@@ -30,6 +30,7 @@ type SingleAgent struct {
 	JumpConfig              *bot_common.JumpConfig
 	BackgroundImageInfoList []*bot_common.BackgroundImageInfo
 	Database                []*bot_common.Database
+	ShortcutCommand         []string
 }
 
 type AgentIdentity struct {
@@ -47,11 +48,27 @@ type DuplicateAgentRequest struct {
 	AgentID int64
 }
 
+type ToolType int32
+
+const (
+	ToolTypeOfWorkflow ToolType = 1
+	ToolTypeOfPlugin   ToolType = 2
+)
+
+type ToolsRetriever struct {
+	PluginID  int64
+	ToolName  string
+	ToolID    int64
+	Arguments string
+	Type      ToolType
+}
+
 type ExecuteRequest struct {
 	Identity *AgentIdentity
 	UserID   int64
 	SpaceID  int64
 
-	Input   *schema.Message
-	History []*schema.Message
+	Input        *schema.Message
+	History      []*schema.Message
+	PreCallTools []*ToolsRetriever
 }

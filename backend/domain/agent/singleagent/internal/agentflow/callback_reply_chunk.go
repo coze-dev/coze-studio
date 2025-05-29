@@ -78,6 +78,27 @@ func (r *replyChunkCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo,
 		if knowledgeEvent.Knowledge != nil {
 			r.sw.Send(knowledgeEvent, nil)
 		}
+	case keyOfToolsPreRetriever:
+		result := convToolsPreRetrieverCallbackInput(output)
+
+		if len(result) > 0 {
+			for _, item := range result {
+				var event *entity.AgentEvent
+				if item.Role == schema.Tool {
+					event = &entity.AgentEvent{
+						EventType:    entity.EventTypeOfToolsMessage,
+						ToolsMessage: []*schema.Message{item},
+					}
+				} else {
+					event = &entity.AgentEvent{
+						EventType: entity.EventTypeOfFuncCall,
+						FuncCall:  item,
+					}
+				}
+				r.sw.Send(event, nil)
+			}
+		}
+
 	case keyOfSuggestParser:
 		sg := convSuggestionNodeCallbackOutput(output)
 
@@ -199,6 +220,15 @@ func convToolsNodeCallbackOutput(output callbacks.CallbackOutput) []*schema.Mess
 		return nil
 	}
 }
+func convToolsPreRetrieverCallbackInput(output callbacks.CallbackOutput) []*schema.Message {
+	switch t := output.(type) {
+	case []*schema.Message:
+		return t
+	default:
+		return nil
+	}
+}
+
 func convSuggestionNodeCallbackOutput(output callbacks.CallbackInput) []*schema.Message {
 	var sg []*schema.Message
 

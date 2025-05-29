@@ -100,3 +100,10 @@ const (
 	MessageSubTypeKnowledgeCall  MessageSubType = "knowledge_recall"
 	MessageSubTypeGenerateFinish MessageSubType = "generate_answer_finish"
 )
+
+type ToolType int32
+
+const (
+	ToolTypePlugin   ToolType = 1
+	ToolTypeWorkflow ToolType = 2
+)

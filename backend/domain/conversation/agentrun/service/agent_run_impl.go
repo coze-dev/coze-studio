@@ -139,10 +139,11 @@ func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWri
 	faChan := make(chan *entity.FinalAnswerEvent, 100)
 
 	ar := &crossagent.AgentRuntime{
-		AgentVersion: c.rtDependence.runMeta.Version,
-		SpaceID:      c.rtDependence.runMeta.SpaceID,
-		IsDraft:      c.rtDependence.runMeta.IsDraft,
-		ConnectorID:  c.rtDependence.runMeta.ConnectorID,
+		AgentVersion:     c.rtDependence.runMeta.Version,
+		SpaceID:          c.rtDependence.runMeta.SpaceID,
+		IsDraft:          c.rtDependence.runMeta.IsDraft,
+		ConnectorID:      c.rtDependence.runMeta.ConnectorID,
+		PreRetrieveTools: c.rtDependence.runMeta.PreRetrieveTools,
 	}
 
 	streamer, err := crossagent.DefaultSVC().StreamExecute(ctx, historyMsg, input, ar)

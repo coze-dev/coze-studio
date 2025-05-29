@@ -36,6 +36,7 @@ type SingleAgentVersion struct {
 	Version                 string                            `gorm:"column:version;not null;comment:Agent Version" json:"version"`                                                 // Agent Version
 	BackgroundImageInfoList []*bot_common.BackgroundImageInfo `gorm:"column:background_image_info_list;comment:Background image;serializer:json" json:"background_image_info_list"` // Background image
 	Database                []*bot_common.Database            `gorm:"column:database;comment:Agent Database Base Configuration;serializer:json" json:"database"`                    // Agent Database Base Configuration
+	ShortcutCommand         []string                          `gorm:"column:shortcut_command;comment:shortcut command;serializer:json" json:"shortcut_command"`                     // shortcut command
 }
 
 // TableName SingleAgentVersion's table name

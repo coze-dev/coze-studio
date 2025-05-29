@@ -12,6 +12,7 @@ import (
 	arEntity "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -49,6 +50,23 @@ func (c *impl) buildReq2SingleAgentStreamExecute(historyMsg []*msgEntity.Message
 		History:  history,
 		UserID:   input.UserID,
 		SpaceID:  agentRuntime.SpaceID,
+		PreCallTools: slices.Transform(agentRuntime.PreRetrieveTools, func(tool *arEntity.Tool) *entity.ToolsRetriever {
+			return &entity.ToolsRetriever{
+				PluginID:  tool.PluginID,
+				ToolName:  tool.ToolName,
+				ToolID:    tool.ToolID,
+				Arguments: tool.Arguments,
+				Type: func(toolType arEntity.ToolType) entity.ToolType {
+					switch toolType {
+					case arEntity.ToolTypeWorkflow:
+						return entity.ToolTypeOfWorkflow
+					case arEntity.ToolTypePlugin:
+						return entity.ToolTypeOfPlugin
+					}
+					return entity.ToolTypeOfPlugin
+				}(tool.Type),
+			}
+		}),
 	}
 }
 

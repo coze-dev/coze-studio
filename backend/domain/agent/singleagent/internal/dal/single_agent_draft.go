@@ -121,6 +121,7 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftPo2Do(po *model.SingleAgentDraft)
 		VariablesMetaID:         po.VariablesMetaID,
 		BackgroundImageInfoList: po.BackgroundImageInfoList,
 		Database:                po.Database,
+		ShortcutCommand:         po.ShortcutCommand,
 	}
 }
 
@@ -146,5 +147,6 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftDo2Po(do *entity.SingleAgent) *mo
 		VariablesMetaID:         do.VariablesMetaID,
 		BackgroundImageInfoList: do.BackgroundImageInfoList,
 		Database:                do.Database,
+		ShortcutCommand:         do.ShortcutCommand,
 	}
 }

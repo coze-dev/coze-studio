@@ -21,7 +21,8 @@ type AgentRequest struct {
 	Input   *schema.Message
 	History []*schema.Message
 
-	Variables map[string]string
+	PreCallTools []*entity.ToolsRetriever
+	Variables    map[string]string
 }
 
 type AgentRunner struct {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"strconv"
 
 	"github.com/cloudwego/eino/schema"
 
@@ -14,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
+	cmdEntity "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
@@ -51,8 +51,17 @@ func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentR
 		}
 
 	}
+	var shortcutCmd *cmdEntity.ShortcutCmd
+	if ar.GetShortcutCmdID() > 0 {
+		cmdID := ar.GetShortcutCmdID()
+		cmdMeta, err := c.ShortcutDomainSVC.GetByCmdID(ctx, cmdID, 0)
+		if err != nil {
+			return nil, err
+		}
+		shortcutCmd = cmdMeta
+	}
 
-	arr, err := c.buildAgentRunRequest(ctx, ar, userID, "", conversationData)
+	arr, err := c.buildAgentRunRequest(ctx, ar, userID, conversationData, shortcutCmd)
 	if err != nil {
 		logs.CtxErrorf(ctx, "buildAgentRunRequest err:%v", err)
 		return nil, err
@@ -107,7 +116,7 @@ func (c *ConversationApplicationService) checkAgent(ctx context.Context, ar *run
 	return agentInfo, nil
 }
 
-func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, agentVersion string, conversationData *convEntity.Conversation) (*entity.AgentRunMeta, error) {
+func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, conversationData *convEntity.Conversation, shortcutCMD *cmdEntity.ShortcutCmd) (*entity.AgentRunMeta, error) {
 	var contentType entity.ContentType
 	if ptr.From(ar.ContentType) == string(entity.ContentTypeText) {
 		contentType = entity.ContentTypeText
@@ -116,19 +125,18 @@ func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Contex
 	}
 
 	arm := &entity.AgentRunMeta{
-		ConversationID: ar.ConversationID,
-		AgentID:        ar.BotID,
-		Content:        c.buildMultiContent(ctx, ar),
-		DisplayContent: c.buildDisplayContent(ctx, ar),
-		SpaceID:        ptr.From(ar.SpaceID),
-		UserID:         userID,
-		SectionID:      conversationData.SectionID,
-		Tools:          c.buildTools(ar.ToolList),
-		IsDraft:        ptr.From(ar.DraftMode),
-		ConnectorID:    consts.CozeConnectorID,
-		ContentType:    contentType,
-		Version:        agentVersion,
-		Ext:            ar.Extra,
+		ConversationID:   ar.ConversationID,
+		AgentID:          ar.BotID,
+		Content:          c.buildMultiContent(ctx, ar),
+		DisplayContent:   c.buildDisplayContent(ctx, ar),
+		SpaceID:          ptr.From(ar.SpaceID),
+		UserID:           userID,
+		SectionID:        conversationData.SectionID,
+		PreRetrieveTools: c.buildTools(ar.ToolList, shortcutCMD),
+		IsDraft:          ptr.From(ar.DraftMode),
+		ConnectorID:      consts.CozeConnectorID,
+		ContentType:      contentType,
+		Ext:              ar.Extra,
 	}
 	return arm, nil
 }
@@ -140,23 +148,23 @@ func (c *ConversationApplicationService) buildDisplayContent(ctx context.Context
 	return ar.Query
 }
 
-func (c *ConversationApplicationService) buildTools(tools []*run.Tool) []*entity.Tool {
+func (c *ConversationApplicationService) buildTools(tools []*run.Tool, shortcutCMD *cmdEntity.ShortcutCmd) []*entity.Tool {
 	var ts []*entity.Tool
 	for _, tool := range tools {
-		parameters, err := json.Marshal(tool.Parameters)
+		arguments, err := json.Marshal(tool.Parameters)
 		if err != nil {
 			continue
 		}
-		tID, err := strconv.ParseInt(tool.PluginID, 10, 64)
-		if err != nil {
-			continue
+
+		if shortcutCMD != nil {
+			ts = append(ts, &entity.Tool{
+				PluginID:  shortcutCMD.PluginID,
+				Arguments: string(arguments),
+				ToolName:  shortcutCMD.PluginToolName,
+				ToolID:    shortcutCMD.PluginToolID,
+				Type:      entity.ToolType(shortcutCMD.ToolType),
+			})
 		}
-		t := &entity.Tool{
-			PluginId:   tID,
-			Parameters: string(parameters),
-			ApiName:    tool.APIName,
-		}
-		ts = append(ts, t)
 	}
 	if len(ts) > 0 {
 		return ts

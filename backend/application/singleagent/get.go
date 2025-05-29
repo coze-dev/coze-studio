@@ -19,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	shortcutCMDEntity "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/entity"
 	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
@@ -74,21 +75,69 @@ func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req
 		return nil, err
 	}
 
+	shortCutCmdResp, err := s.fetchShortcutCMD(ctx, agentInfo)
+	if err != nil {
+		return nil, err
+	}
+
 	return &playground.GetDraftBotInfoAgwResponse{
 		Data: &playground.GetDraftBotInfoAgwData{
 			BotInfo: vo,
 			BotOptionData: &playground.BotOptionData{
-				ModelDetailMap:     modelInfoDo2Vo(modelInfos),
-				KnowledgeDetailMap: knowledgeInfoDo2Vo(klInfos),
-				PluginAPIDetailMap: toolInfoDo2Vo(toolResp.Tools),
-				PluginDetailMap:    pluginInfoDo2Vo(pluginResp.Plugins),
-				WorkflowDetailMap:  workflowDo2Vo(workflowInfos),
+				ModelDetailMap:      modelInfoDo2Vo(modelInfos),
+				KnowledgeDetailMap:  knowledgeInfoDo2Vo(klInfos),
+				PluginAPIDetailMap:  toolInfoDo2Vo(toolResp.Tools),
+				PluginDetailMap:     pluginInfoDo2Vo(pluginResp.Plugins),
+				WorkflowDetailMap:   workflowDo2Vo(workflowInfos),
+				ShortcutCommandList: shortCutCmdResp,
 			},
 			SpaceID:   agentInfo.SpaceID,
 			Editable:  ptr.Of(true),
 			Deletable: ptr.Of(true),
 		},
 	}, nil
+}
+
+func (s *SingleAgentApplicationService) fetchShortcutCMD(ctx context.Context, agentInfo *entity.SingleAgent) ([]*playground.ShortcutCommand, error) {
+	cmdDOs, err := s.appContext.ShortcutCMDDomainSVC.ListCMD(ctx, &shortcutCMDEntity.ListMeta{
+		SpaceID:  agentInfo.SpaceID,
+		ObjectID: agentInfo.AgentID,
+		CommandIDs: slices.Transform(agentInfo.ShortcutCommand, func(a string) int64 {
+			return conv.StrToInt64D(a, 0)
+		}),
+	})
+
+	logs.CtxInfof(ctx, "fetchShortcutCMD cmdDOs = %v, err = %v", conv.DebugJsonToStr(cmdDOs), err)
+
+	if err != nil {
+		return nil, err
+	}
+	cmdVOs := s.shortcutCMDDo2Vo(cmdDOs)
+	return cmdVOs, nil
+}
+
+func (s *SingleAgentApplicationService) shortcutCMDDo2Vo(cmdDOs []*shortcutCMDEntity.ShortcutCmd) []*playground.ShortcutCommand {
+
+	return slices.Transform(cmdDOs, func(cmdDO *shortcutCMDEntity.ShortcutCmd) *playground.ShortcutCommand {
+		return &playground.ShortcutCommand{
+			ObjectID:        cmdDO.ObjectID,
+			CommandID:       cmdDO.CommandID,
+			CommandName:     cmdDO.CommandName,
+			ShortcutCommand: cmdDO.ShortcutCommand,
+			Description:     cmdDO.Description,
+			SendType:        playground.SendType(cmdDO.SendType),
+			ToolType:        playground.ToolType(cmdDO.ToolType),
+			WorkFlowID:      cmdDO.WorkFlowID,
+			PluginID:        cmdDO.PluginID,
+			PluginAPIName:   cmdDO.PluginToolName,
+			PluginAPIID:     cmdDO.PluginToolID,
+			ShortcutIcon:    cmdDO.ShortcutIcon,
+			TemplateQuery:   cmdDO.TemplateQuery,
+			ComponentsList:  cmdDO.Components,
+			CardSchema:      cmdDO.CardSchema,
+			ToolInfo:        cmdDO.ToolInfo,
+		}
+	})
 }
 
 func (s *SingleAgentApplicationService) fetchModelDetails(ctx context.Context, agentInfo *entity.SingleAgent) ([]*modelEntity.Model, error) {

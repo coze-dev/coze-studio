@@ -64,9 +64,11 @@ type AgentConfig struct {
 }
 
 type Tool struct {
-	PluginId   int64  `json:"plugin_id"`
-	Parameters string `json:"parameters"`
-	ApiName    string `json:"api_name"`
+	PluginID  int64    `json:"plugin_id"`
+	ToolID    int64    `json:"tool_id"`
+	Arguments string   `json:"arguments"`
+	ToolName  string   `json:"tool_name"`
+	Type      ToolType `json:"type"`
 }
 
 type InputMetaData struct {
@@ -103,23 +105,23 @@ type Usage struct {
 	WorkflowCost        *int64 `json:"workflow_cost"`
 }
 type AgentRunMeta struct {
-	ConversationID  int64             `json:"conversation_id"`
-	ConnectorID     int64             `json:"connector_id"`
-	SpaceID         int64             `json:"space_id"`
-	Scene           common.Scene      `json:"scene"`
-	SectionID       int64             `json:"section_id"`
-	Name            string            `json:"name"`
-	UserID          int64             `json:"user_id"`
-	AgentID         int64             `json:"agent_id"`
-	ContentType     ContentType       `json:"content_type"`
-	Content         []*InputMetaData  `json:"content"`
-	Tools           []*Tool           `json:"tools"`
-	IsDraft         bool              `json:"is_draft"`
-	CustomerConfig  *CustomerConfig   `json:"customer_config"`
-	DisplayContent  string            `json:"display_content"`
-	CustomVariables map[string]string `json:"custom_variables"`
-	Version         string            `json:"version"`
-	Ext             map[string]string `json:"ext"`
+	ConversationID   int64             `json:"conversation_id"`
+	ConnectorID      int64             `json:"connector_id"`
+	SpaceID          int64             `json:"space_id"`
+	Scene            common.Scene      `json:"scene"`
+	SectionID        int64             `json:"section_id"`
+	Name             string            `json:"name"`
+	UserID           int64             `json:"user_id"`
+	AgentID          int64             `json:"agent_id"`
+	ContentType      ContentType       `json:"content_type"`
+	Content          []*InputMetaData  `json:"content"`
+	PreRetrieveTools []*Tool           `json:"tools"`
+	IsDraft          bool              `json:"is_draft"`
+	CustomerConfig   *CustomerConfig   `json:"customer_config"`
+	DisplayContent   string            `json:"display_content"`
+	CustomVariables  map[string]string `json:"custom_variables"`
+	Version          string            `json:"version"`
+	Ext              map[string]string `json:"ext"`
 }
 
 type AgentRunResponse struct {

@@ -16,6 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/plugin"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/search"
+	"code.byted.org/flow/opencoze/backend/application/shortcutcmd"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	"code.byted.org/flow/opencoze/backend/application/user"
 	"code.byted.org/flow/opencoze/backend/application/workflow"
@@ -63,6 +64,7 @@ type primaryServices struct {
 	memorySVC     *memory.MemoryApplicationServices
 	knowledgeSVC  *knowledge.KnowledgeApplicationService
 	workflowSVC   *workflow.ApplicationService
+	shortcutSVC   *shortcutcmd.ShortcutCmdApplicationService
 }
 
 type complexServices struct {
@@ -156,12 +158,15 @@ func initPrimaryServices(ctx context.Context, basicServices *basicServices) (*pr
 	workflowDomainSVC := workflow.InitService(
 		basicServices.toWorkflowServiceComponents(pluginSVC, memorySVC, knowledgeSVC))
 
+	shortcutSVC := shortcutcmd.InitService(basicServices.infra.DB, basicServices.infra.IDGenSVC)
+
 	return &primaryServices{
 		basicServices: basicServices,
 		pluginSVC:     pluginSVC,
 		memorySVC:     memorySVC,
 		knowledgeSVC:  knowledgeSVC,
 		workflowSVC:   workflowDomainSVC,
+		shortcutSVC:   shortcutSVC,
 	}, nil
 }
 
@@ -244,19 +249,20 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 
 func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceComponents {
 	return &singleagent.ServiceComponents{
-		IDGen:              p.basicServices.infra.IDGenSVC,
-		DB:                 p.basicServices.infra.DB,
-		Cache:              p.basicServices.infra.CacheCli,
-		TosClient:          p.basicServices.infra.TOSClient,
-		ImageX:             p.basicServices.infra.ImageXClient,
-		ModelMgrDomainSVC:  p.basicServices.modelMgrSVC.DomainSVC,
-		UserDomainSVC:      p.basicServices.userSVC.DomainSVC,
-		EventBus:           p.basicServices.eventbus.projectEventBus,
-		ConnectorDomainSVC: p.basicServices.connectorSVC.DomainSVC,
-		KnowledgeDomainSVC: p.knowledgeSVC.DomainSVC,
-		PluginDomainSVC:    p.pluginSVC.DomainSVC,
-		WorkflowDomainSVC:  p.workflowSVC.DomainSVC,
-		VariablesDomainSVC: p.memorySVC.VariablesDomainSVC,
+		IDGen:                p.basicServices.infra.IDGenSVC,
+		DB:                   p.basicServices.infra.DB,
+		Cache:                p.basicServices.infra.CacheCli,
+		TosClient:            p.basicServices.infra.TOSClient,
+		ImageX:               p.basicServices.infra.ImageXClient,
+		ModelMgrDomainSVC:    p.basicServices.modelMgrSVC.DomainSVC,
+		UserDomainSVC:        p.basicServices.userSVC.DomainSVC,
+		EventBus:             p.basicServices.eventbus.projectEventBus,
+		ConnectorDomainSVC:   p.basicServices.connectorSVC.DomainSVC,
+		KnowledgeDomainSVC:   p.knowledgeSVC.DomainSVC,
+		PluginDomainSVC:      p.pluginSVC.DomainSVC,
+		WorkflowDomainSVC:    p.workflowSVC.DomainSVC,
+		VariablesDomainSVC:   p.memorySVC.VariablesDomainSVC,
+		ShortcutCMDDomainSVC: p.shortcutSVC.ShortCutDomainSVC,
 	}
 }
 

@@ -6,16 +6,18 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	arEntity "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 )
 
 type AgentInfo = entity.SingleAgent
 
 type AgentRuntime struct {
-	AgentVersion string
-	IsDraft      bool
-	SpaceID      int64
-	ConnectorID  int64
+	AgentVersion     string
+	IsDraft          bool
+	SpaceID          int64
+	ConnectorID      int64
+	PreRetrieveTools []*arEntity.Tool
 }
 
 type SingleAgent interface {

@@ -85,6 +85,7 @@ func (sa *SingleAgentVersionDAO) singleAgentVersionPo2Do(po *model.SingleAgentVe
 		JumpConfig:      po.JumpConfig,
 		VariablesMetaID: po.VariablesMetaID,
 		Database:        po.Database,
+		ShortcutCommand: po.ShortcutCommand,
 	}
 }
 
@@ -109,5 +110,6 @@ func (sa *SingleAgentVersionDAO) singleAgentVersionDo2Po(do *entity.SingleAgent)
 		JumpConfig:      do.JumpConfig,
 		VariablesMetaID: do.VariablesMetaID,
 		Database:        do.Database,
+		ShortcutCommand: do.ShortcutCommand,
 	}
 }

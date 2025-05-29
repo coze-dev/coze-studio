@@ -101,17 +101,17 @@ func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, a
 	var contentType entity.ContentType
 
 	arm := &entity.AgentRunMeta{
-		ConversationID: ptr.From(ar.ConversationID),
-		AgentID:        ar.BotID,
-		Content:        a.buildMultiContent(ctx, ar),
-		SpaceID:        666,
-		UserID:         userID,
-		SectionID:      conversationData.SectionID,
-		Tools:          a.buildTools(ar.Tools),
-		IsDraft:        true,
-		ConnectorID:    connectorID,
-		ContentType:    contentType,
-		Ext:            ar.ExtraParams,
+		ConversationID:   ptr.From(ar.ConversationID),
+		AgentID:          ar.BotID,
+		Content:          a.buildMultiContent(ctx, ar),
+		SpaceID:          666,
+		UserID:           userID,
+		SectionID:        conversationData.SectionID,
+		PreRetrieveTools: a.buildTools(ar.Tools),
+		IsDraft:          true,
+		ConnectorID:      connectorID,
+		ContentType:      contentType,
+		Ext:              ar.ExtraParams,
 	}
 	return arm, nil
 }
@@ -128,9 +128,9 @@ func (a *OpenapiAgentRunApplication) buildTools(tools []*run.Tool) []*entity.Too
 			continue
 		}
 		t := &entity.Tool{
-			PluginId:   tID,
-			Parameters: string(parameters),
-			ApiName:    tool.APIName,
+			PluginID:  tID,
+			Arguments: string(parameters),
+			ToolName:  tool.APIName,
 		}
 		ts = append(ts, t)
 	}

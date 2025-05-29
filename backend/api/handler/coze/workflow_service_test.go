@@ -3383,10 +3383,10 @@ func TestInputComplex(t *testing.T) {
 			"output_list": []any{
 				map[string]any{
 					"name": "user_1",
-					"age":  float64(0), //TODO: this is different to online behavior which is nil
+					"age":  float64(0), // TODO: this is different to online behavior which is nil
 				},
 				map[string]any{
-					"name": "", //TODO: this is different to online behavior which is nil
+					"name": "", // TODO: this is different to online behavior which is nil
 					"age":  float64(2),
 				},
 			},

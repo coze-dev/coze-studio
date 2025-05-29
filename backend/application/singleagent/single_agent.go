@@ -207,6 +207,10 @@ func (s *SingleAgentApplicationService) applyAgentUpdates(target *entity.SingleA
 		target.JumpConfig = patch.Agents[0].JumpConfig
 	}
 
+	if patch.ShortcutSort != nil {
+		target.ShortcutCommand = patch.ShortcutSort
+	}
+
 	if patch.DatabaseList != nil {
 		for _, db := range patch.DatabaseList {
 			if db.PromptDisabled == nil {
@@ -312,6 +316,7 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 		BackgroundImageInfoList: do.BackgroundImageInfoList,
 		Status:                  bot_common.BotStatus_Using,
 		DatabaseList:            do.Database,
+		ShortcutSort:            do.ShortcutCommand,
 	}
 
 	if do.VariablesMetaID != nil {

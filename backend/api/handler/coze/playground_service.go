@@ -7,6 +7,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
+	"code.byted.org/flow/opencoze/backend/application/shortcutcmd"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	"code.byted.org/flow/opencoze/backend/application/user"
 
@@ -270,5 +271,28 @@ func UpdateBotPopupInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	c.JSON(consts.StatusOK, resp)
+}
+
+// CreateUpdateShortcutCommand .
+// @router /api/playground_api/create_update_shortcut_command [POST]
+func CreateUpdateShortcutCommand(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req playground.CreateUpdateShortcutCommandRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	shortCuts, err := shortcutcmd.ShortcutCmdSVC.Handler(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	resp := new(playground.CreateUpdateShortcutCommandResponse)
+	resp.Shortcuts = shortCuts
+	resp.Code = 0
+	resp.Msg = ""
 	c.JSON(consts.StatusOK, resp)
 }

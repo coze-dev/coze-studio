@@ -1854,6 +1854,7 @@ type AgentRunRequest struct {
 	SubScene *string `thrift:"sub_scene,22,optional" form:"sub_scene" json:"sub_scene,omitempty" query:"sub_scene"`
 	// diff模式下的聊天配置，仅草稿single bot
 	DiffModeIdentifier *DiffModeIdentifier `thrift:"diff_mode_identifier,23,optional" form:"diff_mode_identifier" json:"diff_mode_identifier,omitempty" query:"diff_mode_identifier"`
+	ShortcutCmdID      *int64              `thrift:"shortcut_cmd_id,24,optional" form:"shortcut_cmd_id" json:"shortcut_cmd_id,string,omitempty" query:"shortcut_cmd_id"`
 }
 
 func NewAgentRunRequest() *AgentRunRequest {
@@ -2009,6 +2010,15 @@ func (p *AgentRunRequest) GetDiffModeIdentifier() (v DiffModeIdentifier) {
 	return *p.DiffModeIdentifier
 }
 
+var AgentRunRequest_ShortcutCmdID_DEFAULT int64
+
+func (p *AgentRunRequest) GetShortcutCmdID() (v int64) {
+	if !p.IsSetShortcutCmdID() {
+		return AgentRunRequest_ShortcutCmdID_DEFAULT
+	}
+	return *p.ShortcutCmdID
+}
+
 var fieldIDToName_AgentRunRequest = map[int16]string{
 	1:  "bot_id",
 	2:  "conversation_id",
@@ -2029,6 +2039,7 @@ var fieldIDToName_AgentRunRequest = map[int16]string{
 	21: "commit_version",
 	22: "sub_scene",
 	23: "diff_mode_identifier",
+	24: "shortcut_cmd_id",
 }
 
 func (p *AgentRunRequest) IsSetDraftMode() bool {
@@ -2085,6 +2096,10 @@ func (p *AgentRunRequest) IsSetSubScene() bool {
 
 func (p *AgentRunRequest) IsSetDiffModeIdentifier() bool {
 	return p.DiffModeIdentifier != nil
+}
+
+func (p *AgentRunRequest) IsSetShortcutCmdID() bool {
+	return p.ShortcutCmdID != nil
 }
 
 func (p *AgentRunRequest) Read(iprot thrift.TProtocol) (err error) {
@@ -2256,6 +2271,14 @@ func (p *AgentRunRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 23:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField23(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 24:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField24(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -2584,6 +2607,17 @@ func (p *AgentRunRequest) ReadField23(iprot thrift.TProtocol) error {
 	p.DiffModeIdentifier = _field
 	return nil
 }
+func (p *AgentRunRequest) ReadField24(iprot thrift.TProtocol) error {
+
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.ShortcutCmdID = _field
+	return nil
+}
 
 func (p *AgentRunRequest) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -2665,6 +2699,10 @@ func (p *AgentRunRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField23(oprot); err != nil {
 			fieldId = 23
+			goto WriteFieldError
+		}
+		if err = p.writeField24(oprot); err != nil {
+			fieldId = 24
 			goto WriteFieldError
 		}
 	}
@@ -3062,6 +3100,24 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 23 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 23 end error: ", p), err)
+}
+func (p *AgentRunRequest) writeField24(oprot thrift.TProtocol) (err error) {
+	if p.IsSetShortcutCmdID() {
+		if err = oprot.WriteFieldBegin("shortcut_cmd_id", thrift.I64, 24); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI64(*p.ShortcutCmdID); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 24 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 24 end error: ", p), err)
 }
 
 func (p *AgentRunRequest) String() string {

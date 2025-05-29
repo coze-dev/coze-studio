@@ -15,6 +15,7 @@ import (
 	"gorm.io/gorm/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	dbentity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
@@ -35,6 +36,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"jump_config":                &bot_common.JumpConfig{},
 			"background_image_info_list": []*bot_common.BackgroundImageInfo{},
 			"database":                   []*bot_common.Database{},
+			"shortcut_command":           []string{},
 		},
 		"single_agent_version": {
 			// "variable":        []*bot_common.Variable{},
@@ -48,6 +50,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"jump_config":                &bot_common.JumpConfig{},
 			"background_image_info_list": []*bot_common.BackgroundImageInfo{},
 			"database":                   []*bot_common.Database{},
+			"shortcut_command":           []string{},
 		},
 		"single_agent_publish": {
 			"connector_ids": []int64{},
@@ -128,6 +131,13 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 
 	"domain/permission/openapiauth/internal/dal/query": {
 		"api_key": {},
+	},
+	"domain/shortcutcmd/internal/dal/query": {
+		"shortcut_command": {
+			"tool_info":     &playground.ToolInfo{},
+			"components":    []*playground.Components{},
+			"shortcut_icon": &playground.ShortcutFileInfo{},
+		},
 	},
 
 	"domain/memory/database/internal/dal/query": {

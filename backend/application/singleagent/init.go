@@ -9,10 +9,12 @@ import (
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	service2 "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
+	shortcutCmd "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/service"
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -37,13 +39,15 @@ type ServiceComponents struct {
 	EventBus    search.ProjectEventBus
 	CounterRepo repository.CounterRepository
 
-	KnowledgeDomainSVC knowledge.Knowledge
-	ModelMgrDomainSVC  modelmgr.Manager
-	PluginDomainSVC    service.PluginService
-	WorkflowDomainSVC  workflow.Service
-	UserDomainSVC      user.User
-	VariablesDomainSVC variables.Variables
-	ConnectorDomainSVC connector.Connector
+	KnowledgeDomainSVC   knowledge.Knowledge
+	ModelMgrDomainSVC    modelmgr.Manager
+	PluginDomainSVC      service.PluginService
+	WorkflowDomainSVC    workflow.Service
+	UserDomainSVC        user.User
+	VariablesDomainSVC   variables.Variables
+	ConnectorDomainSVC   connector.Connector
+	DatabaseDomainSVC    service2.Database
+	ShortcutCMDDomainSVC shortcutCmd.ShortcutCmd
 }
 
 func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
