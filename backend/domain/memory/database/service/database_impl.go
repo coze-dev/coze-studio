@@ -1796,3 +1796,41 @@ func (d databaseService) increaseProgress(ctx context.Context, req *SubmitDataba
 
 	return nil
 }
+
+func (d databaseService) GetDraftDatabaseByOnlineID(ctx context.Context, req *GetDraftDatabaseByOnlineIDRequest) (*GetDraftDatabaseByOnlineIDResponse, error) {
+	online, err := d.MGetDatabase(ctx, &MGetDatabaseRequest{
+		Basics: []*entity2.DatabaseBasic{
+			{
+				ID:        req.OnlineID,
+				TableType: entity2.TableType_OnlineTable,
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(online.Databases) == 0 {
+		return nil, fmt.Errorf("online table not found, id: %d", req.OnlineID)
+	}
+
+	draftID := online.Databases[0].GetDraftID()
+
+	draftResp, err := d.MGetDatabase(ctx, &MGetDatabaseRequest{
+		Basics: []*entity2.DatabaseBasic{
+			{
+				ID:        draftID,
+				TableType: entity2.TableType_DraftTable,
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(draftResp.Databases) == 0 {
+		return nil, fmt.Errorf("online table not found, id: %d", req.OnlineID)
+	}
+
+	return &GetDraftDatabaseByOnlineIDResponse{
+		Database: draftResp.Databases[0],
+	}, nil
+}
