@@ -1,7 +1,6 @@
 package agentflow
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"context"
 	"fmt"
 	"sort"
@@ -13,6 +12,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
