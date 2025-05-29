@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/cloudwego/eino/components/tool"
+	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/redis/go-redis/v9"
 
@@ -39,6 +40,7 @@ type Service interface {
 	ListWorkflow(ctx context.Context, spaceID int64, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error)
 	ListWorkflowAsToolData(ctx context.Context, spaceID int64, queryInfo *vo.QueryToolInfoOption) ([]*vo.WorkFlowAsToolInfo, error)
 	MGetWorkflowDetailInfo(ctx context.Context, ids []*entity.WorkflowIdentity) ([]*entity.Workflow, error)
+	WithMessagePipe() (einoCompose.Option, *schema.StreamReader[*entity.Message])
 }
 
 type Repository interface {
@@ -84,6 +86,7 @@ type Repository interface {
 type ToolFromWorkflow interface {
 	tool.BaseTool
 	TerminatePlan() vo.TerminatePlan
+	GetWorkflow() *entity.Workflow
 }
 
 var repositorySingleton Repository

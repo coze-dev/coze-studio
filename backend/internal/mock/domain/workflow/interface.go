@@ -13,15 +13,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	tool "github.com/cloudwego/eino/components/tool"
-	schema "github.com/cloudwego/eino/schema"
-	redis "github.com/redis/go-redis/v9"
-	gomock "go.uber.org/mock/gomock"
-
 	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	tool "github.com/cloudwego/eino/components/tool"
+	compose "github.com/cloudwego/eino/compose"
+	schema "github.com/cloudwego/eino/schema"
+	redis "github.com/redis/go-redis/v9"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockService is a mock of Service interface.
@@ -372,6 +372,21 @@ func (m *MockService) ValidateTree(ctx context.Context, id int64, canvasSchema s
 func (mr *MockServiceMockRecorder) ValidateTree(ctx, id, canvasSchema any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateTree", reflect.TypeOf((*MockService)(nil).ValidateTree), ctx, id, canvasSchema)
+}
+
+// WithMessagePipe mocks base method.
+func (m *MockService) WithMessagePipe() (compose.Option, *schema.StreamReader[*entity.Message]) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WithMessagePipe")
+	ret0, _ := ret[0].(compose.Option)
+	ret1, _ := ret[1].(*schema.StreamReader[*entity.Message])
+	return ret0, ret1
+}
+
+// WithMessagePipe indicates an expected call of WithMessagePipe.
+func (mr *MockServiceMockRecorder) WithMessagePipe() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithMessagePipe", reflect.TypeOf((*MockService)(nil).WithMessagePipe))
 }
 
 // WorkflowAsModelTool mocks base method.
@@ -952,6 +967,20 @@ func NewMockToolFromWorkflow(ctrl *gomock.Controller) *MockToolFromWorkflow {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockToolFromWorkflow) EXPECT() *MockToolFromWorkflowMockRecorder {
 	return m.recorder
+}
+
+// GetWorkflow mocks base method.
+func (m *MockToolFromWorkflow) GetWorkflow() *entity.Workflow {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWorkflow")
+	ret0, _ := ret[0].(*entity.Workflow)
+	return ret0
+}
+
+// GetWorkflow indicates an expected call of GetWorkflow.
+func (mr *MockToolFromWorkflowMockRecorder) GetWorkflow() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkflow", reflect.TypeOf((*MockToolFromWorkflow)(nil).GetWorkflow))
 }
 
 // Info mocks base method.

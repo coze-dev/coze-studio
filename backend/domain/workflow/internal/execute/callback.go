@@ -11,8 +11,10 @@ import (
 	"time"
 
 	"github.com/cloudwego/eino/callbacks"
+	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	callbacks2 "github.com/cloudwego/eino/utils/callbacks"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
@@ -39,6 +41,11 @@ type WorkflowHandler struct {
 	subWorkflowBasic  *entity.WorkflowBasic
 	requireCheckpoint bool
 	resumeEvent       *entity.InterruptEvent
+}
+
+type ToolHandler struct {
+	ch   chan<- *Event
+	info entity.FunctionInfo
 }
 
 func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler { // TODO: to be removed
@@ -103,6 +110,19 @@ func NewNodeHandler(key string, name string, ch chan<- *Event, resumeEvent *enti
 		resumeEvent:   resumeEvent,
 		terminatePlan: plan,
 	}
+}
+
+func NewToolHandler(ch chan<- *Event, info entity.FunctionInfo) callbacks.Handler {
+	th := &ToolHandler{
+		ch:   ch,
+		info: info,
+	}
+	return callbacks2.NewHandlerHelper().Tool(&callbacks2.ToolCallbackHandler{
+		OnStart:               th.OnStart,
+		OnEnd:                 th.OnEnd,
+		OnEndWithStreamOutput: th.OnEndWithStreamOutput,
+		OnError:               th.OnError,
+	}).Handler()
 }
 
 func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context, bool) {
@@ -754,16 +774,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 		return ctx
 	}
 
-	// stream emitters such as LLM node, or VariableAggregator node, can potentially trigger this.
-	// when it's triggered in this way, we should consume the stream asynchronously, concat the output, calculate the tokens and duration, then send the event.
-	// on the other hand, Exit node and OutputEmitter node can trigger this, but only in a synchronous way:
-	// we will consume the stream synchronously and send the event.
-
 	c := GetExeCtx(ctx)
-	e := &Event{
-		Type:    NodeEndStreaming,
-		Context: c,
-	}
 
 	switch t := entity.NodeType(info.Type); t {
 	case entity.NodeTypeLLM, entity.NodeTypeVariableAggregator:
@@ -789,8 +800,12 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				}
 			}
 
-			e.Output = fullOutput
-			e.Duration = time.Since(time.UnixMilli(c.StartTime))
+			e := &Event{
+				Type:     NodeEndStreaming,
+				Context:  c,
+				Output:   fullOutput,
+				Duration: time.Since(time.UnixMilli(c.StartTime)),
+			}
 
 			if c.TokenCollector != nil {
 				usage := c.TokenCollector.wait()
@@ -803,95 +818,233 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			n.ch <- e
 		}()
 	case entity.NodeTypeExit, entity.NodeTypeOutputEmitter, entity.NodeTypeSubWorkflow:
-		// TODO: is NodeTypeSubWorkflow belong here?
-		// consumes the stream synchronously because Exit and OutputEmitter are both synchronous.
-		defer output.Close()
-		fullOutput := make(map[string]any)
-		var firstEvent, previousEvent, secondPreviousEvent *Event
-		for {
-			chunk, err := output.Recv()
-			if err != nil {
-				if err == io.EOF {
-					if previousEvent != nil {
-						previousEmpty := len(previousEvent.Answer) == 0
-						if previousEmpty { // concat the empty previous chunk with the second previous chunk
-							if secondPreviousEvent != nil {
-								secondPreviousEvent.StreamEnd = true
-								n.ch <- secondPreviousEvent
+		consumer := func(ctx context.Context) context.Context {
+			defer output.Close()
+			fullOutput := make(map[string]any)
+			var firstEvent, previousEvent, secondPreviousEvent *Event
+			for {
+				chunk, err := output.Recv()
+				if err != nil {
+					if err == io.EOF {
+						if previousEvent != nil {
+							previousEmpty := len(previousEvent.Answer) == 0
+							if previousEmpty { // concat the empty previous chunk with the second previous chunk
+								if secondPreviousEvent != nil {
+									secondPreviousEvent.StreamEnd = true
+									n.ch <- secondPreviousEvent
+								} else {
+									previousEvent.StreamEnd = true
+									n.ch <- previousEvent
+								}
 							} else {
+								if secondPreviousEvent != nil {
+									n.ch <- secondPreviousEvent
+								}
+
 								previousEvent.StreamEnd = true
 								n.ch <- previousEvent
 							}
-						} else {
-							if secondPreviousEvent != nil {
-								n.ch <- secondPreviousEvent
+						} else { // only sent first event, or no event at all
+							n.ch <- &Event{
+								Type:      NodeStreamingOutput,
+								Context:   c,
+								Output:    fullOutput,
+								StreamEnd: true,
 							}
-
-							previousEvent.StreamEnd = true
-							n.ch <- previousEvent
 						}
-					} else { // only sent first event, or no event at all
-						n.ch <- &Event{
-							Type:      NodeStreamingOutput,
+						break
+					}
+					logs.Errorf("failed to receive stream output: %v", err)
+					return n.OnError(ctx, info, err)
+				}
+
+				if secondPreviousEvent != nil {
+					n.ch <- secondPreviousEvent
+				}
+
+				fullOutput, err = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
+				if err != nil {
+					logs.Errorf("failed to concat two maps: %v", err)
+					return n.OnError(ctx, info, err)
+				}
+
+				deltaEvent := &Event{
+					Type:    NodeStreamingOutput,
+					Context: c,
+					Output:  fullOutput,
+				}
+
+				if delta, ok := chunk.(map[string]any)["output"]; ok {
+					deltaEvent.Answer = strings.TrimSuffix(delta.(string), nodes.KeyIsFinished)
+				}
+
+				if firstEvent == nil { // prioritize sending the first event asap.
+					firstEvent = deltaEvent
+					n.ch <- firstEvent
+				} else {
+					secondPreviousEvent = previousEvent
+					previousEvent = deltaEvent
+				}
+			}
+
+			e := &Event{
+				Type:     NodeEndStreaming,
+				Context:  c,
+				Output:   fullOutput,
+				Duration: time.Since(time.UnixMilli(c.StartTime)),
+			}
+
+			if answer, ok := fullOutput["output"]; ok {
+				e.Answer = answer.(string)
+			}
+
+			if c.TokenCollector != nil {
+				usage := c.TokenCollector.wait()
+				e.Token = &TokenInfo{
+					InputToken:  int64(usage.PromptTokens),
+					OutputToken: int64(usage.CompletionTokens),
+					TotalToken:  int64(usage.TotalTokens),
+				}
+			}
+			n.ch <- e
+
+			return ctx
+		}
+
+		if c.NodeType == entity.NodeTypeExit {
+			go consumer(ctx) // handles Exit node asynchronously to keep the typewriter effect for workflow tool returning directly
+			return ctx
+		} else if c.NodeType == entity.NodeTypeOutputEmitter || c.NodeType == entity.NodeTypeSubWorkflow {
+			return consumer(ctx)
+		}
+	default:
+		panic(fmt.Sprintf("impossible, node type= %s", info.Type))
+	}
+
+	return ctx
+}
+
+func (t *ToolHandler) OnStart(ctx context.Context, info *callbacks.RunInfo,
+	input *tool.CallbackInput) context.Context {
+	if info.Name != t.info.Name {
+		return ctx
+	}
+
+	t.ch <- &Event{
+		Type:    FunctionCall,
+		Context: GetExeCtx(ctx),
+		functionCall: &entity.FunctionCallInfo{
+			FunctionInfo: t.info,
+			CallID:       compose.GetToolCallID(ctx),
+			Arguments:    input.ArgumentsInJSON,
+		},
+	}
+
+	return ctx
+}
+
+func (t *ToolHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo,
+	output *tool.CallbackOutput) context.Context {
+	if info.Name != t.info.Name {
+		return ctx
+	}
+
+	t.ch <- &Event{
+		Type:    ToolResponse,
+		Context: GetExeCtx(ctx),
+		toolResponse: &entity.ToolResponseInfo{
+			FunctionInfo: t.info,
+			CallID:       compose.GetToolCallID(ctx),
+			Response:     output.Response,
+		},
+	}
+
+	return ctx
+}
+
+func (t *ToolHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo,
+	output *schema.StreamReader[*tool.CallbackOutput]) context.Context {
+	if info.Name != t.info.Name {
+		output.Close()
+		return ctx
+	}
+
+	go func() {
+		c := GetExeCtx(ctx)
+		defer output.Close()
+		var (
+			firstEvent, previousEvent *Event
+			fullResponse              string
+			callID                    = compose.GetToolCallID(ctx)
+		)
+		for {
+			chunk, e := output.Recv()
+			if e != nil {
+				if e == io.EOF {
+					if previousEvent != nil {
+						previousEvent.StreamEnd = true
+						t.ch <- previousEvent
+					} else {
+						t.ch <- &Event{
+							Type:      ToolStreamingResponse,
 							Context:   c,
-							Output:    fullOutput,
 							StreamEnd: true,
+							toolResponse: &entity.ToolResponseInfo{
+								FunctionInfo: t.info,
+								CallID:       callID,
+							},
 						}
 					}
 					break
 				}
 				logs.Errorf("failed to receive stream output: %v", e)
-				return n.OnError(ctx, info, err)
+				_ = t.OnError(ctx, info, e)
+				return
 			}
 
-			if secondPreviousEvent != nil {
-				n.ch <- secondPreviousEvent
-			}
+			fullResponse += chunk.Response
 
-			fullOutput, err = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
-			if err != nil {
-				logs.Errorf("failed to concat two maps: %v", e)
-				return n.OnError(ctx, info, err)
+			if previousEvent != nil {
+				t.ch <- previousEvent
 			}
 
 			deltaEvent := &Event{
-				Type:    NodeStreamingOutput,
-				Context: e.Context,
-				Output:  fullOutput,
+				Type:    ToolStreamingResponse,
+				Context: c,
+				toolResponse: &entity.ToolResponseInfo{
+					FunctionInfo: t.info,
+					CallID:       compose.GetToolCallID(ctx),
+					Response:     chunk.Response,
+				},
 			}
 
-			if delta, ok := chunk.(map[string]any)["output"]; ok {
-				deltaEvent.Answer = strings.TrimSuffix(delta.(string), nodes.KeyIsFinished)
-			}
-
-			if firstEvent == nil { // prioritize sending the first event asap.
+			if firstEvent == nil {
 				firstEvent = deltaEvent
-				n.ch <- firstEvent
+				t.ch <- firstEvent
 			} else {
-				secondPreviousEvent = previousEvent
 				previousEvent = deltaEvent
 			}
 		}
+	}()
 
-		e.Output = fullOutput
-		e.Duration = time.Since(time.UnixMilli(c.StartTime))
+	return ctx
+}
 
-		if answer, ok := fullOutput["output"]; ok {
-			e.Answer = answer.(string)
-		}
-
-		if c.TokenCollector != nil {
-			usage := c.TokenCollector.wait()
-			e.Token = &TokenInfo{
-				InputToken:  int64(usage.PromptTokens),
-				OutputToken: int64(usage.CompletionTokens),
-				TotalToken:  int64(usage.TotalTokens),
-			}
-		}
-		n.ch <- e
-	default:
-		panic(fmt.Sprintf("impossible, node type= %s", info.Type))
+func (t *ToolHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err error) context.Context {
+	if info.Name != t.info.Name {
+		return ctx
 	}
-
+	t.ch <- &Event{
+		Type:    ToolError,
+		Context: GetExeCtx(ctx),
+		functionCall: &entity.FunctionCallInfo{
+			FunctionInfo: t.info,
+			CallID:       compose.GetToolCallID(ctx),
+		},
+		Err: &ErrorInfo{
+			Level: LevelError, // TODO: handle warn level errors
+			Err:   err,
+		},
+	}
 	return ctx
 }

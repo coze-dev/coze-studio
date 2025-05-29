@@ -26,6 +26,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/adaptor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/validate"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -598,7 +599,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 		return 0, err
 	}
 	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(int32(len(workflowSC.GetAllNodes()))),
-		nil, i.repo, workflowSC, nil, false)
+		nil, i.repo, workflowSC, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -651,7 +652,7 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 	sr, sw := schema.Pipe[*entity.Message](10)
 
 	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(int32(len(workflowSC.GetAllNodes()))),
-		nil, i.repo, workflowSC, sw, true)
+		nil, i.repo, workflowSC, sw)
 	if err != nil {
 		return nil, err
 	}
@@ -824,7 +825,7 @@ func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeReques
 	}
 
 	cancelCtx, _, opts, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
-		req, i.repo, workflowSC, nil, false)
+		req, i.repo, workflowSC, nil)
 
 	wf.AsyncRun(cancelCtx, nil, opts...)
 
@@ -887,7 +888,7 @@ func (i *impl) StreamResumeWorkflow(ctx context.Context, req *entity.ResumeReque
 
 	sr, sw := schema.Pipe[*entity.Message](10)
 	cancelCtx, _, opts, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
-		req, i.repo, workflowSC, sw, true)
+		req, i.repo, workflowSC, sw)
 
 	wf.AsyncRun(cancelCtx, nil, opts...)
 
@@ -1339,6 +1340,10 @@ func (i *impl) MGetWorkflowDetailInfo(ctx context.Context, identifies []*entity.
 		w.LatestFlowVersionDesc = v.VersionDescription
 	}
 	return wfs, nil
+}
+
+func (i *impl) WithMessagePipe() (einoCompose.Option, *schema.StreamReader[*entity.Message]) {
+	return execute.WithMessagePipe()
 }
 
 func (i *impl) shouldResetTestRun(ctx context.Context, c *vo.Canvas, wid int64) (bool, error) {

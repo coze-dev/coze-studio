@@ -63,7 +63,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 	if rInfo != nil {
 		cancelCtx, executeID, callOpts, err = Prepare(ctx, "", i.wfEntity.GetBasic(int32(len(i.sc.GetAllNodes()))),
 			rInfo, i.repo, i.sc,
-			execute.GetIntermediateStreamWriter(opts...), false)
+			execute.GetIntermediateStreamWriter(opts...))
 		if err != nil {
 			return "", err
 		}
@@ -75,7 +75,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 
 		cancelCtx, executeID, callOpts, err = Prepare(ctx, argumentsInJSON, i.wfEntity.GetBasic(int32(len(i.sc.GetAllNodes()))),
 			nil, i.repo, i.sc,
-			execute.GetIntermediateStreamWriter(opts...), false)
+			execute.GetIntermediateStreamWriter(opts...))
 		if err != nil {
 			return "", err
 		}
@@ -102,7 +102,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 				time.Sleep(5 * time.Millisecond)
 				count++
 
-				if count >= 3 {
+				if count >= 10 {
 					return "", fmt.Errorf("workflow execution %d is not interrupted, status is %v, cannot resume", executeID, wfExe.Status)
 				}
 			}
@@ -150,6 +150,10 @@ func (i *invokableWorkflow) TerminatePlan() vo.TerminatePlan {
 	return i.terminatePlan
 }
 
+func (i *invokableWorkflow) GetWorkflow() *entity.Workflow {
+	return i.wfEntity
+}
+
 type streamableWorkflow struct {
 	info          *schema.ToolInfo
 	stream        func(ctx context.Context, input map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error)
@@ -176,11 +180,11 @@ func NewStreamableWorkflow(info *schema.ToolInfo,
 	}
 }
 
-func (s streamableWorkflow) Info(_ context.Context) (*schema.ToolInfo, error) {
+func (s *streamableWorkflow) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return s.info, nil
 }
 
-func (s streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (*schema.StreamReader[string], error) {
+func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (*schema.StreamReader[string], error) {
 	rInfo := execute.GetResumeRequest(opts...)
 
 	var (
@@ -193,7 +197,7 @@ func (s streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON s
 	if rInfo != nil {
 		cancelCtx, executeID, callOpts, err = Prepare(ctx, "", s.wfEntity.GetBasic(int32(len(s.sc.GetAllNodes()))),
 			rInfo, s.repo, s.sc,
-			execute.GetIntermediateStreamWriter(opts...), false)
+			execute.GetIntermediateStreamWriter(opts...))
 		if err != nil {
 			return nil, err
 		}
@@ -205,7 +209,7 @@ func (s streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON s
 
 		cancelCtx, executeID, callOpts, err = Prepare(ctx, argumentsInJSON, s.wfEntity.GetBasic(int32(len(s.sc.GetAllNodes()))),
 			nil, s.repo, s.sc,
-			execute.GetIntermediateStreamWriter(opts...), false)
+			execute.GetIntermediateStreamWriter(opts...))
 		if err != nil {
 			return nil, err
 		}
@@ -232,7 +236,7 @@ func (s streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON s
 				time.Sleep(5 * time.Millisecond)
 				count++
 
-				if count >= 3 {
+				if count >= 10 {
 					return nil, fmt.Errorf("workflow execution %d is not interrupted, status is %v, cannot resume", executeID, wfExe.Status)
 				}
 			}
@@ -277,6 +281,10 @@ func (s streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON s
 	}), nil
 }
 
-func (s streamableWorkflow) TerminatePlan() vo.TerminatePlan {
+func (s *streamableWorkflow) TerminatePlan() vo.TerminatePlan {
 	return s.terminatePlan
+}
+
+func (s *streamableWorkflow) GetWorkflow() *entity.Workflow {
+	return s.wfEntity
 }

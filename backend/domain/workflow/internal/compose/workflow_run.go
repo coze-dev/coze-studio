@@ -15,17 +15,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
-
-type runner struct {
-	input map[string]any
-	wb    *entity.WorkflowBasic
-	sc    *WorkflowSchema
-	repo  wf.Repository
-}
 
 func Prepare(ctx context.Context,
 	in string,
@@ -34,7 +28,6 @@ func Prepare(ctx context.Context,
 	repo wf.Repository,
 	sc *WorkflowSchema,
 	sw *schema.StreamWriter[*entity.Message],
-	needCloseSW bool,
 ) (
 	context.Context,
 	int64,
@@ -78,7 +71,10 @@ func Prepare(ctx context.Context,
 
 	}
 
-	composeOpts := DesignateOptions(wb, sc, executeID, eventChan, interruptEvent)
+	composeOpts, err := DesignateOptions(ctx, wb, sc, executeID, eventChan, interruptEvent, sw)
+	if err != nil {
+		return ctx, 0, nil, err
+	}
 
 	if interruptEvent != nil {
 		if interruptEvent.ToolWorkflowExecuteID == 0 {
@@ -145,7 +141,8 @@ func Prepare(ctx context.Context,
 							ResumeData: resumeReq.ResumeData,
 						})))
 			resumeOpt = einoCompose.WithLambdaOption(
-				nodes.WithOptsForNested(resumeOpt)).
+				llm.WithNestedWorkflowOptions(
+					nodes.WithOptsForNested(resumeOpt))).
 				DesignateNode(interruptEvent.NodePath[len(interruptEvent.NodePath)-1])
 			if len(interruptEvent.NodePath) > 1 {
 				for i := len(interruptEvent.NodePath) - 2; i >= 0; i-- {
@@ -228,7 +225,7 @@ func Prepare(ctx context.Context,
 			}
 		}()
 		defer func() {
-			if needCloseSW {
+			if sw != nil {
 				sw.Close()
 			}
 		}()

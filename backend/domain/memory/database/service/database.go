@@ -10,13 +10,14 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 )
 
-//go:generate mockgen -destination  ../../../internal/mock/domain/memory/database/database_mock.go  --package database  -source database.go
+//go:generate mockgen -destination  ../../../../internal/mock/domain/memory/database/database_mock.go  --package database  -source database.go
 type Database interface {
 	CreateDatabase(ctx context.Context, req *CreateDatabaseRequest) (*CreateDatabaseResponse, error)
 	UpdateDatabase(ctx context.Context, req *UpdateDatabaseRequest) (*UpdateDatabaseResponse, error)
 	DeleteDatabase(ctx context.Context, req *DeleteDatabaseRequest) error
 	MGetDatabase(ctx context.Context, req *MGetDatabaseRequest) (*MGetDatabaseResponse, error)
 	ListDatabase(ctx context.Context, req *ListDatabaseRequest) (*ListDatabaseResponse, error)
+	GetDraftDatabaseByOnlineID(ctx context.Context, req *GetDraftDatabaseByOnlineIDRequest) (*GetDraftDatabaseByOnlineIDResponse, error)
 
 	GetDatabaseTemplate(ctx context.Context, req *GetDatabaseTemplateRequest) (*GetDatabaseTemplateResponse, error)
 	GetDatabaseTableSchema(ctx context.Context, req *GetDatabaseTableSchemaRequest) (*GetDatabaseTableSchemaResponse, error)
@@ -256,4 +257,12 @@ type GetDatabaseFileProgressDataResponse struct {
 	FileName       string
 	Progress       int32
 	StatusDescript *string
+}
+
+type GetDraftDatabaseByOnlineIDRequest struct {
+	OnlineID int64
+}
+
+type GetDraftDatabaseByOnlineIDResponse struct {
+	Database *entity.Database
 }

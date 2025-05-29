@@ -23,6 +23,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose/checkpoint"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type Format int
@@ -60,13 +61,6 @@ Strictly reply in valid Markdown format.
 const (
 	reasoningOutputKey = "reasoning_content"
 )
-
-// type ModelConfig struct {
-// 	Temperature      *float32
-// 	TopP             *float32
-// 	PresencePenalty  *float32
-// 	MaxTokens        *int
-// }
 
 type Config struct {
 	ChatModel           model.BaseChatModel
@@ -125,6 +119,25 @@ func getReasoningContent(message *schema.Message) string {
 	}
 
 	return ""
+}
+
+type Options struct {
+	nested         []nodes.NestedWorkflowOption
+	toolWorkflowSW *schema.StreamWriter[*entity.Message]
+}
+
+type Option func(o *Options)
+
+func WithNestedWorkflowOptions(nested ...nodes.NestedWorkflowOption) Option {
+	return func(o *Options) {
+		o.nested = append(o.nested, nested...)
+	}
+}
+
+func WithToolWorkflowMessageWriter(sw *schema.StreamWriter[*entity.Message]) Option {
+	return func(o *Options) {
+		o.toolWorkflowSW = sw
+	}
 }
 
 func New(ctx context.Context, cfg *Config) (*LLM, error) {
@@ -334,7 +347,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	return llm, nil
 }
 
-func (l *LLM) Chat(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (out map[string]any, err error) {
+func (l *LLM) Chat(ctx context.Context, in map[string]any, opts ...Option) (out map[string]any, err error) {
 	c := execute.GetExeCtx(ctx)
 	resuming := c != nil && c.NodeCtx.ResumingEvent != nil
 
@@ -374,16 +387,45 @@ func (l *LLM) Chat(ctx context.Context, in map[string]any, opts ...nodes.NestedW
 		composeOpts = append(composeOpts, compose.WithCheckPointID(checkpointID))
 	}
 
-	nestedOpts := &nodes.NestedWorkflowOptions{}
+	llmOpts := &Options{}
 	for _, opt := range opts {
+		opt(llmOpts)
+	}
+
+	nestedOpts := &nodes.NestedWorkflowOptions{}
+	for _, opt := range llmOpts.nested {
 		opt(nestedOpts)
 	}
+
 	composeOpts = append(composeOpts, nestedOpts.GetOptsForNested()...)
 
 	if resuming {
 		err = compose.ProcessState(ctx, func(ctx context.Context, state nodes.InterruptEventStore) error {
 			return state.DeleteInterruptEvent(c.NodeKey)
 		})
+	}
+
+	if llmOpts.toolWorkflowSW != nil {
+		toolMsgOpt, toolMsgSR := execute.WithMessagePipe()
+		composeOpts = append(composeOpts, toolMsgOpt)
+
+		go func() {
+			defer toolMsgSR.Close()
+			for {
+				msg, err := toolMsgSR.Recv()
+				if err != nil {
+					if err == io.EOF {
+						return
+					}
+					logs.CtxErrorf(ctx, "failed to receive message from tool workflow: %v", err)
+					return
+				}
+
+				logs.Infof("received message from tool workflow: %+v", msg)
+
+				llmOpts.toolWorkflowSW.Send(msg, nil)
+			}
+		}()
 	}
 
 	out, err = l.r.Invoke(ctx, in, composeOpts...)
@@ -445,7 +487,7 @@ func (l *LLM) Chat(ctx context.Context, in map[string]any, opts ...nodes.NestedW
 	return out, nil
 }
 
-func (l *LLM) ChatStream(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (out *schema.StreamReader[map[string]any], err error) {
+func (l *LLM) ChatStream(ctx context.Context, in map[string]any, opts ...Option) (out *schema.StreamReader[map[string]any], err error) {
 	c := execute.GetExeCtx(ctx)
 	resuming := c != nil && c.NodeCtx.ResumingEvent != nil
 
@@ -485,16 +527,45 @@ func (l *LLM) ChatStream(ctx context.Context, in map[string]any, opts ...nodes.N
 		composeOpts = append(composeOpts, compose.WithCheckPointID(checkpointID))
 	}
 
-	nestedOpts := &nodes.NestedWorkflowOptions{}
+	llmOpts := &Options{}
 	for _, opt := range opts {
+		opt(llmOpts)
+	}
+
+	nestedOpts := &nodes.NestedWorkflowOptions{}
+	for _, opt := range llmOpts.nested {
 		opt(nestedOpts)
 	}
+
 	composeOpts = append(composeOpts, nestedOpts.GetOptsForNested()...)
 
 	if resuming {
 		err = compose.ProcessState(ctx, func(ctx context.Context, state nodes.InterruptEventStore) error {
 			return state.DeleteInterruptEvent(c.NodeKey)
 		})
+	}
+
+	if llmOpts.toolWorkflowSW != nil {
+		toolMsgOpt, toolMsgSR := execute.WithMessagePipe()
+		composeOpts = append(composeOpts, toolMsgOpt)
+
+		go func() {
+			defer toolMsgSR.Close()
+			for {
+				msg, err := toolMsgSR.Recv()
+				if err != nil {
+					if err == io.EOF {
+						return
+					}
+					logs.CtxErrorf(ctx, "failed to receive message from tool workflow: %v", err)
+					return
+				}
+
+				logs.Infof("received message from tool workflow: %+v", msg)
+
+				llmOpts.toolWorkflowSW.Send(msg, nil)
+			}
+		}()
 	}
 
 	out, err = l.r.Stream(ctx, in, composeOpts...)
