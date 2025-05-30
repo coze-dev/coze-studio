@@ -27,6 +27,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
+	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -42,6 +43,7 @@ type PluginApplicationService struct {
 	DomainSVC  service.PluginService
 	eventbus   search.ResourceEventBus
 	oss        storage.Storage
+	userSVC    user.User
 	toolRepo   repository.ToolRepository
 	pluginRepo repository.PluginRepository
 }
@@ -99,7 +101,7 @@ func (p *PluginApplicationService) GetPlaygroundPluginList(ctx context.Context, 
 			return nil, err
 		}
 
-		pluginInfo, err := toPluginInfoForPlayground(pl, tools)
+		pluginInfo, err := p.toPluginInfoForPlayground(ctx, pl, tools)
 		if err != nil {
 			return nil, err
 		}
@@ -117,7 +119,7 @@ func (p *PluginApplicationService) GetPlaygroundPluginList(ctx context.Context, 
 	return resp, nil
 }
 
-func toPluginInfoForPlayground(pl *entity.PluginInfo, tools []*entity.ToolInfo) (*common.PluginInfoForPlayground, error) {
+func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context, pl *entity.PluginInfo, tools []*entity.ToolInfo) (*common.PluginInfoForPlayground, error) {
 	pluginAPIs := make([]*common.PluginApi, 0, len(tools))
 	for _, tl := range tools {
 		params, err := tl.ToPluginParameters()
@@ -136,21 +138,40 @@ func toPluginInfoForPlayground(pl *entity.PluginInfo, tools []*entity.ToolInfo) 
 		})
 	}
 
+	var creator *common.Creator
+	userInfo, err := p.userSVC.GetUserInfo(context.Background(), pl.DeveloperID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "get user info failed, err: %v", err)
+		creator = common.NewCreator()
+	} else {
+		creator = &common.Creator{
+			ID:             strconv.FormatInt(pl.DeveloperID, 10),
+			Name:           userInfo.Name,
+			AvatarURL:      userInfo.IconURL,
+			UserUniqueName: userInfo.UniqueName,
+		}
+	}
+
+	iconURL, err := p.oss.GetObjectUrl(ctx, pl.GetIconURI())
+	if err != nil {
+		logs.Errorf("get plugin icon url failed, err: %v", err)
+	}
+
 	pluginInfo := &common.PluginInfoForPlayground{
 		Auth:           0,
 		CreateTime:     strconv.FormatInt(pl.CreatedAt/1000, 10),
 		CreationMethod: common.CreationMethod_COZE,
-		Creator:        common.NewCreator(),
+		Creator:        creator,
 		DescForHuman:   pl.GetDesc(),
 		ID:             strconv.FormatInt(pl.ID, 10),
 		IsOfficial:     false,
 		MaterialID:     strconv.FormatInt(pl.ID, 10),
 		Name:           pl.GetName(),
-		PluginIcon:     pl.GetIconURI(),
+		PluginIcon:     iconURL,
 		PluginType:     pl.PluginType,
 		SpaceID:        strconv.FormatInt(pl.SpaceID, 10),
-		StatisticData:  common.NewPluginStatisticData(), // TODO(@maronghong): 引用计数
-		Status:         common.PluginStatus_SUBMITTED,   // TODO(@maronghong): 确认含义
+		StatisticData:  common.NewPluginStatisticData(),
+		Status:         common.PluginStatus_SUBMITTED,
 		UpdateTime:     strconv.FormatInt(pl.UpdatedAt/1000, 10),
 		VersionName:    pl.GetVersion(),
 		PluginApis:     pluginAPIs,
@@ -1139,5 +1160,49 @@ func (p *PluginApplicationService) GetPluginNextVersion(ctx context.Context, req
 	resp = &pluginAPI.GetPluginNextVersionResponse{
 		NextVersionName: res.Version,
 	}
+	return resp, nil
+}
+
+func (p *PluginApplicationService) GetDevPluginList(ctx context.Context, req *pluginAPI.GetDevPluginListRequest) (resp *pluginAPI.GetDevPluginListResponse, err error) {
+	pageInfo := entity.PageInfo{
+		Page:       int(req.GetPage()),
+		Size:       int(req.GetSize()),
+		OrderByACS: ptr.Of(false),
+	}
+	if req.GetOrderBy() == common.OrderBy_UpdateTime {
+		pageInfo.SortBy = ptr.Of(entity.SortByUpdatedAt)
+	} else {
+		pageInfo.SortBy = ptr.Of(entity.SortByCreatedAt)
+	}
+
+	res, err := p.DomainSVC.ListDraftPlugins(ctx, &service.ListDraftPluginsRequest{
+		SpaceID:  req.SpaceID,
+		APPID:    req.ProjectID,
+		PageInfo: pageInfo,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	pluginLists := make([]*common.PluginInfoForPlayground, 0, len(res.Plugins))
+	for _, pl := range res.Plugins {
+		tools, err := p.pluginRepo.GetPluginAllDraftTools(ctx, pl.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		pluginInfo, err := p.toPluginInfoForPlayground(ctx, pl, tools)
+		if err != nil {
+			return nil, err
+		}
+
+		pluginLists = append(pluginLists, pluginInfo)
+	}
+
+	resp = &pluginAPI.GetDevPluginListResponse{
+		PluginList: pluginLists,
+		Total:      res.Total,
+	}
+
 	return resp, nil
 }

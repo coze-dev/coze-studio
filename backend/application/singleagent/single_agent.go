@@ -506,3 +506,20 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 
 	return resp, nil
 }
+
+func (s *SingleAgentApplicationService) ReportUserBehavior(ctx context.Context, req *playground.ReportUserBehaviorRequest) (resp *playground.ReportUserBehaviorResponse, err error) {
+	err = s.appContext.EventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Updated,
+		Project: &searchEntity.ProjectDocument{
+			ID:             req.ResourceID,
+			SpaceID:        req.SpaceID,
+			Type:           intelligence.IntelligenceType_Bot,
+			IsRecentlyOpen: ptr.Of(1),
+		},
+	})
+	if err != nil {
+		logs.CtxWarnf(ctx, "publish updated project event failed id=%v, err=%v", req.ResourceID, err)
+	}
+
+	return &playground.ReportUserBehaviorResponse{}, nil
+}

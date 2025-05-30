@@ -16,7 +16,10 @@ type AppRepository interface {
 	UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPPRequest) (err error)
 
 	// online application
-	GetLatestOnlineAPP(ctx context.Context, req *GetLatestOnlineAPPRequest) (app *entity.APP, exist bool, err error)
+	GetLatestPublishedAPP(ctx context.Context, req *GetLatestPublishedAPPRequest) (app *entity.APP, exist bool, err error)
+
+	// version application
+	CheckAPPVersionExist(ctx context.Context, req *GetVersionAPPRequest) (exist bool, err error)
 }
 
 type CreateDraftAPPRequest struct {
@@ -43,6 +46,11 @@ type UpdateDraftAPPRequest struct {
 	APP *entity.APP
 }
 
-type GetLatestOnlineAPPRequest struct {
+type GetLatestPublishedAPPRequest struct {
 	APPID int64
+}
+
+type GetVersionAPPRequest struct {
+	APPID   int64
+	Version string
 }

@@ -717,3 +717,40 @@ func RegisterPlugin(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// GetDevPluginList .
+// @router /api/plugin_api/get_dev_plugin_list [POST]
+func GetDevPluginList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.GetDevPluginListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.SpaceID <= 0 {
+		invalidParamRequestResponse(c, "spaceID is invalid")
+		return
+	}
+	if req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "projectID is invalid")
+		return
+	}
+	if req.GetPage() <= 0 {
+		invalidParamRequestResponse(c, "page is invalid")
+		return
+	}
+	if req.GetSize() <= 0 {
+		invalidParamRequestResponse(c, "size is invalid")
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.GetDevPluginList(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

@@ -17,23 +17,23 @@ import (
 
 var (
 	Q          = new(Query)
+	App        *app
 	AppDraft   *appDraft
-	AppRelease *appRelease
 	AppVersion *appVersion
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	App = &Q.App
 	AppDraft = &Q.AppDraft
-	AppRelease = &Q.AppRelease
 	AppVersion = &Q.AppVersion
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:         db,
+		App:        newApp(db, opts...),
 		AppDraft:   newAppDraft(db, opts...),
-		AppRelease: newAppRelease(db, opts...),
 		AppVersion: newAppVersion(db, opts...),
 	}
 }
@@ -41,8 +41,8 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 type Query struct {
 	db *gorm.DB
 
+	App        app
 	AppDraft   appDraft
-	AppRelease appRelease
 	AppVersion appVersion
 }
 
@@ -51,8 +51,8 @@ func (q *Query) Available() bool { return q.db != nil }
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
 		db:         db,
+		App:        q.App.clone(db),
 		AppDraft:   q.AppDraft.clone(db),
-		AppRelease: q.AppRelease.clone(db),
 		AppVersion: q.AppVersion.clone(db),
 	}
 }
@@ -68,22 +68,22 @@ func (q *Query) WriteDB() *Query {
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
 		db:         db,
+		App:        q.App.replaceDB(db),
 		AppDraft:   q.AppDraft.replaceDB(db),
-		AppRelease: q.AppRelease.replaceDB(db),
 		AppVersion: q.AppVersion.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
+	App        IAppDo
 	AppDraft   IAppDraftDo
-	AppRelease IAppReleaseDo
 	AppVersion IAppVersionDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
+		App:        q.App.WithContext(ctx),
 		AppDraft:   q.AppDraft.WithContext(ctx),
-		AppRelease: q.AppRelease.WithContext(ctx),
 		AppVersion: q.AppVersion.WithContext(ctx),
 	}
 }

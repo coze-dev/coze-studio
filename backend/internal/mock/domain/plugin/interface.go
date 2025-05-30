@@ -13,17 +13,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	entity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	service "code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPluginService is a mock of PluginService interface.
 type MockPluginService struct {
 	ctrl     *gomock.Controller
 	recorder *MockPluginServiceMockRecorder
-	isgomock struct{}
 }
 
 // MockPluginServiceMockRecorder is the mock recorder for MockPluginService.
@@ -194,6 +192,21 @@ func (m *MockPluginService) GetPluginNextVersion(ctx context.Context, req *servi
 func (mr *MockPluginServiceMockRecorder) GetPluginNextVersion(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginNextVersion", reflect.TypeOf((*MockPluginService)(nil).GetPluginNextVersion), ctx, req)
+}
+
+// ListDraftPlugins mocks base method.
+func (m *MockPluginService) ListDraftPlugins(ctx context.Context, req *service.ListDraftPluginsRequest) (*service.ListDraftPluginsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListDraftPlugins", ctx, req)
+	ret0, _ := ret[0].(*service.ListDraftPluginsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListDraftPlugins indicates an expected call of ListDraftPlugins.
+func (mr *MockPluginServiceMockRecorder) ListDraftPlugins(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDraftPlugins", reflect.TypeOf((*MockPluginService)(nil).ListDraftPlugins), ctx, req)
 }
 
 // ListPluginProducts mocks base method.

@@ -18,6 +18,7 @@ import (
 	modelEntity "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
+	appEntity "code.byted.org/flow/opencoze/backend/domain/app/entity"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
@@ -156,9 +157,13 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"space_user": {},
 	},
 	"domain/app/internal/dal/query": {
-		"app_draft":   {},
-		"app_version": {},
-		"app_release": {},
+		"app_draft": {},
+		"app": {
+			"publish_config": &appEntity.PublishConfig{},
+		},
+		"app_version": {
+			"publish_config": &appEntity.PublishConfig{},
+		},
 	},
 }
 

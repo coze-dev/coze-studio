@@ -17,6 +17,7 @@ type PluginService interface {
 	CreateDraftPluginWithCode(ctx context.Context, req *CreateDraftPluginWithCodeRequest) (resp *CreateDraftPluginWithCodeResponse, err error)
 	GetDraftPlugin(ctx context.Context, req *GetDraftPluginRequest) (resp *GetDraftPluginResponse, err error)
 	MGetDraftPlugins(ctx context.Context, req *MGetDraftPluginsRequest) (resp *MGetDraftPluginsResponse, err error)
+	ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error)
 	UpdateDraftPlugin(ctx context.Context, plugin *UpdateDraftPluginRequest) (err error)
 	UpdateDraftPluginWithCode(ctx context.Context, req *UpdateDraftPluginWithCodeRequest) (err error)
 	DeleteDraftPlugin(ctx context.Context, req *DeleteDraftPluginRequest) (err error)
@@ -96,6 +97,17 @@ type MGetDraftPluginsRequest struct {
 
 type MGetDraftPluginsResponse struct {
 	Plugins []*entity.PluginInfo
+}
+
+type ListDraftPluginsRequest struct {
+	SpaceID  int64
+	APPID    int64
+	PageInfo entity.PageInfo
+}
+
+type ListDraftPluginsResponse struct {
+	Plugins []*entity.PluginInfo
+	Total   int64
 }
 
 type CreateDraftPluginWithCodeRequest struct {
@@ -265,14 +277,4 @@ type ListPluginProductsRequest struct {
 type ListPluginProductsResponse struct {
 	Plugins []*entity.PluginInfo
 	Total   int64
-}
-
-type InstallPluginProductRequest struct {
-	SpaceID   int64
-	ProductID int64
-}
-
-type InstallPluginProductResponse struct {
-	Plugin *entity.PluginInfo
-	Tools  []*entity.ToolInfo
 }

@@ -7,7 +7,9 @@ import (
 
 	intelligenceAPI "code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	projectAPI "code.byted.org/flow/opencoze/backend/api/model/project"
+	publishAPI "code.byted.org/flow/opencoze/backend/api/model/publish"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/domain/app/service"
@@ -18,6 +20,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -102,7 +105,7 @@ func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, re
 	}
 
 	publishInfo := &intelligenceAPI.IntelligencePublishInfo{
-		HasPublished: res.APP.HasPublished(),
+		HasPublished: res.APP.Published(),
 		PublishTime:  strconv.FormatInt(res.APP.GetPublishedAtMS()/1000, 10),
 	}
 
@@ -115,18 +118,6 @@ func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, re
 		Nickname:       ui.Name,
 		AvatarURL:      ui.IconURL,
 		UserUniqueName: ui.UniqueName,
-	}
-
-	err = a.eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
-		OpType: searchEntity.Updated,
-		Project: &searchEntity.ProjectDocument{
-			ID:             res.APP.ID,
-			Type:           common.IntelligenceType_Project,
-			IsRecentlyOpen: ptr.Of(1),
-		},
-	})
-	if err != nil {
-		logs.CtxErrorf(ctx, "publish project event failed, id=%d, err=%v", res.APP.ID, err)
 	}
 
 	resp = &intelligenceAPI.GetDraftIntelligenceInfoResponse{
@@ -185,6 +176,133 @@ func (a *APPApplicationService) DraftProjectUpdate(ctx context.Context, req *pro
 	}
 
 	resp = &projectAPI.DraftProjectUpdateResponse{}
+
+	return resp, nil
+}
+
+func (a *APPApplicationService) ProjectPublishConnectorList(ctx context.Context, req *publishAPI.PublishConnectorListRequest) (resp *publishAPI.PublishConnectorListResponse, err error) {
+	connectorList, err := a.getProjectReleaseConnectorList(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	latestPublishInfo, err := a.getLatestPublishInfo(ctx, req.ProjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &publishAPI.PublishConnectorListResponse{
+		Data: &publishAPI.PublishConnectorListData{
+			ConnectorList:         connectorList,
+			LastPublishInfo:       latestPublishInfo,
+			ConnectorUnionInfoMap: map[int64]*publishAPI.ConnectorUnionInfo{},
+		},
+	}
+
+	return resp, nil
+}
+
+func (a *APPApplicationService) getProjectReleaseConnectorList(ctx context.Context) ([]*publishAPI.PublishConnectorInfo, error) {
+	res, err := a.DomainSVC.GetPublishConnectorList(ctx, &service.GetPublishConnectorListRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	connectorList := make([]*publishAPI.PublishConnectorInfo, 0, len(res.Connectors))
+
+	for _, c := range res.Connectors {
+		info := &publishAPI.PublishConnectorInfo{
+			ID:                      c.ID,
+			ConnectorClassification: publishAPI.ConnectorClassification_APIOrSDK,
+			BindInfo:                map[string]string{},
+			Name:                    c.Name,
+			IconURL:                 c.URL,
+			Description:             c.Desc,
+			AllowPublish:            true,
+		}
+
+		switch c.ID {
+		case consts.WebSDKConnectorID:
+			info.BindType = publishAPI.ConnectorBindType_WebSDKBind
+		case consts.APIConnectorID:
+			info.BindType = publishAPI.ConnectorBindType_ApiBind
+		default:
+			info.AllowPublish = false
+		}
+
+		connectorList = append(connectorList, info)
+	}
+
+	return connectorList, nil
+}
+
+func (a *APPApplicationService) getLatestPublishInfo(ctx context.Context, appID int64) (*publishAPI.LastPublishInfo, error) {
+	publishInfo, err := a.DomainSVC.GetAPPPublishInfo(ctx, &service.GetAPPPublishInfoRequest{
+		APPID: appID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	latestPublishInfo := &publishAPI.LastPublishInfo{
+		VersionNumber:          publishInfo.Version,
+		ConnectorIds:           []int64{},
+		ConnectorPublishConfig: map[int64]*publishAPI.ConnectorPublishConfig{},
+	}
+
+	if !publishInfo.Published {
+		return latestPublishInfo, nil
+	}
+
+	for _, info := range publishInfo.ConnectorPublishInfo {
+		latestPublishInfo.ConnectorIds = append(latestPublishInfo.ConnectorIds, info.ConnectorID)
+
+		if info.ConnectorID == consts.WebSDKConnectorID {
+			selectedWorkflows := make([]*publishAPI.SelectedWorkflow, 0, len(info.PublishConfig.SelectedWorkflows))
+			for _, w := range info.PublishConfig.SelectedWorkflows {
+				selectedWorkflows = append(selectedWorkflows, &publishAPI.SelectedWorkflow{
+					WorkflowID:   w.WorkflowID,
+					WorkflowName: w.WorkflowName,
+				})
+			}
+
+			latestPublishInfo.ConnectorPublishConfig[info.ConnectorID] = &publishAPI.ConnectorPublishConfig{
+				SelectedWorkflows: selectedWorkflows,
+			}
+		}
+	}
+
+	return latestPublishInfo, nil
+}
+
+func (a *APPApplicationService) ReportUserBehavior(ctx context.Context, req *playground.ReportUserBehaviorRequest) (resp *playground.ReportUserBehaviorResponse, err error) {
+	err = a.eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Updated,
+		Project: &searchEntity.ProjectDocument{
+			ID:             req.ResourceID,
+			SpaceID:        req.SpaceID,
+			Type:           common.IntelligenceType_Project,
+			IsRecentlyOpen: ptr.Of(1),
+		},
+	})
+	if err != nil {
+		logs.CtxWarnf(ctx, "publish updated project event failed id=%v, err=%v", req.ResourceID, err)
+	}
+
+	return &playground.ReportUserBehaviorResponse{}, nil
+}
+
+func (a *APPApplicationService) CheckProjectVersionNumber(ctx context.Context, req *publishAPI.CheckProjectVersionNumberRequest) (resp *publishAPI.CheckProjectVersionNumberResponse, err error) {
+	exist, err := a.appRepo.CheckAPPVersionExist(ctx, &repository.GetVersionAPPRequest{
+		APPID:   req.ProjectID,
+		Version: req.VersionNumber,
+	})
+
+	resp = &publishAPI.CheckProjectVersionNumberResponse{
+		Data: &publishAPI.CheckProjectVersionNumberData{
+			IsDuplicate: exist,
+		},
+	}
 
 	return resp, nil
 }

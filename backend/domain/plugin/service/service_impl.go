@@ -129,6 +129,21 @@ func (p *pluginServiceImpl) MGetDraftPlugins(ctx context.Context, req *MGetDraft
 	}, nil
 }
 
+func (p *pluginServiceImpl) ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error) {
+	res, err := p.pluginRepo.ListDraftPlugins(ctx, &repository.ListDraftPluginsRequest{
+		SpaceID:  req.SpaceID,
+		APPID:    req.APPID,
+		PageInfo: req.PageInfo,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &ListDraftPluginsResponse{
+		Plugins: res.Plugins,
+		Total:   res.Total,
+	}, nil
+}
+
 func (p *pluginServiceImpl) CreateDraftPluginWithCode(ctx context.Context, req *CreateDraftPluginWithCodeRequest) (resp *CreateDraftPluginWithCodeResponse, err error) {
 	res, err := p.pluginRepo.CreateDraftPluginWithCode(ctx, &repository.CreateDraftPluginWithCodeRequest{
 		SpaceID:     req.SpaceID,
@@ -654,19 +669,19 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 		return fmt.Errorf("draft plugin draft '%d' not found", req.PluginID)
 	}
 
-	draftPlugin.Version = &req.Version
-	draftPlugin.VersionDesc = &req.VersionDesc
-
 	onlinePlugin, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
 	} else if exist && onlinePlugin.Version != nil {
-		if semver.Compare(*draftPlugin.Version, *onlinePlugin.Version) != 1 {
+		if semver.Compare(req.Version, *onlinePlugin.Version) != 1 {
 			return fmt.Errorf("invalid version")
 		}
 	}
+
+	draftPlugin.Version = &req.Version
+	draftPlugin.VersionDesc = &req.VersionDesc
 
 	err = p.pluginRepo.PublishPlugin(ctx, draftPlugin)
 	if err != nil {

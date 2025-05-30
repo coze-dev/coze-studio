@@ -29,3 +29,7 @@ func (c *databaseImpl) ExecuteSQL(ctx context.Context, req *model.ExecuteSQLRequ
 func (c *databaseImpl) PublishDatabase(ctx context.Context, req *model.PublishDatabaseRequest) (resp *model.PublishDatabaseResponse, err error) {
 	return c.DomainSVC.PublishDatabase(ctx, req)
 }
+
+func (c *databaseImpl) DeleteDatabase(ctx context.Context, req *model.DeleteDatabaseRequest) error {
+	return c.DomainSVC.DeleteDatabase(ctx, req)
+}

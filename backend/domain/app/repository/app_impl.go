@@ -15,7 +15,8 @@ type appRepoImpl struct {
 	query *query.Query
 
 	appDraftDAO   *dal.APPDraftDAO
-	appReleaseDAO *dal.APPReleaseDAO
+	appVersionDAO *dal.APPVersionDAO
+	appDAO        *dal.APPDAO
 }
 
 type APPRepoComponents struct {
@@ -27,7 +28,8 @@ func NewAPPRepo(components *APPRepoComponents) AppRepository {
 	return &appRepoImpl{
 		query:         query.Use(components.DB),
 		appDraftDAO:   dal.NewAPPDraftDAO(components.DB, components.IDGen),
-		appReleaseDAO: dal.NewAPPReleaseDAO(components.DB, components.IDGen),
+		appDAO:        dal.NewAPPDAO(components.DB, components.IDGen),
+		appVersionDAO: dal.NewAPPVersionDAO(components.DB, components.IDGen),
 	}
 }
 
@@ -67,6 +69,18 @@ func (a *appRepoImpl) UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPPReq
 	return a.appDraftDAO.Update(ctx, req.APP)
 }
 
-func (a *appRepoImpl) GetLatestOnlineAPP(ctx context.Context, req *GetLatestOnlineAPPRequest) (app *entity.APP, exist bool, err error) {
-	return a.appReleaseDAO.GetLatestAPP(ctx, req.APPID)
+func (a *appRepoImpl) GetLatestPublishedAPP(ctx context.Context, req *GetLatestPublishedAPPRequest) (app *entity.APP, exist bool, err error) {
+	app, exist, err = a.appDAO.GetAPP(ctx, req.APPID)
+	if err != nil {
+		return nil, false, err
+	}
+	if !exist {
+		return nil, false, nil
+	}
+
+	return app, true, nil
+}
+
+func (a *appRepoImpl) CheckAPPVersionExist(ctx context.Context, req *GetVersionAPPRequest) (exist bool, err error) {
+	return a.appVersionDAO.CheckAPPVersionExist(ctx, req.APPID, req.Version)
 }

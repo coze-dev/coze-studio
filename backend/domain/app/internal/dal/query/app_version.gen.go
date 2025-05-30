@@ -34,7 +34,12 @@ func newAppVersion(db *gorm.DB, opts ...gen.DOOption) appVersion {
 	_appVersion.IconURI = field.NewString(tableName, "icon_uri")
 	_appVersion.Name = field.NewString(tableName, "Name")
 	_appVersion.Desc = field.NewString(tableName, "desc")
+	_appVersion.ConnectorID = field.NewInt64(tableName, "connector_id")
+	_appVersion.PublishConfig = field.NewField(tableName, "publish_config")
 	_appVersion.Version = field.NewString(tableName, "version")
+	_appVersion.PublisherID = field.NewInt64(tableName, "publisher_id")
+	_appVersion.VersionDesc = field.NewString(tableName, "version_desc")
+	_appVersion.Status = field.NewInt32(tableName, "status")
 	_appVersion.CreatedAt = field.NewInt64(tableName, "created_at")
 
 	_appVersion.fillFieldMap()
@@ -46,16 +51,21 @@ func newAppVersion(db *gorm.DB, opts ...gen.DOOption) appVersion {
 type appVersion struct {
 	appVersionDo
 
-	ALL       field.Asterisk
-	ID        field.Int64  // APP ID
-	AppID     field.Int64  // Application ID
-	SpaceID   field.Int64  // Space ID
-	OwnerID   field.Int64  // Owner ID
-	IconURI   field.String // Icon URI
-	Name      field.String // Application Name
-	Desc      field.String // Application Description
-	Version   field.String // Release Version
-	CreatedAt field.Int64  // Create Time in Milliseconds
+	ALL           field.Asterisk
+	ID            field.Int64  // Publish Record ID
+	AppID         field.Int64  // Application ID
+	SpaceID       field.Int64  // Space ID
+	OwnerID       field.Int64  // Owner ID
+	IconURI       field.String // Icon URI
+	Name          field.String // Application Name
+	Desc          field.String // Application Description
+	ConnectorID   field.Int64  // Publish Connector ID
+	PublishConfig field.Field  // Publish Configuration
+	Version       field.String // Release Version
+	PublisherID   field.Int64  // Publisher ID
+	VersionDesc   field.String // Version Description
+	Status        field.Int32  // Publish Status
+	CreatedAt     field.Int64  // Create Time in Milliseconds
 
 	fieldMap map[string]field.Expr
 }
@@ -79,7 +89,12 @@ func (a *appVersion) updateTableName(table string) *appVersion {
 	a.IconURI = field.NewString(table, "icon_uri")
 	a.Name = field.NewString(table, "Name")
 	a.Desc = field.NewString(table, "desc")
+	a.ConnectorID = field.NewInt64(table, "connector_id")
+	a.PublishConfig = field.NewField(table, "publish_config")
 	a.Version = field.NewString(table, "version")
+	a.PublisherID = field.NewInt64(table, "publisher_id")
+	a.VersionDesc = field.NewString(table, "version_desc")
+	a.Status = field.NewInt32(table, "status")
 	a.CreatedAt = field.NewInt64(table, "created_at")
 
 	a.fillFieldMap()
@@ -97,7 +112,7 @@ func (a *appVersion) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (a *appVersion) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 9)
+	a.fieldMap = make(map[string]field.Expr, 14)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["app_id"] = a.AppID
 	a.fieldMap["space_id"] = a.SpaceID
@@ -105,7 +120,12 @@ func (a *appVersion) fillFieldMap() {
 	a.fieldMap["icon_uri"] = a.IconURI
 	a.fieldMap["Name"] = a.Name
 	a.fieldMap["desc"] = a.Desc
+	a.fieldMap["connector_id"] = a.ConnectorID
+	a.fieldMap["publish_config"] = a.PublishConfig
 	a.fieldMap["version"] = a.Version
+	a.fieldMap["publisher_id"] = a.PublisherID
+	a.fieldMap["version_desc"] = a.VersionDesc
+	a.fieldMap["status"] = a.Status
 	a.fieldMap["created_at"] = a.CreatedAt
 }
 

@@ -11,6 +11,7 @@ type PluginRepository interface {
 	CreateDraftPluginWithCode(ctx context.Context, req *CreateDraftPluginWithCodeRequest) (resp *CreateDraftPluginWithCodeResponse, err error)
 	GetDraftPlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error)
 	MGetDraftPlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
+	ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error)
 	UpdateDraftPlugin(ctx context.Context, plugin *entity.PluginInfo) (err error)
 	UpdateDraftPluginWithoutURLChanged(ctx context.Context, plugin *entity.PluginInfo) (err error)
 	UpdateDraftPluginWithCode(ctx context.Context, req *UpdatePluginDraftWithCode) (err error)
@@ -59,6 +60,17 @@ type CreateDraftPluginWithCodeRequest struct {
 type CreateDraftPluginWithCodeResponse struct {
 	Plugin *entity.PluginInfo
 	Tools  []*entity.ToolInfo
+}
+
+type ListDraftPluginsRequest struct {
+	SpaceID  int64
+	APPID    int64
+	PageInfo entity.PageInfo
+}
+
+type ListDraftPluginsResponse struct {
+	Plugins []*entity.PluginInfo
+	Total   int64
 }
 
 type ToolRepository interface {

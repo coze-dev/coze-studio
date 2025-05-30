@@ -5,13 +5,9 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/domain/app/service"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
-	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
-	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	plugin "code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 )
@@ -22,12 +18,8 @@ type ServiceComponents struct {
 	OSS      storage.Storage
 	Eventbus search.ProjectEventBus
 
-	UserSVC      user.User
-	PluginSVC    plugin.PluginService
-	WorkflowSVC  workflow.Service
-	DatabaseSVC  database.Database
-	KnowledgeSVC knowledge.Knowledge
-	VariablesSVC variables.Variables
+	UserSVC   user.User
+	PluginSVC plugin.PluginService
 }
 
 func InitService(components *ServiceComponents) (*APPApplicationService, error) {
@@ -37,13 +29,9 @@ func InitService(components *ServiceComponents) (*APPApplicationService, error) 
 	})
 
 	domainComponents := &service.Components{
-		IDGen:        components.IDGen,
-		DB:           components.DB,
-		APPRepo:      appRepo,
-		VariablesSVC: components.VariablesSVC,
-		KnowledgeSVC: components.KnowledgeSVC,
-		WorkflowSVC:  components.WorkflowSVC,
-		DatabaseSVC:  components.DatabaseSVC,
+		IDGen:   components.IDGen,
+		DB:      components.DB,
+		APPRepo: appRepo,
 	}
 
 	domainSVC := service.NewService(domainComponents)

@@ -3,12 +3,19 @@ package service
 import (
 	"context"
 	"fmt"
+	"sort"
+	"sync"
 
 	"gorm.io/gorm"
 
-	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	connectorModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/connector"
+	databaseModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	resourceCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
-	"code.byted.org/flow/opencoze/backend/domain/app/crossdomain"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossconnector"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossknowledge"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
@@ -17,6 +24,7 @@ import (
 	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
 )
 
 type Components struct {
@@ -24,12 +32,6 @@ type Components struct {
 	DB    *gorm.DB
 
 	APPRepo repository.AppRepository
-
-	VariablesSVC crossdomain.VariablesService
-	KnowledgeSVC crossdomain.KnowledgeService
-	WorkflowSVC  crossdomain.WorkflowService
-	DatabaseSVC  crossdomain.DatabaseService
-	PluginSVC    crossdomain.PluginService
 }
 
 func NewService(components *Components) AppService {
@@ -105,21 +107,21 @@ func (a *appServiceImpl) deleteAPPResource(ctx context.Context, resource *resour
 	// TODO(@maronghong): 删除 variables
 	switch resource.ResType {
 	case resourceCommon.ResType_Plugin:
-		err = a.PluginSVC.DeleteDraftPlugin(ctx, &plugin.DeleteDraftPluginRequest{
+		err = crossplugin.DefaultSVC().DeleteDraftPlugin(ctx, &plugin.DeleteDraftPluginRequest{
 			PluginID: resource.ResID,
 		})
 
 	case resourceCommon.ResType_Knowledge:
-		err = a.KnowledgeSVC.DeleteKnowledge(ctx, &knowledge.DeleteKnowledgeRequest{
+		err = crossknowledge.DefaultSVC().DeleteKnowledge(ctx, &knowledge.DeleteKnowledgeRequest{
 			KnowledgeID: resource.ResID,
 		})
 
 	case resourceCommon.ResType_Workflow:
-		err = a.WorkflowSVC.DeleteWorkflow(ctx, resource.ResID)
+		err = crossworkflow.DefaultSVC().DeleteWorkflow(ctx, resource.ResID)
 
 	case resourceCommon.ResType_Database:
-		err = a.DatabaseSVC.DeleteDatabase(ctx, &database.DeleteDatabaseRequest{
-			Database: &model.Database{
+		err = crossdatabase.DefaultSVC().DeleteDatabase(ctx, &database.DeleteDatabaseRequest{
+			Database: &databaseModel.Database{
 				ID: resource.ResID,
 			},
 		})
@@ -154,32 +156,143 @@ func (a *appServiceImpl) UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPP
 }
 
 func (a *appServiceImpl) PublishAPP(ctx context.Context, req *PublishAPPRequest) (resp *PublishAPPResponse, err error) {
-	// TODO implement me
-	panic("implement me")
+	_, err = crossconnector.DefaultSVC().GetByIDs(ctx, entity.ConnectorIDWhiteList)
+	if err != nil {
+		return nil, err
+	}
+
+	// 1. 先发布 plugin，将版本号传给 workflow
+	_, err = a.publishPlugins(ctx, req.Resources)
+	if err != nil {
+		return nil, err
+	}
+
+	err = a.publishWorkflows(ctx, req.Resources)
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &PublishAPPResponse{}
+
+	return resp, nil
 }
 
-func (a *appServiceImpl) CopyResource(ctx context.Context, req *CopyResourceRequest) (resp *CopyResourceResponse, err error) {
-	// TODO implement me
-	panic("implement me")
+func (a *appServiceImpl) publishWorkflows(ctx context.Context, resources []*resourceEntity.ResourceDocument) (err error) {
+	tasks := taskgroup.NewTaskGroup(ctx, 2)
+	for _, resource := range resources {
+		if resource.ResType != resourceCommon.ResType_Workflow {
+			continue
+		}
+
+		workflowID := resource.ResID
+
+		tasks.Go(func() (err error) {
+			err = crossworkflow.DefaultSVC().PublishWorkflow(ctx, workflowID, "", "", false)
+			if err != nil {
+				return fmt.Errorf("publish workflow '%d' failed, err=%v", workflowID, err)
+			}
+
+			return nil
+		})
+	}
+
+	err = tasks.Wait()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (a *appServiceImpl) GetAPPReleaseInfo(ctx context.Context, req *GetAPPReleaseInfoRequest) (resp *GetAppReleaseInfoResponse, err error) {
-	app, exist, err := a.APPRepo.GetLatestOnlineAPP(ctx, &repository.GetLatestOnlineAPPRequest{
+func (a *appServiceImpl) publishPlugins(ctx context.Context, resources []*resourceEntity.ResourceDocument) (versions map[int64]string, err error) {
+	versions = map[int64]string{}
+	mutex := sync.Mutex{}
+
+	tasks := taskgroup.NewTaskGroup(ctx, 3)
+	for _, resource := range resources {
+		if resource.ResType != resourceCommon.ResType_Plugin {
+			continue
+		}
+
+		pluginID := resource.ResID
+
+		tasks.Go(func() (err error) {
+			nextVersionResp, err := crossplugin.DefaultSVC().GetPluginNextVersion(ctx, &plugin.GetPluginNextVersionRequest{
+				PluginID: pluginID,
+			})
+			if err != nil {
+				return fmt.Errorf("get next version of plugin '%d' failed, err=%v", pluginID, err)
+			}
+
+			err = crossplugin.DefaultSVC().PublishPlugin(ctx, &plugin.PublishPluginRequest{
+				PluginID: pluginID,
+				Version:  nextVersionResp.Version,
+			})
+			if err != nil {
+				return fmt.Errorf("publish plugin '%d' failed, err=%v", pluginID, err)
+			}
+
+			mutex.Lock()
+			versions[pluginID] = nextVersionResp.Version
+			mutex.Unlock()
+
+			return nil
+		})
+	}
+
+	err = tasks.Wait()
+	if err != nil {
+		return nil, err
+	}
+
+	return versions, nil
+}
+
+func (a *appServiceImpl) GetAPPPublishInfo(ctx context.Context, req *GetAPPPublishInfoRequest) (resp *GetAppPublishInfoResponse, err error) {
+	app, exist, err := a.APPRepo.GetLatestPublishedAPP(ctx, &repository.GetLatestPublishedAPPRequest{
 		APPID: req.APPID,
 	})
 	if err != nil {
 		return nil, err
 	}
 	if !exist {
-		return nil, fmt.Errorf("draft app '%d' not exist", req.APPID)
+		return &GetAppPublishInfoResponse{
+			Published: false,
+		}, nil
 	}
 
-	resp = &GetAppReleaseInfoResponse{
-		HasPublished: app.HasPublished(),
-		Version:      app.GetVersion(),
-		PublishAtMS:  app.GetPublishedAtMS(),
-		ConnectorIDs: app.ConnectorIDs,
+	resp = &GetAppPublishInfoResponse{
+		Published:            app.Published(),
+		Version:              app.GetVersion(),
+		PublishedAtMS:        app.GetPublishedAtMS(),
+		ConnectorPublishInfo: app.ConnectorPublishInfo,
 	}
 
 	return resp, nil
+}
+
+func (a *appServiceImpl) GetPublishConnectorList(ctx context.Context, _ *GetPublishConnectorListRequest) (resp *GetPublishConnectorListResponse, err error) {
+	connectorMap, err := crossconnector.DefaultSVC().GetByIDs(ctx, entity.ConnectorIDWhiteList)
+	if err != nil {
+		return nil, err
+	}
+
+	connectorList := make([]*connectorModel.Connector, 0, len(connectorMap))
+	for _, v := range connectorMap {
+		connectorList = append(connectorList, v)
+	}
+	sort.Slice(connectorList, func(i, j int) bool {
+		return connectorList[i].ID < connectorList[j].ID
+	})
+
+	resp = &GetPublishConnectorListResponse{
+		Connectors: connectorList,
+	}
+
+	return resp, nil
+}
+
+func (a *appServiceImpl) CopyResource(ctx context.Context, req *CopyResourceRequest) (resp *CopyResourceResponse, err error) {
+	//TODO implement me
+	panic("implement me")
 }

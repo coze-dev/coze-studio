@@ -140,3 +140,7 @@ type DatabaseBasic struct {
 	TableType     table.TableType
 	NeedSysFields bool
 }
+
+type DeleteDatabaseRequest struct {
+	Database *Database
+}

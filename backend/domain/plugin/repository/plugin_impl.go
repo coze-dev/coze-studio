@@ -71,6 +71,20 @@ func (p *pluginRepoImpl) MGetDraftPlugins(ctx context.Context, pluginIDs []int64
 	return p.pluginDraftDAO.MGet(ctx, pluginIDs)
 }
 
+func (p *pluginRepoImpl) ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error) {
+	plugins, total, err := p.pluginDraftDAO.List(ctx, req.SpaceID, req.APPID, req.PageInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &ListDraftPluginsResponse{
+		Plugins: plugins,
+		Total:   total,
+	}
+
+	return resp, nil
+}
+
 func (p *pluginRepoImpl) UpdateDraftPlugin(ctx context.Context, plugin *entity.PluginInfo) (err error) {
 	tx := p.query.Begin()
 	if tx.Error != nil {

@@ -42,3 +42,15 @@ func (s *impl) ExecuteTool(ctx context.Context, req *service.ExecuteToolRequest,
 func (s *impl) PublishAgentTools(ctx context.Context, req *service.PublishAgentToolsRequest) (resp *service.PublishAgentToolsResponse, err error) {
 	return s.DomainSVC.PublishAgentTools(ctx, req)
 }
+
+func (s *impl) DeleteDraftPlugin(ctx context.Context, req *service.DeleteDraftPluginRequest) (err error) {
+	return s.DomainSVC.DeleteDraftPlugin(ctx, req)
+}
+
+func (s *impl) PublishPlugin(ctx context.Context, req *service.PublishPluginRequest) (err error) {
+	return s.DomainSVC.PublishPlugin(ctx, req)
+}
+
+func (s *impl) GetPluginNextVersion(ctx context.Context, req *service.GetPluginNextVersionRequest) (resp *service.GetPluginNextVersionResponse, err error) {
+	return s.DomainSVC.GetPluginNextVersion(ctx, req)
+}

@@ -64,10 +64,6 @@ type UpdateKnowledgeRequest struct {
 	Status      *knowledge.KnowledgeStatus
 }
 
-type DeleteKnowledgeRequest struct {
-	KnowledgeID int64
-}
-
 type CreateDocumentRequest struct {
 	Documents []*entity.Document
 }
@@ -122,6 +118,8 @@ type ListKnowledgeRequest = knowledge.ListKnowledgeRequest
 type RetrieveResponse = knowledge.RetrieveResponse
 
 type ListKnowledgeResponse = knowledge.ListKnowledgeResponse
+
+type DeleteKnowledgeRequest = knowledge.DeleteKnowledgeRequest
 
 type CreateDocumentResponse struct {
 	Documents []*entity.Document

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	connectorModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/connector"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 )
@@ -17,7 +18,8 @@ type AppService interface {
 
 	CopyResource(ctx context.Context, req *CopyResourceRequest) (resp *CopyResourceResponse, err error)
 
-	GetAPPReleaseInfo(ctx context.Context, req *GetAPPReleaseInfoRequest) (resp *GetAppReleaseInfoResponse, err error)
+	GetAPPPublishInfo(ctx context.Context, req *GetAPPPublishInfoRequest) (resp *GetAppPublishInfoResponse, err error)
+	GetPublishConnectorList(ctx context.Context, req *GetPublishConnectorListRequest) (resp *GetPublishConnectorListResponse, err error)
 }
 
 type CreateDraftAPPRequest struct {
@@ -53,6 +55,10 @@ type UpdateDraftAPPRequest struct {
 }
 
 type PublishAPPRequest struct {
+	APPID       int64
+	Version     string
+	VersionDesc string
+	Resources   []*resourceEntity.ResourceDocument
 }
 
 type PublishAPPResponse struct {
@@ -64,13 +70,30 @@ type CopyResourceRequest struct {
 type CopyResourceResponse struct {
 }
 
-type GetAPPReleaseInfoRequest struct {
+type GetAPPPublishInfoRequest struct {
 	APPID int64
 }
 
-type GetAppReleaseInfoResponse struct {
-	HasPublished bool
-	Version      string
-	PublishAtMS  int64
-	ConnectorIDs []int64
+type GetAppPublishInfoResponse struct {
+	Published            bool
+	Version              string
+	PublishedAtMS        int64
+	ConnectorPublishInfo []entity.ConnectorPublishInfo
+}
+
+type GetPublishConnectorListRequest struct {
+}
+
+type GetPublishConnectorListResponse struct {
+	Connectors []*connectorModel.Connector
+}
+
+type ReleaseAPP struct {
+	APPID int64
+}
+
+type ReleaseAPPResource struct {
+}
+
+type ConnectorRelease struct {
 }

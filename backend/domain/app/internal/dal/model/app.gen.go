@@ -6,11 +6,11 @@ package model
 
 import "code.byted.org/flow/opencoze/backend/domain/app/entity"
 
-const TableNameAppVersion = "app_version"
+const TableNameApp = "app"
 
-// AppVersion Application Version
-type AppVersion struct {
-	ID            int64                 `gorm:"column:id;primaryKey;comment:Publish Record ID" json:"id"`                                              // Publish Record ID
+// App Latest Application
+type App struct {
+	ID            int64                 `gorm:"column:id;primaryKey;comment:Primary Key" json:"id"`                                                    // Primary Key
 	AppID         int64                 `gorm:"column:app_id;not null;comment:Application ID" json:"app_id"`                                           // Application ID
 	SpaceID       int64                 `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                                             // Space ID
 	OwnerID       int64                 `gorm:"column:owner_id;not null;comment:Owner ID" json:"owner_id"`                                             // Owner ID
@@ -22,11 +22,12 @@ type AppVersion struct {
 	Version       string                `gorm:"column:version;not null;comment:Release Version" json:"version"`                                        // Release Version
 	PublisherID   int64                 `gorm:"column:publisher_id;not null;comment:Publisher ID" json:"publisher_id"`                                 // Publisher ID
 	VersionDesc   string                `gorm:"column:version_desc;comment:Version Description" json:"version_desc"`                                   // Version Description
-	Status        int32                 `gorm:"column:status;not null;comment:Publish Status" json:"status"`                                           // Publish Status
+	PublishAt     int64                 `gorm:"column:publish_at;not null;comment:Publish Time in Milliseconds" json:"publish_at"`                     // Publish Time in Milliseconds
 	CreatedAt     int64                 `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	UpdatedAt     int64                 `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
 }
 
-// TableName AppVersion's table name
-func (*AppVersion) TableName() string {
-	return TableNameAppVersion
+// TableName App's table name
+func (*App) TableName() string {
+	return TableNameApp
 }

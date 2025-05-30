@@ -107,7 +107,7 @@ func (s *singleAgentImpl) GetPublishConnectorList(ctx context.Context, agentID i
 		// If there are new ones, use a map to maintain the ID to BindType relationship.
 		if v.ID == consts.WebSDKConnectorID {
 			c.BindType = developer_api.BindType_WebSDKBind
-		} else if v.ID == consts.AgentAsAPIConnectorID {
+		} else if v.ID == consts.APIConnectorID {
 			c.BindType = developer_api.BindType_ApiBind
 			// c.BindInfo = map[string]string{
 			// 	"sdk_version": "1.2.0-beta.6", // TODO（@fanlv）: 确认版本在哪读取？

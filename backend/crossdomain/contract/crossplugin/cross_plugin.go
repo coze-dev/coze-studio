@@ -14,6 +14,9 @@ type PluginService interface {
 	MGetAgentTools(ctx context.Context, req *service.MGetAgentToolsRequest) (resp *service.MGetAgentToolsResponse, err error)
 	ExecuteTool(ctx context.Context, req *service.ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (resp *service.ExecuteToolResponse, err error)
 	PublishAgentTools(ctx context.Context, req *service.PublishAgentToolsRequest) (resp *service.PublishAgentToolsResponse, err error)
+	DeleteDraftPlugin(ctx context.Context, req *service.DeleteDraftPluginRequest) (err error)
+	PublishPlugin(ctx context.Context, req *service.PublishPluginRequest) (err error)
+	GetPluginNextVersion(ctx context.Context, req *service.GetPluginNextVersionRequest) (resp *service.GetPluginNextVersionResponse, err error)
 }
 
 var defaultSVC PluginService

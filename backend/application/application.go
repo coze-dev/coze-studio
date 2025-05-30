@@ -204,6 +204,7 @@ func (b *basicServices) toPluginServiceComponents() *plugin.ServiceComponents {
 		DB:       b.infra.DB,
 		EventBus: b.eventbus.resourceEventBus,
 		OSS:      b.infra.TOSClient,
+		UserSVC:  b.userSVC.DomainSVC,
 	}
 }
 
@@ -291,16 +292,12 @@ func (p *primaryServices) toAPPServiceComponents() *app.ServiceComponents {
 	infra := p.basicServices.infra
 	basic := p.basicServices
 	return &app.ServiceComponents{
-		IDGen:        infra.IDGenSVC,
-		DB:           infra.DB,
-		OSS:          infra.TOSClient,
-		Eventbus:     basic.eventbus.projectEventBus,
-		UserSVC:      basic.userSVC.DomainSVC,
-		KnowledgeSVC: p.knowledgeSVC.DomainSVC,
-		PluginSVC:    p.pluginSVC.DomainSVC,
-		WorkflowSVC:  p.workflowSVC.DomainSVC,
-		VariablesSVC: p.memorySVC.VariablesDomainSVC,
-		DatabaseSVC:  p.memorySVC.DatabaseDomainSVC,
+		IDGen:     infra.IDGenSVC,
+		DB:        infra.DB,
+		OSS:       infra.TOSClient,
+		Eventbus:  basic.eventbus.projectEventBus,
+		UserSVC:   basic.userSVC.DomainSVC,
+		PluginSVC: p.pluginSVC.DomainSVC,
 	}
 }
 

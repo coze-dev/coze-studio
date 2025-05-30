@@ -1,9 +1,10 @@
 package knowledge
 
 import (
+	"github.com/bytedance/sonic"
+
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/schema"
 )
 
@@ -215,4 +216,8 @@ type SliceImage struct {
 
 type SliceTable struct { // table slice 为一行数据
 	Columns []*document.ColumnData
+}
+
+type DeleteKnowledgeRequest struct {
+	KnowledgeID int64
 }

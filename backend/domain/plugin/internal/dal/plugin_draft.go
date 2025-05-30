@@ -109,7 +109,7 @@ func (p *PluginDraftDAO) MGet(ctx context.Context, pluginIDs []int64) (plugins [
 	return plugins, nil
 }
 
-func (p *PluginDraftDAO) List(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
+func (p *PluginDraftDAO) List(ctx context.Context, spaceID, appID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
 	if pageInfo.SortBy == nil || pageInfo.OrderByACS == nil {
 		return nil, 0, fmt.Errorf("sortBy or orderByACS is empty")
 	}
@@ -138,7 +138,7 @@ func (p *PluginDraftDAO) List(ctx context.Context, spaceID int64, pageInfo entit
 	pls, total, err := table.WithContext(ctx).
 		Where(
 			table.SpaceID.Eq(spaceID),
-			table.AppID.Eq(0),
+			table.AppID.Eq(appID),
 		).
 		Order(orderExpr).
 		FindByPage(offset, pageInfo.Size)

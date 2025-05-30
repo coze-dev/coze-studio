@@ -18,9 +18,9 @@ const (
 	MinIOBucket    = "MINIO_BUCKET"
 	RocketMQServer = "RMQ_NAME_SERVER"
 
-	CozeConnectorID       = int64(10000010)
-	WebSDKConnectorID     = int64(999)
-	AgentAsAPIConnectorID = int64(1024)
+	CozeConnectorID   = int64(10000010)
+	WebSDKConnectorID = int64(999)
+	APIConnectorID    = int64(1024)
 
 	SessionDataKeyInCtx = "session_data_key_in_ctx"
 	OpenapiAuthKeyInCtx = "openapi_auth_key_in_ctx"

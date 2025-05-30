@@ -619,6 +619,100 @@ func (p *BotPopupType) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
+type SpaceResourceType int64
+
+const (
+	SpaceResourceType_DraftBot        SpaceResourceType = 1
+	SpaceResourceType_Project         SpaceResourceType = 2
+	SpaceResourceType_Space           SpaceResourceType = 3
+	SpaceResourceType_DouyinAvatarBot SpaceResourceType = 4
+)
+
+func (p SpaceResourceType) String() string {
+	switch p {
+	case SpaceResourceType_DraftBot:
+		return "DraftBot"
+	case SpaceResourceType_Project:
+		return "Project"
+	case SpaceResourceType_Space:
+		return "Space"
+	case SpaceResourceType_DouyinAvatarBot:
+		return "DouyinAvatarBot"
+	}
+	return "<UNSET>"
+}
+
+func SpaceResourceTypeFromString(s string) (SpaceResourceType, error) {
+	switch s {
+	case "DraftBot":
+		return SpaceResourceType_DraftBot, nil
+	case "Project":
+		return SpaceResourceType_Project, nil
+	case "Space":
+		return SpaceResourceType_Space, nil
+	case "DouyinAvatarBot":
+		return SpaceResourceType_DouyinAvatarBot, nil
+	}
+	return SpaceResourceType(0), fmt.Errorf("not a valid SpaceResourceType string")
+}
+
+func SpaceResourceTypePtr(v SpaceResourceType) *SpaceResourceType { return &v }
+func (p *SpaceResourceType) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = SpaceResourceType(result.Int64)
+	return
+}
+
+func (p *SpaceResourceType) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
+type BehaviorType int64
+
+const (
+	BehaviorType_Visit BehaviorType = 1
+	BehaviorType_Edit  BehaviorType = 2
+)
+
+func (p BehaviorType) String() string {
+	switch p {
+	case BehaviorType_Visit:
+		return "Visit"
+	case BehaviorType_Edit:
+		return "Edit"
+	}
+	return "<UNSET>"
+}
+
+func BehaviorTypeFromString(s string) (BehaviorType, error) {
+	switch s {
+	case "Visit":
+		return BehaviorType_Visit, nil
+	case "Edit":
+		return BehaviorType_Edit, nil
+	}
+	return BehaviorType(0), fmt.Errorf("not a valid BehaviorType string")
+}
+
+func BehaviorTypePtr(v BehaviorType) *BehaviorType { return &v }
+func (p *BehaviorType) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = BehaviorType(result.Int64)
+	return
+}
+
+func (p *BehaviorType) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
 type UpdateDraftBotInfoAgwResponse struct {
 	Data     *UpdateDraftBotInfoAgwData `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
 	Code     int64                      `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
@@ -14460,6 +14554,622 @@ func (p *UpdateBotPopupInfoRequest) String() string {
 
 }
 
+type ReportUserBehaviorRequest struct {
+	ResourceID   int64             `thrift:"ResourceID,1,required" form:"resource_id,required" json:"resource_id,string,required"`
+	ResourceType SpaceResourceType `thrift:"ResourceType,2,required" form:"resource_type,required" json:"resource_type,required"`
+	BehaviorType BehaviorType      `thrift:"BehaviorType,3,required" form:"behavior_type,required" json:"behavior_type,required"`
+	// 本需求必传
+	SpaceID *int64     `thrift:"SpaceID,4,optional" form:"space_id" json:"space_id,string,omitempty"`
+	Base    *base.Base `thrift:"Base,255" form:"-" json:"-" query:"-"`
+}
+
+func NewReportUserBehaviorRequest() *ReportUserBehaviorRequest {
+	return &ReportUserBehaviorRequest{}
+}
+
+func (p *ReportUserBehaviorRequest) InitDefault() {
+}
+
+func (p *ReportUserBehaviorRequest) GetResourceID() (v int64) {
+	return p.ResourceID
+}
+
+func (p *ReportUserBehaviorRequest) GetResourceType() (v SpaceResourceType) {
+	return p.ResourceType
+}
+
+func (p *ReportUserBehaviorRequest) GetBehaviorType() (v BehaviorType) {
+	return p.BehaviorType
+}
+
+var ReportUserBehaviorRequest_SpaceID_DEFAULT int64
+
+func (p *ReportUserBehaviorRequest) GetSpaceID() (v int64) {
+	if !p.IsSetSpaceID() {
+		return ReportUserBehaviorRequest_SpaceID_DEFAULT
+	}
+	return *p.SpaceID
+}
+
+var ReportUserBehaviorRequest_Base_DEFAULT *base.Base
+
+func (p *ReportUserBehaviorRequest) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return ReportUserBehaviorRequest_Base_DEFAULT
+	}
+	return p.Base
+}
+
+var fieldIDToName_ReportUserBehaviorRequest = map[int16]string{
+	1:   "ResourceID",
+	2:   "ResourceType",
+	3:   "BehaviorType",
+	4:   "SpaceID",
+	255: "Base",
+}
+
+func (p *ReportUserBehaviorRequest) IsSetSpaceID() bool {
+	return p.SpaceID != nil
+}
+
+func (p *ReportUserBehaviorRequest) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *ReportUserBehaviorRequest) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetResourceID bool = false
+	var issetResourceType bool = false
+	var issetBehaviorType bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetResourceID = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetResourceType = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetBehaviorType = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 255:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField255(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetResourceID {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetResourceType {
+		fieldId = 2
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetBehaviorType {
+		fieldId = 3
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_ReportUserBehaviorRequest[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_ReportUserBehaviorRequest[fieldId]))
+}
+
+func (p *ReportUserBehaviorRequest) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ResourceID = _field
+	return nil
+}
+func (p *ReportUserBehaviorRequest) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field SpaceResourceType
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = SpaceResourceType(v)
+	}
+	p.ResourceType = _field
+	return nil
+}
+func (p *ReportUserBehaviorRequest) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field BehaviorType
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = BehaviorType(v)
+	}
+	p.BehaviorType = _field
+	return nil
+}
+func (p *ReportUserBehaviorRequest) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.SpaceID = _field
+	return nil
+}
+func (p *ReportUserBehaviorRequest) ReadField255(iprot thrift.TProtocol) error {
+	_field := base.NewBase()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Base = _field
+	return nil
+}
+
+func (p *ReportUserBehaviorRequest) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("ReportUserBehaviorRequest"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField255(oprot); err != nil {
+			fieldId = 255
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *ReportUserBehaviorRequest) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("ResourceID", thrift.I64, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.ResourceID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *ReportUserBehaviorRequest) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("ResourceType", thrift.I32, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(int32(p.ResourceType)); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *ReportUserBehaviorRequest) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("BehaviorType", thrift.I32, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(int32(p.BehaviorType)); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *ReportUserBehaviorRequest) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSpaceID() {
+		if err = oprot.WriteFieldBegin("SpaceID", thrift.I64, 4); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI64(*p.SpaceID); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+func (p *ReportUserBehaviorRequest) writeField255(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("Base", thrift.STRUCT, 255); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Base.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
+}
+
+func (p *ReportUserBehaviorRequest) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ReportUserBehaviorRequest(%+v)", *p)
+
+}
+
+type ReportUserBehaviorResponse struct {
+	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
+	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
+}
+
+func NewReportUserBehaviorResponse() *ReportUserBehaviorResponse {
+	return &ReportUserBehaviorResponse{}
+}
+
+func (p *ReportUserBehaviorResponse) InitDefault() {
+}
+
+func (p *ReportUserBehaviorResponse) GetCode() (v int64) {
+	return p.Code
+}
+
+func (p *ReportUserBehaviorResponse) GetMsg() (v string) {
+	return p.Msg
+}
+
+var ReportUserBehaviorResponse_BaseResp_DEFAULT *base.BaseResp
+
+func (p *ReportUserBehaviorResponse) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return ReportUserBehaviorResponse_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+
+var fieldIDToName_ReportUserBehaviorResponse = map[int16]string{
+	253: "code",
+	254: "msg",
+	255: "BaseResp",
+}
+
+func (p *ReportUserBehaviorResponse) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *ReportUserBehaviorResponse) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetCode bool = false
+	var issetMsg bool = false
+	var issetBaseResp bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 253:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField253(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 254:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField254(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 255:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField255(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetBaseResp = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetCode {
+		fieldId = 253
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 254
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetBaseResp {
+		fieldId = 255
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_ReportUserBehaviorResponse[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_ReportUserBehaviorResponse[fieldId]))
+}
+
+func (p *ReportUserBehaviorResponse) ReadField253(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *ReportUserBehaviorResponse) ReadField254(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
+	return nil
+}
+func (p *ReportUserBehaviorResponse) ReadField255(iprot thrift.TProtocol) error {
+	_field := base.NewBaseResp()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.BaseResp = _field
+	return nil
+}
+
+func (p *ReportUserBehaviorResponse) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("ReportUserBehaviorResponse"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField253(oprot); err != nil {
+			fieldId = 253
+			goto WriteFieldError
+		}
+		if err = p.writeField254(oprot); err != nil {
+			fieldId = 254
+			goto WriteFieldError
+		}
+		if err = p.writeField255(oprot); err != nil {
+			fieldId = 255
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *ReportUserBehaviorResponse) writeField253(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I64, 253); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 end error: ", p), err)
+}
+func (p *ReportUserBehaviorResponse) writeField254(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 254); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 end error: ", p), err)
+}
+func (p *ReportUserBehaviorResponse) writeField255(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("BaseResp", thrift.STRUCT, 255); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.BaseResp.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
+}
+
+func (p *ReportUserBehaviorResponse) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ReportUserBehaviorResponse(%+v)", *p)
+
+}
+
 type PlaygroundService interface {
 	UpdateDraftBotInfoAgw(ctx context.Context, request *UpdateDraftBotInfoAgwRequest) (r *UpdateDraftBotInfoAgwResponse, err error)
 
@@ -14470,6 +15180,8 @@ type PlaygroundService interface {
 	GetBotPopupInfo(ctx context.Context, request *GetBotPopupInfoRequest) (r *GetBotPopupInfoResponse, err error)
 
 	UpdateBotPopupInfo(ctx context.Context, request *UpdateBotPopupInfoRequest) (r *UpdateBotPopupInfoResponse, err error)
+
+	ReportUserBehavior(ctx context.Context, request *ReportUserBehaviorRequest) (r *ReportUserBehaviorResponse, err error)
 	// 创建快捷指令
 	CreateUpdateShortcutCommand(ctx context.Context, req *CreateUpdateShortcutCommandRequest) (r *CreateUpdateShortcutCommandResponse, err error)
 	// prompt resource
@@ -14553,6 +15265,15 @@ func (p *PlaygroundServiceClient) UpdateBotPopupInfo(ctx context.Context, reques
 	_args.Request = request
 	var _result PlaygroundServiceUpdateBotPopupInfoResult
 	if err = p.Client_().Call(ctx, "UpdateBotPopupInfo", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *PlaygroundServiceClient) ReportUserBehavior(ctx context.Context, request *ReportUserBehaviorRequest) (r *ReportUserBehaviorResponse, err error) {
+	var _args PlaygroundServiceReportUserBehaviorArgs
+	_args.Request = request
+	var _result PlaygroundServiceReportUserBehaviorResult
+	if err = p.Client_().Call(ctx, "ReportUserBehavior", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
@@ -14646,6 +15367,7 @@ func NewPlaygroundServiceProcessor(handler PlaygroundService) *PlaygroundService
 	self.AddToProcessorMap("GetImagexShortUrl", &playgroundServiceProcessorGetImagexShortUrl{handler: handler})
 	self.AddToProcessorMap("GetBotPopupInfo", &playgroundServiceProcessorGetBotPopupInfo{handler: handler})
 	self.AddToProcessorMap("UpdateBotPopupInfo", &playgroundServiceProcessorUpdateBotPopupInfo{handler: handler})
+	self.AddToProcessorMap("ReportUserBehavior", &playgroundServiceProcessorReportUserBehavior{handler: handler})
 	self.AddToProcessorMap("CreateUpdateShortcutCommand", &playgroundServiceProcessorCreateUpdateShortcutCommand{handler: handler})
 	self.AddToProcessorMap("GetOfficialPromptResourceList", &playgroundServiceProcessorGetOfficialPromptResourceList{handler: handler})
 	self.AddToProcessorMap("GetPromptResourceInfo", &playgroundServiceProcessorGetPromptResourceInfo{handler: handler})
@@ -14896,6 +15618,54 @@ func (p *playgroundServiceProcessorUpdateBotPopupInfo) Process(ctx context.Conte
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("UpdateBotPopupInfo", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type playgroundServiceProcessorReportUserBehavior struct {
+	handler PlaygroundService
+}
+
+func (p *playgroundServiceProcessorReportUserBehavior) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := PlaygroundServiceReportUserBehaviorArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("ReportUserBehavior", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := PlaygroundServiceReportUserBehaviorResult{}
+	var retval *ReportUserBehaviorResponse
+	if retval, err2 = p.handler.ReportUserBehavior(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing ReportUserBehavior: "+err2.Error())
+		oprot.WriteMessageBegin("ReportUserBehavior", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("ReportUserBehavior", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -16706,6 +17476,298 @@ func (p *PlaygroundServiceUpdateBotPopupInfoResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("PlaygroundServiceUpdateBotPopupInfoResult(%+v)", *p)
+
+}
+
+type PlaygroundServiceReportUserBehaviorArgs struct {
+	Request *ReportUserBehaviorRequest `thrift:"request,1"`
+}
+
+func NewPlaygroundServiceReportUserBehaviorArgs() *PlaygroundServiceReportUserBehaviorArgs {
+	return &PlaygroundServiceReportUserBehaviorArgs{}
+}
+
+func (p *PlaygroundServiceReportUserBehaviorArgs) InitDefault() {
+}
+
+var PlaygroundServiceReportUserBehaviorArgs_Request_DEFAULT *ReportUserBehaviorRequest
+
+func (p *PlaygroundServiceReportUserBehaviorArgs) GetRequest() (v *ReportUserBehaviorRequest) {
+	if !p.IsSetRequest() {
+		return PlaygroundServiceReportUserBehaviorArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_PlaygroundServiceReportUserBehaviorArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *PlaygroundServiceReportUserBehaviorArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *PlaygroundServiceReportUserBehaviorArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PlaygroundServiceReportUserBehaviorArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *PlaygroundServiceReportUserBehaviorArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewReportUserBehaviorRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *PlaygroundServiceReportUserBehaviorArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("ReportUserBehavior_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *PlaygroundServiceReportUserBehaviorArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *PlaygroundServiceReportUserBehaviorArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("PlaygroundServiceReportUserBehaviorArgs(%+v)", *p)
+
+}
+
+type PlaygroundServiceReportUserBehaviorResult struct {
+	Success *ReportUserBehaviorResponse `thrift:"success,0,optional"`
+}
+
+func NewPlaygroundServiceReportUserBehaviorResult() *PlaygroundServiceReportUserBehaviorResult {
+	return &PlaygroundServiceReportUserBehaviorResult{}
+}
+
+func (p *PlaygroundServiceReportUserBehaviorResult) InitDefault() {
+}
+
+var PlaygroundServiceReportUserBehaviorResult_Success_DEFAULT *ReportUserBehaviorResponse
+
+func (p *PlaygroundServiceReportUserBehaviorResult) GetSuccess() (v *ReportUserBehaviorResponse) {
+	if !p.IsSetSuccess() {
+		return PlaygroundServiceReportUserBehaviorResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_PlaygroundServiceReportUserBehaviorResult = map[int16]string{
+	0: "success",
+}
+
+func (p *PlaygroundServiceReportUserBehaviorResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *PlaygroundServiceReportUserBehaviorResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PlaygroundServiceReportUserBehaviorResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *PlaygroundServiceReportUserBehaviorResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewReportUserBehaviorResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *PlaygroundServiceReportUserBehaviorResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("ReportUserBehavior_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *PlaygroundServiceReportUserBehaviorResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *PlaygroundServiceReportUserBehaviorResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("PlaygroundServiceReportUserBehaviorResult(%+v)", *p)
 
 }
 

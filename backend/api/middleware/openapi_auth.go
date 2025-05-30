@@ -96,7 +96,7 @@ func OpenapiAuthMW() app.HandlerFunc {
 			return
 		}
 
-		apiKeyInfo.ConnectorID = consts.AgentAsAPIConnectorID
+		apiKeyInfo.ConnectorID = consts.APIConnectorID
 		logs.CtxInfof(ctx, "OpenapiAuthMW: apiKeyInfo=%v", conv.DebugJsonToStr(apiKeyInfo))
 		ctxcache.Store(ctx, consts.OpenapiAuthKeyInCtx, apiKeyInfo)
 

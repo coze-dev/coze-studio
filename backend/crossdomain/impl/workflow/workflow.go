@@ -31,3 +31,11 @@ func (i *impl) MGetWorkflows(ctx context.Context, ids []*workflowEntity.Workflow
 func (i *impl) WorkflowAsModelTool(ctx context.Context, ids []*workflowEntity.WorkflowIdentity) ([]tool.BaseTool, error) {
 	return i.DomainSVC.WorkflowAsModelTool(ctx, ids)
 }
+
+func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, version, desc string, force bool) (err error) {
+	return i.DomainSVC.PublishWorkflow(ctx, wfID, version, desc, force)
+}
+
+func (i *impl) DeleteWorkflow(ctx context.Context, id int64) error {
+	return i.DomainSVC.DeleteWorkflow(ctx, id)
+}

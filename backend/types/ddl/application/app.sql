@@ -1,6 +1,6 @@
-CREATE TABLE IF NOT EXISTS `app_version`
+CREATE TABLE IF NOT EXISTS `app`
 (
-    `id`             bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Publish Record ID',
+    `id`             bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Primary Key',
     `app_id`         bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Application ID',
     `space_id`       bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Space ID',
     `owner_id`       bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Owner ID',
@@ -12,13 +12,14 @@ CREATE TABLE IF NOT EXISTS `app_version`
     `version`        varchar(255)        NOT NULL DEFAULT '' COMMENT 'Release Version',
     `publisher_id`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Publisher ID',
     `version_desc`   text COMMENT 'Version Description',
-    `status`         tinyint             NOT NULL DEFAULT 0 COMMENT 'Publish Status',
 
+    `publish_at`     bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Publish Time in Milliseconds',
     `created_at`     bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
+    `updated_at`     bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
 
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uniq_idx_app_version_connector` (`app_id`, `version`, `connector_id`)
+    UNIQUE KEY `uniq_idx_app_connector` (`app_id`, `connector_id`)
 
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_unicode_ci COMMENT = 'Application Version';
+  COLLATE = utf8mb4_unicode_ci COMMENT = 'Latest Application';
