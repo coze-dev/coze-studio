@@ -94,6 +94,10 @@ func (m *messageImpl) Edit(ctx context.Context, req *entity.Message) (*entity.Me
 		updateColumns["model_content"] = req.ModelContent
 	}
 
+	if len(req.ReasoningContent) > 0 {
+		updateColumns["reasoning_content"] = req.ReasoningContent
+	}
+
 	updateColumns["updated_at"] = time.Now().UnixMilli()
 
 	_, err := m.MessageRepo.Edit(ctx, req.ID, updateColumns)

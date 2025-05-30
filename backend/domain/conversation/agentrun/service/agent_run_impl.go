@@ -25,6 +25,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/repository"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -120,10 +121,6 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 	c.rtDependence.agentInfo = agentInfo
 
 	err = c.handlerStreamExecute(ctx, sw, history, input, runRecord)
-	if err != nil {
-		return
-	}
-
 	return
 }
 
@@ -448,6 +445,7 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 			}
 		case message.MessageTypeAnswer:
 			fullContent := bytes.NewBuffer([]byte{})
+			reasoningContent := bytes.NewBuffer([]byte{})
 			preMsg, err := c.handlerPreAnswer(ctx)
 			if err != nil {
 				return err
@@ -463,7 +461,7 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 				if answerEvent.Err != nil {
 					if errors.Is(answerEvent.Err, io.EOF) {
 
-						hfErr := c.handlerFinalAnswer(ctx, sendMsg, fullContent.String(), sw, usage)
+						hfErr := c.handlerFinalAnswer(ctx, sendMsg, fullContent.String(), sw, usage, reasoningContent.String())
 						if hfErr != nil {
 							return err
 						}
@@ -476,11 +474,15 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 					}
 					return answerEvent.Err
 				}
+				rc := c.parseReasoningContent(ctx, answerEvent)
+				reasoningContent.WriteString(rc)
+				sendMsg.ReasoningContent = ptr.Of(rc)
 
 				answer := answerEvent.Message
 				usage = c.handlerUsage(answer.ResponseMeta)
 				fullContent.WriteString(answer.Content)
 				sendMsg.Content = answer.Content
+
 				c.runEvent.SendMsgEvent(entity.RunEventMessageDelta, sendMsg, sw)
 			}
 
@@ -491,6 +493,14 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 			}
 		}
 	}
+}
+
+func (c *runImpl) parseReasoningContent(ctx context.Context, chunk *entity.FinalAnswerEvent) string {
+
+	if rc, ok := chunk.Message.Extra["ark-reasoning-content"]; ok {
+		return rc.(string)
+	}
+	return ""
 }
 
 func (c *runImpl) handlerUsage(meta *schema.ResponseMeta) *msgEntity.UsageExt {
@@ -541,7 +551,7 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context) (*msgEntity.Message, err
 	return crossmessage.DefaultSVC().Create(ctx, msgMeta)
 }
 
-func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, fullContent string, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt) error {
+func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, fullContent string, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt, rc string) error {
 	msg.Content = fullContent
 	msg.IsFinish = true
 	if msg.Ext == nil {
@@ -567,11 +577,12 @@ func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessa
 		return err
 	}
 	editMsg := &msgEntity.Message{
-		ID:           msg.ID,
-		Content:      fullContent,
-		ContentType:  message.ContentTypeText,
-		ModelContent: string(mc),
-		Ext:          msg.Ext,
+		ID:               msg.ID,
+		Content:          fullContent,
+		ContentType:      message.ContentTypeText,
+		ModelContent:     string(mc),
+		ReasoningContent: rc,
+		Ext:              msg.Ext,
 	}
 	_, err = crossmessage.DefaultSVC().Edit(ctx, editMsg)
 	if err != nil {
@@ -708,20 +719,21 @@ func (c *runImpl) handlerFinalAnswerFinish(ctx context.Context, sw *schema.Strea
 
 func (c *runImpl) buildSendMsg(_ context.Context, msg *msgEntity.Message, isFinish bool) *entity.ChunkMessageItem {
 	return &entity.ChunkMessageItem{
-		ID:             msg.ID,
-		ConversationID: msg.ConversationID,
-		SectionID:      msg.SectionID,
-		AgentID:        msg.AgentID,
-		Content:        msg.Content,
-		Role:           entity.RoleTypeAssistant,
-		ContentType:    msg.ContentType,
-		MessageType:    msg.MessageType,
-		ReplyID:        c.rtDependence.questionMsgID,
-		Type:           msg.MessageType,
-		CreatedAt:      msg.CreatedAt,
-		UpdatedAt:      msg.UpdatedAt,
-		Ext:            msg.Ext,
-		IsFinish:       isFinish,
+		ID:               msg.ID,
+		ConversationID:   msg.ConversationID,
+		SectionID:        msg.SectionID,
+		AgentID:          msg.AgentID,
+		Content:          msg.Content,
+		Role:             entity.RoleTypeAssistant,
+		ContentType:      msg.ContentType,
+		MessageType:      msg.MessageType,
+		ReplyID:          c.rtDependence.questionMsgID,
+		Type:             msg.MessageType,
+		CreatedAt:        msg.CreatedAt,
+		UpdatedAt:        msg.UpdatedAt,
+		Ext:              msg.Ext,
+		IsFinish:         isFinish,
+		ReasoningContent: ptr.Of(msg.ReasoningContent),
 	}
 }
 

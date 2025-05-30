@@ -81,7 +81,7 @@ func (c *ConversationApplicationService) checkConversation(ctx context.Context, 
 		conversationData = conData
 	}
 
-	if ar.ConversationID == 0 || conversationData == nil { // create conversation
+	if ar.ConversationID == 0 || conversationData == nil {
 
 		conData, err := c.ConversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
 			AgentID: ar.BotID,
@@ -95,7 +95,6 @@ func (c *ConversationApplicationService) checkConversation(ctx context.Context, 
 		}
 		conversationData = conData
 
-		// set ar.ConversationID
 		ar.ConversationID = conversationData.ID
 	}
 
@@ -126,6 +125,12 @@ func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Contex
 		contentType = message.ContentTypeMix
 	}
 
+	shortcutCMDData, err := c.buildTools(ctx, ar.ToolList, shortcutCMD)
+
+	if err != nil {
+		return nil, err
+	}
+
 	arm := &entity.AgentRunMeta{
 		ConversationID:   ar.ConversationID,
 		AgentID:          ar.BotID,
@@ -134,7 +139,7 @@ func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Contex
 		SpaceID:          ptr.From(ar.SpaceID),
 		UserID:           userID,
 		SectionID:        conversationData.SectionID,
-		PreRetrieveTools: c.buildTools(ar.ToolList, shortcutCMD),
+		PreRetrieveTools: shortcutCMDData,
 		IsDraft:          ptr.From(ar.DraftMode),
 		ConnectorID:      consts.CozeConnectorID,
 		ContentType:      contentType,
@@ -150,7 +155,7 @@ func (c *ConversationApplicationService) buildDisplayContent(ctx context.Context
 	return ar.Query
 }
 
-func (c *ConversationApplicationService) buildTools(tools []*run.Tool, shortcutCMD *cmdEntity.ShortcutCmd) []*entity.Tool {
+func (c *ConversationApplicationService) buildTools(ctx context.Context, tools []*run.Tool, shortcutCMD *cmdEntity.ShortcutCmd) ([]*entity.Tool, error) {
 	var ts []*entity.Tool
 	for _, tool := range tools {
 		if shortcutCMD != nil {
@@ -160,15 +165,18 @@ func (c *ConversationApplicationService) buildTools(tools []*run.Tool, shortcutC
 				if parametersStruct == nil {
 					continue
 				}
+
 				arguments[key] = parametersStruct.Value
 				// uri需要转换成url
-				// if parametersStruct.ResourceType == base.ResourceTypeUri {
-				// 	url, ok := urlMap[parametersStruct.Value]
-				// 	if !ok {
-				// 		return nil
-				// 	}
-				// 	platformParameters[key] = url
-				// }
+				if parametersStruct.ResourceType == consts.ShortcutCommandResourceType {
+
+					resourceInfo, err := c.appContext.ImageX.GetResourceURL(ctx, parametersStruct.Value)
+
+					if err != nil {
+						return nil, err
+					}
+					arguments[key] = resourceInfo.URL
+				}
 			}
 
 			argBytes, err := json.Marshal(arguments)
@@ -184,11 +192,8 @@ func (c *ConversationApplicationService) buildTools(tools []*run.Tool, shortcutC
 
 		}
 	}
-	if len(ts) > 0 {
-		return ts
-	}
 
-	return nil
+	return ts, nil
 }
 
 func (c *ConversationApplicationService) buildMultiContent(ctx context.Context, ar *run.AgentRunRequest) []*message.InputMetaData {

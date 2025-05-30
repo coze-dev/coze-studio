@@ -27,6 +27,10 @@ const (
 )
 
 const (
+	ShortcutCommandResourceType = "uri"
+)
+
+const (
 	SessionMaxAgeSecond    = 30 * 24 * 60 * 60
 	DefaultSessionDuration = SessionMaxAgeSecond * time.Second
 )

@@ -95,6 +95,9 @@ func (a *agentPacker) GetProjectInfo(ctx context.Context) (*projectInfo, error) 
 		return nil, err
 	}
 
+	if agent == nil {
+		return nil, fmt.Errorf("agent info is nil")
+	}
 	return &projectInfo{
 		iconURI: agent.IconURI,
 		desc:    agent.Desc,
