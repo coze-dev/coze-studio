@@ -93,6 +93,7 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	h.POST("/v1/workflow/stream_run", OpenAPIStreamRunFlow)
 	h.POST("/v1/workflow/stream_resume", OpenAPIStreamResumeFlow)
 	h.POST("/api/workflow_api/nodeDebug", WorkflowNodeDebugV2)
+	h.GET("/api/workflow_api/get_node_execute_history", GetNodeExecuteHistory)
 	h.POST("/api/workflow_api/copy", CopyWorkflow)
 
 	ctrl := gomock.NewController(t)
@@ -249,6 +250,39 @@ func getProcess(t *testing.T, h *server.Hertz, idStr string, exeID string) *work
 	time.Sleep(50 * time.Millisecond)
 
 	return getProcessResp
+}
+
+func getNodeExeHistory(t *testing.T, h *server.Hertz, idStr string, exeID string, nodeID string, scene *workflow.NodeHistoryScene) *workflow.NodeResult {
+	getNodeExeHistoryReq := &workflow.GetNodeExecuteHistoryRequest{
+		WorkflowID:       idStr,
+		SpaceID:          "123",
+		ExecuteID:        exeID,
+		NodeID:           nodeID,
+		NodeHistoryScene: scene,
+	}
+
+	w := ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/api/workflow_api/get_node_execute_history?workflow_id=%s&space_id=%s&execute_id=%s"+
+		"&node_id=%s&node_type=3&node_history_scene=%d", getNodeExeHistoryReq.WorkflowID, getNodeExeHistoryReq.SpaceID, getNodeExeHistoryReq.ExecuteID,
+		getNodeExeHistoryReq.NodeID, getNodeExeHistoryReq.GetNodeHistoryScene()), nil,
+		ut.Header{Key: "Content-Type", Value: "application/json"})
+
+	res := w.Result()
+	assert.Equal(t, http.StatusOK, res.StatusCode())
+	getNodeResultResp := &workflow.GetNodeExecuteHistoryResponse{}
+	err := sonic.Unmarshal(res.Body(), getNodeResultResp)
+	assert.NoError(t, err)
+
+	return getNodeResultResp.Data
+}
+
+func mustUnmarshalToMap(t *testing.T, s string) map[string]any {
+	r := make(map[string]any)
+	err := sonic.UnmarshalString(s, &r)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return r
 }
 
 func ensureWorkflowVersion(t *testing.T, h *server.Hertz, id int64, version string, schemaFile string, mockIDGen *mock.MockIDGenerator) {
@@ -938,6 +972,9 @@ func TestTestResumeWithInputNode(t *testing.T) {
 					"field1": []any{"1", "2"},
 				},
 			}, outputMap)
+
+			result := getNodeExeHistory(t, h, idStr, executeID, "154951", nil)
+			assert.Equal(t, outputMap, mustUnmarshalToMap(t, result.Output))
 		})
 	})
 }
@@ -2726,6 +2763,9 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 
 		assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Success)
 
+		result := getNodeExeHistory(t, h, idStr, "", "100001", ptr.Of(workflow.NodeHistoryScene_TestRunInput))
+		assert.True(t, len(result.Output) > 0)
+
 		mockey.PatchConvey("test node debug with batch mode", func() {
 			nodeDebugReq := &workflow.WorkflowNodeDebugV2Request{
 				WorkflowID: idStr,
@@ -2778,6 +2818,15 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 					},
 				},
 			}, outputMap)
+
+			result := getNodeExeHistory(t, h, idStr, executeID, "178876", nil)
+			assert.Equal(t, outputMap, mustUnmarshalToMap(t, result.Output))
+
+			result = getNodeExeHistory(t, h, idStr, testRunResp.Data.ExecuteID, "178876", nil)
+			assert.True(t, len(result.Output) > 0)
+
+			result = getNodeExeHistory(t, h, idStr, "", "178876", ptr.Of(workflow.NodeHistoryScene_TestRunInput))
+			assert.Equal(t, outputMap, mustUnmarshalToMap(t, result.Output))
 		})
 	})
 }
@@ -3987,6 +4036,9 @@ func TestStreamRun(t *testing.T) {
 			assert.Equal(t, map[string]any{
 				"output": "I don't know.",
 			}, outputMap)
+
+			result := getNodeExeHistory(t, h, idStr, executeID, "156549", nil)
+			assert.Equal(t, outputMap, mustUnmarshalToMap(t, result.Output))
 		})
 	})
 }
@@ -4477,6 +4529,15 @@ func TestNodeDebugLoop(t *testing.T) {
 			},
 			"variable_out": "dddd",
 		}, outputMap)
+
+		result := getNodeExeHistory(t, h, idStr, executeID, "192046", nil)
+		assert.Equal(t, outputMap, mustUnmarshalToMap(t, result.Output))
+
+		result = getNodeExeHistory(t, h, idStr, "", "100001", ptr.Of(workflow.NodeHistoryScene_TestRunInput))
+		assert.Equal(t, "", result.Output)
+
+		result = getNodeExeHistory(t, h, idStr, "", "wrong_node_id", ptr.Of(workflow.NodeHistoryScene_TestRunInput))
+		assert.Equal(t, "", result.Output)
 	})
 }
 

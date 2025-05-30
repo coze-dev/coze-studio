@@ -452,7 +452,11 @@ func GetNodeExecuteHistory(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetNodeExecuteHistoryResponse)
+	resp, err := appworkflow.SVC.GetNodeExecuteHistory(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

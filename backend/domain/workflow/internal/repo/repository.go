@@ -673,6 +673,40 @@ func (r *RepositoryImpl) UpdateNodeExecution(ctx context.Context, execution *ent
 	return nil
 }
 
+func convertNodeExecution(nodeExec *model2.NodeExecution) *entity.NodeExecution {
+	nodeExeEntity := &entity.NodeExecution{
+		ID:           nodeExec.ID,
+		ExecuteID:    nodeExec.ExecuteID,
+		NodeID:       nodeExec.NodeID,
+		NodeName:     nodeExec.NodeName,
+		NodeType:     entity.NodeType(nodeExec.NodeType),
+		CreatedAt:    time.UnixMilli(nodeExec.CreatedAt),
+		Status:       entity.NodeExecuteStatus(nodeExec.Status),
+		Duration:     time.Duration(nodeExec.Duration) * time.Millisecond,
+		Input:        &nodeExec.Input,
+		Output:       &nodeExec.Output,
+		RawOutput:    &nodeExec.RawOutput,
+		ErrorInfo:    &nodeExec.ErrorInfo,
+		ErrorLevel:   &nodeExec.ErrorLevel,
+		TokenInfo:    &entity.TokenUsage{InputTokens: nodeExec.InputTokens, OutputTokens: nodeExec.OutputTokens},
+		ParentNodeID: ternary.IFElse(nodeExec.ParentNodeID != "", ptr.Of(nodeExec.ParentNodeID), nil),
+		Index:        int(nodeExec.CompositeNodeIndex),
+		Items:        ternary.IFElse(nodeExec.CompositeNodeItems != "", ptr.Of(nodeExec.CompositeNodeItems), nil),
+	}
+
+	if nodeExec.UpdatedAt > 0 {
+		nodeExeEntity.UpdatedAt = ptr.Of(time.UnixMilli(nodeExec.UpdatedAt))
+	}
+
+	if nodeExec.SubExecuteID > 0 {
+		nodeExeEntity.SubWorkflowExecution = &entity.WorkflowExecution{
+			ID: nodeExec.SubExecuteID,
+		}
+	}
+
+	return nodeExeEntity
+}
+
 func (r *RepositoryImpl) GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID int64) (result []*entity.NodeExecution, err error) {
 	nodeExecs, err := r.query.NodeExecution.WithContext(ctx).
 		Where(r.query.NodeExecution.ExecuteID.Eq(wfExeID)).
@@ -682,39 +716,42 @@ func (r *RepositoryImpl) GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID
 	}
 
 	for _, nodeExec := range nodeExecs {
-		nodeExeEntity := &entity.NodeExecution{
-			ID:           nodeExec.ID,
-			ExecuteID:    nodeExec.ExecuteID,
-			NodeID:       nodeExec.NodeID,
-			NodeName:     nodeExec.NodeName,
-			NodeType:     entity.NodeType(nodeExec.NodeType),
-			CreatedAt:    time.UnixMilli(nodeExec.CreatedAt),
-			Status:       entity.NodeExecuteStatus(nodeExec.Status),
-			Duration:     time.Duration(nodeExec.Duration) * time.Millisecond,
-			Input:        &nodeExec.Input,
-			Output:       &nodeExec.Output,
-			RawOutput:    &nodeExec.RawOutput,
-			ErrorInfo:    &nodeExec.ErrorInfo,
-			ErrorLevel:   &nodeExec.ErrorLevel,
-			TokenInfo:    &entity.TokenUsage{InputTokens: nodeExec.InputTokens, OutputTokens: nodeExec.OutputTokens},
-			ParentNodeID: ternary.IFElse(nodeExec.ParentNodeID != "", ptr.Of(nodeExec.ParentNodeID), nil),
-			Index:        int(nodeExec.CompositeNodeIndex),
-			Items:        ternary.IFElse(nodeExec.CompositeNodeItems != "", ptr.Of(nodeExec.CompositeNodeItems), nil),
-		}
-
-		if nodeExec.UpdatedAt > 0 {
-			nodeExeEntity.UpdatedAt = ptr.Of(time.UnixMilli(nodeExec.UpdatedAt))
-		}
-
-		if nodeExec.SubExecuteID > 0 {
-			nodeExeEntity.SubWorkflowExecution = &entity.WorkflowExecution{
-				ID: nodeExec.SubExecuteID,
-			}
-		}
-
+		nodeExeEntity := convertNodeExecution(nodeExec)
 		result = append(result, nodeExeEntity)
 	}
 
+	return result, nil
+}
+
+func (r *RepositoryImpl) GetNodeExecution(ctx context.Context, wfExeID int64, nodeID string) (*entity.NodeExecution, bool, error) {
+	nodeExec, err := r.query.NodeExecution.WithContext(ctx).
+		Where(r.query.NodeExecution.ExecuteID.Eq(wfExeID), r.query.NodeExecution.NodeID.Eq(nodeID)).
+		First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, fmt.Errorf("failed to find node executions: %w", err)
+	}
+
+	nodeExeEntity := convertNodeExecution(nodeExec)
+
+	return nodeExeEntity, true, nil
+}
+
+func (r *RepositoryImpl) GetNodeExecutionByParent(ctx context.Context, wfExeID int64, parentNodeID string) (
+	[]*entity.NodeExecution, error) {
+	nodeExecs, err := r.query.NodeExecution.WithContext(ctx).
+		Where(r.query.NodeExecution.ExecuteID.Eq(wfExeID), r.query.NodeExecution.ParentNodeID.Eq(parentNodeID)).
+		Find()
+	if err != nil {
+		return nil, fmt.Errorf("failed to find node executions: %w", err)
+	}
+	var result []*entity.NodeExecution
+	for _, nodeExec := range nodeExecs {
+		nodeExeEntity := convertNodeExecution(nodeExec)
+		result = append(result, nodeExeEntity)
+	}
 	return result, nil
 }
 
@@ -1407,6 +1444,53 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, spaceID int64, workfl
 
 	return copiedWorkflow, nil
 
+}
+
+const (
+	testRunLastExeKey   = "test_run_last_exe_id:%d:%d"
+	nodeDebugLastExeKey = "node_debug_last_exe_id:%d:%s:%d"
+)
+
+func (r *RepositoryImpl) SetTestRunLatestExeID(ctx context.Context, wfID int64, uID int64, exeID int64) error {
+	key := fmt.Sprintf(testRunLastExeKey, wfID, uID)
+	return r.redis.Set(ctx, key, exeID, 7*24*time.Hour).Err()
+}
+
+func (r *RepositoryImpl) GetTestRunLatestExeID(ctx context.Context, wfID int64, uID int64) (int64, error) {
+	key := fmt.Sprintf(testRunLastExeKey, wfID, uID)
+	exeIDStr, err := r.redis.Get(ctx, key).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	exeID, err := strconv.ParseInt(exeIDStr, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return exeID, nil
+}
+
+func (r *RepositoryImpl) SetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64, exeID int64) error {
+	key := fmt.Sprintf(nodeDebugLastExeKey, wfID, nodeID, uID)
+	return r.redis.Set(ctx, key, exeID, 7*24*time.Hour).Err()
+}
+
+func (r *RepositoryImpl) GetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64) (int64, error) {
+	key := fmt.Sprintf(nodeDebugLastExeKey, wfID, nodeID, uID)
+	exeIDStr, err := r.redis.Get(ctx, key).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	exeID, err := strconv.ParseInt(exeIDStr, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return exeID, nil
 }
 
 func filterDisabledAPIParameters(parametersCfg []*workflow3.APIParameter, m map[string]any) map[string]any {

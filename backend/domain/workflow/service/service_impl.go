@@ -611,6 +611,12 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 		return 0, err
 	}
 
+	if config.Mode == vo.ExecuteModeDebug {
+		if err = i.repo.SetTestRunLatestExeID(ctx, id.ID, config.Operator, executeID); err != nil {
+			logs.CtxErrorf(ctx, "failed to set test run latest exe id: %v", err)
+		}
+	}
+
 	wf.AsyncRun(cancelCtx, convertedInput, opts...)
 
 	return executeID, nil
@@ -661,6 +667,12 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity
 		nil, i.repo, newSC, nil, config)
 	if err != nil {
 		return 0, err
+	}
+
+	if config.Mode == vo.ExecuteModeNodeDebug {
+		if err = i.repo.SetNodeDebugLatestExeID(ctx, id.ID, nodeID, config.Operator, executeID); err != nil {
+			logs.CtxErrorf(ctx, "failed to set node debug latest exe id: %v", err)
+		}
 	}
 
 	wf.AsyncRun(cancelCtx, convertedInput, opts...)
@@ -770,50 +782,7 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 	}
 
 	for nodeID, nodeExes := range nodeGroups {
-		var groupNodeExe *entity.NodeExecution
-		for _, v := range nodeExes {
-			groupNodeExe = &entity.NodeExecution{
-				ID:           v.ID,
-				ExecuteID:    v.ExecuteID,
-				NodeID:       nodeID,
-				NodeName:     v.NodeName,
-				NodeType:     v.NodeType,
-				ParentNodeID: v.ParentNodeID,
-			}
-			break
-		}
-
-		var (
-			duration  time.Duration
-			tokenInfo *entity.TokenUsage
-			status    = entity.NodeSuccess
-		)
-
-		maxIndex := nodeGroupMaxIndex[nodeID]
-		groupNodeExe.IndexedExecutions = make([]*entity.NodeExecution, maxIndex+1)
-
-		for index, ne := range nodeExes {
-			duration = max(duration, ne.Duration)
-			if ne.TokenInfo != nil {
-				if tokenInfo == nil {
-					tokenInfo = &entity.TokenUsage{}
-				}
-				tokenInfo.InputTokens += ne.TokenInfo.InputTokens
-				tokenInfo.OutputTokens += ne.TokenInfo.OutputTokens
-			}
-			if ne.Status == entity.NodeFailed {
-				status = entity.NodeFailed
-			} else if ne.Status == entity.NodeRunning {
-				status = entity.NodeRunning
-			}
-
-			groupNodeExe.IndexedExecutions[index] = nodeExes[index]
-		}
-
-		groupNodeExe.Duration = duration
-		groupNodeExe.TokenInfo = tokenInfo
-		groupNodeExe.Status = status
-
+		groupNodeExe := mergeCompositeInnerNodes(nodeExes, nodeGroupMaxIndex[nodeID])
 		wfExeEntity.NodeExecutions = append(wfExeEntity.NodeExecutions, groupNodeExe)
 	}
 
@@ -829,6 +798,146 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 	}
 
 	return wfExeEntity, nil
+}
+
+func (i *impl) GetNodeExecution(ctx context.Context, exeID int64, nodeID string) (*entity.NodeExecution, *entity.NodeExecution, error) {
+	nodeExe, found, err := i.repo.GetNodeExecution(ctx, exeID, nodeID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if !found {
+		return nil, nil, fmt.Errorf("try getting node exe for exeID : %d, nodeID : %s, but not found", exeID, nodeID)
+	}
+
+	if nodeExe.NodeType != entity.NodeTypeBatch {
+		return nodeExe, nil, nil
+	}
+
+	wfExe, found, err := i.repo.GetWorkflowExecution(ctx, exeID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if !found {
+		return nil, nil, fmt.Errorf("try getting node exe for exeID : %d, nodeID : %s, but not found", exeID, nodeID)
+	}
+
+	if wfExe.Mode != vo.ExecuteModeNodeDebug {
+		return nodeExe, nil, nil
+	}
+
+	// when node debugging a node with batch mode, we need to query the inner node executions and return it together
+	innerNodeExecs, err := i.repo.GetNodeExecutionByParent(ctx, exeID, nodeExe.NodeID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for i := range innerNodeExecs {
+		innerNodeID := innerNodeExecs[i].NodeID
+		if !vo.IsGeneratedNodeForBatchMode(innerNodeID, nodeExe.NodeID) {
+			// inner node is not generated, means this is normal batch, not node in batch mode
+			return nodeExe, nil, nil
+		}
+	}
+
+	var (
+		maxIndex  int
+		index2Exe = make(map[int]*entity.NodeExecution)
+	)
+
+	for i := range innerNodeExecs {
+		index2Exe[innerNodeExecs[i].Index] = innerNodeExecs[i]
+		if innerNodeExecs[i].Index > maxIndex {
+			maxIndex = innerNodeExecs[i].Index
+		}
+	}
+
+	return nodeExe, mergeCompositeInnerNodes(index2Exe, maxIndex), nil
+}
+
+func (i *impl) GetLatestTestRunInput(ctx context.Context, wfID int64, userID int64) (*entity.NodeExecution, bool, error) {
+	exeID, err := i.repo.GetTestRunLatestExeID(ctx, wfID, userID)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if exeID == 0 {
+		return nil, false, nil
+	}
+
+	nodeExe, _, err := i.GetNodeExecution(ctx, exeID, compose.EntryNodeKey)
+	if err != nil {
+		return nil, false, err
+	}
+
+	return nodeExe, true, nil
+}
+
+func (i *impl) GetLastestNodeDebugInput(ctx context.Context, wfID int64, nodeID string, userID int64) (
+	*entity.NodeExecution, *entity.NodeExecution, bool, error) {
+	exeID, err := i.repo.GetNodeDebugLatestExeID(ctx, wfID, nodeID, userID)
+	if err != nil {
+		return nil, nil, false, err
+	}
+
+	if exeID == 0 {
+		return nil, nil, false, nil
+	}
+
+	nodeExe, innerExe, err := i.GetNodeExecution(ctx, exeID, nodeID)
+	if err != nil {
+		return nil, nil, false, err
+	}
+
+	return nodeExe, innerExe, true, nil
+}
+
+func mergeCompositeInnerNodes(nodeExes map[int]*entity.NodeExecution, maxIndex int) *entity.NodeExecution {
+	var groupNodeExe *entity.NodeExecution
+	for _, v := range nodeExes {
+		groupNodeExe = &entity.NodeExecution{
+			ID:           v.ID,
+			ExecuteID:    v.ExecuteID,
+			NodeID:       v.NodeID,
+			NodeName:     v.NodeName,
+			NodeType:     v.NodeType,
+			ParentNodeID: v.ParentNodeID,
+		}
+		break
+	}
+
+	var (
+		duration  time.Duration
+		tokenInfo *entity.TokenUsage
+		status    = entity.NodeSuccess
+	)
+
+	groupNodeExe.IndexedExecutions = make([]*entity.NodeExecution, maxIndex+1)
+
+	for index, ne := range nodeExes {
+		duration = max(duration, ne.Duration)
+		if ne.TokenInfo != nil {
+			if tokenInfo == nil {
+				tokenInfo = &entity.TokenUsage{}
+			}
+			tokenInfo.InputTokens += ne.TokenInfo.InputTokens
+			tokenInfo.OutputTokens += ne.TokenInfo.OutputTokens
+		}
+		if ne.Status == entity.NodeFailed {
+			status = entity.NodeFailed
+		} else if ne.Status == entity.NodeRunning {
+			status = entity.NodeRunning
+		}
+
+		groupNodeExe.IndexedExecutions[index] = nodeExes[index]
+	}
+
+	groupNodeExe.Duration = duration
+	groupNodeExe.TokenInfo = tokenInfo
+	groupNodeExe.Status = status
+
+	return groupNodeExe
 }
 
 // AsyncResumeWorkflow resumes a workflow execution asynchronously, using the passed in executionID and eventID.

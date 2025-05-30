@@ -27,6 +27,10 @@ type Service interface {
 	AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string, config vo.ExecuteConfig) (int64, error)
 	AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]string, config vo.ExecuteConfig) (int64, error)
 	GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error)
+	GetNodeExecution(ctx context.Context, exeID int64, nodeID string) (*entity.NodeExecution, *entity.NodeExecution, error)
+	GetLatestTestRunInput(ctx context.Context, wfID int64, userID int64) (*entity.NodeExecution, bool, error)
+	GetLastestNodeDebugInput(ctx context.Context, wfID int64, nodeID string, userID int64) (
+		*entity.NodeExecution, *entity.NodeExecution, bool, error)
 	GetWorkflowReference(ctx context.Context, id int64) (map[int64]*entity.Workflow, error)
 	GetReleasedWorkflows(ctx context.Context, ids []*entity.WorkflowIdentity) (map[int64]*entity.Workflow, error)
 	AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeRequest, config vo.ExecuteConfig) error
@@ -66,6 +70,9 @@ type Repository interface {
 	CreateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error
 	UpdateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error
 	GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID int64) (result []*entity.NodeExecution, err error)
+	GetNodeExecution(ctx context.Context, wfExeID int64, nodeID string) (*entity.NodeExecution, bool, error)
+	GetNodeExecutionByParent(ctx context.Context, wfExeID int64, parentNodeID string) (
+		[]*entity.NodeExecution, error)
 	UpdateWorkflowDraftTestRunSuccess(ctx context.Context, id int64) error
 
 	GetParentWorkflowsBySubWorkflowID(ctx context.Context, id int64) ([]*entity.WorkflowReference, error)
@@ -85,6 +92,11 @@ type Repository interface {
 	GetWorkflowCancelFlag(ctx context.Context, wfExeID int64) (bool, error)
 	WorkflowAsTool(ctx context.Context, wfID entity.WorkflowIdentity, wfToolConfig vo.WorkflowToolConfig) (ToolFromWorkflow, error)
 	CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (*entity.Workflow, error)
+
+	SetTestRunLatestExeID(ctx context.Context, wfID int64, uID int64, exeID int64) error
+	GetTestRunLatestExeID(ctx context.Context, wfID int64, uID int64) (int64, error)
+	SetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64, exeID int64) error
+	GetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64) (int64, error)
 }
 
 type ToolFromWorkflow interface {

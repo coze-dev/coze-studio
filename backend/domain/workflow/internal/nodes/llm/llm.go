@@ -436,7 +436,7 @@ func (l *LLM) Chat(ctx context.Context, in map[string]any, opts ...Option) (out 
 	out, err = l.r.Invoke(ctx, in, composeOpts...)
 	if err != nil {
 		if info, ok := compose.ExtractInterruptInfo(err); ok {
-			info = info.SubGraphs["llm"]
+			info = info.SubGraphs["llm"] // 'llm' is the node key of the react agent
 			for _, extra := range info.RerunNodesExtra {
 				toolsNodeExtra, ok := extra.(*compose.ToolsInterruptAndRerunExtra)
 				if !ok {

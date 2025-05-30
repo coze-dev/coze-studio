@@ -383,60 +383,30 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 	}
 
 	batchNodeID2NodeResult := make(map[string]*workflow.NodeResult)
-	innerNodeID2NodeResult := make(map[string]*workflow.NodeResult)
+	batchNodeID2InnerNodeResult := make(map[string]*workflow.NodeResult)
 	successNum := 0
 	for _, nodeExe := range wfExeEntity.NodeExecutions {
-		nr := &workflow.NodeResult{
-			NodeId:      nodeExe.NodeID,
-			NodeName:    nodeExe.NodeName,
-			NodeType:    string(nodeExe.NodeType),
-			NodeStatus:  workflow.NodeExeStatus(nodeExe.Status),
-			ErrorInfo:   ptr.FromOrDefault(nodeExe.ErrorInfo, ""),
-			Input:       ptr.FromOrDefault(nodeExe.Input, ""),
-			Output:      ptr.FromOrDefault(nodeExe.Output, ""),
-			NodeExeCost: fmt.Sprintf("%.3fs", nodeExe.Duration.Seconds()),
-			RawOutput:   nodeExe.RawOutput,
-			ErrorLevel:  ptr.FromOrDefault(nodeExe.ErrorLevel, ""),
-		}
-
-		if nodeExe.TokenInfo != nil {
-			nr.TokenAndCost = &workflow.TokenAndCost{
-				InputTokens:  ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.InputTokens)),
-				OutputTokens: ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.OutputTokens)),
-				TotalTokens:  ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.InputTokens+nodeExe.TokenInfo.OutputTokens)),
-			}
+		nr, err := convertNodeExecution(nodeExe)
+		if err != nil {
+			return nil, err
 		}
 
 		if nodeExe.NodeType == entity.NodeTypeBatch {
-			if inner, ok := innerNodeID2NodeResult[nodeExe.NodeID]; ok {
+			if inner, ok := batchNodeID2InnerNodeResult[nodeExe.NodeID]; ok {
 				nr = mergeBatchModeNodes(inner, nr)
-				delete(innerNodeID2NodeResult, nodeExe.NodeID)
+				delete(batchNodeID2InnerNodeResult, nodeExe.NodeID)
 			} else {
 				batchNodeID2NodeResult[nodeExe.NodeID] = nr
 				continue
 			}
-		}
-
-		if nodeExe.Index > 0 {
-			nr.Index = ptr.Of(int32(nodeExe.Index))
-			nr.Items = nodeExe.Items
-		}
-
-		if len(nodeExe.IndexedExecutions) > 0 {
-			nr.IsBatch = ptr.Of(true)
-			m, err := sonic.MarshalString(nodeExe.IndexedExecutions) // TODO: convert to correct format
-			if err != nil {
-				return nil, err
-			}
-			nr.Batch = ptr.Of(m)
-
+		} else if len(nodeExe.IndexedExecutions) > 0 {
 			if vo.IsGeneratedNodeForBatchMode(nodeExe.NodeID, *nodeExe.ParentNodeID) {
 				parentNodeResult, ok := batchNodeID2NodeResult[*nodeExe.ParentNodeID]
 				if ok {
 					nr = mergeBatchModeNodes(parentNodeResult, nr)
 					delete(batchNodeID2NodeResult, *nodeExe.ParentNodeID)
 				} else {
-					innerNodeID2NodeResult[nodeExe.NodeID] = nr
+					batchNodeID2InnerNodeResult[*nodeExe.ParentNodeID] = nr
 					continue
 				}
 			}
@@ -473,6 +443,142 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 	}
 
 	return resp, nil
+}
+
+func (w *ApplicationService) GetNodeExecuteHistory(ctx context.Context, req *workflow.GetNodeExecuteHistoryRequest) (
+	*workflow.GetNodeExecuteHistoryResponse, error) {
+	executeID := req.GetExecuteID()
+	scene := req.GetNodeHistoryScene()
+
+	if scene == workflow.NodeHistoryScene_TestRunInput {
+		if len(executeID) > 0 {
+			return nil, fmt.Errorf("when scene is test_run_input, execute_id should be empty")
+		}
+
+		nodeID := req.GetNodeID()
+		if nodeID == "100001" {
+			nodeExe, found, err := GetWorkflowDomainSVC().GetLatestTestRunInput(ctx, mustParseInt64(req.GetWorkflowID()),
+				ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0))
+			if err != nil {
+				return nil, err
+			}
+			if !found {
+				return &workflow.GetNodeExecuteHistoryResponse{
+					Data: &workflow.NodeResult{},
+				}, nil
+			}
+
+			result, err := convertNodeExecution(nodeExe)
+			if err != nil {
+				return nil, err
+			}
+
+			return &workflow.GetNodeExecuteHistoryResponse{
+				Data: result,
+			}, nil
+		} else {
+			nodeExe, innerExe, found, err := GetWorkflowDomainSVC().GetLastestNodeDebugInput(ctx, mustParseInt64(req.GetWorkflowID()), nodeID,
+				ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0))
+			if err != nil {
+				return nil, err
+			}
+			if !found {
+				return &workflow.GetNodeExecuteHistoryResponse{
+					Data: &workflow.NodeResult{},
+				}, nil
+			}
+
+			result, err := convertNodeExecution(nodeExe)
+			if err != nil {
+				return nil, err
+			}
+
+			if innerExe == nil {
+				return &workflow.GetNodeExecuteHistoryResponse{
+					Data: result,
+				}, nil
+			}
+
+			inner, err := convertNodeExecution(innerExe)
+			if err != nil {
+				return nil, err
+			}
+
+			result = mergeBatchModeNodes(result, inner)
+			return &workflow.GetNodeExecuteHistoryResponse{
+				Data: result,
+			}, nil
+		}
+	} else {
+		if len(executeID) == 0 {
+			return nil, fmt.Errorf("when scene is not test_run_input, execute_id should not be empty")
+		}
+
+		nodeExe, innerNodeExe, err := GetWorkflowDomainSVC().GetNodeExecution(ctx, mustParseInt64(executeID), req.GetNodeID())
+		if err != nil {
+			return nil, err
+		}
+
+		result, err := convertNodeExecution(nodeExe)
+		if err != nil {
+			return nil, err
+		}
+
+		if innerNodeExe != nil {
+			inner, err := convertNodeExecution(innerNodeExe)
+			if err != nil {
+				return nil, err
+			}
+
+			result := mergeBatchModeNodes(result, inner)
+			return &workflow.GetNodeExecuteHistoryResponse{
+				Data: result,
+			}, nil
+		}
+
+		return &workflow.GetNodeExecuteHistoryResponse{
+			Data: result,
+		}, nil
+	}
+}
+
+func convertNodeExecution(nodeExe *entity.NodeExecution) (*workflow.NodeResult, error) {
+	nr := &workflow.NodeResult{
+		NodeId:      nodeExe.NodeID,
+		NodeName:    nodeExe.NodeName,
+		NodeType:    string(nodeExe.NodeType),
+		NodeStatus:  workflow.NodeExeStatus(nodeExe.Status),
+		ErrorInfo:   ptr.FromOrDefault(nodeExe.ErrorInfo, ""),
+		Input:       ptr.FromOrDefault(nodeExe.Input, ""),
+		Output:      ptr.FromOrDefault(nodeExe.Output, ""),
+		NodeExeCost: fmt.Sprintf("%.3fs", nodeExe.Duration.Seconds()),
+		RawOutput:   nodeExe.RawOutput,
+		ErrorLevel:  ptr.FromOrDefault(nodeExe.ErrorLevel, ""),
+	}
+
+	if nodeExe.TokenInfo != nil {
+		nr.TokenAndCost = &workflow.TokenAndCost{
+			InputTokens:  ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.InputTokens)),
+			OutputTokens: ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.OutputTokens)),
+			TotalTokens:  ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.InputTokens+nodeExe.TokenInfo.OutputTokens)),
+		}
+	}
+
+	if nodeExe.Index > 0 {
+		nr.Index = ptr.Of(int32(nodeExe.Index))
+		nr.Items = nodeExe.Items
+	}
+
+	if len(nodeExe.IndexedExecutions) > 0 {
+		nr.IsBatch = ptr.Of(true)
+		m, err := sonic.MarshalString(nodeExe.IndexedExecutions) // TODO: convert to correct format
+		if err != nil {
+			return nil, err
+		}
+		nr.Batch = ptr.Of(m)
+	}
+
+	return nr, nil
 }
 
 func mergeBatchModeNodes(parent, inner *workflow.NodeResult) *workflow.NodeResult {
