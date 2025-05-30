@@ -3,20 +3,18 @@ package crossplugin
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 )
 
-// TODO(@fanlv): 参数引用需要修改。
 type PluginService interface {
-	MGetVersionPlugins(ctx context.Context, req *service.MGetVersionPluginsRequest) (resp *service.MGetVersionPluginsResponse, err error)
-	BindAgentTools(ctx context.Context, req *service.BindAgentToolsRequest) (err error)
-	MGetAgentTools(ctx context.Context, req *service.MGetAgentToolsRequest) (resp *service.MGetAgentToolsResponse, err error)
-	ExecuteTool(ctx context.Context, req *service.ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (resp *service.ExecuteToolResponse, err error)
-	PublishAgentTools(ctx context.Context, req *service.PublishAgentToolsRequest) (resp *service.PublishAgentToolsResponse, err error)
-	DeleteDraftPlugin(ctx context.Context, req *service.DeleteDraftPluginRequest) (err error)
-	PublishPlugin(ctx context.Context, req *service.PublishPluginRequest) (err error)
-	GetPluginNextVersion(ctx context.Context, req *service.GetPluginNextVersionRequest) (resp *service.GetPluginNextVersionResponse, err error)
+	MGetVersionPlugins(ctx context.Context, req *plugin.MGetVersionPluginsRequest) (resp *plugin.MGetVersionPluginsResponse, err error)
+	BindAgentTools(ctx context.Context, req *plugin.BindAgentToolsRequest) (err error)
+	MGetAgentTools(ctx context.Context, req *plugin.MGetAgentToolsRequest) (resp *plugin.MGetAgentToolsResponse, err error)
+	ExecuteTool(ctx context.Context, req *plugin.ExecuteToolRequest, opts ...plugin.ExecuteToolOpts) (resp *plugin.ExecuteToolResponse, err error)
+	PublishAgentTools(ctx context.Context, req *plugin.PublishAgentToolsRequest) (resp *plugin.PublishAgentToolsResponse, err error)
+	DeleteDraftPlugin(ctx context.Context, req *plugin.DeleteDraftPluginRequest) (err error)
+	PublishPlugin(ctx context.Context, req *plugin.PublishPluginRequest) (err error)
+	GetPluginNextVersion(ctx context.Context, req *plugin.GetPluginNextVersionRequest) (resp *plugin.GetPluginNextVersionResponse, err error)
 }
 
 var defaultSVC PluginService

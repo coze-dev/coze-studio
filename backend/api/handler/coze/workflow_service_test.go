@@ -34,6 +34,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
+	pluginModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	crossplugin "code.byted.org/flow/opencoze/backend/crossdomain/workflow/plugin"
@@ -3559,7 +3560,7 @@ func TestLLMWithSkills(t *testing.T) {
 		}, nil).AnyTimes()
 
 		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlinePluginsResponse{
-			Plugins: []*pluginentity.PluginInfo{
+			Plugins: []*pluginModel.PluginInfo{
 				{ID: int64(7509353177339133952)},
 			},
 		}, nil).AnyTimes()
@@ -3632,7 +3633,7 @@ func TestLLMWithSkills(t *testing.T) {
   }
 }`
 
-		operation := &pluginentity.Openapi3Operation{}
+		operation := &pluginModel.Openapi3Operation{}
 		_ = sonic.UnmarshalString(operationString, operation)
 
 		mPlugin.EXPECT().MGetOnlineTools(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlineToolsResponse{
@@ -4214,19 +4215,19 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
     }
   }
 }`
-		operation := &pluginentity.Openapi3Operation{}
+		operation := &pluginModel.Openapi3Operation{}
 		_ = sonic.UnmarshalString(operationString, operation)
 		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
 		defer ctrl.Finish()
 
 		mPlugin := mockPlugin.NewMockPluginService(ctrl)
 		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlinePluginsResponse{
-			Plugins: []*pluginentity.PluginInfo{
+			Plugins: []*pluginModel.PluginInfo{
 				{
 					ID:       123,
 					SpaceID:  123,
 					Version:  ptr.Of("v0.0.1"),
-					Manifest: &pluginentity.PluginManifest{NameForHuman: "p1", DescriptionForHuman: "desc"},
+					Manifest: &pluginModel.PluginManifest{NameForHuman: "p1", DescriptionForHuman: "desc"},
 				},
 			},
 		}, nil).AnyTimes()
@@ -4339,19 +4340,19 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
   }
 }`
 
-		operation := &pluginentity.Openapi3Operation{}
+		operation := &pluginModel.Openapi3Operation{}
 		_ = sonic.UnmarshalString(operationString, operation)
 		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
 		defer ctrl.Finish()
 
 		mPlugin := mockPlugin.NewMockPluginService(ctrl)
 		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlinePluginsResponse{
-			Plugins: []*pluginentity.PluginInfo{
+			Plugins: []*pluginModel.PluginInfo{
 				{
 					ID:       123,
 					SpaceID:  123,
 					Version:  ptr.Of("v0.0.1"),
-					Manifest: &pluginentity.PluginManifest{NameForHuman: "p1", DescriptionForHuman: "desc"},
+					Manifest: &pluginModel.PluginManifest{NameForHuman: "p1", DescriptionForHuman: "desc"},
 				},
 			},
 		}, nil).AnyTimes()

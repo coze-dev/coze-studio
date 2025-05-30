@@ -8,6 +8,7 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
@@ -31,7 +32,7 @@ type PluginDAO struct {
 type pluginPO model.Plugin
 
 func (p pluginPO) ToDO() *entity.PluginInfo {
-	return &entity.PluginInfo{
+	return entity.NewPluginInfo(&plugin.PluginInfo{
 		ID:          p.ID,
 		SpaceID:     p.SpaceID,
 		DeveloperID: p.DeveloperID,
@@ -44,7 +45,7 @@ func (p pluginPO) ToDO() *entity.PluginInfo {
 		VersionDesc: &p.VersionDesc,
 		Manifest:    p.Manifest,
 		OpenapiDoc:  p.OpenapiDoc,
-	}
+	})
 }
 
 func (p *PluginDAO) Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {

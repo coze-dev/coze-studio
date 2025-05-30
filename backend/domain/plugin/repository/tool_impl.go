@@ -7,6 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal"
@@ -236,7 +237,7 @@ func (t *toolRepoImpl) BatchCreateVersionAgentTools(ctx context.Context, agentID
 	return t.agentToolVersionDAO.BatchCreate(ctx, agentID, tools)
 }
 
-func (t *toolRepoImpl) UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, doc *entity.Openapi3T, updatedTool *entity.ToolInfo) (err error) {
+func (t *toolRepoImpl) UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, doc *plugin.Openapi3T, updatedTool *entity.ToolInfo) (err error) {
 	tx := t.query.Begin()
 	if tx.Error != nil {
 		return tx.Error
@@ -262,10 +263,10 @@ func (t *toolRepoImpl) UpdateDraftToolAndDebugExample(ctx context.Context, plugi
 		return err
 	}
 
-	updatedPlugin := &entity.PluginInfo{
+	updatedPlugin := entity.NewPluginInfo(&plugin.PluginInfo{
 		ID:         pluginID,
 		OpenapiDoc: doc,
-	}
+	})
 	err = t.pluginDraftDAO.UpdateWithTX(ctx, tx, updatedPlugin)
 	if err != nil {
 		return err

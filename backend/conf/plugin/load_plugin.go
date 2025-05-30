@@ -12,8 +12,8 @@ import (
 	"golang.org/x/mod/semver"
 	"gopkg.in/yaml.v3"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -85,7 +85,7 @@ func GetAllPluginProducts() []*PluginInfo {
 }
 
 type PluginInfo struct {
-	Info    *entity.PluginInfo
+	Info    *plugin.PluginInfo
 	ToolIDs []int64
 }
 
@@ -169,7 +169,7 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 			continue
 		}
 
-		doc := ptr.Of(entity.Openapi3T(*_doc))
+		doc := ptr.Of(plugin.Openapi3T(*_doc))
 
 		err = doc.Validate(ctx)
 		if err != nil {
@@ -178,14 +178,14 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 		}
 
 		pi := &PluginInfo{
-			Info: &entity.PluginInfo{
+			Info: &plugin.PluginInfo{
 				ID:           m.PluginID,
 				RefProductID: &m.ProductID,
 				PluginType:   m.PluginType,
 				Version:      ptr.Of(m.Version),
 				IconURI:      ptr.Of(m.Manifest.LogoURL),
 				ServerURL:    ptr.Of(doc.Servers[0].URL),
-				Manifest:     m.Manifest,
+				Manifest:     m.Manifest.PluginManifest,
 				OpenapiDoc:   doc,
 			},
 			ToolIDs: make([]int64, 0, len(m.Tools)),
@@ -198,14 +198,14 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 
 		pluginProducts[m.PluginID] = pi
 
-		apis := make(map[entity.UniqueToolAPI]*entity.Openapi3Operation, len(doc.Paths))
+		apis := make(map[entity.UniqueToolAPI]*plugin.Openapi3Operation, len(doc.Paths))
 		for subURL, pathItem := range doc.Paths {
 			for method, op := range pathItem.Operations() {
 				api := entity.UniqueToolAPI{
 					SubURL: subURL,
 					Method: strings.ToUpper(method),
 				}
-				apis[api] = ptr.Of(entity.Openapi3Operation(*op))
+				apis[api] = ptr.Of(plugin.Openapi3Operation(*op))
 			}
 		}
 
@@ -245,7 +245,7 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 					Method:          ptr.Of(t.Method),
 					SubURL:          ptr.Of(t.SubURL),
 					Operation:       op,
-					ActivatedStatus: ptr.Of(consts.ActivateTool),
+					ActivatedStatus: ptr.Of(plugin.ActivateTool),
 					DebugStatus:     ptr.Of(common.APIDebugStatus_DebugPassed),
 				},
 			}

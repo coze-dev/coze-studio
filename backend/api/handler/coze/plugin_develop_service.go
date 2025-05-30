@@ -9,10 +9,9 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	"code.byted.org/flow/opencoze/backend/application/plugin"
-
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	"code.byted.org/flow/opencoze/backend/application/plugin"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 )
 

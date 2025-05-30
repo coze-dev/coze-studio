@@ -12,6 +12,7 @@ import (
 	gonanoid "github.com/matoous/go-nanoid"
 	"gopkg.in/yaml.v3"
 
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	productCommon "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_common"
 	productAPI "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
@@ -20,8 +21,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/application/base/pluginutil"
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
@@ -190,27 +189,27 @@ func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *
 		return nil, fmt.Errorf("auth type is empty")
 	}
 
-	_authType, ok := convertor.ToAuthType(req.GetAuthType())
+	_authType, ok := model.ToAuthType(req.GetAuthType())
 	if !ok {
 		return nil, fmt.Errorf("invalid auth type '%d'", req.GetAuthType())
 	}
 	authType := ptr.Of(_authType)
 
-	var authSubType *consts.AuthSubType
+	var authSubType *model.AuthSubType
 	if req.SubAuthType != nil {
-		_authSubType, ok := convertor.ToAuthSubType(req.GetSubAuthType())
+		_authSubType, ok := model.ToAuthSubType(req.GetSubAuthType())
 		if !ok {
 			return nil, fmt.Errorf("invalid sub auth type '%d'", req.GetSubAuthType())
 		}
 		authSubType = ptr.Of(_authSubType)
 	}
 
-	var loc consts.HTTPParamLocation
-	if *authType != consts.AuthTypeOfNone {
+	var loc model.HTTPParamLocation
+	if *authType != model.AuthTypeOfNone {
 		if req.GetLocation() == common.AuthorizationServiceLocation_Query {
-			loc = consts.ParamInQuery
+			loc = model.ParamInQuery
 		} else if req.GetLocation() == common.AuthorizationServiceLocation_Header {
-			loc = consts.ParamInPath
+			loc = model.ParamInPath
 		} else {
 			return nil, fmt.Errorf("invalid location '%s'", req.GetLocation())
 		}
@@ -290,7 +289,7 @@ func (p *PluginApplicationService) RegisterPlugin(ctx context.Context, req *plug
 		DeveloperID: *userID,
 		ProjectID:   req.ProjectID,
 		Manifest:    mf,
-		OpenapiDoc:  ptr.Of(entity.Openapi3T(*doc)),
+		OpenapiDoc:  ptr.Of(model.Openapi3T(*doc)),
 	})
 	if err != nil {
 		return nil, err
@@ -369,7 +368,7 @@ func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *plugi
 
 	apis := make([]*common.PluginAPIInfo, 0, len(draftTools))
 	for _, tool := range draftTools {
-		method, ok := convertor.ToThriftAPIMethod(tool.GetMethod())
+		method, ok := model.ToThriftAPIMethod(tool.GetMethod())
 		if !ok {
 			return nil, fmt.Errorf("invalid method '%s'", tool.GetMethod())
 		}
@@ -388,7 +387,7 @@ func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *plugi
 			DebugStatus: tool.GetDebugStatus(),
 			Desc:        tool.GetDesc(),
 			Disabled: func() bool {
-				if tool.GetActivatedStatus() == consts.DeactivateTool {
+				if tool.GetActivatedStatus() == model.DeactivateTool {
 					return true
 				}
 				return false
@@ -438,7 +437,7 @@ func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *plugi
 
 	paths := openapi3.Paths{}
 	for _, tool := range tools {
-		if tool.GetActivatedStatus() == consts.DeactivateTool {
+		if tool.GetActivatedStatus() == model.DeactivateTool {
 			continue
 		}
 		item := &openapi3.PathItem{}
@@ -449,7 +448,7 @@ func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *plugi
 
 	commonParams := make(map[common.ParameterLocation][]*common.CommonParamSchema, len(draftPlugin.Manifest.CommonParams))
 	for loc, params := range draftPlugin.Manifest.CommonParams {
-		location, ok := convertor.ToThriftHTTPParamLocation(loc)
+		location, ok := model.ToThriftHTTPParamLocation(loc)
 		if !ok {
 			return nil, fmt.Errorf("invalid location '%s'", loc)
 		}
@@ -615,18 +614,18 @@ func (p *PluginApplicationService) CreateAPI(ctx context.Context, req *pluginAPI
 
 	tool := &entity.ToolInfo{
 		PluginID:        req.PluginID,
-		ActivatedStatus: ptr.Of(consts.ActivateTool),
+		ActivatedStatus: ptr.Of(model.ActivateTool),
 		DebugStatus:     ptr.Of(common.APIDebugStatus_DebugWaiting),
 		SubURL:          ptr.Of("/" + defaultSubURL),
 		Method:          ptr.Of(http.MethodGet),
-		Operation: &entity.Openapi3Operation{
+		Operation: &model.Openapi3Operation{
 			Summary:     req.Desc,
 			OperationID: req.Name,
 			Parameters:  []*openapi3.ParameterRef{},
 			RequestBody: &openapi3.RequestBodyRef{
 				Value: &openapi3.RequestBody{
 					Content: map[string]*openapi3.MediaType{
-						consts.MIMETypeJson: {
+						model.MIMETypeJson: {
 							Schema: &openapi3.SchemaRef{
 								Value: &openapi3.Schema{
 									Type:       openapi3.TypeObject,
@@ -641,7 +640,7 @@ func (p *PluginApplicationService) CreateAPI(ctx context.Context, req *pluginAPI
 				strconv.Itoa(http.StatusOK): {
 					Value: &openapi3.Response{
 						Content: map[string]*openapi3.MediaType{
-							consts.MIMETypeJson: {
+							model.MIMETypeJson: {
 								Schema: &openapi3.SchemaRef{
 									Value: &openapi3.Schema{
 										Type:       openapi3.TypeObject,
@@ -654,7 +653,7 @@ func (p *PluginApplicationService) CreateAPI(ctx context.Context, req *pluginAPI
 				},
 			},
 			Extensions: map[string]interface{}{
-				consts.APISchemaExtendGlobalDisable: false,
+				model.APISchemaExtendGlobalDisable: false,
 			},
 		},
 	}
@@ -678,7 +677,7 @@ func (p *PluginApplicationService) UpdateAPI(ctx context.Context, req *pluginAPI
 	}
 
 	var method *string
-	if m, ok := convertor.ToHTTPMethod(req.GetMethod()); ok {
+	if m, ok := model.ToHTTPMethod(req.GetMethod()); ok {
 		method = &m
 	}
 
@@ -725,7 +724,7 @@ func (p *PluginApplicationService) UpdatePlugin(ctx context.Context, req *plugin
 		return nil, err
 	}
 
-	doc := ptr.Of(entity.Openapi3T(*_doc))
+	doc := ptr.Of(model.Openapi3T(*_doc))
 
 	manifest := &entity.PluginManifest{}
 	err = sonic.UnmarshalString(req.AiPlugin, manifest)
@@ -833,27 +832,27 @@ func (p *PluginApplicationService) UpdatePluginMeta(ctx context.Context, req *pl
 		return nil, fmt.Errorf("auth type is empty")
 	}
 
-	_authType, ok := convertor.ToAuthType(req.GetAuthType())
+	_authType, ok := model.ToAuthType(req.GetAuthType())
 	if !ok {
 		return nil, fmt.Errorf("invalid auth type '%d'", req.GetAuthType())
 	}
 	authType := &_authType
 
-	var authSubType *consts.AuthSubType
+	var authSubType *model.AuthSubType
 	if req.SubAuthType != nil {
-		_authSubType, ok := convertor.ToAuthSubType(req.GetSubAuthType())
+		_authSubType, ok := model.ToAuthSubType(req.GetSubAuthType())
 		if !ok {
 			return nil, fmt.Errorf("invalid sub auth type '%d'", req.GetSubAuthType())
 		}
 		authSubType = &_authSubType
 	}
 
-	var location *consts.HTTPParamLocation
+	var location *model.HTTPParamLocation
 	if req.Location != nil {
 		if *req.Location == common.AuthorizationServiceLocation_Header {
-			location = ptr.Of(consts.ParamInHeader)
+			location = ptr.Of(model.ParamInHeader)
 		} else if *req.Location == common.AuthorizationServiceLocation_Query {
-			location = ptr.Of(consts.ParamInQuery)
+			location = ptr.Of(model.ParamInQuery)
 		} else {
 			return nil, fmt.Errorf("invalid location '%d'", req.GetLocation())
 		}
@@ -960,7 +959,7 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 	res, err := p.DomainSVC.ExecuteTool(ctx, &service.ExecuteToolRequest{
 		PluginID:        req.PluginID,
 		ToolID:          req.APIID,
-		ExecScene:       consts.ExecSceneOfToolDebug,
+		ExecScene:       model.ExecSceneOfToolDebug,
 		ArgumentsInJson: req.Parameters,
 	})
 	if err != nil {

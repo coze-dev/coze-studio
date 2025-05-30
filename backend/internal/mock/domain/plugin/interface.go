@@ -13,15 +13,17 @@ import (
 	context "context"
 	reflect "reflect"
 
+	gomock "go.uber.org/mock/gomock"
+
 	entity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	service "code.byted.org/flow/opencoze/backend/domain/plugin/service"
-	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPluginService is a mock of PluginService interface.
 type MockPluginService struct {
 	ctrl     *gomock.Controller
 	recorder *MockPluginServiceMockRecorder
+	isgomock struct{}
 }
 
 // MockPluginServiceMockRecorder is the mock recorder for MockPluginService.

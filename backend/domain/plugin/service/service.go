@@ -5,8 +5,8 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
@@ -69,7 +69,7 @@ type CreateDraftPluginResponse struct {
 }
 type UpdateDraftPluginWithCodeRequest struct {
 	PluginID   int64
-	OpenapiDoc *entity.Openapi3T
+	OpenapiDoc *plugin.Openapi3T
 	Manifest   *entity.PluginManifest
 }
 
@@ -115,7 +115,7 @@ type CreateDraftPluginWithCodeRequest struct {
 	DeveloperID int64
 	ProjectID   *int64
 	Manifest    *entity.PluginManifest
-	OpenapiDoc  *entity.Openapi3T
+	OpenapiDoc  *plugin.Openapi3T
 }
 
 type CreateDraftPluginWithCodeResponse struct {
@@ -124,18 +124,16 @@ type CreateDraftPluginWithCodeResponse struct {
 }
 
 type PluginAuthInfo struct {
-	AuthType     *consts.AuthType
-	Location     *consts.HTTPParamLocation
+	AuthType     *plugin.AuthType
+	Location     *plugin.HTTPParamLocation
 	Key          *string
 	ServiceToken *string
 	OauthInfo    *string
-	AuthSubType  *consts.AuthSubType
+	AuthSubType  *plugin.AuthSubType
 	AuthPayload  *string
 }
 
-type DeleteDraftPluginRequest struct {
-	PluginID int64
-}
+type DeleteDraftPluginRequest = plugin.DeleteDraftPluginRequest
 
 type GetOnlinePluginRequest struct {
 	PluginID int64
@@ -150,30 +148,18 @@ type MGetOnlinePluginsRequest struct {
 }
 
 type MGetOnlinePluginsResponse struct {
-	Plugins []*entity.PluginInfo
+	Plugins []*plugin.PluginInfo
 }
 
-type GetPluginNextVersionRequest struct {
-	PluginID int64
-}
+type GetPluginNextVersionRequest = plugin.GetPluginNextVersionRequest
 
-type GetPluginNextVersionResponse struct {
-	Version string
-}
+type GetPluginNextVersionResponse = plugin.GetPluginNextVersionResponse
 
-type PublishPluginRequest struct {
-	PluginID    int64
-	Version     string
-	VersionDesc string
-}
+type PublishPluginRequest = plugin.PublishPluginRequest
 
-type MGetVersionPluginsRequest struct {
-	VersionPlugins []entity.VersionPlugin
-}
+type MGetVersionPluginsRequest = plugin.MGetVersionPluginsRequest
 
-type MGetVersionPluginsResponse struct {
-	Plugins []*entity.PluginInfo
-}
+type MGetVersionPluginsResponse = plugin.MGetVersionPluginsResponse
 
 type MGetDraftToolsRequest struct {
 	ToolIDs []int64
@@ -214,10 +200,7 @@ type GetOnlineToolsResponse struct {
 	Tool *entity.ToolInfo
 }
 
-type BindAgentToolsRequest struct {
-	AgentID int64
-	ToolIDs []int64
-}
+type BindAgentToolsRequest = plugin.BindAgentToolsRequest
 
 type GetDraftAgentToolRequest struct {
 	AgentID  int64
@@ -228,17 +211,9 @@ type GetAgentToolResponse struct {
 	Tool *entity.ToolInfo
 }
 
-type MGetAgentToolsRequest struct {
-	AgentID int64
-	SpaceID int64
-	IsDraft bool
+type MGetAgentToolsRequest = plugin.MGetAgentToolsRequest
 
-	VersionAgentTools []entity.VersionAgentTool
-}
-
-type MGetAgentToolsResponse struct {
-	Tools []*entity.ToolInfo
-}
+type MGetAgentToolsResponse = plugin.MGetAgentToolsResponse
 
 type UpdateBotDefaultParamsRequest struct {
 	PluginID    int64
@@ -249,30 +224,15 @@ type UpdateBotDefaultParamsRequest struct {
 	Responses   openapi3.Responses
 }
 
-type PublishAgentToolsRequest struct {
-	AgentID int64
-}
+type PublishAgentToolsRequest = plugin.PublishAgentToolsRequest
 
-type PublishAgentToolsResponse struct {
-	VersionTools map[int64]entity.VersionAgentTool
-}
+type PublishAgentToolsResponse = plugin.PublishAgentToolsResponse
 
-type ExecuteToolRequest struct {
-	PluginID  int64
-	ToolID    int64
-	ExecScene consts.ExecuteScene
+type ExecuteToolRequest = plugin.ExecuteToolRequest
 
-	ArgumentsInJson string
-}
+type ExecuteToolResponse = plugin.ExecuteToolResponse
 
-type ExecuteToolResponse struct {
-	Tool        *entity.ToolInfo
-	TrimmedResp string
-	RawResp     string
-}
-
-type ListPluginProductsRequest struct {
-}
+type ListPluginProductsRequest struct{}
 
 type ListPluginProductsResponse struct {
 	Plugins []*entity.PluginInfo

@@ -9,8 +9,8 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
@@ -43,7 +43,7 @@ func (t toolDraftPO) ToDO() *entity.ToolInfo {
 		Method:          ptr.Of(t.Method),
 		Operation:       t.Operation,
 		DebugStatus:     ptr.Of(common.APIDebugStatus(t.DebugStatus)),
-		ActivatedStatus: ptr.Of(consts.ActivatedStatus(t.ActivatedStatus)),
+		ActivatedStatus: ptr.Of(plugin.ActivatedStatus(t.ActivatedStatus)),
 	}
 }
 

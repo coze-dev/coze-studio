@@ -11,16 +11,16 @@ import (
 	"github.com/shopspring/decimal"
 	"gopkg.in/yaml.v3"
 
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 )
 
 func encodeBodyWithContentType(contentType string, body map[string]any) ([]byte, error) {
 	switch contentType {
-	case consts.MIMETypeJson, consts.MIMETypeJsonPatch, consts.MIMETypeProblemJson:
+	case plugin.MIMETypeJson, plugin.MIMETypeJsonPatch, plugin.MIMETypeProblemJson:
 		return jsonBodyEncoder(body)
-	case consts.MIMETypeForm:
+	case plugin.MIMETypeForm:
 		return urlencodedBodyEncoder(body)
-	case consts.MIMETypeYaml, consts.MIMETypeXYaml:
+	case plugin.MIMETypeYaml, plugin.MIMETypeXYaml:
 		return yamlBodyEncoder(body)
 	default:
 		return nil, fmt.Errorf("[encodeBodyWithContentType] unsupported contentType=%s", contentType)
@@ -257,7 +257,7 @@ func tryFixValueType(paramName string, schemaRef *openapi3.SchemaRef, value any)
 		return "", fmt.Errorf("value of '%s' is nil", paramName)
 	}
 
-	//TODO(@maronghong): 在 tool.Extra 中增加 try 失败信息
+	// TODO(@maronghong): 在 tool.Extra 中增加 try 失败信息
 	switch schemaRef.Value.Type {
 	case openapi3.TypeString:
 		return tryString(value)

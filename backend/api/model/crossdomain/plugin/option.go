@@ -1,8 +1,4 @@
-package entity
-
-import (
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
-)
+package plugin
 
 type ExecuteOptions struct {
 	AgentID                    int64
@@ -10,7 +6,7 @@ type ExecuteOptions struct {
 	Version                    string
 	AgentToolVersion           int64
 	Operation                  *Openapi3Operation
-	InvalidRespProcessStrategy consts.InvalidResponseProcessStrategy
+	InvalidRespProcessStrategy InvalidResponseProcessStrategy
 }
 
 type ExecuteToolOpts func(o *ExecuteOptions)
@@ -45,7 +41,7 @@ func WithOpenapiOperation(op *Openapi3Operation) ExecuteToolOpts {
 	}
 }
 
-func WithInvalidRespProcessStrategy(strategy consts.InvalidResponseProcessStrategy) ExecuteToolOpts {
+func WithInvalidRespProcessStrategy(strategy InvalidResponseProcessStrategy) ExecuteToolOpts {
 	return func(o *ExecuteOptions) {
 		o.InvalidRespProcessStrategy = strategy
 	}

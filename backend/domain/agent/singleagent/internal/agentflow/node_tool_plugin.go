@@ -7,9 +7,9 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -92,11 +92,11 @@ func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error
 
 func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...tool.Option) (string, error) {
 	req := &service.ExecuteToolRequest{
-		ExecScene: func() consts.ExecuteScene {
+		ExecScene: func() plugin.ExecuteScene {
 			if p.isDraft {
-				return consts.ExecSceneOfAgentDraft
+				return plugin.ExecSceneOfAgentDraft
 			}
-			return consts.ExecSceneOfAgentOnline
+			return plugin.ExecSceneOfAgentOnline
 		}(),
 		PluginID:        p.toolInfo.PluginID,
 		ToolID:          p.toolInfo.ID,
@@ -104,12 +104,12 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 	}
 
 	opts := []pluginEntity.ExecuteToolOpts{
-		pluginEntity.WithAgentID(p.agentID),
-		pluginEntity.WithSpaceID(p.spaceID),
-		pluginEntity.WithVersion(p.toolInfo.GetVersion()),
+		plugin.WithAgentID(p.agentID),
+		plugin.WithSpaceID(p.spaceID),
+		plugin.WithVersion(p.toolInfo.GetVersion()),
 	}
 	if !p.isDraft && p.agentToolVersion != nil {
-		opts = append(opts, pluginEntity.WithAgentToolVersion(*p.agentToolVersion))
+		opts = append(opts, plugin.WithAgentToolVersion(*p.agentToolVersion))
 	}
 
 	resp, err := crossplugin.DefaultSVC().ExecuteTool(ctx, req, opts...)

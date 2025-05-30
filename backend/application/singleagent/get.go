@@ -8,6 +8,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
@@ -16,7 +17,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	shortcutCMDEntity "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/entity"
@@ -271,8 +271,9 @@ func toolInfoDo2Vo(toolInfos []*pluginEntity.ToolInfo) map[int64]*playground.Plu
 	})
 }
 
-func pluginInfoDo2Vo(pluginInfos []*pluginEntity.PluginInfo) map[int64]*playground.PluginDetal {
-	return slices.ToMap(pluginInfos, func(e *pluginEntity.PluginInfo) (int64, *playground.PluginDetal) {
+func pluginInfoDo2Vo(pluginInfos []*plugin.PluginInfo) map[int64]*playground.PluginDetal {
+	return slices.ToMap(pluginInfos, func(v *plugin.PluginInfo) (int64, *playground.PluginDetal) {
+		e := pluginEntity.NewPluginInfo(v)
 		return e.ID, &playground.PluginDetal{
 			ID:           ptr.Of(e.ID),
 			Name:         ptr.Of(e.GetName()),
@@ -289,7 +290,7 @@ func pluginInfoDo2Vo(pluginInfos []*pluginEntity.PluginInfo) map[int64]*playgrou
 	})
 }
 
-func parametersDo2Vo(op *pluginEntity.Openapi3Operation) []*playground.PluginParameter {
+func parametersDo2Vo(op *plugin.Openapi3Operation) []*playground.PluginParameter {
 	var convertReqBody func(paramName string, isRequired bool, sc *openapi3.Schema) *playground.PluginParameter
 	convertReqBody = func(paramName string, isRequired bool, sc *openapi3.Schema) *playground.PluginParameter {
 		if disabledParam(sc) {
@@ -297,7 +298,7 @@ func parametersDo2Vo(op *pluginEntity.Openapi3Operation) []*playground.PluginPar
 		}
 
 		var assistType *int64
-		if v, ok := sc.Extensions[consts.APISchemaExtendAssistType]; ok {
+		if v, ok := sc.Extensions[plugin.APISchemaExtendAssistType]; ok {
 			if _v, ok := v.(string); ok {
 				assistType = toParameterAssistType(_v)
 			}
@@ -368,7 +369,7 @@ func parametersDo2Vo(op *pluginEntity.Openapi3Operation) []*playground.PluginPar
 		}
 
 		var assistType *int64
-		if v, ok := schemaVal.Extensions[consts.APISchemaExtendAssistType]; ok {
+		if v, ok := schemaVal.Extensions[plugin.APISchemaExtendAssistType]; ok {
 			if _v, ok := v.(string); ok {
 				assistType = toParameterAssistType(_v)
 			}
@@ -410,26 +411,26 @@ func toParameterAssistType(assistType string) *int64 {
 	if assistType == "" {
 		return nil
 	}
-	switch consts.APIFileAssistType(assistType) {
-	case consts.AssistTypeFile:
+	switch plugin.APIFileAssistType(assistType) {
+	case plugin.AssistTypeFile:
 		return ptr.Of(int64(plugin_develop_common.AssistParameterType_CODE))
-	case consts.AssistTypeImage:
+	case plugin.AssistTypeImage:
 		return ptr.Of(int64(plugin_develop_common.AssistParameterType_IMAGE))
-	case consts.AssistTypeDoc:
+	case plugin.AssistTypeDoc:
 		return ptr.Of(int64(plugin_develop_common.AssistParameterType_DOC))
-	case consts.AssistTypePPT:
+	case plugin.AssistTypePPT:
 		return ptr.Of(int64(plugin_develop_common.AssistParameterType_PPT))
-	case consts.AssistTypeCode:
+	case plugin.AssistTypeCode:
 		return ptr.Of(int64(plugin_develop_common.AssistParameterType_CODE))
-	case consts.AssistTypeExcel:
+	case plugin.AssistTypeExcel:
 		return ptr.Of(int64(plugin_develop_common.AssistParameterType_EXCEL))
-	case consts.AssistTypeZIP:
+	case plugin.AssistTypeZIP:
 		return ptr.Of(int64(plugin_develop_common.AssistParameterType_ZIP))
-	case consts.AssistTypeVideo:
+	case plugin.AssistTypeVideo:
 		return ptr.Of(int64(plugin_develop_common.AssistParameterType_VIDEO))
-	case consts.AssistTypeAudio:
+	case plugin.AssistTypeAudio:
 		return ptr.Of(int64(plugin_develop_common.AssistParameterType_AUDIO))
-	case consts.AssistTypeTXT:
+	case plugin.AssistTypeTXT:
 		return ptr.Of(int64(plugin_develop_common.AssistParameterType_TXT))
 	default:
 		return nil

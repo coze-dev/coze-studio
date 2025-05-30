@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
@@ -42,7 +43,7 @@ type CreateDraftPluginResponse struct {
 
 type UpdatePluginDraftWithCode struct {
 	PluginID   int64
-	OpenapiDoc *entity.Openapi3T
+	OpenapiDoc *plugin.Openapi3T
 	Manifest   *entity.PluginManifest
 
 	UpdatedTools  []*entity.ToolInfo
@@ -54,7 +55,7 @@ type CreateDraftPluginWithCodeRequest struct {
 	DeveloperID int64
 	ProjectID   *int64
 	Manifest    *entity.PluginManifest
-	OpenapiDoc  *entity.Openapi3T
+	OpenapiDoc  *plugin.Openapi3T
 }
 
 type CreateDraftPluginWithCodeResponse struct {
@@ -102,7 +103,7 @@ type ToolRepository interface {
 	MGetVersionAgentTool(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error)
 	BatchCreateVersionAgentTools(ctx context.Context, agentID int64, tools []*entity.ToolInfo) (toolVersions map[int64]int64, err error)
 
-	UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, doc *entity.Openapi3T, updatedTool *entity.ToolInfo) (err error)
+	UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, doc *plugin.Openapi3T, updatedTool *entity.ToolInfo) (err error)
 }
 
 type MGetDraftAgentToolsRequest struct {

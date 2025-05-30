@@ -9,10 +9,10 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"golang.org/x/exp/maps"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/application/base/pluginutil"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
@@ -48,7 +48,7 @@ func (t *toolService) getPluginsWithTools(ctx context.Context, pluginID int64, t
 		if err != nil {
 			return nil, nil, err
 		}
-		pluginsInfo = resp.Plugins
+		pluginsInfo = entity.NewPluginInfos(resp.Plugins)
 	}
 
 	var pInfo *entity.PluginInfo
@@ -85,9 +85,7 @@ func (t *toolService) getPluginsWithTools(ctx context.Context, pluginID int64, t
 }
 
 func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplugin.PluginToolsInvokableRequest) (map[int64]tool.InvokableTool, error) {
-	var (
-		toolsInfo []*entity.ToolInfo
-	)
+	var toolsInfo []*entity.ToolInfo
 
 	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, req.PluginEntity.PluginID, maps.Keys(req.ToolsInvokableInfo), req.IsDraft)
 	if err != nil {
@@ -117,16 +115,12 @@ func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplu
 
 	}
 	return result, nil
-
 }
 
 func (t *toolService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.PluginToolsInfoRequest) (*crossplugin.PluginToolsInfoResponse, error) {
-	var (
-		toolsInfo []*entity.ToolInfo
-	)
+	var toolsInfo []*entity.ToolInfo
 
 	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, req.PluginEntity.PluginID, req.ToolIDs, req.IsDraft)
-
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +190,7 @@ func (p *pluginInvokeTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	)
 
 	if p.toolOperation != nil {
-		parameterInfo, err = entity.Openapi3Operation(*p.toolOperation).ToEinoSchemaParameterInfo()
+		parameterInfo, err = plugin.Openapi3Operation(*p.toolOperation).ToEinoSchemaParameterInfo()
 	} else {
 		parameterInfo, err = p.toolInfo.Operation.ToEinoSchemaParameterInfo()
 	}
@@ -213,23 +207,22 @@ func (p *pluginInvokeTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
 }
 
 func (p *pluginInvokeTool) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
-
 	req := &service.ExecuteToolRequest{
 		PluginID:        p.pluginEntity.PluginID,
 		ToolID:          p.toolInfo.ID,
-		ExecScene:       consts.ExecSceneOfWorkflow,
+		ExecScene:       plugin.ExecSceneOfWorkflow,
 		ArgumentsInJson: argumentsInJSON,
 	}
 
 	execOpts := []entity.ExecuteToolOpts{
-		entity.WithInvalidRespProcessStrategy(consts.InvalidResponseProcessStrategyOfReturnDefault),
+		plugin.WithInvalidRespProcessStrategy(plugin.InvalidResponseProcessStrategyOfReturnDefault),
 	}
 	if p.pluginEntity.PluginVersion != nil {
-		execOpts = append(execOpts, entity.WithVersion(*p.pluginEntity.PluginVersion))
+		execOpts = append(execOpts, plugin.WithVersion(*p.pluginEntity.PluginVersion))
 	}
 
 	if p.toolOperation != nil {
-		execOpts = append(execOpts, entity.WithOpenapiOperation(ptr.Of(entity.Openapi3Operation(*p.toolOperation))))
+		execOpts = append(execOpts, plugin.WithOpenapiOperation(ptr.Of(plugin.Openapi3Operation(*p.toolOperation))))
 	}
 	r, err := p.client.ExecuteTool(ctx, req, execOpts...)
 	if err != nil {

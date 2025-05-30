@@ -1,0 +1,520 @@
+package plugin
+
+import (
+	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+
+	productAPI "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"github.com/getkin/kin-openapi/openapi3"
+	gonanoid "github.com/matoous/go-nanoid"
+)
+
+type ToolInfo struct {
+	ID        int64
+	PluginID  int64
+	CreatedAt int64
+	UpdatedAt int64
+	Version   *string
+
+	ActivatedStatus *ActivatedStatus
+	DebugStatus     *plugin_develop_common.APIDebugStatus
+
+	Method    *string
+	SubURL    *string
+	Operation *Openapi3Operation
+}
+
+func (t ToolInfo) GetName() string {
+	if t.Operation == nil {
+		return ""
+	}
+	return t.Operation.OperationID
+}
+
+func (t ToolInfo) GetDesc() string {
+	if t.Operation == nil {
+		return ""
+	}
+	return t.Operation.Summary
+}
+
+func (t ToolInfo) GetVersion() string {
+	return ptr.FromOrDefault(t.Version, "")
+}
+
+func (t ToolInfo) GetActivatedStatus() ActivatedStatus {
+	return ptr.FromOrDefault(t.ActivatedStatus, ActivateTool)
+}
+
+func (t ToolInfo) GetSubURL() string {
+	return ptr.FromOrDefault(t.SubURL, "")
+}
+
+func (t ToolInfo) GetMethod() string {
+	return strings.ToUpper(ptr.FromOrDefault(t.Method, ""))
+}
+
+func (t ToolInfo) GetDebugStatus() common.APIDebugStatus {
+	return ptr.FromOrDefault(t.DebugStatus, common.APIDebugStatus_DebugWaiting)
+}
+
+func (t ToolInfo) GetResponseOpenapiSchema() (*openapi3.Schema, error) {
+	op := t.Operation
+	if op == nil {
+		return nil, fmt.Errorf("operation is nil")
+	}
+
+	resp, ok := op.Responses[strconv.Itoa(http.StatusOK)]
+	if !ok {
+		if op.Responses == nil {
+			op.Responses = openapi3.Responses{}
+		}
+		op.Responses[strconv.Itoa(http.StatusOK)] = &openapi3.ResponseRef{
+			Value: &openapi3.Response{
+				Content: openapi3.Content{
+					MIMETypeJson: {
+						Schema: &openapi3.SchemaRef{
+							Value: &openapi3.Schema{
+								Type:       openapi3.TypeObject,
+								Properties: openapi3.Schemas{},
+							},
+						},
+					},
+				},
+			},
+		}
+	}
+
+	mType, ok := resp.Value.Content[MIMETypeJson] // only support application/json
+	if !ok {
+		if resp.Value.Content == nil {
+			resp.Value.Content = openapi3.Content{}
+		}
+		resp.Value.Content[MIMETypeJson] = &openapi3.MediaType{
+			Schema: &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type:       openapi3.TypeObject,
+					Properties: openapi3.Schemas{},
+				},
+			},
+		}
+	}
+
+	return mType.Schema.Value, nil
+}
+
+type paramMetaInfo struct {
+	name     string
+	desc     string
+	required bool
+	location string
+}
+
+func (t ToolInfo) ToRespAPIParameter() ([]*common.APIParameter, error) {
+	op := t.Operation
+	if op == nil {
+		return nil, fmt.Errorf("operation is nil")
+	}
+
+	respSchema, err := t.GetResponseOpenapiSchema()
+	if err != nil {
+		return nil, err
+	}
+
+	params := make([]*common.APIParameter, 0, len(op.Parameters))
+	if len(respSchema.Properties) == 0 {
+		return params, nil
+	}
+
+	required := slices.ToMap(respSchema.Required, func(e string) (string, bool) {
+		return e, true
+	})
+
+	for paramName, prop := range respSchema.Properties {
+		paramMeta := paramMetaInfo{
+			name:     paramName,
+			desc:     prop.Value.Description,
+			location: string(ParamInBody),
+			required: required[paramName],
+		}
+		apiParam, err := toAPIParameter(paramMeta, prop.Value)
+		if err != nil {
+			return nil, err
+		}
+		params = append(params, apiParam)
+	}
+
+	return params, nil
+}
+
+func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
+	op := t.Operation
+	if op == nil {
+		return nil, fmt.Errorf("operation is nil")
+	}
+
+	params := make([]*common.APIParameter, 0, len(op.Parameters))
+	for _, param := range op.Parameters {
+		schemaVal := param.Value.Schema.Value
+		paramMeta := paramMetaInfo{
+			name:     param.Value.Name,
+			desc:     param.Value.Description,
+			location: param.Value.In,
+			required: param.Value.Required,
+		}
+		apiParam, err := toAPIParameter(paramMeta, schemaVal)
+		if err != nil {
+			return nil, err
+		}
+		params = append(params, apiParam)
+	}
+
+	for _, mType := range op.RequestBody.Value.Content {
+		schemaVal := mType.Schema.Value
+		if len(schemaVal.Properties) == 0 {
+			continue
+		}
+
+		required := slices.ToMap(schemaVal.Required, func(e string) (string, bool) {
+			return e, true
+		})
+
+		for paramName, prop := range schemaVal.Properties {
+			paramMeta := paramMetaInfo{
+				name:     paramName,
+				desc:     prop.Value.Description,
+				location: string(ParamInBody),
+				required: required[paramName],
+			}
+			apiParam, err := toAPIParameter(paramMeta, prop.Value)
+			if err != nil {
+				return nil, err
+			}
+			params = append(params, apiParam)
+		}
+
+		break // 只取一种 MIME
+	}
+
+	return params, nil
+}
+
+func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIParameter, error) {
+	apiType, ok := ToThriftParamType(strings.ToLower(sc.Type))
+	if !ok {
+		return nil, fmt.Errorf("invalid type '%s'", sc.Type)
+	}
+	location, ok := ToThriftHTTPParamLocation(HTTPParamLocation(paramMeta.location))
+	if !ok {
+		return nil, fmt.Errorf("invalid location '%s'", paramMeta.location)
+	}
+
+	apiParam := &common.APIParameter{
+		ID:            gonanoid.MustID(10),
+		Name:          paramMeta.name,
+		Desc:          paramMeta.desc,
+		Type:          apiType,
+		Location:      location, // 使用父节点的值
+		IsRequired:    paramMeta.required,
+		SubParameters: []*common.APIParameter{},
+	}
+
+	if sc.Default != nil {
+		apiParam.LocalDefault = ptr.Of(fmt.Sprintf("%v", sc.Default))
+	}
+
+	if sc.Format != "" {
+		aType, ok := FormatToAssistType(sc.Format)
+		if !ok {
+			return nil, fmt.Errorf("invalid format '%s'", sc.Format)
+		}
+		_aType, ok := ToThriftAPIAssistType(aType)
+		if !ok {
+			return nil, fmt.Errorf("invalid assist type '%s'", aType)
+		}
+		apiParam.AssistType = ptr.Of(_aType)
+	}
+
+	if v, ok := sc.Extensions[APISchemaExtendGlobalDisable]; ok {
+		if disable, ok := v.(bool); ok {
+			apiParam.GlobalDisable = disable
+		}
+	}
+	if v, ok := sc.Extensions[APISchemaExtendLocalDisable]; ok {
+		if disable, ok := v.(bool); ok {
+			apiParam.LocalDisable = disable
+		}
+	}
+
+	switch sc.Type {
+	case openapi3.TypeObject:
+		if len(sc.Properties) == 0 {
+			return apiParam, nil
+		}
+
+		required := slices.ToMap(sc.Required, func(e string) (string, bool) {
+			return e, true
+		})
+		for subParamName, prop := range sc.Properties {
+			subMeta := paramMetaInfo{
+				name:     subParamName,
+				desc:     prop.Value.Description,
+				required: required[subParamName],
+				location: paramMeta.location,
+			}
+			subParam, err := toAPIParameter(subMeta, prop.Value)
+			if err != nil {
+				return nil, err
+			}
+
+			apiParam.SubParameters = append(apiParam.SubParameters, subParam)
+		}
+
+		return apiParam, nil
+
+	case openapi3.TypeArray:
+		item := sc.Items.Value
+		if item.Type == openapi3.TypeObject {
+			required := slices.ToMap(item.Required, func(e string) (string, bool) {
+				return e, true
+			})
+			for subParamName, prop := range item.Properties {
+				subMeta := paramMetaInfo{
+					name:     subParamName,
+					desc:     prop.Value.Description,
+					location: paramMeta.location,
+					required: required[subParamName],
+				}
+				subParam, err := toAPIParameter(subMeta, prop.Value)
+				if err != nil {
+					return nil, err
+				}
+
+				apiParam.SubParameters = append(apiParam.SubParameters, subParam)
+			}
+
+			return apiParam, nil
+		}
+
+		subMeta := paramMetaInfo{
+			name:     "[Array Item]",
+			desc:     item.Description,
+			location: paramMeta.location,
+			required: paramMeta.required,
+		}
+		subParam, err := toAPIParameter(subMeta, item)
+		if err != nil {
+			return nil, err
+		}
+
+		apiParam.SubParameters = append(apiParam.SubParameters, subParam)
+
+		return apiParam, nil
+	}
+
+	return apiParam, nil
+}
+
+func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
+	op := t.Operation
+	if op == nil {
+		return nil, fmt.Errorf("operation is nil")
+	}
+
+	var params []*common.PluginParameter
+
+	for _, prop := range op.Parameters {
+		paramVal := prop.Value
+		schemaVal := paramVal.Schema.Value
+		if schemaVal.Type == openapi3.TypeObject || schemaVal.Type == openapi3.TypeArray {
+			continue
+		}
+
+		if disabledParam(prop.Value.Schema.Value) {
+			continue
+		}
+
+		var assistType *common.PluginParamTypeFormat
+		if v, ok := schemaVal.Extensions[APISchemaExtendAssistType]; ok {
+			_v, ok := v.(string)
+			if !ok {
+				continue
+			}
+			f, ok := AssistTypeToThriftFormat(APIFileAssistType(_v))
+			if ok {
+				return nil, fmt.Errorf("invalid assist type '%s'", _v)
+			}
+			assistType = ptr.Of(f)
+		}
+
+		params = append(params, &common.PluginParameter{
+			Name:          paramVal.Name,
+			Desc:          paramVal.Description,
+			Required:      paramVal.Required,
+			Type:          schemaVal.Type,
+			Format:        assistType,
+			SubParameters: []*common.PluginParameter{},
+		})
+	}
+
+	for _, mType := range op.RequestBody.Value.Content {
+		schemaVal := mType.Schema.Value
+		if len(schemaVal.Properties) == 0 {
+			continue
+		}
+
+		required := slices.ToMap(schemaVal.Required, func(e string) (string, bool) {
+			return e, true
+		})
+
+		for paramName, prop := range schemaVal.Properties {
+			paramMeta := paramMetaInfo{
+				name:     paramName,
+				desc:     prop.Value.Description,
+				required: required[paramName],
+			}
+			paramInfo, err := toPluginParameter(paramMeta, prop.Value)
+			if err != nil {
+				return nil, err
+			}
+			if paramInfo != nil {
+				params = append(params, paramInfo)
+			}
+		}
+
+		break // 只取一种 MIME
+	}
+
+	return params, nil
+}
+
+func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.PluginParameter, error) {
+	if disabledParam(sc) {
+		return nil, nil
+	}
+
+	var assistType *common.PluginParamTypeFormat
+	if v, ok := sc.Extensions[APISchemaExtendAssistType]; ok {
+		if _v, ok := v.(string); ok {
+			f, ok := AssistTypeToThriftFormat(APIFileAssistType(_v))
+			if !ok {
+				return nil, fmt.Errorf("invalid assist type '%s'", _v)
+			}
+			assistType = ptr.Of(f)
+		}
+	}
+
+	pluginParam := &common.PluginParameter{
+		Name:          paramMeta.name,
+		Type:          sc.Type,
+		Desc:          paramMeta.desc,
+		Required:      paramMeta.required,
+		Format:        assistType,
+		SubParameters: []*common.PluginParameter{},
+	}
+
+	switch sc.Type {
+	case openapi3.TypeObject:
+		if len(sc.Properties) == 0 {
+			return pluginParam, nil
+		}
+
+		required := slices.ToMap(sc.Required, func(e string) (string, bool) {
+			return e, true
+		})
+		for subParamName, prop := range sc.Properties {
+			subMeta := paramMetaInfo{
+				name:     subParamName,
+				desc:     prop.Value.Description,
+				required: required[subParamName],
+			}
+			subParam, err := toPluginParameter(subMeta, prop.Value)
+			if err != nil {
+				return nil, err
+			}
+			pluginParam.SubParameters = append(pluginParam.SubParameters, subParam)
+		}
+
+		return pluginParam, nil
+
+	case openapi3.TypeArray:
+		item := sc.Items.Value
+		pluginParam.SubType = item.Type
+
+		if item.Type == openapi3.TypeObject {
+			required := slices.ToMap(item.Required, func(e string) (string, bool) {
+				return e, true
+			})
+			for subParamName, prop := range item.Properties {
+				subMeta := paramMetaInfo{
+					name:     subParamName,
+					desc:     prop.Value.Description,
+					required: required[subParamName],
+				}
+				subParam, err := toPluginParameter(subMeta, prop.Value)
+				if err != nil {
+					return nil, err
+				}
+				pluginParam.SubParameters = append(pluginParam.SubParameters, subParam)
+			}
+
+			return pluginParam, nil
+		}
+
+		subMeta := paramMetaInfo{
+			desc:     item.Description,
+			required: paramMeta.required,
+		}
+		subParam, err := toPluginParameter(subMeta, item)
+		if err != nil {
+			return nil, err
+		}
+		pluginParam.SubParameters = append(pluginParam.SubParameters, subParam)
+
+		return pluginParam, nil
+	}
+
+	return pluginParam, nil
+}
+
+func (t ToolInfo) ToToolParameters() ([]*productAPI.ToolParameter, error) {
+	apiParams, err := t.ToReqAPIParameter()
+	if err != nil {
+		return nil, err
+	}
+
+	var toToolParams func(apiParams []*common.APIParameter) ([]*productAPI.ToolParameter, error)
+	toToolParams = func(apiParams []*common.APIParameter) ([]*productAPI.ToolParameter, error) {
+		params := make([]*productAPI.ToolParameter, 0, len(apiParams))
+		for _, apiParam := range apiParams {
+			typ, _ := ToOpenapiParamType(apiParam.Type)
+			toolParam := &productAPI.ToolParameter{
+				Name:         apiParam.Name,
+				Description:  apiParam.Desc,
+				Type:         typ,
+				IsRequired:   apiParam.IsRequired,
+				SubParameter: []*productAPI.ToolParameter{},
+			}
+
+			if len(apiParam.SubParameters) > 0 {
+				subParams, err := toToolParams(apiParam.SubParameters)
+				if err != nil {
+					return nil, err
+				}
+				toolParam.SubParameter = append(toolParam.SubParameter, subParams...)
+			}
+
+			params = append(params, toolParam)
+		}
+
+		return params, nil
+	}
+
+	return toToolParams(apiParams)
+}

@@ -4,7 +4,7 @@
 
 package model
 
-import "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+import "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 
 const TableNameToolVersion = "tool_version"
 
@@ -17,7 +17,7 @@ type ToolVersion struct {
 	Version   string                    `gorm:"column:version;not null;comment:Tool Version, e.g. v1.0.0" json:"version"`                              // Tool Version, e.g. v1.0.0
 	SubURL    string                    `gorm:"column:sub_url;not null;comment:Sub URL Path" json:"sub_url"`                                           // Sub URL Path
 	Method    string                    `gorm:"column:method;not null;comment:HTTP Request Method" json:"method"`                                      // HTTP Request Method
-	Operation *entity.Openapi3Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
+	Operation *plugin.Openapi3Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
 }
 
 // TableName ToolVersion's table name
