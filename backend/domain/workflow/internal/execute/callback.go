@@ -283,11 +283,18 @@ func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...st
 
 		if !ok {
 			logs.Errorf("failed to extract interrupt event from node key: %v", err)
-			continue
+			extra := interruptInfo.RerunNodesExtra[nodeKey]
+			if extra == nil {
+				continue
+			}
+			interruptE, ok = extra.(*entity.InterruptEvent)
+			if !ok {
+				logs.Errorf("failed to extract tool interrupt event from node key: %v", err)
+				continue
+			}
 		}
 
-		if len(interruptE.NestedInterruptInfo) == 0 && interruptE.SubWorkflowInterruptInfo == nil &&
-			len(interruptE.ToolInterruptEvents) == 0 {
+		if len(interruptE.NestedInterruptInfo) == 0 && interruptE.SubWorkflowInterruptInfo == nil {
 			interruptE.NodePath = append(prefixes, string(interruptE.NodeKey))
 			interruptEvents = append(interruptEvents, interruptE)
 		} else if len(interruptE.NestedInterruptInfo) > 0 {
@@ -306,14 +313,6 @@ func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...st
 				return nil, err
 			}
 			interruptEvents = append(interruptEvents, subWorkflowIEvents...)
-		} else {
-			appendedPrefix := append(prefixes, string(interruptE.NodeKey))
-			for i := range interruptE.ToolInterruptEvents {
-				toolIE := interruptE.ToolInterruptEvents[i]
-				toolIE.NodePath = appendedPrefix
-				toolIE.ToolWorkflowExecuteID = toolIE.ExecuteID
-				interruptEvents = append(interruptEvents, toolIE.InterruptEvent)
-			}
 		}
 	}
 
@@ -654,7 +653,7 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 
 	c := GetExeCtx(ctx)
 
-	if errors.Is(err, compose.InterruptAndRerun) { // current node interrupts
+	if _, ok := compose.IsInterruptRerunError(err); ok { // current node interrupts
 		if err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
 			if state == nil {
 				return errors.New("state is nil")

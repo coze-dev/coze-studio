@@ -156,7 +156,7 @@ func (id *IntentDetector) parseToNodeOut(content string) (map[string]any, error)
 }
 
 func (id *IntentDetector) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
-	tokenHandler := execute.GetTokenCallbackHandler()
+	tokenHandler := execute.GetTokenCallbackHandler() // TODO: migrate them to designate_options
 
 	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
 		Component: compose.ComponentOfChain,

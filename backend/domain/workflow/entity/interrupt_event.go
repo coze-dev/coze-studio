@@ -24,8 +24,7 @@ type InterruptEvent struct {
 	// TODO: separate the following fields with InterruptEvent
 	NestedInterruptInfo      map[int]*compose.InterruptInfo `json:"nested_interrupt_info,omitempty"`
 	SubWorkflowInterruptInfo *compose.InterruptInfo         `json:"sub_workflow_interrupt_info,omitempty"`
-	ToolInterruptEvents      []*ToolInterruptEvent          `json:"tool_interrupt_events,omitempty"`
-	ToolWorkflowExecuteID    int64
+	ToolInterruptEvent       *ToolInterruptEvent            `json:"tool_interrupt_event,omitempty"`
 }
 
 type InterruptEventType = workflow.EventType

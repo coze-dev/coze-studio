@@ -9,7 +9,6 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
-	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/components/tool"
@@ -347,40 +346,34 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	return llm, nil
 }
 
-func (l *LLM) Chat(ctx context.Context, in map[string]any, opts ...Option) (out map[string]any, err error) {
+func (l *LLM) prepare(ctx context.Context, in map[string]any, opts ...Option) (composeOpts []compose.Option, resumingEvent *entity.InterruptEvent, err error) {
 	c := execute.GetExeCtx(ctx)
-	resuming := c != nil && c.NodeCtx.ResumingEvent != nil
+	if c != nil {
+		resumingEvent = c.NodeCtx.ResumingEvent
+	}
+	var previousToolES map[string]*entity.ToolInterruptEvent
 
 	if len(in) == 0 && c != nil {
 		// check if we are not resuming, but previously interrupted. Interrupt immediately.
-		if !resuming {
-			var previouslyInterrupted bool
-			err := compose.ProcessState(ctx, func(ctx context.Context, state nodes.InterruptEventStore) error {
+		if resumingEvent == nil {
+			err := compose.ProcessState(ctx, func(ctx context.Context, state ToolInterruptEventStore) error {
 				var e error
-				_, previouslyInterrupted, e = state.GetInterruptEvent(c.NodeKey)
+				previousToolES, e = state.GetToolInterruptEvents(c.NodeKey)
 				if e != nil {
 					return e
 				}
 				return nil
 			})
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 
-			if previouslyInterrupted {
-				return nil, compose.InterruptAndRerun
+			if len(previousToolES) > 0 {
+				return nil, nil, compose.InterruptAndRerun
 			}
 		}
 	}
 
-	tokenHandler := execute.GetTokenCallbackHandler()
-
-	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
-		Component: compose.ComponentOfGraph,
-		Name:      "chat",
-	}, tokenHandler)
-
-	var composeOpts []compose.Option
 	if l.requireCheckpoint {
 		c := execute.GetExeCtx(ctx)
 		checkpointID := fmt.Sprintf("%d_%s", c.RootCtx.RootExecuteID, c.NodeCtx.NodeKey)
@@ -399,10 +392,32 @@ func (l *LLM) Chat(ctx context.Context, in map[string]any, opts ...Option) (out 
 
 	composeOpts = append(composeOpts, nestedOpts.GetOptsForNested()...)
 
-	if resuming {
-		err = compose.ProcessState(ctx, func(ctx context.Context, state nodes.InterruptEventStore) error {
-			return state.DeleteInterruptEvent(c.NodeKey)
+	if resumingEvent != nil {
+		var (
+			resumeData string
+			e          error
+			allIEs     = make(map[string]*entity.ToolInterruptEvent)
+		)
+		err = compose.ProcessState(ctx, func(ctx context.Context, state ToolInterruptEventStore) error {
+			allIEs, e = state.GetToolInterruptEvents(c.NodeKey)
+			if e != nil {
+				return e
+			}
+
+			resumeData, e = state.ResumeToolInterruptEvent(c.NodeKey, resumingEvent.ToolInterruptEvent.ToolCallID)
+
+			return e
 		})
+		if err != nil {
+			return nil, nil, err
+		}
+		composeOpts = append(composeOpts, compose.WithToolsNodeOption(
+			compose.WithToolOption(
+				execute.WithResume(&entity.ResumeRequest{
+					ExecuteID:  resumingEvent.ToolInterruptEvent.ExecuteID,
+					EventID:    resumingEvent.ToolInterruptEvent.ID,
+					ResumeData: resumeData,
+				}, allIEs))))
 	}
 
 	if c != nil {
@@ -433,50 +448,95 @@ func (l *LLM) Chat(ctx context.Context, in map[string]any, opts ...Option) (out 
 		}()
 	}
 
+	return composeOpts, resumingEvent, nil
+}
+
+func handleInterrupt(ctx context.Context, err error, resumingEvent *entity.InterruptEvent) error {
+	info, ok := compose.ExtractInterruptInfo(err)
+	if !ok {
+		return err
+	}
+
+	info = info.SubGraphs["llm"] // 'llm' is the node key of the react agent
+	var extra any
+	for i := range info.RerunNodesExtra {
+		extra = info.RerunNodesExtra[i]
+		break
+	}
+
+	toolsNodeExtra, ok := extra.(*compose.ToolsInterruptAndRerunExtra)
+	if !ok {
+		return fmt.Errorf("llm rerun node extra type expected to be ToolsInterruptAndRerunExtra, actual: %T", extra)
+	}
+	id, err := workflow.GetRepository().GenID(ctx)
+	if err != nil {
+		return err
+	}
+
+	var (
+		previousInterruptedCallID string
+		highPriorityEvent         *entity.ToolInterruptEvent
+	)
+	if resumingEvent != nil {
+		previousInterruptedCallID = resumingEvent.ToolInterruptEvent.ToolCallID
+	}
+
+	toolIEs := make([]*entity.ToolInterruptEvent, 0, len(toolsNodeExtra.RerunExtraMap))
+	for callID := range toolsNodeExtra.RerunExtraMap {
+		subIE, ok := toolsNodeExtra.RerunExtraMap[callID].(*entity.ToolInterruptEvent)
+		if !ok {
+			return fmt.Errorf("llm rerun node extra type expected to be ToolInterruptEvent, actual: %T", extra)
+		}
+
+		toolIEs = append(toolIEs, subIE)
+		if subIE.ToolCallID == previousInterruptedCallID {
+			highPriorityEvent = subIE
+		}
+	}
+
+	c := execute.GetExeCtx(ctx)
+	ie := &entity.InterruptEvent{
+		ID:        id,
+		NodeKey:   c.NodeKey,
+		NodeType:  entity.NodeTypeLLM,
+		NodeTitle: c.NodeName,
+		NodeIcon:  entity.NodeMetaByNodeType(entity.NodeTypeLLM).IconURL,
+		EventType: entity.InterruptEventLLM,
+	}
+
+	if highPriorityEvent != nil {
+		ie.ToolInterruptEvent = highPriorityEvent
+	} else {
+		ie.ToolInterruptEvent = toolIEs[0]
+	}
+
+	err = compose.ProcessState(ctx, func(ctx context.Context, ieStore ToolInterruptEventStore) error {
+		for i := range toolIEs {
+			e := ieStore.SetToolInterruptEvent(c.NodeKey, toolIEs[i].ToolCallID, toolIEs[i])
+			if e != nil {
+				return e
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return compose.NewInterruptAndRerunErr(ie)
+}
+
+func (l *LLM) Chat(ctx context.Context, in map[string]any, opts ...Option) (out map[string]any, err error) {
+	composeOpts, resumingEvent, err := l.prepare(ctx, in, opts...)
+	if err != nil {
+		return nil, err
+	}
+
 	out, err = l.r.Invoke(ctx, in, composeOpts...)
 	if err != nil {
-		if info, ok := compose.ExtractInterruptInfo(err); ok {
-			info = info.SubGraphs["llm"] // 'llm' is the node key of the react agent
-			for _, extra := range info.RerunNodesExtra {
-				toolsNodeExtra, ok := extra.(*compose.ToolsInterruptAndRerunExtra)
-				if !ok {
-					return nil, fmt.Errorf("llm rerun node extra type expected to be ToolsInterruptAndRerunExtra, actual: %T", extra)
-				}
-				id, err := workflow.GetRepository().GenID(ctx)
-				if err != nil {
-					return nil, err
-				}
-
-				toolIEs := make([]*entity.ToolInterruptEvent, 0, len(toolsNodeExtra.RerunExtraMap))
-				for callID := range toolsNodeExtra.RerunExtraMap {
-					subIE, ok := toolsNodeExtra.RerunExtraMap[callID].(*entity.ToolInterruptEvent)
-					if !ok {
-						return nil, fmt.Errorf("llm rerun node extra type expected to be ToolInterruptEvent, actual: %T", extra)
-					}
-
-					toolIEs = append(toolIEs, subIE)
-				}
-
-				c := execute.GetExeCtx(ctx)
-				ie := &entity.InterruptEvent{
-					ID:                  id,
-					NodeKey:             c.NodeKey,
-					NodeType:            entity.NodeTypeLLM,
-					NodeTitle:           c.NodeName,
-					NodeIcon:            entity.NodeMetaByNodeType(entity.NodeTypeLLM).IconURL,
-					EventType:           entity.InterruptEventLLM,
-					ToolInterruptEvents: toolIEs,
-				}
-
-				err = compose.ProcessState(ctx, func(ctx context.Context, ieStore nodes.InterruptEventStore) error {
-					return ieStore.SetInterruptEvent(c.NodeKey, ie)
-				})
-				if err != nil {
-					return nil, err
-				}
-
-				return nil, compose.InterruptAndRerun
-			}
+		err = handleInterrupt(ctx, err, resumingEvent)
+		if _, ok := compose.IsInterruptRerunError(err); ok {
+			return nil, err
 		}
 
 		if l.defaultOutput != nil {
@@ -493,135 +553,16 @@ func (l *LLM) Chat(ctx context.Context, in map[string]any, opts ...Option) (out 
 }
 
 func (l *LLM) ChatStream(ctx context.Context, in map[string]any, opts ...Option) (out *schema.StreamReader[map[string]any], err error) {
-	c := execute.GetExeCtx(ctx)
-	resuming := c != nil && c.NodeCtx.ResumingEvent != nil
-
-	if len(in) == 0 && c != nil {
-		// check if we are not resuming, but previously interrupted. Interrupt immediately.
-		if !resuming {
-			var previouslyInterrupted bool
-			err := compose.ProcessState(ctx, func(ctx context.Context, state nodes.InterruptEventStore) error {
-				var e error
-				_, previouslyInterrupted, e = state.GetInterruptEvent(c.NodeKey)
-				if e != nil {
-					return e
-				}
-				return nil
-			})
-			if err != nil {
-				return nil, err
-			}
-
-			if previouslyInterrupted {
-				return nil, compose.InterruptAndRerun
-			}
-		}
-	}
-
-	tokenHandler := execute.GetTokenCallbackHandler()
-
-	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
-		Component: compose.ComponentOfGraph,
-		Name:      "chat",
-	}, tokenHandler)
-
-	var composeOpts []compose.Option
-	if l.requireCheckpoint {
-		c := execute.GetExeCtx(ctx)
-		checkpointID := fmt.Sprintf("%d_%s", c.RootCtx.RootExecuteID, c.NodeCtx.NodeKey)
-		composeOpts = append(composeOpts, compose.WithCheckPointID(checkpointID))
-	}
-
-	llmOpts := &Options{}
-	for _, opt := range opts {
-		opt(llmOpts)
-	}
-
-	nestedOpts := &nodes.NestedWorkflowOptions{}
-	for _, opt := range llmOpts.nested {
-		opt(nestedOpts)
-	}
-
-	composeOpts = append(composeOpts, nestedOpts.GetOptsForNested()...)
-
-	if resuming {
-		err = compose.ProcessState(ctx, func(ctx context.Context, state nodes.InterruptEventStore) error {
-			return state.DeleteInterruptEvent(c.NodeKey)
-		})
-	}
-
-	if c != nil {
-		exeCfg := c.ExeCfg
-		composeOpts = append(composeOpts, compose.WithToolsNodeOption(compose.WithToolOption(execute.WithExecuteConfig(exeCfg))))
-	}
-
-	if llmOpts.toolWorkflowSW != nil {
-		toolMsgOpt, toolMsgSR := execute.WithMessagePipe()
-		composeOpts = append(composeOpts, toolMsgOpt)
-
-		go func() {
-			defer toolMsgSR.Close()
-			for {
-				msg, err := toolMsgSR.Recv()
-				if err != nil {
-					if err == io.EOF {
-						return
-					}
-					logs.CtxErrorf(ctx, "failed to receive message from tool workflow: %v", err)
-					return
-				}
-
-				logs.Infof("received message from tool workflow: %+v", msg)
-
-				llmOpts.toolWorkflowSW.Send(msg, nil)
-			}
-		}()
+	composeOpts, resumingEvent, err := l.prepare(ctx, in, opts...)
+	if err != nil {
+		return nil, err
 	}
 
 	out, err = l.r.Stream(ctx, in, composeOpts...)
 	if err != nil {
-		if info, ok := compose.ExtractInterruptInfo(err); ok {
-			info = info.SubGraphs["llm"]
-			for _, extra := range info.RerunNodesExtra {
-				toolsNodeExtra, ok := extra.(*compose.ToolsInterruptAndRerunExtra)
-				if !ok {
-					return nil, fmt.Errorf("llm rerun node extra type expected to be ToolsInterruptAndRerunExtra, actual: %T", extra)
-				}
-				id, err := workflow.GetRepository().GenID(ctx)
-				if err != nil {
-					return nil, err
-				}
-
-				toolIEs := make([]*entity.ToolInterruptEvent, 0, len(toolsNodeExtra.RerunExtraMap))
-				for callID := range toolsNodeExtra.RerunExtraMap {
-					subIE, ok := toolsNodeExtra.RerunExtraMap[callID].(*entity.ToolInterruptEvent)
-					if !ok {
-						return nil, fmt.Errorf("llm rerun node extra type expected to be ToolInterruptEvent, actual: %T", extra)
-					}
-
-					toolIEs = append(toolIEs, subIE)
-				}
-
-				c := execute.GetExeCtx(ctx)
-				ie := &entity.InterruptEvent{
-					ID:                  id,
-					NodeKey:             c.NodeKey,
-					NodeType:            entity.NodeTypeLLM,
-					NodeTitle:           c.NodeName,
-					NodeIcon:            entity.NodeMetaByNodeType(entity.NodeTypeLLM).IconURL,
-					EventType:           entity.InterruptEventLLM,
-					ToolInterruptEvents: toolIEs,
-				}
-
-				err = compose.ProcessState(ctx, func(ctx context.Context, ieStore nodes.InterruptEventStore) error {
-					return ieStore.SetInterruptEvent(c.NodeKey, ie)
-				})
-				if err != nil {
-					return nil, err
-				}
-
-				return nil, compose.InterruptAndRerun
-			}
+		err = handleInterrupt(ctx, err, resumingEvent)
+		if _, ok := compose.IsInterruptRerunError(err); ok {
+			return nil, err
 		}
 
 		if l.defaultOutput != nil {
@@ -635,4 +576,10 @@ func (l *LLM) ChatStream(ctx context.Context, in map[string]any, opts ...Option)
 	}
 
 	return out, nil
+}
+
+type ToolInterruptEventStore interface {
+	SetToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string, ie *entity.ToolInterruptEvent) error
+	GetToolInterruptEvents(llmNodeKey vo.NodeKey) (map[string]*entity.ToolInterruptEvent, error)
+	ResumeToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string) (string, error)
 }

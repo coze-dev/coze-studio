@@ -102,6 +102,8 @@ func DesignateOptions(ctx context.Context,
 		opts = append(opts, einoCompose.WithCheckPointID(strconv.FormatInt(executeID, 10)))
 	}
 
+	opts = append(opts, einoCompose.WithCallbacks(execute.GetTokenCallbackHandler()))
+
 	return opts, nil
 }
 

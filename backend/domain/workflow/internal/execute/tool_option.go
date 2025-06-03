@@ -10,14 +10,16 @@ import (
 )
 
 type workflowToolOption struct {
-	resumeReq *entity.ResumeRequest
-	sw        *schema.StreamWriter[*entity.Message]
-	exeCfg    vo.ExecuteConfig
+	resumeReq          *entity.ResumeRequest
+	sw                 *schema.StreamWriter[*entity.Message]
+	exeCfg             vo.ExecuteConfig
+	allInterruptEvents map[string]*entity.ToolInterruptEvent
 }
 
-func WithResume(req *entity.ResumeRequest) tool.Option {
+func WithResume(req *entity.ResumeRequest, all map[string]*entity.ToolInterruptEvent) tool.Option {
 	return tool.WrapImplSpecificOptFn(func(opts *workflowToolOption) {
 		opts.resumeReq = req
+		opts.allInterruptEvents = all
 	})
 }
 
@@ -33,9 +35,9 @@ func WithExecuteConfig(cfg vo.ExecuteConfig) tool.Option {
 	})
 }
 
-func GetResumeRequest(opts ...tool.Option) *entity.ResumeRequest {
+func GetResumeRequest(opts ...tool.Option) (*entity.ResumeRequest, map[string]*entity.ToolInterruptEvent) {
 	opt := tool.GetImplSpecificOptions(&workflowToolOption{}, opts...)
-	return opt.resumeReq
+	return opt.resumeReq, opt.allInterruptEvents
 }
 
 func GetIntermediateStreamWriter(opts ...tool.Option) *schema.StreamWriter[*entity.Message] {

@@ -483,6 +483,20 @@ func (mr *MockServiceMockRecorder) WithMessagePipe() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithMessagePipe", reflect.TypeOf((*MockService)(nil).WithMessagePipe))
 }
 
+// WithResumeToolWorkflow mocks base method.
+func (m *MockService) WithResumeToolWorkflow(resumingEvent *entity.ToolInterruptEvent, resumeData string, allInterruptEvents map[string]*entity.ToolInterruptEvent) compose.Option {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WithResumeToolWorkflow", resumingEvent, resumeData, allInterruptEvents)
+	ret0, _ := ret[0].(compose.Option)
+	return ret0
+}
+
+// WithResumeToolWorkflow indicates an expected call of WithResumeToolWorkflow.
+func (mr *MockServiceMockRecorder) WithResumeToolWorkflow(resumingEvent, resumeData, allInterruptEvents any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithResumeToolWorkflow", reflect.TypeOf((*MockService)(nil).WithResumeToolWorkflow), resumingEvent, resumeData, allInterruptEvents)
+}
+
 // WorkflowAsModelTool mocks base method.
 func (m *MockService) WorkflowAsModelTool(ctx context.Context, ids []*entity.WorkflowIdentity) ([]tool.BaseTool, error) {
 	m.ctrl.T.Helper()

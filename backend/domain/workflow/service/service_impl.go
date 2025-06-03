@@ -1565,6 +1565,17 @@ func (i *impl) WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option {
 	return einoCompose.WithToolsNodeOption(einoCompose.WithToolOption(execute.WithExecuteConfig(cfg)))
 }
 
+func (i *impl) WithResumeToolWorkflow(resumingEvent *entity.ToolInterruptEvent, resumeData string,
+	allInterruptEvents map[string]*entity.ToolInterruptEvent) einoCompose.Option {
+	return einoCompose.WithToolsNodeOption(
+		einoCompose.WithToolOption(
+			execute.WithResume(&entity.ResumeRequest{
+				ExecuteID:  resumingEvent.ExecuteID,
+				EventID:    resumingEvent.ID,
+				ResumeData: resumeData,
+			}, allInterruptEvents)))
+}
+
 func (i *impl) CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (int64, error) {
 	wf, err := i.repo.CopyWorkflow(ctx, spaceID, workflowID)
 	if err != nil {

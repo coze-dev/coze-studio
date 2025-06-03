@@ -32,6 +32,9 @@ type State struct {
 	ExecutedNodes map[vo.NodeKey]bool                         `json:"executed_nodes,omitempty"`
 	SourceInfos   map[vo.NodeKey]map[string]*nodes.SourceInfo `json:"source_infos,omitempty"`
 	GroupChoices  map[vo.NodeKey]map[string]int               `json:"group_choices,omitempty"`
+
+	ToolInterruptEvents map[vo.NodeKey]map[string] /*ToolCallID*/ *entity.ToolInterruptEvent `json:"tool_interrupt_events,omitempty"`
+	LLMToResumeData     map[vo.NodeKey]string                                                `json:"llm_to_resume_data,omitempty"`
 }
 
 func init() {
@@ -175,6 +178,28 @@ func (s *State) GetDynamicStreamType(nodeKey vo.NodeKey, group string) (nodes.Fi
 	return s.GetDynamicStreamType(subInfo.FromNodeKey, subInfo.FromPath[0])
 }
 
+func (s *State) SetToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string, ie *entity.ToolInterruptEvent) error {
+	if _, ok := s.ToolInterruptEvents[llmNodeKey]; !ok {
+		s.ToolInterruptEvents[llmNodeKey] = make(map[string]*entity.ToolInterruptEvent)
+	}
+	s.ToolInterruptEvents[llmNodeKey][toolCallID] = ie
+	return nil
+}
+
+func (s *State) GetToolInterruptEvents(llmNodeKey vo.NodeKey) (map[string]*entity.ToolInterruptEvent, error) {
+	return s.ToolInterruptEvents[llmNodeKey], nil
+}
+
+func (s *State) ResumeToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string) (string, error) {
+	resumeData, ok := s.LLMToResumeData[llmNodeKey]
+	if !ok {
+		return "", fmt.Errorf("resume data not found for llm node %s", llmNodeKey)
+	}
+	delete(s.ToolInterruptEvents[llmNodeKey], toolCallID)
+	delete(s.LLMToResumeData, llmNodeKey)
+	return resumeData, nil
+}
+
 func GenState() compose.GenLocalState[*State] {
 	return func(ctx context.Context) (state *State) {
 		return &State{
@@ -187,6 +212,8 @@ func GenState() compose.GenLocalState[*State] {
 			ExecutedNodes:        make(map[vo.NodeKey]bool),
 			SourceInfos:          make(map[vo.NodeKey]map[string]*nodes.SourceInfo),
 			GroupChoices:         make(map[vo.NodeKey]map[string]int),
+			ToolInterruptEvents:  make(map[vo.NodeKey]map[string]*entity.ToolInterruptEvent),
+			LLMToResumeData:      make(map[vo.NodeKey]string),
 		}
 	}
 }
@@ -394,6 +421,7 @@ func (s *NodeSchema) StatePostHandler() compose.GraphAddNodeOpt {
 func GenStateModifierByEventType(e entity.InterruptEventType,
 	nodeKey vo.NodeKey,
 	resumeData string) (stateModifier compose.StateModifier) {
+	// TODO: can we unify them all to a map[NodeKey]resumeData?
 	switch e {
 	case entity.InterruptEventInput:
 		stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
@@ -410,6 +438,12 @@ func GenStateModifierByEventType(e entity.InterruptEventType,
 			fmt.Println("state modifier for QA node happens. Path: ", path)
 
 			state.(*State).Answers[nodeKey] = append(state.(*State).Answers[nodeKey], resumeData)
+			return nil
+		}
+	case entity.InterruptEventLLM:
+		stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
+			fmt.Println("state modifier for LLM node happens. Path: ", path)
+			state.(*State).LLMToResumeData[nodeKey] = resumeData
 			return nil
 		}
 	default:

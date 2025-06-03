@@ -16,6 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 const answerKey = "output"
@@ -51,7 +52,25 @@ func (i *invokableWorkflow) Info(_ context.Context) (*schema.ToolInfo, error) {
 }
 
 func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
-	rInfo := execute.GetResumeRequest(opts...)
+	rInfo, allIEs := execute.GetResumeRequest(opts...)
+	var (
+		previouslyInterrupted bool
+		callID                = einoCompose.GetToolCallID(ctx)
+		previousExecuteID     int64
+	)
+	for interruptedCallID := range allIEs {
+		if callID == interruptedCallID {
+			previouslyInterrupted = true
+			previousExecuteID = allIEs[interruptedCallID].ExecuteID
+			break
+		}
+	}
+
+	if previouslyInterrupted && rInfo.ExecuteID != previousExecuteID {
+		logs.Infof("previous interrupted call ID: %s, previous execute ID: %d, current execute ID: %d. Not resuming, interrupt immediately", callID, previousExecuteID, rInfo.ExecuteID)
+		return "", einoCompose.InterruptAndRerun
+	}
+
 	cfg := execute.GetExecuteConfig(opts...)
 
 	var (
@@ -186,7 +205,25 @@ func (s *streamableWorkflow) Info(_ context.Context) (*schema.ToolInfo, error) {
 }
 
 func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (*schema.StreamReader[string], error) {
-	rInfo := execute.GetResumeRequest(opts...)
+	rInfo, allIEs := execute.GetResumeRequest(opts...)
+	var (
+		previouslyInterrupted bool
+		callID                = einoCompose.GetToolCallID(ctx)
+		previousExecuteID     int64
+	)
+	for interruptedCallID := range allIEs {
+		if callID == interruptedCallID {
+			previouslyInterrupted = true
+			previousExecuteID = allIEs[interruptedCallID].ExecuteID
+			break
+		}
+	}
+
+	if previouslyInterrupted && rInfo.ExecuteID != previousExecuteID {
+		logs.Infof("previous interrupted call ID: %s, previous execute ID: %d, current execute ID: %d. Not resuming, interrupt immediately", callID, previousExecuteID, rInfo.ExecuteID)
+		return nil, einoCompose.InterruptAndRerun
+	}
+
 	cfg := execute.GetExecuteConfig(opts...)
 
 	var (

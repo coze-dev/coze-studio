@@ -47,6 +47,8 @@ type Service interface {
 	MGetWorkflowDetailInfo(ctx context.Context, ids []*entity.WorkflowIdentity) ([]*entity.Workflow, error)
 	WithMessagePipe() (einoCompose.Option, *schema.StreamReader[*entity.Message])
 	WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option
+	WithResumeToolWorkflow(resumingEvent *entity.ToolInterruptEvent, resumeData string,
+		allInterruptEvents map[string]*entity.ToolInterruptEvent) einoCompose.Option
 	CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (int64, error)
 }
 
