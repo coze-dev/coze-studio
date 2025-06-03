@@ -3,8 +3,10 @@ package datacopy
 import (
 	"context"
 
+	"code.byted.org/flow/opencoze/backend/application/base/appinfra"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatacopy"
 	"code.byted.org/flow/opencoze/backend/domain/datacopy"
+	"code.byted.org/flow/opencoze/backend/domain/datacopy/service"
 )
 
 var defaultSVC crossdatacopy.DataCopy
@@ -13,12 +15,12 @@ type impl struct {
 	DomainSVC datacopy.DataCopy
 }
 
-func InitDomainService(c datacopy.DataCopy) crossdatacopy.DataCopy {
-	defaultSVC = &impl{
-		DomainSVC: c,
-	}
-
-	return defaultSVC
+func InitDomainService(a *appinfra.AppDependencies) crossdatacopy.DataCopy {
+	svc := service.NewDataCopySVC(&service.DataCopySVCConfig{
+		DB:    a.DB,
+		IDGen: a.IDGenSVC,
+	})
+	return svc
 }
 
 func (i *impl) CheckAndGenCopyTask(ctx context.Context, req *datacopy.CheckAndGenCopyTaskReq) (*datacopy.CheckAndGenCopyTaskResp, error) {

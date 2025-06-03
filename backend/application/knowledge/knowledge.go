@@ -93,6 +93,15 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 }
 
 func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *dataset.DatasetDetailRequest) (*dataset.DatasetDetailResponse, error) {
+	k.DomainSVC.CopyKnowledge(ctx, &knowledge.CopyKnowledgeRequest{
+		KnowledgeID:   7511568003863937024,
+		OriginAppID:   0,
+		TargetAppID:   0,
+		OriginSpaceID: 7509383746273935360,
+		TargetSpaceID: 666,
+		TargetUserID:  10086,
+		TaskUniqKey:   "uniq",
+	})
 	var err error
 	var datasetIDs []int64
 

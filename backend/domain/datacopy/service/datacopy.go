@@ -47,6 +47,7 @@ func (svc *dataCopySVC) CheckAndGenCopyTask(ctx context.Context, req *datacopy.C
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
+	isNewTask := true
 	if task != nil {
 		taskStatus := entity.DataCopyTaskStatus(task.Status)
 		switch taskStatus {
@@ -61,29 +62,29 @@ func (svc *dataCopySVC) CheckAndGenCopyTask(ctx context.Context, req *datacopy.C
 			resp.TargetID = task.TargetDataID
 			return &resp, nil
 		case entity.DataCopyTaskStatusFail:
-			resp.CopyTaskStatus = entity.DataCopyTaskStatusInProgress // 重试，设置为处理中
-			resp.CopyTaskID = task.ID
-			resp.TargetID = task.TargetDataID
-			return &resp, nil
+			isNewTask = false
 		}
-	} else {
-		if req.Task.ID == 0 {
-			req.Task.ID, err = svc.idgen.GenID(ctx)
-			if err != nil {
-				return nil, err
-			}
-		}
-		task := convert.ConvertToDataCopyTaskModel(req.Task)
-		err = svc.dataCopyTaskRepo.CreateCopyTask(ctx, task)
+	}
+
+	if req.Task.ID == 0 {
+		req.Task.ID, err = svc.idgen.GenID(ctx)
 		if err != nil {
 			return nil, err
 		}
-		resp.CopyTaskStatus = entity.DataCopyTaskStatusCreate
-		resp.CopyTaskID = task.ID
-		resp.TargetID = task.TargetDataID
-		return &resp, nil
 	}
-	return nil, nil
+	task = convert.ConvertToDataCopyTaskModel(req.Task)
+	if !isNewTask {
+		task.Status = int32(entity.DataCopyTaskStatusInProgress)
+	}
+	err = svc.dataCopyTaskRepo.UpsertCopyTask(ctx, task)
+	if err != nil {
+		return nil, err
+	}
+	resp.CopyTaskStatus = entity.DataCopyTaskStatus(task.Status)
+	resp.CopyTaskID = task.ID
+	resp.TargetID = task.TargetDataID
+	return &resp, nil
+
 }
 
 func (svc *dataCopySVC) UpdateCopyTask(ctx context.Context, req *datacopy.UpdateCopyTaskReq) error {

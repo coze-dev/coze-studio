@@ -11,6 +11,7 @@ type CopyDataTask struct {
 	TargetUserID  int64
 	OriginAppID   int64
 	TargetAppID   int64
+	Status        DataCopyTaskStatus
 	DataType      DataType
 	StartTime     int64 // 任务开始时间ms
 	FinishTime    int64 // 任务结束时间ms

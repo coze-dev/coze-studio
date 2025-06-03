@@ -1003,6 +1003,7 @@ func (k *knowledgeSVC) MGetDocumentReview(ctx context.Context, request *knowledg
 			Url:           reviewTosURL,
 			Status:        &status,
 			DocTreeTosUrl: ptr.Of(reviewChunkRespTosURL),
+			PreviewTosUrl: ptr.Of(reviewTosURL),
 		})
 	}
 	return &knowledge.MGetDocumentReviewResponse{

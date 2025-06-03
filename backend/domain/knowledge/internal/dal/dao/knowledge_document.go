@@ -125,6 +125,7 @@ type WhereDocumentOpt struct {
 	Limit        int
 	Offset       *int
 	Cursor       *string
+	SelectAll    bool
 }
 
 func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) ([]*model.KnowledgeDocument, int64, error) {
@@ -154,7 +155,9 @@ func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 	if opts.Limit != 0 {
 		do = do.Limit(opts.Limit)
 	} else {
-		do = do.Limit(50)
+		if !opts.SelectAll {
+			do = do.Limit(50)
+		}
 	}
 	if opts.Offset != nil {
 		do = do.Offset(*opts.Offset)
