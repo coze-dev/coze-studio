@@ -32,12 +32,13 @@ func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
 
 	switch config.FileExtension {
 	case parser.FileExtensionPDF:
-		pFn = parsePDFPy(config, m.storage, m.ocr)
-	case parser.FileExtensionTXT,
-		parser.FileExtensionMarkdown:
+		pFn = parseByPython(config, m.storage, m.ocr, ".venv/bin/python3", "parse_pdf.py")
+	case parser.FileExtensionTXT:
+		pFn = parseText(config)
+	case parser.FileExtensionMarkdown:
 		pFn = parseMarkdown(config, m.storage, m.ocr)
 	case parser.FileExtensionDocx:
-		pFn = parseDocx(config, m.storage, m.ocr)
+		pFn = parseByPython(config, m.storage, m.ocr, ".venv/bin/python3", "parse_docx.py")
 	case parser.FileExtensionCSV:
 		pFn = parseCSV(config)
 	case parser.FileExtensionXLSX:

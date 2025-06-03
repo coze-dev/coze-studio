@@ -17,28 +17,30 @@ if [ ! -d "$VENV_DIR" ]; then
         echo "Failed to create virtual environment - aborting startup"
         exit 1
     fi
-
     echo "Virtual environment created successfully!"
-
-    echo "Installing required Python packages"
-    source "$VENV_DIR/bin/activate"
-    pip install --upgrade pip
-    pip install pillow pdfplumber RestrictedPython
-
-    if [ $? -ne 0 ]; then
-        echo "Failed to install Python packages - aborting startup"
-        deactivate
-        rm -rf "$VENV_DIR"
-        exit 1
-    fi
-
-    echo "Python packages installed successfully!"
-    deactivate
 else
     echo "Virtual environment already exists. Skipping creation."
 fi
 
-PDF_PARSER="$BACKEND_DIR/infra/impl/document/parser/builtin/parse_pdf.py"
+
+echo "Installing required Python packages"
+source "$VENV_DIR/bin/activate"
+pip install --upgrade pip
+pip install pillow pdfplumber RestrictedPython python-docx
+
+if [ $? -ne 0 ]; then
+    echo "Failed to install Python packages - aborting startup"
+    deactivate
+    rm -rf "$VENV_DIR"
+    exit 1
+fi
+
+echo "Python packages installed successfully!"
+deactivate
+
+PARSER_SCRIPT_ROOT="$BACKEND_DIR/infra/impl/document/parser/builtin"
+PDF_PARSER="$PARSER_SCRIPT_ROOT/parse_pdf.py"
+DOCX_PARSER="$PARSER_SCRIPT_ROOT/parse_docx.py"
 
 if [ -f "$PDF_PARSER" ]; then
     cp "$PDF_PARSER" "$BIN_DIR/parse_pdf.py"
@@ -47,6 +49,12 @@ else
     exit 1
 fi
 
+if [ -f "$DOCX_PARSER" ]; then
+    cp "$DOCX_PARSER" "$BIN_DIR/parse_docx.py"
+else
+    echo "❌ $DOCX_PARSER file not found"
+    exit 1
+fi
 
 RUN_PYTHON_SCRIPT="$BACKEND_DIR/infra/impl/coderunner/script/python_script.py"
 

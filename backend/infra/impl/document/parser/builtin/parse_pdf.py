@@ -40,7 +40,7 @@ def is_structured_table(table):
     return row_count >= 2 and col_count >= 2
 
 
-def extract_pdf_content(pdf_data):
+def extract_pdf_content(pdf_data: bytes, extract_images, extract_tables: bool):
     with pdfplumber.open(io.BytesIO(pdf_data)) as pdf:
         content = []
 
@@ -55,55 +55,57 @@ def extract_pdf_content(pdf_data):
                 'bbox': page.bbox
             })
 
-            images = page.images
-            for img_index, img in enumerate(images):
-                try:
-                    filters = img['stream'].get_filters()
-                    data = img['stream'].get_data()
-                    buffered = io.BytesIO()
+            if extract_images:
+                images = page.images
+                for img_index, img in enumerate(images):
+                    try:
+                        filters = img['stream'].get_filters()
+                        data = img['stream'].get_data()
+                        buffered = io.BytesIO()
 
-                    if filters[-1][0] in LITERALS_DCT_DECODE:
-                        if LITERAL_DEVICE_CMYK in img['colorspace']:
-                            i = Image.open(io.BytesIO(data))
-                            i = ImageChops.invert(i)
-                            i = i.convert("RGB")
+                        if filters[-1][0] in LITERALS_DCT_DECODE:
+                            if LITERAL_DEVICE_CMYK in img['colorspace']:
+                                i = Image.open(io.BytesIO(data))
+                                i = ImageChops.invert(i)
+                                i = i.convert("RGB")
+                                i.save(buffered, format="PNG")
+                            else:
+                                buffered.write(data)
+
+                        elif len(filters) == 1 and filters[0][0] in LITERALS_FLATE_DECODE:
+                            width, height = img['srcsize']
+                            channels = len(img['stream'].get_data()) / width / height / (img['bits'] / 8)
+                            mode: Literal["1", "L", "RGB", "CMYK"]
+                            if img['bits'] == 1:
+                                mode = "1"
+                            elif img['bits'] == 8 and channels == 1:
+                                mode = "L"
+                            elif img['bits'] == 8 and channels == 3:
+                                mode = "RGB"
+                            elif img['bits'] == 8 and channels == 4:
+                                mode = "CMYK"
+                            i = Image.frombytes(mode, img['srcsize'], data, "raw")
                             i.save(buffered, format="PNG")
                         else:
                             buffered.write(data)
+                        content.append({
+                            'type': 'image',
+                            'content': base64.b64encode(buffered.getvalue()).decode('utf-8'),
+                            'page': page_num + 1,
+                            'bbox': (img['x0'], img['top'], img['x1'], img['bottom'])
+                        })
+                    except Exception as err:
+                        print(f"Skipping an unsupported image on page {page_num + 1}, error message: {err}")
 
-                    elif len(filters) == 1 and filters[0][0] in LITERALS_FLATE_DECODE:
-                        width, height = img['srcsize']
-                        channels = len(img['stream'].get_data()) / width / height / (img['bits'] / 8)
-                        mode: Literal["1", "L", "RGB", "CMYK"]
-                        if img['bits'] == 1:
-                            mode = "1"
-                        elif img['bits'] == 8 and channels == 1:
-                            mode = "L"
-                        elif img['bits'] == 8 and channels == 3:
-                            mode = "RGB"
-                        elif img['bits'] == 8 and channels == 4:
-                            mode = "CMYK"
-                        i = Image.frombytes(mode, img['srcsize'], data, "raw")
-                        i.save(buffered, format="PNG")
-                    else:
-                        buffered.write(data)
+            if extract_tables:
+                tables = page.extract_tables()
+                for table in tables:
                     content.append({
-                        'type': 'image',
-                        'content': base64.b64encode(buffered.getvalue()).decode('utf-8'),
+                        'type': 'table',
+                        'table': table,
                         'page': page_num + 1,
-                        'bbox': (img['x0'], img['top'], img['x1'], img['bottom'])
+                        'bbox': page.bbox
                     })
-                except Exception as err:
-                    print(f"Skipping an unsupported image on page {page_num + 1}, error message: {err}")
-
-            tables = page.extract_tables()
-            for table in tables:
-                content.append({
-                    'type': 'table',
-                    'table': table,
-                    'page': page_num + 1,
-                    'bbox': page.bbox
-                })
 
         content.sort(key=lambda x: (x['page'], x['bbox'][1], x['bbox'][0]))
 
@@ -127,17 +129,22 @@ def extract_pdf_content(pdf_data):
 
 if __name__ == "__main__":
     w = os.fdopen(3, "wb", )
+    r = os.fdopen(4, "rb", )
     pdf_data = sys.stdin.buffer.read()
     print(f"Read {len(pdf_data)} bytes of PDF data")
 
     try:
-        extracted_content = extract_pdf_content(pdf_data)
+        req = json.load(r)
+        ei, et = req['extract_images'], req['extract_tables']
+        extracted_content = extract_pdf_content(pdf_data, ei, et)
         print(f"Extracted {len(extracted_content)} items")
         result = json.dumps({"content": extracted_content}, ensure_ascii=False)
         w.write(str.encode(result))
         w.flush()
+        w.close()
         print("Pdf parse done")
     except Exception as e:
         print("Pdf parse error", e)
         w.write(str.encode(json.dumps({"error": str(e)})))
         w.flush()
+        w.close()
