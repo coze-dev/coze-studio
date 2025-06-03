@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/cloudwego/eino/schema"
@@ -29,11 +28,12 @@ func (r *RunProcess) StepToCreate(ctx context.Context, srRecord *entity.ChunkRun
 }
 func (r *RunProcess) StepToInProgress(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 	srRecord.Status = entity.RunStatusInProgress
-	updateMap := map[string]interface{}{
-		"status":     string(entity.RunStatusInProgress),
-		"updated_at": time.Now().UnixMilli(),
+
+	updateMeta := &entity.UpdateMeta{
+		Status:    entity.RunStatusInProgress,
+		UpdatedAt: time.Now().UnixMilli(),
 	}
-	err := r.RunRecordRepo.UpdateByID(ctx, srRecord.ID, updateMap)
+	err := r.RunRecordRepo.UpdateByID(ctx, srRecord.ID, updateMeta)
 
 	if err != nil {
 		return err
@@ -46,15 +46,17 @@ func (r *RunProcess) StepToInProgress(ctx context.Context, srRecord *entity.Chun
 func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 
 	completedAt := time.Now().UnixMilli()
-	updateMap := map[string]interface{}{
-		"status":       string(entity.RunStatusCompleted),
-		"completed_at": completedAt,
-	}
-	err := r.RunRecordRepo.UpdateByID(ctx, srRecord.ID, updateMap)
 
+	updateMeta := &entity.UpdateMeta{
+		Status:      entity.RunStatusCompleted,
+		CompletedAt: completedAt,
+		UpdatedAt:   completedAt,
+	}
+	err := r.RunRecordRepo.UpdateByID(ctx, srRecord.ID, updateMeta)
 	if err != nil {
 		return err
 	}
+
 	srRecord.CompletedAt = completedAt
 	srRecord.Status = entity.RunStatusCompleted
 
@@ -65,19 +67,15 @@ func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkR
 }
 func (r *RunProcess) StepToFailed(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
 
-	updateMap := map[string]interface{}{
-		"status":    string(entity.RunStatusFailed),
-		"failed_at": time.Now().UnixMilli(),
+	nowTime := time.Now().UnixMilli()
+	updateMeta := &entity.UpdateMeta{
+		Status:    entity.RunStatusFailed,
+		UpdatedAt: nowTime,
+		FailedAt:  nowTime,
+		LastError: srRecord.Error,
 	}
 
-	if srRecord.Error != nil {
-		errString, err := json.Marshal(srRecord.Error)
-		if err == nil {
-			updateMap["last_error"] = errString
-		}
-	}
-
-	err := r.RunRecordRepo.UpdateByID(ctx, srRecord.ID, updateMap)
+	err := r.RunRecordRepo.UpdateByID(ctx, srRecord.ID, updateMeta)
 
 	if err != nil {
 		return err

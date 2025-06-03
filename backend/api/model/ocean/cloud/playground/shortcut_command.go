@@ -896,8 +896,8 @@ type ShortcutCommand struct {
 	SendType SendType `thrift:"send_type,6" form:"send_type" json:"send_type" query:"send_type"`
 	// 使用工具type
 	ToolType      ToolType `thrift:"tool_type,7" form:"tool_type" json:"tool_type" query:"tool_type"`
-	WorkFlowID    int64    `thrift:"work_flow_id,8" form:"work_flow_id" json:"work_flow_id,string" query:"work_flow_id"`
-	PluginID      int64    `thrift:"plugin_id,9" form:"plugin_id" json:"plugin_id,string" query:"plugin_id"`
+	WorkFlowID    string   `thrift:"work_flow_id,8" form:"work_flow_id" json:"work_flow_id" query:"work_flow_id"`
+	PluginID      string   `thrift:"plugin_id,9" form:"plugin_id" json:"plugin_id" query:"plugin_id"`
 	PluginAPIName string   `thrift:"plugin_api_name,10" form:"plugin_api_name" json:"plugin_api_name" query:"plugin_api_name"`
 	// 模板query
 	TemplateQuery string `thrift:"template_query,11" form:"template_query" json:"template_query" query:"template_query"`
@@ -947,11 +947,11 @@ func (p *ShortcutCommand) GetToolType() (v ToolType) {
 	return p.ToolType
 }
 
-func (p *ShortcutCommand) GetWorkFlowID() (v int64) {
+func (p *ShortcutCommand) GetWorkFlowID() (v string) {
 	return p.WorkFlowID
 }
 
-func (p *ShortcutCommand) GetPluginID() (v int64) {
+func (p *ShortcutCommand) GetPluginID() (v string) {
 	return p.PluginID
 }
 
@@ -1105,7 +1105,7 @@ func (p *ShortcutCommand) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 8:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField8(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1113,7 +1113,7 @@ func (p *ShortcutCommand) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 9:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField9(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1289,8 +1289,8 @@ func (p *ShortcutCommand) ReadField7(iprot thrift.TProtocol) error {
 }
 func (p *ShortcutCommand) ReadField8(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1300,8 +1300,8 @@ func (p *ShortcutCommand) ReadField8(iprot thrift.TProtocol) error {
 }
 func (p *ShortcutCommand) ReadField9(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1604,10 +1604,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 func (p *ShortcutCommand) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("work_flow_id", thrift.I64, 8); err != nil {
+	if err = oprot.WriteFieldBegin("work_flow_id", thrift.STRING, 8); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.WorkFlowID); err != nil {
+	if err := oprot.WriteString(p.WorkFlowID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1620,10 +1620,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
 }
 func (p *ShortcutCommand) writeField9(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("plugin_id", thrift.I64, 9); err != nil {
+	if err = oprot.WriteFieldBegin("plugin_id", thrift.STRING, 9); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.PluginID); err != nil {
+	if err := oprot.WriteString(p.PluginID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

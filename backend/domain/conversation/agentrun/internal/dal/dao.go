@@ -47,8 +47,29 @@ func (dao *RunRecordDAO) GetByID(ctx context.Context, id int64) (*model.RunRecor
 	return dao.query.RunRecord.WithContext(ctx).Where(dao.query.RunRecord.ID.Eq(id)).First()
 }
 
-func (dao *RunRecordDAO) UpdateByID(ctx context.Context, id int64, columns map[string]interface{}) error {
-	_, err := dao.query.RunRecord.WithContext(ctx).Where(dao.query.RunRecord.ID.Eq(id)).UpdateColumns(columns)
+func (dao *RunRecordDAO) UpdateByID(ctx context.Context, id int64, updateMeta *entity.UpdateMeta) error {
+
+	updateMeta.UpdatedAt = time.Now().UnixMilli()
+	updateColumn := make(map[string]interface{})
+	if updateMeta.Status != "" {
+		updateColumn["status"] = updateMeta.Status
+	}
+	if updateMeta.LastError != nil {
+		errString, err := json.Marshal(updateMeta.LastError)
+		if err != nil {
+			return err
+		}
+		updateColumn["last_error"] = string(errString)
+	}
+	if updateMeta.CompletedAt != 0 {
+		updateColumn["completed_at"] = updateMeta.CompletedAt
+	}
+	if updateMeta.FailedAt != 0 {
+		updateColumn["failed_at"] = updateMeta.FailedAt
+	}
+	updateColumn["updated_at"] = time.Now().UnixMilli()
+
+	_, err := dao.query.RunRecord.WithContext(ctx).Where(dao.query.RunRecord.ID.Eq(id)).UpdateColumns(updateColumn)
 	return err
 }
 

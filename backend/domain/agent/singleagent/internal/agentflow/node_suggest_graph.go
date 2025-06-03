@@ -16,6 +16,7 @@ const (
 	keyOfSuggestPromptVariables = "suggest_prompt_variables"
 	keyOfSuggestGraph           = "suggest_graph"
 	keyOfSuggestPreInputParse   = "suggest_pre_input_parse"
+	keyOfSuggestPersonParse     = "suggest_persona"
 	keyOfSuggestChatModel       = "suggest_chat_model"
 	keyOfSuggestParser          = "suggest_parser"
 	keyOfSuggestTemplate        = "suggest_template"
@@ -26,19 +27,19 @@ func newSuggestGraph(_ context.Context, conf *Config, chatModel chatmodel.ToolCa
 	isNeedGenerateSuggest := false
 	agentSuggestionSetting := conf.Agent.SuggestReply
 
-	suggestPromptTemplate := SUGGESTION_PROMPT_JINJA2
-
+	sp := &suggestPersonaRender{}
 	if agentSuggestionSetting != nil && ptr.From(agentSuggestionSetting.SuggestReplyMode) != bot_common.SuggestReplyMode_Disable {
 		isNeedGenerateSuggest = true
 		if ptr.From(agentSuggestionSetting.SuggestReplyMode) == bot_common.SuggestReplyMode_Custom {
-			suggestPromptTemplate = ptr.From(agentSuggestionSetting.CustomizedSuggestPrompt)
+			sp.persona = ptr.From(agentSuggestionSetting.CustomizedSuggestPrompt)
 		}
 	}
+
 	if !isNeedGenerateSuggest {
 		return nil, isNeedGenerateSuggest
 	}
 	suggestPrompt := prompt.FromMessages(schema.Jinja2,
-		schema.SystemMessage(suggestPromptTemplate),
+		schema.SystemMessage(SUGGESTION_PROMPT_JINJA2),
 	)
 
 	suggestGraph := compose.NewGraph[[]*schema.Message, *schema.Message]()
@@ -46,11 +47,18 @@ func newSuggestGraph(_ context.Context, conf *Config, chatModel chatmodel.ToolCa
 	_ = suggestGraph.AddLambdaNode(keyOfSuggestPromptVariables,
 		compose.InvokableLambda[[]*schema.Message, map[string]any](suggestPromptVars.AssembleSuggestPromptVariables))
 
+	_ = suggestGraph.AddLambdaNode(keyOfSuggestPersonParse,
+		compose.InvokableLambda[[]*schema.Message, string](sp.RenderPersona),
+		compose.WithOutputKey(keyOfSuggestPersonParse),
+	)
+
 	_ = suggestGraph.AddChatTemplateNode(keyOfSuggestTemplate, suggestPrompt)
 	_ = suggestGraph.AddChatModelNode(keyOfSuggestChatModel, chatModel, compose.WithNodeName(keyOfSuggestChatModel))
 	_ = suggestGraph.AddLambdaNode(keyOfSuggestParser, compose.InvokableLambda[*schema.Message, *schema.Message](suggestParser), compose.WithNodeName(keyOfSuggestParser))
 
 	_ = suggestGraph.AddEdge(compose.START, keyOfSuggestPromptVariables)
+	_ = suggestGraph.AddEdge(compose.START, keyOfSuggestPersonParse)
+	_ = suggestGraph.AddEdge(keyOfSuggestPersonParse, keyOfSuggestTemplate)
 	_ = suggestGraph.AddEdge(keyOfSuggestPromptVariables, keyOfSuggestTemplate)
 	_ = suggestGraph.AddEdge(keyOfSuggestTemplate, keyOfSuggestChatModel)
 	_ = suggestGraph.AddEdge(keyOfSuggestChatModel, keyOfSuggestParser)

@@ -18,8 +18,8 @@ func NewRunRecordRepo(db *gorm.DB, idGen idgen.IDGenerator) RunRecordRepo {
 
 type RunRecordRepo interface {
 	Create(ctx context.Context, runMeta *entity.AgentRunMeta) (*entity.RunRecordMeta, error)
-	GetByID(ctx context.Context, id int64) (*model.RunRecord, error)
+	GetByID(ctx context.Context, id int64) (*entity.RunRecord, error)
 	Delete(ctx context.Context, id []int64) error
-	UpdateByID(ctx context.Context, id int64, columns map[string]interface{}) error
+	UpdateByID(ctx context.Context, id int64, update *entity.UpdateMeta) error
 	List(ctx context.Context, conversationID int64, sectionID int64, limit int64) ([]*model.RunRecord, error)
 }

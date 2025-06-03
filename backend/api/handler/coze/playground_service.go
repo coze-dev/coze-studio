@@ -5,15 +5,15 @@ package coze
 import (
 	"context"
 
+	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/protocol/consts"
+
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	appApplication "code.byted.org/flow/opencoze/backend/application/app"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/shortcutcmd"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	"code.byted.org/flow/opencoze/backend/application/user"
-
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
 // UpdateDraftBotInfoAgw .

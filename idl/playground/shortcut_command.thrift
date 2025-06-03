@@ -28,8 +28,8 @@ struct ShortcutCommand {
    5 : string description        // 描述
    6 : SendType send_type          // 发送类型
    7 : ToolType tool_type          // 使用工具type
-   8 : i64 work_flow_id  (api.js_conv="true")
-   9 : i64 plugin_id (api.js_conv="true")
+   8 : string work_flow_id
+   9 : string plugin_id
    10: string plugin_api_name
    11 : string template_query     // 模板query
    12 : list<Components> components_list     // panel参数

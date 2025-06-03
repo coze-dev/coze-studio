@@ -2,11 +2,13 @@ package shortcutcmd
 
 import (
 	"context"
+	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/shortcutcmd/entity"
 	"code.byted.org/flow/opencoze/backend/domain/shortcutcmd/service"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 )
 
 type ShortcutCmdApplicationService struct {
@@ -15,7 +17,10 @@ type ShortcutCmdApplicationService struct {
 
 func (s *ShortcutCmdApplicationService) Handler(ctx context.Context, req *playground.CreateUpdateShortcutCommandRequest) (*playground.ShortcutCommand, error) {
 
-	cr := s.buildReq(ctx, req)
+	cr, buildErr := s.buildReq(ctx, req)
+	if buildErr != nil {
+		return nil, buildErr
+	}
 	var err error
 	var cmdDO *entity.ShortcutCmd
 	if cr.CommandID > 0 {
@@ -33,9 +38,27 @@ func (s *ShortcutCmdApplicationService) Handler(ctx context.Context, req *playgr
 	}
 	return s.buildDo2Vo(ctx, cmdDO), nil
 }
-func (s *ShortcutCmdApplicationService) buildReq(ctx context.Context, req *playground.CreateUpdateShortcutCommandRequest) *entity.ShortcutCmd {
+func (s *ShortcutCmdApplicationService) buildReq(ctx context.Context, req *playground.CreateUpdateShortcutCommandRequest) (*entity.ShortcutCmd, error) {
 
 	uid := ctxutil.MustGetUIDFromCtx(ctx)
+
+	var workflowID int64
+	var pluginID int64
+	var err error
+	if req.GetShortcuts().GetWorkFlowID() != "" {
+		workflowID, err = strconv.ParseInt(req.GetShortcuts().GetWorkFlowID(), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if req.GetShortcuts().GetPluginID() != "" {
+		pluginID, err = strconv.ParseInt(req.GetShortcuts().GetPluginID(), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &entity.ShortcutCmd{
 		ObjectID:        req.GetObjectID(),
 		CommandID:       req.GetShortcuts().CommandID,
@@ -44,8 +67,8 @@ func (s *ShortcutCmdApplicationService) buildReq(ctx context.Context, req *playg
 		Description:     req.GetShortcuts().Description,
 		SendType:        int32(req.GetShortcuts().SendType),
 		ToolType:        int32(req.GetShortcuts().ToolType),
-		WorkFlowID:      req.GetShortcuts().WorkFlowID,
-		PluginID:        req.GetShortcuts().PluginID,
+		WorkFlowID:      workflowID,
+		PluginID:        pluginID,
 		Components:      req.GetShortcuts().ComponentsList,
 		CardSchema:      req.GetShortcuts().CardSchema,
 		ToolInfo:        req.GetShortcuts().ToolInfo,
@@ -54,7 +77,7 @@ func (s *ShortcutCmdApplicationService) buildReq(ctx context.Context, req *playg
 		PluginToolName:  req.GetShortcuts().PluginAPIName,
 		TemplateQuery:   req.GetShortcuts().TemplateQuery,
 		ShortcutIcon:    req.GetShortcuts().ShortcutIcon,
-	}
+	}, nil
 }
 
 func (s *ShortcutCmdApplicationService) buildDo2Vo(ctx context.Context, do *entity.ShortcutCmd) *playground.ShortcutCommand {
@@ -67,8 +90,8 @@ func (s *ShortcutCmdApplicationService) buildDo2Vo(ctx context.Context, do *enti
 		Description:     do.Description,
 		SendType:        playground.SendType(do.SendType),
 		ToolType:        playground.ToolType(do.ToolType),
-		WorkFlowID:      do.WorkFlowID,
-		PluginID:        do.PluginID,
+		WorkFlowID:      conv.Int64ToStr(do.WorkFlowID),
+		PluginID:        conv.Int64ToStr(do.PluginID),
 		ComponentsList:  do.Components,
 		CardSchema:      do.CardSchema,
 		ToolInfo:        do.ToolInfo,

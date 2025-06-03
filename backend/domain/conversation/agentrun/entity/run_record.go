@@ -6,7 +6,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal/dal/model"
 )
+
+type RunRecord = model.RunRecord
 
 type RunRecordMeta struct {
 	ID             int64     `json:"id"`
@@ -107,6 +110,14 @@ type AgentRunMeta struct {
 	CustomVariables  map[string]string        `json:"custom_variables"`
 	Version          string                   `json:"version"`
 	Ext              map[string]string        `json:"ext"`
+}
+
+type UpdateMeta struct {
+	Status      RunStatus
+	LastError   *RunError
+	UpdatedAt   int64
+	CompletedAt int64
+	FailedAt    int64
 }
 
 type AgentRunResponse struct {

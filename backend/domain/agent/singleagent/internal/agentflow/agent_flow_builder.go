@@ -38,6 +38,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	personaVars := &personaRender{
 		personaVariableNames: extractJinja2Placeholder(persona),
+		persona:              persona,
 		// variables:            conf.Variables,
 	}
 
