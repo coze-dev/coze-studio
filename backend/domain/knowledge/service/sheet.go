@@ -139,13 +139,13 @@ func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSc
 		}
 
 		isFirstImport := true
+		name2IDMap := map[string]int64{}
 		for _, col := range prevTableMeta {
 			if col.ID != 0 {
 				isFirstImport = false
-				break
 			}
+			name2IDMap[col.Name] = col.ID
 		}
-
 		prevData := make([][]*document.ColumnData, 0, len(originalResp.PreviewData))
 		for _, row := range originalResp.PreviewData {
 			prevRow := make([]*document.ColumnData, len(prevTableMeta))
@@ -166,6 +166,9 @@ func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSc
 					}
 				}
 			} else {
+				for t := range row {
+					row[t].ColumnID = name2IDMap[row[t].ColumnName]
+				}
 				// align by column id
 				mp := make(map[int64]*document.ColumnData, len(row))
 				for _, item := range row {
@@ -387,14 +390,24 @@ func (k *knowledgeSVC) GetDocumentTableInfoByID(ctx context.Context, documentID 
 
 	tblInfo := doc.TableInfo
 	cols := k.filterIDColumn(tblInfo.Columns) // filter `id`
-	sheet := &entity.TableSheet{
-		SheetId:       doc.ParseRule.ParsingStrategy.SheetID,
-		HeaderLineIdx: int64(doc.ParseRule.ParsingStrategy.HeaderLine),
-		StartLineIdx:  int64(doc.ParseRule.ParsingStrategy.DataStartLine),
-		SheetName:     doc.Name,
-		TotalRows:     doc.SliceCount,
+	var sheet *entity.TableSheet
+	if doc.ParseRule.ParsingStrategy != nil {
+		sheet = &entity.TableSheet{
+			SheetId:       doc.ParseRule.ParsingStrategy.SheetID,
+			HeaderLineIdx: int64(doc.ParseRule.ParsingStrategy.HeaderLine),
+			StartLineIdx:  int64(doc.ParseRule.ParsingStrategy.DataStartLine),
+			SheetName:     doc.Name,
+			TotalRows:     doc.SliceCount,
+		}
+	} else {
+		sheet = &entity.TableSheet{
+			SheetId:       0,
+			HeaderLineIdx: 0,
+			StartLineIdx:  1,
+			SheetName:     "default",
+			TotalRows:     0,
+		}
 	}
-
 	if !needData {
 		return &knowledge.TableSchemaResponse{
 			TableSheet:     sheet,

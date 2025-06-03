@@ -2,7 +2,6 @@ package impl
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -322,16 +321,21 @@ func (c *CustomDocProcessor) BeforeCreate() error {
 
 func (c *CustomTableProcessor) BeforeCreate() error {
 	if len(c.Documents) == 1 && c.Documents[0].Type == knowledge.DocumentTypeTable && c.Documents[0].IsAppend {
-		doc, err := c.documentRepo.GetByID(c.ctx, c.Documents[0].ID)
+		tableDoc, _, err := c.documentRepo.FindDocumentByCondition(c.ctx, &dao.WhereDocumentOpt{KnowledgeIDs: []int64{c.Documents[0].KnowledgeID}})
 		if err != nil {
-			logs.CtxErrorf(c.ctx, "get document failed, err: %v", err)
+			logs.CtxErrorf(c.ctx, "find document failed, err: %v", err)
 			return err
 		}
-		if doc.TableInfo == nil {
-			logs.CtxErrorf(c.ctx, "document table info is nil")
-			return errors.New("document table info is nil")
+		if len(tableDoc) == 0 {
+			logs.CtxErrorf(c.ctx, "table doc not found")
+			return fmt.Errorf("table doc not found")
 		}
-		c.Documents[0].TableInfo = *doc.TableInfo
+		c.Documents[0].ID = tableDoc[0].ID
+		if tableDoc[0].TableInfo == nil {
+			logs.CtxErrorf(c.ctx, "table info not found")
+			return fmt.Errorf("table info not found")
+		}
+		c.Documents[0].TableInfo = *tableDoc[0].TableInfo
 		// 追加场景
 		if c.Documents[0].RawContent != "" {
 			c.Documents[0].FileExtension = getFormatType(c.Documents[0].Type)
@@ -377,6 +381,7 @@ func (c *CustomTableProcessor) InsertDBModel() error {
 			logs.CtxErrorf(c.ctx, "document set status err:%v", err)
 			return err
 		}
+		return nil
 	}
 	return c.baseDocProcessor.InsertDBModel()
 }
