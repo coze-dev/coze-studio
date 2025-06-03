@@ -21,6 +21,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"github.com/bytedance/sonic"
 )
 
 func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *knowledge.CopyKnowledgeRequest) (*knowledge.CopyKnowledgeResponse, error) {
@@ -60,20 +61,36 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *knowledge.Cop
 		FinishTime:    0,
 		ExtInfo:       "",
 		ErrorMsg:      "",
+		Status:        copyEntity.DataCopyTaskStatusCreate,
 	}
 	checkResult, err := crossdatacopy.DefaultSVC().CheckAndGenCopyTask(ctx, &datacopy.CheckAndGenCopyTaskReq{Task: &copyTaskEntity})
 	if err != nil {
 		return nil, err
 	}
 	switch checkResult.CopyTaskStatus {
-	case copyEntity.DataCopyTaskStatusSuccess, copyEntity.DataCopyTaskStatusCreate, copyEntity.DataCopyTaskStatusInProgress:
+	case copyEntity.DataCopyTaskStatusSuccess:
+		return &knowledge.CopyKnowledgeResponse{
+			OriginKnowledgeID: request.KnowledgeID,
+			TargetKnowledgeID: checkResult.TargetID,
+			CopyStatus:        knowledge.CopyStatus_Successful,
+			ErrMsg:            "",
+		}, nil
+	case copyEntity.DataCopyTaskStatusInProgress:
 		return &knowledge.CopyKnowledgeResponse{
 			OriginKnowledgeID: request.KnowledgeID,
 			TargetKnowledgeID: checkResult.TargetID,
 			CopyStatus:        knowledge.CopyStatus_Processing,
 			ErrMsg:            "",
 		}, nil
+	case copyEntity.DataCopyTaskStatusFail:
+		return &knowledge.CopyKnowledgeResponse{
+			OriginKnowledgeID: request.KnowledgeID,
+			TargetKnowledgeID: checkResult.TargetID,
+			CopyStatus:        knowledge.CopyStatus_Failed,
+			ErrMsg:            checkResult.FailReason,
+		}, nil
 	}
+	copyTaskEntity.ID = checkResult.CopyTaskID
 	copyResp, err := k.copyDo(ctx, &knowledgeCopyCtx{
 		OriginData: kn,
 		CopyTask:   &copyTaskEntity,
@@ -109,6 +126,11 @@ func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*
 			}
 		}
 	}()
+	copyCtx.CopyTask.Status = copyEntity.DataCopyTaskStatusInProgress
+	err = crossdatacopy.DefaultSVC().UpdateCopyTask(ctx, &datacopy.UpdateCopyTaskReq{Task: copyCtx.CopyTask})
+	if err != nil {
+		return nil, err
+	}
 	err = k.copyKnowledge(ctx, copyCtx)
 	if err != nil {
 		return nil, err
@@ -134,14 +156,20 @@ func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*
 }
 
 func (k *knowledgeSVC) copyKnowledge(ctx context.Context, copyCtx *knowledgeCopyCtx) error {
-	copyKnowledgeInfo := copyCtx.OriginData
-	copyKnowledgeInfo.ID = copyCtx.CopyTask.TargetDataID
-	copyKnowledgeInfo.CreatorID = copyCtx.CopyTask.TargetUserID
-	copyKnowledgeInfo.SpaceID = copyCtx.CopyTask.TargetSpaceID
-	copyKnowledgeInfo.AppID = copyCtx.CopyTask.TargetAppID
-	copyKnowledgeInfo.CreatedAt = time.Now().UnixMilli()
-	copyKnowledgeInfo.UpdatedAt = 0
-	return k.knowledgeRepo.Create(ctx, copyKnowledgeInfo)
+	copyKnowledgeInfo := model.Knowledge{
+		ID:          copyCtx.CopyTask.TargetDataID,
+		Name:        copyCtx.OriginData.Name,
+		AppID:       copyCtx.CopyTask.TargetAppID,
+		CreatorID:   copyCtx.CopyTask.TargetUserID,
+		SpaceID:     copyCtx.CopyTask.TargetSpaceID,
+		CreatedAt:   time.Now().UnixMilli(),
+		UpdatedAt:   time.Now().UnixMilli(),
+		Status:      int32(knowledgeModel.KnowledgeStatusEnable),
+		Description: copyCtx.OriginData.Description,
+		IconURI:     copyCtx.OriginData.IconURI,
+		FormatType:  copyCtx.OriginData.FormatType,
+	}
+	return k.knowledgeRepo.Create(ctx, &copyKnowledgeInfo)
 }
 
 func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *knowledgeCopyCtx) (err error) {
@@ -221,6 +249,18 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 	columnMap := map[int64]int64{}
 	// 如果是表格型知识库->创建新的表格
 	if doc.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
+		if doc.TableInfo != nil {
+			newTableInfo := entity.TableInfo{}
+			data, err := sonic.Marshal(doc.TableInfo)
+			if err != nil {
+				return err
+			}
+			err = sonic.Unmarshal(data, &newTableInfo)
+			if err != nil {
+				return err
+			}
+			newDoc.TableInfo = &newTableInfo
+		}
 		err = k.createTable(ctx, &newDoc)
 		if err != nil {
 			return err
@@ -237,6 +277,7 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 		for i := range doc.TableInfo.Columns {
 			columnMap[oldColumnName2IDMap[doc.TableInfo.Columns[i].Name]] = newDoc.TableInfo.Columns[i].ID
 		}
+		copyCtx.NewRDBTableNames = append(copyCtx.NewRDBTableNames, newDoc.TableInfo.PhysicalTableName)
 	}
 	sliceIDs, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{doc.ID})
 	if err != nil {
@@ -276,7 +317,7 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 				FailReason:  "",
 				Hit:         0,
 			}
-			newMap[sliceInfo[t].ID] = &newSliceModel
+			newMap[newSliceIDs[t]] = &newSliceModel
 		}
 		if doc.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 			sliceMap, err := k.selectTableData(ctx, doc.TableInfo, sliceInfo)
@@ -293,8 +334,13 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 				for t := range info.RawContent[0].Table.Columns {
 					info.RawContent[0].Table.Columns[t].ColumnID = columnMap[info.RawContent[0].Table.Columns[t].ColumnID]
 				}
+				newSlices = append(newSlices, info)
 			}
-			k.upsertDataToTable(ctx, newDoc.TableInfo, newSlices)
+			err = k.upsertDataToTable(ctx, newDoc.TableInfo, newSlices)
+			if err != nil {
+				logs.CtxErrorf(ctx, "upsert data to table failed, err: %v", err)
+				return err
+			}
 		}
 		// todo，完成viking和es的复制
 		for _, v := range newMap {
@@ -355,7 +401,6 @@ func (k *knowledgeSVC) createTable(ctx context.Context, doc *model.KnowledgeDocu
 		logs.CtxErrorf(ctx, "create table failed, err: %v", err)
 		return err
 	}
-	doc.TableInfo.PhysicalTableName = resp.Table.Name
 	doc.TableInfo = &entity.TableInfo{
 		VirtualTableName:  doc.Name,
 		PhysicalTableName: resp.Table.Name,

@@ -18,7 +18,7 @@ func ConvertToDataCopyTaskModel(task *entity.CopyDataTask) *model.DataCopyTask {
 		OriginAppID:   task.OriginAppID,
 		TargetAppID:   task.TargetAppID,
 		DataType:      int32(task.DataType),
-		Status:        int32(entity.DataCopyTaskStatusCreate),
+		Status:        int32(task.Status),
 		StartTime:     task.StartTime,
 		FinishTime:    task.FinishTime,
 		ExtInfo:       task.ExtInfo,
