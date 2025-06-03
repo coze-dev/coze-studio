@@ -48,6 +48,7 @@ func (is *Insert) Insert(ctx context.Context, input map[string]any) (map[string]
 	req := &database.InsertRequest{
 		DatabaseInfoID: is.config.DatabaseInfoID,
 		Fields:         fs.(map[string]any),
+		IsDebugRun:     isDebugExecute(ctx),
 	}
 
 	response, err := is.config.Inserter.Insert(ctx, req)

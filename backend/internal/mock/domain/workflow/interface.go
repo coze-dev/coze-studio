@@ -13,16 +13,15 @@ import (
 	context "context"
 	reflect "reflect"
 
+	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
+	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	tool "github.com/cloudwego/eino/components/tool"
 	compose "github.com/cloudwego/eino/compose"
 	schema "github.com/cloudwego/eino/schema"
 	redis "github.com/redis/go-redis/v9"
 	gomock "go.uber.org/mock/gomock"
-
-	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
-	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 // MockService is a mock of Service interface.
@@ -381,6 +380,21 @@ func (mr *MockServiceMockRecorder) QueryWorkflowNodeTypes(ctx, wfID any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryWorkflowNodeTypes", reflect.TypeOf((*MockService)(nil).QueryWorkflowNodeTypes), ctx, wfID)
 }
 
+// ReleaseApplicationWorkflows mocks base method.
+func (m *MockService) ReleaseApplicationWorkflows(ctx context.Context, spaceID, project int64, version, desc string) ([]*vo.ValidateIssue, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReleaseApplicationWorkflows", ctx, spaceID, project, version, desc)
+	ret0, _ := ret[0].([]*vo.ValidateIssue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReleaseApplicationWorkflows indicates an expected call of ReleaseApplicationWorkflows.
+func (mr *MockServiceMockRecorder) ReleaseApplicationWorkflows(ctx, spaceID, project, version, desc any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseApplicationWorkflows", reflect.TypeOf((*MockService)(nil).ReleaseApplicationWorkflows), ctx, spaceID, project, version, desc)
+}
+
 // SaveWorkflow mocks base method.
 func (m *MockService) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
 	m.ctrl.T.Helper()
@@ -536,6 +550,20 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// BatchPublishWorkflows mocks base method.
+func (m *MockRepository) BatchPublishWorkflows(ctx context.Context, workflows map[int64]*vo.VersionInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BatchPublishWorkflows", ctx, workflows)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BatchPublishWorkflows indicates an expected call of BatchPublishWorkflows.
+func (mr *MockRepositoryMockRecorder) BatchPublishWorkflows(ctx, workflows any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchPublishWorkflows", reflect.TypeOf((*MockRepository)(nil).BatchPublishWorkflows), ctx, workflows)
+}
+
 // CopyWorkflow mocks base method.
 func (m *MockRepository) CopyWorkflow(ctx context.Context, spaceID, workflowID int64) (*entity.Workflow, error) {
 	m.ctrl.T.Helper()
@@ -664,6 +692,22 @@ func (m *MockRepository) GenID(ctx context.Context) (int64, error) {
 func (mr *MockRepositoryMockRecorder) GenID(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenID", reflect.TypeOf((*MockRepository)(nil).GenID), ctx)
+}
+
+// GetDraftWorkflowsByAppID mocks base method.
+func (m *MockRepository) GetDraftWorkflowsByAppID(ctx context.Context, spaceID, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDraftWorkflowsByAppID", ctx, spaceID, AppID)
+	ret0, _ := ret[0].(map[int64]*vo.DraftInfo)
+	ret1, _ := ret[1].(map[int64]string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetDraftWorkflowsByAppID indicates an expected call of GetDraftWorkflowsByAppID.
+func (mr *MockRepositoryMockRecorder) GetDraftWorkflowsByAppID(ctx, spaceID, AppID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDraftWorkflowsByAppID", reflect.TypeOf((*MockRepository)(nil).GetDraftWorkflowsByAppID), ctx, spaceID, AppID)
 }
 
 // GetFirstInterruptEvent mocks base method.

@@ -101,7 +101,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				RootExecutionID:     event.RootExecuteID,
 				ParentNodeID:        parentNodeID,
 				ParentNodeExecuteID: parentNodeExecuteID,
-				ProjectID:           wb.ProjectID,
+				APPID:               wb.APPID,
 				NodeCount:           wb.NodeCount,
 			}
 

@@ -115,7 +115,7 @@ func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.C
 		Desc:        req.Desc,
 		IconURI:     req.IconURI,
 		Mode:        workflow.WorkflowMode_Workflow,
-		ProjectID:   parseInt64(req.ProjectID),
+		APPID:       parseInt64(req.ProjectID),
 	}
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -255,7 +255,7 @@ func (w *ApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetC
 				Self: ternary.IFElse[bool](wf.CreatorID == ptr.From(ctxutil.GetUIDFromCtx(ctx)), true, false),
 			},
 			FlowMode:  wf.Mode,
-			ProjectID: i64PtrToStringPtr(wf.ProjectID),
+			ProjectID: i64PtrToStringPtr(wf.APPID),
 
 			PersistenceModel: workflow.PersistenceModel_DB,
 		},
@@ -378,8 +378,8 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 		}
 	}
 
-	if wfExeEntity.ProjectID != nil {
-		resp.Data.ProjectId = fmt.Sprintf("%d", *wfExeEntity.ProjectID)
+	if wfExeEntity.APPID != nil {
+		resp.Data.ProjectId = fmt.Sprintf("%d", *wfExeEntity.APPID)
 	}
 
 	batchNodeID2NodeResult := make(map[string]*workflow.NodeResult)
@@ -804,7 +804,7 @@ func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.Val
 		if err != nil {
 			return nil, err
 		}
-		validateTreeCfg.ProjectID = ptr.Of(pId)
+		validateTreeCfg.APPID = ptr.Of(pId)
 	}
 
 	wfValidateInfos, err := GetWorkflowDomainSVC().ValidateTree(ctx, mustParseInt64(req.GetWorkflowID()), validateTreeCfg)
@@ -852,8 +852,8 @@ func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *wor
 			wfw.UpdateTime = wk.UpdatedAt.UnixMilli()
 		}
 
-		if wk.ProjectID != nil {
-			wfw.ProjectID = ptr.Of(strconv.FormatInt(ptr.From(wk.ProjectID), 10))
+		if wk.APPID != nil {
+			wfw.ProjectID = ptr.Of(strconv.FormatInt(ptr.From(wk.APPID), 10))
 		}
 		response.Data.WorkflowList = append(response.Data.WorkflowList, wfw)
 	}
@@ -1385,7 +1385,8 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 			} else {
 				pluginToolsInfoReqs[pluginID] = &plugin.PluginToolsInfoRequest{
 					PluginEntity: plugin.PluginEntity{
-						PluginID: pluginID,
+						PluginID:      pluginID,
+						PluginVersion: pl.PluginVersion,
 					},
 					ToolIDs: []int64{toolID},
 				}
@@ -2113,24 +2114,25 @@ func toVariable(p *workflow.APIParameter) (*vo.Variable, error) {
 		v.Type = vo.VariableTypeInteger
 	case workflow.ParameterType_Number:
 		v.Type = vo.VariableTypeFloat
+	case workflow.ParameterType_Bool:
+		v.Type = vo.VariableTypeBoolean
 	case workflow.ParameterType_Array:
 		v.Type = vo.VariableTypeList
-		av := &vo.Variable{
-			Type: vo.VariableTypeString,
+		if len(p.SubParameters) > 0 {
+			subVs := make([]any, 0)
+			for _, ap := range p.SubParameters {
+				av, err := toVariable(ap)
+				if err != nil {
+					return nil, err
+				}
+				subVs = append(subVs, av)
+			}
+			v.Schema = &vo.Variable{
+				Type:   vo.VariableTypeObject,
+				Schema: subVs,
+			}
 		}
-		switch *p.SubType {
-		case workflow.ParameterType_String:
-			av.Type = vo.VariableTypeString
-		case workflow.ParameterType_Integer:
-			av.Type = vo.VariableTypeInteger
-		case workflow.ParameterType_Number:
-			av.Type = vo.VariableTypeFloat
-		case workflow.ParameterType_Array:
-			av.Type = vo.VariableTypeList
-		case workflow.ParameterType_Object:
-			av.Type = vo.VariableTypeObject
-		}
-		v.Schema = av
+
 	case workflow.ParameterType_Object:
 		v.Type = vo.VariableTypeObject
 		vs := make([]*vo.Variable, 0)

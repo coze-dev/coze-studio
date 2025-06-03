@@ -45,6 +45,7 @@ func (d *Delete) Delete(ctx context.Context, conditionGroup *database.ConditionG
 	request := &database.DeleteRequest{
 		DatabaseInfoID: d.config.DatabaseInfoID,
 		ConditionGroup: conditionGroup,
+		IsDebugRun:     isDebugExecute(ctx),
 	}
 
 	response, err := d.config.Deleter.Delete(ctx, request)

@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
 
 type DatabaseRepository struct {
@@ -30,6 +31,7 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 		DatabaseID:  request.DatabaseInfoID,
 		OperateType: database.OperateType_Custom,
 		SQL:         &request.SQL,
+		TableType:   ternary.IFElse[table.TableType](request.IsDebugRun, table.TableType_DraftTable, table.TableType_OnlineTable),
 	}
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -58,7 +60,7 @@ func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.D
 		req = &service.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: database.OperateType_Delete,
-			TableType:   table.TableType_OnlineTable, // TODO 目前先默认写到线上
+			TableType:   ternary.IFElse[table.TableType](request.IsDebugRun, table.TableType_DraftTable, table.TableType_OnlineTable),
 		}
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -85,7 +87,7 @@ func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.Qu
 		req = &service.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: database.OperateType_Select,
-			TableType:   table.TableType_OnlineTable, // TODO 目前先默认写到线上
+			TableType:   ternary.IFElse[table.TableType](request.IsDebugRun, table.TableType_DraftTable, table.TableType_OnlineTable),
 		}
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -133,7 +135,7 @@ func (d *DatabaseRepository) Update(ctx context.Context, request *nodedatabase.U
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: database.OperateType_Update,
 			SQLParams:   make([]*database.SQLParamVal, 0),
-			TableType:   table.TableType_OnlineTable, // TODO 目前先默认写到线上
+			TableType:   ternary.IFElse[table.TableType](request.IsDebugRun, table.TableType_DraftTable, table.TableType_OnlineTable),
 		}
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -168,8 +170,7 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 		req = &service.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
 			OperateType: database.OperateType_Insert,
-
-			TableType: table.TableType_OnlineTable, // TODO 目前先默认写到线上
+			TableType:   ternary.IFElse[table.TableType](request.IsDebugRun, table.TableType_DraftTable, table.TableType_OnlineTable),
 		}
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)

@@ -35,7 +35,7 @@ type reachability struct {
 
 type Config struct {
 	Canvas              *vo.Canvas
-	ProjectID           *int64
+	APPID               *int64
 	AgentID             *int64
 	VariablesMetaGetter variable.VariablesMetaGetter
 }
@@ -235,7 +235,7 @@ func (cv *CanvasValidator) ValidateNestedFlows(ctx context.Context) (issues []*I
 }
 
 func (cv *CanvasValidator) CheckGlobalVariables(ctx context.Context) (issues []*Issue, err error) {
-	if cv.cfg.ProjectID == nil {
+	if cv.cfg.APPID == nil {
 		return nil, nil // if not project not check global variables, directly return nil
 	}
 
@@ -246,7 +246,7 @@ func (cv *CanvasValidator) CheckGlobalVariables(ctx context.Context) (issues []*
 		node *vo.Node
 		vars map[string]*variable.VarTypeInfo
 	}
-	projectID := cv.cfg.ProjectID
+	appID := cv.cfg.APPID
 
 	nVars := make([]*nodeVars, 0)
 	for _, node := range cv.cfg.Canvas.Nodes {
@@ -265,7 +265,7 @@ func (cv *CanvasValidator) CheckGlobalVariables(ctx context.Context) (issues []*
 		nVars = append(nVars, v)
 	}
 
-	varsMeta, err := cv.cfg.VariablesMetaGetter.GetProjectVariablesMeta(ctx, strconv.FormatInt(*projectID, 10), "") // now project version always empty
+	varsMeta, err := cv.cfg.VariablesMetaGetter.GetProjectVariablesMeta(ctx, strconv.FormatInt(*appID, 10), "") // now project version always empty
 	if err != nil {
 		return nil, err
 	}

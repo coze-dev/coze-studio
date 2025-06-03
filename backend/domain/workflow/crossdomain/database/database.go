@@ -8,6 +8,7 @@ type CustomSQLRequest struct {
 	DatabaseInfoID int64
 	SQL            string
 	Params         []string
+	IsDebugRun     bool
 }
 
 type Object = map[string]any
@@ -67,6 +68,7 @@ type ConditionGroup struct {
 type DeleteRequest struct {
 	DatabaseInfoID int64
 	ConditionGroup *ConditionGroup
+	IsDebugRun     bool
 }
 
 type QueryRequest struct {
@@ -75,6 +77,7 @@ type QueryRequest struct {
 	Limit          int64
 	ConditionGroup *ConditionGroup
 	OrderClauses   []*OrderClause
+	IsDebugRun     bool
 }
 
 type OrderClause struct {
@@ -85,11 +88,13 @@ type UpdateRequest struct {
 	DatabaseInfoID int64
 	ConditionGroup *ConditionGroup
 	Fields         map[string]any
+	IsDebugRun     bool
 }
 
 type InsertRequest struct {
 	DatabaseInfoID int64
 	Fields         map[string]any
+	IsDebugRun     bool
 }
 
 func GetDatabaseOperator() DatabaseOperator {

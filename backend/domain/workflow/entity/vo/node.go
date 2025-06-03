@@ -147,7 +147,7 @@ func (n *NamedTypeInfo) ToVariable() (*Variable, error) {
 		if err != nil {
 			return nil, err
 		}
-		v.Schema = ele.Schema
+		v.Schema = ele
 	}
 
 	if n.Type == DataTypeObject && len(n.Properties) > 0 {

@@ -46,6 +46,7 @@ func (c *CustomSQL) Execute(ctx context.Context, input map[string]any) (map[stri
 
 	req := &database.CustomSQLRequest{
 		DatabaseInfoID: c.config.DatabaseInfoID,
+		IsDebugRun:     isDebugExecute(ctx),
 	}
 	templateSQL := c.config.SQLTemplate
 
@@ -62,7 +63,6 @@ func (c *CustomSQL) Execute(ctx context.Context, input map[string]any) (map[stri
 			templateSQL = strings.Replace(templateSQL, p, "?", 1)
 		}
 		req.Params = ps
-
 	}
 
 	sql, err := nodes.Jinja2TemplateRender(templateSQL, input)
