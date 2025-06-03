@@ -28,7 +28,7 @@ type WorkflowMeta struct {
 	SpaceID     int64          `gorm:"column:space_id;not null;comment: 空间 ID" json:"space_id"`                                                                                                                                                                                                                 //  空间 ID
 	UpdaterID   int64          `gorm:"column:updater_id;comment: 更新元信息的用户 ID" json:"updater_id"`                                                                                                                                                                                                                //  更新元信息的用户 ID
 	SourceID    int64          `gorm:"column:source_id;comment: 复制来源的 workflow ID" json:"source_id"`                                                                                                                                                                                                            //  复制来源的 workflow ID
-	ProjectID   int64          `gorm:"column:project_id;comment: 项目 ID" json:"project_id"`                                                                                                                                                                                                                      //  项目 ID
+	AppID       int64          `gorm:"column:app_id;comment:应用 ID" json:"app_id"`                                                                                                                                                                                                                               // 应用 ID
 }
 
 // TableName WorkflowMeta's table name

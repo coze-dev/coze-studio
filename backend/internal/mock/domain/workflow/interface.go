@@ -381,18 +381,18 @@ func (mr *MockServiceMockRecorder) QueryWorkflowNodeTypes(ctx, wfID any) *gomock
 }
 
 // ReleaseApplicationWorkflows mocks base method.
-func (m *MockService) ReleaseApplicationWorkflows(ctx context.Context, spaceID, project int64, version, desc string) ([]*vo.ValidateIssue, error) {
+func (m *MockService) ReleaseApplicationWorkflows(ctx context.Context, appID int64, version string) ([]*vo.ValidateIssue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReleaseApplicationWorkflows", ctx, spaceID, project, version, desc)
+	ret := m.ctrl.Call(m, "ReleaseApplicationWorkflows", ctx, appID, version)
 	ret0, _ := ret[0].([]*vo.ValidateIssue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ReleaseApplicationWorkflows indicates an expected call of ReleaseApplicationWorkflows.
-func (mr *MockServiceMockRecorder) ReleaseApplicationWorkflows(ctx, spaceID, project, version, desc any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ReleaseApplicationWorkflows(ctx, appID, version any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseApplicationWorkflows", reflect.TypeOf((*MockService)(nil).ReleaseApplicationWorkflows), ctx, spaceID, project, version, desc)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseApplicationWorkflows", reflect.TypeOf((*MockService)(nil).ReleaseApplicationWorkflows), ctx, appID, version)
 }
 
 // SaveWorkflow mocks base method.
@@ -695,9 +695,9 @@ func (mr *MockRepositoryMockRecorder) GenID(ctx any) *gomock.Call {
 }
 
 // GetDraftWorkflowsByAppID mocks base method.
-func (m *MockRepository) GetDraftWorkflowsByAppID(ctx context.Context, spaceID, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error) {
+func (m *MockRepository) GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDraftWorkflowsByAppID", ctx, spaceID, AppID)
+	ret := m.ctrl.Call(m, "GetDraftWorkflowsByAppID", ctx, AppID)
 	ret0, _ := ret[0].(map[int64]*vo.DraftInfo)
 	ret1, _ := ret[1].(map[int64]string)
 	ret2, _ := ret[2].(error)
@@ -705,9 +705,9 @@ func (m *MockRepository) GetDraftWorkflowsByAppID(ctx context.Context, spaceID, 
 }
 
 // GetDraftWorkflowsByAppID indicates an expected call of GetDraftWorkflowsByAppID.
-func (mr *MockRepositoryMockRecorder) GetDraftWorkflowsByAppID(ctx, spaceID, AppID any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) GetDraftWorkflowsByAppID(ctx, AppID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDraftWorkflowsByAppID", reflect.TypeOf((*MockRepository)(nil).GetDraftWorkflowsByAppID), ctx, spaceID, AppID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDraftWorkflowsByAppID", reflect.TypeOf((*MockRepository)(nil).GetDraftWorkflowsByAppID), ctx, AppID)
 }
 
 // GetFirstInterruptEvent mocks base method.

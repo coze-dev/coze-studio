@@ -160,7 +160,7 @@ func Prepare(ctx context.Context,
 			Status:           entity.WorkflowRunning,
 			Input:            ptr.Of(in),
 			RootExecutionID:  executeID,
-			APPID:            wb.APPID,
+			AppID:            wb.APPID,
 			NodeCount:        wb.NodeCount,
 		}
 

@@ -19,7 +19,7 @@ type WorkflowExecution struct {
 	ConnectorUID string
 	CreatedAt    time.Time
 	LogID        string
-	APPID        *int64
+	AppID        *int64
 	NodeCount    int32
 
 	Status     WorkflowExecuteStatus
@@ -89,7 +89,7 @@ func (we *WorkflowExecution) GetBasic() *WorkflowBasic {
 	return &WorkflowBasic{
 		WorkflowIdentity: we.WorkflowIdentity,
 		SpaceID:          we.SpaceID,
-		APPID:            we.APPID,
+		APPID:            we.AppID,
 		NodeCount:        we.NodeCount,
 	}
 }

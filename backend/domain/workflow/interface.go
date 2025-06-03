@@ -50,7 +50,7 @@ type Service interface {
 	WithResumeToolWorkflow(resumingEvent *entity.ToolInterruptEvent, resumeData string,
 		allInterruptEvents map[string]*entity.ToolInterruptEvent) einoCompose.Option
 	CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (int64, error)
-	ReleaseApplicationWorkflows(ctx context.Context, spaceID int64, project int64, version string, desc string) ([]*vo.ValidateIssue, error)
+	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
 }
 
 type Repository interface {
@@ -100,7 +100,7 @@ type Repository interface {
 	SetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64, exeID int64) error
 	GetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64) (int64, error)
 
-	GetDraftWorkflowsByAppID(ctx context.Context, spaceID int64, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error)
+	GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error)
 	BatchPublishWorkflows(ctx context.Context, workflows map[int64]*vo.VersionInfo) error
 }
 

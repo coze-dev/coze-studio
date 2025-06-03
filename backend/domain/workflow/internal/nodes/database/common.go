@@ -297,6 +297,5 @@ func isDebugExecute(ctx context.Context) bool {
 	if execCtx == nil {
 		panic(fmt.Errorf("unable to get exe context"))
 	}
-	return execCtx.RootCtx.ExeCfg.Mode == vo.ExecuteModeDebug
-
+	return execCtx.RootCtx.ExeCfg.Mode == vo.ExecuteModeDebug || execCtx.RootCtx.ExeCfg.Mode == vo.ExecuteModeNodeDebug
 }

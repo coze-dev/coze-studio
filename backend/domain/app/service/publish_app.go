@@ -8,10 +8,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	resourceCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/app/consts"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	commonConsts "code.byted.org/flow/opencoze/backend/types/consts"
 )
@@ -155,35 +157,37 @@ func (a *appServiceImpl) createPublishVersion(ctx context.Context, req *PublishA
 }
 
 func (a *appServiceImpl) packResources(ctx context.Context, appID int64, version string) (failedResources []*entity.PackResourceFailedInfo, err error) {
-	failedPlugins, err := a.packPlugins(ctx, appID, version)
+	failedPlugins, allDraftPlugins, err := a.packPlugins(ctx, appID, version)
 	if err != nil {
 		return nil, err
 	}
 
-	failedWorkflows, err := a.packWorkflows(ctx, version)
+	workflowFailedInfoList, err := a.packWorkflows(ctx, appID, version,
+		slices.Transform(allDraftPlugins, func(a *plugin.PluginInfo) int64 {
+			return a.ID
+		}))
 	if err != nil {
 		return nil, err
 	}
 
-	length := len(failedPlugins) + len(failedWorkflows)
+	length := len(failedPlugins) + len(workflowFailedInfoList)
 	if length == 0 {
 		return nil, nil
 	}
 
 	failedResources = append(failedResources, failedPlugins...)
-
-	// TODO(@zhuangjie): 失败 workflow 资源
+	failedResources = append(failedResources, workflowFailedInfoList...)
 
 	return failedResources, nil
 }
 
-func (a *appServiceImpl) packPlugins(ctx context.Context, appID int64, version string) (failedInfo []*entity.PackResourceFailedInfo, err error) {
+func (a *appServiceImpl) packPlugins(ctx context.Context, appID int64, version string) (failedInfo []*entity.PackResourceFailedInfo, allDraftPlugins []*plugin.PluginInfo, err error) {
 	res, err := crossplugin.DefaultSVC().PublishAPPPlugins(ctx, &plugin.PublishAPPPluginsRequest{
 		APPID:   appID,
 		Version: version,
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	failedInfo = make([]*entity.PackResourceFailedInfo, 0, len(res.FailedPlugins))
@@ -195,13 +199,33 @@ func (a *appServiceImpl) packPlugins(ctx context.Context, appID int64, version s
 		})
 	}
 
-	return failedInfo, nil
+	return failedInfo, res.AllDraftPlugins, nil
+
 }
 
-func (a *appServiceImpl) packWorkflows(ctx context.Context, version string) (failedWorkflowIDs []int64, err error) {
-	// TODO(@zhuangjie): 批量发布接口
+func (a *appServiceImpl) packWorkflows(ctx context.Context, appID int64, version string, allDraftPluginIDs []int64) (workflowFailedInfoList []*entity.PackResourceFailedInfo, err error) {
+	issues, err := crossworkflow.DefaultSVC().ReleaseApplicationWorkflows(ctx, appID, &crossworkflow.ReleaseWorkflowConfig{
+		Version:   version,
+		PluginIDs: allDraftPluginIDs,
+	})
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	if len(issues) == 0 {
+		return workflowFailedInfoList, nil
+	}
+
+	workflowFailedInfoList = make([]*entity.PackResourceFailedInfo, 0, len(issues))
+	for _, issue := range issues {
+		workflowFailedInfoList = append(workflowFailedInfoList, &entity.PackResourceFailedInfo{
+			ResourceID:   issue.WorkflowID,
+			ResourceType: resourceCommon.ResType_Workflow,
+			ResourceName: issue.WorkflowName,
+		})
+	}
+
+	return workflowFailedInfoList, nil
 }
 
 func (a *appServiceImpl) packResourcesFailedPostProcess(ctx context.Context, recordID int64, packFailedInfo []*entity.PackResourceFailedInfo) (err error) {

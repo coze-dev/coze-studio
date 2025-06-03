@@ -32,7 +32,7 @@ func NewToolService(client service.PluginService, tos storage.Storage) crossplug
 }
 
 func (t *toolService) getPluginsWithTools(ctx context.Context, pluginEntity *crossplugin.PluginEntity, toolIDs []int64, isDraft bool) (*entity.PluginInfo, []*entity.ToolInfo, error) {
-	// 如果是draft 直接查询draft
+
 	var pluginsInfo []*entity.PluginInfo
 	pluginID := pluginEntity.PluginID
 	isDraft = isDraft || (pluginEntity.PluginVersion != nil && *pluginEntity.PluginVersion == "0") // application plugin version use 0 for draft

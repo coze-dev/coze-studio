@@ -4668,7 +4668,6 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 		wf, err := appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 7511616004728815618)
 		assert.NoError(t, err)
 		version := "v0.0.1"
-		desc := version + "desc"
 		if wf.LatestVersion != "" {
 			versionSchema := strings.Split(wf.LatestVersion, ".")
 			vInt, err := strconv.ParseInt(versionSchema[2], 10, 64)
@@ -4678,10 +4677,12 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 			nextVer := strconv.FormatInt(vInt+1, 10)
 			versionSchema[2] = nextVer
 			version = strings.Join(versionSchema, ".")
-			desc = version + "desc"
 		}
 
-		vIssues, err := appworkflow.GetWorkflowDomainSVC().ReleaseApplicationWorkflows(c, 123, 10001000, version, desc)
+		vIssues, err := appworkflow.GetWorkflowDomainSVC().ReleaseApplicationWorkflows(c, 10001000, &vo.ReleaseWorkflowConfig{
+			Version:   version,
+			PluginIDs: []int64{7511616454588891136},
+		})
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(vIssues))
 
@@ -4788,7 +4789,7 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 		assert.NoError(t, err)
 
 		version := "v0.0.1"
-		desc := version + "desc"
+
 		if wf.LatestVersion != "" {
 			versionSchema := strings.Split(wf.LatestVersion, ".")
 			vInt, err := strconv.ParseInt(versionSchema[2], 10, 64)
@@ -4798,10 +4799,12 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 			nextVer := strconv.FormatInt(vInt+1, 10)
 			versionSchema[2] = nextVer
 			version = strings.Join(versionSchema, ".")
-			desc = version + "desc"
 		}
 
-		vIssues, err := appworkflow.GetWorkflowDomainSVC().ReleaseApplicationWorkflows(c, 123, 100010001, version, desc)
+		vIssues, err := appworkflow.GetWorkflowDomainSVC().ReleaseApplicationWorkflows(c, 100010001, &vo.ReleaseWorkflowConfig{
+			Version:   version,
+			PluginIDs: []int64{},
+		})
 		assert.NoError(t, err)
 		assert.Equal(t, 1, len(vIssues))
 		assert.Equal(t, 2, len(vIssues[0].IssueMessages))

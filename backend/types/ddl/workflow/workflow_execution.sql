@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `workflow_execution` (
     updated_at bigint unsigned null comment 'update time in millisecond',
     root_execution_id bigint unsigned null comment 'the top level execution id. Null if this is the root',
     parent_node_id varchar(128) null comment 'the node key for the sub_workflow node that executes this workflow',
-    project_id bigint unsigned null comment 'project id this workflow execution belongs to',
+    app_id bigint unsigned null comment 'app id this workflow execution belongs to',
     node_count mediumint unsigned null comment 'the total node count of the workflow',
     resume_event_id   bigint unsigned    null comment 'the current event ID which is resuming',
     KEY `idx_workflow_id_version_mode_created_at` (workflow_id, version, mode, created_at)

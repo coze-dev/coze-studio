@@ -43,7 +43,7 @@ func newWorkflowMeta(db *gorm.DB, opts ...gen.DOOption) workflowMeta {
 	_workflowMeta.SpaceID = field.NewInt64(tableName, "space_id")
 	_workflowMeta.UpdaterID = field.NewInt64(tableName, "updater_id")
 	_workflowMeta.SourceID = field.NewInt64(tableName, "source_id")
-	_workflowMeta.ProjectID = field.NewInt64(tableName, "project_id")
+	_workflowMeta.AppID = field.NewInt64(tableName, "app_id")
 
 	_workflowMeta.fillFieldMap()
 
@@ -70,7 +70,7 @@ type workflowMeta struct {
 	SpaceID     field.Int64  //  空间 ID
 	UpdaterID   field.Int64  //  更新元信息的用户 ID
 	SourceID    field.Int64  //  复制来源的 workflow ID
-	ProjectID   field.Int64  //  项目 ID
+	AppID       field.Int64  // 应用 ID
 
 	fieldMap map[string]field.Expr
 }
@@ -103,7 +103,7 @@ func (w *workflowMeta) updateTableName(table string) *workflowMeta {
 	w.SpaceID = field.NewInt64(table, "space_id")
 	w.UpdaterID = field.NewInt64(table, "updater_id")
 	w.SourceID = field.NewInt64(table, "source_id")
-	w.ProjectID = field.NewInt64(table, "project_id")
+	w.AppID = field.NewInt64(table, "app_id")
 
 	w.fillFieldMap()
 
@@ -137,7 +137,7 @@ func (w *workflowMeta) fillFieldMap() {
 	w.fieldMap["space_id"] = w.SpaceID
 	w.fieldMap["updater_id"] = w.UpdaterID
 	w.fieldMap["source_id"] = w.SourceID
-	w.fieldMap["project_id"] = w.ProjectID
+	w.fieldMap["app_id"] = w.AppID
 }
 
 func (w workflowMeta) clone(db *gorm.DB) workflowMeta {

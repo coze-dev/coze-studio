@@ -1607,8 +1607,9 @@ func (i *impl) CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64
 
 }
 
-func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, spaceID int64, appID int64, version string, desc string) ([]*vo.ValidateIssue, error) {
-	draftVersions, wid2Named, err := i.repo.GetDraftWorkflowsByAppID(ctx, spaceID, appID)
+func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error) {
+
+	draftVersions, wid2Named, err := i.repo.GetDraftWorkflowsByAppID(ctx, appID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil // there are no Workflows to be published under the app， return nil,nil
@@ -1616,17 +1617,20 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, spaceID int64, a
 		return nil, err
 	}
 
-	var processSubWorkflows func(nodes []*vo.Node) error
-	processSubWorkflows = func(nodes []*vo.Node) error {
+	allPluginIDMap := slices.ToMap(config.PluginIDs, func(e int64) (string, bool) {
+		return strconv.FormatInt(e, 10), true
+	})
+	var processWfNodes func(nodes []*vo.Node) error
+	processWfNodes = func(nodes []*vo.Node) error {
 		for _, n := range nodes {
 			if n.Type == vo.BlockTypeBotSubWorkflow {
 				workflowID, err := strconv.ParseInt(n.Data.Inputs.WorkflowID, 10, 64)
 				if err != nil {
 					return err
 				}
-				// 在当前app项目内的workflow
+				// in the current app
 				if _, ok := draftVersions[workflowID]; ok {
-					n.Data.Inputs.WorkflowVersion = version
+					n.Data.Inputs.WorkflowVersion = config.Version
 				}
 			}
 
@@ -1639,47 +1643,33 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, spaceID int64, a
 							return err
 						}
 						if _, ok := draftVersions[workflowID]; ok {
-							w.WorkflowVersion = version
+							w.WorkflowVersion = config.Version
 						}
 					}
 				}
-			}
-			if len(n.Blocks) > 0 {
-				err = processSubWorkflows(n.Blocks)
-				if err != nil {
-					return err
-				}
-			}
-
-		}
-		return nil
-	}
-
-	var processPlugins func(nodes []*vo.Node) error
-	processPlugins = func(nodes []*vo.Node) error {
-		for _, n := range nodes {
-			if n.Type == vo.BlockTypeBotAPI {
-				for _, apiParam := range n.Data.Inputs.APIParams {
-					// In the application, the workflow plugin node When the plugin version is equal to 0, the plugin is a plugin created in the application
-					if apiParam.Name == "pluginVersion" && apiParam.Input.Value.Content == "0" {
-						apiParam.Input.Value.Content = version
-					}
-				}
-			}
-
-			if n.Type == vo.BlockTypeBotLLM {
 				if n.Data.Inputs.FCParam != nil && n.Data.Inputs.FCParam.PluginFCParam != nil {
 					// In the application, the workflow llm node When the plugin version is equal to 0, the plugin is a plugin created in the application
 					for idx := range n.Data.Inputs.FCParam.PluginFCParam.PluginList {
 						p := n.Data.Inputs.FCParam.PluginFCParam.PluginList[idx]
-						if p.PluginVersion == "0" {
-							p.PluginVersion = version
+						if allPluginIDMap[p.PluginID] {
+							p.PluginVersion = config.Version
 						}
+
 					}
 				}
 			}
+
+			if n.Type == vo.BlockTypeBotAPI {
+				for _, apiParam := range n.Data.Inputs.APIParams {
+					// In the application, the workflow plugin node When the plugin version is equal to 0, the plugin is a plugin created in the application
+					if apiParam.Name == "pluginVersion" && apiParam.Input.Value.Content == "0" {
+						apiParam.Input.Value.Content = config.Version
+					}
+				}
+			}
+
 			if len(n.Blocks) > 0 {
-				err = processPlugins(n.Blocks)
+				err = processWfNodes(n.Blocks)
 				if err != nil {
 					return err
 				}
@@ -1688,6 +1678,7 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, spaceID int64, a
 		}
 		return nil
 	}
+
 	vIssues := make([]*vo.ValidateIssue, 0)
 	for id, draftVersion := range draftVersions {
 		issues, err := validateWorkflowTree(ctx, vo.ValidateTreeConfig{
@@ -1709,21 +1700,19 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, spaceID int64, a
 	}
 
 	for _, draftVersion := range draftVersions {
+		//TODO(zhuangjie): When a new canvas is generated for storage, the front-end description information of the original canvas will be lost,
+		// and the front-end description field needs to be completed in the canvas structure later
 		c := &vo.Canvas{}
 		err := sonic.UnmarshalString(draftVersion.Canvas, c)
 		if err != nil {
 			return nil, err
 		}
 
-		err = processSubWorkflows(c.Nodes)
+		err = processWfNodes(c.Nodes)
 		if err != nil {
 			return nil, err
 		}
 
-		err = processPlugins(c.Nodes)
-		if err != nil {
-			return nil, err
-		}
 		canvasSchema, err := sonic.MarshalString(c)
 		if err != nil {
 			return nil, err
@@ -1735,12 +1724,11 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, spaceID int64, a
 	workflowsToPublish := make(map[int64]*vo.VersionInfo)
 	for wid, draftVersion := range draftVersions {
 		workflowsToPublish[wid] = &vo.VersionInfo{
-			Version:            version,
-			VersionDescription: desc,
-			Canvas:             draftVersion.Canvas,
-			InputParams:        draftVersion.InputParams,
-			OutputParams:       draftVersion.OutputParams,
-			CreatorID:          ctxutil.MustGetUIDFromCtx(ctx),
+			Version:      config.Version,
+			Canvas:       draftVersion.Canvas,
+			InputParams:  draftVersion.InputParams,
+			OutputParams: draftVersion.OutputParams,
+			CreatorID:    ctxutil.MustGetUIDFromCtx(ctx),
 		}
 	}
 

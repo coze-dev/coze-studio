@@ -378,8 +378,8 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 		}
 	}
 
-	if wfExeEntity.APPID != nil {
-		resp.Data.ProjectId = fmt.Sprintf("%d", *wfExeEntity.APPID)
+	if wfExeEntity.AppID != nil {
+		resp.Data.ProjectId = fmt.Sprintf("%d", *wfExeEntity.AppID)
 	}
 
 	batchNodeID2NodeResult := make(map[string]*workflow.NodeResult)

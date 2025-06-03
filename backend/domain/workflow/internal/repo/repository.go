@@ -159,7 +159,7 @@ func (r *RepositoryImpl) CreateWorkflowMeta(ctx context.Context, wf *entity.Work
 	}
 
 	if wf.APPID != nil {
-		wfMeta.ProjectID = *wf.APPID
+		wfMeta.AppID = *wf.APPID
 	}
 
 	if ref == nil {
@@ -330,8 +330,8 @@ func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity
 	if meta.SourceID != 0 {
 		wf.SourceID = &meta.SourceID
 	}
-	if meta.ProjectID != 0 {
-		wf.APPID = &meta.ProjectID
+	if meta.AppID != 0 {
+		wf.APPID = &meta.AppID
 	}
 	if meta.UpdatedAt > 0 {
 		wf.UpdatedAt = ptr.Of(time.UnixMilli(meta.UpdatedAt))
@@ -474,7 +474,7 @@ func (r *RepositoryImpl) CreateWorkflowExecution(ctx context.Context, execution 
 		Input:           ptr.FromOrDefault(execution.Input, ""),
 		RootExecutionID: execution.RootExecutionID,
 		ParentNodeID:    ptr.FromOrDefault(execution.ParentNodeID, ""),
-		ProjectID:       ptr.FromOrDefault(execution.APPID, 0),
+		AppID:           ptr.FromOrDefault(execution.AppID, 0),
 		NodeCount:       execution.NodeCount,
 	}
 
@@ -609,7 +609,7 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 		ConnectorUID: rootExe.ConnectorUID,
 		CreatedAt:    time.UnixMilli(rootExe.CreatedAt),
 		LogID:        rootExe.LogID,
-		APPID:        ternary.IFElse(rootExe.ProjectID > 0, ptr.Of(rootExe.ProjectID), nil),
+		AppID:        ternary.IFElse(rootExe.AppID > 0, ptr.Of(rootExe.AppID), nil),
 		NodeCount:    rootExe.NodeCount,
 		Status:       entity.WorkflowExecuteStatus(rootExe.Status),
 		Duration:     time.Duration(rootExe.Duration) * time.Microsecond,
@@ -989,8 +989,8 @@ func (r *RepositoryImpl) MGetWorkflowMeta(ctx context.Context, ids ...int64) (ma
 		if meta.SourceID != 0 {
 			wf.SourceID = &meta.SourceID
 		}
-		if meta.ProjectID != 0 {
-			wf.APPID = &meta.ProjectID
+		if meta.AppID != 0 {
+			wf.APPID = &meta.AppID
 		}
 		if meta.UpdatedAt > 0 {
 			wf.UpdatedAt = ptr.Of(time.UnixMilli(meta.UpdatedAt))
@@ -1123,8 +1123,8 @@ func (r *RepositoryImpl) ListWorkflowMeta(ctx context.Context, spaceID int64, pa
 		if meta.SourceID != 0 {
 			wf.SourceID = &meta.SourceID
 		}
-		if meta.ProjectID != 0 {
-			wf.APPID = &meta.ProjectID
+		if meta.AppID != 0 {
+			wf.APPID = &meta.AppID
 		}
 		if meta.UpdatedAt > 0 {
 			wf.UpdatedAt = ptr.Of(time.UnixMilli(meta.UpdatedAt))
@@ -1481,8 +1481,8 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, spaceID int64, workfl
 		copiedWorkflow.IconURI = wfMeta.IconURI
 		copiedWorkflow.SpaceID = wfMeta.SpaceID
 		copiedWorkflow.Desc = wfMeta.Description
-		if wfMeta.ProjectID > 0 {
-			copiedWorkflow.APPID = &wfMeta.ProjectID
+		if wfMeta.AppID > 0 {
+			copiedWorkflow.APPID = &wfMeta.AppID
 		}
 		copiedWorkflow.CreatorID = wfMeta.CreatorID
 
@@ -1542,13 +1542,14 @@ func (r *RepositoryImpl) GetNodeDebugLatestExeID(ctx context.Context, wfID int64
 	}
 	return exeID, nil
 }
-func (r *RepositoryImpl) GetDraftWorkflowsByAppID(ctx context.Context, spaceID int64, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error) {
+func (r *RepositoryImpl) GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error) {
 	var (
 		workflowMeta  = r.query.WorkflowMeta
 		workflowDraft = r.query.WorkflowDraft
 	)
 
-	wfMetas, err := workflowMeta.WithContext(ctx).Where(workflowMeta.SpaceID.Eq(spaceID), workflowMeta.ProjectID.Eq(AppID)).Find()
+	// TODO(zhuangjie): querying workflow information may require additional commit_id at a later stage, it is used to confirm the workflow information at the time of release, not to obtain the latest version
+	wfMetas, err := workflowMeta.WithContext(ctx).Where(workflowMeta.AppID.Eq(AppID)).Find()
 	if err != nil {
 		return nil, nil, err
 	}

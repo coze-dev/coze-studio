@@ -134,7 +134,7 @@ func designateOptionsForSubWorkflow(ctx context.Context,
 			WorkflowIdentity: *subWorkflowIdentity,
 			SpaceID:          0,   // TODO: fill this
 			APPID:            nil, // TODO: fill this
-			NodeCount:        int32(len(ns.SubWorkflowSchema.GetAllNodes())),
+			NodeCount:        ns.SubWorkflowSchema.NodeCount(),
 		},
 		resumeEvent,
 	)
