@@ -33,7 +33,7 @@ func createSecret(uid int64, fileType string) string {
 	}
 	return result
 }
-func GetExtension(uri string) string {
+func getExtension(uri string) string {
 	if uri == "" {
 		return ""
 	}

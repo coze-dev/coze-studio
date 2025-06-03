@@ -10,6 +10,8 @@ import (
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
@@ -43,7 +45,7 @@ func (d *DraftImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, databas
 
 	draftInfo := &model.DraftDatabaseInfo{
 		ID:              draftID,
-		ProjectID:       database.ProjectID,
+		AppID:           database.AppID,
 		SpaceID:         database.SpaceID,
 		RelatedOnlineID: onlineID,
 		IsVisible:       1, // 默认可见
@@ -97,15 +99,15 @@ func (d *DraftImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 		CreatorID: info.CreatorID,
 		IconURI:   info.IconURI,
 
-		ProjectID:       info.ProjectID,
+		AppID:           info.AppID,
 		IsVisible:       info.IsVisible == 1,
 		PromptDisabled:  info.PromptDisabled == 1,
 		TableName:       info.TableName_,
 		TableDesc:       info.TableDesc,
 		FieldList:       info.TableField,
-		Status:          entity.TableStatus_Draft,
+		Status:          table.BotTableStatus_Online,
 		ActualTableName: info.PhysicalTableName,
-		RwMode:          entity.DatabaseRWMode(info.RwMode),
+		RwMode:          table.BotTableRWMode(info.RwMode),
 		OnlineID:        &info.RelatedOnlineID,
 	}
 
@@ -135,15 +137,15 @@ func (d *DraftImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 			CreatorID: info.CreatorID,
 			IconURI:   info.IconURI,
 
-			ProjectID:       info.ProjectID,
+			AppID:           info.AppID,
 			IsVisible:       info.IsVisible == 1,
 			PromptDisabled:  info.PromptDisabled == 1,
 			TableName:       info.TableName_,
 			TableDesc:       info.TableDesc,
 			FieldList:       info.TableField,
-			Status:          entity.TableStatus_Draft,
+			Status:          table.BotTableStatus_Online,
 			ActualTableName: info.PhysicalTableName,
-			RwMode:          entity.DatabaseRWMode(info.RwMode),
+			RwMode:          table.BotTableRWMode(info.RwMode),
 			OnlineID:        &info.RelatedOnlineID,
 
 			CreatedAtMs: info.CreatedAt,
@@ -167,7 +169,7 @@ func (d *DraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 	now := time.Now().UnixMilli()
 
 	updates := map[string]interface{}{ // todo lj 检查哪些可能被更新
-		"project_id":  database.ProjectID,
+		"app_id":      database.AppID,
 		"table_name":  database.TableName,
 		"table_desc":  database.Description,
 		"table_field": fieldJsonStr,
@@ -211,7 +213,7 @@ func (d *DraftImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int6
 }
 
 // List 列出符合条件的数据库信息
-func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*entity.OrderBy) ([]*entity.Database, int64, error) {
+func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*database.OrderBy) ([]*entity.Database, int64, error) {
 	res := d.query.DraftDatabaseInfo
 
 	q := res.WithContext(ctx)
@@ -224,6 +226,10 @@ func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 
 		if filter.SpaceID != nil {
 			q = q.Where(res.SpaceID.Eq(*filter.SpaceID))
+		}
+
+		if filter.AppID != nil {
+			q = q.Where(res.AppID.Eq(*filter.AppID))
 		}
 
 		if filter.TableName != nil {
@@ -252,13 +258,13 @@ func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 		for _, order := range orderBy {
 			switch order.Field {
 			case "created_at":
-				if order.Direction == entity.SortDirection_Desc {
+				if order.Direction == table.SortDirection_Desc {
 					q = q.Order(res.CreatedAt.Desc())
 				} else {
 					q = q.Order(res.CreatedAt)
 				}
 			case "updated_at":
-				if order.Direction == entity.SortDirection_Desc {
+				if order.Direction == table.SortDirection_Desc {
 					q = q.Order(res.UpdatedAt.Desc())
 				} else {
 					q = q.Order(res.UpdatedAt)
@@ -284,16 +290,16 @@ func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 			CreatorID: info.CreatorID,
 			IconURI:   info.IconURI,
 
-			ProjectID:       info.ProjectID,
+			AppID:           info.AppID,
 			IsVisible:       info.IsVisible == 1,
 			PromptDisabled:  info.PromptDisabled == 1,
 			TableName:       info.TableName_,
 			TableDesc:       info.TableDesc,
 			FieldList:       info.TableField,
-			Status:          entity.TableStatus_Draft,
+			Status:          table.BotTableStatus_Online,
 			ActualTableName: info.PhysicalTableName,
-			RwMode:          entity.DatabaseRWMode(info.RwMode),
-			TableType:       ptr.Of(entity.TableType_DraftTable),
+			RwMode:          table.BotTableRWMode(info.RwMode),
+			TableType:       ptr.Of(table.TableType_DraftTable),
 			OnlineID:        &info.RelatedOnlineID,
 		}
 

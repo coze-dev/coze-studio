@@ -5,7 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 )
 
@@ -13,17 +14,17 @@ const (
 	TimeFormat = "2006-01-02 15:04:05"
 )
 
-func SwitchToDataType(itemType entity2.FieldItemType) entity.DataType {
+func SwitchToDataType(itemType table.FieldItemType) entity.DataType {
 	switch itemType {
-	case entity2.FieldItemType_Text:
+	case table.FieldItemType_Text:
 		return entity.TypeVarchar
-	case entity2.FieldItemType_Number:
+	case table.FieldItemType_Number:
 		return entity.TypeBigInt
-	case entity2.FieldItemType_Date:
+	case table.FieldItemType_Date:
 		return entity.TypeTimestamp
-	case entity2.FieldItemType_Float:
+	case table.FieldItemType_Float:
 		return entity.TypeDouble
-	case entity2.FieldItemType_Boolean:
+	case table.FieldItemType_Boolean:
 		return entity.TypeBoolean
 	default:
 		// 默认使用 VARCHAR
@@ -32,13 +33,13 @@ func SwitchToDataType(itemType entity2.FieldItemType) entity.DataType {
 }
 
 // ConvertValueByType converts a string value to the specified type.
-func ConvertValueByType(value string, fieldType entity2.FieldItemType) (interface{}, error) {
+func ConvertValueByType(value string, fieldType table.FieldItemType) (interface{}, error) {
 	if value == "" {
 		return nil, nil
 	}
 
 	switch fieldType {
-	case entity2.FieldItemType_Number:
+	case table.FieldItemType_Number:
 		intVal, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
 			return 0, fmt.Errorf("cannot convert %s to number", value)
@@ -46,14 +47,14 @@ func ConvertValueByType(value string, fieldType entity2.FieldItemType) (interfac
 
 		return intVal, nil
 
-	case entity2.FieldItemType_Float:
+	case table.FieldItemType_Float:
 		if floatVal, err := strconv.ParseFloat(value, 64); err == nil {
 			return floatVal, nil
 		}
 
 		return 0.0, fmt.Errorf("cannot convert %s to float", value)
 
-	case entity2.FieldItemType_Boolean:
+	case table.FieldItemType_Boolean:
 		if boolVal, err := strconv.ParseBool(value); err == nil {
 			return boolVal, nil
 		}
@@ -68,7 +69,7 @@ func ConvertValueByType(value string, fieldType entity2.FieldItemType) (interfac
 
 		return false, fmt.Errorf("cannot convert %s to boolean", value)
 
-	case entity2.FieldItemType_Date:
+	case table.FieldItemType_Date:
 		t, err := time.Parse(TimeFormat, value) // database use this format
 		if err != nil {
 			return "", fmt.Errorf("cannot convert %s to date", value)
@@ -76,7 +77,7 @@ func ConvertValueByType(value string, fieldType entity2.FieldItemType) (interfac
 
 		return t.UTC(), nil
 
-	case entity2.FieldItemType_Text:
+	case table.FieldItemType_Text:
 		return value, nil
 
 	default:
@@ -85,14 +86,14 @@ func ConvertValueByType(value string, fieldType entity2.FieldItemType) (interfac
 }
 
 // ConvertDBValueToString converts a database value to a string.
-func ConvertDBValueToString(value interface{}, fieldType entity2.FieldItemType) string {
+func ConvertDBValueToString(value interface{}, fieldType table.FieldItemType) string {
 	switch fieldType {
-	case entity2.FieldItemType_Text:
+	case table.FieldItemType_Text:
 		if byteArray, ok := value.([]uint8); ok {
 			return string(byteArray)
 		}
 
-	case entity2.FieldItemType_Number:
+	case table.FieldItemType_Number:
 		switch v := value.(type) {
 		case int64:
 			return strconv.FormatInt(v, 10)
@@ -100,7 +101,7 @@ func ConvertDBValueToString(value interface{}, fieldType entity2.FieldItemType) 
 			return string(v)
 		}
 
-	case entity2.FieldItemType_Float:
+	case table.FieldItemType_Float:
 		switch v := value.(type) {
 		case float64:
 			return strconv.FormatFloat(v, 'f', -1, 64)
@@ -108,7 +109,7 @@ func ConvertDBValueToString(value interface{}, fieldType entity2.FieldItemType) 
 			return string(v)
 		}
 
-	case entity2.FieldItemType_Boolean:
+	case table.FieldItemType_Boolean:
 		switch v := value.(type) {
 		case bool:
 			return strconv.FormatBool(v)
@@ -122,7 +123,7 @@ func ConvertDBValueToString(value interface{}, fieldType entity2.FieldItemType) 
 			return "false"
 		}
 
-	case entity2.FieldItemType_Date:
+	case table.FieldItemType_Date:
 		switch v := value.(type) {
 		case time.Time:
 			return v.Format(TimeFormat)
@@ -158,42 +159,42 @@ func ConvertSystemFieldToString(fieldName string, value interface{}) string {
 	return fmt.Sprintf("%v", value)
 }
 
-func ConvertLogicOperator(logic entity2.Logic) entity.LogicalOperator {
+func ConvertLogicOperator(logic database.Logic) entity.LogicalOperator {
 	switch logic {
-	case entity2.Logic_And:
+	case database.Logic_And:
 		return entity.AND
-	case entity2.Logic_Or:
+	case database.Logic_Or:
 		return entity.OR
 	default:
 		return entity.AND // 默认使用AND
 	}
 }
 
-func ConvertOperator(op entity2.Operation) entity.Operator {
+func ConvertOperator(op database.Operation) entity.Operator {
 	switch op {
-	case entity2.Operation_EQUAL:
+	case database.Operation_EQUAL:
 		return entity.OperatorEqual
-	case entity2.Operation_NOT_EQUAL:
+	case database.Operation_NOT_EQUAL:
 		return entity.OperatorNotEqual
-	case entity2.Operation_GREATER_THAN:
+	case database.Operation_GREATER_THAN:
 		return entity.OperatorGreater
-	case entity2.Operation_GREATER_EQUAL:
+	case database.Operation_GREATER_EQUAL:
 		return entity.OperatorGreaterEqual
-	case entity2.Operation_LESS_THAN:
+	case database.Operation_LESS_THAN:
 		return entity.OperatorLess
-	case entity2.Operation_LESS_EQUAL:
+	case database.Operation_LESS_EQUAL:
 		return entity.OperatorLessEqual
-	case entity2.Operation_IN:
+	case database.Operation_IN:
 		return entity.OperatorIn
-	case entity2.Operation_NOT_IN:
+	case database.Operation_NOT_IN:
 		return entity.OperatorNotIn
-	case entity2.Operation_LIKE:
+	case database.Operation_LIKE:
 		return entity.OperatorLike
-	case entity2.Operation_NOT_LIKE:
+	case database.Operation_NOT_LIKE:
 		return entity.OperatorNotLike
-	case entity2.Operation_IS_NULL:
+	case database.Operation_IS_NULL:
 		return entity.OperatorIsNull
-	case entity2.Operation_IS_NOT_NULL:
+	case database.Operation_IS_NOT_NULL:
 		return entity.OperatorIsNotNull
 	default:
 		return entity.OperatorEqual

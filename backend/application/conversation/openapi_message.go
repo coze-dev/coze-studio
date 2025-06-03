@@ -50,8 +50,7 @@ func (m *OpenapiMessageApplication) GetApiMessageList(ctx context.Context, mr *m
 		msgListMeta.OrderBy = mr.Order
 	}
 
-	mListMessages, err := messageDomainSVC.List(ctx, msgListMeta)
-
+	mListMessages, err := ConversationSVC.MessageDomainSVC.List(ctx, msgListMeta)
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +67,7 @@ func (m *OpenapiMessageApplication) GetApiMessageList(ctx context.Context, mr *m
 }
 
 func getConversation(ctx context.Context, conversationID int64) (*convEntity.Conversation, error) {
-
-	conversationInfo, err := conversationDomainSVC.GetByID(ctx, conversationID)
+	conversationInfo, err := ConversationSVC.ConversationDomainSVC.GetByID(ctx, conversationID)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +75,6 @@ func getConversation(ctx context.Context, conversationID int64) (*convEntity.Con
 }
 
 func (m *OpenapiMessageApplication) buildMessageListResponse(ctx context.Context, mListMessages *entity.ListResult, currentConversation *convEntity.Conversation) *message.ListMessageApiResponse {
-
 	messagesVO := slices.Transform(mListMessages.Messages, func(dm *entity.Message) *message.OpenMessageApi {
 		return &message.OpenMessageApi{
 			ID:             dm.ID,

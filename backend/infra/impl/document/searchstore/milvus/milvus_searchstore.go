@@ -2,6 +2,7 @@ package milvus
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -34,8 +35,14 @@ func (m *milvusSearchStore) Store(ctx context.Context, docs []*schema.Document, 
 	if len(docs) == 0 {
 		return nil, nil
 	}
-
 	implSpecOptions := indexer.GetImplSpecificOptions(&searchstore.IndexerOptions{}, opts...)
+	defer func() {
+		if err != nil {
+			if implSpecOptions.ProgressBar != nil {
+				implSpecOptions.ProgressBar.ReportError(err)
+			}
+		}
+	}()
 	indexingFields := make(sets.Set[string])
 	for _, field := range implSpecOptions.IndexingFields {
 		indexingFields[field] = struct{}{}
@@ -86,6 +93,11 @@ func (m *milvusSearchStore) Store(ctx context.Context, docs []*schema.Document, 
 				}
 			}
 			ids = append(ids, sid)
+		}
+		if implSpecOptions.ProgressBar != nil {
+			if err = implSpecOptions.ProgressBar.AddN(len(part)); err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -458,6 +470,11 @@ func (m *milvusSearchStore) dsl2Expr(src map[string]interface{}) (string, error)
 		case searchstore.OpLike:
 			return pyfmt.Fmt("{field} LIKE {val}", kv)
 		case searchstore.OpIn:
+			b, err := json.Marshal(dsl.Value)
+			if err != nil {
+				return "", err
+			}
+			kv["val"] = string(b)
 			return pyfmt.Fmt("{field} IN {val}", kv)
 		case searchstore.OpAnd, searchstore.OpOr:
 			sub, ok := dsl.Value.([]*searchstore.DSL)

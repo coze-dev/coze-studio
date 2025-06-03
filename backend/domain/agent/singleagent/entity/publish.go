@@ -6,8 +6,8 @@ import (
 )
 
 var PublishConnectorIDWhiteList = map[int64]bool{
-	consts.WebSDKConnectorID:     true,
-	consts.AgentAsAPIConnectorID: true,
+	consts.WebSDKConnectorID: true,
+	consts.APIConnectorID:    true,
 }
 
 type PublishConnectorData struct {

@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"time"
 
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 //go:generate mockgen -destination ../../mock/dal/dao/knowledge_document.go --package dao -source knowledge_document.go
@@ -23,7 +25,7 @@ type KnowledgeDocumentRepo interface {
 	GetByID(ctx context.Context, id int64) (*model.KnowledgeDocument, error)
 	FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) (
 		[]*model.KnowledgeDocument, int64, error)
-	SoftDeleteDocuments(ctx context.Context, ids []int64) error
+	DeleteDocuments(ctx context.Context, ids []int64) error
 	SetStatus(ctx context.Context, documentID int64, status int32, reason string) error
 	CreateWithTx(ctx context.Context, tx *gorm.DB, document []*model.KnowledgeDocument) error
 	UpdateDocumentSliceInfo(ctx context.Context, documentID int64) error
@@ -123,6 +125,7 @@ type WhereDocumentOpt struct {
 	Limit        int
 	Offset       *int
 	Cursor       *string
+	SelectAll    bool
 }
 
 func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) ([]*model.KnowledgeDocument, int64, error) {
@@ -152,7 +155,9 @@ func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 	if opts.Limit != 0 {
 		do = do.Limit(opts.Limit)
 	} else {
-		do = do.Limit(50)
+		if !opts.SelectAll {
+			do = do.Limit(50)
+		}
 	}
 	if opts.Offset != nil {
 		do = do.Offset(*opts.Offset)
@@ -175,7 +180,7 @@ func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 	return resp, total, nil
 }
 
-func (dao *knowledgeDocumentDAO) SoftDeleteDocuments(ctx context.Context, ids []int64) error {
+func (dao *knowledgeDocumentDAO) DeleteDocuments(ctx context.Context, ids []int64) error {
 	tx := dao.db.Begin()
 	var err error
 	defer func() {
@@ -200,7 +205,10 @@ func (dao *knowledgeDocumentDAO) SoftDeleteDocuments(ctx context.Context, ids []
 
 func (dao *knowledgeDocumentDAO) SetStatus(ctx context.Context, documentID int64, status int32, reason string) error {
 	k := dao.query.KnowledgeDocument
-	d := &model.KnowledgeDocument{Status: status, FailReason: reason}
+	if len(reason) > 255 { // TODO: tinytext 换成 text ?
+		reason = reason[:255]
+	}
+	d := &model.KnowledgeDocument{Status: status, FailReason: reason, UpdatedAt: time.Now().UnixMilli()}
 	_, err := k.WithContext(ctx).Debug().Where(k.ID.Eq(documentID)).Updates(d)
 	return err
 }
@@ -218,6 +226,9 @@ func (dao *knowledgeDocumentDAO) GetByID(ctx context.Context, id int64) (*model.
 	k := dao.query.KnowledgeDocument
 	document, err := k.WithContext(ctx).Where(k.ID.Eq(id)).First()
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return document, nil
@@ -227,7 +238,7 @@ func (dao *knowledgeDocumentDAO) UpdateDocumentSliceInfo(ctx context.Context, do
 	s := dao.query.KnowledgeDocumentSlice
 	var err error
 	var sliceCount int64
-	var totalSize int64
+	var totalSize *int64
 	sliceCount, err = s.WithContext(ctx).Debug().Where(s.DocumentID.Eq(documentID)).Count()
 	if err != nil {
 		return err
@@ -237,7 +248,7 @@ func (dao *knowledgeDocumentDAO) UpdateDocumentSliceInfo(ctx context.Context, do
 		return err
 	}
 	k := dao.query.KnowledgeDocument
-	d := &model.KnowledgeDocument{SliceCount: sliceCount, Size: totalSize}
+	d := &model.KnowledgeDocument{SliceCount: sliceCount, Size: ptr.From(totalSize), CreatedAt: time.Now().UnixMilli()}
 	_, err = k.WithContext(ctx).Debug().Where(k.ID.Eq(documentID)).Updates(d)
 	return err
 }

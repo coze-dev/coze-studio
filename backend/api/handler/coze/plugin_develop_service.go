@@ -9,10 +9,9 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	"code.byted.org/flow/opencoze/backend/application/plugin"
-
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	"code.byted.org/flow/opencoze/backend/application/plugin"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 )
 
@@ -63,7 +62,7 @@ func GetPlaygroundPluginList(ctx context.Context, c *app.RequestContext) {
 	// when there is only one element in the types list, and the element type is workflow, use workflow service
 	// TODO Figure out when there are multiple values for types
 	if len(req.GetPluginTypes()) == 1 && req.GetPluginTypes()[0] == int32(common.PluginType_WORKFLOW) {
-		resp, err := appworkflow.WorkflowSVC.GetPlaygroundPluginList(ctx, &req)
+		resp, err := appworkflow.SVC.GetPlaygroundPluginList(ctx, &req)
 		if err != nil {
 			internalServerErrorResponse(ctx, c, err)
 			return
@@ -122,7 +121,7 @@ func RegisterPluginMeta(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 	}
-	if req.GetPluginType() != common.PluginType_PLUGIN && req.GetPluginType() != common.PluginType_LOCAL {
+	if req.GetPluginType() != common.PluginType_PLUGIN {
 		invalidParamRequestResponse(c, "plugin type is invalid")
 		return
 	}
@@ -710,6 +709,43 @@ func RegisterPlugin(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := plugin.PluginApplicationSVC.RegisterPlugin(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetDevPluginList .
+// @router /api/plugin_api/get_dev_plugin_list [POST]
+func GetDevPluginList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.GetDevPluginListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.SpaceID <= 0 {
+		invalidParamRequestResponse(c, "spaceID is invalid")
+		return
+	}
+	if req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "projectID is invalid")
+		return
+	}
+	if req.GetPage() <= 0 {
+		invalidParamRequestResponse(c, "page is invalid")
+		return
+	}
+	if req.GetSize() <= 0 {
+		invalidParamRequestResponse(c, "size is invalid")
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.GetDevPluginList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

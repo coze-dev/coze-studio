@@ -35,7 +35,7 @@ func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
 		pFn = parsePDFPy(config, m.storage, m.ocr)
 	case parser.FileExtensionTXT,
 		parser.FileExtensionMarkdown:
-		pFn = parseText(config)
+		pFn = parseMarkdown(config, m.storage, m.ocr)
 	case parser.FileExtensionDocx:
 		pFn = parseDocx(config, m.storage, m.ocr)
 	case parser.FileExtensionCSV:

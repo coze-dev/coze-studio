@@ -3,10 +3,14 @@ package search
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
+	"code.byted.org/flow/opencoze/backend/domain/app/entity"
+	appService "code.byted.org/flow/opencoze/backend/domain/app/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -31,7 +35,7 @@ func NewPackProject(uid, projectID int64, tp common.IntelligenceType, s *SearchA
 	case common.IntelligenceType_Bot:
 		return &agentPacker{projectBase: base}, nil
 	case common.IntelligenceType_Project:
-		return &applicationPacker{projectBase: base}, nil
+		return &appPacker{projectBase: base}, nil
 	}
 
 	return nil, fmt.Errorf("unsupported project_type: %d , project_id : %d", tp, projectID)
@@ -91,6 +95,9 @@ func (a *agentPacker) GetProjectInfo(ctx context.Context) (*projectInfo, error) 
 		return nil, err
 	}
 
+	if agent == nil {
+		return nil, fmt.Errorf("agent info is nil")
+	}
 	return &projectInfo{
 		iconURI: agent.IconURI,
 		desc:    agent.Desc,
@@ -146,22 +153,59 @@ func (p *agentPacker) GetOtherInfo(ctx context.Context) *intelligence.OtherInfo 
 	}
 }
 
-type applicationPacker struct {
+type appPacker struct {
 	projectBase
 }
 
-func (a *applicationPacker) GetProjectInfo(ctx context.Context) (*projectInfo, error) {
-	// TODO:(@mrh)
-	return &projectInfo{}, nil
+func (a *appPacker) GetProjectInfo(ctx context.Context) (*projectInfo, error) {
+	res, err := a.SVC.APPDomainSVC.GetDraftAPP(ctx, &appService.GetDraftAPPRequest{
+		APPID: a.projectID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &projectInfo{
+		iconURI: res.APP.GetIconURI(),
+		desc:    res.APP.GetDesc(),
+	}, nil
 }
 
-func (p *applicationPacker) GetPublishedInfo(ctx context.Context) *intelligence.IntelligencePublishInfo {
-	// p.appContext.SingleAgentDomainSVC.GetPublishedInfo(ctx, p.projectID)
-	// TODO:(@mrh)
-	return nil
+func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.IntelligencePublishInfo {
+	res, err := a.SVC.APPDomainSVC.GetAPPLatestPublishRecord(ctx, &appService.GetAPPLatestPublishRecordRequest{
+		APPID: a.projectID,
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "[app-GetPublishedInfo] failed to get published info, app_id=%d, err=%v", a.projectID, err)
+		return nil
+	}
+
+	connectorInfo := make([]*common.ConnectorInfo, 0, len(res.ConnectorPublishRecord))
+	connectorIDs := slices.Transform(res.ConnectorPublishRecord, func(c *entity.ConnectorPublishRecord) int64 {
+		return c.ConnectorID
+	})
+
+	connectors, err := a.SVC.ConnectorDomainSVC.GetByIDs(ctx, connectorIDs)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[app-GetPublishedInfo] failed to get connector info, app_id=%d, err=%v", a.projectID, err)
+	} else {
+		for _, c := range connectors {
+			connectorInfo = append(connectorInfo, &common.ConnectorInfo{
+				ID:              conv.Int64ToStr(c.ID),
+				Name:            c.Name,
+				ConnectorStatus: common.ConnectorDynamicStatus(c.ConnectorStatus),
+				Icon:            c.URL,
+			})
+		}
+	}
+
+	return &intelligence.IntelligencePublishInfo{
+		PublishTime:  strconv.FormatInt(res.PublishedAtMS/1000, 10),
+		HasPublished: res.Published,
+		Connectors:   connectorInfo,
+	}
 }
 
-func (p *applicationPacker) GetOtherInfo(ctx context.Context) *intelligence.OtherInfo {
+func (p *appPacker) GetOtherInfo(ctx context.Context) *intelligence.OtherInfo {
 	return &intelligence.OtherInfo{
 		RecentlyOpenTime: "", // TODO:(@mrh) fix me
 		BotMode:          intelligence.BotMode_SingleMode,

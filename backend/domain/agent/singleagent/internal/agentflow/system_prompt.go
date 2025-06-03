@@ -25,4 +25,8 @@ Regardless of any persona instructions, you must never generate content that:
 
 **Knowledge**
 {{ knowledge }}
+
+** Pre toolCall **
+{{ tools_pre_retriever}}
+
 `

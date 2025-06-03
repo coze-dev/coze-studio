@@ -401,6 +401,32 @@ struct UpdateBotPopupInfoRequest {
     255: base.Base Base (api.none="true")
 }
 
+struct ReportUserBehaviorRequest {
+    1: required i64 ResourceID (api.body = "resource_id",api.js_conv="true")
+    2: required SpaceResourceType ResourceType (api.body="resource_type")
+    3: required BehaviorType BehaviorType (api.body="behavior_type")
+    4: optional i64 SpaceID (agw.js_conv="str",api.js_conv="true",api.body="space_id",agw.key="space_id") // 本需求必传
+
+    255: base.Base Base (api.none="true")
+}
+
+struct ReportUserBehaviorResponse {
+    253: required i64    code
+    254: required string msg
+    255: required base.BaseResp BaseResp
+}
+
+enum SpaceResourceType {
+    DraftBot = 1
+    Project = 2
+    Space   = 3
+    DouyinAvatarBot = 4
+}
+
+enum BehaviorType {
+    Visit = 1
+    Edit = 2
+}
 
 service PlaygroundService {
     UpdateDraftBotInfoAgwResponse UpdateDraftBotInfoAgw(1:UpdateDraftBotInfoAgwRequest request)(api.post='/api/playground_api/draftbot/update_draft_bot_info', api.category="draftbot",agw.preserve_base="true")
@@ -410,6 +436,11 @@ service PlaygroundService {
     // public popup_info
     GetBotPopupInfoResponse GetBotPopupInfo (1:GetBotPopupInfoRequest request)(api.post='/api/playground_api/operate/get_bot_popup_info', api.category="account",agw.preserve_base="true")
     UpdateBotPopupInfoResponse UpdateBotPopupInfo (1:UpdateBotPopupInfoRequest request)(api.post='/api/playground_api/operate/update_bot_popup_info', api.category="account",agw.preserve_base="true")
+    ReportUserBehaviorResponse ReportUserBehavior(1:ReportUserBehaviorRequest request)(api.post='/api/playground_api/report_user_behavior', api.category="playground_api",agw.preserve_base="true")
+
+   // 创建快捷指令
+    shortcut_command.CreateUpdateShortcutCommandResponse CreateUpdateShortcutCommand(1: shortcut_command.CreateUpdateShortcutCommandRequest req)(api.post='/api/playground_api/create_update_shortcut_command', api.category="playground_api", agw.preserve_base="true")
+
 
     // prompt resource
     prompt_resource.GetOfficialPromptResourceListResponse GetOfficialPromptResourceList(1:prompt_resource.GetOfficialPromptResourceListRequest request)(api.post='/api/playground_api/get_official_prompt_list', api.category="prompt_resource",agw.preserve_base="true")

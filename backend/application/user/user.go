@@ -24,12 +24,14 @@ type UserApplicationService struct {
 	DomainSVC user.User
 }
 
-func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context, req *passport.PassportWebEmailRegisterV2PostRequest) (
+func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context, locale string, req *passport.PassportWebEmailRegisterV2PostRequest) (
 	resp *passport.PassportWebEmailRegisterV2PostResponse, sessionKey string, err error,
 ) {
 	userInfo, err := u.DomainSVC.Create(ctx, &user.CreateUserRequest{
 		Email:    req.GetEmail(),
 		Password: req.GetPassword(),
+
+		Locale: locale,
 	})
 	if err != nil {
 		return nil, "", err
@@ -152,6 +154,7 @@ func (u *UserApplicationService) UserUpdateProfile(ctx context.Context, req *pas
 		Name:        req.Name,
 		UniqueName:  req.UserUniqueName,
 		Description: req.Description,
+		Locale:      req.Locale,
 	})
 	if err != nil {
 		return nil, err
@@ -220,7 +223,10 @@ func (u *UserApplicationService) MGetUserBasicInfo(ctx context.Context, req *pla
 
 func (u *UserApplicationService) UpdateUserProfileCheck(ctx context.Context, req *developer_api.UpdateUserProfileCheckRequest) (resp *developer_api.UpdateUserProfileCheckResponse, err error) {
 	if req.GetUserUniqueName() == "" {
-		return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "missing unique name"))
+		return &developer_api.UpdateUserProfileCheckResponse{
+			Code: 0,
+			Msg:  "no content to update",
+		}, nil
 	}
 
 	validateResp, err := u.DomainSVC.ValidateProfileUpdate(ctx, &user.ValidateProfileUpdateRequest{
@@ -250,6 +256,12 @@ func (u *UserApplicationService) ValidateSession(ctx context.Context, sessionKey
 }
 
 func userDo2PassportTo(userDo *entity.User) *passport.User {
+
+	var locale *string
+	if userDo.Locale != "" {
+		locale = ptr.Of(userDo.Locale)
+	}
+
 	return &passport.User{
 		UserIDStr:      userDo.UserID,
 		Name:           userDo.Name,
@@ -261,6 +273,7 @@ func userDo2PassportTo(userDo *entity.User) *passport.User {
 		AppUserInfo: &passport.AppUserInfo{
 			UserUniqueName: userDo.UniqueName,
 		},
+		Locale: locale,
 
 		UserCreateTime: userDo.CreatedAt / 1000,
 	}

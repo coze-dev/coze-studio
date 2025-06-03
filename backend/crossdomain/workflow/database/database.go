@@ -8,10 +8,10 @@ import (
 
 	"github.com/spf13/cast"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
-	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 )
 
@@ -26,25 +26,22 @@ func NewDatabaseRepository(client service.Database) *DatabaseRepository {
 }
 
 func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.CustomSQLRequest) (*nodedatabase.Response, error) {
-
 	req := &service.ExecuteSQLRequest{
 		DatabaseID:  request.DatabaseInfoID,
-		OperateType: entity.OperateType_Custom,
+		OperateType: database.OperateType_Custom,
 		SQL:         &request.SQL,
 	}
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.User = &userEntity.UserIdentity{
-			UserID: *uid,
-		}
+		req.UserID = *uid
 	}
 
-	req.SQLParams = make([]*entity.SQLParamVal, 0, len(request.Params))
+	req.SQLParams = make([]*database.SQLParamVal, 0, len(request.Params))
 	for i := range request.Params {
 		value := request.Params[i]
-		req.SQLParams = append(req.SQLParams, &entity.SQLParamVal{
-			ValueType: entity.FieldItemType_Text,
+		req.SQLParams = append(req.SQLParams, &database.SQLParamVal{
+			ValueType: table.FieldItemType_Text,
 			Value:     &value,
 		})
 	}
@@ -53,7 +50,6 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 		return nil, err
 	}
 	return toNodeDateBaseResponse(response), nil
-
 }
 
 func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.DeleteRequest) (*nodedatabase.Response, error) {
@@ -61,15 +57,13 @@ func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.D
 		err error
 		req = &service.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
-			OperateType: entity.OperateType_Delete,
-			TableType:   entity.TableType_OnlineTable, // TODO 目前先默认写到线上
+			OperateType: database.OperateType_Delete,
+			TableType:   table.TableType_OnlineTable, // TODO 目前先默认写到线上
 		}
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.User = &userEntity.UserIdentity{
-			UserID: *uid,
-		}
+		req.UserID = *uid
 	}
 	if request.ConditionGroup != nil {
 		req.Condition, req.SQLParams, err = buildComplexCondition(request.ConditionGroup)
@@ -86,30 +80,28 @@ func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.D
 }
 
 func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.QueryRequest) (*nodedatabase.Response, error) {
-
 	var (
 		err error
 		req = &service.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
-			OperateType: entity.OperateType_Select,
-			TableType:   entity.TableType_OnlineTable, // TODO 目前先默认写到线上
+			OperateType: database.OperateType_Select,
+			TableType:   table.TableType_OnlineTable, // TODO 目前先默认写到线上
 		}
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.User = &userEntity.UserIdentity{
-			UserID: *uid,
-		}
+		req.UserID = *uid
 	}
-	req.SelectFieldList = &entity.SelectFieldList{FieldID: make([]string, 0, len(request.SelectFields))}
+
+	req.SelectFieldList = &database.SelectFieldList{FieldID: make([]string, 0, len(request.SelectFields))}
 	for i := range request.SelectFields {
 		req.SelectFieldList.FieldID = append(req.SelectFieldList.FieldID, request.SelectFields[i])
 	}
 
-	req.OrderByList = make([]entity.OrderBy, 0)
+	req.OrderByList = make([]database.OrderBy, 0)
 	for i := range request.OrderClauses {
 		clause := request.OrderClauses[i]
-		req.OrderByList = append(req.OrderByList, entity.OrderBy{
+		req.OrderByList = append(req.OrderByList, database.OrderBy{
 			Field:     clause.FieldID,
 			Direction: toOrderDirection(clause.IsAsc),
 		})
@@ -135,20 +127,18 @@ func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.Qu
 func (d *DatabaseRepository) Update(ctx context.Context, request *nodedatabase.UpdateRequest) (*nodedatabase.Response, error) {
 	var (
 		err       error
-		condition *entity.ComplexCondition
-		params    []*entity.SQLParamVal
+		condition *database.ComplexCondition
+		params    []*database.SQLParamVal
 		req       = &service.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
-			OperateType: entity.OperateType_Update,
-			SQLParams:   make([]*entity.SQLParamVal, 0),
-			TableType:   entity.TableType_OnlineTable, // TODO 目前先默认写到线上
+			OperateType: database.OperateType_Update,
+			SQLParams:   make([]*database.SQLParamVal, 0),
+			TableType:   table.TableType_OnlineTable, // TODO 目前先默认写到线上
 		}
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.User = &userEntity.UserIdentity{
-			UserID: *uid,
-		}
+		req.UserID = *uid
 	}
 	req.UpsertRows, req.SQLParams, err = resolveUpsertRow(request.Fields)
 	if err != nil {
@@ -173,21 +163,18 @@ func (d *DatabaseRepository) Update(ctx context.Context, request *nodedatabase.U
 }
 
 func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.InsertRequest) (*nodedatabase.Response, error) {
-
 	var (
 		err error
 		req = &service.ExecuteSQLRequest{
 			DatabaseID:  request.DatabaseInfoID,
-			OperateType: entity.OperateType_Insert,
+			OperateType: database.OperateType_Insert,
 
-			TableType: entity.TableType_OnlineTable, // TODO 目前先默认写到线上
+			TableType: table.TableType_OnlineTable, // TODO 目前先默认写到线上
 		}
 	)
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.User = &userEntity.UserIdentity{
-			UserID: *uid,
-		}
+		req.UserID = *uid
 	}
 	req.UpsertRows, req.SQLParams, err = resolveUpsertRow(request.Fields)
 	if err != nil {
@@ -200,24 +187,22 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 	}
 
 	return toNodeDateBaseResponse(response), nil
-
 }
 
-func buildComplexCondition(conditionGroup *nodedatabase.ConditionGroup) (*entity.ComplexCondition, []*entity.SQLParamVal, error) {
-
-	condition := &entity.ComplexCondition{}
+func buildComplexCondition(conditionGroup *nodedatabase.ConditionGroup) (*database.ComplexCondition, []*database.SQLParamVal, error) {
+	condition := &database.ComplexCondition{}
 	logic, err := toLogic(conditionGroup.Relation)
 	if err != nil {
 		return nil, nil, err
 	}
 	condition.Logic = logic
 
-	params := make([]*entity.SQLParamVal, 0)
+	params := make([]*database.SQLParamVal, 0)
 	for i := range conditionGroup.Conditions {
 		var (
 			nCond = conditionGroup.Conditions[i]
-			vals  []*entity.SQLParamVal
-			dCond = &entity.Condition{
+			vals  []*database.SQLParamVal
+			dCond = &database.Condition{
 				Left: nCond.Left,
 			}
 		)
@@ -241,7 +226,6 @@ func buildComplexCondition(conditionGroup *nodedatabase.ConditionGroup) (*entity
 
 	}
 	return condition, params, nil
-
 }
 
 func toMapStringAny(m map[string]string) map[string]any {
@@ -252,39 +236,38 @@ func toMapStringAny(m map[string]string) map[string]any {
 	return ret
 }
 
-func toOperation(operator nodedatabase.Operator) (entity.Operation, error) {
+func toOperation(operator nodedatabase.Operator) (database.Operation, error) {
 	switch operator {
 	case nodedatabase.OperatorEqual:
-		return entity.Operation_EQUAL, nil
+		return database.Operation_EQUAL, nil
 	case nodedatabase.OperatorNotEqual:
-		return entity.Operation_NOT_EQUAL, nil
+		return database.Operation_NOT_EQUAL, nil
 	case nodedatabase.OperatorGreater:
-		return entity.Operation_GREATER_THAN, nil
+		return database.Operation_GREATER_THAN, nil
 	case nodedatabase.OperatorGreaterOrEqual:
-		return entity.Operation_GREATER_EQUAL, nil
+		return database.Operation_GREATER_EQUAL, nil
 	case nodedatabase.OperatorLesser:
-		return entity.Operation_LESS_THAN, nil
+		return database.Operation_LESS_THAN, nil
 	case nodedatabase.OperatorLesserOrEqual:
-		return entity.Operation_LESS_EQUAL, nil
+		return database.Operation_LESS_EQUAL, nil
 	case nodedatabase.OperatorIn:
-		return entity.Operation_IN, nil
+		return database.Operation_IN, nil
 	case nodedatabase.OperatorNotIn:
-		return entity.Operation_NOT_IN, nil
+		return database.Operation_NOT_IN, nil
 	case nodedatabase.OperatorIsNotNull:
-		return entity.Operation_IS_NOT_NULL, nil
+		return database.Operation_IS_NOT_NULL, nil
 	case nodedatabase.OperatorIsNull:
-		return entity.Operation_IS_NULL, nil
+		return database.Operation_IS_NULL, nil
 	case nodedatabase.OperatorLike:
-		return entity.Operation_LIKE, nil
+		return database.Operation_LIKE, nil
 	case nodedatabase.OperatorNotLike:
-		return entity.Operation_NOT_LIKE, nil
+		return database.Operation_NOT_LIKE, nil
 	default:
-		return entity.Operation(0), fmt.Errorf("invalid operator %v", operator)
+		return database.Operation(0), fmt.Errorf("invalid operator %v", operator)
 	}
 }
 
-func resolveRightValue(operator entity.Operation, right any) (string, []*entity.SQLParamVal, error) {
-
+func resolveRightValue(operator database.Operation, right any) (string, []*database.SQLParamVal, error) {
 	rightValue, err := cast.ToStringE(right)
 	if err != nil {
 		return "", nil, err
@@ -295,12 +278,12 @@ func resolveRightValue(operator entity.Operation, right any) (string, []*entity.
 			value = "?"
 			v     = "%s" + rightValue + "%s"
 		)
-		return value, []*entity.SQLParamVal{{ValueType: entity.FieldItemType_Text, Value: &v}}, nil
+		return value, []*database.SQLParamVal{{ValueType: table.FieldItemType_Text, Value: &v}}, nil
 	}
 
 	if isInOrNotIn(operator) {
 		var (
-			vals    = make([]*entity.SQLParamVal, 0)
+			vals    = make([]*database.SQLParamVal, 0)
 			anyVals = make([]any, 0)
 			commas  = make([]string, 0, len(anyVals))
 		)
@@ -310,65 +293,65 @@ func resolveRightValue(operator entity.Operation, right any) (string, []*entity.
 		}
 		for i := range anyVals {
 			v := cast.ToString(anyVals[i])
-			vals = append(vals, &entity.SQLParamVal{ValueType: entity.FieldItemType_Text, Value: &v})
+			vals = append(vals, &database.SQLParamVal{ValueType: table.FieldItemType_Text, Value: &v})
 			commas = append(commas, "?")
 		}
 		value := "(" + strings.Join(commas, ",") + ")"
 		return value, vals, nil
 	}
 
-	return "?", []*entity.SQLParamVal{{ValueType: entity.FieldItemType_Text, Value: &rightValue}}, nil
+	return "?", []*database.SQLParamVal{{ValueType: table.FieldItemType_Text, Value: &rightValue}}, nil
 }
 
-func resolveUpsertRow(fields map[string]any) ([]*entity.UpsertRow, []*entity.SQLParamVal, error) {
-	upsertRow := &entity.UpsertRow{Records: make([]*entity.Record, 0, len(fields))}
-	params := make([]*entity.SQLParamVal, 0)
+func resolveUpsertRow(fields map[string]any) ([]*database.UpsertRow, []*database.SQLParamVal, error) {
+	upsertRow := &database.UpsertRow{Records: make([]*database.Record, 0, len(fields))}
+	params := make([]*database.SQLParamVal, 0)
 
 	for key, value := range fields {
 		val, err := cast.ToStringE(value)
 		if err != nil {
 			return nil, nil, err
 		}
-		record := &entity.Record{
+		record := &database.Record{
 			FieldId:    key,
 			FieldValue: "?",
 		}
 		upsertRow.Records = append(upsertRow.Records, record)
-		params = append(params, &entity.SQLParamVal{
-			ValueType: entity.FieldItemType_Text,
+		params = append(params, &database.SQLParamVal{
+			ValueType: table.FieldItemType_Text,
 			Value:     &val,
 		})
 	}
-	return []*entity.UpsertRow{upsertRow}, params, nil
+	return []*database.UpsertRow{upsertRow}, params, nil
 }
 
-func isNullOrNotNull(opt entity.Operation) bool {
-	return opt == entity.Operation_IS_NOT_NULL || opt == entity.Operation_IS_NULL
+func isNullOrNotNull(opt database.Operation) bool {
+	return opt == database.Operation_IS_NOT_NULL || opt == database.Operation_IS_NULL
 }
 
-func isLikeOrNotLike(opt entity.Operation) bool {
-	return opt == entity.Operation_LIKE || opt == entity.Operation_NOT_LIKE
+func isLikeOrNotLike(opt database.Operation) bool {
+	return opt == database.Operation_LIKE || opt == database.Operation_NOT_LIKE
 }
 
-func isInOrNotIn(opt entity.Operation) bool {
-	return opt == entity.Operation_IN || opt == entity.Operation_NOT_IN
+func isInOrNotIn(opt database.Operation) bool {
+	return opt == database.Operation_IN || opt == database.Operation_NOT_IN
 }
 
-func toOrderDirection(isAsc bool) entity.SortDirection {
+func toOrderDirection(isAsc bool) table.SortDirection {
 	if isAsc {
-		return entity.SortDirection_ASC
+		return table.SortDirection_ASC
 	}
-	return entity.SortDirection_Desc
+	return table.SortDirection_Desc
 }
 
-func toLogic(relation nodedatabase.ClauseRelation) (entity.Logic, error) {
+func toLogic(relation nodedatabase.ClauseRelation) (database.Logic, error) {
 	switch relation {
 	case nodedatabase.ClauseRelationOR:
-		return entity.Logic_Or, nil
+		return database.Logic_Or, nil
 	case nodedatabase.ClauseRelationAND:
-		return entity.Logic_And, nil
+		return database.Logic_And, nil
 	default:
-		return entity.Logic(0), fmt.Errorf("invalid relation %v", relation)
+		return database.Logic(0), fmt.Errorf("invalid relation %v", relation)
 	}
 }
 

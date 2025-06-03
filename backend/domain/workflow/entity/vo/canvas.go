@@ -1,8 +1,83 @@
 package vo
 
 import (
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 )
+
+const defaultInitCanvasJsonSchema = `{
+ "nodes": [
+  {
+   "blocks": [],
+   "data": {
+    "nodeMeta": {
+     "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start.png",
+     "subTitle": "",
+     "title": "开始"
+    },
+    "outputs": [
+     {
+      "name": "input",
+      "required": false,
+      "type": "string"
+     }
+    ]
+   },
+   "edges": null,
+   "id": "100001",
+   "meta": {
+    "position": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "type": "1"
+  },
+  {
+   "blocks": [],
+   "data": {
+    "inputs": {
+     "inputParameters": [
+      {
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "ref"
+        }
+       },
+       "name": "output"
+      }
+     ],
+     "terminatePlan": "returnVariables"
+    },
+    "nodeMeta": {
+     "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End.png",
+     "subTitle": "",
+     "title": "结束"
+    }
+   },
+   "edges": null,
+   "id": "900001",
+   "meta": {
+    "position": {
+     "x": 1000,
+     "y": 0
+    }
+   },
+   "type": "2"
+  }
+ ],
+ "edges": null,
+ "versions": {
+  "loop": "v2"
+ }
+}`
+
+func GetDefaultInitCanvasJsonSchema() string {
+	return defaultInitCanvasJsonSchema
+}
 
 type Canvas struct {
 	Nodes []*Node `json:"nodes"`
@@ -125,6 +200,10 @@ const (
 	QAOptionTypeDynamic QAOptionType = "dynamic"
 )
 
+type RequestParameter struct {
+	Name string
+}
+
 type FCParam struct {
 	WorkflowFCParam *struct {
 		WorkflowList []struct {
@@ -133,6 +212,10 @@ type FCParam struct {
 			PluginID        string `json:"plugin_id"`
 			PluginVersion   string `json:"plugin_version"`
 			IsDraft         bool   `json:"is_draft"`
+			FCSetting       *struct {
+				RequestParameters  []*workflow.APIParameter `json:"request_params"`
+				ResponseParameters []*workflow.APIParameter `json:"response_params"`
+			} `json:"fc_setting,omitempty"`
 		} `json:"workflowList,omitempty"`
 	} `json:"workflowFCParam,omitempty"`
 	PluginFCParam *struct {
@@ -142,6 +225,10 @@ type FCParam struct {
 			ApiName       string `json:"api_name"`
 			PluginVersion string `json:"plugin_version"`
 			IsDraft       bool   `json:"is_draft"`
+			FCSetting     *struct {
+				RequestParameters  []*workflow.APIParameter `json:"request_params"`
+				ResponseParameters []*workflow.APIParameter `json:"response_params"`
+			} `json:"fc_setting,omitempty"`
 		}
 	} `json:"pluginFCParam,omitempty"`
 }
@@ -554,4 +641,12 @@ func (c *Canvas) GetAllSubWorkflowIdentities() []*WorkflowIdentity {
 	collectSubWorkFlowEntities(c.Nodes)
 
 	return workflowEntities
+}
+
+func GenerateNodeIDForBatchMode(key string) string {
+	return key + "_inner"
+}
+
+func IsGeneratedNodeForBatchMode(key string, parentKey string) bool {
+	return key == GenerateNodeIDForBatchMode(parentKey)
 }

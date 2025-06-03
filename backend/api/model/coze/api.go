@@ -18,7 +18,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/passport"
 	"code.byted.org/flow/opencoze/backend/api/model/permission/openapiauth"
 	"code.byted.org/flow/opencoze/backend/api/model/resource"
-	"context"
 	"github.com/apache/thrift/lib/go/thrift"
 )
 
@@ -412,35 +411,6 @@ func NewKnowledgeServiceClient(c thrift.TClient) *KnowledgeServiceClient {
 	}
 }
 
-type CozeService interface {
-}
-
-type CozeServiceClient struct {
-	c thrift.TClient
-}
-
-func NewCozeServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *CozeServiceClient {
-	return &CozeServiceClient{
-		c: thrift.NewTStandardClient(f.GetProtocol(t), f.GetProtocol(t)),
-	}
-}
-
-func NewCozeServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *CozeServiceClient {
-	return &CozeServiceClient{
-		c: thrift.NewTStandardClient(iprot, oprot),
-	}
-}
-
-func NewCozeServiceClient(c thrift.TClient) *CozeServiceClient {
-	return &CozeServiceClient{
-		c: c,
-	}
-}
-
-func (p *CozeServiceClient) Client_() thrift.TClient {
-	return p.c
-}
-
 type IntelligenceServiceProcessor struct {
 	*intelligence.IntelligenceServiceProcessor
 }
@@ -574,44 +544,4 @@ type KnowledgeServiceProcessor struct {
 func NewKnowledgeServiceProcessor(handler KnowledgeService) *KnowledgeServiceProcessor {
 	self := &KnowledgeServiceProcessor{dataset.NewDatasetServiceProcessor(handler)}
 	return self
-}
-
-type CozeServiceProcessor struct {
-	processorMap map[string]thrift.TProcessorFunction
-	handler      CozeService
-}
-
-func (p *CozeServiceProcessor) AddToProcessorMap(key string, processor thrift.TProcessorFunction) {
-	p.processorMap[key] = processor
-}
-
-func (p *CozeServiceProcessor) GetProcessorFunction(key string) (processor thrift.TProcessorFunction, ok bool) {
-	processor, ok = p.processorMap[key]
-	return processor, ok
-}
-
-func (p *CozeServiceProcessor) ProcessorMap() map[string]thrift.TProcessorFunction {
-	return p.processorMap
-}
-
-func NewCozeServiceProcessor(handler CozeService) *CozeServiceProcessor {
-	self := &CozeServiceProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
-	return self
-}
-func (p *CozeServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	name, _, seqId, err := iprot.ReadMessageBegin()
-	if err != nil {
-		return false, err
-	}
-	if processor, ok := p.GetProcessorFunction(name); ok {
-		return processor.Process(ctx, seqId, iprot, oprot)
-	}
-	iprot.Skip(thrift.STRUCT)
-	iprot.ReadMessageEnd()
-	x := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function "+name)
-	oprot.WriteMessageBegin(name, thrift.EXCEPTION, seqId)
-	x.Write(oprot)
-	oprot.WriteMessageEnd()
-	oprot.Flush(ctx)
-	return false, x
 }

@@ -12,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose/checkpoint"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
@@ -24,6 +25,7 @@ type Workflow struct { // TODO: too many fields in this struct, cut them down to
 	requireCheckpoint bool
 	entry             *compose.WorkflowNode
 	inner             bool
+	fromNode          bool // this workflow is constructed from a single node, without Entry or Exit nodes
 	streamRun         bool
 	Runner            compose.Runnable[map[string]any, map[string]any] // TODO: this will be unexported eventually
 	input             map[string]*vo.TypeInfo
@@ -102,13 +104,19 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 func (w *Workflow) AsyncRun(ctx context.Context, in map[string]any, opts ...compose.Option) {
 	if w.streamRun {
 		safego.Go(ctx, func() {
-			_, _ = w.Runner.Stream(ctx, in, opts...)
+			_, err := w.Runner.Stream(ctx, in, opts...)
+			if err != nil {
+				logs.CtxErrorf(ctx, "workflow async run with stream failed: %v", err)
+			}
 		})
 		return
 	}
 
 	safego.Go(ctx, func() {
-		_, _ = w.Runner.Invoke(ctx, in, opts...)
+		_, err := w.Runner.Invoke(ctx, in, opts...)
+		if err != nil {
+			logs.CtxErrorf(ctx, "workflow async run with invoke failed: %v", err)
+		}
 	})
 
 }
@@ -254,7 +262,7 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 }
 
 func (w *Workflow) Compile(ctx context.Context, opts ...compose.GraphCompileOption) (compose.Runnable[map[string]any, map[string]any], error) {
-	if !w.inner {
+	if !w.inner && !w.fromNode {
 		if w.entry == nil {
 			return nil, fmt.Errorf("entry node is not set")
 		}

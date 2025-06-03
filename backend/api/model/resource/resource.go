@@ -1119,9 +1119,9 @@ func (p *LibraryResourceListResponse) String() string {
 
 type ProjectResourceListRequest struct {
 	// 项目ID
-	ProjectID string `thrift:"project_id,1,required" form:"project_id,required" json:"project_id,required" query:"project_id,required"`
+	ProjectID int64 `thrift:"project_id,1,required" form:"project_id,required" json:"project_id,string,required" query:"project_id,required"`
 	// 用户所在space id
-	SpaceID string `thrift:"space_id,2" form:"space_id" json:"space_id" query:"space_id"`
+	SpaceID int64 `thrift:"space_id,2" form:"space_id" json:"space_id,string" query:"space_id"`
 	// 指定获取某个版本的project的资源
 	ProjectVersion *string    `thrift:"project_version,3,optional" form:"project_version" json:"project_version,omitempty" query:"project_version"`
 	Base           *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
@@ -1134,11 +1134,11 @@ func NewProjectResourceListRequest() *ProjectResourceListRequest {
 func (p *ProjectResourceListRequest) InitDefault() {
 }
 
-func (p *ProjectResourceListRequest) GetProjectID() (v string) {
+func (p *ProjectResourceListRequest) GetProjectID() (v int64) {
 	return p.ProjectID
 }
 
-func (p *ProjectResourceListRequest) GetSpaceID() (v string) {
+func (p *ProjectResourceListRequest) GetSpaceID() (v int64) {
 	return p.SpaceID
 }
 
@@ -1195,7 +1195,7 @@ func (p *ProjectResourceListRequest) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1204,7 +1204,7 @@ func (p *ProjectResourceListRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1264,8 +1264,8 @@ RequiredFieldNotSetError:
 
 func (p *ProjectResourceListRequest) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1275,8 +1275,8 @@ func (p *ProjectResourceListRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 func (p *ProjectResourceListRequest) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1345,10 +1345,10 @@ WriteStructEndError:
 }
 
 func (p *ProjectResourceListRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("project_id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("project_id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ProjectID); err != nil {
+	if err := oprot.WriteI64(p.ProjectID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1361,10 +1361,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *ProjectResourceListRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("space_id", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("space_id", thrift.I64, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.SpaceID); err != nil {
+	if err := oprot.WriteI64(p.SpaceID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

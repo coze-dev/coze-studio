@@ -164,20 +164,22 @@ services:
         # Create plugin directory
         mkdir -p /bitnami/elasticsearch/plugins;
       
-        # Download plugin package locally
-        echo 'Downloading smartcn plugin...';
-        curl -k -L -o /tmp/analysis-smartcn.zip https://artifacts.elastic.co/downloads/elasticsearch-plugins/analysis-smartcn/analysis-smartcn-8.18.0.zip
-        if [[ "$?" != "0" ]]; then
-          echo 'Plugin download failed, exiting installation';
-          exit 1;
-        fi;
-      
         # Unzip plugin to plugin directory and set correct permissions
         echo 'Installing smartcn plugin...';
         if [ ! -d /opt/bitnami/elasticsearch/plugins/analysis-smartcn ]; then
+
+          # Download plugin package locally
+          echo 'Downloading smartcn plugin...';
+          curl -k -L -o /tmp/analysis-smartcn.zip https://artifacts.elastic.co/downloads/elasticsearch-plugins/analysis-smartcn/analysis-smartcn-8.18.0.zip
+          if [[ "$?" != "0" ]]; then
+            echo 'Plugin download failed, exiting installation';
+            exit 1;
+          fi;
+
           elasticsearch-plugin install file:///tmp/analysis-smartcn.zip
           if [[ "$?" != "0" ]]; then
             echo 'Plugin installation failed, exiting operation';
+            rm -rf /opt/bitnami/elasticsearch/plugins/analysis-smartcn
             exit 1;
           fi;
           rm -f /tmp/analysis-smartcn.zip;
@@ -191,15 +193,6 @@ services:
         exec /opt/bitnami/scripts/elasticsearch/entrypoint.sh /opt/bitnami/scripts/elasticsearch/run.sh
       
         echo -e "${GREEN}⏳ Adjusting Elasticsearch disk watermark settings...${NC}"
-        curl -X PUT "localhost:9200/_cluster/settings" -H 'Content-Type: application/json' -d'
-        {
-          "persistent": {
-            "cluster.routing.allocation.disk.watermark.low": "99%",
-            "cluster.routing.allocation.disk.watermark.high": "99%",
-            "cluster.routing.allocation.disk.watermark.flood_stage": "99%",
-            "cluster.info.update.interval": "1m"
-          }
-        }'
       "
 
   kibana:

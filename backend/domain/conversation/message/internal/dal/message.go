@@ -9,7 +9,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
 
-	runEntity "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/internal/dal/query"
@@ -32,7 +32,6 @@ func NewMessageDAO(db *gorm.DB, idgen idgen.IDGenerator) *MessageDAO {
 }
 
 func (dao *MessageDAO) Create(ctx context.Context, msg *entity.Message) (*entity.Message, error) {
-
 	poData, err := dao.messageDO2PO(ctx, msg)
 	if err != nil {
 		return nil, err
@@ -47,7 +46,7 @@ func (dao *MessageDAO) Create(ctx context.Context, msg *entity.Message) (*entity
 	return dao.messagePO2DO(poData), nil
 }
 
-func (dao *MessageDAO) List(ctx context.Context, conversationID int64, userID int64, limit int, cursor int64, direction entity.ScrollPageDirection, messageType *runEntity.MessageType) ([]*entity.Message, bool, error) {
+func (dao *MessageDAO) List(ctx context.Context, conversationID int64, userID int64, limit int, cursor int64, direction entity.ScrollPageDirection, messageType *message.MessageType) ([]*entity.Message, bool, error) {
 	m := dao.query.Message
 	do := m.WithContext(ctx).Debug().Where(m.ConversationID.Eq(conversationID)).Where(m.UserID.Eq(userID)).Where(m.Status.Eq(int32(entity.MessageStatusAvailable)))
 
@@ -85,7 +84,6 @@ func (dao *MessageDAO) List(ctx context.Context, conversationID int64, userID in
 	}
 
 	return dao.batchMessagePO2DO(messageList), hasMore, nil
-
 }
 
 func (dao *MessageDAO) GetByRunIDs(ctx context.Context, runIDs []int64, orderBy string) ([]*entity.Message, error) {
@@ -132,7 +130,6 @@ func (dao *MessageDAO) GetByID(ctx context.Context, msgID int64) (*entity.Messag
 }
 
 func (dao *MessageDAO) Delete(ctx context.Context, msgIDs []int64, runIDs []int64) error {
-
 	if len(msgIDs) == 0 && len(runIDs) == 0 {
 		return nil
 	}
@@ -150,11 +147,9 @@ func (dao *MessageDAO) Delete(ctx context.Context, msgIDs []int64, runIDs []int6
 	}
 	_, err := do.UpdateColumns(&updateColumns)
 	return err
-
 }
 
 func (dao *MessageDAO) messageDO2PO(ctx context.Context, msgDo *entity.Message) (*model.Message, error) {
-
 	id, gErr := dao.idgen.GenID(ctx)
 	if gErr != nil {
 		return nil, gErr
@@ -190,7 +185,6 @@ func (dao *MessageDAO) messageDO2PO(ctx context.Context, msgDo *entity.Message) 
 	msgPO.Ext = string(ext)
 
 	return msgPO, nil
-
 }
 
 func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) {
@@ -209,15 +203,15 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 	for _, contentData := range msgDO.MultiContent {
 		one := schema.ChatMessagePart{}
 		switch contentData.Type {
-		case runEntity.InputTypeText:
+		case message.InputTypeText:
 			one.Type = schema.ChatMessagePartTypeText
 			one.Text = contentData.Text
-		case runEntity.InputTypeImage:
+		case message.InputTypeImage:
 			one.Type = schema.ChatMessagePartTypeImageURL
 			one.ImageURL = &schema.ChatMessageImageURL{
 				URL: contentData.FileData[0].Url,
 			}
-		case runEntity.InputTypeFile:
+		case message.InputTypeFile:
 			one.Type = schema.ChatMessagePartTypeFileURL
 			one.FileURL = &schema.ChatMessageFileURL{
 				URL: contentData.FileData[0].Url,
@@ -238,7 +232,6 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 
 func (dao *MessageDAO) batchMessagePO2DO(msgPOs []*model.Message) []*entity.Message {
 	return slices.Transform(msgPOs, func(msgPO *model.Message) *entity.Message {
-
 		msgDO := &entity.Message{
 			ID:             msgPO.ID,
 			AgentID:        msgPO.AgentID,
@@ -247,12 +240,12 @@ func (dao *MessageDAO) batchMessagePO2DO(msgPOs []*model.Message) []*entity.Mess
 			UserID:         msgPO.UserID,
 			RunID:          msgPO.RunID,
 			Role:           schema.RoleType(msgPO.Role),
-			ContentType:    runEntity.ContentType(msgPO.ContentType),
-			MessageType:    runEntity.MessageType(msgPO.MessageType),
+			ContentType:    message.ContentType(msgPO.ContentType),
+			MessageType:    message.MessageType(msgPO.MessageType),
 			Position:       msgPO.BrokenPosition,
 			ModelContent:   msgPO.ModelContent,
 			Content:        msgPO.Content,
-			Status:         entity.MessageStatus(msgPO.Status),
+			Status:         message.MessageStatus(msgPO.Status),
 			DisplayContent: msgPO.DisplayContent,
 			CreatedAt:      msgPO.CreatedAt,
 			UpdatedAt:      msgPO.UpdatedAt,
@@ -277,8 +270,8 @@ func (dao *MessageDAO) messagePO2DO(msgPO *model.Message) *entity.Message {
 		UserID:         msgPO.UserID,
 		RunID:          msgPO.RunID,
 		Role:           schema.RoleType(msgPO.Role),
-		ContentType:    runEntity.ContentType(msgPO.ContentType),
-		MessageType:    runEntity.MessageType(msgPO.MessageType),
+		ContentType:    message.ContentType(msgPO.ContentType),
+		MessageType:    message.MessageType(msgPO.MessageType),
 		ModelContent:   msgPO.ModelContent,
 		Content:        msgPO.Content,
 		DisplayContent: msgPO.DisplayContent,

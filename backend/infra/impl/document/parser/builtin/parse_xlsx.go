@@ -28,14 +28,15 @@ func parseXLSX(config *contract.Config) parseFn {
 			return nil, err
 		}
 
-		iter := &xlsxIterator{rows}
+		iter := &xlsxIterator{rows, 0}
 
 		return parseByRowIterator(iter, config, opts...)
 	}
 }
 
 type xlsxIterator struct {
-	rows *excelize.Rows
+	rows         *excelize.Rows
+	firstRowSize int
 }
 
 func (x *xlsxIterator) NextRow() (row []string, end bool, err error) {
@@ -47,6 +48,14 @@ func (x *xlsxIterator) NextRow() (row []string, end bool, err error) {
 	row, err = x.rows.Columns()
 	if err != nil {
 		return nil, false, err
+	}
+
+	if x.firstRowSize == 0 {
+		x.firstRowSize = len(row)
+	} else if x.firstRowSize > len(row) {
+		row = append(row, make([]string, x.firstRowSize-len(row))...)
+	} else if x.firstRowSize < len(row) {
+		row = row[:x.firstRowSize]
 	}
 
 	return row, false, nil

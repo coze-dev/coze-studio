@@ -6,8 +6,9 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossknowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -15,23 +16,19 @@ import (
 
 type retrieverConfig struct {
 	knowledgeConfig *bot_common.Knowledge
-	svr             crossdomain.Knowledge
 }
 
 func newKnowledgeRetriever(_ context.Context, conf *retrieverConfig) (*knowledgeRetriever, error) {
 	return &knowledgeRetriever{
 		knowledgeConfig: conf.knowledgeConfig,
-		svr:             conf.svr,
 	}, nil
 }
 
 type knowledgeRetriever struct {
 	knowledgeConfig *bot_common.Knowledge
-	svr             crossdomain.Knowledge
 }
 
 func (r *knowledgeRetriever) Retrieve(ctx context.Context, req *AgentRequest) ([]*schema.Document, error) {
-
 	if r.knowledgeConfig == nil || len(r.knowledgeConfig.KnowledgeInfo) == 0 {
 		return nil, nil
 	}
@@ -51,7 +48,7 @@ func (r *knowledgeRetriever) Retrieve(ctx context.Context, req *AgentRequest) ([
 		return nil, err
 	}
 
-	resp, err := r.svr.Retrieve(ctx, kr)
+	resp, err := crossknowledge.DefaultSVC().Retrieve(ctx, kr)
 	if err != nil {
 		return nil, err
 	}
@@ -75,26 +72,26 @@ func genKnowledgeRequest(_ context.Context, ids []int64, conf *bot_common.Knowle
 			TopK:     conf.TopK,
 			MinScore: conf.MinScore,
 
-			SelectType: func() knowledgeEntity.SelectType {
+			SelectType: func() knowledgeModel.SelectType {
 				if conf.Auto != nil && *conf.Auto {
-					return knowledgeEntity.SelectTypeAuto
+					return knowledgeModel.SelectTypeAuto
 				}
-				return knowledgeEntity.SelectTypeOnDemand
+				return knowledgeModel.SelectTypeOnDemand
 			}(),
 
-			SearchType: func() knowledgeEntity.SearchType {
+			SearchType: func() knowledgeModel.SearchType {
 				if conf.SearchStrategy == nil {
-					return knowledgeEntity.SearchTypeSemantic
+					return knowledgeModel.SearchTypeSemantic
 				}
 				switch *conf.SearchStrategy {
 				case bot_common.SearchStrategy_SemanticSearch:
-					return knowledgeEntity.SearchTypeSemantic
+					return knowledgeModel.SearchTypeSemantic
 				case bot_common.SearchStrategy_FullTextSearch:
-					return knowledgeEntity.SearchTypeFullText
+					return knowledgeModel.SearchTypeFullText
 				case bot_common.SearchStrategy_HybirdSearch:
-					return knowledgeEntity.SearchTypeHybrid
+					return knowledgeModel.SearchTypeHybrid
 				default:
-					return knowledgeEntity.SearchTypeSemantic
+					return knowledgeModel.SearchTypeSemantic
 				}
 			}(),
 
@@ -107,8 +104,8 @@ func genKnowledgeRequest(_ context.Context, ids []int64, conf *bot_common.Knowle
 	return rr, nil
 }
 
-func convertDocument(_ context.Context, docSlice []*knowledge.RetrieveSlice) ([]*schema.Document, error) {
-	return slices.Transform(docSlice, func(a *knowledge.RetrieveSlice) *schema.Document {
+func convertDocument(_ context.Context, docSlice []*knowledgeModel.RetrieveSlice) ([]*schema.Document, error) {
+	return slices.Transform(docSlice, func(a *knowledgeModel.RetrieveSlice) *schema.Document {
 		doc := &schema.Document{
 			ID:       strconv.FormatInt(a.Slice.ID, 10),
 			Content:  a.Slice.GetSliceContent(),

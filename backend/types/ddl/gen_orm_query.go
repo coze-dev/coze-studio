@@ -14,10 +14,14 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	modelEntity "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	dbentity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
+	appEntity "code.byted.org/flow/opencoze/backend/domain/app/entity"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
@@ -34,6 +38,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"jump_config":                &bot_common.JumpConfig{},
 			"background_image_info_list": []*bot_common.BackgroundImageInfo{},
 			"database":                   []*bot_common.Database{},
+			"shortcut_command":           []string{},
 		},
 		"single_agent_version": {
 			// "variable":        []*bot_common.Variable{},
@@ -47,6 +52,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"jump_config":                &bot_common.JumpConfig{},
 			"background_image_info_list": []*bot_common.BackgroundImageInfo{},
 			"database":                   []*bot_common.Database{},
+			"shortcut_command":           []string{},
 		},
 		"single_agent_publish": {
 			"connector_ids": []int64{},
@@ -54,31 +60,31 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	},
 	"domain/plugin/internal/dal/query": {
 		"plugin": {
-			"manifest":    &pluginEntity.PluginManifest{},
-			"openapi_doc": &pluginEntity.Openapi3T{},
+			"manifest":    &plugin.PluginManifest{},
+			"openapi_doc": &plugin.Openapi3T{},
 		},
 		"plugin_draft": {
-			"manifest":    &pluginEntity.PluginManifest{},
-			"openapi_doc": &pluginEntity.Openapi3T{},
+			"manifest":    &plugin.PluginManifest{},
+			"openapi_doc": &plugin.Openapi3T{},
 		},
 		"plugin_version": {
-			"manifest":    &pluginEntity.PluginManifest{},
-			"openapi_doc": &pluginEntity.Openapi3T{},
+			"manifest":    &plugin.PluginManifest{},
+			"openapi_doc": &plugin.Openapi3T{},
 		},
 		"agent_tool_draft": {
-			"operation": &pluginEntity.Openapi3Operation{},
+			"operation": &plugin.Openapi3Operation{},
 		},
 		"agent_tool_version": {
-			"operation": &pluginEntity.Openapi3Operation{},
+			"operation": &plugin.Openapi3Operation{},
 		},
 		"tool": {
-			"operation": &pluginEntity.Openapi3Operation{},
+			"operation": &plugin.Openapi3Operation{},
 		},
 		"tool_draft": {
-			"operation": &pluginEntity.Openapi3Operation{},
+			"operation": &plugin.Openapi3Operation{},
 		},
 		"tool_version": {
-			"operation": &pluginEntity.Openapi3Operation{},
+			"operation": &plugin.Openapi3Operation{},
 		},
 	},
 	"domain/conversation/agentrun/internal/dal/query": {
@@ -104,17 +110,18 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		},
 		"variable_instance": {},
 	},
-	// "domain/model/dal/query": {
-	//	"model_meta": {
-	//		"capability":   &model.Capability{},
-	//		"conn_config":  &model.ConnConfig{},
-	//		"param_schema": &openapi3.Schema{},
-	//		//"status":       model.Status(0),
-	//	},
-	//	"model_entity": {
-	//		//"scenario": model.Scenario(0),
-	//	},
-	// },
+	"domain/modelmgr/internal/dal/query": {
+		"model_meta": {
+			"capability":  &modelEntity.Capability{},
+			"conn_config": &chatmodel.Config{},
+			"status":      modelEntity.ModelMetaStatus(0),
+		},
+		"model_entity": {
+			"scenario":       modelEntity.Scenario(0),
+			"default_params": []*modelEntity.Parameter{},
+			"status":         modelEntity.ModelEntityStatus(0),
+		},
+	},
 	"domain/workflow/internal/repo/dal/query": {
 		"workflow_meta":      {},
 		"workflow_draft":     {},
@@ -127,13 +134,20 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	"domain/permission/openapiauth/internal/dal/query": {
 		"api_key": {},
 	},
+	"domain/shortcutcmd/internal/dal/query": {
+		"shortcut_command": {
+			"tool_info":     &playground.ToolInfo{},
+			"components":    []*playground.Components{},
+			"shortcut_icon": &playground.ShortcutFileInfo{},
+		},
+	},
 
 	"domain/memory/database/internal/dal/query": {
 		"online_database_info": {
-			"table_field": []*dbentity.FieldItem{},
+			"table_field": []*database.FieldItem{},
 		},
 		"draft_database_info": {
-			"table_field": []*dbentity.FieldItem{},
+			"table_field": []*database.FieldItem{},
 		},
 		"agent_to_database": {},
 	},
@@ -141,6 +155,16 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"user":       {},
 		"space":      {},
 		"space_user": {},
+	},
+	"domain/app/internal/dal/query": {
+		"app_draft": {},
+		"release_record": {
+			"connector_ids": []int64{},
+			"extra_info":    &appEntity.PublishRecordExtraInfo{},
+		},
+		"connector_release_ref": {
+			"publish_config": appEntity.PublishConfig{},
+		},
 	},
 }
 

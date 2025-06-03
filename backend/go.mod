@@ -12,13 +12,13 @@ require (
 	github.com/apache/thrift v0.21.0
 	github.com/bytedance/mockey v1.2.14
 	github.com/bytedance/sonic v1.13.2
-	github.com/cloudwego/eino v0.3.33
+	github.com/cloudwego/eino v0.3.38-0.20250527071740-b6f1cf5f0e5b
 	github.com/cloudwego/eino-ext/components/model/ark v0.1.9
 	github.com/cloudwego/eino-ext/components/model/claude v0.0.0-20250522060253-ddb617598b09
 	github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250522060253-ddb617598b09
 	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250522023626-7bc321639a70
 	github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250522060253-ddb617598b09
-	github.com/cloudwego/hertz v0.9.6
+	github.com/cloudwego/hertz v0.10.0
 	github.com/dslipak/pdf v0.0.2
 	github.com/elastic/go-elasticsearch/v8 v8.18.0
 	github.com/fumiama/go-docx v0.0.0-20241231153056-9f8f327c74a5
@@ -58,10 +58,12 @@ require (
 	github.com/cloudwego/eino-ext/components/embedding/openai v0.0.0-20250522060253-ddb617598b09
 	github.com/dimchansky/utfbom v1.1.1
 	github.com/extrame/xls v0.0.1
+	github.com/yuin/goldmark v1.4.13
 )
 
 require (
 	github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302 // indirect
+	github.com/cloudwego/gopkg v0.1.4 // indirect
 	github.com/extrame/ole2 v0.0.0-20160812065207-d69429661ad7 // indirect
 	github.com/frankban/quicktest v1.14.6 // indirect
 	github.com/google/btree v1.1.2 // indirect
@@ -103,7 +105,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cilium/ebpf v0.11.0 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
-	github.com/cloudwego/netpoll v0.6.4 // indirect
+	github.com/cloudwego/netpoll v0.7.0 // indirect
 	github.com/cockroachdb/errors v1.9.1
 	github.com/cockroachdb/logtags v0.0.0-20211118104740-dabe8e521a4f // indirect
 	github.com/cockroachdb/redact v1.1.3 // indirect
@@ -132,7 +134,7 @@ require (
 	github.com/go-openapi/swag v0.23.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-sql-driver/mysql v1.9.0
+	github.com/go-sql-driver/mysql v1.9.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/godbus/dbus/v5 v5.0.4 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect

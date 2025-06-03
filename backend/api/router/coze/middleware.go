@@ -1202,6 +1202,26 @@ func _conversation0Mw() []app.HandlerFunc {
 	return nil
 }
 
+func _draft_projectMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _draftprojectcreateMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _draftprojectdeleteMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _draftprojectupdateMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _publicfavoriteproductMw() []app.HandlerFunc {
 	// your code...
 	return nil
@@ -1247,6 +1267,10 @@ func _openapigetworkflowinfoMw() []app.HandlerFunc {
 	return nil
 }
 
+func _gettypelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
 func _iconMw() []app.HandlerFunc {
 	// your code...
 	return nil
@@ -1258,6 +1282,61 @@ func _geticon0Mw() []app.HandlerFunc {
 }
 
 func _geticonfordatasetMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createshortcutcommandMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createupdateshortcutcommandMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publish0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _checkprojectversionnumberMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publishconnectorlist0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getprojectpublishedconnectorMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publishprojectMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getpublishrecordlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _reportuserbehaviorMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdevpluginlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _projectpublishconnectorlistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

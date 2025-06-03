@@ -26,7 +26,7 @@ func PublicGetProductList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := plugin.PluginApplicationSVC.PublicGetProductList(ctx, &req)
+	resp, err := plugin.PluginApplicationSVC.PublicGetProductList(ctx, &req) // todo lj 补充
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

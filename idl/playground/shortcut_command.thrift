@@ -22,22 +22,23 @@ struct ShortcutStruct {
 }
 
 struct ShortcutCommand {
-   2 : string object_id             // 绑定实体ID
+   2 : i64 object_id    (api.js_conv="true")         // 绑定实体ID
    3 : string command_name       // 命令名称
    4 : string shortcut_command   // 快捷指令
    5 : string description        // 描述
    6 : SendType send_type          // 发送类型
    7 : ToolType tool_type          // 使用工具type
-   8 : string work_flow_id
-   9 : string plugin_id
+   8 : i64 work_flow_id  (api.js_conv="true")
+   9 : i64 plugin_id (api.js_conv="true")
    10: string plugin_api_name
    11 : string template_query     // 模板query
    12 : list<Components> components_list     // panel参数
    15 : string card_schema // 表单的schema
-   16 : string command_id  // 指令ID
+   16 : i64 command_id  (api.js_conv="true") // 指令ID
    17 : ToolInfo  tool_info //工具信息 包含name+变量列表+...
    18 : ShortcutFileInfo shortcut_icon // 指令图标
    21 : optional string agent_id //multi的指令时，该指令由哪个节点执行
+   22 : i64 plugin_api_id  (api.js_conv="true")
 }
 
 struct ShortcutFileInfo {
@@ -102,13 +103,17 @@ enum InputType {
 }
 
 struct CreateUpdateShortcutCommandRequest {
-     1: required  string object_id
-     2: required  string space_id
+     1: required  i64 object_id (api.js_conv="true")
+     2: required  i64 space_id  (api.js_conv="true")
      3: required  ShortcutCommand shortcuts
      255: base.Base Base
 }
 struct CreateUpdateShortcutCommandResponse {
     1:   ShortcutCommand shortcuts
+
+    
+    253: required i64    code
+    254: required string msg
     255: required base.BaseResp BaseResp
 }
 

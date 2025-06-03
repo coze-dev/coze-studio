@@ -2582,9 +2582,9 @@ func (p *GetUpdatedAPIsResponse) String() string {
 
 type GetPluginInfoRequest struct {
 	// 目前只支持插件openapi插件的信息
-	PluginID         int64      `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
-	PreviewVersionTs *int64     `thrift:"preview_version_ts,2,optional" form:"preview_version_ts" json:"preview_version_ts,string,omitempty" query:"preview_version_ts"`
-	Base             *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	PluginID          int64      `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
+	PreviewVersionTsx *string    `thrift:"preview_version_tsx,2,optional" form:"preview_version_tsx" json:"preview_version_tsx,omitempty" query:"preview_version_tsx"`
+	Base              *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewGetPluginInfoRequest() *GetPluginInfoRequest {
@@ -2598,13 +2598,13 @@ func (p *GetPluginInfoRequest) GetPluginID() (v int64) {
 	return p.PluginID
 }
 
-var GetPluginInfoRequest_PreviewVersionTs_DEFAULT int64
+var GetPluginInfoRequest_PreviewVersionTsx_DEFAULT string
 
-func (p *GetPluginInfoRequest) GetPreviewVersionTs() (v int64) {
-	if !p.IsSetPreviewVersionTs() {
-		return GetPluginInfoRequest_PreviewVersionTs_DEFAULT
+func (p *GetPluginInfoRequest) GetPreviewVersionTsx() (v string) {
+	if !p.IsSetPreviewVersionTsx() {
+		return GetPluginInfoRequest_PreviewVersionTsx_DEFAULT
 	}
-	return *p.PreviewVersionTs
+	return *p.PreviewVersionTsx
 }
 
 var GetPluginInfoRequest_Base_DEFAULT *base.Base
@@ -2618,12 +2618,12 @@ func (p *GetPluginInfoRequest) GetBase() (v *base.Base) {
 
 var fieldIDToName_GetPluginInfoRequest = map[int16]string{
 	1:   "plugin_id",
-	2:   "preview_version_ts",
+	2:   "preview_version_tsx",
 	255: "Base",
 }
 
-func (p *GetPluginInfoRequest) IsSetPreviewVersionTs() bool {
-	return p.PreviewVersionTs != nil
+func (p *GetPluginInfoRequest) IsSetPreviewVersionTsx() bool {
+	return p.PreviewVersionTsx != nil
 }
 
 func (p *GetPluginInfoRequest) IsSetBase() bool {
@@ -2659,7 +2659,7 @@ func (p *GetPluginInfoRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -2722,13 +2722,13 @@ func (p *GetPluginInfoRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 func (p *GetPluginInfoRequest) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = &v
 	}
-	p.PreviewVersionTs = _field
+	p.PreviewVersionTsx = _field
 	return nil
 }
 func (p *GetPluginInfoRequest) ReadField255(iprot thrift.TProtocol) error {
@@ -2793,11 +2793,11 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *GetPluginInfoRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetPreviewVersionTs() {
-		if err = oprot.WriteFieldBegin("preview_version_ts", thrift.I64, 2); err != nil {
+	if p.IsSetPreviewVersionTsx() {
+		if err = oprot.WriteFieldBegin("preview_version_tsx", thrift.STRING, 2); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteI64(*p.PreviewVersionTs); err != nil {
+		if err := oprot.WriteString(*p.PreviewVersionTsx); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -19877,6 +19877,1181 @@ func (p *RegisterPluginResponse) String() string {
 
 }
 
+type GetDevPluginListRequest struct {
+	Status    []plugin_develop_common.PluginStatus `thrift:"status,1,optional" form:"status" json:"status,omitempty" query:"status"`
+	Page      *int32                               `thrift:"page,2,optional" form:"page" json:"page,omitempty" query:"page"`
+	Size      *int32                               `thrift:"size,3,optional" form:"size" json:"size,omitempty" query:"size"`
+	DevID     int64                                `thrift:"dev_id,4,required" form:"dev_id,required" json:"dev_id,string,required"`
+	SpaceID   int64                                `thrift:"space_id,5" form:"space_id" json:"space_id,string"`
+	ScopeType *plugin_develop_common.ScopeType     `thrift:"scope_type,6,optional" form:"scope_type" json:"scope_type,omitempty" query:"scope_type"`
+	OrderBy   *plugin_develop_common.OrderBy       `thrift:"order_by,7,optional" form:"order_by" json:"order_by,omitempty" query:"order_by"`
+	// 发布状态筛选：true:已发布, false:未发布
+	PublishStatus *bool `thrift:"publish_status,8,optional" form:"publish_status" json:"publish_status,omitempty" query:"publish_status"`
+	// 插件名或工具名
+	Name *string `thrift:"name,9,optional" form:"name" json:"name,omitempty" query:"name"`
+	// 插件种类筛选 端/云
+	PluginTypeForFilter *plugin_develop_common.PluginTypeForFilter `thrift:"plugin_type_for_filter,10,optional" form:"plugin_type_for_filter" json:"plugin_type_for_filter,omitempty" query:"plugin_type_for_filter"`
+	ProjectID           int64                                      `thrift:"project_id,11" form:"project_id" json:"project_id,string"`
+	// 插件id列表
+	PluginIds []int64    `thrift:"plugin_ids,12" form:"plugin_ids" json:"plugin_ids"`
+	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+}
+
+func NewGetDevPluginListRequest() *GetDevPluginListRequest {
+	return &GetDevPluginListRequest{}
+}
+
+func (p *GetDevPluginListRequest) InitDefault() {
+}
+
+var GetDevPluginListRequest_Status_DEFAULT []plugin_develop_common.PluginStatus
+
+func (p *GetDevPluginListRequest) GetStatus() (v []plugin_develop_common.PluginStatus) {
+	if !p.IsSetStatus() {
+		return GetDevPluginListRequest_Status_DEFAULT
+	}
+	return p.Status
+}
+
+var GetDevPluginListRequest_Page_DEFAULT int32
+
+func (p *GetDevPluginListRequest) GetPage() (v int32) {
+	if !p.IsSetPage() {
+		return GetDevPluginListRequest_Page_DEFAULT
+	}
+	return *p.Page
+}
+
+var GetDevPluginListRequest_Size_DEFAULT int32
+
+func (p *GetDevPluginListRequest) GetSize() (v int32) {
+	if !p.IsSetSize() {
+		return GetDevPluginListRequest_Size_DEFAULT
+	}
+	return *p.Size
+}
+
+func (p *GetDevPluginListRequest) GetDevID() (v int64) {
+	return p.DevID
+}
+
+func (p *GetDevPluginListRequest) GetSpaceID() (v int64) {
+	return p.SpaceID
+}
+
+var GetDevPluginListRequest_ScopeType_DEFAULT plugin_develop_common.ScopeType
+
+func (p *GetDevPluginListRequest) GetScopeType() (v plugin_develop_common.ScopeType) {
+	if !p.IsSetScopeType() {
+		return GetDevPluginListRequest_ScopeType_DEFAULT
+	}
+	return *p.ScopeType
+}
+
+var GetDevPluginListRequest_OrderBy_DEFAULT plugin_develop_common.OrderBy
+
+func (p *GetDevPluginListRequest) GetOrderBy() (v plugin_develop_common.OrderBy) {
+	if !p.IsSetOrderBy() {
+		return GetDevPluginListRequest_OrderBy_DEFAULT
+	}
+	return *p.OrderBy
+}
+
+var GetDevPluginListRequest_PublishStatus_DEFAULT bool
+
+func (p *GetDevPluginListRequest) GetPublishStatus() (v bool) {
+	if !p.IsSetPublishStatus() {
+		return GetDevPluginListRequest_PublishStatus_DEFAULT
+	}
+	return *p.PublishStatus
+}
+
+var GetDevPluginListRequest_Name_DEFAULT string
+
+func (p *GetDevPluginListRequest) GetName() (v string) {
+	if !p.IsSetName() {
+		return GetDevPluginListRequest_Name_DEFAULT
+	}
+	return *p.Name
+}
+
+var GetDevPluginListRequest_PluginTypeForFilter_DEFAULT plugin_develop_common.PluginTypeForFilter
+
+func (p *GetDevPluginListRequest) GetPluginTypeForFilter() (v plugin_develop_common.PluginTypeForFilter) {
+	if !p.IsSetPluginTypeForFilter() {
+		return GetDevPluginListRequest_PluginTypeForFilter_DEFAULT
+	}
+	return *p.PluginTypeForFilter
+}
+
+func (p *GetDevPluginListRequest) GetProjectID() (v int64) {
+	return p.ProjectID
+}
+
+func (p *GetDevPluginListRequest) GetPluginIds() (v []int64) {
+	return p.PluginIds
+}
+
+var GetDevPluginListRequest_Base_DEFAULT *base.Base
+
+func (p *GetDevPluginListRequest) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return GetDevPluginListRequest_Base_DEFAULT
+	}
+	return p.Base
+}
+
+var fieldIDToName_GetDevPluginListRequest = map[int16]string{
+	1:   "status",
+	2:   "page",
+	3:   "size",
+	4:   "dev_id",
+	5:   "space_id",
+	6:   "scope_type",
+	7:   "order_by",
+	8:   "publish_status",
+	9:   "name",
+	10:  "plugin_type_for_filter",
+	11:  "project_id",
+	12:  "plugin_ids",
+	255: "Base",
+}
+
+func (p *GetDevPluginListRequest) IsSetStatus() bool {
+	return p.Status != nil
+}
+
+func (p *GetDevPluginListRequest) IsSetPage() bool {
+	return p.Page != nil
+}
+
+func (p *GetDevPluginListRequest) IsSetSize() bool {
+	return p.Size != nil
+}
+
+func (p *GetDevPluginListRequest) IsSetScopeType() bool {
+	return p.ScopeType != nil
+}
+
+func (p *GetDevPluginListRequest) IsSetOrderBy() bool {
+	return p.OrderBy != nil
+}
+
+func (p *GetDevPluginListRequest) IsSetPublishStatus() bool {
+	return p.PublishStatus != nil
+}
+
+func (p *GetDevPluginListRequest) IsSetName() bool {
+	return p.Name != nil
+}
+
+func (p *GetDevPluginListRequest) IsSetPluginTypeForFilter() bool {
+	return p.PluginTypeForFilter != nil
+}
+
+func (p *GetDevPluginListRequest) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *GetDevPluginListRequest) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetDevID bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetDevID = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 6:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField6(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 7:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField7(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 8:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField8(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 9:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField9(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 10:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField10(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 11:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField11(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 12:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField12(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 255:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField255(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetDevID {
+		fieldId = 4
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_GetDevPluginListRequest[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_GetDevPluginListRequest[fieldId]))
+}
+
+func (p *GetDevPluginListRequest) ReadField1(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]plugin_develop_common.PluginStatus, 0, size)
+	for i := 0; i < size; i++ {
+
+		var _elem plugin_develop_common.PluginStatus
+		if v, err := iprot.ReadI32(); err != nil {
+			return err
+		} else {
+			_elem = plugin_develop_common.PluginStatus(v)
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.Status = _field
+	return nil
+}
+func (p *GetDevPluginListRequest) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Page = _field
+	return nil
+}
+func (p *GetDevPluginListRequest) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Size = _field
+	return nil
+}
+func (p *GetDevPluginListRequest) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.DevID = _field
+	return nil
+}
+func (p *GetDevPluginListRequest) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.SpaceID = _field
+	return nil
+}
+func (p *GetDevPluginListRequest) ReadField6(iprot thrift.TProtocol) error {
+
+	var _field *plugin_develop_common.ScopeType
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		tmp := plugin_develop_common.ScopeType(v)
+		_field = &tmp
+	}
+	p.ScopeType = _field
+	return nil
+}
+func (p *GetDevPluginListRequest) ReadField7(iprot thrift.TProtocol) error {
+
+	var _field *plugin_develop_common.OrderBy
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		tmp := plugin_develop_common.OrderBy(v)
+		_field = &tmp
+	}
+	p.OrderBy = _field
+	return nil
+}
+func (p *GetDevPluginListRequest) ReadField8(iprot thrift.TProtocol) error {
+
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.PublishStatus = _field
+	return nil
+}
+func (p *GetDevPluginListRequest) ReadField9(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Name = _field
+	return nil
+}
+func (p *GetDevPluginListRequest) ReadField10(iprot thrift.TProtocol) error {
+
+	var _field *plugin_develop_common.PluginTypeForFilter
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		tmp := plugin_develop_common.PluginTypeForFilter(v)
+		_field = &tmp
+	}
+	p.PluginTypeForFilter = _field
+	return nil
+}
+func (p *GetDevPluginListRequest) ReadField11(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ProjectID = _field
+	return nil
+}
+func (p *GetDevPluginListRequest) ReadField12(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]int64, 0, size)
+	for i := 0; i < size; i++ {
+
+		var _elem int64
+		if v, err := iprot.ReadI64(); err != nil {
+			return err
+		} else {
+			_elem = v
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.PluginIds = _field
+	return nil
+}
+func (p *GetDevPluginListRequest) ReadField255(iprot thrift.TProtocol) error {
+	_field := base.NewBase()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Base = _field
+	return nil
+}
+
+func (p *GetDevPluginListRequest) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetDevPluginListRequest"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField6(oprot); err != nil {
+			fieldId = 6
+			goto WriteFieldError
+		}
+		if err = p.writeField7(oprot); err != nil {
+			fieldId = 7
+			goto WriteFieldError
+		}
+		if err = p.writeField8(oprot); err != nil {
+			fieldId = 8
+			goto WriteFieldError
+		}
+		if err = p.writeField9(oprot); err != nil {
+			fieldId = 9
+			goto WriteFieldError
+		}
+		if err = p.writeField10(oprot); err != nil {
+			fieldId = 10
+			goto WriteFieldError
+		}
+		if err = p.writeField11(oprot); err != nil {
+			fieldId = 11
+			goto WriteFieldError
+		}
+		if err = p.writeField12(oprot); err != nil {
+			fieldId = 12
+			goto WriteFieldError
+		}
+		if err = p.writeField255(oprot); err != nil {
+			fieldId = 255
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *GetDevPluginListRequest) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetStatus() {
+		if err = oprot.WriteFieldBegin("status", thrift.LIST, 1); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteListBegin(thrift.I32, len(p.Status)); err != nil {
+			return err
+		}
+		for _, v := range p.Status {
+			if err := oprot.WriteI32(int32(v)); err != nil {
+				return err
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *GetDevPluginListRequest) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetPage() {
+		if err = oprot.WriteFieldBegin("page", thrift.I32, 2); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.Page); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *GetDevPluginListRequest) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSize() {
+		if err = oprot.WriteFieldBegin("size", thrift.I32, 3); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.Size); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *GetDevPluginListRequest) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("dev_id", thrift.I64, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.DevID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+func (p *GetDevPluginListRequest) writeField5(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("space_id", thrift.I64, 5); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.SpaceID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+func (p *GetDevPluginListRequest) writeField6(oprot thrift.TProtocol) (err error) {
+	if p.IsSetScopeType() {
+		if err = oprot.WriteFieldBegin("scope_type", thrift.I32, 6); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(int32(*p.ScopeType)); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
+}
+func (p *GetDevPluginListRequest) writeField7(oprot thrift.TProtocol) (err error) {
+	if p.IsSetOrderBy() {
+		if err = oprot.WriteFieldBegin("order_by", thrift.I32, 7); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(int32(*p.OrderBy)); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
+}
+func (p *GetDevPluginListRequest) writeField8(oprot thrift.TProtocol) (err error) {
+	if p.IsSetPublishStatus() {
+		if err = oprot.WriteFieldBegin("publish_status", thrift.BOOL, 8); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteBool(*p.PublishStatus); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
+}
+func (p *GetDevPluginListRequest) writeField9(oprot thrift.TProtocol) (err error) {
+	if p.IsSetName() {
+		if err = oprot.WriteFieldBegin("name", thrift.STRING, 9); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Name); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
+}
+func (p *GetDevPluginListRequest) writeField10(oprot thrift.TProtocol) (err error) {
+	if p.IsSetPluginTypeForFilter() {
+		if err = oprot.WriteFieldBegin("plugin_type_for_filter", thrift.I32, 10); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(int32(*p.PluginTypeForFilter)); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
+}
+func (p *GetDevPluginListRequest) writeField11(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("project_id", thrift.I64, 11); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.ProjectID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
+}
+func (p *GetDevPluginListRequest) writeField12(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("plugin_ids", thrift.LIST, 12); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteListBegin(thrift.I64, len(p.PluginIds)); err != nil {
+		return err
+	}
+	for _, v := range p.PluginIds {
+		if err := oprot.WriteI64(v); err != nil {
+			return err
+		}
+	}
+	if err := oprot.WriteListEnd(); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
+}
+func (p *GetDevPluginListRequest) writeField255(oprot thrift.TProtocol) (err error) {
+	if p.IsSetBase() {
+		if err = oprot.WriteFieldBegin("Base", thrift.STRUCT, 255); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Base.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
+}
+
+func (p *GetDevPluginListRequest) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetDevPluginListRequest(%+v)", *p)
+
+}
+
+type GetDevPluginListResponse struct {
+	Code       int32                                            `thrift:"code,1" form:"code" json:"code" query:"code"`
+	Msg        string                                           `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
+	PluginList []*plugin_develop_common.PluginInfoForPlayground `thrift:"plugin_list,3" form:"plugin_list" json:"plugin_list" query:"plugin_list"`
+	Total      int64                                            `thrift:"total,4" form:"total" json:"total,string"`
+	BaseResp   *base.BaseResp                                   `thrift:"baseResp,255" form:"baseResp" json:"baseResp" query:"baseResp"`
+}
+
+func NewGetDevPluginListResponse() *GetDevPluginListResponse {
+	return &GetDevPluginListResponse{}
+}
+
+func (p *GetDevPluginListResponse) InitDefault() {
+}
+
+func (p *GetDevPluginListResponse) GetCode() (v int32) {
+	return p.Code
+}
+
+func (p *GetDevPluginListResponse) GetMsg() (v string) {
+	return p.Msg
+}
+
+func (p *GetDevPluginListResponse) GetPluginList() (v []*plugin_develop_common.PluginInfoForPlayground) {
+	return p.PluginList
+}
+
+func (p *GetDevPluginListResponse) GetTotal() (v int64) {
+	return p.Total
+}
+
+var GetDevPluginListResponse_BaseResp_DEFAULT *base.BaseResp
+
+func (p *GetDevPluginListResponse) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return GetDevPluginListResponse_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+
+var fieldIDToName_GetDevPluginListResponse = map[int16]string{
+	1:   "code",
+	2:   "msg",
+	3:   "plugin_list",
+	4:   "total",
+	255: "baseResp",
+}
+
+func (p *GetDevPluginListResponse) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *GetDevPluginListResponse) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 255:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField255(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_GetDevPluginListResponse[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *GetDevPluginListResponse) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *GetDevPluginListResponse) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
+	return nil
+}
+func (p *GetDevPluginListResponse) ReadField3(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]*plugin_develop_common.PluginInfoForPlayground, 0, size)
+	values := make([]plugin_develop_common.PluginInfoForPlayground, size)
+	for i := 0; i < size; i++ {
+		_elem := &values[i]
+		_elem.InitDefault()
+
+		if err := _elem.Read(iprot); err != nil {
+			return err
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.PluginList = _field
+	return nil
+}
+func (p *GetDevPluginListResponse) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Total = _field
+	return nil
+}
+func (p *GetDevPluginListResponse) ReadField255(iprot thrift.TProtocol) error {
+	_field := base.NewBaseResp()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.BaseResp = _field
+	return nil
+}
+
+func (p *GetDevPluginListResponse) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetDevPluginListResponse"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField255(oprot); err != nil {
+			fieldId = 255
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *GetDevPluginListResponse) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *GetDevPluginListResponse) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *GetDevPluginListResponse) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("plugin_list", thrift.LIST, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.PluginList)); err != nil {
+		return err
+	}
+	for _, v := range p.PluginList {
+		if err := v.Write(oprot); err != nil {
+			return err
+		}
+	}
+	if err := oprot.WriteListEnd(); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *GetDevPluginListResponse) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("total", thrift.I64, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.Total); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+func (p *GetDevPluginListResponse) writeField255(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("baseResp", thrift.STRUCT, 255); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.BaseResp.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
+}
+
+func (p *GetDevPluginListResponse) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetDevPluginListResponse(%+v)", *p)
+
+}
+
 type PluginDevelopService interface {
 	GetOAuthSchema(ctx context.Context, request *GetOAuthSchemaRequest) (r *GetOAuthSchemaResponse, err error)
 
@@ -19921,6 +21096,8 @@ type PluginDevelopService interface {
 	DebugAPI(ctx context.Context, request *DebugAPIRequest) (r *DebugAPIResponse, err error)
 
 	GetPluginNextVersion(ctx context.Context, request *GetPluginNextVersionRequest) (r *GetPluginNextVersionResponse, err error)
+
+	GetDevPluginList(ctx context.Context, request *GetDevPluginListRequest) (r *GetDevPluginListResponse, err error)
 }
 
 type PluginDevelopServiceClient struct {
@@ -20147,6 +21324,15 @@ func (p *PluginDevelopServiceClient) GetPluginNextVersion(ctx context.Context, r
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *PluginDevelopServiceClient) GetDevPluginList(ctx context.Context, request *GetDevPluginListRequest) (r *GetDevPluginListResponse, err error) {
+	var _args PluginDevelopServiceGetDevPluginListArgs
+	_args.Request = request
+	var _result PluginDevelopServiceGetDevPluginListResult
+	if err = p.Client_().Call(ctx, "GetDevPluginList", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 
 type PluginDevelopServiceProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
@@ -20190,6 +21376,7 @@ func NewPluginDevelopServiceProcessor(handler PluginDevelopService) *PluginDevel
 	self.AddToProcessorMap("GetUserAuthority", &pluginDevelopServiceProcessorGetUserAuthority{handler: handler})
 	self.AddToProcessorMap("DebugAPI", &pluginDevelopServiceProcessorDebugAPI{handler: handler})
 	self.AddToProcessorMap("GetPluginNextVersion", &pluginDevelopServiceProcessorGetPluginNextVersion{handler: handler})
+	self.AddToProcessorMap("GetDevPluginList", &pluginDevelopServiceProcessorGetDevPluginList{handler: handler})
 	return self
 }
 func (p *PluginDevelopServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -21249,6 +22436,54 @@ func (p *pluginDevelopServiceProcessorGetPluginNextVersion) Process(ctx context.
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("GetPluginNextVersion", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type pluginDevelopServiceProcessorGetDevPluginList struct {
+	handler PluginDevelopService
+}
+
+func (p *pluginDevelopServiceProcessorGetDevPluginList) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := PluginDevelopServiceGetDevPluginListArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetDevPluginList", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := PluginDevelopServiceGetDevPluginListResult{}
+	var retval *GetDevPluginListResponse
+	if retval, err2 = p.handler.GetDevPluginList(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetDevPluginList: "+err2.Error())
+		oprot.WriteMessageBegin("GetDevPluginList", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetDevPluginList", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -27687,5 +28922,297 @@ func (p *PluginDevelopServiceGetPluginNextVersionResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("PluginDevelopServiceGetPluginNextVersionResult(%+v)", *p)
+
+}
+
+type PluginDevelopServiceGetDevPluginListArgs struct {
+	Request *GetDevPluginListRequest `thrift:"request,1"`
+}
+
+func NewPluginDevelopServiceGetDevPluginListArgs() *PluginDevelopServiceGetDevPluginListArgs {
+	return &PluginDevelopServiceGetDevPluginListArgs{}
+}
+
+func (p *PluginDevelopServiceGetDevPluginListArgs) InitDefault() {
+}
+
+var PluginDevelopServiceGetDevPluginListArgs_Request_DEFAULT *GetDevPluginListRequest
+
+func (p *PluginDevelopServiceGetDevPluginListArgs) GetRequest() (v *GetDevPluginListRequest) {
+	if !p.IsSetRequest() {
+		return PluginDevelopServiceGetDevPluginListArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_PluginDevelopServiceGetDevPluginListArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *PluginDevelopServiceGetDevPluginListArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *PluginDevelopServiceGetDevPluginListArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PluginDevelopServiceGetDevPluginListArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceGetDevPluginListArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewGetDevPluginListRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *PluginDevelopServiceGetDevPluginListArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetDevPluginList_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceGetDevPluginListArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceGetDevPluginListArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("PluginDevelopServiceGetDevPluginListArgs(%+v)", *p)
+
+}
+
+type PluginDevelopServiceGetDevPluginListResult struct {
+	Success *GetDevPluginListResponse `thrift:"success,0,optional"`
+}
+
+func NewPluginDevelopServiceGetDevPluginListResult() *PluginDevelopServiceGetDevPluginListResult {
+	return &PluginDevelopServiceGetDevPluginListResult{}
+}
+
+func (p *PluginDevelopServiceGetDevPluginListResult) InitDefault() {
+}
+
+var PluginDevelopServiceGetDevPluginListResult_Success_DEFAULT *GetDevPluginListResponse
+
+func (p *PluginDevelopServiceGetDevPluginListResult) GetSuccess() (v *GetDevPluginListResponse) {
+	if !p.IsSetSuccess() {
+		return PluginDevelopServiceGetDevPluginListResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_PluginDevelopServiceGetDevPluginListResult = map[int16]string{
+	0: "success",
+}
+
+func (p *PluginDevelopServiceGetDevPluginListResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *PluginDevelopServiceGetDevPluginListResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PluginDevelopServiceGetDevPluginListResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceGetDevPluginListResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewGetDevPluginListResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *PluginDevelopServiceGetDevPluginListResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetDevPluginList_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceGetDevPluginListResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceGetDevPluginListResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("PluginDevelopServiceGetDevPluginListResult(%+v)", *p)
 
 }

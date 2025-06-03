@@ -1,0 +1,142 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 137,
+          "y": -336
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input_string",
+            "required": true
+          },
+          {
+            "type": "float",
+            "name": "input_number",
+            "required": true
+          },
+          {
+            "type": "object",
+            "name": "input_object",
+            "schema": [],
+            "required": true
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "type": "string",
+            "name": "input_string",
+            "required": true
+          },
+          {
+            "type": "float",
+            "name": "input_number",
+            "required": true
+          },
+          {
+            "type": "object",
+            "name": "input_object",
+            "schema": [],
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 571,
+          "y": -232
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output_string",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input_string"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "output_number",
+              "input": {
+                "type": "float",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input_number"
+                  },
+                  "rawMeta": {
+                    "type": 4
+                  }
+                }
+              }
+            },
+            {
+              "name": "output_object",
+              "input": {
+                "type": "object",
+                "schema": [],
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input_object"
+                  },
+                  "rawMeta": {
+                    "type": 6
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "900001"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

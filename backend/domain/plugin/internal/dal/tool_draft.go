@@ -9,24 +9,62 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
-
-type ToolDraftDAO struct {
-	idGen idgen.IDGenerator
-	query *query.Query
-}
 
 func NewToolDraftDAO(db *gorm.DB, idGen idgen.IDGenerator) *ToolDraftDAO {
 	return &ToolDraftDAO{
 		idGen: idGen,
 		query: query.Use(db),
 	}
+}
+
+type ToolDraftDAO struct {
+	idGen idgen.IDGenerator
+	query *query.Query
+}
+
+type toolDraftPO model.ToolDraft
+
+func (t toolDraftPO) ToDO() *entity.ToolInfo {
+	return &entity.ToolInfo{
+		ID:              t.ID,
+		PluginID:        t.PluginID,
+		CreatedAt:       t.CreatedAt,
+		UpdatedAt:       t.UpdatedAt,
+		SubURL:          &t.SubURL,
+		Method:          ptr.Of(t.Method),
+		Operation:       t.Operation,
+		DebugStatus:     ptr.Of(common.APIDebugStatus(t.DebugStatus)),
+		ActivatedStatus: ptr.Of(plugin.ActivatedStatus(t.ActivatedStatus)),
+	}
+}
+
+func (p *ToolDraftDAO) getSelected(opt *ToolSelectedOption) (selected []field.Expr) {
+	if opt == nil {
+		return selected
+	}
+
+	table := p.query.ToolDraft
+
+	if opt.ToolID {
+		selected = append(selected, table.ID)
+	}
+	if opt.ActivatedStatus {
+		selected = append(selected, table.ActivatedStatus)
+	}
+	if opt.DebugStatus {
+		selected = append(selected, table.DebugStatus)
+	}
+
+	return selected
 }
 
 func (t *ToolDraftDAO) Create(ctx context.Context, tool *entity.ToolInfo) (toolID int64, err error) {
@@ -63,12 +101,12 @@ func (t *ToolDraftDAO) Get(ctx context.Context, toolID int64) (tool *entity.Tool
 		return nil, false, err
 	}
 
-	tool = model.ToolDraftToDO(tl)
+	tool = toolDraftPO(*tl).ToDO()
 
 	return tool, true, nil
 }
 
-func (t *ToolDraftDAO) MGet(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+func (t *ToolDraftDAO) MGet(ctx context.Context, toolIDs []int64, opt *ToolSelectedOption) (tools []*entity.ToolInfo, err error) {
 	tools = make([]*entity.ToolInfo, 0, len(toolIDs))
 
 	table := t.query.ToolDraft
@@ -76,13 +114,14 @@ func (t *ToolDraftDAO) MGet(ctx context.Context, toolIDs []int64) (tools []*enti
 
 	for _, chunk := range chunks {
 		tls, err := table.WithContext(ctx).
+			Select(t.getSelected(opt)...).
 			Where(table.ID.In(chunk...)).
 			Find()
 		if err != nil {
 			return nil, err
 		}
 		for _, tl := range tls {
-			tools = append(tools, model.ToolDraftToDO(tl))
+			tools = append(tools, toolDraftPO(*tl).ToDO())
 		}
 	}
 
@@ -105,7 +144,7 @@ func (t *ToolDraftDAO) GetWithAPI(ctx context.Context, pluginID int64, api entit
 		return nil, false, err
 	}
 
-	tool = model.ToolDraftToDO(tl)
+	tool = toolDraftPO(*tl).ToDO()
 
 	return tool, true, nil
 }
@@ -144,20 +183,21 @@ func (t *ToolDraftDAO) MGetWithAPIs(ctx context.Context, pluginID int64, apis []
 				SubURL: tl.SubURL,
 				Method: tl.Method,
 			}
-			tools[api] = model.ToolDraftToDO(tl)
+			tools[api] = toolDraftPO(*tl).ToDO()
 		}
 	}
 
 	return tools, nil
 }
 
-func (t *ToolDraftDAO) GetAll(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
+func (t *ToolDraftDAO) GetAll(ctx context.Context, pluginID int64, opt *ToolSelectedOption) (tools []*entity.ToolInfo, err error) {
 	const limit = 20
 	table := t.query.ToolDraft
 	cursor := int64(0)
 
 	for {
 		tls, err := table.WithContext(ctx).
+			Select(t.getSelected(opt)...).
 			Where(
 				table.PluginID.Eq(pluginID),
 				table.ID.Gt(cursor),
@@ -170,7 +210,7 @@ func (t *ToolDraftDAO) GetAll(ctx context.Context, pluginID int64) (tools []*ent
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, model.ToolDraftToDO(tl))
+			tools = append(tools, toolDraftPO(*tl).ToDO())
 		}
 
 		if len(tls) < limit {
@@ -240,7 +280,7 @@ func (t *ToolDraftDAO) List(ctx context.Context, pluginID int64, pageInfo entity
 
 	tools = make([]*entity.ToolInfo, 0, len(tls))
 	for _, tl := range tls {
-		tools = append(tools, model.ToolDraftToDO(tl))
+		tools = append(tools, toolDraftPO(*tl).ToDO())
 	}
 
 	return tools, total, nil

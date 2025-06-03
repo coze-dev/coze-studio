@@ -1350,6 +1350,152 @@ func (p *DebugOperation) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
+type ScopeType int64
+
+const (
+	// 所有
+	ScopeType_All ScopeType = 0
+	// 自己
+	ScopeType_Self ScopeType = 1
+)
+
+func (p ScopeType) String() string {
+	switch p {
+	case ScopeType_All:
+		return "All"
+	case ScopeType_Self:
+		return "Self"
+	}
+	return "<UNSET>"
+}
+
+func ScopeTypeFromString(s string) (ScopeType, error) {
+	switch s {
+	case "All":
+		return ScopeType_All, nil
+	case "Self":
+		return ScopeType_Self, nil
+	}
+	return ScopeType(0), fmt.Errorf("not a valid ScopeType string")
+}
+
+func ScopeTypePtr(v ScopeType) *ScopeType { return &v }
+func (p *ScopeType) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = ScopeType(result.Int64)
+	return
+}
+
+func (p *ScopeType) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
+type OrderBy int64
+
+const (
+	OrderBy_CreateTime  OrderBy = 0
+	OrderBy_UpdateTime  OrderBy = 1
+	OrderBy_PublishTime OrderBy = 2
+	OrderBy_Hot         OrderBy = 3
+)
+
+func (p OrderBy) String() string {
+	switch p {
+	case OrderBy_CreateTime:
+		return "CreateTime"
+	case OrderBy_UpdateTime:
+		return "UpdateTime"
+	case OrderBy_PublishTime:
+		return "PublishTime"
+	case OrderBy_Hot:
+		return "Hot"
+	}
+	return "<UNSET>"
+}
+
+func OrderByFromString(s string) (OrderBy, error) {
+	switch s {
+	case "CreateTime":
+		return OrderBy_CreateTime, nil
+	case "UpdateTime":
+		return OrderBy_UpdateTime, nil
+	case "PublishTime":
+		return OrderBy_PublishTime, nil
+	case "Hot":
+		return OrderBy_Hot, nil
+	}
+	return OrderBy(0), fmt.Errorf("not a valid OrderBy string")
+}
+
+func OrderByPtr(v OrderBy) *OrderBy { return &v }
+func (p *OrderBy) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = OrderBy(result.Int64)
+	return
+}
+
+func (p *OrderBy) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
+type PluginTypeForFilter int64
+
+const (
+	// 包含PLUGIN和APP
+	PluginTypeForFilter_CloudPlugin PluginTypeForFilter = 1
+	// 包含LOCAL
+	PluginTypeForFilter_LocalPlugin PluginTypeForFilter = 2
+	// 包含WORKFLOW和IMAGEFLOW
+	PluginTypeForFilter_WorkflowPlugin PluginTypeForFilter = 3
+)
+
+func (p PluginTypeForFilter) String() string {
+	switch p {
+	case PluginTypeForFilter_CloudPlugin:
+		return "CloudPlugin"
+	case PluginTypeForFilter_LocalPlugin:
+		return "LocalPlugin"
+	case PluginTypeForFilter_WorkflowPlugin:
+		return "WorkflowPlugin"
+	}
+	return "<UNSET>"
+}
+
+func PluginTypeForFilterFromString(s string) (PluginTypeForFilter, error) {
+	switch s {
+	case "CloudPlugin":
+		return PluginTypeForFilter_CloudPlugin, nil
+	case "LocalPlugin":
+		return PluginTypeForFilter_LocalPlugin, nil
+	case "WorkflowPlugin":
+		return PluginTypeForFilter_WorkflowPlugin, nil
+	}
+	return PluginTypeForFilter(0), fmt.Errorf("not a valid PluginTypeForFilter string")
+}
+
+func PluginTypeForFilterPtr(v PluginTypeForFilter) *PluginTypeForFilter { return &v }
+func (p *PluginTypeForFilter) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = PluginTypeForFilter(result.Int64)
+	return
+}
+
+func (p *PluginTypeForFilter) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
 type ResponseStyle struct {
 	WorkflowResponseMode WorkflowResponseMode `thrift:"workflow_response_mode,1" form:"workflow_response_mode" json:"workflow_response_mode" query:"workflow_response_mode"`
 }

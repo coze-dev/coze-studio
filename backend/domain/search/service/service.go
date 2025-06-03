@@ -6,7 +6,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
 )
 
-type AppProjectEventBus interface {
+type ProjectEventBus interface {
 	PublishProject(ctx context.Context, event *entity.ProjectDomainEvent) error
 }
 
@@ -15,6 +15,6 @@ type ResourceEventBus interface {
 }
 
 type Search interface {
-	SearchApps(ctx context.Context, req *entity.SearchAppsRequest) (resp *entity.SearchAppsResponse, err error)
+	SearchProjects(ctx context.Context, req *entity.SearchProjectsRequest) (resp *entity.SearchProjectsResponse, err error)
 	SearchResources(ctx context.Context, req *entity.SearchResourcesRequest) (resp *entity.SearchResourcesResponse, err error)
 }

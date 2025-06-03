@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"time"
 	"unicode/utf8"
 
 	"github.com/cloudwego/eino/components/document/parser"
@@ -57,14 +56,14 @@ func parseDocx(config *contract.Config, storage storage.Storage, ocr ocr.OCR) pa
 					last.MetaData[k] = v
 				}
 				if needOverlap && cs.Overlap > 0 && len(docs) > 0 {
-					overlap := getOverlap([]rune(docs[len(docs)-1].Content), cs.Overlap)
+					overlap := getOverlap([]rune(docs[len(docs)-1].Content), cs.Overlap, cs.ChunkSize)
 					addSliceContent(string(overlap))
 				}
 				emptySlice = true
 			}
 
 			pushSlice := func() {
-				if !emptySlice {
+				if !emptySlice && last.Content != "" { // filter empty content
 					docs = append(docs, last)
 					newSlice(true)
 				}
@@ -168,15 +167,12 @@ func parseDocx(config *contract.Config, storage storage.Storage, ocr ocr.OCR) pa
 						if !found {
 							continue
 						}
-						imgExt := GetExtension(media.Name)
-						uid := getCreatorIDFromExtraMeta(options.ExtraMeta)
-						secret := createSecret(uid, imgExt)
-						fileName := fmt.Sprintf("%d_%d_%s.%s", uid, time.Now().UnixNano(), secret, imgExt)
-						objectName := fmt.Sprintf("%s/%s", knowledgePrefix, fileName)
-						if err = storage.PutObject(ctx, objectName, media.Data); err != nil {
+
+						imgSrc, err := putImageObject(ctx, storage, getExtension(media.Name), getCreatorIDFromExtraMeta(options.ExtraMeta), media.Data)
+						if err != nil {
 							return err
 						}
-						imgSrc := fmt.Sprintf(imgSrcFormat, objectName)
+
 						newSlice(false)
 						addSliceContent(fmt.Sprintf("\n%s\n", imgSrc))
 

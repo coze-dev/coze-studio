@@ -218,6 +218,10 @@ func (u *userImpl) UpdateProfile(ctx context.Context, req *UpdateProfileRequest)
 		updates["description"] = ptr.From(req.Description)
 	}
 
+	if req.Locale != nil {
+		updates["locale"] = ptr.From(req.Locale)
+	}
+
 	err := u.UserRepo.UpdateProfile(ctx, req.UserID, updates)
 	if err != nil {
 		return err
@@ -298,6 +302,7 @@ func (u *userImpl) Create(ctx context.Context, req *CreateUserRequest) (user *us
 		Password:     hashedPassword,
 		Description:  req.Description,
 		UserVerified: false,
+		Locale:       req.Locale,
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}
@@ -630,7 +635,7 @@ func userPo2Do(model *model.User, iconURL string) *userEntity.User {
 		IconURI:      model.IconURI,
 		IconURL:      iconURL,
 		UserVerified: model.UserVerified,
-		CountryCode:  model.CountryCode,
+		Locale:       model.Locale,
 		SessionKey:   model.SessionKey,
 		CreatedAt:    model.CreatedAt,
 		UpdatedAt:    model.UpdatedAt,

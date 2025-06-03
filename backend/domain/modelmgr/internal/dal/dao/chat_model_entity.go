@@ -2,19 +2,23 @@ package dao
 
 import (
 	"context"
+	"database/sql/driver"
 	"strconv"
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/sqlutil"
 )
 
 type ModelEntityRepo interface {
 	Create(ctx context.Context, modelEntity *model.ModelEntity) error
 	Delete(ctx context.Context, id int64) error
-	List(ctx context.Context, fuzzyModelName *string, scenario *int64, limit int, cursor *string) (
-		resp []*model.ModelEntity, nextCursor *string, hasMore bool, err error)
+	List(ctx context.Context, fuzzyModelName *string, scenario *int64, status []modelmgr.ModelEntityStatus,
+		limit int, cursor *string) (resp []*model.ModelEntity, nextCursor *string, hasMore bool, err error)
 	MGet(ctx context.Context, ids []int64) ([]*model.ModelEntity, error)
 }
 
@@ -44,9 +48,9 @@ func (m *ModelEntityDAO) Delete(ctx context.Context, id int64) error {
 	return err
 }
 
-func (m *ModelEntityDAO) List(ctx context.Context, fuzzyModelName *string, scenario *int64, limit int, cursor *string) (
-	resp []*model.ModelEntity, nextCursor *string, hasMore bool, err error) {
-
+func (m *ModelEntityDAO) List(ctx context.Context, fuzzyModelName *string, scenario *int64, status []modelmgr.ModelEntityStatus,
+	limit int, cursor *string,
+) (resp []*model.ModelEntity, nextCursor *string, hasMore bool, err error) {
 	me := m.query.ModelEntity
 	do := me.WithContext(ctx)
 
@@ -54,7 +58,14 @@ func (m *ModelEntityDAO) List(ctx context.Context, fuzzyModelName *string, scena
 		do.Where(me.Name.Like(*fuzzyModelName))
 	}
 	if scenario != nil {
-		do.Where(me.Scenario.Eq(*scenario))
+		do.Where(me.Scenario.Eq(sqlutil.DriverValue(*scenario)))
+	}
+	if len(status) > 0 {
+		vals := slices.Transform(status, func(a modelmgr.ModelEntityStatus) driver.Valuer {
+			return sqlutil.DriverValue(a)
+		})
+
+		do.Where(me.Status.In(vals...))
 	}
 	if cursor != nil {
 		var id int64

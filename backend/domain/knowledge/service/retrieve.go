@@ -16,9 +16,9 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"golang.org/x/sync/errgroup"
 
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
@@ -42,7 +42,7 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, request *knowledge.Retrieve
 	if err != nil {
 		return nil, err
 	}
-	chain := compose.NewChain[*knowledge.RetrieveContext, []*knowledge.RetrieveSlice]()
+	chain := compose.NewChain[*knowledge.RetrieveContext, []*knowledgeModel.RetrieveSlice]()
 	rewriteNode := compose.InvokableLambda(k.queryRewriteNode)
 	// 向量化召回
 	vectorRetrieveNode := compose.InvokableLambda(k.vectorRetrieveNode)
@@ -99,7 +99,7 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.Re
 	for _, kn := range enableKnowledge {
 		if knowledgeInfoMap[kn.ID] == nil {
 			knowledgeInfoMap[kn.ID] = &knowledge.KnowledgeInfo{}
-			knowledgeInfoMap[kn.ID].DocumentType = entity.DocumentType(kn.FormatType)
+			knowledgeInfoMap[kn.ID].DocumentType = knowledgeModel.DocumentType(kn.FormatType)
 			knowledgeInfoMap[kn.ID].DocumentIDs = []int64{}
 		}
 	}
@@ -109,7 +109,7 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.Re
 			continue
 		}
 		info.DocumentIDs = append(info.DocumentIDs, doc.ID)
-		if info.DocumentType == entity.DocumentTypeTable && info.TableColumns == nil && doc.TableInfo != nil {
+		if info.DocumentType == knowledgeModel.DocumentTypeTable && info.TableColumns == nil && doc.TableInfo != nil {
 			info.TableColumns = doc.TableInfo.Columns
 		}
 	}
@@ -167,7 +167,7 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.Retr
 }
 
 func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*schema.Document, err error) {
-	if req.Strategy.SearchType == entity.SearchTypeFullText {
+	if req.Strategy.SearchType == knowledgeModel.SearchTypeFullText {
 		return nil, nil
 	}
 	var manager searchstore.Manager
@@ -187,7 +187,7 @@ func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.Re
 }
 
 func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*schema.Document, err error) {
-	if req.Strategy.SearchType == entity.SearchTypeSemantic {
+	if req.Strategy.SearchType == knowledgeModel.SearchTypeSemantic {
 		return nil, nil
 	}
 	var manager searchstore.Manager
@@ -218,16 +218,7 @@ func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *knowledge.Retr
 		kid := knowledgeID
 		info := knowledgeInfo
 		collectionName := getCollectionName(kid)
-		//fn, found := d2sMapping[info.DocumentType]
-		//if !found {
-		//	return nil, fmt.Errorf("[vectorRetrieveNode] document type not support, type=%d", info.DocumentType)
-		//}
-		var matchCols []string
-		for _, col := range info.TableColumns {
-			if col.Indexing {
-				matchCols = append(matchCols, getColName(col.ID))
-			}
-		}
+
 		// TODO: creator id 过滤
 		dsl := &searchstore.DSL{
 			Op:    searchstore.OpIn,
@@ -236,16 +227,23 @@ func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *knowledge.Retr
 		}
 		partitions := make([]string, 0, len(req.Documents))
 		for _, doc := range req.Documents {
-			partitions = append(partitions, strconv.FormatInt(doc.ID, 10))
+			if doc.KnowledgeID == kid {
+				partitions = append(partitions, strconv.FormatInt(doc.ID, 10))
+			}
 		}
 		opts := []retriever.Option{
 			searchstore.WithPartitions(partitions),
 			retriever.WithDSLInfo(dsl.DSL()),
 		}
-		if len(matchCols) > 1 {
+		if info.DocumentType == knowledgeModel.DocumentTypeTable && !k.enableCompactTable {
+			var matchCols []string
+			for _, col := range info.TableColumns {
+				if col.Indexing {
+					matchCols = append(matchCols, getColName(col.ID))
+				}
+			}
 			opts = append(opts, searchstore.WithMultiMatch(matchCols, query))
 		}
-
 		eg.Go(func() error {
 			ss, err := manager.GetSearchStore(ctx, collectionName)
 			if err != nil {
@@ -272,7 +270,7 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *knowledge.Re
 	hasTable := false
 	var tableDocs []*model.KnowledgeDocument
 	for _, doc := range req.Documents {
-		if doc.DocumentType == int32(entity.DocumentTypeTable) {
+		if doc.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 			hasTable = true
 			tableDocs = append(tableDocs, doc)
 		}
@@ -287,9 +285,9 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *knowledge.Re
 			go func() {
 				doc := tableDocs[t]
 				defer wg.Done()
-				docs, err := k.nl2SqlExec(ctx, doc, req)
-				if err != nil {
-					logs.CtxErrorf(ctx, "nl2sql exec failed: %v", err)
+				docs, execErr := k.nl2SqlExec(ctx, doc, req)
+				if execErr != nil {
+					logs.CtxErrorf(ctx, "nl2sql exec failed: %v", execErr)
 					return
 				}
 				mu.Lock()
@@ -447,11 +445,11 @@ func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any)
 	// 根据召回策略从不同渠道获取召回结果
 	var retrieveResultArr [][]*rerank.Data
 	switch retrieveCtx.Strategy.SearchType {
-	case entity.SearchTypeSemantic:
+	case knowledgeModel.SearchTypeSemantic:
 		retrieveResultArr = append(retrieveResultArr, docs2RerankData(vectorRetrieveResult))
-	case entity.SearchTypeFullText:
+	case knowledgeModel.SearchTypeFullText:
 		retrieveResultArr = append(retrieveResultArr, docs2RerankData(esRetrieveResult))
-	case entity.SearchTypeHybrid:
+	case knowledgeModel.SearchTypeHybrid:
 		retrieveResultArr = append(retrieveResultArr, docs2RerankData(vectorRetrieveResult))
 		retrieveResultArr = append(retrieveResultArr, docs2RerankData(esRetrieveResult))
 	default:
@@ -479,6 +477,9 @@ func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any)
 
 	retrieveResult = make([]*schema.Document, 0, len(resp.SortedData))
 	for _, item := range resp.SortedData {
+		if item.Score < ptr.From(retrieveCtx.Strategy.MinScore) {
+			continue
+		}
 		doc := item.Document
 		doc.WithScore(item.Score)
 		retrieveResult = append(retrieveResult, doc)
@@ -487,7 +488,7 @@ func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any)
 	return retrieveResult, nil
 }
 
-func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema.Document) (results []*knowledge.RetrieveSlice, err error) {
+func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema.Document) (results []*knowledgeModel.RetrieveSlice, err error) {
 	if len(retrieveResult) == 0 {
 		return nil, nil
 	}
@@ -539,7 +540,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 		if knowledgeMap[slice.KnowledgeID] == nil {
 			continue
 		}
-		if knowledgeMap[slice.KnowledgeID].FormatType == int32(entity.DocumentTypeTable) {
+		if knowledgeMap[slice.KnowledgeID].FormatType == int32(knowledgeModel.DocumentTypeTable) {
 			if slicesInTable[slice.DocumentID] == nil {
 				slicesInTable[slice.DocumentID] = []*model.KnowledgeDocumentSlice{}
 			}
@@ -557,23 +558,16 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 			return nil, err
 		}
 	}
-	results = []*knowledge.RetrieveSlice{}
+	results = []*knowledgeModel.RetrieveSlice{}
 	for i := range slices {
 		doc := documentMap[slices[i].DocumentID]
 		kn := knowledgeMap[slices[i].KnowledgeID]
-		var projectID int64
-		if kn.ProjectID != "" {
-			projectID, err = strconv.ParseInt(kn.ProjectID, 10, 64)
-			if err != nil {
-				return nil, err
-			}
-		}
 		sliceEntity := entity.Slice{
-			Info: common.Info{
+			Info: knowledgeModel.Info{
 				ID:          slices[i].ID,
 				CreatorID:   slices[i].CreatorID,
 				SpaceID:     doc.SpaceID,
-				ProjectID:   projectID,
+				AppID:       kn.AppID,
 				CreatedAtMs: slices[i].CreatedAt,
 				UpdatedAtMs: slices[i].UpdatedAt,
 			},
@@ -582,16 +576,16 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 			DocumentName: doc.Name,
 			Sequence:     int64(slices[i].Sequence),
 			ByteCount:    int64(len(slices[i].Content)),
-			SliceStatus:  entity.SliceStatus(slices[i].Status),
+			SliceStatus:  knowledgeModel.SliceStatus(slices[i].Status),
 			CharCount:    int64(utf8.RuneCountInString(slices[i].Content)),
 		}
 
-		switch entity.DocumentType(doc.DocumentType) {
-		case entity.DocumentTypeText:
-			sliceEntity.RawContent = []*entity.SliceContent{
-				{Type: entity.SliceContentTypeText, Text: ptr.Of(slices[i].Content)},
+		switch knowledgeModel.DocumentType(doc.DocumentType) {
+		case knowledgeModel.DocumentTypeText:
+			sliceEntity.RawContent = []*knowledgeModel.SliceContent{
+				{Type: knowledgeModel.SliceContentTypeText, Text: ptr.Of(slices[i].Content)},
 			}
-		case entity.DocumentTypeTable:
+		case knowledgeModel.DocumentTypeTable:
 			if v, ok := sliceMap[slices[i].ID]; ok {
 				sliceEntity.RawContent = v.RawContent
 			}
@@ -599,7 +593,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 
 		}
 
-		results = append(results, &knowledge.RetrieveSlice{
+		results = append(results, &knowledgeModel.RetrieveSlice{
 			Slice: &sliceEntity,
 			Score: sliceScoreMap[slices[i].ID],
 		})

@@ -165,6 +165,7 @@ type User struct {
 	AvatarURL      string       `thrift:"avatar_url,6,required" form:"avatar_url,required" json:"avatar_url,required" query:"avatar_url,required"`
 	ScreenName     *string      `thrift:"screen_name,7,optional" form:"screen_name" json:"screen_name,omitempty" query:"screen_name"`
 	AppUserInfo    *AppUserInfo `thrift:"app_user_info,8,optional" form:"app_user_info" json:"app_user_info,omitempty" query:"app_user_info"`
+	Locale         *string      `thrift:"locale,9,optional" form:"locale" json:"locale,omitempty" query:"locale"`
 	// unix timestamp in seconds
 	UserCreateTime int64 `thrift:"user_create_time,10" form:"user_create_time" json:"user_create_time" query:"user_create_time"`
 }
@@ -218,6 +219,15 @@ func (p *User) GetAppUserInfo() (v *AppUserInfo) {
 	return p.AppUserInfo
 }
 
+var User_Locale_DEFAULT string
+
+func (p *User) GetLocale() (v string) {
+	if !p.IsSetLocale() {
+		return User_Locale_DEFAULT
+	}
+	return *p.Locale
+}
+
 func (p *User) GetUserCreateTime() (v int64) {
 	return p.UserCreateTime
 }
@@ -231,6 +241,7 @@ var fieldIDToName_User = map[int16]string{
 	6:  "avatar_url",
 	7:  "screen_name",
 	8:  "app_user_info",
+	9:  "locale",
 	10: "user_create_time",
 }
 
@@ -240,6 +251,10 @@ func (p *User) IsSetScreenName() bool {
 
 func (p *User) IsSetAppUserInfo() bool {
 	return p.AppUserInfo != nil
+}
+
+func (p *User) IsSetLocale() bool {
+	return p.Locale != nil
 }
 
 func (p *User) Read(iprot thrift.TProtocol) (err error) {
@@ -331,6 +346,14 @@ func (p *User) Read(iprot thrift.TProtocol) (err error) {
 		case 8:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField8(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 9:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField9(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -489,6 +512,17 @@ func (p *User) ReadField8(iprot thrift.TProtocol) error {
 	p.AppUserInfo = _field
 	return nil
 }
+func (p *User) ReadField9(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Locale = _field
+	return nil
+}
 func (p *User) ReadField10(iprot thrift.TProtocol) error {
 
 	var _field int64
@@ -537,6 +571,10 @@ func (p *User) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField8(oprot); err != nil {
 			fieldId = 8
+			goto WriteFieldError
+		}
+		if err = p.writeField9(oprot); err != nil {
+			fieldId = 9
 			goto WriteFieldError
 		}
 		if err = p.writeField10(oprot); err != nil {
@@ -692,6 +730,24 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
+}
+func (p *User) writeField9(oprot thrift.TProtocol) (err error) {
+	if p.IsSetLocale() {
+		if err = oprot.WriteFieldBegin("locale", thrift.STRING, 9); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Locale); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
 }
 func (p *User) writeField10(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("user_create_time", thrift.I64, 10); err != nil {
@@ -3278,6 +3334,7 @@ type UserUpdateProfileRequest struct {
 	Name           *string `thrift:"name,2,optional" form:"name" json:"name,omitempty" query:"name"`
 	UserUniqueName *string `thrift:"user_unique_name,3,optional" form:"user_unique_name" json:"user_unique_name,omitempty" query:"user_unique_name"`
 	Description    *string `thrift:"description,5,optional" form:"description" json:"description,omitempty" query:"description"`
+	Locale         *string `thrift:"locale,6,optional" form:"locale" json:"locale,omitempty" query:"locale"`
 }
 
 func NewUserUpdateProfileRequest() *UserUpdateProfileRequest {
@@ -3314,10 +3371,20 @@ func (p *UserUpdateProfileRequest) GetDescription() (v string) {
 	return *p.Description
 }
 
+var UserUpdateProfileRequest_Locale_DEFAULT string
+
+func (p *UserUpdateProfileRequest) GetLocale() (v string) {
+	if !p.IsSetLocale() {
+		return UserUpdateProfileRequest_Locale_DEFAULT
+	}
+	return *p.Locale
+}
+
 var fieldIDToName_UserUpdateProfileRequest = map[int16]string{
 	2: "name",
 	3: "user_unique_name",
 	5: "description",
+	6: "locale",
 }
 
 func (p *UserUpdateProfileRequest) IsSetName() bool {
@@ -3330,6 +3397,10 @@ func (p *UserUpdateProfileRequest) IsSetUserUniqueName() bool {
 
 func (p *UserUpdateProfileRequest) IsSetDescription() bool {
 	return p.Description != nil
+}
+
+func (p *UserUpdateProfileRequest) IsSetLocale() bool {
+	return p.Locale != nil
 }
 
 func (p *UserUpdateProfileRequest) Read(iprot thrift.TProtocol) (err error) {
@@ -3369,6 +3440,14 @@ func (p *UserUpdateProfileRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 5:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 6:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField6(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -3436,6 +3515,17 @@ func (p *UserUpdateProfileRequest) ReadField5(iprot thrift.TProtocol) error {
 	p.Description = _field
 	return nil
 }
+func (p *UserUpdateProfileRequest) ReadField6(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Locale = _field
+	return nil
+}
 
 func (p *UserUpdateProfileRequest) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -3453,6 +3543,10 @@ func (p *UserUpdateProfileRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField5(oprot); err != nil {
 			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField6(oprot); err != nil {
+			fieldId = 6
 			goto WriteFieldError
 		}
 	}
@@ -3526,6 +3620,24 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+func (p *UserUpdateProfileRequest) writeField6(oprot thrift.TProtocol) (err error) {
+	if p.IsSetLocale() {
+		if err = oprot.WriteFieldBegin("locale", thrift.STRING, 6); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Locale); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 
 func (p *UserUpdateProfileRequest) String() string {

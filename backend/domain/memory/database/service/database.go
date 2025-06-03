@@ -4,20 +4,20 @@ import (
 	"context"
 
 	"code.byted.org/flow/opencoze/backend/api/model/common"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
-	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 )
 
-//go:generate mockgen -destination  ../../../internal/mock/domain/memory/database/database_mock.go  --package database  -source database.go
+//go:generate mockgen -destination  ../../../../internal/mock/domain/memory/database/database_mock.go  --package database  -source database.go
 type Database interface {
 	CreateDatabase(ctx context.Context, req *CreateDatabaseRequest) (*CreateDatabaseResponse, error)
 	UpdateDatabase(ctx context.Context, req *UpdateDatabaseRequest) (*UpdateDatabaseResponse, error)
 	DeleteDatabase(ctx context.Context, req *DeleteDatabaseRequest) error
 	MGetDatabase(ctx context.Context, req *MGetDatabaseRequest) (*MGetDatabaseResponse, error)
 	ListDatabase(ctx context.Context, req *ListDatabaseRequest) (*ListDatabaseResponse, error)
+	GetDraftDatabaseByOnlineID(ctx context.Context, req *GetDraftDatabaseByOnlineIDRequest) (*GetDraftDatabaseByOnlineIDResponse, error)
 
 	GetDatabaseTemplate(ctx context.Context, req *GetDatabaseTemplateRequest) (*GetDatabaseTemplateResponse, error)
 	GetDatabaseTableSchema(ctx context.Context, req *GetDatabaseTableSchemaRequest) (*GetDatabaseTableSchemaResponse, error)
@@ -55,12 +55,9 @@ type UpdateDatabaseRequest struct {
 type UpdateDatabaseResponse struct {
 	Database *entity.Database
 }
-type DeleteDatabaseRequest struct {
-	Database *entity.Database
-}
 
 type MGetDatabaseRequest struct {
-	Basics []*entity.DatabaseBasic
+	Basics []*database.DatabaseBasic
 }
 type MGetDatabaseResponse struct {
 	Databases []*entity.Database
@@ -79,8 +76,9 @@ type ListDatabaseRequest struct {
 	SpaceID     *int64
 	ConnectorID *int64
 	TableName   *string
-	TableType   entity.TableType
-	OrderBy     []*entity.OrderBy
+	AppID       *int64
+	TableType   table.TableType
+	OrderBy     []*database.OrderBy
 
 	Limit  int
 	Offset int
@@ -95,7 +93,7 @@ type ListDatabaseResponse struct {
 
 type AddDatabaseRecordRequest struct {
 	DatabaseID  int64
-	TableType   entity.TableType
+	TableType   table.TableType
 	ConnectorID *int64
 	UserID      int64
 	Records     []map[string]string
@@ -103,7 +101,7 @@ type AddDatabaseRecordRequest struct {
 
 type UpdateDatabaseRecordRequest struct {
 	DatabaseID  int64
-	TableType   entity.TableType
+	TableType   table.TableType
 	ConnectorID *int64
 	UserID      int64
 	Records     []map[string]string
@@ -111,7 +109,7 @@ type UpdateDatabaseRecordRequest struct {
 
 type DeleteDatabaseRecordRequest struct {
 	DatabaseID  int64
-	TableType   entity.TableType
+	TableType   table.TableType
 	ConnectorID *int64
 	UserID      int64
 	Records     []map[string]string
@@ -120,7 +118,7 @@ type DeleteDatabaseRecordRequest struct {
 type ListDatabaseRecordRequest struct {
 	DatabaseID  int64
 	ConnectorID *int64
-	TableType   entity.TableType
+	TableType   table.TableType
 	UserID      int64
 
 	Limit  int
@@ -129,37 +127,15 @@ type ListDatabaseRecordRequest struct {
 
 type ListDatabaseRecordResponse struct {
 	Records   []map[string]string
-	FieldList []*entity.FieldItem
+	FieldList []*database.FieldItem
 
 	HasMore    bool
 	TotalCount int64
 }
 
-type ExecuteSQLRequest struct {
-	SQL     *string        // set if OperateType is 0.
-	SQLType entity.SQLType // SQLType indicates the type of SQL: parameterized or raw SQL. It takes effect if OperateType is 0.
+type ExecuteSQLRequest = database.ExecuteSQLRequest
 
-	DatabaseID  int64
-	User        *userEntity.UserIdentity
-	ConnectorID *int64
-	SQLParams   []*entity.SQLParamVal
-	TableType   entity.TableType
-	OperateType entity.OperateType
-
-	// set the following values if OperateType is not 0.
-	SelectFieldList *entity.SelectFieldList
-	OrderByList     []entity.OrderBy
-	Limit           *int64
-	Offset          *int64
-	Condition       *entity.ComplexCondition
-	UpsertRows      []*entity.UpsertRow
-}
-
-type ExecuteSQLResponse struct {
-	Records      []map[string]string
-	FieldList    []*entity.FieldItem
-	RowsAffected *int64
-}
+type ExecuteSQLResponse = database.ExecuteSQLResponse
 
 type BindDatabaseToAgentRequest struct {
 	Relations []*entity.AgentToDatabase
@@ -171,7 +147,7 @@ type UnBindDatabaseToAgentRequest struct {
 
 type MGetDatabaseByAgentIDRequest struct {
 	AgentID       int64
-	TableType     entity.TableType
+	TableType     table.TableType
 	NeedSysFields bool
 }
 
@@ -179,13 +155,11 @@ type MGetDatabaseByAgentIDResponse struct {
 	Databases []*entity.Database
 }
 
-type PublishDatabaseRequest struct {
-	AgentID int64
-}
+type PublishDatabaseRequest = database.PublishDatabaseRequest
 
-type PublishDatabaseResponse struct {
-	OnlineDatabases []*bot_common.Database
-}
+type PublishDatabaseResponse = database.PublishDatabaseResponse
+
+type DeleteDatabaseRequest = database.DeleteDatabaseRequest
 
 type UpdateAgentToDatabaseRequest struct {
 	Relation *entity.AgentToDatabase
@@ -193,7 +167,7 @@ type UpdateAgentToDatabaseRequest struct {
 
 type MGetRelationsByAgentIDRequest struct {
 	AgentID       int64
-	TableType     entity.TableType
+	TableType     table.TableType
 	NeedSysFields bool
 }
 
@@ -202,7 +176,7 @@ type MGetRelationsByAgentIDResponse struct {
 }
 type GetDatabaseTableSchemaRequest struct {
 	TableSheet    entity.TableSheet
-	TableDataType entity.TableDataType
+	TableDataType table.TableDataType
 	DatabaseID    int64
 	TosURL        string
 	UserID        int64
@@ -216,21 +190,30 @@ type GetDatabaseTableSchemaResponse struct {
 
 type ValidateDatabaseTableSchemaRequest struct {
 	TableSheet    entity.TableSheet
-	TableDataType entity.TableDataType
+	TableDataType table.TableDataType
 	DatabaseID    int64
 	TosURL        string
 	UserID        int64
-	Fields        []*entity.FieldItem
+	Fields        []*database.FieldItem
 }
 
 type ValidateDatabaseTableSchemaResponse struct {
-	Valid bool
+	Valid      bool
+	InvalidMsg *string // if valid is false, it will be set
+}
+
+func (r *ValidateDatabaseTableSchemaResponse) GetInvalidMsg() string {
+	if r.Valid || r.InvalidMsg == nil {
+		return ""
+	}
+
+	return *r.InvalidMsg
 }
 
 type SubmitDatabaseInsertTaskRequest struct {
 	DatabaseID  int64
 	FileURI     string
-	TableType   entity.TableType
+	TableType   table.TableType
 	TableSheet  entity.TableSheet
 	ConnectorID *int64
 	UserID      int64
@@ -238,7 +221,7 @@ type SubmitDatabaseInsertTaskRequest struct {
 
 type GetDatabaseFileProgressDataRequest struct {
 	DatabaseID int64
-	TableType  entity.TableType
+	TableType  table.TableType
 	UserID     int64
 }
 
@@ -246,4 +229,12 @@ type GetDatabaseFileProgressDataResponse struct {
 	FileName       string
 	Progress       int32
 	StatusDescript *string
+}
+
+type GetDraftDatabaseByOnlineIDRequest struct {
+	OnlineID int64
+}
+
+type GetDraftDatabaseByOnlineIDResponse struct {
+	Database *entity.Database
 }

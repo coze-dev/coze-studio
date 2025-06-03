@@ -9,16 +9,16 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/repository"
-	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	rdb2 "code.byted.org/flow/opencoze/backend/infra/impl/rdb"
@@ -110,29 +110,29 @@ func TestCreateDatabase(t *testing.T) {
 	defer cleanupTestEnv(t, gormDB)
 
 	req := &CreateDatabaseRequest{
-		Database: &entity2.Database{
+		Database: &database.Database{
 			SpaceID:   1,
 			CreatorID: 1001,
 
 			TableName: "test_db_create",
-			FieldList: []*entity2.FieldItem{
+			FieldList: []*database.FieldItem{
 				{
 					Name:         "id",
-					Type:         entity2.FieldItemType_Number,
+					Type:         table.FieldItemType_Number,
 					MustRequired: true,
 				},
 				{
 					Name:         "name",
-					Type:         entity2.FieldItemType_Text,
+					Type:         table.FieldItemType_Text,
 					MustRequired: true,
 				},
 				{
 					Name: "score",
-					Type: entity2.FieldItemType_Float,
+					Type: table.FieldItemType_Float,
 				},
 				{
 					Name: "date",
-					Type: entity2.FieldItemType_Date,
+					Type: table.FieldItemType_Date,
 				},
 			},
 		},
@@ -168,11 +168,11 @@ func TestUpdateDatabase(t *testing.T) {
 		SpaceID:   1,
 		CreatorID: 1001,
 		TableName: "test_db_update",
-		TableType: ptr.Of(entity2.TableType_OnlineTable),
-		FieldList: []*entity2.FieldItem{
+		TableType: ptr.Of(table.TableType_OnlineTable),
+		FieldList: []*database.FieldItem{
 			{
 				Name:         "age",
-				Type:         entity2.FieldItemType_Float,
+				Type:         table.FieldItemType_Float,
 				MustRequired: true,
 			},
 		},
@@ -227,7 +227,7 @@ func TestListDatabase(t *testing.T) {
 	}
 
 	spaceID := int64(1)
-	tableType := entity2.TableType_OnlineTable
+	tableType := table.TableType_OnlineTable
 	listReq := &ListDatabaseRequest{
 		SpaceID:   &spaceID,
 		TableType: tableType,
@@ -257,24 +257,24 @@ func createDatabase(dbService Database) (*CreateDatabaseResponse, error) {
 			CreatorID: 1001,
 
 			TableName: "test_db_table_01",
-			FieldList: []*entity2.FieldItem{
+			FieldList: []*database.FieldItem{
 				{
 					Name:         "id",
-					Type:         entity2.FieldItemType_Number,
+					Type:         table.FieldItemType_Number,
 					MustRequired: true,
 				},
 				{
 					Name:         "name",
-					Type:         entity2.FieldItemType_Text,
+					Type:         table.FieldItemType_Text,
 					MustRequired: true,
 				},
 				{
 					Name: "score",
-					Type: entity2.FieldItemType_Float,
+					Type: table.FieldItemType_Float,
 				},
 				{
 					Name: "date",
-					Type: entity2.FieldItemType_Date,
+					Type: table.FieldItemType_Date,
 				},
 			},
 		},
@@ -293,7 +293,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 
 	addRecordReq := &AddDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
-		TableType:  entity2.TableType_OnlineTable,
+		TableType:  table.TableType_OnlineTable,
 		UserID:     1001,
 		Records: []map[string]string{
 			{
@@ -316,7 +316,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 
 	listRecordReq := &ListDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
-		TableType:  entity2.TableType_OnlineTable,
+		TableType:  table.TableType_OnlineTable,
 		UserID:     1001,
 		Limit:      50,
 	}
@@ -343,7 +343,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 
 	updateRecordReq := &UpdateDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
-		TableType:  entity2.TableType_OnlineTable,
+		TableType:  table.TableType_OnlineTable,
 		UserID:     1001,
 		Records: []map[string]string{
 			{
@@ -359,7 +359,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 
 	listReq := &ListDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
-		TableType:  entity2.TableType_OnlineTable,
+		TableType:  table.TableType_OnlineTable,
 		Limit:      50,
 		UserID:     1001,
 	}
@@ -379,7 +379,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 
 	deleteRecordReq := &DeleteDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
-		TableType:  entity2.TableType_OnlineTable,
+		TableType:  table.TableType_OnlineTable,
 		UserID:     1001,
 		Records: []map[string]string{
 			{
@@ -393,7 +393,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 
 	listRecordAfterDeleteReq := &ListDatabaseRecordRequest{
 		DatabaseID: resp.Database.ID,
-		TableType:  entity2.TableType_OnlineTable,
+		TableType:  table.TableType_OnlineTable,
 		Limit:      50,
 		UserID:     1001,
 	}
@@ -411,13 +411,13 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 
-	fieldMap := slices.ToMap(resp.Database.FieldList, func(e *entity2.FieldItem) (string, *entity2.FieldItem) {
+	fieldMap := slices.ToMap(resp.Database.FieldList, func(e *database.FieldItem) (string, *database.FieldItem) {
 		return e.Name, e
 	})
 
-	upsertRows := []*entity2.UpsertRow{
+	upsertRows := []*database.UpsertRow{
 		{
-			Records: []*entity2.Record{
+			Records: []*database.Record{
 				{
 					FieldId:    strconv.FormatInt(fieldMap["id"].AlterID, 10),
 					FieldValue: "?",
@@ -433,7 +433,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 			},
 		},
 		{
-			Records: []*entity2.Record{
+			Records: []*database.Record{
 				{
 					FieldId:    strconv.FormatInt(fieldMap["id"].AlterID, 10),
 					FieldValue: "?",
@@ -452,10 +452,10 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 
 	executeInsertReq := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
-		TableType:   entity2.TableType_OnlineTable,
-		OperateType: entity2.OperateType_Insert,
+		TableType:   table.TableType_OnlineTable,
+		OperateType: database.OperateType_Insert,
 		UpsertRows:  upsertRows,
-		SQLParams: []*entity2.SQLParamVal{
+		SQLParams: []*database.SQLParamVal{
 			{
 				Value: ptr.Of("111"),
 			},
@@ -475,10 +475,8 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 				Value: ptr.Of("90.5"),
 			},
 		},
-		User: &userEntity.UserIdentity{
-			UserID:  1001,
-			SpaceID: 1,
-		},
+		UserID:  1001,
+		SpaceID: 1,
 	}
 
 	insertResp, err := dbService.ExecuteSQL(context.Background(), executeInsertReq)
@@ -488,24 +486,22 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.Equal(t, int64(2), *insertResp.RowsAffected)
 
 	limit := int64(10)
-	selectFields := &entity2.SelectFieldList{
+	selectFields := &database.SelectFieldList{
 		FieldID: []string{strconv.FormatInt(fieldMap["name"].AlterID, 10), strconv.FormatInt(fieldMap["score"].AlterID, 10)},
 	}
 
 	executeSelectReq := &ExecuteSQLRequest{
 		DatabaseID:      resp.Database.ID,
-		TableType:       entity2.TableType_OnlineTable,
-		OperateType:     entity2.OperateType_Select,
+		TableType:       table.TableType_OnlineTable,
+		OperateType:     database.OperateType_Select,
 		SelectFieldList: selectFields,
 		Limit:           &limit,
-		User: &userEntity.UserIdentity{
-			UserID:  1001,
-			SpaceID: 1,
-		},
-		OrderByList: []entity2.OrderBy{
+		UserID:          1001,
+		SpaceID:         1,
+		OrderByList: []database.OrderBy{
 			{
 				Field:     "id",
-				Direction: entity2.SortDirection_Desc,
+				Direction: table.SortDirection_Desc,
 			},
 		},
 	}
@@ -517,9 +513,9 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.True(t, len(selectResp.Records) == 2)
 	assert.Equal(t, selectResp.Records[0]["name"], "Bob")
 
-	updateRows := []*entity2.UpsertRow{
+	updateRows := []*database.UpsertRow{
 		{
-			Records: []*entity2.Record{
+			Records: []*database.Record{
 				{
 					FieldId:    strconv.FormatInt(fieldMap["id"].AlterID, 10),
 					FieldValue: "?",
@@ -538,11 +534,11 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 
 	executeUpdateReq := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
-		TableType:   entity2.TableType_OnlineTable,
-		OperateType: entity2.OperateType_Update,
+		TableType:   table.TableType_OnlineTable,
+		OperateType: database.OperateType_Update,
 		UpsertRows:  updateRows,
 		Limit:       &limit,
-		SQLParams: []*entity2.SQLParamVal{
+		SQLParams: []*database.SQLParamVal{
 			{
 				Value: ptr.Of("111"),
 			},
@@ -556,19 +552,17 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 				Value: ptr.Of("111"),
 			},
 		},
-		User: &userEntity.UserIdentity{
-			UserID:  1001,
-			SpaceID: 1,
-		},
-		Condition: &entity2.ComplexCondition{
-			Conditions: []*entity2.Condition{
+		UserID:  1001,
+		SpaceID: 1,
+		Condition: &database.ComplexCondition{
+			Conditions: []*database.Condition{
 				{
 					Left:      "id",
-					Operation: entity2.Operation_EQUAL,
+					Operation: database.Operation_EQUAL,
 					Right:     "?",
 				},
 			},
-			Logic: entity2.Logic_And,
+			Logic: database.Logic_And,
 		},
 	}
 
@@ -579,27 +573,25 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 
 	executeDeleteReq := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
-		TableType:   entity2.TableType_OnlineTable,
-		OperateType: entity2.OperateType_Delete,
+		TableType:   table.TableType_OnlineTable,
+		OperateType: database.OperateType_Delete,
 		Limit:       &limit,
-		User: &userEntity.UserIdentity{
-			UserID:  1001,
-			SpaceID: 1,
-		},
-		SQLParams: []*entity2.SQLParamVal{
+		UserID:      1001,
+		SpaceID:     1,
+		SQLParams: []*database.SQLParamVal{
 			{
 				Value: ptr.Of("111"),
 			},
 		},
-		Condition: &entity2.ComplexCondition{
-			Conditions: []*entity2.Condition{
+		Condition: &database.ComplexCondition{
+			Conditions: []*database.Condition{
 				{
 					Left:      "id",
-					Operation: entity2.Operation_EQUAL,
+					Operation: database.Operation_EQUAL,
 					Right:     "?",
 				},
 			},
-			Logic: entity2.Logic_And,
+			Logic: database.Logic_And,
 		},
 	}
 
@@ -610,15 +602,13 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 
 	selectCustom := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
-		TableType:   entity2.TableType_OnlineTable,
-		OperateType: entity2.OperateType_Custom,
+		TableType:   table.TableType_OnlineTable,
+		OperateType: database.OperateType_Custom,
 		Limit:       &limit,
-		User: &userEntity.UserIdentity{
-			UserID:  1001,
-			SpaceID: 1,
-		},
-		SQL: ptr.Of(fmt.Sprintf("SELECT * FROM %s WHERE score > ?", "test_db_table_01")),
-		SQLParams: []*entity2.SQLParamVal{
+		UserID:      1001,
+		SpaceID:     1,
+		SQL:         ptr.Of(fmt.Sprintf("SELECT * FROM %s WHERE score > ?", "test_db_table_01")),
+		SQLParams: []*database.SQLParamVal{
 			{
 				Value: ptr.Of("85"),
 			},
@@ -634,14 +624,12 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	// Test custom SQL UPDATE
 	updateCustom := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
-		TableType:   entity2.TableType_OnlineTable,
-		OperateType: entity2.OperateType_Custom,
-		User: &userEntity.UserIdentity{
-			UserID:  1001,
-			SpaceID: 1,
-		},
-		SQL: ptr.Of(fmt.Sprintf("UPDATE %s SET name = 'Bob Updated' WHERE id = ?", "test_db_table_01")),
-		SQLParams: []*entity2.SQLParamVal{
+		TableType:   table.TableType_OnlineTable,
+		OperateType: database.OperateType_Custom,
+		UserID:      1001,
+		SpaceID:     1,
+		SQL:         ptr.Of(fmt.Sprintf("UPDATE %s SET name = 'Bob Updated' WHERE id = ?", "test_db_table_01")),
+		SQLParams: []*database.SQLParamVal{
 			{
 				Value: ptr.Of("112"),
 			},
@@ -657,14 +645,12 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	// Test custom SQL DELETE
 	deleteCustom := &ExecuteSQLRequest{
 		DatabaseID:  resp.Database.ID,
-		TableType:   entity2.TableType_OnlineTable,
-		OperateType: entity2.OperateType_Custom,
-		User: &userEntity.UserIdentity{
-			UserID:  1001,
-			SpaceID: 1,
-		},
-		SQL: ptr.Of(fmt.Sprintf("DELETE FROM %s WHERE id = ?", "test_db_table_01")),
-		SQLParams: []*entity2.SQLParamVal{
+		TableType:   table.TableType_OnlineTable,
+		OperateType: database.OperateType_Custom,
+		UserID:      1001,
+		SpaceID:     1,
+		SQL:         ptr.Of(fmt.Sprintf("DELETE FROM %s WHERE id = ?", "test_db_table_01")),
+		SQLParams: []*database.SQLParamVal{
 			{
 				Value: ptr.Of("112"),
 			},

@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
+	app "code.byted.org/flow/opencoze/backend/domain/app/service"
 	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
@@ -21,7 +22,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
-	"code.byted.org/flow/opencoze/backend/pkg/jsoner"
+	"code.byted.org/flow/opencoze/backend/pkg/jsoncache"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
@@ -33,6 +34,7 @@ type ServiceComponents struct {
 	ESClient             *es8.Client
 	ProjectEventBus      ProjectEventBus
 	SingleAgentDomainSVC singleagent.SingleAgent
+	APPDomainSVC         app.AppService
 	KnowledgeDomainSVC   knowledge.Knowledge
 	PluginDomainSVC      service.PluginService
 	WorkflowDomainSVC    workflow.Service
@@ -47,10 +49,10 @@ func InitService(ctx context.Context, s *ServiceComponents) (*SearchApplicationS
 
 	SearchSVC.DomainSVC = searchDomainSVC
 	SearchSVC.ServiceComponents = s
-	SearchSVC.FavRepo = jsoner.New[favInfo]("project:user:agent:", s.Cache)
+	SearchSVC.FavRepo = jsoncache.New[favInfo]("project:user:agent:", s.Cache)
 
 	// setup consumer
-	searchConsumer := search.NewAppHandler(ctx, s.ESClient)
+	searchConsumer := search.NewProjectHandler(ctx, s.ESClient)
 
 	logs.Infof("start search domain consumer...")
 	nameServer := os.Getenv(consts.RocketMQServer)
@@ -72,13 +74,13 @@ func InitService(ctx context.Context, s *ServiceComponents) (*SearchApplicationS
 
 type (
 	ResourceEventBus = search.ResourceEventBus
-	ProjectEventBus  = search.AppProjectEventBus
+	ProjectEventBus  = search.ProjectEventBus
 )
 
 func NewResourceEventBus(p eventbus.Producer) search.ResourceEventBus {
 	return search.NewResourceEventBus(p)
 }
 
-func NewProjectEventBus(p eventbus.Producer) search.AppProjectEventBus {
+func NewProjectEventBus(p eventbus.Producer) search.ProjectEventBus {
 	return search.NewProjectEventBus(p)
 }

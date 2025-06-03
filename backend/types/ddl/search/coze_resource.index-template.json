@@ -1,5 +1,7 @@
 {
-  "index_patterns": ["coze_resource*"],
+  "index_patterns": [
+    "coze_resource*"
+  ],
   "template": {
     "settings": {
       "number_of_shards": 1,
@@ -9,7 +11,11 @@
           "text_analyzer": {
             "type": "custom",
             "tokenizer": "standard",
-            "filter": ["lowercase", "stop", "snowball"]
+            "filter": [
+              "lowercase",
+              "stop",
+              "snowball"
+            ]
           },
           "smartcn": {
             "type": "smartcn"
@@ -22,6 +28,10 @@
       "properties": {
         "res_type": {
           "type": "keyword"
+        },
+        "app_id": {
+          "type": "keyword",
+          "null_value": "NULL"
         },
         "res_id": {
           "type": "keyword"
@@ -55,6 +65,7 @@
         "publish_time": {
           "type": "long"
         }
+        
       }
     }
   },

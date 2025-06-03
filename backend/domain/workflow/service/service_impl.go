@@ -9,14 +9,16 @@ import (
 	"time"
 
 	"github.com/bytedance/sonic"
-	"github.com/cloudwego/eino/components/tool"
-	einoCompose "github.com/cloudwego/eino/compose"
-	"github.com/cloudwego/eino/schema"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/cast"
 	"gorm.io/gorm"
 
+	"github.com/cloudwego/eino/components/tool"
+	einoCompose "github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
+
 	cloudworkflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
@@ -25,6 +27,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/adaptor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/validate"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -100,14 +103,14 @@ func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowI
 			workflowMeta.Canvas = &vInfo.Canvas
 			if len(vInfo.InputParams) > 0 {
 				workflowMeta.InputParams = make([]*vo.NamedTypeInfo, 0)
-				err := sonic.UnmarshalString(vInfo.InputParams, workflowMeta.InputParams)
+				err := sonic.UnmarshalString(vInfo.InputParams, &workflowMeta.InputParams)
 				if err != nil {
 					return nil, err
 				}
 			}
 			if len(vInfo.OutputParams) > 0 {
 				workflowMeta.OutputParams = make([]*vo.NamedTypeInfo, 0)
-				err := sonic.UnmarshalString(vInfo.OutputParams, workflowMeta.OutputParams)
+				err := sonic.UnmarshalString(vInfo.OutputParams, &workflowMeta.OutputParams)
 				if err != nil {
 					return nil, err
 				}
@@ -122,7 +125,7 @@ func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowI
 
 func (i *impl) WorkflowAsModelTool(ctx context.Context, ids []*entity.WorkflowIdentity) (tools []tool.BaseTool, err error) {
 	for _, id := range ids {
-		t, err := i.repo.WorkflowAsTool(ctx, *id)
+		t, err := i.repo.WorkflowAsTool(ctx, *id, vo.WorkflowToolConfig{})
 		if err != nil {
 			return nil, err
 		}
@@ -180,13 +183,23 @@ func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *ent
 		return 0, err
 	}
 
+	// save the initialized  canvas information to the draft
+	wf.Canvas = ptr.Of(vo.GetDefaultInitCanvasJsonSchema())
+	wf.ID = id
+	err = i.SaveWorkflow(ctx, wf)
+	if err != nil {
+		return 0, err
+	}
+
 	err = search.GetNotifier().PublishWorkflowResource(ctx, search.Created, &search.Resource{
 		WorkflowID:    id,
 		URI:           &wf.IconURI,
 		Name:          &wf.Name,
 		Desc:          &wf.Desc,
+		APPID:         wf.ProjectID,
 		SpaceID:       &wf.SpaceID,
 		OwnerID:       &wf.CreatorID,
+		Mode:          ptr.Of(int32(wf.Mode)),
 		PublishStatus: ptr.Of(search.UnPublished),
 		CreatedAt:     ptr.Of(time.Now().UnixMilli()),
 	})
@@ -208,24 +221,76 @@ func (i *impl) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
 	}
 
 	var inputParams, outputParams string
-
-	sc, err := adaptor.CanvasToWorkflowSchema(ctx, c)
-	if err == nil {
-		wf, err := compose.NewWorkflow(ctx, sc)
-		if err == nil {
-			inputParams, outputParams, err = generateWorkflowNamedTypeInfoParams(wf, c.Nodes)
-			if err != nil {
-				return err
-			}
-		}
+	inputs, outputs, err := extractInputsAndOutputsNamedInfoList(c)
+	if err != nil {
+		return err
+	}
+	inputParams, err = sonic.MarshalString(inputs)
+	if err != nil {
+		return err
 	}
 
-	resetTestRun, err := i.shouldResetTestRun(ctx, sc, draft.ID)
+	outputParams, err = sonic.MarshalString(outputs)
+	if err != nil {
+		return err
+	}
+
+	resetTestRun, err := i.shouldResetTestRun(ctx, c, draft.ID)
 	if err != nil {
 		return err
 	}
 
 	return i.repo.CreateOrUpdateDraft(ctx, draft.ID, *draft.Canvas, inputParams, outputParams, resetTestRun)
+}
+
+func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeInfo, outputs []*vo.NamedTypeInfo, err error) {
+	var (
+		startNode *vo.Node
+		endNode   *vo.Node
+	)
+	for _, node := range c.Nodes {
+		if startNode != nil && endNode != nil {
+			break
+		}
+		if node.Type == vo.BlockTypeBotStart {
+			startNode = node
+		}
+		if node.Type == vo.BlockTypeBotEnd {
+			endNode = node
+		}
+	}
+
+	if startNode == nil {
+		return nil, nil, fmt.Errorf("invalid canvas, can not find start node in canvas")
+	}
+
+	if endNode == nil {
+		return nil, nil, fmt.Errorf("invalid canvas, can not find end node in canvas")
+	}
+
+	inputs, err = slices.TransformWithErrorCheck(startNode.Data.Outputs, func(o any) (*vo.NamedTypeInfo, error) {
+		v, err := vo.ParseVariable(o)
+		if err != nil {
+			return nil, err
+		}
+		nInfo, err := adaptor.VariableToNamedTypeInfo(v)
+		if err != nil {
+			return nil, err
+		}
+		return nInfo, nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	outputs, err = slices.TransformWithErrorCheck(endNode.Data.Inputs.InputParameters, func(a *vo.Param) (*vo.NamedTypeInfo, error) {
+		return adaptor.BlockInputToNamedTypeInfo(a.Name, a.Input)
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return inputs, outputs, nil
 }
 
 func (i *impl) DeleteWorkflow(ctx context.Context, id int64) error {
@@ -436,22 +501,22 @@ func (i *impl) GetReleasedWorkflows(ctx context.Context, wfEntities []*entity.Wo
 	return workflowMetas, nil
 }
 
-func (i *impl) ValidateTree(ctx context.Context, id int64, schemaJSON string) ([]*cloudworkflow.ValidateTreeInfo, error) {
+func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*cloudworkflow.ValidateTreeInfo, error) {
 	wfValidateInfos := make([]*cloudworkflow.ValidateTreeInfo, 0)
 
-	wErrs, err := validateWorkflowTree(ctx, schemaJSON)
+	wErrs, err := validateWorkflowTree(ctx, validateConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to validate work flow: %w", err)
 	}
 
 	wfValidateInfos = append(wfValidateInfos, &cloudworkflow.ValidateTreeInfo{
 		WorkflowID: strconv.FormatInt(id, 10),
-		Name:       "", // TODO How to get this name
+		Name:       "", // TODO front doesn't seem to care about this workflow name
 		Errors:     wErrs,
 	})
 
 	c := &vo.Canvas{}
-	err = sonic.UnmarshalString(schemaJSON, &c)
+	err = sonic.UnmarshalString(validateConfig.CanvasSchema, &c)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal canvas schema: %w", err)
 	}
@@ -461,9 +526,10 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, schemaJSON string) ([
 	if len(subWorkflowIdentities) > 0 {
 		entities := make([]*entity.WorkflowIdentity, 0, len(subWorkflowIdentities))
 		for _, e := range subWorkflowIdentities {
-			if e.Version != "" { // not validate
+			if e.Version != "" {
 				continue
 			}
+			// only project-level workflows need to validate sub-workflows
 			entities = append(entities, &entity.WorkflowIdentity{
 				ID: cast.ToInt64(e.ID),
 			})
@@ -472,11 +538,15 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, schemaJSON string) ([
 		if err != nil {
 			return nil, err
 		}
+
 		for _, wf := range workflows {
 			if wf.Canvas == nil {
 				continue
 			}
-			wErrs, err = validateWorkflowTree(ctx, *wf.Canvas)
+			wErrs, err = validateWorkflowTree(ctx, vo.ValidateTreeConfig{
+				CanvasSchema: ptr.From(wf.Canvas),
+				ProjectID:    wf.ProjectID, // project workflow use same project id
+			})
 			if err != nil {
 				return nil, err
 			}
@@ -494,7 +564,7 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, schemaJSON string) ([
 // AsyncExecuteWorkflow executes the specified workflow asynchronously, returning the execution ID.
 // Intermediate results are not emitted on the fly.
 // The caller is expected to poll the execution status using the GetExecution method and the returned execution ID.
-func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string) (int64, error) {
+func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string, config vo.ExecuteConfig) (int64, error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -535,10 +605,74 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 	if err != nil {
 		return 0, err
 	}
-	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(int32(len(workflowSC.GetAllNodes()))),
-		nil, i.repo, workflowSC, nil, false)
+	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(workflowSC.NodeCount()),
+		nil, i.repo, workflowSC, nil, config)
 	if err != nil {
 		return 0, err
+	}
+
+	if config.Mode == vo.ExecuteModeDebug {
+		if err = i.repo.SetTestRunLatestExeID(ctx, id.ID, config.Operator, executeID); err != nil {
+			logs.CtxErrorf(ctx, "failed to set test run latest exe id: %v", err)
+		}
+	}
+
+	wf.AsyncRun(cancelCtx, convertedInput, opts...)
+
+	return executeID, nil
+}
+
+func (i *impl) AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]string, config vo.ExecuteConfig) (int64, error) {
+	var (
+		err      error
+		wfEntity *entity.Workflow
+	)
+	if id.Version != "" {
+		wfEntity, err = i.GetWorkflowVersion(ctx, id)
+		if err != nil {
+			return 0, err
+		}
+	} else {
+		wfEntity, err = i.GetWorkflowDraft(ctx, id.ID)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	c := &vo.Canvas{}
+	if err = sonic.UnmarshalString(*wfEntity.Canvas, c); err != nil {
+		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
+	}
+
+	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, c)
+	if err != nil {
+		return 0, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
+	}
+
+	wf, newSC, err := compose.NewWorkflowFromNode(ctx, workflowSC, vo.NodeKey(nodeID), einoCompose.WithGraphName(fmt.Sprintf("%d", wfEntity.ID)))
+	if err != nil {
+		return 0, fmt.Errorf("failed to create workflow: %w", err)
+	}
+
+	convertedInput, err := convertInputs(input, wf.Inputs())
+	if err != nil {
+		return 0, fmt.Errorf("failed to convert inputs: %w", err)
+	}
+
+	inStr, err := sonic.MarshalString(input)
+	if err != nil {
+		return 0, err
+	}
+	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(newSC.NodeCount()),
+		nil, i.repo, newSC, nil, config)
+	if err != nil {
+		return 0, err
+	}
+
+	if config.Mode == vo.ExecuteModeNodeDebug {
+		if err = i.repo.SetNodeDebugLatestExeID(ctx, id.ID, nodeID, config.Operator, executeID); err != nil {
+			logs.CtxErrorf(ctx, "failed to set node debug latest exe id: %v", err)
+		}
 	}
 
 	wf.AsyncRun(cancelCtx, convertedInput, opts...)
@@ -548,7 +682,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 
 // StreamExecuteWorkflow executes the specified workflow, returning a stream of execution events.
 // The caller is expected to receive from the returned stream immediately.
-func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string) (
+func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (
 	*schema.StreamReader[*entity.Message], error) {
 	var (
 		err      error
@@ -581,11 +715,6 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 		return nil, fmt.Errorf("failed to create workflow: %w", err)
 	}
 
-	convertedInput, err := convertInputs(input, wf.Inputs())
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert inputs: %w", err)
-	}
-
 	inStr, err := sonic.MarshalString(input)
 	if err != nil {
 		return nil, err
@@ -593,15 +722,15 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 
 	sr, sw := schema.Pipe[*entity.Message](10)
 
-	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(int32(len(workflowSC.GetAllNodes()))),
-		nil, i.repo, workflowSC, sw, true)
+	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(workflowSC.NodeCount()),
+		nil, i.repo, workflowSC, sw, config)
 	if err != nil {
 		return nil, err
 	}
 
 	_ = executeID
 
-	wf.AsyncRun(cancelCtx, convertedInput, opts...)
+	wf.AsyncRun(cancelCtx, input, opts...)
 
 	return sr, nil
 }
@@ -653,49 +782,7 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 	}
 
 	for nodeID, nodeExes := range nodeGroups {
-		var groupNodeExe *entity.NodeExecution
-		for _, v := range nodeExes {
-			groupNodeExe = &entity.NodeExecution{
-				ID:        v.ID,
-				ExecuteID: v.ExecuteID,
-				NodeID:    nodeID,
-				NodeName:  v.NodeName,
-				NodeType:  v.NodeType,
-			}
-			break
-		}
-
-		var (
-			duration  time.Duration
-			tokenInfo *entity.TokenUsage
-			status    = entity.NodeSuccess
-		)
-
-		maxIndex := nodeGroupMaxIndex[nodeID]
-		groupNodeExe.IndexedExecutions = make([]*entity.NodeExecution, maxIndex+1)
-
-		for index, ne := range nodeExes {
-			duration = max(duration, ne.Duration)
-			if ne.TokenInfo != nil {
-				if tokenInfo == nil {
-					tokenInfo = &entity.TokenUsage{}
-				}
-				tokenInfo.InputTokens += ne.TokenInfo.InputTokens
-				tokenInfo.OutputTokens += ne.TokenInfo.OutputTokens
-			}
-			if ne.Status == entity.NodeFailed {
-				status = entity.NodeFailed
-			} else if ne.Status == entity.NodeRunning {
-				status = entity.NodeRunning
-			}
-
-			groupNodeExe.IndexedExecutions[index] = nodeExes[index]
-		}
-
-		groupNodeExe.Duration = duration
-		groupNodeExe.TokenInfo = tokenInfo
-		groupNodeExe.Status = status
-
+		groupNodeExe := mergeCompositeInnerNodes(nodeExes, nodeGroupMaxIndex[nodeID])
 		wfExeEntity.NodeExecutions = append(wfExeEntity.NodeExecutions, groupNodeExe)
 	}
 
@@ -713,12 +800,150 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 	return wfExeEntity, nil
 }
 
+func (i *impl) GetNodeExecution(ctx context.Context, exeID int64, nodeID string) (*entity.NodeExecution, *entity.NodeExecution, error) {
+	nodeExe, found, err := i.repo.GetNodeExecution(ctx, exeID, nodeID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if !found {
+		return nil, nil, fmt.Errorf("try getting node exe for exeID : %d, nodeID : %s, but not found", exeID, nodeID)
+	}
+
+	if nodeExe.NodeType != entity.NodeTypeBatch {
+		return nodeExe, nil, nil
+	}
+
+	wfExe, found, err := i.repo.GetWorkflowExecution(ctx, exeID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if !found {
+		return nil, nil, fmt.Errorf("try getting node exe for exeID : %d, nodeID : %s, but not found", exeID, nodeID)
+	}
+
+	if wfExe.Mode != vo.ExecuteModeNodeDebug {
+		return nodeExe, nil, nil
+	}
+
+	// when node debugging a node with batch mode, we need to query the inner node executions and return it together
+	innerNodeExecs, err := i.repo.GetNodeExecutionByParent(ctx, exeID, nodeExe.NodeID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for i := range innerNodeExecs {
+		innerNodeID := innerNodeExecs[i].NodeID
+		if !vo.IsGeneratedNodeForBatchMode(innerNodeID, nodeExe.NodeID) {
+			// inner node is not generated, means this is normal batch, not node in batch mode
+			return nodeExe, nil, nil
+		}
+	}
+
+	var (
+		maxIndex  int
+		index2Exe = make(map[int]*entity.NodeExecution)
+	)
+
+	for i := range innerNodeExecs {
+		index2Exe[innerNodeExecs[i].Index] = innerNodeExecs[i]
+		if innerNodeExecs[i].Index > maxIndex {
+			maxIndex = innerNodeExecs[i].Index
+		}
+	}
+
+	return nodeExe, mergeCompositeInnerNodes(index2Exe, maxIndex), nil
+}
+
+func (i *impl) GetLatestTestRunInput(ctx context.Context, wfID int64, userID int64) (*entity.NodeExecution, bool, error) {
+	exeID, err := i.repo.GetTestRunLatestExeID(ctx, wfID, userID)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if exeID == 0 {
+		return nil, false, nil
+	}
+
+	nodeExe, _, err := i.GetNodeExecution(ctx, exeID, compose.EntryNodeKey)
+	if err != nil {
+		return nil, false, err
+	}
+
+	return nodeExe, true, nil
+}
+
+func (i *impl) GetLastestNodeDebugInput(ctx context.Context, wfID int64, nodeID string, userID int64) (
+	*entity.NodeExecution, *entity.NodeExecution, bool, error) {
+	exeID, err := i.repo.GetNodeDebugLatestExeID(ctx, wfID, nodeID, userID)
+	if err != nil {
+		return nil, nil, false, err
+	}
+
+	if exeID == 0 {
+		return nil, nil, false, nil
+	}
+
+	nodeExe, innerExe, err := i.GetNodeExecution(ctx, exeID, nodeID)
+	if err != nil {
+		return nil, nil, false, err
+	}
+
+	return nodeExe, innerExe, true, nil
+}
+
+func mergeCompositeInnerNodes(nodeExes map[int]*entity.NodeExecution, maxIndex int) *entity.NodeExecution {
+	var groupNodeExe *entity.NodeExecution
+	for _, v := range nodeExes {
+		groupNodeExe = &entity.NodeExecution{
+			ID:           v.ID,
+			ExecuteID:    v.ExecuteID,
+			NodeID:       v.NodeID,
+			NodeName:     v.NodeName,
+			NodeType:     v.NodeType,
+			ParentNodeID: v.ParentNodeID,
+		}
+		break
+	}
+
+	var (
+		duration  time.Duration
+		tokenInfo *entity.TokenUsage
+		status    = entity.NodeSuccess
+	)
+
+	groupNodeExe.IndexedExecutions = make([]*entity.NodeExecution, maxIndex+1)
+
+	for index, ne := range nodeExes {
+		duration = max(duration, ne.Duration)
+		if ne.TokenInfo != nil {
+			if tokenInfo == nil {
+				tokenInfo = &entity.TokenUsage{}
+			}
+			tokenInfo.InputTokens += ne.TokenInfo.InputTokens
+			tokenInfo.OutputTokens += ne.TokenInfo.OutputTokens
+		}
+		if ne.Status == entity.NodeFailed {
+			status = entity.NodeFailed
+		} else if ne.Status == entity.NodeRunning {
+			status = entity.NodeRunning
+		}
+
+		groupNodeExe.IndexedExecutions[index] = nodeExes[index]
+	}
+
+	groupNodeExe.Duration = duration
+	groupNodeExe.TokenInfo = tokenInfo
+	groupNodeExe.Status = status
+
+	return groupNodeExe
+}
+
 // AsyncResumeWorkflow resumes a workflow execution asynchronously, using the passed in executionID and eventID.
 // Intermediate results during the resuming run are not emitted on the fly.
 // Caller is expected to poll the execution status using the GetExecution method.
-func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeRequest) error {
-	// must get the interrupt event
-	// generate the state modifier
+func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeRequest, config vo.ExecuteConfig) error {
 	wfExe, found, err := i.repo.GetWorkflowExecution(ctx, req.ExecuteID)
 	if err != nil {
 		return err
@@ -761,13 +986,46 @@ func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeReques
 		return fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
+	if wfExe.Mode == vo.ExecuteModeNodeDebug {
+		nodeExes, err := i.repo.GetNodeExecutionsByWfExeID(ctx, wfExe.ID)
+		if err != nil {
+			return err
+		}
+
+		if len(nodeExes) == 0 {
+			return fmt.Errorf("during node debug resume, no node execution found for workflow execution %d", wfExe.ID)
+		}
+
+		var nodeID string
+		for _, ne := range nodeExes {
+			if ne.ParentNodeID == nil {
+				nodeID = ne.NodeID
+				break
+			}
+		}
+
+		wf, newSC, err := compose.NewWorkflowFromNode(ctx, workflowSC, vo.NodeKey(nodeID),
+			einoCompose.WithGraphName(fmt.Sprintf("%d", wfExe.WorkflowIdentity.ID)))
+		if err != nil {
+			return fmt.Errorf("failed to create workflow: %w", err)
+		}
+
+		config.Mode = vo.ExecuteModeNodeDebug
+
+		cancelCtx, _, opts, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
+			req, i.repo, newSC, nil, config)
+
+		wf.AsyncRun(cancelCtx, nil, opts...)
+		return nil
+	}
+
 	wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName(fmt.Sprintf("%d", wfExe.WorkflowIdentity.ID)))
 	if err != nil {
 		return fmt.Errorf("failed to create workflow: %w", err)
 	}
 
 	cancelCtx, _, opts, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
-		req, i.repo, workflowSC, nil, false)
+		req, i.repo, workflowSC, nil, config)
 
 	wf.AsyncRun(cancelCtx, nil, opts...)
 
@@ -777,7 +1035,7 @@ func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeReques
 // StreamResumeWorkflow resumes a workflow execution, using the passed in executionID and eventID.
 // Intermediate results during the resuming run are emitted using the returned StreamReader.
 // Caller is expected to poll the execution status using the GetExecution method.
-func (i *impl) StreamResumeWorkflow(ctx context.Context, req *entity.ResumeRequest) (
+func (i *impl) StreamResumeWorkflow(ctx context.Context, req *entity.ResumeRequest, config vo.ExecuteConfig) (
 	*schema.StreamReader[*entity.Message], error) {
 	// must get the interrupt event
 	// generate the state modifier
@@ -830,7 +1088,7 @@ func (i *impl) StreamResumeWorkflow(ctx context.Context, req *entity.ResumeReque
 
 	sr, sw := schema.Pipe[*entity.Message](10)
 	cancelCtx, _, opts, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
-		req, i.repo, workflowSC, sw, true)
+		req, i.repo, workflowSC, sw, config)
 
 	wf.AsyncRun(cancelCtx, nil, opts...)
 
@@ -1064,10 +1322,11 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 	return nodePropertyMap, nil
 }
 
-func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, version *vo.VersionInfo) (err error) {
-	_, err = i.repo.GetWorkflowVersion(ctx, wfID, version.Version)
+func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, version, desc string, force bool) (err error) {
+	// TODO how to use force to publish
+	_, err = i.repo.GetWorkflowVersion(ctx, wfID, version)
 	if err == nil {
-		return fmt.Errorf("workflow version %v already exists", version.Version)
+		return fmt.Errorf("workflow version %v already exists", version)
 	}
 
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -1079,16 +1338,24 @@ func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, vers
 		return err
 	}
 
+	versionInfo := &vo.VersionInfo{}
+
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		draftInfo, err := i.repo.GetWorkflowDraft(ctx, wfID)
 		if err != nil {
 			return err
 		}
-		version.Canvas = draftInfo.Canvas
-		version.InputParams = draftInfo.InputParams
-		version.OutputParams = draftInfo.OutputParams
+		uid := ctxutil.GetUIDFromCtx(ctx)
+		if uid != nil {
+			versionInfo.CreatorID = *uid
+		}
+		versionInfo.Version = version
+		versionInfo.Canvas = draftInfo.Canvas
+		versionInfo.InputParams = draftInfo.InputParams
+		versionInfo.OutputParams = draftInfo.OutputParams
+		versionInfo.VersionDescription = desc
 
-		_, err = i.repo.CreateWorkflowVersion(ctx, wfID, version)
+		_, err = i.repo.CreateWorkflowVersion(ctx, wfID, versionInfo)
 		if err != nil {
 			return err
 		}
@@ -1111,13 +1378,13 @@ func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, vers
 	if err != nil {
 		return err
 	}
-	currentVersion, err := parseVersion(version.Version)
+	currentVersion, err := parseVersion(version)
 	if err != nil {
 		return err
 	}
 
 	if !isIncremental(latestVersion, currentVersion) {
-		return fmt.Errorf("the version number is not self-incrementing, old version %v, current version is %v", latestVersionInfo.Version, version.Version)
+		return fmt.Errorf("the version number is not self-incrementing, old version %v, current version is %v", latestVersionInfo.Version, version)
 	}
 
 	draftInfo, err := i.repo.GetWorkflowDraft(ctx, wfID)
@@ -1125,11 +1392,17 @@ func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, force bool, vers
 		return err
 	}
 
-	version.Canvas = draftInfo.Canvas
-	version.InputParams = draftInfo.InputParams
-	version.OutputParams = draftInfo.OutputParams
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid != nil {
+		versionInfo.CreatorID = *uid
+	}
+	versionInfo.Version = version
+	versionInfo.Canvas = draftInfo.Canvas
+	versionInfo.InputParams = draftInfo.InputParams
+	versionInfo.OutputParams = draftInfo.OutputParams
+	versionInfo.VersionDescription = desc
 
-	_, err = i.repo.CreateWorkflowVersion(ctx, wfID, version)
+	_, err = i.repo.CreateWorkflowVersion(ctx, wfID, versionInfo)
 	if err != nil {
 		return err
 	}
@@ -1284,8 +1557,44 @@ func (i *impl) MGetWorkflowDetailInfo(ctx context.Context, identifies []*entity.
 	return wfs, nil
 }
 
-func (i *impl) shouldResetTestRun(ctx context.Context, sc *compose.WorkflowSchema, wid int64) (bool, error) {
-	if sc == nil { // 新的不合法, 需要改
+func (i *impl) WithMessagePipe() (einoCompose.Option, *schema.StreamReader[*entity.Message]) {
+	return execute.WithMessagePipe()
+}
+
+func (i *impl) WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option {
+	return einoCompose.WithToolsNodeOption(einoCompose.WithToolOption(execute.WithExecuteConfig(cfg)))
+}
+
+func (i *impl) CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (int64, error) {
+	wf, err := i.repo.CopyWorkflow(ctx, spaceID, workflowID)
+	if err != nil {
+		return 0, err
+	}
+
+	// TODO(zhuangjie): publish workflow resource logic should move to application
+	err = search.GetNotifier().PublishWorkflowResource(ctx, search.Created, &search.Resource{
+		WorkflowID:    wf.ID,
+		URI:           &wf.IconURI,
+		Name:          &wf.Name,
+		Desc:          &wf.Desc,
+		APPID:         wf.ProjectID,
+		SpaceID:       &wf.SpaceID,
+		OwnerID:       &wf.CreatorID,
+		PublishStatus: ptr.Of(search.UnPublished),
+		CreatedAt:     ptr.Of(time.Now().UnixMilli()),
+	})
+
+	if err != nil {
+		return 0, err
+	}
+	return wf.ID, nil
+
+}
+
+func (i *impl) shouldResetTestRun(ctx context.Context, c *vo.Canvas, wid int64) (bool, error) {
+
+	sc, err := adaptor.CanvasToWorkflowSchema(ctx, c)
+	if err != nil {
 		return true, nil
 	}
 
@@ -1312,16 +1621,15 @@ func (i *impl) shouldResetTestRun(ctx context.Context, sc *compose.WorkflowSchem
 	return shouldReset, nil
 }
 
-func validateWorkflowTree(ctx context.Context, schemaJSON string) ([]*cloudworkflow.ValidateErrorData, error) {
+func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]*cloudworkflow.ValidateErrorData, error) {
 	c := &vo.Canvas{}
-	err := sonic.UnmarshalString(schemaJSON, &c)
+	err := sonic.UnmarshalString(config.CanvasSchema, &c)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal canvas schema: %w", err)
 	}
 	validator, err := validate.NewCanvasValidator(ctx, &validate.Config{
 		Canvas:              c,
-		ProjectID:           "project_id", // TODO need to be fetched and assigned
-		ProjectVersion:      "",           // TODO need to be fetched and assigned
+		ProjectID:           config.ProjectID,
 		VariablesMetaGetter: variable.GetVariablesMetaGetter(),
 	})
 	if err != nil {
@@ -1459,171 +1767,4 @@ func isIncremental(prev version, next version) bool {
 	}
 
 	return next.Patch > prev.Patch
-}
-
-func generateWorkflowNamedTypeInfoParams(wf *compose.Workflow, nodes []*vo.Node) (inputParams, outputParams string, err error) {
-	var (
-		inputs    = wf.Inputs()
-		outputs   = wf.Outputs()
-		startNode *vo.Node
-		endNode   *vo.Node
-	)
-
-	for _, n := range nodes {
-		if n.Type == vo.BlockTypeBotStart {
-			startNode = n
-		}
-		if n.Type == vo.BlockTypeBotEnd {
-			endNode = n
-		}
-	}
-
-	if startNode != nil {
-		namedTypeInfoList, err := generateInputNamedTypeInfoList(inputs, startNode.Data.Outputs)
-		inputParams, err = sonic.MarshalString(namedTypeInfoList)
-		if err != nil {
-			return "", "", err
-		}
-	}
-
-	if endNode != nil {
-		namedTypeInfoList, err := generateOutputNamedTypeInfoList(outputs, endNode.Data.Inputs.InputParameters)
-
-		outputParams, err = sonic.MarshalString(namedTypeInfoList)
-		if err != nil {
-			return "", "", err
-		}
-	}
-
-	return inputParams, outputParams, nil
-}
-
-func generateInputNamedTypeInfoList(params map[string]*vo.TypeInfo, variables []any) ([]*vo.NamedTypeInfo, error) {
-	result := make([]*vo.NamedTypeInfo, 0, len(params))
-	for _, a := range variables {
-		nTypeInfo, err := convertVariableToNamedTypeInfo(params, a)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, nTypeInfo)
-	}
-
-	return result, nil
-}
-
-func generateOutputNamedTypeInfoList(params map[string]*vo.TypeInfo, ps []*vo.Param) ([]*vo.NamedTypeInfo, error) {
-	result := make([]*vo.NamedTypeInfo, 0, len(params))
-	for _, p := range ps {
-		nTypeInfo, err := convertParamToNamedTypeInfo(params, p)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, nTypeInfo)
-	}
-
-	return result, nil
-}
-
-func convertVariableToNamedTypeInfo(params map[string]*vo.TypeInfo, variable any) (*vo.NamedTypeInfo, error) {
-	v, err := vo.ParseVariable(variable)
-	if err != nil {
-		return nil, err
-	}
-
-	typeInfo, exists := params[v.Name]
-	if !exists {
-		return nil, errors.New("type info not found for order name: " + v.Name)
-	}
-
-	namedTypeInfo := &vo.NamedTypeInfo{
-		Name:     v.Name,
-		Type:     typeInfo.Type,
-		FileType: typeInfo.FileType,
-		Required: typeInfo.Required,
-		Desc:     typeInfo.Desc,
-	}
-
-	if typeInfo.ElemTypeInfo != nil {
-		elemTypeInfo, err := convertTypeInfoToNamedTypeInfo(typeInfo.ElemTypeInfo)
-		if err != nil {
-			return nil, err
-		}
-		namedTypeInfo.ElemTypeInfo = elemTypeInfo
-	}
-
-	if v.Type == vo.VariableTypeObject && len(typeInfo.Properties) > 0 {
-		for _, propOrder := range v.Schema.([]any) {
-			propTypeInfo, err := convertVariableToNamedTypeInfo(typeInfo.Properties, propOrder)
-			if err != nil {
-				return nil, err
-			}
-			namedTypeInfo.Properties = append(namedTypeInfo.Properties, propTypeInfo)
-		}
-	}
-
-	return namedTypeInfo, nil
-}
-
-func convertParamToNamedTypeInfo(params map[string]*vo.TypeInfo, p *vo.Param) (*vo.NamedTypeInfo, error) {
-	typeInfo, exists := params[p.Name]
-	if !exists {
-		return nil, errors.New("type info not found for order name: " + p.Name)
-	}
-
-	namedTypeInfo := &vo.NamedTypeInfo{
-		Name:     p.Name,
-		Type:     typeInfo.Type,
-		FileType: typeInfo.FileType,
-		Required: typeInfo.Required,
-		Desc:     typeInfo.Desc,
-	}
-
-	if typeInfo.ElemTypeInfo != nil {
-		elemTypeInfo, err := convertTypeInfoToNamedTypeInfo(typeInfo.ElemTypeInfo)
-		if err != nil {
-			return nil, err
-		}
-		namedTypeInfo.ElemTypeInfo = elemTypeInfo
-	}
-	if p.Input != nil && p.Input.Type == vo.VariableTypeObject && len(typeInfo.Properties) > 0 {
-		for _, v := range p.Input.Schema.([]any) {
-			nTypeInfo, err := convertVariableToNamedTypeInfo(typeInfo.Properties, v)
-			if err != nil {
-				return nil, err
-			}
-			namedTypeInfo.Properties = append(namedTypeInfo.Properties, nTypeInfo)
-		}
-	}
-
-	return namedTypeInfo, nil
-}
-
-func convertTypeInfoToNamedTypeInfo(typeInfo *vo.TypeInfo) (*vo.NamedTypeInfo, error) {
-	namedTypeInfo := &vo.NamedTypeInfo{
-		Type:     typeInfo.Type,
-		FileType: typeInfo.FileType,
-		Required: typeInfo.Required,
-		Desc:     typeInfo.Desc,
-	}
-
-	if typeInfo.ElemTypeInfo != nil {
-		elemTypeInfo, err := convertTypeInfoToNamedTypeInfo(typeInfo.ElemTypeInfo)
-		if err != nil {
-			return nil, err
-		}
-		namedTypeInfo.ElemTypeInfo = elemTypeInfo
-	}
-
-	if len(typeInfo.Properties) > 0 {
-		for name, propTypeInfo := range typeInfo.Properties {
-			propNamedTypeInfo, err := convertTypeInfoToNamedTypeInfo(propTypeInfo)
-			if err != nil {
-				return nil, err
-			}
-			propNamedTypeInfo.Name = name
-			namedTypeInfo.Properties = append(namedTypeInfo.Properties, propNamedTypeInfo)
-		}
-	}
-
-	return namedTypeInfo, nil
 }

@@ -53,12 +53,16 @@ func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map
 		}
 	}()
 
-	invokeMap, err := p.config.ToolService.GetPluginInvokableTools(ctx, &plugin.PluginToolsInfoRequest{
+	invokeMap, err := p.config.ToolService.GetPluginInvokableTools(ctx, &plugin.PluginToolsInvokableRequest{
 		PluginEntity: plugin.PluginEntity{
 			PluginID:      p.config.PluginID,
 			PluginVersion: &p.config.PluginVersion,
 		},
-		ToolIDs: []int64{p.config.ToolID},
+		ToolsInvokableInfo: map[int64]*plugin.ToolsInvokableInfo{
+			p.config.ToolID: &plugin.ToolsInvokableInfo{
+				ToolID: p.config.ToolID,
+			},
+		},
 		IsDraft: true, // todo(@zj) The debug mode uses the draft mode, and you need to check other scenarios
 	})
 

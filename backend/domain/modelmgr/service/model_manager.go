@@ -7,19 +7,24 @@ import (
 
 	"gorm.io/gorm"
 
+	modelmgrModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
+	iconEntity "code.byted.org/flow/opencoze/backend/domain/icon/entity"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/dao"
 	dmodel "code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/model"
 	modelcontract "code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-func NewModelManager(db *gorm.DB, idgen idgen.IDGenerator) modelmgr.Manager {
+func NewModelManager(db *gorm.DB, idgen idgen.IDGenerator, oss storage.Storage) modelmgr.Manager {
 	return &modelManager{
 		idgen:           idgen,
+		oss:             oss,
 		modelMetaRepo:   dao.NewModelMetaDAO(db),
 		modelEntityRepo: dao.NewModelEntityDAO(db),
 	}
@@ -27,6 +32,7 @@ func NewModelManager(db *gorm.DB, idgen idgen.IDGenerator) modelmgr.Manager {
 
 type modelManager struct {
 	idgen idgen.IDGenerator
+	oss   storage.Storage
 
 	modelMetaRepo   dao.ModelMetaRepo
 	modelEntityRepo dao.ModelEntityRepo
@@ -47,11 +53,9 @@ func (m *modelManager) CreateModelMeta(ctx context.Context, meta *entity.ModelMe
 		ID:          id,
 		ModelName:   meta.Name,
 		Protocol:    string(meta.Protocol),
-		ShowName:    meta.ShowName,
 		Capability:  meta.Capability,
 		ConnConfig:  meta.ConnConfig,
-		ParamSchema: meta.Schema,
-		Status:      int32(meta.Status),
+		Status:      meta.Status,
 		Description: meta.Description,
 		CreatedAt:   now,
 		UpdatedAt:   now,
@@ -66,17 +70,15 @@ func (m *modelManager) CreateModelMeta(ctx context.Context, meta *entity.ModelMe
 		CreatedAtMs: now,
 		UpdatedAtMs: now,
 
-		ShowName:   meta.ShowName,
 		Protocol:   meta.Protocol,
 		Capability: meta.Capability,
 		ConnConfig: meta.ConnConfig,
-		Schema:     meta.Schema,
 		Status:     meta.Status,
 	}, nil
 }
 
-func (m *modelManager) UpdateModelMetaStatus(ctx context.Context, id int64, status entity.Status) error {
-	return m.modelMetaRepo.UpdateStatus(ctx, id, int32(status))
+func (m *modelManager) UpdateModelMetaStatus(ctx context.Context, id int64, status entity.ModelMetaStatus) error {
+	return m.modelMetaRepo.UpdateStatus(ctx, id, status)
 }
 
 func (m *modelManager) DeleteModelMeta(ctx context.Context, id int64) error {
@@ -84,16 +86,36 @@ func (m *modelManager) DeleteModelMeta(ctx context.Context, id int64) error {
 }
 
 func (m *modelManager) ListModelMeta(ctx context.Context, req *modelmgr.ListModelMetaRequest) (*modelmgr.ListModelMetaResponse, error) {
-	status := slices.Transform(req.Status, func(a entity.Status) int32 {
-		return int32(a)
-	})
+	status := req.Status
+	if len(status) == 0 {
+		status = []entity.ModelMetaStatus{modelmgrModel.StatusInUse}
+	}
 
 	pos, next, hasMore, err := m.modelMetaRepo.List(ctx, req.FuzzyModelName, status, req.Limit, req.Cursor)
 	if err != nil {
 		return nil, err
 	}
 
-	dos := slices.Transform(pos, m.fromModelMetaPO)
+	uris := slices.ToMap(pos, func(meta *dmodel.ModelMeta) (string, string) {
+		if meta.IconURI == "" {
+			meta.IconURI = iconEntity.ModelIconURI
+		}
+		return meta.IconURI, ""
+	})
+
+	for uri := range uris {
+		url, err := m.oss.GetObjectUrl(ctx, uri)
+		if err != nil {
+			return nil, err
+		}
+
+		uris[uri] = url
+	}
+
+	dos := slices.Transform(pos, func(a *dmodel.ModelMeta) *entity.ModelMeta {
+		return fromModelMetaPO(a, uris)
+	})
+
 	return &modelmgr.ListModelMetaResponse{
 		ModelMetaList: dos,
 		HasMore:       hasMore,
@@ -111,19 +133,38 @@ func (m *modelManager) MGetModelMetaByID(ctx context.Context, req *modelmgr.MGet
 		return nil, err
 	}
 
-	dos := slices.Transform(pos, m.fromModelMetaPO)
+	uris := slices.ToMap(pos, func(meta *dmodel.ModelMeta) (string, string) {
+		if meta.IconURI == "" {
+			meta.IconURI = iconEntity.ModelIconURI
+		}
+		return meta.IconURI, ""
+	})
+
+	for uri := range uris {
+		url, err := m.oss.GetObjectUrl(ctx, uri)
+		if err != nil {
+			return nil, err
+		}
+		uris[uri] = url
+	}
+
+	logs.CtxInfof(ctx, "model uris: %v", uris)
+
+	dos := slices.Transform(pos, func(a *dmodel.ModelMeta) *entity.ModelMeta {
+		return fromModelMetaPO(a, uris)
+	})
 
 	return dos, nil
 }
 
-func (m *modelManager) CreateModel(ctx context.Context, model *entity.Model) (*entity.Model, error) {
+func (m *modelManager) CreateModel(ctx context.Context, e *entity.Model) (*entity.Model, error) {
 	// check if meta id exists
-	metaPO, err := m.modelMetaRepo.GetByID(ctx, model.Meta.ID)
+	metaPO, err := m.modelMetaRepo.GetByID(ctx, e.Meta.ID)
 	if err != nil {
 		return nil, err
 	}
 	if metaPO == nil {
-		return nil, fmt.Errorf("[CreateModel] mode meta not found, model_meta id=%d", model.Meta.ID)
+		return nil, fmt.Errorf("[CreateModel] mode meta not found, model_meta id=%d", e.Meta.ID)
 	}
 
 	id, err := m.idgen.GenID(ctx)
@@ -132,11 +173,12 @@ func (m *modelManager) CreateModel(ctx context.Context, model *entity.Model) (*e
 	}
 
 	now := time.Now().UnixMilli()
+	// TODO(@fanlv) : do -> po 放到 dal 里面去
 	if err = m.modelEntityRepo.Create(ctx, &dmodel.ModelEntity{
 		ID:        id,
-		MetaID:    model.Meta.ID,
-		Name:      model.Name,
-		Scenario:  int64(model.Scenario),
+		MetaID:    e.Meta.ID,
+		Name:      e.Name,
+		Scenario:  e.Scenario,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}); err != nil {
@@ -144,13 +186,14 @@ func (m *modelManager) CreateModel(ctx context.Context, model *entity.Model) (*e
 	}
 
 	resp := &entity.Model{
-		ID:          id,
-		Name:        model.Name,
-		CreatedAtMs: now,
-		UpdatedAtMs: now,
-
-		Meta:     model.Meta,
-		Scenario: model.Scenario,
+		Model: &modelmgrModel.Model{
+			ID:          id,
+			Name:        e.Name,
+			CreatedAtMs: now,
+			UpdatedAtMs: now,
+			Meta:        e.Meta,
+			Scenario:    e.Scenario,
+		},
 	}
 
 	return resp, nil
@@ -166,11 +209,17 @@ func (m *modelManager) ListModel(ctx context.Context, req *modelmgr.ListModelReq
 		sc = ptr.Of(int64(*req.Scenario))
 	}
 
-	pos, next, hasMore, err := m.modelEntityRepo.List(ctx, req.FuzzyModelName, sc, req.Limit, req.Cursor)
+	status := req.Status
+	if len(status) == 0 {
+		status = []modelmgrModel.ModelEntityStatus{modelmgrModel.ModelEntityStatusDefault, modelmgrModel.ModelEntityStatusInUse}
+	}
+
+	pos, next, hasMore, err := m.modelEntityRepo.List(ctx, req.FuzzyModelName, sc, status, req.Limit, req.Cursor)
 	if err != nil {
 		return nil, err
 	}
 
+	pos = moveDefaultModelToFirst(pos)
 	resp, err := m.fromModelPOs(ctx, pos)
 	if err != nil {
 		return nil, err
@@ -214,25 +263,26 @@ func (m *modelManager) alignProtocol(meta *entity.ModelMeta) error {
 	return nil
 }
 
-func (m *modelManager) fromModelMetaPO(po *dmodel.ModelMeta) *entity.ModelMeta {
+func fromModelMetaPO(po *dmodel.ModelMeta, uris map[string]string) *entity.ModelMeta {
 	if po == nil {
 		return nil
 	}
 
 	return &entity.ModelMeta{
-		ID:          po.ID,
-		Name:        po.ModelName,
+		ID:      po.ID,
+		Name:    po.ModelName,
+		IconURI: po.IconURI,
+		IconURL: uris[po.IconURI],
+
 		Description: po.Description,
 		CreatedAtMs: po.CreatedAt,
 		UpdatedAtMs: po.UpdatedAt,
 		DeletedAtMs: po.DeletedAt.Time.UnixMilli(),
 
-		ShowName:   po.ShowName,
 		Protocol:   modelcontract.Protocol(po.Protocol),
 		Capability: po.Capability,
 		ConnConfig: po.ConnConfig,
-		Schema:     po.ParamSchema,
-		Status:     entity.Status(po.Status),
+		Status:     po.Status,
 	}
 }
 
@@ -245,15 +295,18 @@ func (m *modelManager) fromModelPOs(ctx context.Context, pos []*dmodel.ModelEnti
 	metaIDSet := make(map[int64]struct{})
 	for _, po := range pos {
 		resp = append(resp, &entity.Model{
-			ID:          po.ID,
-			Name:        po.Name,
-			CreatedAtMs: po.CreatedAt,
-			UpdatedAtMs: po.UpdatedAt,
-
-			Meta: entity.ModelMeta{
-				ID: po.MetaID,
+			Model: &modelmgrModel.Model{
+				ID:                po.ID,
+				Name:              po.Name,
+				Description:       po.Description,
+				DefaultParameters: po.DefaultParams,
+				CreatedAtMs:       po.CreatedAt,
+				UpdatedAtMs:       po.UpdatedAt,
+				Meta: entity.ModelMeta{
+					ID: po.MetaID,
+				},
+				Scenario: po.Scenario,
 			},
-			Scenario: entity.Scenario(po.Scenario),
 		})
 		metaIDSet[po.MetaID] = struct{}{}
 	}
@@ -283,4 +336,17 @@ func (m *modelManager) fromModelPOs(ctx context.Context, pos []*dmodel.ModelEnti
 	}
 
 	return resp, nil
+}
+
+func moveDefaultModelToFirst(ms []*dmodel.ModelEntity) []*dmodel.ModelEntity {
+	orders := make([]*dmodel.ModelEntity, len(ms))
+	copy(orders, ms)
+
+	for i, m := range orders {
+		if i != 0 && m.Status == modelmgrModel.ModelEntityStatusDefault {
+			orders[0], orders[i] = orders[i], orders[0]
+			break
+		}
+	}
+	return orders
 }

@@ -11,6 +11,8 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type ManagerConfig struct {
@@ -73,8 +75,10 @@ func (m *milvusManager) Create(ctx context.Context, req *searchstore.CreateReque
 		return fmt.Errorf("[Create] create indexes failed, %w", err)
 	}
 
-	if err := m.loadCollection(ctx, req.CollectionName); err != nil {
+	if exists, err := m.loadCollection(ctx, req.CollectionName); err != nil {
 		return fmt.Errorf("[Create] load collection failed, %w", err)
+	} else if !exists {
+		return fmt.Errorf("[Create] load collection failed, collection=%v does not exist", req.CollectionName)
 	}
 
 	return nil
@@ -89,8 +93,11 @@ func (m *milvusManager) GetType() searchstore.SearchStoreType {
 }
 
 func (m *milvusManager) GetSearchStore(ctx context.Context, collectionName string) (searchstore.SearchStore, error) {
-	if err := m.loadCollection(ctx, collectionName); err != nil {
+	if exists, err := m.loadCollection(ctx, collectionName); err != nil {
 		return nil, err
+	} else if !exists {
+		return nil, errorx.New(errno.ErrorNonRetryableCode,
+			errorx.KVf("reason", "[GetSearchStore] collection=%v does not exist", collectionName))
 	}
 
 	return &milvusSearchStore{
@@ -192,30 +199,33 @@ func (m *milvusManager) tryCreateIndex(ctx context.Context, collectionName, fiel
 	}
 }
 
-func (m *milvusManager) loadCollection(ctx context.Context, collectionName string) error {
+func (m *milvusManager) loadCollection(ctx context.Context, collectionName string) (exists bool, err error) {
 	cli := m.config.Client
 
 	stat, err := cli.GetLoadState(ctx, client.NewGetLoadStateOption(collectionName))
 	if err != nil {
-		return fmt.Errorf("[loadCollection] GetLoadState failed, %w", err)
+		return false, fmt.Errorf("[loadCollection] GetLoadState failed, %w", err)
 	}
 
 	switch stat.State {
 	case mentity.LoadStateNotLoad:
 		task, err := cli.LoadCollection(ctx, client.NewLoadCollectionOption(collectionName))
 		if err != nil {
-			return fmt.Errorf("[loadCollection] LoadCollection failed, %w", err)
+			return false, fmt.Errorf("[loadCollection] LoadCollection failed, collection=%v, %w", collectionName, err)
 		}
 		if err = task.Await(ctx); err != nil {
-			return fmt.Errorf("[loadCollection] await failed, %w", err)
+			return false, fmt.Errorf("[loadCollection] await failed, collection=%v, %w", collectionName, err)
 		}
+		return true, nil
 	case mentity.LoadStateLoaded:
-		// do nothing
+		return true, nil
+	case mentity.LoadStateLoading:
+		return true, fmt.Errorf("[loadCollection] collection is unloading, retry later, collection=%v", collectionName)
+	case mentity.LoadStateUnloading:
+		return false, nil
 	default:
-		return fmt.Errorf("[loadCollection] load state unexpected, state=%d", stat)
+		return false, fmt.Errorf("[loadCollection] load state unexpected, state=%d", stat)
 	}
-
-	return nil
 }
 
 func (m *milvusManager) convertFields(fields []*searchstore.Field) ([]*mentity.Field, error) {

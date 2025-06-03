@@ -4,36 +4,25 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"code.byted.org/flow/opencoze/backend/api/model/base"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	intelligence "code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
-	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	agentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
-	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
-	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
-	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
+
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
-	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -94,8 +83,12 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 	}
 
 	if req.BotInfo.VariableList != nil {
-		var varsMetaID int64
-		varsMetaID, err = s.upsertVariableList(ctx, agentID, userID, "", req.BotInfo.VariableList)
+		var (
+			varsMetaID int64
+			vars       = variableEntity.NewVariablesWithAgentVariables(req.BotInfo.VariableList)
+		)
+
+		varsMetaID, err = s.appContext.VariablesDomainSVC.UpsertBotMeta(ctx, agentID, "", userID, vars)
 		if err != nil {
 			return nil, err
 		}
@@ -120,13 +113,11 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 		return nil, err
 	}
 
-	// TODO(@fanlv): 这几个字段确认下有没有用
 	return &playground.UpdateDraftBotInfoAgwResponse{
 		Data: &playground.UpdateDraftBotInfoAgwData{
 			HasChange:    ptr.Of(true),
 			CheckNotPass: false,
 			Branch:       playground.BranchPtr(playground.Branch_PersonalDraft),
-			// SameWithOnline: false,
 		},
 	}, nil
 }
@@ -137,14 +128,15 @@ func (s *SingleAgentApplicationService) UpdatePromptDisable(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
+
 	if len(draft.Database) == 0 {
-		return nil, fmt.Errorf("agent %d has no database", agentID)
+		return nil, fmt.Errorf("agent %d has no database", agentID) // TODO（@fanlv）: 错误码
 	}
 
 	dbInfos := draft.Database
 	var found bool
 	for _, db := range dbInfos {
-		if db.GetTableId() == strconv.FormatInt(req.GetDatabaseID(), 10) {
+		if db.GetTableId() == conv.Int64ToStr(req.GetDatabaseID()) {
 			db.PromptDisabled = ptr.Of(req.GetPromptDisable())
 			found = true
 			break
@@ -152,7 +144,7 @@ func (s *SingleAgentApplicationService) UpdatePromptDisable(ctx context.Context,
 	}
 
 	if !found {
-		return nil, fmt.Errorf("database %d not found in agent %d", req.GetDatabaseID(), agentID)
+		return nil, fmt.Errorf("database %d not found in agent %d", req.GetDatabaseID(), agentID) // TODO（@fanlv）: 错误码
 	}
 
 	draft.Database = dbInfos
@@ -164,20 +156,10 @@ func (s *SingleAgentApplicationService) UpdatePromptDisable(ctx context.Context,
 	return &table.UpdateDatabaseBotSwitchResponse{
 		Code: 0,
 		Msg:  "success",
-		BaseResp: &base.BaseResp{
-			StatusCode:    0,
-			StatusMessage: "success",
-		},
 	}, nil
 }
 
-func (s *SingleAgentApplicationService) upsertVariableList(ctx context.Context, agentID, userID int64, version string, update []*bot_common.Variable) (int64, error) {
-	vars := variableEntity.NewVariablesWithAgentVariables(update)
-
-	return s.appContext.VariablesDomainSVC.UpsertBotMeta(ctx, agentID, version, userID, vars)
-}
-
-func (s *SingleAgentApplicationService) applyAgentUpdates(target *agentEntity.SingleAgent, patch *bot_common.BotInfoForUpdate) (*agentEntity.SingleAgent, error) {
+func (s *SingleAgentApplicationService) applyAgentUpdates(target *entity.SingleAgent, patch *bot_common.BotInfoForUpdate) (*entity.SingleAgent, error) {
 	if patch.Name != nil {
 		target.Name = *patch.Name
 	}
@@ -226,6 +208,10 @@ func (s *SingleAgentApplicationService) applyAgentUpdates(target *agentEntity.Si
 		target.JumpConfig = patch.Agents[0].JumpConfig
 	}
 
+	if patch.ShortcutSort != nil {
+		target.ShortcutCommand = patch.ShortcutSort
+	}
+
 	if patch.DatabaseList != nil {
 		for _, db := range patch.DatabaseList {
 			if db.PromptDisabled == nil {
@@ -238,265 +224,13 @@ func (s *SingleAgentApplicationService) applyAgentUpdates(target *agentEntity.Si
 	return target, nil
 }
 
-func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Context, req *developer_api.DraftBotCreateRequest) (*developer_api.DraftBotCreateResponse, error) {
-	spaceID := req.GetSpaceID()
-
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
-	}
-
-	userID := *uid
-
-	// TODO： 鉴权
-
-	do, err := s.draftBotCreateRequestToSingleAgent(req)
-	if err != nil {
-		return nil, err
-	}
-
-	agentID, err := s.DomainSVC.CreateSingleAgentDraft(ctx, userID, do)
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.appContext.EventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
-		OpType: searchEntity.Created,
-		Project: &searchEntity.ProjectDocument{
-			Status:         intelligence.IntelligenceStatus_Using,
-			Type:           intelligence.IntelligenceType_Bot,
-			ID:             agentID,
-			SpaceID:        &spaceID,
-			OwnerID:        &userID,
-			Name:           &do.Name,
-			IsRecentlyOpen: ptr.Of(1),
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &developer_api.DraftBotCreateResponse{Data: &developer_api.DraftBotCreateData{
-		BotID: agentID,
-	}}, nil
-}
-
-func (s *SingleAgentApplicationService) draftBotCreateRequestToSingleAgent(req *developer_api.DraftBotCreateRequest) (*agentEntity.SingleAgent, error) {
-	spaceID := req.SpaceID
-
-	sa := s.newDefaultSingleAgent()
-	sa.SpaceID = spaceID
-	sa.Name = req.GetName()
-	sa.Desc = req.GetDescription()
-	sa.IconURI = req.GetIconURI()
-	sa.Knowledge.RecallStrategy = new(bot_common.RecallStrategy)
-	sa.Knowledge.RecallStrategy.UseNl2sql = ptr.Of(true)
-	sa.Knowledge.RecallStrategy.UseRerank = ptr.Of(true)
-	sa.Knowledge.RecallStrategy.UseRewrite = ptr.Of(true)
-	return sa, nil
-}
-
-func (s *SingleAgentApplicationService) defaultModelInfo() *bot_common.ModelInfo {
-	return &bot_common.ModelInfo{
-		MaxTokens:  ptr.Of[int32](4096),
-		ModelId:    ptr.Of[int64](1737521813),
-		ModelStyle: bot_common.ModelStylePtr(bot_common.ModelStyle_Balance),
-		ShortMemoryPolicy: &bot_common.ShortMemoryPolicy{
-			ContextMode:  bot_common.ContextModePtr(bot_common.ContextMode_FunctionCall_2),
-			HistoryRound: ptr.Of[int32](3),
-		},
-	}
-}
-
-func (s *SingleAgentApplicationService) newDefaultSingleAgent() *agentEntity.SingleAgent {
-	// TODO(@lipandeng)： 默认配置
-
-	now := time.Now().UnixMilli()
-	return &agentEntity.SingleAgent{
-		OnboardingInfo: &bot_common.OnboardingInfo{},
-		ModelInfo:      s.defaultModelInfo(),
-		Prompt:         &bot_common.PromptInfo{},
-		Plugin:         []*bot_common.PluginInfo{},
-		Knowledge:      &bot_common.Knowledge{},
-		Workflow:       []*bot_common.WorkflowInfo{},
-		SuggestReply:   &bot_common.SuggestReplyInfo{},
-		JumpConfig:     &bot_common.JumpConfig{},
-		Database:       []*bot_common.Database{},
-
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
-}
-
-func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req *playground.GetDraftBotInfoAgwRequest) (*playground.GetDraftBotInfoAgwResponse, error) {
-	agentInfo, err := s.DomainSVC.GetSingleAgent(ctx, req.GetBotID(), req.GetVersion())
-	if err != nil {
-		return nil, err
-	}
-
-	if agentInfo == nil {
-		return nil, errorx.New(errno.ErrAgentInvalidParamCode, errorx.KVf("msg", "agent %d not found", req.GetBotID()))
-	}
-
-	uid := ctxutil.MustGetUIDFromCtx(ctx)
-
-	err = s.DomainSVC.SetRecentOpenAgentTime(ctx, uid, req.GetBotID(), time.Now().UnixMilli())
-	if err != nil {
-		logs.CtxWarnf(ctx, "set recent open agent time failed: %v", err)
-	}
-
-	vo, err := s.singleAgentDraftDo2Vo(ctx, agentInfo)
-	if err != nil {
-		return nil, err
-	}
-
-	var klInfos []*knowledgeEntity.Knowledge
-	if klInfos, err = s.fetchKnowledgeDetails(ctx, agentInfo); err != nil {
-		return nil, err
-	}
-
-	var modelInfos []*modelEntity.Model
-	if modelInfos, err = s.fetchModelDetails(ctx, agentInfo); err != nil {
-		return nil, err
-	}
-
-	toolResp, err := s.fetchToolDetails(ctx, agentInfo, req)
-	if err != nil {
-		return nil, err
-	}
-
-	vPlugins := make([]pluginEntity.VersionPlugin, 0, len(agentInfo.Plugin))
-	vPluginMap := make(map[string]bool, len(agentInfo.Plugin))
-	for _, v := range toolResp.Tools {
-		k := fmt.Sprintf("%d:%s", v.PluginID, v.GetVersion())
-		if vPluginMap[k] {
-			continue
-		}
-		vPluginMap[k] = true
-		vPlugins = append(vPlugins, pluginEntity.VersionPlugin{
-			PluginID: v.PluginID,
-			Version:  v.GetVersion(),
-		})
-	}
-	pluginResp, err := s.fetchPluginDetails(ctx, vPlugins)
-	if err != nil {
-		return nil, err
-	}
-
-	workflowInfos, err := s.fetchWorkflowDetails(ctx, agentInfo)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: 确认剩下字段是否需要
-	// "commit_time": "1747116741",
-	// "commit_version": "7503808916724564008",
-	// "committer_name": "fanlv",
-	// "connectors": [],
-	// "deletable": true,
-	// "editable": true,
-	// "has_publish": false,
-	// "has_unpublished_change": false,
-	// "in_collaboration": false,
-	// "publish_time": "-62135596800",
-	// "same_with_online": false,
-	// "space_id": "7350235204910563380"
-
-	return &playground.GetDraftBotInfoAgwResponse{
-		Data: &playground.GetDraftBotInfoAgwData{
-			BotInfo: vo,
-			BotOptionData: &playground.BotOptionData{
-				ModelDetailMap:     modelInfoDo2Vo(modelInfos),
-				KnowledgeDetailMap: knowledgeInfoDo2Vo(klInfos),
-				PluginAPIDetailMap: toolInfoDo2Vo(toolResp.Tools),
-				PluginDetailMap:    pluginInfoDo2Vo(pluginResp.Plugins),
-				WorkflowDetailMap:  workflowDo2Vo(workflowInfos),
-			},
-			SpaceID:   agentInfo.SpaceID,
-			Editable:  ptr.Of(true),
-			Deletable: ptr.Of(true),
-			// Connectors: ,
-			// TODO: 确认剩下字段是否需要
-		},
-	}, nil
-}
-
-func (s *SingleAgentApplicationService) fetchModelDetails(ctx context.Context, agentInfo *agentEntity.SingleAgent) ([]*modelEntity.Model, error) {
-	if agentInfo.ModelInfo.ModelId == nil {
-		return nil, nil
-	}
-
-	modelID := agentInfo.ModelInfo.GetModelId()
-	modelInfos, err := s.appContext.ModelMgrDomainSVC.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
-		IDs: []int64{modelID},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("fetch model(%d) details failed: %v", modelID, err)
-	}
-	return modelInfos, nil
-}
-
-func (s *SingleAgentApplicationService) fetchKnowledgeDetails(ctx context.Context, agentInfo *agentEntity.SingleAgent) ([]*knowledgeEntity.Knowledge, error) {
-	// 提取知识库ID列表
-	knowledgeIDs := make([]int64, 0, len(agentInfo.Knowledge.KnowledgeInfo))
-	for _, v := range agentInfo.Knowledge.KnowledgeInfo {
-		id, err := conv.StrToInt64(v.GetId())
-		if err != nil {
-			return nil, fmt.Errorf("invalid knowledge id: %s", v.GetId())
-		}
-		knowledgeIDs = append(knowledgeIDs, id)
-	}
-
-	// 批量获取知识库详情
-	if len(knowledgeIDs) == 0 {
-		return nil, nil
-	}
-
-	listResp, err := s.appContext.KnowledgeDomainSVC.ListKnowledge(ctx, &knowledge.ListKnowledgeRequest{
-		IDs: knowledgeIDs,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("fetch knowledge details failed: %v", err)
-	}
-	return listResp.KnowledgeList, err
-}
-
-func (s *SingleAgentApplicationService) fetchToolDetails(ctx context.Context, agentInfo *agentEntity.SingleAgent, req *playground.GetDraftBotInfoAgwRequest) (*service.MGetAgentToolsResponse, error) {
-	return s.appContext.PluginDomainSVC.MGetAgentTools(ctx, &service.MGetAgentToolsRequest{
-		SpaceID: agentInfo.SpaceID,
-		AgentID: req.GetBotID(),
-		IsDraft: true,
-		VersionAgentTools: slices.Transform(agentInfo.Plugin, func(a *bot_common.PluginInfo) pluginEntity.VersionAgentTool {
-			return pluginEntity.VersionAgentTool{
-				ToolID: a.GetApiId(),
-			}
-		}),
-	})
-}
-
-func (s *SingleAgentApplicationService) fetchPluginDetails(ctx context.Context, vPlugins []pluginEntity.VersionPlugin) (*service.MGetVersionPluginsResponse, error) {
-	return s.appContext.PluginDomainSVC.MGetVersionPlugins(ctx, &service.MGetVersionPluginsRequest{
-		VersionPlugins: vPlugins,
-	})
-}
-
-// 新增工作流信息获取函数
-func (s *SingleAgentApplicationService) fetchWorkflowDetails(ctx context.Context, agentInfo *agentEntity.SingleAgent) ([]*workflowEntity.Workflow, error) {
-	return s.appContext.WorkflowDomainSVC.MGetWorkflows(ctx, slices.Transform(agentInfo.Workflow, func(a *bot_common.WorkflowInfo) *workflowEntity.WorkflowIdentity {
-		return &workflowEntity.WorkflowIdentity{
-			ID:      a.GetWorkflowId(),
-			Version: "",
-		}
-	}))
-}
-
 func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, req *developer_api.DeleteDraftBotRequest) (*developer_api.DeleteDraftBotResponse, error) {
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+	_, err := s.ValidateAgentDraftAccess(ctx, req.GetBotID())
+	if err != nil {
+		return nil, err
 	}
 
-	err := s.DomainSVC.DeleteAgentDraft(ctx, req.GetSpaceID(), req.GetBotID())
+	err = s.DomainSVC.DeleteAgentDraft(ctx, req.GetSpaceID(), req.GetBotID())
 	if err != nil {
 		return nil, err
 	}
@@ -526,7 +260,7 @@ func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, r
 
 	userID := *userIDPtr
 
-	copiedAgent, err := s.DomainSVC.Duplicate(ctx, &agentEntity.DuplicateAgentRequest{
+	copiedAgent, err := s.DomainSVC.Duplicate(ctx, &entity.DuplicateAgentRequest{
 		SpaceID: req.GetSpaceID(),
 		AgentID: req.GetBotID(),
 		UserID:  userID,
@@ -562,7 +296,7 @@ func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, r
 	}, nil
 }
 
-func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Context, do *agentEntity.SingleAgent) (*bot_common.BotInfo, error) {
+func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Context, do *entity.SingleAgent) (*bot_common.BotInfo, error) {
 	vo := &bot_common.BotInfo{
 		BotId:                   do.AgentID,
 		Name:                    do.Name,
@@ -581,12 +315,9 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 		UpdateTime:              do.UpdatedAt / 1000,
 		BotMode:                 bot_common.BotMode_SingleMode,
 		BackgroundImageInfoList: do.BackgroundImageInfoList,
-		Status:                  bot_common.BotStatus_Using, // TODO: 确认其他场景有没有其他状态
-		// TODO: 确认这些字段要不要？
-		// VoicesInfo:       do.v,
-		// UserQueryCollectConf: u,
-		// LayoutInfo
-		DatabaseList: do.Database,
+		Status:                  bot_common.BotStatus_Using,
+		DatabaseList:            do.Database,
+		ShortcutSort:            do.ShortcutCommand,
 	}
 
 	if do.VariablesMetaID != nil {
@@ -609,237 +340,14 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 	}
 
 	if vo.ModelInfo == nil || vo.ModelInfo.ModelId == nil {
-		vo.ModelInfo = s.defaultModelInfo()
+		mi, err := s.defaultModelInfo(ctx)
+		if err != nil {
+			return nil, err
+		}
+		vo.ModelInfo = mi
 	}
 
 	return vo, nil
-}
-
-func knowledgeInfoDo2Vo(klInfos []*knowledgeEntity.Knowledge) map[string]*playground.KnowledgeDetail {
-	return slices.ToMap(klInfos, func(e *knowledgeEntity.Knowledge) (string, *playground.KnowledgeDetail) {
-		return fmt.Sprintf("%v", e.ID), &playground.KnowledgeDetail{
-			ID:      ptr.Of(fmt.Sprintf("%d", e.ID)),
-			Name:    ptr.Of(e.Name),
-			IconURL: ptr.Of(e.IconURI),
-			FormatType: func() playground.DataSetType {
-				switch e.Type {
-				case knowledgeEntity.DocumentTypeText:
-					return playground.DataSetType_Text
-				case knowledgeEntity.DocumentTypeTable:
-					return playground.DataSetType_Table
-				case knowledgeEntity.DocumentTypeImage:
-					return playground.DataSetType_Image
-				}
-				return playground.DataSetType_Text
-			}(),
-		}
-	})
-}
-
-func modelInfoDo2Vo(modelInfos []*modelEntity.Model) map[int64]*playground.ModelDetail {
-	return slices.ToMap(modelInfos, func(e *modelEntity.Model) (int64, *playground.ModelDetail) {
-		return e.ID, &playground.ModelDetail{
-			Name:         ptr.Of(e.Name),
-			ModelName:    ptr.Of(e.Meta.Name),
-			ModelID:      ptr.Of(e.ID),
-			ModelFamily:  nil,
-			ModelIconURL: nil,
-		}
-	})
-}
-
-func toolInfoDo2Vo(toolInfos []*pluginEntity.ToolInfo) map[int64]*playground.PluginAPIDetal {
-	return slices.ToMap(toolInfos, func(e *pluginEntity.ToolInfo) (int64, *playground.PluginAPIDetal) {
-		return e.ID, &playground.PluginAPIDetal{
-			ID:          ptr.Of(e.ID),
-			Name:        ptr.Of(e.GetName()),
-			Description: ptr.Of(e.GetDesc()),
-			PluginID:    ptr.Of(e.PluginID),
-			Parameters:  parametersDo2Vo(e.Operation),
-		}
-	})
-}
-
-func pluginInfoDo2Vo(pluginInfos []*pluginEntity.PluginInfo) map[int64]*playground.PluginDetal {
-	return slices.ToMap(pluginInfos, func(e *pluginEntity.PluginInfo) (int64, *playground.PluginDetal) {
-		return e.ID, &playground.PluginDetal{
-			ID:           ptr.Of(e.ID),
-			Name:         ptr.Of(e.GetName()),
-			Description:  ptr.Of(e.GetDesc()),
-			PluginType:   (*int64)(&e.PluginType),
-			PluginStatus: (*int64)(ptr.Of(common.PluginStatus_PUBLISHED)),
-			IsOfficial: func() *bool {
-				if e.SpaceID == 0 {
-					return ptr.Of(true)
-				}
-				return ptr.Of(false)
-			}(),
-		}
-	})
-}
-
-func workflowDo2Vo(wfInfos []*workflowEntity.Workflow) map[int64]*playground.WorkflowDetail {
-	return slices.ToMap(wfInfos, func(e *workflowEntity.Workflow) (int64, *playground.WorkflowDetail) {
-		return e.ID, &playground.WorkflowDetail{
-			ID:          ptr.Of(e.ID),
-			Name:        ptr.Of(e.Name),
-			Description: ptr.Of(e.Desc),
-			IconURL:     ptr.Of(e.IconURI),
-			APIDetail: &playground.PluginAPIDetal{
-				ID:          ptr.Of(e.ID),
-				Name:        ptr.Of(e.Name),
-				Description: ptr.Of(e.Desc),
-				Parameters:  nil, // TODO(@shentong): convert from []NamedTypeInfo
-			},
-		}
-	})
-}
-
-func parametersDo2Vo(op *pluginEntity.Openapi3Operation) []*playground.PluginParameter {
-	var convertReqBody func(paramName string, isRequired bool, sc *openapi3.Schema) *playground.PluginParameter
-	convertReqBody = func(paramName string, isRequired bool, sc *openapi3.Schema) *playground.PluginParameter {
-		if disabledParam(sc) {
-			return nil
-		}
-
-		var assistType *int64
-		if v, ok := sc.Extensions[consts.APISchemaExtendAssistType]; ok {
-			if _v, ok := v.(string); ok {
-				assistType = toParameterAssistType(_v)
-			}
-		}
-
-		paramInfo := &playground.PluginParameter{
-			Name:        ptr.Of(paramName),
-			Type:        ptr.Of(sc.Type),
-			Description: ptr.Of(sc.Description),
-			IsRequired:  ptr.Of(isRequired),
-			AssistType:  assistType,
-		}
-
-		switch sc.Type {
-		case openapi3.TypeObject:
-			required := slices.ToMap(sc.Required, func(e string) (string, bool) {
-				return e, true
-			})
-
-			subParams := make([]*playground.PluginParameter, 0, len(sc.Properties))
-			for subParamName, prop := range sc.Properties {
-				subParamInfo := convertReqBody(subParamName, required[subParamName], prop.Value)
-				if subParamInfo != nil {
-					subParams = append(subParams, subParamInfo)
-				}
-			}
-
-			paramInfo.SubParameters = subParams
-
-			return paramInfo
-		case openapi3.TypeArray:
-			paramInfo.SubType = ptr.Of(sc.Items.Value.Type)
-			if sc.Items.Value.Type != openapi3.TypeObject {
-				return paramInfo
-			}
-
-			required := slices.ToMap(sc.Required, func(e string) (string, bool) {
-				return e, true
-			})
-
-			subParams := make([]*playground.PluginParameter, 0, len(sc.Items.Value.Properties))
-			for subParamName, prop := range sc.Items.Value.Properties {
-				subParamInfo := convertReqBody(subParamName, required[subParamName], prop.Value)
-				if subParamInfo != nil {
-					subParams = append(subParams, subParamInfo)
-				}
-			}
-
-			paramInfo.SubParameters = subParams
-
-			return paramInfo
-		default:
-			return paramInfo
-		}
-	}
-
-	var params []*playground.PluginParameter
-
-	for _, prop := range op.Parameters {
-		paramVal := prop.Value
-		schemaVal := paramVal.Schema.Value
-		if schemaVal.Type == openapi3.TypeObject || schemaVal.Type == openapi3.TypeArray {
-			continue
-		}
-
-		if disabledParam(prop.Value.Schema.Value) {
-			continue
-		}
-
-		var assistType *int64
-		if v, ok := schemaVal.Extensions[consts.APISchemaExtendAssistType]; ok {
-			if _v, ok := v.(string); ok {
-				assistType = toParameterAssistType(_v)
-			}
-		}
-
-		params = append(params, &playground.PluginParameter{
-			Name:        ptr.Of(paramVal.Name),
-			Description: ptr.Of(paramVal.Description),
-			IsRequired:  ptr.Of(paramVal.Required),
-			Type:        ptr.Of(schemaVal.Type),
-			AssistType:  assistType,
-		})
-	}
-
-	for _, mType := range op.RequestBody.Value.Content {
-		schemaVal := mType.Schema.Value
-		if len(schemaVal.Properties) == 0 {
-			continue
-		}
-
-		required := slices.ToMap(schemaVal.Required, func(e string) (string, bool) {
-			return e, true
-		})
-
-		for paramName, prop := range schemaVal.Properties {
-			paramInfo := convertReqBody(paramName, required[paramName], prop.Value)
-			if paramInfo != nil {
-				params = append(params, paramInfo)
-			}
-		}
-
-		break // 只取一种 MIME
-	}
-
-	return params
-}
-
-func toParameterAssistType(assistType string) *int64 {
-	if assistType == "" {
-		return nil
-	}
-	switch consts.APIFileAssistType(assistType) {
-	case consts.AssistTypeFile:
-		return ptr.Of(int64(common.AssistParameterType_CODE))
-	case consts.AssistTypeImage:
-		return ptr.Of(int64(common.AssistParameterType_IMAGE))
-	case consts.AssistTypeDoc:
-		return ptr.Of(int64(common.AssistParameterType_DOC))
-	case consts.AssistTypePPT:
-		return ptr.Of(int64(common.AssistParameterType_PPT))
-	case consts.AssistTypeCode:
-		return ptr.Of(int64(common.AssistParameterType_CODE))
-	case consts.AssistTypeExcel:
-		return ptr.Of(int64(common.AssistParameterType_EXCEL))
-	case consts.AssistTypeZIP:
-		return ptr.Of(int64(common.AssistParameterType_ZIP))
-	case consts.AssistTypeVideo:
-		return ptr.Of(int64(common.AssistParameterType_VIDEO))
-	case consts.AssistTypeAudio:
-		return ptr.Of(int64(common.AssistParameterType_AUDIO))
-	case consts.AssistTypeTXT:
-		return ptr.Of(int64(common.AssistParameterType_TXT))
-	default:
-		return nil
-	}
 }
 
 func disabledParam(schemaVal *openapi3.Schema) bool {
@@ -847,10 +355,10 @@ func disabledParam(schemaVal *openapi3.Schema) bool {
 		return false
 	}
 	globalDisable, localDisable := false, false
-	if v, ok := schemaVal.Extensions[consts.APISchemaExtendLocalDisable]; ok {
+	if v, ok := schemaVal.Extensions[plugin.APISchemaExtendLocalDisable]; ok {
 		localDisable = v.(bool)
 	}
-	if v, ok := schemaVal.Extensions[consts.APISchemaExtendGlobalDisable]; ok {
+	if v, ok := schemaVal.Extensions[plugin.APISchemaExtendGlobalDisable]; ok {
 		globalDisable = v.(bool)
 	}
 	return globalDisable || localDisable
@@ -923,14 +431,14 @@ func (s *SingleAgentApplicationService) ValidateAgentDraftAccess(ctx context.Con
 	}
 
 	if do.CreatorID != *uid {
-		logs.CtxErrorf(ctx, "User(%d) is not the creator(%d) of the draft", *uid, do.CreatorID)
-		return do, errorx.New(errno.ErrPermissionCode, errorx.KV("detail", "User is not the creator of the draft"))
+		logs.CtxErrorf(ctx, "user(%d) is not the creator(%d) of the agent draft", *uid, do.CreatorID)
+
+		return do, errorx.New(errno.ErrPermissionCode, errorx.KV("detail", "you are not the agent owner"))
 	}
 
 	return do, nil
 }
 
-// 新增 ListDraftBotHistory 方法
 func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Context, req *developer_api.ListDraftBotHistoryRequest) (*developer_api.ListDraftBotHistoryResponse, error) {
 	resp := &developer_api.ListDraftBotHistoryResponse{}
 	draftAgent, err := s.ValidateAgentDraftAccess(ctx, req.BotID)
@@ -958,10 +466,8 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 	resp.Data = &developer_api.ListDraftBotHistoryData{}
 
 	for _, v := range historyList {
-
 		connectorInfos := make([]*developer_api.ConnectorInfo, 0, len(v.ConnectorIds))
-
-		infos, err := s.appContext.Connector.GetByIDs(ctx, v.ConnectorIds)
+		infos, err := s.appContext.ConnectorDomainSVC.GetByIDs(ctx, v.ConnectorIds)
 		if err != nil {
 			return nil, err
 		}
@@ -1000,4 +506,21 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 	}
 
 	return resp, nil
+}
+
+func (s *SingleAgentApplicationService) ReportUserBehavior(ctx context.Context, req *playground.ReportUserBehaviorRequest) (resp *playground.ReportUserBehaviorResponse, err error) {
+	err = s.appContext.EventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Updated,
+		Project: &searchEntity.ProjectDocument{
+			ID:             req.ResourceID,
+			SpaceID:        req.SpaceID,
+			Type:           intelligence.IntelligenceType_Bot,
+			IsRecentlyOpen: ptr.Of(1),
+		},
+	})
+	if err != nil {
+		logs.CtxWarnf(ctx, "publish updated project event failed id=%v, err=%v", req.ResourceID, err)
+	}
+
+	return &playground.ReportUserBehaviorResponse{}, nil
 }

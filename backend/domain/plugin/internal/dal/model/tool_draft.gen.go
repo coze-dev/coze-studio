@@ -4,7 +4,7 @@
 
 package model
 
-import "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+import "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 
 const TableNameToolDraft = "tool_draft"
 
@@ -16,7 +16,7 @@ type ToolDraft struct {
 	UpdatedAt       int64                     `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
 	SubURL          string                    `gorm:"column:sub_url;not null;comment:Sub URL Path" json:"sub_url"`                                           // Sub URL Path
 	Method          string                    `gorm:"column:method;not null;comment:HTTP Request Method" json:"method"`                                      // HTTP Request Method
-	Operation       *entity.Openapi3Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
+	Operation       *plugin.Openapi3Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
 	DebugStatus     int32                     `gorm:"column:debug_status;not null;comment:0:not pass; 1:pass" json:"debug_status"`                           // 0:not pass; 1:pass
 	ActivatedStatus int32                     `gorm:"column:activated_status;not null;comment:0:activated; 1:deactivated" json:"activated_status"`           // 0:activated; 1:deactivated
 }

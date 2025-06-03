@@ -30,11 +30,10 @@ func newModelMeta(db *gorm.DB, opts ...gen.DOOption) modelMeta {
 	_modelMeta.ID = field.NewInt64(tableName, "id")
 	_modelMeta.ModelName = field.NewString(tableName, "model_name")
 	_modelMeta.Protocol = field.NewString(tableName, "protocol")
-	_modelMeta.ShowName = field.NewString(tableName, "show_name")
+	_modelMeta.IconURI = field.NewString(tableName, "icon_uri")
 	_modelMeta.Capability = field.NewField(tableName, "capability")
 	_modelMeta.ConnConfig = field.NewField(tableName, "conn_config")
-	_modelMeta.ParamSchema = field.NewField(tableName, "param_schema")
-	_modelMeta.Status = field.NewInt32(tableName, "status")
+	_modelMeta.Status = field.NewField(tableName, "status")
 	_modelMeta.Description = field.NewString(tableName, "description")
 	_modelMeta.CreatedAt = field.NewInt64(tableName, "created_at")
 	_modelMeta.UpdatedAt = field.NewInt64(tableName, "updated_at")
@@ -53,11 +52,10 @@ type modelMeta struct {
 	ID          field.Int64  // 主键ID
 	ModelName   field.String // 模型名称
 	Protocol    field.String // 模型协议
-	ShowName    field.String // 模型展示名
+	IconURI     field.String // Icon URI
 	Capability  field.Field  // 模型能力
 	ConnConfig  field.Field  // 模型连接配置
-	ParamSchema field.Field  // 模型请求参数
-	Status      field.Int32  // 模型状态
+	Status      field.Field  // 模型状态
 	Description field.String // 模型描述
 	CreatedAt   field.Int64  // Create Time in Milliseconds
 	UpdatedAt   field.Int64  // Update Time in Milliseconds
@@ -81,11 +79,10 @@ func (m *modelMeta) updateTableName(table string) *modelMeta {
 	m.ID = field.NewInt64(table, "id")
 	m.ModelName = field.NewString(table, "model_name")
 	m.Protocol = field.NewString(table, "protocol")
-	m.ShowName = field.NewString(table, "show_name")
+	m.IconURI = field.NewString(table, "icon_uri")
 	m.Capability = field.NewField(table, "capability")
 	m.ConnConfig = field.NewField(table, "conn_config")
-	m.ParamSchema = field.NewField(table, "param_schema")
-	m.Status = field.NewInt32(table, "status")
+	m.Status = field.NewField(table, "status")
 	m.Description = field.NewString(table, "description")
 	m.CreatedAt = field.NewInt64(table, "created_at")
 	m.UpdatedAt = field.NewInt64(table, "updated_at")
@@ -106,14 +103,13 @@ func (m *modelMeta) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (m *modelMeta) fillFieldMap() {
-	m.fieldMap = make(map[string]field.Expr, 12)
+	m.fieldMap = make(map[string]field.Expr, 11)
 	m.fieldMap["id"] = m.ID
 	m.fieldMap["model_name"] = m.ModelName
 	m.fieldMap["protocol"] = m.Protocol
-	m.fieldMap["show_name"] = m.ShowName
+	m.fieldMap["icon_uri"] = m.IconURI
 	m.fieldMap["capability"] = m.Capability
 	m.fieldMap["conn_config"] = m.ConnConfig
-	m.fieldMap["param_schema"] = m.ParamSchema
 	m.fieldMap["status"] = m.Status
 	m.fieldMap["description"] = m.Description
 	m.fieldMap["created_at"] = m.CreatedAt

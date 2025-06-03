@@ -12,7 +12,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossknowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 )
 
@@ -24,7 +24,6 @@ const (
 type knowledgeConfig struct {
 	knowledgeInfos  []*knowledgeEntity.Knowledge
 	knowledgeConfig *bot_common.Knowledge
-	Knowledge       crossdomain.Knowledge
 	Input           *schema.Message
 	GetHistory      func() []*schema.Message
 }
@@ -34,7 +33,6 @@ func newKnowledgeTool(ctx context.Context, conf *knowledgeConfig) (tool.Invokabl
 		knowledgeConfig: conf.knowledgeConfig,
 		Input:           conf.Input,
 		GetHistory:      conf.GetHistory,
-		svr:             conf.Knowledge,
 	}
 
 	customTagsFn := func(name string, t reflect.Type, tag reflect.StructTag,
@@ -75,7 +73,6 @@ type RetrieveRequest struct {
 }
 
 type knowledgeTool struct {
-	svr             crossdomain.Knowledge
 	knowledgeConfig *bot_common.Knowledge
 	Input           *schema.Message
 	GetHistory      func() []*schema.Message
@@ -87,7 +84,7 @@ func (k *knowledgeTool) Retrieve(ctx context.Context, req *RetrieveRequest) ([]*
 		return nil, err
 	}
 
-	resp, err := k.svr.Retrieve(ctx, rr)
+	resp, err := crossknowledge.DefaultSVC().Retrieve(ctx, rr)
 	if err != nil {
 		return nil, err
 	}

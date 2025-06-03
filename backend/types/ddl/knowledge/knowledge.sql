@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS knowledge
     id                bigint unsigned                           not null comment '主键ID'
         primary key,
     name              varchar(150)    default ''                not null comment '名称',
-    project_id        varchar(128)    NOT NULL DEFAULT '' COMMENT '项目ID，标识该资源是否是项目独有',
+    app_id            bigint(20)    NOT NULL DEFAULT 0 COMMENT '项目ID，标识该资源是否是项目独有',
     creator_id        bigint unsigned default '0'               not null comment 'ID',
     space_id          bigint unsigned default 0                 not null comment '空间ID',
     created_at bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS knowledge
     icon_uri          varchar(150)                              null comment '头像uri',
     format_type       tinyint         default 0                 not null comment '0:文本 1:表格 2:图片',
     KEY idx_creator_id (creator_id),
-    KEY idx_space_id_deleted_at_updated_at (space_id, deleted_at, updated_at)
+    KEY idx_space_id_deleted_at_updated_at (space_id, deleted_at, updated_at),
+    KEY idx_app_id (app_id)
 )
     comment '知识库表';

@@ -10,6 +10,8 @@ import (
 	"time"
 
 	modelCommon "code.byted.org/flow/opencoze/backend/api/model/common"
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -195,7 +197,7 @@ func convertSliceContent(s *entity.Slice) string {
 	if len(s.RawContent) == 0 {
 		return ""
 	}
-	if s.RawContent[0].Type == entity.SliceContentTypeTable {
+	if s.RawContent[0].Type == knowledgeModel.SliceContentTypeTable {
 		tableData := make([]sliceContentData, 0, len(s.RawContent[0].Table.Columns))
 		for _, col := range s.RawContent[0].Table.Columns {
 			tableData = append(tableData, sliceContentData{
@@ -220,13 +222,13 @@ type sliceContentData struct {
 	Desc       string `json:"desc"`
 }
 
-func convertSliceStatus2Model(status entity.SliceStatus) dataset.SliceStatus {
+func convertSliceStatus2Model(status knowledgeModel.SliceStatus) dataset.SliceStatus {
 	switch status {
-	case entity.SliceStatusInit:
+	case knowledgeModel.SliceStatusInit:
 		return dataset.SliceStatus_PendingVectoring
-	case entity.SliceStatusFinishStore:
+	case knowledgeModel.SliceStatusFinishStore:
 		return dataset.SliceStatus_FinishVectoring
-	case entity.SliceStatusFailed:
+	case knowledgeModel.SliceStatusFailed:
 		return dataset.SliceStatus_Deactive
 	default:
 		return dataset.SliceStatus_PendingVectoring
@@ -468,14 +470,14 @@ func GetExtension(uri string) string {
 	return ""
 }
 
-func convertDatasetStatus2Entity(status dataset.DatasetStatus) entity.KnowledgeStatus {
+func convertDatasetStatus2Entity(status dataset.DatasetStatus) model.KnowledgeStatus {
 	switch status {
 	case dataset.DatasetStatus_DatasetReady:
-		return entity.KnowledgeStatusEnable
+		return model.KnowledgeStatusEnable
 	case dataset.DatasetStatus_DatasetForbid, dataset.DatasetStatus_DatasetDeleted:
-		return entity.KnowledgeStatusDisable
+		return model.KnowledgeStatusDisable
 	default:
-		return entity.KnowledgeStatusEnable
+		return model.KnowledgeStatusEnable
 	}
 }
 
@@ -522,33 +524,33 @@ func convertChunkingStrategy2Model(chunkingStrategy *entity.ChunkingStrategy) *d
 	}
 }
 
-func convertDocumentTypeEntity2Dataset(formatType entity.DocumentType) dataset.FormatType {
+func convertDocumentTypeEntity2Dataset(formatType model.DocumentType) dataset.FormatType {
 	switch formatType {
-	case entity.DocumentTypeText:
+	case model.DocumentTypeText:
 		return dataset.FormatType_Text
-	case entity.DocumentTypeTable:
+	case model.DocumentTypeTable:
 		return dataset.FormatType_Table
-	case entity.DocumentTypeImage:
+	case model.DocumentTypeImage:
 		return dataset.FormatType_Image
 	default:
 		return dataset.FormatType_Text
 	}
 }
 
-func convertDocumentTypeDataset2Entity(formatType dataset.FormatType) entity.DocumentType {
+func convertDocumentTypeDataset2Entity(formatType dataset.FormatType) model.DocumentType {
 	switch formatType {
 	case dataset.FormatType_Text:
-		return entity.DocumentTypeText
+		return model.DocumentTypeText
 	case dataset.FormatType_Table:
-		return entity.DocumentTypeTable
+		return model.DocumentTypeTable
 	case dataset.FormatType_Image:
-		return entity.DocumentTypeImage
+		return model.DocumentTypeImage
 	default:
-		return entity.DocumentTypeUnknown
+		return model.DocumentTypeUnknown
 	}
 }
 
-func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*entity.Knowledge) (map[int64]*dataset.Dataset, error) {
+func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*model.Knowledge) (map[int64]*dataset.Dataset, error) {
 	knowledgeMap := map[int64]*dataset.Dataset{}
 	for _, k := range knowledgeEntity {
 		documentEntity, err := KnowledgeSVC.DomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{
@@ -559,7 +561,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			return nil, err
 		}
 		datasetStatus := dataset.DatasetStatus_DatasetReady
-		if k.Status == entity.KnowledgeStatusDisable {
+		if k.Status == model.KnowledgeStatusDisable {
 			datasetStatus = dataset.DatasetStatus_DatasetForbid
 		}
 
@@ -605,7 +607,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*e
 			HitCount:             int32(k.SliceHit),
 			ChunkStrategy:        convertChunkingStrategy2Model(rule),
 			ProcessingFileIDList: processingFileIDList,
-			ProjectID:            strconv.FormatInt(k.ProjectID, 10),
+			ProjectID:            strconv.FormatInt(k.AppID, 10),
 		}
 	}
 	return knowledgeMap, nil
@@ -688,15 +690,15 @@ func getIconURI(tp dataset.FormatType) string {
 	}
 }
 
-func convertFormatType2Entity(tp dataset.FormatType) entity.DocumentType {
+func convertFormatType2Entity(tp dataset.FormatType) model.DocumentType {
 	switch tp {
 	case dataset.FormatType_Text:
-		return entity.DocumentTypeText
+		return model.DocumentTypeText
 	case dataset.FormatType_Table:
-		return entity.DocumentTypeTable
+		return model.DocumentTypeTable
 	case dataset.FormatType_Image:
-		return entity.DocumentTypeImage
+		return model.DocumentTypeImage
 	default:
-		return entity.DocumentTypeUnknown
+		return model.DocumentTypeUnknown
 	}
 }

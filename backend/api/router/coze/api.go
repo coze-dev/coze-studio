@@ -21,6 +21,7 @@ func Register(r *server.Hertz) {
 		_api := root.Group("/api", _apiMw()...)
 		{
 			_bot := _api.Group("/bot", _botMw()...)
+			_bot.POST("/get_type_list", append(_gettypelistMw(), coze.GetTypeList)...)
 			_bot.POST("/upload_file", append(_uploadfileMw(), coze.UploadFile)...)
 		}
 		{
@@ -56,6 +57,20 @@ func Register(r *server.Hertz) {
 		}
 		{
 			_intelligence_api := _api.Group("/intelligence_api", _intelligence_apiMw()...)
+			{
+				_draft_project := _intelligence_api.Group("/draft_project", _draft_projectMw()...)
+				_draft_project.POST("/create", append(_draftprojectcreateMw(), coze.DraftProjectCreate)...)
+				_draft_project.POST("/delete", append(_draftprojectdeleteMw(), coze.DraftProjectDelete)...)
+				_draft_project.POST("/update", append(_draftprojectupdateMw(), coze.DraftProjectUpdate)...)
+			}
+			{
+				_publish0 := _intelligence_api.Group("/publish", _publish0Mw()...)
+				_publish0.POST("/check_version_number", append(_checkprojectversionnumberMw(), coze.CheckProjectVersionNumber)...)
+				_publish0.POST("/connector_list", append(_projectpublishconnectorlistMw(), coze.ProjectPublishConnectorList)...)
+				_publish0.POST("/get_published_connector", append(_getprojectpublishedconnectorMw(), coze.GetProjectPublishedConnector)...)
+				_publish0.POST("/publish_project", append(_publishprojectMw(), coze.PublishProject)...)
+				_publish0.POST("/publish_record_list", append(_getpublishrecordlistMw(), coze.GetPublishRecordList)...)
+			}
 			{
 				_search := _intelligence_api.Group("/search", _searchMw()...)
 				_search.POST("/get_draft_intelligence_info", append(_getdraftintelligenceinfoMw(), coze.GetDraftIntelligenceInfo)...)
@@ -236,11 +251,13 @@ func Register(r *server.Hertz) {
 		}
 		{
 			_playground_api := _api.Group("/playground_api", _playground_apiMw()...)
+			_playground_api.POST("/create_update_shortcut_command", append(_createupdateshortcutcommandMw(), coze.CreateUpdateShortcutCommand)...)
 			_playground_api.POST("/delete_prompt_resource", append(_deletepromptresourceMw(), coze.DeletePromptResource)...)
 			_playground_api.POST("/get_imagex_url", append(_getimagexshorturlMw(), coze.GetImagexShortUrl)...)
 			_playground_api.POST("/get_official_prompt_list", append(_getofficialpromptresourcelistMw(), coze.GetOfficialPromptResourceList)...)
 			_playground_api.GET("/get_prompt_resource_info", append(_getpromptresourceinfoMw(), coze.GetPromptResourceInfo)...)
 			_playground_api.POST("/mget_user_info", append(_mgetuserbasicinfoMw(), coze.MGetUserBasicInfo)...)
+			_playground_api.POST("/report_user_behavior", append(_reportuserbehaviorMw(), coze.ReportUserBehavior)...)
 			_playground_api.POST("/upsert_prompt_resource", append(_upsertpromptresourceMw(), coze.UpsertPromptResource)...)
 			{
 				_draftbot0 := _playground_api.Group("/draftbot", _draftbot0Mw()...)
@@ -265,6 +282,7 @@ func Register(r *server.Hertz) {
 			_plugin_api.POST("/del_plugin", append(_delpluginMw(), coze.DelPlugin)...)
 			_plugin_api.POST("/delete_api", append(_deleteapiMw(), coze.DeleteAPI)...)
 			_plugin_api.POST("/get_bot_default_params", append(_getbotdefaultparamsMw(), coze.GetBotDefaultParams)...)
+			_plugin_api.POST("/get_dev_plugin_list", append(_getdevpluginlistMw(), coze.GetDevPluginList)...)
 			_plugin_api.POST("/get_oauth_schema", append(_getoauthschemaMw(), coze.GetOAuthSchema)...)
 			_plugin_api.POST("/get_oauth_status", append(_getoauthstatusMw(), coze.GetOAuthStatus)...)
 			_plugin_api.POST("/get_playground_plugin_list", append(_getplaygroundpluginlistMw(), coze.GetPlaygroundPluginList)...)

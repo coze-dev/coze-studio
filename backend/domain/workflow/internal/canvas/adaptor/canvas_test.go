@@ -60,7 +60,7 @@ func TestLLMFromCanvas(t *testing.T) {
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 
 		chatModel := &testutil.UTChatModel{
-			StreamResultProvider: func(_ int) (*schema.StreamReader[*schema.Message], error) {
+			StreamResultProvider: func(_ int, in []*schema.Message) (*schema.StreamReader[*schema.Message], error) {
 				return schema.StreamReaderFromArray([]*schema.Message{
 					{
 						Role:    schema.Assistant,
@@ -109,8 +109,8 @@ func TestLLMFromCanvas(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        int32(len(workflowSC.GetAllNodes())),
-		}, 1, false, nil)
+			NodeCount:        workflowSC.NodeCount(),
+		}, 1, false, nil, vo.ExecuteConfig{})
 
 		t.Logf("duration: %v", time.Since(t1))
 
@@ -187,8 +187,8 @@ func TestLoopSelectorFromCanvas(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        int32(len(workflowSC.GetAllNodes())),
-		}, 1, false, nil)
+			NodeCount:        workflowSC.NodeCount(),
+		}, 1, false, nil, vo.ExecuteConfig{})
 		assert.NoError(t, err)
 
 		t.Logf("duration: %v", time.Since(t1))
@@ -235,7 +235,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 
 		chatModel := &testutil.UTChatModel{
-			InvokeResultProvider: func(_ int) (*schema.Message, error) {
+			InvokeResultProvider: func(_ int, in []*schema.Message) (*schema.Message, error) {
 				return &schema.Message{
 					Role:    schema.Assistant,
 					Content: `{"classificationId":1,"reason":"choice branch 1 "}`,
@@ -300,8 +300,8 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        int32(len(workflowSC.GetAllNodes())),
-		}, 1, false, nil)
+			NodeCount:        workflowSC.NodeCount(),
+		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
 			"input": "what's your name?",
@@ -443,8 +443,8 @@ func TestDatabaseCURD(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        int32(len(workflowSC.GetAllNodes())),
-		}, 1, false, nil)
+			NodeCount:        workflowSC.NodeCount(),
+		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
 			"input": "input for database curd",
@@ -683,8 +683,8 @@ func TestHttpRequester(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        int32(len(workflowSC.GetAllNodes())),
-		}, 1, false, nil)
+			NodeCount:        workflowSC.NodeCount(),
+		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
 			"v1":    "v1",
@@ -793,8 +793,8 @@ func TestHttpRequester(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        int32(len(workflowSC.GetAllNodes())),
-		}, 1, false, nil)
+			NodeCount:        workflowSC.NodeCount(),
+		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
 			"v1":         "v1",
@@ -944,7 +944,7 @@ func TestHttpRequester(t *testing.T) {
 }
 
 func TestKnowledgeNodes(t *testing.T) {
-	mockey.PatchConvey("knowledge indexer & retriever ", t, func() {
+	mockey.PatchConvey("knowledge indexer & retriever", t, func() {
 		data, err := os.ReadFile("../examples/knowledge.json")
 		assert.NoError(t, err)
 		c := &vo.Canvas{}
@@ -983,7 +983,7 @@ func TestKnowledgeNodes(t *testing.T) {
 		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)
 		resp, err := wf.Runner.Invoke(ctx, map[string]any{
-			"file": "http://127.0.0.1:8080/file",
+			"file": "http://127.0.0.1:8080/file?x-wf-file_name=file_v1.docx",
 			"v1":   "v1",
 		})
 		assert.NoError(t, err)
@@ -1088,4 +1088,28 @@ func TestVariableAggregatorNode(t *testing.T) {
 			"g2": int64(100),
 		}, response)
 	})
+}
+
+func TestPruneIsolatedNodes(t *testing.T) {
+	data, err := os.ReadFile("../examples/validate/workflow_of_prune_isolate.json")
+	assert.NoError(t, err)
+	c := &vo.Canvas{}
+	err = sonic.Unmarshal(data, c)
+	assert.NoError(t, err)
+	c.Nodes, c.Edges = pruneIsolatedNodes(c.Nodes, c.Edges, nil)
+	qaNodeID := "147187"
+	blockTextProcessNodeID := "102623"
+	for _, n := range c.Nodes {
+		if n.ID == qaNodeID {
+			t.Fatal("qa node id should not exist")
+		}
+		if len(n.Blocks) > 0 {
+			for _, b := range n.Blocks {
+				if b.ID == blockTextProcessNodeID {
+					t.Fatal("text process node id should not exist")
+				}
+			}
+		}
+	}
+
 }

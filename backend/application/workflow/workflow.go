@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/schema"
 
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
@@ -26,18 +27,18 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-type WorkflowApplicationService struct {
+type ApplicationService struct {
 	DomainSVC workflowDomain.Service
 	ImageX    imagex.ImageX // we set Imagex here, because Imagex is used as a proxy to get auth token, there is no actual correlation with the workflow domain.
 }
 
-var WorkflowSVC = &WorkflowApplicationService{}
+var SVC = &ApplicationService{}
 
 func GetWorkflowDomainSVC() domainWorkflow.Service {
-	return WorkflowSVC.DomainSVC
+	return SVC.DomainSVC
 }
 
-func (w *WorkflowApplicationService) GetNodeTemplateList(ctx context.Context, req *workflow.NodeTemplateListRequest) (*workflow.NodeTemplateListResponse, error) {
+func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workflow.NodeTemplateListRequest) (*workflow.NodeTemplateListResponse, error) {
 	toQueryTypes := make(map[entity.NodeType]bool)
 	for _, t := range req.NodeTypes {
 		entityType, err := nodeType2EntityNodeType(t)
@@ -106,7 +107,7 @@ func (w *WorkflowApplicationService) GetNodeTemplateList(ctx context.Context, re
 	return resp, nil
 }
 
-func (w *WorkflowApplicationService) CreateWorkflow(ctx context.Context, req *workflow.CreateWorkflowRequest) (*workflow.CreateWorkflowResponse, error) {
+func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.CreateWorkflowRequest) (*workflow.CreateWorkflowResponse, error) {
 
 	wf := &entity.Workflow{
 		ContentType: workflow.WorkFlowType_User,
@@ -162,7 +163,7 @@ func (w *WorkflowApplicationService) CreateWorkflow(ctx context.Context, req *wo
 	}, nil
 }
 
-func (w *WorkflowApplicationService) SaveWorkflow(ctx context.Context, req *workflow.SaveWorkflowRequest) (*workflow.SaveWorkflowResponse, error) {
+func (w *ApplicationService) SaveWorkflow(ctx context.Context, req *workflow.SaveWorkflowRequest) (*workflow.SaveWorkflowResponse, error) {
 	draft := &entity.Workflow{
 		WorkflowIdentity: entity.WorkflowIdentity{
 			ID: mustParseInt64(req.GetWorkflowID()),
@@ -181,7 +182,7 @@ func (w *WorkflowApplicationService) SaveWorkflow(ctx context.Context, req *work
 	}, nil
 }
 
-func (w *WorkflowApplicationService) UpdateWorkflowMeta(ctx context.Context, req *workflow.UpdateWorkflowMetaRequest) (*workflow.UpdateWorkflowMetaResponse, error) {
+func (w *ApplicationService) UpdateWorkflowMeta(ctx context.Context, req *workflow.UpdateWorkflowMetaRequest) (*workflow.UpdateWorkflowMetaResponse, error) {
 	wf := &entity.Workflow{
 		WorkflowIdentity: entity.WorkflowIdentity{
 			ID: mustParseInt64(req.GetWorkflowID()),
@@ -199,7 +200,7 @@ func (w *WorkflowApplicationService) UpdateWorkflowMeta(ctx context.Context, req
 	return &workflow.UpdateWorkflowMetaResponse{}, nil
 }
 
-func (w *WorkflowApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.DeleteWorkflowRequest) (*workflow.DeleteWorkflowResponse, error) {
+func (w *ApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.DeleteWorkflowRequest) (*workflow.DeleteWorkflowResponse, error) {
 	err := GetWorkflowDomainSVC().DeleteWorkflow(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
 		return &workflow.DeleteWorkflowResponse{
@@ -216,7 +217,7 @@ func (w *WorkflowApplicationService) DeleteWorkflow(ctx context.Context, req *wo
 	}, nil
 }
 
-func (w *WorkflowApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetCanvasInfoRequest) (*workflow.GetCanvasInfoResponse, error) {
+func (w *ApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetCanvasInfoRequest) (*workflow.GetCanvasInfoResponse, error) {
 	wf, err := GetWorkflowDomainSVC().GetWorkflowDraft(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
 		return nil, err
@@ -236,29 +237,25 @@ func (w *WorkflowApplicationService) GetWorkflow(ctx context.Context, req *workf
 
 	canvasData := &workflow.CanvasData{
 		Workflow: &workflow.Workflow{
-			WorkflowID:               strconv.FormatInt(wf.ID, 10),
-			Name:                     wf.Name,
-			Desc:                     wf.Desc,
-			URL:                      wf.IconURL,
-			IconURI:                  wf.IconURI,
-			Status:                   devStatus,
-			Type:                     wf.ContentType,
-			CreateTime:               wf.CreatedAt.UnixMilli(),
-			UpdateTime:               wf.UpdatedAt.UnixMilli(),
-			Tag:                      wf.Tag,
-			TemplateAuthorID:         ternary.IFElse(wf.AuthorID > 0, ptr.Of(strconv.FormatInt(wf.AuthorID, 10)), nil),
-			TemplateAuthorName:       nil, // TODO: query the author's information
-			TemplateAuthorPictureURL: nil, // TODO: query the author's information
-			SpaceID:                  ptr.Of(strconv.FormatInt(wf.SpaceID, 10)),
-			InterfaceStr:             nil, // TODO: format input and output into this
-			SchemaJSON:               wf.Canvas,
-			Creator: &workflow.Creator{ // TODO: query the creator's information
+			WorkflowID:       strconv.FormatInt(wf.ID, 10),
+			Name:             wf.Name,
+			Desc:             wf.Desc,
+			URL:              wf.IconURL,
+			IconURI:          wf.IconURI,
+			Status:           devStatus,
+			Type:             wf.ContentType,
+			CreateTime:       wf.CreatedAt.UnixMilli(),
+			UpdateTime:       wf.UpdatedAt.UnixMilli(),
+			Tag:              wf.Tag,
+			TemplateAuthorID: ternary.IFElse(wf.AuthorID > 0, ptr.Of(strconv.FormatInt(wf.AuthorID, 10)), nil),
+			SpaceID:          ptr.Of(strconv.FormatInt(wf.SpaceID, 10)),
+			SchemaJSON:       wf.Canvas,
+			Creator: &workflow.Creator{
 				ID:   strconv.FormatInt(wf.CreatorID, 10),
 				Self: ternary.IFElse[bool](wf.CreatorID == ptr.From(ctxutil.GetUIDFromCtx(ctx)), true, false),
 			},
-			FlowMode:    wf.Mode,
-			CheckResult: nil, // TODO: validate the workflow
-			ProjectID:   i64PtrToStringPtr(wf.ProjectID),
+			FlowMode:  wf.Mode,
+			ProjectID: i64PtrToStringPtr(wf.ProjectID),
 
 			PersistenceModel: workflow.PersistenceModel_DB,
 		},
@@ -273,25 +270,66 @@ func (w *WorkflowApplicationService) GetWorkflow(ctx context.Context, req *workf
 	}, nil
 }
 
-func (w *WorkflowApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlowTestRunRequest) (*workflow.WorkFlowTestRunResponse, error) {
+func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlowTestRunRequest) (*workflow.WorkFlowTestRunResponse, error) {
 	wfID := &entity.WorkflowIdentity{
 		ID: mustParseInt64(req.GetWorkflowID()),
 	}
 
-	exeID, err := GetWorkflowDomainSVC().AsyncExecuteWorkflow(ctx, wfID, req.Input)
+	uID := ctxutil.GetUIDFromCtx(ctx)
+
+	exeID, err := GetWorkflowDomainSVC().AsyncExecuteWorkflow(ctx, wfID, req.Input, vo.ExecuteConfig{
+		Operator: ptr.FromOrDefault(uID, 0),
+		Mode:     vo.ExecuteModeDebug,
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	return &workflow.WorkFlowTestRunResponse{
 		Data: &workflow.WorkFlowTestRunData{
-			WorkflowID: fmt.Sprintf("%d", wfID.ID),
+			WorkflowID: req.WorkflowID,
 			ExecuteID:  fmt.Sprintf("%d", exeID),
 		},
 	}, nil
 }
 
-func (w *WorkflowApplicationService) GetProcess(ctx context.Context, req *workflow.GetWorkflowProcessRequest) (*workflow.GetWorkflowProcessResponse, error) {
+func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.WorkflowNodeDebugV2Request) (*workflow.WorkflowNodeDebugV2Response, error) {
+	wfID := &entity.WorkflowIdentity{
+		ID: mustParseInt64(req.GetWorkflowID()),
+	}
+
+	// merge input, batch and setting, they are all the same when executing
+	mergedInput := make(map[string]string, len(req.Input)+len(req.Batch)+len(req.Setting))
+	for k, v := range req.Input {
+		mergedInput[k] = v
+	}
+	for k, v := range req.Batch {
+		mergedInput[k] = v
+	}
+	for k, v := range req.Setting {
+		mergedInput[k] = v
+	}
+
+	uID := ctxutil.GetUIDFromCtx(ctx)
+
+	exeID, err := GetWorkflowDomainSVC().AsyncExecuteNode(ctx, wfID, req.NodeID, mergedInput, vo.ExecuteConfig{
+		Operator: ptr.FromOrDefault(uID, 0),
+		Mode:     vo.ExecuteModeNodeDebug,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.WorkflowNodeDebugV2Response{
+		Data: &workflow.WorkflowNodeDebugV2Data{
+			WorkflowID: req.WorkflowID,
+			NodeID:     req.NodeID,
+			ExecuteID:  fmt.Sprintf("%d", exeID),
+		},
+	}, nil
+}
+
+func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWorkflowProcessRequest) (*workflow.GetWorkflowProcessResponse, error) {
 	var wfExeEntity *entity.WorkflowExecution
 	if req.SubExecuteID == nil {
 		wfExeEntity = &entity.WorkflowExecution{
@@ -344,47 +382,48 @@ func (w *WorkflowApplicationService) GetProcess(ctx context.Context, req *workfl
 		resp.Data.ProjectId = fmt.Sprintf("%d", *wfExeEntity.ProjectID)
 	}
 
+	batchNodeID2NodeResult := make(map[string]*workflow.NodeResult)
+	batchNodeID2InnerNodeResult := make(map[string]*workflow.NodeResult)
 	successNum := 0
 	for _, nodeExe := range wfExeEntity.NodeExecutions {
-		nr := &workflow.NodeResult{
-			NodeId:      nodeExe.NodeID,
-			NodeName:    nodeExe.NodeName,
-			NodeType:    string(nodeExe.NodeType),
-			NodeStatus:  workflow.NodeExeStatus(nodeExe.Status),
-			ErrorInfo:   ptr.FromOrDefault(nodeExe.ErrorInfo, ""),
-			Input:       ptr.FromOrDefault(nodeExe.Input, ""),
-			Output:      ptr.FromOrDefault(nodeExe.Output, ""),
-			NodeExeCost: fmt.Sprintf("%.3fs", nodeExe.Duration.Seconds()),
-			RawOutput:   nodeExe.RawOutput,
-			ErrorLevel:  ptr.FromOrDefault(nodeExe.ErrorLevel, ""),
+		nr, err := convertNodeExecution(nodeExe)
+		if err != nil {
+			return nil, err
 		}
 
-		if nodeExe.TokenInfo != nil {
-			nr.TokenAndCost = &workflow.TokenAndCost{
-				InputTokens:  ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.InputTokens)),
-				OutputTokens: ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.OutputTokens)),
-				TotalTokens:  ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.InputTokens+nodeExe.TokenInfo.OutputTokens)),
+		if nodeExe.NodeType == entity.NodeTypeBatch {
+			if inner, ok := batchNodeID2InnerNodeResult[nodeExe.NodeID]; ok {
+				nr = mergeBatchModeNodes(inner, nr)
+				delete(batchNodeID2InnerNodeResult, nodeExe.NodeID)
+			} else {
+				batchNodeID2NodeResult[nodeExe.NodeID] = nr
+				continue
 			}
-		}
-
-		if nodeExe.Index > 0 {
-			nr.Index = ptr.Of(int32(nodeExe.Index))
-			nr.Items = nodeExe.Items
-		}
-
-		if len(nodeExe.IndexedExecutions) > 0 {
-			nr.IsBatch = ptr.Of(true)
-			m, err := sonic.MarshalString(nodeExe.IndexedExecutions)
-			if err != nil {
-				return nil, err
+		} else if len(nodeExe.IndexedExecutions) > 0 {
+			if vo.IsGeneratedNodeForBatchMode(nodeExe.NodeID, *nodeExe.ParentNodeID) {
+				parentNodeResult, ok := batchNodeID2NodeResult[*nodeExe.ParentNodeID]
+				if ok {
+					nr = mergeBatchModeNodes(parentNodeResult, nr)
+					delete(batchNodeID2NodeResult, *nodeExe.ParentNodeID)
+				} else {
+					batchNodeID2InnerNodeResult[*nodeExe.ParentNodeID] = nr
+					continue
+				}
 			}
-			nr.Batch = ptr.Of(m)
 		}
 
 		if nr.NodeStatus == workflow.NodeExeStatus_Success {
 			successNum++
 		}
 
+		resp.Data.NodeResults = append(resp.Data.NodeResults, nr)
+	}
+
+	for id := range batchNodeID2NodeResult {
+		nr := batchNodeID2NodeResult[id]
+		if nr.NodeStatus == workflow.NodeExeStatus_Success {
+			successNum++
+		}
 		resp.Data.NodeResults = append(resp.Data.NodeResults, nr)
 	}
 
@@ -406,13 +445,369 @@ func (w *WorkflowApplicationService) GetProcess(ctx context.Context, req *workfl
 	return resp, nil
 }
 
-func (w *WorkflowApplicationService) ValidateTree(ctx context.Context, req *workflow.ValidateTreeRequest) (*workflow.ValidateTreeResponse, error) {
+func (w *ApplicationService) GetNodeExecuteHistory(ctx context.Context, req *workflow.GetNodeExecuteHistoryRequest) (
+	*workflow.GetNodeExecuteHistoryResponse, error) {
+	executeID := req.GetExecuteID()
+	scene := req.GetNodeHistoryScene()
+
+	if scene == workflow.NodeHistoryScene_TestRunInput {
+		if len(executeID) > 0 {
+			return nil, fmt.Errorf("when scene is test_run_input, execute_id should be empty")
+		}
+
+		nodeID := req.GetNodeID()
+		if nodeID == "100001" {
+			nodeExe, found, err := GetWorkflowDomainSVC().GetLatestTestRunInput(ctx, mustParseInt64(req.GetWorkflowID()),
+				ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0))
+			if err != nil {
+				return nil, err
+			}
+			if !found {
+				return &workflow.GetNodeExecuteHistoryResponse{
+					Data: &workflow.NodeResult{},
+				}, nil
+			}
+
+			result, err := convertNodeExecution(nodeExe)
+			if err != nil {
+				return nil, err
+			}
+
+			return &workflow.GetNodeExecuteHistoryResponse{
+				Data: result,
+			}, nil
+		} else {
+			nodeExe, innerExe, found, err := GetWorkflowDomainSVC().GetLastestNodeDebugInput(ctx, mustParseInt64(req.GetWorkflowID()), nodeID,
+				ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0))
+			if err != nil {
+				return nil, err
+			}
+			if !found {
+				return &workflow.GetNodeExecuteHistoryResponse{
+					Data: &workflow.NodeResult{},
+				}, nil
+			}
+
+			result, err := convertNodeExecution(nodeExe)
+			if err != nil {
+				return nil, err
+			}
+
+			if innerExe == nil {
+				return &workflow.GetNodeExecuteHistoryResponse{
+					Data: result,
+				}, nil
+			}
+
+			inner, err := convertNodeExecution(innerExe)
+			if err != nil {
+				return nil, err
+			}
+
+			result = mergeBatchModeNodes(result, inner)
+			return &workflow.GetNodeExecuteHistoryResponse{
+				Data: result,
+			}, nil
+		}
+	} else {
+		if len(executeID) == 0 {
+			return nil, fmt.Errorf("when scene is not test_run_input, execute_id should not be empty")
+		}
+
+		nodeExe, innerNodeExe, err := GetWorkflowDomainSVC().GetNodeExecution(ctx, mustParseInt64(executeID), req.GetNodeID())
+		if err != nil {
+			return nil, err
+		}
+
+		result, err := convertNodeExecution(nodeExe)
+		if err != nil {
+			return nil, err
+		}
+
+		if innerNodeExe != nil {
+			inner, err := convertNodeExecution(innerNodeExe)
+			if err != nil {
+				return nil, err
+			}
+
+			result := mergeBatchModeNodes(result, inner)
+			return &workflow.GetNodeExecuteHistoryResponse{
+				Data: result,
+			}, nil
+		}
+
+		return &workflow.GetNodeExecuteHistoryResponse{
+			Data: result,
+		}, nil
+	}
+}
+
+func convertNodeExecution(nodeExe *entity.NodeExecution) (*workflow.NodeResult, error) {
+	nr := &workflow.NodeResult{
+		NodeId:      nodeExe.NodeID,
+		NodeName:    nodeExe.NodeName,
+		NodeType:    string(nodeExe.NodeType),
+		NodeStatus:  workflow.NodeExeStatus(nodeExe.Status),
+		ErrorInfo:   ptr.FromOrDefault(nodeExe.ErrorInfo, ""),
+		Input:       ptr.FromOrDefault(nodeExe.Input, ""),
+		Output:      ptr.FromOrDefault(nodeExe.Output, ""),
+		NodeExeCost: fmt.Sprintf("%.3fs", nodeExe.Duration.Seconds()),
+		RawOutput:   nodeExe.RawOutput,
+		ErrorLevel:  ptr.FromOrDefault(nodeExe.ErrorLevel, ""),
+	}
+
+	if nodeExe.TokenInfo != nil {
+		nr.TokenAndCost = &workflow.TokenAndCost{
+			InputTokens:  ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.InputTokens)),
+			OutputTokens: ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.OutputTokens)),
+			TotalTokens:  ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.InputTokens+nodeExe.TokenInfo.OutputTokens)),
+		}
+	}
+
+	if nodeExe.Index > 0 {
+		nr.Index = ptr.Of(int32(nodeExe.Index))
+		nr.Items = nodeExe.Items
+	}
+
+	if len(nodeExe.IndexedExecutions) > 0 {
+		nr.IsBatch = ptr.Of(true)
+		m, err := sonic.MarshalString(nodeExe.IndexedExecutions) // TODO: convert to correct format
+		if err != nil {
+			return nil, err
+		}
+		nr.Batch = ptr.Of(m)
+	}
+
+	return nr, nil
+}
+
+func mergeBatchModeNodes(parent, inner *workflow.NodeResult) *workflow.NodeResult {
+	merged := &workflow.NodeResult{
+		NodeId:       parent.NodeId,
+		NodeType:     inner.NodeType,
+		NodeName:     parent.NodeName,
+		NodeStatus:   parent.NodeStatus,
+		ErrorInfo:    parent.ErrorInfo,
+		Input:        parent.Input,
+		Output:       parent.Output,
+		NodeExeCost:  parent.NodeExeCost,
+		TokenAndCost: parent.TokenAndCost,
+		RawOutput:    parent.RawOutput,
+		ErrorLevel:   parent.ErrorLevel,
+		Batch:        inner.Batch,
+		IsBatch:      inner.IsBatch,
+		Extra:        inner.Extra,
+		ExecuteId:    parent.ExecuteId,
+		SubExecuteId: parent.SubExecuteId,
+		NeedAsync:    parent.NeedAsync,
+	}
+
+	return merged
+}
+
+type StreamRunEventType string
+
+const (
+	DoneEvent      StreamRunEventType = "done"
+	MessageEvent   StreamRunEventType = "message"
+	ErrEvent       StreamRunEventType = "error"
+	InterruptEvent StreamRunEventType = "interrupt"
+)
+
+var debugURLTpl = "https://www.coze.cn/work_flow?execute_id=%d&space_id=%d&workflow_id=%d&execute_mode=2"
+
+func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *workflow.OpenAPIStreamRunFlowResponse, err error) {
+	var (
+		messageID  int
+		executeID  int64
+		spaceID    int64
+		nodeID2Seq = make(map[string]int)
+	)
+
+	return func(msg *entity.Message) (res *workflow.OpenAPIStreamRunFlowResponse, err error) {
+		defer func() {
+			if err == nil {
+				messageID++
+			}
+		}()
+
+		if msg.StateMessage != nil {
+			// stream run will skip all messages from workflow tools
+			if executeID > 0 && executeID != msg.StateMessage.ExecuteID {
+				return nil, schema.ErrNoValue
+			}
+
+			switch msg.StateMessage.Status {
+			case entity.WorkflowSuccess:
+				return &workflow.OpenAPIStreamRunFlowResponse{
+					ID:       strconv.Itoa(messageID),
+					Event:    string(DoneEvent),
+					DebugUrl: ptr.Of(fmt.Sprintf(debugURLTpl, executeID, spaceID, workflowID)),
+				}, nil
+			case entity.WorkflowFailed, entity.WorkflowCancel:
+				return &workflow.OpenAPIStreamRunFlowResponse{
+					ID:           strconv.Itoa(messageID),
+					Event:        string(ErrEvent),
+					DebugUrl:     ptr.Of(fmt.Sprintf(debugURLTpl, executeID, spaceID, workflowID)),
+					ErrorCode:    ptr.Of(int64(msg.StateMessage.LastError.Code)),
+					ErrorMessage: ptr.Of(msg.StateMessage.LastError.Msg),
+				}, nil
+			case entity.WorkflowInterrupted:
+				return &workflow.OpenAPIStreamRunFlowResponse{
+					ID:       strconv.Itoa(messageID),
+					Event:    string(InterruptEvent),
+					DebugUrl: ptr.Of(fmt.Sprintf(debugURLTpl, executeID, spaceID, workflowID)),
+					InterruptData: &workflow.Interrupt{
+						EventID: fmt.Sprintf("%d/%d", executeID, msg.InterruptEvent.ID),
+						Type:    workflow.InterruptType(msg.InterruptEvent.EventType),
+						InData:  msg.InterruptEvent.InterruptData,
+					},
+				}, nil
+			case entity.WorkflowRunning:
+				executeID = msg.StateMessage.ExecuteID
+				spaceID = msg.SpaceID
+				return nil, schema.ErrNoValue
+			default:
+				return nil, schema.ErrNoValue
+			}
+		}
+
+		if msg.DataMessage != nil {
+			if msg.Type != entity.Answer {
+				// stream run api do not emit FunctionCall or ToolResponse
+				return nil, schema.ErrNoValue
+			}
+
+			// stream run will skip all messages from workflow tools
+			if executeID > 0 && executeID != msg.DataMessage.ExecuteID {
+				return nil, schema.ErrNoValue
+			}
+
+			var nodeType workflow.NodeTemplateType
+			nodeType, err = entityNodeTypeToAPINodeTemplateType(msg.NodeType)
+			if err != nil {
+				logs.Errorf("convert node type %v failed, err:=%v", msg.NodeType, err)
+				nodeType = workflow.NodeTemplateType(0)
+			}
+
+			res = &workflow.OpenAPIStreamRunFlowResponse{
+				ID:           strconv.Itoa(messageID),
+				Event:        string(MessageEvent),
+				NodeTitle:    ptr.Of(msg.NodeTitle),
+				Content:      ptr.Of(msg.Content),
+				ContentType:  ptr.Of("text"),
+				NodeIsFinish: ptr.Of(msg.Last),
+				NodeType:     ptr.Of(nodeType.String()),
+				NodeID:       ptr.Of(msg.NodeID),
+			}
+
+			if msg.DataMessage.Usage != nil {
+				token := msg.DataMessage.Usage.InputTokens + msg.DataMessage.Usage.OutputTokens
+				res.Token = ptr.Of(token)
+			}
+
+			seq, ok := nodeID2Seq[msg.NodeID]
+			if !ok {
+				seq = 0
+				nodeID2Seq[msg.NodeID] = 0
+			}
+
+			res.NodeSeqID = ptr.Of(strconv.Itoa(seq))
+			nodeID2Seq[msg.NodeID]++
+		}
+
+		return res, nil
+	}
+}
+
+func (w *ApplicationService) StreamRun(ctx context.Context, req *workflow.OpenAPIRunFlowRequest) (
+	*schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], error) {
+	parameters := make(map[string]any)
+	if req.Parameters != nil {
+		err := sonic.UnmarshalString(*req.Parameters, &parameters)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	wfIdentity := &entity.WorkflowIdentity{
+		ID: mustParseInt64(req.GetWorkflowID()),
+	}
+
+	if req.Version != nil {
+		wfIdentity.Version = *req.Version
+	}
+
+	sr, err := GetWorkflowDomainSVC().StreamExecuteWorkflow(ctx, wfIdentity, parameters, vo.ExecuteConfig{
+		Operator: ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0),
+		Mode:     vo.ExecuteModeRelease,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	convert := convertStreamRunEvent(wfIdentity.ID)
+
+	return schema.StreamReaderWithConvert(sr, convert), nil
+}
+
+func (w *ApplicationService) StreamResume(ctx context.Context, req *workflow.OpenAPIStreamResumeFlowRequest) (
+	*schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], error) {
+	idStr := req.EventID
+	idSegments := strings.Split(idStr, "/")
+	if len(idSegments) != 2 {
+		return nil, fmt.Errorf("invalid event id when stream resume: %s", idStr)
+	}
+
+	executeID, err := strconv.ParseInt(idSegments[0], 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse executeID from eventID segment %s: %w", idSegments[0], err)
+	}
+	eventID, err := strconv.ParseInt(idSegments[1], 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse eventID from eventID segment %s: %w", idSegments[1], err)
+	}
+
+	workflowID := mustParseInt64(req.WorkflowID)
+
+	resumeReq := &entity.ResumeRequest{
+		ExecuteID:  executeID,
+		EventID:    eventID,
+		ResumeData: req.ResumeData,
+	}
+
+	sr, err := GetWorkflowDomainSVC().StreamResumeWorkflow(ctx, resumeReq, vo.ExecuteConfig{
+		Operator: ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0),
+		Mode:     vo.ExecuteModeRelease,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	convert := convertStreamRunEvent(workflowID)
+
+	return schema.StreamReaderWithConvert(sr, convert), nil
+}
+
+func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.ValidateTreeRequest) (*workflow.ValidateTreeResponse, error) {
 	canvasSchema := req.GetSchema()
 	if len(canvasSchema) == 0 {
 		return nil, errors.New("validate tree schema is required")
 	}
 	response := &workflow.ValidateTreeResponse{}
-	wfValidateInfos, err := GetWorkflowDomainSVC().ValidateTree(ctx, mustParseInt64(req.GetWorkflowID()), canvasSchema)
+
+	validateTreeCfg := vo.ValidateTreeConfig{
+		CanvasSchema: canvasSchema,
+	}
+	if req.GetBindProjectID() != "" {
+		pId, err := strconv.ParseInt(req.GetBindProjectID(), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		validateTreeCfg.ProjectID = ptr.Of(pId)
+	}
+
+	wfValidateInfos, err := GetWorkflowDomainSVC().ValidateTree(ctx, mustParseInt64(req.GetWorkflowID()), validateTreeCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -421,7 +816,7 @@ func (w *WorkflowApplicationService) ValidateTree(ctx context.Context, req *work
 	return response, nil
 }
 
-func (w *WorkflowApplicationService) GetWorkflowReferences(ctx context.Context, req *workflow.GetWorkflowReferencesRequest) (*workflow.GetWorkflowReferencesResponse, error) {
+func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *workflow.GetWorkflowReferencesRequest) (*workflow.GetWorkflowReferencesResponse, error) {
 	workflows, err := GetWorkflowDomainSVC().GetWorkflowReference(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
 		return nil, err
@@ -467,7 +862,7 @@ func (w *WorkflowApplicationService) GetWorkflowReferences(ctx context.Context, 
 }
 
 // GetReleasedWorkflows TODO currently, the online version of this API is no longer used, and you need to confirm with the front-end
-func (w *WorkflowApplicationService) GetReleasedWorkflows(ctx context.Context, req *workflow.GetReleasedWorkflowsRequest) (*vo.ReleasedWorkflowData, error) {
+func (w *ApplicationService) GetReleasedWorkflows(ctx context.Context, req *workflow.GetReleasedWorkflowsRequest) (*vo.ReleasedWorkflowData, error) {
 	wfEntities := make([]*entity.WorkflowIdentity, 0)
 	for _, wf := range req.WorkflowFilterList {
 		wfID, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
@@ -508,11 +903,11 @@ func (w *WorkflowApplicationService) GetReleasedWorkflows(ctx context.Context, r
 			LatestFlowVersion:     wfMeta.LatestFlowVersion,
 			SubWorkflowList:       subWk,
 		}
-		inputs[wfIDStr], err = convertNamedTypeInfoListToVariables(wfMeta.InputParams)
+		inputs[wfIDStr], err = toVariables(wfMeta.InputParams)
 		if err != nil {
 			return nil, err
 		}
-		outputs[wfIDStr], err = convertNamedTypeInfoListToVariables(wfMeta.OutputParams)
+		outputs[wfIDStr], err = toVariables(wfMeta.OutputParams)
 		if err != nil {
 			return nil, err
 		}
@@ -528,13 +923,16 @@ func (w *WorkflowApplicationService) GetReleasedWorkflows(ctx context.Context, r
 	return response, nil
 }
 
-func (w *WorkflowApplicationService) TestResume(ctx context.Context, req *workflow.WorkflowTestResumeRequest) (*workflow.WorkflowTestResumeResponse, error) {
+func (w *ApplicationService) TestResume(ctx context.Context, req *workflow.WorkflowTestResumeRequest) (*workflow.WorkflowTestResumeResponse, error) {
 	resumeReq := &entity.ResumeRequest{
 		ExecuteID:  mustParseInt64(req.GetExecuteID()),
 		EventID:    mustParseInt64(req.GetEventID()),
 		ResumeData: req.GetData(),
 	}
-	err := GetWorkflowDomainSVC().AsyncResumeWorkflow(ctx, resumeReq)
+	err := GetWorkflowDomainSVC().AsyncResumeWorkflow(ctx, resumeReq, vo.ExecuteConfig{
+		Operator: ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0),
+		Mode:     vo.ExecuteModeDebug, // at this stage it could be debug or node debug, we will decide it within AsyncResumeWorkflow
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -542,7 +940,7 @@ func (w *WorkflowApplicationService) TestResume(ctx context.Context, req *workfl
 	return &workflow.WorkflowTestResumeResponse{}, nil
 }
 
-func (w *WorkflowApplicationService) Cancel(ctx context.Context, req *workflow.CancelWorkFlowRequest) (*workflow.CancelWorkFlowResponse, error) {
+func (w *ApplicationService) Cancel(ctx context.Context, req *workflow.CancelWorkFlowRequest) (*workflow.CancelWorkFlowResponse, error) {
 	err := GetWorkflowDomainSVC().CancelWorkflow(ctx, mustParseInt64(req.GetExecuteID()),
 		mustParseInt64(req.GetWorkflowID()), mustParseInt64(req.GetSpaceID()))
 	if err != nil {
@@ -552,7 +950,7 @@ func (w *WorkflowApplicationService) Cancel(ctx context.Context, req *workflow.C
 	return &workflow.CancelWorkFlowResponse{}, nil
 }
 
-func (w *WorkflowApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *workflow.QueryWorkflowNodeTypeRequest) (*workflow.QueryWorkflowNodeTypeResponse, error) {
+func (w *ApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *workflow.QueryWorkflowNodeTypeRequest) (*workflow.QueryWorkflowNodeTypeResponse, error) {
 	nodeProperties, err := GetWorkflowDomainSVC().QueryWorkflowNodeTypes(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
 		return nil, err
@@ -613,16 +1011,9 @@ func (w *WorkflowApplicationService) QueryWorkflowNodeTypes(ctx context.Context,
 	return response, nil
 }
 
-func (w *WorkflowApplicationService) PublishWorkflow(ctx context.Context, req *workflow.PublishWorkflowRequest) (*workflow.PublishWorkflowResponse, error) {
-	versionInfo := &vo.VersionInfo{}
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	if uid != nil {
-		versionInfo.CreatorID = *uid
-	}
-	versionInfo.Version = req.GetWorkflowVersion()
-	versionInfo.VersionDescription = req.GetVersionDescription()
+func (w *ApplicationService) PublishWorkflow(ctx context.Context, req *workflow.PublishWorkflowRequest) (*workflow.PublishWorkflowResponse, error) {
 
-	err := GetWorkflowDomainSVC().PublishWorkflow(ctx, mustParseInt64(req.GetWorkflowID()), req.GetForce(), versionInfo)
+	err := GetWorkflowDomainSVC().PublishWorkflow(ctx, mustParseInt64(req.GetWorkflowID()), req.GetWorkflowVersion(), req.GetVersionDescription(), req.GetForce())
 	if err != nil {
 		return nil, err
 	}
@@ -635,7 +1026,7 @@ func (w *WorkflowApplicationService) PublishWorkflow(ctx context.Context, req *w
 	}, nil
 }
 
-func (w *WorkflowApplicationService) ListWorkflow(ctx context.Context, req *workflow.GetWorkFlowListRequest) (*workflow.GetWorkFlowListResponse, error) {
+func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.GetWorkFlowListRequest) (*workflow.GetWorkFlowListResponse, error) {
 	if req.GetSpaceID() == "" {
 		return nil, errors.New("space id is required")
 	}
@@ -723,7 +1114,7 @@ func (w *WorkflowApplicationService) ListWorkflow(ctx context.Context, req *work
 		}
 
 		for _, in := range w.InputParams {
-			param, err := convertNamedTypeInfo2WorkflowParameter(in)
+			param, err := toWorkflowParameter(in)
 			if err != nil {
 				return nil, err
 			}
@@ -737,7 +1128,7 @@ func (w *WorkflowApplicationService) ListWorkflow(ctx context.Context, req *work
 	return response, nil
 }
 
-func (w *WorkflowApplicationService) GetWorkflowDetail(ctx context.Context, req *workflow.GetWorkflowDetailRequest) (*vo.WorkflowDetailDataList, error) {
+func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflow.GetWorkflowDetailRequest) (*vo.WorkflowDetailDataList, error) {
 	entities, err := slices.TransformWithErrorCheck(req.GetWorkflowIds(), func(s string) (*entity.WorkflowIdentity, error) {
 		wid, err := strconv.ParseInt(s, 10, 64)
 		if err != nil {
@@ -778,11 +1169,11 @@ func (w *WorkflowApplicationService) GetWorkflowDetail(ctx context.Context, req 
 		if wf.UpdatedAt != nil {
 			wd.UpdateTime = wf.UpdatedAt.Unix()
 		}
-		inputs[wfIDStr], err = convertNamedTypeInfoListToVariables(wf.InputParams)
+		inputs[wfIDStr], err = toVariables(wf.InputParams)
 		if err != nil {
 			return nil, err
 		}
-		outputs[wfIDStr], err = convertNamedTypeInfoListToVariables(wf.OutputParams)
+		outputs[wfIDStr], err = toVariables(wf.OutputParams)
 		if err != nil {
 			return nil, err
 		}
@@ -795,7 +1186,7 @@ func (w *WorkflowApplicationService) GetWorkflowDetail(ctx context.Context, req 
 	return workflowDetailDataList, nil
 }
 
-func (w *WorkflowApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *workflow.GetWorkflowDetailInfoRequest) (*vo.WorkflowDetailInfoDataList, error) {
+func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *workflow.GetWorkflowDetailInfoRequest) (*vo.WorkflowDetailInfoDataList, error) {
 
 	entities, err := slices.TransformWithErrorCheck(req.GetWorkflowFilterList(), func(wf *workflow.WorkflowFilter) (*entity.WorkflowIdentity, error) {
 		wid, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
@@ -850,11 +1241,11 @@ func (w *WorkflowApplicationService) GetWorkflowDetailInfo(ctx context.Context, 
 			wd.UpdateTime = wf.UpdatedAt.Unix()
 		}
 
-		inputs[wfIDStr], err = convertNamedTypeInfoListToVariables(wf.InputParams)
+		inputs[wfIDStr], err = toVariables(wf.InputParams)
 		if err != nil {
 			return nil, err
 		}
-		outputs[wfIDStr], err = convertNamedTypeInfoListToVariables(wf.OutputParams)
+		outputs[wfIDStr], err = toVariables(wf.OutputParams)
 		if err != nil {
 			return nil, err
 		}
@@ -865,7 +1256,7 @@ func (w *WorkflowApplicationService) GetWorkflowDetailInfo(ctx context.Context, 
 	return workflowDetailInfoDataList, nil
 }
 
-func (w *WorkflowApplicationService) GetWorkflowUploadAuthToken(ctx context.Context, req *workflow.GetUploadAuthTokenRequest) (*workflow.GetUploadAuthTokenResponse, error) {
+func (w *ApplicationService) GetWorkflowUploadAuthToken(ctx context.Context, req *workflow.GetUploadAuthTokenRequest) (*workflow.GetUploadAuthTokenResponse, error) {
 
 	var (
 		sceneToUploadPrefixMap = map[string]string{
@@ -901,7 +1292,7 @@ func (w *WorkflowApplicationService) GetWorkflowUploadAuthToken(ctx context.Cont
 
 }
 
-func (w *WorkflowApplicationService) SignImageURL(ctx context.Context, req *workflow.SignImageURLRequest) (*workflow.SignImageURLResponse, error) {
+func (w *ApplicationService) SignImageURL(ctx context.Context, req *workflow.SignImageURLRequest) (*workflow.SignImageURLResponse, error) {
 	url, err := w.ImageX.GetResourceURL(ctx, req.GetURI())
 	if err != nil {
 		return nil, err
@@ -913,7 +1304,7 @@ func (w *WorkflowApplicationService) SignImageURL(ctx context.Context, req *work
 
 }
 
-func (w *WorkflowApplicationService) GetApiDetail(ctx context.Context, req *workflow.GetApiDetailRequest) (*vo.ToolDetailInfo, error) {
+func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.GetApiDetailRequest) (*vo.ToolDetailInfo, error) {
 
 	toolID, err := strconv.ParseInt(req.GetAPIID(), 10, 64)
 	if err != nil {
@@ -939,6 +1330,17 @@ func (w *WorkflowApplicationService) GetApiDetail(ctx context.Context, req *work
 	if !ok {
 		return nil, fmt.Errorf("tool info not found, tool id: %d", toolID)
 	}
+
+	inputVars, err := slices.TransformWithErrorCheck(toolInfo.Inputs, toVariable)
+	if err != nil {
+		return nil, err
+	}
+
+	outputVars, err := slices.TransformWithErrorCheck(toolInfo.Outputs, toVariable)
+	if err != nil {
+		return nil, err
+	}
+
 	toolDetailInfo := &vo.ToolDetailInfo{
 		ApiDetailData: &workflow.ApiDetailData{
 			PluginID:   req.GetPluginID(),
@@ -949,83 +1351,136 @@ func (w *WorkflowApplicationService) GetApiDetail(ctx context.Context, req *work
 			ApiName:    toolInfo.ToolName,
 			PluginType: workflow.PluginType(toolInfoResponse.PluginType),
 		},
-		ToolInputs:  toolInfo.Inputs,
-		ToolOutputs: toolInfo.Outputs,
+		ToolInputs:  inputVars,
+		ToolOutputs: outputVars,
 	}
 
 	return toolDetailInfo, nil
 
 }
 
-func (w *WorkflowApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req *workflow.GetLLMNodeFCSettingDetailRequest) (*workflow.GetLLMNodeFCSettingDetailResponse, error) {
+func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req *workflow.GetLLMNodeFCSettingDetailRequest) (*workflow.GetLLMNodeFCSettingDetailResponse, error) {
 	var (
 		toolSvc             = plugin.GetToolService()
 		pluginToolsInfoReqs = make(map[int64]*plugin.PluginToolsInfoRequest)
 		pluginDetailMap     = make(map[string]*workflow.PluginDetail)
 		toolsDetailInfo     = make(map[string]*workflow.APIDetail)
+		workflowDetailMap   = make(map[string]*workflow.WorkflowDetail)
 	)
 
-	for _, pl := range req.GetPluginList() {
-		pluginID, err := strconv.ParseInt(pl.PluginID, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		toolID, err := strconv.ParseInt(pl.APIID, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		if r, ok := pluginToolsInfoReqs[pluginID]; ok {
-			r.ToolIDs = append(r.ToolIDs, toolID)
-		} else {
-			pluginToolsInfoReqs[pluginID] = &plugin.PluginToolsInfoRequest{
-				PluginEntity: plugin.PluginEntity{
-					PluginID: pluginID,
-				},
-				ToolIDs: []int64{toolID},
+	if len(req.GetPluginList()) > 0 {
+		for _, pl := range req.GetPluginList() {
+			pluginID, err := strconv.ParseInt(pl.PluginID, 10, 64)
+			if err != nil {
+				return nil, err
 			}
-		}
 
+			toolID, err := strconv.ParseInt(pl.APIID, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+
+			if r, ok := pluginToolsInfoReqs[pluginID]; ok {
+				r.ToolIDs = append(r.ToolIDs, toolID)
+			} else {
+				pluginToolsInfoReqs[pluginID] = &plugin.PluginToolsInfoRequest{
+					PluginEntity: plugin.PluginEntity{
+						PluginID: pluginID,
+					},
+					ToolIDs: []int64{toolID},
+				}
+			}
+
+		}
+		for _, r := range pluginToolsInfoReqs {
+			resp, err := toolSvc.GetPluginToolsInfo(ctx, r)
+			if err != nil {
+				return nil, err
+			}
+
+			pluginIdStr := strconv.FormatInt(resp.PluginID, 10)
+			if _, ok := pluginDetailMap[pluginIdStr]; !ok {
+				pluginDetail := &workflow.PluginDetail{
+					ID:          pluginIdStr,
+					Name:        resp.PluginName,
+					IconURL:     resp.IconURL,
+					Description: resp.Description,
+					PluginType:  resp.PluginType,
+					VersionName: resp.Version,
+
+					//LatestVersionName: "",  // TODO plugin use version or version ts
+					//LatestVersionTs: "",
+				}
+				pluginDetailMap[pluginIdStr] = pluginDetail
+			}
+
+			for id, tl := range resp.ToolInfoList {
+				toolIDStr := strconv.FormatInt(id, 10)
+				if _, ok := toolsDetailInfo[toolIDStr]; !ok {
+					toolDetail := &workflow.APIDetail{
+						ID:          toolIDStr,
+						PluginID:    pluginIdStr,
+						Name:        tl.ToolName,
+						Description: tl.Description,
+					}
+					toolsDetailInfo[toolIDStr] = toolDetail
+
+					toolDetail.Parameters = tl.Inputs
+
+				}
+
+			}
+
+		}
 	}
 
-	for _, r := range pluginToolsInfoReqs {
-		resp, err := toolSvc.GetPluginToolsInfo(ctx, r)
+	if len(req.GetWorkflowList()) > 0 {
+		entities, err := slices.TransformWithErrorCheck(req.GetWorkflowList(), func(w *workflow.WorkflowFCItem) (*entity.WorkflowIdentity, error) {
+			wid, err := strconv.ParseInt(w.GetWorkflowID(), 10, 64)
+			if err != nil {
+				return nil, err
+			}
+
+			if w.IsDraft {
+				return &entity.WorkflowIdentity{
+					ID: wid,
+				}, nil
+			}
+			return &entity.WorkflowIdentity{
+				ID:      wid,
+				Version: w.GetWorkflowVersion(),
+			}, nil
+
+		})
 		if err != nil {
 			return nil, err
 		}
-
-		pluginIdStr := strconv.FormatInt(resp.PluginID, 10)
-		if _, ok := pluginDetailMap[pluginIdStr]; !ok {
-			pluginDetail := &workflow.PluginDetail{
-				ID:          pluginIdStr,
-				Name:        resp.PluginName,
-				IconURL:     resp.IconURL,
-				Description: resp.Description,
-				PluginType:  resp.PluginType,
-				VersionName: resp.Version,
-			}
-			pluginDetailMap[pluginIdStr] = pluginDetail
+		wfs, err := GetWorkflowDomainSVC().MGetWorkflowDetailInfo(ctx, entities)
+		if err != nil {
+			return nil, err
 		}
-
-		for id, tl := range resp.ToolInfoList {
-			toolIDStr := strconv.FormatInt(id, 10)
-			if _, ok := toolsDetailInfo[toolIDStr]; !ok {
-				toolDetail := &workflow.APIDetail{
-					ID:          toolIDStr,
-					PluginID:    pluginIdStr,
-					Name:        tl.ToolName,
-					Description: tl.Description,
-				}
-				toolsDetailInfo[toolIDStr] = toolDetail
-				inputParam, err := toAPIParameters(tl.Inputs)
-				if err != nil {
-					return nil, err
-				}
-				toolDetail.Parameters = inputParam
-
+		for _, wf := range wfs {
+			wfIDStr := strconv.FormatInt(wf.ID, 10)
+			workflowParameters, err := slices.TransformWithErrorCheck(wf.InputParams, toWorkflowAPIParameter)
+			if err != nil {
+				return nil, err
 			}
 
+			workflowDetailMap[wfIDStr] = &workflow.WorkflowDetail{
+				ID:                wfIDStr,
+				PluginID:          wfIDStr,
+				Description:       wf.Desc,
+				Name:              wf.Name,
+				IconURL:           wf.IconURL,
+				Type:              int64(common.PluginType_WORKFLOW),
+				LatestVersionName: wf.LatestVersion,
+				APIDetail: &workflow.APIDetail{
+					ID:         wfIDStr,
+					PluginID:   wfIDStr,
+					Name:       wf.Name,
+					Parameters: workflowParameters,
+				},
+			}
 		}
 
 	}
@@ -1033,12 +1488,135 @@ func (w *WorkflowApplicationService) GetLLMNodeFCSettingDetail(ctx context.Conte
 	response := &workflow.GetLLMNodeFCSettingDetailResponse{
 		PluginDetailMap:    pluginDetailMap,
 		PluginAPIDetailMap: toolsDetailInfo,
+		WorkflowDetailMap:  workflowDetailMap,
 	}
 
 	return response, nil
 }
 
-func (w *WorkflowApplicationService) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
+func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req *workflow.GetLLMNodeFCSettingsMergedRequest) (*workflow.GetLLMNodeFCSettingsMergedResponse, error) {
+
+	var fcPluginSetting *workflow.FCPluginSetting
+	if req.GetPluginFcSetting() != nil {
+		var (
+			toolSvc         = plugin.GetToolService()
+			pluginFcSetting = req.GetPluginFcSetting()
+			isDraft         = pluginFcSetting.GetIsDraft()
+		)
+
+		pluginID, err := strconv.ParseInt(pluginFcSetting.GetPluginID(), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		toolID, err := strconv.ParseInt(pluginFcSetting.GetAPIID(), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		pluginReq := &plugin.PluginToolsInfoRequest{
+			PluginEntity: plugin.PluginEntity{
+				PluginID: pluginID,
+			},
+			ToolIDs: []int64{toolID},
+			IsDraft: isDraft,
+		}
+
+		pInfo, err := toolSvc.GetPluginToolsInfo(ctx, pluginReq)
+		if err != nil {
+			return nil, err
+		}
+		toolInfo, ok := pInfo.ToolInfoList[toolID]
+		if !ok {
+			return nil, fmt.Errorf("tool info not found, too id=%v", toolID)
+		}
+
+		latestRequestParams := toolInfo.Inputs
+		latestResponseParams := toolInfo.Outputs
+		mergeWorkflowAPIParameters(latestRequestParams, pluginFcSetting.GetRequestParams())
+		mergeWorkflowAPIParameters(latestResponseParams, pluginFcSetting.GetResponseParams())
+
+		fcPluginSetting = &workflow.FCPluginSetting{
+			PluginID:       strconv.FormatInt(pInfo.PluginID, 10),
+			APIID:          strconv.FormatInt(toolInfo.ToolID, 10),
+			APIName:        toolInfo.ToolName,
+			IsDraft:        isDraft,
+			RequestParams:  latestRequestParams,
+			ResponseParams: latestResponseParams,
+			PluginVersion:  pluginFcSetting.GetPluginVersion(),
+			ResponseStyle:  &workflow.ResponseStyle{},
+		}
+	}
+	var fCWorkflowSetting *workflow.FCWorkflowSetting
+	if req.GetWorkflowFcSetting() != nil {
+		var (
+			workflowFcSetting = req.GetWorkflowFcSetting()
+		)
+		wid, err := strconv.ParseInt(workflowFcSetting.GetWorkflowID(), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		var e *entity.WorkflowIdentity
+		if workflowFcSetting.GetIsDraft() {
+			e = &entity.WorkflowIdentity{
+				ID: wid,
+			}
+		} else {
+			e = &entity.WorkflowIdentity{
+				ID:      wid,
+				Version: workflowFcSetting.GetWorkflowVersion(),
+			}
+		}
+
+		wfs, err := GetWorkflowDomainSVC().MGetWorkflowDetailInfo(ctx, []*entity.WorkflowIdentity{e})
+		if err != nil {
+			return nil, err
+		}
+
+		var wf *entity.Workflow
+		for _, f := range wfs {
+			if f.ID == wid {
+				wf = f
+			}
+		}
+
+		if wf == nil {
+			return nil, fmt.Errorf("workflow not found, workflow id=%v", wid)
+		}
+
+		latestRequestParams, err := slices.TransformWithErrorCheck(wf.InputParams, toWorkflowAPIParameter)
+		if err != nil {
+			return nil, err
+		}
+
+		latestResponseParams, err := slices.TransformWithErrorCheck(wf.OutputParams, toWorkflowAPIParameter)
+		if err != nil {
+			return nil, err
+		}
+
+		mergeWorkflowAPIParameters(latestRequestParams, workflowFcSetting.GetRequestParams())
+
+		mergeWorkflowAPIParameters(latestResponseParams, workflowFcSetting.GetResponseParams())
+
+		fCWorkflowSetting = &workflow.FCWorkflowSetting{
+			WorkflowID:     strconv.FormatInt(wid, 10),
+			PluginID:       strconv.FormatInt(wid, 10),
+			IsDraft:        workflowFcSetting.GetIsDraft(),
+			RequestParams:  latestRequestParams,
+			ResponseParams: latestResponseParams,
+			ResponseStyle:  &workflow.ResponseStyle{},
+		}
+
+	}
+
+	return &workflow.GetLLMNodeFCSettingsMergedResponse{
+		PluginFcSetting:  fcPluginSetting,
+		WorflowFcSetting: fCWorkflowSetting,
+	}, nil
+}
+
+func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
+
 	var (
 		toolsInfo []*vo.WorkFlowAsToolInfo
 	)
@@ -1090,7 +1668,8 @@ func (w *WorkflowApplicationService) GetPlaygroundPluginList(ctx context.Context
 			Desc:     toolInfo.Desc,
 			PluginID: strconv.FormatInt(toolInfo.ID, 10),
 		}
-		pluginApi.Parameters, err = toPluginParameters(toolInfo.InputParams)
+		pluginApi.Parameters, err = slices.TransformWithErrorCheck(toolInfo.InputParams, toPluginParameter)
+
 		if err != nil {
 			return nil, err
 		}
@@ -1109,7 +1688,48 @@ func (w *WorkflowApplicationService) GetPlaygroundPluginList(ctx context.Context
 
 }
 
-func convertNamedTypeInfo2WorkflowParameter(nType *vo.NamedTypeInfo) (*workflow.Parameter, error) {
+func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.CopyWorkflowRequest) (resp *workflow.CopyWorkflowResponse, err error) {
+
+	spaceID, err := strconv.ParseInt(req.GetSpaceID(), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	workflowID, err := strconv.ParseInt(req.GetWorkflowID(), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	copiedID, err := GetWorkflowDomainSVC().CopyWorkflow(ctx, spaceID, workflowID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.CopyWorkflowResponse{
+		Data: &workflow.CopyWorkflowData{
+			WorkflowID: strconv.FormatInt(copiedID, 10),
+		},
+	}, err
+}
+
+func mustParseInt64(s string) int64 {
+	i, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	return i
+}
+
+func parseInt64(s *string) *int64 {
+	if s == nil {
+		return nil
+	}
+
+	i := mustParseInt64(*s)
+	return &i
+}
+
+func toWorkflowParameter(nType *vo.NamedTypeInfo) (*workflow.Parameter, error) {
 	wp := &workflow.Parameter{Name: nType.Name}
 	wp.Desc = nType.Desc
 	if nType.Required {
@@ -1258,9 +1878,6 @@ func entityNodeTypeToAPINodeTemplateType(nodeType entity.NodeType) (workflow.Nod
 	case entity.NodeTypeBreak:
 		return workflow.NodeTemplateType_Break, nil
 	case entity.NodeTypeVariableAssigner:
-		// Maps to AssignVariable (ID 40) in the API model.
-		// API also has LoopSetVariable (ID 20).
-		// TODO: needs to split 20 and 40 to two types in workflow entity defines.
 		return workflow.NodeTemplateType_AssignVariable, nil
 	case entity.NodeTypeVariableAssignerWithinLoop:
 		return workflow.NodeTemplateType_LoopSetVariable, nil
@@ -1311,23 +1928,6 @@ func entityNodeTypeToAPINodeTemplateType(nodeType entity.NodeType) (workflow.Nod
 	}
 }
 
-func mustParseInt64(s string) int64 {
-	i, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		panic(err)
-	}
-	return i
-}
-
-func parseInt64(s *string) *int64 {
-	if s == nil {
-		return nil
-	}
-
-	i := mustParseInt64(*s)
-	return &i
-}
-
 func i64PtrToStringPtr(i *int64) *string {
 	if i == nil {
 		return nil
@@ -1337,25 +1937,7 @@ func i64PtrToStringPtr(i *int64) *string {
 	return &s
 }
 
-func convertNamedTypeInfoListToVariableString(namedTypeInfoList []*vo.NamedTypeInfo) (string, error) {
-	var outputAnyList = make([]any, 0, len(namedTypeInfoList))
-	for _, in := range namedTypeInfoList {
-		v, err := in.ToVariable()
-		if err != nil {
-			return "", err
-		}
-		outputAnyList = append(outputAnyList, v)
-	}
-
-	s, err := sonic.MarshalString(outputAnyList)
-	if err != nil {
-		return "", err
-	}
-	return s, nil
-
-}
-
-func convertNamedTypeInfoListToVariables(namedTypeInfoList []*vo.NamedTypeInfo) ([]*vo.Variable, error) {
+func toVariables(namedTypeInfoList []*vo.NamedTypeInfo) ([]*vo.Variable, error) {
 	var vs = make([]*vo.Variable, 0, len(namedTypeInfoList))
 	for _, in := range namedTypeInfoList {
 		v, err := in.ToVariable()
@@ -1369,19 +1951,10 @@ func convertNamedTypeInfoListToVariables(namedTypeInfoList []*vo.NamedTypeInfo) 
 
 }
 
-func toPluginParameters(ns []*vo.NamedTypeInfo) ([]*common.PluginParameter, error) {
-	parameters := make([]*common.PluginParameter, 0)
-	for _, n := range ns {
-		p, err := convertNameInfoToPluginParameter(n)
-		if err != nil {
-			return nil, err
-		}
-		parameters = append(parameters, p)
+func toPluginParameter(info *vo.NamedTypeInfo) (*common.PluginParameter, error) {
+	if info == nil {
+		return nil, fmt.Errorf("named type info is nil")
 	}
-	return parameters, nil
-}
-
-func convertNameInfoToPluginParameter(info *vo.NamedTypeInfo) (*common.PluginParameter, error) {
 	p := &common.PluginParameter{
 		Name:     info.Name,
 		Desc:     info.Desc,
@@ -1425,7 +1998,7 @@ func convertNameInfoToPluginParameter(info *vo.NamedTypeInfo) (*common.PluginPar
 		p.Type = "object"
 		p.SubParameters = make([]*common.PluginParameter, 0, len(info.Properties))
 		for _, sub := range info.Properties {
-			subParameter, err := convertNameInfoToPluginParameter(sub)
+			subParameter, err := toPluginParameter(sub)
 			if err != nil {
 				return nil, err
 			}
@@ -1433,7 +2006,7 @@ func convertNameInfoToPluginParameter(info *vo.NamedTypeInfo) (*common.PluginPar
 		}
 	case vo.DataTypeArray:
 		p.Type = "array"
-		eleParameter, err := convertNameInfoToPluginParameter(info.ElemTypeInfo)
+		eleParameter, err := toPluginParameter(info.ElemTypeInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -1446,58 +2019,154 @@ func convertNameInfoToPluginParameter(info *vo.NamedTypeInfo) (*common.PluginPar
 	return p, nil
 }
 
-func toAPIParameters(vs []*vo.Variable) ([]*workflow.APIParameter, error) {
-	ws := make([]*workflow.APIParameter, 0, len(vs))
-	for _, v := range vs {
-		w, err := convertVariableToAPIParameter(v)
+func toWorkflowAPIParameter(info *vo.NamedTypeInfo) (*workflow.APIParameter, error) {
+	if info == nil {
+		return nil, fmt.Errorf("named type info is nil")
+	}
+	p := &workflow.APIParameter{
+		Name:       info.Name,
+		Desc:       info.Desc,
+		IsRequired: info.Required,
+	}
+
+	if info.Type == vo.DataTypeFile && info.FileType != nil {
+		p.AssistType = ptr.Of(toWorkflowAPIParameterAssistType(*info.FileType))
+	}
+
+	switch info.Type {
+	case vo.DataTypeString, vo.DataTypeFile, vo.DataTypeTime:
+		p.Type = workflow.ParameterType_String
+	case vo.DataTypeInteger:
+		p.Type = workflow.ParameterType_Integer
+	case vo.DataTypeBoolean:
+		p.Type = workflow.ParameterType_Bool
+	case vo.DataTypeObject:
+		p.Type = workflow.ParameterType_Object
+		p.SubParameters = make([]*workflow.APIParameter, 0, len(info.Properties))
+		subParameters, err := slices.TransformWithErrorCheck(info.Properties, toWorkflowAPIParameter)
 		if err != nil {
 			return nil, err
 		}
-		ws = append(ws, w)
+		p.SubParameters = append(p.SubParameters, subParameters...)
+	case vo.DataTypeNumber:
+		p.Type = workflow.ParameterType_Number
+	case vo.DataTypeArray:
+		p.Type = workflow.ParameterType_Array
+		eleParameters, err := slices.TransformWithErrorCheck([]*vo.NamedTypeInfo{info.ElemTypeInfo}, toWorkflowAPIParameter)
+		if err != nil {
+			return nil, err
+		}
+		eleParameter := eleParameters[0]
+		p.SubType = &eleParameter.Type
+		p.SubParameters = []*workflow.APIParameter{eleParameter}
+	default:
+		return nil, fmt.Errorf("unknown named type info type: %s", info.Type)
 	}
-	return ws, nil
+
+	return p, nil
 }
 
-func convertVariableToAPIParameter(variable *vo.Variable) (*workflow.APIParameter, error) {
-	parameter := &workflow.APIParameter{
-		Name:       variable.Name,
-		Desc:       variable.Description,
-		AssistType: ptr.Of(workflow.AssistParameterType(variable.AssistType)),
+func toWorkflowAPIParameterAssistType(ty vo.FileSubType) workflow.AssistParameterType {
+	switch ty {
+	case vo.FileTypeImage:
+		return workflow.AssistParameterType_IMAGE
+	case vo.FileTypeSVG:
+		return workflow.AssistParameterType_SVG
+	case vo.FileTypeAudio:
+		return workflow.AssistParameterType_AUDIO
+	case vo.FileTypeVideo:
+		return workflow.AssistParameterType_VIDEO
+	case vo.FileTypeVoice:
+		return workflow.AssistParameterType_Voice
+	case vo.FileTypeDocument:
+		return workflow.AssistParameterType_DOC
+	case vo.FileTypePPT:
+		return workflow.AssistParameterType_PPT
+	case vo.FileTypeExcel:
+		return workflow.AssistParameterType_EXCEL
+	case vo.FileTypeTxt:
+		return workflow.AssistParameterType_TXT
+	case vo.FileTypeCode:
+		return workflow.AssistParameterType_CODE
+	case vo.FileTypeZip:
+		return workflow.AssistParameterType_ZIP
+	default:
+		return workflow.APIParameter_AssistType_DEFAULT
+	}
+}
+
+func toVariable(p *workflow.APIParameter) (*vo.Variable, error) {
+	v := &vo.Variable{
+		Name:        p.Name,
+		Description: p.Desc,
+		Required:    p.IsRequired,
 	}
 
-	switch variable.Type {
-	case vo.VariableTypeString, vo.VariableTypeImage:
-		parameter.Type = workflow.ParameterType_String
+	if p.AssistType != nil {
+		v.AssistType = vo.AssistType(*p.AssistType)
+	}
 
-	case vo.VariableTypeInteger:
-		parameter.Type = workflow.ParameterType_Integer
-
-	case vo.VariableTypeFloat:
-		parameter.Type = workflow.ParameterType_Number
-
-	case vo.VariableTypeBoolean:
-		parameter.Type = workflow.ParameterType_Bool
-
-	case vo.VariableTypeObject:
-		parameter.Type = workflow.ParameterType_Object
-		parameter.SubParameters = make([]*workflow.APIParameter, 0)
-		for _, v := range variable.Schema.([]*vo.Variable) {
-			subParameter, err := convertVariableToAPIParameter(v)
+	switch p.Type {
+	case workflow.ParameterType_String:
+		v.Type = vo.VariableTypeString
+	case workflow.ParameterType_Integer:
+		v.Type = vo.VariableTypeInteger
+	case workflow.ParameterType_Number:
+		v.Type = vo.VariableTypeFloat
+	case workflow.ParameterType_Array:
+		v.Type = vo.VariableTypeList
+		av := &vo.Variable{
+			Type: vo.VariableTypeString,
+		}
+		switch *p.SubType {
+		case workflow.ParameterType_String:
+			av.Type = vo.VariableTypeString
+		case workflow.ParameterType_Integer:
+			av.Type = vo.VariableTypeInteger
+		case workflow.ParameterType_Number:
+			av.Type = vo.VariableTypeFloat
+		case workflow.ParameterType_Array:
+			av.Type = vo.VariableTypeList
+		case workflow.ParameterType_Object:
+			av.Type = vo.VariableTypeObject
+		}
+		v.Schema = av
+	case workflow.ParameterType_Object:
+		v.Type = vo.VariableTypeObject
+		vs := make([]*vo.Variable, 0)
+		for _, v := range p.SubParameters {
+			objV, err := toVariable(v)
 			if err != nil {
 				return nil, err
 			}
-			parameter.SubParameters = append(parameter.SubParameters, subParameter)
+			vs = append(vs, objV)
+
 		}
-	case vo.VariableTypeList:
-		parameter.Type = workflow.ParameterType_Array
-		elemParameter, err := convertVariableToAPIParameter(variable.Schema.(*vo.Variable))
-		if err != nil {
-			return nil, err
-		}
-		parameter.SubType = &elemParameter.Type
+		v.Schema = vs
 	default:
-		return nil, fmt.Errorf("not supported variable type: %s", variable.Type)
+		return nil, fmt.Errorf("unknown workflow api parameter type: %v", p.Type)
 	}
-	return parameter, nil
+	return v, nil
+}
+
+func mergeWorkflowAPIParameters(latestAPIParameters []*workflow.APIParameter, existAPIParameters []*workflow.APIParameter) {
+
+	existAPIParameterMap := slices.ToMap(existAPIParameters, func(w *workflow.APIParameter) (string, *workflow.APIParameter) {
+		return w.Name, w
+	})
+
+	for _, parameter := range latestAPIParameters {
+		if ep, ok := existAPIParameterMap[parameter.Name]; ok {
+			parameter.LocalDisable = ep.LocalDisable
+			parameter.LocalDefault = ep.LocalDefault
+			if len(parameter.SubParameters) > 0 && len(ep.SubParameters) > 0 {
+				mergeWorkflowAPIParameters(parameter.SubParameters, ep.SubParameters)
+			}
+
+		} else {
+			existAPIParameters = append(existAPIParameters, parameter)
+		}
+
+	}
 
 }

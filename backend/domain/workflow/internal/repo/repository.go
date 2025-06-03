@@ -14,6 +14,8 @@ import (
 	"gorm.io/gen"
 	"gorm.io/gorm"
 
+	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -26,6 +28,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type RepositoryImpl struct {
@@ -302,7 +305,7 @@ func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity
 
 	url, err := r.tos.GetObjectUrl(ctx, meta.IconURI)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get url for workflow id %d, icon uri %s: %w", id, meta.IconURI, err)
+		logs.Warnf("failed to get url for workflow meta for ID %d: %v", id, err)
 	}
 	// Initialize the result entity
 	wf := &entity.Workflow{
@@ -341,7 +344,6 @@ func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity
 }
 
 func (r *RepositoryImpl) UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) error {
-
 	_, err := r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.ID.Eq(wf.ID)).UpdateColumnSimple(
 		r.query.WorkflowMeta.Name.Value(wf.Name),
 		r.query.WorkflowMeta.Description.Value(wf.Desc),
@@ -452,13 +454,22 @@ func (r *RepositoryImpl) GetWorkflowReference(ctx context.Context, id int64) ([]
 }
 
 func (r *RepositoryImpl) CreateWorkflowExecution(ctx context.Context, execution *entity.WorkflowExecution) error {
+	var mode int32
+	if execution.Mode == vo.ExecuteModeDebug {
+		mode = 1
+	} else if execution.Mode == vo.ExecuteModeRelease {
+		mode = 2
+	} else if execution.Mode == vo.ExecuteModeNodeDebug {
+		mode = 3
+	}
+
 	wfExec := &model2.WorkflowExecution{
 		ID:              execution.ID,
 		WorkflowID:      execution.WorkflowIdentity.ID,
 		Version:         execution.WorkflowIdentity.Version,
 		SpaceID:         execution.SpaceID,
-		Mode:            0, // TODO: how to know whether it's a debug run or release run? Version alone is not sufficient.
-		OperatorID:      0, // TODO: fill operator information
+		Mode:            mode,
+		OperatorID:      execution.Operator,
 		Status:          int32(entity.WorkflowRunning),
 		Input:           ptr.FromOrDefault(execution.Input, ""),
 		RootExecutionID: execution.RootExecutionID,
@@ -526,7 +537,7 @@ func (r *RepositoryImpl) UpdateWorkflowExecution(ctx context.Context, execution 
 		return 0, wfExe.Status, nil
 	}
 
-	return info.RowsAffected, entity.WorkflowSuccess, nil
+	return info.RowsAffected, execution.Status, nil
 }
 
 func (r *RepositoryImpl) TryLockWorkflowExecution(ctx context.Context, wfExeID, resumingEventID int64) (bool, entity.WorkflowExecuteStatus, error) {
@@ -574,15 +585,26 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 	}
 
 	rootExe := rootExes[0]
+	var exeMode vo.ExecuteMode
+	if rootExe.Mode == 1 {
+		exeMode = vo.ExecuteModeDebug
+	} else if rootExe.Mode == 2 {
+		exeMode = vo.ExecuteModeRelease
+	} else {
+		exeMode = vo.ExecuteModeNodeDebug
+	}
+
 	exe := &entity.WorkflowExecution{
 		ID: rootExe.ID,
 		WorkflowIdentity: entity.WorkflowIdentity{
 			ID:      rootExe.WorkflowID,
 			Version: rootExe.Version,
 		},
-		SpaceID:      rootExe.SpaceID,
-		Mode:         entity.ExecuteMode(rootExe.Mode),
-		OperatorID:   rootExe.OperatorID,
+		SpaceID: rootExe.SpaceID,
+		ExecuteConfig: vo.ExecuteConfig{
+			Operator: rootExe.OperatorID,
+			Mode:     exeMode,
+		},
 		ConnectorID:  rootExe.ConnectorID,
 		ConnectorUID: rootExe.ConnectorUID,
 		CreatedAt:    time.UnixMilli(rootExe.CreatedAt),
@@ -601,8 +623,8 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 		},
 		UpdatedAt:              ternary.IFElse(rootExe.UpdatedAt > 0, ptr.Of(time.UnixMilli(rootExe.UpdatedAt)), nil),
 		ParentNodeID:           ptr.Of(rootExe.ParentNodeID),
-		ParentNodeExecuteID:    nil, // TODO: should we insert it here?
-		NodeExecutions:         nil, // TODO: should we insert it here?
+		ParentNodeExecuteID:    nil, // keep it nil here, query parent node execution separately
+		NodeExecutions:         nil, // keep it nil here, query node executions separately
 		RootExecutionID:        rootExe.RootExecutionID,
 		CurrentResumingEventID: ternary.IFElse(rootExe.ResumeEventID == 0, nil, ptr.Of(rootExe.ResumeEventID)),
 	}
@@ -651,6 +673,40 @@ func (r *RepositoryImpl) UpdateNodeExecution(ctx context.Context, execution *ent
 	return nil
 }
 
+func convertNodeExecution(nodeExec *model2.NodeExecution) *entity.NodeExecution {
+	nodeExeEntity := &entity.NodeExecution{
+		ID:           nodeExec.ID,
+		ExecuteID:    nodeExec.ExecuteID,
+		NodeID:       nodeExec.NodeID,
+		NodeName:     nodeExec.NodeName,
+		NodeType:     entity.NodeType(nodeExec.NodeType),
+		CreatedAt:    time.UnixMilli(nodeExec.CreatedAt),
+		Status:       entity.NodeExecuteStatus(nodeExec.Status),
+		Duration:     time.Duration(nodeExec.Duration) * time.Millisecond,
+		Input:        &nodeExec.Input,
+		Output:       &nodeExec.Output,
+		RawOutput:    &nodeExec.RawOutput,
+		ErrorInfo:    &nodeExec.ErrorInfo,
+		ErrorLevel:   &nodeExec.ErrorLevel,
+		TokenInfo:    &entity.TokenUsage{InputTokens: nodeExec.InputTokens, OutputTokens: nodeExec.OutputTokens},
+		ParentNodeID: ternary.IFElse(nodeExec.ParentNodeID != "", ptr.Of(nodeExec.ParentNodeID), nil),
+		Index:        int(nodeExec.CompositeNodeIndex),
+		Items:        ternary.IFElse(nodeExec.CompositeNodeItems != "", ptr.Of(nodeExec.CompositeNodeItems), nil),
+	}
+
+	if nodeExec.UpdatedAt > 0 {
+		nodeExeEntity.UpdatedAt = ptr.Of(time.UnixMilli(nodeExec.UpdatedAt))
+	}
+
+	if nodeExec.SubExecuteID > 0 {
+		nodeExeEntity.SubWorkflowExecution = &entity.WorkflowExecution{
+			ID: nodeExec.SubExecuteID,
+		}
+	}
+
+	return nodeExeEntity
+}
+
 func (r *RepositoryImpl) GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID int64) (result []*entity.NodeExecution, err error) {
 	nodeExecs, err := r.query.NodeExecution.WithContext(ctx).
 		Where(r.query.NodeExecution.ExecuteID.Eq(wfExeID)).
@@ -660,39 +716,42 @@ func (r *RepositoryImpl) GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID
 	}
 
 	for _, nodeExec := range nodeExecs {
-		nodeExeEntity := &entity.NodeExecution{
-			ID:           nodeExec.ID,
-			ExecuteID:    nodeExec.ExecuteID,
-			NodeID:       nodeExec.NodeID,
-			NodeName:     nodeExec.NodeName,
-			NodeType:     entity.NodeType(nodeExec.NodeType),
-			CreatedAt:    time.UnixMilli(nodeExec.CreatedAt),
-			Status:       entity.NodeExecuteStatus(nodeExec.Status),
-			Duration:     time.Duration(nodeExec.Duration) * time.Millisecond,
-			Input:        &nodeExec.Input,
-			Output:       &nodeExec.Output,
-			RawOutput:    &nodeExec.RawOutput,
-			ErrorInfo:    &nodeExec.ErrorInfo,
-			ErrorLevel:   &nodeExec.ErrorLevel,
-			TokenInfo:    &entity.TokenUsage{InputTokens: nodeExec.InputTokens, OutputTokens: nodeExec.OutputTokens},
-			ParentNodeID: ternary.IFElse(nodeExec.ParentNodeID != "", ptr.Of(nodeExec.ParentNodeID), nil),
-			Index:        int(nodeExec.CompositeNodeIndex),
-			Items:        ternary.IFElse(nodeExec.CompositeNodeItems != "", ptr.Of(nodeExec.CompositeNodeItems), nil),
-		}
-
-		if nodeExec.UpdatedAt > 0 {
-			nodeExeEntity.UpdatedAt = ptr.Of(time.UnixMilli(nodeExec.UpdatedAt))
-		}
-
-		if nodeExec.SubExecuteID > 0 {
-			nodeExeEntity.SubWorkflowExecution = &entity.WorkflowExecution{
-				ID: nodeExec.SubExecuteID,
-			}
-		}
-
+		nodeExeEntity := convertNodeExecution(nodeExec)
 		result = append(result, nodeExeEntity)
 	}
 
+	return result, nil
+}
+
+func (r *RepositoryImpl) GetNodeExecution(ctx context.Context, wfExeID int64, nodeID string) (*entity.NodeExecution, bool, error) {
+	nodeExec, err := r.query.NodeExecution.WithContext(ctx).
+		Where(r.query.NodeExecution.ExecuteID.Eq(wfExeID), r.query.NodeExecution.NodeID.Eq(nodeID)).
+		First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, fmt.Errorf("failed to find node executions: %w", err)
+	}
+
+	nodeExeEntity := convertNodeExecution(nodeExec)
+
+	return nodeExeEntity, true, nil
+}
+
+func (r *RepositoryImpl) GetNodeExecutionByParent(ctx context.Context, wfExeID int64, parentNodeID string) (
+	[]*entity.NodeExecution, error) {
+	nodeExecs, err := r.query.NodeExecution.WithContext(ctx).
+		Where(r.query.NodeExecution.ExecuteID.Eq(wfExeID), r.query.NodeExecution.ParentNodeID.Eq(parentNodeID)).
+		Find()
+	if err != nil {
+		return nil, fmt.Errorf("failed to find node executions: %w", err)
+	}
+	var result []*entity.NodeExecution
+	for _, nodeExec := range nodeExecs {
+		nodeExeEntity := convertNodeExecution(nodeExec)
+		result = append(result, nodeExeEntity)
+	}
 	return result, nil
 }
 
@@ -1135,11 +1194,16 @@ func (r *RepositoryImpl) GetWorkflowCancelFlag(ctx context.Context, wfExeID int6
 	return count == 1, nil
 }
 
-func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.WorkflowIdentity) (workflow.ToolFromWorkflow, error) {
-	// TODO: handle default values and input/output cutting
-	namedTypeInfoList := make([]*vo.NamedTypeInfo, 0)
-
-	var canvas vo.Canvas
+func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.WorkflowIdentity, wfToolConfig vo.WorkflowToolConfig) (workflow.ToolFromWorkflow, error) {
+	var (
+		canvas               vo.Canvas
+		inputParamsCfg       = wfToolConfig.InputParametersConfig
+		outputParamsCfg      = wfToolConfig.OutputParametersConfig
+		namedTypeInfoList    = make([]*vo.NamedTypeInfo, 0)
+		inputParamsConfigMap = slices.ToMap(inputParamsCfg, func(w *workflow3.APIParameter) (string, *workflow3.APIParameter) {
+			return w.Name, w
+		})
+	)
 
 	wfMeta, err := r.GetWorkflowMeta(ctx, wfID.ID)
 	if err != nil {
@@ -1188,6 +1252,9 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.Workflo
 	params := make(map[string]*schema.ParameterInfo)
 
 	for _, tInfo := range namedTypeInfoList {
+		if p, ok := inputParamsConfigMap[tInfo.Name]; ok && p.LocalDisable {
+			continue
+		}
 		param, err := tInfo.ToParameterInfo()
 		if err != nil {
 			return nil, err
@@ -1212,10 +1279,39 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.Workflo
 		return nil, fmt.Errorf("failed to create workflow: %w", err)
 	}
 
+	type streamFunc func(ctx context.Context, in map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error)
+
+	convertStream := func(stream streamFunc) streamFunc {
+		return func(ctx context.Context, in map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error) {
+			if len(inputParamsConfigMap) == 0 {
+				return stream(ctx, in, opts...)
+			}
+			input := make(map[string]any, len(in))
+			for k, v := range in {
+				if p, ok := inputParamsConfigMap[k]; ok {
+					if p.LocalDisable {
+						if p.LocalDefault != nil {
+							input[k], err = transformDefaultValue(*p.LocalDefault, p)
+							if err != nil {
+								return nil, err
+							}
+						}
+					} else {
+						input[k] = v
+					}
+
+				} else {
+					input[k] = v
+				}
+			}
+			return stream(ctx, input, opts...)
+		}
+	}
+
 	if wf.StreamRun() {
 		return compose.NewStreamableWorkflow(
 			toolInfo,
-			wf.Runner.Stream,
+			convertStream(wf.Runner.Stream),
 			wf.TerminatePlan(),
 			wfMeta,
 			workflowSC,
@@ -1223,12 +1319,241 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.Workflo
 		), nil
 	}
 
+	type invokeFunc func(ctx context.Context, in map[string]any, opts ...einoCompose.Option) (out map[string]any, err error)
+	convertInvoke := func(invoke invokeFunc) invokeFunc {
+		return func(ctx context.Context, in map[string]any, opts ...einoCompose.Option) (out map[string]any, err error) {
+			if len(inputParamsCfg) == 0 && len(outputParamsCfg) == 0 {
+				return invoke(ctx, in, opts...)
+			}
+			input := make(map[string]any, len(in))
+			for k, v := range in {
+				if p, ok := inputParamsConfigMap[k]; ok {
+					if p.LocalDisable {
+						if p.LocalDefault != nil {
+							input[k], err = transformDefaultValue(*p.LocalDefault, p)
+							if err != nil {
+								return nil, fmt.Errorf("failed to transfer default value, default value=%v,value type=%v,err=%w", *p.LocalDefault, p.Type, err)
+							}
+						}
+					} else {
+						input[k] = v
+					}
+				} else {
+					input[k] = v
+				}
+			}
+
+			out, err = invoke(ctx, input, opts...)
+			if err != nil {
+				return nil, err
+			}
+
+			if wf.TerminatePlan() == vo.ReturnVariables && len(outputParamsCfg) > 0 {
+				return filterDisabledAPIParameters(outputParamsCfg, out), nil
+			}
+
+			return out, nil
+
+		}
+	}
+
 	return compose.NewInvokableWorkflow(
 		toolInfo,
-		wf.Runner.Invoke,
+		convertInvoke(wf.Runner.Invoke),
 		wf.TerminatePlan(),
 		wfMeta,
 		workflowSC,
 		r,
 	), nil
+}
+
+func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (*entity.Workflow, error) {
+	const (
+		copyWorkflowRedisKeyPrefix         = "copy_workflow_redis_key_prefix"
+		copyWorkflowRedisKeyExpireInterval = time.Hour * 24 * 7
+	)
+	var (
+		workflowMeta  = r.query.WorkflowMeta
+		workflowDraft = r.query.WorkflowDraft
+	)
+
+	copiedID, err := r.idGen.GenID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	copiedWorkflowRedisKey := fmt.Sprintf("%s:%d:%d", copyWorkflowRedisKeyPrefix, workflowID, ctxutil.MustGetUIDFromCtx(ctx))
+
+	copiedNameSuffix, err := r.redis.Incr(ctx, copiedWorkflowRedisKey).Result()
+	if err != nil {
+		return nil, err
+	}
+	err = r.redis.Expire(ctx, copiedWorkflowRedisKey, copyWorkflowRedisKeyExpireInterval).Err()
+	if err != nil {
+		logs.Warnf("failed to set the rediskey %v expiration time, err=%w", copiedWorkflowRedisKey, err)
+	}
+	var copiedWorkflow *entity.Workflow
+
+	err = r.query.Transaction(func(tx *query.Query) error {
+		wfMeta, err := workflowMeta.WithContext(ctx).Where(workflowMeta.ID.Eq(workflowID), workflowMeta.SpaceID.Eq(spaceID)).First()
+		if err != nil {
+			return err
+		}
+
+		wfDraft, err := workflowDraft.WithContext(ctx).Where(workflowDraft.ID.Eq(workflowID)).First()
+		if err != nil {
+			return err
+		}
+
+		wfMeta.Name = fmt.Sprintf("%s_%d", wfMeta.Name, copiedNameSuffix)
+		wfMeta.Status = 0
+		wfMeta.ID = copiedID
+		wfMeta.CreatedAt = 0
+		wfMeta.UpdatedAt = 0
+		wfMeta.CreatorID = ctxutil.MustGetUIDFromCtx(ctx)
+		err = workflowMeta.WithContext(ctx).Create(wfMeta)
+		if err != nil {
+			return err
+		}
+
+		wfDraft.ID = copiedID
+		wfDraft.TestRunSuccess = false
+		wfDraft.Modified = false
+		wfDraft.CreatedAt = 0
+		wfDraft.UpdatedAt = 0
+		err = workflowDraft.WithContext(ctx).Create(wfDraft)
+		if err != nil {
+			return err
+		}
+		copiedWorkflow = &entity.Workflow{}
+		copiedWorkflow.ID = wfMeta.ID
+		copiedWorkflow.Name = wfMeta.Name
+		copiedWorkflow.IconURI = wfMeta.IconURI
+		copiedWorkflow.SpaceID = wfMeta.SpaceID
+		copiedWorkflow.Desc = wfMeta.Description
+		if wfMeta.ProjectID > 0 {
+			copiedWorkflow.ProjectID = &wfMeta.ProjectID
+		}
+		copiedWorkflow.CreatorID = wfMeta.CreatorID
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return copiedWorkflow, nil
+
+}
+
+const (
+	testRunLastExeKey   = "test_run_last_exe_id:%d:%d"
+	nodeDebugLastExeKey = "node_debug_last_exe_id:%d:%s:%d"
+)
+
+func (r *RepositoryImpl) SetTestRunLatestExeID(ctx context.Context, wfID int64, uID int64, exeID int64) error {
+	key := fmt.Sprintf(testRunLastExeKey, wfID, uID)
+	return r.redis.Set(ctx, key, exeID, 7*24*time.Hour).Err()
+}
+
+func (r *RepositoryImpl) GetTestRunLatestExeID(ctx context.Context, wfID int64, uID int64) (int64, error) {
+	key := fmt.Sprintf(testRunLastExeKey, wfID, uID)
+	exeIDStr, err := r.redis.Get(ctx, key).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	exeID, err := strconv.ParseInt(exeIDStr, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return exeID, nil
+}
+
+func (r *RepositoryImpl) SetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64, exeID int64) error {
+	key := fmt.Sprintf(nodeDebugLastExeKey, wfID, nodeID, uID)
+	return r.redis.Set(ctx, key, exeID, 7*24*time.Hour).Err()
+}
+
+func (r *RepositoryImpl) GetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64) (int64, error) {
+	key := fmt.Sprintf(nodeDebugLastExeKey, wfID, nodeID, uID)
+	exeIDStr, err := r.redis.Get(ctx, key).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	exeID, err := strconv.ParseInt(exeIDStr, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return exeID, nil
+}
+
+func filterDisabledAPIParameters(parametersCfg []*workflow3.APIParameter, m map[string]any) map[string]any {
+	result := make(map[string]any, len(m))
+	responseParameterMap := slices.ToMap(parametersCfg, func(p *workflow3.APIParameter) (string, *workflow3.APIParameter) {
+		return p.Name, p
+	})
+	for key, value := range m {
+		if parameter, ok := responseParameterMap[key]; ok {
+			if parameter.LocalDisable {
+				continue
+			}
+			if parameter.Type == workflow3.ParameterType_Object && len(parameter.SubParameters) > 0 {
+				val := filterDisabledAPIParameters(parameter.SubParameters, value.(map[string]interface{}))
+				result[key] = val
+			} else {
+				result[key] = value
+			}
+		} else {
+			result[key] = value
+		}
+	}
+	return result
+}
+
+func transformDefaultValue(value string, p *workflow3.APIParameter) (any, error) {
+	switch p.Type {
+	default:
+		return value, nil
+	case workflow3.ParameterType_String:
+		return value, nil
+	case workflow3.ParameterType_Object:
+		ret := make(map[string]any)
+		err := sonic.UnmarshalString(value, &ret)
+		if err != nil {
+			return nil, err
+		}
+		return ret, nil
+	case workflow3.ParameterType_Bool:
+		b, err := strconv.ParseBool(value)
+		if err != nil {
+			return nil, err
+		}
+		return b, nil
+	case workflow3.ParameterType_Number:
+		f, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return nil, err
+		}
+		return f, nil
+	case workflow3.ParameterType_Integer:
+		i, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		return i, nil
+	case workflow3.ParameterType_Array:
+		ret := make([]any, 0)
+		err := sonic.UnmarshalString(value, &ret)
+		if err != nil {
+			return nil, err
+		}
+		return ret, nil
+
+	}
 }

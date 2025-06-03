@@ -20,6 +20,7 @@ type SingleAgent interface {
 	GetAgentDraftDisplayInfo(ctx context.Context, userID, agentID int64) (*entity.AgentDraftDisplayInfo, error)
 
 	// online agent
+	CreateSingleAgent(ctx context.Context, connectorID int64, version string, e *entity.SingleAgent) (int64, error)
 	Duplicate(ctx context.Context, req *entity.DuplicateAgentRequest) (draft *entity.SingleAgent, err error)
 	StreamExecute(ctx context.Context, req *entity.ExecuteRequest) (events *schema.StreamReader[*entity.AgentEvent], err error)
 	GetSingleAgent(ctx context.Context, agentID int64, version string) (botInfo *entity.SingleAgent, err error)
@@ -37,6 +38,6 @@ type SingleAgent interface {
 	// Publish
 	GetPublishedTime(ctx context.Context, agentID int64) (int64, error)
 	GetPublishedInfo(ctx context.Context, agentID int64) (*entity.PublishInfo, error)
-	PublishAgent(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error
+	SavePublishRecord(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error
 	GetPublishConnectorList(ctx context.Context, agentID int64) (*entity.PublishConnectorData, error)
 }

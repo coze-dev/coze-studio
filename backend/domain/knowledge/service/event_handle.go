@@ -12,6 +12,7 @@ import (
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
@@ -21,23 +22,27 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/infra/impl/document/progressbar"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message) (err error) {
 	defer func() {
 		if err != nil {
-			logs.Errorf("[HandleMessage] failed, %v", err)
+			var statusError errorx.StatusError
+			if errors.As(err, &statusError) && statusError.Code() == errno.ErrorNonRetryableCode {
+				logs.Errorf("[HandleMessage][no-retry] failed, %v", err)
+				err = nil
+			} else {
+				logs.Errorf("[HandleMessage][retry] failed, %v", err)
+			}
 		} else {
 			logs.Infof("[HandleMessage] knowledge event handle success, body=%s", string(msg.Body))
 		}
 	}()
-
-	if string(msg.Body) == "hello" {
-		fmt.Println("bye")
-		return nil
-	}
 
 	// TODO: 确认下 retry ?
 	event := &entity.Event{}
@@ -70,6 +75,8 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 			logs.CtxErrorf(ctx, "[HandleMessage] document review failed, err: %v", err)
 			return err
 		}
+	default:
+		return errorx.New(errno.ErrorNonRetryableCode, errorx.KV("reason", fmt.Sprintf("unknown event type=%s", event.Type)))
 	}
 	return nil
 }
@@ -77,6 +84,7 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 func (k *knowledgeSVC) deleteKnowledgeDataEventHandler(ctx context.Context, event *entity.Event) error {
 	// 删除知识库在各个存储里的数据
 	for _, manager := range k.searchStoreManagers {
+		// TODO: non retry 错误可能导致其他资源删除也失效
 		s, err := manager.GetSearchStore(ctx, getCollectionName(event.KnowledgeID))
 		if err != nil {
 			return fmt.Errorf("get search store failed, %w", err)
@@ -122,10 +130,21 @@ func (k *knowledgeSVC) indexDocuments(ctx context.Context, event *entity.Event) 
 }
 
 func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (err error) {
-	// 需要设计一套防重入的机制
 	doc := event.Document
 	if doc == nil {
-		return fmt.Errorf("[indexDocument] document not provided")
+		return errorx.New(errno.ErrorNonRetryableCode, errorx.KV("reason", fmt.Sprintf("[indexDocument] document not provided")))
+	}
+
+	// TODO: document redis lock
+	// 1. retry 队列和普通队列中对同一文档的 index 操作并发，同一个文档数据写入两份（在后端 bugfix 上线时产生）
+	// 2. rebalance 重复消费同一条消息
+
+	// check knowledge and document status
+	if valid, err := k.isWritableKnowledgeAndDocument(ctx, event.KnowledgeID, doc.ID); err != nil {
+		return err
+	} else if !valid {
+		return errorx.New(errno.ErrorNonRetryableCode,
+			errorx.KVf("reason", "[indexDocument] not writable, knowledge_id=%d, document_id=%d", event.KnowledgeID, doc.ID))
 	}
 
 	defer func() {
@@ -146,7 +165,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 
 	// clear
 	collectionName := getCollectionName(doc.KnowledgeID)
-
 	ids, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{doc.ID})
 	if err != nil {
 		return err
@@ -195,6 +213,23 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		return fmt.Errorf("[indexDocument] parse document failed, %w", err)
 	}
 
+	// set id
+	allIDs := make([]int64, 0, len(parseResult))
+	for l := 0; l < len(parseResult); l += 100 {
+		r := min(l+100, len(parseResult))
+		batchSize := r - l
+		ids, err = k.idgen.GenMultiIDs(ctx, batchSize)
+		if err != nil {
+			return err
+		}
+		allIDs = append(allIDs, ids...)
+		for i := 0; i < batchSize; i++ {
+			id := ids[i]
+			index := l + i
+			parseResult[index].ID = strconv.FormatInt(id, 10)
+		}
+	}
+
 	convertFn := d2sMapping[doc.Type]
 	if convertFn == nil {
 		return fmt.Errorf("[indexDocument] document convert fn not found, type=%d", doc.Type)
@@ -208,26 +243,9 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}
 
 	// save slices
-	const maxBatchSize = 100
-	total := len(parseResult)
-	allIDs := make([]int64, 0, total)
-	for total > 0 {
-		batchSize := min(total, maxBatchSize)
-		ids, err = k.idgen.GenMultiIDs(ctx, batchSize)
-		if err != nil {
-			return err
-		}
-		allIDs = append(allIDs, ids...)
-		total -= batchSize
-	}
-
-	for i := range allIDs {
-		parseResult[i].ID = strconv.FormatInt(allIDs[i], 10)
-	}
-
-	if doc.Type == entity.DocumentTypeTable {
+	if doc.Type == knowledge.DocumentTypeTable {
 		// 表格类型，将数据插入到数据库中
-		err = k.upsertDataToTable(ctx, &doc.TableInfo, entitySlices, allIDs)
+		err = k.upsertDataToTable(ctx, &doc.TableInfo, entitySlices)
 		if err != nil {
 			logs.CtxErrorf(ctx, "[indexDocument] insert data to table failed, err: %v", err)
 			return err
@@ -250,7 +268,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			Status:      int32(model.SliceStatusProcessing),
 			FailReason:  "",
 		}
-		if doc.Type == entity.DocumentTypeTable {
+		if doc.Type == knowledge.DocumentTypeTable {
 			sliceEntity, err := convertFn(src, doc.KnowledgeID, doc.ID, doc.CreatorID)
 			if err != nil {
 				logs.CtxErrorf(ctx, "[indexDocument] convert document failed, err: %v", err)
@@ -273,7 +291,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}()
 
 	// to vectorstore
-
 	fields, err := k.mapSearchFields(doc)
 	if err != nil {
 		return err
@@ -286,6 +303,14 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		}
 	}
 
+	// reformat docs, mainly for enableCompactTable
+	ssDocs, err := slices.TransformWithErrorCheck(entitySlices, func(a *entity.Slice) (*schema.Document, error) {
+		return k.slice2Document(ctx, doc, a)
+	})
+	if err != nil {
+		return fmt.Errorf("[indexDocument] reformat failed, %w", err)
+	}
+	progressbar := progressbar.NewProgressBar(ctx, doc.ID, int64(len(ssDocs)*len(k.searchStoreManagers)), k.CacheCli, true)
 	for _, manager := range k.searchStoreManagers {
 		// TODO: knowledge 可以记录 search store 状态，不需要每次都 create 然后靠 create 检查
 		if err = manager.Create(ctx, &searchstore.CreateRequest{
@@ -293,23 +318,23 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			Fields:         fields,
 			CollectionMeta: nil,
 		}); err != nil {
-			return fmt.Errorf("[indexDocuments] search store create failed, %w", err)
+			return fmt.Errorf("[indexDocument] search store create failed, %w", err)
 		}
 
 		ss, err := manager.GetSearchStore(ctx, collectionName)
 		if err != nil {
-			return fmt.Errorf("[indexDocuments] search store get failed, %w", err)
+			return fmt.Errorf("[indexDocument] search store get failed, %w", err)
 		}
 
-		if _, err = ss.Store(ctx, parseResult,
+		if _, err = ss.Store(ctx, ssDocs,
 			searchstore.WithPartition(strconv.FormatInt(doc.ID, 10)),
-			searchstore.WithIndexingFields(indexingFields),
+			searchstore.WithIndexingFields(indexingFields), searchstore.WithProgressBar(progressbar),
 		); err != nil {
-			return fmt.Errorf("[indexDocuments] search store save failed, %w", err)
+			return fmt.Errorf("[indexDocument] search store save failed, %w", err)
 		}
 	}
 	// set slice status
-	if err = k.sliceRepo.BatchSetStatus(ctx, ids, int32(model.SliceStatusDone), ""); err != nil {
+	if err = k.sliceRepo.BatchSetStatus(ctx, allIDs, int32(model.SliceStatusDone), ""); err != nil {
 		return err
 	}
 
@@ -324,15 +349,8 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	return nil
 }
 
-func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.TableInfo, slices []*entity.Slice, sliceIDs []int64) (err error) {
-	if len(slices) == 0 {
-		logs.CtxWarnf(ctx, "[insertDataToTable] slices not provided")
-		return nil
-	}
-	if len(sliceIDs) != len(slices) {
-		return errors.New("slice ids length not equal slices length")
-	}
-	insertData, err := packInsertData(slices, sliceIDs, tableInfo)
+func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.TableInfo, slices []*entity.Slice) (err error) {
+	insertData, err := packInsertData(slices)
 	if err != nil {
 		logs.CtxErrorf(ctx, "[insertDataToTable] pack insert data failed, err: %v", err)
 		return err
@@ -351,7 +369,7 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 	return nil
 }
 
-func packInsertData(slices []*entity.Slice, ids []int64, tableInfo *entity.TableInfo) (data []map[string]interface{}, err error) {
+func packInsertData(slices []*entity.Slice) (data []map[string]interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			logs.Errorf("[packInsertData] panic: %v", r)
@@ -359,24 +377,22 @@ func packInsertData(slices []*entity.Slice, ids []int64, tableInfo *entity.Table
 			return
 		}
 	}()
-	colTypeMap := make(map[int64]document.TableColumnType)
-	for _, col := range tableInfo.Columns {
-		colTypeMap[col.ID] = col.Type
-	}
+
 	for i := range slices {
 		dataMap := map[string]any{
-			consts.RDBFieldID: ids[i],
+			consts.RDBFieldID: slices[i].ID,
 		}
 		for j := range slices[i].RawContent[0].Table.Columns {
-			col := slices[i].RawContent[0].Table.Columns[j]
-			if col.ColumnName == consts.RDBFieldID {
+			val := slices[i].RawContent[0].Table.Columns[j]
+			if val.ColumnName == consts.RDBFieldID {
 				continue
 			}
-			physicalColumnName := convert.ColumnIDToRDBField(col.ColumnID)
-			dataMap[physicalColumnName] = convert.AssertValForce(colTypeMap[col.ColumnID], col.GetStringValue()).GetValue()
+			physicalColumnName := convert.ColumnIDToRDBField(val.ColumnID)
+			dataMap[physicalColumnName] = val.GetValue()
 		}
 		data = append(data, dataMap)
 	}
+
 	return data, nil
 }
 

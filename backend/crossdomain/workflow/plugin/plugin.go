@@ -6,14 +6,20 @@ import (
 
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
+	"github.com/getkin/kin-openapi/openapi3"
+	"golang.org/x/exp/maps"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
+	"code.byted.org/flow/opencoze/backend/application/base/pluginutil"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type toolService struct {
@@ -25,11 +31,11 @@ func NewToolService(client service.PluginService, tos storage.Storage) crossplug
 	return &toolService{client: client, tos: tos}
 }
 
-func (t *toolService) getPluginsWithTools(ctx context.Context, req *crossplugin.PluginToolsInfoRequest) (*entity.PluginInfo, []*entity.ToolInfo, error) {
+func (t *toolService) getPluginsWithTools(ctx context.Context, pluginID int64, toolIDs []int64, isDraft bool) (*entity.PluginInfo, []*entity.ToolInfo, error) {
 	var pluginsInfo []*entity.PluginInfo
-	if req.IsDraft {
+	if isDraft {
 		resp, err := t.client.MGetDraftPlugins(ctx, &service.MGetDraftPluginsRequest{
-			PluginIDs: []int64{req.PluginEntity.PluginID},
+			PluginIDs: []int64{pluginID},
 		})
 		if err != nil {
 			return nil, nil, err
@@ -37,29 +43,29 @@ func (t *toolService) getPluginsWithTools(ctx context.Context, req *crossplugin.
 		pluginsInfo = resp.Plugins
 	} else {
 		resp, err := t.client.MGetOnlinePlugins(ctx, &service.MGetOnlinePluginsRequest{
-			PluginIDs: []int64{req.PluginEntity.PluginID},
+			PluginIDs: []int64{pluginID},
 		})
 		if err != nil {
 			return nil, nil, err
 		}
-		pluginsInfo = resp.Plugins
+		pluginsInfo = entity.NewPluginInfos(resp.Plugins)
 	}
 
 	var pInfo *entity.PluginInfo
 	for _, p := range pluginsInfo {
-		if p.ID == req.PluginEntity.PluginID {
+		if p.ID == pluginID {
 			pInfo = p
 			break
 		}
 	}
 
 	if pInfo == nil {
-		return nil, nil, fmt.Errorf("plugin id %v not found", req.PluginEntity.PluginID)
+		return nil, nil, fmt.Errorf("plugin id %v not found", pluginID)
 	}
 	var toolsInfo []*entity.ToolInfo
-	if req.IsDraft {
+	if isDraft {
 		resp, err := t.client.MGetDraftTools(ctx, &service.MGetDraftToolsRequest{
-			ToolIDs: req.ToolIDs,
+			ToolIDs: toolIDs,
 		})
 		if err != nil {
 			return nil, nil, err
@@ -67,23 +73,21 @@ func (t *toolService) getPluginsWithTools(ctx context.Context, req *crossplugin.
 		toolsInfo = resp.Tools
 	} else {
 		resp, err := t.client.MGetOnlineTools(ctx, &service.MGetOnlineToolsRequest{
-			ToolIDs: req.ToolIDs,
+			ToolIDs: toolIDs,
 		})
 		if err != nil {
 			return nil, nil, err
 		}
 		toolsInfo = resp.Tools
 	}
+
 	return pInfo, toolsInfo, nil
 }
 
-func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplugin.PluginToolsInfoRequest) (map[int64]tool.InvokableTool, error) {
-	var (
-		toolsInfo []*entity.ToolInfo
-	)
+func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplugin.PluginToolsInvokableRequest) (map[int64]tool.InvokableTool, error) {
+	var toolsInfo []*entity.ToolInfo
 
-	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, req)
-
+	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, req.PluginEntity.PluginID, maps.Keys(req.ToolsInvokableInfo), req.IsDraft)
 	if err != nil {
 		return nil, err
 	}
@@ -98,20 +102,25 @@ func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplu
 			client:   t.client,
 			toolInfo: tf,
 		}
+		if r, ok := req.ToolsInvokableInfo[tf.ID]; ok {
+			reqPluginCommonAPIParameters := slices.Transform(r.RequestAPIParametersConfig, toPluginCommonAPIParameter)
+			respPluginCommonAPIParameters := slices.Transform(r.ResponseAPIParametersConfig, toPluginCommonAPIParameter)
+			tl.toolOperation, err = pluginutil.APIParamsToOpenapiOperation(reqPluginCommonAPIParameters, respPluginCommonAPIParameters)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		result[tf.ID] = tl
 
 	}
 	return result, nil
-
 }
 
 func (t *toolService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.PluginToolsInfoRequest) (*crossplugin.PluginToolsInfoResponse, error) {
-	var (
-		toolsInfo []*entity.ToolInfo
-	)
+	var toolsInfo []*entity.ToolInfo
 
-	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, req)
-
+	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, req.PluginEntity.PluginID, req.ToolIDs, req.IsDraft)
 	if err != nil {
 		return nil, err
 	}
@@ -140,26 +149,26 @@ func (t *toolService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.P
 		if err != nil {
 			return nil, err
 		}
+		toolExample := pInfo.GetToolExample(ctx, tf.GetName())
 
-		inputVars, err := toVariables(inputs)
-		if err != nil {
-			return nil, err
-		}
-
-		outputVars, err := toVariables(outputs)
-		if err != nil {
-			return nil, err
+		var (
+			requestExample  string
+			responseExample string
+		)
+		if toolExample != nil {
+			requestExample = toolExample.RequestExample
+			responseExample = toolExample.RequestExample
 		}
 
 		response.ToolInfoList[tf.ID] = crossplugin.ToolInfo{
 			ToolID:      tf.ID,
 			ToolName:    tf.GetName(),
-			Inputs:      inputVars,
-			Outputs:     outputVars,
+			Inputs:      slices.Transform(inputs, toWorkflowAPIParameter),
+			Outputs:     slices.Transform(outputs, toWorkflowAPIParameter),
 			Description: tf.GetDesc(),
 			DebugExample: &vo.DebugExample{
-				ReqExample:  pInfo.GetToolExample(ctx, tf.GetName()).RequestExample,
-				RespExample: pInfo.GetToolExample(ctx, tf.GetName()).ResponseExample,
+				ReqExample:  requestExample,
+				RespExample: responseExample,
 			},
 		}
 
@@ -167,29 +176,29 @@ func (t *toolService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.P
 	return response, nil
 }
 
-func toVariables(ps []*common.APIParameter) ([]*vo.Variable, error) {
-	vs := make([]*vo.Variable, 0, len(ps))
-	for _, p := range ps {
-		v, err := convertAPIParameterToVariable(p)
-		if err != nil {
-			return nil, err
-		}
-		vs = append(vs, v)
-	}
-	return vs, nil
-}
-
 type pluginInvokeTool struct {
-	pluginEntity crossplugin.PluginEntity
-	client       service.PluginService
-	toolInfo     *entity.ToolInfo
+	pluginEntity  crossplugin.PluginEntity
+	client        service.PluginService
+	toolInfo      *entity.ToolInfo
+	toolOperation *openapi3.Operation
 }
 
 func (p *pluginInvokeTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
-	parameterInfo, err := p.toolInfo.Operation.ToEinoSchemaParameterInfo()
+	var (
+		err           error
+		parameterInfo map[string]*schema.ParameterInfo
+	)
+
+	if p.toolOperation != nil {
+		parameterInfo, err = plugin.Openapi3Operation(*p.toolOperation).ToEinoSchemaParameterInfo()
+	} else {
+		parameterInfo, err = p.toolInfo.Operation.ToEinoSchemaParameterInfo()
+	}
+
 	if err != nil {
 		return nil, err
 	}
+
 	return &schema.ToolInfo{
 		Name:        p.toolInfo.GetName(),
 		Desc:        p.toolInfo.GetDesc(),
@@ -201,15 +210,19 @@ func (p *pluginInvokeTool) InvokableRun(ctx context.Context, argumentsInJSON str
 	req := &service.ExecuteToolRequest{
 		PluginID:        p.pluginEntity.PluginID,
 		ToolID:          p.toolInfo.ID,
-		ExecScene:       consts.ExecSceneOfWorkflow,
+		ExecScene:       plugin.ExecSceneOfWorkflow,
 		ArgumentsInJson: argumentsInJSON,
 	}
 
 	execOpts := []entity.ExecuteToolOpts{
-		entity.WithInvalidRespProcessStrategy(consts.InvalidResponseProcessStrategyOfReturnDefault),
+		plugin.WithInvalidRespProcessStrategy(plugin.InvalidResponseProcessStrategyOfReturnDefault),
 	}
 	if p.pluginEntity.PluginVersion != nil {
-		execOpts = append(execOpts, entity.WithVersion(*p.pluginEntity.PluginVersion))
+		execOpts = append(execOpts, plugin.WithVersion(*p.pluginEntity.PluginVersion))
+	}
+
+	if p.toolOperation != nil {
+		execOpts = append(execOpts, plugin.WithOpenapiOperation(ptr.Of(plugin.Openapi3Operation(*p.toolOperation))))
 	}
 	r, err := p.client.ExecuteTool(ctx, req, execOpts...)
 	if err != nil {
@@ -218,56 +231,78 @@ func (p *pluginInvokeTool) InvokableRun(ctx context.Context, argumentsInJSON str
 	return r.TrimmedResp, nil
 }
 
-func convertAPIParameterToVariable(p *common.APIParameter) (*vo.Variable, error) {
-	v := &vo.Variable{
-		Name:        p.Name,
-		Description: p.Desc,
-		Required:    p.IsRequired,
+func toPluginCommonAPIParameter(parameter *workflow3.APIParameter) *common.APIParameter {
+	if parameter == nil {
+		return nil
+	}
+	p := &common.APIParameter{
+		ID:            parameter.ID,
+		Name:          parameter.Name,
+		Desc:          parameter.Desc,
+		Type:          common.ParameterType(parameter.Type),
+		Location:      common.ParameterLocation(parameter.Location),
+		IsRequired:    parameter.IsRequired,
+		GlobalDefault: parameter.GlobalDefault,
+		GlobalDisable: parameter.GlobalDisable,
+		LocalDefault:  parameter.LocalDefault,
+		LocalDisable:  parameter.LocalDisable,
+		VariableRef:   parameter.VariableRef,
+	}
+	if parameter.SubType != nil {
+		p.SubType = ptr.Of(common.ParameterType(*parameter.SubType))
 	}
 
-	if p.AssistType != nil {
-		v.AssistType = vo.AssistType(*p.AssistType)
+	if parameter.DefaultParamSource != nil {
+		p.DefaultParamSource = ptr.Of(common.DefaultParamSource(*parameter.DefaultParamSource))
+	}
+	if parameter.AssistType != nil {
+		p.AssistType = ptr.Of(common.AssistParameterType(*parameter.AssistType))
 	}
 
-	switch p.Type {
-	case common.ParameterType_String:
-		v.Type = vo.VariableTypeString
-	case common.ParameterType_Integer:
-		v.Type = vo.VariableTypeInteger
-	case common.ParameterType_Number:
-		v.Type = vo.VariableTypeFloat
-	case common.ParameterType_Array:
-		v.Type = vo.VariableTypeList
-		av := &vo.Variable{
-			Type: vo.VariableTypeString,
+	if len(parameter.SubParameters) > 0 {
+		p.SubParameters = make([]*common.APIParameter, 0, len(parameter.SubParameters))
+		for _, subParam := range parameter.SubParameters {
+			p.SubParameters = append(p.SubParameters, toPluginCommonAPIParameter(subParam))
 		}
-		switch *p.SubType {
-		case common.ParameterType_String:
-			av.Type = vo.VariableTypeString
-		case common.ParameterType_Integer:
-			av.Type = vo.VariableTypeInteger
-		case common.ParameterType_Number:
-			av.Type = vo.VariableTypeFloat
-		case common.ParameterType_Array:
-			av.Type = vo.VariableTypeList
-		case common.ParameterType_Object:
-			av.Type = vo.VariableTypeObject
-		}
-		v.Schema = av
-	case common.ParameterType_Object:
-		v.Type = vo.VariableTypeObject
-		vs := make([]*vo.Variable, 0)
-		for _, v := range p.SubParameters {
-			objV, err := convertAPIParameterToVariable(v)
-			if err != nil {
-				return nil, err
-			}
-			vs = append(vs, objV)
-
-		}
-		v.Schema = vs
-	default:
-		return nil, fmt.Errorf("unknown parameter type: %v", p.Type)
 	}
-	return v, nil
+
+	return p
+}
+
+func toWorkflowAPIParameter(parameter *common.APIParameter) *workflow3.APIParameter {
+	if parameter == nil {
+		return nil
+	}
+	p := &workflow3.APIParameter{
+		ID:            parameter.ID,
+		Name:          parameter.Name,
+		Desc:          parameter.Desc,
+		Type:          workflow3.ParameterType(parameter.Type),
+		Location:      workflow3.ParameterLocation(parameter.Location),
+		IsRequired:    parameter.IsRequired,
+		GlobalDefault: parameter.GlobalDefault,
+		GlobalDisable: parameter.GlobalDisable,
+		LocalDefault:  parameter.LocalDefault,
+		LocalDisable:  parameter.LocalDisable,
+		VariableRef:   parameter.VariableRef,
+	}
+	if parameter.SubType != nil {
+		p.SubType = ptr.Of(workflow3.ParameterType(*parameter.SubType))
+	}
+
+	if parameter.DefaultParamSource != nil {
+		p.DefaultParamSource = ptr.Of(workflow3.DefaultParamSource(*parameter.DefaultParamSource))
+	}
+	if parameter.AssistType != nil {
+		p.AssistType = ptr.Of(workflow3.AssistParameterType(*parameter.AssistType))
+	}
+
+	if len(parameter.SubParameters) > 0 {
+		p.SubParameters = make([]*workflow3.APIParameter, 0, len(parameter.SubParameters))
+		for _, subParam := range parameter.SubParameters {
+			p.SubParameters = append(p.SubParameters, toWorkflowAPIParameter(subParam))
+		}
+	}
+
+	return p
 }

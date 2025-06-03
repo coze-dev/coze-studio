@@ -10,7 +10,6 @@ import (
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -18,17 +17,10 @@ import (
 )
 
 type Config struct {
-	Agent *entity.SingleAgent
-
-	ConnectorID int64
-	IsDraft     bool
-
-	PluginSvr    crossdomain.PluginService
-	KnowledgeSvr crossdomain.Knowledge
-	WorkflowSvr  crossdomain.Workflow
-	ModelMgrSvr  crossdomain.ModelMgr
+	Agent        *entity.SingleAgent
+	ConnectorID  int64
+	IsDraft      bool
 	ModelFactory chatmodel.Factory
-	DatabaseSvr  crossdomain.Database
 }
 
 const (
@@ -38,6 +30,7 @@ const (
 	keyOfPromptTemplate     = "prompt_template"
 	keyOfReActAgent         = "react_agent"
 	keyOfLLM                = "llm"
+	keyOfToolsPreRetriever  = "tools_pre_retriever"
 )
 
 func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
@@ -54,7 +47,6 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	kr, err := newKnowledgeRetriever(ctx, &retrieverConfig{
 		knowledgeConfig: conf.Agent.Knowledge,
-		svr:             conf.KnowledgeSvr,
 	})
 	if err != nil {
 		return nil, err
@@ -62,7 +54,6 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	chatModel, err := newChatModel(ctx, &config{
 		modelFactory: conf.ModelFactory,
-		modelManager: conf.ModelMgrSvr,
 		modelInfo:    conf.Agent.ModelInfo,
 	})
 	if err != nil {
@@ -71,7 +62,6 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	pluginTools, err := newPluginTools(ctx, &toolConfig{
 		toolConf: conf.Agent.Plugin,
-		svr:      conf.PluginSvr,
 		agentID:  conf.Agent.AgentID,
 		spaceID:  conf.Agent.SpaceID,
 		isDraft:  conf.IsDraft,
@@ -79,20 +69,19 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	tr := newPreToolRetriever(&toolPreCallConf{})
 
 	wfTools, err := newWorkflowTools(ctx, &workflowConfig{
 		wfInfos: conf.Agent.Workflow,
-		wfSvr:   conf.WorkflowSvr,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	var dbTools []tool.InvokableTool
-	if conf.DatabaseSvr != nil && len(conf.Agent.Database) > 0 {
+	if len(conf.Agent.Database) > 0 {
 		dbTools, err = newDatabaseTools(ctx, &databaseConfig{
 			databaseConf: conf.Agent.Database,
-			dbSvr:        conf.DatabaseSvr,
 			connectorID:  ptr.Of(conf.ConnectorID),
 			userID:       conf.Agent.CreatorID,
 			agentID:      conf.Agent.AgentID,
@@ -138,7 +127,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		agentNodeName = keyOfLLM
 	}
 
-	suggestGraph, ng := newSuggestGraph(ctx, conf, chatModel)
+	suggestGraph, nsg := newSuggestGraph(ctx, conf, chatModel)
 
 	g := compose.NewGraph[*AgentRequest, *schema.Message](
 		compose.WithGenLocalState(func(ctx context.Context) (state *AgentState) {
@@ -161,6 +150,12 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		compose.WithOutputKey(placeholderOfKnowledge),
 		compose.WithNodeName(keyOfKnowledgeRetriever))
 
+	_ = g.AddLambdaNode(keyOfToolsPreRetriever,
+		compose.InvokableLambda[*AgentRequest, []*schema.Message](tr.toolPreRetrieve),
+		compose.WithOutputKey(keyOfToolsPreRetriever),
+		compose.WithNodeName(keyOfToolsPreRetriever),
+	)
+
 	_ = g.AddChatTemplateNode(keyOfPromptTemplate, chatPrompt)
 
 	agentNodeOpts = append(agentNodeOpts, compose.WithNodeName(agentNodeName))
@@ -171,7 +166,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		_ = g.AddChatModelNode(agentNodeName, chatModel, agentNodeOpts...)
 	}
 
-	if ng {
+	if nsg {
 		_ = g.AddLambdaNode(keyOfSuggestPreInputParse, compose.ToList[*schema.Message](),
 			compose.WithStatePostHandler(func(ctx context.Context, out []*schema.Message, state *AgentState) ([]*schema.Message, error) {
 				out = append(out, state.UserInput)
@@ -184,14 +179,16 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	_ = g.AddEdge(compose.START, keyOfPersonRender)
 	_ = g.AddEdge(compose.START, keyOfPromptVariables)
 	_ = g.AddEdge(compose.START, keyOfKnowledgeRetriever)
+	_ = g.AddEdge(compose.START, keyOfToolsPreRetriever)
 
 	_ = g.AddEdge(keyOfPersonRender, keyOfPromptTemplate)
 	_ = g.AddEdge(keyOfPromptVariables, keyOfPromptTemplate)
 	_ = g.AddEdge(keyOfKnowledgeRetriever, keyOfPromptTemplate)
+	_ = g.AddEdge(keyOfToolsPreRetriever, keyOfPromptTemplate)
 
 	_ = g.AddEdge(keyOfPromptTemplate, agentNodeName)
 
-	if ng {
+	if nsg {
 		_ = g.AddEdge(agentNodeName, keyOfSuggestPreInputParse)
 		_ = g.AddEdge(keyOfSuggestPreInputParse, keyOfSuggestGraph)
 		_ = g.AddEdge(keyOfSuggestGraph, compose.END)

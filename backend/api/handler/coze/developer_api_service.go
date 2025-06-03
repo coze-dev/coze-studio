@@ -17,6 +17,7 @@ import (
 	developer_api "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/application/icon"
+	"code.byted.org/flow/opencoze/backend/application/modelmgr"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	application "code.byted.org/flow/opencoze/backend/application/singleagent"
 	"code.byted.org/flow/opencoze/backend/application/user"
@@ -363,6 +364,26 @@ func UpdateUserProfileCheck(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := user.UserApplicationSVC.UpdateUserProfileCheck(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetTypeList .
+// @router /api/bot/get_type_list [POST]
+func GetTypeList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.GetTypeListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := modelmgr.ModelmgrApplicationSVC.GetModelList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

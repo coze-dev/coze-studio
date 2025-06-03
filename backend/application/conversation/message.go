@@ -6,10 +6,10 @@ import (
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	singleAgent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	runEntity "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/common"
+	singleAgentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -17,11 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
-type MessageApplication struct{}
-
-var MessageApplicationService = new(MessageApplication)
-
-func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.GetMessageListRequest) (*message.GetMessageListResponse, error) {
+func (c *ConversationApplicationService) GetMessageList(ctx context.Context, mr *message.GetMessageListRequest) (*message.GetMessageListResponse, error) {
 	// Get Conversation ID by agent id & userID & scene
 	userID := ctxutil.GetUIDFromCtx(ctx)
 
@@ -30,7 +26,7 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.Get
 		return nil, err
 	}
 
-	currentConversation, isNewCreate, err := getCurrentConversation(ctx, *userID, agentID, common.Scene(*mr.Scene), nil)
+	currentConversation, isNewCreate, err := c.getCurrentConversation(ctx, *userID, agentID, conversation.Scene(*mr.Scene), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +51,7 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.Get
 		return nil, err
 	}
 
-	mListMessages, err := messageDomainSVC.List(ctx, &entity.ListMeta{
+	mListMessages, err := c.MessageDomainSVC.List(ctx, &entity.ListMeta{
 		UserID:         *userID,
 		ConversationID: currentConversation.ID,
 		AgentID:        agentID,
@@ -63,7 +59,6 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.Get
 		Cursor:         cursor,
 		Direction:      loadDirectionToScrollDirection(mr.LoadDirection),
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -74,11 +69,11 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.Get
 		agentIDs = append(agentIDs, mOne.AgentID)
 	}
 
-	agentInfo, err := buildAgentInfo(ctx, agentIDs)
+	agentInfo, err := c.buildAgentInfo(ctx, agentIDs)
 	if err != nil {
 		return nil, err
 	}
-	resp := m.buildMessageListResponse(ctx, mListMessages, currentConversation)
+	resp := c.buildMessageListResponse(ctx, mListMessages, currentConversation)
 
 	resp.ParticipantInfoMap = map[string]*message.MsgParticipantInfo{}
 	for _, aOne := range agentInfo {
@@ -87,16 +82,15 @@ func (m *MessageApplication) GetMessageList(ctx context.Context, mr *message.Get
 	return resp, err
 }
 
-func buildAgentInfo(ctx context.Context, agentIDs []int64) ([]*message.MsgParticipantInfo, error) {
-
+func (c *ConversationApplicationService) buildAgentInfo(ctx context.Context, agentIDs []int64) ([]*message.MsgParticipantInfo, error) {
 	var result []*message.MsgParticipantInfo
 	if len(agentIDs) > 0 {
-		agentInfos, err := singleAgentDomainSVC.MGetSingleAgentDraft(ctx, agentIDs)
+		agentInfos, err := c.appContext.SingleAgentDomainSVC.MGetSingleAgentDraft(ctx, agentIDs)
 		if err != nil {
 			return nil, err
 		}
 
-		result = slices.Transform(agentInfos, func(a *singleAgent.SingleAgent) *message.MsgParticipantInfo {
+		result = slices.Transform(agentInfos, func(a *singleAgentEntity.SingleAgent) *message.MsgParticipantInfo {
 			return &message.MsgParticipantInfo{
 				ID:        strconv.FormatInt(a.AgentID, 10),
 				Name:      a.Name,
@@ -108,18 +102,17 @@ func buildAgentInfo(ctx context.Context, agentIDs []int64) ([]*message.MsgPartic
 	}
 
 	return result, nil
-
 }
 
-func getCurrentConversation(ctx context.Context, userID int64, agentID int64, scene common.Scene, connectorID *int64) (*convEntity.Conversation, bool, error) {
+func (c *ConversationApplicationService) getCurrentConversation(ctx context.Context, userID int64, agentID int64, scene conversation.Scene, connectorID *int64) (*convEntity.Conversation, bool, error) {
 	var currentConversation *convEntity.Conversation
 	var isNewCreate bool
 
-	if connectorID == nil && scene == common.ScenePlayground {
+	if connectorID == nil && scene == conversation.ScenePlayground {
 		connectorID = ptr.Of(consts.CozeConnectorID)
 	}
 
-	currentConversation, err := conversationDomainSVC.GetCurrentConversation(ctx, &convEntity.GetCurrent{
+	currentConversation, err := c.ConversationDomainSVC.GetCurrentConversation(ctx, &convEntity.GetCurrent{
 		UserID:      userID,
 		Scene:       scene,
 		AgentID:     agentID,
@@ -131,7 +124,7 @@ func getCurrentConversation(ctx context.Context, userID int64, agentID int64, sc
 
 	if currentConversation == nil { // new conversation
 		// create conversation
-		ccNew, err := conversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
+		ccNew, err := c.ConversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
 			AgentID:     agentID,
 			UserID:      userID,
 			Scene:       scene,
@@ -157,18 +150,18 @@ func loadDirectionToScrollDirection(direction *message.LoadDirection) entity.Scr
 	return entity.ScrollPageDirectionPrev
 }
 
-func (m *MessageApplication) buildMessageListResponse(ctx context.Context, mListMessages *entity.ListResult, currentConversation *convEntity.Conversation) *message.GetMessageListResponse {
+func (c *ConversationApplicationService) buildMessageListResponse(ctx context.Context, mListMessages *entity.ListResult, currentConversation *convEntity.Conversation) *message.GetMessageListResponse {
 	var messages []*message.ChatMessage
 	runToQuestionIDMap := make(map[int64]int64)
 
 	for _, mMessage := range mListMessages.Messages {
-		if mMessage.MessageType == runEntity.MessageTypeQuestion {
+		if mMessage.MessageType == model.MessageTypeQuestion {
 			runToQuestionIDMap[mMessage.RunID] = mMessage.ID
 		}
 	}
 
 	for _, mMessage := range mListMessages.Messages {
-		messages = append(messages, m.buildDomainMsg2VOMessage(ctx, mMessage, runToQuestionIDMap))
+		messages = append(messages, c.buildDomainMsg2VOMessage(ctx, mMessage, runToQuestionIDMap))
 	}
 
 	resp := &message.GetMessageListResponse{
@@ -189,7 +182,7 @@ func (m *MessageApplication) buildMessageListResponse(ctx context.Context, mList
 	return resp
 }
 
-func (m *MessageApplication) buildDomainMsg2VOMessage(ctx context.Context, dm *entity.Message, runToQuestionIDMap map[int64]int64) *message.ChatMessage {
+func (c *ConversationApplicationService) buildDomainMsg2VOMessage(ctx context.Context, dm *entity.Message, runToQuestionIDMap map[int64]int64) *message.ChatMessage {
 	cm := &message.ChatMessage{
 		MessageID:   strconv.FormatInt(dm.ID, 10),
 		Role:        string(dm.Role),
@@ -204,15 +197,15 @@ func (m *MessageApplication) buildDomainMsg2VOMessage(ctx context.Context, dm *e
 		Source:      0,
 	}
 
-	if dm.Status == entity.MessageStatusBroken {
+	if dm.Status == model.MessageStatusBroken {
 		cm.BrokenPos = ptr.Of(dm.Position)
 	}
 
-	if dm.ContentType == runEntity.ContentTypeMix && dm.DisplayContent != "" {
+	if dm.ContentType == model.ContentTypeMix && dm.DisplayContent != "" {
 		cm.Content = dm.DisplayContent
 	}
 
-	if dm.MessageType != runEntity.MessageTypeQuestion {
+	if dm.MessageType != model.MessageTypeQuestion {
 		cm.ReplyID = strconv.FormatInt(runToQuestionIDMap[dm.RunID], 10)
 		cm.SenderID = ptr.Of(strconv.FormatInt(dm.AgentID, 10))
 	}
@@ -240,13 +233,13 @@ func buildDExt2ApiExt(extra map[string]string) *message.ExtraInfo {
 	}
 }
 
-func (m *MessageApplication) DeleteMessage(ctx context.Context, mr *message.DeleteMessageRequest) error {
+func (c *ConversationApplicationService) DeleteMessage(ctx context.Context, mr *message.DeleteMessageRequest) error {
 	// get message id
 	messageID, err := strconv.ParseInt(mr.MessageID, 10, 64)
 	if err != nil {
 		return err
 	}
-	messageInfo, err := messageDomainSVC.GetByID(ctx, messageID)
+	messageInfo, err := c.MessageDomainSVC.GetByID(ctx, messageID)
 	if err != nil {
 		return err
 	}
@@ -258,18 +251,23 @@ func (m *MessageApplication) DeleteMessage(ctx context.Context, mr *message.Dele
 		return errors.New("permission denied")
 	}
 
-	return messageDomainSVC.Delete(ctx, &entity.DeleteMeta{
+	err = c.AgentRunDomainSVC.Delete(ctx, []int64{messageInfo.RunID})
+	if err != nil {
+		return err
+	}
+
+	return c.MessageDomainSVC.Delete(ctx, &entity.DeleteMeta{
 		RunIDs: []int64{messageInfo.RunID},
 	})
 }
 
-func (m *MessageApplication) BreakMessage(ctx context.Context, mr *message.BreakMessageRequest) error {
+func (c *ConversationApplicationService) BreakMessage(ctx context.Context, mr *message.BreakMessageRequest) error {
 	aMID, err := strconv.ParseInt(*mr.AnswerMessageID, 10, 64)
 	if err != nil {
 		return err
 	}
 
-	return messageDomainSVC.Broken(ctx, &entity.BrokenMeta{
+	return c.MessageDomainSVC.Broken(ctx, &entity.BrokenMeta{
 		ID:       aMID,
 		Position: mr.BrokenPos,
 	})

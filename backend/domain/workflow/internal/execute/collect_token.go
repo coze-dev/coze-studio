@@ -66,11 +66,12 @@ func GetTokenCallbackHandler() callbacks.Handler {
 			return ctx
 		},
 		OnEnd: func(ctx context.Context, runInfo *callbacks.RunInfo, output *model.CallbackOutput) context.Context {
-			if output.TokenUsage == nil {
-				return ctx
-			}
 			c := getTokenCollector(ctx)
 			if c == nil {
+				return ctx
+			}
+			if output.TokenUsage == nil {
+				c.wg.Done()
 				return ctx
 			}
 			c.addTokenUsage(output.TokenUsage)

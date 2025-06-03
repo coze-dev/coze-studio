@@ -28,7 +28,7 @@ func newDraftDatabaseInfo(db *gorm.DB, opts ...gen.DOOption) draftDatabaseInfo {
 	tableName := _draftDatabaseInfo.draftDatabaseInfoDo.TableName()
 	_draftDatabaseInfo.ALL = field.NewAsterisk(tableName)
 	_draftDatabaseInfo.ID = field.NewInt64(tableName, "id")
-	_draftDatabaseInfo.ProjectID = field.NewInt64(tableName, "project_id")
+	_draftDatabaseInfo.AppID = field.NewInt64(tableName, "app_id")
 	_draftDatabaseInfo.SpaceID = field.NewInt64(tableName, "space_id")
 	_draftDatabaseInfo.RelatedOnlineID = field.NewInt64(tableName, "related_online_id")
 	_draftDatabaseInfo.IsVisible = field.NewInt32(tableName, "is_visible")
@@ -55,7 +55,7 @@ type draftDatabaseInfo struct {
 
 	ALL               field.Asterisk
 	ID                field.Int64  // ID
-	ProjectID         field.Int64  // Project ID
+	AppID             field.Int64  // App ID
 	SpaceID           field.Int64  // Space ID
 	RelatedOnlineID   field.Int64  // The primary key ID of online_database_info table
 	IsVisible         field.Int32  // Visibility: 0 invisible, 1 visible
@@ -87,7 +87,7 @@ func (d draftDatabaseInfo) As(alias string) *draftDatabaseInfo {
 func (d *draftDatabaseInfo) updateTableName(table string) *draftDatabaseInfo {
 	d.ALL = field.NewAsterisk(table)
 	d.ID = field.NewInt64(table, "id")
-	d.ProjectID = field.NewInt64(table, "project_id")
+	d.AppID = field.NewInt64(table, "app_id")
 	d.SpaceID = field.NewInt64(table, "space_id")
 	d.RelatedOnlineID = field.NewInt64(table, "related_online_id")
 	d.IsVisible = field.NewInt32(table, "is_visible")
@@ -120,7 +120,7 @@ func (d *draftDatabaseInfo) GetFieldByName(fieldName string) (field.OrderExpr, b
 func (d *draftDatabaseInfo) fillFieldMap() {
 	d.fieldMap = make(map[string]field.Expr, 16)
 	d.fieldMap["id"] = d.ID
-	d.fieldMap["project_id"] = d.ProjectID
+	d.fieldMap["app_id"] = d.AppID
 	d.fieldMap["space_id"] = d.SpaceID
 	d.fieldMap["related_online_id"] = d.RelatedOnlineID
 	d.fieldMap["is_visible"] = d.IsVisible

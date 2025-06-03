@@ -5,8 +5,11 @@ import (
 	"errors"
 	"fmt"
 
+	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
@@ -26,6 +29,45 @@ type PluginVersionDAO struct {
 	query *query.Query
 }
 
+type pluginVersionPO model.PluginVersion
+
+func (p pluginVersionPO) ToDO() *entity.PluginInfo {
+	return entity.NewPluginInfo(&plugin.PluginInfo{
+		ID:          p.ID,
+		SpaceID:     p.SpaceID,
+		APPID:       &p.AppID,
+		DeveloperID: p.DeveloperID,
+		PluginType:  plugin_develop_common.PluginType(p.PluginType),
+		IconURI:     &p.IconURI,
+		ServerURL:   &p.ServerURL,
+		CreatedAt:   p.CreatedAt,
+		Version:     &p.Version,
+		VersionDesc: &p.VersionDesc,
+		Manifest:    p.Manifest,
+		OpenapiDoc:  p.OpenapiDoc,
+	})
+}
+
+func (p *PluginVersionDAO) getSelected(opt *PluginSelectedOption) (selected []field.Expr) {
+	if opt == nil {
+		return selected
+	}
+
+	table := p.query.PluginVersion
+
+	if opt.PluginID {
+		selected = append(selected, table.PluginID)
+	}
+	if opt.OpenapiDoc {
+		selected = append(selected, table.OpenapiDoc)
+	}
+	if opt.Version {
+		selected = append(selected, table.Version)
+	}
+
+	return selected
+}
+
 func (p *PluginVersionDAO) Get(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error) {
 	table := p.query.PluginVersion
 	pl, err := table.WithContext(ctx).
@@ -40,12 +82,12 @@ func (p *PluginVersionDAO) Get(ctx context.Context, pluginID int64, version stri
 		return nil, false, err
 	}
 
-	plugin = model.PluginVersionToDO(pl)
+	plugin = pluginVersionPO(*pl).ToDO()
 
 	return plugin, true, nil
 }
 
-func (p *PluginVersionDAO) MGet(ctx context.Context, vPlugins []entity.VersionPlugin) (plugins []*entity.PluginInfo, err error) {
+func (p *PluginVersionDAO) MGet(ctx context.Context, vPlugins []entity.VersionPlugin, opt *PluginSelectedOption) (plugins []*entity.PluginInfo, err error) {
 	plugins = make([]*entity.PluginInfo, 0, len(vPlugins))
 
 	table := p.query.PluginVersion
@@ -53,6 +95,7 @@ func (p *PluginVersionDAO) MGet(ctx context.Context, vPlugins []entity.VersionPl
 
 	for _, chunk := range chunks {
 		q := table.WithContext(ctx).
+			Select(p.getSelected(opt)...).
 			Where(
 				table.Where(
 					table.PluginID.Eq(chunk[0].PluginID),
@@ -76,7 +119,7 @@ func (p *PluginVersionDAO) MGet(ctx context.Context, vPlugins []entity.VersionPl
 		}
 
 		for _, pl := range pls {
-			plugins = append(plugins, model.PluginVersionToDO(pl))
+			plugins = append(plugins, pluginVersionPO(*pl).ToDO())
 		}
 	}
 
@@ -98,7 +141,7 @@ func (p *PluginVersionDAO) ListVersions(ctx context.Context, pluginID int64, pag
 
 	plugins = make([]*entity.PluginInfo, 0, len(pls))
 	for _, pl := range pls {
-		plugins = append(plugins, model.PluginVersionToDO(pl))
+		plugins = append(plugins, pluginVersionPO(*pl).ToDO())
 	}
 
 	return plugins, total, nil
@@ -120,6 +163,7 @@ func (p *PluginVersionDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, 
 		SpaceID:     plugin.SpaceID,
 		PluginID:    plugin.ID,
 		DeveloperID: plugin.DeveloperID,
+		AppID:       plugin.GetAPPID(),
 		PluginType:  int32(plugin.PluginType),
 		IconURI:     plugin.GetIconURI(),
 		ServerURL:   plugin.GetServerURL(),

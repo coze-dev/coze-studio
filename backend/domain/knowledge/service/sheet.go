@@ -10,6 +10,7 @@ import (
 
 	"github.com/xuri/excelize/v2"
 
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
@@ -118,8 +119,8 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *knowle
 // originalResp is raw data before format
 // prevTableMeta is table schema to be displayed
 func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSchemaResponse, prevTableMeta []*entity.TableColumn, tableDataType knowledge.TableDataType) (
-	*knowledge.TableSchemaResponse, error) {
-
+	*knowledge.TableSchemaResponse, error,
+) {
 	switch tableDataType {
 	case knowledge.AllData, knowledge.OnlyPreview:
 		if prevTableMeta == nil {
@@ -380,7 +381,7 @@ func (k *knowledgeSVC) GetDocumentTableInfoByID(ctx context.Context, documentID 
 	}
 
 	doc := docs[0]
-	if doc.DocumentType != int32(entity.DocumentTypeTable) {
+	if doc.DocumentType != int32(knowledgeModel.DocumentTypeTable) {
 		return nil, fmt.Errorf("[GetDocumentTableInfoByID] document type invalid, got=%d", doc.DocumentType)
 	}
 
@@ -424,8 +425,8 @@ func (k *knowledgeSVC) GetDocumentTableInfoByID(ctx context.Context, documentID 
 }
 
 func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo knowledge.TableSourceInfo, ps *entity.ParsingStrategy) (
-	sheets []*rawSheet, err error) {
-
+	sheets []*rawSheet, err error,
+) {
 	switch {
 	case sourceInfo.FileType != nil && (sourceInfo.Uri != nil || sourceInfo.FileBase64 != nil):
 		var b []byte
@@ -483,8 +484,8 @@ func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo k
 }
 
 func (k *knowledgeSVC) LoadSourceInfoSpecificSheet(ctx context.Context, sourceInfo knowledge.TableSourceInfo, ps *entity.ParsingStrategy) (
-	sheet *rawSheet, err error) {
-
+	sheet *rawSheet, err error,
+) {
 	var b []byte
 	switch {
 	case sourceInfo.FileType != nil && (sourceInfo.Uri != nil || sourceInfo.FileBase64 != nil):
@@ -571,8 +572,8 @@ func (k *knowledgeSVC) LoadSheet(ctx context.Context, b []byte, ps *entity.Parsi
 }
 
 func (k *knowledgeSVC) ParseRDBData(columns []*entity.TableColumn, resultSet *rentity.ResultSet) (
-	resp [][]*document.ColumnData, err error) {
-
+	resp [][]*document.ColumnData, err error,
+) {
 	names := make([]string, 0, len(columns))
 	for _, c := range columns {
 		if c.Name == consts.RDBFieldID {

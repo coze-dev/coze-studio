@@ -35,8 +35,8 @@ type reachability struct {
 
 type Config struct {
 	Canvas              *vo.Canvas
-	ProjectID           string
-	ProjectVersion      string
+	ProjectID           *int64
+	AgentID             *int64
 	VariablesMetaGetter variable.VariablesMetaGetter
 }
 
@@ -235,14 +235,24 @@ func (cv *CanvasValidator) ValidateNestedFlows(ctx context.Context) (issues []*I
 }
 
 func (cv *CanvasValidator) CheckGlobalVariables(ctx context.Context) (issues []*Issue, err error) {
+	if cv.cfg.ProjectID == nil {
+		return nil, nil // if not project not check global variables, directly return nil
+	}
+
+	// TODO(@zhuangjie): if there is a value for project or agent ID, you need to verify the global variables.
+	// TODO(@zhuangjie): currently, agent verification is not supported, skipping now.
 	issues = make([]*Issue, 0)
 	type nodeVars struct {
 		node *vo.Node
 		vars map[string]*variable.VarTypeInfo
 	}
+	projectID := cv.cfg.ProjectID
 
 	nVars := make([]*nodeVars, 0)
 	for _, node := range cv.cfg.Canvas.Nodes {
+		if node.Type == vo.BlockTypeBotComment {
+			continue
+		}
 		v := &nodeVars{node: node, vars: make(map[string]*variable.VarTypeInfo)}
 		if node.Type == vo.BlockTypeBotAssignVariable {
 			for _, p := range node.Data.Inputs.InputParameters {
@@ -255,14 +265,7 @@ func (cv *CanvasValidator) CheckGlobalVariables(ctx context.Context) (issues []*
 		nVars = append(nVars, v)
 	}
 
-	projectID := cv.cfg.ProjectID
-	if len(projectID) == 0 {
-		return nil, fmt.Errorf("project id is required")
-	}
-
-	projectVersion := cv.cfg.ProjectVersion
-
-	varsMeta, err := cv.cfg.VariablesMetaGetter.GetProjectVariablesMeta(ctx, projectID, projectVersion)
+	varsMeta, err := cv.cfg.VariablesMetaGetter.GetProjectVariablesMeta(ctx, strconv.FormatInt(*projectID, 10), "") // now project version always empty
 	if err != nil {
 		return nil, err
 	}
@@ -277,10 +280,11 @@ func (cv *CanvasValidator) CheckGlobalVariables(ctx context.Context) (issues []*
 		nodeID := nodeVar.node.ID
 		for v, info := range nodeVar.vars {
 			vInfo, ok := varTypeInfoMap[v]
-			if !ok { // 不是app 设置的变量 暂时不做校验
+			if !ok {
 				continue
 			}
-			if vInfo.Type == variable.VarTypeString && info.Type != variable.VarTypeString { // string类型 是否匹配
+
+			if vInfo.Type != info.Type {
 				issues = append(issues, &Issue{
 					NodeErr: &NodeErr{
 						NodeID:   nodeID,
@@ -288,10 +292,9 @@ func (cv *CanvasValidator) CheckGlobalVariables(ctx context.Context) (issues []*
 					},
 					Message: fmt.Sprintf("node name %v,param [%s] is updated, please update the param", nodeName, v),
 				})
-				continue
 			}
 
-			if vInfo.Type == variable.VarTypeArray && info.Type == variable.VarTypeArray { // array 类型是否匹配
+			if vInfo.Type == variable.VarTypeArray && info.Type == variable.VarTypeArray {
 				if vInfo.ElemTypeInfo.Type != info.ElemTypeInfo.Type {
 					issues = append(issues, &Issue{
 						NodeErr: &NodeErr{
@@ -301,7 +304,6 @@ func (cv *CanvasValidator) CheckGlobalVariables(ctx context.Context) (issues []*
 						Message: fmt.Sprintf("node name %v, param [%s] is updated, please update the param", nodeName, v),
 					})
 
-					continue
 				}
 			}
 		}

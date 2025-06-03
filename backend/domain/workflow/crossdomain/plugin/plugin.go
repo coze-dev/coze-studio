@@ -3,6 +3,8 @@ package plugin
 import (
 	"context"
 
+	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+
 	"github.com/cloudwego/eino/components/tool"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -10,7 +12,7 @@ import (
 
 //go:generate  mockgen -destination pluginmock/plugin_mock.go --package pluginmock -source plugin.go
 type ToolService interface {
-	GetPluginInvokableTools(ctx context.Context, req *PluginToolsInfoRequest) (map[int64]tool.InvokableTool, error)
+	GetPluginInvokableTools(ctx context.Context, req *PluginToolsInvokableRequest) (map[int64]tool.InvokableTool, error)
 	GetPluginToolsInfo(ctx context.Context, req *PluginToolsInfoRequest) (*PluginToolsInfoResponse, error)
 }
 
@@ -29,10 +31,21 @@ type PluginEntity struct {
 	PluginVersion *string
 }
 
+type WorkflowAPIParameters = []*workflow3.APIParameter
 type PluginToolsInfoRequest struct {
 	PluginEntity PluginEntity
 	ToolIDs      []int64
 	IsDraft      bool
+}
+type ToolsInvokableInfo struct {
+	ToolID                      int64
+	RequestAPIParametersConfig  WorkflowAPIParameters
+	ResponseAPIParametersConfig WorkflowAPIParameters
+}
+type PluginToolsInvokableRequest struct {
+	PluginEntity       PluginEntity
+	ToolsInvokableInfo map[int64]*ToolsInvokableInfo
+	IsDraft            bool
 }
 
 type ToolInfo struct {
@@ -40,8 +53,9 @@ type ToolInfo struct {
 	ToolID       int64
 	Description  string
 	DebugExample *vo.DebugExample
-	Inputs       []*vo.Variable
-	Outputs      []*vo.Variable
+
+	Inputs  []*workflow3.APIParameter
+	Outputs []*workflow3.APIParameter
 }
 
 type PluginToolsInfoResponse struct {

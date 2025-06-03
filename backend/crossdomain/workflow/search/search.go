@@ -24,11 +24,13 @@ func NewNotify(client search.ResourceEventBus) *Notify {
 
 func (n *Notify) PublishWorkflowResource(ctx context.Context, op crosssearch.OpType, r *crosssearch.Resource) error {
 	entityResource := &entity.ResourceDocument{
-		ResType: common.ResType_Workflow,
-		ResID:   r.WorkflowID,
-		Name:    r.Name,
-		SpaceID: r.SpaceID,
-		OwnerID: r.OwnerID,
+		ResType:    common.ResType_Workflow,
+		ResID:      r.WorkflowID,
+		ResSubType: r.Mode,
+		Name:       r.Name,
+		SpaceID:    r.SpaceID,
+		OwnerID:    r.OwnerID,
+		APPID:      r.APPID,
 	}
 	if r.PublishStatus != nil {
 		publishStatus := *r.PublishStatus

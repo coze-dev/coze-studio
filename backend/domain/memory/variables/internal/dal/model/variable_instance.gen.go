@@ -9,8 +9,8 @@ const TableNameVariableInstance = "variable_instance"
 // VariableInstance KV Memory
 type VariableInstance struct {
 	ID           int64  `gorm:"column:id;primaryKey;comment:主键ID" json:"id"`                                         // 主键ID
-	BizType      int32  `gorm:"column:biz_type;not null;comment:1 for agent，2 for project" json:"biz_type"`          // 1 for agent，2 for project
-	BizID        string `gorm:"column:biz_id;not null;comment:1 for agent_id，2 for project_id" json:"biz_id"`        // 1 for agent_id，2 for project_id
+	BizType      int32  `gorm:"column:biz_type;not null;comment:1 for agent，2 for app" json:"biz_type"`              // 1 for agent，2 for app
+	BizID        string `gorm:"column:biz_id;not null;comment:1 for agent_id，2 for app_id" json:"biz_id"`            // 1 for agent_id，2 for app_id
 	Version      string `gorm:"column:version;not null;comment:agent or project 版本,为空代表草稿态" json:"version"`          // agent or project 版本,为空代表草稿态
 	Keyword      string `gorm:"column:keyword;not null;comment:记忆的KEY" json:"keyword"`                               // 记忆的KEY
 	Type         int32  `gorm:"column:type;not null;comment:记忆类型 1 KV 2 list" json:"type"`                           // 记忆类型 1 KV 2 list

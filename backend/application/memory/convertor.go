@@ -6,18 +6,19 @@ import (
 	"strings"
 
 	"code.byted.org/flow/opencoze/backend/api/model/base"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 )
 
 func convertAddDatabase(req *table.AddDatabaseRequest) *database.CreateDatabaseRequest {
-	fieldItems := make([]*entity.FieldItem, 0, len(req.FieldList))
+	fieldItems := make([]*model.FieldItem, 0, len(req.FieldList))
 	for _, field := range req.FieldList {
-		fieldItems = append(fieldItems, &entity.FieldItem{
+		fieldItems = append(fieldItems, &model.FieldItem{
 			Name:         field.Name,
 			Desc:         field.Desc,
-			Type:         convertFieldType(field.Type),
+			Type:         field.Type,
 			MustRequired: field.MustRequired,
 		})
 	}
@@ -29,11 +30,11 @@ func convertAddDatabase(req *table.AddDatabaseRequest) *database.CreateDatabaseR
 			IconURI:        req.IconURI,
 			CreatorID:      req.CreatorID,
 			SpaceID:        req.SpaceID,
-			ProjectID:      req.ProjectID,
+			AppID:          req.ProjectID,
 			TableName:      req.TableName,
 			TableDesc:      req.TableDesc,
 			FieldList:      fieldItems,
-			RwMode:         entity.DatabaseRWMode(req.RwMode),
+			RwMode:         req.RwMode,
 			PromptDisabled: req.PromptDisabled,
 			ExtraInfo:      req.ExtraInfo,
 		},
@@ -55,13 +56,13 @@ func ConvertDatabaseRes(res *entity.Database) *table.SingleDatabaseResponse {
 
 // ConvertUpdateDatabase converts the API update request to domain request
 func ConvertUpdateDatabase(req *table.UpdateDatabaseRequest) *database.UpdateDatabaseRequest {
-	fieldItems := make([]*entity.FieldItem, 0, len(req.FieldList))
+	fieldItems := make([]*model.FieldItem, 0, len(req.FieldList))
 	for _, field := range req.FieldList {
-		fieldItems = append(fieldItems, &entity.FieldItem{
+		fieldItems = append(fieldItems, &model.FieldItem{
 			Name:         field.Name,
 			Desc:         field.Desc,
 			AlterID:      field.AlterId,
-			Type:         convertFieldType(field.Type),
+			Type:         field.Type,
 			MustRequired: field.MustRequired,
 		})
 	}
@@ -75,7 +76,7 @@ func ConvertUpdateDatabase(req *table.UpdateDatabaseRequest) *database.UpdateDat
 			TableName:      req.TableName,
 			TableDesc:      req.TableDesc,
 			FieldList:      fieldItems,
-			RwMode:         entity.DatabaseRWMode(req.RwMode),
+			RwMode:         req.RwMode,
 			PromptDisabled: req.PromptDisabled,
 			ExtraInfo:      req.ExtraInfo,
 		},
@@ -102,7 +103,7 @@ func convertDatabaseRes(db *entity.Database) *table.DatabaseInfo {
 		fieldItems = append(fieldItems, &table.FieldItem{
 			Name:          field.Name,
 			Desc:          field.Desc,
-			Type:          convertToTableFieldType(field.Type),
+			Type:          field.Type,
 			MustRequired:  field.MustRequired,
 			AlterId:       field.AlterID,
 			IsSystemField: field.IsSystemField,
@@ -122,12 +123,12 @@ func convertDatabaseRes(db *entity.Database) *table.DatabaseInfo {
 	return &table.DatabaseInfo{
 		ID:               db.ID,
 		SpaceID:          db.SpaceID,
-		ProjectID:        db.ProjectID,
+		ProjectID:        db.AppID,
 		IconURI:          db.IconURI,
 		IconURL:          db.IconURL,
 		TableName:        db.TableName,
 		TableDesc:        db.TableDesc,
-		Status:           table.BotTableStatus(db.Status),
+		Status:           db.Status,
 		CreatorID:        db.CreatorID,
 		CreateTime:       db.CreatedAtMs,
 		UpdateTime:       db.UpdatedAtMs,
@@ -143,48 +144,13 @@ func convertDatabaseRes(db *entity.Database) *table.DatabaseInfo {
 	}
 }
 
-// convertFieldType converts table.FieldItemType to entity.FieldItemType
-func convertFieldType(fieldType table.FieldItemType) entity.FieldItemType {
-	switch fieldType {
-	case table.FieldItemType_Text:
-		return entity.FieldItemType_Text
-	case table.FieldItemType_Number:
-		return entity.FieldItemType_Number
-	case table.FieldItemType_Date:
-		return entity.FieldItemType_Date
-	case table.FieldItemType_Float:
-		return entity.FieldItemType_Float
-	case table.FieldItemType_Boolean:
-		return entity.FieldItemType_Boolean
-	default:
-		return entity.FieldItemType_Text
-	}
-}
-
-// convertToTableFieldType converts entity.FieldItemType to table.FieldItemType
-func convertToTableFieldType(fieldType entity.FieldItemType) table.FieldItemType {
-	switch fieldType {
-	case entity.FieldItemType_Text:
-		return table.FieldItemType_Text
-	case entity.FieldItemType_Number:
-		return table.FieldItemType_Number
-	case entity.FieldItemType_Date:
-		return table.FieldItemType_Date
-	case entity.FieldItemType_Float:
-		return table.FieldItemType_Float
-	case entity.FieldItemType_Boolean:
-		return table.FieldItemType_Boolean
-	default:
-		return table.FieldItemType_Text
-	}
-}
-
 // convertListDatabase converts the API list request to domain request
 func convertListDatabase(req *table.ListDatabaseRequest) *database.ListDatabaseRequest {
 	dRes := &database.ListDatabaseRequest{
 		SpaceID:   req.SpaceID,
 		TableName: req.TableName,
-		TableType: entity.TableType(req.TableType),
+		TableType: req.TableType,
+		AppID:     req.ProjectID,
 		Limit:     int(req.GetLimit()),
 		Offset:    int(req.GetOffset()),
 	}
@@ -194,11 +160,11 @@ func convertListDatabase(req *table.ListDatabaseRequest) *database.ListDatabaseR
 	}
 
 	if len(req.OrderBy) > 0 {
-		dRes.OrderBy = make([]*entity.OrderBy, len(req.OrderBy))
+		dRes.OrderBy = make([]*model.OrderBy, len(req.OrderBy))
 		for i, order := range req.OrderBy {
-			dRes.OrderBy[i] = &entity.OrderBy{
+			dRes.OrderBy[i] = &model.OrderBy{
 				Field:     order.Field,
-				Direction: entity.SortDirection(order.Direction),
+				Direction: order.Direction,
 			}
 		}
 	}
@@ -246,7 +212,7 @@ func convertListDatabaseRecordsRes(res *database.ListDatabaseRecordResponse) *ta
 		apiRes.FieldList = append(apiRes.FieldList, &table.FieldItem{
 			Name:         field.Name,
 			Desc:         field.Desc,
-			Type:         convertToTableFieldType(field.Type),
+			Type:         field.Type,
 			MustRequired: field.MustRequired,
 		})
 	}
@@ -276,7 +242,7 @@ func convertToBotTableList(databases []*entity.Database, agentID int64, relation
 			fieldItems = append(fieldItems, &table.FieldItem{
 				Name:          field.Name,
 				Desc:          field.Desc,
-				Type:          convertToTableFieldType(field.Type),
+				Type:          field.Type,
 				MustRequired:  field.MustRequired,
 				AlterId:       field.AlterID,
 				IsSystemField: field.IsSystemField,

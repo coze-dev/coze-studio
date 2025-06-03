@@ -7,10 +7,12 @@ import (
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
@@ -26,6 +28,22 @@ type ToolDAO struct {
 	query *query.Query
 }
 
+type toolPO model.Tool
+
+func (t toolPO) ToDO() *entity.ToolInfo {
+	return &entity.ToolInfo{
+		ID:              t.ID,
+		PluginID:        t.PluginID,
+		CreatedAt:       t.CreatedAt,
+		UpdatedAt:       t.UpdatedAt,
+		Version:         &t.Version,
+		SubURL:          &t.SubURL,
+		Method:          ptr.Of(t.Method),
+		Operation:       t.Operation,
+		ActivatedStatus: ptr.Of(plugin.ActivatedStatus(t.ActivatedStatus)),
+	}
+}
+
 func (t *ToolDAO) Get(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error) {
 	table := t.query.Tool
 	tl, err := table.WithContext(ctx).
@@ -38,7 +56,7 @@ func (t *ToolDAO) Get(ctx context.Context, toolID int64) (tool *entity.ToolInfo,
 		return nil, false, err
 	}
 
-	tool = model.ToolToDO(tl)
+	tool = toolPO(*tl).ToDO()
 
 	return tool, true, nil
 }
@@ -91,7 +109,7 @@ func (t *ToolDAO) MGet(ctx context.Context, toolIDs []int64) (tools []*entity.To
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, model.ToolToDO(tl))
+			tools = append(tools, toolPO(*tl).ToDO())
 		}
 	}
 
@@ -117,7 +135,7 @@ func (t *ToolDAO) GetAll(ctx context.Context, pluginID int64) (tools []*entity.T
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, model.ToolToDO(tl))
+			tools = append(tools, toolPO(*tl).ToDO())
 		}
 
 		if len(tls) < limit {

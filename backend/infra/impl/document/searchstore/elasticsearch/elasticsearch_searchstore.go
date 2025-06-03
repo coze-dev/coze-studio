@@ -28,6 +28,14 @@ type esSearchStore struct {
 }
 
 func (e *esSearchStore) Store(ctx context.Context, docs []*schema.Document, opts ...indexer.Option) (ids []string, err error) {
+	implSpecOptions := indexer.GetImplSpecificOptions(&searchstore.IndexerOptions{}, opts...)
+	defer func() {
+		if err != nil {
+			if implSpecOptions.ProgressBar != nil {
+				implSpecOptions.ProgressBar.ReportError(err)
+			}
+		}
+	}()
 	cli := e.config.Client
 	index := e.indexName
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
@@ -37,7 +45,6 @@ func (e *esSearchStore) Store(ctx context.Context, docs []*schema.Document, opts
 	if err != nil {
 		return nil, err
 	}
-
 	ids = make([]string, 0, len(docs))
 	for _, doc := range docs {
 		fieldMapping, err := e.fromDocument(doc)
@@ -58,6 +65,11 @@ func (e *esSearchStore) Store(ctx context.Context, docs []*schema.Document, opts
 			return nil, err
 		}
 		ids = append(ids, doc.ID)
+		if implSpecOptions.ProgressBar != nil {
+			if err = implSpecOptions.ProgressBar.AddN(1); err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	if err = bi.Close(ctx); err != nil {

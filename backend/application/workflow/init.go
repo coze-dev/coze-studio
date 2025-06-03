@@ -45,7 +45,7 @@ type ServiceComponents struct {
 	ImageX             imagex.ImageX
 }
 
-func InitService(components *ServiceComponents) *WorkflowApplicationService {
+func InitService(components *ServiceComponents) *ApplicationService {
 	workflowRepo := service.NewWorkflowRepository(components.IDGen, components.DB, components.Cache, components.Tos)
 	workflow.SetRepository(workflowRepo)
 
@@ -59,8 +59,8 @@ func InitService(components *ServiceComponents) *WorkflowApplicationService {
 	crosscode.SetCodeRunner(coderunner.NewRunner())
 	crosssearch.SetNotifier(wfsearch.NewNotify(components.DomainNotifier))
 
-	WorkflowSVC.DomainSVC = workflowDomainSVC
-	WorkflowSVC.ImageX = components.ImageX
+	SVC.DomainSVC = workflowDomainSVC
+	SVC.ImageX = components.ImageX
 
-	return WorkflowSVC
+	return SVC
 }

@@ -91,6 +91,45 @@ func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData
 	}
 }
 
+func assertValAsForce(typ document.TableColumnType, val string, nullable bool) *document.ColumnData {
+	cd := &document.ColumnData{
+		Type: typ,
+	}
+	// TODO: 先不处理 image
+	switch typ {
+	case document.TableColumnTypeString:
+		cd.ValString = &val
+	case document.TableColumnTypeInteger:
+		if i, err := strconv.ParseInt(val, 10, 64); err == nil {
+			cd.ValInteger = ptr.Of(i)
+		} else if !nullable {
+			cd.ValInteger = ptr.Of(int64(0))
+		}
+	case document.TableColumnTypeTime:
+		if t, err := time.Parse(timeFormat, val); err == nil {
+			cd.ValTime = ptr.Of(t)
+		} else if !nullable {
+			cd.ValTime = ptr.Of(time.Time{})
+		}
+	case document.TableColumnTypeNumber:
+		if f, err := strconv.ParseFloat(val, 64); err == nil {
+			cd.ValNumber = ptr.Of(f)
+		} else if !nullable {
+			cd.ValNumber = ptr.Of(0.0)
+		}
+	case document.TableColumnTypeBoolean:
+		if t, err := strconv.ParseBool(val); err == nil {
+			cd.ValBoolean = ptr.Of(t)
+		} else if !nullable {
+			cd.ValBoolean = ptr.Of(false)
+		}
+	default:
+		cd.ValString = &val
+	}
+
+	return cd
+}
+
 func assertVal(val string) document.ColumnData {
 	// TODO: 先不处理 image
 	if val == "" {

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
 
@@ -10,25 +11,24 @@ type PluginRepository interface {
 	CreateDraftPlugin(ctx context.Context, req *CreateDraftPluginRequest) (resp *CreateDraftPluginResponse, err error)
 	CreateDraftPluginWithCode(ctx context.Context, req *CreateDraftPluginWithCodeRequest) (resp *CreateDraftPluginWithCodeResponse, err error)
 	GetDraftPlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error)
-	MGetDraftPlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
+	MGetDraftPlugins(ctx context.Context, pluginIDs []int64, opts ...PluginSelectedOptions) (plugins []*entity.PluginInfo, err error)
+	GetAPPAllDraftPlugins(ctx context.Context, appID int64) (plugins []*entity.PluginInfo, err error)
+	ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error)
 	UpdateDraftPlugin(ctx context.Context, plugin *entity.PluginInfo) (err error)
 	UpdateDraftPluginWithoutURLChanged(ctx context.Context, plugin *entity.PluginInfo) (err error)
 	UpdateDraftPluginWithCode(ctx context.Context, req *UpdatePluginDraftWithCode) (err error)
 	DeleteDraftPlugin(ctx context.Context, pluginID int64) (err error)
 
-	GetOnlinePlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error)
+	GetOnlinePlugin(ctx context.Context, pluginID int64, opts ...PluginSelectedOptions) (plugin *entity.PluginInfo, exist bool, err error)
 	CheckOnlinePluginExist(ctx context.Context, pluginID int64) (exist bool, err error)
-	MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
+	MGetOnlinePlugins(ctx context.Context, pluginIDs []int64, opts ...PluginSelectedOptions) (plugins []*entity.PluginInfo, err error)
 	ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
 
 	GetVersionPlugin(ctx context.Context, vPlugin entity.VersionPlugin) (plugin *entity.PluginInfo, exist bool, err error)
-	MGetVersionPlugins(ctx context.Context, vPlugins []entity.VersionPlugin) (plugin []*entity.PluginInfo, err error)
+	MGetVersionPlugins(ctx context.Context, vPlugins []entity.VersionPlugin, opts ...PluginSelectedOptions) (plugin []*entity.PluginInfo, err error)
 
 	PublishPlugin(ctx context.Context, draftPlugin *entity.PluginInfo) (err error)
-
-	GetPluginAllDraftTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
-	GetPluginAllOnlineTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
-	ListPluginDraftTools(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error)
+	PublishPlugins(ctx context.Context, draftPlugins []*entity.PluginInfo) (err error)
 }
 
 type CreateDraftPluginRequest struct {
@@ -41,7 +41,7 @@ type CreateDraftPluginResponse struct {
 
 type UpdatePluginDraftWithCode struct {
 	PluginID   int64
-	OpenapiDoc *entity.Openapi3T
+	OpenapiDoc *plugin.Openapi3T
 	Manifest   *entity.PluginManifest
 
 	UpdatedTools  []*entity.ToolInfo
@@ -53,7 +53,7 @@ type CreateDraftPluginWithCodeRequest struct {
 	DeveloperID int64
 	ProjectID   *int64
 	Manifest    *entity.PluginManifest
-	OpenapiDoc  *entity.Openapi3T
+	OpenapiDoc  *plugin.Openapi3T
 }
 
 type CreateDraftPluginWithCodeResponse struct {
@@ -61,11 +61,22 @@ type CreateDraftPluginWithCodeResponse struct {
 	Tools  []*entity.ToolInfo
 }
 
+type ListDraftPluginsRequest struct {
+	SpaceID  int64
+	APPID    int64
+	PageInfo entity.PageInfo
+}
+
+type ListDraftPluginsResponse struct {
+	Plugins []*entity.PluginInfo
+	Total   int64
+}
+
 type ToolRepository interface {
 	CreateDraftTool(ctx context.Context, tool *entity.ToolInfo) (toolID int64, err error)
 	UpdateDraftTool(ctx context.Context, tool *entity.ToolInfo) (err error)
 	GetDraftTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error)
-	MGetDraftTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error)
+	MGetDraftTools(ctx context.Context, toolIDs []int64, opts ...ToolSelectedOptions) (tools []*entity.ToolInfo, err error)
 
 	GetDraftToolWithAPI(ctx context.Context, pluginID int64, api entity.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error)
 	MGetDraftToolWithAPI(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error)
@@ -90,7 +101,11 @@ type ToolRepository interface {
 	MGetVersionAgentTool(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error)
 	BatchCreateVersionAgentTools(ctx context.Context, agentID int64, tools []*entity.ToolInfo) (toolVersions map[int64]int64, err error)
 
-	UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, doc *entity.Openapi3T, updatedTool *entity.ToolInfo) (err error)
+	UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, doc *plugin.Openapi3T, updatedTool *entity.ToolInfo) (err error)
+
+	GetPluginAllDraftTools(ctx context.Context, pluginID int64, opts ...ToolSelectedOptions) (tools []*entity.ToolInfo, err error)
+	GetPluginAllOnlineTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
+	ListPluginDraftTools(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error)
 }
 
 type MGetDraftAgentToolsRequest struct {

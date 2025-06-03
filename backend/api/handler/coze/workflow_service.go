@@ -4,12 +4,18 @@ package coze
 
 import (
 	"context"
+	"errors"
+	"io"
 
+	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/schema"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/cloudwego/hertz/pkg/protocol/sse"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 // CreateWorkflow .
@@ -23,7 +29,7 @@ func CreateWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.CreateWorkflow(ctx, &req)
+	resp, err := appworkflow.SVC.CreateWorkflow(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -43,7 +49,7 @@ func GetCanvasInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.GetWorkflow(ctx, &req)
+	resp, err := appworkflow.SVC.GetWorkflow(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -63,7 +69,7 @@ func SaveWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.SaveWorkflow(ctx, &req)
+	resp, err := appworkflow.SVC.SaveWorkflow(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -82,7 +88,7 @@ func UpdateWorkflowMeta(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	resp, err := appworkflow.WorkflowSVC.UpdateWorkflowMeta(ctx, &req)
+	resp, err := appworkflow.SVC.UpdateWorkflowMeta(ctx, &req)
 
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
@@ -103,7 +109,7 @@ func DeleteWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.DeleteWorkflow(ctx, &req)
+	resp, err := appworkflow.SVC.DeleteWorkflow(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -154,7 +160,7 @@ func PublishWorkflow(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	resp, err := appworkflow.WorkflowSVC.PublishWorkflow(ctx, &req)
+	resp, err := appworkflow.SVC.PublishWorkflow(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -173,8 +179,11 @@ func CopyWorkflow(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-
-	resp := new(workflow.CopyWorkflowResponse)
+	resp, err := appworkflow.SVC.CopyWorkflow(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -205,7 +214,7 @@ func GetReleasedWorkflows(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	releasedWorkflowData, err := appworkflow.WorkflowSVC.GetReleasedWorkflows(ctx, &req)
+	releasedWorkflowData, err := appworkflow.SVC.GetReleasedWorkflows(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -229,7 +238,7 @@ func GetWorkflowReferences(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	resp, err := appworkflow.WorkflowSVC.GetWorkflowReferences(ctx, &req)
+	resp, err := appworkflow.SVC.GetWorkflowReferences(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -248,7 +257,7 @@ func GetWorkFlowList(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	resp, err := appworkflow.WorkflowSVC.ListWorkflow(ctx, &req)
+	resp, err := appworkflow.SVC.ListWorkflow(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -267,7 +276,7 @@ func QueryWorkflowNodeTypes(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	resp, err := appworkflow.WorkflowSVC.QueryWorkflowNodeTypes(ctx, &req)
+	resp, err := appworkflow.SVC.QueryWorkflowNodeTypes(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -287,7 +296,7 @@ func NodeTemplateList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.GetNodeTemplateList(ctx, &req)
+	resp, err := appworkflow.SVC.GetNodeTemplateList(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -323,7 +332,11 @@ func GetLLMNodeFCSettingsMerged(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetLLMNodeFCSettingsMergedResponse)
+	resp, err := appworkflow.SVC.GetLLMNodeFCSettingsMerged(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -339,7 +352,7 @@ func GetLLMNodeFCSettingDetail(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.GetLLMNodeFCSettingDetail(ctx, &req)
+	resp, err := appworkflow.SVC.GetLLMNodeFCSettingDetail(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
@@ -359,7 +372,7 @@ func WorkFlowTestRun(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.TestRun(ctx, &req)
+	resp, err := appworkflow.SVC.TestRun(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -379,7 +392,7 @@ func WorkFlowTestResume(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.TestResume(ctx, &req)
+	resp, err := appworkflow.SVC.TestResume(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -399,7 +412,7 @@ func CancelWorkFlow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.Cancel(ctx, &req)
+	resp, err := appworkflow.SVC.Cancel(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -419,7 +432,7 @@ func GetWorkFlowProcess(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.GetProcess(ctx, &req)
+	resp, err := appworkflow.SVC.GetProcess(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -439,7 +452,11 @@ func GetNodeExecuteHistory(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetNodeExecuteHistoryResponse)
+	resp, err := appworkflow.SVC.GetNodeExecuteHistory(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -455,7 +472,7 @@ func GetApiDetail(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	toolDetailInfo, err := appworkflow.WorkflowSVC.GetApiDetail(ctx, &req)
+	toolDetailInfo, err := appworkflow.SVC.GetApiDetail(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -481,7 +498,11 @@ func WorkflowNodeDebugV2(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.WorkflowNodeDebugV2Response)
+	resp, err := appworkflow.SVC.NodeDebug(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -497,7 +518,7 @@ func SignImageURL(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.SignImageURL(ctx, &req)
+	resp, err := appworkflow.SVC.SignImageURL(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -613,7 +634,7 @@ func GetWorkflowDetail(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	workflowDetailDataList, err := appworkflow.WorkflowSVC.GetWorkflowDetail(ctx, &req)
+	workflowDetailDataList, err := appworkflow.SVC.GetWorkflowDetail(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -639,7 +660,7 @@ func GetWorkflowDetailInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	workflowDetailInfoDataList, err := appworkflow.WorkflowSVC.GetWorkflowDetailInfo(ctx, &req)
+	workflowDetailInfoDataList, err := appworkflow.SVC.GetWorkflowDetailInfo(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -665,7 +686,7 @@ func ValidateTree(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.ValidateTree(ctx, &req)
+	resp, err := appworkflow.SVC.ValidateTree(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -749,9 +770,9 @@ func GetWorkflowUploadAuthToken(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.WorkflowSVC.GetWorkflowUploadAuthToken(ctx, &req)
+	resp, err := appworkflow.SVC.GetWorkflowUploadAuthToken(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		c.String(consts.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -774,6 +795,104 @@ func OpenAPIRunFlow(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, resp)
 }
 
+type streamRunData struct {
+	Content       *string        `json:"content,omitempty"`
+	ContentType   *string        `json:"content_type,omitempty"`
+	NodeSeqID     *string        `json:"node_seq_id,omitempty"`
+	NodeID        *string        `json:"node_id,omitempty"`
+	NodeIsFinish  *bool          `json:"node_is_finish,omitempty"`
+	NodeType      *string        `json:"node_type,omitempty"`
+	NodeTitle     *string        `json:"node_title,omitempty"`
+	Token         *int64         `json:"token,omitempty"`
+	DebugURL      *string        `json:"debug_url,omitempty"`
+	ErrorCode     *int64         `json:"error_code,omitempty"`
+	ErrorMessage  *string        `json:"error_message,omitempty"`
+	InterruptData *interruptData `json:"interrupt_data,omitempty"`
+}
+
+type interruptData struct {
+	EventID string `json:"event_id"`
+	Type    int64  `json:"type"`
+	Data    string `json:"data"`
+}
+
+func convertStreamRunData(msg *workflow.OpenAPIStreamRunFlowResponse) *streamRunData {
+	var ie *interruptData
+	if msg.InterruptData != nil {
+		ie = &interruptData{
+			EventID: msg.InterruptData.EventID,
+			Type:    int64(msg.InterruptData.Type),
+			Data:    msg.InterruptData.InData,
+		}
+	}
+
+	return &streamRunData{
+		Content:       msg.Content,
+		ContentType:   msg.ContentType,
+		NodeSeqID:     msg.NodeSeqID,
+		NodeID:        msg.NodeID,
+		NodeIsFinish:  msg.NodeIsFinish,
+		NodeType:      msg.NodeType,
+		NodeTitle:     msg.NodeTitle,
+		Token:         msg.Token,
+		DebugURL:      msg.DebugUrl,
+		ErrorCode:     msg.ErrorCode,
+		ErrorMessage:  msg.ErrorMessage,
+		InterruptData: ie,
+	}
+}
+
+func sendStreamRunSSE(ctx context.Context, w *sse.Writer, sr *schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse]) {
+	defer func() {
+		_ = w.Close()
+		sr.Close()
+	}()
+
+	for {
+		msg, err := sr.Recv()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				// finish
+				break
+			}
+
+			event := &sse.Event{
+				Type: "error",
+				Data: []byte(err.Error()),
+			}
+
+			if err = w.Write(event); err != nil {
+				logs.CtxErrorf(ctx, "publish stream event failed, err:%v", err)
+			}
+			return
+		}
+
+		converted := convertStreamRunData(msg)
+		msgBytes, err := sonic.Marshal(converted)
+		if err != nil {
+			event := &sse.Event{
+				Type: "error",
+				Data: []byte(err.Error()),
+			}
+			if err = w.Write(event); err != nil {
+				logs.CtxErrorf(ctx, "publish stream event failed, err:%v", err)
+			}
+			return
+		}
+
+		event := &sse.Event{
+			ID:   msg.ID,
+			Type: msg.Event,
+			Data: msgBytes,
+		}
+
+		if err = w.Write(event); err != nil {
+			logs.CtxErrorf(ctx, "publish stream event failed, err:%v", err)
+			return
+		}
+	}
+}
+
 // OpenAPIStreamRunFlow .
 // @router /v1/workflow/stream_run [POST]
 func OpenAPIStreamRunFlow(ctx context.Context, c *app.RequestContext) {
@@ -785,9 +904,20 @@ func OpenAPIStreamRunFlow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.OpenAPIStreamRunFlowResponse)
+	w := sse.NewWriter(c)
 
-	c.JSON(consts.StatusOK, resp)
+	c.SetContentType("text/event-stream; charset=utf-8")
+	c.Response.Header.Set("Cache-Control", "no-cache")
+	c.Response.Header.Set("Connection", "keep-alive")
+	c.Response.Header.Set("Access-Control-Allow-Origin", "*")
+
+	sr, err := appworkflow.SVC.StreamRun(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+
+	sendStreamRunSSE(ctx, w, sr)
 }
 
 // OpenAPIStreamResumeFlow .
@@ -801,9 +931,20 @@ func OpenAPIStreamResumeFlow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.OpenAPIStreamRunFlowResponse)
+	w := sse.NewWriter(c)
 
-	c.JSON(consts.StatusOK, resp)
+	c.SetContentType("text/event-stream; charset=utf-8")
+	c.Response.Header.Set("Cache-Control", "no-cache")
+	c.Response.Header.Set("Connection", "keep-alive")
+	c.Response.Header.Set("Access-Control-Allow-Origin", "*")
+
+	sr, err := appworkflow.SVC.StreamResume(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+
+	sendStreamRunSSE(ctx, w, sr)
 }
 
 // OpenAPIGetWorkflowRunHistory .

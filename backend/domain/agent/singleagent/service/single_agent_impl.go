@@ -9,14 +9,14 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/agentflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/repository"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/jsoner"
+	"code.byted.org/flow/opencoze/backend/pkg/jsoncache"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -27,17 +27,11 @@ type singleAgentImpl struct {
 }
 
 type Components struct {
-	PluginSvr    crossdomain.PluginService
-	KnowledgeSvr crossdomain.Knowledge
-	WorkflowSvr  crossdomain.Workflow
-	ModelMgrSvr  crossdomain.ModelMgr
 	ModelFactory chatmodel.Factory
-	DatabaseSvr  crossdomain.Database
-	Connector    crossdomain.Connector
 
 	AgentDraftRepo   repository.SingleAgentDraftRepo
 	AgentVersionRepo repository.SingleAgentVersionRepo
-	PublishInfoRepo  *jsoner.Jsoner[entity.PublishInfo]
+	PublishInfoRepo  *jsoncache.JsonCache[entity.PublishInfo]
 	CounterRepo      repository.CounterRepository
 }
 
@@ -92,16 +86,10 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 	}
 
 	conf := &agentflow.Config{
-		Agent: ae,
-
+		Agent:        ae,
 		ConnectorID:  req.Identity.ConnectorID,
 		IsDraft:      req.Identity.IsDraft,
-		PluginSvr:    s.PluginSvr,
-		KnowledgeSvr: s.KnowledgeSvr,
-		WorkflowSvr:  s.WorkflowSvr,
-		ModelMgrSvr:  s.ModelMgrSvr,
 		ModelFactory: s.ModelFactory,
-		DatabaseSvr:  s.DatabaseSvr,
 	}
 	rn, err := agentflow.BuildAgent(ctx, conf)
 	if err != nil {
@@ -111,6 +99,8 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 	exeReq := &agentflow.AgentRequest{
 		Input:   req.Input,
 		History: req.History,
+
+		PreCallTools: req.PreCallTools,
 	}
 	return rn.StreamExecute(ctx, exeReq)
 }
@@ -133,7 +123,7 @@ func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo 
 		toolIDs := slices.Transform(agentInfo.Plugin, func(item *bot_common.PluginInfo) int64 {
 			return item.GetApiId()
 		})
-		err = s.PluginSvr.BindAgentTools(ctx, &service.BindAgentToolsRequest{
+		err = crossplugin.DefaultSVC().BindAgentTools(ctx, &service.BindAgentToolsRequest{
 			AgentID: agentInfo.AgentID,
 			ToolIDs: toolIDs,
 		})

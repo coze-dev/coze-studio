@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
@@ -11,9 +12,14 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	search "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -23,24 +29,9 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		return nil, err
 	}
 
-	version := req.GetCommitVersion()
-	if version == "" {
-		var v int64
-		v, err = s.appContext.IDGen.GenID(ctx)
-		if err != nil {
-			return nil, err
-		}
-		version = fmt.Sprintf("%v", v)
-	}
-
-	if draftAgent.VariablesMetaID != nil && *draftAgent.VariablesMetaID != 0 {
-		var newVariableMetaID int64
-		newVariableMetaID, err = s.appContext.VariablesDomainSVC.PublishMeta(ctx, *draftAgent.VariablesMetaID, version)
-		if err != nil {
-			return nil, err
-		}
-
-		draftAgent.VariablesMetaID = ptr.Of(newVariableMetaID)
+	version, err := s.getPublishAgentVersion(ctx, req)
+	if err != nil {
+		return nil, err
 	}
 
 	connectorIDs := make([]int64, 0, len(req.Connectors))
@@ -58,9 +49,6 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		connectorIDs = append(connectorIDs, id)
 	}
 
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	draftAgent.CreatorID = *uid
-
 	p := &entity.SingleAgentPublish{
 		ConnectorIds: connectorIDs,
 		Version:      version,
@@ -68,40 +56,89 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		PublishInfo:  req.HistoryInfo,
 	}
 
-	err = s.DomainSVC.PublishAgent(ctx, p, draftAgent)
+	publishFns := []publishFn{
+		publishAgentVariables,
+		publishAgentPlugins,
+		publishShortcutCommand,
+	}
+
+	for _, pubFn := range publishFns {
+		draftAgent, err = pubFn(ctx, s.appContext, p, draftAgent)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = s.DomainSVC.SavePublishRecord(ctx, p, draftAgent)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := &developer_api.PublishDraftBotResponse{
-		Code: 0,
-		Msg:  "success",
+	tasks := taskgroup.NewUninterruptibleTaskGroup(ctx, len(connectorIDs))
+	publishResult := make(map[string]*developer_api.ConnectorBindResult, len(connectorIDs))
+	lock := sync.Mutex{}
+
+	for _, connectorID := range connectorIDs {
+		tasks.Go(func() error {
+			_, err = s.DomainSVC.CreateSingleAgent(ctx, connectorID, version, draftAgent)
+			if err != nil {
+				logs.CtxWarnf(ctx, "create single agent failed: %v, agentID: %d, connectorID: %d , version : %s", err, draftAgent.AgentID, connectorID, version)
+				lock.Lock()
+				publishResult[conv.Int64ToStr(connectorID)] = &developer_api.ConnectorBindResult{
+					PublishResultStatus: ptr.Of(developer_api.PublishResultStatus_Failed),
+				}
+				lock.Unlock()
+				return err
+			}
+
+			// do other connector publish logic if need
+
+			lock.Lock()
+			publishResult[conv.Int64ToStr(connectorID)] = &developer_api.ConnectorBindResult{
+				PublishResultStatus: ptr.Of(developer_api.PublishResultStatus_Success),
+			}
+			lock.Unlock()
+			return nil
+		})
 	}
 
-	resp.Data = &developer_api.PublishDraftBotData{
-		CheckNotPass:  false,
-		PublishResult: make(map[string]*developer_api.ConnectorBindResult, len(req.Connectors)),
-	}
+	_ = tasks.Wait()
 
-	for k := range req.Connectors {
-		resp.Data.PublishResult[k] = &developer_api.ConnectorBindResult{
-			Code:                0,
-			Msg:                 "success",
-			PublishResultStatus: ptr.Of(developer_api.PublishResultStatus_Success),
-		}
-	}
-
-	s.appContext.EventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
-		OpType: searchEntity.Updated,
-		Project: &searchEntity.ProjectDocument{
+	err = s.appContext.EventBus.PublishProject(ctx, &search.ProjectDomainEvent{
+		OpType: search.Updated,
+		Project: &search.ProjectDocument{
 			ID:            draftAgent.AgentID,
 			HasPublished:  ptr.Of(1),
 			PublishTimeMS: ptr.Of(time.Now().UnixMilli()),
 			Type:          common.IntelligenceType_Bot,
 		},
 	})
+	if err != nil {
+		logs.CtxWarnf(ctx, "publish project event failed, agentID: %d, err : %v", draftAgent.AgentID, err)
+	}
 
-	return resp, nil
+	return &developer_api.PublishDraftBotResponse{
+		Data: &developer_api.PublishDraftBotData{
+			CheckNotPass:  false,
+			PublishResult: publishResult,
+		},
+	}, nil
+}
+
+func (s *SingleAgentApplicationService) getPublishAgentVersion(ctx context.Context, req *developer_api.PublishDraftBotRequest) (string, error) {
+	version := req.GetCommitVersion()
+	if version != "" {
+		return version, nil
+	}
+
+	v, err := s.appContext.IDGen.GenID(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	version = fmt.Sprintf("%v", v)
+
+	return version, nil
 }
 
 func (s *SingleAgentApplicationService) GetAgentPopupInfo(ctx context.Context, req *playground.GetBotPopupInfoRequest) (*playground.GetBotPopupInfoResponse, error) {
@@ -109,7 +146,6 @@ func (s *SingleAgentApplicationService) GetAgentPopupInfo(ctx context.Context, r
 	agentPopupCountInfo := make(map[playground.BotPopupType]int64, len(req.BotPopupTypes))
 
 	for _, agentPopupType := range req.BotPopupTypes {
-
 		count, err := s.DomainSVC.GetAgentPopupCount(ctx, uid, req.GetBotID(), agentPopupType)
 		if err != nil {
 			return nil, err
@@ -150,4 +186,67 @@ func (s *SingleAgentApplicationService) GetPublishConnectorList(ctx context.Cont
 		Code:                 0,
 		Msg:                  "success",
 	}, nil
+}
+
+type publishFn func(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error)
+
+func publishAgentVariables(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
+	draftAgent := agent
+	if draftAgent.VariablesMetaID != nil || *draftAgent.VariablesMetaID == 0 {
+		return draftAgent, nil
+	}
+
+	var newVariableMetaID int64
+	newVariableMetaID, err := appContext.VariablesDomainSVC.PublishMeta(ctx, *draftAgent.VariablesMetaID, publishInfo.Version)
+	if err != nil {
+		return nil, err
+	}
+
+	draftAgent.VariablesMetaID = ptr.Of(newVariableMetaID)
+
+	return draftAgent, nil
+}
+
+func publishAgentPlugins(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
+	_, err := appContext.PluginDomainSVC.PublishAgentTools(ctx, &service.PublishAgentToolsRequest{
+		AgentID: agent.AgentID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// existTools := make([]*bot_common.PluginInfo, 0, len(toolRes.VersionTools))
+	// for _, tl := range agent.Plugin {
+	// 	vs, ok := toolRes.VersionTools[tl.GetApiId()]
+	// 	if !ok {
+	// 		continue
+	// 	}
+	// 	existTools = append(existTools, &bot_common.PluginInfo{
+	// 		PluginId:     tl.PluginId,
+	// 		ApiId:        tl.ApiId,
+	// 		ApiName:      vs.ToolName,
+	// 		ApiVersionMs: vs.VersionMs,
+	// 	})
+	// }
+
+	// agent.Plugin = existTools
+
+	return agent, nil
+}
+func publishShortcutCommand(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
+
+	logs.CtxInfof(ctx, "publishShortcutCommand agentID: %d, shortcutCommand: %v", agent.AgentID, agent.ShortcutCommand)
+	if agent.ShortcutCommand == nil || len(agent.ShortcutCommand) == 0 {
+		return agent, nil
+	}
+	cmdIDs := slices.Transform(agent.ShortcutCommand, func(a string) int64 {
+		return conv.StrToInt64D(a, 0)
+	})
+	err := appContext.ShortcutCMDDomainSVC.PublishCMDs(ctx, agent.AgentID, cmdIDs)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return agent, nil
 }

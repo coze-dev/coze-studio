@@ -71,9 +71,10 @@ func (j *jsonIterator) NextRow() (row []string, end bool, err error) {
 	for _, h := range j.header {
 		val, found := raw[h]
 		if !found {
-			return nil, false, fmt.Errorf("[json] val not found, key=%s", h)
+			row = append(row, "")
+		} else {
+			row = append(row, val)
 		}
-		row = append(row, val)
 	}
 
 	return row, false, nil

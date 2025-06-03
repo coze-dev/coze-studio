@@ -5,6 +5,7 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
@@ -15,7 +16,7 @@ type Knowledge interface {
 	CreateKnowledge(ctx context.Context, request *CreateKnowledgeRequest) (response *CreateKnowledgeResponse, err error)
 	UpdateKnowledge(ctx context.Context, request *UpdateKnowledgeRequest) error
 	DeleteKnowledge(ctx context.Context, request *DeleteKnowledgeRequest) error
-	CopyKnowledge(ctx context.Context) // todo: 跨空间拷贝，看下功能是否要支持
+	CopyKnowledge(ctx context.Context, request *CopyKnowledgeRequest) (*CopyKnowledgeResponse, error)
 	ListKnowledge(ctx context.Context, request *ListKnowledgeRequest) (response *ListKnowledgeResponse, err error)
 
 	CreateDocument(ctx context.Context, request *CreateDocumentRequest) (response *CreateDocumentResponse, err error)
@@ -46,8 +47,8 @@ type CreateKnowledgeRequest struct {
 	CreatorID   int64
 	SpaceID     int64
 	IconUri     string
-	FormatType  entity.DocumentType
-	ProjectID   int64
+	FormatType  knowledge.DocumentType
+	AppID       int64
 }
 
 type CreateKnowledgeResponse struct {
@@ -60,11 +61,7 @@ type UpdateKnowledgeRequest struct {
 	Name        *string
 	IconUri     *string
 	Description *string
-	Status      *entity.KnowledgeStatus
-}
-
-type DeleteKnowledgeRequest struct {
-	KnowledgeID int64
+	Status      *knowledge.KnowledgeStatus
 }
 
 type CreateDocumentRequest struct {
@@ -93,7 +90,7 @@ type CreateSliceRequest struct {
 	DocumentID int64
 	CreatorID  int64
 	Position   int64
-	RawContent []*entity.SliceContent
+	RawContent []*knowledge.SliceContent
 }
 type CreateSliceResponse struct {
 	SliceID int64
@@ -103,7 +100,7 @@ type UpdateSliceRequest struct {
 	SliceID    int64
 	DocumentID int64
 	CreatorID  int64
-	RawContent []*entity.SliceContent
+	RawContent []*knowledge.SliceContent
 }
 
 type GetSliceRequest struct {
@@ -116,44 +113,17 @@ type DeleteSliceRequest struct {
 	SliceID int64
 }
 
-type ListKnowledgeRequest struct {
-	IDs        []int64
-	SpaceID    *int64
-	ProjectID  *int64
-	Name       *string // 完全匹配
-	Status     []int32
-	UserID     *int64
-	Query      *string // 模糊匹配
-	Page       *int
-	PageSize   *int
-	Order      *Order
-	OrderType  *OrderType
-	FormatType *entity.DocumentType
-}
-type RetrieveResponse struct {
-	RetrieveSlices []*RetrieveSlice
-}
-type ListKnowledgeResponse struct {
-	KnowledgeList []*entity.Knowledge
-	Total         int64
-}
+type ListKnowledgeRequest = knowledge.ListKnowledgeRequest
+
+type RetrieveResponse = knowledge.RetrieveResponse
+
+type ListKnowledgeResponse = knowledge.ListKnowledgeResponse
+
+type DeleteKnowledgeRequest = knowledge.DeleteKnowledgeRequest
 
 type CreateDocumentResponse struct {
 	Documents []*entity.Document
 }
-type OrderType int32
-
-const (
-	OrderTypeAsc  OrderType = 1
-	OrderTypeDesc OrderType = 2
-)
-
-type Order int32
-
-const (
-	OrderCreatedAt Order = 1
-	OrderUpdatedAt Order = 2
-)
 
 type ListDocumentRequest struct {
 	KnowledgeID int64
@@ -205,17 +175,7 @@ type ListSliceResponse struct {
 	NextCursor *string
 }
 
-type RetrieveRequest struct {
-	Query       string
-	ChatHistory []*schema.Message
-
-	// 从指定的知识库和文档中召回
-	KnowledgeIDs []int64
-	DocumentIDs  []int64 // todo: 确认下这个场景
-
-	// 召回策略
-	Strategy *entity.RetrievalStrategy
-}
+type RetrieveRequest = knowledge.RetrieveRequest
 
 type RetrieveContext struct {
 	Ctx              context.Context
@@ -230,13 +190,9 @@ type RetrieveContext struct {
 	Documents []*model.KnowledgeDocument
 }
 
-type RetrieveSlice struct {
-	Slice *entity.Slice
-	Score float64
-}
 type KnowledgeInfo struct {
 	DocumentIDs  []int64
-	DocumentType entity.DocumentType
+	DocumentType knowledge.DocumentType
 	TableColumns []*entity.TableColumn
 }
 type AlterTableSchemaRequest struct {
@@ -342,4 +298,29 @@ type MGetDocumentReviewRequest struct {
 
 type MGetDocumentReviewResponse struct {
 	Reviews []*entity.Review
+}
+
+type CopyKnowledgeRequest struct {
+	KnowledgeID   int64
+	OriginAppID   int64
+	TargetAppID   int64
+	OriginSpaceID int64
+	TargetSpaceID int64
+	TargetUserID  int64
+	TaskUniqKey   string
+}
+type CopyStatus int64
+
+const (
+	CopyStatus_Successful CopyStatus = 1
+	CopyStatus_Processing CopyStatus = 2
+	CopyStatus_Failed     CopyStatus = 3
+	CopyStatus_KeepOrigin CopyStatus = 4
+)
+
+type CopyKnowledgeResponse struct {
+	OriginKnowledgeID int64
+	TargetKnowledgeID int64
+	CopyStatus        CopyStatus
+	ErrMsg            string
 }

@@ -50,7 +50,7 @@ const (
 	errGetSingleAgentAffectStability = true
 
 	ErrUpdateSingleAgentCode            = 1000009
-	errUpdateSingleAgentMessage         = "update prompt resource failed"
+	errUpdateSingleAgentMessage         = "update single agent failed"
 	errUpdateSingleAgentAffectStability = true
 
 	ErrUpdateVariableSchemaCode            = 1000010
@@ -133,6 +133,10 @@ const (
 	errorGetConnectorMessage   = "get connector failed"
 	errorGetConnectorStability = false
 
+	ErrorNonRetryableCode      = 1000028
+	errorNonRetryableMessage   = "non-retryable error"
+	errorNonRetryableStability = false
+
 	internalErrorCode = 10086
 )
 
@@ -148,6 +152,12 @@ func init() { // nolint: byted_s_too_many_lines_in_func
 		ErrGetConnectorCode,
 		errorGetConnectorMessage,
 		code.WithAffectStability(errorGetConnectorStability),
+	)
+
+	code.Register(
+		ErrorNonRetryableCode,
+		errorNonRetryableMessage,
+		code.WithAffectStability(errorNonRetryableStability),
 	)
 
 	code.Register(

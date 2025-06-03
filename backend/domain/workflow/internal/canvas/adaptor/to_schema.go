@@ -41,6 +41,12 @@ func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (sc *compose.Work
 		}
 	}()
 
+	connectedNodes, connectedEdges := pruneIsolatedNodes(s.Nodes, s.Edges, nil)
+	s = &vo.Canvas{
+		Nodes: connectedNodes,
+		Edges: connectedEdges,
+	}
+
 	sc = &compose.WorkflowSchema{}
 
 	nodeMap := make(map[string]*vo.Node)
@@ -73,6 +79,7 @@ func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (sc *compose.Work
 
 		if enableBatch {
 			node = newNode
+			sc.GeneratedNodes = append(sc.GeneratedNodes, vo.NodeKey(node.Blocks[0].ID))
 		}
 
 		nsList, hierarchy, err := NodeToNodeSchema(ctx, node)
@@ -305,12 +312,7 @@ func toExitNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 			return nil, fmt.Errorf("exit node's content value type must be %s, got %s", vo.BlockInputValueTypeLiteral, content.Value.Type)
 		}
 
-		template, ok := content.Value.Content.(string)
-		if !ok {
-			return nil, fmt.Errorf("exit node's content value must be string, got %v", content.Value.Content)
-		}
-
-		ns.SetConfigKV("Template", template)
+		ns.SetConfigKV("Template", content.Value.Content.(string))
 	}
 
 	ns.SetConfigKV("TerminalPlan", *n.Data.Inputs.TerminatePlan)
@@ -1700,6 +1702,50 @@ func buildClauseGroupFromCondition(condition *vo.DBCondition) (*database.ClauseG
 	return clauseGroup, nil
 }
 
+func pruneIsolatedNodes(nodes []*vo.Node, edges []*vo.Edge, parentNode *vo.Node) ([]*vo.Node, []*vo.Edge) {
+	nodeDependencyCount := map[string]int{}
+	if parentNode != nil {
+		nodeDependencyCount[parentNode.ID] = 0
+	}
+	for _, node := range nodes {
+		if len(node.Blocks) > 0 && len(node.Edges) > 0 {
+			node.Blocks, node.Edges = pruneIsolatedNodes(node.Blocks, node.Edges, node)
+		}
+		nodeDependencyCount[node.ID] = 0
+	}
+	nodeDependencyCount[compose.EntryNodeKey] = 1 // entry node is considered to be 1
+	for _, edge := range edges {
+		if _, ok := nodeDependencyCount[edge.TargetNodeID]; ok {
+			nodeDependencyCount[edge.TargetNodeID]++
+		} else {
+			panic(fmt.Errorf("node id %v not existed, but appears in the edge", edge.TargetNodeID))
+		}
+	}
+
+	isolatedNodeIDs := make(map[string]struct{})
+	for nodeId, count := range nodeDependencyCount {
+		if count == 0 {
+			isolatedNodeIDs[nodeId] = struct{}{}
+		}
+	}
+
+	connectedNodes := make([]*vo.Node, 0)
+	for _, node := range nodes {
+		if _, ok := isolatedNodeIDs[node.ID]; !ok {
+			connectedNodes = append(connectedNodes, node)
+		}
+	}
+
+	connectedEdges := make([]*vo.Edge, 0)
+	for _, edge := range edges {
+		if _, ok := isolatedNodeIDs[edge.SourceNodeID]; !ok {
+			connectedEdges = append(connectedEdges, edge)
+		}
+	}
+
+	return connectedNodes, connectedEdges
+}
+
 func buildClauseFromParams(params []*vo.Param) (*database.Clause, error) {
 	var left, operation *vo.Param
 	for _, p := range params {
@@ -1798,8 +1844,8 @@ func parseBatchMode(n *vo.Node) (
 				Type: vo.BlockInputValueTypeRef,
 				Content: &vo.BlockInputReference{
 					Source:  vo.RefSourceTypeBlockOutput,
-					BlockID: n.ID + "_inner",
-					Name:    "", // keep this empty to signal a all out mapping
+					BlockID: vo.GenerateNodeIDForBatchMode(n.ID),
+					Name:    "", // keep this empty to signal an all out mapping
 				},
 			},
 		},

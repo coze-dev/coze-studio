@@ -1,14 +1,25 @@
 package entity
 
+import "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
+
 type Model struct {
-	ID          int64
-	Name        string
-	Description string
+	*modelmgr.Model
+}
 
-	CreatedAtMs int64
-	UpdatedAtMs int64
-	DeletedAtMs int64
+type ModelMeta = modelmgr.ModelMeta
 
-	Meta     ModelMeta
-	Scenario Scenario
+type ModelMetaStatus = modelmgr.ModelMetaStatus
+
+func (m *Model) FindParameter(name modelmgr.ParameterName) (*modelmgr.Parameter, bool) {
+	if len(m.DefaultParameters) == 0 {
+		return nil, false
+	}
+
+	for _, param := range m.DefaultParameters {
+		if param.Name == name {
+			return param, true
+		}
+	}
+
+	return nil, false
 }

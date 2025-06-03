@@ -10,6 +10,8 @@ import (
 	"github.com/bytedance/sonic"
 
 	modelCommon "code.byted.org/flow/opencoze/backend/api/model/common"
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
 	resource "code.byted.org/flow/opencoze/backend/api/model/resource/common"
@@ -17,10 +19,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/search"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	cd "code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/maps"
@@ -33,13 +35,14 @@ import (
 type KnowledgeApplicationService struct {
 	DomainSVC knowledge.Knowledge
 	eventBus  search.ResourceEventBus
+	storage   storage.Storage
 }
 
 var KnowledgeSVC = &KnowledgeApplicationService{}
 
 func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *dataset.CreateDatasetRequest) (*dataset.CreateDatasetResponse, error) {
 	documentType := convertDocumentTypeDataset2Entity(req.FormatType)
-	if documentType == entity.DocumentTypeUnknown {
+	if documentType == model.DocumentTypeUnknown {
 		return dataset.NewCreateDatasetResponse(), errors.New("unknown document type")
 	}
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -51,7 +54,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 		Description: req.Description,
 		CreatorID:   ptr.From(uid),
 		SpaceID:     req.SpaceID,
-		ProjectID:   req.GetProjectID(),
+		AppID:       req.GetProjectID(),
 		FormatType:  documentType,
 	}
 	if req.IconURI == "" {
@@ -62,6 +65,10 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 		logs.CtxErrorf(ctx, "create knowledge failed, err: %v", err)
 		return dataset.NewCreateDatasetResponse(), err
 	}
+	var ptrAppID *int64
+	if req.ProjectID != 0 {
+		ptrAppID = ptr.Of(req.ProjectID)
+	}
 	err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 		OpType: resourceEntity.Created,
 		Resource: &resourceEntity.ResourceDocument{
@@ -70,6 +77,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 			Name:         ptr.Of(req.Name),
 			ResSubType:   ptr.Of(int32(req.FormatType)),
 			SpaceID:      ptr.Of(req.SpaceID),
+			APPID:        ptrAppID,
 			OwnerID:      ptr.Of(*uid),
 			CreateTimeMS: ptr.Of(domainResp.CreatedAtMs),
 			UpdateTimeMS: ptr.Of(domainResp.CreatedAtMs),
@@ -85,6 +93,15 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 }
 
 func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *dataset.DatasetDetailRequest) (*dataset.DatasetDetailResponse, error) {
+	k.DomainSVC.CopyKnowledge(ctx, &knowledge.CopyKnowledgeRequest{
+		KnowledgeID:   7511568003863937024,
+		OriginAppID:   0,
+		TargetAppID:   0,
+		OriginSpaceID: 7509383746273935360,
+		TargetSpaceID: 666,
+		TargetUserID:  10086,
+		TaskUniqKey:   "uniq",
+	})
 	var err error
 	var datasetIDs []int64
 
@@ -98,9 +115,9 @@ func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *da
 	}
 
 	domainResp, err := k.DomainSVC.ListKnowledge(ctx, &knowledge.ListKnowledgeRequest{
-		IDs:       datasetIDs,
-		SpaceID:   &req.SpaceID,
-		ProjectID: &req.ProjectID,
+		IDs:     datasetIDs,
+		SpaceID: &req.SpaceID,
+		AppID:   &req.ProjectID,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "get knowledge failed, err: %v", err)
@@ -138,16 +155,16 @@ func (k *KnowledgeApplicationService) ListKnowledge(ctx context.Context, req *da
 			logs.CtxErrorf(ctx, "convert project id failed, err: %v", err)
 			return dataset.NewListDatasetResponse(), err
 		}
-		request.ProjectID = ptr.Of(projectID)
+		request.AppID = ptr.Of(projectID)
 	}
-	orderBy := knowledge.OrderUpdatedAt
+	orderBy := model.OrderUpdatedAt
 	if req.GetOrderField() == dataset.OrderField_CreateTime {
-		orderBy = knowledge.OrderCreatedAt
+		orderBy = model.OrderCreatedAt
 	}
 	request.Order = &orderBy
-	orderType := knowledge.OrderTypeDesc
+	orderType := model.OrderTypeDesc
 	if req.GetOrderType() == dataset.OrderType_Asc {
-		orderType = knowledge.OrderTypeAsc
+		orderType = model.OrderTypeAsc
 	}
 	if req.GetSpaceID() != 0 {
 		request.SpaceID = &req.SpaceID
@@ -276,11 +293,11 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 			docSource = entity.DocumentSourceLocal
 		}
 		document := entity.Document{
-			Info: common.Info{
+			Info: model.Info{
 				Name:      req.GetDocumentBases()[i].GetName(),
 				CreatorID: *uid,
 				SpaceID:   knowledgeInfo.SpaceID,
-				ProjectID: knowledgeInfo.ProjectID,
+				AppID:     knowledgeInfo.AppID,
 			},
 			KnowledgeID:      req.GetDatasetID(),
 			Type:             convertDocumentTypeDataset2Entity(req.GetFormatType()),
@@ -460,23 +477,23 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 	if len(listResp.Documents) != 1 {
 		return dataset.NewCreateSliceResponse(), errors.New("document not found")
 	}
-	sliceEntity := &entity.Slice{
-		Info: common.Info{
+	sliceEntity := &knowledgeModel.Slice{
+		Info: model.Info{
 			CreatorID: *uid,
 		},
 		DocumentID: req.GetDocumentID(),
 		Sequence:   req.GetSequence(),
 	}
-	if listResp.Documents[0].Type == entity.DocumentTypeTable {
+	if listResp.Documents[0].Type == model.DocumentTypeTable {
 		err = packTableSliceColumnData(ctx, sliceEntity, req.GetRawText(), listResp.Documents[0])
 		if err != nil {
 			logs.CtxErrorf(ctx, "pack table slice column data failed, err: %v", err)
 			return dataset.NewCreateSliceResponse(), err
 		}
 	} else {
-		sliceEntity.RawContent = []*entity.SliceContent{
+		sliceEntity.RawContent = []*knowledgeModel.SliceContent{
 			{
-				Type: entity.SliceContentTypeText,
+				Type: knowledgeModel.SliceContentTypeText,
 				Text: req.RawText,
 			},
 		}
@@ -539,23 +556,23 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 	if len(listResp.Documents) != 1 {
 		return dataset.NewUpdateSliceResponse(), errors.New("document not found")
 	}
-	sliceEntity := &entity.Slice{
-		Info: common.Info{
+	sliceEntity := &knowledgeModel.Slice{
+		Info: model.Info{
 			ID:        req.GetSliceID(),
 			CreatorID: *uid,
 		},
 		DocumentID: docID,
 	}
-	if listResp.Documents[0].Type == entity.DocumentTypeTable {
+	if listResp.Documents[0].Type == model.DocumentTypeTable {
 		err = packTableSliceColumnData(ctx, sliceEntity, req.GetRawText(), listResp.Documents[0])
 		if err != nil {
 			logs.CtxErrorf(ctx, "pack table slice column data failed, err: %v", err)
 			return dataset.NewUpdateSliceResponse(), err
 		}
 	} else {
-		sliceEntity.RawContent = []*entity.SliceContent{
+		sliceEntity.RawContent = []*knowledgeModel.SliceContent{
 			{
-				Type: entity.SliceContentTypeText,
+				Type: knowledgeModel.SliceContentTypeText,
 				Text: req.RawText,
 			},
 		}
@@ -573,7 +590,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 	return &dataset.UpdateSliceResponse{}, nil
 }
 
-func packTableSliceColumnData(ctx context.Context, slice *entity.Slice, text string, doc *entity.Document) error {
+func packTableSliceColumnData(ctx context.Context, slice *knowledgeModel.Slice, text string, doc *entity.Document) error {
 	columnMap := map[int64]string{}
 	columnTypeMap := map[int64]cd.TableColumnType{}
 	for i := range doc.TableInfo.Columns {
@@ -586,10 +603,10 @@ func packTableSliceColumnData(ctx context.Context, slice *entity.Slice, text str
 		logs.CtxErrorf(ctx, "unmarshal raw text failed, err: %v", err)
 		return err
 	}
-	slice.RawContent = []*entity.SliceContent{
+	slice.RawContent = []*knowledgeModel.SliceContent{
 		{
-			Type: entity.SliceContentTypeTable,
-			Table: &entity.SliceTable{
+			Type: knowledgeModel.SliceContentTypeTable,
+			Table: &knowledgeModel.SliceTable{
 				Columns: make([]*cd.ColumnData, 0, len(dataMap)),
 			},
 		},
@@ -846,4 +863,29 @@ func (k *KnowledgeApplicationService) SaveDocumentReview(ctx context.Context, re
 		return dataset.NewSaveDocumentReviewResponse(), err
 	}
 	return &dataset.SaveDocumentReviewResponse{}, nil
+}
+
+func (k *KnowledgeApplicationService) GetIconForDataset(ctx context.Context, req *dataset.GetIconRequest) (*dataset.GetIconResponse, error) {
+	resp := dataset.NewGetIconResponse()
+	var uri string
+	switch req.FormatType {
+	case dataset.FormatType_Text:
+		uri = TextKnowledgeDefaultIcon
+	case dataset.FormatType_Table:
+		uri = TableKnowledgeDefaultIcon
+	case dataset.FormatType_Image:
+		uri = ImageKnowledgeDefaultIcon
+	default:
+		uri = TextKnowledgeDefaultIcon
+	}
+
+	iconUrl, err := k.storage.GetObjectUrl(ctx, uri)
+	if err != nil {
+		return resp, err
+	}
+	resp.Icon = &dataset.Icon{
+		URL: iconUrl,
+		URI: uri,
+	}
+	return resp, nil
 }

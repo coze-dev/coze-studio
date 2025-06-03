@@ -3,12 +3,13 @@ package modelmgr
 import (
 	"context"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 )
 
 type Manager interface {
 	CreateModelMeta(ctx context.Context, meta *entity.ModelMeta) (*entity.ModelMeta, error)
-	UpdateModelMetaStatus(ctx context.Context, id int64, status entity.Status) error
+	UpdateModelMetaStatus(ctx context.Context, id int64, status entity.ModelMetaStatus) error
 	DeleteModelMeta(ctx context.Context, id int64) error
 	ListModelMeta(ctx context.Context, req *ListModelMetaRequest) (*ListModelMetaResponse, error)
 	MGetModelMetaByID(ctx context.Context, req *MGetModelMetaRequest) ([]*entity.ModelMeta, error)
@@ -21,7 +22,7 @@ type Manager interface {
 
 type ListModelMetaRequest struct {
 	FuzzyModelName *string
-	Status         []entity.Status
+	Status         []entity.ModelMetaStatus
 	Limit          int
 	Cursor         *string
 }
@@ -38,7 +39,8 @@ type MGetModelMetaRequest struct {
 
 type ListModelRequest struct {
 	FuzzyModelName *string
-	Scenario       *entity.Scenario
+	Scenario       *modelmgr.Scenario
+	Status         []modelmgr.ModelEntityStatus // default is default and in_use status
 	Limit          int
 	Cursor         *string
 }
@@ -49,6 +51,4 @@ type ListModelResponse struct {
 	NextCursor *string
 }
 
-type MGetModelRequest struct {
-	IDs []int64
-}
+type MGetModelRequest = modelmgr.MGetModelRequest

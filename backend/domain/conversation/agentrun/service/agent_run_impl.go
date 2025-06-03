@@ -14,14 +14,18 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagent"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmessage"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/crossdomain"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/repository"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -35,17 +39,13 @@ type runImpl struct {
 
 type runtimeDependence struct {
 	runID         int64
-	agentInfo     *crossdomain.AgentInfo
+	agentInfo     *singleagent.SingleAgent
 	questionMsgID int64
 	runMeta       *entity.AgentRunMeta
 	startTime     time.Time
 }
 
 type Components struct {
-	CdMessage      crossdomain.Message
-	CdSingleAgent  crossdomain.SingleAgent
-	CdConversation crossdomain.Conversation
-
 	RunRecordRepo repository.RunRecordRepo
 }
 
@@ -121,15 +121,11 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 	c.rtDependence.agentInfo = agentInfo
 
 	err = c.handlerStreamExecute(ctx, sw, history, input, runRecord)
-	if err != nil {
-		return
-	}
-
 	return
 }
 
-func (c *runImpl) handlerAgent(ctx context.Context, agentID int64) (*crossdomain.AgentInfo, error) {
-	agentInfo, err := c.CdSingleAgent.GetSingleAgent(ctx, agentID, "")
+func (c *runImpl) handlerAgent(ctx context.Context, agentID int64) (*singleagent.SingleAgent, error) {
+	agentInfo, err := crossagent.DefaultSVC().GetSingleAgent(ctx, agentID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -141,14 +137,15 @@ func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWri
 	mainChan := make(chan *entity.AgentRespEvent, 100)
 	faChan := make(chan *entity.FinalAnswerEvent, 100)
 
-	ar := &crossdomain.AgentRuntime{
-		AgentVersion: c.rtDependence.runMeta.Version,
-		SpaceID:      c.rtDependence.runMeta.SpaceID,
-		IsDraft:      c.rtDependence.runMeta.IsDraft,
-		ConnectorID:  c.rtDependence.runMeta.ConnectorID,
+	ar := &singleagent.AgentRuntime{
+		AgentVersion:     c.rtDependence.runMeta.Version,
+		SpaceID:          c.rtDependence.runMeta.SpaceID,
+		IsDraft:          c.rtDependence.runMeta.IsDraft,
+		ConnectorID:      c.rtDependence.runMeta.ConnectorID,
+		PreRetrieveTools: c.rtDependence.runMeta.PreRetrieveTools,
 	}
 
-	streamer, err := c.CdSingleAgent.StreamExecute(ctx, historyMsg, input, ar)
+	streamer, err := crossagent.DefaultSVC().StreamExecute(ctx, historyMsg, input, ar)
 	if err != nil {
 		return err
 	}
@@ -170,24 +167,24 @@ func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWri
 	return err
 }
 
-func transformEventMap(eventType entity2.EventType) (entity.MessageType, error) {
-	var eType entity.MessageType
+func transformEventMap(eventType singleagent.EventType) (message.MessageType, error) {
+	var eType message.MessageType
 	switch eventType {
-	case entity2.EventTypeOfFuncCall:
-		return entity.MessageTypeFunctionCall, nil
-	case entity2.EventTypeOfKnowledge:
-		return entity.MessageTypeKnowledge, nil
-	case entity2.EventTypeOfToolsMessage:
-		return entity.MessageTypeToolResponse, nil
-	case entity2.EventTypeOfFinalAnswer:
-		return entity.MessageTypeAnswer, nil
-	case entity2.EventTypeOfSuggest:
-		return entity.MessageTypeFlowUp, nil
+	case singleagent.EventTypeOfFuncCall:
+		return message.MessageTypeFunctionCall, nil
+	case singleagent.EventTypeOfKnowledge:
+		return message.MessageTypeKnowledge, nil
+	case singleagent.EventTypeOfToolsMessage:
+		return message.MessageTypeToolResponse, nil
+	case singleagent.EventTypeOfFinalAnswer:
+		return message.MessageTypeAnswer, nil
+	case singleagent.EventTypeOfSuggest:
+		return message.MessageTypeFlowUp, nil
 	}
 	return eType, errors.New("unknown event type")
 }
 
-func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.AgentRespEvent, messageType entity.MessageType) *msgEntity.Message {
+func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.AgentRespEvent, messageType message.MessageType) *message.Message {
 	arm := c.rtDependence.runMeta
 	msg := &msgEntity.Message{
 		ConversationID: arm.ConversationID,
@@ -200,11 +197,11 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 	buildExt := map[string]string{}
 
 	switch messageType {
-	case entity.MessageTypeQuestion:
+	case message.MessageTypeQuestion:
 		msg.Role = schema.User
 		msg.ContentType = arm.ContentType
 		for _, content := range arm.Content {
-			if content.Type == entity.InputTypeText {
+			if content.Type == message.InputTypeText {
 				msg.Content = content.Text
 				break
 			}
@@ -213,13 +210,13 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 		buildExt = arm.Ext
 
 		msg.DisplayContent = arm.DisplayContent
-	case entity.MessageTypeAnswer:
+	case message.MessageTypeAnswer:
 		msg.Role = schema.Assistant
-		msg.ContentType = entity.ContentTypeText
+		msg.ContentType = message.ContentTypeText
 
-	case entity.MessageTypeToolResponse:
+	case message.MessageTypeToolResponse:
 		msg.Role = schema.Tool
-		msg.ContentType = entity.ContentTypeText
+		msg.ContentType = message.ContentTypeText
 		msg.Content = chunk.ToolsMessage[0].Content
 
 		modelContent := chunk.ToolsMessage[0]
@@ -228,9 +225,9 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 			msg.ModelContent = string(mc)
 		}
 
-	case entity.MessageTypeKnowledge:
+	case message.MessageTypeKnowledge:
 		msg.Role = schema.Assistant
-		msg.ContentType = entity.ContentTypeText
+		msg.ContentType = message.ContentTypeText
 
 		knowledgeContent := c.buildKnowledge(ctx, arm, chunk)
 		if knowledgeContent != nil {
@@ -248,9 +245,9 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 			msg.ModelContent = string(mc)
 		}
 
-	case entity.MessageTypeFunctionCall:
+	case message.MessageTypeFunctionCall:
 		msg.Role = schema.Assistant
-		msg.ContentType = entity.ContentTypeText
+		msg.ContentType = message.ContentTypeText
 
 		if len(chunk.FuncCall.ToolCalls) > 0 {
 			toolCall := chunk.FuncCall.ToolCalls[0]
@@ -267,14 +264,14 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 				msg.ModelContent = string(mc)
 			}
 		}
-	case entity.MessageTypeFlowUp:
+	case message.MessageTypeFlowUp:
 		msg.Role = schema.Assistant
-		msg.ContentType = entity.ContentTypeText
+		msg.ContentType = message.ContentTypeText
 		msg.Content = chunk.Suggest.Content
 
-	case entity.MessageTypeVerbose:
+	case message.MessageTypeVerbose:
 		msg.Role = schema.Assistant
-		msg.ContentType = entity.ContentTypeText
+		msg.ContentType = message.ContentTypeText
 
 		d := &entity.Data{
 			FinishReason: 0,
@@ -289,7 +286,7 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 		msg.Content = string(afcMarshal)
 	}
 
-	if messageType != entity.MessageTypeQuestion {
+	if messageType != message.MessageTypeQuestion {
 		botStateExt := c.buildBotStateExt(arm)
 		bseString, err := json.Marshal(botStateExt)
 		if err == nil {
@@ -314,7 +311,7 @@ func (c *runImpl) handlerHistory(ctx context.Context) ([]*msgEntity.Message, err
 
 	runIDS := c.getRunID(runRecordList)
 
-	history, err := c.CdMessage.GetByRunIDs(ctx, c.rtDependence.runMeta.ConversationID, runIDS)
+	history, err := crossmessage.DefaultSVC().GetByRunIDs(ctx, c.rtDependence.runMeta.ConversationID, runIDS)
 	if err != nil {
 		return nil, err
 	}
@@ -352,9 +349,9 @@ func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*
 }
 
 func (c *runImpl) handlerInput(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse]) (*msgEntity.Message, error) {
-	msgMeta := c.buildAgentMessage2Create(ctx, nil, entity.MessageTypeQuestion)
+	msgMeta := c.buildAgentMessage2Create(ctx, nil, message.MessageTypeQuestion)
 
-	cm, err := c.CdMessage.Create(ctx, msgMeta)
+	cm, err := crossmessage.DefaultSVC().Create(ctx, msgMeta)
 	if err != nil {
 		return nil, err
 	}
@@ -399,7 +396,7 @@ func (c *runImpl) pull(ctx context.Context, mainChan chan *entity.AgentRespEvent
 
 		mainChan <- respChunk
 
-		if resp.EventType == entity2.EventTypeOfFinalAnswer {
+		if resp.EventType == singleagent.EventTypeOfFinalAnswer {
 			for {
 				answer, answerErr := resp.FinalAnswer.Recv()
 
@@ -431,23 +428,24 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 		}
 
 		switch chunk.EventType {
-		case entity.MessageTypeFunctionCall:
+		case message.MessageTypeFunctionCall:
 			err := c.handlerFunctionCall(ctx, chunk, sw)
 			if err != nil {
 				return err
 			}
-		case entity.MessageTypeToolResponse:
+		case message.MessageTypeToolResponse:
 			err := c.handlerTooResponse(ctx, chunk, sw)
 			if err != nil {
 				return err
 			}
-		case entity.MessageTypeKnowledge:
+		case message.MessageTypeKnowledge:
 			err := c.handlerKnowledge(ctx, chunk, sw)
 			if err != nil {
 				return err
 			}
-		case entity.MessageTypeAnswer:
+		case message.MessageTypeAnswer:
 			fullContent := bytes.NewBuffer([]byte{})
+			reasoningContent := bytes.NewBuffer([]byte{})
 			preMsg, err := c.handlerPreAnswer(ctx)
 			if err != nil {
 				return err
@@ -463,7 +461,7 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 				if answerEvent.Err != nil {
 					if errors.Is(answerEvent.Err, io.EOF) {
 
-						hfErr := c.handlerFinalAnswer(ctx, sendMsg, fullContent.String(), sw, usage)
+						hfErr := c.handlerFinalAnswer(ctx, sendMsg, fullContent.String(), sw, usage, reasoningContent.String())
 						if hfErr != nil {
 							return err
 						}
@@ -476,21 +474,33 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 					}
 					return answerEvent.Err
 				}
+				rc := c.parseReasoningContent(ctx, answerEvent)
+				reasoningContent.WriteString(rc)
+				sendMsg.ReasoningContent = ptr.Of(rc)
 
 				answer := answerEvent.Message
 				usage = c.handlerUsage(answer.ResponseMeta)
 				fullContent.WriteString(answer.Content)
 				sendMsg.Content = answer.Content
+
 				c.runEvent.SendMsgEvent(entity.RunEventMessageDelta, sendMsg, sw)
 			}
 
-		case entity.MessageTypeFlowUp:
+		case message.MessageTypeFlowUp:
 			err := c.handlerSuggest(ctx, chunk, sw)
 			if err != nil {
 				return err
 			}
 		}
 	}
+}
+
+func (c *runImpl) parseReasoningContent(ctx context.Context, chunk *entity.FinalAnswerEvent) string {
+
+	if rc, ok := chunk.Message.Extra["ark-reasoning-content"]; ok {
+		return rc.(string)
+	}
+	return ""
 }
 
 func (c *runImpl) handlerUsage(meta *schema.ResponseMeta) *msgEntity.UsageExt {
@@ -518,8 +528,8 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context) (*msgEntity.Message, err
 		SectionID:      arm.SectionID,
 		UserID:         arm.UserID,
 		Role:           schema.Assistant,
-		MessageType:    entity.MessageTypeAnswer,
-		ContentType:    entity.ContentTypeText,
+		MessageType:    message.MessageTypeAnswer,
+		ContentType:    message.ContentTypeText,
 		Ext:            arm.Ext,
 	}
 
@@ -538,10 +548,10 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context) (*msgEntity.Message, err
 	}
 
 	msgMeta.Ext = arm.Ext
-	return c.CdMessage.Create(ctx, msgMeta)
+	return crossmessage.DefaultSVC().Create(ctx, msgMeta)
 }
 
-func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, fullContent string, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt) error {
+func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, fullContent string, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt, rc string) error {
 	msg.Content = fullContent
 	msg.IsFinish = true
 	if msg.Ext == nil {
@@ -567,13 +577,14 @@ func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessa
 		return err
 	}
 	editMsg := &msgEntity.Message{
-		ID:           msg.ID,
-		Content:      fullContent,
-		ContentType:  entity.ContentTypeText,
-		ModelContent: string(mc),
-		Ext:          msg.Ext,
+		ID:               msg.ID,
+		Content:          fullContent,
+		ContentType:      message.ContentTypeText,
+		ModelContent:     string(mc),
+		ReasoningContent: rc,
+		Ext:              msg.Ext,
 	}
-	_, err = c.CdMessage.Edit(ctx, editMsg)
+	_, err = crossmessage.DefaultSVC().Edit(ctx, editMsg)
 	if err != nil {
 		return err
 	}
@@ -595,9 +606,9 @@ func (c *runImpl) buildBotStateExt(arm *entity.AgentRunMeta) *msgEntity.BotState
 }
 
 func (c *runImpl) handlerFunctionCall(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeFunctionCall)
+	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeFunctionCall)
 
-	cmData, err := c.CdMessage.Create(ctx, cm)
+	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -615,10 +626,10 @@ func (c *runImpl) handlerAckMessage(_ context.Context, input *msgEntity.Message,
 		SectionID:      input.SectionID,
 		AgentID:        input.AgentID,
 		Role:           entity.RoleType(input.Role),
-		MessageType:    entity.MessageTypeAck,
+		MessageType:    message.MessageTypeAck,
 		ReplyID:        input.ID,
 		Content:        input.Content,
-		ContentType:    entity.ContentTypeText,
+		ContentType:    message.ContentTypeText,
 		IsFinish:       true,
 	}
 
@@ -628,8 +639,8 @@ func (c *runImpl) handlerAckMessage(_ context.Context, input *msgEntity.Message,
 }
 
 func (c *runImpl) handlerTooResponse(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeToolResponse)
-	cmData, err := c.CdMessage.Create(ctx, cm)
+	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeToolResponse)
+	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -642,10 +653,9 @@ func (c *runImpl) handlerTooResponse(ctx context.Context, chunk *entity.AgentRes
 }
 
 func (c *runImpl) handlerSuggest(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
+	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeFlowUp)
 
-	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeFlowUp)
-
-	cmData, err := c.CdMessage.Create(ctx, cm)
+	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -658,8 +668,8 @@ func (c *runImpl) handlerSuggest(ctx context.Context, chunk *entity.AgentRespEve
 }
 
 func (c *runImpl) handlerKnowledge(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-	cm := c.buildAgentMessage2Create(ctx, chunk, entity.MessageTypeKnowledge)
-	cmData, err := c.CdMessage.Create(ctx, cm)
+	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeKnowledge)
+	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -695,8 +705,8 @@ func (c *runImpl) buildKnowledge(_ context.Context, arm *entity.AgentRunMeta, ch
 }
 
 func (c *runImpl) handlerFinalAnswerFinish(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-	cm := c.buildAgentMessage2Create(ctx, nil, entity.MessageTypeVerbose)
-	cmData, err := c.CdMessage.Create(ctx, cm)
+	cm := c.buildAgentMessage2Create(ctx, nil, message.MessageTypeVerbose)
+	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
@@ -709,20 +719,21 @@ func (c *runImpl) handlerFinalAnswerFinish(ctx context.Context, sw *schema.Strea
 
 func (c *runImpl) buildSendMsg(_ context.Context, msg *msgEntity.Message, isFinish bool) *entity.ChunkMessageItem {
 	return &entity.ChunkMessageItem{
-		ID:             msg.ID,
-		ConversationID: msg.ConversationID,
-		SectionID:      msg.SectionID,
-		AgentID:        msg.AgentID,
-		Content:        msg.Content,
-		Role:           entity.RoleTypeAssistant,
-		ContentType:    msg.ContentType,
-		MessageType:    msg.MessageType,
-		ReplyID:        c.rtDependence.questionMsgID,
-		Type:           msg.MessageType,
-		CreatedAt:      msg.CreatedAt,
-		UpdatedAt:      msg.UpdatedAt,
-		Ext:            msg.Ext,
-		IsFinish:       isFinish,
+		ID:               msg.ID,
+		ConversationID:   msg.ConversationID,
+		SectionID:        msg.SectionID,
+		AgentID:          msg.AgentID,
+		Content:          msg.Content,
+		Role:             entity.RoleTypeAssistant,
+		ContentType:      msg.ContentType,
+		MessageType:      msg.MessageType,
+		ReplyID:          c.rtDependence.questionMsgID,
+		Type:             msg.MessageType,
+		CreatedAt:        msg.CreatedAt,
+		UpdatedAt:        msg.UpdatedAt,
+		Ext:              msg.Ext,
+		IsFinish:         isFinish,
+		ReasoningContent: ptr.Of(msg.ReasoningContent),
 	}
 }
 

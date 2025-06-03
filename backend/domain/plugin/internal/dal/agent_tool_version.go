@@ -28,6 +28,19 @@ type AgentToolVersionDAO struct {
 	query *query.Query
 }
 
+type agentToolVersionPO model.AgentToolVersion
+
+func (a agentToolVersionPO) ToDO() *entity.ToolInfo {
+	return &entity.ToolInfo{
+		ID:        a.ToolID,
+		PluginID:  a.PluginID,
+		Version:   &a.ToolVersion,
+		Method:    &a.Method,
+		SubURL:    &a.SubURL,
+		Operation: a.Operation,
+	}
+}
+
 // TODO(@maronghong): 简化查询代码，封装查询条件
 func (at *AgentToolVersionDAO) GetWithToolName(ctx context.Context, agentID int64, toolName string, versionMs *int64) (tool *entity.ToolInfo, exist bool, err error) {
 	table := at.query.AgentToolVersion
@@ -61,7 +74,7 @@ func (at *AgentToolVersionDAO) GetWithToolName(ctx context.Context, agentID int6
 		}
 	}
 
-	tool = model.AgentToolVersionToDO(tl)
+	tool = agentToolVersionPO(*tl).ToDO()
 
 	return tool, true, nil
 }
@@ -74,7 +87,7 @@ func (at *AgentToolVersionDAO) Get(ctx context.Context, agentID int64, vAgentToo
 		table.ToolID.Eq(vAgentTool.ToolID),
 	}
 	var tl *model.AgentToolVersion
-	if vAgentTool.VersionMs == nil || *vAgentTool.VersionMs <= 0 {
+	if vAgentTool.VersionMS == nil || *vAgentTool.VersionMS <= 0 {
 		tl, err = table.WithContext(ctx).
 			Where(conds...).
 			Order(table.VersionMs.Desc()).
@@ -86,7 +99,7 @@ func (at *AgentToolVersionDAO) Get(ctx context.Context, agentID int64, vAgentToo
 			return nil, false, err
 		}
 	} else {
-		conds = append(conds, table.VersionMs.Eq(*vAgentTool.VersionMs))
+		conds = append(conds, table.VersionMs.Eq(*vAgentTool.VersionMS))
 		tl, err = table.WithContext(ctx).
 			Where(conds...).
 			First()
@@ -98,7 +111,7 @@ func (at *AgentToolVersionDAO) Get(ctx context.Context, agentID int64, vAgentToo
 		}
 	}
 
-	tool = model.AgentToolVersionToDO(tl)
+	tool = agentToolVersionPO(*tl).ToDO()
 
 	return tool, true, nil
 }
@@ -113,7 +126,7 @@ func (at *AgentToolVersionDAO) MGet(ctx context.Context, agentID int64, vAgentTo
 	for _, chunk := range chunks {
 		var q query.IAgentToolVersionDo
 		for _, v := range chunk {
-			if v.VersionMs == nil || *v.VersionMs == 0 {
+			if v.VersionMS == nil || *v.VersionMS == 0 {
 				noVersion = append(noVersion, v)
 				continue
 			}
@@ -122,13 +135,13 @@ func (at *AgentToolVersionDAO) MGet(ctx context.Context, agentID int64, vAgentTo
 					Where(
 						table.Where(
 							table.ToolID.Eq(chunk[0].ToolID),
-							table.VersionMs.Eq(*chunk[0].VersionMs),
+							table.VersionMs.Eq(*chunk[0].VersionMS),
 						),
 					)
 			} else {
 				q = q.Or(
 					table.ToolID.Eq(v.ToolID),
-					table.VersionMs.Eq(*v.VersionMs),
+					table.VersionMs.Eq(*v.VersionMS),
 				)
 			}
 		}
@@ -143,7 +156,7 @@ func (at *AgentToolVersionDAO) MGet(ctx context.Context, agentID int64, vAgentTo
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, model.AgentToolVersionToDO(tl))
+			tools = append(tools, agentToolVersionPO(*tl).ToDO())
 		}
 	}
 

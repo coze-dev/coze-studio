@@ -8,6 +8,7 @@ import (
 
 	"github.com/bytedance/sonic"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
@@ -93,7 +94,7 @@ func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) (p process
 		p = &CustomDocProcessor{
 			baseDocProcessor: *base,
 		}
-		if config.Documents[0].Type == entity.DocumentTypeTable {
+		if config.Documents[0].Type == knowledge.DocumentTypeTable {
 			p = &CustomTableProcessor{
 				baseDocProcessor: *base,
 			}
@@ -129,11 +130,13 @@ func (p *baseDocProcessor) BuildDBModel() error {
 			CreatorID:     p.UserID,
 			SpaceID:       p.SpaceID,
 			SourceType:    int32(p.Documents[i].Source),
-			Status:        int32(entity.KnowledgeStatusInit),
+			Status:        int32(knowledge.KnowledgeStatusInit),
 			ParseRule: &model.DocumentParseRule{
 				ParsingStrategy:  p.Documents[i].ParsingStrategy,
 				ChunkingStrategy: p.Documents[i].ChunkingStrategy,
 			},
+			CreatedAt: time.Now().UnixMilli(),
+			UpdatedAt: time.Now().UnixMilli(),
 		}
 		p.Documents[i].ID = docModel.ID
 		p.docModels = append(p.docModels, docModel)
@@ -143,10 +146,9 @@ func (p *baseDocProcessor) BuildDBModel() error {
 }
 
 func (p *baseDocProcessor) InsertDBModel() (err error) {
-
 	ctx := p.ctx
 
-	if len(p.Documents) == 1 && p.Documents[0].Type == entity.DocumentTypeTable {
+	if len(p.Documents) == 1 && p.Documents[0].Type == knowledge.DocumentTypeTable {
 		err = p.createTable()
 		if err != nil {
 			logs.CtxErrorf(ctx, "create table failed, err: %v", err)
@@ -196,7 +198,7 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 }
 
 func (p *baseDocProcessor) createTable() error {
-	if len(p.Documents) == 1 && p.Documents[0].Type == entity.DocumentTypeTable {
+	if len(p.Documents) == 1 && p.Documents[0].Type == knowledge.DocumentTypeTable {
 		// 表格型知识库，创建表
 		rdbColumns := []*entity2.Column{}
 		tableColumns := p.Documents[0].TableInfo.Columns
@@ -256,7 +258,7 @@ func (p *baseDocProcessor) createTable() error {
 }
 
 func (p *baseDocProcessor) deleteTable() error {
-	if len(p.Documents) == 1 && p.Documents[0].Type == entity.DocumentTypeTable {
+	if len(p.Documents) == 1 && p.Documents[0].Type == knowledge.DocumentTypeTable {
 		_, err := p.rdb.DropTable(p.ctx, &rdb.DropTableRequest{
 			TableName: p.TableName,
 			IfExists:  false,
@@ -288,9 +290,9 @@ func (p *baseDocProcessor) GetResp() []*entity.Document {
 	return p.Documents
 }
 
-func getFormatType(tp entity.DocumentType) parser.FileExtension {
+func getFormatType(tp knowledge.DocumentType) parser.FileExtension {
 	docType := parser.FileExtensionTXT
-	if tp == entity.DocumentTypeTable {
+	if tp == knowledge.DocumentTypeTable {
 		docType = parser.FileExtensionJSON
 	}
 	return docType
@@ -319,8 +321,7 @@ func (c *CustomDocProcessor) BeforeCreate() error {
 }
 
 func (c *CustomTableProcessor) BeforeCreate() error {
-
-	if len(c.Documents) == 1 && c.Documents[0].Type == entity.DocumentTypeTable && c.Documents[0].IsAppend {
+	if len(c.Documents) == 1 && c.Documents[0].Type == knowledge.DocumentTypeTable && c.Documents[0].IsAppend {
 		doc, err := c.documentRepo.GetByID(c.ctx, c.Documents[0].ID)
 		if err != nil {
 			logs.CtxErrorf(c.ctx, "get document failed, err: %v", err)
@@ -347,7 +348,7 @@ func (c *CustomTableProcessor) BeforeCreate() error {
 }
 
 func (c *CustomTableProcessor) BuildDBModel() error {
-	if len(c.Documents) == 1 && c.Documents[0].Type == entity.DocumentTypeTable {
+	if len(c.Documents) == 1 && c.Documents[0].Type == knowledge.DocumentTypeTable {
 		if c.Documents[0].IsAppend {
 			// 追加场景，不需要创建表了
 			// 一是用户自定义一些数据、二是再上传一个表格，把表格里的数据追加到表格中
@@ -368,7 +369,7 @@ func (c *CustomTableProcessor) BuildDBModel() error {
 
 func (c *CustomTableProcessor) InsertDBModel() error {
 	if len(c.Documents) == 1 &&
-		c.Documents[0].Type == entity.DocumentTypeTable &&
+		c.Documents[0].Type == knowledge.DocumentTypeTable &&
 		c.Documents[0].IsAppend {
 		// 追加场景，设置文档为处理中状态
 		err := c.documentRepo.SetStatus(c.ctx, c.Documents[0].ID, int32(entity.DocumentStatusUploading), "")
@@ -383,7 +384,7 @@ func (c *CustomTableProcessor) InsertDBModel() error {
 func (c *CustomTableProcessor) Indexing() error {
 	// c.baseDocProcessor.Indexing()
 	if len(c.Documents) == 1 &&
-		c.Documents[0].Type == entity.DocumentTypeTable &&
+		c.Documents[0].Type == knowledge.DocumentTypeTable &&
 		c.Documents[0].IsAppend {
 		err := c.baseDocProcessor.Indexing()
 		if err != nil {

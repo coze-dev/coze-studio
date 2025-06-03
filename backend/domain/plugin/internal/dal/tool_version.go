@@ -10,6 +10,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
@@ -23,6 +24,20 @@ func NewToolVersionDAO(db *gorm.DB, idGen idgen.IDGenerator) *ToolVersionDAO {
 type ToolVersionDAO struct {
 	idGen idgen.IDGenerator
 	query *query.Query
+}
+
+type toolVersionPO model.ToolVersion
+
+func (t toolVersionPO) ToDO() *entity.ToolInfo {
+	return &entity.ToolInfo{
+		ID:        t.ID,
+		PluginID:  t.PluginID,
+		CreatedAt: t.CreatedAt,
+		Version:   &t.Version,
+		SubURL:    &t.SubURL,
+		Method:    ptr.Of(t.Method),
+		Operation: t.Operation,
+	}
 }
 
 func (t *ToolVersionDAO) Get(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, exist bool, err error) {
@@ -42,7 +57,7 @@ func (t *ToolVersionDAO) Get(ctx context.Context, vTool entity.VersionTool) (too
 		return nil, false, err
 	}
 
-	tool = model.ToolVersionToDO(tl)
+	tool = toolVersionPO(*tl).ToDO()
 
 	return tool, true, nil
 }
@@ -78,7 +93,7 @@ func (t *ToolVersionDAO) MGet(ctx context.Context, vTools []entity.VersionTool) 
 		}
 
 		for _, tl := range tls {
-			tools = append(tools, model.ToolVersionToDO(tl))
+			tools = append(tools, toolVersionPO(*tl).ToDO())
 		}
 	}
 

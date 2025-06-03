@@ -10,6 +10,8 @@ import (
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
@@ -42,7 +44,7 @@ func (o *OlineImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, databas
 	now := time.Now().UnixMilli()
 	onlineInfo := &model.OnlineDatabaseInfo{
 		ID:             onlineID,
-		ProjectID:      database.ProjectID,
+		AppID:          database.AppID,
 		SpaceID:        database.SpaceID,
 		RelatedDraftID: draftID,
 		IsVisible:      1, // 默认可见
@@ -95,16 +97,16 @@ func (o *OlineImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 		CreatorID: info.CreatorID,
 		IconURI:   info.IconURI,
 
-		ProjectID:       info.ProjectID,
+		AppID:           info.AppID,
 		DraftID:         &info.RelatedDraftID,
 		IsVisible:       info.IsVisible == 1,
 		PromptDisabled:  info.PromptDisabled == 1,
 		TableName:       info.TableName_,
 		TableDesc:       info.TableDesc,
 		FieldList:       info.TableField,
-		Status:          entity.TableStatus_Online,
+		Status:          table.BotTableStatus_Online,
 		ActualTableName: info.PhysicalTableName,
-		RwMode:          entity.DatabaseRWMode(info.RwMode),
+		RwMode:          table.BotTableRWMode(info.RwMode),
 	}
 
 	return db, nil
@@ -122,7 +124,7 @@ func (o *OlineImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 
 	// 构建更新内容
 	updates := map[string]interface{}{
-		"project_id":  database.ProjectID,
+		"app_id":      database.AppID,
 		"table_name":  database.TableName,
 		"table_desc":  database.Description,
 		"table_field": fieldJsonStr,
@@ -179,7 +181,6 @@ func (o *OlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 	records, err := res.WithContext(ctx).
 		Where(res.ID.In(ids...)).
 		Find()
-
 	if err != nil {
 		return nil, fmt.Errorf("batch query online database failed: %v", err)
 	}
@@ -193,16 +194,16 @@ func (o *OlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 			CreatorID: info.CreatorID,
 			IconURI:   info.IconURI,
 
-			ProjectID:       info.ProjectID,
+			AppID:           info.AppID,
 			DraftID:         &info.RelatedDraftID, // todo online表可以获取到draftID
 			IsVisible:       info.IsVisible == 1,
 			PromptDisabled:  info.PromptDisabled == 1,
 			TableName:       info.TableName_,
 			TableDesc:       info.TableDesc,
 			FieldList:       info.TableField,
-			Status:          entity.TableStatus_Online,
+			Status:          table.BotTableStatus_Online,
 			ActualTableName: info.PhysicalTableName,
-			RwMode:          entity.DatabaseRWMode(info.RwMode),
+			RwMode:          table.BotTableRWMode(info.RwMode),
 
 			CreatedAtMs: info.CreatedAt,
 			UpdatedAtMs: info.UpdatedAt,
@@ -215,7 +216,7 @@ func (o *OlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 }
 
 // List 列出符合条件的数据库信息
-func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*entity.OrderBy) ([]*entity.Database, int64, error) {
+func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, page *entity.Pagination, orderBy []*database.OrderBy) ([]*entity.Database, int64, error) {
 	res := o.query.OnlineDatabaseInfo
 
 	// 构建基础查询
@@ -229,6 +230,10 @@ func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 
 		if filter.SpaceID != nil {
 			q = q.Where(res.SpaceID.Eq(*filter.SpaceID))
+		}
+
+		if filter.AppID != nil {
+			q = q.Where(res.AppID.Eq(*filter.AppID))
 		}
 
 		if filter.TableName != nil {
@@ -258,13 +263,13 @@ func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 		for _, order := range orderBy {
 			switch order.Field {
 			case "created_at":
-				if order.Direction == entity.SortDirection_Desc {
+				if order.Direction == table.SortDirection_Desc {
 					q = q.Order(res.CreatedAt.Desc())
 				} else {
 					q = q.Order(res.CreatedAt)
 				}
 			case "updated_at":
-				if order.Direction == entity.SortDirection_Desc {
+				if order.Direction == table.SortDirection_Desc {
 					q = q.Order(res.UpdatedAt.Desc())
 				} else {
 					q = q.Order(res.UpdatedAt)
@@ -290,17 +295,17 @@ func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 			CreatorID: info.CreatorID,
 			IconURI:   info.IconURI,
 
-			ProjectID:       info.ProjectID,
+			AppID:           info.AppID,
 			DraftID:         &info.RelatedDraftID,
 			IsVisible:       info.IsVisible == 1,
 			PromptDisabled:  info.PromptDisabled == 1,
 			TableName:       info.TableName_,
 			TableDesc:       info.TableDesc,
 			FieldList:       info.TableField,
-			Status:          entity.TableStatus_Online,
+			Status:          table.BotTableStatus_Online,
 			ActualTableName: info.PhysicalTableName,
-			RwMode:          entity.DatabaseRWMode(info.RwMode),
-			TableType:       ptr.Of(entity.TableType_OnlineTable),
+			RwMode:          table.BotTableRWMode(info.RwMode),
+			TableType:       ptr.Of(table.TableType_OnlineTable),
 		}
 
 		databases = append(databases, d)

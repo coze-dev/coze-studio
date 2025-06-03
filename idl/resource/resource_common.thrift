@@ -80,15 +80,15 @@ struct ResourceInfo{
     4 : optional string               Name                (go.tag = "json:\"name\"", agw.key = "name")                                , // 资源名称
     5 : optional string               Desc                (go.tag = "json:\"desc\"", agw.key = "desc")                                , // 资源描述
     6 : optional string               Icon                (go.tag = "json:\"icon\"", agw.key = "icon")                                , // 资源Icon，完整url
-    7 : optional i64                  CreatorID           (go.tag = "json:\"creator_id\"", agw.js_conv="str", agw.key = "creator_id") , // 资源创建者
+    7 : optional i64                  CreatorID           (agw.js_conv="str", agw.key = "creator_id", api.js_conv="true", api.body="creator_id") , // 资源创建者
     8 : optional string               CreatorAvatar       (go.tag = "json:\"creator_avatar\"", agw.key = "creator_avatar")            , // 资源创建者
     9 : optional string               CreatorName         (go.tag = "json:\"creator_name\"", agw.key = "creator_name")                , // 资源创建者
     10: optional string               UserName            (go.tag = "json:\"user_name\"", agw.key = "user_name")                      , // 资源创建者
     11: optional PublishStatus        PublishStatus       (go.tag = "json:\"publish_status\"", agw.key = "publish_status")            , // 资源发布状态，1-未发布，2-已发布
     12: optional i32                  BizResStatus        (go.tag = "json:\"biz_res_status\"", agw.key = "biz_res_status")            , // 资源状态，各类型资源自身定义
     13: optional bool                 CollaborationEnable (go.tag = "json:\"collaboration_enable\"", agw.key = "collaboration_enable"), // 是否开启多人编辑
-    14: optional i64                  EditTime            (go.tag = "json:\"edit_time\"", agw.key = "edit_time")                      , // 最近编辑时间, unix秒级时间戳
-    15: optional i64                  SpaceID             (go.tag = "json:\"space_id\"", agw.js_conv="str", agw.key = "space_id")     , // 资源所属空间ID
+    14: optional i64                  EditTime            (agw.key = "edit_time", api.js_conv="true", api.body="edit_time")                      , // 最近编辑时间, unix秒级时间戳
+    15: optional i64                  SpaceID             (agw.js_conv="str", agw.key = "space_id", api.js_conv="true", api.body="space_id")     , // 资源所属空间ID
     16: optional map<string,string>   BizExtend           (go.tag = "json:\"biz_extend\"", agw.key = "biz_extend")                    , // 业务携带的扩展信息，以res_type区分，每个res_type定义的schema和含义不一样，使用前需要判断res_type
     17: optional list<ResourceAction> Actions             (go.tag = "json:\"actions\"", agw.key = "actions")                          , // 不同类型的不同操作按钮，由资源实现方和前端约定。返回则展示，要隐藏某个按钮，则不要返回；
     18: optional bool                 DetailDisable       (go.tag = "json:\"detail_disable\"", agw.key = "detail_disable")            , // 是否禁止进详情页
@@ -107,7 +107,7 @@ struct ProjectResourceAction{
 // 实现方提供展示信息
 struct ProjectResourceInfo{
     // 资源id
-    1 : i64    ResID (go.tag = "json:\"res_id\"", agw.js_conv="str", agw.key = "res_id")
+    1 : i64    ResID (api.js_conv="true", api.body="res_id", agw.js_conv="str", agw.key = "res_id")
      // 资源名称
     2 : string Name  (go.tag = "json:\"name\"", agw.key = "name")
     // 不同类型的不同操作按钮，由资源实现方和前端约定。返回则展示，要隐藏某个按钮，则不要返回；
@@ -132,7 +132,7 @@ struct ProjectResourceGroup{
 }
 
 struct ResourceCopyFailedReason {
-    1 : i64 ResID (go.tag = "json:\"res_id\"", agw.js_conv="str", agw.key = "res_id")
+    1 : i64 ResID (agw.js_conv="str", agw.key = "res_id", api.js_conv="true", api.body="res_id")
     2 : ResType ResType (go.tag = "json:\"res_type\"", agw.key = "res_type")
     3 : string ResName (go.tag = "json:\"res_name\"", agw.key = "res_name")
     4 : string Reason (go.tag = "json:\"reason\"", agw.key = "reason")

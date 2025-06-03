@@ -7,22 +7,19 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/crossdomain"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type toolConfig struct {
-	spaceID int64
-	agentID int64
-	isDraft bool
-
+	spaceID  int64
+	agentID  int64
+	isDraft  bool
 	toolConf []*bot_common.PluginInfo
-
-	svr crossdomain.PluginService
 }
 
 func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool, error) {
@@ -33,11 +30,11 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 		VersionAgentTools: slices.Transform(conf.toolConf, func(a *bot_common.PluginInfo) pluginEntity.VersionAgentTool {
 			return pluginEntity.VersionAgentTool{
 				ToolID:    a.GetApiId(),
-				VersionMs: a.ApiVersionMs,
+				VersionMS: a.ApiVersionMs,
 			}
 		}),
 	}
-	resp, err := conf.svr.MGetAgentTools(ctx, req)
+	resp, err := crossplugin.DefaultSVC().MGetAgentTools(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +55,6 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 			spaceID:          conf.spaceID,
 			agentToolVersion: tc.ApiVersionMs,
 			toolInfo:         ti,
-			svr:              conf.svr,
 		})
 	}
 
@@ -71,7 +67,6 @@ type pluginInvokableTool struct {
 	spaceID          int64
 	agentToolVersion *int64
 	toolInfo         *pluginEntity.ToolInfo
-	svr              crossdomain.PluginService
 }
 
 func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
@@ -96,13 +91,12 @@ func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error
 }
 
 func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...tool.Option) (string, error) {
-
 	req := &service.ExecuteToolRequest{
-		ExecScene: func() consts.ExecuteScene {
+		ExecScene: func() plugin.ExecuteScene {
 			if p.isDraft {
-				return consts.ExecSceneOfAgentDraft
+				return plugin.ExecSceneOfAgentDraft
 			}
-			return consts.ExecSceneOfAgentOnline
+			return plugin.ExecSceneOfAgentOnline
 		}(),
 		PluginID:        p.toolInfo.PluginID,
 		ToolID:          p.toolInfo.ID,
@@ -110,15 +104,15 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 	}
 
 	opts := []pluginEntity.ExecuteToolOpts{
-		pluginEntity.WithAgentID(p.agentID),
-		pluginEntity.WithSpaceID(p.spaceID),
-		pluginEntity.WithVersion(p.toolInfo.GetVersion()),
+		plugin.WithAgentID(p.agentID),
+		plugin.WithSpaceID(p.spaceID),
+		plugin.WithVersion(p.toolInfo.GetVersion()),
 	}
 	if !p.isDraft && p.agentToolVersion != nil {
-		opts = append(opts, pluginEntity.WithAgentToolVersion(*p.agentToolVersion))
+		opts = append(opts, plugin.WithAgentToolVersion(*p.agentToolVersion))
 	}
 
-	resp, err := p.svr.ExecuteTool(ctx, req, opts...)
+	resp, err := crossplugin.DefaultSVC().ExecuteTool(ctx, req, opts...)
 	if err != nil {
 		return "", err
 	}

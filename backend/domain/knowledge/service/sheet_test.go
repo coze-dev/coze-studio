@@ -9,6 +9,7 @@ import (
 	"github.com/smartystreets/goconvey/convey"
 	"go.uber.org/mock/gomock"
 
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
@@ -601,7 +602,7 @@ func TestGetDocumentTableInfoByID(t *testing.T) {
 		doc := &model.KnowledgeDocument{
 			ID:           docID,
 			KnowledgeID:  333,
-			DocumentType: int32(entity.DocumentTypeTable),
+			DocumentType: int32(knowledgeModel.DocumentTypeTable),
 			ParseRule: &model.DocumentParseRule{
 				ParsingStrategy: &entity.ParsingStrategy{
 					ExtractImage:  false,
@@ -709,7 +710,7 @@ func TestGetDocumentTableInfoByID(t *testing.T) {
 		})
 
 		PatchConvey("test document type invalid", func() {
-			d := &model.KnowledgeDocument{ID: docID, DocumentType: int32(entity.DocumentTypeText)}
+			d := &model.KnowledgeDocument{ID: docID, DocumentType: int32(knowledgeModel.DocumentTypeText)}
 			expErr := fmt.Errorf("[GetDocumentTableInfoByID] document type invalid, got=%d", d.DocumentType)
 			mockRepo.EXPECT().MGetByID(gomock.Any(), gomock.Any()).Return([]*model.KnowledgeDocument{d}, nil).Times(1)
 			resp, err := k.GetDocumentTableInfoByID(ctx, docID, false)

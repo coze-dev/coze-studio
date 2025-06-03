@@ -30,7 +30,7 @@ func newPlugin(db *gorm.DB, opts ...gen.DOOption) plugin {
 	_plugin.ID = field.NewInt64(tableName, "id")
 	_plugin.SpaceID = field.NewInt64(tableName, "space_id")
 	_plugin.DeveloperID = field.NewInt64(tableName, "developer_id")
-	_plugin.ProjectID = field.NewInt64(tableName, "project_id")
+	_plugin.AppID = field.NewInt64(tableName, "app_id")
 	_plugin.IconURI = field.NewString(tableName, "icon_uri")
 	_plugin.ServerURL = field.NewString(tableName, "server_url")
 	_plugin.PluginType = field.NewInt32(tableName, "plugin_type")
@@ -54,7 +54,7 @@ type plugin struct {
 	ID          field.Int64  // Plugin ID
 	SpaceID     field.Int64  // Space ID
 	DeveloperID field.Int64  // Developer ID
-	ProjectID   field.Int64  // Project ID
+	AppID       field.Int64  // Application ID
 	IconURI     field.String // Icon URI
 	ServerURL   field.String // Server URL
 	PluginType  field.Int32  // Plugin Type, 1:http, 6:local
@@ -83,7 +83,7 @@ func (p *plugin) updateTableName(table string) *plugin {
 	p.ID = field.NewInt64(table, "id")
 	p.SpaceID = field.NewInt64(table, "space_id")
 	p.DeveloperID = field.NewInt64(table, "developer_id")
-	p.ProjectID = field.NewInt64(table, "project_id")
+	p.AppID = field.NewInt64(table, "app_id")
 	p.IconURI = field.NewString(table, "icon_uri")
 	p.ServerURL = field.NewString(table, "server_url")
 	p.PluginType = field.NewInt32(table, "plugin_type")
@@ -113,7 +113,7 @@ func (p *plugin) fillFieldMap() {
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["space_id"] = p.SpaceID
 	p.fieldMap["developer_id"] = p.DeveloperID
-	p.fieldMap["project_id"] = p.ProjectID
+	p.fieldMap["app_id"] = p.AppID
 	p.fieldMap["icon_uri"] = p.IconURI
 	p.fieldMap["server_url"] = p.ServerURL
 	p.fieldMap["plugin_type"] = p.PluginType

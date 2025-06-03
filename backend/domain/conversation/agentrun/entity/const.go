@@ -34,19 +34,6 @@ const (
 	RunEventStreamDone RunEvent = "conversation.stream.done"
 )
 
-type ContentType string
-
-const (
-	ContentTypeText   ContentType = "text"
-	ContentTypeImage  ContentType = "image"
-	ContentTypeVideo  ContentType = "video"
-	ContentTypeMusic  ContentType = "music"
-	ContentTypeCard   ContentType = "card"
-	ContentTypeWidget ContentType = "widget"
-	ContentTypeAPP    ContentType = "app"
-	ContentTypeMix    ContentType = "mix"
-)
-
 type ReplyType int64
 
 const (
@@ -64,14 +51,6 @@ const (
 	MetaTypeKnowledgeCard MetaType = 4
 )
 
-type InputType string
-
-const (
-	InputTypeText  InputType = "text"
-	InputTypeFile  InputType = "file"
-	InputTypeImage InputType = "image"
-)
-
 type RoleType string
 
 const (
@@ -79,19 +58,6 @@ const (
 	RoleTypeUser      RoleType = "user"
 	RoleTypeAssistant RoleType = "assistant"
 	RoleTypeTool      RoleType = "tool"
-)
-
-type MessageType string
-
-const (
-	MessageTypeAck          MessageType = "ack"
-	MessageTypeQuestion     MessageType = "question"
-	MessageTypeFunctionCall MessageType = "function_call"
-	MessageTypeToolResponse MessageType = "tool_response"
-	MessageTypeKnowledge    MessageType = "knowledge"
-	MessageTypeAnswer       MessageType = "answer"
-	MessageTypeFlowUp       MessageType = "follow_up"
-	MessageTypeVerbose      MessageType = "verbose"
 )
 
 type MessageSubType string

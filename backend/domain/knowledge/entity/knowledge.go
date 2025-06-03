@@ -1,12 +1,7 @@
 package entity
 
-import (
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
-)
+import "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 
 type Knowledge struct {
-	common.Info
-	SliceHit int64
-	Type     DocumentType
-	Status   KnowledgeStatus
+	*knowledge.Knowledge
 }

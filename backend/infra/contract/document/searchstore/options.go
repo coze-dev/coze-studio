@@ -1,6 +1,7 @@
 package searchstore
 
 import (
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/progressbar"
 	"github.com/cloudwego/eino/components/indexer"
 	"github.com/cloudwego/eino/components/retriever"
 )
@@ -8,6 +9,7 @@ import (
 type IndexerOptions struct {
 	Partition      *string // 存储分片映射
 	IndexingFields []string
+	ProgressBar    progressbar.ProgressBar
 }
 
 type RetrieverOptions struct {
@@ -29,6 +31,12 @@ func WithPartition(partition string) indexer.Option {
 func WithIndexingFields(fields []string) indexer.Option {
 	return indexer.WrapImplSpecificOptFn(func(o *IndexerOptions) {
 		o.IndexingFields = fields
+	})
+}
+
+func WithProgressBar(progressBar progressbar.ProgressBar) indexer.Option {
+	return indexer.WrapImplSpecificOptFn(func(o *IndexerOptions) {
+		o.ProgressBar = progressBar
 	})
 }
 

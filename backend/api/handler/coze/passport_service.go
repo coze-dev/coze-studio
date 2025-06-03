@@ -30,7 +30,18 @@ func PassportWebEmailRegisterV2Post(ctx context.Context, c *app.RequestContext) 
 		return
 	}
 
-	resp, sessionKey, err := user.UserApplicationSVC.PassportWebEmailRegisterV2(ctx, &req)
+	// 从 Accept-Language 中提取 locale
+	// Accept-Language 格式示例: zh-CN,zh;q=0.9,en;q=0.8
+	acceptLanguage := string(c.Request.Header.Get("Accept-Language"))
+	locale := "en-US" // 默认使用英语
+	if acceptLanguage != "" {
+		languages := strings.Split(acceptLanguage, ",")
+		if len(languages) > 0 {
+			locale = languages[0]
+		}
+	}
+
+	resp, sessionKey, err := user.UserApplicationSVC.PassportWebEmailRegisterV2(ctx, locale, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

@@ -723,7 +723,7 @@ type ResourceInfo struct {
 	// 资源Icon，完整url
 	Icon *string `thrift:"Icon,6,optional" json:"icon" form:"Icon" query:"Icon"`
 	// 资源创建者
-	CreatorID *int64 `thrift:"CreatorID,7,optional" json:"creator_id" form:"CreatorID" query:"CreatorID"`
+	CreatorID *int64 `thrift:"CreatorID,7,optional" form:"creator_id" json:"creator_id,string,omitempty"`
 	// 资源创建者
 	CreatorAvatar *string `thrift:"CreatorAvatar,8,optional" json:"creator_avatar" form:"CreatorAvatar" query:"CreatorAvatar"`
 	// 资源创建者
@@ -737,9 +737,9 @@ type ResourceInfo struct {
 	// 是否开启多人编辑
 	CollaborationEnable *bool `thrift:"CollaborationEnable,13,optional" json:"collaboration_enable" form:"CollaborationEnable" query:"CollaborationEnable"`
 	// 最近编辑时间, unix秒级时间戳
-	EditTime *int64 `thrift:"EditTime,14,optional" json:"edit_time" form:"EditTime" query:"EditTime"`
+	EditTime *int64 `thrift:"EditTime,14,optional" form:"edit_time" json:"edit_time,string,omitempty"`
 	// 资源所属空间ID
-	SpaceID *int64 `thrift:"SpaceID,15,optional" json:"space_id" form:"SpaceID" query:"SpaceID"`
+	SpaceID *int64 `thrift:"SpaceID,15,optional" form:"space_id" json:"space_id,string,omitempty"`
 	// 业务携带的扩展信息，以res_type区分，每个res_type定义的schema和含义不一样，使用前需要判断res_type
 	BizExtend map[string]string `thrift:"BizExtend,16,optional" json:"biz_extend" form:"BizExtend" query:"BizExtend"`
 	// 不同类型的不同操作按钮，由资源实现方和前端约定。返回则展示，要隐藏某个按钮，则不要返回；
@@ -2198,7 +2198,7 @@ func (p *ProjectResourceAction) String() string {
 // 实现方提供展示信息
 type ProjectResourceInfo struct {
 	// 资源id
-	ResID int64 `thrift:"ResID,1" json:"res_id" form:"ResID" query:"ResID"`
+	ResID int64 `thrift:"ResID,1" form:"res_id" json:"res_id,string"`
 	// 资源名称
 	Name string `thrift:"Name,2" json:"name" form:"Name" query:"Name"`
 	// 不同类型的不同操作按钮，由资源实现方和前端约定。返回则展示，要隐藏某个按钮，则不要返回；
@@ -2970,7 +2970,7 @@ func (p *ProjectResourceGroup) String() string {
 }
 
 type ResourceCopyFailedReason struct {
-	ResID   int64   `thrift:"ResID,1" json:"res_id" form:"ResID" query:"ResID"`
+	ResID   int64   `thrift:"ResID,1" form:"res_id" json:"res_id,string"`
 	ResType ResType `thrift:"ResType,2" json:"res_type" form:"ResType" query:"ResType"`
 	ResName string  `thrift:"ResName,3" json:"res_name" form:"ResName" query:"ResName"`
 	Reason  string  `thrift:"Reason,4" json:"reason" form:"Reason" query:"Reason"`

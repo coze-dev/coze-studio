@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"code.byted.org/flow/opencoze/backend/application/app"
 	"code.byted.org/flow/opencoze/backend/application/base/appinfra"
 	"code.byted.org/flow/opencoze/backend/application/connector"
 	"code.byted.org/flow/opencoze/backend/application/conversation"
@@ -15,9 +16,34 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/plugin"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/search"
+	"code.byted.org/flow/opencoze/backend/application/shortcutcmd"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	"code.byted.org/flow/opencoze/backend/application/user"
 	"code.byted.org/flow/opencoze/backend/application/workflow"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagent"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagentrun"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossconnector"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossconversation"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatacopy"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossknowledge"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmessage"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
+	agentrunImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/agentrun"
+	connectorImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/connector"
+	conversationImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/conversation"
+	crossuserImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/crossuser"
+	databaseImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/database"
+	dataCopyImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/datacopy"
+	knowledgeImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/knowledge"
+	messageImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/message"
+	modelmgrImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/modelmgr"
+	pluginImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/plugin"
+	singleagentImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/singleagent"
+	workflowImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/workflow"
 )
 
 type eventbusImpl struct {
@@ -39,17 +65,18 @@ type primaryServices struct {
 	pluginSVC     *plugin.PluginApplicationService
 	memorySVC     *memory.MemoryApplicationServices
 	knowledgeSVC  *knowledge.KnowledgeApplicationService
-	workflowSVC   *workflow.WorkflowApplicationService
+	workflowSVC   *workflow.ApplicationService
+	shortcutSVC   *shortcutcmd.ShortcutCmdApplicationService
 }
 
-type vitalServices struct {
+type complexServices struct {
 	primaryServices *primaryServices
 	singleAgentSVC  *singleagent.SingleAgentApplicationService
+	appSVC          *app.APPApplicationService
 	searchSVC       *search.SearchApplicationService
+	conversationSVC *conversation.ConversationApplicationService
 }
 
-// 本文件只引用 application/xxxx ，不要直接引用 domain service
-// domain service 初始化放到 application/xxxx/init.go 中
 func Init(ctx context.Context) (err error) {
 	infra, err := appinfra.Init(ctx)
 	if err != nil {
@@ -68,11 +95,23 @@ func Init(ctx context.Context) (err error) {
 		return fmt.Errorf("Init - initPrimaryServices failed, err: %v", err)
 	}
 
-	_, err = initVitalServices(ctx, primaryServices)
+	complexServices, err := initComplexServices(ctx, primaryServices)
 	if err != nil {
 		return fmt.Errorf("Init - initVitalServices failed, err: %v", err)
 	}
 
+	crossconnector.SetDefaultSVC(connectorImpl.InitDomainService(basicServices.connectorSVC.DomainSVC))
+	crossdatabase.SetDefaultSVC(databaseImpl.InitDomainService(primaryServices.memorySVC.DatabaseDomainSVC))
+	crossknowledge.SetDefaultSVC(knowledgeImpl.InitDomainService(primaryServices.knowledgeSVC.DomainSVC))
+	crossmodelmgr.SetDefaultSVC(modelmgrImpl.InitDomainService(basicServices.modelMgrSVC.DomainSVC))
+	crossplugin.SetDefaultSVC(pluginImpl.InitDomainService(primaryServices.pluginSVC.DomainSVC))
+	crossworkflow.SetDefaultSVC(workflowImpl.InitDomainService(primaryServices.workflowSVC.DomainSVC))
+	crossconversation.SetDefaultSVC(conversationImpl.InitDomainService(complexServices.conversationSVC.ConversationDomainSVC))
+	crossmessage.SetDefaultSVC(messageImpl.InitDomainService(complexServices.conversationSVC.MessageDomainSVC))
+	crossagentrun.SetDefaultSVC(agentrunImpl.InitDomainService(complexServices.conversationSVC.AgentRunDomainSVC))
+	crossagent.SetDefaultSVC(singleagentImpl.InitDomainService(complexServices.singleAgentSVC.DomainSVC))
+	crossuser.SetDefaultSVC(crossuserImpl.InitDomainService(basicServices.userSVC.DomainSVC))
+	crossdatacopy.SetDefaultSVC(dataCopyImpl.InitDomainService(basicServices.infra))
 	return nil
 }
 
@@ -84,14 +123,13 @@ func initEventBus(infra *appinfra.AppDependencies) *eventbusImpl {
 	return e
 }
 
+// initBasicServices init basic services that only depends on infra.
 func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *eventbusImpl) (*basicServices, error) {
-	// 初始化无依赖的简单服务
 	icon.InitService(infra.TOSClient)
 	openapiauth.InitService(infra.DB, infra.IDGenSVC)
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
 
-	// 初始化有返回值的服务
-	modelMgrSVC := modelmgr.InitService(infra.DB, infra.IDGenSVC)
+	modelMgrSVC := modelmgr.InitService(infra.DB, infra.IDGenSVC, infra.TOSClient)
 	connectorSVC := connector.InitService(infra.TOSClient)
 	userSVC := user.InitService(ctx, infra.DB, infra.TOSClient, infra.IDGenSVC)
 
@@ -105,6 +143,7 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 	}, nil
 }
 
+// initPrimaryServices init primary services that depends on basic services.
 func initPrimaryServices(ctx context.Context, basicServices *basicServices) (*primaryServices, error) {
 	pluginSVC, err := plugin.InitService(ctx, basicServices.toPluginServiceComponents())
 	if err != nil {
@@ -121,34 +160,43 @@ func initPrimaryServices(ctx context.Context, basicServices *basicServices) (*pr
 	workflowDomainSVC := workflow.InitService(
 		basicServices.toWorkflowServiceComponents(pluginSVC, memorySVC, knowledgeSVC))
 
+	shortcutSVC := shortcutcmd.InitService(basicServices.infra.DB, basicServices.infra.IDGenSVC)
+
 	return &primaryServices{
 		basicServices: basicServices,
 		pluginSVC:     pluginSVC,
 		memorySVC:     memorySVC,
 		knowledgeSVC:  knowledgeSVC,
 		workflowSVC:   workflowDomainSVC,
+		shortcutSVC:   shortcutSVC,
 	}, nil
 }
 
-func initVitalServices(ctx context.Context, p *primaryServices) (*vitalServices, error) {
+// initComplexServices init complex services that depends on primary services.
+func initComplexServices(ctx context.Context, p *primaryServices) (*complexServices, error) {
 	singleAgentSVC, err := singleagent.InitService(p.toSingleAgentServiceComponents())
 	if err != nil {
 		return nil, err
 	}
 
-	infra := p.basicServices.infra
-	searchSVC, err := search.InitService(ctx, p.toSearchServiceComponents(singleAgentSVC))
+	appSVC, err := app.InitService(p.toAPPServiceComponents())
 	if err != nil {
 		return nil, err
 	}
 
-	conversation.InitService(infra.DB, infra.IDGenSVC, infra.TOSClient, infra.ImageXClient,
-		singleAgentSVC.DomainSVC)
+	searchSVC, err := search.InitService(ctx, p.toSearchServiceComponents(singleAgentSVC, appSVC))
+	if err != nil {
+		return nil, err
+	}
 
-	return &vitalServices{
+	conversationSVC := conversation.InitService(p.toConversationComponents(singleAgentSVC))
+
+	return &complexServices{
 		primaryServices: p,
 		singleAgentSVC:  singleAgentSVC,
+		appSVC:          appSVC,
 		searchSVC:       searchSVC,
+		conversationSVC: conversationSVC,
 	}, nil
 }
 
@@ -158,6 +206,7 @@ func (b *basicServices) toPluginServiceComponents() *plugin.ServiceComponents {
 		DB:       b.infra.DB,
 		EventBus: b.eventbus.resourceEventBus,
 		OSS:      b.infra.TOSClient,
+		UserSVC:  b.userSVC.DomainSVC,
 	}
 }
 
@@ -170,6 +219,7 @@ func (b *basicServices) toKnowledgeServiceComponents(memoryService *memory.Memor
 		ImageX:   b.infra.ImageXClient,
 		ES:       b.infra.ESClient,
 		EventBus: b.eventbus.resourceEventBus,
+		CacheCli: b.infra.CacheCli,
 	}
 }
 
@@ -202,24 +252,24 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 
 func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceComponents {
 	return &singleagent.ServiceComponents{
-		IDGen:              p.basicServices.infra.IDGenSVC,
-		DB:                 p.basicServices.infra.DB,
-		Cache:              p.basicServices.infra.CacheCli,
-		TosClient:          p.basicServices.infra.TOSClient,
-		ImageX:             p.basicServices.infra.ImageXClient,
-		ModelMgrDomainSVC:  p.basicServices.modelMgrSVC.DomainSVC,
-		UserDomainSVC:      p.basicServices.userSVC.DomainSVC,
-		EventBus:           p.basicServices.eventbus.projectEventBus,
-		Connector:          p.basicServices.connectorSVC.DomainSVC,
-		KnowledgeDomainSVC: p.knowledgeSVC.DomainSVC,
-		PluginDomainSVC:    p.pluginSVC.DomainSVC,
-		WorkflowDomainSVC:  p.workflowSVC.DomainSVC,
-		VariablesDomainSVC: p.memorySVC.VariablesDomainSVC,
-		DatabaseDomainSVC:  p.memorySVC.DatabaseDomainSVC,
+		IDGen:                p.basicServices.infra.IDGenSVC,
+		DB:                   p.basicServices.infra.DB,
+		Cache:                p.basicServices.infra.CacheCli,
+		TosClient:            p.basicServices.infra.TOSClient,
+		ImageX:               p.basicServices.infra.ImageXClient,
+		ModelMgrDomainSVC:    p.basicServices.modelMgrSVC.DomainSVC,
+		UserDomainSVC:        p.basicServices.userSVC.DomainSVC,
+		EventBus:             p.basicServices.eventbus.projectEventBus,
+		ConnectorDomainSVC:   p.basicServices.connectorSVC.DomainSVC,
+		KnowledgeDomainSVC:   p.knowledgeSVC.DomainSVC,
+		PluginDomainSVC:      p.pluginSVC.DomainSVC,
+		WorkflowDomainSVC:    p.workflowSVC.DomainSVC,
+		VariablesDomainSVC:   p.memorySVC.VariablesDomainSVC,
+		ShortcutCMDDomainSVC: p.shortcutSVC.ShortCutDomainSVC,
 	}
 }
 
-func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.SingleAgentApplicationService) *search.ServiceComponents {
+func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.SingleAgentApplicationService, appSVC *app.APPApplicationService) *search.ServiceComponents {
 	infra := p.basicServices.infra
 
 	return &search.ServiceComponents{
@@ -229,6 +279,7 @@ func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.
 		ESClient:             infra.ESClient,
 		ProjectEventBus:      p.basicServices.eventbus.projectEventBus,
 		SingleAgentDomainSVC: singleAgentSVC.DomainSVC,
+		APPDomainSVC:         appSVC.DomainSVC,
 		KnowledgeDomainSVC:   p.knowledgeSVC.DomainSVC,
 		PluginDomainSVC:      p.pluginSVC.DomainSVC,
 		WorkflowDomainSVC:    p.workflowSVC.DomainSVC,
@@ -236,5 +287,30 @@ func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.
 		ConnectorDomainSVC:   p.basicServices.connectorSVC.DomainSVC,
 		PromptDomainSVC:      p.basicServices.promptSVC.DomainSVC,
 		DatabaseDomainSVC:    p.memorySVC.DatabaseDomainSVC,
+	}
+}
+
+func (p *primaryServices) toAPPServiceComponents() *app.ServiceComponents {
+	infra := p.basicServices.infra
+	basic := p.basicServices
+	return &app.ServiceComponents{
+		IDGen:           infra.IDGenSVC,
+		DB:              infra.DB,
+		OSS:             infra.TOSClient,
+		ProjectEventBus: basic.eventbus.projectEventBus,
+		UserSVC:         basic.userSVC.DomainSVC,
+		ConnectorSVC:    basic.connectorSVC.DomainSVC,
+	}
+}
+
+func (p *primaryServices) toConversationComponents(singleAgentSVC *singleagent.SingleAgentApplicationService) *conversation.ServiceComponents {
+	infra := p.basicServices.infra
+
+	return &conversation.ServiceComponents{
+		DB:                   infra.DB,
+		IDGen:                infra.IDGenSVC,
+		TosClient:            infra.TOSClient,
+		ImageX:               infra.ImageXClient,
+		SingleAgentDomainSVC: singleAgentSVC.DomainSVC,
 	}
 }

@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `workflow_execution` (
     workflow_id bigint unsigned not null comment 'workflow_id',
     version varchar(50) null comment 'workflow version. empty if is draft',
     space_id bigint unsigned not null comment 'the space id the workflow belongs to',
-    mode tinyint unsigned not null comment 'the execution mode: 1. debug run 2. release run',
+    mode tinyint unsigned not null comment 'the execution mode: 1. debug run 2. release run 3. node debug',
     operator_id bigint unsigned not null comment 'the user id that runs this workflow',
     connector_id bigint unsigned null comment 'the connector on which this execution happened',
     connector_uid varchar(64) null comment 'user id of the connector',

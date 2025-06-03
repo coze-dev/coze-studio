@@ -2,14 +2,18 @@ package dao
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"strconv"
 	"time"
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/sqlutil"
 )
 
 const (
@@ -18,9 +22,9 @@ const (
 
 type ModelMetaRepo interface {
 	Create(ctx context.Context, meta *model.ModelMeta) error
-	UpdateStatus(ctx context.Context, id int64, status int32) error
+	UpdateStatus(ctx context.Context, id int64, status modelmgr.ModelMetaStatus) error
 	Delete(ctx context.Context, id int64) error
-	List(ctx context.Context, fuzzyShowName *string, status []int32, limit int, cursor *string) (
+	List(ctx context.Context, fuzzyShowName *string, status []modelmgr.ModelMetaStatus, limit int, cursor *string) (
 		resp []*model.ModelMeta, nextCursor *string, hasMore bool, err error)
 	GetByID(ctx context.Context, id int64) (*model.ModelMeta, error)
 	MGetByID(ctx context.Context, ids []int64) ([]*model.ModelMeta, error)
@@ -42,7 +46,7 @@ func (m *ModelMetaDAO) Create(ctx context.Context, meta *model.ModelMeta) error 
 	return m.query.ModelMeta.WithContext(ctx).Create(meta)
 }
 
-func (m *ModelMetaDAO) UpdateStatus(ctx context.Context, id int64, status int32) error {
+func (m *ModelMetaDAO) UpdateStatus(ctx context.Context, id int64, status modelmgr.ModelMetaStatus) error {
 	mm := m.query.ModelMeta
 	_, err := mm.WithContext(ctx).
 		Debug().
@@ -66,18 +70,21 @@ func (m *ModelMetaDAO) Delete(ctx context.Context, id int64) error {
 	return err
 }
 
-func (m *ModelMetaDAO) List(ctx context.Context, fuzzyShowName *string, status []int32, limit int, cursor *string) (
-	resp []*model.ModelMeta, nextCursor *string, hasMore bool, err error) {
+func (m *ModelMetaDAO) List(ctx context.Context, fuzzyShowName *string, status []modelmgr.ModelMetaStatus, limit int, cursor *string) (
+	resp []*model.ModelMeta, nextCursor *string, hasMore bool, err error,
+) {
 	mm := m.query.ModelMeta
 	do := mm.WithContext(ctx)
 
 	if fuzzyShowName != nil {
-		do.Where(mm.ShowName.Like(*fuzzyShowName))
+		do.Where(mm.ModelName.Like(*fuzzyShowName))
 	}
 
 	if len(status) > 0 {
-		// acc when len(status) == 1
-		do.Where(mm.Status.In(status...))
+		vals := slices.Transform(status, func(a modelmgr.ModelMetaStatus) driver.Valuer {
+			return sqlutil.DriverValue(a)
+		})
+		do.Where(mm.Status.In(vals...))
 	}
 
 	if cursor != nil {

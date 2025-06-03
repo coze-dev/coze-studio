@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	mockDatabase "code.byted.org/flow/opencoze/backend/internal/mock/domain/memory/database"
@@ -16,7 +16,7 @@ import (
 
 func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *service.ExecuteSQLRequest) (*service.ExecuteSQLResponse, error) {
 	return func(ctx context.Context, request *service.ExecuteSQLRequest) (*service.ExecuteSQLResponse, error) {
-		if request.OperateType == entity.OperateType_Custom {
+		if request.OperateType == database.OperateType_Custom {
 			assert.Equal(t, *request.SQL, "select * from table where v1=? and v2=?")
 			rs := make([]string, 0)
 			for idx := range request.SQLParams {
@@ -29,12 +29,12 @@ func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *service.Exe
 				},
 			}, nil
 		}
-		if request.OperateType == entity.OperateType_Select {
+		if request.OperateType == database.OperateType_Select {
 			sFields := []string{"v1", "v2", "v3", "v4"}
 			assert.Equal(t, request.SelectFieldList.FieldID, sFields)
 			cond := request.Condition.Conditions[1] // in
 			assert.Equal(t, "(?,?)", cond.Right)
-			assert.Equal(t, entity.Operation_IN, cond.Operation)
+			assert.Equal(t, database.Operation_IN, cond.Operation)
 			assert.Equal(t, "v2_1", *request.SQLParams[1].Value)
 			assert.Equal(t, "v2_2", *request.SQLParams[2].Value)
 			assert.Equal(t, "%sv4%s", *request.SQLParams[3].Value)
@@ -47,10 +47,10 @@ func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *service.Exe
 			}, nil
 
 		}
-		if request.OperateType == entity.OperateType_Delete {
+		if request.OperateType == database.OperateType_Delete {
 			cond := request.Condition.Conditions[1] // in
 			assert.Equal(t, "(?,?)", cond.Right)
-			assert.Equal(t, entity.Operation_NOT_IN, cond.Operation)
+			assert.Equal(t, database.Operation_NOT_IN, cond.Operation)
 			assert.Equal(t, "v2_1", *request.SQLParams[1].Value)
 			assert.Equal(t, "v2_2", *request.SQLParams[2].Value)
 			assert.Equal(t, "%sv4%s", *request.SQLParams[3].Value)
@@ -62,7 +62,7 @@ func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *service.Exe
 				RowsAffected: &rowsAffected,
 			}, nil
 		}
-		if request.OperateType == entity.OperateType_Insert {
+		if request.OperateType == database.OperateType_Insert {
 			records := request.UpsertRows[0].Records
 			ret := map[string]interface{}{
 				"v1": "1",
@@ -76,7 +76,7 @@ func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *service.Exe
 
 		}
 
-		if request.OperateType == entity.OperateType_Update {
+		if request.OperateType == database.OperateType_Update {
 
 			records := request.UpsertRows[0].Records
 			ret := map[string]interface{}{
@@ -92,16 +92,14 @@ func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *service.Exe
 			request.SQLParams = request.SQLParams[len(records):]
 			cond := request.Condition.Conditions[1] // in
 			assert.Equal(t, "(?,?)", cond.Right)
-			assert.Equal(t, entity.Operation_IN, cond.Operation)
+			assert.Equal(t, database.Operation_IN, cond.Operation)
 			assert.Equal(t, "v2_1", *request.SQLParams[1].Value)
 			assert.Equal(t, "v2_2", *request.SQLParams[2].Value)
 			assert.Equal(t, "%sv4%s", *request.SQLParams[3].Value)
 
 		}
 		return &service.ExecuteSQLResponse{}, nil
-
 	}
-
 }
 
 func TestDatabase_Database(t *testing.T) {
@@ -123,11 +121,9 @@ func TestDatabase_Database(t *testing.T) {
 		assert.Equal(t, response.Objects, []nodedatabase.Object{
 			{"v1": "1", "v2": "2"},
 		})
-
 	})
 
 	t.Run("select", func(t *testing.T) {
-
 		req := &nodedatabase.QueryRequest{
 			DatabaseInfoID: 1,
 			SelectFields:   []string{"v1", "v2", "v3", "v4"},
@@ -150,7 +146,6 @@ func TestDatabase_Database(t *testing.T) {
 		response, err := ds.Query(context.Background(), req)
 		assert.Nil(t, err)
 		assert.Equal(t, *response.RowNumber, int64(10))
-
 	})
 
 	t.Run("delete", func(t *testing.T) {
@@ -169,7 +164,6 @@ func TestDatabase_Database(t *testing.T) {
 		response, err := ds.Delete(context.Background(), req)
 		assert.Nil(t, err)
 		assert.Equal(t, *response.RowNumber, int64(10))
-
 	})
 
 	t.Run("insert", func(t *testing.T) {
@@ -208,5 +202,4 @@ func TestDatabase_Database(t *testing.T) {
 		_, err := ds.Update(context.Background(), req)
 		assert.Nil(t, err)
 	})
-
 }

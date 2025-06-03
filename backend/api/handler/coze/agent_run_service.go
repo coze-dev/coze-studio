@@ -14,6 +14,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/application/conversation"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	sse2 "code.byted.org/flow/opencoze/backend/infra/impl/sse"
@@ -41,7 +42,7 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	arStream, err := conversation.AgentRunApplicationService.Run(ctx, &req)
+	arStream, err := conversation.ConversationSVC.Run(ctx, &req)
 	logs.CtxInfof(ctx, "AgentRun req:%v, err:%v", req, err)
 	sseSender := sse2.NewSSESender(sse.NewStream(c))
 
@@ -142,7 +143,6 @@ func sendMessageEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, event stri
 }
 
 func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest) []byte {
-
 	chunkMessageItem := chunk.ChunkMessageItem
 	chunkMessage := &run.RunStreamResponse{
 		ConversationID: strconv.FormatInt(chunkMessageItem.ConversationID, 10),
@@ -164,7 +164,7 @@ func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest)
 		Index: int32(chunkMessageItem.Index),
 		SeqID: int32(chunkMessageItem.SeqID),
 	}
-	if chunkMessageItem.MessageType == entity.MessageTypeAck {
+	if chunkMessageItem.MessageType == model.MessageTypeAck {
 		chunkMessage.Message.Content = req.GetQuery()
 		chunkMessage.Message.ContentType = req.GetContentType()
 		chunkMessage.Message.ExtraInfo = &message.ExtraInfo{
@@ -175,12 +175,12 @@ func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest)
 		chunkMessage.Message.SenderID = ptr.Of(strconv.FormatInt(chunkMessageItem.AgentID, 10))
 		chunkMessage.Message.Content = chunkMessageItem.Content
 
-		if chunkMessageItem.MessageType == entity.MessageTypeKnowledge {
-			chunkMessage.Message.Type = string(entity.MessageTypeVerbose)
+		if chunkMessageItem.MessageType == model.MessageTypeKnowledge {
+			chunkMessage.Message.Type = string(model.MessageTypeVerbose)
 		}
 	}
 
-	if chunk.ChunkMessageItem.IsFinish && chunkMessageItem.MessageType == entity.MessageTypeAnswer {
+	if chunk.ChunkMessageItem.IsFinish && chunkMessageItem.MessageType == model.MessageTypeAnswer {
 		chunkMessage.Message.Content = ""
 	}
 
@@ -277,11 +277,9 @@ func ChatV3(ctx context.Context, c *app.RequestContext) {
 		}
 
 	}
-
 }
 
 func buildARSM2ApiMessage(chunk *entity.AgentRunResponse, req *run.ChatV3Request) []byte {
-
 	chunkMessageItem := chunk.ChunkMessageItem
 	chunkMessage := &run.ChatV3MessageDetail{
 		ID:               strconv.FormatInt(chunkMessageItem.ID, 10),

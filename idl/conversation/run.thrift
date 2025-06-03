@@ -95,6 +95,7 @@ struct AgentRunRequest  {
     21: optional string     commit_version
     22: optional string     sub_scene // scene粒度下进一步区分场景，目前仅给bot模版使用 = bot_template
     23: optional DiffModeIdentifier diff_mode_identifier // diff模式下的聊天配置，仅草稿single bot
+    24: optional i64 shortcut_cmd_id  (api.js_conv='true')
 }
 
 

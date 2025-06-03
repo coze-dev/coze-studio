@@ -34,6 +34,7 @@ type SingleAgentDraft struct {
 	JumpConfig              *bot_common.JumpConfig            `gorm:"column:jump_config;comment:Jump Configuration;serializer:json" json:"jump_config"`                             // Jump Configuration
 	BackgroundImageInfoList []*bot_common.BackgroundImageInfo `gorm:"column:background_image_info_list;comment:Background image;serializer:json" json:"background_image_info_list"` // Background image
 	Database                []*bot_common.Database            `gorm:"column:database;comment:Agent Database Base Configuration;serializer:json" json:"database"`                    // Agent Database Base Configuration
+	ShortcutCommand         []string                          `gorm:"column:shortcut_command;comment:shortcut command;serializer:json" json:"shortcut_command"`                     // shortcut command
 }
 
 // TableName SingleAgentDraft's table name

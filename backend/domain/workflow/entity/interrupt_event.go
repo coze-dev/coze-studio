@@ -24,6 +24,8 @@ type InterruptEvent struct {
 	// TODO: separate the following fields with InterruptEvent
 	NestedInterruptInfo      map[int]*compose.InterruptInfo `json:"nested_interrupt_info,omitempty"`
 	SubWorkflowInterruptInfo *compose.InterruptInfo         `json:"sub_workflow_interrupt_info,omitempty"`
+	ToolInterruptEvents      []*ToolInterruptEvent          `json:"tool_interrupt_events,omitempty"`
+	ToolWorkflowExecuteID    int64
 }
 
 type InterruptEventType = workflow.EventType
@@ -31,6 +33,7 @@ type InterruptEventType = workflow.EventType
 const (
 	InterruptEventQuestion = workflow.EventType_Question
 	InterruptEventInput    = workflow.EventType_InputNode
+	InterruptEventLLM      = 100 // interrupt events emitted by LLM node, which are emitted by nodes within workflow tools
 )
 
 func (i *InterruptEvent) String() string {
@@ -46,4 +49,11 @@ type ResumeRequest struct {
 
 func (r *ResumeRequest) GetResumeID() string {
 	return fmt.Sprintf("%d_%d", r.ExecuteID, r.EventID)
+}
+
+type ToolInterruptEvent struct {
+	ToolCallID string
+	ToolName   string
+	ExecuteID  int64
+	*InterruptEvent
 }

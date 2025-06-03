@@ -17,9 +17,9 @@ import (
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity/common"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
@@ -231,8 +231,8 @@ func (suite *KnowledgeTestSuite) TestTextKnowledge() {
 		IconUri:     "test_icon_uri",
 		CreatorID:   suite.uid,
 		SpaceID:     suite.spaceID,
-		ProjectID:   0,
-		FormatType:  entity.DocumentTypeText,
+		AppID:       0,
+		FormatType:  knowledgeModel.DocumentTypeText,
 	}
 	createResp, err := suite.svc.CreateKnowledge(suite.ctx, &createReq)
 	assert.NoError(suite.T(), err)
@@ -278,8 +278,8 @@ func (suite *KnowledgeTestSuite) TestTextDocument() {
 		IconUri:     "test_icon_uri",
 		CreatorID:   suite.uid,
 		SpaceID:     suite.spaceID,
-		ProjectID:   0,
-		FormatType:  entity.DocumentTypeText,
+		AppID:       0,
+		FormatType:  knowledgeModel.DocumentTypeText,
 	}
 
 	key := fmt.Sprintf("test_text_document_key:%d:%s", time.Now().Unix(), "test.md")
@@ -305,7 +305,7 @@ func (suite *KnowledgeTestSuite) TestTextDocument() {
 	createdDocs, err := suite.svc.CreateDocument(suite.ctx, &knowledge.CreateDocumentRequest{
 		Documents: []*entity.Document{
 			{
-				Info: common.Info{
+				Info: knowledgeModel.Info{
 					ID:          0,
 					Name:        "test.md",
 					Description: "test description",
@@ -313,7 +313,7 @@ func (suite *KnowledgeTestSuite) TestTextDocument() {
 					SpaceID:     suite.spaceID,
 				},
 				KnowledgeID:   createdKnowledge.KnowledgeID,
-				Type:          entity.DocumentTypeText,
+				Type:          knowledgeModel.DocumentTypeText,
 				URI:           key,
 				URL:           url,
 				Size:          0,
@@ -359,8 +359,8 @@ func (suite *KnowledgeTestSuite) TestTableKnowledge() {
 		IconUri:     "test_icon_uri",
 		CreatorID:   suite.uid,
 		SpaceID:     suite.spaceID,
-		ProjectID:   0,
-		FormatType:  entity.DocumentTypeTable,
+		AppID:       0,
+		FormatType:  knowledgeModel.DocumentTypeTable,
 	}
 	createResp, err := suite.svc.CreateKnowledge(suite.ctx, &createReq)
 	assert.NoError(suite.T(), err)
@@ -407,8 +407,8 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 		IconUri:     "test_icon_uri",
 		CreatorID:   suite.uid,
 		SpaceID:     suite.spaceID,
-		ProjectID:   0,
-		FormatType:  entity.DocumentTypeTable,
+		AppID:       0,
+		FormatType:  knowledgeModel.DocumentTypeTable,
 	}
 
 	key := fmt.Sprintf("test_table_document_key:%d:%s", time.Now().Unix(), "test.json")
@@ -436,7 +436,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 	fmt.Printf("%+v\n", createdKnowledge)
 
 	rawDoc := &entity.Document{
-		Info: common.Info{
+		Info: knowledgeModel.Info{
 			ID:          0,
 			Name:        "test.json",
 			Description: "test json",
@@ -444,7 +444,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 			SpaceID:     suite.spaceID,
 		},
 		KnowledgeID:   createdKnowledge.KnowledgeID,
-		Type:          entity.DocumentTypeTable,
+		Type:          knowledgeModel.DocumentTypeTable,
 		URI:           key,
 		URL:           url,
 		Size:          0,
@@ -519,8 +519,8 @@ func (suite *KnowledgeTestSuite) TestDocRetrieve() {
 			TopK:               ptr.Of(int64(3)),
 			MinScore:           nil,
 			MaxTokens:          nil,
-			SelectType:         entity.SelectTypeAuto,
-			SearchType:         entity.SearchTypeHybrid,
+			SelectType:         knowledgeModel.SelectTypeAuto,
+			SearchType:         knowledgeModel.SearchTypeHybrid,
 			EnableQueryRewrite: false,
 			EnableRerank:       true,
 			EnableNL2SQL:       true,
@@ -545,8 +545,8 @@ func (suite *KnowledgeTestSuite) TestTableRetrieve() {
 			TopK:               ptr.Of(int64(3)),
 			MinScore:           nil,
 			MaxTokens:          nil,
-			SelectType:         entity.SelectTypeAuto,
-			SearchType:         entity.SearchTypeHybrid,
+			SelectType:         knowledgeModel.SelectTypeAuto,
+			SearchType:         knowledgeModel.SearchTypeHybrid,
 			EnableQueryRewrite: true,
 			EnableRerank:       true,
 			EnableNL2SQL:       true,

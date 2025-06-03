@@ -38,14 +38,3 @@ service ResourceService extends resource.ResourceService {}
 service PassportService extends passport.PassportService {}
 service WorkflowService extends ocean_cloud_workflow.WorkflowService {}
 service KnowledgeService extends flow_dataengine_dataset.DatasetService {}
-
-service CozeService {
-    // 测试集 TODO 代码生成报错，后面再看
-    //case manage
-    //flow.devops.debugger.coze.SaveCaseDataResp SaveCaseData(1: flow.devops.debugger.coze.SaveCaseDataReq req) (api.post="/api/devops/debugger/v1/coze/testcase/casedata/save")
-    //flow.devops.debugger.coze.DeleteCaseDataResp DeleteCaseData(1: flow.devops.debugger.coze.DeleteCaseDataReq req) (api.post="/api/devops/debugger/v1/coze/testcase/casedata/delete")
-    //flow.devops.debugger.coze.CheckCaseDuplicateResp CheckCaseDuplicate(1: flow.devops.debugger.coze.CheckCaseDuplicateReq req) (api.post="/api/devops/debugger/v1/coze/testcase/casedata/check")
-    //case schema
-    //flow.devops.debugger.coze.GetSchemaByIDResp GetSchemaByID(1: flow.devops.debugger.coze.GetSchemaByIDReq req)(api.post="/api/devops/debugger/v1/coze/testcase/casedata/schema")
-    /**** workflow end ****/
-}

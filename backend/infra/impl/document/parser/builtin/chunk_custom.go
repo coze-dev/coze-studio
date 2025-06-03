@@ -28,9 +28,7 @@ func chunkCustom(_ context.Context, text string, config *contract.Config, opts .
 		parts         = strings.Split(text, cs.Separator)
 		buffer        []rune
 		currentLength int64
-		overlapBuffer []rune
-
-		options = parser.GetCommonOptions(&parser.Options{ExtraMeta: map[string]any{}}, opts...)
+		options       = parser.GetCommonOptions(&parser.Options{ExtraMeta: map[string]any{}}, opts...)
 	)
 
 	trim := func(text string) string {
@@ -47,45 +45,54 @@ func chunkCustom(_ context.Context, text string, config *contract.Config, opts .
 		return text
 	}
 
-	add := func(plainText string) {
+	add := func() {
+		if len(buffer) == 0 {
+			return
+		}
 		doc := &schema.Document{
-			Content:  plainText,
+			Content:  string(buffer),
 			MetaData: map[string]any{},
 		}
-
 		for k, v := range options.ExtraMeta {
 			doc.MetaData[k] = v
 		}
-
 		docs = append(docs, doc)
+		buffer = []rune{}
 	}
 
 	processPart := func(part string) {
 		runes := []rune(part)
 		for partLength := int64(len(runes)); partLength > 0; partLength = int64(len(runes)) {
 			pos := min(partLength, cs.ChunkSize-currentLength)
-			chunk := runes[:pos]
-			add(string(chunk))
-			buffer = buffer[:0]
-			if cs.Overlap > 0 && len(docs) > 0 {
-				overlapBuffer = getOverlap([]rune(docs[len(docs)-1].Content), cs.Overlap)
-				buffer = append(buffer, overlapBuffer...)
-				currentLength = int64(len(overlapBuffer))
-			} else {
-				currentLength = 0
+			buffer = append(buffer, runes[:pos]...)
+			currentLength = int64(len(buffer))
+
+			if currentLength >= cs.ChunkSize {
+				add()
+				if cs.Overlap > 0 {
+					buffer = getOverlap([]rune(docs[len(docs)-1].Content), cs.Overlap, cs.ChunkSize)
+					currentLength = int64(len(buffer))
+				} else {
+					currentLength = 0
+				}
 			}
 			runes = runes[pos:]
 		}
+
+		add()
 	}
 
 	for _, part := range parts {
 		processPart(trim(part))
 	}
 
+	add()
+
 	return docs, nil
 }
 
-func getOverlap(runes []rune, overlap int64) []rune {
+func getOverlap(runes []rune, overlapRatio int64, chunkSize int64) []rune {
+	overlap := int64(float64(chunkSize) * float64(overlapRatio) / 100)
 	if int64(len(runes)) <= overlap {
 		return runes
 	}

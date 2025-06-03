@@ -4,8 +4,7 @@ import (
 	"context"
 	"time"
 
-	runEntity "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
-	"code.byted.org/flow/opencoze/backend/domain/conversation/message/crossdomain"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/repository"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -17,19 +16,15 @@ type messageImpl struct {
 
 type Components struct {
 	MessageRepo repository.MessageRepo
-	CdAgentRun  crossdomain.AgentRun
 }
 
 func NewService(c *Components) Message {
-
 	return &messageImpl{
 		Components: *c,
 	}
-
 }
 
 func (m *messageImpl) Create(ctx context.Context, msg *entity.Message) (*entity.Message, error) {
-
 	// create message
 	message, err := m.MessageRepo.Create(ctx, msg)
 	if err != nil {
@@ -39,11 +34,10 @@ func (m *messageImpl) Create(ctx context.Context, msg *entity.Message) (*entity.
 }
 
 func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.ListResult, error) {
-
 	resp := &entity.ListResult{}
 
 	// get message with query
-	messageList, hasMore, err := m.MessageRepo.List(ctx, req.ConversationID, req.UserID, req.Limit, req.Cursor, req.Direction, ptr.Of(runEntity.MessageTypeQuestion))
+	messageList, hasMore, err := m.MessageRepo.List(ctx, req.ConversationID, req.UserID, req.Limit, req.Cursor, req.Direction, ptr.Of(message.MessageTypeQuestion))
 	if err != nil {
 		return resp, err
 	}
@@ -73,7 +67,6 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.L
 }
 
 func (m *messageImpl) GetByRunIDs(ctx context.Context, conversationID int64, runIDs []int64) ([]*entity.Message, error) {
-
 	messageList, err := m.MessageRepo.GetByRunIDs(ctx, runIDs, "ASC")
 	if err != nil {
 		return nil, err
@@ -83,7 +76,6 @@ func (m *messageImpl) GetByRunIDs(ctx context.Context, conversationID int64, run
 }
 
 func (m *messageImpl) Edit(ctx context.Context, req *entity.Message) (*entity.Message, error) {
-
 	// build update column
 	updateColumns := make(map[string]interface{})
 
@@ -102,6 +94,10 @@ func (m *messageImpl) Edit(ctx context.Context, req *entity.Message) (*entity.Me
 		updateColumns["model_content"] = req.ModelContent
 	}
 
+	if len(req.ReasoningContent) > 0 {
+		updateColumns["reasoning_content"] = req.ReasoningContent
+	}
+
 	updateColumns["updated_at"] = time.Now().UnixMilli()
 
 	_, err := m.MessageRepo.Edit(ctx, req.ID, updateColumns)
@@ -113,14 +109,7 @@ func (m *messageImpl) Edit(ctx context.Context, req *entity.Message) (*entity.Me
 }
 
 func (m *messageImpl) Delete(ctx context.Context, req *entity.DeleteMeta) error {
-
 	err := m.MessageRepo.Delete(ctx, req.MessageIDs, req.RunIDs)
-
-	if err != nil {
-		return err
-	}
-	err = m.CdAgentRun.Delete(ctx, req.RunIDs)
-
 	if err != nil {
 		return err
 	}
@@ -129,7 +118,6 @@ func (m *messageImpl) Delete(ctx context.Context, req *entity.DeleteMeta) error 
 }
 
 func (m *messageImpl) GetByID(ctx context.Context, id int64) (*entity.Message, error) {
-
 	message, err := m.MessageRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -139,7 +127,6 @@ func (m *messageImpl) GetByID(ctx context.Context, id int64) (*entity.Message, e
 }
 
 func (m *messageImpl) Broken(ctx context.Context, req *entity.BrokenMeta) error {
-
 	// broken message
 	updateColumns := make(map[string]interface{})
 	updateColumns["status"] = entity.MessageStatusBroken

@@ -43,7 +43,7 @@ func (m *MockToolService) EXPECT() *MockToolServiceMockRecorder {
 }
 
 // GetPluginInvokableTools mocks base method.
-func (m *MockToolService) GetPluginInvokableTools(ctx context.Context, req *plugin.PluginToolsInfoRequest) (map[int64]tool.InvokableTool, error) {
+func (m *MockToolService) GetPluginInvokableTools(ctx context.Context, req *plugin.PluginToolsInvokableRequest) (map[int64]tool.InvokableTool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPluginInvokableTools", ctx, req)
 	ret0, _ := ret[0].(map[int64]tool.InvokableTool)
