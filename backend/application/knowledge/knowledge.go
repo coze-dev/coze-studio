@@ -56,6 +56,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 		SpaceID:     req.SpaceID,
 		AppID:       req.GetProjectID(),
 		FormatType:  documentType,
+		IconUri:     req.IconURI,
 	}
 	if req.IconURI == "" {
 		createReq.IconUri = getIconURI(req.GetFormatType())
