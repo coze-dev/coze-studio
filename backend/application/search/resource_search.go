@@ -48,7 +48,7 @@ var resType2iconURI = map[common.ResType]string{
 func (s *SearchApplicationService) LibraryResourceList(ctx context.Context, req *resource.LibraryResourceListRequest) (resp *resource.LibraryResourceListResponse, err error) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrSearchPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	searchReq := &entity.SearchResourcesRequest{

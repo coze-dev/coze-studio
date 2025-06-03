@@ -34,7 +34,7 @@ func (k *knowledgeSVC) isWritableKnowledge(ctx context.Context, knowledgeID int6
 	}
 	if knowledgeModel == nil {
 		logs.Errorf("[isWritableKnowledge] knowledge is nil, id=%d", knowledgeID)
-		return false, errorx.New(errno.ErrorNonRetryableCode, errorx.KV("reason", "[isWritableKnowledge] knowledge not found"))
+		return false, errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", "[isWritableKnowledge] knowledge not found"))
 	}
 	switch model.KnowledgeStatus(knowledgeModel.Status) {
 	case model.KnowledgeStatusInit, model.KnowledgeStatusEnable:
@@ -53,7 +53,7 @@ func (k *knowledgeSVC) isWritableDocument(ctx context.Context, documentID int64)
 	}
 	if documentModel == nil {
 		logs.Errorf("[isWritableDocument] document is nil, id=%d", documentID)
-		return false, errorx.New(errno.ErrorNonRetryableCode, errorx.KV("reason", "[isWritableDocument] document not found"))
+		return false, errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", "[isWritableDocument] document not found"))
 	}
 	switch entity.DocumentStatus(documentModel.Status) {
 	case entity.DocumentStatusUploading, entity.DocumentStatusEnable, entity.DocumentStatusChunking, entity.DocumentStatusFailed:

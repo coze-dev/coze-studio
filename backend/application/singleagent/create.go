@@ -12,7 +12,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
-
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -108,7 +107,7 @@ func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*
 	}
 
 	if len(modelResp.ModelList) == 0 {
-		return nil, errorx.New(errno.ErrResourceNotFound, errorx.KV("type", "model"), errorx.KV("id", "default"))
+		return nil, errorx.New(errno.ErrAgentResourceNotFound, errorx.KV("type", "model"), errorx.KV("id", "default"))
 	}
 
 	dm := modelResp.ModelList[0]

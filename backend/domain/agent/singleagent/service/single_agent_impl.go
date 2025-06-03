@@ -54,7 +54,7 @@ func (s *singleAgentImpl) Duplicate(ctx context.Context, req *entity.DuplicateAg
 	}
 
 	if len(srcAgents) == 0 {
-		return nil, errorx.New(errno.ErrResourceNotFound,
+		return nil, errorx.New(errno.ErrAgentResourceNotFound,
 			errorx.KV("type", "agent"), errorx.KV("id", strconv.FormatInt(req.AgentID, 10)))
 	}
 

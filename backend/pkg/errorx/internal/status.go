@@ -34,6 +34,10 @@ func (w *statusError) Code() int32 {
 	return w.statusCode
 }
 
+func (w *statusError) IsAffectStability() bool {
+	return w.ext.IsAffectStability
+}
+
 func (w *statusError) Msg() string {
 	return w.message
 }

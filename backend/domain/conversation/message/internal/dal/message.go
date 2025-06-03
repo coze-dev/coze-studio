@@ -180,7 +180,7 @@ func (dao *MessageDAO) messageDO2PO(ctx context.Context, msgDo *entity.Message) 
 
 	ext, err := json.Marshal(msgDo.Ext)
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrorJsonMarshal)
+		return nil, errorx.WrapByCode(err, errno.ErrConversationJsonMarshal)
 	}
 	msgPO.Ext = string(ext)
 
@@ -224,7 +224,7 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 
 	mcObjByte, err := json.Marshal(modelContentObj)
 	if err != nil {
-		return "", errorx.WrapByCode(err, errno.ErrorJsonMarshal)
+		return "", errorx.WrapByCode(err, errno.ErrConversationJsonMarshal)
 	}
 
 	return string(mcObjByte), nil

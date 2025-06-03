@@ -96,7 +96,7 @@ func (m *milvusManager) GetSearchStore(ctx context.Context, collectionName strin
 	if exists, err := m.loadCollection(ctx, collectionName); err != nil {
 		return nil, err
 	} else if !exists {
-		return nil, errorx.New(errno.ErrorNonRetryableCode,
+		return nil, errorx.New(errno.ErrKnowledgeNonRetryableCode,
 			errorx.KVf("reason", "[GetSearchStore] collection=%v does not exist", collectionName))
 	}
 

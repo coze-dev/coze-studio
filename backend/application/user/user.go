@@ -124,7 +124,7 @@ func (u *UserApplicationService) UserUpdateAvatar(ctx context.Context, mimeType 
 	case "image/webp":
 		ext = "webp"
 	default:
-		return nil, errorx.WrapByCode(err, errno.ErrInvalidParamCode,
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode,
 			errorx.KV("msg", "unsupported image type"))
 	}
 
@@ -205,7 +205,7 @@ func (u *UserApplicationService) MGetUserBasicInfo(ctx context.Context, req *pla
 		return strconv.ParseInt(s, 10, 64)
 	})
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrInvalidParamCode, errorx.KV("msg", "invalid user id"))
+		return nil, errorx.WrapByCode(err, errno.ErrUserInvalidParamCode, errorx.KV("msg", "invalid user id"))
 	}
 
 	userInfos, err := u.DomainSVC.MGetUserProfiles(ctx, userIDs)
@@ -249,14 +249,13 @@ func (u *UserApplicationService) ValidateSession(ctx context.Context, sessionKey
 	}
 
 	if !exist {
-		return nil, errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", "session not exist"))
+		return nil, errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "session not exist"))
 	}
 
 	return session, nil
 }
 
 func userDo2PassportTo(userDo *entity.User) *passport.User {
-
 	var locale *string
 	if userDo.Locale != "" {
 		locale = ptr.Of(userDo.Locale)

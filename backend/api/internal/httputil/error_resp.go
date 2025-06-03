@@ -9,7 +9,6 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type data struct {
@@ -18,18 +17,23 @@ type data struct {
 }
 
 func BadRequest(c *app.RequestContext, errMsg string) {
-	c.AbortWithStatusJSON(http.StatusBadRequest, data{Code: errno.ErrInvalidParamCode, Msg: errMsg})
+	c.AbortWithStatusJSON(http.StatusBadRequest, data{Code: http.StatusBadRequest, Msg: errMsg})
 }
 
 func InternalError(ctx context.Context, c *app.RequestContext, err error) {
 	var customErr errorx.StatusError
-	if errors.As(err, &customErr) && customErr.Code() != 0 {
-		logs.CtxWarnf(ctx, "[InternalError] error:  %v %v \n", customErr.Code(), err)
+
+	// if error is custom error and not affect stability error
+	// return custom error msg
+	if errors.As(err, &customErr) && customErr.Code() != 0 && !customErr.IsAffectStability() {
+		logs.CtxWarnf(ctx, "[StableError] error:  %v %v \n", customErr.Code(), err)
 
 		c.AbortWithStatusJSON(http.StatusOK, data{Code: customErr.Code(), Msg: customErr.Msg()})
 		return
 	}
 
+	// affect stability error or other error
+	// return internal server error
 	logs.CtxErrorf(ctx, "[InternalError]  error: %v \n", err)
 	c.AbortWithStatusJSON(http.StatusInternalServerError, data{Code: 500, Msg: "internal server error"})
 }

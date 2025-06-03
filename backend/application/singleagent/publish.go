@@ -43,7 +43,7 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		}
 
 		if !entity.PublishConnectorIDWhiteList[id] {
-			return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", fmt.Sprintf("connector %d not allowed", id)))
+			return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", fmt.Sprintf("connector %d not allowed", id)))
 		}
 
 		connectorIDs = append(connectorIDs, id)
@@ -233,8 +233,8 @@ func publishAgentPlugins(ctx context.Context, appContext *ServiceComponents, pub
 
 	return agent, nil
 }
-func publishShortcutCommand(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
 
+func publishShortcutCommand(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
 	logs.CtxInfof(ctx, "publishShortcutCommand agentID: %d, shortcutCommand: %v", agent.AgentID, agent.ShortcutCommand)
 	if agent.ShortcutCommand == nil || len(agent.ShortcutCommand) == 0 {
 		return agent, nil
@@ -243,7 +243,6 @@ func publishShortcutCommand(ctx context.Context, appContext *ServiceComponents, 
 		return conv.StrToInt64D(a, 0)
 	})
 	err := appContext.ShortcutCMDDomainSVC.PublishCMDs(ctx, agent.AgentID, cmdIDs)
-
 	if err != nil {
 		return nil, err
 	}

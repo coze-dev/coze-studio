@@ -2,12 +2,14 @@ package connector
 
 import (
 	"context"
-	"fmt"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/connector"
 	"code.byted.org/flow/opencoze/backend/domain/connector/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type connectorImpl struct {
@@ -73,7 +75,7 @@ func (c *connectorImpl) GetByID(ctx context.Context, id int64) (*entity.Connecto
 
 	connector, ok := res[id]
 	if !ok {
-		return nil, fmt.Errorf("connector %d not found", id)
+		return nil, errorx.New(errno.ErrConnectorNotFound, errorx.KV("id", conv.Int64ToStr(id)))
 	}
 
 	return connector, nil

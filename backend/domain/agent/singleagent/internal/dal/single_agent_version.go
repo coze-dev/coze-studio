@@ -40,7 +40,7 @@ func (sa *SingleAgentVersionDAO) GetLatest(ctx context.Context, agentID int64) (
 	}
 
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrGetSingleAgentCode)
+		return nil, errorx.WrapByCode(err, errno.ErrAgentGetCode)
 	}
 
 	do := sa.singleAgentVersionPo2Do(singleAgent)
@@ -57,7 +57,7 @@ func (sa *SingleAgentVersionDAO) Get(ctx context.Context, agentID int64, version
 		return nil, nil
 	}
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrGetSingleAgentCode)
+		return nil, errorx.WrapByCode(err, errno.ErrAgentGetCode)
 	}
 
 	do := sa.singleAgentVersionPo2Do(singleAgent)

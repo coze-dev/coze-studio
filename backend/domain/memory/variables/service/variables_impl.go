@@ -192,7 +192,7 @@ func (v *variablesImpl) DeleteVariableInstance(ctx context.Context, e *entity.Us
 	keywords = v.removeSysVariable(ctx, keywords)
 
 	if len(keywords) == 0 {
-		return errorx.New(errno.ErrDeleteVariableCode)
+		return errorx.New(errno.ErrMemoryNoVariableCanBeChangedCode)
 	}
 
 	return v.Repo.DeleteVariableInstance(ctx, e, keywords)
@@ -403,7 +403,7 @@ func (v *variablesImpl) SetVariableInstance(ctx context.Context, e *entity.UserV
 
 	filerItems := v.filterKVItem(items, meta)
 	if len(filerItems) == 0 {
-		return nil, errorx.New(errno.ErrSetKvMemoryItemInstanceCode)
+		return nil, errorx.New(errno.ErrMemorySetKvMemoryItemInstanceCode)
 	}
 
 	keywords := make([]string, 0, len(filerItems))

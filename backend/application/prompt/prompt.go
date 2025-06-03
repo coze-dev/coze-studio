@@ -27,7 +27,7 @@ var PromptSVC = &PromptApplicationService{}
 func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req *playground.UpsertPromptResourceRequest) (resp *playground.UpsertPromptResourceResponse, err error) {
 	session := ctxutil.GetUserSessionFromCtx(ctx)
 	if session == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no session data provided"))
+		return nil, errorx.New(errno.ErrPromptPermissionCode, errorx.KV("msg", "no session data provided"))
 	}
 
 	promptID := req.Prompt.GetID()
@@ -97,7 +97,7 @@ func (p *PromptApplicationService) GetOfficialPromptResourceList(ctx context.Con
 ) {
 	session := ctxutil.GetUserSessionFromCtx(ctx)
 	if session == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no session data provided"))
+		return nil, errorx.New(errno.ErrPromptPermissionCode, errorx.KV("msg", "no session data provided"))
 	}
 
 	promptList, err := p.DomainSVC.ListOfficialPromptResource(ctx, c.GetKeyword())
@@ -116,7 +116,7 @@ func (p *PromptApplicationService) GetOfficialPromptResourceList(ctx context.Con
 func (p *PromptApplicationService) DeletePromptResource(ctx context.Context, req *playground.DeletePromptResourceRequest) (resp *playground.DeletePromptResourceResponse, err error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no session data provided"))
+		return nil, errorx.New(errno.ErrPromptPermissionCode, errorx.KV("msg", "no session data provided"))
 	}
 
 	promptInfo, err := p.DomainSVC.GetPromptResource(ctx, req.GetPromptResourceID())
@@ -125,7 +125,7 @@ func (p *PromptApplicationService) DeletePromptResource(ctx context.Context, req
 	}
 
 	if promptInfo.CreatorID != *uid {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no permission"))
+		return nil, errorx.New(errno.ErrPromptPermissionCode, errorx.KV("msg", "no permission"))
 	}
 
 	err = p.DomainSVC.DeletePromptResource(ctx, req.GetPromptResourceID())
@@ -180,7 +180,7 @@ func (p *PromptApplicationService) updatePromptResource(ctx context.Context, req
 	uid := ctxutil.GetUIDFromCtx(ctx)
 
 	if promptResource.CreatorID != *uid {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "no permission"))
+		return nil, errorx.New(errno.ErrPromptPermissionCode, errorx.KV("msg", "no permission"))
 	}
 
 	promptResource.Name = req.Prompt.GetName()

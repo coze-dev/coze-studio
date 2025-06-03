@@ -42,12 +42,12 @@ func (c *ConversationApplicationService) ClearHistory(ctx context.Context, req *
 		return nil, err
 	}
 	if currentRes == nil {
-		return nil, errorx.New(errno.ErrorConversationNotFound)
+		return nil, errorx.New(errno.ErrConversationNotFound)
 	}
 	// check user
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil || *userID != currentRes.CreatorID {
-		return nil, errorx.New(errno.ErrorConversationNotFound, errorx.KV("msg", "user not match"))
+		return nil, errorx.New(errno.ErrConversationNotFound, errorx.KV("msg", "user not match"))
 	}
 
 	// delete conversation
@@ -75,7 +75,7 @@ func (c *ConversationApplicationService) CreateSection(ctx context.Context, conv
 	}
 
 	if currentRes == nil {
-		return 0, errorx.New(errno.ErrorConversationNotFound, errorx.KV("msg", "conversation not found"))
+		return 0, errorx.New(errno.ErrConversationNotFound, errorx.KV("msg", "conversation not found"))
 	}
 	var userID int64
 	if currentRes.ConnectorID == consts.CozeConnectorID {
@@ -85,7 +85,7 @@ func (c *ConversationApplicationService) CreateSection(ctx context.Context, conv
 	}
 
 	if userID != currentRes.CreatorID {
-		return 0, errorx.New(errno.ErrorConversationNotFound, errorx.KV("msg", "user not match"))
+		return 0, errorx.New(errno.ErrConversationNotFound, errorx.KV("msg", "user not match"))
 	}
 
 	convRes, err := c.ConversationDomainSVC.NewConversationCtx(ctx, &entity.NewConversationCtxRequest{
@@ -129,7 +129,7 @@ func (c *ConversationApplicationService) ListConversation(ctx context.Context, r
 	connectorID := apiKeyInfo.ConnectorID
 
 	if userID == 0 {
-		return nil, hasMore, errorx.New(errno.ErrorConversationNotFound)
+		return nil, hasMore, errorx.New(errno.ErrConversationNotFound)
 	}
 	if ptr.From(req.ConnectorID) == consts.WebSDKConnectorID {
 		connectorID = ptr.From(req.ConnectorID)

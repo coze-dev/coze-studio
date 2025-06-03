@@ -41,7 +41,7 @@ func (v *VariablesDAO) DeleteVariableInstance(ctx context.Context, do *entity.Us
 
 	_, err := table.WithContext(ctx).Where(condWhere...).Delete(&model.VariableInstance{})
 	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrDeleteVariableInstanceCode)
+		return errorx.WrapByCode(err, errno.ErrMemoryDeleteVariableInstanceCode)
 	}
 
 	return nil
@@ -63,7 +63,7 @@ func (v *VariablesDAO) GetVariableInstances(ctx context.Context, do *entity.User
 
 	res, err := table.WithContext(ctx).Where(condWhere...).Find()
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrGetVariableInstanceCode)
+		return nil, errorx.WrapByCode(err, errno.ErrMemoryGetVariableInstanceCode)
 	}
 
 	dos := make([]*entity.VariableInstance, 0, len(res))
@@ -121,7 +121,7 @@ func (m *VariablesDAO) UpdateVariableInstance(ctx context.Context, KVs []*entity
 			).
 			Updates(p)
 		if err != nil {
-			return errorx.WrapByCode(err, errno.ErrUpdateVariableInstanceCode)
+			return errorx.WrapByCode(err, errno.ErrMemoryUpdateVariableInstanceCode)
 		}
 	}
 
@@ -137,7 +137,7 @@ func (m *VariablesDAO) InsertVariableInstance(ctx context.Context, KVs []*entity
 
 	ids, err := m.IDGen.GenMultiIDs(ctx, len(KVs))
 	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrIDGenFailCode, errorx.KV("msg", "InsertVariableInstance"))
+		return errorx.WrapByCode(err, errno.ErrMemoryIDGenFailCode, errorx.KV("msg", "InsertVariableInstance"))
 	}
 
 	pos := make([]*model.VariableInstance, 0, len(KVs))
@@ -149,7 +149,7 @@ func (m *VariablesDAO) InsertVariableInstance(ctx context.Context, KVs []*entity
 
 	err = table.WithContext(ctx).CreateInBatches(pos, 10)
 	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrInsertVariableInstanceCode)
+		return errorx.WrapByCode(err, errno.ErrMemoryInsertVariableInstanceCode)
 	}
 
 	return nil

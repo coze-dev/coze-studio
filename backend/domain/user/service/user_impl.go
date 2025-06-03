@@ -115,7 +115,7 @@ func (u *userImpl) ResetPassword(ctx context.Context, email, password string) (e
 
 func (u *userImpl) GetUserInfo(ctx context.Context, userID int64) (resp *userEntity.User, err error) {
 	if userID <= 0 {
-		return nil, errorx.New(errno.ErrInvalidParamCode,
+		return nil, errorx.New(errno.ErrUserInvalidParamCode,
 			errorx.KVf("msg", "invalid user id : %d", userID))
 	}
 
@@ -156,7 +156,7 @@ func (u *userImpl) ValidateProfileUpdate(ctx context.Context, req *ValidateProfi
 	resp *ValidateProfileUpdateResponse, err error,
 ) {
 	if req.UniqueName == nil && req.Email == nil {
-		return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "missing parameter"))
+		return nil, errorx.New(errno.ErrUserInvalidParamCode, errorx.KV("msg", "missing parameter"))
 	}
 
 	if req.UniqueName != nil {
@@ -203,8 +203,7 @@ func (u *userImpl) UpdateProfile(ctx context.Context, req *UpdateProfileRequest)
 		}
 
 		if resp.Code != ValidateSuccess {
-			return errorx.New(errno.ErrInvalidParamCode,
-				errorx.KV("msg", resp.Msg))
+			return errorx.New(errno.ErrUserInvalidParamCode, errorx.KV("msg", resp.Msg))
 		}
 
 		updates["unique_name"] = ptr.From(req.UniqueName)
@@ -237,7 +236,7 @@ func (u *userImpl) Create(ctx context.Context, req *CreateUserRequest) (user *us
 	}
 
 	if exist {
-		return nil, errorx.New(errno.ErrEmailAlreadyExistCode, errorx.KV("email", req.Email))
+		return nil, errorx.New(errno.ErrUserEmailAlreadyExistCode, errorx.KV("email", req.Email))
 	}
 
 	if req.UniqueName != "" {
@@ -246,7 +245,7 @@ func (u *userImpl) Create(ctx context.Context, req *CreateUserRequest) (user *us
 			return nil, err
 		}
 		if exist {
-			return nil, errorx.New(errno.ErrUniqueNameAlreadyExistCode, errorx.KV("name", req.UniqueName))
+			return nil, errorx.New(errno.ErrUserUniqueNameAlreadyExistCode, errorx.KV("name", req.UniqueName))
 		}
 	}
 
@@ -360,7 +359,7 @@ func (u *userImpl) ValidateSession(ctx context.Context, sessionKey string) (
 	// 验证会话密钥
 	sessionModel, err := verifySessionKey(sessionKey)
 	if err != nil {
-		return nil, false, errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", "access denied"))
+		return nil, false, errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "access denied"))
 	}
 
 	// 从数据库获取用户信息
@@ -407,7 +406,7 @@ func (u *userImpl) GetUserProfiles(ctx context.Context, userID int64) (user *use
 	}
 
 	if len(userInfos) == 0 {
-		return nil, errorx.New(errno.ErrResourceNotFound, errorx.KV("type", "user"),
+		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("type", "user"),
 			errorx.KV("id", conv.Int64ToStr(userID)))
 	}
 

@@ -35,7 +35,7 @@ func NewSingleAgentDraftDAO(db *gorm.DB, idGen idgen.IDGenerator, cli *redis.Cli
 func (sa *SingleAgentDraftDAO) Create(ctx context.Context, creatorID int64, draft *entity.SingleAgent) (draftID int64, err error) {
 	id, err := sa.idGen.GenID(ctx)
 	if err != nil {
-		return 0, errorx.WrapByCode(err, errno.ErrIDGenFailCode, errorx.KV("msg", "CreatePromptResource"))
+		return 0, errorx.WrapByCode(err, errno.ErrAgentIDGenFailCode, errorx.KV("msg", "CreatePromptResource"))
 	}
 
 	po := sa.singleAgentDraftDo2Po(draft)
@@ -44,7 +44,7 @@ func (sa *SingleAgentDraftDAO) Create(ctx context.Context, creatorID int64, draf
 
 	err = sa.dbQuery.SingleAgentDraft.WithContext(ctx).Create(po)
 	if err != nil {
-		return 0, errorx.WrapByCode(err, errno.ErrCreateSingleAgentCode)
+		return 0, errorx.WrapByCode(err, errno.ErrAgentCreateDraftCode)
 	}
 
 	return id, nil
@@ -59,7 +59,7 @@ func (sa *SingleAgentDraftDAO) Get(ctx context.Context, agentID int64) (*entity.
 	}
 
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrGetSingleAgentCode)
+		return nil, errorx.WrapByCode(err, errno.ErrAgentGetCode)
 	}
 
 	do := sa.singleAgentDraftPo2Do(singleAgent)
@@ -71,7 +71,7 @@ func (sa *SingleAgentDraftDAO) MGet(ctx context.Context, agentIDs []int64) ([]*e
 	sam := sa.dbQuery.SingleAgentDraft
 	singleAgents, err := sam.WithContext(ctx).Where(sam.AgentID.In(agentIDs...)).Find()
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrGetSingleAgentCode)
+		return nil, errorx.WrapByCode(err, errno.ErrAgentGetCode)
 	}
 
 	dos := make([]*entity.SingleAgent, 0, len(singleAgents))
@@ -88,7 +88,7 @@ func (sa *SingleAgentDraftDAO) Update(ctx context.Context, agentInfo *entity.Sin
 
 	_, err = singleAgentDAOModel.Where(singleAgentDAOModel.AgentID.Eq(agentInfo.AgentID)).Updates(po)
 	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrUpdateSingleAgentCode)
+		return errorx.WrapByCode(err, errno.ErrAgentUpdateCode)
 	}
 
 	return nil

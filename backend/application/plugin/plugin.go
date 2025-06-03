@@ -182,7 +182,7 @@ func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context
 func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *pluginAPI.RegisterPluginMetaRequest) (resp *pluginAPI.RegisterPluginMetaResponse, err error) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	if req.AuthType == nil {
@@ -268,7 +268,7 @@ func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *
 func (p *PluginApplicationService) RegisterPlugin(ctx context.Context, req *pluginAPI.RegisterPluginRequest) (resp *pluginAPI.RegisterPluginResponse, err error) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	mf := &entity.PluginManifest{}

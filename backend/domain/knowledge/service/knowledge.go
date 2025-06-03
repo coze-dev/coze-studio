@@ -863,7 +863,7 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *knowle
 	}
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
 	kn, err := k.knowledgeRepo.GetByID(ctx, request.KnowledgeID)
 	if err != nil {

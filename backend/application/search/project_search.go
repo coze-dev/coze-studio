@@ -32,7 +32,7 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 ) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrSearchPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	do := searchRequestTo2Do(*userID, req)
@@ -90,7 +90,7 @@ func (s *SearchApplicationService) PublicFavoriteProduct(ctx context.Context, re
 
 	intelligenceType, ok := productEntityType2DomainName[req.GetEntityType()]
 	if !ok {
-		return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "invalid entity type"))
+		return nil, errorx.New(errno.ErrSearchInvalidParamCode, errorx.KV("msg", "invalid entity type"))
 	}
 
 	isFav := ternary.IFElse(req.GetIsCancel(), 0, 1)

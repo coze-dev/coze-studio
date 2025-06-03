@@ -42,7 +42,7 @@ type APPApplicationService struct {
 func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *projectAPI.DraftProjectCreateRequest) (resp *projectAPI.DraftProjectCreateResponse, err error) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	res, err := a.DomainSVC.CreateDraftAPP(ctx, &service.CreateDraftAPPRequest{
@@ -335,7 +335,7 @@ func (a *APPApplicationService) getConnectorPublishConfigs(ctx context.Context, 
 		selectedWorkflows := make([]*entity.SelectedWorkflow, 0, len(config.SelectedWorkflows))
 		for _, w := range config.SelectedWorkflows {
 			if w.WorkflowID == 0 {
-				return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "invalid workflow id"))
+				return nil, errorx.New(errno.ErrAppInvalidParamCode, errorx.KV("msg", "invalid workflow id"))
 			}
 			selectedWorkflows = append(selectedWorkflows, &entity.SelectedWorkflow{
 				WorkflowID:   w.WorkflowID,

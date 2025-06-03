@@ -47,7 +47,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 	}
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
 	createReq := knowledge.CreateKnowledgeRequest{
 		Name:        req.Name,
@@ -258,7 +258,7 @@ func (k *KnowledgeApplicationService) UpdateKnowledge(ctx context.Context, req *
 func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *dataset.CreateDocumentRequest) (*dataset.CreateDocumentResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
 	listResp, err := k.DomainSVC.ListKnowledge(ctx, &knowledge.ListKnowledgeRequest{IDs: []int64{req.GetDatasetID()}})
 	if err != nil {
@@ -457,7 +457,7 @@ func (k *KnowledgeApplicationService) Resegment(ctx context.Context, req *datase
 func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *dataset.CreateSliceRequest) (*dataset.CreateSliceResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
 	listResp, err := k.DomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{
 		DocumentIDs: []int64{req.GetDocumentID()},
@@ -526,7 +526,7 @@ func (k *KnowledgeApplicationService) DeleteSlice(ctx context.Context, req *data
 func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *dataset.UpdateSliceRequest) (*dataset.UpdateSliceResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
 	docID := req.GetDocumentID()
 	if docID == 0 {
@@ -534,7 +534,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 			SliceID: req.GetSliceID(),
 		})
 		if err != nil {
-			return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "slice not found"))
+			return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "slice not found"))
 		}
 		docID = getSliceResp.Slice.DocumentID
 	}
@@ -780,7 +780,7 @@ func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, 
 func (k *KnowledgeApplicationService) CreateDocumentReview(ctx context.Context, req *dataset.CreateDocumentReviewRequest) (*dataset.CreateDocumentReviewResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
 	createResp, err := k.DomainSVC.CreateDocumentReview(ctx, convertCreateDocReviewReq(req))
 	if err != nil {
@@ -806,7 +806,7 @@ func (k *KnowledgeApplicationService) CreateDocumentReview(ctx context.Context, 
 func (k *KnowledgeApplicationService) MGetDocumentReview(ctx context.Context, req *dataset.MGetDocumentReviewRequest) (*dataset.MGetDocumentReviewResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
 	reviewIDs, err := slices.TransformWithErrorCheck(req.GetReviewIds(), func(s string) (int64, error) {
 		id, err := strconv.ParseInt(s, 10, 64)
@@ -843,7 +843,7 @@ func (k *KnowledgeApplicationService) MGetDocumentReview(ctx context.Context, re
 func (k *KnowledgeApplicationService) SaveDocumentReview(ctx context.Context, req *dataset.SaveDocumentReviewRequest) (*dataset.SaveDocumentReviewResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
 	err := k.DomainSVC.SaveDocumentReview(ctx, &knowledge.SaveDocumentReviewRequest{
 		KnowledgeID: req.GetDatasetID(),

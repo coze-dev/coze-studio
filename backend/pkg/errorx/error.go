@@ -15,6 +15,7 @@ type StatusError interface {
 	error
 	Code() int32
 	Msg() string
+	IsAffectStability() bool
 	Extra() map[string]string
 }
 

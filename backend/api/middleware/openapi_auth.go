@@ -71,14 +71,14 @@ func OpenapiAuthMW() app.HandlerFunc {
 
 		if len(c.Request.Header.Get(HeaderAuthorizationKey)) == 0 {
 			httputil.InternalError(ctx, c,
-				errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", "missing authorization in header")))
+				errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "missing authorization in header")))
 			return
 		}
 
 		apiKey := parseBearerAuthToken(c.Request.Header.Get(HeaderAuthorizationKey))
 		if len(apiKey) == 0 {
 			httputil.InternalError(ctx, c,
-				errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", "missing api_key in request")))
+				errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "missing api_key in request")))
 			return
 		}
 
@@ -86,13 +86,13 @@ func OpenapiAuthMW() app.HandlerFunc {
 		if err != nil {
 			logs.CtxErrorf(ctx, "OpenApiAuthApplication.CheckPermission failed, err=%v", err)
 			httputil.InternalError(ctx, c,
-				errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", err.Error())))
+				errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", err.Error())))
 			return
 		}
 
 		if apiKeyInfo == nil {
 			httputil.InternalError(ctx, c,
-				errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", "api key invalid")))
+				errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "api key invalid")))
 			return
 		}
 

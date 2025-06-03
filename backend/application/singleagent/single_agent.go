@@ -63,11 +63,11 @@ func (s *SingleAgentApplicationService) UpdateSingleAgentDraft(ctx context.Conte
 	if req.BotInfo.OnboardingInfo != nil {
 		infoStr, err := s.generateOnboardingStr(req.BotInfo.OnboardingInfo)
 		if err != nil {
-			return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "onboarding_info invalidate"))
+			return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "onboarding_info invalidate"))
 		}
 
 		if len(infoStr) > onboardingInfoMaxLength {
-			return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "onboarding_info is too long"))
+			return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "onboarding_info is too long"))
 		}
 	}
 
@@ -373,7 +373,7 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, req *developer_api.DuplicateDraftBotRequest) (*developer_api.DuplicateDraftBotResponse, error) {
 	userIDPtr := ctxutil.GetUIDFromCtx(ctx)
 	if userIDPtr == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	userID := *userIDPtr
@@ -393,7 +393,7 @@ func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, r
 	}
 
 	if len(userInfos) == 0 {
-		return nil, errorx.New(errno.ErrResourceNotFound, errorx.KV("type", "user"),
+		return nil, errorx.New(errno.ErrAgentResourceNotFound, errorx.KV("type", "user"),
 			errorx.KV("id", strconv.FormatInt(userID, 10)))
 	}
 
@@ -485,7 +485,7 @@ func disabledParam(schemaVal *openapi3.Schema) bool {
 func (s *SingleAgentApplicationService) UpdateAgentDraftDisplayInfo(ctx context.Context, req *developer_api.UpdateDraftBotDisplayInfoRequest) (*developer_api.UpdateDraftBotDisplayInfoResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	_, err := s.ValidateAgentDraftAccess(ctx, req.BotID)
@@ -513,7 +513,7 @@ func (s *SingleAgentApplicationService) UpdateAgentDraftDisplayInfo(ctx context.
 func (s *SingleAgentApplicationService) GetAgentDraftDisplayInfo(ctx context.Context, req *developer_api.GetDraftBotDisplayInfoRequest) (*developer_api.GetDraftBotDisplayInfoResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	_, err := s.ValidateAgentDraftAccess(ctx, req.BotID)
@@ -536,7 +536,7 @@ func (s *SingleAgentApplicationService) GetAgentDraftDisplayInfo(ctx context.Con
 func (s *SingleAgentApplicationService) ValidateAgentDraftAccess(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session uid not found"))
+		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "session uid not found"))
 	}
 
 	do, err := s.DomainSVC.GetSingleAgentDraft(ctx, agentID)
@@ -545,13 +545,13 @@ func (s *SingleAgentApplicationService) ValidateAgentDraftAccess(ctx context.Con
 	}
 
 	if do == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KVf("msg", "No agent draft(%d) found for the given agent ID", agentID))
+		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KVf("msg", "No agent draft(%d) found for the given agent ID", agentID))
 	}
 
 	if do.CreatorID != *uid {
 		logs.CtxErrorf(ctx, "user(%d) is not the creator(%d) of the agent draft", *uid, do.CreatorID)
 
-		return do, errorx.New(errno.ErrPermissionCode, errorx.KV("detail", "you are not the agent owner"))
+		return do, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("detail", "you are not the agent owner"))
 	}
 
 	return do, nil
@@ -569,7 +569,7 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 		var id int64
 		id, err = conv.StrToInt64(req.GetConnectorID())
 		if err != nil {
-			return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", fmt.Sprintf("ConnectorID %v invalidate", *req.ConnectorID)))
+			return nil, errorx.New(errno.ErrAgentInvalidParamCode, errorx.KV("msg", fmt.Sprintf("ConnectorID %v invalidate", *req.ConnectorID)))
 		}
 
 		connectorID = ptr.Of(id)

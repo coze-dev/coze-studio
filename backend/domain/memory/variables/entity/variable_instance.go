@@ -49,15 +49,15 @@ func (v *UserVariableMeta) GenSystemKV(ctx context.Context, keyword string) (*kv
 
 func (v *UserVariableMeta) genUUID(ctx context.Context) (*kvmemory.KVItem, error) {
 	if v.BizID == "" {
-		return nil, errorx.New(errno.ErrGetVariableInstanceCode, errorx.KV("msg", "biz_id is empty"))
+		return nil, errorx.New(errno.ErrMemoryGetSysUUIDInstanceCode, errorx.KV("msg", "biz_id is empty"))
 	}
 
 	if v.ConnectorUID == "" {
-		return nil, errorx.New(errno.ErrGetVariableInstanceCode, errorx.KV("msg", "connector_uid is empty"))
+		return nil, errorx.New(errno.ErrMemoryGetSysUUIDInstanceCode, errorx.KV("msg", "connector_uid is empty"))
 	}
 
 	if v.ConnectorID == 0 {
-		return nil, errorx.New(errno.ErrGetVariableInstanceCode, errorx.KV("msg", "connector_id is empty"))
+		return nil, errorx.New(errno.ErrMemoryGetSysUUIDInstanceCode, errorx.KV("msg", "connector_id is empty"))
 	}
 
 	encryptSysUUIDKey := v.encryptSysUUIDKey(ctx)

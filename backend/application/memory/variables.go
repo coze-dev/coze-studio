@@ -64,7 +64,7 @@ func (v *VariableApplicationService) GetSysVariableConf(ctx context.Context, req
 func (v *VariableApplicationService) GetProjectVariablesMeta(ctx context.Context, req *project_memory.GetProjectVariableListReq) (*project_memory.GetProjectVariableListResp, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	version := ""
@@ -163,7 +163,7 @@ func (v *VariableApplicationService) toGroupVariableInfo(ctx context.Context, me
 func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, req project_memory.UpdateProjectVariableReq) (*project_memory.UpdateProjectVariableResp, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	if req.UserID == 0 {
@@ -201,7 +201,7 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 		} else {
 			if key2Var[v.Keyword].DefaultValue != v.DefaultValue ||
 				key2Var[v.Keyword].VariableType != v.VariableType {
-				return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "can not update system variable"))
+				return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "can not update system variable"))
 			}
 		}
 	}
@@ -243,13 +243,11 @@ func (v *VariableApplicationService) GetVariableMeta(ctx context.Context, req *p
 func (v *VariableApplicationService) DeleteVariableInstance(ctx context.Context, req *kvmemory.DelProfileMemoryRequest) (*kvmemory.DelProfileMemoryResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	bizType := ternary.IFElse(req.BotID == 0, project_memory.VariableConnector_Project, project_memory.VariableConnector_Bot)
 	bizID := ternary.IFElse(req.BotID == 0, req.ProjectID, fmt.Sprintf("%d", req.BotID))
-
-	// TODO: auth check
 
 	e := entity.UserVariableMeta{
 		BizType:      int32(bizType),
@@ -270,7 +268,7 @@ func (v *VariableApplicationService) DeleteVariableInstance(ctx context.Context,
 func (v *VariableApplicationService) GetPlayGroundMemory(ctx context.Context, req *kvmemory.GetProfileMemoryRequest) (*kvmemory.GetProfileMemoryResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	isProjectKV := req.ProjectID != nil
@@ -304,10 +302,9 @@ func (v *VariableApplicationService) GetPlayGroundMemory(ctx context.Context, re
 }
 
 func (v *VariableApplicationService) SetVariableInstance(ctx context.Context, req *kvmemory.SetKvMemoryReq) (*kvmemory.SetKvMemoryResp, error) {
-	// TODO: 鉴权
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	isProjectKV := req.ProjectID != nil

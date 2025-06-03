@@ -2,11 +2,13 @@ package icon
 
 import (
 	"context"
-	"errors"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func InitService(oss storage.Storage) {
@@ -38,7 +40,8 @@ func (i *Icon) GetIcon(ctx context.Context, req *developer_api.GetIconRequest) (
 
 	uri := iconURI[req.GetIconType()]
 	if uri == "" {
-		return nil, errors.New("invalid icon type")
+		return nil, errorx.New(errno.ErrIconInvalidType,
+			errorx.KV("type", conv.Int64ToStr(int64(req.GetIconType()))))
 	}
 
 	url, err := i.oss.GetObjectUrl(ctx, iconURI[req.GetIconType()])
@@ -63,10 +66,12 @@ func (i *Icon) UploadFile(ctx context.Context, data []byte, objKey string) (*dev
 	if err != nil {
 		return nil, err
 	}
+
 	url, err := i.oss.GetObjectUrl(ctx, objKey)
 	if err != nil {
 		return nil, err
 	}
+
 	return &developer_api.UploadFileResponse{
 		Data: &developer_api.UploadFileData{
 			UploadURL: url,

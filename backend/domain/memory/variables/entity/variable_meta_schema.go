@@ -33,7 +33,7 @@ func NewVariableMetaSchema(schema []byte) (*VariableMetaSchema, error) {
 	schemaObj := &VariableMetaSchema{}
 	err := json.Unmarshal(schema, schemaObj)
 	if err != nil {
-		return nil, errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KVf("msg", "schema json invalid: %s \n json = %s", err.Error(), string(schema)))
+		return nil, errorx.New(errno.ErrMemorySchemeInvalidCode, errorx.KVf("msg", "schema json invalid: %s \n json = %s", err.Error(), string(schema)))
 	}
 
 	return schemaObj, nil
@@ -47,11 +47,11 @@ func (v *VariableMetaSchema) IsArrayType() bool {
 func (v *VariableMetaSchema) GetArrayType(schema []byte) (string, error) {
 	schemaObj, err := NewVariableMetaSchema(schema)
 	if err != nil {
-		return "", errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KVf("msg", "NewVariableMetaSchema failed, %v", err.Error()))
+		return "", errorx.New(errno.ErrMemorySchemeInvalidCode, errorx.KVf("msg", "NewVariableMetaSchema failed, %v", err.Error()))
 	}
 
 	if schemaObj.Type == "" {
-		return "", errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KVf("msg", "array type not found in %s", schema))
+		return "", errorx.New(errno.ErrMemorySchemeInvalidCode, errorx.KVf("msg", "array type not found in %s", schema))
 	}
 
 	return schemaObj.Type, nil
@@ -82,7 +82,7 @@ func (v *VariableMetaSchema) GetObjectProperties(schema []byte) (map[string]*Var
 	schemas := make([]*VariableMetaSchema, 0)
 	err := json.Unmarshal(schema, &schemas)
 	if err != nil {
-		return nil, errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", "schema array content json invalid"))
+		return nil, errorx.New(errno.ErrMemorySchemeInvalidCode, errorx.KV("msg", "schema array content json invalid"))
 	}
 
 	properties := make(map[string]*VariableMetaSchema)
@@ -99,18 +99,18 @@ func (v *VariableMetaSchema) check(ctx context.Context) error {
 
 func (v *VariableMetaSchema) checkAppVariableSchema(ctx context.Context, schemaObj *VariableMetaSchema, schema string) (err error) {
 	if len(schema) == 0 && schemaObj == nil {
-		return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KV("msg", "schema is nil"))
+		return errorx.New(errno.ErrMemorySchemeInvalidCode, errorx.KV("msg", "schema is nil"))
 	}
 
 	if schemaObj == nil {
 		schemaObj, err = NewVariableMetaSchema([]byte(schema))
 		if err != nil {
-			return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KVf("msg", "checkAppVariableSchema failed , %v", err.Error()))
+			return errorx.New(errno.ErrMemorySchemeInvalidCode, errorx.KVf("msg", "checkAppVariableSchema failed , %v", err.Error()))
 		}
 	}
 
 	if !schemaObj.nameValidate() {
-		return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KVf("msg", "name(%s) is invalid", schemaObj.Name))
+		return errorx.New(errno.ErrMemorySchemeInvalidCode, errorx.KVf("msg", "name(%s) is invalid", schemaObj.Name))
 	}
 
 	if schemaObj.Type == variableMetaSchemaTypeObject {
@@ -118,7 +118,7 @@ func (v *VariableMetaSchema) checkAppVariableSchema(ctx context.Context, schemaO
 	} else if schemaObj.Type == variableMetaSchemaTypeArray {
 		_, err := v.GetArrayType(schemaObj.Schema)
 		if err != nil {
-			return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KVf("msg", "GetArrayType failed : %v", err.Error()))
+			return errorx.New(errno.ErrMemorySchemeInvalidCode, errorx.KVf("msg", "GetArrayType failed : %v", err.Error()))
 		}
 	}
 
@@ -128,7 +128,7 @@ func (v *VariableMetaSchema) checkAppVariableSchema(ctx context.Context, schemaO
 func (v *VariableMetaSchema) checkSchemaObj(ctx context.Context, schema []byte) error {
 	properties, err := v.GetObjectProperties(schema)
 	if err != nil {
-		return errorx.New(errno.ErrUpdateVariableSchemaCode, errorx.KVf("msg", "GetObjectProperties failed : %v", err.Error()))
+		return errorx.New(errno.ErrMemorySchemeInvalidCode, errorx.KVf("msg", "GetObjectProperties failed : %v", err.Error()))
 	}
 
 	for _, schemaObj := range properties {

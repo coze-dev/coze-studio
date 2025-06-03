@@ -59,7 +59,7 @@ func (d *PromptDAO) promptResourcePO2DO(p *model.PromptResource) *entity.PromptR
 func (d *PromptDAO) CreatePromptResource(ctx context.Context, do *entity.PromptResource) (int64, error) {
 	id, err := d.IDGen.GenID(ctx)
 	if err != nil {
-		return 0, errorx.New(errno.ErrIDGenFailCode, errorx.KV("msg", "CreatePromptResource"))
+		return 0, errorx.New(errno.ErrPromptIDGenFailCode, errorx.KV("msg", "CreatePromptResource"))
 	}
 
 	p := d.promptResourceDO2PO(do)
@@ -74,7 +74,7 @@ func (d *PromptDAO) CreatePromptResource(ctx context.Context, do *entity.PromptR
 	promptModel := query.PromptResource
 	err = promptModel.WithContext(ctx).Create(p)
 	if err != nil {
-		return 0, errorx.WrapByCode(err, errno.ErrCreatePromptResourceCode)
+		return 0, errorx.WrapByCode(err, errno.ErrPromptCreateCode)
 	}
 
 	return id, nil
@@ -88,11 +88,11 @@ func (d *PromptDAO) GetPromptResource(ctx context.Context, promptID int64) (*ent
 
 	promptResource, err := promptModel.WithContext(ctx).Where(promptWhere...).First()
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errorx.WrapByCode(err, errno.ErrGetPromptResourceNotFoundCode)
+		return nil, errorx.WrapByCode(err, errno.ErrPromptDataNotFoundCode)
 	}
 
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrGetPromptResourceCode)
+		return nil, errorx.WrapByCode(err, errno.ErrPromptGetCode)
 	}
 
 	do := d.promptResourcePO2DO(promptResource)
@@ -122,7 +122,7 @@ func (d *PromptDAO) UpdatePromptResource(ctx context.Context, p *entity.PromptRe
 
 	_, err := promptModel.WithContext(ctx).Where(promptWhere...).Updates(updateMap)
 	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrUpdatePromptResourceCode)
+		return errorx.WrapByCode(err, errno.ErrPromptUpdateCode)
 	}
 
 	return nil
@@ -135,7 +135,7 @@ func (d *PromptDAO) DeletePromptResource(ctx context.Context, ID int64) error {
 	}
 	_, err := promptModel.WithContext(ctx).Where(promptWhere...).Delete()
 	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrDeletePromptResourceCode)
+		return errorx.WrapByCode(err, errno.ErrPromptDeleteCode)
 	}
 
 	return nil

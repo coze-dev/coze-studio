@@ -47,11 +47,11 @@ func (d *DatabaseApplicationService) GetModeConfig(ctx context.Context, req *tab
 func (d *DatabaseApplicationService) ListDatabase(ctx context.Context, req *table.ListDatabaseRequest) (*table.ListDatabaseResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	if req.SpaceID == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "space id is required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "space id is required"))
 	}
 
 	spaces, err := crossuser.DefaultSVC().GetUserSpaceList(ctx, *uid)
@@ -59,7 +59,7 @@ func (d *DatabaseApplicationService) ListDatabase(ctx context.Context, req *tabl
 		return nil, err
 	}
 	if len(spaces) == 0 || spaces[0].ID != *req.SpaceID {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "space id is invalid"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "space id is invalid"))
 	}
 
 	res, err := d.DomainSVC.ListDatabase(ctx, convertListDatabase(req))
@@ -101,7 +101,7 @@ func (d *DatabaseApplicationService) GetDatabaseByID(ctx context.Context, req *t
 func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table.AddDatabaseRequest) (*table.SingleDatabaseResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	spaces, err := crossuser.DefaultSVC().GetUserSpaceList(ctx, *uid)
@@ -109,7 +109,7 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 		return nil, err
 	}
 	if len(spaces) == 0 || spaces[0].ID != req.SpaceID {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "space id is invalid"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "space id is invalid"))
 	}
 
 	res, err := d.DomainSVC.CreateDatabase(ctx, convertAddDatabase(req))
@@ -214,7 +214,7 @@ func (d *DatabaseApplicationService) ListDatabaseRecords(ctx context.Context, re
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	domainReq := &database.ListDatabaseRecordRequest{
@@ -237,7 +237,7 @@ func (d *DatabaseApplicationService) ListDatabaseRecords(ctx context.Context, re
 func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, req *table.UpdateDatabaseRecordsRequest) (*table.UpdateDatabaseRecordsResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	err := d.ValidateAccess(ctx, req.DatabaseID)
@@ -334,7 +334,7 @@ func (d *DatabaseApplicationService) GetOnlineDatabaseId(ctx context.Context, re
 func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *table.ResetBotTableRequest) (*table.ResetBotTableResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	err := d.ValidateAccess(ctx, req.GetDatabaseInfoID())
@@ -385,7 +385,7 @@ func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *tab
 func (d *DatabaseApplicationService) GetDatabaseTemplate(ctx context.Context, req *table.GetDatabaseTemplateRequest) (*table.GetDatabaseTemplateResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	databaseID, err := getDatabaseID(ctx, req.TableType, req.DatabaseID)
@@ -522,7 +522,7 @@ func (d *DatabaseApplicationService) GetBotDatabase(ctx context.Context, req *ta
 func (d *DatabaseApplicationService) ValidateDatabaseTableSchema(ctx context.Context, req *table.ValidateTableSchemaRequest) (*table.ValidateTableSchemaResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	if req.GetSourceInfo() == nil || req.GetTableSheet() == nil {
@@ -570,7 +570,7 @@ func (d *DatabaseApplicationService) ValidateDatabaseTableSchema(ctx context.Con
 	}
 
 	if !res.Valid {
-		return nil, errorx.New(errno.ErrInvalidParamCode,
+		return nil, errorx.New(errno.ErrMemoryInvalidParamCode,
 			errorx.KV("msg", res.GetInvalidMsg()))
 	}
 
@@ -584,7 +584,7 @@ func (d *DatabaseApplicationService) ValidateDatabaseTableSchema(ctx context.Con
 func (d *DatabaseApplicationService) GetDatabaseTableSchema(ctx context.Context, req *table.GetTableSchemaRequest) (*document.GetTableSchemaInfoResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	if req.GetSourceFile() == nil || req.GetTableSheet() == nil {
@@ -623,7 +623,7 @@ func (d *DatabaseApplicationService) GetDatabaseTableSchema(ctx context.Context,
 func (d *DatabaseApplicationService) SubmitDatabaseInsertTask(ctx context.Context, req *table.SubmitDatabaseInsertRequest) (*table.SubmitDatabaseInsertResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	databaseID, err := getDatabaseID(ctx, req.TableType, req.DatabaseID)
@@ -662,7 +662,7 @@ func (d *DatabaseApplicationService) SubmitDatabaseInsertTask(ctx context.Contex
 func (d *DatabaseApplicationService) DatabaseFileProgressData(ctx context.Context, req *table.GetDatabaseFileProgressRequest) (*table.GetDatabaseFileProgressResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return nil, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
 	databaseID, err := getDatabaseID(ctx, req.TableType, req.DatabaseID)
@@ -717,7 +717,7 @@ func getDatabaseID(ctx context.Context, tableType table.TableType, onlineID int6
 func (d *DatabaseApplicationService) ValidateAccess(ctx context.Context, onlineDatabaseID int64) error {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
-		return errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session uid not found"))
+		return errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session uid not found"))
 	}
 
 	do, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
@@ -732,12 +732,12 @@ func (d *DatabaseApplicationService) ValidateAccess(ctx context.Context, onlineD
 		return err
 	}
 	if len(do.Databases) == 0 {
-		return errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "online database not found"))
+		return errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "online database not found"))
 	}
 
 	if do.Databases[0].CreatorID != *uid {
 		logs.CtxErrorf(ctx, "user(%d) is not the creator(%d) of the database(%d)", *uid, do.Databases[0].CreatorID, onlineDatabaseID)
-		return errorx.New(errno.ErrPermissionCode, errorx.KV("detail", "you are not the creator of the database"))
+		return errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("detail", "you are not the creator of the database"))
 	}
 
 	return nil

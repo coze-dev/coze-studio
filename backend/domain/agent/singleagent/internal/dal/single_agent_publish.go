@@ -24,7 +24,7 @@ func (dao *SingleAgentVersionDAO) List(ctx context.Context, agentID int64, pageI
 
 	result, _, err := query.FindByPage(int(offset), int(pageSize))
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrGetSingleAgentCode)
+		return nil, errorx.WrapByCode(err, errno.ErrAgentGetCode)
 	}
 
 	dos := make([]*entity.SingleAgentPublish, 0, len(result))
@@ -62,7 +62,7 @@ func (sa *SingleAgentVersionDAO) SavePublishRecord(ctx context.Context, p *entit
 
 	id, err := sa.IDGen.GenID(ctx)
 	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrIDGenFailCode, errorx.KV("msg", "PublishDraftAgent"))
+		return errorx.WrapByCode(err, errno.ErrAgentIDGenFailCode, errorx.KV("msg", "PublishDraftAgent"))
 	}
 
 	now := time.Now()
@@ -87,7 +87,7 @@ func (sa *SingleAgentVersionDAO) SavePublishRecord(ctx context.Context, p *entit
 	sapTable := query.SingleAgentPublish
 	err = sapTable.WithContext(ctx).Create(po)
 	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrPublishSingleAgentCode)
+		return errorx.WrapByCode(err, errno.ErrAgentPublishSingleAgentCode)
 	}
 
 	return nil
@@ -96,7 +96,7 @@ func (sa *SingleAgentVersionDAO) SavePublishRecord(ctx context.Context, p *entit
 func (sa *SingleAgentVersionDAO) Create(ctx context.Context, connectorID int64, version string, e *entity.SingleAgent) (int64, error) {
 	id, err := sa.IDGen.GenID(ctx)
 	if err != nil {
-		return 0, errorx.WrapByCode(err, errno.ErrIDGenFailCode, errorx.KV("msg", "CreatePromptResource"))
+		return 0, errorx.WrapByCode(err, errno.ErrAgentIDGenFailCode, errorx.KV("msg", "CreatePromptResource"))
 	}
 
 	po := sa.singleAgentVersionDo2Po(e)
@@ -107,7 +107,7 @@ func (sa *SingleAgentVersionDAO) Create(ctx context.Context, connectorID int64, 
 	table := query.SingleAgentVersion
 	err = table.Create(po)
 	if err != nil {
-		return 0, errorx.WrapByCode(err, errno.ErrPublishSingleAgentCode) // TODO: 错误码整理
+		return 0, errorx.WrapByCode(err, errno.ErrAgentPublishSingleAgentCode)
 	}
 
 	return id, nil

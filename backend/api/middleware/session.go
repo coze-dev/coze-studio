@@ -36,7 +36,7 @@ func SessionAuthMW() app.HandlerFunc {
 		if len(s) == 0 {
 			logs.Errorf("[SessionAuthMW] session id is nil")
 			httputil.InternalError(c, ctx,
-				errorx.New(errno.ErrAuthenticationFailed, errorx.KV("reason", "missing session_key in cookie")))
+				errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "missing session_key in cookie")))
 			return
 		}
 

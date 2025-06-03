@@ -40,7 +40,7 @@ func newChatModel(ctx context.Context, conf *config) (chatmodel.ToolCallingChatM
 	modelMeta := modelDetail.Meta
 
 	if !conf.modelFactory.SupportProtocol(modelMeta.Protocol) {
-		return nil, errorx.New(errno.ErrSupportedChatModelProtocol,
+		return nil, errorx.New(errno.ErrAgentSupportedChatModelProtocol,
 			errorx.KV("protocol", string(modelMeta.Protocol)))
 	}
 

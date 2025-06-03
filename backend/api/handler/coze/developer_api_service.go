@@ -279,7 +279,7 @@ func UploadFile(ctx context.Context, c *app.RequestContext) {
 	}
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
-		internalServerErrorResponse(ctx, c, errorx.New(errno.ErrPermissionCode, errorx.KV("msg", "session required")))
+		internalServerErrorResponse(ctx, c, errorx.New(errno.ErrIconPermissionCode, errorx.KV("msg", "session required")))
 		return
 	}
 	secret := createSecret(ptr.From(userID), req.FileHead.FileType)

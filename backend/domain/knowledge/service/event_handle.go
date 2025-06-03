@@ -33,7 +33,7 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 	defer func() {
 		if err != nil {
 			var statusError errorx.StatusError
-			if errors.As(err, &statusError) && statusError.Code() == errno.ErrorNonRetryableCode {
+			if errors.As(err, &statusError) && statusError.Code() == errno.ErrKnowledgeNonRetryableCode {
 				logs.Errorf("[HandleMessage][no-retry] failed, %v", err)
 				err = nil
 			} else {
@@ -76,7 +76,7 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 			return err
 		}
 	default:
-		return errorx.New(errno.ErrorNonRetryableCode, errorx.KV("reason", fmt.Sprintf("unknown event type=%s", event.Type)))
+		return errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", fmt.Sprintf("unknown event type=%s", event.Type)))
 	}
 	return nil
 }
@@ -132,7 +132,7 @@ func (k *knowledgeSVC) indexDocuments(ctx context.Context, event *entity.Event) 
 func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (err error) {
 	doc := event.Document
 	if doc == nil {
-		return errorx.New(errno.ErrorNonRetryableCode, errorx.KV("reason", fmt.Sprintf("[indexDocument] document not provided")))
+		return errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", fmt.Sprintf("[indexDocument] document not provided")))
 	}
 
 	// TODO: document redis lock
@@ -143,7 +143,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	if valid, err := k.isWritableKnowledgeAndDocument(ctx, event.KnowledgeID, doc.ID); err != nil {
 		return err
 	} else if !valid {
-		return errorx.New(errno.ErrorNonRetryableCode,
+		return errorx.New(errno.ErrKnowledgeNonRetryableCode,
 			errorx.KVf("reason", "[indexDocument] not writable, knowledge_id=%d, document_id=%d", event.KnowledgeID, doc.ID))
 	}
 

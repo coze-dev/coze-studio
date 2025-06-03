@@ -21,14 +21,14 @@ func makeAgentDisplayInfoKey(userID, agentID int64) string {
 func (sa *SingleAgentDraftDAO) UpdateDisplayInfo(ctx context.Context, userID int64, e *entity.AgentDraftDisplayInfo) error {
 	data, err := json.Marshal(e)
 	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrorSetDraftBotDisplayInfo)
+		return errorx.WrapByCode(err, errno.ErrAgentSetDraftBotDisplayInfo)
 	}
 
 	key := makeAgentDisplayInfoKey(userID, e.AgentID)
 
 	_, err = sa.cacheClient.Set(ctx, key, data, 0).Result()
 	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrorSetDraftBotDisplayInfo)
+		return errorx.WrapByCode(err, errno.ErrAgentSetDraftBotDisplayInfo)
 	}
 
 	return nil
@@ -68,13 +68,13 @@ func (sa *SingleAgentDraftDAO) GetDisplayInfo(ctx context.Context, userID, agent
 		}, nil
 	}
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrorGetDraftBotDisplayInfoNotFound)
+		return nil, errorx.WrapByCode(err, errno.ErrAgentGetDraftBotDisplayInfoNotFound)
 	}
 
 	e := &entity.AgentDraftDisplayInfo{}
 	err = json.Unmarshal([]byte(data), e)
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrorGetDraftBotDisplayInfoNotFound)
+		return nil, errorx.WrapByCode(err, errno.ErrAgentGetDraftBotDisplayInfoNotFound)
 	}
 
 	return e, nil

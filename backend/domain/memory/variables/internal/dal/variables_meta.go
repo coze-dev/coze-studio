@@ -32,7 +32,7 @@ func (m *VariablesDAO) CreateVariableMeta(ctx context.Context, do *entity.Variab
 
 	id, err := m.IDGen.GenID(ctx)
 	if err != nil {
-		return 0, errorx.WrapByCode(err, errno.ErrIDGenFailCode, errorx.KV("msg", "CreateProjectVariable"))
+		return 0, errorx.WrapByCode(err, errno.ErrMemoryIDGenFailCode, errorx.KV("msg", "CreateProjectVariable"))
 	}
 
 	po := m.variablesMetaDO2PO(do)
@@ -41,7 +41,7 @@ func (m *VariablesDAO) CreateVariableMeta(ctx context.Context, do *entity.Variab
 
 	err = table.WithContext(ctx).Create(po)
 	if err != nil {
-		return 0, errorx.WrapByCode(err, errno.ErrCreateProjectVariableCode)
+		return 0, errorx.WrapByCode(err, errno.ErrMemoryCreateAppVariableCode)
 	}
 
 	return id, nil
@@ -58,7 +58,7 @@ func (m *VariablesDAO) UpdateProjectVariable(ctx context.Context, do *entity.Var
 
 	_, err := table.WithContext(ctx).Where(condWhere...).Updates(po)
 	if err != nil {
-		return errorx.WrapByCode(err, errno.ErrUpdateProjectVariableCode)
+		return errorx.WrapByCode(err, errno.ErrMemoryUpdateAppVariableCode)
 	}
 
 	return nil
@@ -79,7 +79,7 @@ func (m *VariablesDAO) GetVariableMeta(ctx context.Context, bizID string, bizTyp
 	}
 
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrGetVariableMetaCode)
+		return nil, errorx.WrapByCode(err, errno.ErrMemoryGetVariableMetaCode)
 	}
 
 	do := m.variablesMetaPO2DO(data)
@@ -100,7 +100,7 @@ func (m *VariablesDAO) GetVariableMetaByID(ctx context.Context, id int64) (*enti
 	}
 
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrGetVariableMetaCode)
+		return nil, errorx.WrapByCode(err, errno.ErrMemoryGetVariableMetaCode)
 	}
 
 	do := m.variablesMetaPO2DO(data)
