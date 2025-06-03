@@ -171,7 +171,7 @@ func (a *appPacker) GetProjectInfo(ctx context.Context) (*projectInfo, error) {
 }
 
 func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.IntelligencePublishInfo {
-	res, err := a.SVC.APPDomainSVC.GetAPPPublishInfo(ctx, &appService.GetAPPPublishInfoRequest{
+	res, err := a.SVC.APPDomainSVC.GetAPPLatestPublishRecord(ctx, &appService.GetAPPLatestPublishRecordRequest{
 		APPID: a.projectID,
 	})
 	if err != nil {
@@ -179,8 +179,8 @@ func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.Intellig
 		return nil
 	}
 
-	connectorInfo := make([]*common.ConnectorInfo, 0, len(res.ConnectorPublishInfo))
-	connectorIDs := slices.Transform(res.ConnectorPublishInfo, func(c entity.ConnectorPublishInfo) int64 {
+	connectorInfo := make([]*common.ConnectorInfo, 0, len(res.ConnectorPublishRecord))
+	connectorIDs := slices.Transform(res.ConnectorPublishRecord, func(c *entity.ConnectorPublishRecord) int64 {
 		return c.ConnectorID
 	})
 

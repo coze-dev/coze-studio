@@ -392,7 +392,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 
 	sr.Sort(
 		&sortOptions{
-			OrderBy: fieldOfUpdateTime,
+			OrderBy: fieldOfUpdateTime, // FIXME: updateTime 重复，导致乱序或者漏数据，应该加上 id 做联合 cursor 及 排序
 			Order:   sortorder.Desc,
 		},
 		// &sortOptions{

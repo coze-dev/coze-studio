@@ -257,11 +257,28 @@ func PublishProject(ctx context.Context, c *app.RequestContext) {
 	var req publish.PublishProjectRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp := new(publish.PublishProjectResponse)
+	if req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "invalid project id")
+		return
+	}
+	if req.VersionNumber == "" {
+		invalidParamRequestResponse(c, "invalid version number")
+		return
+	}
+	if len(req.ConnectorPublishConfig) == 0 {
+		invalidParamRequestResponse(c, "invalid connector publish config")
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.PublishAPP(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -273,11 +290,20 @@ func GetPublishRecordList(ctx context.Context, c *app.RequestContext) {
 	var req publish.GetPublishRecordListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp := new(publish.GetPublishRecordListResponse)
+	if req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "invalid project id")
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.GetPublishRecordList(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

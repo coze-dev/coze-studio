@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS `app`
     `connector_id`   bigint(20) unsigned COMMENT 'Publish Connector ID',
     `publish_config` json COMMENT 'Publish Configuration',
     `version`        varchar(255)        NOT NULL DEFAULT '' COMMENT 'Release Version',
-    `publisher_id`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Publisher ID',
     `version_desc`   text COMMENT 'Version Description',
 
     `publish_at`     bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Publish Time in Milliseconds',

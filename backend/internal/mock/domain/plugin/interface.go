@@ -23,7 +23,6 @@ import (
 type MockPluginService struct {
 	ctrl     *gomock.Controller
 	recorder *MockPluginServiceMockRecorder
-	isgomock struct{}
 }
 
 // MockPluginServiceMockRecorder is the mock recorder for MockPluginService.
@@ -182,18 +181,18 @@ func (mr *MockPluginServiceMockRecorder) GetOnlineTool(ctx, req any) *gomock.Cal
 }
 
 // GetPluginNextVersion mocks base method.
-func (m *MockPluginService) GetPluginNextVersion(ctx context.Context, req *service.GetPluginNextVersionRequest) (*service.GetPluginNextVersionResponse, error) {
+func (m *MockPluginService) GetPluginNextVersion(ctx context.Context, pluginID int64) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPluginNextVersion", ctx, req)
-	ret0, _ := ret[0].(*service.GetPluginNextVersionResponse)
+	ret := m.ctrl.Call(m, "GetPluginNextVersion", ctx, pluginID)
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPluginNextVersion indicates an expected call of GetPluginNextVersion.
-func (mr *MockPluginServiceMockRecorder) GetPluginNextVersion(ctx, req any) *gomock.Call {
+func (mr *MockPluginServiceMockRecorder) GetPluginNextVersion(ctx, pluginID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginNextVersion", reflect.TypeOf((*MockPluginService)(nil).GetPluginNextVersion), ctx, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginNextVersion", reflect.TypeOf((*MockPluginService)(nil).GetPluginNextVersion), ctx, pluginID)
 }
 
 // ListDraftPlugins mocks base method.
@@ -314,6 +313,21 @@ func (m *MockPluginService) MGetVersionPlugins(ctx context.Context, req *service
 func (mr *MockPluginServiceMockRecorder) MGetVersionPlugins(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetVersionPlugins", reflect.TypeOf((*MockPluginService)(nil).MGetVersionPlugins), ctx, req)
+}
+
+// PublishAPPPlugins mocks base method.
+func (m *MockPluginService) PublishAPPPlugins(ctx context.Context, req *service.PublishAPPPluginsRequest) (*service.PublishAPPPluginsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublishAPPPlugins", ctx, req)
+	ret0, _ := ret[0].(*service.PublishAPPPluginsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PublishAPPPlugins indicates an expected call of PublishAPPPlugins.
+func (mr *MockPluginServiceMockRecorder) PublishAPPPlugins(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishAPPPlugins", reflect.TypeOf((*MockPluginService)(nil).PublishAPPPlugins), ctx, req)
 }
 
 // PublishAgentTools mocks base method.

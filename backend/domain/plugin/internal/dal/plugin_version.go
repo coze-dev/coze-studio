@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
@@ -47,6 +48,26 @@ func (p pluginVersionPO) ToDO() *entity.PluginInfo {
 	})
 }
 
+func (p *PluginVersionDAO) getSelected(opt *PluginSelectedOption) (selected []field.Expr) {
+	if opt == nil {
+		return selected
+	}
+
+	table := p.query.PluginVersion
+
+	if opt.PluginID {
+		selected = append(selected, table.PluginID)
+	}
+	if opt.OpenapiDoc {
+		selected = append(selected, table.OpenapiDoc)
+	}
+	if opt.Version {
+		selected = append(selected, table.Version)
+	}
+
+	return selected
+}
+
 func (p *PluginVersionDAO) Get(ctx context.Context, pluginID int64, version string) (plugin *entity.PluginInfo, exist bool, err error) {
 	table := p.query.PluginVersion
 	pl, err := table.WithContext(ctx).
@@ -66,7 +87,7 @@ func (p *PluginVersionDAO) Get(ctx context.Context, pluginID int64, version stri
 	return plugin, true, nil
 }
 
-func (p *PluginVersionDAO) MGet(ctx context.Context, vPlugins []entity.VersionPlugin) (plugins []*entity.PluginInfo, err error) {
+func (p *PluginVersionDAO) MGet(ctx context.Context, vPlugins []entity.VersionPlugin, opt *PluginSelectedOption) (plugins []*entity.PluginInfo, err error) {
 	plugins = make([]*entity.PluginInfo, 0, len(vPlugins))
 
 	table := p.query.PluginVersion
@@ -74,6 +95,7 @@ func (p *PluginVersionDAO) MGet(ctx context.Context, vPlugins []entity.VersionPl
 
 	for _, chunk := range chunks {
 		q := table.WithContext(ctx).
+			Select(p.getSelected(opt)...).
 			Where(
 				table.Where(
 					table.PluginID.Eq(chunk[0].PluginID),

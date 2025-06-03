@@ -36,40 +36,25 @@ type PluginInfo struct {
 	OpenapiDoc *Openapi3T
 }
 
-type AuthV2 struct {
-	Type        AuthType     `json:"type" validate:"required" yaml:"type"`
-	SubType     AuthSubType  `json:"sub_type" yaml:"sub_type"`
-	Payload     *string      `json:"payload,omitempty" yaml:"payload,omitempty"`
-	AuthOfOIDC  *AuthOfOIDC  `json:"-"`
-	AuthOfToken *AuthOfToken `json:"-"`
-	AuthOfOAuth *AuthOfOAuth `json:"-"`
+func (p PluginInfo) GetName() string {
+	if p.Manifest == nil {
+		return ""
+	}
+	return p.Manifest.NameForHuman
 }
 
-type AuthOfOIDC struct {
-	GrantType    string `json:"grant_type"`
-	EndpointURL  string `json:"endpoint_url"`
-	Audience     string `json:"audience,omitempty"`
-	ODICScope    string `json:"oidc_scope,omitempty"`
-	ODICClientID string `json:"oidc_client_id,omitempty"`
+func (p PluginInfo) GetDesc() string {
+	if p.Manifest == nil {
+		return ""
+	}
+	return p.Manifest.DescriptionForHuman
 }
 
-type AuthOfToken struct {
-	Location     HTTPParamLocation `json:"location"` // header or query
-	Key          string            `json:"key"`
-	ServiceToken string            `json:"service_token"`
-}
-
-type AuthOfOAuth struct {
-	ClientID                 string `json:"client_id"`
-	ClientSecret             string `json:"client_secret"`
-	ClientURL                string `json:"client_url"`
-	Scope                    string `json:"scope,omitempty"`
-	AuthorizationURL         string `json:"authorization_url"`
-	AuthorizationContentType string `json:"authorization_content_type"` // only support application/json
-}
-
-type APIDesc struct {
-	Type PluginType `json:"type" validate:"required"`
+func (p PluginInfo) GetAuthInfo() *AuthV2 {
+	if p.Manifest == nil {
+		return nil
+	}
+	return p.Manifest.Auth
 }
 
 type BindAgentToolsRequest struct {
@@ -128,10 +113,20 @@ type PublishPluginRequest struct {
 	VersionDesc string
 }
 
-type GetPluginNextVersionRequest struct {
-	PluginID int64
+type PublishAPPPluginsRequest struct {
+	APPID   int64
+	Version string
 }
 
-type GetPluginNextVersionResponse struct {
-	Version string
+type PublishAPPPluginsResponse struct {
+	FailedPlugins []*PluginInfo
+}
+
+type CheckCanPublishPluginsRequest struct {
+	PluginIDs []int64
+	Version   string
+}
+
+type CheckCanPublishPluginsResponse struct {
+	InvalidPlugins []*PluginInfo
 }

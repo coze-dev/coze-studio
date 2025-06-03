@@ -59,7 +59,7 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 	if err != nil {
 		return nil, err
 	}
-	mf.Auth = authV2.AuthV2
+	mf.Auth = authV2
 
 	for loc, params := range req.CommonParams {
 		location, ok := model.ToHTTPParamLocation(loc)
@@ -191,7 +191,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 		}
 	}
 
-	oldDraftTools, err := p.pluginRepo.GetPluginAllDraftTools(ctx, req.PluginID)
+	oldDraftTools, err := p.toolRepo.GetPluginAllDraftTools(ctx, req.PluginID)
 	if err != nil {
 		return err
 	}
@@ -483,21 +483,21 @@ func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *Upd
 		return nil, err
 	}
 
-	mf.Auth = authV2.AuthV2
+	mf.Auth = authV2
 
 	return mf, nil
 }
 
-func convertPluginAuthInfoToAuthV2(authInfo *PluginAuthInfo) (*entity.AuthV2, error) {
+func convertPluginAuthInfoToAuthV2(authInfo *PluginAuthInfo) (*model.AuthV2, error) {
 	if authInfo.AuthType == nil {
 		return nil, fmt.Errorf("auth type is empty")
 	}
 
 	switch *authInfo.AuthType {
 	case model.AuthTypeOfNone:
-		return entity.NewAuthV2(&model.AuthV2{
+		return &model.AuthV2{
 			Type: model.AuthTypeOfNone,
-		}), nil
+		}, nil
 
 	case model.AuthTypeOfOAuth:
 		if authInfo.OauthInfo == nil || *authInfo.OauthInfo == "" {
@@ -529,10 +529,10 @@ func convertPluginAuthInfoToAuthV2(authInfo *PluginAuthInfo) (*entity.AuthV2, er
 			return nil, fmt.Errorf("marshal oauth info failed, err=%v", err)
 		}
 
-		return entity.NewAuthV2(&model.AuthV2{
+		return &model.AuthV2{
 			Type:    model.AuthTypeOfOAuth,
 			Payload: &str,
-		}), nil
+		}, nil
 
 	case model.AuthTypeOfService:
 		if authInfo.AuthSubType == nil {
@@ -562,11 +562,11 @@ func convertPluginAuthInfoToAuthV2(authInfo *PluginAuthInfo) (*entity.AuthV2, er
 				return nil, fmt.Errorf("marshal token auth failed, err=%v", err)
 			}
 
-			return entity.NewAuthV2(&model.AuthV2{
+			return &model.AuthV2{
 				Type:    model.AuthTypeOfService,
 				SubType: model.AuthSubTypeOfToken,
 				Payload: &str,
-			}), nil
+			}, nil
 
 		case model.AuthSubTypeOfOIDC:
 			if authInfo.AuthPayload == nil || *authInfo.AuthPayload == "" {
@@ -579,11 +579,11 @@ func convertPluginAuthInfoToAuthV2(authInfo *PluginAuthInfo) (*entity.AuthV2, er
 				return nil, fmt.Errorf("unmarshal oidc auth info failed, err=%v", err)
 			}
 
-			return entity.NewAuthV2(&model.AuthV2{
+			return &model.AuthV2{
 				Type:    model.AuthTypeOfService,
 				SubType: model.AuthSubTypeOfToken,
 				Payload: authInfo.AuthPayload,
-			}), nil
+			}, nil
 
 		default:
 			return nil, fmt.Errorf("invalid sub auth type '%s'", *authInfo.AuthSubType)
@@ -628,41 +628,33 @@ func (p *pluginServiceImpl) MGetOnlinePlugins(ctx context.Context, req *MGetOnli
 	}, nil
 }
 
-func (p *pluginServiceImpl) GetPluginNextVersion(ctx context.Context, req *GetPluginNextVersionRequest) (resp *GetPluginNextVersionResponse, err error) {
-	pl, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+func (p *pluginServiceImpl) GetPluginNextVersion(ctx context.Context, pluginID int64) (version string, err error) {
+	const defaultVersion = "v1.0.0"
+
+	pl, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, pluginID)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	if !exist {
-		return &GetPluginNextVersionResponse{
-			Version: "v1.0.0",
-		}, nil
+		return defaultVersion, nil
 	}
-
-	const defaultVersion = "v1.0.0"
 
 	parts := strings.Split(pl.GetVersion(), ".") // Remove the 'v' and split
 	if len(parts) < 3 {
 		logs.CtxErrorf(ctx, "invalid version format '%s'", pl.GetVersion())
-		return &GetPluginNextVersionResponse{
-			Version: defaultVersion,
-		}, nil
+		return defaultVersion, nil
 	}
 
 	patch, err := strconv.ParseInt(parts[3], 10, 64)
 	if err != nil {
 		logs.CtxErrorf(ctx, "invalid version format '%s'", pl.GetVersion())
-		return &GetPluginNextVersionResponse{
-			Version: defaultVersion,
-		}, nil
+		return defaultVersion, nil
 	}
 
 	parts[3] = strconv.FormatInt(patch+1, 10)
 	nextVersion := strings.Join(parts, ".")
 
-	return &GetPluginNextVersionResponse{
-		Version: nextVersion,
-	}, nil
+	return nextVersion, nil
 }
 
 func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPluginRequest) (err error) {
@@ -681,7 +673,7 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 		}
 	} else if exist && onlinePlugin.Version != nil {
 		if semver.Compare(req.Version, *onlinePlugin.Version) != 1 {
-			return fmt.Errorf("invalid version")
+			return fmt.Errorf("version '%s' of plugin '%d' is invalid", *onlinePlugin.Version, req.PluginID)
 		}
 	}
 
@@ -696,16 +688,113 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 	return nil
 }
 
+func (p *pluginServiceImpl) PublishAPPPlugins(ctx context.Context, req *PublishAPPPluginsRequest) (resp *PublishAPPPluginsResponse, err error) {
+	resp = &PublishAPPPluginsResponse{}
+
+	draftPlugins, err := p.pluginRepo.GetAPPAllDraftPlugins(ctx, req.APPID)
+	if err != nil {
+		return nil, err
+	}
+
+	failedPluginIDs, err := p.checkCanPublishAPPPlugins(ctx, req.Version, draftPlugins)
+	if err != nil {
+		return nil, err
+	}
+	if len(failedPluginIDs) > 0 {
+		draftPluginMap := slices.ToMap(draftPlugins, func(plugin *entity.PluginInfo) (int64, *entity.PluginInfo) {
+			return plugin.ID, plugin
+		})
+
+		failedPlugins := make([]*entity.PluginInfo, 0, len(failedPluginIDs))
+		for _, failedPluginID := range failedPluginIDs {
+			failedPlugins = append(failedPlugins, draftPluginMap[failedPluginID])
+		}
+		for _, failedPlugin := range failedPlugins {
+			resp.FailedPlugins = append(resp.FailedPlugins, failedPlugin.PluginInfo)
+		}
+
+		return resp, nil
+	}
+
+	for _, draftPlugin := range draftPlugins {
+		draftPlugin.Version = &req.Version
+	}
+
+	err = p.pluginRepo.PublishPlugins(ctx, draftPlugins)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (p *pluginServiceImpl) checkCanPublishAPPPlugins(ctx context.Context, version string, draftPlugins []*entity.PluginInfo) (failedPluginIDs []int64, err error) {
+	failedPluginIDs = make([]int64, 0, len(draftPlugins))
+
+	draftPluginIDs := slices.Transform(draftPlugins, func(plugin *entity.PluginInfo) int64 {
+		return plugin.ID
+	})
+
+	// 1. check version
+	onlinePlugins, err := p.pluginRepo.MGetOnlinePlugins(ctx, draftPluginIDs,
+		repository.WithPluginID(),
+		repository.WithPluginVersion())
+	if err != nil {
+		return nil, err
+	}
+
+	if len(onlinePlugins) > 0 {
+		for _, onlinePlugin := range onlinePlugins {
+			if onlinePlugin.Version == nil {
+				continue
+			}
+			if semver.Compare(version, *onlinePlugin.Version) != 1 {
+				failedPluginIDs = append(failedPluginIDs, onlinePlugin.ID)
+			}
+		}
+		if len(failedPluginIDs) > 0 {
+			logs.CtxErrorf(ctx, "invalid version of plugins '%v'", failedPluginIDs)
+			return failedPluginIDs, nil
+		}
+	}
+
+	// 2. check debug status
+	for _, draftPlugin := range draftPlugins {
+		res, err := p.toolRepo.GetPluginAllDraftTools(ctx, draftPlugin.ID,
+			repository.WithToolID(),
+			repository.WithToolDebugStatus(),
+			repository.WithToolActivatedStatus(),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, tool := range res {
+			if tool.GetActivatedStatus() == model.DeactivateTool {
+				continue
+			}
+			if tool.GetDebugStatus() == common.APIDebugStatus_DebugWaiting {
+				failedPluginIDs = append(failedPluginIDs, draftPlugin.ID)
+			}
+		}
+	}
+	if len(failedPluginIDs) > 0 {
+		logs.CtxErrorf(ctx, "invalid debug status of plugins '%v'", failedPluginIDs)
+		return failedPluginIDs, nil
+	}
+
+	return failedPluginIDs, nil
+}
+
 func (p *pluginServiceImpl) MGetVersionPlugins(ctx context.Context, req *MGetVersionPluginsRequest) (resp *MGetVersionPluginsResponse, err error) {
 	plugins, err := p.pluginRepo.MGetVersionPlugins(ctx, req.VersionPlugins)
 	if err != nil {
 		return nil, err
 	}
 
-	res := make([]*model.PluginInfo, 0, len(plugins))
-	for _, p := range plugins {
-		res = append(res, p.PluginInfo)
-	}
+	res := slices.Transform(plugins, func(plugin *entity.PluginInfo) *model.PluginInfo {
+		return plugin.PluginInfo
+	})
 
 	return &MGetVersionPluginsResponse{
 		Plugins: res,

@@ -158,11 +158,12 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	},
 	"domain/app/internal/dal/query": {
 		"app_draft": {},
-		"app": {
-			"publish_config": &appEntity.PublishConfig{},
+		"release_record": {
+			"connector_ids": []int64{},
+			"extra_info":    &appEntity.PublishRecordExtraInfo{},
 		},
-		"app_version": {
-			"publish_config": &appEntity.PublishConfig{},
+		"connector_release_ref": {
+			"publish_config": appEntity.PublishConfig{},
 		},
 	},
 }

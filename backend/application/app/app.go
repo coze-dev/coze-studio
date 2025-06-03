@@ -11,8 +11,10 @@ import (
 	projectAPI "code.byted.org/flow/opencoze/backend/api/model/project"
 	publishAPI "code.byted.org/flow/opencoze/backend/api/model/publish"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/domain/app/service"
+	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
@@ -30,10 +32,11 @@ type APPApplicationService struct {
 	DomainSVC service.AppService
 	appRepo   repository.AppRepository
 
-	oss      storage.Storage
-	eventbus search.ProjectEventBus
+	oss             storage.Storage
+	projectEventBus search.ProjectEventBus
 
-	userSVC user.User
+	userSVC      user.User
+	connectorSVC connector.Connector
 }
 
 func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *projectAPI.DraftProjectCreateRequest) (resp *projectAPI.DraftProjectCreateResponse, err error) {
@@ -53,7 +56,7 @@ func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *pro
 		return nil, err
 	}
 
-	err = a.eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+	err = a.projectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		OpType: searchEntity.Created,
 		Project: &searchEntity.ProjectDocument{
 			Status:  common.IntelligenceStatus_Using,
@@ -104,7 +107,7 @@ func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, re
 		Status:      common.IntelligenceStatus_Using, // TODO(@maronghong): 完善状态
 	}
 
-	publishInfo := &intelligenceAPI.IntelligencePublishInfo{
+	publishRecord := &intelligenceAPI.IntelligencePublishInfo{
 		HasPublished: res.APP.Published(),
 		PublishTime:  strconv.FormatInt(res.APP.GetPublishedAtMS()/1000, 10),
 	}
@@ -124,7 +127,7 @@ func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, re
 		Data: &intelligenceAPI.GetDraftIntelligenceInfoData{
 			IntelligenceType: common.IntelligenceType_Project,
 			BasicInfo:        basicInfo,
-			PublishInfo:      publishInfo,
+			PublishInfo:      publishRecord,
 			OwnerInfo:        ownerInfo,
 		},
 	}
@@ -140,7 +143,7 @@ func (a *APPApplicationService) DraftProjectDelete(ctx context.Context, req *pro
 		return nil, err
 	}
 
-	err = a.eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+	err = a.projectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		OpType: searchEntity.Deleted,
 		Project: &searchEntity.ProjectDocument{
 			ID: req.ProjectID,
@@ -163,7 +166,7 @@ func (a *APPApplicationService) DraftProjectUpdate(ctx context.Context, req *pro
 		return nil, err
 	}
 
-	err = a.eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+	err = a.projectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		OpType: searchEntity.Updated,
 		Project: &searchEntity.ProjectDocument{
 			ID:   req.ProjectID,
@@ -186,7 +189,7 @@ func (a *APPApplicationService) ProjectPublishConnectorList(ctx context.Context,
 		return nil, err
 	}
 
-	latestPublishInfo, err := a.getLatestPublishInfo(ctx, req.ProjectID)
+	latestPublishRecord, err := a.getLatestPublishRecord(ctx, req.ProjectID)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +197,7 @@ func (a *APPApplicationService) ProjectPublishConnectorList(ctx context.Context,
 	resp = &publishAPI.PublishConnectorListResponse{
 		Data: &publishAPI.PublishConnectorListData{
 			ConnectorList:         connectorList,
-			LastPublishInfo:       latestPublishInfo,
+			LastPublishInfo:       latestPublishRecord,
 			ConnectorUnionInfoMap: map[int64]*publishAPI.ConnectorUnionInfo{},
 		},
 	}
@@ -236,47 +239,37 @@ func (a *APPApplicationService) getProjectReleaseConnectorList(ctx context.Conte
 	return connectorList, nil
 }
 
-func (a *APPApplicationService) getLatestPublishInfo(ctx context.Context, appID int64) (*publishAPI.LastPublishInfo, error) {
-	publishInfo, err := a.DomainSVC.GetAPPPublishInfo(ctx, &service.GetAPPPublishInfoRequest{
+func (a *APPApplicationService) getLatestPublishRecord(ctx context.Context, appID int64) (*publishAPI.LastPublishInfo, error) {
+	publishRecord, err := a.DomainSVC.GetAPPLatestPublishRecord(ctx, &service.GetAPPLatestPublishRecordRequest{
 		APPID: appID,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	latestPublishInfo := &publishAPI.LastPublishInfo{
-		VersionNumber:          publishInfo.Version,
+	latestPublishRecord := &publishAPI.LastPublishInfo{
+		VersionNumber:          publishRecord.Version,
 		ConnectorIds:           []int64{},
 		ConnectorPublishConfig: map[int64]*publishAPI.ConnectorPublishConfig{},
 	}
 
-	if !publishInfo.Published {
-		return latestPublishInfo, nil
+	if !publishRecord.Published {
+		return latestPublishRecord, nil
 	}
 
-	for _, info := range publishInfo.ConnectorPublishInfo {
-		latestPublishInfo.ConnectorIds = append(latestPublishInfo.ConnectorIds, info.ConnectorID)
+	for _, info := range publishRecord.ConnectorPublishRecord {
+		latestPublishRecord.ConnectorIds = append(latestPublishRecord.ConnectorIds, info.ConnectorID)
 
 		if info.ConnectorID == consts.WebSDKConnectorID {
-			selectedWorkflows := make([]*publishAPI.SelectedWorkflow, 0, len(info.PublishConfig.SelectedWorkflows))
-			for _, w := range info.PublishConfig.SelectedWorkflows {
-				selectedWorkflows = append(selectedWorkflows, &publishAPI.SelectedWorkflow{
-					WorkflowID:   w.WorkflowID,
-					WorkflowName: w.WorkflowName,
-				})
-			}
-
-			latestPublishInfo.ConnectorPublishConfig[info.ConnectorID] = &publishAPI.ConnectorPublishConfig{
-				SelectedWorkflows: selectedWorkflows,
-			}
+			latestPublishRecord.ConnectorPublishConfig[info.ConnectorID] = info.PublishConfig.ToVO()
 		}
 	}
 
-	return latestPublishInfo, nil
+	return latestPublishRecord, nil
 }
 
 func (a *APPApplicationService) ReportUserBehavior(ctx context.Context, req *playground.ReportUserBehaviorRequest) (resp *playground.ReportUserBehaviorResponse, err error) {
-	err = a.eventbus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+	err = a.projectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		OpType: searchEntity.Updated,
 		Project: &searchEntity.ProjectDocument{
 			ID:             req.ResourceID,
@@ -302,6 +295,105 @@ func (a *APPApplicationService) CheckProjectVersionNumber(ctx context.Context, r
 		Data: &publishAPI.CheckProjectVersionNumberData{
 			IsDuplicate: exist,
 		},
+	}
+
+	return resp, nil
+}
+
+func (a *APPApplicationService) PublishAPP(ctx context.Context, req *publishAPI.PublishProjectRequest) (resp *publishAPI.PublishProjectResponse, err error) {
+	connectorPublishConfigs, err := a.getConnectorPublishConfigs(ctx, req.ConnectorPublishConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := a.DomainSVC.PublishAPP(ctx, &service.PublishAPPRequest{
+		APPID:                   req.ProjectID,
+		Version:                 req.VersionNumber,
+		VersionDesc:             req.GetDescription(),
+		ConnectorPublishConfigs: connectorPublishConfigs,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &publishAPI.PublishProjectResponse{
+		Data: &publishAPI.PublishProjectData{
+			PublishRecordID: res.PublishRecordID,
+		},
+	}
+
+	return resp, nil
+}
+
+func (a *APPApplicationService) getConnectorPublishConfigs(ctx context.Context, configs map[int64]*publishAPI.ConnectorPublishConfig) (map[int64]entity.PublishConfig, error) {
+	publishConfigs := make(map[int64]entity.PublishConfig, len(configs))
+	for connectorID, config := range configs {
+		if config == nil {
+			continue
+		}
+
+		selectedWorkflows := make([]*entity.SelectedWorkflow, 0, len(config.SelectedWorkflows))
+		for _, w := range config.SelectedWorkflows {
+			if w.WorkflowID == 0 {
+				return nil, errorx.New(errno.ErrInvalidParamCode, errorx.KV("msg", "invalid workflow id"))
+			}
+			selectedWorkflows = append(selectedWorkflows, &entity.SelectedWorkflow{
+				WorkflowID:   w.WorkflowID,
+				WorkflowName: w.WorkflowName,
+			})
+		}
+
+		publishConfigs[connectorID] = entity.PublishConfig{
+			SelectedWorkflows: selectedWorkflows,
+		}
+	}
+
+	return publishConfigs, nil
+}
+
+func (a *APPApplicationService) GetPublishRecordList(ctx context.Context, req *publishAPI.GetPublishRecordListRequest) (resp *publishAPI.GetPublishRecordListResponse, err error) {
+	connectorInfo, err := a.connectorSVC.GetByIDs(ctx, entity.ConnectorIDWhiteList)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := a.DomainSVC.GetAPPAllPublishRecords(ctx, &service.GetAPPAllPublishRecordsRequest{
+		APPID: req.ProjectID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	data := make([]*publishAPI.PublishRecordDetail, 0, len(res.Records))
+	for _, r := range res.Records {
+		connectorPublishRecords := make([]*publishAPI.ConnectorPublishResult, 0, len(r.ConnectorPublishRecords))
+		for _, c := range r.ConnectorPublishRecords {
+			info, exist := connectorInfo[c.ConnectorID]
+			if !exist {
+				logs.CtxErrorf(ctx, "connector '%d' not exist", c.ConnectorID)
+				continue
+			}
+
+			connectorPublishRecords = append(connectorPublishRecords, &publishAPI.ConnectorPublishResult{
+				ConnectorID:            c.ConnectorID,
+				ConnectorName:          info.Name,
+				ConnectorIconURL:       info.URL,
+				ConnectorPublishStatus: publishAPI.ConnectorPublishStatus(c.PublishStatus),
+				ConnectorPublishConfig: c.PublishConfig.ToVO(),
+			})
+		}
+
+		data = append(data, &publishAPI.PublishRecordDetail{
+			PublishRecordID:        r.APP.GetPublishRecordID(),
+			VersionNumber:          r.APP.GetVersion(),
+			ConnectorPublishResult: connectorPublishRecords,
+			PublishStatus:          publishAPI.PublishRecordStatus(r.APP.GetPublishStatus()),
+			PublishStatusDetail:    r.APP.PublishExtraInfo.ToVO(),
+		})
+	}
+
+	resp = &publishAPI.GetPublishRecordListResponse{
+		Data: data,
 	}
 
 	return resp, nil

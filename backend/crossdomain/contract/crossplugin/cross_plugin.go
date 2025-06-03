@@ -14,7 +14,7 @@ type PluginService interface {
 	PublishAgentTools(ctx context.Context, req *plugin.PublishAgentToolsRequest) (resp *plugin.PublishAgentToolsResponse, err error)
 	DeleteDraftPlugin(ctx context.Context, req *plugin.DeleteDraftPluginRequest) (err error)
 	PublishPlugin(ctx context.Context, req *plugin.PublishPluginRequest) (err error)
-	GetPluginNextVersion(ctx context.Context, req *plugin.GetPluginNextVersionRequest) (resp *plugin.GetPluginNextVersionResponse, err error)
+	PublishAPPPlugins(ctx context.Context, req *plugin.PublishAPPPluginsRequest) (resp *plugin.PublishAPPPluginsResponse, err error)
 }
 
 var defaultSVC PluginService

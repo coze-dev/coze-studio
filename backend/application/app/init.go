@@ -5,7 +5,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/domain/app/service"
-	plugin "code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -13,13 +13,13 @@ import (
 )
 
 type ServiceComponents struct {
-	IDGen    idgen.IDGenerator
-	DB       *gorm.DB
-	OSS      storage.Storage
-	Eventbus search.ProjectEventBus
+	IDGen           idgen.IDGenerator
+	DB              *gorm.DB
+	OSS             storage.Storage
+	ProjectEventBus search.ProjectEventBus
 
-	UserSVC   user.User
-	PluginSVC plugin.PluginService
+	UserSVC      user.User
+	ConnectorSVC connector.Connector
 }
 
 func InitService(components *ServiceComponents) (*APPApplicationService, error) {
@@ -40,9 +40,10 @@ func InitService(components *ServiceComponents) (*APPApplicationService, error) 
 	APPApplicationSVC.appRepo = appRepo
 
 	APPApplicationSVC.oss = components.OSS
-	APPApplicationSVC.eventbus = components.Eventbus
+	APPApplicationSVC.projectEventBus = components.ProjectEventBus
 
 	APPApplicationSVC.userSVC = components.UserSVC
+	APPApplicationSVC.connectorSVC = components.ConnectorSVC
 
 	return APPApplicationSVC, nil
 }

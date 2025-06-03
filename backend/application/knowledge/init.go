@@ -5,17 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/milvus-io/milvus/client/v2/milvusclient"
+	"github.com/volcengine/volc-sdk-golang/service/visual"
+	"gorm.io/gorm"
 
 	"github.com/cloudwego/eino-ext/components/embedding/ark"
 	"github.com/cloudwego/eino-ext/components/embedding/openai"
 	mo "github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
-	"github.com/milvus-io/milvus/client/v2/milvusclient"
-	"github.com/volcengine/volc-sdk-golang/service/visual"
-	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/application/search"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
@@ -185,7 +187,10 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	var rewriter messages2query.MessagesToQuery
 	var n2s nl2sql.NL2SQL
 	if bcm != nil {
-		rewriterTemplate, err := readJinja2PromptTemplate("resources/conf/prompt/messages_to_query_template_jinja2.json")
+		root := os.Getenv("PWD")
+
+		filePath := filepath.Join(root, "resources/conf/prompt/messages_to_query_template_jinja2.json")
+		rewriterTemplate, err := readJinja2PromptTemplate(filePath)
 		if err != nil {
 			return nil, err
 		}
@@ -193,7 +198,9 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		if err != nil {
 			return nil, err
 		}
-		n2sTemplate, err := readJinja2PromptTemplate("resources/conf/prompt/nl2sql_template_jinja2.json")
+
+		filePath = filepath.Join(root, "resources/conf/prompt/nl2sql_template_jinja2.json")
+		n2sTemplate, err := readJinja2PromptTemplate(filePath)
 		if err != nil {
 			return nil, err
 		}

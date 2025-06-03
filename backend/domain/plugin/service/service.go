@@ -24,9 +24,10 @@ type PluginService interface {
 
 	// Online Plugin
 	PublishPlugin(ctx context.Context, req *PublishPluginRequest) (err error)
+	PublishAPPPlugins(ctx context.Context, req *PublishAPPPluginsRequest) (resp *PublishAPPPluginsResponse, err error)
 	GetGetOnlinePlugin(ctx context.Context, req *GetOnlinePluginRequest) (resp *GetOnlinePluginResponse, err error)
 	MGetOnlinePlugins(ctx context.Context, req *MGetOnlinePluginsRequest) (resp *MGetOnlinePluginsResponse, err error)
-	GetPluginNextVersion(ctx context.Context, req *GetPluginNextVersionRequest) (resp *GetPluginNextVersionResponse, err error)
+	GetPluginNextVersion(ctx context.Context, pluginID int64) (version string, err error)
 	MGetVersionPlugins(ctx context.Context, req *MGetVersionPluginsRequest) (resp *MGetVersionPluginsResponse, err error)
 
 	// Draft Tool
@@ -151,11 +152,11 @@ type MGetOnlinePluginsResponse struct {
 	Plugins []*plugin.PluginInfo
 }
 
-type GetPluginNextVersionRequest = plugin.GetPluginNextVersionRequest
-
-type GetPluginNextVersionResponse = plugin.GetPluginNextVersionResponse
-
 type PublishPluginRequest = plugin.PublishPluginRequest
+
+type PublishAPPPluginsRequest = plugin.PublishAPPPluginsRequest
+
+type PublishAPPPluginsResponse = plugin.PublishAPPPluginsResponse
 
 type MGetVersionPluginsRequest = plugin.MGetVersionPluginsRequest
 

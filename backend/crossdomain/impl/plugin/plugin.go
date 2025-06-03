@@ -51,6 +51,6 @@ func (s *impl) PublishPlugin(ctx context.Context, req *model.PublishPluginReques
 	return s.DomainSVC.PublishPlugin(ctx, req)
 }
 
-func (s *impl) GetPluginNextVersion(ctx context.Context, req *model.GetPluginNextVersionRequest) (resp *model.GetPluginNextVersionResponse, err error) {
-	return s.DomainSVC.GetPluginNextVersion(ctx, req)
+func (s *impl) PublishAPPPlugins(ctx context.Context, req *model.PublishAPPPluginsRequest) (resp *model.PublishAPPPluginsResponse, err error) {
+	return s.DomainSVC.PublishAPPPlugins(ctx, req)
 }

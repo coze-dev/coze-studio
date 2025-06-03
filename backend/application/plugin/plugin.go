@@ -95,7 +95,7 @@ func (p *PluginApplicationService) GetPlaygroundPluginList(ctx context.Context, 
 
 	pluginLists := make([]*common.PluginInfoForPlayground, 0, len(onlinePlugins))
 	for _, pl := range onlinePlugins {
-		tools, err := p.pluginRepo.GetPluginAllOnlineTools(ctx, pl.ID)
+		tools, err := p.toolRepo.GetPluginAllOnlineTools(ctx, pl.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -360,7 +360,7 @@ func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *plugi
 			SortBy:     ptr.Of(entity.SortByCreatedAt),
 			OrderByACS: ptr.Of(false),
 		}
-		draftTools, total, err = p.pluginRepo.ListPluginDraftTools(ctx, req.PluginID, pageInfo)
+		draftTools, total, err = p.toolRepo.ListPluginDraftTools(ctx, req.PluginID, pageInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -430,7 +430,7 @@ func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *plugi
 		return nil, fmt.Errorf("plugin '%d' not found", req.PluginID)
 	}
 
-	tools, err := p.pluginRepo.GetPluginAllDraftTools(ctx, draftPlugin.ID)
+	tools, err := p.toolRepo.GetPluginAllDraftTools(ctx, draftPlugin.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -506,11 +506,11 @@ func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *plugi
 }
 
 func (p *PluginApplicationService) GetUpdatedAPIs(ctx context.Context, req *pluginAPI.GetUpdatedAPIsRequest) (resp *pluginAPI.GetUpdatedAPIsResponse, err error) {
-	draftTools, err := p.pluginRepo.GetPluginAllDraftTools(ctx, req.PluginID)
+	draftTools, err := p.toolRepo.GetPluginAllDraftTools(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
 	}
-	onlineTools, err := p.pluginRepo.GetPluginAllOnlineTools(ctx, req.PluginID)
+	onlineTools, err := p.toolRepo.GetPluginAllOnlineTools(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
 	}
@@ -1011,7 +1011,7 @@ func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req
 
 	products := make([]*productAPI.ProductInfo, 0, len(res.Plugins))
 	for _, pl := range res.Plugins {
-		tls, err := p.pluginRepo.GetPluginAllOnlineTools(ctx, pl.ID)
+		tls, err := p.toolRepo.GetPluginAllOnlineTools(ctx, pl.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -1130,7 +1130,7 @@ func (p *PluginApplicationService) PublicGetProductDetail(ctx context.Context, r
 		return nil, fmt.Errorf("online plugin '%d' not found", req.GetEntityID())
 	}
 
-	tools, err := p.pluginRepo.GetPluginAllOnlineTools(ctx, plugin.ID)
+	tools, err := p.toolRepo.GetPluginAllOnlineTools(ctx, plugin.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -1150,14 +1150,12 @@ func (p *PluginApplicationService) PublicGetProductDetail(ctx context.Context, r
 }
 
 func (p *PluginApplicationService) GetPluginNextVersion(ctx context.Context, req *pluginAPI.GetPluginNextVersionRequest) (resp *pluginAPI.GetPluginNextVersionResponse, err error) {
-	res, err := p.DomainSVC.GetPluginNextVersion(ctx, &service.GetPluginNextVersionRequest{
-		PluginID: req.PluginID,
-	})
+	nextVersion, err := p.DomainSVC.GetPluginNextVersion(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
 	}
 	resp = &pluginAPI.GetPluginNextVersionResponse{
-		NextVersionName: res.Version,
+		NextVersionName: nextVersion,
 	}
 	return resp, nil
 }
@@ -1185,7 +1183,7 @@ func (p *PluginApplicationService) GetDevPluginList(ctx context.Context, req *pl
 
 	pluginLists := make([]*common.PluginInfoForPlayground, 0, len(res.Plugins))
 	for _, pl := range res.Plugins {
-		tools, err := p.pluginRepo.GetPluginAllDraftTools(ctx, pl.ID)
+		tools, err := p.toolRepo.GetPluginAllDraftTools(ctx, pl.ID)
 		if err != nil {
 			return nil, err
 		}

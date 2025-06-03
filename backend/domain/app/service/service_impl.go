@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sort"
-	"sync"
 
 	"gorm.io/gorm"
 
@@ -24,7 +23,6 @@ import (
 	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
 )
 
 type Components struct {
@@ -155,117 +153,45 @@ func (a *appServiceImpl) UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPP
 	return nil
 }
 
-func (a *appServiceImpl) PublishAPP(ctx context.Context, req *PublishAPPRequest) (resp *PublishAPPResponse, err error) {
-	_, err = crossconnector.DefaultSVC().GetByIDs(ctx, entity.ConnectorIDWhiteList)
-	if err != nil {
-		return nil, err
-	}
-
-	// 1. 先发布 plugin，将版本号传给 workflow
-	_, err = a.publishPlugins(ctx, req.Resources)
-	if err != nil {
-		return nil, err
-	}
-
-	err = a.publishWorkflows(ctx, req.Resources)
-	if err != nil {
-		return nil, err
-	}
-
-	resp = &PublishAPPResponse{}
-
-	return resp, nil
-}
-
-func (a *appServiceImpl) publishWorkflows(ctx context.Context, resources []*resourceEntity.ResourceDocument) (err error) {
-	tasks := taskgroup.NewTaskGroup(ctx, 2)
-	for _, resource := range resources {
-		if resource.ResType != resourceCommon.ResType_Workflow {
-			continue
-		}
-
-		workflowID := resource.ResID
-
-		tasks.Go(func() (err error) {
-			err = crossworkflow.DefaultSVC().PublishWorkflow(ctx, workflowID, "", "", false)
-			if err != nil {
-				return fmt.Errorf("publish workflow '%d' failed, err=%v", workflowID, err)
-			}
-
-			return nil
-		})
-	}
-
-	err = tasks.Wait()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (a *appServiceImpl) publishPlugins(ctx context.Context, resources []*resourceEntity.ResourceDocument) (versions map[int64]string, err error) {
-	versions = map[int64]string{}
-	mutex := sync.Mutex{}
-
-	tasks := taskgroup.NewTaskGroup(ctx, 3)
-	for _, resource := range resources {
-		if resource.ResType != resourceCommon.ResType_Plugin {
-			continue
-		}
-
-		pluginID := resource.ResID
-
-		tasks.Go(func() (err error) {
-			nextVersionResp, err := crossplugin.DefaultSVC().GetPluginNextVersion(ctx, &plugin.GetPluginNextVersionRequest{
-				PluginID: pluginID,
-			})
-			if err != nil {
-				return fmt.Errorf("get next version of plugin '%d' failed, err=%v", pluginID, err)
-			}
-
-			err = crossplugin.DefaultSVC().PublishPlugin(ctx, &plugin.PublishPluginRequest{
-				PluginID: pluginID,
-				Version:  nextVersionResp.Version,
-			})
-			if err != nil {
-				return fmt.Errorf("publish plugin '%d' failed, err=%v", pluginID, err)
-			}
-
-			mutex.Lock()
-			versions[pluginID] = nextVersionResp.Version
-			mutex.Unlock()
-
-			return nil
-		})
-	}
-
-	err = tasks.Wait()
-	if err != nil {
-		return nil, err
-	}
-
-	return versions, nil
-}
-
-func (a *appServiceImpl) GetAPPPublishInfo(ctx context.Context, req *GetAPPPublishInfoRequest) (resp *GetAppPublishInfoResponse, err error) {
-	app, exist, err := a.APPRepo.GetLatestPublishedAPP(ctx, &repository.GetLatestPublishedAPPRequest{
+func (a *appServiceImpl) GetAPPLatestPublishRecord(ctx context.Context, req *GetAPPLatestPublishRecordRequest) (resp *GetAPPLatestPublishRecordResponse, err error) {
+	res, err := a.APPRepo.GetLatestPublishInfo(ctx, &repository.GetLatestPublishInfo{
 		APPID: req.APPID,
 	})
 	if err != nil {
 		return nil, err
 	}
-	if !exist {
-		return &GetAppPublishInfoResponse{
+
+	if !res.Published {
+		return &GetAPPLatestPublishRecordResponse{
 			Published: false,
 		}, nil
 	}
 
-	resp = &GetAppPublishInfoResponse{
-		Published:            app.Published(),
-		Version:              app.GetVersion(),
-		PublishedAtMS:        app.GetPublishedAtMS(),
-		ConnectorPublishInfo: app.ConnectorPublishInfo,
+	resp = &GetAPPLatestPublishRecordResponse{
+		Published:              res.Published,
+		Version:                res.Record.APP.GetVersion(),
+		PublishedAtMS:          res.Record.APP.GetPublishedAtMS(),
+		ConnectorPublishRecord: res.Record.ConnectorPublishRecords,
+	}
+
+	return resp, nil
+}
+
+func (a *appServiceImpl) GetAPPAllPublishRecords(ctx context.Context, req *GetAPPAllPublishRecordsRequest) (resp *GetAPPAllPublishRecordsResponse, err error) {
+	res, err := a.APPRepo.GetAPPAllPublishRecords(ctx, req.APPID,
+		repository.WithAPPID(),
+		repository.WithPublishRecordID(),
+		repository.WithAPPPublishAtMS(),
+		repository.WithPublishVersion(),
+		repository.WithAPPPublishStatus(),
+		repository.WithPublishRecordExtraInfo(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &GetAPPAllPublishRecordsResponse{
+		Records: res.Records,
 	}
 
 	return resp, nil

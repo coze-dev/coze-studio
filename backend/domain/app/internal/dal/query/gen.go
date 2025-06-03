@@ -16,44 +16,44 @@ import (
 )
 
 var (
-	Q          = new(Query)
-	App        *app
-	AppDraft   *appDraft
-	AppVersion *appVersion
+	Q                   = new(Query)
+	AppDraft            *appDraft
+	ConnectorReleaseRef *connectorReleaseRef
+	ReleaseRecord       *releaseRecord
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
-	App = &Q.App
 	AppDraft = &Q.AppDraft
-	AppVersion = &Q.AppVersion
+	ConnectorReleaseRef = &Q.ConnectorReleaseRef
+	ReleaseRecord = &Q.ReleaseRecord
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:         db,
-		App:        newApp(db, opts...),
-		AppDraft:   newAppDraft(db, opts...),
-		AppVersion: newAppVersion(db, opts...),
+		db:                  db,
+		AppDraft:            newAppDraft(db, opts...),
+		ConnectorReleaseRef: newConnectorReleaseRef(db, opts...),
+		ReleaseRecord:       newReleaseRecord(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	App        app
-	AppDraft   appDraft
-	AppVersion appVersion
+	AppDraft            appDraft
+	ConnectorReleaseRef connectorReleaseRef
+	ReleaseRecord       releaseRecord
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:         db,
-		App:        q.App.clone(db),
-		AppDraft:   q.AppDraft.clone(db),
-		AppVersion: q.AppVersion.clone(db),
+		db:                  db,
+		AppDraft:            q.AppDraft.clone(db),
+		ConnectorReleaseRef: q.ConnectorReleaseRef.clone(db),
+		ReleaseRecord:       q.ReleaseRecord.clone(db),
 	}
 }
 
@@ -67,24 +67,24 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:         db,
-		App:        q.App.replaceDB(db),
-		AppDraft:   q.AppDraft.replaceDB(db),
-		AppVersion: q.AppVersion.replaceDB(db),
+		db:                  db,
+		AppDraft:            q.AppDraft.replaceDB(db),
+		ConnectorReleaseRef: q.ConnectorReleaseRef.replaceDB(db),
+		ReleaseRecord:       q.ReleaseRecord.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	App        IAppDo
-	AppDraft   IAppDraftDo
-	AppVersion IAppVersionDo
+	AppDraft            IAppDraftDo
+	ConnectorReleaseRef IConnectorReleaseRefDo
+	ReleaseRecord       IReleaseRecordDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		App:        q.App.WithContext(ctx),
-		AppDraft:   q.AppDraft.WithContext(ctx),
-		AppVersion: q.AppVersion.WithContext(ctx),
+		AppDraft:            q.AppDraft.WithContext(ctx),
+		ConnectorReleaseRef: q.ConnectorReleaseRef.WithContext(ctx),
+		ReleaseRecord:       q.ReleaseRecord.WithContext(ctx),
 	}
 }
 

@@ -47,6 +47,23 @@ func (p pluginDraftPO) ToDO() *entity.PluginInfo {
 	})
 }
 
+func (p *PluginDraftDAO) getSelected(opt *PluginSelectedOption) (selected []field.Expr) {
+	if opt == nil {
+		return selected
+	}
+
+	table := p.query.PluginDraft
+
+	if opt.PluginID {
+		selected = append(selected, table.ID)
+	}
+	if opt.OpenapiDoc {
+		selected = append(selected, table.OpenapiDoc)
+	}
+
+	return selected
+}
+
 func (p *PluginDraftDAO) Create(ctx context.Context, plugin *entity.PluginInfo) (pluginID int64, err error) {
 	id, err := p.idGen.GenID(ctx)
 	if err != nil {
@@ -89,7 +106,37 @@ func (p *PluginDraftDAO) Get(ctx context.Context, pluginID int64) (plugin *entit
 	return plugin, true, nil
 }
 
-func (p *PluginDraftDAO) MGet(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {
+func (p *PluginDraftDAO) GetAPPAllPlugins(ctx context.Context, appID int64) (plugins []*entity.PluginInfo, err error) {
+	table := p.query.PluginDraft
+
+	cursor := int64(0)
+	limit := 20
+	hasMore := true
+
+	for hasMore {
+		pls, err := table.WithContext(ctx).
+			Where(
+				table.AppID.Eq(appID),
+				table.ID.Gt(cursor),
+			).
+			Order(table.ID.Asc()).
+			Limit(limit).
+			Find()
+		if err != nil {
+			return nil, err
+		}
+		for _, pl := range pls {
+			plugins = append(plugins, pluginDraftPO(*pl).ToDO())
+		}
+
+		hasMore = len(pls) == limit
+		cursor = pls[len(pls)-1].ID
+	}
+
+	return plugins, nil
+}
+
+func (p *PluginDraftDAO) MGet(ctx context.Context, pluginIDs []int64, opt *PluginSelectedOption) (plugins []*entity.PluginInfo, err error) {
 	plugins = make([]*entity.PluginInfo, 0, len(pluginIDs))
 
 	table := p.query.PluginDraft
@@ -97,6 +144,7 @@ func (p *PluginDraftDAO) MGet(ctx context.Context, pluginIDs []int64) (plugins [
 
 	for _, chunk := range chunks {
 		pls, err := table.WithContext(ctx).
+			Select(p.getSelected(opt)...).
 			Where(table.ID.In(chunk...)).
 			Find()
 		if err != nil {

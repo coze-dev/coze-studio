@@ -47,6 +47,26 @@ func (t toolDraftPO) ToDO() *entity.ToolInfo {
 	}
 }
 
+func (p *ToolDraftDAO) getSelected(opt *ToolSelectedOption) (selected []field.Expr) {
+	if opt == nil {
+		return selected
+	}
+
+	table := p.query.ToolDraft
+
+	if opt.ToolID {
+		selected = append(selected, table.ID)
+	}
+	if opt.ActivatedStatus {
+		selected = append(selected, table.ActivatedStatus)
+	}
+	if opt.DebugStatus {
+		selected = append(selected, table.DebugStatus)
+	}
+
+	return selected
+}
+
 func (t *ToolDraftDAO) Create(ctx context.Context, tool *entity.ToolInfo) (toolID int64, err error) {
 	id, err := t.idGen.GenID(ctx)
 	if err != nil {
@@ -86,7 +106,7 @@ func (t *ToolDraftDAO) Get(ctx context.Context, toolID int64) (tool *entity.Tool
 	return tool, true, nil
 }
 
-func (t *ToolDraftDAO) MGet(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+func (t *ToolDraftDAO) MGet(ctx context.Context, toolIDs []int64, opt *ToolSelectedOption) (tools []*entity.ToolInfo, err error) {
 	tools = make([]*entity.ToolInfo, 0, len(toolIDs))
 
 	table := t.query.ToolDraft
@@ -94,6 +114,7 @@ func (t *ToolDraftDAO) MGet(ctx context.Context, toolIDs []int64) (tools []*enti
 
 	for _, chunk := range chunks {
 		tls, err := table.WithContext(ctx).
+			Select(t.getSelected(opt)...).
 			Where(table.ID.In(chunk...)).
 			Find()
 		if err != nil {
@@ -169,13 +190,14 @@ func (t *ToolDraftDAO) MGetWithAPIs(ctx context.Context, pluginID int64, apis []
 	return tools, nil
 }
 
-func (t *ToolDraftDAO) GetAll(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
+func (t *ToolDraftDAO) GetAll(ctx context.Context, pluginID int64, opt *ToolSelectedOption) (tools []*entity.ToolInfo, err error) {
 	const limit = 20
 	table := t.query.ToolDraft
 	cursor := int64(0)
 
 	for {
 		tls, err := table.WithContext(ctx).
+			Select(t.getSelected(opt)...).
 			Where(
 				table.PluginID.Eq(pluginID),
 				table.ID.Gt(cursor),

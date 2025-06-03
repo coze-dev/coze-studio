@@ -48,10 +48,32 @@ func (p pluginPO) ToDO() *entity.PluginInfo {
 	})
 }
 
-func (p *PluginDAO) Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {
+func (p *PluginDAO) getSelected(opt *PluginSelectedOption) (selected []field.Expr) {
+	if opt == nil {
+		return selected
+	}
+
 	table := p.query.Plugin
+
+	if opt.PluginID {
+		selected = append(selected, table.ID)
+	}
+	if opt.OpenapiDoc {
+		selected = append(selected, table.OpenapiDoc)
+	}
+	if opt.Version {
+		selected = append(selected, table.Version)
+	}
+
+	return selected
+}
+
+func (p *PluginDAO) Get(ctx context.Context, pluginID int64, opt *PluginSelectedOption) (plugin *entity.PluginInfo, exist bool, err error) {
+	table := p.query.Plugin
+
 	pl, err := table.WithContext(ctx).
 		Where(table.ID.Eq(pluginID)).
+		Select(p.getSelected(opt)...).
 		First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -65,7 +87,7 @@ func (p *PluginDAO) Get(ctx context.Context, pluginID int64) (plugin *entity.Plu
 	return plugin, true, nil
 }
 
-func (p *PluginDAO) MGet(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {
+func (p *PluginDAO) MGet(ctx context.Context, pluginIDs []int64, opt *PluginSelectedOption) (plugins []*entity.PluginInfo, err error) {
 	plugins = make([]*entity.PluginInfo, 0, len(pluginIDs))
 
 	table := p.query.Plugin
@@ -73,6 +95,7 @@ func (p *PluginDAO) MGet(ctx context.Context, pluginIDs []int64) (plugins []*ent
 
 	for _, chunk := range chunks {
 		pls, err := table.WithContext(ctx).
+			Select(p.getSelected(opt)...).
 			Where(table.ID.In(chunk...)).
 			Find()
 		if err != nil {
@@ -144,39 +167,53 @@ func (p *PluginDAO) List(ctx context.Context, spaceID int64, pageInfo entity.Pag
 }
 
 func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
-	m := &model.Plugin{
-		ID:          plugin.ID,
-		SpaceID:     plugin.SpaceID,
-		DeveloperID: plugin.DeveloperID,
-		AppID:       plugin.GetAPPID(),
-		Manifest:    plugin.Manifest,
-		OpenapiDoc:  plugin.OpenapiDoc,
-		PluginType:  int32(plugin.PluginType),
-	}
-
-	if plugin.IconURI != nil {
-		m.IconURI = *plugin.IconURI
-	}
-	if plugin.Version != nil {
-		m.Version = *plugin.Version
-	}
-	if plugin.VersionDesc != nil {
-		m.VersionDesc = *plugin.VersionDesc
-	}
-	if plugin.ServerURL != nil {
-		m.ServerURL = *plugin.ServerURL
-	}
-
 	table := tx.Plugin
 	_, err = table.WithContext(ctx).Select(table.ID).Where(table.ID.Eq(plugin.ID)).First()
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return table.WithContext(ctx).Create(m)
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
 		}
-		return err
+
+		m := &model.Plugin{
+			ID:          plugin.ID,
+			SpaceID:     plugin.SpaceID,
+			DeveloperID: plugin.DeveloperID,
+			AppID:       plugin.GetAPPID(),
+			Manifest:    plugin.Manifest,
+			OpenapiDoc:  plugin.OpenapiDoc,
+			PluginType:  int32(plugin.PluginType),
+			IconURI:     plugin.GetIconURI(),
+			ServerURL:   plugin.GetServerURL(),
+			Version:     plugin.GetVersion(),
+			VersionDesc: plugin.GetVersionDesc(),
+		}
+
+		return table.WithContext(ctx).Create(m)
 	}
 
-	_, err = table.WithContext(ctx).Updates(m)
+	updateMap := map[string]interface{}{}
+	if plugin.IconURI != nil {
+		updateMap[table.IconURI.ColumnName().String()] = *plugin.IconURI
+	}
+	if plugin.Version != nil {
+		updateMap[table.Version.ColumnName().String()] = *plugin.Version
+	}
+	if plugin.VersionDesc != nil {
+		updateMap[table.VersionDesc.ColumnName().String()] = *plugin.VersionDesc
+	}
+	if plugin.ServerURL != nil {
+		updateMap[table.ServerURL.ColumnName().String()] = *plugin.ServerURL
+	}
+	if plugin.Manifest != nil {
+		updateMap[table.Manifest.ColumnName().String()] = plugin.Manifest
+	}
+	if plugin.OpenapiDoc != nil {
+		updateMap[table.OpenapiDoc.ColumnName().String()] = plugin.OpenapiDoc
+	}
+
+	_, err = table.WithContext(ctx).
+		Where(table.ID.Eq(plugin.ID)).
+		UpdateColumns(updateMap)
 	if err != nil {
 		return err
 	}
