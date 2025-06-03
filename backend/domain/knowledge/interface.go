@@ -17,6 +17,7 @@ type Knowledge interface {
 	UpdateKnowledge(ctx context.Context, request *UpdateKnowledgeRequest) error
 	DeleteKnowledge(ctx context.Context, request *DeleteKnowledgeRequest) error
 	CopyKnowledge(ctx context.Context, request *CopyKnowledgeRequest) (*CopyKnowledgeResponse, error)
+	MigrateKnowledge(ctx context.Context, request *MigrateKnowledgeRequest) error
 	ListKnowledge(ctx context.Context, request *ListKnowledgeRequest) (response *ListKnowledgeResponse, err error)
 
 	CreateDocument(ctx context.Context, request *CreateDocumentRequest) (response *CreateDocumentResponse, err error)
@@ -323,4 +324,11 @@ type CopyKnowledgeResponse struct {
 	TargetKnowledgeID int64
 	CopyStatus        CopyStatus
 	ErrMsg            string
+}
+
+type MigrateKnowledgeRequest struct {
+	KnowledgeID   int64
+	TargetAppID   *int64
+	TargetSpaceID int64
+	TaskUniqKey   string
 }

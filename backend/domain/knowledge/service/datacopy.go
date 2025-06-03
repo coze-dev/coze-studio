@@ -20,6 +20,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"github.com/bytedance/sonic"
 )
@@ -414,4 +415,23 @@ type knowledgeCopyCtx struct {
 	OriginData       *model.Knowledge
 	CopyTask         *copyEntity.CopyDataTask
 	NewRDBTableNames []string
+}
+
+func (k *knowledgeSVC) MigrateKnowledge(ctx context.Context, request *knowledge.MigrateKnowledgeRequest) error {
+	if request == nil || request.KnowledgeID == 0 {
+		return errors.New("invalid request")
+	}
+	kn, err := k.knowledgeRepo.GetByID(ctx, request.KnowledgeID)
+	if err != nil {
+		return err
+	}
+	if kn == nil || kn.ID == 0 {
+		return errors.New("knowledge not found")
+	}
+	if request.TargetAppID != nil {
+		kn.AppID = ptr.From(request.TargetAppID)
+	}
+	kn.SpaceID = request.TargetSpaceID
+	err = k.knowledgeRepo.Update(ctx, kn)
+	return err
 }
