@@ -25,10 +25,16 @@ func InternalError(ctx context.Context, c *app.RequestContext, err error) {
 
 	// if error is custom error and not affect stability error
 	// return custom error msg
-	if errors.As(err, &customErr) && customErr.Code() != 0 && !customErr.IsAffectStability() {
+	if errors.As(err, &customErr) && customErr.Code() != 0 {
 		logs.CtxWarnf(ctx, "[StableError] error:  %v %v \n", customErr.Code(), err)
 
-		c.AbortWithStatusJSON(http.StatusOK, data{Code: customErr.Code(), Msg: customErr.Msg()})
+		msg := "internal server error"
+		if !customErr.IsAffectStability() {
+			msg = customErr.Msg()
+			return
+		}
+
+		c.AbortWithStatusJSON(http.StatusOK, data{Code: customErr.Code(), Msg: msg})
 		return
 	}
 

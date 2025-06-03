@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"regexp"
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
@@ -24,9 +25,21 @@ type UserApplicationService struct {
 	DomainSVC user.User
 }
 
+// 添加一个简单的 email 验证函数
+func isValidEmail(email string) bool {
+	// 使用简单的正则表达式验证 email 格式
+	re := regexp.MustCompile(`^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$`)
+	return re.MatchString(email)
+}
+
 func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context, locale string, req *passport.PassportWebEmailRegisterV2PostRequest) (
 	resp *passport.PassportWebEmailRegisterV2PostResponse, sessionKey string, err error,
 ) {
+	// 验证 email 格式是否合法
+	if !isValidEmail(req.GetEmail()) {
+		return nil, "", errorx.New(errno.ErrUserInvalidParamCode, errorx.KV("msg", "Invalid email"))
+	}
+
 	userInfo, err := u.DomainSVC.Create(ctx, &user.CreateUserRequest{
 		Email:    req.GetEmail(),
 		Password: req.GetPassword(),
