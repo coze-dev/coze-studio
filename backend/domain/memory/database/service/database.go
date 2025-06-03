@@ -56,12 +56,8 @@ type UpdateDatabaseResponse struct {
 	Database *entity.Database
 }
 
-type MGetDatabaseRequest struct {
-	Basics []*database.DatabaseBasic
-}
-type MGetDatabaseResponse struct {
-	Databases []*entity.Database
-}
+type MGetDatabaseRequest = database.MGetDatabaseRequest
+type MGetDatabaseResponse = database.MGetDatabaseResponse
 type GetDatabaseTemplateRequest struct {
 	UserID     int64
 	TableName  string
@@ -137,13 +133,9 @@ type ExecuteSQLRequest = database.ExecuteSQLRequest
 
 type ExecuteSQLResponse = database.ExecuteSQLResponse
 
-type BindDatabaseToAgentRequest struct {
-	Relations []*entity.AgentToDatabase
-}
+type BindDatabaseToAgentRequest = database.BindDatabaseToAgentRequest
 
-type UnBindDatabaseToAgentRequest struct {
-	BasicRelations []*entity.AgentToDatabaseBasic
-}
+type UnBindDatabaseToAgentRequest = database.UnBindDatabaseToAgentRequest
 
 type MGetDatabaseByAgentIDRequest struct {
 	AgentID       int64
@@ -161,10 +153,6 @@ type PublishDatabaseResponse = database.PublishDatabaseResponse
 
 type DeleteDatabaseRequest = database.DeleteDatabaseRequest
 
-type UpdateAgentToDatabaseRequest struct {
-	Relation *entity.AgentToDatabase
-}
-
 type MGetRelationsByAgentIDRequest struct {
 	AgentID       int64
 	TableType     table.TableType
@@ -172,7 +160,7 @@ type MGetRelationsByAgentIDRequest struct {
 }
 
 type MGetRelationsByAgentIDResponse struct {
-	Relations []*entity.AgentToDatabase
+	Relations []*database.AgentToDatabase
 }
 type GetDatabaseTableSchemaRequest struct {
 	TableSheet    entity.TableSheet

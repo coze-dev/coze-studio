@@ -7,8 +7,8 @@ import (
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
-	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -35,7 +35,7 @@ func NewAgentToDatabaseDAO(db *gorm.DB, idGen idgen.IDGenerator) *AgentToDatabas
 	return singletonAgentToDb
 }
 
-func (d *AgentToDatabaseImpl) BatchCreate(ctx context.Context, relations []*entity.AgentToDatabase) ([]int64, error) {
+func (d *AgentToDatabaseImpl) BatchCreate(ctx context.Context, relations []*database.AgentToDatabase) ([]int64, error) {
 	if len(relations) == 0 {
 		return []int64{}, nil
 	}
@@ -65,7 +65,7 @@ func (d *AgentToDatabaseImpl) BatchCreate(ctx context.Context, relations []*enti
 	return ids, nil
 }
 
-func (d *AgentToDatabaseImpl) BatchDelete(ctx context.Context, basicRelations []*entity.AgentToDatabaseBasic) error {
+func (d *AgentToDatabaseImpl) BatchDelete(ctx context.Context, basicRelations []*database.AgentToDatabaseBasic) error {
 	if len(basicRelations) == 0 {
 		return nil
 	}
@@ -87,7 +87,7 @@ func (d *AgentToDatabaseImpl) BatchDelete(ctx context.Context, basicRelations []
 	return nil
 }
 
-func (d *AgentToDatabaseImpl) ListByAgentID(ctx context.Context, agentID int64, tableType table.TableType) ([]*entity.AgentToDatabase, error) {
+func (d *AgentToDatabaseImpl) ListByAgentID(ctx context.Context, agentID int64, tableType table.TableType) ([]*database.AgentToDatabase, error) {
 	res := d.query.AgentToDatabase
 
 	q := res.WithContext(ctx).Where(res.AgentID.Eq(agentID))
@@ -103,13 +103,13 @@ func (d *AgentToDatabaseImpl) ListByAgentID(ctx context.Context, agentID int64, 
 		return nil, fmt.Errorf("list agent to database relations failed: %v", err)
 	}
 
-	relations := make([]*entity.AgentToDatabase, 0, len(records))
+	relations := make([]*database.AgentToDatabase, 0, len(records))
 	for _, info := range records {
 		tType := table.TableType_OnlineTable
 		if info.IsDraft {
 			tType = table.TableType_DraftTable
 		}
-		relation := &entity.AgentToDatabase{
+		relation := &database.AgentToDatabase{
 			AgentID:        info.AgentID,
 			DatabaseID:     info.DatabaseID,
 			TableType:      tType,

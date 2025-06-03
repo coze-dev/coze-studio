@@ -118,13 +118,17 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 	}
 
 	databaseRes := res.Database
+	var ptrAppID *int64
+	if databaseRes.AppID != 0 {
+		ptrAppID = ptr.Of(databaseRes.AppID)
+	}
 	err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Created,
 		Resource: &searchEntity.ResourceDocument{
 			ResType:      resCommon.ResType_Database,
 			ResID:        databaseRes.ID,
 			Name:         &databaseRes.Name,
-			APPID:        &databaseRes.AppID,
+			APPID:        ptrAppID,
 			SpaceID:      &databaseRes.SpaceID,
 			OwnerID:      &databaseRes.CreatorID,
 			CreateTimeMS: ptr.Of(databaseRes.CreatedAtMs),
@@ -173,9 +177,7 @@ func (d *DatabaseApplicationService) DeleteDatabase(ctx context.Context, req *ta
 	}
 
 	err = d.DomainSVC.DeleteDatabase(ctx, &database.DeleteDatabaseRequest{
-		Database: &databaseEntity.Database{
-			ID: req.ID,
-		},
+		ID: req.ID,
 	})
 	if err != nil {
 		return nil, err
@@ -193,100 +195,6 @@ func (d *DatabaseApplicationService) DeleteDatabase(ctx context.Context, req *ta
 	}
 
 	return &table.DeleteDatabaseResponse{
-		Code:     0,
-		Msg:      "success",
-		BaseResp: base.NewBaseResp(),
-	}, nil
-}
-
-func (d *DatabaseApplicationService) BindDatabase(ctx context.Context, req *table.BindDatabaseToBotRequest) (*table.BindDatabaseToBotResponse, error) {
-	draft, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
-		Basics: []*model.DatabaseBasic{
-			{
-				ID:        req.DatabaseID, // req.DatabaseID is draftID
-				TableType: table.TableType_DraftTable,
-			},
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-	if len(draft.Databases) == 0 {
-		return nil, fmt.Errorf("online table not found, id: %d", req.DatabaseID)
-	}
-
-	onlineID := draft.Databases[0].GetOnlineID()
-
-	err = d.ValidateAccess(ctx, onlineID)
-	if err != nil {
-		return nil, err
-	}
-
-	err = d.DomainSVC.BindDatabase(ctx, &database.BindDatabaseToAgentRequest{
-		Relations: []*databaseEntity.AgentToDatabase{
-			{
-				AgentID:    req.BotID,
-				DatabaseID: onlineID,
-				TableType:  table.TableType_OnlineTable,
-			},
-			{
-				AgentID:    req.BotID,
-				DatabaseID: req.DatabaseID,
-				TableType:  table.TableType_DraftTable,
-			},
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &table.BindDatabaseToBotResponse{
-		Code:     0,
-		Msg:      "success",
-		BaseResp: base.NewBaseResp(),
-	}, nil
-}
-
-func (d *DatabaseApplicationService) UnBindDatabase(ctx context.Context, req *table.BindDatabaseToBotRequest) (*table.BindDatabaseToBotResponse, error) {
-	draft, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
-		Basics: []*model.DatabaseBasic{
-			{
-				ID:        req.DatabaseID, // req.DatabaseID is draftID
-				TableType: table.TableType_DraftTable,
-			},
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-	if len(draft.Databases) == 0 {
-		return nil, fmt.Errorf("online table not found, id: %d", req.DatabaseID)
-	}
-
-	onlineID := draft.Databases[0].GetOnlineID()
-
-	err = d.ValidateAccess(ctx, onlineID)
-	if err != nil {
-		return nil, err
-	}
-
-	err = d.DomainSVC.UnBindDatabase(ctx, &database.UnBindDatabaseToAgentRequest{
-		BasicRelations: []*databaseEntity.AgentToDatabaseBasic{
-			{
-				AgentID:    req.BotID,
-				DatabaseID: req.DatabaseID,
-			},
-			{
-				AgentID:    req.BotID,
-				DatabaseID: onlineID,
-			},
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &table.BindDatabaseToBotResponse{
 		Code:     0,
 		Msg:      "success",
 		BaseResp: base.NewBaseResp(),
@@ -590,7 +498,7 @@ func (d *DatabaseApplicationService) GetBotDatabase(ctx context.Context, req *ta
 		return nil, err
 	}
 
-	relationMap := slices.ToMap(relationResp.Relations, func(d *databaseEntity.AgentToDatabase) (int64, *databaseEntity.AgentToDatabase) {
+	relationMap := slices.ToMap(relationResp.Relations, func(d *model.AgentToDatabase) (int64, *model.AgentToDatabase) {
 		return d.DatabaseID, d
 	})
 

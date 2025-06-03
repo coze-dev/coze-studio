@@ -8,7 +8,6 @@ import (
 	"gorm.io/gorm"
 
 	connectorModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/connector"
-	databaseModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	resourceCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossconnector"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
@@ -119,9 +118,7 @@ func (a *appServiceImpl) deleteAPPResource(ctx context.Context, resource *resour
 
 	case resourceCommon.ResType_Database:
 		err = crossdatabase.DefaultSVC().DeleteDatabase(ctx, &database.DeleteDatabaseRequest{
-			Database: &databaseModel.Database{
-				ID: resource.ResID,
-			},
+			ID: resource.ResID,
 		})
 
 	default:

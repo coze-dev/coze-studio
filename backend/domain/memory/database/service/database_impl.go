@@ -267,7 +267,7 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *UpdateDatabase
 }
 
 func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabaseRequest) error {
-	onlineInfo, err := d.onlineDAO.Get(ctx, req.Database.ID)
+	onlineInfo, err := d.onlineDAO.Get(ctx, req.ID)
 	if err != nil {
 		return fmt.Errorf("get online database info failed: %v", err)
 	}
@@ -1375,11 +1375,36 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 }
 
 func (d databaseService) BindDatabase(ctx context.Context, req *BindDatabaseToAgentRequest) error {
-	if req == nil {
-		return fmt.Errorf("invalid request: request is nil")
+	draft, err := d.MGetDatabase(ctx, &MGetDatabaseRequest{
+		Basics: []*database.DatabaseBasic{
+			{
+				ID:        req.DraftDatabaseID,
+				TableType: table.TableType_DraftTable,
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if len(draft.Databases) == 0 {
+		return fmt.Errorf("online table not found, id: %d", req.DraftDatabaseID)
 	}
 
-	_, err := d.agentToDatabaseDAO.BatchCreate(ctx, req.Relations)
+	onlineID := draft.Databases[0].GetOnlineID()
+	relations := []*database.AgentToDatabase{
+		{
+			AgentID:    req.AgentID,
+			DatabaseID: onlineID,
+			TableType:  table.TableType_OnlineTable,
+		},
+		{
+			AgentID:    req.AgentID,
+			DatabaseID: req.DraftDatabaseID,
+			TableType:  table.TableType_DraftTable,
+		},
+	}
+
+	_, err = d.agentToDatabaseDAO.BatchCreate(ctx, relations)
 	if err != nil {
 		return fmt.Errorf("failed to bind databases to agent: %w", err)
 	}
@@ -1388,11 +1413,34 @@ func (d databaseService) BindDatabase(ctx context.Context, req *BindDatabaseToAg
 }
 
 func (d databaseService) UnBindDatabase(ctx context.Context, req *UnBindDatabaseToAgentRequest) error {
-	if req == nil {
-		return fmt.Errorf("invalid request: request is nil")
+	draft, err := d.MGetDatabase(ctx, &MGetDatabaseRequest{
+		Basics: []*database.DatabaseBasic{
+			{
+				ID:        req.DraftDatabaseID,
+				TableType: table.TableType_DraftTable,
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if len(draft.Databases) == 0 {
+		return fmt.Errorf("online table not found, id: %d", req.DraftDatabaseID)
 	}
 
-	err := d.agentToDatabaseDAO.BatchDelete(ctx, req.BasicRelations)
+	onlineID := draft.Databases[0].GetOnlineID()
+	relations := []*database.AgentToDatabaseBasic{
+		{
+			AgentID:    req.AgentID,
+			DatabaseID: onlineID,
+		},
+		{
+			AgentID:    req.AgentID,
+			DatabaseID: req.DraftDatabaseID,
+		},
+	}
+
+	err = d.agentToDatabaseDAO.BatchDelete(ctx, relations)
 	if err != nil {
 		return fmt.Errorf("failed to unbind databases from agent: %w", err)
 	}

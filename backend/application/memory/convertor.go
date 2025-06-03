@@ -230,7 +230,7 @@ func getDataModelTableID(actualTableName string) string {
 	return tableIDStr[1]
 }
 
-func convertToBotTableList(databases []*entity.Database, agentID int64, relationMap map[int64]*entity.AgentToDatabase) []*table.BotTable {
+func convertToBotTableList(databases []*entity.Database, agentID int64, relationMap map[int64]*model.AgentToDatabase) []*table.BotTable {
 	if len(databases) == 0 {
 		return []*table.BotTable{}
 	}

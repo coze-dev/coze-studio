@@ -33,3 +33,15 @@ func (c *databaseImpl) PublishDatabase(ctx context.Context, req *model.PublishDa
 func (c *databaseImpl) DeleteDatabase(ctx context.Context, req *model.DeleteDatabaseRequest) error {
 	return c.DomainSVC.DeleteDatabase(ctx, req)
 }
+
+func (c *databaseImpl) BindDatabase(ctx context.Context, req *model.BindDatabaseToAgentRequest) error {
+	return c.DomainSVC.BindDatabase(ctx, req)
+}
+
+func (c *databaseImpl) UnBindDatabase(ctx context.Context, req *model.UnBindDatabaseToAgentRequest) error {
+	return c.DomainSVC.UnBindDatabase(ctx, req)
+}
+
+func (c *databaseImpl) MGetDatabase(ctx context.Context, req *model.MGetDatabaseRequest) (*model.MGetDatabaseResponse, error) {
+	return c.DomainSVC.MGetDatabase(ctx, req)
+}

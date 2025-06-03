@@ -125,7 +125,7 @@ func BindDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseApplicationSVC.BindDatabase(ctx, &req)
+	resp, err := singleagent.SingleAgentSVC.BindDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -145,7 +145,7 @@ func UnBindDatabase(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.DatabaseApplicationSVC.UnBindDatabase(ctx, &req)
+	resp, err := singleagent.SingleAgentSVC.UnBindDatabase(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

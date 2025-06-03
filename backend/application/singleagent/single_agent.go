@@ -8,6 +8,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	intelligence "code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
@@ -15,6 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
@@ -154,6 +156,122 @@ func (s *SingleAgentApplicationService) UpdatePromptDisable(ctx context.Context,
 	}
 
 	return &table.UpdateDatabaseBotSwitchResponse{
+		Code: 0,
+		Msg:  "success",
+	}, nil
+}
+
+func (s *SingleAgentApplicationService) UnBindDatabase(ctx context.Context, req *table.BindDatabaseToBotRequest) (*table.BindDatabaseToBotResponse, error) {
+	agentID := req.GetBotID()
+	draft, err := s.ValidateAgentDraftAccess(ctx, agentID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(draft.Database) == 0 {
+		return nil, fmt.Errorf("agent %d has no database", agentID)
+	}
+
+	dbInfos := draft.Database
+	var found bool
+	newDBInfos := make([]*bot_common.Database, 0)
+	for _, db := range dbInfos {
+		if db.GetTableId() == conv.Int64ToStr(req.GetDatabaseID()) {
+			found = true
+			continue
+		}
+		newDBInfos = append(newDBInfos, db)
+	}
+
+	if !found {
+		return nil, fmt.Errorf("database %d not found in agent %d", req.GetDatabaseID(), agentID)
+	}
+
+	draft.Database = newDBInfos
+	err = s.DomainSVC.UpdateSingleAgentDraft(ctx, draft)
+	if err != nil {
+		return nil, err
+	}
+
+	err = crossdatabase.DefaultSVC().UnBindDatabase(ctx, &database.UnBindDatabaseToAgentRequest{
+		AgentID:         agentID,
+		DraftDatabaseID: req.GetDatabaseID(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &table.BindDatabaseToBotResponse{
+		Code: 0,
+		Msg:  "success",
+	}, nil
+}
+
+func (s *SingleAgentApplicationService) BindDatabase(ctx context.Context, req *table.BindDatabaseToBotRequest) (*table.BindDatabaseToBotResponse, error) {
+	agentID := req.GetBotID()
+	draft, err := s.ValidateAgentDraftAccess(ctx, agentID)
+	if err != nil {
+		return nil, err
+	}
+
+	basics := []*database.DatabaseBasic{
+		{
+			ID:        req.DatabaseID,
+			TableType: table.TableType_DraftTable,
+		},
+	}
+
+	draftRes, err := crossdatabase.DefaultSVC().MGetDatabase(ctx, &database.MGetDatabaseRequest{
+		Basics: basics,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(draftRes.Databases) == 0 {
+		return nil, fmt.Errorf("database %d not found", req.DatabaseID)
+	}
+
+	draftDatabase := draftRes.Databases[0]
+
+	fields := make([]*bot_common.FieldItem, 0, len(draftDatabase.FieldList))
+	for _, field := range draftDatabase.FieldList {
+		fields = append(fields, &bot_common.FieldItem{
+			Name:         ptr.Of(field.Name),
+			Desc:         ptr.Of(field.Desc),
+			Type:         ptr.Of(bot_common.FieldItemType(field.Type)),
+			MustRequired: ptr.Of(field.MustRequired),
+			AlterId:      ptr.Of(field.AlterID),
+			Id:           ptr.Of(int64(0)),
+		})
+	}
+
+	bindDB := &bot_common.Database{
+		TableId:   ptr.Of(strconv.FormatInt(draftDatabase.ID, 10)),
+		TableName: ptr.Of(draftDatabase.TableName),
+		TableDesc: ptr.Of(draftDatabase.TableDesc),
+		FieldList: fields,
+		RWMode:    ptr.Of(bot_common.BotTableRWMode(draftDatabase.RwMode)),
+	}
+
+	if len(draft.Database) == 0 {
+		draft.Database = make([]*bot_common.Database, 0, 1)
+	}
+	draft.Database = append(draft.Database, bindDB)
+
+	err = s.DomainSVC.UpdateSingleAgentDraft(ctx, draft)
+	if err != nil {
+		return nil, err
+	}
+
+	err = crossdatabase.DefaultSVC().BindDatabase(ctx, &database.BindDatabaseToAgentRequest{
+		AgentID:         agentID,
+		DraftDatabaseID: req.GetDatabaseID(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &table.BindDatabaseToBotResponse{
 		Code: 0,
 		Msg:  "success",
 	}, nil

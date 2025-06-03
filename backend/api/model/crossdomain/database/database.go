@@ -142,5 +142,34 @@ type DatabaseBasic struct {
 }
 
 type DeleteDatabaseRequest struct {
-	Database *Database
+	ID int64
+}
+
+type AgentToDatabase struct {
+	AgentID        int64
+	DatabaseID     int64
+	TableType      table.TableType
+	PromptDisabled bool
+}
+
+type AgentToDatabaseBasic struct {
+	AgentID    int64
+	DatabaseID int64
+}
+
+type BindDatabaseToAgentRequest struct {
+	DraftDatabaseID int64
+	AgentID         int64
+}
+
+type UnBindDatabaseToAgentRequest struct {
+	DraftDatabaseID int64
+	AgentID         int64
+}
+
+type MGetDatabaseRequest struct {
+	Basics []*DatabaseBasic
+}
+type MGetDatabaseResponse struct {
+	Databases []*Database
 }

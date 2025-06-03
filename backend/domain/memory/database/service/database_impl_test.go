@@ -200,7 +200,7 @@ func TestDeleteDatabase(t *testing.T) {
 	assert.NotNil(t, resp)
 
 	deleteReq := &DeleteDatabaseRequest{
-		Database: resp.Database,
+		ID: resp.Database.ID,
 	}
 
 	err = dbService.DeleteDatabase(context.Background(), deleteReq)
