@@ -55,9 +55,6 @@ type UpdateDatabaseRequest struct {
 type UpdateDatabaseResponse struct {
 	Database *entity.Database
 }
-type DeleteDatabaseRequest struct {
-	Database *entity.Database
-}
 
 type MGetDatabaseRequest struct {
 	Basics []*database.DatabaseBasic
@@ -161,6 +158,8 @@ type MGetDatabaseByAgentIDResponse struct {
 type PublishDatabaseRequest = database.PublishDatabaseRequest
 
 type PublishDatabaseResponse = database.PublishDatabaseResponse
+
+type DeleteDatabaseRequest = database.DeleteDatabaseRequest
 
 type UpdateAgentToDatabaseRequest struct {
 	Relation *entity.AgentToDatabase

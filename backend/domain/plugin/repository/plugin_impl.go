@@ -8,10 +8,9 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
@@ -67,8 +66,33 @@ func (p *pluginRepoImpl) GetDraftPlugin(ctx context.Context, pluginID int64) (pl
 	return p.pluginDraftDAO.Get(ctx, pluginID)
 }
 
-func (p *pluginRepoImpl) MGetDraftPlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {
-	return p.pluginDraftDAO.MGet(ctx, pluginIDs)
+func (p *pluginRepoImpl) MGetDraftPlugins(ctx context.Context, pluginIDs []int64, opts ...PluginSelectedOptions) (plugins []*entity.PluginInfo, err error) {
+	var opt *dal.PluginSelectedOption
+	if len(opts) > 0 {
+		opt = &dal.PluginSelectedOption{}
+		for _, o := range opts {
+			o(opt)
+		}
+	}
+	return p.pluginDraftDAO.MGet(ctx, pluginIDs, opt)
+}
+
+func (p *pluginRepoImpl) GetAPPAllDraftPlugins(ctx context.Context, appID int64) (plugins []*entity.PluginInfo, err error) {
+	return p.pluginDraftDAO.GetAPPAllPlugins(ctx, appID)
+}
+
+func (p *pluginRepoImpl) ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error) {
+	plugins, total, err := p.pluginDraftDAO.List(ctx, req.SpaceID, req.APPID, req.PageInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &ListDraftPluginsResponse{
+		Plugins: plugins,
+		Total:   total,
+	}
+
+	return resp, nil
 }
 
 func (p *pluginRepoImpl) UpdateDraftPlugin(ctx context.Context, plugin *entity.PluginInfo) (err error) {
@@ -123,18 +147,27 @@ func (p *pluginRepoImpl) CheckOnlinePluginExist(ctx context.Context, pluginID in
 	return p.pluginDAO.CheckPluginExist(ctx, pluginID)
 }
 
-func (p *pluginRepoImpl) GetOnlinePlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {
+func (p *pluginRepoImpl) GetOnlinePlugin(ctx context.Context, pluginID int64, opts ...PluginSelectedOptions) (plugin *entity.PluginInfo, exist bool, err error) {
 	pi, exist := pluginConf.GetPluginProduct(pluginID)
 	if exist {
-		return pi.Info, true, nil
+		return entity.NewPluginInfo(pi.Info), true, nil
 	}
-	return p.pluginDAO.Get(ctx, pluginID)
+
+	var opt *dal.PluginSelectedOption
+	if len(opts) > 0 {
+		opt = &dal.PluginSelectedOption{}
+		for _, o := range opts {
+			o(opt)
+		}
+	}
+
+	return p.pluginDAO.Get(ctx, pluginID, opt)
 }
 
-func (p *pluginRepoImpl) MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {
+func (p *pluginRepoImpl) MGetOnlinePlugins(ctx context.Context, pluginIDs []int64, opts ...PluginSelectedOptions) (plugins []*entity.PluginInfo, err error) {
 	pluginProducts := pluginConf.MGetPluginProducts(pluginIDs)
 	plugins = slices.Transform(pluginProducts, func(pl *pluginConf.PluginInfo) *entity.PluginInfo {
-		return pl.Info
+		return entity.NewPluginInfo(pl.Info)
 	})
 	productPluginIDs := slices.ToMap(pluginProducts, func(plugin *pluginConf.PluginInfo) (int64, bool) {
 		return plugin.Info.ID, true
@@ -149,7 +182,15 @@ func (p *pluginRepoImpl) MGetOnlinePlugins(ctx context.Context, pluginIDs []int6
 		customPluginIDs = append(customPluginIDs, id)
 	}
 
-	customPlugins, err := p.pluginDAO.MGet(ctx, customPluginIDs)
+	var opt *dal.PluginSelectedOption
+	if len(opts) > 0 {
+		opt = &dal.PluginSelectedOption{}
+		for _, o := range opts {
+			o(opt)
+		}
+	}
+
+	customPlugins, err := p.pluginDAO.MGet(ctx, customPluginIDs, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -166,13 +207,13 @@ func (p *pluginRepoImpl) ListCustomOnlinePlugins(ctx context.Context, spaceID in
 func (p *pluginRepoImpl) GetVersionPlugin(ctx context.Context, vPlugin entity.VersionPlugin) (plugin *entity.PluginInfo, exist bool, err error) {
 	pi, exist := pluginConf.GetPluginProduct(vPlugin.PluginID)
 	if exist {
-		return pi.Info, true, nil
+		return entity.NewPluginInfo(pi.Info), true, nil
 	}
 
 	return p.pluginVersionDAO.Get(ctx, vPlugin.PluginID, vPlugin.Version)
 }
 
-func (p *pluginRepoImpl) MGetVersionPlugins(ctx context.Context, vPlugins []entity.VersionPlugin) (plugins []*entity.PluginInfo, err error) {
+func (p *pluginRepoImpl) MGetVersionPlugins(ctx context.Context, vPlugins []entity.VersionPlugin, opts ...PluginSelectedOptions) (plugins []*entity.PluginInfo, err error) {
 	pluginIDs := make([]int64, 0, len(vPlugins))
 	for _, vPlugin := range vPlugins {
 		pluginIDs = append(pluginIDs, vPlugin.PluginID)
@@ -180,7 +221,7 @@ func (p *pluginRepoImpl) MGetVersionPlugins(ctx context.Context, vPlugins []enti
 
 	pluginProducts := pluginConf.MGetPluginProducts(pluginIDs)
 	plugins = slices.Transform(pluginProducts, func(pl *pluginConf.PluginInfo) *entity.PluginInfo {
-		return pl.Info
+		return entity.NewPluginInfo(pl.Info)
 	})
 	productPluginIDs := slices.ToMap(pluginProducts, func(plugin *pluginConf.PluginInfo) (int64, bool) {
 		return plugin.Info.ID, true
@@ -195,7 +236,15 @@ func (p *pluginRepoImpl) MGetVersionPlugins(ctx context.Context, vPlugins []enti
 		vCustomPlugins = append(vCustomPlugins, v)
 	}
 
-	customPlugins, err := p.pluginVersionDAO.MGet(ctx, vCustomPlugins)
+	var opt *dal.PluginSelectedOption
+	if len(opts) > 0 {
+		opt = &dal.PluginSelectedOption{}
+		for _, o := range opts {
+			o(opt)
+		}
+	}
+
+	customPlugins, err := p.pluginVersionDAO.MGet(ctx, vCustomPlugins, opt)
 	if err != nil {
 		return nil, err
 	}
@@ -205,38 +254,15 @@ func (p *pluginRepoImpl) MGetVersionPlugins(ctx context.Context, vPlugins []enti
 	return plugins, nil
 }
 
-func (p *pluginRepoImpl) GetPluginAllDraftTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
-	return p.toolDraftDAO.GetAll(ctx, pluginID)
-}
-
-func (p *pluginRepoImpl) GetPluginAllOnlineTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
-	pi, exist := pluginConf.GetPluginProduct(pluginID)
-	if exist {
-		tis := pi.GetPluginAllTools()
-		tools = slices.Transform(tis, func(ti *pluginConf.ToolInfo) *entity.ToolInfo {
-			return ti.Info
-		})
-
-		return tools, nil
-	}
-
-	tools, err = p.toolDAO.GetAll(ctx, pluginID)
-	if err != nil {
-		return nil, err
-	}
-
-	return tools, nil
-}
-
 func (p *pluginRepoImpl) PublishPlugin(ctx context.Context, draftPlugin *entity.PluginInfo) (err error) {
-	draftTools, err := p.toolDraftDAO.GetAll(ctx, draftPlugin.ID)
+	draftTools, err := p.toolDraftDAO.GetAll(ctx, draftPlugin.ID, nil)
 	if err != nil {
 		return err
 	}
 
 	filteredTools := make([]*entity.ToolInfo, 0, len(draftTools))
 	for _, tool := range draftTools {
-		if tool.GetActivatedStatus() == consts.DeactivateTool {
+		if tool.GetActivatedStatus() == plugin.DeactivateTool {
 			continue
 		}
 
@@ -299,12 +325,94 @@ func (p *pluginRepoImpl) PublishPlugin(ctx context.Context, draftPlugin *entity.
 		return err
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		return err
+	return tx.Commit()
+}
+
+func (p *pluginRepoImpl) PublishPlugins(ctx context.Context, draftPlugins []*entity.PluginInfo) (err error) {
+	draftPluginMap := slices.ToMap(draftPlugins, func(plugin *entity.PluginInfo) (int64, *entity.PluginInfo) {
+		return plugin.ID, plugin
+	})
+
+	pluginTools := make(map[int64][]*entity.ToolInfo, len(draftPlugins))
+	for _, draftPlugin := range draftPlugins {
+		draftTools, err := p.toolDraftDAO.GetAll(ctx, draftPlugin.ID, nil)
+		if err != nil {
+			return err
+		}
+
+		filteredTools := make([]*entity.ToolInfo, 0, len(draftTools))
+		for _, tool := range draftTools {
+			if tool.GetActivatedStatus() == plugin.DeactivateTool {
+				continue
+			}
+
+			if tool.DebugStatus == nil ||
+				*tool.DebugStatus == common.APIDebugStatus_DebugWaiting {
+				return fmt.Errorf("tool '%d' in plugin '%d' does not pass debugging", tool.ID, draftPlugin.ID)
+			}
+
+			tool.Version = draftPlugin.Version
+
+			filteredTools = append(filteredTools, tool)
+		}
+
+		if len(filteredTools) == 0 {
+			continue
+		}
+
+		pluginTools[draftPlugin.ID] = filteredTools
 	}
 
-	return nil
+	tx := p.query.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			if e := tx.Rollback(); e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
+			return
+		}
+		if err != nil {
+			if e := tx.Rollback(); e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+		}
+	}()
+
+	for pluginID, tools := range pluginTools {
+		draftPlugin := draftPluginMap[pluginID]
+
+		err = p.pluginDAO.UpsertWithTX(ctx, tx, draftPlugin)
+		if err != nil {
+			return err
+		}
+
+		err = p.pluginVersionDAO.CreateWithTX(ctx, tx, draftPlugin)
+		if err != nil {
+			return err
+		}
+
+		err = p.toolDAO.DeleteAllWithTX(ctx, tx, draftPlugin.ID)
+		if err != nil {
+			return err
+		}
+
+		err = p.toolDAO.BatchCreateWithTX(ctx, tx, tools)
+		if err != nil {
+			return err
+		}
+
+		err = p.toolVersionDAO.BatchCreateWithTX(ctx, tx, tools)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
 }
 
 func (p *pluginRepoImpl) DeleteDraftPlugin(ctx context.Context, pluginID int64) (err error) {
@@ -351,10 +459,6 @@ func (p *pluginRepoImpl) DeleteDraftPlugin(ctx context.Context, pluginID int64) 
 	return tx.Commit()
 }
 
-func (p *pluginRepoImpl) ListPluginDraftTools(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error) {
-	return p.toolDraftDAO.List(ctx, pluginID, pageInfo)
-}
-
 func (p *pluginRepoImpl) UpdateDraftPluginWithCode(ctx context.Context, req *UpdatePluginDraftWithCode) (err error) {
 	tx := p.query.Begin()
 	if tx.Error != nil {
@@ -380,12 +484,12 @@ func (p *pluginRepoImpl) UpdateDraftPluginWithCode(ctx context.Context, req *Upd
 	paths := req.OpenapiDoc.Paths
 	req.OpenapiDoc.Paths = openapi3.Paths{}
 
-	updatedPlugin := &entity.PluginInfo{
+	updatedPlugin := entity.NewPluginInfo(&plugin.PluginInfo{
 		ID:         req.PluginID,
 		ServerURL:  ptr.Of(req.OpenapiDoc.Servers[0].URL),
 		Manifest:   req.Manifest,
 		OpenapiDoc: req.OpenapiDoc,
-	}
+	})
 	err = p.pluginDraftDAO.UpdateWithTX(ctx, tx, updatedPlugin)
 	if err != nil {
 		return err
@@ -429,9 +533,9 @@ func (p *pluginRepoImpl) CreateDraftPluginWithCode(ctx context.Context, req *Cre
 		return nil, fmt.Errorf("plugin manifest validated failed, err=%v", err)
 	}
 
-	pluginType, _ := convertor.ToThriftPluginType(mf.API.Type)
+	pluginType, _ := plugin.ToThriftPluginType(mf.API.Type)
 
-	plugin := &entity.PluginInfo{
+	pl := entity.NewPluginInfo(&plugin.PluginInfo{
 		PluginType:  pluginType,
 		SpaceID:     req.SpaceID,
 		DeveloperID: req.DeveloperID,
@@ -440,17 +544,17 @@ func (p *pluginRepoImpl) CreateDraftPluginWithCode(ctx context.Context, req *Cre
 		ServerURL:   ptr.Of(doc.Servers[0].URL),
 		Manifest:    mf,
 		OpenapiDoc:  doc,
-	}
+	})
 
 	tools := make([]*entity.ToolInfo, 0, len(doc.Paths))
 	for subURL, pathItem := range doc.Paths {
 		for method, operation := range pathItem.Operations() {
 			tools = append(tools, &entity.ToolInfo{
-				ActivatedStatus: ptr.Of(consts.ActivateTool),
+				ActivatedStatus: ptr.Of(plugin.ActivateTool),
 				DebugStatus:     ptr.Of(common.APIDebugStatus_DebugWaiting),
 				SubURL:          ptr.Of(subURL),
 				Method:          ptr.Of(method),
-				Operation:       ptr.Of(entity.Openapi3Operation(*operation)),
+				Operation:       ptr.Of(plugin.Openapi3Operation(*operation)),
 			})
 		}
 	}
@@ -475,12 +579,12 @@ func (p *pluginRepoImpl) CreateDraftPluginWithCode(ctx context.Context, req *Cre
 		}
 	}()
 
-	pluginID, err := p.pluginDraftDAO.CreateWithTX(ctx, tx, plugin)
+	pluginID, err := p.pluginDraftDAO.CreateWithTX(ctx, tx, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	plugin.ID = pluginID
+	pl.ID = pluginID
 
 	for _, tool := range tools {
 		tool.PluginID = pluginID
@@ -497,7 +601,7 @@ func (p *pluginRepoImpl) CreateDraftPluginWithCode(ctx context.Context, req *Cre
 	}
 
 	return &CreateDraftPluginWithCodeResponse{
-		Plugin: plugin,
+		Plugin: pl,
 		Tools:  tools,
 	}, nil
 }

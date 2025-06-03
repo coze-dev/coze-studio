@@ -1,4 +1,3 @@
-import asyncio
 import json
 import sys
 import os
@@ -10,8 +9,10 @@ except ModuleNotFoundError:
     sys.exit(1)
 
 custom_builtins = safe_builtins.copy()
+
 custom_builtins['__import__'] = __import__
 custom_builtins['asyncio'] = asyncio
+custom_builtins['json'] = json
 
 restricted_globals = {
     '__builtins__': custom_builtins,

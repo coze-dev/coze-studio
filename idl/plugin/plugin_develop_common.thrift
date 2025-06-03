@@ -391,3 +391,21 @@ struct RegisterPluginData {
     1: i64 plugin_id (api.js_conv = "str"),
     2: string openapi  ,
 }
+
+enum ScopeType {
+    All  = 0, // 所有
+    Self = 1, // 自己
+}
+
+enum OrderBy {
+    CreateTime  = 0,
+    UpdateTime  = 1,
+    PublishTime = 2,
+    Hot         = 3,
+}
+
+enum PluginTypeForFilter {
+    CloudPlugin    = 1, // 包含PLUGIN和APP
+    LocalPlugin    = 2, // 包含LOCAL
+    WorkflowPlugin = 3, // 包含WORKFLOW和IMAGEFLOW
+}

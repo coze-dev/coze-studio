@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS `plugin_draft`
 
     PRIMARY KEY (`id`),
     KEY `idx_space_app_updated_at` (`space_id`, `app_id`, `updated_at`),
-    KEY `idx_space_app_create_at` (`space_id`, `app_id`, `created_at`)
+    KEY `idx_space_app_create_at` (`space_id`, `app_id`, `created_at`),
+    KEY `idx_app_id` (`app_id`, `id`)
 
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4

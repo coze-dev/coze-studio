@@ -16,10 +16,11 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	modelEntity "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
+	appEntity "code.byted.org/flow/opencoze/backend/domain/app/entity"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 )
 
@@ -59,31 +60,31 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	},
 	"domain/plugin/internal/dal/query": {
 		"plugin": {
-			"manifest":    &pluginEntity.PluginManifest{},
-			"openapi_doc": &pluginEntity.Openapi3T{},
+			"manifest":    &plugin.PluginManifest{},
+			"openapi_doc": &plugin.Openapi3T{},
 		},
 		"plugin_draft": {
-			"manifest":    &pluginEntity.PluginManifest{},
-			"openapi_doc": &pluginEntity.Openapi3T{},
+			"manifest":    &plugin.PluginManifest{},
+			"openapi_doc": &plugin.Openapi3T{},
 		},
 		"plugin_version": {
-			"manifest":    &pluginEntity.PluginManifest{},
-			"openapi_doc": &pluginEntity.Openapi3T{},
+			"manifest":    &plugin.PluginManifest{},
+			"openapi_doc": &plugin.Openapi3T{},
 		},
 		"agent_tool_draft": {
-			"operation": &pluginEntity.Openapi3Operation{},
+			"operation": &plugin.Openapi3Operation{},
 		},
 		"agent_tool_version": {
-			"operation": &pluginEntity.Openapi3Operation{},
+			"operation": &plugin.Openapi3Operation{},
 		},
 		"tool": {
-			"operation": &pluginEntity.Openapi3Operation{},
+			"operation": &plugin.Openapi3Operation{},
 		},
 		"tool_draft": {
-			"operation": &pluginEntity.Openapi3Operation{},
+			"operation": &plugin.Openapi3Operation{},
 		},
 		"tool_version": {
-			"operation": &pluginEntity.Openapi3Operation{},
+			"operation": &plugin.Openapi3Operation{},
 		},
 	},
 	"domain/conversation/agentrun/internal/dal/query": {
@@ -156,9 +157,14 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"space_user": {},
 	},
 	"domain/app/internal/dal/query": {
-		"app_draft":   {},
-		"app_version": {},
-		"app_release": {},
+		"app_draft": {},
+		"release_record": {
+			"connector_ids": []int64{},
+			"extra_info":    &appEntity.PublishRecordExtraInfo{},
+		},
+		"connector_release_ref": {
+			"publish_config": appEntity.PublishConfig{},
+		},
 	},
 }
 

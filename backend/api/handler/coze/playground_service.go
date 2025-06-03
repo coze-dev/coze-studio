@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
+	appApplication "code.byted.org/flow/opencoze/backend/application/app"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/shortcutcmd"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
@@ -294,5 +295,40 @@ func CreateUpdateShortcutCommand(ctx context.Context, c *app.RequestContext) {
 	resp.Shortcuts = shortCuts
 	resp.Code = 0
 	resp.Msg = ""
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ReportUserBehavior .
+// @router /api/playground_api/report_user_behavior [POST]
+func ReportUserBehavior(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req playground.ReportUserBehaviorRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.ResourceID <= 0 {
+		invalidParamRequestResponse(c, "resource id is invalid")
+		return
+	}
+
+	resp := new(playground.ReportUserBehaviorResponse)
+
+	if req.ResourceType == playground.SpaceResourceType_DraftBot {
+		resp, err = singleagent.SingleAgentSVC.ReportUserBehavior(ctx, &req)
+		if err != nil {
+			internalServerErrorResponse(ctx, c, err)
+			return
+		}
+	} else if req.ResourceType == playground.SpaceResourceType_Project {
+		resp, err = appApplication.APPApplicationSVC.ReportUserBehavior(ctx, &req)
+		if err != nil {
+			internalServerErrorResponse(ctx, c, err)
+			return
+		}
+	}
+
 	c.JSON(consts.StatusOK, resp)
 }

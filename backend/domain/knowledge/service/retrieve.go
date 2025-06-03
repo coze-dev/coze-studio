@@ -235,7 +235,7 @@ func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *knowledge.Retr
 			searchstore.WithPartitions(partitions),
 			retriever.WithDSLInfo(dsl.DSL()),
 		}
-		if info.DocumentType == entity.DocumentTypeTable && !k.enableCompactTable {
+		if info.DocumentType == knowledgeModel.DocumentTypeTable && !k.enableCompactTable {
 			var matchCols []string
 			for _, col := range info.TableColumns {
 				if col.Indexing {

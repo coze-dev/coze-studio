@@ -1295,3 +1295,48 @@ func _createupdateshortcutcommandMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _publish0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _checkprojectversionnumberMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publishconnectorlist0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getprojectpublishedconnectorMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publishprojectMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getpublishrecordlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _reportuserbehaviorMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getdevpluginlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _projectpublishconnectorlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

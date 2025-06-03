@@ -198,34 +198,33 @@ func (s *SearchApplicationService) packResource(ctx context.Context, doc *entity
 }
 
 func (s *SearchApplicationService) ProjectResourceList(ctx context.Context, req *resource.ProjectResourceListRequest) (resp *resource.ProjectResourceListResponse, err error) {
-	resources, err := s.getProjectAllResources(ctx, req.GetSpaceID(), req.GetProjectID())
+	resources, err := s.getAPPAllResources(ctx, req.GetProjectID())
 	if err != nil {
 		return nil, err
 	}
 
-	resourceGroups, err := s.packProjectResources(ctx, resources)
+	resourceGroups, err := s.packAPPResources(ctx, resources)
 	if err != nil {
 		return nil, err
 	}
 
-	resourceGroups = s.sortProjectResources(resourceGroups)
+	resourceGroups = s.sortAPPResources(resourceGroups)
 
 	return &resource.ProjectResourceListResponse{
 		ResourceGroups: resourceGroups,
 	}, nil
 }
 
-func (s *SearchApplicationService) getProjectAllResources(ctx context.Context, spaceID, projectID int64) ([]*entity.ResourceDocument, error) {
+func (s *SearchApplicationService) getAPPAllResources(ctx context.Context, appID int64) ([]*entity.ResourceDocument, error) {
 	hasMore := true
 	cursor := ""
 
 	resources := make([]*entity.ResourceDocument, 0, 100)
 	for hasMore {
 		res, err := s.DomainSVC.SearchResources(ctx, &entity.SearchResourcesRequest{
-			SpaceID: spaceID,
-			APPID:   projectID,
-			Cursor:  cursor,
-			Limit:   100,
+			APPID:  appID,
+			Cursor: cursor,
+			Limit:  100,
 		})
 		if err != nil {
 			return nil, err
@@ -240,7 +239,7 @@ func (s *SearchApplicationService) getProjectAllResources(ctx context.Context, s
 	return resources, nil
 }
 
-func (s *SearchApplicationService) packProjectResources(ctx context.Context, resources []*entity.ResourceDocument) ([]*common.ProjectResourceGroup, error) {
+func (s *SearchApplicationService) packAPPResources(ctx context.Context, resources []*entity.ResourceDocument) ([]*common.ProjectResourceGroup, error) {
 	workflowGroup := &common.ProjectResourceGroup{
 		GroupType:    common.ProjectResourceGroupType_Workflow,
 		ResourceList: []*common.ProjectResourceInfo{},
@@ -262,7 +261,7 @@ func (s *SearchApplicationService) packProjectResources(ctx context.Context, res
 		tasks.Go(func() error {
 			ri, err := s.packProjectResource(ctx, v)
 			if err != nil {
-				logs.CtxErrorf(ctx, "packProjectResources failed, will ignore resID: %d, Name : %s, resType: %d, err: %v",
+				logs.CtxErrorf(ctx, "packAPPResources failed, will ignore resID: %d, Name : %s, resType: %d, err: %v",
 					v.ResID, v.GetName(), v.ResType, err)
 				return err
 			}
@@ -319,7 +318,7 @@ func (s *SearchApplicationService) packProjectResource(ctx context.Context, reso
 	return info, nil
 }
 
-func (s *ServiceComponents) sortProjectResources(resourceGroups []*common.ProjectResourceGroup) []*common.ProjectResourceGroup {
+func (s *ServiceComponents) sortAPPResources(resourceGroups []*common.ProjectResourceGroup) []*common.ProjectResourceGroup {
 	for _, g := range resourceGroups {
 		slices.SortFunc(g.ResourceList, func(a, b *common.ProjectResourceInfo) int {
 			if a.Name == b.Name {

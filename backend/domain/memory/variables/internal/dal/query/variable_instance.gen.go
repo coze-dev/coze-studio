@@ -50,8 +50,8 @@ type variableInstance struct {
 
 	ALL          field.Asterisk
 	ID           field.Int64  // 主键ID
-	BizType      field.Int32  // 1 for agent，2 for project
-	BizID        field.String // 1 for agent_id，2 for project_id
+	BizType      field.Int32  // 1 for agent，2 for app
+	BizID        field.String // 1 for agent_id，2 for app_id
 	Version      field.String // agent or project 版本,为空代表草稿态
 	Keyword      field.String // 记忆的KEY
 	Type         field.Int32  // 记忆类型 1 KV 2 list

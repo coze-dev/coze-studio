@@ -17,7 +17,7 @@ import (
 	"github.com/getkin/kin-openapi/routers"
 	"github.com/go-resty/resty/v2"
 
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -31,7 +31,7 @@ type ExecutorConfig struct {
 	Plugin *entity.PluginInfo
 	Tool   *entity.ToolInfo
 
-	InvalidRespProcessStrategy consts.InvalidResponseProcessStrategy
+	InvalidRespProcessStrategy plugin.InvalidResponseProcessStrategy
 }
 
 type ExecuteResponse struct {
@@ -181,7 +181,7 @@ func (t *executorImpl) prepareArguments(_ context.Context, argumentsInJson strin
 	args := map[string]any{}
 	for loc, params := range t.config.Plugin.Manifest.CommonParams {
 		for _, p := range params {
-			if loc != consts.ParamInBody {
+			if loc != plugin.ParamInBody {
 				args[p.Name] = p.Value
 			}
 		}
@@ -225,7 +225,7 @@ func (t *executorImpl) getLocationArguments(args map[string]any, paramRefs []*op
 		argValue, ok := args[paramVal.Name]
 		if !ok {
 			var defaultVal any
-			_, exist := scVal.Extensions[consts.APISchemaExtendVariableRef]
+			_, exist := scVal.Extensions[plugin.APISchemaExtendVariableRef]
 			if exist {
 				// TODO(@maronghong): 从 Agent Variable 取值
 			} else if scVal.Default != nil {
@@ -267,7 +267,7 @@ func (t *executorImpl) getLocationArguments(args map[string]any, paramRefs []*op
 
 func (t *executorImpl) injectAuthInfo(_ context.Context, httpReq *http.Request) error {
 	authInfo := t.config.Plugin.GetAuthInfo()
-	if authInfo.Type == consts.AuthTypeOfNone {
+	if authInfo.Type == plugin.AuthTypeOfNone {
 		return nil
 	}
 
@@ -310,9 +310,9 @@ func (t *executorImpl) processResponse(ctx context.Context, rawResp string) (new
 	if !ok {
 		return "", fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
 	}
-	mType, ok := resp.Value.Content[consts.MIMETypeJson] // only support application/json
+	mType, ok := resp.Value.Content[plugin.MIMETypeJson] // only support application/json
 	if !ok {
-		return "", fmt.Errorf("the '%s' mime type is not defined in response", consts.MIMETypeJson)
+		return "", fmt.Errorf("the '%s' mime type is not defined in response", plugin.MIMETypeJson)
 	}
 
 	schemaVal := mType.Schema.Value
@@ -322,12 +322,12 @@ func (t *executorImpl) processResponse(ctx context.Context, rawResp string) (new
 
 	var newRespMap map[string]any
 	switch t.config.InvalidRespProcessStrategy {
-	case consts.InvalidResponseProcessStrategyOfReturnRaw:
+	case plugin.InvalidResponseProcessStrategyOfReturnRaw:
 		newRespMap, err = processWithInvalidRespProcessStrategyOfReturnRaw(ctx, respMap, schemaVal)
 		if err != nil {
 			return "", err
 		}
-	case consts.InvalidResponseProcessStrategyOfReturnDefault:
+	case plugin.InvalidResponseProcessStrategyOfReturnDefault:
 		newRespMap, err = processWithInvalidRespProcessStrategyOfReturnDefault(ctx, respMap, schemaVal)
 		if err != nil {
 			return "", err
@@ -474,10 +474,10 @@ func disabledParam(schemaVal *openapi3.Schema) bool {
 		return false
 	}
 	globalDisable, localDisable := false, false
-	if v, ok := schemaVal.Extensions[consts.APISchemaExtendLocalDisable]; ok {
+	if v, ok := schemaVal.Extensions[plugin.APISchemaExtendLocalDisable]; ok {
 		localDisable = v.(bool)
 	}
-	if v, ok := schemaVal.Extensions[consts.APISchemaExtendGlobalDisable]; ok {
+	if v, ok := schemaVal.Extensions[plugin.APISchemaExtendGlobalDisable]; ok {
 		globalDisable = v.(bool)
 	}
 	return globalDisable || localDisable
@@ -559,7 +559,7 @@ func (l *locationArguments) buildHTTPRequestHeader(_ context.Context) (http.Head
 	return header, nil
 }
 
-func (l *locationArguments) buildHTTPRequestBody(_ context.Context, op *entity.Openapi3Operation, args map[string]any) (body []byte, contentType string, err error) {
+func (l *locationArguments) buildHTTPRequestBody(_ context.Context, op *plugin.Openapi3Operation, args map[string]any) (body []byte, contentType string, err error) {
 	contentType, bodySchema := getReqBodySchema(op)
 	if bodySchema == nil || bodySchema.Value == nil {
 		return nil, "", nil
@@ -670,7 +670,7 @@ func (l *locationArguments) buildHTTPRequestBody(_ context.Context, op *entity.O
 
 func getDefaultValue(name string, sc *openapi3.Schema, isRequired bool) (val any, e error) {
 	var defaultVal any
-	_, ok := sc.Extensions[consts.APISchemaExtendVariableRef]
+	_, ok := sc.Extensions[plugin.APISchemaExtendVariableRef]
 	if ok {
 		// TODO(@maronghong): 从 Agent Variable 取值
 	} else if sc.Default != nil {
@@ -685,15 +685,15 @@ func getDefaultValue(name string, sc *openapi3.Schema, isRequired bool) (val any
 }
 
 var contentTypeArray = []string{
-	consts.MIMETypeJson,
-	consts.MIMETypeJsonPatch,
-	consts.MIMETypeProblemJson,
-	consts.MIMETypeForm,
-	consts.MIMETypeXYaml,
-	consts.MIMETypeYaml,
+	plugin.MIMETypeJson,
+	plugin.MIMETypeJsonPatch,
+	plugin.MIMETypeProblemJson,
+	plugin.MIMETypeForm,
+	plugin.MIMETypeXYaml,
+	plugin.MIMETypeYaml,
 }
 
-func getReqBodySchema(op *entity.Openapi3Operation) (string, *openapi3.SchemaRef) {
+func getReqBodySchema(op *plugin.Openapi3Operation) (string, *openapi3.SchemaRef) {
 	if op.RequestBody == nil || op.RequestBody.Value == nil || len(op.RequestBody.Value.Content) == 0 {
 		return "", nil
 	}

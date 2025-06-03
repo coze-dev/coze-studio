@@ -12,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	project "code.byted.org/flow/opencoze/backend/api/model/project"
+	publish "code.byted.org/flow/opencoze/backend/api/model/publish"
 	appApplication "code.byted.org/flow/opencoze/backend/application/app"
 	"code.byted.org/flow/opencoze/backend/application/search"
 )
@@ -196,6 +197,134 @@ func DraftProjectDelete(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := appApplication.APPApplicationSVC.DraftProjectDelete(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetProjectPublishedConnector .
+// @router /api/intelligence_api/publish/get_published_connector [POST]
+func GetProjectPublishedConnector(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req publish.GetProjectPublishedConnectorRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(publish.GetProjectPublishedConnectorResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// CheckProjectVersionNumber .
+// @router /api/intelligence_api/publish/check_version_number [POST]
+func CheckProjectVersionNumber(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req publish.CheckProjectVersionNumberRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "invalid project id")
+		return
+	}
+	if req.VersionNumber == "" {
+		invalidParamRequestResponse(c, "invalid version number")
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.CheckProjectVersionNumber(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PublishProject .
+// @router /api/intelligence_api/publish/publish_project [POST]
+func PublishProject(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req publish.PublishProjectRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "invalid project id")
+		return
+	}
+	if req.VersionNumber == "" {
+		invalidParamRequestResponse(c, "invalid version number")
+		return
+	}
+	if len(req.ConnectorPublishConfig) == 0 {
+		invalidParamRequestResponse(c, "invalid connector publish config")
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.PublishAPP(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetPublishRecordList .
+// @router /api/intelligence_api/publish/publish_record_list [POST]
+func GetPublishRecordList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req publish.GetPublishRecordListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "invalid project id")
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.GetPublishRecordList(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ProjectPublishConnectorList .
+// @router /api/intelligence_api/publish/connector_list [POST]
+func ProjectPublishConnectorList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req publish.PublishConnectorListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "invalid project id")
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.ProjectPublishConnectorList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

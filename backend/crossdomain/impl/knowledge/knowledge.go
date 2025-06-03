@@ -29,3 +29,7 @@ func (i *impl) ListKnowledge(ctx context.Context, request *model.ListKnowledgeRe
 func (i *impl) Retrieve(ctx context.Context, req *model.RetrieveRequest) (*model.RetrieveResponse, error) {
 	return i.DomainSVC.Retrieve(ctx, req)
 }
+
+func (i *impl) DeleteKnowledge(ctx context.Context, req *model.DeleteKnowledgeRequest) error {
+	return i.DomainSVC.DeleteKnowledge(ctx, req)
+}

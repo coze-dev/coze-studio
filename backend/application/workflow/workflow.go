@@ -287,7 +287,43 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 
 	return &workflow.WorkFlowTestRunResponse{
 		Data: &workflow.WorkFlowTestRunData{
-			WorkflowID: fmt.Sprintf("%d", wfID.ID),
+			WorkflowID: req.WorkflowID,
+			ExecuteID:  fmt.Sprintf("%d", exeID),
+		},
+	}, nil
+}
+
+func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.WorkflowNodeDebugV2Request) (*workflow.WorkflowNodeDebugV2Response, error) {
+	wfID := &entity.WorkflowIdentity{
+		ID: mustParseInt64(req.GetWorkflowID()),
+	}
+
+	// merge input, batch and setting, they are all the same when executing
+	mergedInput := make(map[string]string, len(req.Input)+len(req.Batch)+len(req.Setting))
+	for k, v := range req.Input {
+		mergedInput[k] = v
+	}
+	for k, v := range req.Batch {
+		mergedInput[k] = v
+	}
+	for k, v := range req.Setting {
+		mergedInput[k] = v
+	}
+
+	uID := ctxutil.GetUIDFromCtx(ctx)
+
+	exeID, err := GetWorkflowDomainSVC().AsyncExecuteNode(ctx, wfID, req.NodeID, mergedInput, vo.ExecuteConfig{
+		Operator: ptr.FromOrDefault(uID, 0),
+		Mode:     vo.ExecuteModeNodeDebug,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.WorkflowNodeDebugV2Response{
+		Data: &workflow.WorkflowNodeDebugV2Data{
+			WorkflowID: req.WorkflowID,
+			NodeID:     req.NodeID,
 			ExecuteID:  fmt.Sprintf("%d", exeID),
 		},
 	}, nil
@@ -346,47 +382,48 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 		resp.Data.ProjectId = fmt.Sprintf("%d", *wfExeEntity.ProjectID)
 	}
 
+	batchNodeID2NodeResult := make(map[string]*workflow.NodeResult)
+	batchNodeID2InnerNodeResult := make(map[string]*workflow.NodeResult)
 	successNum := 0
 	for _, nodeExe := range wfExeEntity.NodeExecutions {
-		nr := &workflow.NodeResult{
-			NodeId:      nodeExe.NodeID,
-			NodeName:    nodeExe.NodeName,
-			NodeType:    string(nodeExe.NodeType),
-			NodeStatus:  workflow.NodeExeStatus(nodeExe.Status),
-			ErrorInfo:   ptr.FromOrDefault(nodeExe.ErrorInfo, ""),
-			Input:       ptr.FromOrDefault(nodeExe.Input, ""),
-			Output:      ptr.FromOrDefault(nodeExe.Output, ""),
-			NodeExeCost: fmt.Sprintf("%.3fs", nodeExe.Duration.Seconds()),
-			RawOutput:   nodeExe.RawOutput,
-			ErrorLevel:  ptr.FromOrDefault(nodeExe.ErrorLevel, ""),
+		nr, err := convertNodeExecution(nodeExe)
+		if err != nil {
+			return nil, err
 		}
 
-		if nodeExe.TokenInfo != nil {
-			nr.TokenAndCost = &workflow.TokenAndCost{
-				InputTokens:  ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.InputTokens)),
-				OutputTokens: ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.OutputTokens)),
-				TotalTokens:  ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.InputTokens+nodeExe.TokenInfo.OutputTokens)),
+		if nodeExe.NodeType == entity.NodeTypeBatch {
+			if inner, ok := batchNodeID2InnerNodeResult[nodeExe.NodeID]; ok {
+				nr = mergeBatchModeNodes(inner, nr)
+				delete(batchNodeID2InnerNodeResult, nodeExe.NodeID)
+			} else {
+				batchNodeID2NodeResult[nodeExe.NodeID] = nr
+				continue
 			}
-		}
-
-		if nodeExe.Index > 0 {
-			nr.Index = ptr.Of(int32(nodeExe.Index))
-			nr.Items = nodeExe.Items
-		}
-
-		if len(nodeExe.IndexedExecutions) > 0 {
-			nr.IsBatch = ptr.Of(true)
-			m, err := sonic.MarshalString(nodeExe.IndexedExecutions)
-			if err != nil {
-				return nil, err
+		} else if len(nodeExe.IndexedExecutions) > 0 {
+			if vo.IsGeneratedNodeForBatchMode(nodeExe.NodeID, *nodeExe.ParentNodeID) {
+				parentNodeResult, ok := batchNodeID2NodeResult[*nodeExe.ParentNodeID]
+				if ok {
+					nr = mergeBatchModeNodes(parentNodeResult, nr)
+					delete(batchNodeID2NodeResult, *nodeExe.ParentNodeID)
+				} else {
+					batchNodeID2InnerNodeResult[*nodeExe.ParentNodeID] = nr
+					continue
+				}
 			}
-			nr.Batch = ptr.Of(m)
 		}
 
 		if nr.NodeStatus == workflow.NodeExeStatus_Success {
 			successNum++
 		}
 
+		resp.Data.NodeResults = append(resp.Data.NodeResults, nr)
+	}
+
+	for id := range batchNodeID2NodeResult {
+		nr := batchNodeID2NodeResult[id]
+		if nr.NodeStatus == workflow.NodeExeStatus_Success {
+			successNum++
+		}
 		resp.Data.NodeResults = append(resp.Data.NodeResults, nr)
 	}
 
@@ -406,6 +443,166 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 	}
 
 	return resp, nil
+}
+
+func (w *ApplicationService) GetNodeExecuteHistory(ctx context.Context, req *workflow.GetNodeExecuteHistoryRequest) (
+	*workflow.GetNodeExecuteHistoryResponse, error) {
+	executeID := req.GetExecuteID()
+	scene := req.GetNodeHistoryScene()
+
+	if scene == workflow.NodeHistoryScene_TestRunInput {
+		if len(executeID) > 0 {
+			return nil, fmt.Errorf("when scene is test_run_input, execute_id should be empty")
+		}
+
+		nodeID := req.GetNodeID()
+		if nodeID == "100001" {
+			nodeExe, found, err := GetWorkflowDomainSVC().GetLatestTestRunInput(ctx, mustParseInt64(req.GetWorkflowID()),
+				ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0))
+			if err != nil {
+				return nil, err
+			}
+			if !found {
+				return &workflow.GetNodeExecuteHistoryResponse{
+					Data: &workflow.NodeResult{},
+				}, nil
+			}
+
+			result, err := convertNodeExecution(nodeExe)
+			if err != nil {
+				return nil, err
+			}
+
+			return &workflow.GetNodeExecuteHistoryResponse{
+				Data: result,
+			}, nil
+		} else {
+			nodeExe, innerExe, found, err := GetWorkflowDomainSVC().GetLastestNodeDebugInput(ctx, mustParseInt64(req.GetWorkflowID()), nodeID,
+				ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0))
+			if err != nil {
+				return nil, err
+			}
+			if !found {
+				return &workflow.GetNodeExecuteHistoryResponse{
+					Data: &workflow.NodeResult{},
+				}, nil
+			}
+
+			result, err := convertNodeExecution(nodeExe)
+			if err != nil {
+				return nil, err
+			}
+
+			if innerExe == nil {
+				return &workflow.GetNodeExecuteHistoryResponse{
+					Data: result,
+				}, nil
+			}
+
+			inner, err := convertNodeExecution(innerExe)
+			if err != nil {
+				return nil, err
+			}
+
+			result = mergeBatchModeNodes(result, inner)
+			return &workflow.GetNodeExecuteHistoryResponse{
+				Data: result,
+			}, nil
+		}
+	} else {
+		if len(executeID) == 0 {
+			return nil, fmt.Errorf("when scene is not test_run_input, execute_id should not be empty")
+		}
+
+		nodeExe, innerNodeExe, err := GetWorkflowDomainSVC().GetNodeExecution(ctx, mustParseInt64(executeID), req.GetNodeID())
+		if err != nil {
+			return nil, err
+		}
+
+		result, err := convertNodeExecution(nodeExe)
+		if err != nil {
+			return nil, err
+		}
+
+		if innerNodeExe != nil {
+			inner, err := convertNodeExecution(innerNodeExe)
+			if err != nil {
+				return nil, err
+			}
+
+			result := mergeBatchModeNodes(result, inner)
+			return &workflow.GetNodeExecuteHistoryResponse{
+				Data: result,
+			}, nil
+		}
+
+		return &workflow.GetNodeExecuteHistoryResponse{
+			Data: result,
+		}, nil
+	}
+}
+
+func convertNodeExecution(nodeExe *entity.NodeExecution) (*workflow.NodeResult, error) {
+	nr := &workflow.NodeResult{
+		NodeId:      nodeExe.NodeID,
+		NodeName:    nodeExe.NodeName,
+		NodeType:    string(nodeExe.NodeType),
+		NodeStatus:  workflow.NodeExeStatus(nodeExe.Status),
+		ErrorInfo:   ptr.FromOrDefault(nodeExe.ErrorInfo, ""),
+		Input:       ptr.FromOrDefault(nodeExe.Input, ""),
+		Output:      ptr.FromOrDefault(nodeExe.Output, ""),
+		NodeExeCost: fmt.Sprintf("%.3fs", nodeExe.Duration.Seconds()),
+		RawOutput:   nodeExe.RawOutput,
+		ErrorLevel:  ptr.FromOrDefault(nodeExe.ErrorLevel, ""),
+	}
+
+	if nodeExe.TokenInfo != nil {
+		nr.TokenAndCost = &workflow.TokenAndCost{
+			InputTokens:  ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.InputTokens)),
+			OutputTokens: ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.OutputTokens)),
+			TotalTokens:  ptr.Of(fmt.Sprintf("%d Tokens", nodeExe.TokenInfo.InputTokens+nodeExe.TokenInfo.OutputTokens)),
+		}
+	}
+
+	if nodeExe.Index > 0 {
+		nr.Index = ptr.Of(int32(nodeExe.Index))
+		nr.Items = nodeExe.Items
+	}
+
+	if len(nodeExe.IndexedExecutions) > 0 {
+		nr.IsBatch = ptr.Of(true)
+		m, err := sonic.MarshalString(nodeExe.IndexedExecutions) // TODO: convert to correct format
+		if err != nil {
+			return nil, err
+		}
+		nr.Batch = ptr.Of(m)
+	}
+
+	return nr, nil
+}
+
+func mergeBatchModeNodes(parent, inner *workflow.NodeResult) *workflow.NodeResult {
+	merged := &workflow.NodeResult{
+		NodeId:       parent.NodeId,
+		NodeType:     inner.NodeType,
+		NodeName:     parent.NodeName,
+		NodeStatus:   parent.NodeStatus,
+		ErrorInfo:    parent.ErrorInfo,
+		Input:        parent.Input,
+		Output:       parent.Output,
+		NodeExeCost:  parent.NodeExeCost,
+		TokenAndCost: parent.TokenAndCost,
+		RawOutput:    parent.RawOutput,
+		ErrorLevel:   parent.ErrorLevel,
+		Batch:        inner.Batch,
+		IsBatch:      inner.IsBatch,
+		Extra:        inner.Extra,
+		ExecuteId:    parent.ExecuteId,
+		SubExecuteId: parent.SubExecuteId,
+		NeedAsync:    parent.NeedAsync,
+	}
+
+	return merged
 }
 
 type StreamRunEventType string
@@ -598,7 +795,19 @@ func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.Val
 		return nil, errors.New("validate tree schema is required")
 	}
 	response := &workflow.ValidateTreeResponse{}
-	wfValidateInfos, err := GetWorkflowDomainSVC().ValidateTree(ctx, mustParseInt64(req.GetWorkflowID()), canvasSchema)
+
+	validateTreeCfg := vo.ValidateTreeConfig{
+		CanvasSchema: canvasSchema,
+	}
+	if req.GetBindProjectID() != "" {
+		pId, err := strconv.ParseInt(req.GetBindProjectID(), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		validateTreeCfg.ProjectID = ptr.Of(pId)
+	}
+
+	wfValidateInfos, err := GetWorkflowDomainSVC().ValidateTree(ctx, mustParseInt64(req.GetWorkflowID()), validateTreeCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -1477,6 +1686,30 @@ func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *p
 		},
 	}, nil
 
+}
+
+func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.CopyWorkflowRequest) (resp *workflow.CopyWorkflowResponse, err error) {
+
+	spaceID, err := strconv.ParseInt(req.GetSpaceID(), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	workflowID, err := strconv.ParseInt(req.GetWorkflowID(), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	copiedID, err := GetWorkflowDomainSVC().CopyWorkflow(ctx, spaceID, workflowID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.CopyWorkflowResponse{
+		Data: &workflow.CopyWorkflowData{
+			WorkflowID: strconv.FormatInt(copiedID, 10),
+		},
+	}, err
 }
 
 func mustParseInt64(s string) int64 {

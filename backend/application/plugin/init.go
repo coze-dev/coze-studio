@@ -9,6 +9,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
+	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 )
@@ -18,6 +19,7 @@ type ServiceComponents struct {
 	DB       *gorm.DB
 	OSS      storage.Storage
 	EventBus search.ResourceEventBus
+	UserSVC  user.User
 }
 
 func InitService(ctx context.Context, components *ServiceComponents) (*PluginApplicationService, error) {
@@ -46,6 +48,7 @@ func InitService(ctx context.Context, components *ServiceComponents) (*PluginApp
 	PluginApplicationSVC.DomainSVC = pluginSVC
 	PluginApplicationSVC.eventbus = components.EventBus
 	PluginApplicationSVC.oss = components.OSS
+	PluginApplicationSVC.userSVC = components.UserSVC
 	PluginApplicationSVC.pluginRepo = pluginRepo
 	PluginApplicationSVC.toolRepo = toolRepo
 

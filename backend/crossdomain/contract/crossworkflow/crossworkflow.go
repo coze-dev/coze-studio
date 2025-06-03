@@ -12,6 +12,8 @@ import (
 type Workflow interface {
 	MGetWorkflows(ctx context.Context, ids []*workflowEntity.WorkflowIdentity) ([]*workflowEntity.Workflow, error)
 	WorkflowAsModelTool(ctx context.Context, ids []*workflowEntity.WorkflowIdentity) ([]tool.BaseTool, error)
+	DeleteWorkflow(ctx context.Context, id int64) error
+	PublishWorkflow(ctx context.Context, wfID int64, version, desc string, force bool) (err error)
 }
 
 var defaultSVC Workflow

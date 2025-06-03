@@ -26,6 +26,7 @@ service PluginDevelopService {
     GetUserAuthorityResponse GetUserAuthority(1: GetUserAuthorityRequest request)(api.post='/api/plugin_api/get_user_authority', api.category="plugin", api.gen_path="plugin")
     DebugAPIResponse DebugAPI(1: DebugAPIRequest request)(api.post='/api/plugin_api/debug_api', api.category="plugin", api.gen_path='plugin')
     GetPluginNextVersionResponse GetPluginNextVersion(1: GetPluginNextVersionRequest request)(api.post='/api/plugin_api/get_plugin_next_version', api.category="plugin", api.gen_path='plugin')
+    GetDevPluginListResponse GetDevPluginList(1: GetDevPluginListRequest request)(api.post='/api/plugin_api/get_dev_plugin_list', api.category="plugin", api.gen_path='plugin', agw.preserve_base="true")
 }
 
 struct GetPlaygroundPluginListRequest {
@@ -487,4 +488,30 @@ struct RegisterPluginResponse {
     2  :          string                                   msg     ,
     3  :          plugin_develop_common.RegisterPluginData data    ,
     255: optional base.BaseResp                            BaseResp,
+}
+
+struct GetDevPluginListRequest {
+    1  : optional list<plugin_develop_common.PluginStatus>  status                                                                                                       ,
+    2  : optional i32                                       page                                                                                                         ,
+    3  : optional i32                                       size                                                                                                         ,
+    4  : required i64                                       dev_id                 (api.body = "dev_id", api.js_conv="str", agw.js_conv="str", agw.cli_conv="str", agw.key="dev_id")        ,
+    5  :          i64                                       space_id               (api.body = "space_id", api.js_conv="str", agw.js_conv="str", agw.cli_conv="str", agw.key="space_id")    ,
+    6  : optional plugin_develop_common.ScopeType           scope_type                                                                                                   ,
+    7  : optional plugin_develop_common.OrderBy             order_by                                                                                                     ,
+    8  : optional bool                                      publish_status                                                                                               , // 发布状态筛选：true:已发布, false:未发布
+    9  : optional string                                    name                                                                                                         , // 插件名或工具名
+    10 : optional plugin_develop_common.PluginTypeForFilter plugin_type_for_filter                                                                                       , // 插件种类筛选 端/云
+    11 :          i64                                       project_id             (api.body = "project_id", api.js_conv="str", agw.js_conv="str", agw.cli_conv="str", agw.key="project_id"),
+    12 :          list<i64>                                 plugin_ids             (api.body = "plugin_ids", agw.js_conv="str", agw.cli_conv="str", agw.key="plugin_ids"), // 插件id列表
+
+    255: optional base.Base                                 Base                                                                                                         ,
+}
+
+struct GetDevPluginListResponse{
+    1  : i32                                                 code                                                                                    ,
+    2  : string                                              msg                                                                                     ,
+    3  : list<plugin_develop_common.PluginInfoForPlayground> plugin_list                                                                             ,
+    4  : i64                                                 total       (api.body = "total", api.js_conv="str", agw.js_conv="str", agw.cli_conv="str", agw.key="total"),
+
+    255: base.BaseResp                                       baseResp                                                                                ,
 }

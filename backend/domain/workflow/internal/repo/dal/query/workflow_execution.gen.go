@@ -65,7 +65,7 @@ type workflowExecution struct {
 	WorkflowID      field.Int64  // workflow_id
 	Version         field.String // workflow version. empty if is draft
 	SpaceID         field.Int64  // the space id the workflow belongs to
-	Mode            field.Int32  // the execution mode: 1. debug run 2. release run
+	Mode            field.Int32  // the execution mode: 1. debug run 2. release run 3. node debug
 	OperatorID      field.Int64  // the user id that runs this workflow
 	ConnectorID     field.Int64  // the connector on which this execution happened
 	ConnectorUID    field.String // user id of the connector

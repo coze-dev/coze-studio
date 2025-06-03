@@ -231,7 +231,7 @@ func Prepare(ctx context.Context,
 		}()
 
 		// this goroutine should not use the cancelCtx because it needs to be alive to receive workflow cancel events
-		execute.HandleExecuteEvent(ctx, eventChan, cancelFn, cancelSignalChan, clearFn, wf.GetRepository(), sw)
+		execute.HandleExecuteEvent(ctx, eventChan, cancelFn, cancelSignalChan, clearFn, wf.GetRepository(), sw, config)
 	}()
 
 	return cancelCtx, executeID, composeOpts, nil

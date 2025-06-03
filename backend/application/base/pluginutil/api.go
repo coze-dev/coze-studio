@@ -7,9 +7,8 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/convertor"
 )
 
 func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (*openapi3.Operation, error) {
@@ -38,7 +37,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 
 		var mType *openapi3.MediaType
 		if hasSetReqBody {
-			mType = op.RequestBody.Value.Content[consts.MIMETypeJson]
+			mType = op.RequestBody.Value.Content[plugin.MIMETypeJson]
 		} else {
 			hasSetReqBody = true
 			mType = &openapi3.MediaType{
@@ -52,7 +51,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 			op.RequestBody = &openapi3.RequestBodyRef{
 				Value: &openapi3.RequestBody{
 					Content: map[string]*openapi3.MediaType{
-						consts.MIMETypeJson: mType,
+						plugin.MIMETypeJson: mType,
 					},
 				},
 			}
@@ -80,7 +79,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 				strconv.Itoa(http.StatusOK): {
 					Value: &openapi3.Response{
 						Content: map[string]*openapi3.MediaType{
-							consts.MIMETypeJson: {
+							plugin.MIMETypeJson: {
 								Schema: &openapi3.SchemaRef{
 									Value: &openapi3.Schema{
 										Type:       openapi3.TypeObject,
@@ -100,7 +99,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 		}
 
 		resp, _ := op.Responses[strconv.Itoa(http.StatusOK)]
-		mType, _ := resp.Value.Content[consts.MIMETypeJson] // only support application/json
+		mType, _ := resp.Value.Content[plugin.MIMETypeJson] // only support application/json
 		mType.Schema.Value.Properties[apiParam.Name] = &openapi3.SchemaRef{
 			Value: _apiParam,
 		}
@@ -114,7 +113,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 }
 
 func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, error) {
-	paramType, ok := convertor.ToOpenapiParamType(apiParam.Type)
+	paramType, ok := plugin.ToOpenapiParamType(apiParam.Type)
 	if !ok {
 		return nil, fmt.Errorf("invalid param type '%s'", apiParam.Type)
 	}
@@ -123,30 +122,30 @@ func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, err
 		Type:        paramType,
 		Default:     apiParam.GlobalDefault,
 		Extensions: map[string]interface{}{
-			consts.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
+			plugin.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
 		},
 	}
 	if apiParam.LocalDefault != nil {
 		paramSchema.Default = apiParam.LocalDefault
 	}
 	if apiParam.LocalDisable {
-		paramSchema.Extensions[consts.APISchemaExtendLocalDisable] = true
+		paramSchema.Extensions[plugin.APISchemaExtendLocalDisable] = true
 	}
 
 	if apiParam.GetAssistType() > 0 {
-		aType, ok := convertor.ToAPIAssistType(apiParam.GetAssistType())
+		aType, ok := plugin.ToAPIAssistType(apiParam.GetAssistType())
 		if !ok {
 			return nil, fmt.Errorf("invalid assist type '%s'", apiParam.GetAssistType())
 		}
-		paramSchema.Extensions[consts.APISchemaExtendAssistType] = aType
-		format, ok := convertor.AssistTypeToFormat(aType)
+		paramSchema.Extensions[plugin.APISchemaExtendAssistType] = aType
+		format, ok := plugin.AssistTypeToFormat(aType)
 		if !ok {
 			return nil, fmt.Errorf("invalid assist type '%s'", aType)
 		}
 		paramSchema.Format = format
 	}
 
-	loc, ok := convertor.ToHTTPParamLocation(apiParam.Location)
+	loc, ok := plugin.ToHTTPParamLocation(apiParam.Location)
 	if !ok {
 		return nil, fmt.Errorf("invalid param location '%s'", apiParam.Location)
 	}
@@ -165,7 +164,7 @@ func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, err
 }
 
 func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
-	paramType, ok := convertor.ToOpenapiParamType(apiParam.Type)
+	paramType, ok := plugin.ToOpenapiParamType(apiParam.Type)
 	if !ok {
 		return nil, fmt.Errorf("invalid param type '%s'", apiParam.Type)
 	}
@@ -175,23 +174,23 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 		Type:        paramType,
 		Default:     apiParam.GlobalDefault,
 		Extensions: map[string]interface{}{
-			consts.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
+			plugin.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
 		},
 	}
 	if apiParam.LocalDefault != nil {
 		sc.Default = apiParam.LocalDefault
 	}
 	if apiParam.LocalDisable {
-		sc.Extensions[consts.APISchemaExtendLocalDisable] = true
+		sc.Extensions[plugin.APISchemaExtendLocalDisable] = true
 	}
 
 	if apiParam.GetAssistType() > 0 {
-		aType, ok := convertor.ToAPIAssistType(apiParam.GetAssistType())
+		aType, ok := plugin.ToAPIAssistType(apiParam.GetAssistType())
 		if !ok {
 			return nil, fmt.Errorf("invalid assist type '%s'", apiParam.GetAssistType())
 		}
-		sc.Extensions[consts.APISchemaExtendAssistType] = aType
-		format, ok := convertor.AssistTypeToFormat(aType)
+		sc.Extensions[plugin.APISchemaExtendAssistType] = aType
+		format, ok := plugin.AssistTypeToFormat(aType)
 		if !ok {
 			return nil, fmt.Errorf("invalid assist type '%s'", aType)
 		}
@@ -222,7 +221,7 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 		}
 
 		arrayItem := apiParam.SubParameters[0]
-		itemType, ok := convertor.ToOpenapiParamType(arrayItem.Type)
+		itemType, ok := plugin.ToOpenapiParamType(arrayItem.Type)
 		if !ok {
 			return nil, fmt.Errorf("invalid array item type '%s'", itemType)
 		}

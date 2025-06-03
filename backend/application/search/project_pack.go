@@ -7,8 +7,10 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
+	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	appService "code.byted.org/flow/opencoze/backend/domain/app/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -93,6 +95,9 @@ func (a *agentPacker) GetProjectInfo(ctx context.Context) (*projectInfo, error) 
 		return nil, err
 	}
 
+	if agent == nil {
+		return nil, fmt.Errorf("agent info is nil")
+	}
 	return &projectInfo{
 		iconURI: agent.IconURI,
 		desc:    agent.Desc,
@@ -166,7 +171,7 @@ func (a *appPacker) GetProjectInfo(ctx context.Context) (*projectInfo, error) {
 }
 
 func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.IntelligencePublishInfo {
-	res, err := a.SVC.APPDomainSVC.GetAPPReleaseInfo(ctx, &appService.GetAPPReleaseInfoRequest{
+	res, err := a.SVC.APPDomainSVC.GetAPPLatestPublishRecord(ctx, &appService.GetAPPLatestPublishRecordRequest{
 		APPID: a.projectID,
 	})
 	if err != nil {
@@ -174,8 +179,12 @@ func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.Intellig
 		return nil
 	}
 
-	connectorInfo := make([]*common.ConnectorInfo, 0, len(res.ConnectorIDs))
-	connectors, err := a.SVC.ConnectorDomainSVC.GetByIDs(ctx, res.ConnectorIDs)
+	connectorInfo := make([]*common.ConnectorInfo, 0, len(res.ConnectorPublishRecord))
+	connectorIDs := slices.Transform(res.ConnectorPublishRecord, func(c *entity.ConnectorPublishRecord) int64 {
+		return c.ConnectorID
+	})
+
+	connectors, err := a.SVC.ConnectorDomainSVC.GetByIDs(ctx, connectorIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "[app-GetPublishedInfo] failed to get connector info, app_id=%d, err=%v", a.projectID, err)
 	} else {
@@ -190,8 +199,8 @@ func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.Intellig
 	}
 
 	return &intelligence.IntelligencePublishInfo{
-		PublishTime:  strconv.FormatInt(res.PublishAtMS/1000, 10),
-		HasPublished: res.HasPublished,
+		PublishTime:  strconv.FormatInt(res.PublishedAtMS/1000, 10),
+		HasPublished: res.Published,
 		Connectors:   connectorInfo,
 	}
 }

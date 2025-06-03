@@ -7,6 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal"
@@ -57,8 +58,47 @@ func (t *toolRepoImpl) GetDraftTool(ctx context.Context, toolID int64) (tool *en
 	return t.toolDraftDAO.Get(ctx, toolID)
 }
 
-func (t *toolRepoImpl) MGetDraftTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
-	return t.toolDraftDAO.MGet(ctx, toolIDs)
+func (t *toolRepoImpl) MGetDraftTools(ctx context.Context, toolIDs []int64, opts ...ToolSelectedOptions) (tools []*entity.ToolInfo, err error) {
+	var opt *dal.ToolSelectedOption
+	if len(opts) > 0 {
+		for _, o := range opts {
+			o(opt)
+		}
+	}
+	return t.toolDraftDAO.MGet(ctx, toolIDs, opt)
+}
+
+func (t *toolRepoImpl) GetPluginAllDraftTools(ctx context.Context, pluginID int64, opts ...ToolSelectedOptions) (tools []*entity.ToolInfo, err error) {
+	var opt *dal.ToolSelectedOption
+	if len(opts) > 0 {
+		for _, o := range opts {
+			o(opt)
+		}
+	}
+	return t.toolDraftDAO.GetAll(ctx, pluginID, opt)
+}
+
+func (t *toolRepoImpl) GetPluginAllOnlineTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
+	pi, exist := pluginConf.GetPluginProduct(pluginID)
+	if exist {
+		tis := pi.GetPluginAllTools()
+		tools = slices.Transform(tis, func(ti *pluginConf.ToolInfo) *entity.ToolInfo {
+			return ti.Info
+		})
+
+		return tools, nil
+	}
+
+	tools, err = t.toolDAO.GetAll(ctx, pluginID)
+	if err != nil {
+		return nil, err
+	}
+
+	return tools, nil
+}
+
+func (t *toolRepoImpl) ListPluginDraftTools(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error) {
+	return t.toolDraftDAO.List(ctx, pluginID, pageInfo)
 }
 
 func (t *toolRepoImpl) GetDraftToolWithAPI(ctx context.Context, pluginID int64, api entity.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error) {
@@ -236,7 +276,7 @@ func (t *toolRepoImpl) BatchCreateVersionAgentTools(ctx context.Context, agentID
 	return t.agentToolVersionDAO.BatchCreate(ctx, agentID, tools)
 }
 
-func (t *toolRepoImpl) UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, doc *entity.Openapi3T, updatedTool *entity.ToolInfo) (err error) {
+func (t *toolRepoImpl) UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, doc *plugin.Openapi3T, updatedTool *entity.ToolInfo) (err error) {
 	tx := t.query.Begin()
 	if tx.Error != nil {
 		return tx.Error
@@ -262,10 +302,10 @@ func (t *toolRepoImpl) UpdateDraftToolAndDebugExample(ctx context.Context, plugi
 		return err
 	}
 
-	updatedPlugin := &entity.PluginInfo{
+	updatedPlugin := entity.NewPluginInfo(&plugin.PluginInfo{
 		ID:         pluginID,
 		OpenapiDoc: doc,
-	}
+	})
 	err = t.pluginDraftDAO.UpdateWithTX(ctx, tx, updatedPlugin)
 	if err != nil {
 		return err

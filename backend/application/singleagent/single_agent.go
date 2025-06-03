@@ -8,6 +8,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	intelligence "code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
@@ -17,7 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
+
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
@@ -354,10 +355,10 @@ func disabledParam(schemaVal *openapi3.Schema) bool {
 		return false
 	}
 	globalDisable, localDisable := false, false
-	if v, ok := schemaVal.Extensions[consts.APISchemaExtendLocalDisable]; ok {
+	if v, ok := schemaVal.Extensions[plugin.APISchemaExtendLocalDisable]; ok {
 		localDisable = v.(bool)
 	}
-	if v, ok := schemaVal.Extensions[consts.APISchemaExtendGlobalDisable]; ok {
+	if v, ok := schemaVal.Extensions[plugin.APISchemaExtendGlobalDisable]; ok {
 		globalDisable = v.(bool)
 	}
 	return globalDisable || localDisable
@@ -505,4 +506,21 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 	}
 
 	return resp, nil
+}
+
+func (s *SingleAgentApplicationService) ReportUserBehavior(ctx context.Context, req *playground.ReportUserBehaviorRequest) (resp *playground.ReportUserBehaviorResponse, err error) {
+	err = s.appContext.EventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Updated,
+		Project: &searchEntity.ProjectDocument{
+			ID:             req.ResourceID,
+			SpaceID:        req.SpaceID,
+			Type:           intelligence.IntelligenceType_Bot,
+			IsRecentlyOpen: ptr.Of(1),
+		},
+	})
+	if err != nil {
+		logs.CtxWarnf(ctx, "publish updated project event failed id=%v, err=%v", req.ResourceID, err)
+	}
+
+	return &playground.ReportUserBehaviorResponse{}, nil
 }

@@ -40,7 +40,7 @@ require (
 	github.com/volcengine/volc-sdk-golang v1.0.203
 	github.com/xuri/excelize/v2 v2.9.0
 	go.uber.org/mock v0.5.1
-	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
+	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394
 	golang.org/x/mod v0.24.0
 	golang.org/x/sync v0.13.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -134,7 +134,7 @@ require (
 	github.com/go-openapi/swag v0.23.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-sql-driver/mysql v1.9.0
+	github.com/go-sql-driver/mysql v1.9.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/godbus/dbus/v5 v5.0.4 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect

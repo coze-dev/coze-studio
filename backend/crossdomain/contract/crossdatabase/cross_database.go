@@ -9,6 +9,7 @@ import (
 type Database interface {
 	ExecuteSQL(ctx context.Context, req *database.ExecuteSQLRequest) (*database.ExecuteSQLResponse, error)
 	PublishDatabase(ctx context.Context, req *database.PublishDatabaseRequest) (resp *database.PublishDatabaseResponse, err error)
+	DeleteDatabase(ctx context.Context, req *database.DeleteDatabaseRequest) error
 }
 
 var defaultSVC Database

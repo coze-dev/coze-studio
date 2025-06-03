@@ -894,3 +894,25 @@ func (s *NodeSchema) IsRefGlobalVariable() bool {
 
 	return false
 }
+
+func (s *NodeSchema) requireCheckpoint() bool {
+	if s.Type == entity.NodeTypeQuestionAnswer || s.Type == entity.NodeTypeInputReceiver {
+		return true
+	}
+
+	if s.Type == entity.NodeTypeLLM {
+		fcParams := getKeyOrZero[*vo.FCParam]("FCParam", s.Configs)
+		if fcParams != nil && fcParams.WorkflowFCParam != nil {
+			return true
+		}
+	}
+
+	if s.Type == entity.NodeTypeSubWorkflow {
+		s.SubWorkflowSchema.Init()
+		if s.SubWorkflowSchema.requireCheckPoint {
+			return true
+		}
+	}
+
+	return false
+}

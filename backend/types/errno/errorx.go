@@ -50,7 +50,7 @@ const (
 	errGetSingleAgentAffectStability = true
 
 	ErrUpdateSingleAgentCode            = 1000009
-	errUpdateSingleAgentMessage         = "update prompt resource failed"
+	errUpdateSingleAgentMessage         = "update single agent failed"
 	errUpdateSingleAgentAffectStability = true
 
 	ErrUpdateVariableSchemaCode            = 1000010

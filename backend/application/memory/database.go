@@ -567,7 +567,7 @@ func (d *DatabaseApplicationService) GetConnectorName(ctx context.Context, req *
 				ConnectorName: "Chat SDK",
 			},
 			{
-				ConnectorID:   consts.AgentAsAPIConnectorID,
+				ConnectorID:   consts.APIConnectorID,
 				ConnectorName: "API",
 			},
 		},

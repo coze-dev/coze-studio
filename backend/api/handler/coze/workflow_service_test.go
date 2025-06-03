@@ -2,10 +2,12 @@ package coze
 
 import (
 	"bytes"
+
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"io"
 	"net/http"
 	"os"
@@ -20,6 +22,7 @@ import (
 	"github.com/bytedance/sonic"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
+	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/ut"
@@ -31,11 +34,13 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
+	pluginModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	crossplugin "code.byted.org/flow/opencoze/backend/crossdomain/workflow/plugin"
 	pluginentity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	pluginservice "code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
@@ -52,12 +57,22 @@ import (
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz, *gomock.Controller, *mock.MockIDGenerator) {
 	h := server.Default()
+
+	h.Use(func(c context.Context, ctx *app.RequestContext) {
+		c = ctxcache.Init(c)
+		ctxcache.Store(c, consts.SessionDataKeyInCtx, &userentity.Session{
+			UserID: 123,
+		})
+		ctx.Next(c)
+	})
 	h.POST("/api/workflow_api/node_template_list", NodeTemplateList)
 	h.POST("/api/workflow_api/create", CreateWorkflow)
 	h.POST("/api/workflow_api/save", SaveWorkflow)
@@ -77,6 +92,9 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	h.POST("/api/workflow_api/llm_fc_setting_merged", GetLLMNodeFCSettingsMerged)
 	h.POST("/v1/workflow/stream_run", OpenAPIStreamRunFlow)
 	h.POST("/v1/workflow/stream_resume", OpenAPIStreamResumeFlow)
+	h.POST("/api/workflow_api/nodeDebug", WorkflowNodeDebugV2)
+	h.GET("/api/workflow_api/get_node_execute_history", GetNodeExecuteHistory)
+	h.POST("/api/workflow_api/copy", CopyWorkflow)
 
 	ctrl := gomock.NewController(t)
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -232,6 +250,39 @@ func getProcess(t *testing.T, h *server.Hertz, idStr string, exeID string) *work
 	time.Sleep(50 * time.Millisecond)
 
 	return getProcessResp
+}
+
+func getNodeExeHistory(t *testing.T, h *server.Hertz, idStr string, exeID string, nodeID string, scene *workflow.NodeHistoryScene) *workflow.NodeResult {
+	getNodeExeHistoryReq := &workflow.GetNodeExecuteHistoryRequest{
+		WorkflowID:       idStr,
+		SpaceID:          "123",
+		ExecuteID:        exeID,
+		NodeID:           nodeID,
+		NodeHistoryScene: scene,
+	}
+
+	w := ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/api/workflow_api/get_node_execute_history?workflow_id=%s&space_id=%s&execute_id=%s"+
+		"&node_id=%s&node_type=3&node_history_scene=%d", getNodeExeHistoryReq.WorkflowID, getNodeExeHistoryReq.SpaceID, getNodeExeHistoryReq.ExecuteID,
+		getNodeExeHistoryReq.NodeID, getNodeExeHistoryReq.GetNodeHistoryScene()), nil,
+		ut.Header{Key: "Content-Type", Value: "application/json"})
+
+	res := w.Result()
+	assert.Equal(t, http.StatusOK, res.StatusCode())
+	getNodeResultResp := &workflow.GetNodeExecuteHistoryResponse{}
+	err := sonic.Unmarshal(res.Body(), getNodeResultResp)
+	assert.NoError(t, err)
+
+	return getNodeResultResp.Data
+}
+
+func mustUnmarshalToMap(t *testing.T, s string) map[string]any {
+	r := make(map[string]any)
+	err := sonic.UnmarshalString(s, &r)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return r
 }
 
 func ensureWorkflowVersion(t *testing.T, h *server.Hertz, id int64, version string, schemaFile string, mockIDGen *mock.MockIDGenerator) {
@@ -585,7 +636,7 @@ func TestValidateTree(t *testing.T) {
 			req := new(workflow.ValidateTreeRequest)
 
 			req.WorkflowID = "1"
-
+			req.BindProjectID = "1"
 			req.Schema = ptr.Of(string(data))
 
 			m, err := sonic.Marshal(req)
@@ -632,6 +683,7 @@ func TestValidateTree(t *testing.T) {
 			req := new(workflow.ValidateTreeRequest)
 
 			req.WorkflowID = "1"
+			req.BindProjectID = "1"
 
 			req.Schema = ptr.Of(string(data))
 
@@ -671,6 +723,15 @@ func TestTestResumeWithInputNode(t *testing.T) {
 		defer ctrl.Finish()
 
 		idStr := loadWorkflow(t, h, "input_receiver.json")
+
+		userInput := map[string]any{
+			"input": "user input",
+			"obj": map[string]any{
+				"field1": []string{"1", "2"},
+			},
+		}
+		userInputStr, err := sonic.MarshalString(userInput)
+		assert.NoError(t, err)
 
 		testRunReq := &workflow.WorkFlowTestRunRequest{
 			WorkflowID: idStr,
@@ -733,15 +794,6 @@ func TestTestResumeWithInputNode(t *testing.T) {
 
 			t.Logf("second workflow run: %s, success rate: %s, interruptEvents: %v", workflowStatus, getProcessResp.Data.Rate, interruptEvents)
 		}
-
-		userInput := map[string]any{
-			"input": "user input",
-			"obj": map[string]any{
-				"field1": []string{"1", "2"},
-			},
-		}
-		userInputStr, err := sonic.MarshalString(userInput)
-		assert.NoError(t, err)
 
 		testResumeReq := &workflow.WorkflowTestResumeRequest{
 			WorkflowID: idStr,
@@ -857,6 +909,73 @@ func TestTestResumeWithInputNode(t *testing.T) {
 
 			t.Log(msg)
 		}
+
+		mockey.PatchConvey("node debug the input node", func() {
+			nodeDebugReq := &workflow.WorkflowNodeDebugV2Request{
+				WorkflowID: idStr,
+				NodeID:     "154951",
+				SpaceID:    ptr.Of("123"),
+			}
+
+			nodeDebugResp := post[workflow.WorkflowNodeDebugV2Response](t, h, nodeDebugReq, "/api/workflow_api/nodeDebug")
+			executeID := nodeDebugResp.Data.ExecuteID
+
+			workflowStatus := workflow.WorkflowExeStatus_Running
+			var interruptEvents []*workflow.NodeEvent
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+					break
+				}
+
+				getProcessResp := getProcess(t, h, idStr, executeID)
+				interruptEvents = getProcessResp.Data.NodeEvents
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				t.Logf("node debug input node status: %s, success rate: %s, executeID: %v", workflowStatus, getProcessResp.Data.Rate, executeID)
+			}
+
+			testResumeReq := &workflow.WorkflowTestResumeRequest{
+				WorkflowID: idStr,
+				SpaceID:    ptr.Of("123"),
+				ExecuteID:  nodeDebugResp.Data.ExecuteID,
+				EventID:    interruptEvents[0].ID,
+				Data:       userInputStr,
+			}
+
+			_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
+
+			workflowStatus = workflow.WorkflowExeStatus_Running
+			interruptEvents = []*workflow.NodeEvent{}
+			var output string
+			var lastResult *workflow.GetWorkFlowProcessData
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+					break
+				}
+
+				getProcessResp := getProcess(t, h, idStr, nodeDebugResp.Data.ExecuteID)
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				interruptEvents = getProcessResp.Data.NodeEvents
+				output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+				lastResult = getProcessResp.Data
+				t.Logf("node resume. workflow status: %s, success rate: %s, interruptEvents: %v, lastOutput= %s, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, output, lastResult.WorkflowExeCost)
+			}
+
+			var outputMap = map[string]any{}
+			err = sonic.UnmarshalString(output, &outputMap)
+			assert.NoError(t, err)
+			assert.Equal(t, map[string]any{
+				"input":    "user input",
+				"inputArr": nil,
+				"obj": map[string]any{
+					"field1": []any{"1", "2"},
+				},
+			}, outputMap)
+
+			result := getNodeExeHistory(t, h, idStr, executeID, "154951", nil)
+			assert.Equal(t, outputMap, mustUnmarshalToMap(t, result.Output))
+		})
 	})
 }
 
@@ -1458,8 +1577,6 @@ func TestInterruptWithinBatch(t *testing.T) {
 		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 
 		idStr := loadWorkflow(t, h, "batch/batch_with_inner_interrupt.json")
-
-		_ = idStr
 
 		testRunReq := &workflow.WorkFlowTestRunRequest{
 			WorkflowID: idStr,
@@ -2645,6 +2762,72 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 		}, outputMap)
 
 		assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Success)
+
+		result := getNodeExeHistory(t, h, idStr, "", "100001", ptr.Of(workflow.NodeHistoryScene_TestRunInput))
+		assert.True(t, len(result.Output) > 0)
+
+		mockey.PatchConvey("test node debug with batch mode", func() {
+			nodeDebugReq := &workflow.WorkflowNodeDebugV2Request{
+				WorkflowID: idStr,
+				NodeID:     "178876", // this is the sub workflow node
+				Batch:      map[string]string{"item1": `[{"output":"output_1"},{"output":"output_2"}]`},
+				SpaceID:    ptr.Of("123"),
+			}
+
+			nodeDebugResp := post[workflow.WorkflowNodeDebugV2Response](t, h, nodeDebugReq, "/api/workflow_api/nodeDebug")
+			executeID := nodeDebugResp.Data.ExecuteID
+
+			workflowStatus := workflow.WorkflowExeStatus_Running
+			var output string
+			var lastResp *workflow.GetWorkFlowProcessData
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running {
+					break
+				}
+
+				getProcessResp := getProcess(t, h, idStr, executeID)
+				if len(getProcessResp.Data.NodeResults) > 0 {
+					output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+				}
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				if workflowStatus == workflow.WorkflowExeStatus_Fail {
+					t.Fatal(*getProcessResp.Data.Reason)
+				} else if workflowStatus == workflow.WorkflowExeStatus_Success {
+					lastResp = getProcessResp.Data
+				}
+				t.Logf("run sub-workflow node in batch mode status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+			}
+
+			assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
+
+			_ = lastResp
+
+			var outputMap = map[string]any{}
+			err := sonic.UnmarshalString(output, &outputMap)
+			assert.NoError(t, err)
+			assert.Equal(t, map[string]any{
+				"outputList": []any{
+					map[string]any{
+						"input":  "output_1",
+						"output": []any{"output_1"},
+					},
+					map[string]any{
+						"input":  "output_2",
+						"output": []any{"output_2"},
+					},
+				},
+			}, outputMap)
+
+			result := getNodeExeHistory(t, h, idStr, executeID, "178876", nil)
+			assert.Equal(t, outputMap, mustUnmarshalToMap(t, result.Output))
+
+			result = getNodeExeHistory(t, h, idStr, testRunResp.Data.ExecuteID, "178876", nil)
+			assert.True(t, len(result.Output) > 0)
+
+			result = getNodeExeHistory(t, h, idStr, "", "178876", ptr.Of(workflow.NodeHistoryScene_TestRunInput))
+			assert.Equal(t, outputMap, mustUnmarshalToMap(t, result.Output))
+		})
 	})
 }
 
@@ -3426,7 +3609,7 @@ func TestLLMWithSkills(t *testing.T) {
 		}, nil).AnyTimes()
 
 		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlinePluginsResponse{
-			Plugins: []*pluginentity.PluginInfo{
+			Plugins: []*pluginModel.PluginInfo{
 				{ID: int64(7509353177339133952)},
 			},
 		}, nil).AnyTimes()
@@ -3499,7 +3682,7 @@ func TestLLMWithSkills(t *testing.T) {
   }
 }`
 
-		operation := &pluginentity.Openapi3Operation{}
+		operation := &pluginModel.Openapi3Operation{}
 		_ = sonic.UnmarshalString(operationString, operation)
 
 		mPlugin.EXPECT().MGetOnlineTools(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlineToolsResponse{
@@ -3806,6 +3989,57 @@ func TestStreamRun(t *testing.T) {
 			return nil
 		})
 		assert.NoError(t, err)
+
+		mockey.PatchConvey("test llm node debug", func() {
+			chatModel1.Reset()
+			chatModel1.InvokeResultProvider = func(index int, in []*schema.Message) (*schema.Message, error) {
+				if index == 0 {
+					return &schema.Message{
+						Role:    schema.Assistant,
+						Content: "I don't know.",
+					}, nil
+				}
+				return nil, fmt.Errorf("unexpected index: %d", index)
+			}
+
+			nodeDebugReq := &workflow.WorkflowNodeDebugV2Request{
+				WorkflowID: idStr,
+				NodeID:     "156549",
+				Input:      map[string]string{"input": "hello"},
+				SpaceID:    ptr.Of("123"),
+			}
+
+			nodeDebugResp := post[workflow.WorkflowNodeDebugV2Response](t, h, nodeDebugReq, "/api/workflow_api/nodeDebug")
+			executeID := nodeDebugResp.Data.ExecuteID
+
+			workflowStatus := workflow.WorkflowExeStatus_Running
+			var output string
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running {
+					break
+				}
+
+				getProcessResp := getProcess(t, h, idStr, executeID)
+				if len(getProcessResp.Data.NodeResults) > 0 {
+					output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+				}
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				t.Logf("run llm node status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+			}
+
+			assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
+
+			var outputMap = map[string]any{}
+			err := sonic.UnmarshalString(output, &outputMap)
+			assert.NoError(t, err)
+			assert.Equal(t, map[string]any{
+				"output": "I don't know.",
+			}, outputMap)
+
+			result := getNodeExeHistory(t, h, idStr, executeID, "156549", nil)
+			assert.Equal(t, outputMap, mustUnmarshalToMap(t, result.Output))
+		})
 	})
 }
 
@@ -4033,19 +4267,19 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
     }
   }
 }`
-		operation := &pluginentity.Openapi3Operation{}
+		operation := &pluginModel.Openapi3Operation{}
 		_ = sonic.UnmarshalString(operationString, operation)
 		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
 		defer ctrl.Finish()
 
 		mPlugin := mockPlugin.NewMockPluginService(ctrl)
 		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlinePluginsResponse{
-			Plugins: []*pluginentity.PluginInfo{
+			Plugins: []*pluginModel.PluginInfo{
 				{
 					ID:       123,
 					SpaceID:  123,
 					Version:  ptr.Of("v0.0.1"),
-					Manifest: &pluginentity.PluginManifest{NameForHuman: "p1", DescriptionForHuman: "desc"},
+					Manifest: &pluginModel.PluginManifest{NameForHuman: "p1", DescriptionForHuman: "desc"},
 				},
 			},
 		}, nil).AnyTimes()
@@ -4158,19 +4392,19 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
   }
 }`
 
-		operation := &pluginentity.Openapi3Operation{}
+		operation := &pluginModel.Openapi3Operation{}
 		_ = sonic.UnmarshalString(operationString, operation)
 		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
 		defer ctrl.Finish()
 
 		mPlugin := mockPlugin.NewMockPluginService(ctrl)
 		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlinePluginsResponse{
-			Plugins: []*pluginentity.PluginInfo{
+			Plugins: []*pluginModel.PluginInfo{
 				{
 					ID:       123,
 					SpaceID:  123,
 					Version:  ptr.Of("v0.0.1"),
-					Manifest: &pluginentity.PluginManifest{NameForHuman: "p1", DescriptionForHuman: "desc"},
+					Manifest: &pluginModel.PluginManifest{NameForHuman: "p1", DescriptionForHuman: "desc"},
 				},
 			},
 		}, nil).AnyTimes()
@@ -4242,5 +4476,96 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 				}
 			}
 		})
+	})
+}
+
+func TestNodeDebugLoop(t *testing.T) {
+	mockey.PatchConvey("test node debug loop", t, func() {
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
+		defer ctrl.Finish()
+
+		idStr := loadWorkflow(t, h, "loop_selector_variable_assign_text_processor.json")
+
+		nodeDebugReq := &workflow.WorkflowNodeDebugV2Request{
+			WorkflowID: idStr,
+			NodeID:     "192046",
+			Input:      map[string]string{"input": `["a", "bb", "ccc", "dddd"]`},
+			SpaceID:    ptr.Of("123"),
+		}
+
+		nodeDebugResp := post[workflow.WorkflowNodeDebugV2Response](t, h, nodeDebugReq, "/api/workflow_api/nodeDebug")
+		executeID := nodeDebugResp.Data.ExecuteID
+
+		workflowStatus := workflow.WorkflowExeStatus_Running
+		var output string
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, executeID)
+			if len(getProcessResp.Data.NodeResults) > 0 {
+				for _, n := range getProcessResp.Data.NodeResults {
+					if n.NodeId == "192046" {
+						output = n.Output
+						break
+					}
+				}
+			}
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			t.Logf("run llm node status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+		}
+
+		assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
+
+		var outputMap = map[string]any{}
+		err := sonic.UnmarshalString(output, &outputMap)
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]any{
+			"converted": []any{
+				"new_a",
+				"new_ccc",
+			},
+			"variable_out": "dddd",
+		}, outputMap)
+
+		result := getNodeExeHistory(t, h, idStr, executeID, "192046", nil)
+		assert.Equal(t, outputMap, mustUnmarshalToMap(t, result.Output))
+
+		result = getNodeExeHistory(t, h, idStr, "", "100001", ptr.Of(workflow.NodeHistoryScene_TestRunInput))
+		assert.Equal(t, "", result.Output)
+
+		result = getNodeExeHistory(t, h, idStr, "", "wrong_node_id", ptr.Of(workflow.NodeHistoryScene_TestRunInput))
+		assert.Equal(t, "", result.Output)
+	})
+}
+
+func TestCopyWorkflow(t *testing.T) {
+	mockey.PatchConvey("copy work flow", t, func() {
+
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
+		_ = ctrl
+		idStr := loadWorkflowWithWorkflowName(t, h, "original_workflow", "publish/publish_workflow.json")
+
+		response := post[workflow.CopyWorkflowResponse](t, h, &workflow.CopyWorkflowRequest{
+			WorkflowID: idStr,
+			SpaceID:    "123",
+		}, "/api/workflow_api/copy")
+
+		oldCanvasResponse := post[workflow.GetCanvasInfoResponse](t, h, &workflow.GetCanvasInfoRequest{
+			SpaceID:    "123",
+			WorkflowID: ptr.Of(idStr),
+		}, "/api/workflow_api/canvas")
+
+		copiedCanvasResponse := post[workflow.GetCanvasInfoResponse](t, h, &workflow.GetCanvasInfoRequest{
+			SpaceID:    "123",
+			WorkflowID: ptr.Of(response.Data.WorkflowID),
+		}, "/api/workflow_api/canvas")
+
+		assert.Equal(t, ptr.From(oldCanvasResponse.Data.Workflow.SchemaJSON), ptr.From(copiedCanvasResponse.Data.Workflow.SchemaJSON))
+
+		assert.Equal(t, "original_workflow_1", copiedCanvasResponse.Data.Workflow.Name)
+
 	})
 }

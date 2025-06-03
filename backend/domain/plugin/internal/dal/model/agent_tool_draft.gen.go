@@ -4,7 +4,7 @@
 
 package model
 
-import "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+import "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 
 const TableNameAgentToolDraft = "agent_tool_draft"
 
@@ -19,7 +19,7 @@ type AgentToolDraft struct {
 	Method      string                    `gorm:"column:method;not null;comment:HTTP Request Method" json:"method"`                                      // HTTP Request Method
 	ToolName    string                    `gorm:"column:tool_name;not null;comment:Tool Name" json:"tool_name"`                                          // Tool Name
 	ToolVersion string                    `gorm:"column:tool_version;not null;comment:Tool Version, e.g. v1.0.0" json:"tool_version"`                    // Tool Version, e.g. v1.0.0
-	Operation   *entity.Openapi3Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
+	Operation   *plugin.Openapi3Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
 }
 
 // TableName AgentToolDraft's table name

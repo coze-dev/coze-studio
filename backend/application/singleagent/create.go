@@ -34,13 +34,12 @@ func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Conte
 	err = s.appContext.EventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		OpType: searchEntity.Created,
 		Project: &searchEntity.ProjectDocument{
-			Status:         intelligence.IntelligenceStatus_Using,
-			Type:           intelligence.IntelligenceType_Bot,
-			ID:             agentID,
-			SpaceID:        &req.SpaceID,
-			OwnerID:        &userID,
-			Name:           &do.Name,
-			IsRecentlyOpen: ptr.Of(1),
+			Status:  intelligence.IntelligenceStatus_Using,
+			Type:    intelligence.IntelligenceType_Bot,
+			ID:      agentID,
+			SpaceID: &req.SpaceID,
+			OwnerID: &userID,
+			Name:    &do.Name,
 		},
 	})
 	if err != nil {

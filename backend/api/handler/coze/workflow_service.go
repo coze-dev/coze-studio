@@ -179,8 +179,11 @@ func CopyWorkflow(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-
-	resp := new(workflow.CopyWorkflowResponse)
+	resp, err := appworkflow.SVC.CopyWorkflow(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -449,7 +452,11 @@ func GetNodeExecuteHistory(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetNodeExecuteHistoryResponse)
+	resp, err := appworkflow.SVC.GetNodeExecuteHistory(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -491,7 +498,11 @@ func WorkflowNodeDebugV2(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.WorkflowNodeDebugV2Response)
+	resp, err := appworkflow.SVC.NodeDebug(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

@@ -4,7 +4,7 @@
 
 package model
 
-import "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+import "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 
 const TableNamePlugin = "plugin"
 
@@ -21,8 +21,8 @@ type Plugin struct {
 	UpdatedAt   int64                  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
 	Version     string                 `gorm:"column:version;not null;comment:Plugin Version, e.g. v1.0.0" json:"version"`                            // Plugin Version, e.g. v1.0.0
 	VersionDesc string                 `gorm:"column:version_desc;comment:Plugin Version Description" json:"version_desc"`                            // Plugin Version Description
-	Manifest    *entity.PluginManifest `gorm:"column:manifest;comment:Plugin Manifest;serializer:json" json:"manifest"`                               // Plugin Manifest
-	OpenapiDoc  *entity.Openapi3T      `gorm:"column:openapi_doc;comment:OpenAPI Document, only stores the root;serializer:json" json:"openapi_doc"`  // OpenAPI Document, only stores the root
+	Manifest    *plugin.PluginManifest `gorm:"column:manifest;comment:Plugin Manifest;serializer:json" json:"manifest"`                               // Plugin Manifest
+	OpenapiDoc  *plugin.Openapi3T      `gorm:"column:openapi_doc;comment:OpenAPI Document, only stores the root;serializer:json" json:"openapi_doc"`  // OpenAPI Document, only stores the root
 }
 
 // TableName Plugin's table name

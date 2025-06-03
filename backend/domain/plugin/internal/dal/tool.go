@@ -7,7 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/plugin/consts"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/query"
@@ -40,7 +40,7 @@ func (t toolPO) ToDO() *entity.ToolInfo {
 		SubURL:          &t.SubURL,
 		Method:          ptr.Of(t.Method),
 		Operation:       t.Operation,
-		ActivatedStatus: ptr.Of(consts.ActivatedStatus(t.ActivatedStatus)),
+		ActivatedStatus: ptr.Of(plugin.ActivatedStatus(t.ActivatedStatus)),
 	}
 }
 
