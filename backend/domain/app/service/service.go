@@ -18,7 +18,7 @@ type AppService interface {
 
 	CopyResource(ctx context.Context, req *CopyResourceRequest) (resp *CopyResourceResponse, err error)
 
-	GetAPPLatestPublishRecord(ctx context.Context, req *GetAPPLatestPublishRecordRequest) (resp *GetAPPLatestPublishRecordResponse, err error)
+	GetAPPPublishRecord(ctx context.Context, req *GetAPPPublishRecordRequest) (resp *GetAPPPublishRecordResponse, err error)
 	GetAPPAllPublishRecords(ctx context.Context, req *GetAPPAllPublishRecordsRequest) (resp *GetAPPAllPublishRecordsResponse, err error)
 	GetPublishConnectorList(ctx context.Context, req *GetPublishConnectorListRequest) (resp *GetPublishConnectorListResponse, err error)
 }
@@ -64,6 +64,7 @@ type PublishAPPRequest struct {
 
 type PublishAPPResponse struct {
 	PublishRecordID int64
+	Success         bool
 }
 
 type CopyResourceRequest struct {
@@ -72,15 +73,14 @@ type CopyResourceRequest struct {
 type CopyResourceResponse struct {
 }
 
-type GetAPPLatestPublishRecordRequest struct {
-	APPID int64
+type GetAPPPublishRecordRequest struct {
+	APPID    int64
+	RecordID *int64 // if nil, get latest record
 }
 
-type GetAPPLatestPublishRecordResponse struct {
-	Published              bool
-	Version                string
-	PublishedAtMS          int64
-	ConnectorPublishRecord []*entity.ConnectorPublishRecord
+type GetAPPPublishRecordResponse struct {
+	Published bool
+	Record    *entity.PublishRecord
 }
 
 type GetAPPAllPublishRecordsRequest struct {

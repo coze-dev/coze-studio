@@ -167,9 +167,10 @@ func AssistTypeToThriftFormat(typ APIFileAssistType) (common.PluginParamTypeForm
 }
 
 var authTypes = map[common.AuthorizationType]AuthType{
-	common.AuthorizationType_None:    AuthTypeOfNone,
-	common.AuthorizationType_Service: AuthTypeOfService,
-	common.AuthorizationType_OAuth:   AuthTypeOfOAuth,
+	common.AuthorizationType_None:     AuthTypeOfNone,
+	common.AuthorizationType_Service:  AuthTypeOfService,
+	common.AuthorizationType_OAuth:    AuthTypeOfOAuth,
+	common.AuthorizationType_Standard: AuthTypeOfOAuth, // deprecated, the same as OAuth
 }
 
 func ToAuthType(typ common.AuthorizationType) (AuthType, bool) {
@@ -179,7 +180,6 @@ func ToAuthType(typ common.AuthorizationType) (AuthType, bool) {
 
 var subAuthTypes = map[int32]AuthSubType{
 	int32(common.ServiceAuthSubType_ApiKey): AuthSubTypeOfToken,
-	int32(common.ServiceAuthSubType_OIDC):   AuthSubTypeOfOIDC,
 }
 
 func ToAuthSubType(typ int32) (AuthSubType, bool) {

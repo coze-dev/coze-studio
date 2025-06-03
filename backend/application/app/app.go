@@ -4,12 +4,15 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
+	connectorModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/connector"
 	intelligenceAPI "code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	projectAPI "code.byted.org/flow/opencoze/backend/api/model/project"
 	publishAPI "code.byted.org/flow/opencoze/backend/api/model/publish"
+	resource "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
@@ -36,6 +39,7 @@ type APPApplicationService struct {
 	projectEventBus search.ProjectEventBus
 
 	userSVC      user.User
+	searchSVC    search.Search
 	connectorSVC connector.Connector
 }
 
@@ -184,14 +188,21 @@ func (a *APPApplicationService) DraftProjectUpdate(ctx context.Context, req *pro
 }
 
 func (a *APPApplicationService) ProjectPublishConnectorList(ctx context.Context, req *publishAPI.PublishConnectorListRequest) (resp *publishAPI.PublishConnectorListResponse, err error) {
-	connectorList, err := a.getProjectReleaseConnectorList(ctx)
+	connectorList, err := a.getAPPPublishConnectorList(ctx, req.ProjectID)
 	if err != nil {
 		return nil, err
 	}
 
-	latestPublishRecord, err := a.getLatestPublishRecord(ctx, req.ProjectID)
+	latestPublishRecord, published, err := a.getLatestPublishRecord(ctx, req.ProjectID)
 	if err != nil {
 		return nil, err
+	}
+	if !published {
+		latestPublishRecord = &publishAPI.LastPublishInfo{
+			VersionNumber:          "",
+			ConnectorIds:           []int64{},
+			ConnectorPublishConfig: map[int64]*publishAPI.ConnectorPublishConfig{},
+		}
 	}
 
 	resp = &publishAPI.PublishConnectorListResponse{
@@ -205,32 +216,30 @@ func (a *APPApplicationService) ProjectPublishConnectorList(ctx context.Context,
 	return resp, nil
 }
 
-func (a *APPApplicationService) getProjectReleaseConnectorList(ctx context.Context) ([]*publishAPI.PublishConnectorInfo, error) {
+func (a *APPApplicationService) getAPPPublishConnectorList(ctx context.Context, appID int64) ([]*publishAPI.PublishConnectorInfo, error) {
 	res, err := a.DomainSVC.GetPublishConnectorList(ctx, &service.GetPublishConnectorListRequest{})
 	if err != nil {
 		return nil, err
 	}
 
-	connectorList := make([]*publishAPI.PublishConnectorInfo, 0, len(res.Connectors))
+	hasWorkflow, err := a.hasWorkflow(ctx, appID)
+	if err != nil {
+		return nil, err
+	}
 
+	connectorList := make([]*publishAPI.PublishConnectorInfo, 0, len(res.Connectors))
 	for _, c := range res.Connectors {
-		info := &publishAPI.PublishConnectorInfo{
-			ID:                      c.ID,
-			ConnectorClassification: publishAPI.ConnectorClassification_APIOrSDK,
-			BindInfo:                map[string]string{},
-			Name:                    c.Name,
-			IconURL:                 c.URL,
-			Description:             c.Desc,
-			AllowPublish:            true,
-		}
+		var info *publishAPI.PublishConnectorInfo
 
 		switch c.ID {
-		case consts.WebSDKConnectorID:
-			info.BindType = publishAPI.ConnectorBindType_WebSDKBind
 		case consts.APIConnectorID:
-			info.BindType = publishAPI.ConnectorBindType_ApiBind
+			info, err = a.packAPIConnectorInfo(ctx, c, hasWorkflow)
+			if err != nil {
+				return nil, err
+			}
 		default:
-			info.AllowPublish = false
+			logs.CtxWarnf(ctx, "unsupported connector id '%v'", c.ID)
+			continue
 		}
 
 		connectorList = append(connectorList, info)
@@ -239,33 +248,66 @@ func (a *APPApplicationService) getProjectReleaseConnectorList(ctx context.Conte
 	return connectorList, nil
 }
 
-func (a *APPApplicationService) getLatestPublishRecord(ctx context.Context, appID int64) (*publishAPI.LastPublishInfo, error) {
-	publishRecord, err := a.DomainSVC.GetAPPLatestPublishRecord(ctx, &service.GetAPPLatestPublishRecordRequest{
+func (a *APPApplicationService) packAPIConnectorInfo(ctx context.Context, c *connectorModel.Connector, hasWorkflow bool) (*publishAPI.PublishConnectorInfo, error) {
+	const noWorkflowText = "请在应用内至少添加一个工作流"
+
+	info := &publishAPI.PublishConnectorInfo{
+		ID:                      c.ID,
+		BindType:                publishAPI.ConnectorBindType_ApiBind,
+		ConnectorClassification: publishAPI.ConnectorClassification_APIOrSDK,
+		BindInfo:                map[string]string{},
+		Name:                    c.Name,
+		IconURL:                 c.URL,
+		Description:             c.Desc,
+		AllowPublish:            true,
+	}
+
+	if hasWorkflow {
+		return info, nil
+	}
+
+	info.AllowPublish = false
+	info.NotAllowPublishReason = ptr.Of(noWorkflowText)
+
+	return info, nil
+}
+
+func (a *APPApplicationService) hasWorkflow(ctx context.Context, appID int64) (bool, error) {
+	searchRes, err := a.searchSVC.SearchResources(ctx, &searchEntity.SearchResourcesRequest{
+		APPID:         appID,
+		ResTypeFilter: []resource.ResType{resource.ResType_Workflow},
+		Limit:         1,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	return len(searchRes.Data) > 0, nil
+}
+
+func (a *APPApplicationService) getLatestPublishRecord(ctx context.Context, appID int64) (info *publishAPI.LastPublishInfo, published bool, err error) {
+	res, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
 		APPID: appID,
 	})
 	if err != nil {
-		return nil, err
+		return nil, false, err
+	}
+
+	if !res.Published {
+		return nil, false, nil
 	}
 
 	latestPublishRecord := &publishAPI.LastPublishInfo{
-		VersionNumber:          publishRecord.Version,
+		VersionNumber:          res.Record.APP.GetVersion(),
 		ConnectorIds:           []int64{},
 		ConnectorPublishConfig: map[int64]*publishAPI.ConnectorPublishConfig{},
 	}
 
-	if !publishRecord.Published {
-		return latestPublishRecord, nil
+	for _, r := range res.Record.ConnectorPublishRecords {
+		latestPublishRecord.ConnectorIds = append(latestPublishRecord.ConnectorIds, r.ConnectorID)
 	}
 
-	for _, info := range publishRecord.ConnectorPublishRecord {
-		latestPublishRecord.ConnectorIds = append(latestPublishRecord.ConnectorIds, info.ConnectorID)
-
-		if info.ConnectorID == consts.WebSDKConnectorID {
-			latestPublishRecord.ConnectorPublishConfig[info.ConnectorID] = info.PublishConfig.ToVO()
-		}
-	}
-
-	return latestPublishRecord, nil
+	return latestPublishRecord, true, nil
 }
 
 func (a *APPApplicationService) ReportUserBehavior(ctx context.Context, req *playground.ReportUserBehaviorRequest) (resp *playground.ReportUserBehaviorResponse, err error) {
@@ -276,6 +318,7 @@ func (a *APPApplicationService) ReportUserBehavior(ctx context.Context, req *pla
 			SpaceID:        req.SpaceID,
 			Type:           common.IntelligenceType_Project,
 			IsRecentlyOpen: ptr.Of(1),
+			RecentlyOpenMS: ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {
@@ -322,6 +365,23 @@ func (a *APPApplicationService) PublishAPP(ctx context.Context, req *publishAPI.
 		},
 	}
 
+	if !res.Success {
+		return resp, nil
+	}
+
+	err = a.projectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Updated,
+		Project: &searchEntity.ProjectDocument{
+			ID:            req.ProjectID,
+			HasPublished:  ptr.Of(1),
+			PublishTimeMS: ptr.Of(time.Now().UnixMilli()),
+			Type:          common.IntelligenceType_Project,
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish project event failed, id=%v, err=%v", req.ProjectID, err)
+	}
+
 	return resp, nil
 }
 
@@ -364,6 +424,12 @@ func (a *APPApplicationService) GetPublishRecordList(ctx context.Context, req *p
 		return nil, err
 	}
 
+	if len(res.Records) == 0 {
+		return &publishAPI.GetPublishRecordListResponse{
+			Data: []*publishAPI.PublishRecordDetail{},
+		}, nil
+	}
+
 	data := make([]*publishAPI.PublishRecordDetail, 0, len(res.Records))
 	for _, r := range res.Records {
 		connectorPublishRecords := make([]*publishAPI.ConnectorPublishResult, 0, len(r.ConnectorPublishRecords))
@@ -394,6 +460,60 @@ func (a *APPApplicationService) GetPublishRecordList(ctx context.Context, req *p
 
 	resp = &publishAPI.GetPublishRecordListResponse{
 		Data: data,
+	}
+
+	return resp, nil
+}
+
+func (a *APPApplicationService) GetPublishRecordDetail(ctx context.Context, req *publishAPI.GetPublishRecordDetailRequest) (resp *publishAPI.GetPublishRecordDetailResponse, err error) {
+	connectorInfo, err := a.connectorSVC.GetByIDs(ctx, entity.ConnectorIDWhiteList)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
+		APPID:    req.ProjectID,
+		RecordID: req.PublishRecordID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if !res.Published {
+		return &publishAPI.GetPublishRecordDetailResponse{
+			Data: nil,
+		}, nil
+	}
+
+	record := res.Record
+
+	connectorPublishRecords := make([]*publishAPI.ConnectorPublishResult, 0, len(record.ConnectorPublishRecords))
+	for _, c := range record.ConnectorPublishRecords {
+		info, exist := connectorInfo[c.ConnectorID]
+		if !exist {
+			logs.CtxErrorf(ctx, "connector '%d' not exist", c.ConnectorID)
+			continue
+		}
+
+		connectorPublishRecords = append(connectorPublishRecords, &publishAPI.ConnectorPublishResult{
+			ConnectorID:            c.ConnectorID,
+			ConnectorName:          info.Name,
+			ConnectorIconURL:       info.URL,
+			ConnectorPublishStatus: publishAPI.ConnectorPublishStatus(c.PublishStatus),
+			ConnectorPublishConfig: c.PublishConfig.ToVO(),
+		})
+	}
+
+	detail := &publishAPI.PublishRecordDetail{
+		PublishRecordID:        record.APP.GetPublishRecordID(),
+		VersionNumber:          record.APP.GetVersion(),
+		ConnectorPublishResult: connectorPublishRecords,
+		PublishStatus:          publishAPI.PublishRecordStatus(record.APP.GetPublishStatus()),
+		PublishStatusDetail:    record.APP.PublishExtraInfo.ToVO(),
+	}
+
+	resp = &publishAPI.GetPublishRecordDetailResponse{
+		Data: detail,
 	}
 
 	return resp, nil

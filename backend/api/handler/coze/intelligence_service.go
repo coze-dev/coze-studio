@@ -98,22 +98,6 @@ func PublishIntelligenceList(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, resp)
 }
 
-// GetProjectPublishSummary .
-// @router /api/intelligence_api/search/get_project_publish_summary [POST]
-func GetProjectPublishSummary(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req intelligence.GetProjectPublishSummaryRequest
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
-	}
-
-	resp := new(intelligence.GetProjectPublishSummaryResponse)
-
-	c.JSON(consts.StatusOK, resp)
-}
-
 // DraftProjectCreate .
 // @router /api/intelligence_api/draft_project/create [POST]
 func DraftProjectCreate(ctx context.Context, c *app.RequestContext) {
@@ -269,10 +253,6 @@ func PublishProject(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "invalid version number")
 		return
 	}
-	if len(req.ConnectorPublishConfig) == 0 {
-		invalidParamRequestResponse(c, "invalid connector publish config")
-		return
-	}
 
 	resp, err := appApplication.APPApplicationSVC.PublishAPP(ctx, &req)
 	if err != nil {
@@ -325,6 +305,35 @@ func ProjectPublishConnectorList(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := appApplication.APPApplicationSVC.ProjectPublishConnectorList(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetPublishRecordDetail .
+// @router /api/intelligence_api/publish/publish_record_detail [POST]
+func GetPublishRecordDetail(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req publish.GetPublishRecordDetailRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "invalid project id")
+		return
+	}
+	if req.PublishRecordID != nil && *req.PublishRecordID <= 0 {
+		invalidParamRequestResponse(c, "invalid publish record id")
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.GetPublishRecordDetail(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

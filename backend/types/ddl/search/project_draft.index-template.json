@@ -58,6 +58,12 @@
         "update_time": {
           "type": "long"
         },
+        "fav_time": {
+          "type": "long"
+        },
+        "recently_open_time": {
+          "type": "long"
+        },
         "is_fav": {
           "type": "keyword"
         },

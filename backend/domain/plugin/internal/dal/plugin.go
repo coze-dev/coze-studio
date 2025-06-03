@@ -91,7 +91,7 @@ func (p *PluginDAO) MGet(ctx context.Context, pluginIDs []int64, opt *PluginSele
 	plugins = make([]*entity.PluginInfo, 0, len(pluginIDs))
 
 	table := p.query.Plugin
-	chunks := slices.Chunks(pluginIDs, 20)
+	chunks := slices.Chunks(pluginIDs, 10)
 
 	for _, chunk := range chunks {
 		pls, err := table.WithContext(ctx).

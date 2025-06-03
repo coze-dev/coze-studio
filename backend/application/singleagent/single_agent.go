@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
@@ -634,6 +635,7 @@ func (s *SingleAgentApplicationService) ReportUserBehavior(ctx context.Context, 
 			SpaceID:        req.SpaceID,
 			Type:           intelligence.IntelligenceType_Bot,
 			IsRecentlyOpen: ptr.Of(1),
+			RecentlyOpenMS: ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {

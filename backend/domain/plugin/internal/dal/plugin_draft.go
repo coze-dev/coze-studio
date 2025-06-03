@@ -111,9 +111,8 @@ func (p *PluginDraftDAO) GetAPPAllPlugins(ctx context.Context, appID int64) (plu
 
 	cursor := int64(0)
 	limit := 20
-	hasMore := true
 
-	for hasMore {
+	for {
 		pls, err := table.WithContext(ctx).
 			Where(
 				table.AppID.Eq(appID),
@@ -125,11 +124,15 @@ func (p *PluginDraftDAO) GetAPPAllPlugins(ctx context.Context, appID int64) (plu
 		if err != nil {
 			return nil, err
 		}
+
 		for _, pl := range pls {
 			plugins = append(plugins, pluginDraftPO(*pl).ToDO())
 		}
 
-		hasMore = len(pls) == limit
+		if len(pls) < limit {
+			break
+		}
+
 		cursor = pls[len(pls)-1].ID
 	}
 

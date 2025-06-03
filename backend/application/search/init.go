@@ -22,7 +22,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
-	"code.byted.org/flow/opencoze/backend/pkg/jsoncache"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
@@ -33,6 +32,7 @@ type ServiceComponents struct {
 	TOS                  storage.Storage
 	ESClient             *es8.Client
 	ProjectEventBus      ProjectEventBus
+	ResourceEventBus     ResourceEventBus
 	SingleAgentDomainSVC singleagent.SingleAgent
 	APPDomainSVC         app.AppService
 	KnowledgeDomainSVC   knowledge.Knowledge
@@ -49,7 +49,6 @@ func InitService(ctx context.Context, s *ServiceComponents) (*SearchApplicationS
 
 	SearchSVC.DomainSVC = searchDomainSVC
 	SearchSVC.ServiceComponents = s
-	SearchSVC.FavRepo = jsoncache.New[favInfo]("project:user:agent:", s.Cache)
 
 	// setup consumer
 	searchConsumer := search.NewProjectHandler(ctx, s.ESClient)

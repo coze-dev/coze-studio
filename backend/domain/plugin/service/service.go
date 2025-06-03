@@ -25,8 +25,9 @@ type PluginService interface {
 	// Online Plugin
 	PublishPlugin(ctx context.Context, req *PublishPluginRequest) (err error)
 	PublishAPPPlugins(ctx context.Context, req *PublishAPPPluginsRequest) (resp *PublishAPPPluginsResponse, err error)
-	GetGetOnlinePlugin(ctx context.Context, req *GetOnlinePluginRequest) (resp *GetOnlinePluginResponse, err error)
+	GetOnlinePlugin(ctx context.Context, req *GetOnlinePluginRequest) (resp *GetOnlinePluginResponse, err error)
 	MGetOnlinePlugins(ctx context.Context, req *MGetOnlinePluginsRequest) (resp *MGetOnlinePluginsResponse, err error)
+	MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *MGetPluginLatestVersionResponse, err error)
 	GetPluginNextVersion(ctx context.Context, pluginID int64) (version string, err error)
 	MGetVersionPlugins(ctx context.Context, req *MGetVersionPluginsRequest) (resp *MGetVersionPluginsResponse, err error)
 
@@ -50,6 +51,7 @@ type PluginService interface {
 
 	// Product
 	ListPluginProducts(ctx context.Context, req *ListPluginProductsRequest) (resp *ListPluginProductsResponse, err error)
+	GetPluginProductAllTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
 }
 
 type CreateDraftPluginRequest struct {
@@ -161,6 +163,8 @@ type PublishAPPPluginsResponse = plugin.PublishAPPPluginsResponse
 type MGetVersionPluginsRequest = plugin.MGetVersionPluginsRequest
 
 type MGetVersionPluginsResponse = plugin.MGetVersionPluginsResponse
+
+type MGetPluginLatestVersionResponse = plugin.MGetPluginLatestVersionResponse
 
 type MGetDraftToolsRequest struct {
 	ToolIDs []int64

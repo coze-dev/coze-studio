@@ -54,3 +54,7 @@ func (s *impl) PublishPlugin(ctx context.Context, req *model.PublishPluginReques
 func (s *impl) PublishAPPPlugins(ctx context.Context, req *model.PublishAPPPluginsRequest) (resp *model.PublishAPPPluginsResponse, err error) {
 	return s.DomainSVC.PublishAPPPlugins(ctx, req)
 }
+
+func (s *impl) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *model.MGetPluginLatestVersionResponse, err error) {
+	return s.DomainSVC.MGetPluginLatestVersion(ctx, pluginIDs)
+}

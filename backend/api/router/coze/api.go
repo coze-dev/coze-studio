@@ -69,13 +69,13 @@ func Register(r *server.Hertz) {
 				_publish0.POST("/connector_list", append(_projectpublishconnectorlistMw(), coze.ProjectPublishConnectorList)...)
 				_publish0.POST("/get_published_connector", append(_getprojectpublishedconnectorMw(), coze.GetProjectPublishedConnector)...)
 				_publish0.POST("/publish_project", append(_publishprojectMw(), coze.PublishProject)...)
+				_publish0.POST("/publish_record_detail", append(_getpublishrecorddetailMw(), coze.GetPublishRecordDetail)...)
 				_publish0.POST("/publish_record_list", append(_getpublishrecordlistMw(), coze.GetPublishRecordList)...)
 			}
 			{
 				_search := _intelligence_api.Group("/search", _searchMw()...)
 				_search.POST("/get_draft_intelligence_info", append(_getdraftintelligenceinfoMw(), coze.GetDraftIntelligenceInfo)...)
 				_search.POST("/get_draft_intelligence_list", append(_getdraftintelligencelistMw(), coze.GetDraftIntelligenceList)...)
-				_search.POST("/get_project_publish_summary", append(_getprojectpublishsummaryMw(), coze.GetProjectPublishSummary)...)
 				_search.POST("/get_publish_intelligence_list", append(_publishintelligencelistMw(), coze.PublishIntelligenceList)...)
 				_search.POST("/get_recently_edit_intelligence", append(_getuserrecentlyeditintelligenceMw(), coze.GetUserRecentlyEditIntelligence)...)
 			}
@@ -134,6 +134,8 @@ func Register(r *server.Hertz) {
 				_product := _marketplace.Group("/product", _productMw()...)
 				_product.GET("/detail", append(_publicgetproductdetailMw(), coze.PublicGetProductDetail)...)
 				_product.POST("/favorite", append(_publicfavoriteproductMw(), coze.PublicFavoriteProduct)...)
+				_favorite := _product.Group("/favorite", _favoriteMw()...)
+				_favorite.GET("/list.v2", append(_publicgetuserfavoritelistv2Mw(), coze.PublicGetUserFavoriteListV2)...)
 				_product.GET("/list", append(_publicgetproductlistMw(), coze.PublicGetProductList)...)
 			}
 		}

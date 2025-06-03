@@ -12,7 +12,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/jsoncache"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -26,12 +25,6 @@ var SearchSVC = &SearchApplicationService{}
 type SearchApplicationService struct {
 	*ServiceComponents
 	DomainSVC search.Search
-	FavRepo   *jsoncache.JsonCache[favInfo]
-}
-
-type favInfo struct {
-	IsFav     bool  `json:"is_fav"`
-	FavTimeMS int64 `json:"fav_time_ms"`
 }
 
 var resType2iconURI = map[common.ResType]string{
@@ -216,11 +209,10 @@ func (s *SearchApplicationService) ProjectResourceList(ctx context.Context, req 
 }
 
 func (s *SearchApplicationService) getAPPAllResources(ctx context.Context, appID int64) ([]*entity.ResourceDocument, error) {
-	hasMore := true
 	cursor := ""
-
 	resources := make([]*entity.ResourceDocument, 0, 100)
-	for hasMore {
+
+	for {
 		res, err := s.DomainSVC.SearchResources(ctx, &entity.SearchResourcesRequest{
 			APPID:  appID,
 			Cursor: cursor,
@@ -232,8 +224,12 @@ func (s *SearchApplicationService) getAPPAllResources(ctx context.Context, appID
 
 		resources = append(resources, res.Data...)
 
-		hasMore = res.HasMore
+		hasMore := res.HasMore
 		cursor = res.NextCursor
+
+		if !hasMore {
+			break
+		}
 	}
 
 	return resources, nil

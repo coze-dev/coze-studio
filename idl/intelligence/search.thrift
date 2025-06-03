@@ -186,22 +186,3 @@ struct PublishIntelligenceListResponse{
     254: string msg
     255: optional base.BaseResp BaseResp (api.none="true")
 }
-
-struct GetProjectPublishSummaryRequest{
-    1: required i64 project_id(agw.js_conv="str", api.js_conv="true")
-    255: optional base.Base Base (api.none="true")
-}
-
-struct GetProjectPublishSummaryData{
-    1: list<i64> connector_ids(agw.js_conv="str", api.js_conv="true")
-    2: map<i64,string> version_map(agw.js_conv="str", api.js_conv="true")
-    3: optional i64 template_project_id(agw.js_conv="str", api.js_conv="true")
-    4: optional i64 template_project_version(agw.js_conv="str", api.js_conv="true")
-}
-
-struct GetProjectPublishSummaryResponse{
-    1: GetProjectPublishSummaryData data
-    253: i64 code
-    254: string msg
-    255: optional base.BaseResp BaseResp (api.none="true")
-}

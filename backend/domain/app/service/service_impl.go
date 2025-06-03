@@ -150,25 +150,18 @@ func (a *appServiceImpl) UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPP
 	return nil
 }
 
-func (a *appServiceImpl) GetAPPLatestPublishRecord(ctx context.Context, req *GetAPPLatestPublishRecordRequest) (resp *GetAPPLatestPublishRecordResponse, err error) {
-	res, err := a.APPRepo.GetLatestPublishInfo(ctx, &repository.GetLatestPublishInfo{
-		APPID: req.APPID,
+func (a *appServiceImpl) GetAPPPublishRecord(ctx context.Context, req *GetAPPPublishRecordRequest) (resp *GetAPPPublishRecordResponse, err error) {
+	res, err := a.APPRepo.GetPublishRecord(ctx, &repository.GetPublishRecordRequest{
+		APPID:    req.APPID,
+		RecordID: req.RecordID,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	if !res.Published {
-		return &GetAPPLatestPublishRecordResponse{
-			Published: false,
-		}, nil
-	}
-
-	resp = &GetAPPLatestPublishRecordResponse{
-		Published:              res.Published,
-		Version:                res.Record.APP.GetVersion(),
-		PublishedAtMS:          res.Record.APP.GetPublishedAtMS(),
-		ConnectorPublishRecord: res.Record.ConnectorPublishRecords,
+	resp = &GetAPPPublishRecordResponse{
+		Published: res.Published,
+		Record:    res.Record,
 	}
 
 	return resp, nil
@@ -185,6 +178,15 @@ func (a *appServiceImpl) GetAPPAllPublishRecords(ctx context.Context, req *GetAP
 	)
 	if err != nil {
 		return nil, err
+	}
+
+	sort.Slice(res.Records, func(i, j int) bool {
+		return res.Records[i].APP.GetPublishedAtMS() > res.Records[j].APP.GetPublishedAtMS()
+	})
+	for _, r := range res.Records {
+		sort.Slice(r.ConnectorPublishRecords, func(i, j int) bool {
+			return r.ConnectorPublishRecords[i].ConnectorID < r.ConnectorPublishRecords[j].ConnectorID
+		})
 	}
 
 	resp = &GetAPPAllPublishRecordsResponse{

@@ -15,7 +15,7 @@ type AppRepository interface {
 	DeleteDraftAPP(ctx context.Context, req *DeleteDraftAPPRequest) (err error)
 	UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPPRequest) (err error)
 
-	GetLatestPublishInfo(ctx context.Context, req *GetLatestPublishInfo) (resp *GetLatestPublishInfoResponse, err error)
+	GetPublishRecord(ctx context.Context, req *GetPublishRecordRequest) (resp *GetPublishRecordResponse, err error)
 	CheckAPPVersionExist(ctx context.Context, req *GetVersionAPPRequest) (exist bool, err error)
 	CreateAPPPublishRecord(ctx context.Context, req *CreateAPPPublishRecordRequest) (recordID int64, err error)
 	UpdateAPPPublishStatus(ctx context.Context, req *UpdateAPPPublishStatusRequest) (err error)
@@ -47,11 +47,12 @@ type UpdateDraftAPPRequest struct {
 	APP *entity.APP
 }
 
-type GetLatestPublishInfo struct {
-	APPID int64
+type GetPublishRecordRequest struct {
+	APPID    int64
+	RecordID *int64 // if nil, get latest record
 }
 
-type GetLatestPublishInfoResponse struct {
+type GetPublishRecordResponse struct {
 	Published bool
 	Record    *entity.PublishRecord
 }

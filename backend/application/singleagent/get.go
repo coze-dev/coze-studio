@@ -3,7 +3,6 @@ package singleagent
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 
@@ -12,7 +11,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
-	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
@@ -37,12 +35,6 @@ func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req
 
 	if agentInfo == nil {
 		return nil, errorx.New(errno.ErrAgentInvalidParamCode, errorx.KVf("msg", "agent %d not found", req.GetBotID()))
-	}
-
-	uid := ctxutil.MustGetUIDFromCtx(ctx)
-	err = s.DomainSVC.SetRecentOpenAgentTime(ctx, uid, req.GetBotID(), time.Now().UnixMilli())
-	if err != nil {
-		logs.CtxWarnf(ctx, "set recent open agent time failed: %v", err)
 	}
 
 	vo, err := s.singleAgentDraftDo2Vo(ctx, agentInfo)

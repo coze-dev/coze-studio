@@ -6,13 +6,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/getkin/kin-openapi/openapi3"
+	gonanoid "github.com/matoous/go-nanoid"
+
 	productAPI "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"github.com/getkin/kin-openapi/openapi3"
-	gonanoid "github.com/matoous/go-nanoid"
 )
 
 type ToolInfo struct {
@@ -173,6 +174,10 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 			return nil, err
 		}
 		params = append(params, apiParam)
+	}
+
+	if op.RequestBody == nil {
+		return params, nil
 	}
 
 	for _, mType := range op.RequestBody.Value.Content {
@@ -361,6 +366,10 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 			Format:        assistType,
 			SubParameters: []*common.PluginParameter{},
 		})
+	}
+
+	if op.RequestBody == nil {
+		return params, nil
 	}
 
 	for _, mType := range op.RequestBody.Value.Content {

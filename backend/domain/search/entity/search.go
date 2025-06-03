@@ -1,26 +1,27 @@
 package entity
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	resource "code.byted.org/flow/opencoze/backend/api/model/resource/common"
+	"code.byted.org/flow/opencoze/backend/domain/search/consts"
 )
 
 type SearchProjectsRequest struct {
-	SpaceID int64
-	OwnerID int64
-	Name    string
-	Status  []common.IntelligenceStatus
-	Types   []common.IntelligenceType
+	SpaceID   int64
+	ProjectID int64
+	OwnerID   int64
+	Name      string
+	Status    []common.IntelligenceStatus
+	Types     []common.IntelligenceType
 
 	IsPublished    bool
 	IsFav          bool
 	IsRecentlyOpen bool
-	OrderBy        intelligence.OrderBy
+	OrderBy        consts.OrderByType
 	Order          common.OrderByType
 
 	Cursor string
-	Limit  int
+	Limit  int32
 }
 
 type SearchProjectsResponse struct {
@@ -31,10 +32,13 @@ type SearchProjectsResponse struct {
 }
 
 type SearchResourcesRequest struct {
-	SpaceID             int64
-	OwnerID             int64
-	Name                string
-	APPID               int64
+	SpaceID int64
+	OwnerID int64
+	Name    string
+	APPID   int64
+
+	OrderBy             consts.OrderByType
+	Order               common.OrderByType
 	ResTypeFilter       []resource.ResType
 	PublishStatusFilter resource.PublishStatus
 	SearchKeys          []string

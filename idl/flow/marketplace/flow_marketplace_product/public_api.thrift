@@ -9,6 +9,7 @@ service PublicProductService {
     GetProductDetailResponse PublicGetProductDetail(1: GetProductDetailRequest req)(api.get ="/api/marketplace/product/detail", api.category = "PublicAPI")
 
     FavoriteProductResponse PublicFavoriteProduct(1: FavoriteProductRequest req)(api.post = "/api/marketplace/product/favorite", api.category = "PublicAPI")
+    GetUserFavoriteListV2Response PublicGetUserFavoriteListV2(1: GetUserFavoriteListV2Request req)(api.get = "/api/marketplace/product/favorite/list.v2", api.category = "PublicAPI")
 }
 
 struct FavoriteProductResponse {
@@ -487,3 +488,48 @@ struct GetProductDetailData { // 下架的商品只返回非 optional 字段
     24: optional ProjectExtraInfo                  ProjectExtra (agw.key = "project_extra", api.body= "project_extra"),
     25: optional ProductDataIndicator              DataIndicator (agw.key = "data_indicator", api.body= "data_indicator"),
 }
+
+struct GetUserFavoriteListV2Request {
+    1  : optional string                            CursorID   (api.query = "cursor_id")  , // 第一页不传，后续调用时传上一次返回的cursor_id
+    2  : required i32                               PageSize   (api.query = "page_size")  ,
+
+    3  : optional product_common.ProductEntityType  EntityType (api.query = "entity_type"),
+    4  : required product_common.SortType           SortType   (api.query = "sort_type")  ,
+    5  : optional string                            Keyword    (api.query = "keyword")    , // 不为空则搜索
+    6  : optional product_common.FavoriteListSource Source     (api.query = "source")     , // 列表页 tab
+    7  : optional bool                              NeedUserTriggerConfig (api.query = "need_user_trigger_config") // 是否需要查询用户对Bot的触发器配置，为true时，才会返回EntityUserTriggerConfig
+    8  : optional i64                               BeginAt    (api.query = "begin_at", api.js_conv="true")   , // 筛选收藏时间
+    9  : optional i64                               EndAt      (api.query = "end_at", api.js_conv="true")     , // 筛选收藏时间
+    10 : optional list<product_common.ProductEntityType> EntityTypes (api.query = "entity_types"),
+    11 : optional i64                               OrganizationID    (agw.js_conv="str",  agw.cli_conv="str", api.query = "organization_id"), // 组织ID，企业版想获取用户收藏的所有内容时需传递
+
+    255: optional base.Base                         Base                                  ,
+}
+
+
+struct GetUserFavoriteListV2Response {
+    1  : required i32                       Code     (agw.key = "code")   ,
+    2  : required string                    Message  (agw.key = "message"),
+    3  : optional GetUserFavoriteListDataV2 Data     (agw.key = "data")   ,
+
+    255: optional base.BaseResp             BaseResp                      ,
+}
+
+struct GetUserFavoriteListDataV2{
+    1: list<product_common.FavoriteEntity> FavoriteEntities (agw.key = "favorite_entities", api.body="favorite_entities"),
+    2: string                              CursorID         (agw.key = "cursor_id", api.body="cursor_id")        ,
+    3: bool                                HasMore          (agw.key = "has_more", api.body="has_more")         ,
+    // 用户定时任务配置，对应flow.bot.task服务的TriggerEnabled
+    4: map<i64, UserTriggerConfig>         EntityUserTriggerConfig (agw.key = "entity_user_trigger_config", api.body="entity_user_trigger_config"), // key: entity_id; value: UserTriggerConfig
+}
+
+struct UserTriggerConfig {
+    1: TriggerEnable TriggerEnabled (agw.key = "trigger_enabled")
+}
+
+enum TriggerEnable {
+    Init = 0
+    Open = 1
+    Close = 2
+}
+

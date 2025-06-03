@@ -91,7 +91,24 @@ func (r *ReleaseRecordDAO) GetLatestReleaseRecord(ctx context.Context, appID int
 	return app, true, nil
 }
 
-func (r *ReleaseRecordDAO) GetReleaseRecord(ctx context.Context, appID int64, version string) (app *entity.APP, exist bool, err error) {
+func (r *ReleaseRecordDAO) GetReleaseRecordWithID(ctx context.Context, recordID int64) (app *entity.APP, exist bool, err error) {
+	table := r.query.ReleaseRecord
+	res, err := table.WithContext(ctx).
+		Where(table.ID.Eq(recordID)).
+		First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, err
+	}
+
+	app = releaseRecordPO(*res).ToDO()
+
+	return app, true, nil
+}
+
+func (r *ReleaseRecordDAO) GetReleaseRecordWithVersion(ctx context.Context, appID int64, version string) (app *entity.APP, exist bool, err error) {
 	table := r.query.ReleaseRecord
 	res, err := table.WithContext(ctx).
 		Where(
@@ -116,28 +133,30 @@ func (r *ReleaseRecordDAO) GetAPPAllPublishRecords(ctx context.Context, appID in
 
 	cursor := int64(0)
 	limit := 20
-	hasMore := true
 
-	for hasMore {
+	for {
 		res, err := table.WithContext(ctx).
 			Select(r.getSelected(opt)...).
 			Where(
 				table.AppID.Eq(appID),
-				table.PublishAt.Gt(cursor),
+				table.ID.Lt(cursor),
 			).
-			Order(table.PublishAt.Asc()).
+			Order(table.ID.Desc()).
 			Limit(limit).
 			Find()
 		if err != nil {
 			return nil, err
 		}
 
-		hasMore = len(res) == limit
-		cursor = res[len(res)-1].PublishAt
-
 		for _, v := range res {
 			apps = append(apps, releaseRecordPO(*v).ToDO())
 		}
+
+		if len(res) < limit {
+			break
+		}
+
+		cursor = res[len(res)-1].ID
 	}
 
 	return apps, nil

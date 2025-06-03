@@ -177,15 +177,17 @@ func initComplexServices(ctx context.Context, p *primaryServices) (*complexServi
 		return nil, err
 	}
 
-	appSVC, err := app.InitService(p.toAPPServiceComponents())
+	searchSVC, err := search.InitService(ctx, p.toSearchServiceComponents(singleAgentSVC))
 	if err != nil {
 		return nil, err
 	}
 
-	searchSVC, err := search.InitService(ctx, p.toSearchServiceComponents(singleAgentSVC, appSVC))
+	appSVC, err := app.InitService(p.toAPPServiceComponents(searchSVC))
 	if err != nil {
 		return nil, err
 	}
+
+	searchSVC.APPDomainSVC = appSVC.DomainSVC // FIXME: 初始化循环依赖
 
 	conversationSVC := conversation.InitService(p.toConversationComponents(singleAgentSVC))
 
@@ -267,7 +269,7 @@ func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceC
 	}
 }
 
-func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.SingleAgentApplicationService, appSVC *app.APPApplicationService) *search.ServiceComponents {
+func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.SingleAgentApplicationService) *search.ServiceComponents {
 	infra := p.basicServices.infra
 
 	return &search.ServiceComponents{
@@ -277,7 +279,6 @@ func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.
 		ESClient:             infra.ESClient,
 		ProjectEventBus:      p.basicServices.eventbus.projectEventBus,
 		SingleAgentDomainSVC: singleAgentSVC.DomainSVC,
-		APPDomainSVC:         appSVC.DomainSVC,
 		KnowledgeDomainSVC:   p.knowledgeSVC.DomainSVC,
 		PluginDomainSVC:      p.pluginSVC.DomainSVC,
 		WorkflowDomainSVC:    p.workflowSVC.DomainSVC,
@@ -288,7 +289,7 @@ func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.
 	}
 }
 
-func (p *primaryServices) toAPPServiceComponents() *app.ServiceComponents {
+func (p *primaryServices) toAPPServiceComponents(searchSVC *search.SearchApplicationService) *app.ServiceComponents {
 	infra := p.basicServices.infra
 	basic := p.basicServices
 	return &app.ServiceComponents{
@@ -298,6 +299,7 @@ func (p *primaryServices) toAPPServiceComponents() *app.ServiceComponents {
 		ProjectEventBus: basic.eventbus.projectEventBus,
 		UserSVC:         basic.userSVC.DomainSVC,
 		ConnectorSVC:    basic.connectorSVC.DomainSVC,
+		SearchSVC:       searchSVC.DomainSVC,
 	}
 }
 

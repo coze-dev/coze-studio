@@ -251,3 +251,18 @@ struct PackFailedDetail {
     2: common_struct.ResourceType entity_type
     3: string entity_name
 }
+
+struct GetPublishRecordDetailRequest {
+    1: required i64 project_id (agw.js_conv="str", api.js_conv="true")
+    2: optional i64 publish_record_id (agw.js_conv="str", api.js_conv="true") // 不传则获取最近一次发布记录
+
+    255: optional base.Base Base (api.none="true")
+}
+
+struct GetPublishRecordDetailResponse {
+    1: PublishRecordDetail data
+
+    253: i64 code
+    254: string msg
+    255: optional base.BaseResp BaseResp (api.none="true")
+}

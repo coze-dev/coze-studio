@@ -1045,6 +1045,8 @@ const (
 	AuthorizationType_None    AuthorizationType = 0
 	AuthorizationType_Service AuthorizationType = 1
 	AuthorizationType_OAuth   AuthorizationType = 3
+	// deprecated, the same as OAuth
+	AuthorizationType_Standard AuthorizationType = 4
 )
 
 func (p AuthorizationType) String() string {
@@ -1055,6 +1057,8 @@ func (p AuthorizationType) String() string {
 		return "Service"
 	case AuthorizationType_OAuth:
 		return "OAuth"
+	case AuthorizationType_Standard:
+		return "Standard"
 	}
 	return "<UNSET>"
 }
@@ -1067,6 +1071,8 @@ func AuthorizationTypeFromString(s string) (AuthorizationType, error) {
 		return AuthorizationType_Service, nil
 	case "OAuth":
 		return AuthorizationType_OAuth, nil
+	case "Standard":
+		return AuthorizationType_Standard, nil
 	}
 	return AuthorizationType(0), fmt.Errorf("not a valid AuthorizationType string")
 }
@@ -3723,7 +3729,7 @@ type PluginInfoForPlayground struct {
 	// 项目id
 	ProjectID string `thrift:"project_id,32" form:"project_id" json:"project_id" query:"project_id"`
 	// 版本号，毫秒时间戳
-	VersionTs int64 `thrift:"version_ts,33" form:"version_ts" json:"version_ts,string"`
+	VersionTs string `thrift:"version_ts,33" form:"version_ts" json:"version_ts" query:"version_ts"`
 	// 版本名称
 	VersionName string `thrift:"version_name,34" form:"version_name" json:"version_name" query:"version_name"`
 }
@@ -3846,7 +3852,7 @@ func (p *PluginInfoForPlayground) GetProjectID() (v string) {
 	return p.ProjectID
 }
 
-func (p *PluginInfoForPlayground) GetVersionTs() (v int64) {
+func (p *PluginInfoForPlayground) GetVersionTs() (v string) {
 	return p.VersionTs
 }
 
@@ -4106,7 +4112,7 @@ func (p *PluginInfoForPlayground) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 33:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField33(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -4452,8 +4458,8 @@ func (p *PluginInfoForPlayground) ReadField32(iprot thrift.TProtocol) error {
 }
 func (p *PluginInfoForPlayground) ReadField33(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -5015,10 +5021,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 32 end error: ", p), err)
 }
 func (p *PluginInfoForPlayground) writeField33(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("version_ts", thrift.I64, 33); err != nil {
+	if err = oprot.WriteFieldBegin("version_ts", thrift.STRING, 33); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.VersionTs); err != nil {
+	if err := oprot.WriteString(p.VersionTs); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

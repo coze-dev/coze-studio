@@ -12,9 +12,10 @@ type ResourceDocument struct {
 	APPID         *int64                  `json:"app_id,omitempty"`
 	BizStatus     *int64                  `json:"biz_status,omitempty"`
 	PublishStatus *resource.PublishStatus `json:"publish_status,omitempty"`
-	CreateTimeMS  *int64                  `json:"create_time,omitempty"`
-	UpdateTimeMS  *int64                  `json:"update_time,omitempty"`
-	PublishTimeMS *int64                  `json:"publish_time,omitempty"`
+
+	CreateTimeMS  *int64 `json:"create_time,omitempty"`
+	UpdateTimeMS  *int64 `json:"update_time,omitempty"`
+	PublishTimeMS *int64 `json:"publish_time,omitempty"`
 }
 
 func (r *ResourceDocument) GetName() string {
@@ -44,4 +45,18 @@ func (r *ResourceDocument) GetResSubType() int32 {
 		return *r.ResSubType
 	}
 	return 0
+}
+
+func (r *ResourceDocument) GetCreateTime() int64 {
+	if r.CreateTimeMS == nil {
+		return 0
+	}
+	return *r.CreateTimeMS
+}
+
+func (r *ResourceDocument) GetPublishTime() int64 {
+	if r.PublishTimeMS == nil {
+		return 0
+	}
+	return *r.PublishTimeMS
 }

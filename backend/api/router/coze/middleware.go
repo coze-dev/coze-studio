@@ -126,11 +126,6 @@ func _getdraftintelligencelistMw() []app.HandlerFunc {
 	return nil
 }
 
-func _getprojectpublishsummaryMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
 func _publishintelligencelistMw() []app.HandlerFunc {
 	// your code...
 	return nil
@@ -1337,6 +1332,26 @@ func _getdevpluginlistMw() []app.HandlerFunc {
 }
 
 func _projectpublishconnectorlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getpublishrecorddetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _favoriteMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publicgetuserfavoritelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publicgetuserfavoritelistv2Mw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

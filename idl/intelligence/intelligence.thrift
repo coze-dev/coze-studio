@@ -16,13 +16,13 @@ service IntelligenceService {
     search.GetDraftIntelligenceInfoResponse GetDraftIntelligenceInfo(1: search.GetDraftIntelligenceInfoRequest req) (api.post='/api/intelligence_api/search/get_draft_intelligence_info', api.category="search",agw.preserve_base="true")
     search.GetUserRecentlyEditIntelligenceResponse GetUserRecentlyEditIntelligence(1: search.GetUserRecentlyEditIntelligenceRequest req) (api.post='/api/intelligence_api/search/get_recently_edit_intelligence', api.category="search",agw.preserve_base="true")
     search.PublishIntelligenceListResponse PublishIntelligenceList(1: search.PublishIntelligenceListRequest req) (api.post='/api/intelligence_api/search/get_publish_intelligence_list', api.category="search",agw.preserve_base="true")
-    search.GetProjectPublishSummaryResponse GetProjectPublishSummary(1: search.GetProjectPublishSummaryRequest req)(api.post='/api/intelligence_api/search/get_project_publish_summary', api.category="search",agw.preserve_base="true")
 
     publish.PublishConnectorListResponse ProjectPublishConnectorList(1: publish.PublishConnectorListRequest request)(api.post='/api/intelligence_api/publish/connector_list', api.category="publish",agw.preserve_base="true")
     publish.GetProjectPublishedConnectorResponse GetProjectPublishedConnector(1: publish.GetProjectPublishedConnectorRequest request) (api.post='/api/intelligence_api/publish/get_published_connector', api.category="publish",agw.preserve_base="true")
     publish.CheckProjectVersionNumberResponse CheckProjectVersionNumber(1: publish.CheckProjectVersionNumberRequest request)(api.post='/api/intelligence_api/publish/check_version_number', api.category="publish",agw.preserve_base="true")
     publish.PublishProjectResponse PublishProject(1: publish.PublishProjectRequest request)(api.post='/api/intelligence_api/publish/publish_project', api.category="publish",agw.preserve_base="true")
     publish.GetPublishRecordListResponse GetPublishRecordList(1: publish.GetPublishRecordListRequest request)(api.post='/api/intelligence_api/publish/publish_record_list', api.category="publish",agw.preserve_base="true")
+    publish.GetPublishRecordDetailResponse GetPublishRecordDetail(1: publish.GetPublishRecordDetailRequest request)(api.post='/api/intelligence_api/publish/publish_record_detail', api.category="publish",agw.preserve_base="true")
 }
 
 

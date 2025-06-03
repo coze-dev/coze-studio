@@ -25,8 +25,6 @@ type IntelligenceService interface {
 
 	PublishIntelligenceList(ctx context.Context, req *PublishIntelligenceListRequest) (r *PublishIntelligenceListResponse, err error)
 
-	GetProjectPublishSummary(ctx context.Context, req *GetProjectPublishSummaryRequest) (r *GetProjectPublishSummaryResponse, err error)
-
 	ProjectPublishConnectorList(ctx context.Context, request *publish.PublishConnectorListRequest) (r *publish.PublishConnectorListResponse, err error)
 
 	GetProjectPublishedConnector(ctx context.Context, request *publish.GetProjectPublishedConnectorRequest) (r *publish.GetProjectPublishedConnectorResponse, err error)
@@ -36,6 +34,8 @@ type IntelligenceService interface {
 	PublishProject(ctx context.Context, request *publish.PublishProjectRequest) (r *publish.PublishProjectResponse, err error)
 
 	GetPublishRecordList(ctx context.Context, request *publish.GetPublishRecordListRequest) (r *publish.GetPublishRecordListResponse, err error)
+
+	GetPublishRecordDetail(ctx context.Context, request *publish.GetPublishRecordDetailRequest) (r *publish.GetPublishRecordDetailResponse, err error)
 }
 
 type IntelligenceServiceClient struct {
@@ -127,15 +127,6 @@ func (p *IntelligenceServiceClient) PublishIntelligenceList(ctx context.Context,
 	}
 	return _result.GetSuccess(), nil
 }
-func (p *IntelligenceServiceClient) GetProjectPublishSummary(ctx context.Context, req *GetProjectPublishSummaryRequest) (r *GetProjectPublishSummaryResponse, err error) {
-	var _args IntelligenceServiceGetProjectPublishSummaryArgs
-	_args.Req = req
-	var _result IntelligenceServiceGetProjectPublishSummaryResult
-	if err = p.Client_().Call(ctx, "GetProjectPublishSummary", &_args, &_result); err != nil {
-		return
-	}
-	return _result.GetSuccess(), nil
-}
 func (p *IntelligenceServiceClient) ProjectPublishConnectorList(ctx context.Context, request *publish.PublishConnectorListRequest) (r *publish.PublishConnectorListResponse, err error) {
 	var _args IntelligenceServiceProjectPublishConnectorListArgs
 	_args.Request = request
@@ -181,6 +172,15 @@ func (p *IntelligenceServiceClient) GetPublishRecordList(ctx context.Context, re
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *IntelligenceServiceClient) GetPublishRecordDetail(ctx context.Context, request *publish.GetPublishRecordDetailRequest) (r *publish.GetPublishRecordDetailResponse, err error) {
+	var _args IntelligenceServiceGetPublishRecordDetailArgs
+	_args.Request = request
+	var _result IntelligenceServiceGetPublishRecordDetailResult
+	if err = p.Client_().Call(ctx, "GetPublishRecordDetail", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 
 type IntelligenceServiceProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
@@ -209,12 +209,12 @@ func NewIntelligenceServiceProcessor(handler IntelligenceService) *IntelligenceS
 	self.AddToProcessorMap("GetDraftIntelligenceInfo", &intelligenceServiceProcessorGetDraftIntelligenceInfo{handler: handler})
 	self.AddToProcessorMap("GetUserRecentlyEditIntelligence", &intelligenceServiceProcessorGetUserRecentlyEditIntelligence{handler: handler})
 	self.AddToProcessorMap("PublishIntelligenceList", &intelligenceServiceProcessorPublishIntelligenceList{handler: handler})
-	self.AddToProcessorMap("GetProjectPublishSummary", &intelligenceServiceProcessorGetProjectPublishSummary{handler: handler})
 	self.AddToProcessorMap("ProjectPublishConnectorList", &intelligenceServiceProcessorProjectPublishConnectorList{handler: handler})
 	self.AddToProcessorMap("GetProjectPublishedConnector", &intelligenceServiceProcessorGetProjectPublishedConnector{handler: handler})
 	self.AddToProcessorMap("CheckProjectVersionNumber", &intelligenceServiceProcessorCheckProjectVersionNumber{handler: handler})
 	self.AddToProcessorMap("PublishProject", &intelligenceServiceProcessorPublishProject{handler: handler})
 	self.AddToProcessorMap("GetPublishRecordList", &intelligenceServiceProcessorGetPublishRecordList{handler: handler})
+	self.AddToProcessorMap("GetPublishRecordDetail", &intelligenceServiceProcessorGetPublishRecordDetail{handler: handler})
 	return self
 }
 func (p *IntelligenceServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -571,54 +571,6 @@ func (p *intelligenceServiceProcessorPublishIntelligenceList) Process(ctx contex
 	return true, err
 }
 
-type intelligenceServiceProcessorGetProjectPublishSummary struct {
-	handler IntelligenceService
-}
-
-func (p *intelligenceServiceProcessorGetProjectPublishSummary) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := IntelligenceServiceGetProjectPublishSummaryArgs{}
-	if err = args.Read(iprot); err != nil {
-		iprot.ReadMessageEnd()
-		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("GetProjectPublishSummary", thrift.EXCEPTION, seqId)
-		x.Write(oprot)
-		oprot.WriteMessageEnd()
-		oprot.Flush(ctx)
-		return false, err
-	}
-
-	iprot.ReadMessageEnd()
-	var err2 error
-	result := IntelligenceServiceGetProjectPublishSummaryResult{}
-	var retval *GetProjectPublishSummaryResponse
-	if retval, err2 = p.handler.GetProjectPublishSummary(ctx, args.Req); err2 != nil {
-		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetProjectPublishSummary: "+err2.Error())
-		oprot.WriteMessageBegin("GetProjectPublishSummary", thrift.EXCEPTION, seqId)
-		x.Write(oprot)
-		oprot.WriteMessageEnd()
-		oprot.Flush(ctx)
-		return true, err2
-	} else {
-		result.Success = retval
-	}
-	if err2 = oprot.WriteMessageBegin("GetProjectPublishSummary", thrift.REPLY, seqId); err2 != nil {
-		err = err2
-	}
-	if err2 = result.Write(oprot); err == nil && err2 != nil {
-		err = err2
-	}
-	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
-		err = err2
-	}
-	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-		err = err2
-	}
-	if err != nil {
-		return
-	}
-	return true, err
-}
-
 type intelligenceServiceProcessorProjectPublishConnectorList struct {
 	handler IntelligenceService
 }
@@ -842,6 +794,54 @@ func (p *intelligenceServiceProcessorGetPublishRecordList) Process(ctx context.C
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("GetPublishRecordList", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type intelligenceServiceProcessorGetPublishRecordDetail struct {
+	handler IntelligenceService
+}
+
+func (p *intelligenceServiceProcessorGetPublishRecordDetail) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := IntelligenceServiceGetPublishRecordDetailArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetPublishRecordDetail", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := IntelligenceServiceGetPublishRecordDetailResult{}
+	var retval *publish.GetPublishRecordDetailResponse
+	if retval, err2 = p.handler.GetPublishRecordDetail(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetPublishRecordDetail: "+err2.Error())
+		oprot.WriteMessageBegin("GetPublishRecordDetail", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetPublishRecordDetail", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -2903,298 +2903,6 @@ func (p *IntelligenceServicePublishIntelligenceListResult) String() string {
 
 }
 
-type IntelligenceServiceGetProjectPublishSummaryArgs struct {
-	Req *GetProjectPublishSummaryRequest `thrift:"req,1"`
-}
-
-func NewIntelligenceServiceGetProjectPublishSummaryArgs() *IntelligenceServiceGetProjectPublishSummaryArgs {
-	return &IntelligenceServiceGetProjectPublishSummaryArgs{}
-}
-
-func (p *IntelligenceServiceGetProjectPublishSummaryArgs) InitDefault() {
-}
-
-var IntelligenceServiceGetProjectPublishSummaryArgs_Req_DEFAULT *GetProjectPublishSummaryRequest
-
-func (p *IntelligenceServiceGetProjectPublishSummaryArgs) GetReq() (v *GetProjectPublishSummaryRequest) {
-	if !p.IsSetReq() {
-		return IntelligenceServiceGetProjectPublishSummaryArgs_Req_DEFAULT
-	}
-	return p.Req
-}
-
-var fieldIDToName_IntelligenceServiceGetProjectPublishSummaryArgs = map[int16]string{
-	1: "req",
-}
-
-func (p *IntelligenceServiceGetProjectPublishSummaryArgs) IsSetReq() bool {
-	return p.Req != nil
-}
-
-func (p *IntelligenceServiceGetProjectPublishSummaryArgs) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_IntelligenceServiceGetProjectPublishSummaryArgs[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *IntelligenceServiceGetProjectPublishSummaryArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewGetProjectPublishSummaryRequest()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Req = _field
-	return nil
-}
-
-func (p *IntelligenceServiceGetProjectPublishSummaryArgs) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("GetProjectPublishSummary_args"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *IntelligenceServiceGetProjectPublishSummaryArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Req.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-
-func (p *IntelligenceServiceGetProjectPublishSummaryArgs) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("IntelligenceServiceGetProjectPublishSummaryArgs(%+v)", *p)
-
-}
-
-type IntelligenceServiceGetProjectPublishSummaryResult struct {
-	Success *GetProjectPublishSummaryResponse `thrift:"success,0,optional"`
-}
-
-func NewIntelligenceServiceGetProjectPublishSummaryResult() *IntelligenceServiceGetProjectPublishSummaryResult {
-	return &IntelligenceServiceGetProjectPublishSummaryResult{}
-}
-
-func (p *IntelligenceServiceGetProjectPublishSummaryResult) InitDefault() {
-}
-
-var IntelligenceServiceGetProjectPublishSummaryResult_Success_DEFAULT *GetProjectPublishSummaryResponse
-
-func (p *IntelligenceServiceGetProjectPublishSummaryResult) GetSuccess() (v *GetProjectPublishSummaryResponse) {
-	if !p.IsSetSuccess() {
-		return IntelligenceServiceGetProjectPublishSummaryResult_Success_DEFAULT
-	}
-	return p.Success
-}
-
-var fieldIDToName_IntelligenceServiceGetProjectPublishSummaryResult = map[int16]string{
-	0: "success",
-}
-
-func (p *IntelligenceServiceGetProjectPublishSummaryResult) IsSetSuccess() bool {
-	return p.Success != nil
-}
-
-func (p *IntelligenceServiceGetProjectPublishSummaryResult) Read(iprot thrift.TProtocol) (err error) {
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 0:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField0(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_IntelligenceServiceGetProjectPublishSummaryResult[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *IntelligenceServiceGetProjectPublishSummaryResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := NewGetProjectPublishSummaryResponse()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Success = _field
-	return nil
-}
-
-func (p *IntelligenceServiceGetProjectPublishSummaryResult) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("GetProjectPublishSummary_result"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField0(oprot); err != nil {
-			fieldId = 0
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *IntelligenceServiceGetProjectPublishSummaryResult) writeField0(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSuccess() {
-		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.Success.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
-}
-
-func (p *IntelligenceServiceGetProjectPublishSummaryResult) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("IntelligenceServiceGetProjectPublishSummaryResult(%+v)", *p)
-
-}
-
 type IntelligenceServiceProjectPublishConnectorListArgs struct {
 	Request *publish.PublishConnectorListRequest `thrift:"request,1"`
 }
@@ -4652,5 +4360,297 @@ func (p *IntelligenceServiceGetPublishRecordListResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("IntelligenceServiceGetPublishRecordListResult(%+v)", *p)
+
+}
+
+type IntelligenceServiceGetPublishRecordDetailArgs struct {
+	Request *publish.GetPublishRecordDetailRequest `thrift:"request,1"`
+}
+
+func NewIntelligenceServiceGetPublishRecordDetailArgs() *IntelligenceServiceGetPublishRecordDetailArgs {
+	return &IntelligenceServiceGetPublishRecordDetailArgs{}
+}
+
+func (p *IntelligenceServiceGetPublishRecordDetailArgs) InitDefault() {
+}
+
+var IntelligenceServiceGetPublishRecordDetailArgs_Request_DEFAULT *publish.GetPublishRecordDetailRequest
+
+func (p *IntelligenceServiceGetPublishRecordDetailArgs) GetRequest() (v *publish.GetPublishRecordDetailRequest) {
+	if !p.IsSetRequest() {
+		return IntelligenceServiceGetPublishRecordDetailArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_IntelligenceServiceGetPublishRecordDetailArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *IntelligenceServiceGetPublishRecordDetailArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *IntelligenceServiceGetPublishRecordDetailArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_IntelligenceServiceGetPublishRecordDetailArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *IntelligenceServiceGetPublishRecordDetailArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := publish.NewGetPublishRecordDetailRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *IntelligenceServiceGetPublishRecordDetailArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetPublishRecordDetail_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *IntelligenceServiceGetPublishRecordDetailArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *IntelligenceServiceGetPublishRecordDetailArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("IntelligenceServiceGetPublishRecordDetailArgs(%+v)", *p)
+
+}
+
+type IntelligenceServiceGetPublishRecordDetailResult struct {
+	Success *publish.GetPublishRecordDetailResponse `thrift:"success,0,optional"`
+}
+
+func NewIntelligenceServiceGetPublishRecordDetailResult() *IntelligenceServiceGetPublishRecordDetailResult {
+	return &IntelligenceServiceGetPublishRecordDetailResult{}
+}
+
+func (p *IntelligenceServiceGetPublishRecordDetailResult) InitDefault() {
+}
+
+var IntelligenceServiceGetPublishRecordDetailResult_Success_DEFAULT *publish.GetPublishRecordDetailResponse
+
+func (p *IntelligenceServiceGetPublishRecordDetailResult) GetSuccess() (v *publish.GetPublishRecordDetailResponse) {
+	if !p.IsSetSuccess() {
+		return IntelligenceServiceGetPublishRecordDetailResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_IntelligenceServiceGetPublishRecordDetailResult = map[int16]string{
+	0: "success",
+}
+
+func (p *IntelligenceServiceGetPublishRecordDetailResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *IntelligenceServiceGetPublishRecordDetailResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_IntelligenceServiceGetPublishRecordDetailResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *IntelligenceServiceGetPublishRecordDetailResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := publish.NewGetPublishRecordDetailResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *IntelligenceServiceGetPublishRecordDetailResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetPublishRecordDetail_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *IntelligenceServiceGetPublishRecordDetailResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *IntelligenceServiceGetPublishRecordDetailResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("IntelligenceServiceGetPublishRecordDetailResult(%+v)", *p)
 
 }

@@ -75,23 +75,31 @@ func (a *appRepoImpl) UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPPReq
 	return a.appDraftDAO.Update(ctx, req.APP)
 }
 
-func (a *appRepoImpl) GetLatestPublishInfo(ctx context.Context, req *GetLatestPublishInfo) (resp *GetLatestPublishInfoResponse, err error) {
-	app, exist, err := a.releaseRecordDAO.GetLatestReleaseRecord(ctx, req.APPID)
+func (a *appRepoImpl) GetPublishRecord(ctx context.Context, req *GetPublishRecordRequest) (resp *GetPublishRecordResponse, err error) {
+	var (
+		app   *entity.APP
+		exist bool
+	)
+	if req.RecordID != nil {
+		app, exist, err = a.releaseRecordDAO.GetReleaseRecordWithID(ctx, *req.RecordID)
+	} else {
+		app, exist, err = a.releaseRecordDAO.GetLatestReleaseRecord(ctx, req.APPID)
+	}
 	if err != nil {
 		return nil, err
 	}
 	if !exist {
-		return &GetLatestPublishInfoResponse{
+		return &GetPublishRecordResponse{
 			Published: false,
 		}, nil
 	}
 
-	publishRecords, err := a.connectorRefDAO.GetAllConnectorRecords(ctx, req.APPID)
+	publishRecords, err := a.connectorRefDAO.GetAllConnectorRecords(ctx, app.GetPublishRecordID())
 	if err != nil {
 		return nil, err
 	}
 
-	resp = &GetLatestPublishInfoResponse{
+	resp = &GetPublishRecordResponse{
 		Published: true,
 		Record: &entity.PublishRecord{
 			APP:                     app,
@@ -99,11 +107,11 @@ func (a *appRepoImpl) GetLatestPublishInfo(ctx context.Context, req *GetLatestPu
 		},
 	}
 
-	return
+	return resp, nil
 }
 
 func (a *appRepoImpl) CheckAPPVersionExist(ctx context.Context, req *GetVersionAPPRequest) (exist bool, err error) {
-	_, exist, err = a.releaseRecordDAO.GetReleaseRecord(ctx, req.APPID, req.Version)
+	_, exist, err = a.releaseRecordDAO.GetReleaseRecordWithVersion(ctx, req.APPID, req.Version)
 	return exist, err
 }
 

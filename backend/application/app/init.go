@@ -19,6 +19,7 @@ type ServiceComponents struct {
 	ProjectEventBus search.ProjectEventBus
 
 	UserSVC      user.User
+	SearchSVC    search.Search
 	ConnectorSVC connector.Connector
 }
 
@@ -42,6 +43,7 @@ func InitService(components *ServiceComponents) (*APPApplicationService, error) 
 	APPApplicationSVC.oss = components.OSS
 	APPApplicationSVC.projectEventBus = components.ProjectEventBus
 
+	APPApplicationSVC.searchSVC = components.SearchSVC
 	APPApplicationSVC.userSVC = components.UserSVC
 	APPApplicationSVC.connectorSVC = components.ConnectorSVC
 

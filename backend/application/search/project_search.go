@@ -6,11 +6,13 @@ import (
 	"sync"
 	"time"
 
+	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/marketplace_common"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_common"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	searchConsts "code.byted.org/flow/opencoze/backend/domain/search/consts"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
@@ -83,73 +85,211 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 }
 
 func (s *SearchApplicationService) PublicFavoriteProduct(ctx context.Context, req *product_public_api.FavoriteProductRequest) (*product_public_api.FavoriteProductResponse, error) {
-	productEntityType2DomainName := map[product_common.ProductEntityType]common.IntelligenceType{
-		product_common.ProductEntityType_Bot:     common.IntelligenceType_Bot,
-		product_common.ProductEntityType_Project: common.IntelligenceType_Project,
-	}
-
-	intelligenceType, ok := productEntityType2DomainName[req.GetEntityType()]
-	if !ok {
-		return nil, errorx.New(errno.ErrSearchInvalidParamCode, errorx.KV("msg", "invalid entity type"))
-	}
-
-	isFav := ternary.IFElse(req.GetIsCancel(), 0, 1)
+	isFav := !req.GetIsCancel()
 	entityID := req.GetEntityID()
+	typ := req.GetEntityType()
 
-	err := s.ProjectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
-		OpType: searchEntity.Updated,
-		Project: &searchEntity.ProjectDocument{
-			ID:    entityID,
-			IsFav: &isFav,
-			Type:  intelligenceType,
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	uid := ctxutil.MustGetUIDFromCtx(ctx)
-	favTimeMS := ternary.IFElse(isFav == 1, time.Now().UnixMilli(), 0)
-
-	// do we need a project(resource&app) application or domain ?
-	err = SearchSVC.FavRepo.Save(ctx, makeFavInfoKey(uid, intelligenceType, entityID), &favInfo{
-		IsFav:     !req.GetIsCancel(),
-		FavTimeMS: favTimeMS,
-	})
-	if err != nil {
-		return nil, err
+	switch req.GetEntityType() {
+	case product_common.ProductEntityType_Bot, product_common.ProductEntityType_Project:
+		err := s.favoriteProject(ctx, entityID, typ, isFav)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, errorx.New(errno.ErrSearchInvalidParamCode, errorx.KV("msg", fmt.Sprintf("invalid entity type '%d'", req.GetEntityType())))
 	}
 
 	return &product_public_api.FavoriteProductResponse{
-		Code:            0,
 		IsFirstFavorite: ptr.Of(false),
 	}, nil
 }
 
-func makeFavInfoKey(uid int64, entityType common.IntelligenceType, entityID int64) string {
-	return fmt.Sprintf("%d:%d:%d", uid, entityType, entityID)
+func (s *SearchApplicationService) favoriteProject(ctx context.Context, projectID int64, typ product_common.ProductEntityType, isFav bool) error {
+	var entityType common.IntelligenceType
+	if typ == product_common.ProductEntityType_Bot {
+		entityType = common.IntelligenceType_Bot
+	} else {
+		entityType = common.IntelligenceType_Project
+	}
+	err := s.ProjectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Updated,
+		Project: &searchEntity.ProjectDocument{
+			ID:        projectID,
+			IsFav:     ptr.Of(ternary.IFElse(isFav, 1, 0)),
+			FavTimeMS: ptr.Of(time.Now().UnixMilli()),
+			Type:      entityType,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (s *SearchApplicationService) GetDraftIntelligenceInfo(ctx context.Context, req intelligence.GetDraftIntelligenceInfoRequest) (
-	resp *intelligence.GetDraftIntelligenceInfoResponse, err error,
-) {
-	return nil, nil
+func (s *SearchApplicationService) PublicGetUserFavoriteList(ctx context.Context, req *product_public_api.GetUserFavoriteListV2Request) (resp *product_public_api.GetUserFavoriteListV2Response, err error) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrSearchPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	var data *product_public_api.GetUserFavoriteListDataV2
+	switch req.GetEntityType() {
+	case product_common.ProductEntityType_Project, product_common.ProductEntityType_Bot, product_common.ProductEntityType_Common:
+		data, err = s.searchFavProjects(ctx, *userID, req)
+	default:
+		return nil, errorx.New(errno.ErrSearchInvalidParamCode, errorx.KV("msg", fmt.Sprintf("invalid entity type '%d'", req.GetEntityType())))
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &product_public_api.GetUserFavoriteListV2Response{
+		Data: data,
+	}
+
+	return resp, nil
+}
+
+func (s *SearchApplicationService) searchFavProjects(ctx context.Context, userID int64, req *product_public_api.GetUserFavoriteListV2Request) (*product_public_api.GetUserFavoriteListDataV2, error) {
+	var types []common.IntelligenceType
+	if req.GetEntityType() == product_common.ProductEntityType_Common {
+		types = []common.IntelligenceType{common.IntelligenceType_Bot, common.IntelligenceType_Project}
+	} else if req.GetEntityType() == product_common.ProductEntityType_Bot {
+		types = []common.IntelligenceType{common.IntelligenceType_Bot}
+	} else {
+		types = []common.IntelligenceType{common.IntelligenceType_Project}
+	}
+
+	res, err := SearchSVC.DomainSVC.SearchProjects(ctx, &searchEntity.SearchProjectsRequest{
+		OwnerID: userID,
+		Types:   types,
+		IsFav:   true,
+		OrderBy: searchConsts.OrderByFavTime,
+		Order:   common.OrderByType_Desc,
+		Limit:   req.PageSize,
+		Cursor:  req.GetCursorID(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(res.Data) == 0 {
+		return &product_public_api.GetUserFavoriteListDataV2{
+			FavoriteEntities: []*product_common.FavoriteEntity{},
+			CursorID:         res.NextCursor,
+			HasMore:          res.HasMore,
+		}, nil
+	}
+
+	favEntities := make([]*product_common.FavoriteEntity, 0, len(res.Data))
+	for _, r := range res.Data {
+		favEntity, err := s.projectResourceToProductInfo(ctx, userID, r)
+		if err != nil {
+			logs.CtxErrorf(ctx, "[pluginResourceToProductInfo] failed to get project info, id=%v, type=%d, err=%v",
+				r.ID, r.Type, err)
+			continue
+		}
+		favEntities = append(favEntities, favEntity)
+	}
+
+	data := &product_public_api.GetUserFavoriteListDataV2{
+		FavoriteEntities: favEntities,
+		CursorID:         res.NextCursor,
+		HasMore:          res.HasMore,
+	}
+
+	return data, nil
+}
+
+func (s *SearchApplicationService) projectResourceToProductInfo(ctx context.Context, userID int64, doc *searchEntity.ProjectDocument) (favEntity *product_common.FavoriteEntity, err error) {
+	typ := func() product_common.ProductEntityType {
+		if doc.Type == common.IntelligenceType_Bot {
+			return product_common.ProductEntityType_Bot
+		}
+		return product_common.ProductEntityType_Project
+	}()
+
+	packer, err := NewPackProject(userID, doc.ID, doc.Type, s)
+	if err != nil {
+		return nil, err
+	}
+
+	pi, err := packer.GetProjectInfo(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	ui := packer.GetUserInfo(ctx, userID)
+
+	var userInfo *product_common.UserInfo
+	if ui != nil {
+		userInfo = &product_common.UserInfo{
+			UserID:     ui.UserID,
+			UserName:   ui.UserUniqueName,
+			Name:       ui.Nickname,
+			AvatarURL:  ui.AvatarURL,
+			FollowType: ptr.Of(marketplace_common.FollowType_Unknown),
+		}
+	}
+
+	e := &product_common.FavoriteEntity{
+		EntityID:           doc.ID,
+		EntityType:         typ,
+		Name:               doc.GetName(),
+		IconURL:            pi.iconURI,
+		Description:        pi.desc,
+		SpaceID:            doc.GetSpaceID(),
+		HasSpacePermission: true,
+		FavoriteAt:         doc.GetFavTime(),
+		UserInfo:           userInfo,
+	}
+
+	return e, nil
 }
 
 func (s *SearchApplicationService) GetUserRecentlyEditIntelligence(ctx context.Context, req intelligence.GetUserRecentlyEditIntelligenceRequest) (
 	resp *intelligence.GetUserRecentlyEditIntelligenceResponse, err error,
 ) {
-	return nil, nil
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrSearchPermissionCode, errorx.KV("msg", "session required"))
+	}
+
+	res, err := SearchSVC.DomainSVC.SearchProjects(ctx, &searchEntity.SearchProjectsRequest{
+		OwnerID:        *userID,
+		Types:          req.Types,
+		IsRecentlyOpen: true,
+		OrderBy:        searchConsts.OrderByRecentlyOpenTime,
+		Order:          common.OrderByType_Desc,
+		Limit:          req.Size,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	intelligenceDataList := make([]*intelligence.IntelligenceData, 0, len(res.Data))
+	for idx := range res.Data {
+		data := res.Data[idx]
+		info, err := s.packIntelligenceData(ctx, data)
+		if err != nil {
+			logs.CtxErrorf(ctx, "[packIntelligenceData] failed id %v, type %d, name %s, err: %v", data.ID, data.Type, data.GetName(), err)
+			continue
+		}
+		intelligenceDataList = append(intelligenceDataList, info)
+	}
+
+	resp = &intelligence.GetUserRecentlyEditIntelligenceResponse{
+		Data: &intelligence.GetUserRecentlyEditIntelligenceData{
+			IntelligenceInfoList: intelligenceDataList,
+		},
+	}
+
+	return resp, nil
 }
 
 func (s *SearchApplicationService) PublishIntelligenceList(ctx context.Context, req intelligence.PublishIntelligenceListRequest) (
 	resp *intelligence.PublishIntelligenceListResponse, err error,
-) {
-	return nil, nil
-}
-
-func (s *SearchApplicationService) GetProjectPublishSummary(ctx context.Context, req intelligence.GetProjectPublishSummaryRequest) (
-	resp *intelligence.GetProjectPublishSummaryResponse, err error,
 ) {
 	return nil, nil
 }
@@ -204,12 +344,25 @@ func (s *SearchApplicationService) packIntelligenceData(ctx context.Context, doc
 }
 
 func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceListRequest) *searchEntity.SearchProjectsRequest {
+	orderBy := func() searchConsts.OrderByType {
+		switch req.GetOrderBy() {
+		case intelligence.OrderBy_PublishTime:
+			return searchConsts.OrderByPublishTime
+		case intelligence.OrderBy_UpdateTime:
+			return searchConsts.OrderByUpdateTime
+		case intelligence.OrderBy_CreateTime:
+			return searchConsts.OrderByCreateTime
+		default:
+			return searchConsts.OrderByUpdateTime
+		}
+	}()
+
 	searchReq := &searchEntity.SearchProjectsRequest{
 		SpaceID:        req.GetSpaceID(),
 		OwnerID:        0,
-		Limit:          int(req.GetSize()),
+		Limit:          req.GetSize(),
 		Cursor:         req.GetCursorID(),
-		OrderBy:        req.GetOrderBy(),
+		OrderBy:        orderBy,
 		Order:          common.OrderByType_Desc,
 		Types:          req.GetTypes(),
 		Status:         req.GetStatus(),

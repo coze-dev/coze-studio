@@ -73,8 +73,8 @@ type PublishRecordExtraInfo struct {
 	PackFailedInfo []*PackResourceFailedInfo
 }
 
-func (p PublishRecordExtraInfo) ToVO() *publishAPI.PublishRecordStatusDetail {
-	if len(p.PackFailedInfo) == 0 {
+func (p *PublishRecordExtraInfo) ToVO() *publishAPI.PublishRecordStatusDetail {
+	if p == nil || len(p.PackFailedInfo) == 0 {
 		return &publishAPI.PublishRecordStatusDetail{}
 	}
 

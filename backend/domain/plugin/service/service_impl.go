@@ -598,7 +598,7 @@ func (p *pluginServiceImpl) DeleteDraftPlugin(ctx context.Context, req *DeleteDr
 	return p.pluginRepo.DeleteDraftPlugin(ctx, req.PluginID)
 }
 
-func (p *pluginServiceImpl) GetGetOnlinePlugin(ctx context.Context, req *GetOnlinePluginRequest) (resp *GetOnlinePluginResponse, err error) {
+func (p *pluginServiceImpl) GetOnlinePlugin(ctx context.Context, req *GetOnlinePluginRequest) (resp *GetOnlinePluginResponse, err error) {
 	pl, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
@@ -626,6 +626,26 @@ func (p *pluginServiceImpl) MGetOnlinePlugins(ctx context.Context, req *MGetOnli
 	return &MGetOnlinePluginsResponse{
 		Plugins: res,
 	}, nil
+}
+
+func (p *pluginServiceImpl) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *MGetPluginLatestVersionResponse, err error) {
+	plugins, err := p.pluginRepo.MGetOnlinePlugins(ctx, pluginIDs,
+		repository.WithPluginID(),
+		repository.WithPluginVersion())
+	if err != nil {
+		return nil, err
+	}
+
+	versions := make(map[int64]string, len(plugins))
+	for _, pl := range plugins {
+		versions[pl.ID] = pl.GetVersion()
+	}
+
+	resp = &MGetPluginLatestVersionResponse{
+		Versions: versions,
+	}
+
+	return resp, nil
 }
 
 func (p *pluginServiceImpl) GetPluginNextVersion(ctx context.Context, pluginID int64) (version string, err error) {
@@ -1545,4 +1565,12 @@ func (p *pluginServiceImpl) ListPluginProducts(ctx context.Context, req *ListPlu
 		Plugins: plugins,
 		Total:   int64(len(plugins)),
 	}, nil
+}
+
+func (p *pluginServiceImpl) GetPluginProductAllTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
+	res, err := p.toolRepo.GetPluginAllOnlineTools(ctx, pluginID)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }

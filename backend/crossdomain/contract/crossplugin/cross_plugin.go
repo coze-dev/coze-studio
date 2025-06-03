@@ -8,6 +8,7 @@ import (
 
 type PluginService interface {
 	MGetVersionPlugins(ctx context.Context, req *plugin.MGetVersionPluginsRequest) (resp *plugin.MGetVersionPluginsResponse, err error)
+	MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *plugin.MGetPluginLatestVersionResponse, err error)
 	BindAgentTools(ctx context.Context, req *plugin.BindAgentToolsRequest) (err error)
 	MGetAgentTools(ctx context.Context, req *plugin.MGetAgentToolsRequest) (resp *plugin.MGetAgentToolsResponse, err error)
 	ExecuteTool(ctx context.Context, req *plugin.ExecuteToolRequest, opts ...plugin.ExecuteToolOpts) (resp *plugin.ExecuteToolResponse, err error)

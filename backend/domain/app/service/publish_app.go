@@ -13,7 +13,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/pkg/safego"
 	commonConsts "code.byted.org/flow/opencoze/backend/types/consts"
 )
 
@@ -28,21 +27,20 @@ func (a *appServiceImpl) PublishAPP(ctx context.Context, req *PublishAPPRequest)
 		return nil, err
 	}
 
-	safego.Go(ctx, func() {
-		err = a.publishByConnectors(ctx, recordID, req)
-		if err != nil {
-			logs.CtxErrorf(ctx, "publish by connectors failed, err=%v", err)
-		}
-	})
+	success, err := a.publishByConnectors(ctx, recordID, req)
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish by connectors failed, err=%v", err)
+	}
 
 	resp = &PublishAPPResponse{
+		Success:         success,
 		PublishRecordID: recordID,
 	}
 
 	return resp, nil
 }
 
-func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64, req *PublishAPPRequest) (err error) {
+func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64, req *PublishAPPRequest) (success bool, err error) {
 	defer func() {
 		if err != nil {
 			updateErr := a.APPRepo.UpdateAPPPublishStatus(ctx, &repository.UpdateAPPPublishStatusRequest{
@@ -57,7 +55,7 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 
 	failedResources, err := a.packResources(ctx, req.APPID, req.Version)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if len(failedResources) > 0 {
 		logs.CtxWarnf(ctx, "pack resources failed, len=%d", len(failedResources))
@@ -65,7 +63,8 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 		if processErr != nil {
 			logs.CtxErrorf(ctx, "pack resources failed post process failed, err=%v", processErr)
 		}
-		return nil
+
+		return false, nil
 	}
 
 	for cid := range req.ConnectorPublishConfigs {
@@ -95,10 +94,10 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 		PublishStatus: consts.PublishStatusOfPublishDone,
 	})
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	return nil
+	return true, nil
 }
 
 func (a *appServiceImpl) checkCanPublishPlugins(ctx context.Context, req *PublishAPPRequest) (err error) {
@@ -171,22 +170,14 @@ func (a *appServiceImpl) packResources(ctx context.Context, appID int64, version
 		return nil, nil
 	}
 
-	failedResources = make([]*entity.PackResourceFailedInfo, 0, length)
-
-	for _, p := range failedPlugins {
-		failedResources = append(failedResources, &entity.PackResourceFailedInfo{
-			ResourceID:   p.ID,
-			ResourceType: resourceCommon.ResType_Plugin,
-			ResourceName: p.GetName(),
-		})
-	}
+	failedResources = append(failedResources, failedPlugins...)
 
 	// TODO(@zhuangjie): 失败 workflow 资源
 
-	return nil, nil
+	return failedResources, nil
 }
 
-func (a *appServiceImpl) packPlugins(ctx context.Context, appID int64, version string) (failedPlugins []*plugin.PluginInfo, err error) {
+func (a *appServiceImpl) packPlugins(ctx context.Context, appID int64, version string) (failedInfo []*entity.PackResourceFailedInfo, err error) {
 	res, err := crossplugin.DefaultSVC().PublishAPPPlugins(ctx, &plugin.PublishAPPPluginsRequest{
 		APPID:   appID,
 		Version: version,
@@ -195,7 +186,16 @@ func (a *appServiceImpl) packPlugins(ctx context.Context, appID int64, version s
 		return nil, err
 	}
 
-	return res.FailedPlugins, nil
+	failedInfo = make([]*entity.PackResourceFailedInfo, 0, len(res.FailedPlugins))
+	for _, p := range res.FailedPlugins {
+		failedInfo = append(failedInfo, &entity.PackResourceFailedInfo{
+			ResourceID:   p.ID,
+			ResourceType: resourceCommon.ResType_Plugin,
+			ResourceName: p.GetName(),
+		})
+	}
+
+	return failedInfo, nil
 }
 
 func (a *appServiceImpl) packWorkflows(ctx context.Context, version string) (failedWorkflowIDs []int64, err error) {

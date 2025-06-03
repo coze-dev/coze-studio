@@ -190,7 +190,7 @@ func (p *pluginRepoImpl) MGetOnlinePlugins(ctx context.Context, pluginIDs []int6
 		}
 	}
 
-	customPlugins, err := p.pluginDAO.MGet(ctx, customPluginIDs, nil)
+	customPlugins, err := p.pluginDAO.MGet(ctx, customPluginIDs, opt)
 	if err != nil {
 		return nil, err
 	}

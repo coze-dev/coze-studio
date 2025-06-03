@@ -144,6 +144,7 @@ enum AuthorizationType {
     None    = 0,
     Service = 1,
     OAuth   = 3,
+    Standard = 4, // deprecated, the same as OAuth
 }
 
 enum ServiceAuthSubType {
@@ -243,7 +244,7 @@ struct PluginInfoForPlayground {
     30:          CreationMethod                                  creation_method                                                                                                         // 插件创建方式
     31:          bool                                            is_official                                                                                                             // 是否为官方插件
     32:          string                                          project_id                                                                                                              // 项目id
-    33:          i64                                             version_ts                 (api.body = "version_ts" api.js_conv = "str") // 版本号，毫秒时间戳
+    33:          string                                          version_ts                // 版本号，毫秒时间戳
     34:          string                                          version_name                                                                                                            // 版本名称
 }
 

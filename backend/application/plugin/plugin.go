@@ -173,6 +173,7 @@ func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context
 		Status:         common.PluginStatus_SUBMITTED,
 		UpdateTime:     strconv.FormatInt(pl.UpdatedAt/1000, 10),
 		VersionName:    pl.GetVersion(),
+		VersionTs:      pl.GetVersion(), // 兼容前端逻辑，理论上应该使用 VersionName
 		PluginApis:     pluginAPIs,
 	}
 

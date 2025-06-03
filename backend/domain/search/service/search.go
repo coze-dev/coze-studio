@@ -9,8 +9,8 @@ import (
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/sortorder"
 
-	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
+	"code.byted.org/flow/opencoze/backend/domain/search/consts"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
@@ -34,13 +34,14 @@ type fieldName string
 const (
 	fieldOfSpaceID        = "space_id"
 	fieldOfOwnerID        = "owner_id"
+	fieldOfID             = "id"
 	fieldOfAPPID          = "app_id"
 	fieldOfName           = "name"
 	fieldOfHasPublished   = "has_published"
 	fieldOfStatus         = "status"
 	fieldOfType           = "type"
 	fieldOfIsFav          = "is_fav"
-	fieldOFIsRecentlyOpen = "is_recently_open"
+	fieldOfIsRecentlyOpen = "is_recently_open"
 
 	// resource index fields
 	fieldOfResType       = "res_type"
@@ -49,10 +50,13 @@ const (
 	fieldOfBizStatus     = "biz_status"
 	fieldOfScores        = "scores"
 
-	fieldOfCreateTime  = "create_time"
-	fieldOfUpdateTime  = "update_time"
-	fieldOfPublishTime = "publish_time"
-	resTypeSearchAll   = -1
+	fieldOfCreateTime       = "create_time"
+	fieldOfUpdateTime       = "update_time"
+	fieldOfPublishTime      = "publish_time"
+	fieldOfFavTime          = "fav_time"
+	fieldOfRecentlyOpenTime = "recently_open_time"
+
+	resTypeSearchAll = -1
 )
 
 func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.SearchProjectsRequest) (resp *searchEntity.SearchProjectsResponse, err error) {
@@ -60,11 +64,21 @@ func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.Searc
 
 	mustQueries := make([]types.Query, 0, 10)
 
-	mustQueries = append(mustQueries,
-		types.Query{Term: map[string]types.TermQuery{
-			fieldOfSpaceID: {Value: conv.Int64ToStr(req.SpaceID)},
-		}},
-	)
+	if req.ProjectID != 0 { // 精确搜索
+		mustQueries = append(mustQueries,
+			types.Query{
+				Term: map[string]types.TermQuery{
+					fieldOfID: {Value: conv.Int64ToStr(req.ProjectID)},
+				},
+			},
+		)
+	} else {
+		mustQueries = append(mustQueries,
+			types.Query{Term: map[string]types.TermQuery{
+				fieldOfSpaceID: {Value: conv.Int64ToStr(req.SpaceID)},
+			}},
+		)
+	}
 
 	if req.Name != "" {
 		mustQueries = append(mustQueries,
@@ -98,7 +112,7 @@ func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.Searc
 		mustQueries = append(mustQueries,
 			types.Query{
 				Term: map[string]types.TermQuery{
-					fieldOFIsRecentlyOpen: {Value: conv.BoolToInt(req.IsRecentlyOpen)},
+					fieldOfIsRecentlyOpen: {Value: conv.BoolToInt(req.IsRecentlyOpen)},
 				},
 			})
 	}
@@ -148,17 +162,21 @@ func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.Searc
 
 	reqLimit := 100
 	if req.Limit > 0 {
-		reqLimit = req.Limit
+		reqLimit = int(req.Limit)
 	}
 	realLimit := reqLimit + 1
 	orderBy := func() fieldName {
-		switch req.OrderBy {
-		case intelligence.OrderBy_UpdateTime:
+		switch req.OrderBy { // FIXME: time 重复，导致乱序或者漏数据，应该加上 id 做联合 cursor 及 排序
+		case consts.OrderByUpdateTime:
 			return fieldOfUpdateTime
-		case intelligence.OrderBy_CreateTime:
+		case consts.OrderByCreateTime:
 			return fieldOfCreateTime
-		case intelligence.OrderBy_PublishTime:
+		case consts.OrderByPublishTime:
 			return fieldOfPublishTime
+		case consts.OrderByFavTime:
+			return fieldOfFavTime
+		case consts.OrderByRecentlyOpenTime:
+			return fieldOfRecentlyOpenTime
 		default:
 			return fieldOfUpdateTime
 		}
@@ -213,7 +231,7 @@ func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.Searc
 
 	nextCursor := ""
 	if len(docs) > 0 {
-		nextCursor = formatNextCursor(orderBy, docs[len(docs)-1])
+		nextCursor = formatProjectNextCursor(orderBy, docs[len(docs)-1])
 	}
 	if nextCursor == "" {
 		hasMore = false
@@ -261,7 +279,7 @@ type searchCursor struct {
 
 func (s *searchCursor) FieldValueCaster() *types.FieldValue {
 	switch s.orderBy {
-	case fieldOfCreateTime, fieldOfUpdateTime, fieldOfPublishTime:
+	case fieldOfCreateTime, fieldOfUpdateTime, fieldOfPublishTime, fieldOfFavTime, fieldOfRecentlyOpenTime:
 		cursor, err := strconv.ParseInt(s.cursor, 10, 64)
 		if err != nil {
 			cursor = 0
@@ -273,7 +291,24 @@ func (s *searchCursor) FieldValueCaster() *types.FieldValue {
 	}
 }
 
-func formatNextCursor(ob fieldName, val *searchEntity.ProjectDocument) string {
+func formatProjectNextCursor(ob fieldName, val *searchEntity.ProjectDocument) string {
+	fieldName2Cursor := map[fieldName]string{
+		fieldOfCreateTime:       conv.Int64ToStr(val.GetCreateTime()),
+		fieldOfUpdateTime:       conv.Int64ToStr(val.GetUpdateTime()),
+		fieldOfPublishTime:      conv.Int64ToStr(val.GetPublishTime()),
+		fieldOfFavTime:          conv.Int64ToStr(val.GetFavTime()),
+		fieldOfRecentlyOpenTime: conv.Int64ToStr(val.GetRecentlyOpenTime()),
+	}
+
+	res, ok := fieldName2Cursor[ob]
+	if !ok {
+		return ""
+	}
+
+	return res
+}
+
+func formatResourceNextCursor(ob fieldName, val *searchEntity.ResourceDocument) string {
 	fieldName2Cursor := map[fieldName]string{
 		fieldOfCreateTime:  conv.Int64ToStr(val.GetCreateTime()),
 		fieldOfUpdateTime:  conv.Int64ToStr(val.GetUpdateTime()),
@@ -390,22 +425,35 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 	}
 	realLimit := reqLimit + 1
 
-	sr.Sort(
-		&sortOptions{
-			OrderBy: fieldOfUpdateTime, // FIXME: updateTime 重复，导致乱序或者漏数据，应该加上 id 做联合 cursor 及 排序
-			Order:   sortorder.Desc,
-		},
-		// &sortOptions{
-		// 	OrderBy: fieldOfScores,
-		// 	Order:   sortorder.Desc,
-		// },
-	)
+	orderBy := func() fieldName { // FIXME: time 重复，导致乱序或者漏数据，应该加上 id 做联合 cursor 及 排序
+		switch req.OrderBy {
+		case consts.OrderByUpdateTime:
+			return fieldOfUpdateTime
+		case consts.OrderByCreateTime:
+			return fieldOfCreateTime
+		case consts.OrderByPublishTime:
+			return fieldOfPublishTime
+		default:
+			return fieldOfUpdateTime
+		}
+	}()
+	order := common.OrderByType_Desc
+
+	sr.Sort(&sortOptions{
+		OrderBy: orderBy,
+		Order: func() sortorder.SortOrder {
+			if order == common.OrderByType_Asc {
+				return sortorder.Asc
+			}
+			return sortorder.Desc
+		}(),
+	})
 
 	sr.Size(realLimit)
 
 	if req.Cursor != "" && req.Cursor != "0" {
 		sr.SearchAfter(&searchCursor{
-			orderBy: fieldOfUpdateTime,
+			orderBy: orderBy,
 			cursor:  req.Cursor,
 		})
 	}
@@ -440,7 +488,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 
 	nextCursor := ""
 	if len(docs) > 0 {
-		nextCursor = strconv.FormatInt(docs[len(docs)-1].GetUpdateTime(), 10)
+		nextCursor = formatResourceNextCursor(orderBy, docs[len(docs)-1])
 	}
 	if nextCursor == "" {
 		hasMore = false

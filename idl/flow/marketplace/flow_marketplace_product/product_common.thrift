@@ -138,3 +138,44 @@ struct ChargeSKUExtra{
     1: i64 Quantity    (agw.js_conv="str", api.js_conv="true", agw.cli_conv="str", agw.key = "quantity", api.body= "quantity"),
     2: bool IsSelfDefine (agw.key = "is_self_define", api.body= "is_self_define")
 }
+
+enum FavoriteListSource {
+    CreatedByMe = 1, // 用户自己创建的
+}
+
+struct FavoriteEntity {
+    1 :          i64                  EntityID           (agw.js_conv="str", agw.cli_conv="str", agw.key = "entity_id", api.body="entity_id", api.js_conv="true")  ,
+    2 :          ProductEntityType    EntityType         (agw.key = "entity_type", api.body="entity_type")                                        ,
+    4 :          string               Name               (agw.key = "name", api.body="name")                                               ,
+    5 :          string               IconURL            (agw.key = "icon_url", api.body="icon_url")                                           ,
+    6 :          string               Description        (agw.key = "description", api.body="description")                                        ,
+    7 :          SellerInfo           Seller             (agw.key = "seller", api.body="seller")                                             , // 废弃，使用UserInfo
+    8 :          i64                  SpaceID            (agw.js_conv="str",  agw.cli_conv="str", agw.key = "space_id", api.body="space_id", api.js_conv="true")   , // 用于跳转到Bot编辑页
+    9 :          bool                 HasSpacePermission (agw.key = "has_space_permission", api.body="has_space_permission")                               , // 用户是否有该实体所在Space的权限
+    10:          i64                  FavoriteAt         (agw.js_conv="str",  agw.cli_conv="str", agw.key = "favorite_at", api.body="favorite_at", api.js_conv="true"), // 收藏时间
+
+    11: optional FavoriteProductExtra ProductExtra       (agw.key = "product_extra", api.body="product_extra")                                      ,
+    12:          UserInfo             UserInfo           (agw.key = "user_info", api.body="user_info")                                          ,
+    13: optional FavoritePluginExtra  PluginExtra        (agw.key = "plugin_extra", api.body="plugin_extra")                                       ,
+}
+
+struct SellerInfo {
+    1: i64    UserID    (agw.js_conv="str",  agw.cli_conv="str", agw.key = "user_id", api.body="user_id", api.js_conv="true"),
+    2: string UserName  (agw.key = "user_name", api.body="user_name")                                      ,
+    3: string AvatarURL (agw.key = "avatar_url", agw.key="avatar_url", api.body="avatar_url")               ,
+}
+
+struct FavoriteProductExtra {
+    1: i64           ProductID     (agw.js_conv="str",  agw.cli_conv="str", agw.key = "product_id", api.body="product_id", api.js_conv="true"),
+    2: ProductStatus ProductStatus (agw.key="product_status", api.body="product_status")                                      ,
+}
+
+struct FavoritePluginExtra {
+    1: list<PluginTool> Tools (agw.key="tools", api.body="tools"),
+}
+
+struct PluginTool {
+    1: i64    ID (agw.js_conv="str",  agw.cli_conv="str", agw.key = "id", api.body="id", api.js_conv="true"),
+    2: string Name (agw.key="name", api.body="name"),
+    3: string Description (agw.key="description", api.body="description"),
+}

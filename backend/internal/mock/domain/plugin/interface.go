@@ -13,10 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	entity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	service "code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPluginService is a mock of PluginService interface.
@@ -150,19 +149,19 @@ func (mr *MockPluginServiceMockRecorder) GetDraftPlugin(ctx, req any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDraftPlugin", reflect.TypeOf((*MockPluginService)(nil).GetDraftPlugin), ctx, req)
 }
 
-// GetGetOnlinePlugin mocks base method.
-func (m *MockPluginService) GetGetOnlinePlugin(ctx context.Context, req *service.GetOnlinePluginRequest) (*service.GetOnlinePluginResponse, error) {
+// GetOnlinePlugin mocks base method.
+func (m *MockPluginService) GetOnlinePlugin(ctx context.Context, req *service.GetOnlinePluginRequest) (*service.GetOnlinePluginResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetGetOnlinePlugin", ctx, req)
+	ret := m.ctrl.Call(m, "GetOnlinePlugin", ctx, req)
 	ret0, _ := ret[0].(*service.GetOnlinePluginResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetGetOnlinePlugin indicates an expected call of GetGetOnlinePlugin.
-func (mr *MockPluginServiceMockRecorder) GetGetOnlinePlugin(ctx, req any) *gomock.Call {
+// GetOnlinePlugin indicates an expected call of GetOnlinePlugin.
+func (mr *MockPluginServiceMockRecorder) GetOnlinePlugin(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGetOnlinePlugin", reflect.TypeOf((*MockPluginService)(nil).GetGetOnlinePlugin), ctx, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOnlinePlugin", reflect.TypeOf((*MockPluginService)(nil).GetOnlinePlugin), ctx, req)
 }
 
 // GetOnlineTool mocks base method.
@@ -193,6 +192,21 @@ func (m *MockPluginService) GetPluginNextVersion(ctx context.Context, pluginID i
 func (mr *MockPluginServiceMockRecorder) GetPluginNextVersion(ctx, pluginID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginNextVersion", reflect.TypeOf((*MockPluginService)(nil).GetPluginNextVersion), ctx, pluginID)
+}
+
+// GetPluginProductAllTools mocks base method.
+func (m *MockPluginService) GetPluginProductAllTools(ctx context.Context, pluginID int64) ([]*entity.ToolInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPluginProductAllTools", ctx, pluginID)
+	ret0, _ := ret[0].([]*entity.ToolInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPluginProductAllTools indicates an expected call of GetPluginProductAllTools.
+func (mr *MockPluginServiceMockRecorder) GetPluginProductAllTools(ctx, pluginID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginProductAllTools", reflect.TypeOf((*MockPluginService)(nil).GetPluginProductAllTools), ctx, pluginID)
 }
 
 // ListDraftPlugins mocks base method.
@@ -298,6 +312,21 @@ func (m *MockPluginService) MGetOnlineTools(ctx context.Context, req *service.MG
 func (mr *MockPluginServiceMockRecorder) MGetOnlineTools(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetOnlineTools", reflect.TypeOf((*MockPluginService)(nil).MGetOnlineTools), ctx, req)
+}
+
+// MGetPluginLatestVersion mocks base method.
+func (m *MockPluginService) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (*service.MGetPluginLatestVersionResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MGetPluginLatestVersion", ctx, pluginIDs)
+	ret0, _ := ret[0].(*service.MGetPluginLatestVersionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetPluginLatestVersion indicates an expected call of MGetPluginLatestVersion.
+func (mr *MockPluginServiceMockRecorder) MGetPluginLatestVersion(ctx, pluginIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetPluginLatestVersion", reflect.TypeOf((*MockPluginService)(nil).MGetPluginLatestVersion), ctx, pluginIDs)
 }
 
 // MGetVersionPlugins mocks base method.

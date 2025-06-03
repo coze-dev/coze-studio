@@ -28,10 +28,6 @@ type SingleAgent interface {
 	// ObtainAgentByIdentity support obtain agent by connectorID and agentID
 	ObtainAgentByIdentity(ctx context.Context, identity *entity.AgentIdentity) (*entity.SingleAgent, error)
 
-	// agent open time
-	GetRecentOpenAgentTime(ctx context.Context, uid, agentID int64) (int64, error)
-	SetRecentOpenAgentTime(ctx context.Context, uid, agentID int64, openTimeMS int64) error
-
 	GetAgentPopupCount(ctx context.Context, uid, agentID int64, agentPopupType playground.BotPopupType) (int64, error)
 	IncrAgentPopupCount(ctx context.Context, uid, agentID int64, agentPopupType playground.BotPopupType) error
 

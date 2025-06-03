@@ -17,6 +17,10 @@ type MGetVersionPluginsResponse struct {
 	Plugins []*PluginInfo
 }
 
+type MGetPluginLatestVersionResponse struct {
+	Versions map[int64]string // pluginID vs version
+}
+
 type PluginInfo struct {
 	ID           int64
 	PluginType   api.PluginType

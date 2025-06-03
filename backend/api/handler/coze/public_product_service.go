@@ -67,12 +67,12 @@ func PublicFavoriteProduct(ctx context.Context, c *app.RequestContext) {
 	var req product_public_api.FavoriteProductRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	if req.GetEntityID() <= 0 {
-		invalidParamRequestResponse(c, "productID is invalid")
+		invalidParamRequestResponse(c, "entityID is invalid")
 		return
 	}
 
@@ -88,8 +88,36 @@ func PublicFavoriteProduct(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	// TODO:(@fanlv) search pack（resource & project）分层逻辑确认
 	resp, err := search.SearchSVC.PublicFavoriteProduct(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PublicGetUserFavoriteListV2 .
+// @router /api/marketplace/product/favorite/list.v2 [GET]
+func PublicGetUserFavoriteListV2(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.GetUserFavoriteListV2Request
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.GetPageSize() <= 0 {
+		invalidParamRequestResponse(c, "pageSize is invalid")
+		return
+	}
+	if req.GetEntityType() <= 0 {
+		invalidParamRequestResponse(c, "entityType is invalid")
+		return
+	}
+
+	resp, err := search.SearchSVC.PublicGetUserFavoriteList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

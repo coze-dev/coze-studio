@@ -7,7 +7,6 @@ import (
 )
 
 var ConnectorIDWhiteList = []int64{
-	consts.WebSDKConnectorID,
 	consts.APIConnectorID,
 }
 
@@ -21,9 +20,13 @@ type PublishConfig struct {
 	SelectedWorkflows []*SelectedWorkflow `json:"selected_workflows,omitempty"`
 }
 
-func (p PublishConfig) ToVO() *publishAPI.ConnectorPublishConfig {
+func (p *PublishConfig) ToVO() *publishAPI.ConnectorPublishConfig {
 	config := &publishAPI.ConnectorPublishConfig{
 		SelectedWorkflows: make([]*publishAPI.SelectedWorkflow, 0, len(p.SelectedWorkflows)),
+	}
+
+	if p == nil {
+		return config
 	}
 
 	for _, w := range p.SelectedWorkflows {
