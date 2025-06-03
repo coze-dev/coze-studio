@@ -155,6 +155,7 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 			logs.Errorf("plugin meta info validates failed, err=%v", err)
 			continue
 		}
+
 		err = m.Manifest.Validate()
 		if err != nil {
 			logs.Errorf("plugin manifest validates failed, err=%v", err)
@@ -185,7 +186,7 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 				Version:      ptr.Of(m.Version),
 				IconURI:      ptr.Of(m.Manifest.LogoURL),
 				ServerURL:    ptr.Of(doc.Servers[0].URL),
-				Manifest:     m.Manifest.PluginManifest,
+				Manifest:     m.Manifest,
 				OpenapiDoc:   doc,
 			},
 			ToolIDs: make([]int64, 0, len(m.Tools)),

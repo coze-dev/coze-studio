@@ -396,7 +396,7 @@ func (p *pluginRepoImpl) UpdateDraftPluginWithCode(ctx context.Context, req *Upd
 	updatedPlugin := entity.NewPluginInfo(&plugin.PluginInfo{
 		ID:         req.PluginID,
 		ServerURL:  ptr.Of(req.OpenapiDoc.Servers[0].URL),
-		Manifest:   req.Manifest.PluginManifest,
+		Manifest:   req.Manifest,
 		OpenapiDoc: req.OpenapiDoc,
 	})
 	err = p.pluginDraftDAO.UpdateWithTX(ctx, tx, updatedPlugin)
@@ -451,7 +451,7 @@ func (p *pluginRepoImpl) CreateDraftPluginWithCode(ctx context.Context, req *Cre
 		APPID:       req.ProjectID,
 		IconURI:     ptr.Of(mf.LogoURL),
 		ServerURL:   ptr.Of(doc.Servers[0].URL),
-		Manifest:    mf.PluginManifest,
+		Manifest:    mf,
 		OpenapiDoc:  doc,
 	})
 

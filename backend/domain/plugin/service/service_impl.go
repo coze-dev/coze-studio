@@ -89,7 +89,7 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 		DeveloperID: req.DeveloperID,
 		APPID:       req.ProjectID,
 		PluginType:  req.PluginType,
-		Manifest:    mf.PluginManifest,
+		Manifest:    mf,
 		OpenapiDoc:  doc,
 	})
 
@@ -404,7 +404,7 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 	if err != nil {
 		return err
 	}
-	mf, err := updatePluginManifest(ctx, entity.NewPluginManifest(oldPlugin.Manifest), req)
+	mf, err := updatePluginManifest(ctx, oldPlugin.Manifest, req)
 	if err != nil {
 		return err
 	}
@@ -413,7 +413,7 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 		ID:         req.PluginID,
 		IconURI:    ptr.Of(req.Icon.URI),
 		ServerURL:  req.URL,
-		Manifest:   mf.PluginManifest,
+		Manifest:   mf,
 		OpenapiDoc: doc,
 	})
 

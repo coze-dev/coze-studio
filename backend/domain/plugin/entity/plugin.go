@@ -2,12 +2,9 @@ package entity
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/go-playground/validator"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
@@ -156,89 +153,29 @@ type VersionAgentTool = plugin.VersionAgentTool
 
 type ExecuteToolOpts = plugin.ExecuteToolOpts
 
-type PluginManifest struct {
-	*plugin.PluginManifest
-}
-
-func NewPluginManifest(manifest *plugin.PluginManifest) *PluginManifest {
-	return &PluginManifest{
-		PluginManifest: manifest,
-	}
-}
+type PluginManifest = plugin.PluginManifest
 
 func NewDefaultPluginManifest() *PluginManifest {
-	return &PluginManifest{
-		PluginManifest: &plugin.PluginManifest{
-			SchemaVersion: "v1",
-			API: plugin.APIDesc{
-				Type: plugin.PluginTypeOfCloud,
-			},
-			Auth: &plugin.AuthV2{
-				Type: plugin.AuthTypeOfNone,
-			},
-			CommonParams: map[plugin.HTTPParamLocation][]*plugin_develop_common.CommonParamSchema{
-				plugin.ParamInBody: {},
-				plugin.ParamInHeader: {
-					{
-						Name:  "User-Agent",
-						Value: "Coze/1.0",
-					},
+	return &plugin.PluginManifest{
+		SchemaVersion: "v1",
+		API: plugin.APIDesc{
+			Type: plugin.PluginTypeOfCloud,
+		},
+		Auth: &plugin.AuthV2{
+			Type: plugin.AuthTypeOfNone,
+		},
+		CommonParams: map[plugin.HTTPParamLocation][]*plugin_develop_common.CommonParamSchema{
+			plugin.ParamInBody: {},
+			plugin.ParamInHeader: {
+				{
+					Name:  "User-Agent",
+					Value: "Coze/1.0",
 				},
-				plugin.ParamInPath:  {},
-				plugin.ParamInQuery: {},
 			},
+			plugin.ParamInPath:  {},
+			plugin.ParamInQuery: {},
 		},
 	}
-}
-
-func (mf PluginManifest) Validate() (err error) {
-	err = validator.New().Struct(mf)
-	if err != nil {
-		return fmt.Errorf("plugin manifest validates failed, err=%v", err)
-	}
-
-	if mf.SchemaVersion != "v1" {
-		return fmt.Errorf("invalid schema version '%s'", mf.SchemaVersion)
-	}
-	if mf.API.Type != plugin.PluginTypeOfCloud {
-		return fmt.Errorf("invalid api type '%s'", mf.API.Type)
-	}
-	if mf.Auth == nil {
-		return fmt.Errorf("auth is empty")
-	}
-	if mf.Auth.Payload != nil {
-		if !isValidJSON([]byte(*mf.Auth.Payload)) {
-			return fmt.Errorf("invalid auth payload")
-		}
-	}
-	if mf.Auth.Type == "" {
-		return fmt.Errorf("auth type is empty")
-	}
-	if mf.Auth.Type != plugin.AuthTypeOfNone &&
-		mf.Auth.Type != plugin.AuthTypeOfOAuth &&
-		mf.Auth.Type != plugin.AuthTypeOfService {
-		return fmt.Errorf("invalid auth type '%s'", mf.Auth.Type)
-	}
-	if mf.Auth.Type != plugin.AuthTypeOfNone && mf.Auth.Type != plugin.AuthTypeOfOAuth {
-		if mf.Auth.SubType == "" {
-			return fmt.Errorf("auth sub type is empty")
-		}
-		if mf.Auth.SubType != plugin.AuthSubTypeOfToken &&
-			mf.Auth.SubType != plugin.AuthSubTypeOfOIDC {
-			return fmt.Errorf("invalid auth sub type '%s'", mf.Auth.SubType)
-		}
-	}
-
-	for loc := range mf.CommonParams {
-		if loc != plugin.ParamInBody &&
-			loc != plugin.ParamInHeader &&
-			loc != plugin.ParamInQuery &&
-			loc != plugin.ParamInPath {
-			return fmt.Errorf("invalid location '%s' in common params", loc)
-		}
-	}
-
-	return nil
 }
 
 func NewDefaultOpenapiDoc() *plugin.Openapi3T {
@@ -365,9 +302,4 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 type UniqueToolAPI struct {
 	SubURL string
 	Method string
-}
-
-func isValidJSON(data []byte) bool {
-	var js json.RawMessage
-	return sonic.Unmarshal(data, &js) == nil
 }
