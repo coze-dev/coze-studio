@@ -2,10 +2,10 @@ package knowledge
 
 import (
 	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"github.com/cloudwego/eino/schema"
 )
 
 type ListKnowledgeRequest struct {
@@ -227,4 +227,12 @@ type GetKnowledgeByIDRequest struct {
 
 type GetKnowledgeByIDResponse struct {
 	Knowledge *Knowledge
+}
+
+type MGetKnowledgeByIDRequest struct {
+	KnowledgeIDs []int64
+}
+
+type MGetKnowledgeByIDResponse struct {
+	Knowledge []*Knowledge
 }

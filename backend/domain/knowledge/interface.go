@@ -19,6 +19,7 @@ type Knowledge interface {
 	CopyKnowledge(ctx context.Context) // todo: 跨空间拷贝，看下功能是否要支持
 	ListKnowledge(ctx context.Context, request *ListKnowledgeRequest) (response *ListKnowledgeResponse, err error)
 	GetKnowledgeByID(ctx context.Context, request *GetKnowledgeByIDRequest) (response *GetKnowledgeByIDResponse, err error)
+	MGetKnowledgeByID(ctx context.Context, request *MGetKnowledgeByIDRequest) (response *MGetKnowledgeByIDResponse, err error)
 
 	CreateDocument(ctx context.Context, request *CreateDocumentRequest) (response *CreateDocumentResponse, err error)
 	UpdateDocument(ctx context.Context, request *UpdateDocumentRequest) error
@@ -303,3 +304,6 @@ type MGetDocumentReviewResponse struct {
 
 type GetKnowledgeByIDRequest = knowledge.GetKnowledgeByIDRequest
 type GetKnowledgeByIDResponse = knowledge.GetKnowledgeByIDResponse
+
+type MGetKnowledgeByIDRequest = knowledge.MGetKnowledgeByIDRequest
+type MGetKnowledgeByIDResponse = knowledge.MGetKnowledgeByIDResponse

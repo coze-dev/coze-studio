@@ -1287,3 +1287,20 @@ func (k *knowledgeSVC) GetKnowledgeByID(ctx context.Context, request *knowledge.
 		Knowledge: knEntity,
 	}, nil
 }
+
+func (k *knowledgeSVC) MGetKnowledgeByID(ctx context.Context, request *knowledge.MGetKnowledgeByIDRequest) (response *knowledge.MGetKnowledgeByIDResponse, err error) {
+	if request == nil || len(request.KnowledgeIDs) == 0 {
+		return nil, errors.New("request is null")
+	}
+
+	models, err := k.knowledgeRepo.MGetByID(ctx, request.KnowledgeIDs)
+	if err != nil {
+		return nil, err
+	}
+	
+	return &knowledge.MGetKnowledgeByIDResponse{
+		Knowledge: slices.Transform(models, func(a *model.Knowledge) *knowledgeModel.Knowledge {
+			return k.fromModelKnowledge(ctx, a)
+		}),
+	}, nil
+}
