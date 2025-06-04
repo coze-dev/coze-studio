@@ -231,6 +231,27 @@ func loadWorkflowWithWorkflowName(t *testing.T, h *server.Hertz, name, schemaFil
 
 	return idStr
 }
+func loadWorkflowWithCreateReq(t *testing.T, h *server.Hertz, createReq *workflow.CreateWorkflowRequest, schemaFile string) string {
+
+	resp := post[workflow.CreateWorkflowResponse](t, h, createReq, "/api/workflow_api/create")
+
+	idStr := resp.Data.WorkflowID
+	_, err := strconv.ParseInt(idStr, 10, 64)
+	assert.NoError(t, err)
+
+	data, err := os.ReadFile(fmt.Sprintf("../../../domain/workflow/internal/canvas/examples/%s", schemaFile))
+	assert.NoError(t, err)
+
+	saveReq := &workflow.SaveWorkflowRequest{
+		WorkflowID: idStr,
+		Schema:     ptr.Of(string(data)),
+		SpaceID:    ptr.Of("123"),
+	}
+
+	_ = post[workflow.SaveWorkflowResponse](t, h, saveReq, "/api/workflow_api/save")
+
+	return idStr
+}
 
 func getProcess(t *testing.T, h *server.Hertz, idStr string, exeID string) *workflow.GetWorkflowProcessResponse {
 	getProcessReq := &workflow.GetWorkflowProcessRequest{
@@ -4568,4 +4589,226 @@ func TestCopyWorkflow(t *testing.T) {
 		assert.Equal(t, "original_workflow_1", copiedCanvasResponse.Data.Workflow.Name)
 
 	})
+}
+
+func TestReleaseApplicationWorkflows(t *testing.T) {
+	mockey.PatchConvey("normal release application workflow", t, func() {
+		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
+		vars := make([]*variable.VarMeta, 0)
+		vars = append(vars, &variable.VarMeta{
+			Name: "app_v1",
+			TypeInfo: variable.VarTypeInfo{
+				Type: variable.VarTypeString,
+			},
+		})
+		vars = append(vars, &variable.VarMeta{
+			Name: "app_list_v1",
+			TypeInfo: variable.VarTypeInfo{
+				Type: variable.VarTypeArray,
+				ElemTypeInfo: &variable.VarTypeInfo{
+					Type: variable.VarTypeString,
+				},
+			},
+		})
+		vars = append(vars, &variable.VarMeta{
+			Name: "app_list_v2",
+			TypeInfo: variable.VarTypeInfo{
+				Type: variable.VarTypeString,
+			},
+		})
+		mockVarGetter := mockvar.NewMockVariablesMetaGetter(ctrl)
+		mockey.Mock(variable.GetVariablesMetaGetter).Return(mockVarGetter).Build()
+		mockVarGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
+
+		_, err := appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 100100100100)
+		if err != nil {
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(100100100100), nil).Times(1)
+			_ = loadWorkflowWithCreateReq(t, h, &workflow.CreateWorkflowRequest{
+				Name:      "main",
+				Desc:      "main",
+				IconURI:   consts.DefaultWorkflowIcon,
+				SpaceID:   "123",
+				ProjectID: ptr.Of("10001000"),
+			}, "publish/release_main_workflow.json")
+		}
+
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 7511615200781402118)
+		if err != nil {
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7511615200781402118), nil).Times(1)
+			_ = loadWorkflowWithCreateReq(t, h, &workflow.CreateWorkflowRequest{
+				Name:      "c1",
+				Desc:      "c1",
+				IconURI:   consts.DefaultWorkflowIcon,
+				SpaceID:   "123",
+				ProjectID: ptr.Of("10001000"),
+			}, "publish/release_c1_workflow.json")
+		}
+
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 7511616004728815618)
+		if err != nil {
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7511616004728815618), nil).Times(1)
+
+			_ = loadWorkflowWithCreateReq(t, h, &workflow.CreateWorkflowRequest{
+				Name:      "cc1",
+				Desc:      "cc1",
+				IconURI:   consts.DefaultWorkflowIcon,
+				SpaceID:   "123",
+				ProjectID: ptr.Of("10001000"),
+			}, "publish/release_cc1_workflow.json")
+		}
+
+		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+			return time.Now().UnixNano(), nil
+		}).AnyTimes()
+		c := ctxcache.Init(context.Background())
+		ctxcache.Store(c, consts.SessionDataKeyInCtx, &userentity.Session{
+			UserID: 123,
+		})
+
+		wf, err := appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 7511616004728815618)
+		assert.NoError(t, err)
+		version := "v0.0.1"
+		if wf.LatestVersion != "" {
+			versionSchema := strings.Split(wf.LatestVersion, ".")
+			vInt, err := strconv.ParseInt(versionSchema[2], 10, 64)
+			if err != nil {
+				return
+			}
+			nextVer := strconv.FormatInt(vInt+1, 10)
+			versionSchema[2] = nextVer
+			version = strings.Join(versionSchema, ".")
+		}
+
+		vIssues, err := appworkflow.GetWorkflowDomainSVC().ReleaseApplicationWorkflows(c, 10001000, &vo.ReleaseWorkflowConfig{
+			Version:   version,
+			PluginIDs: []int64{7511616454588891136},
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(vIssues))
+
+		wf, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowVersion(context.Background(), &entity.WorkflowIdentity{
+			ID:      100100100100,
+			Version: version,
+		})
+		assert.NoError(t, err)
+		canvasSchema := *wf.Canvas
+
+		cv := &vo.Canvas{}
+
+		err = sonic.UnmarshalString(canvasSchema, cv)
+		assert.NoError(t, err)
+
+		var validateCv func(ns []*vo.Node)
+		validateCv = func(ns []*vo.Node) {
+			for _, n := range ns {
+				if n.Type == vo.BlockTypeBotSubWorkflow {
+					assert.Equal(t, n.Data.Inputs.WorkflowVersion, version)
+				}
+				if n.Type == vo.BlockTypeBotAPI {
+					for _, apiParam := range n.Data.Inputs.APIParams {
+						// In the application, the workflow plugin node When the plugin version is equal to 0, the plugin is a plugin created in the application
+						if apiParam.Name == "pluginVersion" {
+							assert.Equal(t, apiParam.Input.Value.Content, version)
+						}
+					}
+				}
+
+				if n.Type == vo.BlockTypeBotLLM {
+					if n.Data.Inputs.FCParam != nil && n.Data.Inputs.FCParam.PluginFCParam != nil {
+						// In the application, the workflow llm node When the plugin version is equal to 0, the plugin is a plugin created in the application
+						for idx := range n.Data.Inputs.FCParam.PluginFCParam.PluginList {
+							p := n.Data.Inputs.FCParam.PluginFCParam.PluginList[idx]
+							assert.Equal(t, p.PluginVersion, version)
+						}
+					}
+
+					if n.Data.Inputs.FCParam != nil && n.Data.Inputs.FCParam.WorkflowFCParam != nil {
+						for _, w := range n.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+							assert.Equal(t, w.WorkflowVersion, version)
+						}
+					}
+				}
+
+				if len(n.Blocks) > 0 {
+					validateCv(n.Blocks)
+				}
+			}
+		}
+
+	})
+	mockey.PatchConvey("has issues release application workflow", t, func() {
+
+		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
+		vars := make([]*variable.VarMeta, 0)
+		vars = append(vars, &variable.VarMeta{
+			Name: "app_v1",
+			TypeInfo: variable.VarTypeInfo{
+				Type: variable.VarTypeString,
+			},
+		})
+		vars = append(vars, &variable.VarMeta{
+			Name: "app_list_v1",
+			TypeInfo: variable.VarTypeInfo{
+				Type: variable.VarTypeArray,
+				ElemTypeInfo: &variable.VarTypeInfo{
+					Type: variable.VarTypeString,
+				},
+			},
+		})
+		vars = append(vars, &variable.VarMeta{
+			Name: "app_list_v2",
+			TypeInfo: variable.VarTypeInfo{
+				Type: variable.VarTypeString,
+			},
+		})
+		mockVarGetter := mockvar.NewMockVariablesMetaGetter(ctrl)
+		mockey.Mock(variable.GetVariablesMetaGetter).Return(mockVarGetter).Build()
+		mockVarGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
+
+		_, err := appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 1001001001001)
+		if err != nil {
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(1001001001001), nil).Times(1)
+			_ = loadWorkflowWithCreateReq(t, h, &workflow.CreateWorkflowRequest{
+				Name:      "main",
+				Desc:      "main",
+				IconURI:   consts.DefaultWorkflowIcon,
+				SpaceID:   "123",
+				ProjectID: ptr.Of("100010001"),
+			}, "publish/release_error_workflow.json")
+		}
+
+		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+			return time.Now().UnixNano(), nil
+		}).AnyTimes()
+		c := ctxcache.Init(context.Background())
+		ctxcache.Store(c, consts.SessionDataKeyInCtx, &userentity.Session{
+			UserID: 123,
+		})
+
+		wf, err := appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 1001001001001)
+		assert.NoError(t, err)
+
+		version := "v0.0.1"
+
+		if wf.LatestVersion != "" {
+			versionSchema := strings.Split(wf.LatestVersion, ".")
+			vInt, err := strconv.ParseInt(versionSchema[2], 10, 64)
+			if err != nil {
+				return
+			}
+			nextVer := strconv.FormatInt(vInt+1, 10)
+			versionSchema[2] = nextVer
+			version = strings.Join(versionSchema, ".")
+		}
+
+		vIssues, err := appworkflow.GetWorkflowDomainSVC().ReleaseApplicationWorkflows(c, 100010001, &vo.ReleaseWorkflowConfig{
+			Version:   version,
+			PluginIDs: []int64{},
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(vIssues))
+		assert.Equal(t, 2, len(vIssues[0].IssueMessages))
+
+	})
+
 }

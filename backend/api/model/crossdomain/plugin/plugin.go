@@ -123,7 +123,8 @@ type PublishAPPPluginsRequest struct {
 }
 
 type PublishAPPPluginsResponse struct {
-	FailedPlugins []*PluginInfo
+	FailedPlugins   []*PluginInfo
+	AllDraftPlugins []*PluginInfo
 }
 
 type CheckCanPublishPluginsRequest struct {

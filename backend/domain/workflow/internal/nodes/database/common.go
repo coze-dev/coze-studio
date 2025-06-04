@@ -11,6 +11,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
@@ -289,4 +290,12 @@ func toFloat64SliceE(i interface{}) ([]float64, error) {
 	default:
 		return []float64{}, fmt.Errorf("unable to cast %#v of type %T to []int", i, i)
 	}
+}
+
+func isDebugExecute(ctx context.Context) bool {
+	execCtx := execute.GetExeCtx(ctx)
+	if execCtx == nil {
+		panic(fmt.Errorf("unable to get exe context"))
+	}
+	return execCtx.RootCtx.ExeCfg.Mode == vo.ExecuteModeDebug || execCtx.RootCtx.ExeCfg.Mode == vo.ExecuteModeNodeDebug
 }

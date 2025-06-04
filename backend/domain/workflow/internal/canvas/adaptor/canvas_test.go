@@ -227,7 +227,10 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		err = sonic.Unmarshal(data, c)
 		assert.NoError(t, err)
 		ctx := t.Context()
-
+		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{}, 123, false, &entity.InterruptEvent{}, vo.ExecuteConfig{
+			Mode: vo.ExecuteModeDebug,
+		})
+		assert.NoError(t, err)
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 

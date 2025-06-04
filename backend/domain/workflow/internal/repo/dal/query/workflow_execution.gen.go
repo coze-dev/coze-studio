@@ -48,7 +48,7 @@ func newWorkflowExecution(db *gorm.DB, opts ...gen.DOOption) workflowExecution {
 	_workflowExecution.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_workflowExecution.RootExecutionID = field.NewInt64(tableName, "root_execution_id")
 	_workflowExecution.ParentNodeID = field.NewString(tableName, "parent_node_id")
-	_workflowExecution.ProjectID = field.NewInt64(tableName, "project_id")
+	_workflowExecution.AppID = field.NewInt64(tableName, "app_id")
 	_workflowExecution.NodeCount = field.NewInt32(tableName, "node_count")
 	_workflowExecution.ResumeEventID = field.NewInt64(tableName, "resume_event_id")
 
@@ -82,7 +82,7 @@ type workflowExecution struct {
 	UpdatedAt       field.Int64  // update time in millisecond
 	RootExecutionID field.Int64  // the top level execution id. Null if this is the root
 	ParentNodeID    field.String // the node key for the sub_workflow node that executes this workflow
-	ProjectID       field.Int64  // project id this workflow execution belongs to
+	AppID           field.Int64  // app id this workflow execution belongs to
 	NodeCount       field.Int32  // the total node count of the workflow
 	ResumeEventID   field.Int64  // the current event ID which is resuming
 
@@ -122,7 +122,7 @@ func (w *workflowExecution) updateTableName(table string) *workflowExecution {
 	w.UpdatedAt = field.NewInt64(table, "updated_at")
 	w.RootExecutionID = field.NewInt64(table, "root_execution_id")
 	w.ParentNodeID = field.NewString(table, "parent_node_id")
-	w.ProjectID = field.NewInt64(table, "project_id")
+	w.AppID = field.NewInt64(table, "app_id")
 	w.NodeCount = field.NewInt32(table, "node_count")
 	w.ResumeEventID = field.NewInt64(table, "resume_event_id")
 
@@ -163,7 +163,7 @@ func (w *workflowExecution) fillFieldMap() {
 	w.fieldMap["updated_at"] = w.UpdatedAt
 	w.fieldMap["root_execution_id"] = w.RootExecutionID
 	w.fieldMap["parent_node_id"] = w.ParentNodeID
-	w.fieldMap["project_id"] = w.ProjectID
+	w.fieldMap["app_id"] = w.AppID
 	w.fieldMap["node_count"] = w.NodeCount
 	w.fieldMap["resume_event_id"] = w.ResumeEventID
 }

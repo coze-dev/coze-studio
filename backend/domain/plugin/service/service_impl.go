@@ -720,6 +720,7 @@ func (p *pluginServiceImpl) PublishAPPPlugins(ctx context.Context, req *PublishA
 	if err != nil {
 		return nil, err
 	}
+
 	if len(failedPluginIDs) > 0 {
 		draftPluginMap := slices.ToMap(draftPlugins, func(plugin *entity.PluginInfo) (int64, *entity.PluginInfo) {
 			return plugin.ID, plugin
@@ -738,6 +739,7 @@ func (p *pluginServiceImpl) PublishAPPPlugins(ctx context.Context, req *PublishA
 
 	for _, draftPlugin := range draftPlugins {
 		draftPlugin.Version = &req.Version
+		resp.AllDraftPlugins = append(resp.AllDraftPlugins, draftPlugin.PluginInfo)
 	}
 
 	err = p.pluginRepo.PublishPlugins(ctx, draftPlugins)

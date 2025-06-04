@@ -158,8 +158,8 @@ func (r *RepositoryImpl) CreateWorkflowMeta(ctx context.Context, wf *entity.Work
 		wfMeta.SourceID = *wf.SourceID
 	}
 
-	if wf.ProjectID != nil {
-		wfMeta.ProjectID = *wf.ProjectID
+	if wf.APPID != nil {
+		wfMeta.AppID = *wf.APPID
 	}
 
 	if ref == nil {
@@ -330,8 +330,8 @@ func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity
 	if meta.SourceID != 0 {
 		wf.SourceID = &meta.SourceID
 	}
-	if meta.ProjectID != 0 {
-		wf.ProjectID = &meta.ProjectID
+	if meta.AppID != 0 {
+		wf.APPID = &meta.AppID
 	}
 	if meta.UpdatedAt > 0 {
 		wf.UpdatedAt = ptr.Of(time.UnixMilli(meta.UpdatedAt))
@@ -474,7 +474,7 @@ func (r *RepositoryImpl) CreateWorkflowExecution(ctx context.Context, execution 
 		Input:           ptr.FromOrDefault(execution.Input, ""),
 		RootExecutionID: execution.RootExecutionID,
 		ParentNodeID:    ptr.FromOrDefault(execution.ParentNodeID, ""),
-		ProjectID:       ptr.FromOrDefault(execution.ProjectID, 0),
+		AppID:           ptr.FromOrDefault(execution.AppID, 0),
 		NodeCount:       execution.NodeCount,
 	}
 
@@ -609,7 +609,7 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 		ConnectorUID: rootExe.ConnectorUID,
 		CreatedAt:    time.UnixMilli(rootExe.CreatedAt),
 		LogID:        rootExe.LogID,
-		ProjectID:    ternary.IFElse(rootExe.ProjectID > 0, ptr.Of(rootExe.ProjectID), nil),
+		AppID:        ternary.IFElse(rootExe.AppID > 0, ptr.Of(rootExe.AppID), nil),
 		NodeCount:    rootExe.NodeCount,
 		Status:       entity.WorkflowExecuteStatus(rootExe.Status),
 		Duration:     time.Duration(rootExe.Duration) * time.Microsecond,
@@ -964,7 +964,7 @@ func (r *RepositoryImpl) MGetWorkflowMeta(ctx context.Context, ids ...int64) (ma
 	for _, meta := range metas {
 		url, err := r.tos.GetObjectUrl(ctx, meta.IconURI)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get icon URL for workfolw id %d, icon uri %s: %w", meta.ID, meta.IconURI, err)
+			logs.Warnf("failed to get icon URL for workfolw id %d, icon uri %s: %w", meta.ID, meta.IconURI, err)
 		}
 
 		wf := &entity.Workflow{
@@ -989,8 +989,8 @@ func (r *RepositoryImpl) MGetWorkflowMeta(ctx context.Context, ids ...int64) (ma
 		if meta.SourceID != 0 {
 			wf.SourceID = &meta.SourceID
 		}
-		if meta.ProjectID != 0 {
-			wf.ProjectID = &meta.ProjectID
+		if meta.AppID != 0 {
+			wf.APPID = &meta.AppID
 		}
 		if meta.UpdatedAt > 0 {
 			wf.UpdatedAt = ptr.Of(time.UnixMilli(meta.UpdatedAt))
@@ -1099,7 +1099,7 @@ func (r *RepositoryImpl) ListWorkflowMeta(ctx context.Context, spaceID int64, pa
 	for _, meta := range result {
 		url, err := r.tos.GetObjectUrl(ctx, meta.IconURI)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get icon URL for workfolw id %d, icon uri %s: %w", meta.ID, meta.IconURI, err)
+			logs.Warnf("failed to get icon URL for workfolw id %d, icon uri %s: %w", meta.ID, meta.IconURI, err)
 		}
 		wf := &entity.Workflow{
 			WorkflowIdentity: entity.WorkflowIdentity{
@@ -1123,8 +1123,8 @@ func (r *RepositoryImpl) ListWorkflowMeta(ctx context.Context, spaceID int64, pa
 		if meta.SourceID != 0 {
 			wf.SourceID = &meta.SourceID
 		}
-		if meta.ProjectID != 0 {
-			wf.ProjectID = &meta.ProjectID
+		if meta.AppID != 0 {
+			wf.APPID = &meta.AppID
 		}
 		if meta.UpdatedAt > 0 {
 			wf.UpdatedAt = ptr.Of(time.UnixMilli(meta.UpdatedAt))
@@ -1133,6 +1133,56 @@ func (r *RepositoryImpl) ListWorkflowMeta(ctx context.Context, spaceID int64, pa
 	}
 
 	return wfs, nil
+}
+
+func (r *RepositoryImpl) BatchPublishWorkflows(ctx context.Context, workflows map[int64]*vo.VersionInfo) error {
+	const batchSize = 10
+	wfVersions := make([]*model2.WorkflowVersion, 0)
+	wfIDs := make([]int64, 0)
+	for id, v := range workflows {
+		wfVersions = append(wfVersions, &model2.WorkflowVersion{
+			ID:                 id,
+			Canvas:             v.Canvas,
+			InputParams:        v.InputParams,
+			OutputParams:       v.OutputParams,
+			CreatorID:          v.CreatorID,
+			Version:            v.Version,
+			VersionDescription: v.VersionDescription,
+		})
+		wfIDs = append(wfIDs, id)
+	}
+
+	err := r.query.Transaction(func(tx *query.Query) error {
+		err := r.query.WorkflowVersion.WithContext(ctx).CreateInBatches(wfVersions, batchSize)
+		if err != nil {
+			return err
+		}
+
+		_, err = r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.In(wfIDs...)).UpdateColumnSimple(
+			r.query.WorkflowDraft.Modified.Value(false),
+			r.query.WorkflowDraft.TestRunSuccess.Value(true),
+		)
+		if err != nil {
+			return err
+		}
+
+		_, err = r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.ID.In(wfIDs...)).UpdateColumnSimple(
+			r.query.WorkflowMeta.Status.Value(1),
+		)
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
 const (
@@ -1431,8 +1481,8 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, spaceID int64, workfl
 		copiedWorkflow.IconURI = wfMeta.IconURI
 		copiedWorkflow.SpaceID = wfMeta.SpaceID
 		copiedWorkflow.Desc = wfMeta.Description
-		if wfMeta.ProjectID > 0 {
-			copiedWorkflow.ProjectID = &wfMeta.ProjectID
+		if wfMeta.AppID > 0 {
+			copiedWorkflow.APPID = &wfMeta.AppID
 		}
 		copiedWorkflow.CreatorID = wfMeta.CreatorID
 
@@ -1491,6 +1541,43 @@ func (r *RepositoryImpl) GetNodeDebugLatestExeID(ctx context.Context, wfID int64
 		return 0, err
 	}
 	return exeID, nil
+}
+func (r *RepositoryImpl) GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error) {
+	var (
+		workflowMeta  = r.query.WorkflowMeta
+		workflowDraft = r.query.WorkflowDraft
+	)
+
+	// TODO(zhuangjie): querying workflow information may require additional commit_id at a later stage, it is used to confirm the workflow information at the time of release, not to obtain the latest version
+	wfMetas, err := workflowMeta.WithContext(ctx).Where(workflowMeta.AppID.Eq(AppID)).Find()
+	if err != nil {
+		return nil, nil, err
+	}
+	draftIDs := slices.Transform(wfMetas, func(a *model2.WorkflowMeta) int64 {
+		return a.ID
+	})
+
+	wfDrafts, err := workflowDraft.WithContext(ctx).Where(workflowDraft.ID.In(draftIDs...)).Find()
+	if err != nil {
+		return nil, nil, err
+	}
+	result := make(map[int64]*vo.DraftInfo, len(wfDrafts))
+	for _, d := range wfDrafts {
+		result[d.ID] = &vo.DraftInfo{
+			Canvas:         d.Canvas,
+			TestRunSuccess: d.TestRunSuccess,
+			Modified:       d.Modified,
+			InputParams:    d.InputParams,
+			OutputParams:   d.OutputParams,
+			CreatedAt:      d.CreatedAt,
+			UpdatedAt:      d.UpdatedAt,
+		}
+	}
+
+	wid2Named := slices.ToMap(wfMetas, func(e *model2.WorkflowMeta) (int64, string) {
+		return e.ID, e.Name
+	})
+	return result, wid2Named, nil
 }
 
 func filterDisabledAPIParameters(parametersCfg []*workflow3.APIParameter, m map[string]any) map[string]any {

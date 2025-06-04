@@ -1,0 +1,357 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 1360,
+          "y": -206.75
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "167992",
+                    "name": "output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "167992",
+      "type": "15",
+      "meta": {
+        "position": {
+          "x": 855,
+          "y": -261.1
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "文本处理",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
+          "description": "用于处理多个字符串类型变量的格式",
+          "mainColor": "#3071F2",
+          "subTitle": "文本处理"
+        },
+        "inputs": {
+          "method": "concat",
+          "inputParameters": [
+            {
+              "name": "String1",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "concatParams": [
+            {
+              "name": "concatResult",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "{{String1}}",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "arrayItemConcatChar",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "，",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "allArrayItemConcatChars",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "object",
+                  "schema": [
+                    {
+                      "type": "string",
+                      "name": "label",
+                      "required": true
+                    },
+                    {
+                      "type": "string",
+                      "name": "value",
+                      "required": true
+                    },
+                    {
+                      "type": "boolean",
+                      "name": "isDefault",
+                      "required": true
+                    }
+                  ]
+                },
+                "value": {
+                  "type": "literal",
+                  "content": [
+                    {
+                      "label": "Line Break",
+                      "value": "\n",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "Tab Break",
+                      "value": "\t",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "Period",
+                      "value": "。",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "Comma",
+                      "value": "，",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "Semicolon",
+                      "value": "；",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "Space",
+                      "value": " ",
+                      "isDefault": true
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "151138",
+      "type": "5",
+      "meta": {
+        "position": {
+          "x": 1289,
+          "y": -504.1
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "代码",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
+          "description": "编写代码，处理输入变量来生成返回值",
+          "mainColor": "#00B2B2",
+          "subTitle": "代码"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "167992",
+                    "name": "output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "code": "workflow_code_py_illustrate_all\n\nasync def main(args: Args) -> Output:\n    params = args.params\n    workflow_code_py_illustrate_output\n    ret: Output = {\n        \"key0\": params['input'] + params['input'], workflow_code_py_illustrate_output_param\n        \"key1\": [\"hello\", \"world\"],  workflow_code_py_illustrate_output_arr\n        \"key2\": { workflow_code_py_illustrate_output_obj\n            \"key21\": \"hi\"\n        },\n    }\n    return ret",
+          "language": 3,
+          "settingOnError": {
+            "processType": 1,
+            "timeoutMs": 60000,
+            "retryTimes": 0
+          }
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "key0"
+          },
+          {
+            "type": "list",
+            "name": "key1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "type": "object",
+            "name": "key2",
+            "schema": [
+              {
+                "type": "string",
+                "name": "key21"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "148912",
+      "type": "8",
+      "meta": {
+        "position": {
+          "x": 410,
+          "y": -165.05
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "选择器",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Condition-v2.jpg",
+          "description": "连接多个下游分支，若设定的条件成立则仅运行对应的分支，若均不成立则只运行“否则”分支",
+          "mainColor": "#00B2B2",
+          "subTitle": "选择器"
+        },
+        "inputs": {
+          "branches": [
+            {
+              "condition": {
+                "logic": 2,
+                "conditions": [
+                  {
+                    "operator": 1,
+                    "left": {
+                      "input": {
+                        "type": "string",
+                        "value": {
+                          "type": "ref",
+                          "content": {
+                            "source": "block-output",
+                            "blockID": "100001",
+                            "name": "input"
+                          }
+                        }
+                      }
+                    },
+                    "right": {
+                      "input": {
+                        "type": "string",
+                        "value": {
+                          "type": "literal",
+                          "content": "123",
+                          "rawMeta": {
+                            "type": 1
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "148912"
+    },
+    {
+      "sourceNodeID": "167992",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "148912",
+      "targetNodeID": "167992",
+      "sourcePortID": "true"
+    },
+    {
+      "sourceNodeID": "167992",
+      "targetNodeID": "151138"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

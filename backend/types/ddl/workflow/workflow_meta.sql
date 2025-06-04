@@ -17,12 +17,12 @@ CREATE TABLE IF NOT EXISTS `workflow_meta`
     space_id     bigint unsigned  not null comment ' 空间 ID',
     updater_id   bigint unsigned  null comment ' 更新元信息的用户 ID',
     source_id    bigint unsigned  null comment ' 复制来源的 workflow ID',
-    project_id   bigint unsigned  null comment ' 项目 ID',
+    app_id   bigint unsigned  null comment '应用 ID',
 
     KEY `idx_creator_id` (creator_id),
-    KEY `idx_project_id` (project_id),
+    KEY `idx_app_id` (app_id),
     KEY `idx_source_id` (source_id),
     KEY `idx_published_time` (status),
-    KEY `idx_space_id_project_id_mode_content_type` (space_id, project_id, mode, content_type)
+    KEY `idx_space_id_app_id_mode_content_type` (space_id, app_id, mode, content_type)
 );
 

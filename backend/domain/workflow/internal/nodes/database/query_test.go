@@ -11,7 +11,9 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 )
 
 type mockDsSelect struct {
@@ -37,7 +39,11 @@ func TestDataset_Query(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-
+	ctx := context.Background()
+	ctx, err := execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{}, 123, false, &entity.InterruptEvent{}, vo.ExecuteConfig{
+		Mode: vo.ExecuteModeDebug,
+	})
+	assert.NoError(t, err)
 	t.Run("string case", func(t *testing.T) {
 
 		t.Run("single", func(t *testing.T) {
@@ -90,9 +96,9 @@ func TestDataset_Query(t *testing.T) {
 			in := map[string]interface{}{
 				"SingleRight": 1,
 			}
-			cGroup, err := ConvertClauseGroupToConditionGroup(context.Background(), ds.config.ClauseGroup, in)
+			cGroup, err := ConvertClauseGroupToConditionGroup(ctx, ds.config.ClauseGroup, in)
 			assert.NoError(t, err)
-			result, err := ds.Query(context.Background(), cGroup)
+			result, err := ds.Query(ctx, cGroup)
 			assert.NoError(t, err)
 			assert.Equal(t, "1", result["outputList"].([]any)[0].(database.Object)["v1"])
 			assert.Equal(t, "2", result["outputList"].([]any)[0].(database.Object)["v2"])
@@ -157,9 +163,9 @@ func TestDataset_Query(t *testing.T) {
 				"Multi_1_Right": 2,
 			}
 
-			cGroup, err := ConvertClauseGroupToConditionGroup(context.Background(), ds.config.ClauseGroup, in)
+			cGroup, err := ConvertClauseGroupToConditionGroup(ctx, ds.config.ClauseGroup, in)
 			assert.NoError(t, err)
-			result, err := ds.Query(context.Background(), cGroup)
+			result, err := ds.Query(ctx, cGroup)
 			assert.NoError(t, err)
 			assert.NoError(t, err)
 			assert.Equal(t, "1", result["outputList"].([]any)[0].(database.Object)["v1"])
@@ -218,9 +224,9 @@ func TestDataset_Query(t *testing.T) {
 				"SingleRight": 1,
 			}
 
-			cGroup, err := ConvertClauseGroupToConditionGroup(context.Background(), ds.config.ClauseGroup, in)
+			cGroup, err := ConvertClauseGroupToConditionGroup(ctx, ds.config.ClauseGroup, in)
 			assert.NoError(t, err)
-			result, err := ds.Query(context.Background(), cGroup)
+			result, err := ds.Query(ctx, cGroup)
 			assert.NoError(t, err)
 			fmt.Println(result)
 			assert.Equal(t, nil, result["outputList"])
@@ -275,9 +281,9 @@ func TestDataset_Query(t *testing.T) {
 
 			in := map[string]any{"SingleRight": 1}
 
-			cGroup, err := ConvertClauseGroupToConditionGroup(context.Background(), ds.config.ClauseGroup, in)
+			cGroup, err := ConvertClauseGroupToConditionGroup(ctx, ds.config.ClauseGroup, in)
 			assert.NoError(t, err)
-			result, err := ds.Query(context.Background(), cGroup)
+			result, err := ds.Query(ctx, cGroup)
 			assert.NoError(t, err)
 			fmt.Println(result)
 			assert.Equal(t, int64(1), result["outputList"].([]any)[0].(database.Object)["v1"])
@@ -351,9 +357,9 @@ func TestDataset_Query(t *testing.T) {
 			"SingleRight": 1,
 		}
 
-		cGroup, err := ConvertClauseGroupToConditionGroup(context.Background(), ds.config.ClauseGroup, in)
+		cGroup, err := ConvertClauseGroupToConditionGroup(ctx, ds.config.ClauseGroup, in)
 		assert.NoError(t, err)
-		result, err := ds.Query(context.Background(), cGroup)
+		result, err := ds.Query(ctx, cGroup)
 		assert.NoError(t, err)
 
 		assert.Equal(t, int64(1), result["outputList"].([]any)[0].(database.Object)["v1"])
@@ -416,9 +422,9 @@ func TestDataset_Query(t *testing.T) {
 		in := map[string]any{
 			"SingleRight": 1,
 		}
-		cGroup, err := ConvertClauseGroupToConditionGroup(context.Background(), ds.config.ClauseGroup, in)
+		cGroup, err := ConvertClauseGroupToConditionGroup(ctx, ds.config.ClauseGroup, in)
 		assert.NoError(t, err)
-		result, err := ds.Query(context.Background(), cGroup)
+		result, err := ds.Query(ctx, cGroup)
 		assert.NoError(t, err)
 		assert.Equal(t, result["outputList"].([]any)[0].(database.Object), database.Object{
 			"v1": "1",

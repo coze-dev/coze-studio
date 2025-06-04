@@ -196,7 +196,7 @@ func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *ent
 		URI:           &wf.IconURI,
 		Name:          &wf.Name,
 		Desc:          &wf.Desc,
-		APPID:         wf.ProjectID,
+		APPID:         wf.APPID,
 		SpaceID:       &wf.SpaceID,
 		OwnerID:       &wf.CreatorID,
 		Mode:          ptr.Of(int32(wf.Mode)),
@@ -503,17 +503,18 @@ func (i *impl) GetReleasedWorkflows(ctx context.Context, wfEntities []*entity.Wo
 
 func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*cloudworkflow.ValidateTreeInfo, error) {
 	wfValidateInfos := make([]*cloudworkflow.ValidateTreeInfo, 0)
-
-	wErrs, err := validateWorkflowTree(ctx, validateConfig)
+	issues, err := validateWorkflowTree(ctx, validateConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to validate work flow: %w", err)
 	}
 
-	wfValidateInfos = append(wfValidateInfos, &cloudworkflow.ValidateTreeInfo{
-		WorkflowID: strconv.FormatInt(id, 10),
-		Name:       "", // TODO front doesn't seem to care about this workflow name
-		Errors:     wErrs,
-	})
+	if len(issues) > 0 {
+		wfValidateInfos = append(wfValidateInfos, &cloudworkflow.ValidateTreeInfo{
+			WorkflowID: strconv.FormatInt(id, 10),
+			Name:       "", // TODO front doesn't seem to care about this workflow name
+			Errors:     toValidateErrorData(issues),
+		})
+	}
 
 	c := &vo.Canvas{}
 	err = sonic.UnmarshalString(validateConfig.CanvasSchema, &c)
@@ -543,18 +544,22 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 			if wf.Canvas == nil {
 				continue
 			}
-			wErrs, err = validateWorkflowTree(ctx, vo.ValidateTreeConfig{
+			issues, err = validateWorkflowTree(ctx, vo.ValidateTreeConfig{
 				CanvasSchema: ptr.From(wf.Canvas),
-				ProjectID:    wf.ProjectID, // project workflow use same project id
+				APPID:        wf.APPID, // application workflow use same app id
 			})
 			if err != nil {
 				return nil, err
 			}
-			wfValidateInfos = append(wfValidateInfos, &cloudworkflow.ValidateTreeInfo{
-				WorkflowID: strconv.FormatInt(wf.ID, 10),
-				Name:       wf.Name,
-				Errors:     wErrs,
-			})
+
+			if len(issues) > 0 {
+				wfValidateInfos = append(wfValidateInfos, &cloudworkflow.ValidateTreeInfo{
+					WorkflowID: strconv.FormatInt(wf.ID, 10),
+					Name:       wf.Name,
+					Errors:     toValidateErrorData(issues),
+				})
+			}
+
 		}
 	}
 
@@ -1588,7 +1593,7 @@ func (i *impl) CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64
 		URI:           &wf.IconURI,
 		Name:          &wf.Name,
 		Desc:          &wf.Desc,
-		APPID:         wf.ProjectID,
+		APPID:         wf.APPID,
 		SpaceID:       &wf.SpaceID,
 		OwnerID:       &wf.CreatorID,
 		PublishStatus: ptr.Of(search.UnPublished),
@@ -1600,6 +1605,139 @@ func (i *impl) CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64
 	}
 	return wf.ID, nil
 
+}
+
+func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error) {
+
+	draftVersions, wid2Named, err := i.repo.GetDraftWorkflowsByAppID(ctx, appID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // there are no Workflows to be published under the app， return nil,nil
+		}
+		return nil, err
+	}
+
+	allPluginIDMap := slices.ToMap(config.PluginIDs, func(e int64) (string, bool) {
+		return strconv.FormatInt(e, 10), true
+	})
+	var processWfNodes func(nodes []*vo.Node) error
+	processWfNodes = func(nodes []*vo.Node) error {
+		for _, n := range nodes {
+			if n.Type == vo.BlockTypeBotSubWorkflow {
+				workflowID, err := strconv.ParseInt(n.Data.Inputs.WorkflowID, 10, 64)
+				if err != nil {
+					return err
+				}
+				// in the current app
+				if _, ok := draftVersions[workflowID]; ok {
+					n.Data.Inputs.WorkflowVersion = config.Version
+				}
+			}
+
+			if n.Type == vo.BlockTypeBotLLM {
+				if n.Data.Inputs.FCParam != nil && n.Data.Inputs.FCParam.WorkflowFCParam != nil {
+					for idx := range n.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+						w := n.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList[idx]
+						workflowID, err := strconv.ParseInt(w.WorkflowID, 10, 64)
+						if err != nil {
+							return err
+						}
+						if _, ok := draftVersions[workflowID]; ok {
+							w.WorkflowVersion = config.Version
+						}
+					}
+				}
+				if n.Data.Inputs.FCParam != nil && n.Data.Inputs.FCParam.PluginFCParam != nil {
+					// In the application, the workflow llm node When the plugin version is equal to 0, the plugin is a plugin created in the application
+					for idx := range n.Data.Inputs.FCParam.PluginFCParam.PluginList {
+						p := n.Data.Inputs.FCParam.PluginFCParam.PluginList[idx]
+						if allPluginIDMap[p.PluginID] {
+							p.PluginVersion = config.Version
+						}
+
+					}
+				}
+			}
+
+			if n.Type == vo.BlockTypeBotAPI {
+				for _, apiParam := range n.Data.Inputs.APIParams {
+					// In the application, the workflow plugin node When the plugin version is equal to 0, the plugin is a plugin created in the application
+					if apiParam.Name == "pluginVersion" && apiParam.Input.Value.Content == "0" {
+						apiParam.Input.Value.Content = config.Version
+					}
+				}
+			}
+
+			if len(n.Blocks) > 0 {
+				err = processWfNodes(n.Blocks)
+				if err != nil {
+					return err
+				}
+			}
+
+		}
+		return nil
+	}
+
+	vIssues := make([]*vo.ValidateIssue, 0)
+	for id, draftVersion := range draftVersions {
+		issues, err := validateWorkflowTree(ctx, vo.ValidateTreeConfig{
+			CanvasSchema: draftVersion.Canvas,
+			APPID:        ptr.Of(appID),
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		if len(issues) > 0 {
+			vIssues = append(vIssues, toValidateIssue(id, wid2Named[id], issues))
+		}
+
+	}
+	if len(vIssues) > 0 {
+		return vIssues, nil
+	}
+
+	for _, draftVersion := range draftVersions {
+		//TODO(zhuangjie): When a new canvas is generated for storage, the front-end description information of the original canvas will be lost,
+		// and the front-end description field needs to be completed in the canvas structure later
+		c := &vo.Canvas{}
+		err := sonic.UnmarshalString(draftVersion.Canvas, c)
+		if err != nil {
+			return nil, err
+		}
+
+		err = processWfNodes(c.Nodes)
+		if err != nil {
+			return nil, err
+		}
+
+		canvasSchema, err := sonic.MarshalString(c)
+		if err != nil {
+			return nil, err
+		}
+		draftVersion.Canvas = canvasSchema
+
+	}
+
+	workflowsToPublish := make(map[int64]*vo.VersionInfo)
+	for wid, draftVersion := range draftVersions {
+		workflowsToPublish[wid] = &vo.VersionInfo{
+			Version:      config.Version,
+			Canvas:       draftVersion.Canvas,
+			InputParams:  draftVersion.InputParams,
+			OutputParams: draftVersion.OutputParams,
+			CreatorID:    ctxutil.MustGetUIDFromCtx(ctx),
+		}
+	}
+
+	err = i.repo.BatchPublishWorkflows(ctx, workflowsToPublish)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }
 
 func (i *impl) shouldResetTestRun(ctx context.Context, c *vo.Canvas, wid int64) (bool, error) {
@@ -1632,7 +1770,7 @@ func (i *impl) shouldResetTestRun(ctx context.Context, c *vo.Canvas, wid int64) 
 	return shouldReset, nil
 }
 
-func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]*cloudworkflow.ValidateErrorData, error) {
+func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]*validate.Issue, error) {
 	c := &vo.Canvas{}
 	err := sonic.UnmarshalString(config.CanvasSchema, &c)
 	if err != nil {
@@ -1640,7 +1778,7 @@ func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]
 	}
 	validator, err := validate.NewCanvasValidator(ctx, &validate.Config{
 		Canvas:              c,
-		ProjectID:           config.ProjectID,
+		APPID:               config.APPID,
 		VariablesMetaGetter: variable.GetVariablesMetaGetter(),
 	})
 	if err != nil {
@@ -1653,7 +1791,7 @@ func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]
 		return nil, fmt.Errorf("failed to check connectivity : %w", err)
 	}
 	if len(issues) > 0 {
-		return handleValidationIssues(issues), nil
+		return issues, nil
 	}
 
 	issues, err = validator.DetectCycles(ctx)
@@ -1661,7 +1799,7 @@ func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]
 		return nil, fmt.Errorf("failed to check loops: %w", err)
 	}
 	if len(issues) > 0 {
-		return handleValidationIssues(issues), nil
+		return issues, nil
 	}
 
 	issues, err = validator.ValidateNestedFlows(ctx)
@@ -1669,7 +1807,7 @@ func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]
 		return nil, fmt.Errorf("failed to check nested batch or recurse: %w", err)
 	}
 	if len(issues) > 0 {
-		return handleValidationIssues(issues), nil
+		return issues, nil
 	}
 
 	issues, err = validator.CheckRefVariable(ctx)
@@ -1677,7 +1815,7 @@ func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]
 		return nil, fmt.Errorf("failed to check ref variable: %w", err)
 	}
 	if len(issues) > 0 {
-		return handleValidationIssues(issues), nil
+		return issues, nil
 	}
 
 	issues, err = validator.CheckGlobalVariables(ctx)
@@ -1685,7 +1823,7 @@ func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]
 		return nil, fmt.Errorf("failed to check global variables: %w", err)
 	}
 	if len(issues) > 0 {
-		return handleValidationIssues(issues), nil
+		return issues, nil
 	}
 
 	issues, err = validator.CheckSubWorkFlowTerminatePlanType(ctx)
@@ -1693,10 +1831,10 @@ func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]
 		return nil, fmt.Errorf("failed to check sub workflow terminate plan type: %w", err)
 	}
 	if len(issues) > 0 {
-		return handleValidationIssues(issues), nil
+		return issues, nil
 	}
 
-	return handleValidationIssues(issues), nil
+	return issues, nil
 }
 
 func convertToValidationError(issue *validate.Issue) *cloudworkflow.ValidateErrorData {
@@ -1718,13 +1856,23 @@ func convertToValidationError(issue *validate.Issue) *cloudworkflow.ValidateErro
 	return e
 }
 
-func handleValidationIssues(issues []*validate.Issue) []*cloudworkflow.ValidateErrorData {
+func toValidateErrorData(issues []*validate.Issue) []*cloudworkflow.ValidateErrorData {
 	validateErrors := make([]*cloudworkflow.ValidateErrorData, 0, len(issues))
 	for _, issue := range issues {
 		validateErrors = append(validateErrors, convertToValidationError(issue))
 	}
-
 	return validateErrors
+}
+
+func toValidateIssue(id int64, name string, issues []*validate.Issue) *vo.ValidateIssue {
+	vIssue := &vo.ValidateIssue{
+		WorkflowID:   id,
+		WorkflowName: name,
+	}
+	for _, issue := range issues {
+		vIssue.IssueMessages = append(vIssue.IssueMessages, issue.Message)
+	}
+	return vIssue
 }
 
 type version struct {

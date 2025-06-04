@@ -4,13 +4,14 @@ import (
 	"context"
 	"testing"
 
-	"go.uber.org/mock/gomock"
-
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 )
 
 type mockCustomSQLer struct {
@@ -65,7 +66,11 @@ func TestCustomSQL_Execute(t *testing.T) {
 		config: cfg,
 	}
 
-	ctx := context.Background()
+	ctx := t.Context()
+	ctx, err := execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{}, 123, false, &entity.InterruptEvent{}, vo.ExecuteConfig{
+		Mode: vo.ExecuteModeDebug,
+	})
+	assert.NoError(t, err)
 
 	ret, err := cl.Execute(ctx, map[string]any{
 		"v1": "v1_value",

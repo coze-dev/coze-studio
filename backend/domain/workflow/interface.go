@@ -50,6 +50,7 @@ type Service interface {
 	WithResumeToolWorkflow(resumingEvent *entity.ToolInterruptEvent, resumeData string,
 		allInterruptEvents map[string]*entity.ToolInterruptEvent) einoCompose.Option
 	CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (int64, error)
+	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
 }
 
 type Repository interface {
@@ -94,11 +95,13 @@ type Repository interface {
 	GetWorkflowCancelFlag(ctx context.Context, wfExeID int64) (bool, error)
 	WorkflowAsTool(ctx context.Context, wfID entity.WorkflowIdentity, wfToolConfig vo.WorkflowToolConfig) (ToolFromWorkflow, error)
 	CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (*entity.Workflow, error)
-
 	SetTestRunLatestExeID(ctx context.Context, wfID int64, uID int64, exeID int64) error
 	GetTestRunLatestExeID(ctx context.Context, wfID int64, uID int64) (int64, error)
 	SetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64, exeID int64) error
 	GetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64) (int64, error)
+
+	GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error)
+	BatchPublishWorkflows(ctx context.Context, workflows map[int64]*vo.VersionInfo) error
 }
 
 type ToolFromWorkflow interface {

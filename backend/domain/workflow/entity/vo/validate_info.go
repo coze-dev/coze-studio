@@ -2,6 +2,12 @@ package vo
 
 type ValidateTreeConfig struct {
 	CanvasSchema string
-	ProjectID    *int64
+	APPID        *int64
 	AgentID      *int64
+}
+
+type ValidateIssue struct {
+	WorkflowName  string
+	WorkflowID    int64
+	IssueMessages []string
 }

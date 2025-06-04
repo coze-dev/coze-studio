@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
 
 type DatabaseRepository struct {
@@ -26,10 +27,24 @@ func NewDatabaseRepository(client service.Database) *DatabaseRepository {
 }
 
 func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.CustomSQLRequest) (*nodedatabase.Response, error) {
+	var (
+		err            error
+		databaseInfoID = request.DatabaseInfoID
+		tableType      = ternary.IFElse[table.TableType](request.IsDebugRun, table.TableType_DraftTable, table.TableType_OnlineTable)
+	)
+
+	if request.IsDebugRun {
+		databaseInfoID, err = d.getDraftTableID(ctx, databaseInfoID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	req := &service.ExecuteSQLRequest{
-		DatabaseID:  request.DatabaseInfoID,
+		DatabaseID:  databaseInfoID,
 		OperateType: database.OperateType_Custom,
 		SQL:         &request.SQL,
+		TableType:   tableType,
 	}
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -54,13 +69,24 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 
 func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.DeleteRequest) (*nodedatabase.Response, error) {
 	var (
-		err error
-		req = &service.ExecuteSQLRequest{
-			DatabaseID:  request.DatabaseInfoID,
-			OperateType: database.OperateType_Delete,
-			TableType:   table.TableType_OnlineTable, // TODO 目前先默认写到线上
-		}
+		err            error
+		databaseInfoID = request.DatabaseInfoID
+		tableType      = ternary.IFElse[table.TableType](request.IsDebugRun, table.TableType_DraftTable, table.TableType_OnlineTable)
 	)
+
+	if request.IsDebugRun {
+		databaseInfoID, err = d.getDraftTableID(ctx, databaseInfoID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req := &service.ExecuteSQLRequest{
+		DatabaseID:  databaseInfoID,
+		OperateType: database.OperateType_Delete,
+		TableType:   tableType,
+	}
+
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
 		req.UserID = *uid
@@ -81,13 +107,24 @@ func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.D
 
 func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.QueryRequest) (*nodedatabase.Response, error) {
 	var (
-		err error
-		req = &service.ExecuteSQLRequest{
-			DatabaseID:  request.DatabaseInfoID,
-			OperateType: database.OperateType_Select,
-			TableType:   table.TableType_OnlineTable, // TODO 目前先默认写到线上
-		}
+		err            error
+		databaseInfoID = request.DatabaseInfoID
+		tableType      = ternary.IFElse[table.TableType](request.IsDebugRun, table.TableType_DraftTable, table.TableType_OnlineTable)
 	)
+
+	if request.IsDebugRun {
+		databaseInfoID, err = d.getDraftTableID(ctx, databaseInfoID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req := &service.ExecuteSQLRequest{
+		DatabaseID:  databaseInfoID,
+		OperateType: database.OperateType_Select,
+		TableType:   tableType,
+	}
+
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
 		req.UserID = *uid
@@ -125,17 +162,29 @@ func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.Qu
 }
 
 func (d *DatabaseRepository) Update(ctx context.Context, request *nodedatabase.UpdateRequest) (*nodedatabase.Response, error) {
+
 	var (
-		err       error
-		condition *database.ComplexCondition
-		params    []*database.SQLParamVal
-		req       = &service.ExecuteSQLRequest{
-			DatabaseID:  request.DatabaseInfoID,
-			OperateType: database.OperateType_Update,
-			SQLParams:   make([]*database.SQLParamVal, 0),
-			TableType:   table.TableType_OnlineTable, // TODO 目前先默认写到线上
-		}
+		err            error
+		condition      *database.ComplexCondition
+		params         []*database.SQLParamVal
+		databaseInfoID = request.DatabaseInfoID
+		tableType      = ternary.IFElse[table.TableType](request.IsDebugRun, table.TableType_DraftTable, table.TableType_OnlineTable)
 	)
+
+	if request.IsDebugRun {
+		databaseInfoID, err = d.getDraftTableID(ctx, databaseInfoID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req := &service.ExecuteSQLRequest{
+		DatabaseID:  databaseInfoID,
+		OperateType: database.OperateType_Update,
+		SQLParams:   make([]*database.SQLParamVal, 0),
+		TableType:   tableType,
+	}
+
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
 		req.UserID = *uid
@@ -164,14 +213,24 @@ func (d *DatabaseRepository) Update(ctx context.Context, request *nodedatabase.U
 
 func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.InsertRequest) (*nodedatabase.Response, error) {
 	var (
-		err error
-		req = &service.ExecuteSQLRequest{
-			DatabaseID:  request.DatabaseInfoID,
-			OperateType: database.OperateType_Insert,
-
-			TableType: table.TableType_OnlineTable, // TODO 目前先默认写到线上
-		}
+		err            error
+		databaseInfoID = request.DatabaseInfoID
+		tableType      = ternary.IFElse[table.TableType](request.IsDebugRun, table.TableType_DraftTable, table.TableType_OnlineTable)
 	)
+
+	if request.IsDebugRun {
+		databaseInfoID, err = d.getDraftTableID(ctx, databaseInfoID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req := &service.ExecuteSQLRequest{
+		DatabaseID:  databaseInfoID,
+		OperateType: database.OperateType_Insert,
+		TableType:   tableType,
+	}
+
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
 		req.UserID = *uid
@@ -187,6 +246,15 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 	}
 
 	return toNodeDateBaseResponse(response), nil
+}
+
+func (d *DatabaseRepository) getDraftTableID(ctx context.Context, onlineID int64) (int64, error) {
+	resp, err := d.client.GetDraftDatabaseByOnlineID(ctx, &service.GetDraftDatabaseByOnlineIDRequest{OnlineID: onlineID})
+	if err != nil {
+		return 0, err
+	}
+	return resp.Database.ID, nil
+
 }
 
 func buildComplexCondition(conditionGroup *nodedatabase.ConditionGroup) (*database.ComplexCondition, []*database.SQLParamVal, error) {

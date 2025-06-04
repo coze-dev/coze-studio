@@ -8,6 +8,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 var defaultSVC crossworkflow.Workflow
@@ -38,4 +39,8 @@ func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, version, desc st
 
 func (i *impl) DeleteWorkflow(ctx context.Context, id int64) error {
 	return i.DomainSVC.DeleteWorkflow(ctx, id)
+}
+
+func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error) {
+	return i.DomainSVC.ReleaseApplicationWorkflows(ctx, appID, config)
 }

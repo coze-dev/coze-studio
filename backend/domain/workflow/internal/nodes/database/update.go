@@ -48,6 +48,7 @@ func (u *Update) Update(ctx context.Context, inventory *UpdateInventory) (map[st
 		DatabaseInfoID: u.config.DatabaseInfoID,
 		ConditionGroup: inventory.ConditionGroup,
 		Fields:         inventory.Fields,
+		IsDebugRun:     isDebugExecute(ctx),
 	}
 
 	response, err := u.config.Updater.Update(ctx, req)
