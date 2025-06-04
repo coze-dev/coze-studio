@@ -38,8 +38,12 @@ func (sa *SingleAgentDraftDAO) Create(ctx context.Context, creatorID int64, draf
 		return 0, errorx.WrapByCode(err, errno.ErrAgentIDGenFailCode, errorx.KV("msg", "CreatePromptResource"))
 	}
 
+	return sa.CreateWithID(ctx, creatorID, id, draft)
+}
+
+func (sa *SingleAgentDraftDAO) CreateWithID(ctx context.Context, creatorID, agentID int64, draft *entity.SingleAgent) (draftID int64, err error) {
 	po := sa.singleAgentDraftDo2Po(draft)
-	po.AgentID = id
+	po.AgentID = agentID
 	po.CreatorID = creatorID
 
 	err = sa.dbQuery.SingleAgentDraft.WithContext(ctx).Create(po)
@@ -47,7 +51,7 @@ func (sa *SingleAgentDraftDAO) Create(ctx context.Context, creatorID int64, draf
 		return 0, errorx.WrapByCode(err, errno.ErrAgentCreateDraftCode)
 	}
 
-	return id, nil
+	return agentID, nil
 }
 
 func (sa *SingleAgentDraftDAO) Get(ctx context.Context, agentID int64) (*entity.SingleAgent, error) {

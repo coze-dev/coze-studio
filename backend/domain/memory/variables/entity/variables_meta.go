@@ -10,7 +10,7 @@ import (
 type VariablesMeta struct {
 	ID        int64
 	CreatorID int64
-	BizType   int32
+	BizType   project_memory.VariableConnector
 	BizID     string
 	CreatedAt int64
 	UpdatedAt int64

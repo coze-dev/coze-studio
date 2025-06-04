@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"strconv"
 
 	"github.com/cloudwego/eino/schema"
+	"github.com/jinzhu/copier"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
@@ -47,32 +47,26 @@ func (s *singleAgentImpl) DeleteAgentDraft(ctx context.Context, spaceID, agentID
 	return s.AgentDraftRepo.Delete(ctx, spaceID, agentID)
 }
 
-func (s *singleAgentImpl) Duplicate(ctx context.Context, req *entity.DuplicateAgentRequest) (draft *entity.SingleAgent, err error) {
-	srcAgents, err := s.MGetSingleAgentDraft(ctx, []int64{req.AgentID})
+func (s *singleAgentImpl) DuplicateInMemory(ctx context.Context, req *entity.DuplicateInfo) (newAgent *entity.SingleAgent, err error) {
+	srcAgent := req.DraftAgent
+	if srcAgent == nil {
+		return nil, errorx.New(errno.ErrAgentInvalidParamCode,
+			errorx.KVf("msg", "srcAgent is nil"))
+	}
+
+	newAgent = &entity.SingleAgent{}
+	err = copier.CopyWithOption(newAgent, srcAgent, copier.Option{DeepCopy: true, IgnoreEmpty: true})
 	if err != nil {
 		return nil, err
 	}
-
-	if len(srcAgents) == 0 {
-		return nil, errorx.New(errno.ErrAgentResourceNotFound,
-			errorx.KV("type", "agent"), errorx.KV("id", strconv.FormatInt(req.AgentID, 10)))
-	}
-
-	srcAgent := srcAgents[0]
 
 	copySuffixNum := rand.Intn(1000)
-	srcAgent.Name = fmt.Sprintf("%v%03d", srcAgent.Name, copySuffixNum)
-	srcAgent.SpaceID = req.SpaceID
-	srcAgent.CreatorID = req.UserID
+	newAgent.Name = fmt.Sprintf("%v%03d", srcAgent.Name, copySuffixNum)
+	newAgent.SpaceID = req.SpaceID
+	newAgent.CreatorID = req.UserID
+	newAgent.AgentID = req.NewAgentID
 
-	agentID, err := s.CreateSingleAgentDraft(ctx, req.UserID, srcAgent)
-	if err != nil {
-		return nil, err
-	}
-
-	srcAgent.AgentID = agentID
-
-	return srcAgent, nil
+	return newAgent, nil
 }
 
 func (s *singleAgentImpl) MGetSingleAgentDraft(ctx context.Context, agentIDs []int64) (agents []*entity.SingleAgent, err error) {
@@ -133,6 +127,10 @@ func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo 
 	}
 
 	return s.AgentDraftRepo.Update(ctx, agentInfo)
+}
+
+func (s *singleAgentImpl) CreateSingleAgentDraftWithID(ctx context.Context, creatorID, agentID int64, draft *entity.SingleAgent) (int64, error) {
+	return s.AgentDraftRepo.CreateWithID(ctx, creatorID, agentID, draft)
 }
 
 func (s *singleAgentImpl) CreateSingleAgentDraft(ctx context.Context, creatorID int64, draft *entity.SingleAgent) (agentID int64, err error) {

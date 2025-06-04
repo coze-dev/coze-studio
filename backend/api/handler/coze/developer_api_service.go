@@ -123,6 +123,11 @@ func DuplicateDraftBot(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := application.SingleAgentSVC.DuplicateDraftBot(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
 	c.JSON(consts.StatusOK, resp)
 }
 

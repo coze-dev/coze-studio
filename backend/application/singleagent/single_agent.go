@@ -371,50 +371,6 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 	}, nil
 }
 
-func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, req *developer_api.DuplicateDraftBotRequest) (*developer_api.DuplicateDraftBotResponse, error) {
-	userIDPtr := ctxutil.GetUIDFromCtx(ctx)
-	if userIDPtr == nil {
-		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "session required"))
-	}
-
-	userID := *userIDPtr
-
-	copiedAgent, err := s.DomainSVC.Duplicate(ctx, &entity.DuplicateAgentRequest{
-		SpaceID: req.GetSpaceID(),
-		AgentID: req.GetBotID(),
-		UserID:  userID,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	userInfos, err := s.appContext.UserDomainSVC.MGetUserProfiles(ctx, []int64{userID})
-	if err != nil {
-		return nil, err
-	}
-
-	if len(userInfos) == 0 {
-		return nil, errorx.New(errno.ErrAgentResourceNotFound, errorx.KV("type", "user"),
-			errorx.KV("id", strconv.FormatInt(userID, 10)))
-	}
-
-	return &developer_api.DuplicateDraftBotResponse{
-		Data: &developer_api.DuplicateDraftBotData{
-			BotID: copiedAgent.AgentID,
-			Name:  copiedAgent.Name,
-			UserInfo: &developer_api.Creator{
-				ID:             userID,
-				Name:           userInfos[0].Name,
-				AvatarURL:      userInfos[0].IconURL,
-				Self:           false,
-				UserUniqueName: userInfos[0].UniqueName,
-				UserLabel:      nil,
-			},
-		},
-		Code: 0,
-	}, nil
-}
-
 func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Context, do *entity.SingleAgent) (*bot_common.BotInfo, error) {
 	vo := &bot_common.BotInfo{
 		BotId:                   do.AgentID,

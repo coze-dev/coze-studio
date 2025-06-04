@@ -85,7 +85,7 @@ func (v *VariableApplicationService) GetProjectVariablesMeta(ctx context.Context
 	return &project_memory.GetProjectVariableListResp{
 		VariableList: meta.ToProjectVariables(),
 		GroupConf:    groupConf,
-		CanEdit:      *uid == req.UserID,
+		CanEdit:      true,
 	}, nil
 }
 

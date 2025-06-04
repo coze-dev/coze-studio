@@ -25,6 +25,7 @@ func NewCounterRepo(cli *redis.Client) CounterRepository {
 
 type SingleAgentDraftRepo interface {
 	Create(ctx context.Context, creatorID int64, draft *entity.SingleAgent) (draftID int64, err error)
+	CreateWithID(ctx context.Context, creatorID, agentID int64, draft *entity.SingleAgent) (draftID int64, err error)
 	Get(ctx context.Context, agentID int64) (*entity.SingleAgent, error)
 	MGet(ctx context.Context, agentIDs []int64) ([]*entity.SingleAgent, error)
 	Delete(ctx context.Context, spaceID, agentID int64) (err error)

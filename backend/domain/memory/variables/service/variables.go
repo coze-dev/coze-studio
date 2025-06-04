@@ -14,6 +14,7 @@ type Variables interface {
 	GetAgentVariableMeta(ctx context.Context, agentID int64, version string) (*entity.VariablesMeta, error)
 	GetProjectVariablesMeta(ctx context.Context, projectID, version string) (*entity.VariablesMeta, error)
 	GetSysVariableConf(ctx context.Context) entity.SysConfVariables
+	UpsertMeta(ctx context.Context, e *entity.VariablesMeta) (int64, error)
 	UpsertProjectMeta(ctx context.Context, projectID, version string, userID int64, e *entity.VariablesMeta) (int64, error)
 	UpsertBotMeta(ctx context.Context, agentID int64, version string, userID int64, e *entity.VariablesMeta) (int64, error)
 	PublishMeta(ctx context.Context, variableMetaID int64, version string) (int64, error)

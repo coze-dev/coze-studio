@@ -13,9 +13,9 @@ type AgentIdentity = singleagent.AgentIdentity
 
 type ExecuteRequest = singleagent.ExecuteRequest
 
-type DuplicateAgentRequest struct {
-	UserID  int64
-	SpaceID int64
-
-	AgentID int64
+type DuplicateInfo struct {
+	UserID     int64
+	SpaceID    int64
+	NewAgentID int64
+	DraftAgent *SingleAgent
 }

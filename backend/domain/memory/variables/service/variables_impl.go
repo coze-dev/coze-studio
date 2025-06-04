@@ -54,6 +54,10 @@ func (v *variablesImpl) UpsertProjectMeta(ctx context.Context, projectID, versio
 	return v.upsertVariableMeta(ctx, projectID, project_memory.VariableConnector_Project, version, userID, e)
 }
 
+func (v *variablesImpl) UpsertMeta(ctx context.Context, e *entity.VariablesMeta) (int64, error) {
+	return v.upsertVariableMeta(ctx, e.BizID, e.BizType, e.Version, e.CreatorID, e)
+}
+
 func (v *variablesImpl) UpsertBotMeta(ctx context.Context, agentID int64, version string, userID int64, e *entity.VariablesMeta) (int64, error) {
 	bizID := fmt.Sprintf("%d", agentID)
 	return v.upsertVariableMeta(ctx, bizID, project_memory.VariableConnector_Bot, version, userID, e)
@@ -69,7 +73,7 @@ func (v *variablesImpl) upsertVariableMeta(ctx context.Context, bizID string, bi
 		BizID:     bizID,
 		Version:   version,
 		CreatorID: int64(userID),
-		BizType:   int32(bizType),
+		BizType:   bizType,
 		Variables: e.Variables,
 	}
 

@@ -116,7 +116,7 @@ func (m *VariablesDAO) variablesMetaPO2DO(po *model.VariablesMeta) *entity.Varia
 	return &entity.VariablesMeta{
 		ID:        po.ID,
 		CreatorID: po.CreatorID,
-		BizType:   po.BizType,
+		BizType:   project_memory.VariableConnector(po.BizType),
 		BizID:     po.BizID,
 		Variables: po.VariableList,
 		CreatedAt: po.CreatedAt,
@@ -133,7 +133,7 @@ func (m *VariablesDAO) variablesMetaDO2PO(do *entity.VariablesMeta) *model.Varia
 	return &model.VariablesMeta{
 		ID:           do.ID,
 		CreatorID:    do.CreatorID,
-		BizType:      do.BizType,
+		BizType:      int32(do.BizType),
 		BizID:        do.BizID,
 		VariableList: do.Variables,
 		CreatedAt:    do.CreatedAt,
