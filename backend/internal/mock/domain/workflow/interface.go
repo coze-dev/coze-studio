@@ -106,6 +106,21 @@ func (mr *MockServiceMockRecorder) CancelWorkflow(ctx, wfExeID, wfID, spaceID an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CancelWorkflow", reflect.TypeOf((*MockService)(nil).CancelWorkflow), ctx, wfExeID, wfID, spaceID)
 }
 
+// CheckWorkflowsExistByAppID mocks base method.
+func (m *MockService) CheckWorkflowsExistByAppID(ctx context.Context, appID int64) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckWorkflowsExistByAppID", ctx, appID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckWorkflowsExistByAppID indicates an expected call of CheckWorkflowsExistByAppID.
+func (mr *MockServiceMockRecorder) CheckWorkflowsExistByAppID(ctx, appID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckWorkflowsExistByAppID", reflect.TypeOf((*MockService)(nil).CheckWorkflowsExistByAppID), ctx, appID)
+}
+
 // CopyWorkflow mocks base method.
 func (m *MockService) CopyWorkflow(ctx context.Context, spaceID, workflowID int64) (int64, error) {
 	m.ctrl.T.Helper()
@@ -381,18 +396,18 @@ func (mr *MockServiceMockRecorder) QueryWorkflowNodeTypes(ctx, wfID any) *gomock
 }
 
 // ReleaseApplicationWorkflows mocks base method.
-func (m *MockService) ReleaseApplicationWorkflows(ctx context.Context, appID int64, version string) ([]*vo.ValidateIssue, error) {
+func (m *MockService) ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReleaseApplicationWorkflows", ctx, appID, version)
+	ret := m.ctrl.Call(m, "ReleaseApplicationWorkflows", ctx, appID, config)
 	ret0, _ := ret[0].([]*vo.ValidateIssue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ReleaseApplicationWorkflows indicates an expected call of ReleaseApplicationWorkflows.
-func (mr *MockServiceMockRecorder) ReleaseApplicationWorkflows(ctx, appID, version any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ReleaseApplicationWorkflows(ctx, appID, config any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseApplicationWorkflows", reflect.TypeOf((*MockService)(nil).ReleaseApplicationWorkflows), ctx, appID, version)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseApplicationWorkflows", reflect.TypeOf((*MockService)(nil).ReleaseApplicationWorkflows), ctx, appID, config)
 }
 
 // SaveWorkflow mocks base method.
@@ -936,6 +951,21 @@ func (m *MockRepository) GetWorkflowVersion(ctx context.Context, id int64, versi
 func (mr *MockRepositoryMockRecorder) GetWorkflowVersion(ctx, id, version any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkflowVersion", reflect.TypeOf((*MockRepository)(nil).GetWorkflowVersion), ctx, id, version)
+}
+
+// HasWorkflow mocks base method.
+func (m *MockRepository) HasWorkflow(ctx context.Context, appID int64) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasWorkflow", ctx, appID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HasWorkflow indicates an expected call of HasWorkflow.
+func (mr *MockRepositoryMockRecorder) HasWorkflow(ctx, appID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasWorkflow", reflect.TypeOf((*MockRepository)(nil).HasWorkflow), ctx, appID)
 }
 
 // ListInterruptEvents mocks base method.

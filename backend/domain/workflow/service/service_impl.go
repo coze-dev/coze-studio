@@ -1165,6 +1165,8 @@ func (i *impl) QueryWorkflowNodeTypes(ctx context.Context, wfID int64) (map[stri
 	if err != nil {
 		return nil, err
 	}
+
+	mainCanvas.Nodes, mainCanvas.Edges = adaptor.PruneIsolatedNodes(mainCanvas.Nodes, mainCanvas.Edges, nil)
 	nodePropertyMap, err := i.collectNodePropertyMap(ctx, mainCanvas)
 	if err != nil {
 		return nil, err
@@ -1740,6 +1742,10 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 	return nil, nil
 }
 
+func (i *impl) CheckWorkflowsExistByAppID(ctx context.Context, appID int64) (bool, error) {
+	return i.repo.HasWorkflow(ctx, appID)
+}
+
 func (i *impl) shouldResetTestRun(ctx context.Context, c *vo.Canvas, wid int64) (bool, error) {
 
 	sc, err := adaptor.CanvasToWorkflowSchema(ctx, c)
@@ -1773,6 +1779,7 @@ func (i *impl) shouldResetTestRun(ctx context.Context, c *vo.Canvas, wid int64) 
 func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]*validate.Issue, error) {
 	c := &vo.Canvas{}
 	err := sonic.UnmarshalString(config.CanvasSchema, &c)
+	c.Nodes, c.Edges = adaptor.PruneIsolatedNodes(c.Nodes, c.Edges, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal canvas schema: %w", err)
 	}

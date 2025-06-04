@@ -407,61 +407,52 @@ func validateConnections(ctx context.Context, c *vo.Canvas) (issues []*Issue, er
 
 		}
 	}
+
 	outDegree := make(map[string]int)
-	allNodes := make(map[string]bool)
 	selectorPorts := make(map[string]map[string]bool)
 
-	for _, edge := range c.Edges {
-		allNodes[edge.SourceNodeID] = true
-		allNodes[edge.TargetNodeID] = true
-		node, ok := nodeMap[edge.SourceNodeID]
-		if !ok {
-			return nil, fmt.Errorf("source node id %v not found in node map", edge.SourceNodeID)
-		}
-
-		if node.Type == vo.BlockTypeCondition {
+	for nodeID, node := range nodeMap {
+		switch node.Type {
+		case vo.BlockTypeCondition:
 			branches := node.Data.Inputs.Branches
-			if _, exists := selectorPorts[edge.SourceNodeID]; !exists {
-				selectorPorts[edge.SourceNodeID] = make(map[string]bool)
+			if _, exists := selectorPorts[nodeID]; !exists {
+				selectorPorts[nodeID] = make(map[string]bool)
 			}
-			selectorPorts[edge.SourceNodeID]["false"] = true
+			selectorPorts[nodeID]["false"] = true
 			for index := range branches {
 				if index == 0 {
-					selectorPorts[edge.SourceNodeID]["true"] = true
+					selectorPorts[nodeID]["true"] = true
 				} else {
-					selectorPorts[edge.SourceNodeID][fmt.Sprintf("true_%v", index)] = true
+					selectorPorts[nodeID][fmt.Sprintf("true_%v", index)] = true
 				}
 			}
-		}
-
-		if node.Type == vo.BlockTypeBotIntent {
+		case vo.BlockTypeBotIntent:
 			intents := node.Data.Inputs.Intents
-			if _, exists := selectorPorts[edge.SourceNodeID]; !exists {
-				selectorPorts[edge.SourceNodeID] = make(map[string]bool)
+			if _, exists := selectorPorts[nodeID]; !exists {
+				selectorPorts[nodeID] = make(map[string]bool)
 			}
 			for index := range intents {
-				selectorPorts[edge.SourceNodeID][fmt.Sprintf("branch_%v", index)] = true
+				selectorPorts[nodeID][fmt.Sprintf("branch_%v", index)] = true
 			}
-			selectorPorts[edge.SourceNodeID]["default"] = true
-		}
-
-		if node.Type == vo.BlockTypeQuestion {
+			selectorPorts[nodeID]["default"] = true
+		case vo.BlockTypeQuestion:
 			if node.Data.Inputs.QA.AnswerType == vo.QAAnswerTypeOption {
-				if _, exists := selectorPorts[edge.SourceNodeID]; !exists {
-					selectorPorts[edge.SourceNodeID] = make(map[string]bool)
+				if _, exists := selectorPorts[nodeID]; !exists {
+					selectorPorts[nodeID] = make(map[string]bool)
 				}
 				if node.Data.Inputs.QA.OptionType == vo.QAOptionTypeStatic {
 					for index := range node.Data.Inputs.QA.Options {
-						selectorPorts[edge.SourceNodeID][fmt.Sprintf("branch_%v", index)] = true
+						selectorPorts[nodeID][fmt.Sprintf("branch_%v", index)] = true
 					}
 				}
 
 				if node.Data.Inputs.QA.OptionType == vo.QAOptionTypeDynamic {
-					selectorPorts[edge.SourceNodeID][fmt.Sprintf("branch_%v", 0)] = true
+					selectorPorts[nodeID][fmt.Sprintf("branch_%v", 0)] = true
 				}
 
 			}
-
+		default:
+			outDegree[node.ID] = 0
 		}
 
 	}
@@ -484,11 +475,7 @@ func validateConnections(ctx context.Context, c *vo.Canvas) (issues []*Issue, er
 
 	}
 
-	for nodeID := range allNodes {
-		node, ok := nodeMap[nodeID]
-		if !ok {
-			return nil, fmt.Errorf("node not found for %s", nodeID)
-		}
+	for nodeID, node := range nodeMap {
 		nodeName := node.Data.Meta.Title
 
 		switch node.Type {
