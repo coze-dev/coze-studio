@@ -165,6 +165,7 @@ func (a *appServiceImpl) packResources(ctx context.Context, appID int64, version
 		slices.Transform(allDraftPlugins, func(a *plugin.PluginInfo) int64 {
 			return a.ID
 		}))
+
 	if err != nil {
 		return nil, err
 	}
@@ -199,6 +200,7 @@ func (a *appServiceImpl) packPlugins(ctx context.Context, appID int64, version s
 	}
 
 	return failedInfo, res.AllDraftPlugins, nil
+
 }
 
 func (a *appServiceImpl) packWorkflows(ctx context.Context, appID int64, version string, allDraftPluginIDs []int64) (workflowFailedInfoList []*entity.PackResourceFailedInfo, err error) {

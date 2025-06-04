@@ -868,6 +868,8 @@ func (k *KnowledgeApplicationService) GetIconForDataset(ctx context.Context, req
 		uri = TableKnowledgeDefaultIcon
 	case dataset.FormatType_Image:
 		uri = ImageKnowledgeDefaultIcon
+	case dataset.FormatType_Database:
+		uri = DatabaseDefaultIcon
 	default:
 		uri = TextKnowledgeDefaultIcon
 	}

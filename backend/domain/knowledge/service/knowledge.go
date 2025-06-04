@@ -1269,3 +1269,21 @@ func convertOrder(order *knowledgeModel.Order) *dao.Order {
 		return &createAt
 	}
 }
+
+func (k *knowledgeSVC) GetKnowledgeByID(ctx context.Context, request *knowledge.GetKnowledgeByIDRequest) (response *knowledge.GetKnowledgeByIDResponse, err error) {
+	if request == nil || request.KnowledgeID == 0 {
+		return nil, errors.New("request is null")
+	}
+	kn, err := k.knowledgeRepo.GetByID(ctx, request.KnowledgeID)
+	if err != nil {
+		return nil, err
+	}
+	if kn == nil || kn.ID == 0 {
+		return nil, errors.New("knowledge not found")
+	}
+	knEntity := k.fromModelKnowledge(ctx, kn)
+
+	return &knowledge.GetKnowledgeByIDResponse{
+		Knowledge: knEntity,
+	}, nil
+}

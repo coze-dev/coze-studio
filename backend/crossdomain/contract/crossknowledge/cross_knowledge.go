@@ -8,6 +8,7 @@ import (
 
 type Knowledge interface {
 	ListKnowledge(ctx context.Context, request *knowledge.ListKnowledgeRequest) (response *knowledge.ListKnowledgeResponse, err error)
+	GetKnowledgeByID(ctx context.Context, request *knowledge.GetKnowledgeByIDRequest) (response *knowledge.GetKnowledgeByIDResponse, err error)
 	Retrieve(ctx context.Context, req *knowledge.RetrieveRequest) (*knowledge.RetrieveResponse, error)
 	DeleteKnowledge(ctx context.Context, request *knowledge.DeleteKnowledgeRequest) error
 }

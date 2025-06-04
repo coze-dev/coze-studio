@@ -33,3 +33,7 @@ func (i *impl) Retrieve(ctx context.Context, req *model.RetrieveRequest) (*model
 func (i *impl) DeleteKnowledge(ctx context.Context, req *model.DeleteKnowledgeRequest) error {
 	return i.DomainSVC.DeleteKnowledge(ctx, req)
 }
+
+func (i *impl) GetKnowledgeByID(ctx context.Context, request *model.GetKnowledgeByIDRequest) (response *model.GetKnowledgeByIDResponse, err error) {
+	return i.DomainSVC.GetKnowledgeByID(ctx, request)
+}

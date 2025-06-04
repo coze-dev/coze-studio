@@ -221,3 +221,10 @@ type SliceTable struct { // table slice 为一行数据
 type DeleteKnowledgeRequest struct {
 	KnowledgeID int64
 }
+type GetKnowledgeByIDRequest struct {
+	KnowledgeID int64
+}
+
+type GetKnowledgeByIDResponse struct {
+	Knowledge *Knowledge
+}

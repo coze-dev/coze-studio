@@ -18,6 +18,7 @@ type Knowledge interface {
 	DeleteKnowledge(ctx context.Context, request *DeleteKnowledgeRequest) error
 	CopyKnowledge(ctx context.Context) // todo: 跨空间拷贝，看下功能是否要支持
 	ListKnowledge(ctx context.Context, request *ListKnowledgeRequest) (response *ListKnowledgeResponse, err error)
+	GetKnowledgeByID(ctx context.Context, request *GetKnowledgeByIDRequest) (response *GetKnowledgeByIDResponse, err error)
 
 	CreateDocument(ctx context.Context, request *CreateDocumentRequest) (response *CreateDocumentResponse, err error)
 	UpdateDocument(ctx context.Context, request *UpdateDocumentRequest) error
@@ -299,3 +300,6 @@ type MGetDocumentReviewRequest struct {
 type MGetDocumentReviewResponse struct {
 	Reviews []*entity.Review
 }
+
+type GetKnowledgeByIDRequest = knowledge.GetKnowledgeByIDRequest
+type GetKnowledgeByIDResponse = knowledge.GetKnowledgeByIDResponse
