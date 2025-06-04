@@ -13,8 +13,10 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/query"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 //go:generate mockgen -destination ../../mock/dal/dao/knowledge_document_slice.go --package dao -source knowledge_document_slice.go
@@ -28,10 +30,6 @@ type KnowledgeDocumentSliceRepo interface {
 	DeleteByDocument(ctx context.Context, documentID int64) error
 	MGetSlices(ctx context.Context, sliceIDs []int64) ([]*model.KnowledgeDocumentSlice, error)
 
-	List(ctx context.Context, knowledgeID, documentID int64, limit int, cursor *string) (
-		resp []*model.KnowledgeDocumentSlice, nextCursor *string, hasMore bool, err error)
-	ListStatus(ctx context.Context, documentID int64, limit int, cursor *string) (
-		resp []*model.SliceProgress, nextCursor *string, hasMore bool, err error)
 	FindSliceByCondition(ctx context.Context, opts *WhereSliceOpt) (
 		[]*model.KnowledgeDocumentSlice, int64, error)
 	GetDocumentSliceIDs(ctx context.Context, docIDs []int64) (sliceIDs []int64, err error)
@@ -39,6 +37,7 @@ type KnowledgeDocumentSliceRepo interface {
 		[]*model.KnowledgeDocumentSlice, error)
 	IncrementHitCount(ctx context.Context, sliceIDs []int64) error
 	GetSliceHitByKnowledgeID(ctx context.Context, knowledgeID int64) (int64, error)
+	GetLastSequence(ctx context.Context, documentID int64) (float64, error)
 }
 
 func NewKnowledgeDocumentSliceDAO(db *gorm.DB) KnowledgeDocumentSliceRepo {
@@ -322,4 +321,24 @@ func (dao *knowledgeDocumentSliceDAO) GetSliceHitByKnowledgeID(ctx context.Conte
 		return 0, err
 	}
 	return ptr.From(totalSliceHit), nil
+}
+
+func (dao *knowledgeDocumentSliceDAO) GetLastSequence(ctx context.Context, documentID int64) (float64, error) {
+	if documentID == 0 {
+		return 0, errors.New("[GetLastSequence] documentID cannot be empty")
+	}
+	s := dao.query.KnowledgeDocumentSlice
+	resp, err := s.WithContext(ctx).Debug().
+		Select(s.Sequence).
+		Where(s.DocumentID.Eq(documentID)).
+		Order(s.Sequence.Desc()).
+		First()
+	if err != nil {
+		return 0, fmt.Errorf("[GetLastSequence] db exec err, document_id=%v, %w", documentID, err)
+	}
+	if resp == nil {
+		return 0, errorx.New(errno.ErrKnowledgeNonRetryableCode,
+			errorx.KVf("reason", "[GetLastSequence] resp is nil, document_id=%v", documentID))
+	}
+	return resp.Sequence, nil
 }

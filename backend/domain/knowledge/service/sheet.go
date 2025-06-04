@@ -44,7 +44,7 @@ func (k *knowledgeSVC) GetAlterTableSchema(ctx context.Context, req *knowledge.A
 func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *knowledge.ImportDataTableSchemaRequest) (resp *knowledge.TableSchemaResponse, err error) {
 	if (req.OriginTableMeta == nil && req.PreviewTableMeta != nil) ||
 		(req.OriginTableMeta != nil && req.PreviewTableMeta == nil) {
-		return nil, fmt.Errorf("[ImportDataTableSchema] invalid table meta param")
+		return nil, fmt.Errorf("[GetImportDataTableSchema] invalid table meta param")
 	}
 
 	reqSheet := req.TableSheet
@@ -58,18 +58,30 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *knowle
 	}
 
 	var (
-		sheet     *rawSheet
-		allSheets []*entity.TableSheet
+		sheet             *rawSheet
+		savedDoc          = &knowledge.TableSchemaResponse{}
+		targetColumns     []*entity.TableColumn
+		alignCurrentTable = req.DocumentID != nil && req.PreviewTableMeta == nil
 	)
+
+	if alignCurrentTable {
+		savedDoc, err = k.GetDocumentTableInfoByID(ctx, *req.DocumentID, false)
+		if err != nil {
+			return nil, fmt.Errorf("[GetImportDataTableSchema] getDocumentTableInfoByID failed, %w", err)
+		}
+		targetColumns = savedDoc.TableMeta
+	} else {
+		targetColumns = req.PreviewTableMeta
+	}
 
 	if req.SourceInfo.FileType != nil && *req.SourceInfo.FileType == string(parser.FileExtensionXLSX) {
 		allRawSheets, err := k.LoadSourceInfoAllSheets(ctx, req.SourceInfo, &entity.ParsingStrategy{
 			HeaderLine:    int(reqSheet.HeaderLineIdx),
 			DataStartLine: int(reqSheet.StartLineIdx),
 			RowsCount:     int(reqSheet.TotalRows),
-		})
+		}, targetColumns)
 		if err != nil {
-			return nil, fmt.Errorf("[ImportDataTableSchema] LoadSourceInfoAllSheets failed, %w", err)
+			return nil, fmt.Errorf("[GetImportDataTableSchema] LoadSourceInfoAllSheets failed, %w", err)
 		}
 
 		for i := range allRawSheets {
@@ -77,7 +89,6 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *knowle
 			if s.sheet.SheetId == reqSheet.SheetId {
 				sheet = s
 			}
-			allSheets = append(allSheets, s.sheet)
 		}
 	} else {
 		sheet, err = k.LoadSourceInfoSpecificSheet(ctx, req.SourceInfo, &entity.ParsingStrategy{
@@ -85,27 +96,19 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *knowle
 			HeaderLine:    int(reqSheet.HeaderLineIdx),
 			DataStartLine: int(reqSheet.StartLineIdx),
 			RowsCount:     int(reqSheet.TotalRows),
-		})
+		}, targetColumns)
 		if err != nil {
-			return nil, fmt.Errorf("[ImportDataTableSchema] loadTableSourceInfo failed, %w", err)
+			return nil, fmt.Errorf("[GetImportDataTableSchema] loadTableSourceInfo failed, %w", err)
 		}
-
-		allSheets = append(allSheets, sheet.sheet)
 	}
 
 	// first time import / import with current document schema
-	if req.DocumentID == nil || req.PreviewTableMeta != nil {
+	if !alignCurrentTable {
 		return k.FormatTableSchemaResponse(&knowledge.TableSchemaResponse{
 			TableSheet:  sheet.sheet,
 			TableMeta:   sheet.cols,
 			PreviewData: sheet.vals,
 		}, req.PreviewTableMeta, req.TableDataType)
-	}
-
-	// import with preview
-	savedDoc, err := k.GetDocumentTableInfoByID(ctx, *req.DocumentID, true)
-	if err != nil {
-		return nil, fmt.Errorf("[ImportDataTableSchema] getDocumentTableInfoByID failed, %w", err)
 	}
 
 	return k.FormatTableSchemaResponse(&knowledge.TableSchemaResponse{
@@ -139,12 +142,11 @@ func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSc
 		}
 
 		isFirstImport := true
-		name2IDMap := map[string]int64{}
 		for _, col := range prevTableMeta {
 			if col.ID != 0 {
 				isFirstImport = false
+				break
 			}
-			name2IDMap[col.Name] = col.ID
 		}
 		prevData := make([][]*document.ColumnData, 0, len(originalResp.PreviewData))
 		for _, row := range originalResp.PreviewData {
@@ -166,9 +168,6 @@ func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSc
 					}
 				}
 			} else {
-				for t := range row {
-					row[t].ColumnID = name2IDMap[row[t].ColumnName]
-				}
 				// align by column id
 				mp := make(map[int64]*document.ColumnData, len(row))
 				for _, item := range row {
@@ -228,23 +227,23 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *knowled
 	if err != nil {
 		return nil, fmt.Errorf("[ValidateTableSchema] get document failed: %v", err)
 	}
-
 	if len(docs) == 0 {
 		return nil, fmt.Errorf("[ValidateTableSchema] document not found, id=%d", request.DocumentID)
 	}
 
+	doc := docs[0]
 	sheet, err := k.LoadSourceInfoSpecificSheet(ctx, request.SourceInfo, &entity.ParsingStrategy{
 		SheetID:       request.TableSheet.SheetId,
 		HeaderLine:    int(request.TableSheet.HeaderLineIdx),
 		DataStartLine: int(request.TableSheet.StartLineIdx),
 		RowsCount:     5, // parse few rows for type assertion
-	})
+	}, doc.TableInfo.Columns)
 	if err != nil {
 		return nil, fmt.Errorf("[GetDocumentTableInfo] load sheets failed, %w", err)
 	}
 
 	src := sheet
-	dst := docs[0].TableInfo
+	dst := doc.TableInfo
 	result := make(map[string]string)
 
 	// validate 通过条件:
@@ -335,7 +334,7 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowle
 		HeaderLine:    0,
 		DataStartLine: 1,
 		RowsCount:     0, // get all rows
-	})
+	}, nil)
 	if err != nil {
 		// TODO: resp code msg 具体填写
 		return nil, fmt.Errorf("[GetDocumentTableInfo] load sheets failed, %w", err)
@@ -437,7 +436,7 @@ func (k *knowledgeSVC) GetDocumentTableInfoByID(ctx context.Context, documentID 
 	}, nil
 }
 
-func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo knowledge.TableSourceInfo, ps *entity.ParsingStrategy) (
+func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo knowledge.TableSourceInfo, ps *entity.ParsingStrategy, columns []*entity.TableColumn) (
 	sheets []*rawSheet, err error,
 ) {
 	switch {
@@ -465,7 +464,7 @@ func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo k
 					RowsCount:     ps.RowsCount,
 				}
 
-				rs, err := k.LoadSheet(ctx, b, newPS, *sourceInfo.FileType, &sheet)
+				rs, err := k.LoadSheet(ctx, b, newPS, *sourceInfo.FileType, &sheet, columns)
 				if err != nil {
 					return nil, fmt.Errorf("[loadTableSourceInfo] load xlsx sheet failed, %w", err)
 				}
@@ -473,7 +472,7 @@ func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo k
 				sheets = append(sheets, rs)
 			}
 		} else {
-			rs, err := k.LoadSheet(ctx, b, ps, *sourceInfo.FileType, nil)
+			rs, err := k.LoadSheet(ctx, b, ps, *sourceInfo.FileType, nil, columns)
 			if err != nil {
 				return nil, fmt.Errorf("[loadTableSourceInfo] load sheet failed, %w", err)
 			}
@@ -482,7 +481,7 @@ func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo k
 		}
 
 	case sourceInfo.CustomContent != nil:
-		rs, err := k.LoadSourceInfoSpecificSheet(ctx, sourceInfo, ps)
+		rs, err := k.LoadSourceInfoSpecificSheet(ctx, sourceInfo, ps, columns)
 		if err != nil {
 			return nil, err
 		}
@@ -496,7 +495,7 @@ func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo k
 	return sheets, nil
 }
 
-func (k *knowledgeSVC) LoadSourceInfoSpecificSheet(ctx context.Context, sourceInfo knowledge.TableSourceInfo, ps *entity.ParsingStrategy) (
+func (k *knowledgeSVC) LoadSourceInfoSpecificSheet(ctx context.Context, sourceInfo knowledge.TableSourceInfo, ps *entity.ParsingStrategy, columns []*entity.TableColumn) (
 	sheet *rawSheet, err error,
 ) {
 	var b []byte
@@ -517,7 +516,7 @@ func (k *knowledgeSVC) LoadSourceInfoSpecificSheet(ctx context.Context, sourceIn
 		return nil, fmt.Errorf("[LoadSourceInfoSpecificSheet] get content failed, %w", err)
 	}
 
-	sheet, err = k.LoadSheet(ctx, b, ps, *sourceInfo.FileType, nil)
+	sheet, err = k.LoadSheet(ctx, b, ps, *sourceInfo.FileType, nil, columns)
 	if err != nil {
 		return nil, fmt.Errorf("[LoadSourceInfoSpecificSheet] load sheet failed, %w", err)
 	}
@@ -525,8 +524,8 @@ func (k *knowledgeSVC) LoadSourceInfoSpecificSheet(ctx context.Context, sourceIn
 	return sheet, nil
 }
 
-func (k *knowledgeSVC) LoadSheet(ctx context.Context, b []byte, ps *entity.ParsingStrategy, fileExtension string, sheetName *string) (*rawSheet, error) {
-	pConfig := convert.ToParseConfig(parser.FileExtension(fileExtension), ps, nil, false, nil)
+func (k *knowledgeSVC) LoadSheet(ctx context.Context, b []byte, ps *entity.ParsingStrategy, fileExtension string, sheetName *string, columns []*entity.TableColumn) (*rawSheet, error) {
+	pConfig := convert.ToParseConfig(parser.FileExtension(fileExtension), ps, nil, false, columns)
 	p, err := k.parseManager.GetParser(pConfig)
 	if err != nil {
 		return nil, fmt.Errorf("[LoadSheet] get parser failed, %w", err)

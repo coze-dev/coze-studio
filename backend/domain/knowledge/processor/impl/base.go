@@ -13,13 +13,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
-	entity2 "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
+	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -43,67 +42,6 @@ type baseDocProcessor struct {
 	rdb           rdb.RDB
 	producer      eventbus.Producer
 	parseManager  parser.Manager
-}
-
-// 用户自定义表格创建文档
-type CustomTableProcessor struct {
-	baseDocProcessor
-}
-
-// 用户输入自定义内容后创建文档
-type CustomDocProcessor struct {
-	baseDocProcessor
-}
-
-type DocProcessorConfig struct {
-	UserID         int64
-	SpaceID        int64
-	DocumentSource entity.DocumentSource
-	Documents      []*entity.Document
-
-	KnowledgeRepo dao.KnowledgeRepo
-	DocumentRepo  dao.KnowledgeDocumentRepo
-	SliceRepo     dao.KnowledgeDocumentSliceRepo
-	Idgen         idgen.IDGenerator
-	Storage       storage.Storage
-	Rdb           rdb.RDB
-	Producer      eventbus.Producer // TODO: document id 维度有序?
-	ParseManager  parser.Manager
-}
-
-func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) (p processor.DocProcessor) {
-	base := &baseDocProcessor{
-		ctx:            ctx,
-		UserID:         config.UserID,
-		SpaceID:        config.SpaceID,
-		Documents:      config.Documents,
-		documentSource: &config.DocumentSource,
-		knowledgeRepo:  config.KnowledgeRepo,
-		documentRepo:   config.DocumentRepo,
-		sliceRepo:      config.SliceRepo,
-		storage:        config.Storage,
-		idgen:          config.Idgen,
-		rdb:            config.Rdb,
-		producer:       config.Producer,
-		parseManager:   config.ParseManager,
-	}
-
-	switch config.DocumentSource {
-	case entity.DocumentSourceCustom:
-		p = &CustomDocProcessor{
-			baseDocProcessor: *base,
-		}
-		if config.Documents[0].Type == knowledge.DocumentTypeTable {
-			p = &CustomTableProcessor{
-				baseDocProcessor: *base,
-			}
-		}
-		return p
-	case entity.DocumentSourceLocal:
-		return base
-	default:
-		return base
-	}
 }
 
 func (p *baseDocProcessor) BeforeCreate() error {
@@ -147,7 +85,7 @@ func (p *baseDocProcessor) BuildDBModel() error {
 func (p *baseDocProcessor) InsertDBModel() (err error) {
 	ctx := p.ctx
 
-	if len(p.Documents) == 1 && p.Documents[0].Type == knowledge.DocumentTypeTable {
+	if !isTableAppend(p.Documents) {
 		err = p.createTable()
 		if err != nil {
 			logs.CtxErrorf(ctx, "create table failed, err: %v", err)
@@ -199,7 +137,7 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 func (p *baseDocProcessor) createTable() error {
 	if len(p.Documents) == 1 && p.Documents[0].Type == knowledge.DocumentTypeTable {
 		// 表格型知识库，创建表
-		rdbColumns := []*entity2.Column{}
+		rdbColumns := []*rdbEntity.Column{}
 		tableColumns := p.Documents[0].TableInfo.Columns
 		columnIDs, err := p.idgen.GenMultiIDs(p.ctx, len(tableColumns)+1)
 		if err != nil {
@@ -207,7 +145,7 @@ func (p *baseDocProcessor) createTable() error {
 		}
 		for i := range tableColumns {
 			tableColumns[i].ID = columnIDs[i]
-			rdbColumns = append(rdbColumns, &entity2.Column{
+			rdbColumns = append(rdbColumns, &rdbEntity.Column{
 				Name:     convert.ColumnIDToRDBField(columnIDs[i]),
 				DataType: convert.ConvertColumnType(tableColumns[i].Type),
 				NotNull:  tableColumns[i].Indexing,
@@ -222,19 +160,19 @@ func (p *baseDocProcessor) createTable() error {
 			Sequence:    -1,
 		})
 		// 为每个表格增加个主键ID
-		rdbColumns = append(rdbColumns, &entity2.Column{
+		rdbColumns = append(rdbColumns, &rdbEntity.Column{
 			Name:     consts.RDBFieldID,
-			DataType: entity2.TypeBigInt,
+			DataType: rdbEntity.TypeBigInt,
 			NotNull:  true,
 		})
 		// 创建一个数据表
 		resp, err := p.rdb.CreateTable(p.ctx, &rdb.CreateTableRequest{
-			Table: &entity2.Table{
+			Table: &rdbEntity.Table{
 				Columns: rdbColumns,
-				Indexes: []*entity2.Index{
+				Indexes: []*rdbEntity.Index{
 					{
 						Name:    "pk",
-						Type:    entity2.PrimaryKey,
+						Type:    rdbEntity.PrimaryKey,
 						Columns: []string{consts.RDBFieldID},
 					},
 				},
@@ -287,115 +225,4 @@ func (p *baseDocProcessor) Indexing() error {
 
 func (p *baseDocProcessor) GetResp() []*entity.Document {
 	return p.Documents
-}
-
-func getFormatType(tp knowledge.DocumentType) parser.FileExtension {
-	docType := parser.FileExtensionTXT
-	if tp == knowledge.DocumentTypeTable {
-		docType = parser.FileExtensionJSON
-	}
-	return docType
-}
-
-func getTosUri(userID int64, fileType string) string {
-	fileName := fmt.Sprintf("FileBizType.Knowledge/%d_%d.%s", userID, time.Now().UnixNano(), fileType)
-	return fileName
-}
-
-func (c *CustomDocProcessor) BeforeCreate() error {
-	for i := range c.Documents {
-		if c.Documents[i].RawContent != "" {
-			c.Documents[i].FileExtension = getFormatType(c.Documents[i].Type)
-			uri := getTosUri(c.UserID, string(c.Documents[i].FileExtension))
-			err := c.storage.PutObject(c.ctx, uri, []byte(c.Documents[i].RawContent))
-			if err != nil {
-				logs.CtxErrorf(c.ctx, "put object failed, err: %v", err)
-				return err
-			}
-			c.Documents[i].URI = uri
-		}
-	}
-
-	return nil
-}
-
-func (c *CustomTableProcessor) BeforeCreate() error {
-	if len(c.Documents) == 1 && c.Documents[0].Type == knowledge.DocumentTypeTable && c.Documents[0].IsAppend {
-		tableDoc, _, err := c.documentRepo.FindDocumentByCondition(c.ctx, &dao.WhereDocumentOpt{KnowledgeIDs: []int64{c.Documents[0].KnowledgeID}})
-		if err != nil {
-			logs.CtxErrorf(c.ctx, "find document failed, err: %v", err)
-			return err
-		}
-		if len(tableDoc) == 0 {
-			logs.CtxErrorf(c.ctx, "table doc not found")
-			return fmt.Errorf("table doc not found")
-		}
-		c.Documents[0].ID = tableDoc[0].ID
-		if tableDoc[0].TableInfo == nil {
-			logs.CtxErrorf(c.ctx, "table info not found")
-			return fmt.Errorf("table info not found")
-		}
-		c.Documents[0].TableInfo = *tableDoc[0].TableInfo
-		// 追加场景
-		if c.Documents[0].RawContent != "" {
-			c.Documents[0].FileExtension = getFormatType(c.Documents[0].Type)
-			uri := getTosUri(c.UserID, string(c.Documents[0].FileExtension))
-			err := c.storage.PutObject(c.ctx, uri, []byte(c.Documents[0].RawContent))
-			if err != nil {
-				logs.CtxErrorf(c.ctx, "put object failed, err: %v", err)
-				return err
-			}
-			c.Documents[0].URI = uri
-		}
-	}
-	return nil
-}
-
-func (c *CustomTableProcessor) BuildDBModel() error {
-	if len(c.Documents) == 1 && c.Documents[0].Type == knowledge.DocumentTypeTable {
-		if c.Documents[0].IsAppend {
-			// 追加场景，不需要创建表了
-			// 一是用户自定义一些数据、二是再上传一个表格，把表格里的数据追加到表格中
-		} else {
-			err := c.baseDocProcessor.BuildDBModel()
-			if err != nil {
-				return err
-			}
-			// 因为这种创建方式不带数据，所以直接设置状态为可用
-			for i := range c.docModels {
-				c.docModels[i].DocumentType = 1
-				c.docModels[i].Status = int32(entity.DocumentStatusEnable)
-			}
-		}
-	}
-	return nil
-}
-
-func (c *CustomTableProcessor) InsertDBModel() error {
-	if len(c.Documents) == 1 &&
-		c.Documents[0].Type == knowledge.DocumentTypeTable &&
-		c.Documents[0].IsAppend {
-		// 追加场景，设置文档为处理中状态
-		err := c.documentRepo.SetStatus(c.ctx, c.Documents[0].ID, int32(entity.DocumentStatusUploading), "")
-		if err != nil {
-			logs.CtxErrorf(c.ctx, "document set status err:%v", err)
-			return err
-		}
-		return nil
-	}
-	return c.baseDocProcessor.InsertDBModel()
-}
-
-func (c *CustomTableProcessor) Indexing() error {
-	// c.baseDocProcessor.Indexing()
-	if len(c.Documents) == 1 &&
-		c.Documents[0].Type == knowledge.DocumentTypeTable &&
-		c.Documents[0].IsAppend {
-		err := c.baseDocProcessor.Indexing()
-		if err != nil {
-			logs.CtxErrorf(c.ctx, "document indexing err:%v", err)
-			return err
-		}
-	}
-	return nil
 }

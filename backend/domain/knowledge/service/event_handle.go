@@ -63,7 +63,6 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 		if err = k.indexSlice(ctx, event); err != nil {
 			return err
 		}
-
 	case entity.EventTypeDeleteKnowledgeData:
 		err = k.deleteKnowledgeDataEventHandler(ctx, event)
 		if err != nil {
@@ -163,26 +162,30 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		}
 	}()
 
+	// TODO: fix append retry
 	// clear
 	collectionName := getCollectionName(doc.KnowledgeID)
-	ids, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{doc.ID})
-	if err != nil {
-		return err
-	}
-	if len(ids) > 0 {
-		if err = k.sliceRepo.DeleteByDocument(ctx, doc.ID); err != nil {
+
+	if !doc.IsAppend {
+		ids, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{doc.ID})
+		if err != nil {
 			return err
 		}
-		for _, manager := range k.searchStoreManagers {
-			s, err := manager.GetSearchStore(ctx, collectionName)
-			if err != nil {
-				return fmt.Errorf("[indexDocument] get search store failed, %w", err)
-			}
-			if err := s.Delete(ctx, slices.Transform(event.SliceIDs, func(id int64) string {
-				return strconv.FormatInt(id, 10)
-			})); err != nil {
-				logs.Errorf("[indexDocument] delete knowledge failed, err: %v", err)
+		if len(ids) > 0 {
+			if err = k.sliceRepo.DeleteByDocument(ctx, doc.ID); err != nil {
 				return err
+			}
+			for _, manager := range k.searchStoreManagers {
+				s, err := manager.GetSearchStore(ctx, collectionName)
+				if err != nil {
+					return fmt.Errorf("[indexDocument] get search store failed, %w", err)
+				}
+				if err := s.Delete(ctx, slices.Transform(event.SliceIDs, func(id int64) string {
+					return strconv.FormatInt(id, 10)
+				})); err != nil {
+					logs.Errorf("[indexDocument] delete knowledge failed, err: %v", err)
+					return err
+				}
 			}
 		}
 	}
@@ -218,7 +221,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	for l := 0; l < len(parseResult); l += 100 {
 		r := min(l+100, len(parseResult))
 		batchSize := r - l
-		ids, err = k.idgen.GenMultiIDs(ctx, batchSize)
+		ids, err := k.idgen.GenMultiIDs(ctx, batchSize)
 		if err != nil {
 			return err
 		}
@@ -252,6 +255,15 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		}
 	}
 
+	var seqOffset float64
+	if doc.IsAppend {
+		seqOffset, err = k.sliceRepo.GetLastSequence(ctx, doc.ID)
+		if err != nil {
+			return err
+		}
+		seqOffset += 1
+	}
+
 	sliceModels := make([]*model.KnowledgeDocumentSlice, 0, len(parseResult))
 	for i, src := range parseResult {
 		now := time.Now().UnixMilli()
@@ -260,7 +272,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			KnowledgeID: doc.KnowledgeID,
 			DocumentID:  doc.ID,
 			Content:     parseResult[i].Content,
-			Sequence:    float64(i),
+			Sequence:    seqOffset + float64(i),
 			CreatedAt:   now,
 			UpdatedAt:   now,
 			CreatorID:   doc.CreatorID,
