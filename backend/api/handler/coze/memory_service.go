@@ -12,8 +12,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	table "code.byted.org/flow/opencoze/backend/api/model/table"
+	appApplication "code.byted.org/flow/opencoze/backend/application/app"
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
+	"code.byted.org/flow/opencoze/backend/domain/app/service"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 )
 
 // GetSysVariableConf .
@@ -52,7 +55,19 @@ func GetProjectVariableList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := memory.VariableApplicationSVC.GetProjectVariablesMeta(ctx, &req)
+	pID, err := conv.StrToInt64(req.ProjectID)
+	if err != nil {
+		invalidParamRequestResponse(c, "project_id is not int")
+		return
+	}
+
+	pInfo, err := appApplication.APPApplicationSVC.DomainSVC.GetDraftAPP(ctx, &service.GetDraftAPPRequest{APPID: pID})
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	resp, err := memory.VariableApplicationSVC.GetProjectVariablesMeta(ctx, pInfo.APP.OwnerID, &req)
 	if err != nil {
 		invalidParamRequestResponse(c, err.Error())
 		return

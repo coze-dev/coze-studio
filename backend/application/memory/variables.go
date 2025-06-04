@@ -61,7 +61,7 @@ func (v *VariableApplicationService) GetSysVariableConf(ctx context.Context, req
 	}, nil
 }
 
-func (v *VariableApplicationService) GetProjectVariablesMeta(ctx context.Context, req *project_memory.GetProjectVariableListReq) (*project_memory.GetProjectVariableListResp, error) {
+func (v *VariableApplicationService) GetProjectVariablesMeta(ctx context.Context, appOwnerID int64, req *project_memory.GetProjectVariableListReq) (*project_memory.GetProjectVariableListResp, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
@@ -85,7 +85,7 @@ func (v *VariableApplicationService) GetProjectVariablesMeta(ctx context.Context
 	return &project_memory.GetProjectVariableListResp{
 		VariableList: meta.ToProjectVariables(),
 		GroupConf:    groupConf,
-		CanEdit:      true,
+		CanEdit:      appOwnerID == *uid,
 	}, nil
 }
 
