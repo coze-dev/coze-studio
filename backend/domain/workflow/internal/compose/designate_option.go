@@ -10,6 +10,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
@@ -258,7 +259,42 @@ func llmToolCallbackOptions(ctx context.Context, ns *NodeSchema, eventChan chan 
 			}
 		}
 		if fcParams.PluginFCParam != nil {
-			// TODO: complete information about plugins
+			for _, p := range fcParams.PluginFCParam.PluginList {
+				toolID, err := strconv.ParseInt(p.ApiId, 10, 64)
+				if err != nil {
+					return nil, err
+				}
+				pluginID, err := strconv.ParseInt(p.PluginID, 10, 64)
+				if err != nil {
+					return nil, err
+				}
+
+				toolInfoResponse, err := plugin.GetToolService().GetPluginToolsInfo(ctx, &plugin.PluginToolsInfoRequest{
+					PluginEntity: plugin.PluginEntity{
+						PluginID:      pluginID,
+						PluginVersion: ptr.Of(p.PluginVersion),
+					},
+					ToolIDs: []int64{toolID},
+				})
+
+				if err != nil {
+					return nil, err
+				}
+
+				funcInfo := entity.FunctionInfo{
+					Name:       toolInfoResponse.ToolInfoList[toolID].ToolName,
+					Type:       entity.PluginTool,
+					PluginID:   pluginID,
+					PluginName: toolInfoResponse.PluginName,
+					APIID:      toolID,
+					APIName:    p.ApiName,
+				}
+
+				toolHandler := execute.NewToolHandler(eventChan, funcInfo)
+				opt := einoCompose.WithCallbacks(toolHandler)
+				opt = einoCompose.WithLambdaOption(llm.WithNestedWorkflowOptions(nodes.WithOptsForNested(opt))).DesignateNode(string(ns.Key))
+				opts = append(opts, opt)
+			}
 		}
 	}
 

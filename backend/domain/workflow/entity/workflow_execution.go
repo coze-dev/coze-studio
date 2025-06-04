@@ -83,6 +83,8 @@ type NodeExecution struct {
 	ParentNodeID         *string
 	SubWorkflowExecution *WorkflowExecution
 	IndexedExecutions    []*NodeExecution
+
+	Extra *NodeExtra
 }
 
 func (we *WorkflowExecution) GetBasic() *WorkflowBasic {
@@ -92,4 +94,23 @@ func (we *WorkflowExecution) GetBasic() *WorkflowBasic {
 		APPID:            we.AppID,
 		NodeCount:        we.NodeCount,
 	}
+}
+
+type NodeExtra struct {
+	CurrentSubExecuteID int64          `json:"current_sub_execute_id,omitempty"`
+	ResponseExtra       *ResponseExtra `json:"response_extra,omitempty"`
+}
+
+type ResponseExtra struct {
+	ReasoningContent string          `json:"reasoning_content,omitempty"`
+	FCCalledDetail   *FCCalledDetail `json:"fc_called_detail,omitempty"`
+}
+
+type FCCalled struct {
+	Input  string `json:"input,omitempty"`
+	Output string `json:"output,omitempty"`
+}
+
+type FCCalledDetail struct {
+	FCCalledList []*FCCalled `json:"fc_called_list,omitempty"`
 }

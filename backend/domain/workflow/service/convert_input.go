@@ -8,6 +8,7 @@ import (
 	"github.com/bytedance/sonic"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 func convertInputs(in map[string]string, tInfo map[string]*vo.TypeInfo) (map[string]any, error) {
@@ -15,7 +16,10 @@ func convertInputs(in map[string]string, tInfo map[string]*vo.TypeInfo) (map[str
 	for k, v := range in {
 		t, ok := tInfo[k]
 		if !ok {
-			return nil, fmt.Errorf("input %s not found in type info", k)
+			// for input fields not explicitly defined, just pass the string value through
+			logs.Warnf("input %s not found in type info", k)
+			out[k] = in[k]
+			continue
 		}
 		switch t.Type {
 		case vo.DataTypeString, vo.DataTypeFile, vo.DataTypeInteger, vo.DataTypeNumber, vo.DataTypeBoolean, vo.DataTypeTime:
@@ -124,7 +128,10 @@ func convertMapInput(in map[string]any, t *vo.TypeInfo) (map[string]any, error) 
 	for k, v := range in {
 		t, ok := t.Properties[k]
 		if !ok {
-			return nil, fmt.Errorf("input %s not found in type info", k)
+			// for input fields not explicitly defined, just pass the string value through
+			logs.Warnf("input %s not found in type info", k)
+			out[k] = in[k]
+			continue
 		}
 		switch t.Type {
 		case vo.DataTypeString, vo.DataTypeBoolean, vo.DataTypeNumber, vo.DataTypeFile:

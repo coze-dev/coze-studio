@@ -47,6 +47,7 @@ func newNodeExecution(db *gorm.DB, opts ...gen.DOOption) nodeExecution {
 	_nodeExecution.CompositeNodeItems = field.NewString(tableName, "composite_node_items")
 	_nodeExecution.ParentNodeID = field.NewString(tableName, "parent_node_id")
 	_nodeExecution.SubExecuteID = field.NewInt64(tableName, "sub_execute_id")
+	_nodeExecution.Extra = field.NewString(tableName, "extra")
 
 	_nodeExecution.fillFieldMap()
 
@@ -77,6 +78,7 @@ type nodeExecution struct {
 	CompositeNodeItems field.String // the items extracted from parent composite node for this index
 	ParentNodeID       field.String // when as inner node for loop or batch, this is the parent node's key
 	SubExecuteID       field.Int64  // if this node is sub_workflow, the exe id of the sub workflow
+	Extra              field.String // extra info
 
 	fieldMap map[string]field.Expr
 }
@@ -113,6 +115,7 @@ func (n *nodeExecution) updateTableName(table string) *nodeExecution {
 	n.CompositeNodeItems = field.NewString(table, "composite_node_items")
 	n.ParentNodeID = field.NewString(table, "parent_node_id")
 	n.SubExecuteID = field.NewInt64(table, "sub_execute_id")
+	n.Extra = field.NewString(table, "extra")
 
 	n.fillFieldMap()
 
@@ -129,7 +132,7 @@ func (n *nodeExecution) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (n *nodeExecution) fillFieldMap() {
-	n.fieldMap = make(map[string]field.Expr, 20)
+	n.fieldMap = make(map[string]field.Expr, 21)
 	n.fieldMap["id"] = n.ID
 	n.fieldMap["execute_id"] = n.ExecuteID
 	n.fieldMap["node_id"] = n.NodeID
@@ -150,6 +153,7 @@ func (n *nodeExecution) fillFieldMap() {
 	n.fieldMap["composite_node_items"] = n.CompositeNodeItems
 	n.fieldMap["parent_node_id"] = n.ParentNodeID
 	n.fieldMap["sub_execute_id"] = n.SubExecuteID
+	n.fieldMap["extra"] = n.Extra
 }
 
 func (n nodeExecution) clone(db *gorm.DB) nodeExecution {

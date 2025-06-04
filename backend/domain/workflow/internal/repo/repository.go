@@ -646,6 +646,14 @@ func (r *RepositoryImpl) CreateNodeExecution(ctx context.Context, execution *ent
 		ParentNodeID:       ptr.FromOrDefault(execution.ParentNodeID, ""),
 	}
 
+	if execution.Extra != nil {
+		m, err := sonic.MarshalString(execution.Extra)
+		if err != nil {
+			return fmt.Errorf("failed to marshal extra: %w", err)
+		}
+		nodeExec.Extra = m
+	}
+
 	return r.query.NodeExecution.WithContext(ctx).Create(nodeExec)
 }
 
@@ -663,6 +671,14 @@ func (r *RepositoryImpl) UpdateNodeExecution(ctx context.Context, execution *ent
 	if execution.TokenInfo != nil {
 		nodeExec.InputTokens = execution.TokenInfo.InputTokens
 		nodeExec.OutputTokens = execution.TokenInfo.OutputTokens
+	}
+
+	if execution.Extra != nil {
+		m, err := sonic.MarshalString(execution.Extra)
+		if err != nil {
+			return fmt.Errorf("failed to marshal extra: %w", err)
+		}
+		nodeExec.Extra = m
 	}
 
 	_, err := r.query.NodeExecution.WithContext(ctx).Where(r.query.NodeExecution.ID.Eq(execution.ID)).Updates(nodeExec)
@@ -701,6 +717,15 @@ func convertNodeExecution(nodeExec *model2.NodeExecution) *entity.NodeExecution 
 	if nodeExec.SubExecuteID > 0 {
 		nodeExeEntity.SubWorkflowExecution = &entity.WorkflowExecution{
 			ID: nodeExec.SubExecuteID,
+		}
+	}
+
+	if len(nodeExec.Extra) > 0 {
+		var extra entity.NodeExtra
+		if err := sonic.UnmarshalString(nodeExec.Extra, &extra); err != nil {
+			logs.Errorf("failed to unmarshal extra: %v", err)
+		} else {
+			nodeExeEntity.Extra = &extra
 		}
 	}
 

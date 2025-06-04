@@ -164,7 +164,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 				}
 			}()
 
-			callbackInput, err := s.ToSelectorCallbackInput(in)
+			callbackInput, err := s.ToSelectorCallbackInput(in, sc)
 			if err != nil {
 				return -1, err
 			}

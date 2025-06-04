@@ -246,10 +246,11 @@ func (w *WorkflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, ou
 
 	c := GetExeCtx(ctx)
 	e := &Event{
-		Type:     WorkflowSuccess,
-		Context:  c,
-		Output:   output.(map[string]any),
-		Duration: time.Since(time.UnixMilli(c.StartTime)),
+		Type:      WorkflowSuccess,
+		Context:   c,
+		Output:    output.(map[string]any),
+		RawOutput: output.(map[string]any),
+		Duration:  time.Since(time.UnixMilli(c.StartTime)),
 	}
 
 	if c.TokenCollector != nil {
@@ -620,10 +621,12 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 
 	c := GetExeCtx(ctx)
 	e := &Event{
-		Type:     NodeEnd,
-		Context:  c,
-		Duration: time.Since(time.UnixMilli(c.StartTime)),
-		Output:   output.(map[string]any),
+		Type:      NodeEnd,
+		Context:   c,
+		Duration:  time.Since(time.UnixMilli(c.StartTime)),
+		Output:    output.(map[string]any),
+		RawOutput: output.(map[string]any),
+		extra:     &entity.NodeExtra{},
 	}
 
 	if c.TokenCollector != nil {
@@ -639,6 +642,12 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		e.Answer = output.(map[string]any)["output"].(string)
 	} else if c.NodeType == entity.NodeTypeExit && *c.TerminatePlan == vo.UseAnswerContent {
 		e.Answer = output.(map[string]any)["output"].(string)
+	}
+
+	if c.SubWorkflowCtx == nil {
+		e.extra.CurrentSubExecuteID = c.RootExecuteID
+	} else {
+		e.extra.CurrentSubExecuteID = c.SubExecuteID
 	}
 
 	n.ch <- e
@@ -787,10 +796,12 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			}
 
 			e := &Event{
-				Type:     NodeEndStreaming,
-				Context:  c,
-				Output:   fullOutput,
-				Duration: time.Since(time.UnixMilli(c.StartTime)),
+				Type:      NodeEndStreaming,
+				Context:   c,
+				Output:    fullOutput,
+				RawOutput: fullOutput,
+				Duration:  time.Since(time.UnixMilli(c.StartTime)),
+				extra:     &entity.NodeExtra{},
 			}
 
 			if c.TokenCollector != nil {
@@ -801,6 +812,41 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					TotalToken:  int64(usage.TotalTokens),
 				}
 			}
+
+			if c.SubWorkflowCtx == nil {
+				e.extra.CurrentSubExecuteID = c.RootExecuteID
+			} else {
+				e.extra.CurrentSubExecuteID = c.SubExecuteID
+			}
+
+			if entity.NodeType(info.Type) == entity.NodeTypeLLM { // TODO: hard-coded string
+				if _, ok := fullOutput["output"]; ok {
+					if len(fullOutput) == 1 {
+						e.outputExtractor = func(o map[string]any) string {
+							if o["output"] == nil {
+								return ""
+							}
+							return o["output"].(string)
+						}
+					} else if len(fullOutput) == 2 {
+						if reasoning, ok := fullOutput["reasoning_content"]; ok {
+							e.outputExtractor = func(o map[string]any) string {
+								if o["output"] == nil {
+									return ""
+								}
+								return o["output"].(string)
+							}
+
+							if reasoning != nil {
+								e.extra.ResponseExtra = &entity.ResponseExtra{
+									ReasoningContent: fullOutput["reasoning_content"].(string),
+								}
+							}
+						}
+					}
+				}
+			}
+
 			n.ch <- e
 		}()
 	case entity.NodeTypeExit, entity.NodeTypeOutputEmitter, entity.NodeTypeSubWorkflow:
@@ -861,7 +907,11 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				}
 
 				if delta, ok := chunk.(map[string]any)["output"]; ok {
-					deltaEvent.Answer = strings.TrimSuffix(delta.(string), nodes.KeyIsFinished)
+					if entity.NodeType(info.Type) == entity.NodeTypeOutputEmitter {
+						deltaEvent.Answer = strings.TrimSuffix(delta.(string), nodes.KeyIsFinished)
+					} else if n.terminatePlan != nil && *n.terminatePlan == vo.UseAnswerContent {
+						deltaEvent.Answer = strings.TrimSuffix(delta.(string), nodes.KeyIsFinished)
+					}
 				}
 
 				if firstEvent == nil { // prioritize sending the first event asap.
@@ -874,14 +924,26 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			}
 
 			e := &Event{
-				Type:     NodeEndStreaming,
-				Context:  c,
-				Output:   fullOutput,
-				Duration: time.Since(time.UnixMilli(c.StartTime)),
+				Type:      NodeEndStreaming,
+				Context:   c,
+				Output:    fullOutput,
+				RawOutput: fullOutput,
+				Duration:  time.Since(time.UnixMilli(c.StartTime)),
+				extra:     &entity.NodeExtra{},
 			}
 
 			if answer, ok := fullOutput["output"]; ok {
-				e.Answer = answer.(string)
+				if entity.NodeType(info.Type) == entity.NodeTypeOutputEmitter {
+					e.Answer = answer.(string)
+					e.outputExtractor = func(o map[string]any) string {
+						return o["output"].(string)
+					}
+				} else if n.terminatePlan != nil && *n.terminatePlan == vo.UseAnswerContent {
+					e.Answer = answer.(string)
+					e.outputExtractor = func(o map[string]any) string {
+						return o["output"].(string)
+					}
+				}
 			}
 
 			if c.TokenCollector != nil {
@@ -892,6 +954,13 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					TotalToken:  int64(usage.TotalTokens),
 				}
 			}
+
+			if c.SubWorkflowCtx == nil {
+				e.extra.CurrentSubExecuteID = c.RootExecuteID
+			} else {
+				e.extra.CurrentSubExecuteID = c.SubExecuteID
+			}
+
 			n.ch <- e
 
 			return ctx

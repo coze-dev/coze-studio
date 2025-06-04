@@ -3,6 +3,7 @@ package entity
 import (
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
@@ -51,22 +52,22 @@ const (
 )
 
 type FunctionInfo struct {
-	Name string
-	Type ToolType
+	Name string   `json:"name"`
+	Type ToolType `json:"plugin_type"`
 
-	PluginID   int64
-	PluginName string
-	APIID      int64
-	APIName    string
+	PluginID   int64  `json:"plugin_id,omitempty"`
+	PluginName string `json:"plugin_name,omitempty"`
+	APIID      int64  `json:"api_id,omitempty"`
+	APIName    string `json:"api_name,omitempty"`
 
-	WorkflowName          string
-	WorkflowTerminatePlan vo.TerminatePlan
+	WorkflowName          string           `json:"workflow_name,omitempty"`
+	WorkflowTerminatePlan vo.TerminatePlan `json:"terminate_plan,omitempty"`
 }
 
 type FunctionCallInfo struct {
 	FunctionInfo
-	CallID    string
-	Arguments string
+	CallID    string `json:"-"`
+	Arguments string `json:"arguments"`
 }
 
 type ToolResponseInfo struct {
@@ -75,9 +76,9 @@ type ToolResponseInfo struct {
 	Response string
 }
 
-type ToolType string
+type ToolType = workflow.PluginType
 
 const (
-	PluginTool   ToolType = "plugin"
-	WorkflowTool ToolType = "workflow"
+	PluginTool   = workflow.PluginType_PLUGIN
+	WorkflowTool = workflow.PluginType_WORKFLOW
 )

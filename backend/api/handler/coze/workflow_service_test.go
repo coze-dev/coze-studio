@@ -1579,12 +1579,7 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 			}
 		}
 
-		outputMap := map[string]any{}
-		err = sonic.UnmarshalString(output, &outputMap)
-		assert.NoError(t, err)
-		assert.Equal(t, map[string]any{
-			"output": "I don't know.\nI don't know too.\nb\n['new_a_more info 1', 'new_b_more info 2']",
-		}, outputMap)
+		assert.Equal(t, "I don't know.\nI don't know too.\nb\n['new_a_more info 1', 'new_b_more info 2']", output)
 	})
 }
 
@@ -2346,13 +2341,7 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 			t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
 		}
 
-		outputMap := map[string]any{}
-		err := sonic.UnmarshalString(output, &outputMap)
-		assert.NoError(t, err)
-		assert.Equal(t, map[string]any{
-			"output": "this is the streaming output I don't know.",
-		}, outputMap)
-
+		assert.Equal(t, "this is the streaming output I don't know.", output)
 		assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Success)
 
 		outerModel.Reset()
@@ -2377,7 +2366,7 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 		}
 
 		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
-		err = sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+		err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
 			t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
 			return nil
 		})
@@ -2666,13 +2655,7 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 			t.Logf("after second resume. workflow status: %s, success rate: %s, interruptEvents: %v, lastOutput= %s, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, output, lastResult.WorkflowExeCost)
 		}
 
-		outputMap := map[string]any{}
-		err := sonic.UnmarshalString(output, &outputMap)
-		assert.NoError(t, err)
-		assert.Equal(t, map[string]any{
-			"output": "the name is eino, age is 1",
-		}, outputMap)
-
+		assert.Equal(t, "the name is eino, age is 1", output)
 		assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Success)
 	})
 }
@@ -2984,13 +2967,7 @@ func TestAggregateStreamVariables(t *testing.T) {
 			t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
 		}
 
-		outputMap := map[string]any{}
-		err := sonic.UnmarshalString(output, &outputMap)
-		assert.NoError(t, err)
-		assert.Equal(t, map[string]any{
-			"output": "I won't tell you.\nI won't tell you.\n{'Group1': 'I won't tell you.', 'input': 'I've got an important question'}",
-		}, outputMap)
-
+		assert.Equal(t, "I won't tell you.\nI won't tell you.\n{'Group1': 'I won't tell you.', 'input': 'I've got an important question'}", output)
 		assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Success)
 
 		wfID, _ := strconv.ParseInt(idStr, 10, 64)

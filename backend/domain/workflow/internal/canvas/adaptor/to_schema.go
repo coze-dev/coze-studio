@@ -518,10 +518,6 @@ func toSelectorNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 
 		if len(branchCond.Condition.Conditions) == 1 { // single condition
 			cond := branchCond.Condition.Conditions[0]
-			op, err := ToSelectorOperator(cond.Operator)
-			if err != nil {
-				return nil, err
-			}
 
 			left := cond.Left
 			if left == nil {
@@ -541,6 +537,11 @@ func toSelectorNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 			inputType.Properties[selector.LeftKey] = leftType
 
 			ns.AddInputSource(leftSources...)
+
+			op, err := ToSelectorOperator(cond.Operator, leftType)
+			if err != nil {
+				return nil, err
+			}
 
 			if cond.Right != nil {
 				rightType, err := CanvasBlockInputToTypeInfo(cond.Right.Input)
@@ -576,12 +577,6 @@ func toSelectorNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 
 		var ops []*selector.Operator
 		for j, cond := range branchCond.Condition.Conditions {
-			op, err := ToSelectorOperator(cond.Operator)
-			if err != nil {
-				return nil, err
-			}
-			ops = append(ops, &op)
-
 			left := cond.Left
 			if left == nil {
 				return nil, fmt.Errorf("operator left is nil")
@@ -605,6 +600,12 @@ func toSelectorNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 			}
 
 			ns.AddInputSource(leftSources...)
+
+			op, err := ToSelectorOperator(cond.Operator, leftType)
+			if err != nil {
+				return nil, err
+			}
+			ops = append(ops, &op)
 
 			if cond.Right != nil {
 				rightType, err := CanvasBlockInputToTypeInfo(cond.Right.Input)

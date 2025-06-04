@@ -2,6 +2,7 @@ package compose
 
 import (
 	"fmt"
+	"strings"
 
 	"strconv"
 
@@ -19,26 +20,26 @@ import (
 
 type SelectorCallbackInput = []*SelectorBranch
 
-type CallbackField struct {
-	FromNodeKey string            `json:"from_node_key"`
-	FromPath    compose.FieldPath `json:"from_path"`
-	Type        vo.DataType       `json:"type"`
-	Value       any               `json:"value"`
-	VarType     *variable.Type    `json:"var_type"`
+type SelectorCallbackField struct {
+	Key     string         `json:"key"`
+	Type    vo.DataType    `json:"type"`
+	Value   any            `json:"value"`
+	VarType *variable.Type `json:"var_type,omitempty"`
 }
 
 type SelectorCondition struct {
-	Left     CallbackField     `json:"left"`
-	Operator selector.Operator `json:"operator"`
-	Right    *CallbackField    `json:"right"`
+	Left     SelectorCallbackField  `json:"left"`
+	Operator vo.OperatorType        `json:"operator"`
+	Right    *SelectorCallbackField `json:"right"`
 }
 
 type SelectorBranch struct {
-	Conditions []*SelectorCondition    `json:"conditions"`
-	Relation   selector.ClauseRelation `json:"relation"`
+	Conditions []*SelectorCondition `json:"conditions"`
+	Logic      vo.LogicType         `json:"logic"`
+	Name       string               `json:"name"`
 }
 
-func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any) (map[string]any, error) {
+func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any, sc *WorkflowSchema) (map[string]any, error) {
 	config := s.Configs.([]*selector.OneClauseSchema)
 	count := len(config)
 
@@ -58,10 +59,10 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any) (map[string]any,
 				output[index] = &SelectorBranch{
 					Conditions: []*SelectorCondition{
 						{
-							Operator: *config[index].Single,
+							Operator: config[index].Single.ToCanvasOperatorType(),
 						},
 					},
-					Relation: selector.ClauseRelationAND,
+					Logic: selector.ClauseRelationAND.ToVOLogicType(),
 				}
 			}
 
@@ -70,27 +71,37 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any) (map[string]any,
 				if !ok {
 					return nil, fmt.Errorf("failed to take left value of %s", targetPath)
 				}
-				output[index].Conditions[0].Left = CallbackField{
-					FromNodeKey: string(source.Source.Ref.FromNodeKey),
-					FromPath:    source.Source.Ref.FromPath,
-					Type:        s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
-					Value:       leftV,
-					VarType:     source.Source.Ref.VariableType,
+				if source.Source.Ref.VariableType != nil { // TODO: double check format for variables, including intermediate vars
+					output[index].Conditions[0].Left = SelectorCallbackField{
+						Key:     strings.Join(source.Source.Ref.FromPath, "."),
+						Type:    s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
+						VarType: source.Source.Ref.VariableType,
+					}
+				} else {
+					output[index].Conditions[0].Left = SelectorCallbackField{
+						Key:     sc.GetNode(source.Source.Ref.FromNodeKey).Name + "." + strings.Join(source.Source.Ref.FromPath, "."),
+						Type:    s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
+						Value:   leftV,
+						VarType: source.Source.Ref.VariableType,
+					}
 				}
 			} else if targetPath[1] == selector.RightKey {
 				rightV, ok := nodes.TakeMapValue(in, targetPath)
 				if !ok {
 					return nil, fmt.Errorf("failed to take right value of %s", targetPath)
 				}
-				output[index].Conditions[0].Right = &CallbackField{
+				output[index].Conditions[0].Right = &SelectorCallbackField{
 					Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
 					Value: rightV,
 				}
 
 				if source.Source.Ref != nil {
-					output[index].Conditions[0].Right.FromNodeKey = string(source.Source.Ref.FromNodeKey)
-					output[index].Conditions[0].Right.FromPath = source.Source.Ref.FromPath
-					output[index].Conditions[0].Right.VarType = source.Source.Ref.VariableType
+					if source.Source.Ref.VariableType != nil {
+						output[index].Conditions[0].Right.Key = strings.Join(source.Source.Ref.FromPath, ".")
+						output[index].Conditions[0].Right.VarType = source.Source.Ref.VariableType
+					} else {
+						output[index].Conditions[0].Right.Key = sc.GetNode(source.Source.Ref.FromNodeKey).Name + "." + strings.Join(source.Source.Ref.FromPath, ".")
+					}
 				}
 			}
 		} else if len(targetPath) == 3 {
@@ -106,14 +117,14 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any) (map[string]any,
 			if branch == nil {
 				output[index] = &SelectorBranch{
 					Conditions: make([]*SelectorCondition, len(multi.Clauses)),
-					Relation:   multi.Relation,
+					Logic:      multi.Relation.ToVOLogicType(),
 				}
 			}
 
 			for j := range multi.Clauses {
 				if output[index].Conditions[j] == nil {
 					output[index].Conditions[j] = &SelectorCondition{
-						Operator: *multi.Clauses[j],
+						Operator: multi.Clauses[j].ToCanvasOperatorType(),
 					}
 				}
 
@@ -122,25 +133,23 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any) (map[string]any,
 					if !ok {
 						return nil, fmt.Errorf("failed to take left value of %s", targetPath)
 					}
-					output[index].Conditions[j].Left = CallbackField{
-						FromNodeKey: string(source.Source.Ref.FromNodeKey),
-						FromPath:    source.Source.Ref.FromPath,
-						Type:        s.InputTypes[targetPath[0]].Properties[targetPath[1]].Properties[targetPath[2]].Type,
-						Value:       leftV,
-						VarType:     source.Source.Ref.VariableType,
+					output[index].Conditions[j].Left = SelectorCallbackField{
+						Key:     sc.GetNode(source.Source.Ref.FromNodeKey).Name + "." + strings.Join(source.Source.Ref.FromPath, "."),
+						Type:    s.InputTypes[targetPath[0]].Properties[targetPath[1]].Properties[targetPath[2]].Type,
+						Value:   leftV,
+						VarType: source.Source.Ref.VariableType,
 					}
 				} else if targetPath[2] == selector.RightKey {
 					rightV, ok := nodes.TakeMapValue(in, targetPath)
 					if !ok {
 						return nil, fmt.Errorf("failed to take right value of %s", targetPath)
 					}
-					output[index].Conditions[j].Right = &CallbackField{
+					output[index].Conditions[j].Right = &SelectorCallbackField{
 						Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Properties[targetPath[2]].Type,
 						Value: rightV,
 					}
 					if source.Source.Ref != nil {
-						output[index].Conditions[j].Right.FromNodeKey = string(source.Source.Ref.FromNodeKey)
-						output[index].Conditions[j].Right.FromPath = source.Source.Ref.FromPath
+						output[index].Conditions[0].Right.Key = sc.GetNode(source.Source.Ref.FromNodeKey).Name + "." + strings.Join(source.Source.Ref.FromPath, ".")
 						output[index].Conditions[j].Right.VarType = source.Source.Ref.VariableType
 					}
 				}
@@ -158,7 +167,7 @@ func (s *NodeSchema) ToSelectorCallbackOutput(out int) (map[string]any, error) {
 	}
 
 	if out >= 0 && out < count {
-		return map[string]any{"result": fmt.Sprintf("pass to condition %d branch", out)}, nil
+		return map[string]any{"result": fmt.Sprintf("pass to condition %d branch", out+1)}, nil
 	}
 
 	return nil, fmt.Errorf("out of range: %d", out)

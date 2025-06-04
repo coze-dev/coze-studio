@@ -32,13 +32,16 @@ type Event struct {
 
 	*Context
 
-	Duration  time.Duration
-	Input     map[string]any
-	Output    map[string]any
-	Answer    string // if the node is output_emitter or exit node with answer as terminate plan, this field will be set
+	Duration time.Duration
+	Input    map[string]any
+	Output   map[string]any
+
+	// if the node is output_emitter or exit node with answer as terminate plan, this field will be set.
+	// it contains the incremental change in the output.
+	Answer    string
 	StreamEnd bool
 
-	RawOutput map[string]any // TODO: fill this when needed
+	RawOutput map[string]any
 
 	Err   *ErrorInfo
 	Token *TokenInfo
@@ -47,6 +50,9 @@ type Event struct {
 
 	functionCall *entity.FunctionCallInfo
 	toolResponse *entity.ToolResponseInfo
+
+	outputExtractor func(o map[string]any) string
+	extra           *entity.NodeExtra
 }
 
 type ErrorLevel string

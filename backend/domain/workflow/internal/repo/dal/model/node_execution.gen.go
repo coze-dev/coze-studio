@@ -28,6 +28,7 @@ type NodeExecution struct {
 	CompositeNodeItems string `gorm:"column:composite_node_items;comment:the items extracted from parent composite node for this index" json:"composite_node_items"` // the items extracted from parent composite node for this index
 	ParentNodeID       string `gorm:"column:parent_node_id;comment:when as inner node for loop or batch, this is the parent node's key" json:"parent_node_id"`       // when as inner node for loop or batch, this is the parent node's key
 	SubExecuteID       int64  `gorm:"column:sub_execute_id;comment:if this node is sub_workflow, the exe id of the sub workflow" json:"sub_execute_id"`              // if this node is sub_workflow, the exe id of the sub workflow
+	Extra              string `gorm:"column:extra;comment:extra info" json:"extra"`                                                                                  // extra info
 }
 
 // TableName NodeExecution's table name

@@ -153,8 +153,29 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 		canStream    = true
 	)
 
+	format := cfg.OutputFormat
+	if format == FormatJSON {
+		if len(cfg.OutputFields) == 1 {
+			for _, v := range cfg.OutputFields {
+				if v.Type == vo.DataTypeString {
+					format = FormatText
+					break
+				}
+			}
+		} else if len(cfg.OutputFields) == 2 {
+			if _, ok := cfg.OutputFields[reasoningOutputKey]; ok {
+				for k, v := range cfg.OutputFields {
+					if k != reasoningOutputKey && v.Type == vo.DataTypeString {
+						format = FormatText
+						break
+					}
+				}
+			}
+		}
+	}
+
 	userPrompt := cfg.UserPrompt
-	switch cfg.OutputFormat {
+	switch format {
 	case FormatJSON:
 		jsonSchema, err := vo.TypeInfoToJSONSchema(cfg.OutputFields, nil)
 		if err != nil {
@@ -198,34 +219,13 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 			return nil, err
 		}
 
-		agentNode, opts := reactAgent.ExportGraph()
+		agentNode, opts := reactAgent.ExportGraph() // TODO: need to pipe the intermediate content to the final output
 		_ = g.AddGraphNode(llmNodeKey, agentNode, opts...)
 	} else {
 		_ = g.AddChatModelNode(llmNodeKey, cfg.ChatModel)
 	}
 
 	_ = g.AddEdge(templateNodeKey, llmNodeKey)
-
-	format := cfg.OutputFormat
-	if format == FormatJSON {
-		if len(cfg.OutputFields) == 1 {
-			for _, v := range cfg.OutputFields {
-				if v.Type == vo.DataTypeString {
-					format = FormatText
-					break
-				}
-			}
-		} else if len(cfg.OutputFields) == 2 {
-			if _, ok := cfg.OutputFields[reasoningOutputKey]; ok {
-				for k, v := range cfg.OutputFields {
-					if k != reasoningOutputKey && v.Type == vo.DataTypeString {
-						format = FormatText
-						break
-					}
-				}
-			}
-		}
-	}
 
 	if format == FormatJSON {
 		iConvert := func(_ context.Context, msg *schema.Message) (map[string]any, error) {

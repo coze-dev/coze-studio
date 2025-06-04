@@ -298,6 +298,7 @@ func (w *Workflow) getInnerWorkflow(ctx context.Context, cNode *CompositeNode) (
 		connections:       innerConnections,
 		inner:             true,
 		requireCheckpoint: w.requireCheckpoint,
+		schema:            w.schema,
 	}
 
 	carryOvers := make(map[vo.NodeKey][]*compose.FieldMapping)

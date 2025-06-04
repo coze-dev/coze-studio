@@ -338,15 +338,38 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 	case NodeEnd, NodeEndStreaming:
 		nodeExec := &entity.NodeExecution{
-			ID:        event.NodeExecuteID,
-			Status:    entity.NodeSuccess,
-			Output:    ptr.Of(mustMarshalToString(event.Output)),
-			RawOutput: ptr.Of(mustMarshalToString(event.RawOutput)),
-			Duration:  event.Duration,
+			ID:       event.NodeExecuteID,
+			Status:   entity.NodeSuccess,
+			Duration: event.Duration,
 			TokenInfo: &entity.TokenUsage{
 				InputTokens:  event.GetInputTokens(),
 				OutputTokens: event.GetOutputTokens(),
 			},
+			Extra: event.extra,
+		}
+
+		if event.outputExtractor != nil {
+			nodeExec.Output = ptr.Of(event.outputExtractor(event.Output))
+			nodeExec.RawOutput = ptr.Of(event.outputExtractor(event.RawOutput))
+		} else {
+			nodeExec.Output = ptr.Of(mustMarshalToString(event.Output))
+			nodeExec.RawOutput = ptr.Of(mustMarshalToString(event.RawOutput))
+		}
+
+		fcInfos := getFCInfos(ctx, event.NodeKey)
+		if len(fcInfos) > 0 {
+			if nodeExec.Extra.ResponseExtra == nil {
+				nodeExec.Extra.ResponseExtra = &entity.ResponseExtra{}
+			}
+			nodeExec.Extra.ResponseExtra.FCCalledDetail = &entity.FCCalledDetail{
+				FCCalledList: make([]*entity.FCCalled, 0, len(fcInfos)),
+			}
+			for _, fcInfo := range fcInfos {
+				nodeExec.Extra.ResponseExtra.FCCalledDetail.FCCalledList = append(nodeExec.Extra.ResponseExtra.FCCalledDetail.FCCalledList, &entity.FCCalled{
+					Input:  fcInfo.inputString(),
+					Output: fcInfo.outputString(),
+				})
+			}
 		}
 
 		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
@@ -396,9 +419,15 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 	case NodeStreamingOutput:
 		nodeExec := &entity.NodeExecution{
-			ID:     event.NodeExecuteID,
-			Output: ptr.Of(mustMarshalToString(event.Output)),
+			ID: event.NodeExecuteID,
 		}
+
+		if event.outputExtractor != nil {
+			nodeExec.Output = ptr.Of(event.outputExtractor(event.Output))
+		} else {
+			nodeExec.Output = ptr.Of(mustMarshalToString(event.Output))
+		}
+
 		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
 			return noTerminate, fmt.Errorf("failed to save node execution: %v", err)
 		}
@@ -459,6 +488,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			return noTerminate, fmt.Errorf("failed to save node execution: %v", err)
 		}
 	case FunctionCall:
+		cacheFunctionCall(ctx, event)
 		if sw == nil {
 			return noTerminate, nil
 		}
@@ -471,6 +501,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			},
 		}, nil)
 	case ToolResponse:
+		cacheToolResponse(ctx, event)
 		if sw == nil {
 			return noTerminate, nil
 		}
@@ -484,6 +515,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			},
 		}, nil)
 	case ToolStreamingResponse:
+		cacheToolStreamingResponse(ctx, event)
 		if sw == nil {
 			return noTerminate, nil
 		}
@@ -505,6 +537,12 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 	return noTerminate, nil
 }
 
+type fcCacheKey struct{}
+type fcInfo struct {
+	input  *entity.FunctionCallInfo
+	output *entity.ToolResponseInfo
+}
+
 func HandleExecuteEvent(ctx context.Context,
 	eventChan <-chan *Event, // workflow execution event emitted by workflow handler and node handlers
 	cancelFn context.CancelFunc, // func to cancel the context given to running workflow
@@ -520,6 +558,8 @@ func HandleExecuteEvent(ctx context.Context,
 		wfSuccessEvent *Event
 		lastNodeIsDone bool
 	)
+
+	ctx = context.WithValue(ctx, fcCacheKey{}, make(map[vo.NodeKey]map[string]*fcInfo))
 
 	for {
 		select {
@@ -563,6 +603,64 @@ func mustMarshalToString[T any](m map[string]T) string {
 	}
 
 	b, err := sonic.ConfigStd.MarshalToString(m) // keep the order of the keys
+	if err != nil {
+		panic(err)
+	}
+	return b
+}
+
+func cacheFunctionCall(ctx context.Context, event *Event) {
+	c := ctx.Value(fcCacheKey{}).(map[vo.NodeKey]map[string]*fcInfo)
+	if _, ok := c[event.NodeKey]; !ok {
+		c[event.NodeKey] = make(map[string]*fcInfo)
+	}
+	c[event.NodeKey][event.functionCall.CallID] = &fcInfo{
+		input: event.functionCall,
+	}
+}
+
+func cacheToolResponse(ctx context.Context, event *Event) {
+	c := ctx.Value(fcCacheKey{}).(map[vo.NodeKey]map[string]*fcInfo)
+	if _, ok := c[event.NodeKey]; !ok {
+		c[event.NodeKey] = make(map[string]*fcInfo)
+	}
+
+	c[event.NodeKey][event.toolResponse.CallID].output = event.toolResponse
+}
+
+func cacheToolStreamingResponse(ctx context.Context, event *Event) {
+	c := ctx.Value(fcCacheKey{}).(map[vo.NodeKey]map[string]*fcInfo)
+	if _, ok := c[event.NodeKey]; !ok {
+		c[event.NodeKey] = make(map[string]*fcInfo)
+	}
+	if c[event.NodeKey][event.toolResponse.CallID].output == nil {
+		c[event.NodeKey][event.toolResponse.CallID].output = event.toolResponse
+	}
+	c[event.NodeKey][event.toolResponse.CallID].output.Response += event.toolResponse.Response
+}
+
+func getFCInfos(ctx context.Context, nodeKey vo.NodeKey) map[string]*fcInfo {
+	c := ctx.Value(fcCacheKey{}).(map[vo.NodeKey]map[string]*fcInfo)
+	return c[nodeKey]
+}
+
+func (f *fcInfo) inputString() string {
+	m, err := sonic.MarshalString(f.input)
+	if err != nil {
+		panic(err)
+	}
+	return m
+}
+
+func (f *fcInfo) outputString() string {
+	if f.output == nil {
+		return ""
+	}
+
+	m := map[string]any{
+		"data": f.output.Response, // TODO: traceID, code, message?
+	}
+	b, err := sonic.MarshalString(m)
 	if err != nil {
 		panic(err)
 	}

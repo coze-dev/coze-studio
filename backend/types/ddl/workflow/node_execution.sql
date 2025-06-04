@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS `node_execution`
     composite_node_items mediumtext       null comment 'the items extracted from parent composite node for this index',
     parent_node_id       varchar(128)     null comment 'when as inner node for loop or batch, this is the parent node''s key',
     sub_execute_id       bigint unsigned  null comment 'if this node is sub_workflow, the exe id of the sub workflow',
+    extra                mediumtext       null comment 'extra info',
 
     KEY `idx_execute_id_node_id` (execute_id, node_id),
     KEY `idx_execute_id_parent_node_id` (execute_id, parent_node_id)

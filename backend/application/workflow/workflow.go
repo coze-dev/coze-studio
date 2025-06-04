@@ -578,6 +578,14 @@ func convertNodeExecution(nodeExe *entity.NodeExecution) (*workflow.NodeResult, 
 		nr.Batch = ptr.Of(m)
 	}
 
+	if nodeExe.Extra != nil {
+		m, err := sonic.MarshalString(nodeExe.Extra)
+		if err != nil {
+			return nil, err
+		}
+		nr.Extra = m
+	}
+
 	return nr, nil
 }
 

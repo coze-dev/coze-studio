@@ -3,6 +3,8 @@ package selector
 import (
 	"fmt"
 	"reflect"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 type Operator string
@@ -95,4 +97,47 @@ func (o *Operator) WillAccept(leftT, rightT reflect.Type) error {
 	}
 
 	return nil
+}
+
+func (o *Operator) ToCanvasOperatorType() vo.OperatorType {
+	switch *o {
+	case OperatorEqual:
+		return vo.Equal
+	case OperatorNotEqual:
+		return vo.NotEqual
+	case OperatorEmpty:
+		return vo.Empty
+	case OperatorNotEmpty:
+		return vo.NotEmpty
+	case OperatorGreater:
+		return vo.GreaterThan
+	case OperatorGreaterOrEqual:
+		return vo.GreaterThanEqual
+	case OperatorLesser:
+		return vo.LessThan
+	case OperatorLesserOrEqual:
+		return vo.LessThanEqual
+	case OperatorIsTrue:
+		return vo.True
+	case OperatorIsFalse:
+		return vo.False
+	case OperatorLengthGreater:
+		return vo.LengthGreaterThan
+	case OperatorLengthGreaterOrEqual:
+		return vo.LengthGreaterThanEqual
+	case OperatorLengthLesser:
+		return vo.LengthLessThan
+	case OperatorLengthLesserOrEqual:
+		return vo.LengthLessThanEqual
+	case OperatorContain:
+		return vo.Contain
+	case OperatorNotContain:
+		return vo.NotContain
+	case OperatorContainKey:
+		return vo.Contain
+	case OperatorNotContainKey:
+		return vo.NotContain
+	default:
+		panic(fmt.Sprintf("unknown operator: %+v", o))
+	}
 }

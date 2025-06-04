@@ -854,7 +854,7 @@ func SetOutputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema) error {
 	return nil
 }
 
-func ToSelectorOperator(o vo.OperatorType) (selector.Operator, error) {
+func ToSelectorOperator(o vo.OperatorType, leftType *vo.TypeInfo) (selector.Operator, error) {
 	switch o {
 	case vo.Equal:
 		return selector.OperatorEqual, nil
@@ -869,8 +869,14 @@ func ToSelectorOperator(o vo.OperatorType) (selector.Operator, error) {
 	case vo.LengthLessThanEqual:
 		return selector.OperatorLengthLesserOrEqual, nil
 	case vo.Contain:
+		if leftType.Type == vo.DataTypeObject {
+			return selector.OperatorContainKey, nil
+		}
 		return selector.OperatorContain, nil
 	case vo.NotContain:
+		if leftType.Type == vo.DataTypeObject {
+			return selector.OperatorNotContainKey, nil
+		}
 		return selector.OperatorNotContain, nil
 	case vo.Empty:
 		return selector.OperatorEmpty, nil

@@ -1,5 +1,11 @@
 package selector
 
+import (
+	"fmt"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+)
+
 type ClauseRelation string
 
 const (
@@ -19,4 +25,14 @@ type OneClauseSchema struct {
 type MultiClauseSchema struct {
 	Clauses  []*Operator    `json:"clauses"`
 	Relation ClauseRelation `json:"relation"`
+}
+
+func (c ClauseRelation) ToVOLogicType() vo.LogicType {
+	if c == ClauseRelationAND {
+		return vo.AND
+	} else if c == ClauseRelationOR {
+		return vo.OR
+	}
+
+	panic(fmt.Sprintf("unknown clause relation: %s", c))
 }
