@@ -36,7 +36,7 @@ func parseDocx(config *contract.Config, storage storage.Storage, ocr ocr.OCR) pa
 		cs := config.ChunkingStrategy
 
 		switch cs.ChunkType {
-		case contract.ChunkTypeCustom:
+		case contract.ChunkTypeCustom, contract.ChunkTypeDefault:
 
 			var (
 				last       *schema.Document

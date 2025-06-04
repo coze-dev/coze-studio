@@ -9,6 +9,7 @@ type RetrievalStrategy = knowledge.RetrievalStrategy
 
 // ParsingStrategy for document parse before indexing
 type ParsingStrategy struct {
+	ParsingType ParsingType `json:"parsing_type"` // 解析类型
 	// Doc
 	ExtractImage bool `json:"extract_image"` // 提取图片元素
 	ExtractTable bool `json:"extract_table"` // 提取表格元素
@@ -22,6 +23,12 @@ type ParsingStrategy struct {
 
 	// Image
 }
+type ParsingType int64
+
+const (
+	ParsingType_FastParsing     ParsingType = 0
+	ParsingType_AccurateParsing ParsingType = 1
+)
 
 // ChunkingStrategy for document chunk before indexing
 type ChunkingStrategy struct {

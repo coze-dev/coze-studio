@@ -532,10 +532,17 @@ func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request *knowledge
 	if err != nil {
 		return nil, err
 	}
-
+	doc.ParseRule.ChunkingStrategy = request.ChunkingStrategy
+	doc.ParseRule.ParsingStrategy = request.ParsingStrategy
+	doc.Status = int32(entity.DocumentStatusChunking)
+	err = k.documentRepo.Update(ctx, doc)
+	if err != nil {
+		return nil, err
+	}
 	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(strconv.FormatInt(docEntity.KnowledgeID, 10))); err != nil {
 		return nil, err
 	}
+	docEntity.Status = entity.DocumentStatusChunking
 	return &knowledge.ResegmentDocumentResponse{
 		Document: docEntity,
 	}, nil

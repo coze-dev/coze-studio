@@ -407,6 +407,12 @@ func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dat
 		res.ExtractImage = strategy.GetImageExtraction()
 		res.ExtractTable = strategy.GetTableExtraction()
 		res.ImageOCR = strategy.GetImageOcr()
+		res.ParsingType = convertParsingType2Entity(strategy.GetParsingType())
+		if strategy.GetParsingType() == dataset.ParsingType_FastParsing {
+			res.ExtractImage = false
+			res.ExtractTable = false
+			res.ImageOCR = false
+		}
 	}
 	if sheet != nil {
 		res.SheetID = sheet.GetSheetID()
@@ -414,6 +420,17 @@ func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dat
 		res.DataStartLine = int(sheet.GetStartLineIdx())
 	}
 	return res
+}
+
+func convertParsingType2Entity(pt dataset.ParsingType) entity.ParsingType {
+	switch pt {
+	case dataset.ParsingType_AccurateParsing:
+		return entity.ParsingType_AccurateParsing
+	case dataset.ParsingType_FastParsing:
+		return entity.ParsingType_FastParsing
+	default:
+		return entity.ParsingType_FastParsing
+	}
 }
 
 func convertParsingStrategy2Model(strategy *entity.ParsingStrategy) (s *dataset.ParsingStrategy, sheet *dataset.TableSheet) {
@@ -426,19 +443,29 @@ func convertParsingStrategy2Model(strategy *entity.ParsingStrategy) (s *dataset.
 		StartLineIdx:  int64(strategy.DataStartLine),
 	}
 	return &dataset.ParsingStrategy{
+		ParsingType:     ptr.Of(convertParsingType2Model(strategy.ParsingType)),
 		ImageExtraction: &strategy.ExtractImage,
 		TableExtraction: &strategy.ExtractTable,
 		ImageOcr:        &strategy.ImageOCR,
 	}, sheet
 }
-
+func convertParsingType2Model(pt entity.ParsingType) dataset.ParsingType {
+	switch pt {
+	case entity.ParsingType_AccurateParsing:
+		return dataset.ParsingType_AccurateParsing
+	case entity.ParsingType_FastParsing:
+		return dataset.ParsingType_FastParsing
+	default:
+		return dataset.ParsingType_FastParsing
+	}
+}
 func convertChunkingStrategy2Entity(strategy *dataset.ChunkStrategy) *entity.ChunkingStrategy {
 	if strategy == nil {
 		return nil
 	}
 	if strategy.ChunkType == dataset.ChunkType_DefaultChunk {
 		return &entity.ChunkingStrategy{
-			ChunkType:       convertChunkType2Entity(dataset.ChunkType_CustomChunk),
+			ChunkType:       convertChunkType2Entity(dataset.ChunkType_DefaultChunk),
 			ChunkSize:       defaultChunkSize,
 			Separator:       defaultSeparator,
 			Overlap:         defaultOverlap,

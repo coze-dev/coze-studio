@@ -45,7 +45,7 @@ func parsePDF(config *contract.Config) parseFn {
 		}
 
 		switch config.ChunkingStrategy.ChunkType {
-		case contract.ChunkTypeCustom:
+		case contract.ChunkTypeCustom, contract.ChunkTypeDefault:
 			docs, err = chunkCustom(ctx, buf.String(), config, opts...)
 		default:
 			return nil, fmt.Errorf("[parsePDF] chunk type not support, type=%d", config.ChunkingStrategy.ChunkType)

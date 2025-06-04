@@ -140,7 +140,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	// 2. rebalance 重复消费同一条消息
 
 	// check knowledge and document status
-	if valid, err := k.isWritableKnowledgeAndDocument(ctx, event.KnowledgeID, doc.ID); err != nil {
+	if valid, err := k.isWritableKnowledgeAndDocument(ctx, doc.KnowledgeID, doc.ID); err != nil {
 		return err
 	} else if !valid {
 		return errorx.New(errno.ErrKnowledgeNonRetryableCode,
@@ -338,8 +338,8 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		return err
 	}
 
-	// TODO: 更新 size + slice count + char count
 	// set document status
+
 	if err = k.documentRepo.SetStatus(ctx, doc.ID, int32(entity.DocumentStatusEnable), ""); err != nil {
 		return err
 	}

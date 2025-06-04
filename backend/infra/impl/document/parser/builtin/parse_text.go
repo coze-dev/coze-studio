@@ -19,7 +19,7 @@ func parseText(config *contract.Config) parseFn {
 		}
 
 		switch config.ChunkingStrategy.ChunkType {
-		case contract.ChunkTypeCustom:
+		case contract.ChunkTypeCustom, contract.ChunkTypeDefault:
 			docs, err = chunkCustom(ctx, string(content), config, opts...)
 		default:
 			return nil, fmt.Errorf("[parseText] chunk type not support, type=%d", config.ChunkingStrategy.ChunkType)
