@@ -787,7 +787,7 @@ func TestUpsertData(t *testing.T) {
 				name VARCHAR(255) NOT NULL,
 				age INT,
 				status VARCHAR(20) DEFAULT 'active',
-				PRIMARY KEY (id),
+				PRIMARY KEY (age),
 				UNIQUE KEY idx_name (name)
 			)
 		`).Error
@@ -819,7 +819,7 @@ func TestUpsertData(t *testing.T) {
 				{
 					"id":     1,
 					"name":   "John Doe Updated",
-					"age":    36,
+					"age":    30,
 					"status": "primary key updated",
 				},
 				{
@@ -831,7 +831,7 @@ func TestUpsertData(t *testing.T) {
 				{
 					"id":     4,
 					"name":   "New Person 2",
-					"age":    40,
+					"age":    45,
 					"status": "active",
 				},
 			},

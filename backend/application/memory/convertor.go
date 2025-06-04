@@ -110,16 +110,6 @@ func convertDatabaseRes(db *entity.Database) *table.DatabaseInfo {
 		})
 	}
 
-	var draftID *int64
-	if db.DraftID != nil {
-		draftID = db.DraftID
-	}
-
-	var isAddedToBot *bool
-	if db.IsAddedToAgent != nil {
-		isAddedToBot = db.IsAddedToAgent
-	}
-
 	return &table.DatabaseInfo{
 		ID:               db.ID,
 		SpaceID:          db.SpaceID,
@@ -137,9 +127,9 @@ func convertDatabaseRes(db *entity.Database) *table.DatabaseInfo {
 		RwMode:           table.BotTableRWMode(db.RwMode),
 		PromptDisabled:   db.PromptDisabled,
 		IsVisible:        db.IsVisible,
-		DraftID:          draftID,
+		DraftID:          db.DraftID,
 		ExtraInfo:        db.ExtraInfo,
-		IsAddedToBot:     isAddedToBot,
+		IsAddedToBot:     db.IsAddedToAgent,
 		DatamodelTableID: getDataModelTableID(db.ActualTableName),
 	}
 }

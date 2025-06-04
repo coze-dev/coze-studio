@@ -150,6 +150,7 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 
 	onlineEntity.ActualTableName = onlinePhysicalTableRes.Table.Name
 	onlineEntity.ID = onlineID
+	onlineEntity.DraftID = ptr.Of(draftID)
 	objURL, uRrr := d.storage.GetObjectUrl(ctx, onlineEntity.IconURI)
 	if uRrr == nil {
 		onlineEntity.IconURL = objURL
