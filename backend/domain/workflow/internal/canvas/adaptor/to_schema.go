@@ -41,7 +41,7 @@ func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (sc *compose.Work
 		}
 	}()
 
-	connectedNodes, connectedEdges := pruneIsolatedNodes(s.Nodes, s.Edges, nil)
+	connectedNodes, connectedEdges := PruneIsolatedNodes(s.Nodes, s.Edges, nil)
 	s = &vo.Canvas{
 		Nodes: connectedNodes,
 		Edges: connectedEdges,
@@ -1703,14 +1703,14 @@ func buildClauseGroupFromCondition(condition *vo.DBCondition) (*database.ClauseG
 	return clauseGroup, nil
 }
 
-func pruneIsolatedNodes(nodes []*vo.Node, edges []*vo.Edge, parentNode *vo.Node) ([]*vo.Node, []*vo.Edge) {
+func PruneIsolatedNodes(nodes []*vo.Node, edges []*vo.Edge, parentNode *vo.Node) ([]*vo.Node, []*vo.Edge) {
 	nodeDependencyCount := map[string]int{}
 	if parentNode != nil {
 		nodeDependencyCount[parentNode.ID] = 0
 	}
 	for _, node := range nodes {
 		if len(node.Blocks) > 0 && len(node.Edges) > 0 {
-			node.Blocks, node.Edges = pruneIsolatedNodes(node.Blocks, node.Edges, node)
+			node.Blocks, node.Edges = PruneIsolatedNodes(node.Blocks, node.Edges, node)
 		}
 		nodeDependencyCount[node.ID] = 0
 	}

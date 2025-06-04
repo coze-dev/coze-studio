@@ -1605,6 +1605,15 @@ func (r *RepositoryImpl) GetDraftWorkflowsByAppID(ctx context.Context, AppID int
 	return result, wid2Named, nil
 }
 
+func (r *RepositoryImpl) HasWorkflow(ctx context.Context, appID int64) (bool, error) {
+	ct, err := r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.AppID.Eq(appID)).Count()
+	if err != nil {
+		return false, err
+	}
+	return ternary.IFElse(ct > 0, true, false), nil
+
+}
+
 func filterDisabledAPIParameters(parametersCfg []*workflow3.APIParameter, m map[string]any) map[string]any {
 	result := make(map[string]any, len(m))
 	responseParameterMap := slices.ToMap(parametersCfg, func(p *workflow3.APIParameter) (string, *workflow3.APIParameter) {

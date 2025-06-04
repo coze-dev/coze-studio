@@ -51,6 +51,7 @@ type Service interface {
 		allInterruptEvents map[string]*entity.ToolInterruptEvent) einoCompose.Option
 	CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (int64, error)
 	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
+	CheckWorkflowsExistByAppID(ctx context.Context, appID int64) (bool, error)
 }
 
 type Repository interface {
@@ -102,6 +103,7 @@ type Repository interface {
 
 	GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error)
 	BatchPublishWorkflows(ctx context.Context, workflows map[int64]*vo.VersionInfo) error
+	HasWorkflow(ctx context.Context, appID int64) (bool, error)
 }
 
 type ToolFromWorkflow interface {

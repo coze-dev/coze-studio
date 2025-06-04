@@ -921,7 +921,7 @@ func TestPruneIsolatedNodes(t *testing.T) {
 	c := &vo.Canvas{}
 	err = sonic.Unmarshal(data, c)
 	assert.NoError(t, err)
-	c.Nodes, c.Edges = pruneIsolatedNodes(c.Nodes, c.Edges, nil)
+	c.Nodes, c.Edges = PruneIsolatedNodes(c.Nodes, c.Edges, nil)
 	qaNodeID := "147187"
 	blockTextProcessNodeID := "102623"
 	for _, n := range c.Nodes {
