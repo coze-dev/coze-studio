@@ -57,7 +57,7 @@ func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
 		PublishInfoRepo:  jsoncache.New[entity.PublishInfo]("agent:publish:last:", c.Cache),
 		CounterRepo:      repository.NewCounterRepo(c.Cache),
 
-		ModelFactory: chatmodel.NewDefaultFactory(nil), // TODO(@fanlv): remove me
+		ModelFactory: chatmodel.NewDefaultFactory(),
 	}
 
 	singleAgentDomainSVC := singleagent.NewService(domainComponents)

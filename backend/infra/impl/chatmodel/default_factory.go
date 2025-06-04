@@ -15,7 +15,11 @@ import (
 
 type Builder func(ctx context.Context, config *chatmodel.Config) (chatmodel.ToolCallingChatModel, error)
 
-func NewDefaultFactory(customFactory map[chatmodel.Protocol]Builder) chatmodel.Factory {
+func NewDefaultFactory() chatmodel.Factory {
+	return NewFactory(nil)
+}
+
+func NewFactory(customFactory map[chatmodel.Protocol]Builder) chatmodel.Factory {
 	protocol2Builder := map[chatmodel.Protocol]Builder{
 		chatmodel.ProtocolOpenAI:   openAIBuilder,
 		chatmodel.ProtocolClaude:   claudeBuilder,

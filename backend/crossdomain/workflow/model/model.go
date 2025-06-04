@@ -20,7 +20,7 @@ type ModelManager struct {
 
 func NewModelManager(m modelmgr.Manager, f chatmodel.Factory) *ModelManager {
 	if f == nil {
-		f = chatmodel2.NewDefaultFactory(nil)
+		f = chatmodel2.NewDefaultFactory()
 	}
 	return &ModelManager{
 		modelMgr: m,
@@ -78,5 +78,4 @@ func (m *ModelManager) GetModel(ctx context.Context, params *model.LLMParams) (m
 	}
 
 	return cm, nil
-
 }
