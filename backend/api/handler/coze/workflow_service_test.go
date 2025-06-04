@@ -3612,6 +3612,12 @@ func TestLLMWithSkills(t *testing.T) {
 			},
 		}, nil).AnyTimes()
 
+		mPlugin.EXPECT().MGetDraftPlugins(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetDraftPluginsResponse{
+			Plugins: []*pluginentity.PluginInfo{{
+				&pluginModel.PluginInfo{ID: 7509353177339133952},
+			}},
+		}, nil).AnyTimes()
+
 		operationString := `{
   "summary" : "根据输入的解梦标题给出相关对应的解梦内容，如果返回的内容为空，给用户返回固定的话术：如果想了解自己梦境的详细解析，需要给我详细的梦见信息，例如： 梦见XXX",
   "operationId" : "xz_zgjm",
@@ -3684,6 +3690,12 @@ func TestLLMWithSkills(t *testing.T) {
 		_ = sonic.UnmarshalString(operationString, operation)
 
 		mPlugin.EXPECT().MGetOnlineTools(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlineToolsResponse{
+			Tools: []*pluginentity.ToolInfo{
+				{ID: int64(7509353598782816256), Operation: operation},
+			},
+		}, nil).AnyTimes()
+
+		mPlugin.EXPECT().MGetDraftTools(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetDraftToolsResponse{
 			Tools: []*pluginentity.ToolInfo{
 				{ID: int64(7509353598782816256), Operation: operation},
 			},
