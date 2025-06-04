@@ -83,7 +83,7 @@ struct WorkflowInfo {
     1: optional i64 WorkflowId (agw.js_conv="str", api.js_conv="true", api.body="workflow_id"), // WorkflowId
     2: optional i64 PluginId   (agw.js_conv="str", api.js_conv="true", api.body="plugin_id")  , // 插件id
     3: optional i64 ApiId      (agw.js_conv="str", api.js_conv="true", api.body="api_id")     , // api Id
-    4: optional WorkflowMode FlowMode  (agw.js_conv="str", api.js_conv="true", api.body="flow_mode") // workflow or imageflow, 默认为workflow
+    4: optional WorkflowMode FlowMode  (agw.js_conv="str", api.body="flow_mode") // workflow or imageflow, 默认为workflow
     5: optional string WorkflowName (api.body="workflow_name")   , // workflow name
     6: optional string Desc (api.body="desc", api.body="desc"),
     7: optional list<PluginParameter> Parameters (api.body="parameters", api.body="parameters"),

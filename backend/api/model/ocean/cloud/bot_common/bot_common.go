@@ -3346,7 +3346,7 @@ type WorkflowInfo struct {
 	// api Id
 	ApiId *int64 `thrift:"ApiId,3,optional" form:"api_id" json:"api_id,string,omitempty"`
 	// workflow or imageflow, 默认为workflow
-	FlowMode *WorkflowMode `thrift:"FlowMode,4,optional" form:"flow_mode" json:"flow_mode,string,omitempty"`
+	FlowMode *WorkflowMode `thrift:"FlowMode,4,optional" form:"flow_mode" json:"flow_mode,omitempty"`
 	// workflow name
 	WorkflowName *string            `thrift:"WorkflowName,5,optional" form:"workflow_name" json:"workflow_name,omitempty"`
 	Desc         *string            `thrift:"Desc,6,optional" form:"desc" form:"desc" json:"desc,omitempty"`
