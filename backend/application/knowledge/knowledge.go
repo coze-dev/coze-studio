@@ -211,7 +211,8 @@ func (k *KnowledgeApplicationService) DeleteKnowledge(ctx context.Context, req *
 	err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 		OpType: resourceEntity.Deleted,
 		Resource: &resourceEntity.ResourceDocument{
-			ResID: req.GetDatasetID(),
+			ResID:   req.GetDatasetID(),
+			ResType: resource.ResType_Knowledge,
 		},
 	})
 	if err != nil {

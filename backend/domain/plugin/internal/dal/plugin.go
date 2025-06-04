@@ -2,6 +2,7 @@ package dal
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -191,7 +192,7 @@ func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin 
 		return table.WithContext(ctx).Create(m)
 	}
 
-	updateMap := map[string]interface{}{}
+	updateMap := map[string]any{}
 	if plugin.IconURI != nil {
 		updateMap[table.IconURI.ColumnName().String()] = *plugin.IconURI
 	}
@@ -205,15 +206,23 @@ func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin 
 		updateMap[table.ServerURL.ColumnName().String()] = *plugin.ServerURL
 	}
 	if plugin.Manifest != nil {
-		updateMap[table.Manifest.ColumnName().String()] = plugin.Manifest
+		b, err := json.Marshal(plugin.Manifest)
+		if err != nil {
+			return err
+		}
+		updateMap[table.Manifest.ColumnName().String()] = b
 	}
 	if plugin.OpenapiDoc != nil {
-		updateMap[table.OpenapiDoc.ColumnName().String()] = plugin.OpenapiDoc
+		b, err := json.Marshal(plugin.OpenapiDoc)
+		if err != nil {
+			return err
+		}
+		updateMap[table.OpenapiDoc.ColumnName().String()] = b
 	}
 
 	_, err = table.WithContext(ctx).
 		Where(table.ID.Eq(plugin.ID)).
-		UpdateColumns(updateMap)
+		Updates(updateMap)
 	if err != nil {
 		return err
 	}

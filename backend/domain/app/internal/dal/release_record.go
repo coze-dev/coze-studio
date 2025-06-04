@@ -2,6 +2,7 @@ package dal
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 
 	"gorm.io/gen/field"
@@ -12,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 func NewReleaseRecordDAO(db *gorm.DB, idGen idgen.IDGenerator) *ReleaseRecordDAO {
@@ -43,6 +45,7 @@ func (a releaseRecordPO) ToDO() *entity.APP {
 		PublishRecordID:  &a.ID,
 		Version:          &a.Version,
 		VersionDesc:      &a.VersionDesc,
+		PublishStatus:    ptr.Of(consts.PublishStatus(a.PublishStatus)),
 		PublishExtraInfo: a.ExtraInfo,
 	}
 }
@@ -162,12 +165,23 @@ func (r *ReleaseRecordDAO) GetAPPAllPublishRecords(ctx context.Context, appID in
 	return apps, nil
 }
 
-func (r *ReleaseRecordDAO) UpdatePublishStatus(ctx context.Context, recordID int64, status consts.PublishStatus) (err error) {
+func (r *ReleaseRecordDAO) UpdatePublishStatus(ctx context.Context, recordID int64, status consts.PublishStatus, extraInfo *entity.PublishRecordExtraInfo) (err error) {
 	table := r.query.ReleaseRecord
+
+	updateMap := map[string]any{
+		table.PublishStatus.ColumnName().String(): int32(status),
+	}
+	if extraInfo != nil {
+		b, err := json.Marshal(extraInfo)
+		if err != nil {
+			return err
+		}
+		updateMap[table.ExtraInfo.ColumnName().String()] = b
+	}
 
 	_, err = table.WithContext(ctx).
 		Where(table.ID.Eq(recordID)).
-		Update(table.PublishStatus, int32(status))
+		Updates(updateMap)
 	if err != nil {
 		return err
 	}

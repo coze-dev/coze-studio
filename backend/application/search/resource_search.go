@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"sync"
 
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/resource"
 	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
@@ -284,15 +285,15 @@ func (s *SearchApplicationService) packAPPResources(ctx context.Context, resourc
 
 	resourceGroups := []*common.ProjectResourceGroup{
 		workflowGroup,
-		dataGroup,
 		pluginGroup,
+		dataGroup,
 	}
 
 	return resourceGroups, nil
 }
 
 func (s *SearchApplicationService) packProjectResource(ctx context.Context, resource *entity.ResourceDocument) (*common.ProjectResourceInfo, error) {
-	packer, err := NewResourcePacker(resource.ResID, resource.ResType, nil)
+	packer, err := NewResourcePacker(resource.ResID, resource.ResType, s.ServiceComponents)
 	if err != nil {
 		return nil, err
 	}
@@ -302,12 +303,28 @@ func (s *SearchApplicationService) packProjectResource(ctx context.Context, reso
 		ResType:    resource.ResType,
 		ResSubType: resource.ResSubType,
 		Name:       resource.GetName(),
-		Actions:    packer.GetProjectActions(ctx),
+		Actions:    packer.GetProjectDefaultActions(ctx),
 	}
 
 	if resource.ResType == common.ResType_Knowledge {
 		info.BizExtend = map[string]string{
 			"format_type": strconv.FormatInt(int64(resource.GetResSubType()), 10),
+		}
+		di, err := packer.GetDataInfo(ctx)
+		if err != nil {
+			logs.CtxWarnf(ctx, "GetDataInfo failed, resID=%d, resType=%d, err=%v",
+				resource.ResID, resource.ResType, err)
+		} else {
+			info.BizResStatus = ptr.Of(*di.status)
+			if *di.status == int32(knowledgeModel.KnowledgeStatusDisable) {
+				actions := slices.Clone(info.Actions)
+				for _, a := range actions {
+					if a.Key == common.ProjectResourceActionKey_Disable {
+						a.Key = common.ProjectResourceActionKey_Enable
+						break
+					}
+				}
+			}
 		}
 	}
 

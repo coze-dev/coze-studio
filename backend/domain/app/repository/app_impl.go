@@ -155,7 +155,7 @@ func (a *appRepoImpl) CreateAPPPublishRecord(ctx context.Context, req *CreateAPP
 }
 
 func (a *appRepoImpl) UpdateAPPPublishStatus(ctx context.Context, req *UpdateAPPPublishStatusRequest) (err error) {
-	return a.releaseRecordDAO.UpdatePublishStatus(ctx, req.RecordID, req.PublishStatus)
+	return a.releaseRecordDAO.UpdatePublishStatus(ctx, req.RecordID, req.PublishStatus, req.PublishRecordExtraInfo)
 }
 
 func (a *appRepoImpl) UpdateConnectorPublishStatus(ctx context.Context, recordID int64, status consts.ConnectorPublishStatus) (err error) {

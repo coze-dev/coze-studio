@@ -329,12 +329,6 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 	mustQueries := make([]types.Query, 0, 10)
 	mustNotQueries := make([]types.Query, 0, 10)
 
-	mustQueries = append(mustQueries,
-		types.Query{Term: map[string]types.TermQuery{
-			fieldOfSpaceID: {Value: conv.Int64ToStr(req.SpaceID)},
-		}},
-	)
-
 	if req.APPID > 0 {
 		mustQueries = append(mustQueries,
 			types.Query{
@@ -343,6 +337,11 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 				},
 			})
 	} else {
+		mustQueries = append(mustQueries,
+			types.Query{Term: map[string]types.TermQuery{
+				fieldOfSpaceID: {Value: conv.Int64ToStr(req.SpaceID)},
+			}},
+		)
 		mustNotQueries = append(mustNotQueries,
 			types.Query{
 				Exists: &types.ExistsQuery{

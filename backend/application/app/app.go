@@ -150,7 +150,8 @@ func (a *APPApplicationService) DraftProjectDelete(ctx context.Context, req *pro
 	err = a.projectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		OpType: searchEntity.Deleted,
 		Project: &searchEntity.ProjectDocument{
-			ID: req.ProjectID,
+			ID:   req.ProjectID,
+			Type: common.IntelligenceType_Project,
 		},
 	})
 

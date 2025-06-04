@@ -2,10 +2,10 @@ package dal
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
-	"github.com/bytedance/sonic"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
@@ -399,26 +399,26 @@ func (t *ToolDraftDAO) ResetAllDebugStatusWithTX(ctx context.Context, tx *query.
 func (t *ToolDraftDAO) getToolDraftUpdateMap(tool *entity.ToolInfo) (map[string]any, error) {
 	table := t.query.ToolDraft
 
-	m := map[string]any{}
+	updateMap := map[string]any{}
 	if tool.Operation != nil {
-		str, err := sonic.MarshalString(tool.Operation)
+		b, err := json.Marshal(tool.Operation)
 		if err != nil {
 			return nil, err
 		}
-		m[table.Operation.ColumnName().String()] = str
+		updateMap[table.Operation.ColumnName().String()] = b
 	}
 	if tool.SubURL != nil {
-		m[table.SubURL.ColumnName().String()] = *tool.SubURL
+		updateMap[table.SubURL.ColumnName().String()] = *tool.SubURL
 	}
 	if tool.Method != nil {
-		m[table.Method.ColumnName().String()] = *tool.Method
+		updateMap[table.Method.ColumnName().String()] = *tool.Method
 	}
 	if tool.ActivatedStatus != nil {
-		m[table.ActivatedStatus.ColumnName().String()] = int32(*tool.ActivatedStatus)
+		updateMap[table.ActivatedStatus.ColumnName().String()] = int32(*tool.ActivatedStatus)
 	}
 	if tool.DebugStatus != nil {
-		m[table.DebugStatus.ColumnName().String()] = int32(*tool.DebugStatus)
+		updateMap[table.DebugStatus.ColumnName().String()] = int32(*tool.DebugStatus)
 	}
 
-	return m, nil
+	return updateMap, nil
 }

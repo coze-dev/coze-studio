@@ -70,7 +70,7 @@ type PublishRecord struct {
 }
 
 type PublishRecordExtraInfo struct {
-	PackFailedInfo []*PackResourceFailedInfo
+	PackFailedInfo []*PackResourceFailedInfo `json:"pack_failed_info,omitempty"`
 }
 
 func (p *PublishRecordExtraInfo) ToVO() *publishAPI.PublishRecordStatusDetail {
@@ -81,9 +81,9 @@ func (p *PublishRecordExtraInfo) ToVO() *publishAPI.PublishRecordStatusDetail {
 	packFailedDetail := make([]*publishAPI.PackFailedDetail, 0, len(p.PackFailedInfo))
 	for _, info := range p.PackFailedInfo {
 		packFailedDetail = append(packFailedDetail, &publishAPI.PackFailedDetail{
-			EntityID:   info.ResourceID,
-			EntityType: common.ResourceType(info.ResourceType),
-			EntityName: info.ResourceName,
+			EntityID:   info.ResID,
+			EntityType: common.ResourceType(info.ResType),
+			EntityName: info.ResName,
 		})
 	}
 
@@ -93,7 +93,7 @@ func (p *PublishRecordExtraInfo) ToVO() *publishAPI.PublishRecordStatusDetail {
 }
 
 type PackResourceFailedInfo struct {
-	ResourceID   int64
-	ResourceType resource.ResType
-	ResourceName string
+	ResID   int64            `json:"res_id"`
+	ResType resource.ResType `json:"res_type"`
+	ResName string           `json:"res_name"`
 }

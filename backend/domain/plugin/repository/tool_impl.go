@@ -61,6 +61,7 @@ func (t *toolRepoImpl) GetDraftTool(ctx context.Context, toolID int64) (tool *en
 func (t *toolRepoImpl) MGetDraftTools(ctx context.Context, toolIDs []int64, opts ...ToolSelectedOptions) (tools []*entity.ToolInfo, err error) {
 	var opt *dal.ToolSelectedOption
 	if len(opts) > 0 {
+		opt = &dal.ToolSelectedOption{}
 		for _, o := range opts {
 			o(opt)
 		}
@@ -71,6 +72,7 @@ func (t *toolRepoImpl) MGetDraftTools(ctx context.Context, toolIDs []int64, opts
 func (t *toolRepoImpl) GetPluginAllDraftTools(ctx context.Context, pluginID int64, opts ...ToolSelectedOptions) (tools []*entity.ToolInfo, err error) {
 	var opt *dal.ToolSelectedOption
 	if len(opts) > 0 {
+		opt = &dal.ToolSelectedOption{}
 		for _, o := range opts {
 			o(opt)
 		}

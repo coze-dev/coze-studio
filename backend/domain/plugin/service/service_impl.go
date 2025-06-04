@@ -204,10 +204,6 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 		return fmt.Errorf("draft plugin '%d' not found", req.PluginID)
 	}
 
-	if draftPlugin.GetIconURI() != mf.LogoURL {
-		return fmt.Errorf("icon uri cannot be updated by code")
-	}
-
 	if draftPlugin.GetServerURL() != doc.Servers[0].URL {
 		for _, draftTool := range oldDraftTools {
 			draftTool.DebugStatus = ptr.Of(common.APIDebugStatus_DebugWaiting)
@@ -665,13 +661,13 @@ func (p *pluginServiceImpl) GetPluginNextVersion(ctx context.Context, pluginID i
 		return defaultVersion, nil
 	}
 
-	patch, err := strconv.ParseInt(parts[3], 10, 64)
+	patch, err := strconv.ParseInt(parts[2], 10, 64)
 	if err != nil {
 		logs.CtxErrorf(ctx, "invalid version format '%s'", pl.GetVersion())
 		return defaultVersion, nil
 	}
 
-	parts[3] = strconv.FormatInt(patch+1, 10)
+	parts[2] = strconv.FormatInt(patch+1, 10)
 	nextVersion := strings.Join(parts, ".")
 
 	return nextVersion, nil
@@ -721,6 +717,11 @@ func (p *pluginServiceImpl) PublishAPPPlugins(ctx context.Context, req *PublishA
 		return nil, err
 	}
 
+	for _, draftPlugin := range draftPlugins {
+		draftPlugin.Version = &req.Version
+		resp.AllDraftPlugins = append(resp.AllDraftPlugins, draftPlugin.PluginInfo)
+	}
+
 	if len(failedPluginIDs) > 0 {
 		draftPluginMap := slices.ToMap(draftPlugins, func(plugin *entity.PluginInfo) (int64, *entity.PluginInfo) {
 			return plugin.ID, plugin
@@ -735,11 +736,6 @@ func (p *pluginServiceImpl) PublishAPPPlugins(ctx context.Context, req *PublishA
 		}
 
 		return resp, nil
-	}
-
-	for _, draftPlugin := range draftPlugins {
-		draftPlugin.Version = &req.Version
-		resp.AllDraftPlugins = append(resp.AllDraftPlugins, draftPlugin.PluginInfo)
 	}
 
 	err = p.pluginRepo.PublishPlugins(ctx, draftPlugins)
@@ -791,17 +787,23 @@ func (p *pluginServiceImpl) checkCanPublishAPPPlugins(ctx context.Context, versi
 			return nil, err
 		}
 
+		if len(res) == 0 {
+			logs.CtxErrorf(ctx, "no tools in plugin '%d'", draftPlugin.ID)
+			failedPluginIDs = append(failedPluginIDs, draftPlugin.ID)
+			continue
+		}
+
 		for _, tool := range res {
-			if tool.GetActivatedStatus() == model.DeactivateTool {
+			if tool.GetDebugStatus() != common.APIDebugStatus_DebugWaiting {
 				continue
 			}
-			if tool.GetDebugStatus() == common.APIDebugStatus_DebugWaiting {
-				failedPluginIDs = append(failedPluginIDs, draftPlugin.ID)
-			}
+			logs.CtxErrorf(ctx, "tool '%d' in plugin '%d' has not been debugged yet", tool.ID, draftPlugin.ID)
+			failedPluginIDs = append(failedPluginIDs, draftPlugin.ID)
+			break
 		}
 	}
+
 	if len(failedPluginIDs) > 0 {
-		logs.CtxErrorf(ctx, "invalid debug status of plugins '%v'", failedPluginIDs)
 		return failedPluginIDs, nil
 	}
 

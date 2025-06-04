@@ -28,7 +28,7 @@ var defaultAction = []*common.ResourceAction{
 type ResourcePacker interface {
 	GetDataInfo(ctx context.Context) (*dataInfo, error)
 	GetActions(ctx context.Context) []*common.ResourceAction
-	GetProjectActions(ctx context.Context) []*common.ProjectResourceAction
+	GetProjectDefaultActions(ctx context.Context) []*common.ProjectResourceAction
 }
 
 func NewResourcePacker(resID int64, t common.ResType, appContext *ServiceComponents) (ResourcePacker, error) {
@@ -59,13 +59,14 @@ type dataInfo struct {
 	iconURI *string
 	iconURL string
 	desc    *string
+	status  *int32
 }
 
 func (b *resourceBasePacker) GetActions(ctx context.Context) []*common.ResourceAction {
 	return defaultAction
 }
 
-func (b *resourceBasePacker) GetProjectActions(ctx context.Context) []*common.ProjectResourceAction {
+func (b *resourceBasePacker) GetProjectDefaultActions(ctx context.Context) []*common.ProjectResourceAction {
 	return []*common.ProjectResourceAction{}
 }
 
@@ -93,7 +94,7 @@ func (p *pluginPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	}, nil
 }
 
-func (p *pluginPacker) GetProjectActions(ctx context.Context) []*common.ProjectResourceAction {
+func (p *pluginPacker) GetProjectDefaultActions(ctx context.Context) []*common.ProjectResourceAction {
 	return []*common.ProjectResourceAction{
 		{
 			Key:    common.ProjectResourceActionKey_Rename,
@@ -135,7 +136,7 @@ func (w *workflowPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	}, nil
 }
 
-func (w *workflowPacker) GetProjectActions(ctx context.Context) []*common.ProjectResourceAction {
+func (w *workflowPacker) GetProjectDefaultActions(ctx context.Context) []*common.ProjectResourceAction {
 	return []*common.ProjectResourceAction{
 		{
 			Key:    common.ProjectResourceActionKey_Rename,
@@ -181,14 +182,17 @@ func (k *knowledgePacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 		return nil, fmt.Errorf("knowledge not found by id: %d", k.resID)
 	}
 
+	kn := listResp.KnowledgeList[0]
+
 	return &dataInfo{
-		iconURI: ptr.Of(listResp.KnowledgeList[0].IconURI),
-		iconURL: listResp.KnowledgeList[0].IconURL,
-		desc:    ptr.Of(listResp.KnowledgeList[0].Description),
+		iconURI: ptr.Of(kn.IconURI),
+		iconURL: kn.IconURL,
+		desc:    ptr.Of(kn.Description),
+		status:  ptr.Of(int32(kn.Status)),
 	}, nil
 }
 
-func (k *knowledgePacker) GetProjectActions(ctx context.Context) []*common.ProjectResourceAction {
+func (k *knowledgePacker) GetProjectDefaultActions(ctx context.Context) []*common.ProjectResourceAction {
 	return []*common.ProjectResourceAction{
 		{
 			Key:    common.ProjectResourceActionKey_Rename,
@@ -267,7 +271,7 @@ func (d *databasePacker) GetActions(ctx context.Context) []*common.ResourceActio
 	}
 }
 
-func (d *databasePacker) GetProjectActions(ctx context.Context) []*common.ProjectResourceAction {
+func (d *databasePacker) GetProjectDefaultActions(ctx context.Context) []*common.ProjectResourceAction {
 	return []*common.ProjectResourceAction{
 		{
 			Key:    common.ProjectResourceActionKey_Copy,

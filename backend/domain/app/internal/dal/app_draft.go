@@ -107,20 +107,20 @@ func (a *APPDraftDAO) Delete(ctx context.Context, appID int64) (err error) {
 func (a *APPDraftDAO) Update(ctx context.Context, app *entity.APP) (err error) {
 	table := a.query.AppDraft
 
-	m := map[string]any{}
+	m := &model.AppDraft{}
 	if app.Name != nil {
-		m[table.Name.ColumnName().String()] = *app.Name
+		m.Name = *app.Name
 	}
 	if app.Desc != nil {
-		m[table.Desc.ColumnName().String()] = *app.Desc
+		m.Desc = *app.Desc
 	}
 	if app.IconURI != nil {
-		m[table.IconURI.ColumnName().String()] = *app.IconURI
+		m.IconURI = *app.IconURI
 	}
 
 	_, err = table.WithContext(ctx).
 		Where(table.ID.Eq(app.ID)).
-		UpdateColumns(m)
+		Updates(m)
 	if err != nil {
 		return err
 	}

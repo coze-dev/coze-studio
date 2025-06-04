@@ -147,8 +147,6 @@ func (dao *knowledgeDAO) FindKnowledgeByCondition(ctx context.Context, opts *Whe
 	}
 	if len(opts.Status) > 0 {
 		do = do.Where(k.Status.In(opts.Status...))
-	} else {
-		do = do.Where(k.Status.Neq(int32(entity.DocumentStatusDeleted))) // 不查询已经删除的文档
 	}
 	if opts.UserID != nil && *opts.UserID != 0 {
 		do = do.Where(k.CreatorID.Eq(*opts.UserID))

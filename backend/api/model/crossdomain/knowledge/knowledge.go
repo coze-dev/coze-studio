@@ -77,7 +77,7 @@ type KnowledgeStatus int64
 const (
 	KnowledgeStatusInit    KnowledgeStatus = 0
 	KnowledgeStatusEnable  KnowledgeStatus = 1
-	KnowledgeStatusDisable KnowledgeStatus = 2
+	KnowledgeStatusDisable KnowledgeStatus = 3
 )
 
 type RetrieveRequest struct {

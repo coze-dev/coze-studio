@@ -19,7 +19,7 @@ import (
 )
 
 func (a *appServiceImpl) PublishAPP(ctx context.Context, req *PublishAPPRequest) (resp *PublishAPPResponse, err error) {
-	err = a.checkCanPublishPlugins(ctx, req)
+	err = a.checkCanPublishAPP(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,6 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 			if updateSuccessErr == nil {
 				continue
 			}
-
 			updateFailedErr := a.APPRepo.UpdateAPPPublishStatus(ctx, &repository.UpdateAPPPublishStatusRequest{
 				RecordID:      recordID,
 				PublishStatus: consts.PublishStatusOfPackFailed,
@@ -102,7 +101,7 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 	return true, nil
 }
 
-func (a *appServiceImpl) checkCanPublishPlugins(ctx context.Context, req *PublishAPPRequest) (err error) {
+func (a *appServiceImpl) checkCanPublishAPP(ctx context.Context, req *PublishAPPRequest) (err error) {
 	exist, err := a.APPRepo.CheckAPPVersionExist(ctx, &repository.GetVersionAPPRequest{
 		APPID:   req.APPID,
 		Version: req.Version,
@@ -193,14 +192,13 @@ func (a *appServiceImpl) packPlugins(ctx context.Context, appID int64, version s
 	failedInfo = make([]*entity.PackResourceFailedInfo, 0, len(res.FailedPlugins))
 	for _, p := range res.FailedPlugins {
 		failedInfo = append(failedInfo, &entity.PackResourceFailedInfo{
-			ResourceID:   p.ID,
-			ResourceType: resourceCommon.ResType_Plugin,
-			ResourceName: p.GetName(),
+			ResID:   p.ID,
+			ResType: resourceCommon.ResType_Plugin,
+			ResName: p.GetName(),
 		})
 	}
 
 	return failedInfo, res.AllDraftPlugins, nil
-
 }
 
 func (a *appServiceImpl) packWorkflows(ctx context.Context, appID int64, version string, allDraftPluginIDs []int64) (workflowFailedInfoList []*entity.PackResourceFailedInfo, err error) {
@@ -219,9 +217,9 @@ func (a *appServiceImpl) packWorkflows(ctx context.Context, appID int64, version
 	workflowFailedInfoList = make([]*entity.PackResourceFailedInfo, 0, len(issues))
 	for _, issue := range issues {
 		workflowFailedInfoList = append(workflowFailedInfoList, &entity.PackResourceFailedInfo{
-			ResourceID:   issue.WorkflowID,
-			ResourceType: resourceCommon.ResType_Workflow,
-			ResourceName: issue.WorkflowName,
+			ResID:   issue.WorkflowID,
+			ResType: resourceCommon.ResType_Workflow,
+			ResName: issue.WorkflowName,
 		})
 	}
 
