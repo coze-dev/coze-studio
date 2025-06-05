@@ -485,3 +485,19 @@ func GetIconForDataset(ctx context.Context, c *app.RequestContext) {
 	}
 	c.JSON(consts.StatusOK, resp)
 }
+
+// ExtractPhotoCaption .
+// @router /api/knowledge/photo/extract_caption [POST]
+func ExtractPhotoCaption(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.ExtractPhotoCaptionRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.ExtractPhotoCaptionResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
