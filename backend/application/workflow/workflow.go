@@ -1174,6 +1174,22 @@ func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflo
 			FlowMode:   wf.Mode,
 			Version:    wf.Version,
 		}
+
+		cv := &vo.Canvas{}
+		err = sonic.UnmarshalString(*wf.Canvas, cv)
+		if err != nil {
+			return nil, err
+		}
+
+		wd.EndType, err = parseWorkflowTerminatePlanType(cv)
+		if err != nil {
+			return nil, err
+		}
+
+		if wf.APPID != nil {
+			wd.ProjectID = strconv.FormatInt(*wf.APPID, 10)
+		}
+
 		if wf.UpdatedAt != nil {
 			wd.UpdateTime = wf.UpdatedAt.Unix()
 		}
@@ -1245,8 +1261,24 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 			LatestFlowVersion:     wf.LatestFlowVersion,
 			LatestFlowVersionDesc: wf.LatestFlowVersionDesc,
 		}
+
+		cv := &vo.Canvas{}
+		err = sonic.UnmarshalString(*wf.Canvas, cv)
+		if err != nil {
+			return nil, err
+		}
+
+		wd.EndType, err = parseWorkflowTerminatePlanType(cv)
+		if err != nil {
+			return nil, err
+		}
+
 		if wf.UpdatedAt != nil {
 			wd.UpdateTime = wf.UpdatedAt.Unix()
+		}
+
+		if wf.APPID != nil {
+			wd.ProjectID = strconv.FormatInt(*wf.APPID, 10)
 		}
 
 		inputs[wfIDStr], err = toVariables(wf.InputParams)
@@ -2177,6 +2209,28 @@ func mergeWorkflowAPIParameters(latestAPIParameters []*workflow.APIParameter, ex
 			existAPIParameters = append(existAPIParameters, parameter)
 		}
 
+	}
+
+}
+
+func parseWorkflowTerminatePlanType(c *vo.Canvas) (int32, error) {
+	var endNode *vo.Node
+	for _, n := range c.Nodes {
+		if n.Type == vo.BlockTypeBotEnd {
+			endNode = n
+			break
+		}
+	}
+	if endNode == nil {
+		return 0, fmt.Errorf("can not find end node")
+	}
+	switch *endNode.Data.Inputs.TerminatePlan {
+	case vo.ReturnVariables:
+		return 0, nil
+	case vo.UseAnswerContent:
+		return 1, nil
+	default:
+		return 0, fmt.Errorf("invalid terminate plan type %v", *endNode.Data.Inputs.TerminatePlan)
 	}
 
 }

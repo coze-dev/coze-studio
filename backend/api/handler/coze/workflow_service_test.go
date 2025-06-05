@@ -3092,6 +3092,7 @@ func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 		assert.Equal(t, 1, len((*detailInfoResponse)["data"].([]any)))
 		assert.Equal(t, "v0.0.2", (*detailInfoResponse)["data"].([]any)[0].(map[string]any)["latest_flow_version"].(string))
 		assert.Equal(t, "version v0.0.2", (*detailInfoResponse)["data"].([]any)[0].(map[string]any)["latest_flow_version_desc"].(string))
+		assert.Equal(t, float64(1), (*detailInfoResponse)["data"].([]any)[0].(map[string]any)["end_type"].(float64))
 
 		deleteReq := &workflow.DeleteWorkflowRequest{
 			WorkflowID: idStr,
