@@ -24,7 +24,6 @@ type Knowledge interface {
 	UpdateDocument(ctx context.Context, request *UpdateDocumentRequest) error
 	DeleteDocument(ctx context.Context, request *DeleteDocumentRequest) error
 	ListDocument(ctx context.Context, request *ListDocumentRequest) (response *ListDocumentResponse, err error)
-	GetDocumentsBySliceIDs(ctx context.Context, request *GetDocumentsBySliceIDsRequest) (response *GetDocumentsBySliceIDsResponse, err error)
 	MGetDocumentProgress(ctx context.Context, request *MGetDocumentProgressRequest) (response *MGetDocumentProgressResponse, err error)
 	ResegmentDocument(ctx context.Context, request *ResegmentDocumentRequest) (response *ResegmentDocumentResponse, err error)
 	GetAlterTableSchema(ctx context.Context, request *AlterTableSchemaRequest) (response *TableSchemaResponse, err error)
