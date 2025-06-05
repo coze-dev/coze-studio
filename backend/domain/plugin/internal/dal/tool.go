@@ -185,7 +185,7 @@ func (t *ToolDAO) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, plugin
 		if err != nil {
 			return err
 		}
-		if info.RowsAffected == 0 || info.RowsAffected < limit {
+		if info.RowsAffected < limit {
 			break
 		}
 	}

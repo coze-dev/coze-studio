@@ -12,7 +12,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
@@ -208,28 +207,10 @@ func publishAgentVariables(ctx context.Context, appContext *ServiceComponents, p
 }
 
 func publishAgentPlugins(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
-	_, err := appContext.PluginDomainSVC.PublishAgentTools(ctx, &service.PublishAgentToolsRequest{
-		AgentID: agent.AgentID,
-	})
+	_, err := appContext.PluginDomainSVC.PublishAgentTools(ctx, agent.AgentID)
 	if err != nil {
 		return nil, err
 	}
-
-	// existTools := make([]*bot_common.PluginInfo, 0, len(toolRes.VersionTools))
-	// for _, tl := range agent.Plugin {
-	// 	vs, ok := toolRes.VersionTools[tl.GetApiId()]
-	// 	if !ok {
-	// 		continue
-	// 	}
-	// 	existTools = append(existTools, &bot_common.PluginInfo{
-	// 		PluginId:     tl.PluginId,
-	// 		ApiId:        tl.ApiId,
-	// 		ApiName:      vs.ToolName,
-	// 		ApiVersionMs: vs.VersionMs,
-	// 	})
-	// }
-
-	// agent.Plugin = existTools
 
 	return agent, nil
 }

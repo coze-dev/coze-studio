@@ -2,12 +2,10 @@ package coze
 
 import (
 	"bytes"
-
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-
 	"io"
 	"net/http"
 	"os"
@@ -20,6 +18,12 @@ import (
 	"github.com/alicebob/miniredis/v2"
 	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
+	"github.com/redis/go-redis/v9"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
 	"github.com/cloudwego/hertz/pkg/app"
@@ -28,11 +32,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/ut"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
-	"github.com/redis/go-redis/v9"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 
 	pluginModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
@@ -3607,17 +3606,13 @@ func TestLLMWithSkills(t *testing.T) {
 			TrimmedResp: `{"data":"ok","err_msg":"error","data_structural":{"content":"ok","title":"title","weburl":"weburl"}}`,
 		}, nil).AnyTimes()
 
-		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlinePluginsResponse{
-			Plugins: []*pluginModel.PluginInfo{
-				{ID: int64(7509353177339133952)},
-			},
+		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return([]*pluginentity.PluginInfo{
+			{&pluginModel.PluginInfo{ID: 7509353177339133952}},
 		}, nil).AnyTimes()
 
-		mPlugin.EXPECT().MGetDraftPlugins(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetDraftPluginsResponse{
-			Plugins: []*pluginentity.PluginInfo{{
-				&pluginModel.PluginInfo{ID: 7509353177339133952},
-			}},
-		}, nil).AnyTimes()
+		mPlugin.EXPECT().MGetDraftPlugins(gomock.Any(), gomock.Any()).Return([]*pluginentity.PluginInfo{{
+			&pluginModel.PluginInfo{ID: 7509353177339133952},
+		}}, nil).AnyTimes()
 
 		operationString := `{
   "summary" : "根据输入的解梦标题给出相关对应的解梦内容，如果返回的内容为空，给用户返回固定的话术：如果想了解自己梦境的详细解析，需要给我详细的梦见信息，例如： 梦见XXX",
@@ -3690,16 +3685,12 @@ func TestLLMWithSkills(t *testing.T) {
 		operation := &pluginModel.Openapi3Operation{}
 		_ = sonic.UnmarshalString(operationString, operation)
 
-		mPlugin.EXPECT().MGetOnlineTools(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlineToolsResponse{
-			Tools: []*pluginentity.ToolInfo{
-				{ID: int64(7509353598782816256), Operation: operation},
-			},
+		mPlugin.EXPECT().MGetOnlineTools(gomock.Any(), gomock.Any()).Return([]*pluginentity.ToolInfo{
+			{ID: int64(7509353598782816256), Operation: operation},
 		}, nil).AnyTimes()
 
-		mPlugin.EXPECT().MGetDraftTools(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetDraftToolsResponse{
-			Tools: []*pluginentity.ToolInfo{
-				{ID: int64(7509353598782816256), Operation: operation},
-			},
+		mPlugin.EXPECT().MGetDraftTools(gomock.Any(), gomock.Any()).Return([]*pluginentity.ToolInfo{
+			{ID: int64(7509353598782816256), Operation: operation},
 		}, nil).AnyTimes()
 
 		mockTos := storageMock.NewMockStorage(ctrl)
@@ -4284,9 +4275,9 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 		defer ctrl.Finish()
 
 		mPlugin := mockPlugin.NewMockPluginService(ctrl)
-		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlinePluginsResponse{
-			Plugins: []*pluginModel.PluginInfo{
-				{
+		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return([]*pluginentity.PluginInfo{
+			{
+				PluginInfo: &pluginModel.PluginInfo{
 					ID:       123,
 					SpaceID:  123,
 					Version:  ptr.Of("v0.0.1"),
@@ -4294,10 +4285,8 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 				},
 			},
 		}, nil).AnyTimes()
-		mPlugin.EXPECT().MGetOnlineTools(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlineToolsResponse{
-			Tools: []*pluginentity.ToolInfo{
-				{ID: 123, Operation: operation},
-			},
+		mPlugin.EXPECT().MGetOnlineTools(gomock.Any(), gomock.Any()).Return([]*pluginentity.ToolInfo{
+			{ID: 123, Operation: operation},
 		}, nil).AnyTimes()
 		mockTos := storageMock.NewMockStorage(ctrl)
 		mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
@@ -4409,9 +4398,9 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 		defer ctrl.Finish()
 
 		mPlugin := mockPlugin.NewMockPluginService(ctrl)
-		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlinePluginsResponse{
-			Plugins: []*pluginModel.PluginInfo{
-				{
+		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return([]*pluginentity.PluginInfo{
+			{
+				PluginInfo: &pluginModel.PluginInfo{
 					ID:       123,
 					SpaceID:  123,
 					Version:  ptr.Of("v0.0.1"),
@@ -4419,10 +4408,8 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 				},
 			},
 		}, nil).AnyTimes()
-		mPlugin.EXPECT().MGetOnlineTools(gomock.Any(), gomock.Any()).Return(&pluginservice.MGetOnlineToolsResponse{
-			Tools: []*pluginentity.ToolInfo{
-				{ID: 123, Operation: operation},
-			},
+		mPlugin.EXPECT().MGetOnlineTools(gomock.Any(), gomock.Any()).Return([]*pluginentity.ToolInfo{
+			{ID: 123, Operation: operation},
 		}, nil).AnyTimes()
 		mockTos := storageMock.NewMockStorage(ctrl)
 		mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()

@@ -9,42 +9,18 @@ import (
 
 type AppRepository interface {
 	// draft application
-	CreateDraftAPP(ctx context.Context, req *CreateDraftAPPRequest) (resp *CreateDraftAPPResponse, err error)
-	GetDraftAPP(ctx context.Context, req *GetDraftAPPRequest) (app *entity.APP, exist bool, err error)
-	CheckDraftAPPExist(ctx context.Context, req *CheckDraftAPPExistRequest) (exist bool, err error)
-	DeleteDraftAPP(ctx context.Context, req *DeleteDraftAPPRequest) (err error)
-	UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPPRequest) (err error)
+	CreateDraftAPP(ctx context.Context, app *entity.APP) (appID int64, err error)
+	GetDraftAPP(ctx context.Context, appID int64) (app *entity.APP, exist bool, err error)
+	CheckDraftAPPExist(ctx context.Context, appID int64) (exist bool, err error)
+	DeleteDraftAPP(ctx context.Context, appID int64) (err error)
+	UpdateDraftAPP(ctx context.Context, app *entity.APP) (err error)
 
-	GetPublishRecord(ctx context.Context, req *GetPublishRecordRequest) (resp *GetPublishRecordResponse, err error)
-	CheckAPPVersionExist(ctx context.Context, req *GetVersionAPPRequest) (exist bool, err error)
-	CreateAPPPublishRecord(ctx context.Context, req *CreateAPPPublishRecordRequest) (recordID int64, err error)
+	GetPublishRecord(ctx context.Context, req *GetPublishRecordRequest) (record *entity.PublishRecord, exist bool, err error)
+	CheckAPPVersionExist(ctx context.Context, appID int64, version string) (exist bool, err error)
+	CreateAPPPublishRecord(ctx context.Context, record *entity.PublishRecord) (recordID int64, err error)
 	UpdateAPPPublishStatus(ctx context.Context, req *UpdateAPPPublishStatusRequest) (err error)
 	UpdateConnectorPublishStatus(ctx context.Context, recordID int64, status consts.ConnectorPublishStatus) (err error)
-	GetAPPAllPublishRecords(ctx context.Context, appID int64, opts ...APPSelectedOptions) (resp *GetAPPAllPublishRecordsResponse, err error)
-}
-
-type CreateDraftAPPRequest struct {
-	APP *entity.APP
-}
-
-type CreateDraftAPPResponse struct {
-	APPID int64
-}
-
-type GetDraftAPPRequest struct {
-	APPID int64
-}
-
-type CheckDraftAPPExistRequest struct {
-	APPID int64
-}
-
-type DeleteDraftAPPRequest struct {
-	APPID int64
-}
-
-type UpdateDraftAPPRequest struct {
-	APP *entity.APP
+	GetAPPAllPublishRecords(ctx context.Context, appID int64, opts ...APPSelectedOptions) (records []*entity.PublishRecord, err error)
 }
 
 type GetPublishRecordRequest struct {
@@ -52,31 +28,8 @@ type GetPublishRecordRequest struct {
 	RecordID *int64 // if nil, get latest record
 }
 
-type GetPublishRecordResponse struct {
-	Published bool
-	Record    *entity.PublishRecord
-}
-
-type GetVersionAPPRequest struct {
-	APPID   int64
-	Version string
-}
-
-type CreateAPPPublishRecordRequest struct {
-	PublishRecord *entity.PublishRecord
-}
-
 type UpdateAPPPublishStatusRequest struct {
 	RecordID               int64
 	PublishStatus          consts.PublishStatus
 	PublishRecordExtraInfo *entity.PublishRecordExtraInfo
-}
-
-type GetAPPAllPublishRecordsResponse struct {
-	Records []*entity.PublishRecord
-}
-
-type APPPublishRecord struct {
-	RecordID      int64
-	PublishStatus consts.PublishStatus
 }

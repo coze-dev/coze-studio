@@ -236,7 +236,7 @@ func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *
 			AuthPayload:  req.AuthPayload,
 		},
 	}
-	res, err := p.DomainSVC.CreateDraftPlugin(ctx, r)
+	pluginID, err := p.DomainSVC.CreateDraftPlugin(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *
 		Resource: &searchEntity.ResourceDocument{
 			ResType:       resCommon.ResType_Plugin,
 			ResSubType:    ptr.Of(int32(req.GetPluginType())),
-			ResID:         res.PluginID,
+			ResID:         pluginID,
 			Name:          &req.Name,
 			SpaceID:       &req.SpaceID,
 			APPID:         req.ProjectID,
@@ -256,11 +256,11 @@ func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource failed, err=%v", err)
+		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", pluginID, err)
 	}
 
 	resp = &pluginAPI.RegisterPluginMetaResponse{
-		PluginID: res.PluginID,
+		PluginID: pluginID,
 	}
 
 	return resp, nil
@@ -311,7 +311,7 @@ func (p *PluginApplicationService) RegisterPlugin(ctx context.Context, req *plug
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource failed, err=%v", err)
+		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", res.Plugin.ID, err)
 	}
 
 	resp = &pluginAPI.RegisterPluginResponse{
@@ -710,7 +710,7 @@ func (p *PluginApplicationService) UpdateAPI(ctx context.Context, req *pluginAPI
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource failed, err=%v", err)
+		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
 	}
 
 	resp = &pluginAPI.UpdateAPIResponse{}
@@ -752,7 +752,7 @@ func (p *PluginApplicationService) UpdatePlugin(ctx context.Context, req *plugin
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource failed, err=%v", err)
+		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
 	}
 
 	resp = &pluginAPI.UpdatePluginResponse{
@@ -776,9 +776,7 @@ func (p *PluginApplicationService) DeleteAPI(ctx context.Context, req *pluginAPI
 }
 
 func (p *PluginApplicationService) DelPlugin(ctx context.Context, req *pluginAPI.DelPluginRequest) (resp *pluginAPI.DelPluginResponse, err error) {
-	err = p.DomainSVC.DeleteDraftPlugin(ctx, &service.DeleteDraftPluginRequest{
-		PluginID: req.PluginID,
-	})
+	err = p.DomainSVC.DeleteDraftPlugin(ctx, req.PluginID)
 	if err != nil {
 		return nil, err
 	}
@@ -792,7 +790,7 @@ func (p *PluginApplicationService) DelPlugin(ctx context.Context, req *pluginAPI
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource failed, err=%v", err)
+		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
 	}
 
 	resp = &pluginAPI.DelPluginResponse{}
@@ -820,7 +818,7 @@ func (p *PluginApplicationService) PublishPlugin(ctx context.Context, req *plugi
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource failed, err=%v", err)
+		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
 	}
 
 	resp = &pluginAPI.PublishPluginResponse{}
@@ -891,7 +889,7 @@ func (p *PluginApplicationService) UpdatePluginMeta(ctx context.Context, req *pl
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource failed, err=%v", err)
+		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
 	}
 
 	resp = &pluginAPI.UpdatePluginMetaResponse{}
@@ -908,19 +906,16 @@ func (p *PluginApplicationService) GetBotDefaultParams(ctx context.Context, req 
 		return nil, fmt.Errorf("plugin '%d' not found", req.PluginID)
 	}
 
-	res, err := p.DomainSVC.GetDraftAgentTool(ctx, &service.GetDraftAgentToolRequest{
-		ToolName: req.APIName,
-		AgentID:  req.BotID,
-	})
+	draftAgentTool, err := p.DomainSVC.GetDraftAgentToolByName(ctx, req.BotID, req.APIName)
 	if err != nil {
 		return nil, err
 	}
 
-	reqAPIParams, err := res.Tool.ToReqAPIParameter()
+	reqAPIParams, err := draftAgentTool.ToReqAPIParameter()
 	if err != nil {
 		return nil, err
 	}
-	respAPIParams, err := res.Tool.ToRespAPIParameter()
+	respAPIParams, err := draftAgentTool.ToRespAPIParameter()
 	if err != nil {
 		return nil, err
 	}
@@ -1004,7 +999,7 @@ func (p *PluginApplicationService) UnlockPluginEdit(ctx context.Context, req *pl
 	return resp, nil
 }
 
-func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
+func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, _ *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
 	res, err := p.DomainSVC.ListPluginProducts(ctx, &service.ListPluginProductsRequest{})
 	if err != nil {
 		return nil, err
@@ -1203,4 +1198,26 @@ func (p *PluginApplicationService) GetDevPluginList(ctx context.Context, req *pl
 	}
 
 	return resp, nil
+}
+
+func (p *PluginApplicationService) DeleteAPPAllPlugins(ctx context.Context, appID int64) (err error) {
+	pluginIDs, err := p.DomainSVC.DeleteAPPAllPlugins(ctx, appID)
+	if err != nil {
+		return err
+	}
+
+	for _, id := range pluginIDs {
+		err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+			OpType: searchEntity.Deleted,
+			Resource: &searchEntity.ResourceDocument{
+				ResType: resCommon.ResType_Plugin,
+				ResID:   id,
+			},
+		})
+		if err != nil {
+			logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", id, err)
+		}
+	}
+
+	return nil
 }

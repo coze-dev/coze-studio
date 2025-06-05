@@ -15,7 +15,6 @@ import (
 	appApplication "code.byted.org/flow/opencoze/backend/application/app"
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
-	"code.byted.org/flow/opencoze/backend/domain/app/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 )
 
@@ -61,13 +60,13 @@ func GetProjectVariableList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	pInfo, err := appApplication.APPApplicationSVC.DomainSVC.GetDraftAPP(ctx, &service.GetDraftAPPRequest{APPID: pID})
+	pInfo, err := appApplication.APPApplicationSVC.DomainSVC.GetDraftAPP(ctx, pID)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
-	resp, err := memory.VariableApplicationSVC.GetProjectVariablesMeta(ctx, pInfo.APP.OwnerID, &req)
+	resp, err := memory.VariableApplicationSVC.GetProjectVariablesMeta(ctx, pInfo.OwnerID, &req)
 	if err != nil {
 		invalidParamRequestResponse(c, err.Error())
 		return

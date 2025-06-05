@@ -124,20 +124,18 @@ type appPacker struct {
 }
 
 func (a *appPacker) GetProjectInfo(ctx context.Context) (*projectInfo, error) {
-	res, err := a.SVC.APPDomainSVC.GetDraftAPP(ctx, &appService.GetDraftAPPRequest{
-		APPID: a.projectID,
-	})
+	app, err := a.SVC.APPDomainSVC.GetDraftAPP(ctx, a.projectID)
 	if err != nil {
 		return nil, err
 	}
 	return &projectInfo{
-		iconURI: res.APP.GetIconURI(),
-		desc:    res.APP.GetDesc(),
+		iconURI: app.GetIconURI(),
+		desc:    app.GetDesc(),
 	}, nil
 }
 
 func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.IntelligencePublishInfo {
-	res, err := a.SVC.APPDomainSVC.GetAPPPublishRecord(ctx, &appService.GetAPPPublishRecordRequest{
+	record, published, err := a.SVC.APPDomainSVC.GetAPPPublishRecord(ctx, &appService.GetAPPPublishRecordRequest{
 		APPID: a.projectID,
 	})
 	if err != nil {
@@ -145,15 +143,13 @@ func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.Intellig
 		return nil
 	}
 
-	if res.Record == nil {
+	if !published {
 		return &intelligence.IntelligencePublishInfo{
 			PublishTime:  "",
 			HasPublished: false,
 			Connectors:   nil,
 		}
 	}
-
-	record := res.Record
 
 	connectorInfo := make([]*common.ConnectorInfo, 0, len(record.ConnectorPublishRecords))
 	connectorIDs := slices.Transform(record.ConnectorPublishRecords, func(c *entity.ConnectorPublishRecord) int64 {
@@ -176,7 +172,7 @@ func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.Intellig
 
 	return &intelligence.IntelligencePublishInfo{
 		PublishTime:  strconv.FormatInt(record.APP.GetPublishedAtMS()/1000, 10),
-		HasPublished: res.Published,
+		HasPublished: published,
 		Connectors:   connectorInfo,
 	}
 }

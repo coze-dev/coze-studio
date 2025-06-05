@@ -1,28 +1,3 @@
-components:
-  examples:
-    ChatPPT:
-      value:
-        ReqExample:
-          color: 蓝色
-          text: 介绍ChatPPT
-        RespExample:
-          data:
-            downloadInfo:
-              desc: ""
-              fileInfo:
-                jumpLink: https://chat-ppt.com/generateResults?generateID=Tardf4wQVzDmGkJwYHDdMy8HZEEuZggh&channel=coze-chatppt
-                jumpText: 查看⽂件
-                name: chatppt功能与应用介绍
-                pic: https://file.static.yoojober.cn/chatppt/20241029/67205e3e3cd6b.jpg
-                preview_url: ""
-                type: jump
-              operation: 生成
-              prefix: 使用了
-              suffix: 为你生成PPT模板
-            showType: download
-          errCode: 0
-          errMsg: ""
-          requestId: yoo-plugin67205e2f02760
 info:
   description: ChatPPT，是一款在线Chat指令式生成PPT产品。通过简单的对话式输入，即可轻松完成PPT文档在线生成、编辑、美化、排版、导出、一键动效、协作等超400+类操作，同时支持基于主题词或其他文档（word、脑图、在线链接、大纲文本等）生成PPT，目前支持500字以内生成指令的解析。
   title: ChatPPT

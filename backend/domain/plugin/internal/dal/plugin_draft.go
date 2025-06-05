@@ -106,7 +106,7 @@ func (p *PluginDraftDAO) Get(ctx context.Context, pluginID int64) (plugin *entit
 	return plugin, true, nil
 }
 
-func (p *PluginDraftDAO) GetAPPAllPlugins(ctx context.Context, appID int64) (plugins []*entity.PluginInfo, err error) {
+func (p *PluginDraftDAO) GetAPPAllPlugins(ctx context.Context, appID int64, opt *PluginSelectedOption) (plugins []*entity.PluginInfo, err error) {
 	table := p.query.PluginDraft
 
 	cursor := int64(0)
@@ -114,6 +114,7 @@ func (p *PluginDraftDAO) GetAPPAllPlugins(ctx context.Context, appID int64) (plu
 
 	for {
 		pls, err := table.WithContext(ctx).
+			Select(p.getSelected(opt)...).
 			Where(
 				table.AppID.Eq(appID),
 				table.ID.Gt(cursor),

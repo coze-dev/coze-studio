@@ -1,16 +1,3 @@
-components:
-  examples:
-    generateTasks:
-      value:
-        ReqExample:
-          input: 减脂
-        RespExample:
-          code: 0
-          data:
-            edit_text: 如果您想修改此看板，请点击修改
-            edit_url: https://banlikanban.com/kanban/669787cc71b9f024bbc220ed?ADTAG=coze
-            img_url: https://kanban.oss-cn-hangzhou.aliyuncs.com/dc8aa5f9-4a5a-4bd6-bac1-2e67f398e37d.png
-            view_text: 根据减脂，已为您生成看板
 info:
   description: 任务拆解
   title: 板栗看板

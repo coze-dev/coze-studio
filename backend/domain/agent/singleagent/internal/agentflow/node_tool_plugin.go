@@ -34,7 +34,7 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 			}
 		}),
 	}
-	resp, err := crossplugin.DefaultSVC().MGetAgentTools(ctx, req)
+	agentTools, err := crossplugin.DefaultSVC().MGetAgentTools(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +43,8 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 		return a.GetApiId(), a
 	})
 
-	tools := make([]tool.InvokableTool, 0, len(resp.Tools))
-	for _, ti := range resp.Tools {
+	tools := make([]tool.InvokableTool, 0, len(agentTools))
+	for _, ti := range agentTools {
 		tc, ok := toolConf[ti.ID]
 		if !ok {
 			return nil, fmt.Errorf("tool '%d' not found", ti.ID)

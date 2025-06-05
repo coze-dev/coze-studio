@@ -1,33 +1,3 @@
-components:
-  examples:
-    ckt_intelligent_design:
-      value:
-        ReqExample:
-          query: 红色海报，圣诞节
-        RespExample:
-          body:
-            code: 200
-            data:
-              result:
-                - designId: b105d620-1c66-4222-b288-707b9196f642
-                  imageUrl: https://eyuankupub-cdn-oss.chuangkit.com/tools/intellect_design_mark_thumb/2024/07/15/47f828dc6db94edfaf8bf8eddea125cc
-                  redirectUrl: https://www.chuangkit.com/ai/third-login?channel=3&taskId=64d6f5eca48e4230a3a8107cf1241180
-                  taskId: 64d6f5eca48e4230a3a8107cf1241180
-                - designId: df7d8652-f7aa-4432-9d33-b0bfadbbd0d7
-                  imageUrl: https://eyuankupub-cdn-oss.chuangkit.com/tools/intellect_design_mark_thumb/2024/07/15/24696d735d7e490c97d9c76113f0f243
-                  redirectUrl: https://www.chuangkit.com/ai/third-login?channel=3&taskId=d999540c596b48cfacef55cfae803031
-                  taskId: d999540c596b48cfacef55cfae803031
-                - designId: 8d029144-ee41-4b99-a2d8-681b8d33c249
-                  imageUrl: https://eyuankupub-cdn-oss.chuangkit.com/tools/intellect_design_mark_thumb/2024/07/15/87f343cb014e4c979bd97b5828665216
-                  redirectUrl: https://www.chuangkit.com/ai/third-login?channel=3&taskId=d2e837b69017468babbaa6e6f0f2b9d3
-                  taskId: d2e837b69017468babbaa6e6f0f2b9d3
-                - designId: c53a72ff-5214-479c-bc3d-8ac39563034b
-                  imageUrl: https://eyuankupub-cdn-oss.chuangkit.com/tools/intellect_design_mark_thumb/2024/07/15/a2bc772854bc497cbac3b60a8ae9eec1
-                  redirectUrl: https://www.chuangkit.com/ai/third-login?channel=3&taskId=78adf962ff58415f83817522083c8062
-                  taskId: 78adf962ff58415f83817522083c8062
-            msg: success
-          header:
-            code: "1"
 info:
   description: 输入设计需求，即刻生成精美设计图；涵盖手机海报、宣传图、电商图、店铺广告、日签、社交媒体配图等多样场景。
   title: 创客贴智能设计

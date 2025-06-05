@@ -435,7 +435,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 	}
 	realLimit := reqLimit + 1
 
-	orderBy := func() fieldName { // FIXME: time 重复，导致乱序或者漏数据，应该加上 id 做联合 cursor 及 排序
+	orderBy := func() fieldName {
 		switch req.OrderBy {
 		case consts.OrderByUpdateTime:
 			return fieldOfUpdateTime

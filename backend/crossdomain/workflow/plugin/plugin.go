@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cloudwego/eino/components/tool"
-	"github.com/cloudwego/eino/schema"
 	"github.com/getkin/kin-openapi/openapi3"
 	"golang.org/x/exp/maps"
+
+	"github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
@@ -37,24 +38,20 @@ func (t *toolService) getPluginsWithTools(ctx context.Context, pluginEntity *cro
 	pluginID := pluginEntity.PluginID
 	isDraft = isDraft || (pluginEntity.PluginVersion != nil && *pluginEntity.PluginVersion == "0") // application plugin version use 0 for draft
 	if isDraft {
-		resp, err := t.client.MGetDraftPlugins(ctx, &service.MGetDraftPluginsRequest{
-			PluginIDs: []int64{pluginID},
-		})
+		plugins, err := t.client.MGetDraftPlugins(ctx, []int64{pluginID})
 		if err != nil {
 			return nil, nil, err
 		}
-		pluginsInfo = resp.Plugins
+		pluginsInfo = plugins
 	} else if pluginEntity.PluginVersion == nil {
-		resp, err := t.client.MGetOnlinePlugins(ctx, &service.MGetOnlinePluginsRequest{
-			PluginIDs: []int64{pluginID},
-		})
+		plugins, err := t.client.MGetOnlinePlugins(ctx, []int64{pluginID})
 		if err != nil {
 			return nil, nil, err
 		}
-		pluginsInfo = entity.NewPluginInfos(resp.Plugins)
+		pluginsInfo = plugins
 
 	} else {
-		resp, err := t.client.MGetVersionPlugins(ctx, &service.MGetVersionPluginsRequest{
+		plugins, err := t.client.MGetVersionPlugins(ctx, &service.MGetVersionPluginsRequest{
 			VersionPlugins: []entity.VersionPlugin{
 				{PluginID: pluginID, Version: *pluginEntity.PluginVersion},
 			},
@@ -62,7 +59,7 @@ func (t *toolService) getPluginsWithTools(ctx context.Context, pluginEntity *cro
 		if err != nil {
 			return nil, nil, err
 		}
-		pluginsInfo = entity.NewPluginInfos(resp.Plugins)
+		pluginsInfo = plugins
 
 	}
 
@@ -79,21 +76,17 @@ func (t *toolService) getPluginsWithTools(ctx context.Context, pluginEntity *cro
 
 	var toolsInfo []*entity.ToolInfo
 	if isDraft {
-		resp, err := t.client.MGetDraftTools(ctx, &service.MGetDraftToolsRequest{
-			ToolIDs: toolIDs,
-		})
+		tools, err := t.client.MGetDraftTools(ctx, toolIDs)
 		if err != nil {
 			return nil, nil, err
 		}
-		toolsInfo = resp.Tools
+		toolsInfo = tools
 	} else {
-		resp, err := t.client.MGetOnlineTools(ctx, &service.MGetOnlineToolsRequest{
-			ToolIDs: toolIDs,
-		})
+		tools, err := t.client.MGetOnlineTools(ctx, toolIDs)
 		if err != nil {
 			return nil, nil, err
 		}
-		toolsInfo = resp.Tools
+		toolsInfo = tools
 	}
 
 	return pInfo, toolsInfo, nil
