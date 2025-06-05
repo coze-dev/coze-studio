@@ -15,6 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 var searchInstance *searchImpl
@@ -80,11 +81,16 @@ func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.Searc
 		)
 	}
 
+	logs.CtxDebugf(ctx, "[SearchProjects] search : %s", conv.DebugJsonToStr(req))
+
 	if req.Name != "" {
 		mustQueries = append(mustQueries,
 			types.Query{
-				Term: map[string]types.TermQuery{
-					fieldOfName: {Value: req.Name},
+				Wildcard: map[string]types.WildcardQuery{
+					fieldOfName: {
+						Value:           ptr.Of("*" + req.Name + "*"),
+						CaseInsensitive: ptr.Of(true), // 忽略大小写
+					},
 				},
 			},
 		)
@@ -166,7 +172,7 @@ func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.Searc
 	}
 	realLimit := reqLimit + 1
 	orderBy := func() fieldName {
-		switch req.OrderBy { // FIXME: time 重复，导致乱序或者漏数据，应该加上 id 做联合 cursor 及 排序
+		switch req.OrderBy {
 		case consts.OrderByUpdateTime:
 			return fieldOfUpdateTime
 		case consts.OrderByCreateTime:
@@ -201,6 +207,8 @@ func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.Searc
 			cursor:  req.Cursor,
 		})
 	}
+
+	logs.CtxDebugf(ctx, "Elasticsearch Request: %s\n", conv.DebugJsonToStr(searchReq))
 
 	result, err := sr.Do(ctx)
 	if err != nil {
@@ -353,8 +361,11 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 	if req.Name != "" {
 		mustQueries = append(mustQueries,
 			types.Query{
-				Term: map[string]types.TermQuery{
-					fieldOfName: {Value: req.Name},
+				Wildcard: map[string]types.WildcardQuery{
+					fieldOfName: {
+						Value:           ptr.Of("*" + req.Name + "*"),
+						CaseInsensitive: ptr.Of(true), // 忽略大小写
+					},
 				},
 			},
 		)
