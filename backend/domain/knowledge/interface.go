@@ -16,7 +16,8 @@ type Knowledge interface {
 	CreateKnowledge(ctx context.Context, request *CreateKnowledgeRequest) (response *CreateKnowledgeResponse, err error)
 	UpdateKnowledge(ctx context.Context, request *UpdateKnowledgeRequest) error
 	DeleteKnowledge(ctx context.Context, request *DeleteKnowledgeRequest) error
-	CopyKnowledge(ctx context.Context) // todo: 跨空间拷贝，看下功能是否要支持
+	CopyKnowledge(ctx context.Context, request *CopyKnowledgeRequest) (*CopyKnowledgeResponse, error)
+	MigrateKnowledge(ctx context.Context, request *MigrateKnowledgeRequest) error
 	ListKnowledge(ctx context.Context, request *ListKnowledgeRequest) (response *ListKnowledgeResponse, err error)
 	GetKnowledgeByID(ctx context.Context, request *GetKnowledgeByIDRequest) (response *GetKnowledgeByIDResponse, err error)
 	MGetKnowledgeByID(ctx context.Context, request *MGetKnowledgeByIDRequest) (response *MGetKnowledgeByIDResponse, err error)
@@ -302,6 +303,37 @@ type MGetDocumentReviewResponse struct {
 	Reviews []*entity.Review
 }
 
+type CopyKnowledgeRequest struct {
+	KnowledgeID   int64
+	OriginAppID   int64
+	TargetAppID   int64
+	OriginSpaceID int64
+	TargetSpaceID int64
+	TargetUserID  int64
+	TaskUniqKey   string
+}
+type CopyStatus int64
+
+const (
+	CopyStatus_Successful CopyStatus = 1
+	CopyStatus_Processing CopyStatus = 2
+	CopyStatus_Failed     CopyStatus = 3
+	CopyStatus_KeepOrigin CopyStatus = 4
+)
+
+type CopyKnowledgeResponse struct {
+	OriginKnowledgeID int64
+	TargetKnowledgeID int64
+	CopyStatus        CopyStatus
+	ErrMsg            string
+}
+
+type MigrateKnowledgeRequest struct {
+	KnowledgeID   int64
+	TargetAppID   *int64
+	TargetSpaceID int64
+	TaskUniqKey   string
+}
 type GetKnowledgeByIDRequest = knowledge.GetKnowledgeByIDRequest
 type GetKnowledgeByIDResponse = knowledge.GetKnowledgeByIDResponse
 

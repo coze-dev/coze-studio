@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
@@ -64,6 +65,7 @@ func (dao *knowledgeDocumentSliceDAO) Create(ctx context.Context, slice *model.K
 
 func (dao *knowledgeDocumentSliceDAO) Update(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
 	s := dao.query.KnowledgeDocumentSlice
+	slice.UpdatedAt = time.Now().UnixMilli()
 	_, err := s.WithContext(ctx).Updates(slice)
 	return err
 }

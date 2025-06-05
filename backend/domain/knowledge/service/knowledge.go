@@ -20,6 +20,7 @@ import (
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
@@ -240,19 +241,13 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *knowledge.D
 		return fmt.Errorf("[DeleteKnowledge] FindDocumentByCondition failed, %w", err)
 	}
 
-	if err = k.documentRepo.SoftDeleteDocuments(ctx, slices.Transform(docs, func(a *model.KnowledgeDocument) int64 {
+	if err = k.documentRepo.DeleteDocuments(ctx, slices.Transform(docs, func(a *model.KnowledgeDocument) int64 {
 		return a.ID
 	})); err != nil {
 		return fmt.Errorf("[DeleteDocument] soft delete documents failed, err: %v", err)
 	}
 
 	return err
-}
-
-func (k *knowledgeSVC) CopyKnowledge(ctx context.Context) {
-	// 这个有哪些场景要讨论一下，目前能想到的场景有跨空间复制
-	// TODO implement me
-	panic("implement me")
 }
 
 func (k *knowledgeSVC) ListKnowledge(ctx context.Context, request *knowledge.ListKnowledgeRequest) (response *knowledge.ListKnowledgeResponse, err error) {
@@ -404,7 +399,7 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, request *knowledge.De
 		}
 	}
 
-	err = k.documentRepo.SoftDeleteDocuments(ctx, []int64{request.DocumentID})
+	err = k.documentRepo.DeleteDocuments(ctx, []int64{request.DocumentID})
 	if err != nil {
 		return fmt.Errorf("[DeleteDocument] soft delete documents failed, err: %v", err)
 	}
@@ -1004,6 +999,7 @@ func (k *knowledgeSVC) MGetDocumentReview(ctx context.Context, request *knowledg
 			Url:           reviewTosURL,
 			Status:        &status,
 			DocTreeTosUrl: ptr.Of(reviewChunkRespTosURL),
+			PreviewTosUrl: ptr.Of(reviewTosURL),
 		})
 	}
 	return &knowledge.MGetDocumentReviewResponse{
