@@ -231,6 +231,22 @@ type FCParam struct {
 			} `json:"fc_setting,omitempty"`
 		}
 	} `json:"pluginFCParam,omitempty"`
+
+	KnowledgeFCParam *struct {
+		GlobalSetting *struct {
+			SearchMode                   int64   `json:"search_mode"`
+			TopK                         int64   `json:"top_k"`
+			MinScore                     float64 `json:"min_score"`
+			UseNL2SQL                    bool    `json:"use_nl2_sql"`
+			UseRewrite                   bool    `json:"use_rewrite"`
+			UseRerank                    bool    `json:"use_rerank"`
+			NoRecallReplyCustomizePrompt string  `json:"no_recall_reply_customize_prompt"`
+			NoRecallReplyMode            int64   `json:"no_recall_reply_mode"`
+		} `json:"global_setting,omitempty"`
+		KnowledgeList []*struct {
+			ID string `json:"id"`
+		} `json:"knowledgeList,omitempty"`
+	} `json:"knowledgeFCParam,omitempty"`
 }
 
 type Batch struct {

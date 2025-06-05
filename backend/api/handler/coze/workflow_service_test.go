@@ -41,6 +41,8 @@ import (
 	pluginservice "code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge/knowledgemock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
@@ -3607,11 +3609,11 @@ func TestLLMWithSkills(t *testing.T) {
 		}, nil).AnyTimes()
 
 		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return([]*pluginentity.PluginInfo{
-			{&pluginModel.PluginInfo{ID: 7509353177339133952}},
+			{PluginInfo: &pluginModel.PluginInfo{ID: 7509353177339133952}},
 		}, nil).AnyTimes()
 
 		mPlugin.EXPECT().MGetDraftPlugins(gomock.Any(), gomock.Any()).Return([]*pluginentity.PluginInfo{{
-			&pluginModel.PluginInfo{ID: 7509353177339133952},
+			PluginInfo: &pluginModel.PluginInfo{ID: 7509353177339133952},
 		}}, nil).AnyTimes()
 
 		operationString := `{
@@ -3829,6 +3831,108 @@ func TestLLMWithSkills(t *testing.T) {
 			assert.Equal(t, `{"output":"output_data"}`, output)
 		})
 	})
+
+	mockey.PatchConvey("workflow llm node with knowledge skill", t, func() {
+		h, ctrl, mockIdGen := prepareWorkflowIntegration(t, false)
+		defer ctrl.Finish()
+		utChatModel := &testutil.UTChatModel{
+			InvokeResultProvider: func(index int, in []*schema.Message) (*schema.Message, error) {
+
+				if index == 0 {
+					assert.Equal(t, 1, len(in))
+					assert.Contains(t, in[0].Content, "7512369185624686592", "你是一个知识库意图识别AI Agent", "北京有哪些著名的景点")
+					return &schema.Message{
+						Role:    schema.Assistant,
+						Content: "7512369185624686592",
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     10,
+								CompletionTokens: 11,
+								TotalTokens:      21,
+							},
+						},
+					}, nil
+
+				} else if index == 1 {
+					assert.Equal(t, 2, len(in))
+					for _, message := range in {
+						if message.Role == schema.System {
+							assert.Equal(t, "你是一个旅游推荐专家，通过用户提出的问题，推荐用户具体城市的旅游景点", message.Content)
+						}
+						if message.Role == schema.User {
+							assert.Contains(t, message.Content, "天安门广场 ‌：中国政治文化中心，见证了近现代重大历史事件‌", "八达岭长城 ‌：明代长城的精华段，被誉为“不到长城非好汉")
+						}
+					}
+					return &schema.Message{
+						Role:    schema.Assistant,
+						Content: `八达岭长城 ‌：明代长城的精华段，被誉为“不到长城非好汉‌`,
+					}, nil
+				}
+				return nil, fmt.Errorf("unexpected index: %d", index)
+			},
+		}
+
+		mockModelMgr := mockmodel.NewMockManager(ctrl)
+		mockModelMgr.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil).AnyTimes()
+
+		model.SetManager(mockModelMgr)
+
+		mockKwOperator := knowledgemock.NewMockKnowledgeOperator(ctrl)
+		knowledge.SetKnowledgeOperator(mockKwOperator)
+
+		mockKwOperator.EXPECT().ListKnowledgeDetail(gomock.Any(), gomock.Any()).Return(&knowledge.ListKnowledgeDetailResponse{
+			KnowledgeDetails: []*knowledge.KnowledgeDetail{
+				{ID: 7512369185624686592, Name: "旅游景点", Description: "旅游景点介绍"},
+			},
+		}, nil).AnyTimes()
+
+		mockKwOperator.EXPECT().Retrieve(gomock.Any(), gomock.Any()).Return(&knowledge.RetrieveResponse{
+			Slices: []*knowledge.Slice{
+				{DocumentID: "1", Output: "天安门广场 ‌：中国政治文化中心，见证了近现代重大历史事件‌"},
+				{DocumentID: "2", Output: "八达岭长城 ‌：明代长城的精华段，被誉为“不到长城非好汉"},
+			},
+		}, nil).AnyTimes()
+
+		t.Run("llm node with knowledge skill", func(t *testing.T) {
+
+			mockIdGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+				return time.Now().UnixNano(), nil
+			}).AnyTimes()
+
+			idStr := loadWorkflow(t, h, "llm_node_with_skills/llm_with_knowledge_skill.json")
+
+			testRunReq := &workflow.WorkFlowTestRunRequest{
+				WorkflowID: idStr,
+				SpaceID:    ptr.Of("123"),
+				Input: map[string]string{
+					"input": "北京有哪些著名的景点",
+				},
+			}
+
+			testRunResp := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
+
+			workflowStatus := workflow.WorkflowExeStatus_Running
+			var output string
+
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running {
+					break
+				}
+				getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+
+				bs, _ := sonic.MarshalString(getProcessResp)
+				fmt.Println("getProcessResp", bs)
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				if len(getProcessResp.Data.NodeResults) > 0 {
+					output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+				}
+				t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+			}
+			assert.Equal(t, `{"output":"八达岭长城 ‌：明代长城的精华段，被誉为“不到长城非好汉‌"}`, output)
+		})
+	})
+
 }
 
 func TestStreamRun(t *testing.T) {

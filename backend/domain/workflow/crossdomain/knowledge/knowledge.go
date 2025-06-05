@@ -73,8 +73,13 @@ type RetrieveRequest struct {
 	RetrievalStrategy *RetrievalStrategy
 }
 
+type Slice struct {
+	DocumentID string `json:"documentId"`
+	Output     string `json:"output"`
+}
+
 type RetrieveResponse struct {
-	RetrieveData []map[string]any
+	Slices []*Slice
 }
 
 var (
@@ -89,8 +94,25 @@ func SetKnowledgeOperator(k KnowledgeOperator) {
 	knowledgeOperatorImpl = k
 }
 
+type KnowledgeDetail struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	IconURL     string `json:"-"`
+	FormatType  int64  `json:"-"`
+}
+
+type ListKnowledgeDetailRequest struct {
+	KnowledgeIDs []int64
+}
+
+type ListKnowledgeDetailResponse struct {
+	KnowledgeDetails []*KnowledgeDetail
+}
+
 //go:generate  mockgen -destination knowledgemock/knowledge_mock.go --package knowledgemock -source knowledge.go
 type KnowledgeOperator interface {
 	Store(ctx context.Context, document *CreateDocumentRequest) (*CreateDocumentResponse, error)
 	Retrieve(context.Context, *RetrieveRequest) (*RetrieveResponse, error)
+	ListKnowledgeDetail(context.Context, *ListKnowledgeDetailRequest) (*ListKnowledgeDetailResponse, error)
 }

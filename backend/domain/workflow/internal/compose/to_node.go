@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	einomodel "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
@@ -42,6 +43,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
@@ -56,14 +58,20 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 	}
 
 	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", s.Configs)
-	if llmParams != nil {
-		m, err := model.GetManager().GetModel(ctx, llmParams)
-		if err != nil {
-			return nil, err
-		}
 
-		llmConf.ChatModel = m
+	if llmParams == nil {
+		return nil, fmt.Errorf("llm node llmParams is required")
 	}
+	var (
+		err       error
+		chatModel einomodel.BaseChatModel
+	)
+
+	chatModel, err = model.GetManager().GetModel(ctx, llmParams)
+	if err != nil {
+		return nil, err
+	}
+	llmConf.ChatModel = chatModel
 
 	// TODO: inject plugin tools and knowledge tools
 	fcParams := getKeyOrZero[*vo.FCParam]("FCParam", s.Configs)
@@ -161,6 +169,53 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 				llmConf.Tools = inInvokableTools
 			}
 
+		}
+
+		if fcParams.KnowledgeFCParam != nil && len(fcParams.KnowledgeFCParam.KnowledgeList) > 0 {
+			kwChatModel, err := knowledgeRecallChatModel(ctx)
+			if err != nil {
+				return nil, err
+			}
+			knowledgeOperator := crossknowledge.GetKnowledgeOperator()
+			setting := fcParams.KnowledgeFCParam.GlobalSetting
+			cfg := &llm.KnowledgeRecallConfig{
+				ChatModel: kwChatModel,
+				Retriever: knowledgeOperator,
+			}
+			searchType, err := totRetrievalSearchType(setting.SearchMode)
+			if err != nil {
+				return nil, err
+			}
+			cfg.RetrievalStrategy = &llm.RetrievalStrategy{
+				RetrievalStrategy: &crossknowledge.RetrievalStrategy{
+					TopK:               ptr.Of(setting.TopK),
+					MinScore:           ptr.Of(setting.MinScore),
+					SearchType:         searchType,
+					EnableNL2SQL:       setting.UseNL2SQL,
+					EnableQueryRewrite: setting.UseRewrite,
+					EnableRerank:       setting.UseRerank,
+				},
+				NoReCallReplyMode:            llm.NoReCallReplyMode(setting.NoRecallReplyMode),
+				NoReCallReplyCustomizePrompt: setting.NoRecallReplyCustomizePrompt,
+			}
+
+			knowledgeIDs := make([]int64, 0, len(fcParams.KnowledgeFCParam.KnowledgeList))
+			for _, kw := range fcParams.KnowledgeFCParam.KnowledgeList {
+				kid, err := strconv.ParseInt(kw.ID, 10, 64)
+				if err != nil {
+					return nil, err
+				}
+				knowledgeIDs = append(knowledgeIDs, kid)
+			}
+
+			detailResp, err := knowledgeOperator.ListKnowledgeDetail(ctx, &crossknowledge.ListKnowledgeDetailRequest{
+				KnowledgeIDs: knowledgeIDs,
+			})
+			if err != nil {
+				return nil, err
+			}
+			cfg.SelectedKnowledgeDetails = detailResp.KnowledgeDetails
+			llmConf.KnowledgeRecallConfig = cfg
 		}
 
 	}
@@ -567,4 +622,29 @@ func (s *NodeSchema) GetImplicitInputFields() ([]*vo.FieldInfo, error) {
 	default:
 		return nil, nil
 	}
+}
+
+func totRetrievalSearchType(s int64) (crossknowledge.SearchType, error) {
+	switch s {
+	case 0:
+		return crossknowledge.SearchTypeSemantic, nil
+	case 1:
+		return crossknowledge.SearchTypeHybrid, nil
+	case 20:
+		return crossknowledge.SearchTypeFullText, nil
+	default:
+		return "", fmt.Errorf("invalid retrieval search type %v", s)
+	}
+}
+
+// knowledgeRecallChatModel the chat model used by the knowledge base recall in the LLM node, not the user-configured model
+func knowledgeRecallChatModel(ctx context.Context) (einomodel.BaseChatModel, error) {
+	defaultChatModelParma := &model.LLMParams{
+		ModelName:   "豆包·1.5·Pro·32k",
+		ModelType:   1,
+		Temperature: ptr.Of(0.5),
+		MaxTokens:   4096,
+	}
+	return model.GetManager().GetModel(ctx, defaultChatModelParma)
+
 }

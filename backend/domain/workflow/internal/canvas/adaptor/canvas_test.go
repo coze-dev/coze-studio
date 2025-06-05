@@ -785,14 +785,20 @@ func TestKnowledgeNodes(t *testing.T) {
 			DocumentID: int64(1),
 		}
 		mockKnowledgeOperator.EXPECT().Store(gomock.Any(), gomock.Any()).Return(response, nil)
+
 		rResponse := &knowledge.RetrieveResponse{
-			RetrieveData: []map[string]interface{}{
+			Slices: []*knowledge.Slice{
 				{
-					"v1": "v1",
-					"v2": "v2",
+					DocumentID: "v1",
+					Output:     "v1",
+				},
+				{
+					DocumentID: "v2",
+					Output:     "v2",
 				},
 			},
 		}
+
 		mockKnowledgeOperator.EXPECT().Retrieve(gomock.Any(), gomock.Any()).Return(rResponse, nil)
 		mockGlobalAppVarStore := mockvar.NewMockStore(ctrl)
 		mockGlobalAppVarStore.EXPECT().Get(gomock.Any(), gomock.Any()).Return("v1", nil).AnyTimes()
@@ -815,9 +821,13 @@ func TestKnowledgeNodes(t *testing.T) {
 		assert.Equal(t, map[string]any{
 			"success": []any{
 				map[string]any{
-					"v1":     "v1",
-					"v2":     "v2",
-					"output": "",
+					"documentId": "v1",
+					"output":     "v1",
+				},
+
+				map[string]any{
+					"documentId": "v2",
+					"output":     "v2",
 				},
 			},
 			"v1": "v1",

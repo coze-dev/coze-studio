@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
@@ -11,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type Knowledge struct {
@@ -113,22 +115,45 @@ func (k *Knowledge) Retrieve(ctx context.Context, r *crossknowledge.RetrieveRequ
 		return nil, err
 	}
 
-	data := make([]map[string]any, 0)
+	ss := make([]*crossknowledge.Slice, 0, len(response.RetrieveSlices))
 	for _, s := range response.RetrieveSlices {
 		if s.Slice == nil {
 			continue
 		}
-		data = append(data, map[string]any{
-			"output": s.Slice.GetSliceContent(),
+		ss = append(ss, &crossknowledge.Slice{
+			DocumentID: strconv.FormatInt(s.Slice.DocumentID, 10),
+			Output:     s.Slice.GetSliceContent(),
 		})
 
 	}
 
 	return &crossknowledge.RetrieveResponse{
-		RetrieveData: data,
+		Slices: ss,
 	}, nil
 }
 
+func (k *Knowledge) ListKnowledgeDetail(ctx context.Context, req *crossknowledge.ListKnowledgeDetailRequest) (*crossknowledge.ListKnowledgeDetailResponse, error) {
+	response, err := k.client.MGetKnowledgeByID(ctx, &domainknowledge.MGetKnowledgeByIDRequest{
+		KnowledgeIDs: req.KnowledgeIDs,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &crossknowledge.ListKnowledgeDetailResponse{
+		KnowledgeDetails: slices.Transform(response.Knowledge, func(a *knowledge.Knowledge) *crossknowledge.KnowledgeDetail {
+			return &crossknowledge.KnowledgeDetail{
+				ID:          a.ID,
+				Name:        a.Name,
+				Description: a.Description,
+				IconURL:     a.IconURL,
+				FormatType:  int64(a.Type),
+			}
+		}),
+	}
+
+	return resp, nil
+}
 func toSearchType(typ crossknowledge.SearchType) (knowledge.SearchType, error) {
 	switch typ {
 	case crossknowledge.SearchTypeSemantic:

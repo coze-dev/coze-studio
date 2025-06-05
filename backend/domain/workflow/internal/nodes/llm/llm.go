@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strconv"
+	"strings"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino-ext/components/model/ark"
@@ -17,11 +19,13 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
+	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose/checkpoint"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -61,6 +65,77 @@ const (
 	reasoningOutputKey = "reasoning_content"
 )
 
+const knowledgeUserPromptTemplate = `根据引用的内容回答问题: 
+ 1.如果引用的内容里面包含 <img src=""> 的标签, 标签里的 src 字段表示图片地址, 需要在回答问题的时候展示出去, 输出格式为"![图片名称](图片地址)" 。 
+ 2.如果引用的内容不包含 <img src=""> 的标签, 你回答问题时不需要展示图片 。 
+例如：
+  如果内容为<img src="https://example.com/image.jpg">一只小猫，你的输出应为：![一只小猫](https://example.com/image.jpg)。
+  如果内容为<img src="https://example.com/image1.jpg">一只小猫 和 <img src="https://example.com/image2.jpg">一只小狗 和 <img src="https://example.com/image3.jpg">一只小牛，你的输出应为：![一只小猫](https://example.com/image1.jpg) 和 ![一只小狗](https://example.com/image2.jpg) 和 ![一只小牛](https://example.com/image3.jpg)
+you can refer to the following content and do relevant searches to improve:
+---
+%s
+
+question is:
+
+`
+
+const knowledgeIntentPrompt = `
+# 角色:
+你是一个知识库意图识别AI Agent。
+## 目标:
+- 按照「系统提示词」、用户需求、最新的聊天记录选择应该使用的知识库。
+## 工作流程:
+1. 分析「系统提示词」以确定用户的具体需求。
+2. 如果「系统提示词」明确指明了要使用的知识库，则直接返回这些知识库，只输出它们的knowledge_id，不需要再判断用户的输入
+3. 检查每个知识库的knowledge_name和knowledge_description，以了解它们各自的功能。
+4. 根据用户需求，选择最符合的知识库。
+5. 如果找到一个或多个合适的知识库，输出它们的knowledge_id。如果没有合适的知识库，输出0。
+## 约束:
+- 严格按照「系统提示词」和用户的需求选择知识库。「系统提示词」的优先级大于用户的需求
+- 如果有多个合适的知识库，将它们的knowledge_id用英文逗号连接后输出。
+- 输出必须仅为knowledge_id或0，不得包括任何其他内容或解释，不要在id后面输出知识库名称。
+
+## 输出示例
+123,456
+
+## 输出格式:
+输出应该是一个纯数字或者由英文逗号连接的数字序列，具体取决于选择的知识库数量。不应包含任何其他文本或格式。
+## 知识库列表如下
+%s
+## 「系统提示词」如下
+%s
+`
+
+const (
+	knowledgeTemplateKey           = "knowledge_template"
+	knowledgeChatModelKey          = "knowledge_chat_model"
+	knowledgeLambdaKey             = "knowledge_lambda"
+	knowledgeUserPromptTemplateKey = "knowledge_user_prompt_prefix"
+	templateNodeKey                = "template"
+	llmNodeKey                     = "llm"
+	outputConvertNodeKey           = "output_convert"
+)
+
+type NoReCallReplyMode int64
+
+const (
+	NoReCallReplyModeOfDefault   NoReCallReplyMode = 0
+	NoReCallReplyModeOfCustomize NoReCallReplyMode = 1
+)
+
+type RetrievalStrategy struct {
+	RetrievalStrategy            *crossknowledge.RetrievalStrategy
+	NoReCallReplyMode            NoReCallReplyMode
+	NoReCallReplyCustomizePrompt string
+}
+
+type KnowledgeRecallConfig struct {
+	ChatModel                model.BaseChatModel
+	Retriever                crossknowledge.KnowledgeOperator
+	RetrievalStrategy        *RetrievalStrategy
+	SelectedKnowledgeDetails []*crossknowledge.KnowledgeDetail
+}
+
 type Config struct {
 	ChatModel           model.BaseChatModel
 	Tools               []tool.BaseTool
@@ -72,6 +147,8 @@ type Config struct {
 	DefaultOutput       map[string]any
 	ToolsReturnDirectly map[string]bool
 	// TODO: needs to support descriptions for output fields
+
+	KnowledgeRecallConfig *KnowledgeRecallConfig
 }
 
 type LLM struct {
@@ -139,14 +216,12 @@ func WithToolWorkflowMessageWriter(sw *schema.StreamWriter[*entity.Message]) Opt
 	}
 }
 
-func New(ctx context.Context, cfg *Config) (*LLM, error) {
-	g := compose.NewGraph[map[string]any, map[string]any]()
+type llmState = map[string]any
 
-	const (
-		templateNodeKey      = "template"
-		llmNodeKey           = "llm"
-		outputConvertNodeKey = "output_convert"
-	)
+func New(ctx context.Context, cfg *Config) (*LLM, error) {
+	g := compose.NewGraph[map[string]any, map[string]any](compose.WithGenLocalState(func(ctx context.Context) (state llmState) {
+		return llmState{}
+	}))
 
 	var (
 		hasReasoning bool
@@ -189,13 +264,35 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	case FormatText:
 	}
 
-	template := prompt.FromMessages(schema.Jinja2,
-		schema.SystemMessage(cfg.SystemPrompt),
-		schema.UserMessage(userPrompt),
-	)
+	if cfg.KnowledgeRecallConfig != nil {
+		err := injectKnowledgeTool(ctx, g, cfg.UserPrompt, cfg.KnowledgeRecallConfig)
+		if err != nil {
+			return nil, err
+		}
+		userPrompt = fmt.Sprintf("{{%s}}%s", knowledgeUserPromptTemplateKey, userPrompt)
 
-	_ = g.AddChatTemplateNode(templateNodeKey, template)
-	_ = g.AddEdge(compose.START, templateNodeKey)
+		template := prompt.FromMessages(schema.Jinja2,
+			schema.SystemMessage(cfg.SystemPrompt),
+			schema.UserMessage(userPrompt),
+		)
+		_ = g.AddChatTemplateNode(templateNodeKey, template,
+			compose.WithStatePreHandler(func(ctx context.Context, in map[string]any, state llmState) (map[string]any, error) {
+				for k, v := range state {
+					in[k] = v
+				}
+				return in, nil
+			}))
+		_ = g.AddEdge(knowledgeLambdaKey, templateNodeKey)
+
+	} else {
+		template := prompt.FromMessages(schema.Jinja2,
+			schema.SystemMessage(cfg.SystemPrompt),
+			schema.UserMessage(userPrompt),
+		)
+		_ = g.AddChatTemplateNode(templateNodeKey, template)
+
+		_ = g.AddEdge(compose.START, templateNodeKey)
+	}
 
 	if len(cfg.Tools) > 0 {
 		m, ok := cfg.ChatModel.(model.ToolCallingChatModel)
@@ -576,6 +673,75 @@ func (l *LLM) ChatStream(ctx context.Context, in map[string]any, opts ...Option)
 	}
 
 	return out, nil
+}
+
+func injectKnowledgeTool(_ context.Context, g *compose.Graph[map[string]any, map[string]any], userPrompt string, cfg *KnowledgeRecallConfig) error {
+	selectedKwDetails, err := sonic.MarshalString(cfg.SelectedKnowledgeDetails)
+	if err != nil {
+		return err
+	}
+	_ = g.AddChatTemplateNode(knowledgeTemplateKey,
+		prompt.FromMessages(schema.Jinja2,
+			schema.SystemMessage(fmt.Sprintf(knowledgeIntentPrompt, selectedKwDetails, userPrompt)),
+		), compose.WithStatePreHandler(func(ctx context.Context, in map[string]any, state llmState) (map[string]any, error) {
+			for k, v := range in {
+				state[k] = v
+			}
+			return in, nil
+		}))
+	_ = g.AddChatModelNode(knowledgeChatModelKey, cfg.ChatModel)
+
+	_ = g.AddLambdaNode(knowledgeLambdaKey, compose.InvokableLambda(func(ctx context.Context, input *schema.Message) (output map[string]any, err error) {
+
+		modelPredictionIDs := strings.Split(input.Content, ",")
+		selectKwIDs := slices.ToMap(cfg.SelectedKnowledgeDetails, func(e *crossknowledge.KnowledgeDetail) (string, int64) {
+			return strconv.Itoa(int(e.ID)), e.ID
+		})
+		recallKnowledgeIDs := make([]int64, 0)
+		for _, id := range modelPredictionIDs {
+			if kid, ok := selectKwIDs[id]; ok {
+				recallKnowledgeIDs = append(recallKnowledgeIDs, kid)
+			}
+		}
+
+		if len(recallKnowledgeIDs) == 0 {
+			return make(map[string]any), nil
+		}
+
+		docs, err := cfg.Retriever.Retrieve(ctx, &crossknowledge.RetrieveRequest{
+			Query:             userPrompt,
+			KnowledgeIDs:      recallKnowledgeIDs,
+			RetrievalStrategy: cfg.RetrievalStrategy.RetrievalStrategy,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		if len(docs.Slices) == 0 && cfg.RetrievalStrategy.NoReCallReplyMode == NoReCallReplyModeOfDefault {
+			return make(map[string]any), nil
+		}
+
+		sb := strings.Builder{}
+		if len(docs.Slices) == 0 && cfg.RetrievalStrategy.NoReCallReplyMode == NoReCallReplyModeOfCustomize {
+			sb.WriteString("recall slice 1: \n")
+			sb.WriteString(cfg.RetrievalStrategy.NoReCallReplyCustomizePrompt + "\n")
+		}
+
+		for idx, msg := range docs.Slices {
+			sb.WriteString(fmt.Sprintf("recall slice %d:\n", idx+1))
+			sb.WriteString(fmt.Sprintf("%s\n", msg.Output))
+		}
+
+		output = map[string]any{
+			knowledgeUserPromptTemplateKey: fmt.Sprintf(knowledgeUserPromptTemplate, sb.String()),
+		}
+
+		return output, nil
+	}))
+	_ = g.AddEdge(compose.START, knowledgeTemplateKey)
+	_ = g.AddEdge(knowledgeTemplateKey, knowledgeChatModelKey)
+	_ = g.AddEdge(knowledgeChatModelKey, knowledgeLambdaKey)
+	return nil
 }
 
 type ToolInterruptEventStore interface {
