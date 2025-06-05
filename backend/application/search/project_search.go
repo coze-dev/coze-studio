@@ -392,6 +392,7 @@ func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceList
 
 	searchReq := &searchEntity.SearchProjectsRequest{
 		SpaceID:        req.GetSpaceID(),
+		Name:           req.GetName(),
 		OwnerID:        0,
 		Limit:          req.GetSize(),
 		Cursor:         req.GetCursorID(),

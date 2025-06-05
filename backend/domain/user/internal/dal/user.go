@@ -21,10 +21,17 @@ type UserDAO struct {
 	query *query.Query
 }
 
-func (dao *UserDAO) GetUsersByEmail(ctx context.Context, email string) (*model.User, error) {
-	return dao.query.User.WithContext(ctx).Where(
-		dao.query.User.Email.Eq(email),
-	).First()
+func (dao *UserDAO) GetUsersByEmail(ctx context.Context, email string) (*model.User, bool, error) {
+	user, err := dao.query.User.WithContext(ctx).Where(dao.query.User.Email.Eq(email)).First()
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, false, nil
+	}
+
+	if err != nil {
+		return nil, false, err
+	}
+
+	return user, true, err
 }
 
 func (dao *UserDAO) UpdateSessionKey(ctx context.Context, userID int64, sessionKey string) error {
@@ -98,13 +105,15 @@ func (dao *UserDAO) UpdateProfile(ctx context.Context, userID int64, updates map
 }
 
 func (dao *UserDAO) CheckEmailExist(ctx context.Context, email string) (bool, error) {
-	_, err := dao.GetUsersByEmail(ctx, email)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	_, exist, err := dao.GetUsersByEmail(ctx, email)
+	if !exist {
 		return false, nil
 	}
+
 	if err != nil {
 		return false, err
 	}
+
 	return true, nil
 }
 

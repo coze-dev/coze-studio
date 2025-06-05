@@ -49,9 +49,13 @@ type userImpl struct {
 }
 
 func (u *userImpl) Login(ctx context.Context, email, password string) (user *userEntity.User, err error) {
-	userModel, err := u.UserRepo.GetUsersByEmail(ctx, email)
+	userModel, exist, err := u.UserRepo.GetUsersByEmail(ctx, email)
 	if err != nil {
 		return nil, err
+	}
+
+	if !exist {
+		return nil, errorx.New(errno.ErrUserInfoInvalidateCode)
 	}
 
 	// 验证密码，使用 Argon2id 算法
