@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	projectAPI "code.byted.org/flow/opencoze/backend/api/model/project"
+	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	publishAPI "code.byted.org/flow/opencoze/backend/api/model/publish"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/application/memory"
@@ -19,12 +20,14 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/domain/app/service"
 	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
+	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
@@ -40,10 +43,11 @@ type APPApplicationService struct {
 	oss             storage.Storage
 	projectEventBus search.ProjectEventBus
 
-	userSVC      user.User
-	searchSVC    search.Search
-	workflowSVC  workflow.Service
-	connectorSVC connector.Connector
+	userSVC            user.User
+	searchSVC          search.Search
+	workflowSVC        workflow.Service
+	connectorSVC       connector.Connector
+	VariablesDomainSVC variables.Variables
 }
 
 func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *projectAPI.DraftProjectCreateRequest) (resp *projectAPI.DraftProjectCreateResponse, err error) {
@@ -176,6 +180,11 @@ func (a *APPApplicationService) deleteAPPResources(ctx context.Context, appID in
 	err = memory.DatabaseApplicationSVC.DeleteDatabaseByAppID(ctx, appID)
 	if err != nil {
 		logs.CtxErrorf(ctx, "delete app databases failed, err=%v", err)
+	}
+
+	err = a.VariablesDomainSVC.DeleteAllVariable(ctx, project_memory.VariableConnector_Project, conv.Int64ToStr(appID))
+	if err != nil {
+		logs.CtxErrorf(ctx, "delete app variables failed, err=%v", err)
 	}
 
 	// TODO(@liuyunchao): 删除应用 knowledge

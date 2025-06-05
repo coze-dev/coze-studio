@@ -6,6 +6,7 @@ import (
 	"gorm.io/gen"
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/internal/dal/query"
@@ -25,10 +26,49 @@ func NewDAO(db *gorm.DB, generator idgen.IDGenerator) *VariablesDAO {
 	}
 }
 
+func (v *VariablesDAO) DeleteAllVariableData(ctx context.Context, bizType project_memory.VariableConnector, bizID string) (err error) {
+	tx := query.Q.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	varInstanceTable := tx.VariableInstance
+	varInsWhere := []gen.Condition{
+		varInstanceTable.BizType.Eq(int32(bizType)),
+		varInstanceTable.BizID.Eq(bizID),
+	}
+
+	_, err = varInstanceTable.WithContext(ctx).Where(varInsWhere...).Delete()
+	if err != nil {
+		return tx.Error
+	}
+
+	varMetaTable := tx.VariablesMeta
+	varMetaWhere := []gen.Condition{
+		varMetaTable.BizType.Eq(int32(bizType)),
+		varMetaTable.BizID.Eq(bizID),
+	}
+
+	_, err = varMetaTable.WithContext(ctx).Where(varMetaWhere...).Delete()
+	if err != nil {
+		return tx.Error
+	}
+
+	err = tx.Commit()
+
+	return err
+}
+
 func (v *VariablesDAO) DeleteVariableInstance(ctx context.Context, do *entity.UserVariableMeta, keywords []string) error {
 	table := query.VariableInstance
 	condWhere := []gen.Condition{
-		table.BizType.Eq(do.BizType),
+		table.BizType.Eq(int32(do.BizType)),
 		table.BizID.Eq(do.BizID),
 		table.Version.Eq(do.Version),
 		table.ConnectorUID.Eq(do.ConnectorUID),
@@ -50,7 +90,7 @@ func (v *VariablesDAO) DeleteVariableInstance(ctx context.Context, do *entity.Us
 func (v *VariablesDAO) GetVariableInstances(ctx context.Context, do *entity.UserVariableMeta, keywords []string) ([]*entity.VariableInstance, error) {
 	table := query.VariableInstance
 	condWhere := []gen.Condition{
-		table.BizType.Eq(do.BizType),
+		table.BizType.Eq(int32(do.BizType)),
 		table.BizID.Eq(do.BizID),
 		table.Version.Eq(do.Version),
 		table.ConnectorUID.Eq(do.ConnectorUID),
@@ -77,7 +117,7 @@ func (v *VariablesDAO) GetVariableInstances(ctx context.Context, do *entity.User
 func (v *VariablesDAO) variableInstanceToDO(po *model.VariableInstance) *entity.VariableInstance {
 	return &entity.VariableInstance{
 		ID:           po.ID,
-		BizType:      po.BizType,
+		BizType:      project_memory.VariableConnector(po.BizType),
 		BizID:        po.BizID,
 		Version:      po.Version,
 		ConnectorUID: po.ConnectorUID,
@@ -93,7 +133,7 @@ func (v *VariablesDAO) variableInstanceToDO(po *model.VariableInstance) *entity.
 func (v *VariablesDAO) variableInstanceToPO(po *entity.VariableInstance) *model.VariableInstance {
 	return &model.VariableInstance{
 		ID:           po.ID,
-		BizType:      po.BizType,
+		BizType:      int32(po.BizType),
 		BizID:        po.BizID,
 		Version:      po.Version,
 		ConnectorUID: po.ConnectorUID,

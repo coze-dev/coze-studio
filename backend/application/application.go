@@ -292,12 +292,13 @@ func (p *primaryServices) toAPPServiceComponents() *app.ServiceComponents {
 	infra := p.basicServices.infra
 	basic := p.basicServices
 	return &app.ServiceComponents{
-		IDGen:           infra.IDGenSVC,
-		DB:              infra.DB,
-		OSS:             infra.TOSClient,
-		ProjectEventBus: basic.eventbus.projectEventBus,
-		UserSVC:         basic.userSVC.DomainSVC,
-		ConnectorSVC:    basic.connectorSVC.DomainSVC,
+		IDGen:              infra.IDGenSVC,
+		DB:                 infra.DB,
+		OSS:                infra.TOSClient,
+		ProjectEventBus:    basic.eventbus.projectEventBus,
+		UserSVC:            basic.userSVC.DomainSVC,
+		ConnectorSVC:       basic.connectorSVC.DomainSVC,
+		VariablesDomainSVC: p.memorySVC.VariablesDomainSVC,
 	}
 }
 

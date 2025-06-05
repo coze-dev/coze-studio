@@ -9,12 +9,13 @@ import (
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
+	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type UserVariableMeta struct {
-	BizType      int32
+	BizType      project_memory.VariableConnector
 	BizID        string
 	Version      string
 	ConnectorUID string
@@ -23,7 +24,7 @@ type UserVariableMeta struct {
 
 type VariableInstance struct {
 	ID           int64
-	BizType      int32
+	BizType      project_memory.VariableConnector
 	BizID        string
 	Version      string
 	Keyword      string
@@ -93,7 +94,7 @@ func (v *UserVariableMeta) decryptSysUUIDKey(ctx context.Context, encryptSysUUID
 	bizType64, _ := strconv.ParseInt(parts[0], 10, 32)
 	connectorID, _ := strconv.ParseInt(parts[3], 10, 64)
 	return &VariableInstance{
-		BizType:      int32(bizType64),
+		BizType:      project_memory.VariableConnector(bizType64),
 		BizID:        parts[1],
 		ConnectorUID: parts[2],
 		ConnectorID:  connectorID,

@@ -215,8 +215,6 @@ Bob-->Alice: I am good thanks!
 
 为了便于管理您的文稿，在 **预览区** 的顶部放置了如下所示的 **管理工具栏**：
 
-![tool-manager](https://www.zybuluo.com/static/img/toolbar-manager.jpg)
-
 通过管理工具栏可以：
 
 <i class="icon-share"></i> 发布：将当前的文稿生成固定链接，在网络上发布，分享
@@ -227,8 +225,6 @@ Bob-->Alice: I am good thanks!
 <i class="icon-pencil"></i> 模式：切换 普通/Vim/Emacs 编辑模式
 
 ### 1.3.7. 阅读工具栏
-
-![tool-manager](https://www.zybuluo.com/static/img/toolbar-reader.jpg)
 
 通过 **预览区** 右上角的 **阅读工具栏**，可以查看当前文稿的目录并增强阅读体验。
 
