@@ -101,18 +101,19 @@ type knowledgeSVC struct {
 	sliceRepo     dao.KnowledgeDocumentSliceRepo
 	reviewRepo    dao.KnowledgeDocumentReviewRepo
 
-	idgen               idgen.IDGenerator
-	rdb                 rdb.RDB
-	producer            eventbus.Producer
-	searchStoreManagers []searchstore.Manager
-	parseManager        parser.Manager
-	rewriter            messages2query.MessagesToQuery
-	reranker            rerank.Reranker
-	storage             storage.Storage
-	nl2Sql              nl2sql.NL2SQL
-	imageX              imagex.ImageX
-	CacheCli            cache.Cmdable
-	enableCompactTable  bool // 表格数据压缩
+	idgen                     idgen.IDGenerator
+	rdb                       rdb.RDB
+	producer                  eventbus.Producer
+	searchStoreManagers       []searchstore.Manager
+	parseManager              parser.Manager
+	rewriter                  messages2query.MessagesToQuery
+	reranker                  rerank.Reranker
+	storage                   storage.Storage
+	nl2Sql                    nl2sql.NL2SQL
+	imageX                    imagex.ImageX
+	CacheCli                  cache.Cmdable
+	enableCompactTable        bool // 表格数据压缩
+	isAutoAnnotationSupported bool // 是否支持了图片自动标注
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.CreateKnowledgeRequest) (response *knowledge.CreateKnowledgeResponse, err error) {
@@ -291,15 +292,26 @@ func (k *knowledgeSVC) ListKnowledge(ctx context.Context, request *knowledge.Lis
 		Total:         total,
 	}, nil
 }
-
-func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *knowledge.CreateDocumentRequest) (response *knowledge.CreateDocumentResponse, err error) {
+func (k *knowledgeSVC) checkRequest(request *knowledge.CreateDocumentRequest) error {
 	if len(request.Documents) == 0 {
-		return nil, errors.New("document is empty")
+		return errors.New("document is empty")
+	}
+	for i := range request.Documents {
+		if request.Documents[i].Type == knowledgeModel.DocumentTypeImage && ptr.From(request.Documents[i].ChunkingStrategy.CaptionType) == parser.CaptionType_Auto {
+			if !k.isAutoAnnotationSupported {
+				return errors.New("auto caption type is not supported")
+			}
+		}
+	}
+	return nil
+}
+func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *knowledge.CreateDocumentRequest) (response *knowledge.CreateDocumentResponse, err error) {
+	if err = k.checkRequest(request); err != nil {
+		return nil, err
 	}
 	if err = k.documentsURL2URI(ctx, request.Documents); err != nil {
 		return nil, errors.New("documents url to uri fail")
 	}
-
 	userID := request.Documents[0].CreatorID
 	spaceID := request.Documents[0].SpaceID
 	documentSource := request.Documents[0].Source
@@ -1286,4 +1298,11 @@ func (k *knowledgeSVC) GetKnowledgeByID(ctx context.Context, request *knowledge.
 	return &knowledge.GetKnowledgeByIDResponse{
 		Knowledge: knEntity,
 	}, nil
+}
+
+func (k *knowledgeSVC) ListPhotoSlice(ctx context.Context, request *knowledge.ListPhotoSliceRequest) (response *knowledge.ListPhotoSliceResponse, err error) {
+	if request == nil {
+		return nil, errors.New("request is null")
+	}
+	return nil, nil
 }

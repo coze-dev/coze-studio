@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 	"time"
 
@@ -312,7 +313,10 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "create document failed, err: %v", err)
-		return dataset.NewCreateDocumentResponse(), err
+		resp := dataset.NewCreateDocumentResponse()
+		resp.Code = 500
+		resp.Msg = fmt.Sprintf("create document failed, err: %v", err)
+		return resp, nil
 	}
 	resp := dataset.NewCreateDocumentResponse()
 	resp.DocumentInfos = make([]*dataset.DocumentInfo, 0)
@@ -883,4 +887,100 @@ func (k *KnowledgeApplicationService) GetIconForDataset(ctx context.Context, req
 		URI: uri,
 	}
 	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) UpdatePhotoCaption(ctx context.Context, req *dataset.UpdatePhotoCaptionRequest) (*dataset.UpdatePhotoCaptionResponse, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
+	}
+	resp := dataset.NewUpdatePhotoCaptionResponse()
+	listResp, err := k.DomainSVC.ListSlice(ctx, &knowledge.ListSliceRequest{DocumentID: ptr.Of(req.DocumentID)})
+	if err != nil {
+		logs.CtxErrorf(ctx, "list slice failed, err: %v", err)
+		return resp, err
+	}
+	if len(listResp.Slices) == 0 {
+		return resp, nil
+	}
+	err = k.DomainSVC.UpdateSlice(ctx, &knowledge.UpdateSliceRequest{
+		SliceID:    listResp.Slices[0].ID,
+		DocumentID: req.DocumentID,
+		CreatorID:  ptr.From(uid),
+		RawContent: []*knowledgeModel.SliceContent{{
+			Type: knowledgeModel.SliceContentTypeText,
+			Text: ptr.Of(req.Caption),
+		}},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "update slice failed, err: %v", err)
+		return resp, err
+	}
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) ListPhoto(ctx context.Context, req *dataset.ListPhotoRequest) (*dataset.ListPhotoResponse, error) {
+	resp := dataset.NewListPhotoResponse()
+	var err error
+	var offset int
+	if req.GetPage() >= 1 {
+		offset = int(req.GetSize() * (req.GetPage() - 1))
+	}
+	listPhotoSliceReq := knowledge.ListPhotoSliceRequest{
+		KnowledgeID: req.GetDatasetID(),
+		Limit:       ptr.Of(int(req.GetSize())),
+		Offset:      &offset,
+	}
+	if req.Filter != nil {
+		listPhotoSliceReq.HasCaption = req.Filter.HasCaption
+	}
+	listResp, err := k.DomainSVC.ListPhotoSlice(ctx, &listPhotoSliceReq)
+	if err != nil {
+		logs.CtxErrorf(ctx, "list document failed, err: %v", err)
+		return resp, err
+	}
+	if len(listResp.Slices) == 0 {
+		resp.Total = int32(listResp.Total)
+		return resp, nil
+	}
+	docIDs := slices.Transform(listResp.Slices, func(item *entity.Slice) int64 {
+		return item.DocumentID
+	})
+	listDocResp, err := k.DomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{DocumentIDs: docIDs})
+	if err != nil {
+		logs.CtxErrorf(ctx, "get documents by slice ids failed, err: %v", err)
+		return resp, err
+	}
+	photos := k.packPhotoInfo(ctx, listResp.Slices, listDocResp.Documents)
+	sort.SliceStable(photos, func(i, j int) bool {
+		return photos[i].UpdateTime > photos[j].UpdateTime
+	})
+	resp.PhotoInfos = photos
+	resp.Total = int32(listResp.Total)
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) packPhotoInfo(ctx context.Context, slices []*entity.Slice, documents []*entity.Document) []*dataset.PhotoInfo {
+	captions := map[int64]string{}
+	for i := range slices {
+		captions[slices[i].DocumentID] = slices[i].GetSliceContent()
+	}
+	photoInfo := make([]*dataset.PhotoInfo, 0, len(documents))
+	for _, document := range documents {
+		photoStatus := convertDocumentStatus2Model(document.Status)
+		photoInfo = append(photoInfo, &dataset.PhotoInfo{
+			Name:       document.Name,
+			DocumentID: document.ID,
+			URL:        document.URL,
+			Caption:    captions[document.ID],
+			CreateTime: int32(document.CreatedAtMs) / 1000,
+			UpdateTime: int32(document.UpdatedAtMs) / 1000,
+			CreatorID:  document.CreatorID,
+			Type:       string(document.FileExtension),
+			Size:       int32(document.Size),
+			Status:     photoStatus,
+			SourceType: dataset.DocumentSource_Document,
+		})
+	}
+	return photoInfo
 }

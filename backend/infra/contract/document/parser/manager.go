@@ -31,7 +31,7 @@ type ParsingStrategy struct {
 	Columns             []*document.Column `json:"-"`               // sheet 对齐表头
 	IgnoreColumnTypeErr bool               `json:"-"`               // true 时忽略 column type 与 value 未对齐的问题，此时 value 为空
 
-	// TODO: Image
+	CaptionType CaptionType `json:"caption_type"` // 标注类型
 }
 
 type ChunkingStrategy struct {
@@ -57,6 +57,15 @@ const (
 	ChunkTypeLeveled ChunkType = 2 // 层级分片
 )
 
+type CaptionType int64
+
+const (
+	// 智能标注
+	CaptionType_Auto CaptionType = 0
+	// 人工标注
+	CaptionType_Manual CaptionType = 1
+)
+
 type FileExtension string
 
 const (
@@ -72,6 +81,10 @@ const (
 	FileExtensionXLSX     FileExtension = "xlsx"
 	FileExtensionJSON     FileExtension = "json"
 	FileExtensionJsonMaps FileExtension = "json_maps" // json of []map[string]string
+	// image
+	FileExtensionPNG  FileExtension = "png"
+	FileExtensionJPG  FileExtension = "jpg"
+	FileExtensionJPEG FileExtension = "jpeg"
 )
 
 func ValidateFileExtension(fileSuffix string) (ext FileExtension, support bool) {

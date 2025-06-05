@@ -32,8 +32,8 @@ const (
 
 // ChunkingStrategy for document chunk before indexing
 type ChunkingStrategy struct {
-	ChunkType parser.ChunkType `json:"chunk_type"`
-
+	ChunkType   parser.ChunkType    `json:"chunk_type"`
+	CaptionType *parser.CaptionType `json:"caption_type"`
 	// custom chunk config
 	ChunkSize       int64  `json:"chunk_size"` // 分段最大长度
 	Separator       string `json:"separator"`  // 分段标识符

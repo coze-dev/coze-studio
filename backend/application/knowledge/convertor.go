@@ -465,6 +465,7 @@ func convertChunkingStrategy2Entity(strategy *dataset.ChunkStrategy) *entity.Chu
 	}
 	if strategy.ChunkType == dataset.ChunkType_DefaultChunk {
 		return &entity.ChunkingStrategy{
+			CaptionType:     convertCaptionType2Entity(strategy.CaptionType),
 			ChunkType:       convertChunkType2Entity(dataset.ChunkType_DefaultChunk),
 			ChunkSize:       defaultChunkSize,
 			Separator:       defaultSeparator,
@@ -474,6 +475,7 @@ func convertChunkingStrategy2Entity(strategy *dataset.ChunkStrategy) *entity.Chu
 		}
 	}
 	return &entity.ChunkingStrategy{
+		CaptionType:     convertCaptionType2Entity(strategy.CaptionType),
 		ChunkType:       convertChunkType2Entity(strategy.ChunkType),
 		ChunkSize:       strategy.GetMaxTokens(),
 		Separator:       strategy.GetSeparator(),
@@ -496,7 +498,19 @@ func GetExtension(uri string) string {
 	}
 	return ""
 }
-
+func convertCaptionType2Entity(ct *dataset.CaptionType) *parser.CaptionType {
+	if ct == nil {
+		return nil
+	}
+	switch ptr.From(ct) {
+	case dataset.CaptionType_Auto:
+		return ptr.Of(parser.CaptionType_Auto)
+	case dataset.CaptionType_Manual:
+		return ptr.Of(parser.CaptionType_Manual)
+	default:
+		return ptr.Of(parser.CaptionType_Auto)
+	}
+}
 func convertDatasetStatus2Entity(status dataset.DatasetStatus) model.KnowledgeStatus {
 	switch status {
 	case dataset.DatasetStatus_DatasetReady:

@@ -242,7 +242,11 @@ func UpdatePhotoCaption(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.UpdatePhotoCaptionResponse)
-
+	resp, err = application.KnowledgeSVC.UpdatePhotoCaption(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -258,7 +262,11 @@ func ListPhoto(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.ListPhotoResponse)
-
+	resp, err = application.KnowledgeSVC.ListPhoto(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
