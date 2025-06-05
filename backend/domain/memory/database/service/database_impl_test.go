@@ -663,3 +663,91 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NotNil(t, deleteCustomResp.RowsAffected)
 	assert.Equal(t, *deleteCustomResp.RowsAffected, int64(1))
 }
+
+func TestDeleteDatabaseByAppID(t *testing.T) {
+	gormDB, _, _, draftDAO, onlineDAO, dbService := setupTestEnv(t)
+	defer cleanupTestEnv(t, gormDB)
+
+	appID := int64(123456)
+	dbCount := 3
+	var onlineIDs []int64
+	var draftIDs []int64
+	var physicalTables []string
+
+	for i := 0; i < dbCount; i++ {
+		dbName := fmt.Sprintf("test_appid_db_%d_%d", appID, i)
+		req := &CreateDatabaseRequest{
+			Database: &entity2.Database{
+				AppID:     appID,
+				SpaceID:   1,
+				CreatorID: 1001,
+				TableName: dbName,
+				FieldList: []*database.FieldItem{
+					{
+						Name:         "id",
+						Type:         table.FieldItemType_Number,
+						MustRequired: true,
+					},
+					{
+						Name:         "name",
+						Type:         table.FieldItemType_Text,
+						MustRequired: true,
+					},
+					{
+						Name: "score",
+						Type: table.FieldItemType_Float,
+					},
+					{
+						Name: "date",
+						Type: table.FieldItemType_Date,
+					},
+				},
+			},
+		}
+		resp, err := dbService.CreateDatabase(context.Background(), req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.NotNil(t, resp.Database)
+		assert.Equal(t, appID, resp.Database.AppID)
+		assert.NotEmpty(t, resp.Database.ActualTableName)
+		physicalTables = append(physicalTables, resp.Database.ActualTableName)
+		if resp.Database.ID != 0 {
+			onlineIDs = append(onlineIDs, resp.Database.ID)
+		}
+		if resp.Database.DraftID != nil {
+			draftIDs = append(draftIDs, *resp.Database.DraftID)
+		}
+	}
+
+	for _, id := range onlineIDs {
+		_, err := onlineDAO.Get(context.Background(), id)
+		assert.NoError(t, err)
+	}
+	for _, id := range draftIDs {
+		_, err := draftDAO.Get(context.Background(), id)
+		assert.NoError(t, err)
+	}
+
+	_, err := dbService.DeleteDatabaseByAppID(context.Background(), &DeleteDatabaseByAppIDRequest{AppID: appID})
+	assert.NoError(t, err)
+
+	for _, id := range onlineIDs {
+		_, err := onlineDAO.Get(context.Background(), id)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "not found")
+	}
+	for _, id := range draftIDs {
+		_, err := draftDAO.Get(context.Background(), id)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "not found")
+	}
+
+	sqlDB, err := gormDB.DB()
+	assert.NoError(t, err)
+	for _, tableName := range physicalTables {
+		var cnt int
+		err := sqlDB.QueryRow(fmt.Sprintf("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = '%s'", tableName)).Scan(&cnt)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, cnt, "physical table %s should be deleted", tableName)
+	}
+}

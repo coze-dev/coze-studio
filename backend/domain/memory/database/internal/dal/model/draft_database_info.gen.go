@@ -28,7 +28,7 @@ type DraftDatabaseInfo struct {
 	RwMode            int64                 `gorm:"column:rw_mode;not null;default:1;comment:Read and write permission modes: 1. Limited read and write mode 2. Read-only mode 3. Full read and write mode" json:"rw_mode"` // Read and write permission modes: 1. Limited read and write mode 2. Read-only mode 3. Full read and write mode
 	CreatedAt         int64                 `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"`                                                                  // Create Time in Milliseconds
 	UpdatedAt         int64                 `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"`                                                                  // Update Time in Milliseconds
-	DeletedAt         gorm.DeletedAt        `gorm:"column:deleted_at;comment:Delete Time in Milliseconds" json:"deleted_at"`                                                                                                // Delete Time in Milliseconds
+	DeletedAt         gorm.DeletedAt        `gorm:"column:deleted_at;comment:Delete Time" json:"deleted_at"`                                                                                                                // Delete Time
 }
 
 // TableName DraftDatabaseInfo's table name

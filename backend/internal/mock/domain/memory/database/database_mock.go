@@ -97,6 +97,21 @@ func (mr *MockDatabaseMockRecorder) DeleteDatabase(ctx, req any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDatabase", reflect.TypeOf((*MockDatabase)(nil).DeleteDatabase), ctx, req)
 }
 
+// DeleteDatabaseByAppID mocks base method.
+func (m *MockDatabase) DeleteDatabaseByAppID(ctx context.Context, req *service.DeleteDatabaseByAppIDRequest) (*service.DeleteDatabaseByAppIDResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteDatabaseByAppID", ctx, req)
+	ret0, _ := ret[0].(*service.DeleteDatabaseByAppIDResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteDatabaseByAppID indicates an expected call of DeleteDatabaseByAppID.
+func (mr *MockDatabaseMockRecorder) DeleteDatabaseByAppID(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDatabaseByAppID", reflect.TypeOf((*MockDatabase)(nil).DeleteDatabaseByAppID), ctx, req)
+}
+
 // DeleteDatabaseRecord mocks base method.
 func (m *MockDatabase) DeleteDatabaseRecord(ctx context.Context, req *service.DeleteDatabaseRecordRequest) error {
 	m.ctrl.T.Helper()

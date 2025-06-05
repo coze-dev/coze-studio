@@ -742,3 +742,28 @@ func (d *DatabaseApplicationService) ValidateAccess(ctx context.Context, onlineD
 
 	return nil
 }
+
+func (d *DatabaseApplicationService) DeleteDatabaseByAppID(ctx context.Context, appID int64) error {
+	resp, err := d.DomainSVC.DeleteDatabaseByAppID(ctx, &database.DeleteDatabaseByAppIDRequest{
+		AppID: appID,
+	})
+	if err != nil {
+		return err
+	}
+
+	deletedIDs := resp.DeletedDatabaseIDs
+	for _, deletedID := range deletedIDs {
+		err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+			OpType: searchEntity.Deleted,
+			Resource: &searchEntity.ResourceDocument{
+				ResType: resCommon.ResType_Database,
+				ResID:   deletedID,
+			},
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

@@ -153,15 +153,8 @@ func (o *OlineImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 }
 
 func (o *OlineImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int64) error {
-	// 逻辑删除（更新状态为已删除）
-	now := time.Now().UnixMilli()
-	updates := map[string]interface{}{
-		"updated_at": now,
-		"deleted_at": now,
-	}
-
 	res := tx.OnlineDatabaseInfo
-	_, err := res.WithContext(ctx).Where(res.ID.Eq(id)).Updates(updates)
+	_, err := res.WithContext(ctx).Where(res.ID.Eq(id)).Delete(&model.OnlineDatabaseInfo{})
 	if err != nil {
 		return fmt.Errorf("delete online database failed: %v", err)
 	}
@@ -297,6 +290,7 @@ func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 
 			AppID:           info.AppID,
 			DraftID:         &info.RelatedDraftID,
+			OnlineID:        &info.ID,
 			IsVisible:       info.IsVisible == 1,
 			PromptDisabled:  info.PromptDisabled == 1,
 			TableName:       info.TableName_,
@@ -312,4 +306,17 @@ func (o *OlineImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 	}
 
 	return databases, count, nil
+}
+
+func (o *OlineImpl) BatchDeleteWithTX(ctx context.Context, tx *query.QueryTx, ids []int64) error {
+	if len(ids) == 0 {
+		return nil
+	}
+
+	res := tx.OnlineDatabaseInfo
+	_, err := res.WithContext(ctx).Where(res.ID.In(ids...)).Delete()
+	if err != nil {
+		return fmt.Errorf("batch delete online database failed: %v", err)
+	}
+	return nil
 }

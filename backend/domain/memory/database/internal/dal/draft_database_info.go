@@ -196,15 +196,8 @@ func (d *DraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 }
 
 func (d *DraftImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int64) error {
-	// 逻辑删除（更新状态为已删除）
-	now := time.Now().UnixMilli()
-	updates := map[string]interface{}{
-		"updated_at": now,
-		"deleted_at": now,
-	}
-
 	res := tx.DraftDatabaseInfo
-	_, err := res.WithContext(ctx).Where(res.ID.Eq(id)).Updates(updates)
+	_, err := res.WithContext(ctx).Where(res.ID.Eq(id)).Delete(&model.DraftDatabaseInfo{})
 	if err != nil {
 		return fmt.Errorf("delete draft database failed: %v", err)
 	}
@@ -301,10 +294,24 @@ func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 			RwMode:          table.BotTableRWMode(info.RwMode),
 			TableType:       ptr.Of(table.TableType_DraftTable),
 			OnlineID:        &info.RelatedOnlineID,
+			DraftID:         &info.ID,
 		}
 
 		databases = append(databases, db)
 	}
 
 	return databases, count, nil
+}
+
+func (d *DraftImpl) BatchDeleteWithTX(ctx context.Context, tx *query.QueryTx, ids []int64) error {
+	if len(ids) == 0 {
+		return nil
+	}
+
+	res := tx.DraftDatabaseInfo
+	_, err := res.WithContext(ctx).Where(res.ID.In(ids...)).Delete()
+	if err != nil {
+		return fmt.Errorf("batch delete draft database failed: %v", err)
+	}
+	return nil
 }
