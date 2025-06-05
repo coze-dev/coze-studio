@@ -1317,7 +1317,7 @@ const (
 	ConfigStatus_Disconnected ConfigStatus = 3
 	// 配置中，授权中
 	ConfigStatus_Configuring ConfigStatus = 4
-	// 需要重新配置 https://bytedance.larkoffice.com/docx/KXNed5NWUoplVBxXdQxcfPNwnrf#Gn7dd2KoaoNZo6xw1tkcT92znbG
+	// 需要重新配置
 	ConfigStatus_NeedReconfiguring ConfigStatus = 5
 )
 
@@ -27400,7 +27400,7 @@ type PublishConnectorInfo struct {
 	BrandID *int64 `thrift:"brand_id,19,optional" form:"brand_id" json:"brand_id,omitempty" query:"brand_id"`
 	// 支持商业化
 	SupportMonetization *bool `thrift:"support_monetization,20,optional" form:"support_monetization" json:"support_monetization,omitempty" query:"support_monetization"`
-	// 1: 已授权，2:未授权. 目前仅 bind_type == 8 时这个字段才有 https://bytedance.larkoffice.com/docx/KXNed5NWUoplVBxXdQxcfPNwnrf#Gn7dd2KoaoNZo6xw1tkcT92znbG
+	// 1: 已授权，2:未授权. 目前仅 bind_type == 8 时这个字段才有
 	AuthStatus *UserAuthStatus `thrift:"auth_status,21,optional" form:"auth_status" json:"auth_status,omitempty" query:"auth_status"`
 	// 补全信息按钮的 url
 	ToCompleteInfoURL *string `thrift:"to_complete_info_url,22,optional" form:"to_complete_info_url" json:"to_complete_info_url,omitempty" query:"to_complete_info_url"`

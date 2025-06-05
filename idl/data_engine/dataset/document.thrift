@@ -203,7 +203,7 @@ struct CreateDocumentRequest {
     // 表格类型一次只能创建一个
     6:  list<DocumentBase>        document_bases      // 待创建的文档信息
 
-    17: optional common.ChunkStrategy chunk_strategy  // 只在知识库中没有文档时需要传递，已有则从知识库获取.切片规则，为空则自动按段落切片，具体规则见IDP：https://bytedance.larkoffice.com/docx/Ro4tdG64VoogMlxWqgyc2lsjncf
+    17: optional common.ChunkStrategy chunk_strategy  // 只在知识库中没有文档时需要传递，已有则从知识库获取.切片规则，为空则自动按段落切片
     18: optional common.SinkStrategy sink_strategy // 数据导入的时候落库规则
     // 是否为追加内容，用于表格添加内容
     31: optional bool is_append               // 为 true 时向已有的 document 追加内容。text 类型不能使用

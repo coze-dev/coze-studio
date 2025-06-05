@@ -774,7 +774,7 @@ enum ConfigStatus {
     NotConfigured     = 2 // 未配置
     Disconnected      = 3 // Token发生变化
     Configuring       = 4 // 配置中，授权中
-    NeedReconfiguring = 5 // 需要重新配置 https://bytedance.larkoffice.com/docx/KXNed5NWUoplVBxXdQxcfPNwnrf#Gn7dd2KoaoNZo6xw1tkcT92znbG
+    NeedReconfiguring = 5 // 需要重新配置 
 }
 enum BindType {
     NoBindRequired = 1 // 无需绑定
@@ -839,7 +839,7 @@ struct PublishConnectorInfo {
     18: optional string                                      config_status_toast // 配置状态toast
     19: optional i64                                         brand_id          // 品牌 ID
     20: optional bool                                        support_monetization // 支持商业化
-    21: optional UserAuthStatus                auth_status       // 1: 已授权，2:未授权. 目前仅 bind_type == 8 时这个字段才有 https://bytedance.larkoffice.com/docx/KXNed5NWUoplVBxXdQxcfPNwnrf#Gn7dd2KoaoNZo6xw1tkcT92znbG
+    21: optional UserAuthStatus                auth_status       // 1: 已授权，2:未授权. 目前仅 bind_type == 8 时这个字段才有 
     22: optional string                                      to_complete_info_url // 补全信息按钮的 url
 }
 
