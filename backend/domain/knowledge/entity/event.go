@@ -23,7 +23,7 @@ const (
 	EventTypeIndexDocument EventType = "index_document"
 
 	// EventTypeIndexSlice 切片信息已写入 orm，逻辑中仅写入搜索数据
-	// Event requires: Event.Document, Event.Slice
+	// Event requires: Event.Slice
 	EventTypeIndexSlice EventType = "index_slice"
 
 	// EventTypeDeleteKnowledgeData 删除 knowledge

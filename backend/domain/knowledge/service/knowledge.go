@@ -25,6 +25,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/events"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
 	"code.byted.org/flow/opencoze/backend/infra/contract/cache"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
@@ -525,10 +526,8 @@ func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request *knowledge
 	docEntity := k.fromModelDocument(ctx, doc)
 	docEntity.ChunkingStrategy = request.ChunkingStrategy
 	docEntity.ParsingStrategy = request.ParsingStrategy
-	body, err := sonic.Marshal(&entity.Event{
-		Type:     entity.EventTypeIndexDocument,
-		Document: docEntity,
-	})
+	event := events.NewIndexDocumentEvent(docEntity.KnowledgeID, docEntity)
+	body, err := sonic.Marshal(event)
 	if err != nil {
 		return nil, err
 	}
@@ -627,10 +626,7 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *knowledge.Creat
 		DocumentID: request.DocumentID,
 		RawContent: request.RawContent,
 	}
-	indexSliceEvent := entity.Event{
-		Type:  entity.EventTypeIndexSlice,
-		Slice: &sliceEntity,
-	}
+	indexSliceEvent := events.NewIndexSliceEvent(&sliceEntity)
 	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeText) ||
 		docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		sliceInfo.Content = sliceEntity.GetSliceContent()
@@ -694,18 +690,14 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, request *knowledge.Updat
 	}
 	sliceInfo[0].UpdatedAt = time.Now().UnixMilli()
 	sliceInfo[0].Status = int32(knowledgeModel.SliceStatusInit)
-	indexSliceEvent := entity.Event{
-		Type: entity.EventTypeIndexSlice,
-		Slice: &entity.Slice{
-			Info: knowledgeModel.Info{
-				ID: sliceInfo[0].ID,
-			},
-			KnowledgeID: sliceInfo[0].KnowledgeID,
-			DocumentID:  sliceInfo[0].DocumentID,
-			RawContent:  request.RawContent,
+	indexSliceEvent := events.NewIndexSliceEvent(&entity.Slice{
+		Info: knowledgeModel.Info{
+			ID: sliceInfo[0].ID,
 		},
-	}
-
+		KnowledgeID: sliceInfo[0].KnowledgeID,
+		DocumentID:  sliceInfo[0].DocumentID,
+		RawContent:  request.RawContent,
+	})
 	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		// todo更新表里的内容
 		indexSliceEvent.Slice.ID = sliceInfo[0].ID
@@ -946,23 +938,20 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *knowle
 	}
 	for i := range reviews {
 		review := reviews[i]
-		reviewEvent := entity.Event{
-			Type:           entity.EventTypeDocumentReview,
-			DocumentReview: review,
-			Document: &entity.Document{
-				KnowledgeID:      request.KnowledgeID,
-				ParsingStrategy:  request.ParsingStrategy,
-				ChunkingStrategy: request.ChunkStrategy,
-				Type:             knowledgeModel.DocumentTypeText,
-				URI:              review.Uri,
-				FileExtension:    parser.FileExtension(review.DocumentType),
-				Info: knowledgeModel.Info{
-					Name:      review.DocumentName,
-					CreatorID: *uid,
-				},
-				Source: entity.DocumentSourceLocal,
+		doc := &entity.Document{
+			KnowledgeID:      request.KnowledgeID,
+			ParsingStrategy:  request.ParsingStrategy,
+			ChunkingStrategy: request.ChunkStrategy,
+			Type:             knowledgeModel.DocumentTypeText,
+			URI:              review.Uri,
+			FileExtension:    parser.FileExtension(review.DocumentType),
+			Info: knowledgeModel.Info{
+				Name:      review.DocumentName,
+				CreatorID: *uid,
 			},
+			Source: entity.DocumentSourceLocal,
 		}
+		reviewEvent := events.NewDocumentReviewEvent(doc, review)
 		body, err := sonic.Marshal(&reviewEvent)
 		if err != nil {
 			logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
@@ -1106,11 +1095,7 @@ func (k *knowledgeSVC) documentsURL2URI(ctx context.Context, docs []*entity.Docu
 }
 
 func (k *knowledgeSVC) emitDeleteKnowledgeDataEvent(ctx context.Context, knowledgeID int64, sliceIDs []int64, shardingKey string) error {
-	deleteSliceEvent := entity.Event{
-		Type:        entity.EventTypeDeleteKnowledgeData,
-		KnowledgeID: knowledgeID,
-		SliceIDs:    sliceIDs,
-	}
+	deleteSliceEvent := events.NewDeleteKnowledgeDataEvent(knowledgeID, sliceIDs)
 	body, err := sonic.Marshal(&deleteSliceEvent)
 	if err != nil {
 		return fmt.Errorf("[emitDeleteKnowledgeDataEvent] marshal event failed, %w", err)
@@ -1297,7 +1282,7 @@ func (k *knowledgeSVC) MGetKnowledgeByID(ctx context.Context, request *knowledge
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &knowledge.MGetKnowledgeByIDResponse{
 		Knowledge: slices.Transform(models, func(a *model.Knowledge) *knowledgeModel.Knowledge {
 			return k.fromModelKnowledge(ctx, a)

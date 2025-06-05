@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/events"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
@@ -209,10 +210,8 @@ func (p *baseDocProcessor) deleteTable() error {
 }
 
 func (p *baseDocProcessor) Indexing() error {
-	body, err := sonic.Marshal(&entity.Event{
-		Type:      entity.EventTypeIndexDocuments,
-		Documents: p.Documents,
-	})
+	event := events.NewIndexDocumentsEvent(p.Documents[0].KnowledgeID, p.Documents)
+	body, err := sonic.Marshal(event)
 	if err != nil {
 		return err
 	}
