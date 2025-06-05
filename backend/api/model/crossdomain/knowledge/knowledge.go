@@ -175,7 +175,6 @@ func (s *Slice) GetSliceContent() string {
 			}
 			data += string(byteData)
 		}
-		// todo image的处理
 		if item.Type == SliceContentTypeText {
 			data += ptr.From(item.Text)
 		}
@@ -202,8 +201,8 @@ const (
 type SliceContentType int64
 
 const (
-	SliceContentTypeText  SliceContentType = 0
-	SliceContentTypeImage SliceContentType = 1
+	SliceContentTypeText SliceContentType = 0
+	//SliceContentTypeImage SliceContentType = 1
 	SliceContentTypeTable SliceContentType = 2
 )
 

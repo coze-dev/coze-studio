@@ -61,9 +61,8 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	var (
 		milvusAddr = os.Getenv("MILVUS_ADDR")
 
-		embeddingType        = os.Getenv("EMBEDDING_TYPE")
-		ocrType              = os.Getenv("OCR_TYPE")
-		builtinChatModelType = os.Getenv("BUILTIN_CM_TYPE")
+		embeddingType = os.Getenv("EMBEDDING_TYPE")
+		ocrType       = os.Getenv("OCR_TYPE")
 	)
 
 	ctx := context.Background()
@@ -167,47 +166,41 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		// accept ocr not configured
 	}
 
-	var bcm chatmodel.BaseChatModel
-	switch builtinChatModelType {
-	case "openai":
-		byAzure, _ := strconv.ParseBool(os.Getenv("BUILTIN_CM_OPENAI_BY_AZURE"))
-		bcm, err = mo.NewChatModel(ctx, &mo.ChatModelConfig{
-			APIKey:  os.Getenv("BUILTIN_CM_OPENAI_API_KEY"),
-			ByAzure: byAzure,
-			BaseURL: os.Getenv("BUILTIN_CM_OPENAI_BASE_URL"),
-			Model:   os.Getenv("BUILTIN_CM_OPENAI_MODEL"),
-		})
-		if err != nil {
-			return nil, fmt.Errorf("knowledge init openai chat mode failed, %w", err)
-		}
-	default:
-		// accept builtin chat model not configured
-	}
+	root := os.Getenv("PWD")
 
 	var rewriter messages2query.MessagesToQuery
-	var n2s nl2sql.NL2SQL
-	if bcm != nil {
-		root := os.Getenv("PWD")
-
+	if rewriterChatModel, ok, err := getBuiltinChatModel(ctx, "M2Q_"); err != nil {
+		return nil, err
+	} else if ok {
 		filePath := filepath.Join(root, "resources/conf/prompt/messages_to_query_template_jinja2.json")
 		rewriterTemplate, err := readJinja2PromptTemplate(filePath)
 		if err != nil {
 			return nil, err
 		}
-		rewriter, err = builtinM2Q.NewMessagesToQuery(ctx, bcm, rewriterTemplate)
+		rewriter, err = builtinM2Q.NewMessagesToQuery(ctx, rewriterChatModel, rewriterTemplate)
 		if err != nil {
 			return nil, err
 		}
+	}
 
-		filePath = filepath.Join(root, "resources/conf/prompt/nl2sql_template_jinja2.json")
+	var n2s nl2sql.NL2SQL
+	if n2sChatModel, ok, err := getBuiltinChatModel(ctx, "NL2SQL_"); err != nil {
+		return nil, err
+	} else if ok {
+		filePath := filepath.Join(root, "resources/conf/prompt/nl2sql_template_jinja2.json")
 		n2sTemplate, err := readJinja2PromptTemplate(filePath)
 		if err != nil {
 			return nil, err
 		}
-		n2s, err = builtinNL2SQL.NewNL2SQL(ctx, bcm, n2sTemplate)
+		n2s, err = builtinNL2SQL.NewNL2SQL(ctx, n2sChatModel, n2sTemplate)
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	imageAnnoChatModel, _, err := getBuiltinChatModel(ctx, "IA_")
+	if err != nil {
+		return nil, err
 	}
 
 	knowledgeDomainSVC, knowledgeEventHandler := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
@@ -216,7 +209,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		RDB:                 c.RDB,
 		Producer:            knowledgeProducer,
 		SearchStoreManagers: sManagers,
-		ParseManager:        builtinParser.NewManager(c.Storage, ocrImpl), // default builtin
+		ParseManager:        builtinParser.NewManager(c.Storage, ocrImpl, imageAnnoChatModel), // default builtin
 		Storage:             c.Storage,
 		ImageX:              c.ImageX,
 		Rewriter:            rewriter,
@@ -234,6 +227,34 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	KnowledgeSVC.eventBus = c.EventBus
 	KnowledgeSVC.storage = c.Storage
 	return KnowledgeSVC, nil
+}
+
+func getBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.BaseChatModel, configured bool, err error) {
+	getEnv := func(key string) string {
+		if val := os.Getenv(envPrefix + key); val != "" {
+			return val
+		}
+		return os.Getenv(key)
+	}
+
+	switch getEnv("BUILTIN_CM_TYPE") {
+	case "openai":
+		byAzure, _ := strconv.ParseBool(getEnv("BUILTIN_CM_OPENAI_BY_AZURE"))
+		bcm, err = mo.NewChatModel(ctx, &mo.ChatModelConfig{
+			APIKey:  getEnv("BUILTIN_CM_OPENAI_API_KEY"),
+			ByAzure: byAzure,
+			BaseURL: getEnv("BUILTIN_CM_OPENAI_BASE_URL"),
+			Model:   getEnv("BUILTIN_CM_OPENAI_MODEL"),
+		})
+		if err != nil {
+			return nil, false, fmt.Errorf("knowledge init openai chat mode failed, %w", err)
+		}
+		configured = true
+	default:
+		// accept builtin chat model not configured
+	}
+
+	return
 }
 
 func readJinja2PromptTemplate(jsonFilePath string) (prompt.ChatTemplate, error) {

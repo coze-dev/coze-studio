@@ -84,6 +84,29 @@ var fMapping = map[knowledge.DocumentType]fieldMappingFn{
 		}
 		return fields
 	},
+	knowledge.DocumentTypeImage: func(doc *entity.Document, enableCompactTable bool) []*searchstore.Field {
+		fields := []*searchstore.Field{
+			{
+				Name:      searchstore.FieldID,
+				Type:      searchstore.FieldTypeInt64,
+				IsPrimary: true,
+			},
+			{
+				Name: searchstore.FieldCreatorID,
+				Type: searchstore.FieldTypeInt64,
+			},
+			{
+				Name: "document_id",
+				Type: searchstore.FieldTypeInt64,
+			},
+			{
+				Name:     searchstore.FieldTextContent,
+				Type:     searchstore.FieldTypeText,
+				Indexing: true,
+			},
+		}
+		return fields
+	},
 }
 
 var s2dMapping = map[knowledge.DocumentType]slice2DocumentFn{
@@ -144,6 +167,20 @@ var s2dMapping = map[knowledge.DocumentType]slice2DocumentFn{
 				return nil, fmt.Errorf("[s2dMapping] json marshal failed, %w", err)
 			}
 			doc.Content = string(b)
+		}
+
+		return doc, nil
+	},
+	knowledge.DocumentTypeImage: func(ctx context.Context, slice *entity.Slice, columns []*entity.TableColumn, enableCompactTable bool) (*schema.Document, error) {
+		doc := &schema.Document{
+			ID:      strconv.FormatInt(slice.ID, 10),
+			Content: slice.GetSliceContent(),
+			MetaData: map[string]any{
+				document.MetaDataKeyCreatorID: slice.CreatorID,
+				document.MetaDataKeyExternalStorage: map[string]any{
+					"document_id": slice.DocumentID,
+				},
+			},
 		}
 
 		return doc, nil
@@ -229,6 +266,46 @@ var d2sMapping = map[knowledge.DocumentType]document2SliceFn{
 				Type:  knowledgeModel.SliceContentTypeTable,
 				Table: &knowledgeModel.SliceTable{Columns: vals},
 			})
+		}
+
+		return slice, nil
+	},
+	knowledge.DocumentTypeImage: func(doc *schema.Document, knowledgeID, documentID, creatorID int64) (*entity.Slice, error) {
+		slice := &entity.Slice{
+			Info:        knowledge.Info{},
+			KnowledgeID: knowledgeID,
+			DocumentID:  documentID,
+			RawContent:  nil,
+		}
+
+		if doc.ID != "" {
+			id, err := strconv.ParseInt(doc.ID, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("[d2sMapping] parse id failed, %w", err)
+			}
+
+			slice.ID = id
+		}
+
+		slice.RawContent = append(slice.RawContent, &knowledgeModel.SliceContent{
+			Type: knowledgeModel.SliceContentTypeText,
+			Text: ptr.Of(doc.Content),
+		})
+
+		if creatorID != 0 {
+			slice.CreatorID = creatorID
+		} else {
+			cid, err := document.GetDocumentCreatorID(doc)
+			if err != nil {
+				return nil, err
+			}
+			slice.CreatorID = cid
+		}
+
+		if ext, err := document.GetDocumentExternalStorage(doc); err == nil {
+			if documentID, ok := ext["document_id"].(int64); ok {
+				slice.DocumentID = documentID
+			}
 		}
 
 		return slice, nil

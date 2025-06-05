@@ -9,10 +9,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 )
 
-func NewManager(storage storage.Storage, ocr ocr.OCR) parser.Manager {
+func NewManager(storage storage.Storage, ocr ocr.OCR, imageAnnotationModel chatmodel.BaseChatModel) parser.Manager {
 	return &manager{
 		storage: storage,
 		ocr:     ocr,
+		model:   imageAnnotationModel,
 	}
 }
 
