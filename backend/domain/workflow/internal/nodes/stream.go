@@ -35,7 +35,9 @@ type SourceInfo struct {
 
 type DynamicStreamContainer interface {
 	SaveDynamicChoice(nodeKey vo.NodeKey, groupToChoice map[string]int)
+	GetDynamicChoice(nodeKey vo.NodeKey) map[string]int
 	GetDynamicStreamType(nodeKey vo.NodeKey, group string) (FieldStreamType, error)
+	GetAllDynamicStreamTypes(nodeKey vo.NodeKey) (map[string]FieldStreamType, error)
 }
 
 func ResolveStreamSources(ctx context.Context, sources map[string]*SourceInfo) (map[string]*SourceInfo, error) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"runtime/debug"
 	"strconv"
 	"time"
 
@@ -41,6 +42,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
@@ -252,29 +254,37 @@ func (s *NodeSchema) ToVariableAggregatorConfig(sc *WorkflowSchema) (*variableag
 	}, nil
 }
 
-func (s *NodeSchema) variableAggregatorInputConverter(in map[string]any) (converted map[string]map[int]any, err error) {
+func (s *NodeSchema) variableAggregatorInputConverter(in map[string]any) (converted map[string]map[int]any) {
 	converted = make(map[string]map[int]any)
 
 	for k, value := range in {
 		m, ok := value.(map[string]any)
 		if !ok {
-			return nil, errors.New("value is not a map[string]any")
+			panic(errors.New("value is not a map[string]any"))
 		}
 		converted[k] = make(map[int]any, len(m))
 		for i, sv := range m {
 			index, err := strconv.Atoi(i)
 			if err != nil {
-				return nil, fmt.Errorf(" converting %s to int failed, err=%v", i, err)
+				panic(fmt.Errorf(" converting %s to int failed, err=%v", i, err))
 			}
 			converted[k][index] = sv
 		}
 	}
 
-	return converted, nil
+	return converted
 }
 
-func (s *NodeSchema) variableAggregatorStreamInputConverter(in *schema.StreamReader[map[string]any]) (converted *schema.StreamReader[map[string]map[int]any], err error) {
-	return schema.StreamReaderWithConvert(in, s.variableAggregatorInputConverter), nil
+func (s *NodeSchema) variableAggregatorStreamInputConverter(in *schema.StreamReader[map[string]any]) *schema.StreamReader[map[string]map[int]any] {
+	converter := func(input map[string]any) (output map[string]map[int]any, err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				err = safego.NewPanicErr(r, debug.Stack())
+			}
+		}()
+		return s.variableAggregatorInputConverter(input), nil
+	}
+	return schema.StreamReaderWithConvert(in, converter)
 }
 
 func (s *NodeSchema) ToTextProcessorConfig() (*textprocessor.Config, error) {

@@ -73,6 +73,7 @@ type Repository interface {
 	GetWorkflowExecution(ctx context.Context, id int64) (*entity.WorkflowExecution, bool, error)
 	CreateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error
 	UpdateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error
+	CancelAllRunningNodes(ctx context.Context, wfExeID int64) error
 	GetNodeExecutionsByWfExeID(ctx context.Context, wfExeID int64) (result []*entity.NodeExecution, err error)
 	GetNodeExecution(ctx context.Context, wfExeID int64, nodeID string) (*entity.NodeExecution, bool, error)
 	GetNodeExecutionByParent(ctx context.Context, wfExeID int64, parentNodeID string) (

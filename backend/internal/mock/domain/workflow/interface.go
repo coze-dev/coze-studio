@@ -580,6 +580,20 @@ func (mr *MockRepositoryMockRecorder) BatchPublishWorkflows(ctx, workflows any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchPublishWorkflows", reflect.TypeOf((*MockRepository)(nil).BatchPublishWorkflows), ctx, workflows)
 }
 
+// CancelAllRunningNodes mocks base method.
+func (m *MockRepository) CancelAllRunningNodes(ctx context.Context, wfExeID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CancelAllRunningNodes", ctx, wfExeID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CancelAllRunningNodes indicates an expected call of CancelAllRunningNodes.
+func (mr *MockRepositoryMockRecorder) CancelAllRunningNodes(ctx, wfExeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CancelAllRunningNodes", reflect.TypeOf((*MockRepository)(nil).CancelAllRunningNodes), ctx, wfExeID)
+}
+
 // CopyWorkflow mocks base method.
 func (m *MockRepository) CopyWorkflow(ctx context.Context, spaceID, workflowID int64) (*entity.Workflow, error) {
 	m.ctrl.T.Helper()

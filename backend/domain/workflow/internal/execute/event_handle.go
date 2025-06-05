@@ -273,6 +273,11 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			updatedRows   int64
 			currentStatus entity.WorkflowExecuteStatus
 		)
+
+		if err = repo.CancelAllRunningNodes(ctx, exeID); err != nil {
+			logs.CtxErrorf(ctx, err.Error())
+		}
+
 		if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning,
 			entity.WorkflowInterrupted}); err != nil {
 			return noTerminate, fmt.Errorf("failed to save workflow execution when canceled: %v", err)
@@ -372,6 +377,10 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			}
 		}
 
+		if event.Input != nil {
+			nodeExec.Input = ptr.Of(mustMarshalToString(event.Input))
+		}
+
 		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
 			return noTerminate, fmt.Errorf("failed to save node execution: %v", err)
 		}
@@ -419,7 +428,8 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 	case NodeStreamingOutput:
 		nodeExec := &entity.NodeExecution{
-			ID: event.NodeExecuteID,
+			ID:    event.NodeExecuteID,
+			Extra: event.extra,
 		}
 
 		if event.outputExtractor != nil {
@@ -440,6 +450,8 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			if event.Context.SubWorkflowCtx != nil {
 				return noTerminate, nil
 			}
+		} else if event.NodeType == entity.NodeTypeVariableAggregator {
+			return noTerminate, nil
 		}
 
 		sw.Send(&entity.Message{
@@ -471,6 +483,10 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		} else {
 			errorInfo = event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]
 			errorLevel = string(LevelError)
+		}
+
+		if event.Context == nil || event.Context.NodeCtx == nil {
+			return noTerminate, fmt.Errorf("nil event context")
 		}
 
 		nodeExec := &entity.NodeExecution{

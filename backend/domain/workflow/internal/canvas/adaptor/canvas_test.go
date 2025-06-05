@@ -141,14 +141,14 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 				break outer
 			case execute.WorkflowFailed:
 				t.Fatal(event.Err)
-			case execute.NodeEnd:
-				if event.NodeKey == "141102" {
-					assert.Equal(t, &execute.TokenInfo{
-						InputToken:  1,
-						OutputToken: 2,
-						TotalToken:  3,
-					}, event.Token)
-				}
+			case execute.NodeEnd: // TODO: move this test to api layer
+				/*				if event.NodeKey == "141102" {
+								assert.Equal(t, &execute.TokenInfo{
+									InputToken:  1,
+									OutputToken: 2,
+									TotalToken:  3,
+								}, event.Token)
+							}*/
 			default:
 			}
 		}

@@ -102,8 +102,10 @@ type NodeExtra struct {
 }
 
 type ResponseExtra struct {
-	ReasoningContent string          `json:"reasoning_content,omitempty"`
-	FCCalledDetail   *FCCalledDetail `json:"fc_called_detail,omitempty"`
+	ReasoningContent string                     `json:"reasoning_content,omitempty"`
+	FCCalledDetail   *FCCalledDetail            `json:"fc_called_detail,omitempty"`
+	VariableSelect   []int                      `json:"variable_select,omitempty"`
+	TerminalPlan     workflow.TerminatePlanType `json:"terminal_plan,omitempty"`
 }
 
 type FCCalled struct {

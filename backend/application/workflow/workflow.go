@@ -543,10 +543,15 @@ func (w *ApplicationService) GetNodeExecuteHistory(ctx context.Context, req *wor
 }
 
 func convertNodeExecution(nodeExe *entity.NodeExecution) (*workflow.NodeResult, error) {
+	nType, err := entityNodeTypeToAPINodeTemplateType(nodeExe.NodeType)
+	if err != nil {
+		return nil, err
+	}
+
 	nr := &workflow.NodeResult{
 		NodeId:      nodeExe.NodeID,
 		NodeName:    nodeExe.NodeName,
-		NodeType:    string(nodeExe.NodeType),
+		NodeType:    nType.String(),
 		NodeStatus:  workflow.NodeExeStatus(nodeExe.Status),
 		ErrorInfo:   ptr.FromOrDefault(nodeExe.ErrorInfo, ""),
 		Input:       ptr.FromOrDefault(nodeExe.Input, ""),

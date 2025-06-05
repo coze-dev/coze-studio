@@ -2,12 +2,16 @@ package compose
 
 import (
 	"fmt"
+	"slices"
+	"sort"
 	"strings"
 
 	"strconv"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
+	"golang.org/x/exp/maps"
 
 	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
@@ -16,34 +20,33 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-type SelectorCallbackInput = []*SelectorBranch
-
-type SelectorCallbackField struct {
+type selectorCallbackField struct {
 	Key     string         `json:"key"`
 	Type    vo.DataType    `json:"type"`
 	Value   any            `json:"value"`
 	VarType *variable.Type `json:"var_type,omitempty"`
 }
 
-type SelectorCondition struct {
-	Left     SelectorCallbackField  `json:"left"`
+type selectorCondition struct {
+	Left     selectorCallbackField  `json:"left"`
 	Operator vo.OperatorType        `json:"operator"`
-	Right    *SelectorCallbackField `json:"right"`
+	Right    *selectorCallbackField `json:"right"`
 }
 
-type SelectorBranch struct {
-	Conditions []*SelectorCondition `json:"conditions"`
+type selectorBranch struct {
+	Conditions []*selectorCondition `json:"conditions"`
 	Logic      vo.LogicType         `json:"logic"`
 	Name       string               `json:"name"`
 }
 
-func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any, sc *WorkflowSchema) (map[string]any, error) {
+func (s *NodeSchema) toSelectorCallbackInput(in map[string]any, sc *WorkflowSchema) (map[string]any, error) {
 	config := s.Configs.([]*selector.OneClauseSchema)
 	count := len(config)
 
-	output := make([]*SelectorBranch, count)
+	output := make([]*selectorBranch, count)
 
 	for _, source := range s.InputSources {
 		targetPath := source.Path
@@ -56,8 +59,8 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any, sc *WorkflowSche
 
 			branch := output[index]
 			if branch == nil {
-				output[index] = &SelectorBranch{
-					Conditions: []*SelectorCondition{
+				output[index] = &selectorBranch{
+					Conditions: []*selectorCondition{
 						{
 							Operator: config[index].Single.ToCanvasOperatorType(),
 						},
@@ -72,13 +75,13 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any, sc *WorkflowSche
 					return nil, fmt.Errorf("failed to take left value of %s", targetPath)
 				}
 				if source.Source.Ref.VariableType != nil { // TODO: double check format for variables, including intermediate vars
-					output[index].Conditions[0].Left = SelectorCallbackField{
+					output[index].Conditions[0].Left = selectorCallbackField{
 						Key:     strings.Join(source.Source.Ref.FromPath, "."),
 						Type:    s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
 						VarType: source.Source.Ref.VariableType,
 					}
 				} else {
-					output[index].Conditions[0].Left = SelectorCallbackField{
+					output[index].Conditions[0].Left = selectorCallbackField{
 						Key:     sc.GetNode(source.Source.Ref.FromNodeKey).Name + "." + strings.Join(source.Source.Ref.FromPath, "."),
 						Type:    s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
 						Value:   leftV,
@@ -90,7 +93,7 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any, sc *WorkflowSche
 				if !ok {
 					return nil, fmt.Errorf("failed to take right value of %s", targetPath)
 				}
-				output[index].Conditions[0].Right = &SelectorCallbackField{
+				output[index].Conditions[0].Right = &selectorCallbackField{
 					Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
 					Value: rightV,
 				}
@@ -115,15 +118,15 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any, sc *WorkflowSche
 
 			branch := output[index]
 			if branch == nil {
-				output[index] = &SelectorBranch{
-					Conditions: make([]*SelectorCondition, len(multi.Clauses)),
+				output[index] = &selectorBranch{
+					Conditions: make([]*selectorCondition, len(multi.Clauses)),
 					Logic:      multi.Relation.ToVOLogicType(),
 				}
 			}
 
 			for j := range multi.Clauses {
 				if output[index].Conditions[j] == nil {
-					output[index].Conditions[j] = &SelectorCondition{
+					output[index].Conditions[j] = &selectorCondition{
 						Operator: multi.Clauses[j].ToCanvasOperatorType(),
 					}
 				}
@@ -133,7 +136,7 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any, sc *WorkflowSche
 					if !ok {
 						return nil, fmt.Errorf("failed to take left value of %s", targetPath)
 					}
-					output[index].Conditions[j].Left = SelectorCallbackField{
+					output[index].Conditions[j].Left = selectorCallbackField{
 						Key:     sc.GetNode(source.Source.Ref.FromNodeKey).Name + "." + strings.Join(source.Source.Ref.FromPath, "."),
 						Type:    s.InputTypes[targetPath[0]].Properties[targetPath[1]].Properties[targetPath[2]].Type,
 						Value:   leftV,
@@ -144,7 +147,7 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any, sc *WorkflowSche
 					if !ok {
 						return nil, fmt.Errorf("failed to take right value of %s", targetPath)
 					}
-					output[index].Conditions[j].Right = &SelectorCallbackField{
+					output[index].Conditions[j].Right = &selectorCallbackField{
 						Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Properties[targetPath[2]].Type,
 						Value: rightV,
 					}
@@ -160,7 +163,7 @@ func (s *NodeSchema) ToSelectorCallbackInput(in map[string]any, sc *WorkflowSche
 	return map[string]any{"branches": output}, nil
 }
 
-func (s *NodeSchema) ToSelectorCallbackOutput(out int) (map[string]any, error) {
+func (s *NodeSchema) toSelectorCallbackOutput(out int) (map[string]any, error) {
 	count := len(s.Configs.([]*selector.OneClauseSchema))
 	if out == count {
 		return map[string]any{"result": "pass to else branch"}, nil
@@ -173,7 +176,7 @@ func (s *NodeSchema) ToSelectorCallbackOutput(out int) (map[string]any, error) {
 	return nil, fmt.Errorf("out of range: %d", out)
 }
 
-func (s *NodeSchema) ToDatabaseInsertCallbackInput(databaseID int64, input map[string]any) (map[string]any, error) {
+func (s *NodeSchema) toDatabaseInsertCallbackInput(databaseID int64, input map[string]any) (map[string]any, error) {
 
 	fs, ok := nodes.TakeMapValue(input, compose.FieldPath{"Fields"})
 	if !ok {
@@ -203,7 +206,7 @@ func (s *NodeSchema) ToDatabaseInsertCallbackInput(databaseID int64, input map[s
 
 }
 
-func (s *NodeSchema) ToDatabaseUpdateCallbackInput(databaseID int64, inventory *database.UpdateInventory) (map[string]any, error) {
+func (s *NodeSchema) toDatabaseUpdateCallbackInput(databaseID int64, inventory *database.UpdateInventory) (map[string]any, error) {
 	result := make(map[string]any)
 	result["databaseInfoList"] = []string{fmt.Sprintf("%d", databaseID)}
 	result["updateParam"] = map[string]any{}
@@ -233,7 +236,7 @@ func (s *NodeSchema) ToDatabaseUpdateCallbackInput(databaseID int64, inventory *
 
 }
 
-func (s *NodeSchema) ToDatabaseQueryCallbackInput(config *database.QueryConfig, conditionGroup *crossdatabase.ConditionGroup) (map[string]any, error) {
+func (s *NodeSchema) toDatabaseQueryCallbackInput(config *database.QueryConfig, conditionGroup *crossdatabase.ConditionGroup) (map[string]any, error) {
 	result := make(map[string]any)
 
 	databaseID := config.DatabaseInfoID
@@ -275,7 +278,7 @@ func (s *NodeSchema) ToDatabaseQueryCallbackInput(config *database.QueryConfig, 
 
 }
 
-func (s *NodeSchema) ToDatabaseDeleteCallbackInput(databaseID int64, conditionGroup *crossdatabase.ConditionGroup) (map[string]any, error) {
+func (s *NodeSchema) toDatabaseDeleteCallbackInput(databaseID int64, conditionGroup *crossdatabase.ConditionGroup) (map[string]any, error) {
 	result := make(map[string]any)
 
 	result["databaseInfoList"] = []string{fmt.Sprintf("%d", databaseID)}
@@ -296,7 +299,7 @@ func (s *NodeSchema) ToDatabaseDeleteCallbackInput(databaseID int64, conditionGr
 
 }
 
-func (s *NodeSchema) ToHttpRequesterCallbackInput(config *httprequester.Config, input map[string]any) (map[string]any, error) {
+func (s *NodeSchema) toHttpRequesterCallbackInput(config *httprequester.Config, input map[string]any) (map[string]any, error) {
 	var (
 		request = &httprequester.Request{}
 	)
@@ -444,4 +447,145 @@ func convertToCondition(conditionGroup *crossdatabase.ConditionGroup) (*Conditio
 
 	}
 	return condition, nil
+}
+
+type vaCallbackInput struct {
+	Name      string `json:"name"`
+	Variables []any  `json:"variables"`
+}
+
+type streamMarkerType string
+
+const streamMarker streamMarkerType = "<Stream Data...>"
+
+func (s *NodeSchema) toVariableAggregatorCallbackInput(in map[string]map[int]any, resolvedSources map[string]*nodes.SourceInfo) map[string]any {
+	merged := make([]vaCallbackInput, 0, len(in))
+
+	groupLen := s.Configs.(map[string]any)["GroupToLen"].(map[string]int)
+
+	for groupName, vars := range in {
+		orderedVars := make([]any, groupLen[groupName])
+		for index := range vars {
+			orderedVars[index] = vars[index]
+			if resolvedSources != nil {
+				if resolvedSources[groupName].SubSources[strconv.Itoa(index)].FieldIsStream == nodes.FieldIsStream {
+					orderedVars[index] = streamMarker
+				}
+			}
+		}
+
+		merged = append(merged, vaCallbackInput{
+			Name:      groupName,
+			Variables: orderedVars,
+		})
+	}
+
+	// Sort merged slice by Name
+	sort.Slice(merged, func(i, j int) bool {
+		return merged[i].Name < merged[j].Name
+	})
+
+	return map[string]any{
+		"mergeGroups": merged,
+	}
+}
+
+func (s *NodeSchema) toVariableAggregatorStreamCallbackInput(in *schema.StreamReader[map[string]map[int]any],
+	resolvedSources map[string]*nodes.SourceInfo) *schema.StreamReader[map[string]any] {
+	return schema.StreamReaderWithConvert(in, func(in map[string]map[int]any) (map[string]any, error) {
+		return s.toVariableAggregatorCallbackInput(in, resolvedSources), nil
+	})
+}
+
+func (s *NodeSchema) toVariableAggregatorStreamCallbackOutput(outStream *schema.StreamReader[map[string]any],
+	groupIsStream map[string]nodes.FieldStreamType) *schema.StreamReader[map[string]any] {
+	return schema.StreamReaderWithConvert(outStream, func(out map[string]any) (map[string]any, error) {
+		newOut := maps.Clone(out)
+		for k := range out {
+			if t, ok := groupIsStream[k]; ok && t == nodes.FieldIsStream {
+				newOut[k] = streamMarker
+			}
+		}
+		return newOut, nil
+	})
+}
+
+func concatVACallbackInputs(vs [][]vaCallbackInput) ([]vaCallbackInput, error) {
+	if len(vs) == 0 {
+		return nil, nil
+	}
+
+	init := slices.Clone(vs[0])
+	for i := 1; i < len(vs); i++ {
+		next := vs[i]
+		for j := 0; j < len(next); j++ {
+			oneGroup := next[j]
+			groupName := oneGroup.Name
+			var (
+				existingGroup *vaCallbackInput
+				nextIndex     = len(init)
+				currentIndex  int
+			)
+			for k := 0; k < len(init); k++ {
+				if init[k].Name == groupName {
+					existingGroup = ptr.Of(init[k])
+					currentIndex = k
+				} else if init[k].Name > groupName && k < nextIndex {
+					nextIndex = k
+				}
+			}
+
+			if existingGroup == nil {
+				after := slices.Clone(init[nextIndex:])
+				init = append(init[:nextIndex], oneGroup)
+				init = append(init, after...)
+			} else {
+				for vi := 0; vi < len(oneGroup.Variables); vi++ {
+					newV := oneGroup.Variables[vi]
+					if newV == nil {
+						if vi >= len(existingGroup.Variables) {
+							for i := len(existingGroup.Variables); i <= vi; i++ {
+								existingGroup.Variables = append(existingGroup.Variables, nil)
+							}
+						}
+						continue
+					}
+					if newStr, ok := newV.(string); ok {
+						if strings.HasSuffix(newStr, nodes.KeyIsFinished) {
+							newStr = strings.TrimSuffix(newStr, nodes.KeyIsFinished)
+						}
+						newV = newStr
+					}
+					for ei := len(existingGroup.Variables); ei <= vi; ei++ {
+						existingGroup.Variables = append(existingGroup.Variables, nil)
+					}
+					ev := existingGroup.Variables[vi]
+					if ev == nil {
+						existingGroup.Variables[vi] = oneGroup.Variables[vi]
+					} else {
+						if evStr, ok := ev.(streamMarkerType); !ok {
+							return nil, fmt.Errorf("multiple stream chunk when concating VACallbackInputs, variable %s is not string", ev)
+						} else {
+							if evStr != streamMarker || newV.(streamMarkerType) != streamMarker {
+								return nil, fmt.Errorf("multiple stream chunk when concating VACallbackInputs, variable %s is not streamMarker", ev)
+							}
+							existingGroup.Variables[vi] = evStr
+						}
+					}
+				}
+				init[currentIndex] = *existingGroup
+			}
+		}
+	}
+
+	return init, nil
+}
+
+func concatStreamMarkers(_ []streamMarkerType) (streamMarkerType, error) {
+	return streamMarker, nil
+}
+
+func init() {
+	nodes.RegisterStreamChunkConcatFunc(concatVACallbackInputs)
+	nodes.RegisterStreamChunkConcatFunc(concatStreamMarkers)
 }

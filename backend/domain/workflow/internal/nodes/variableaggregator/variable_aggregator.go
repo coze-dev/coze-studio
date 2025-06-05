@@ -39,22 +39,29 @@ func NewVariableAggregator(_ context.Context, cfg *Config) (*VariableAggregator,
 	return &VariableAggregator{config: cfg}, nil
 }
 
-func (v *VariableAggregator) Invoke(_ context.Context, in map[string]map[int]any) (map[string]any, error) {
+func (v *VariableAggregator) Invoke(ctx context.Context, in map[string]map[int]any) (map[string]any, error) {
 	if v.config.MergeStrategy != FirstNotNullValue {
 		return nil, fmt.Errorf("merge strategy not supported: %v", v.config.MergeStrategy)
 	}
 
 	result := make(map[string]any)
+	groupToChoice := make(map[string]int)
 	for group, length := range v.config.GroupLen {
 		for i := 0; i < length; i++ {
 			if value, ok := in[group][i]; ok {
 				if value != nil {
 					result[group] = value
+					groupToChoice[group] = i
 					break
 				}
 			}
 		}
 	}
+
+	_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.DynamicStreamContainer) error {
+		state.SaveDynamicChoice(v.config.NodeKey, groupToChoice)
+		return nil
+	})
 
 	return result, nil
 }

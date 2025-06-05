@@ -129,6 +129,10 @@ func (s *State) SaveDynamicChoice(nodeKey vo.NodeKey, groupToChoice map[string]i
 	s.GroupChoices[nodeKey] = groupToChoice
 }
 
+func (s *State) GetDynamicChoice(nodeKey vo.NodeKey) map[string]int {
+	return s.GroupChoices[nodeKey]
+}
+
 func (s *State) GetDynamicStreamType(nodeKey vo.NodeKey, group string) (nodes.FieldStreamType, error) {
 	choices, ok := s.GroupChoices[nodeKey]
 	if !ok {
@@ -176,6 +180,24 @@ func (s *State) GetDynamicStreamType(nodeKey vo.NodeKey, group string) (nodes.Fi
 	}
 
 	return s.GetDynamicStreamType(subInfo.FromNodeKey, subInfo.FromPath[0])
+}
+
+func (s *State) GetAllDynamicStreamTypes(nodeKey vo.NodeKey) (map[string]nodes.FieldStreamType, error) {
+	result := make(map[string]nodes.FieldStreamType)
+	choices, ok := s.GroupChoices[nodeKey]
+	if !ok {
+		return result, nil
+	}
+
+	for group := range choices {
+		t, err := s.GetDynamicStreamType(nodeKey, group)
+		if err != nil {
+			return nil, err
+		}
+		result[group] = t
+	}
+
+	return result, nil
 }
 
 func (s *State) SetToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string, ie *entity.ToolInterruptEvent) error {
