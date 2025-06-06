@@ -498,17 +498,17 @@ func GetExtension(uri string) string {
 	}
 	return ""
 }
-func convertCaptionType2Entity(ct *dataset.CaptionType) *parser.CaptionType {
+func convertCaptionType2Entity(ct *dataset.CaptionType) *parser.ImageAnnotationType {
 	if ct == nil {
 		return nil
 	}
 	switch ptr.From(ct) {
 	case dataset.CaptionType_Auto:
-		return ptr.Of(parser.CaptionType_Auto)
+		return ptr.Of(parser.ImageAnnotationTypeModel)
 	case dataset.CaptionType_Manual:
-		return ptr.Of(parser.CaptionType_Manual)
+		return ptr.Of(parser.ImageAnnotationTypeManual)
 	default:
-		return ptr.Of(parser.CaptionType_Auto)
+		return ptr.Of(parser.ImageAnnotationTypeModel)
 	}
 }
 func convertDatasetStatus2Entity(status dataset.DatasetStatus) model.KnowledgeStatus {

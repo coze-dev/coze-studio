@@ -61,8 +61,8 @@ const (
 type ImageAnnotationType int64
 
 const (
-	ImageAnnotationTypeModel  = 0 // 模型自动标注
-	ImageAnnotationTypeManual = 1 // 人工标注
+	ImageAnnotationTypeModel  ImageAnnotationType = 0 // 模型自动标注
+	ImageAnnotationTypeManual ImageAnnotationType = 1 // 人工标注
 )
 
 type FileExtension string

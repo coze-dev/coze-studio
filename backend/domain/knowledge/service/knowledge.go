@@ -295,7 +295,7 @@ func (k *knowledgeSVC) checkRequest(request *knowledge.CreateDocumentRequest) er
 		return errors.New("document is empty")
 	}
 	for i := range request.Documents {
-		if request.Documents[i].Type == knowledgeModel.DocumentTypeImage && ptr.From(request.Documents[i].ChunkingStrategy.CaptionType) == parser.CaptionType_Auto {
+		if request.Documents[i].Type == knowledgeModel.DocumentTypeImage && ptr.From(request.Documents[i].ChunkingStrategy.CaptionType) == parser.ImageAnnotationTypeModel {
 			if !k.isAutoAnnotationSupported {
 				return errors.New("auto caption type is not supported")
 			}
