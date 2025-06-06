@@ -335,6 +335,9 @@ func (dao *knowledgeDocumentSliceDAO) GetLastSequence(ctx context.Context, docum
 		Where(s.DocumentID.Eq(documentID)).
 		Order(s.Sequence.Desc()).
 		First()
+	if err == gorm.ErrRecordNotFound {
+		return 0, nil
+	}
 	if err != nil {
 		return 0, fmt.Errorf("[GetLastSequence] db exec err, document_id=%v, %w", documentID, err)
 	}
