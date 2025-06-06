@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"sync"
 
+	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
@@ -79,6 +80,16 @@ func (b *Batch) initOutput(length int) map[string]any {
 
 func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (
 	out map[string]any, err error) {
+	defer func() {
+		if err != nil {
+			_ = callbacks.OnError(ctx, err)
+		} else {
+			_ = callbacks.OnEnd(ctx, out)
+		}
+	}()
+
+	ctx = callbacks.OnStart(ctx, b.toCallbackInput(in))
+
 	arrays := make(map[string]any, len(b.config.InputArrays))
 	minLen := math.MaxInt64
 	for _, arrayKey := range b.config.InputArrays {
@@ -148,8 +159,9 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 
 		items := make(map[string]any)
 		for arrayKey, array := range arrays {
-			items[arrayKey] = array
-			input[string(b.config.BatchNodeKey)].(map[string]any)[arrayKey] = reflect.ValueOf(array).Index(i).Interface()
+			ele := reflect.ValueOf(array).Index(i).Interface()
+			items[arrayKey] = []any{ele}
+			input[string(b.config.BatchNodeKey)].(map[string]any)[arrayKey] = ele
 		}
 
 		return input, items, nil
@@ -383,4 +395,14 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 	}
 
 	return output, nil
+}
+
+func (b *Batch) toCallbackInput(in map[string]any) map[string]any {
+	trimmed := make(map[string]any, len(b.config.InputArrays))
+	for _, arrayKey := range b.config.InputArrays {
+		if v, ok := in[arrayKey]; ok {
+			trimmed[arrayKey] = v
+		}
+	}
+	return trimmed
 }

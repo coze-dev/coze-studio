@@ -13,16 +13,15 @@ import (
 	context "context"
 	reflect "reflect"
 
+	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
+	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	tool "github.com/cloudwego/eino/components/tool"
 	compose "github.com/cloudwego/eino/compose"
 	schema "github.com/cloudwego/eino/schema"
 	redis "github.com/redis/go-redis/v9"
 	gomock "go.uber.org/mock/gomock"
-
-	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
-	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 // MockService is a mock of Service interface.
@@ -1171,6 +1170,20 @@ func (m *MockRepository) TryLockWorkflowExecution(ctx context.Context, wfExeID, 
 func (mr *MockRepositoryMockRecorder) TryLockWorkflowExecution(ctx, wfExeID, resumingEventID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TryLockWorkflowExecution", reflect.TypeOf((*MockRepository)(nil).TryLockWorkflowExecution), ctx, wfExeID, resumingEventID)
+}
+
+// UpdateFirstInterruptEvent mocks base method.
+func (m *MockRepository) UpdateFirstInterruptEvent(ctx context.Context, wfExeID int64, event *entity.InterruptEvent) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateFirstInterruptEvent", ctx, wfExeID, event)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateFirstInterruptEvent indicates an expected call of UpdateFirstInterruptEvent.
+func (mr *MockRepositoryMockRecorder) UpdateFirstInterruptEvent(ctx, wfExeID, event any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFirstInterruptEvent", reflect.TypeOf((*MockRepository)(nil).UpdateFirstInterruptEvent), ctx, wfExeID, event)
 }
 
 // UpdateNodeExecution mocks base method.

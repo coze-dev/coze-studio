@@ -57,6 +57,10 @@ func NewWorkflowFromNode(ctx context.Context, sc *WorkflowSchema, nodeKey vo.Nod
 		}
 	}
 
+	const inputFillerKey = "input_filler"
+
+	startOutputTypes := maps.Clone(ns.InputTypes)
+
 	// For chosen node, change input sources to be from compose.START,
 	// unless it's static value or from variables.
 	// Also change the FromPath to be the same as Path.
@@ -73,7 +77,7 @@ func NewWorkflowFromNode(ctx context.Context, sc *WorkflowSchema, nodeKey vo.Nod
 			newInputSources = append(newInputSources, &vo.FieldInfo{
 				Path: input.Path,
 				Source: vo.FieldSource{Ref: &vo.Reference{
-					FromNodeKey: compose.START,
+					FromNodeKey: inputFillerKey,
 					FromPath:    input.Path,
 				}},
 			})
@@ -105,10 +109,11 @@ func NewWorkflowFromNode(ctx context.Context, sc *WorkflowSchema, nodeKey vo.Nod
 				newInputSources = append(newInputSources, &vo.FieldInfo{
 					Path: input.Path,
 					Source: vo.FieldSource{Ref: &vo.Reference{
-						FromNodeKey: compose.START,
+						FromNodeKey: inputFillerKey,
 						FromPath:    input.Path,
 					}},
 				})
+				startOutputTypes[input.Path[0]] = inner.InputTypes[input.Path[0]]
 			}
 		}
 		inner.InputSources = newInputSources
@@ -140,6 +145,23 @@ func NewWorkflowFromNode(ctx context.Context, sc *WorkflowSchema, nodeKey vo.Nod
 		output:            ns.OutputTypes,
 		terminatePlan:     vo.ReturnVariables,
 	}
+
+	i := func(ctx context.Context, output map[string]any) (map[string]any, error) {
+		newOutput := make(map[string]any)
+		for k := range output {
+			newOutput[k] = output[k]
+		}
+
+		for k, tInfo := range startOutputTypes {
+			if err := fillIfNotRequired(tInfo, newOutput, k, fillNil); err != nil {
+				return nil, err
+			}
+		}
+
+		return newOutput, nil
+	}
+
+	wf.AddLambdaNode(inputFillerKey, compose.InvokableLambda(i)).AddInput(compose.START)
 
 	if len(innerNodes) > 0 {
 		compositeNode := &CompositeNode{

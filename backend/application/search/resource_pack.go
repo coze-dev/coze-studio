@@ -22,6 +22,10 @@ var defaultAction = []*common.ResourceAction{
 		Key:    common.ActionKey_Delete,
 		Enable: true,
 	},
+	{
+		Key:    common.ActionKey_Copy,
+		Enable: true,
+	},
 }
 
 type ResourcePacker interface {

@@ -144,10 +144,10 @@ const (
 func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, strategy fillStrategy) error {
 	v, ok := container[k]
 	if ok {
-		if len(tInfo.Properties) == 0 { // it's a leaf, no need to do anything.
+		if len(tInfo.Properties) == 0 {
 			if v == nil && strategy == fillZero {
 				v = tInfo.Zero()
-				container[k] = v // TODO: solve data race between decorator and event handle
+				container[k] = v
 				return nil
 			}
 

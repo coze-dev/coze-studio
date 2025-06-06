@@ -613,7 +613,7 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 		AppID:        ternary.IFElse(rootExe.AppID > 0, ptr.Of(rootExe.AppID), nil),
 		NodeCount:    rootExe.NodeCount,
 		Status:       entity.WorkflowExecuteStatus(rootExe.Status),
-		Duration:     time.Duration(rootExe.Duration) * time.Microsecond,
+		Duration:     time.Duration(rootExe.Duration) * time.Millisecond,
 		Input:        &rootExe.Input,
 		Output:       &rootExe.Output,
 		ErrorCode:    &rootExe.ErrorCode,
@@ -682,6 +682,10 @@ func (r *RepositoryImpl) UpdateNodeExecution(ctx context.Context, execution *ent
 		nodeExec.Extra = m
 	}
 
+	if execution.SubWorkflowExecution != nil {
+		nodeExec.SubExecuteID = execution.SubWorkflowExecution.ID
+	}
+
 	_, err := r.query.NodeExecution.WithContext(ctx).Where(r.query.NodeExecution.ID.Eq(execution.ID)).Updates(nodeExec)
 	if err != nil {
 		return fmt.Errorf("failed to update node execution: %w", err)
@@ -707,23 +711,24 @@ func (r *RepositoryImpl) CancelAllRunningNodes(ctx context.Context, wfExeID int6
 
 func convertNodeExecution(nodeExec *model2.NodeExecution) *entity.NodeExecution {
 	nodeExeEntity := &entity.NodeExecution{
-		ID:           nodeExec.ID,
-		ExecuteID:    nodeExec.ExecuteID,
-		NodeID:       nodeExec.NodeID,
-		NodeName:     nodeExec.NodeName,
-		NodeType:     entity.NodeType(nodeExec.NodeType),
-		CreatedAt:    time.UnixMilli(nodeExec.CreatedAt),
-		Status:       entity.NodeExecuteStatus(nodeExec.Status),
-		Duration:     time.Duration(nodeExec.Duration) * time.Millisecond,
-		Input:        &nodeExec.Input,
-		Output:       &nodeExec.Output,
-		RawOutput:    &nodeExec.RawOutput,
-		ErrorInfo:    &nodeExec.ErrorInfo,
-		ErrorLevel:   &nodeExec.ErrorLevel,
-		TokenInfo:    &entity.TokenUsage{InputTokens: nodeExec.InputTokens, OutputTokens: nodeExec.OutputTokens},
-		ParentNodeID: ternary.IFElse(nodeExec.ParentNodeID != "", ptr.Of(nodeExec.ParentNodeID), nil),
-		Index:        int(nodeExec.CompositeNodeIndex),
-		Items:        ternary.IFElse(nodeExec.CompositeNodeItems != "", ptr.Of(nodeExec.CompositeNodeItems), nil),
+		ID:                   nodeExec.ID,
+		ExecuteID:            nodeExec.ExecuteID,
+		NodeID:               nodeExec.NodeID,
+		NodeName:             nodeExec.NodeName,
+		NodeType:             entity.NodeType(nodeExec.NodeType),
+		CreatedAt:            time.UnixMilli(nodeExec.CreatedAt),
+		Status:               entity.NodeExecuteStatus(nodeExec.Status),
+		Duration:             time.Duration(nodeExec.Duration) * time.Millisecond,
+		Input:                &nodeExec.Input,
+		Output:               &nodeExec.Output,
+		RawOutput:            &nodeExec.RawOutput,
+		ErrorInfo:            &nodeExec.ErrorInfo,
+		ErrorLevel:           &nodeExec.ErrorLevel,
+		TokenInfo:            &entity.TokenUsage{InputTokens: nodeExec.InputTokens, OutputTokens: nodeExec.OutputTokens},
+		ParentNodeID:         ternary.IFElse(nodeExec.ParentNodeID != "", ptr.Of(nodeExec.ParentNodeID), nil),
+		Index:                int(nodeExec.CompositeNodeIndex),
+		Items:                ternary.IFElse(nodeExec.CompositeNodeItems != "", ptr.Of(nodeExec.CompositeNodeItems), nil),
+		SubWorkflowExecution: ternary.IFElse(nodeExec.SubExecuteID > 0, &entity.WorkflowExecution{ID: nodeExec.SubExecuteID}, nil),
 	}
 
 	if nodeExec.UpdatedAt > 0 {
@@ -911,6 +916,26 @@ func (r *RepositoryImpl) GetFirstInterruptEvent(ctx context.Context, wfExeID int
 	return &event, true, nil
 }
 
+func (r *RepositoryImpl) UpdateFirstInterruptEvent(ctx context.Context, wfExeID int64, event *entity.InterruptEvent) error {
+	listKey := fmt.Sprintf(interruptEventListKeyPattern, wfExeID)
+	eventJSON, err := sonic.MarshalString(event)
+	if err != nil {
+		return fmt.Errorf("failed to marshal interrupt event %d to JSON: %w", event.ID, err)
+	}
+	err = r.redis.LSet(ctx, listKey, 0, eventJSON).Err()
+	if err != nil {
+		return fmt.Errorf("failed to update first interrupt event in Redis list for wfExeID %d: %w", wfExeID, err)
+	}
+
+	previousResumedEventKey := fmt.Sprintf(previousResumedEventKeyPattern, wfExeID)
+	err = r.redis.Set(ctx, previousResumedEventKey, eventJSON, interruptEventTTL).Err()
+	if err != nil {
+		return fmt.Errorf("failed to set previous resumed event for wfExeID %d: %w", wfExeID, err)
+	}
+
+	return nil
+}
+
 // PopFirstInterruptEvent retrieves and removes the first interrupt event from the list.
 func (r *RepositoryImpl) PopFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error) {
 	listKey := fmt.Sprintf(interruptEventListKeyPattern, wfExeID)
@@ -929,12 +954,6 @@ func (r *RepositoryImpl) PopFirstInterruptEvent(ctx context.Context, wfExeID int
 		// If unmarshalling fails, the event is already popped.
 		// Consider if you need to re-queue or handle this scenario.
 		return nil, true, fmt.Errorf("failed to unmarshal popped interrupt event (wfExeID %d) from JSON: %w", wfExeID, err)
-	}
-
-	previousResumedEventKey := fmt.Sprintf(previousResumedEventKeyPattern, wfExeID)
-	err = r.redis.Set(ctx, previousResumedEventKey, eventJSON, interruptEventTTL).Err()
-	if err != nil {
-		return nil, true, fmt.Errorf("failed to set previous resumed event for wfExeID %d: %w", wfExeID, err)
 	}
 
 	return &event, true, nil
@@ -1365,7 +1384,7 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.Workflo
 		return nil, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
-	wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName(fmt.Sprintf("%d", wfID.ID)))
+	wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(wfID.ID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create workflow: %w", err)
 	}

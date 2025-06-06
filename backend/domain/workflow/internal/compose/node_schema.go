@@ -133,7 +133,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return l.ChatStream(ctx, in, opts...)
 		}
 
-		lambda, err := compose.AnyLambda(i, s, nil, nil, compose.WithLambdaType(string(entity.NodeTypeLLM)), compose.WithLambdaCallbackEnable(true))
+		lambda, err := compose.AnyLambda(i, s, nil, nil, compose.WithLambdaType(string(entity.NodeTypeLLM)),
+			compose.WithLambdaCallbackEnable(true))
 		if err != nil {
 			return nil, err
 		}
@@ -155,7 +156,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 				if err != nil {
 					_ = callbacks.OnError(ctx, err)
 				} else {
-					callbackOutput, err := s.toSelectorCallbackOutput(out)
+					var callbackOutput map[string]any
+					callbackOutput, err = s.toSelectorCallbackOutput(out)
 					if err != nil {
 						_ = callbacks.OnError(ctx, err)
 					} else {
@@ -178,7 +180,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return sl.Select(ctx, newIn)
 		}
 
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeSelector)), compose.WithLambdaCallbackEnable(true))}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeSelector)),
+			compose.WithLambdaCallbackEnable(true))}, nil
 	case entity.NodeTypeBatch:
 		if inner == nil {
 			return nil, fmt.Errorf("inner workflow must not be nil when creating batch node")
@@ -195,7 +198,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		i := postDecorateWO(preDecorateWO(b.Execute, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambdaWithOption(i, compose.WithLambdaType(string(entity.NodeTypeBatch)))}, nil
+		return &Node{Lambda: compose.InvokableLambdaWithOption(i, compose.WithLambdaType(string(entity.NodeTypeBatch)),
+			compose.WithLambdaCallbackEnable(true))}, nil
 	case entity.NodeTypeVariableAggregator:
 		conf, err := s.ToVariableAggregatorConfig(sc)
 		if err != nil {
@@ -239,7 +243,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 						_ = callbacks.OnError(ctx, e)
 					} else {
 						outStreams := out.Copy(2)
-						_, notUsed := callbacks.OnEndWithStreamOutput(ctx, s.toVariableAggregatorStreamCallbackOutput(outStreams[0], dynamicStreamType))
+						_, notUsed := callbacks.OnEndWithStreamOutput(ctx, toVariableAggregatorStreamCallbackOutput(outStreams[0], dynamicStreamType))
 						notUsed.Close()
 						out = outStreams[1]
 					}
@@ -422,7 +426,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorateWO(preDecorateWO(l.Execute, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambdaWithOption(i, compose.WithLambdaType(string(entity.NodeTypeLoop)))}, nil
+		return &Node{Lambda: compose.InvokableLambdaWithOption(i, compose.WithLambdaType(string(entity.NodeTypeLoop)),
+			compose.WithLambdaCallbackEnable(true))}, nil
 	case entity.NodeTypeQuestionAnswer:
 		conf, err := s.ToQAConfig(ctx)
 		if err != nil {
@@ -433,7 +438,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		i := postDecorate(preDecorate(qA.Execute, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeQuestionAnswer)))}, nil
+		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeQuestionAnswer)),
+			compose.WithLambdaCallbackEnable(true))}, nil
 	case entity.NodeTypeInputReceiver:
 		conf, err := s.ToInputReceiverConfig()
 		if err != nil {
@@ -813,7 +819,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			compose.WithLambdaCallbackEnable(true),
 			compose.WithLambdaType(string(entity.NodeTypeIntentDetector)))}, nil
 	case entity.NodeTypeSubWorkflow:
-		conf, err := s.ToSubWorkflowConfig(ctx)
+		conf, err := s.ToSubWorkflowConfig(ctx, sc.requireCheckPoint)
 		if err != nil {
 			return nil, err
 		}

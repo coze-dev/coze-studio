@@ -99,6 +99,7 @@ func (we *WorkflowExecution) GetBasic() *WorkflowBasic {
 type NodeExtra struct {
 	CurrentSubExecuteID int64          `json:"current_sub_execute_id,omitempty"`
 	ResponseExtra       *ResponseExtra `json:"response_extra,omitempty"`
+	SubExecuteID        int64          `json:"subExecuteID,omitempty"` // for subworkflow node, the execute id of the sub workflow
 }
 
 type ResponseExtra struct {

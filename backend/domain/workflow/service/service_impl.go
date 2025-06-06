@@ -596,7 +596,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 		return 0, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
-	wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName(fmt.Sprintf("%d", wfEntity.ID)))
+	wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(wfEntity.ID))
 	if err != nil {
 		return 0, fmt.Errorf("failed to create workflow: %w", err)
 	}
@@ -715,7 +715,7 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 		return nil, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
-	wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName(fmt.Sprintf("%d", wfEntity.ID)))
+	wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(wfEntity.ID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create workflow: %w", err)
 	}
@@ -791,15 +791,13 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 		wfExeEntity.NodeExecutions = append(wfExeEntity.NodeExecutions, groupNodeExe)
 	}
 
-	if wfExeEntity.Status == entity.WorkflowInterrupted {
-		interruptEvent, found, err := i.repo.GetFirstInterruptEvent(ctx, wfExeID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to find interrupt events: %v", err)
-		}
+	interruptEvent, found, err := i.repo.GetFirstInterruptEvent(ctx, wfExeID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find interrupt events: %v", err)
+	}
 
-		if found {
-			wfExeEntity.InterruptEvents = []*entity.InterruptEvent{interruptEvent}
-		}
+	if found {
+		wfExeEntity.InterruptEvents = []*entity.InterruptEvent{interruptEvent}
 	}
 
 	return wfExeEntity, nil
@@ -1024,7 +1022,7 @@ func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeReques
 		return nil
 	}
 
-	wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName(fmt.Sprintf("%d", wfExe.WorkflowIdentity.ID)))
+	wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(wfExe.WorkflowIdentity.ID))
 	if err != nil {
 		return fmt.Errorf("failed to create workflow: %w", err)
 	}
@@ -1086,7 +1084,7 @@ func (i *impl) StreamResumeWorkflow(ctx context.Context, req *entity.ResumeReque
 		return nil, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
-	wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName(fmt.Sprintf("%d", wfExe.WorkflowIdentity.ID)))
+	wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(wfExe.WorkflowIdentity.ID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create workflow: %w", err)
 	}

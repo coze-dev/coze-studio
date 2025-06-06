@@ -24,10 +24,9 @@ import (
 )
 
 type selectorCallbackField struct {
-	Key     string         `json:"key"`
-	Type    vo.DataType    `json:"type"`
-	Value   any            `json:"value"`
-	VarType *variable.Type `json:"var_type,omitempty"`
+	Key   string      `json:"key"`
+	Type  vo.DataType `json:"type"`
+	Value any         `json:"value"`
 }
 
 type selectorCondition struct {
@@ -74,18 +73,29 @@ func (s *NodeSchema) toSelectorCallbackInput(in map[string]any, sc *WorkflowSche
 				if !ok {
 					return nil, fmt.Errorf("failed to take left value of %s", targetPath)
 				}
-				if source.Source.Ref.VariableType != nil { // TODO: double check format for variables, including intermediate vars
-					output[index].Conditions[0].Left = selectorCallbackField{
-						Key:     strings.Join(source.Source.Ref.FromPath, "."),
-						Type:    s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
-						VarType: source.Source.Ref.VariableType,
+				if source.Source.Ref.VariableType != nil {
+					if *source.Source.Ref.VariableType == variable.ParentIntermediate {
+						parentNodeKey, ok := sc.Hierarchy[s.Key]
+						if !ok {
+							return nil, fmt.Errorf("failed to find parent node key of %s", s.Key)
+						}
+						parentNode := sc.GetNode(parentNodeKey)
+						output[index].Conditions[0].Left = selectorCallbackField{
+							Key:   parentNode.Name + "." + strings.Join(source.Source.Ref.FromPath, "."),
+							Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
+							Value: leftV,
+						}
+					} else { // TODO: double check format for variables, excluding intermediate vars
+						output[index].Conditions[0].Left = selectorCallbackField{
+							Key:  strings.Join(source.Source.Ref.FromPath, "."),
+							Type: s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
+						}
 					}
 				} else {
 					output[index].Conditions[0].Left = selectorCallbackField{
-						Key:     sc.GetNode(source.Source.Ref.FromNodeKey).Name + "." + strings.Join(source.Source.Ref.FromPath, "."),
-						Type:    s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
-						Value:   leftV,
-						VarType: source.Source.Ref.VariableType,
+						Key:   sc.GetNode(source.Source.Ref.FromNodeKey).Name + "." + strings.Join(source.Source.Ref.FromPath, "."),
+						Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
+						Value: leftV,
 					}
 				}
 			} else if targetPath[1] == selector.RightKey {
@@ -96,15 +106,6 @@ func (s *NodeSchema) toSelectorCallbackInput(in map[string]any, sc *WorkflowSche
 				output[index].Conditions[0].Right = &selectorCallbackField{
 					Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Type,
 					Value: rightV,
-				}
-
-				if source.Source.Ref != nil {
-					if source.Source.Ref.VariableType != nil {
-						output[index].Conditions[0].Right.Key = strings.Join(source.Source.Ref.FromPath, ".")
-						output[index].Conditions[0].Right.VarType = source.Source.Ref.VariableType
-					} else {
-						output[index].Conditions[0].Right.Key = sc.GetNode(source.Source.Ref.FromNodeKey).Name + "." + strings.Join(source.Source.Ref.FromPath, ".")
-					}
 				}
 			}
 		} else if len(targetPath) == 3 {
@@ -124,37 +125,58 @@ func (s *NodeSchema) toSelectorCallbackInput(in map[string]any, sc *WorkflowSche
 				}
 			}
 
-			for j := range multi.Clauses {
-				if output[index].Conditions[j] == nil {
-					output[index].Conditions[j] = &selectorCondition{
-						Operator: multi.Clauses[j].ToCanvasOperatorType(),
+			clauseIndexStr := targetPath[1]
+			clauseIndex, err := strconv.Atoi(clauseIndexStr)
+			if err != nil {
+				return nil, err
+			}
+
+			clause := multi.Clauses[clauseIndex]
+
+			if output[index].Conditions[clauseIndex] == nil {
+				output[index].Conditions[clauseIndex] = &selectorCondition{
+					Operator: clause.ToCanvasOperatorType(),
+				}
+			}
+
+			if targetPath[2] == selector.LeftKey {
+				leftV, ok := nodes.TakeMapValue(in, targetPath)
+				if !ok {
+					return nil, fmt.Errorf("failed to take left value of %s", targetPath)
+				}
+				if source.Source.Ref.VariableType != nil {
+					if *source.Source.Ref.VariableType == variable.ParentIntermediate {
+						parentNodeKey, ok := sc.Hierarchy[s.Key]
+						if !ok {
+							return nil, fmt.Errorf("failed to find parent node key of %s", s.Key)
+						}
+						parentNode := sc.GetNode(parentNodeKey)
+						output[index].Conditions[clauseIndex].Left = selectorCallbackField{
+							Key:   parentNode.Name + "." + strings.Join(source.Source.Ref.FromPath, "."),
+							Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Properties[targetPath[2]].Type,
+							Value: leftV,
+						}
+					} else { // TODO: double check format for variables, excluding intermediate vars
+						output[index].Conditions[clauseIndex].Left = selectorCallbackField{
+							Key:  strings.Join(source.Source.Ref.FromPath, "."),
+							Type: s.InputTypes[targetPath[0]].Properties[targetPath[1]].Properties[targetPath[2]].Type,
+						}
+					}
+				} else {
+					output[index].Conditions[clauseIndex].Left = selectorCallbackField{
+						Key:   sc.GetNode(source.Source.Ref.FromNodeKey).Name + "." + strings.Join(source.Source.Ref.FromPath, "."),
+						Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Properties[targetPath[2]].Type,
+						Value: leftV,
 					}
 				}
-
-				if targetPath[2] == selector.LeftKey {
-					leftV, ok := nodes.TakeMapValue(in, targetPath)
-					if !ok {
-						return nil, fmt.Errorf("failed to take left value of %s", targetPath)
-					}
-					output[index].Conditions[j].Left = selectorCallbackField{
-						Key:     sc.GetNode(source.Source.Ref.FromNodeKey).Name + "." + strings.Join(source.Source.Ref.FromPath, "."),
-						Type:    s.InputTypes[targetPath[0]].Properties[targetPath[1]].Properties[targetPath[2]].Type,
-						Value:   leftV,
-						VarType: source.Source.Ref.VariableType,
-					}
-				} else if targetPath[2] == selector.RightKey {
-					rightV, ok := nodes.TakeMapValue(in, targetPath)
-					if !ok {
-						return nil, fmt.Errorf("failed to take right value of %s", targetPath)
-					}
-					output[index].Conditions[j].Right = &selectorCallbackField{
-						Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Properties[targetPath[2]].Type,
-						Value: rightV,
-					}
-					if source.Source.Ref != nil {
-						output[index].Conditions[0].Right.Key = sc.GetNode(source.Source.Ref.FromNodeKey).Name + "." + strings.Join(source.Source.Ref.FromPath, ".")
-						output[index].Conditions[j].Right.VarType = source.Source.Ref.VariableType
-					}
+			} else if targetPath[2] == selector.RightKey {
+				rightV, ok := nodes.TakeMapValue(in, targetPath)
+				if !ok {
+					return nil, fmt.Errorf("failed to take right value of %s", targetPath)
+				}
+				output[index].Conditions[clauseIndex].Right = &selectorCallbackField{
+					Type:  s.InputTypes[targetPath[0]].Properties[targetPath[1]].Properties[targetPath[2]].Type,
+					Value: rightV,
 				}
 			}
 		}
@@ -497,7 +519,7 @@ func (s *NodeSchema) toVariableAggregatorStreamCallbackInput(in *schema.StreamRe
 	})
 }
 
-func (s *NodeSchema) toVariableAggregatorStreamCallbackOutput(outStream *schema.StreamReader[map[string]any],
+func toVariableAggregatorStreamCallbackOutput(outStream *schema.StreamReader[map[string]any],
 	groupIsStream map[string]nodes.FieldStreamType) *schema.StreamReader[map[string]any] {
 	return schema.StreamReaderWithConvert(outStream, func(out map[string]any) (map[string]any, error) {
 		newOut := maps.Clone(out)

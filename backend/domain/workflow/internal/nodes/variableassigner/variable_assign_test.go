@@ -21,7 +21,7 @@ func TestVariableAssigner(t *testing.T) {
 	})
 	arrVar := any([]any{1, "2"})
 
-	va := &VariableAssignerInLoop{
+	va := &InLoop{
 		config: &Config{
 			Pairs: []*Pair{
 				{
@@ -62,7 +62,7 @@ func TestVariableAssigner(t *testing.T) {
 		"str_var_s": &strVar,
 		"obj_var_s": &objVar,
 		"arr_var_s": &arrVar,
-	})
+	}, nil)
 
 	err := va.Assign(ctx, map[string]any{
 		"int_var_t": 2,
