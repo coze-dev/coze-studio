@@ -17,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	domainWorkflow "code.byted.org/flow/opencoze/backend/domain/workflow"
 	workflowDomain "code.byted.org/flow/opencoze/backend/domain/workflow"
+	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -543,10 +544,15 @@ func (w *ApplicationService) GetNodeExecuteHistory(ctx context.Context, req *wor
 }
 
 func convertNodeExecution(nodeExe *entity.NodeExecution) (*workflow.NodeResult, error) {
+	nType, err := entityNodeTypeToAPINodeTemplateType(nodeExe.NodeType)
+	if err != nil {
+		return nil, err
+	}
+
 	nr := &workflow.NodeResult{
 		NodeId:      nodeExe.NodeID,
 		NodeName:    nodeExe.NodeName,
-		NodeType:    string(nodeExe.NodeType),
+		NodeType:    nType.String(),
 		NodeStatus:  workflow.NodeExeStatus(nodeExe.Status),
 		ErrorInfo:   ptr.FromOrDefault(nodeExe.ErrorInfo, ""),
 		Input:       ptr.FromOrDefault(nodeExe.Input, ""),
@@ -1174,6 +1180,22 @@ func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflo
 			FlowMode:   wf.Mode,
 			Version:    wf.Version,
 		}
+
+		cv := &vo.Canvas{}
+		err = sonic.UnmarshalString(*wf.Canvas, cv)
+		if err != nil {
+			return nil, err
+		}
+
+		wd.EndType, err = parseWorkflowTerminatePlanType(cv)
+		if err != nil {
+			return nil, err
+		}
+
+		if wf.APPID != nil {
+			wd.ProjectID = strconv.FormatInt(*wf.APPID, 10)
+		}
+
 		if wf.UpdatedAt != nil {
 			wd.UpdateTime = wf.UpdatedAt.Unix()
 		}
@@ -1245,8 +1267,24 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 			LatestFlowVersion:     wf.LatestFlowVersion,
 			LatestFlowVersionDesc: wf.LatestFlowVersionDesc,
 		}
+
+		cv := &vo.Canvas{}
+		err = sonic.UnmarshalString(*wf.Canvas, cv)
+		if err != nil {
+			return nil, err
+		}
+
+		wd.EndType, err = parseWorkflowTerminatePlanType(cv)
+		if err != nil {
+			return nil, err
+		}
+
 		if wf.UpdatedAt != nil {
 			wd.UpdateTime = wf.UpdatedAt.Unix()
+		}
+
+		if wf.APPID != nil {
+			wd.ProjectID = strconv.FormatInt(*wf.APPID, 10)
 		}
 
 		inputs[wfIDStr], err = toVariables(wf.InputParams)
@@ -1374,6 +1412,7 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 		pluginDetailMap     = make(map[string]*workflow.PluginDetail)
 		toolsDetailInfo     = make(map[string]*workflow.APIDetail)
 		workflowDetailMap   = make(map[string]*workflow.WorkflowDetail)
+		knowledgeDetailMap  = make(map[string]*workflow.DatasetDetail)
 	)
 
 	if len(req.GetPluginList()) > 0 {
@@ -1494,10 +1533,34 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 
 	}
 
+	if len(req.GetDatasetList()) > 0 {
+		knowledgeOperator := crossknowledge.GetKnowledgeOperator()
+		knowledgeIDs, err := slices.TransformWithErrorCheck(req.GetDatasetList(), func(a *workflow.DatasetFCItem) (int64, error) {
+			return strconv.ParseInt(a.GetDatasetID(), 10, 64)
+		})
+		if err != nil {
+			return nil, err
+		}
+		details, err := knowledgeOperator.ListKnowledgeDetail(ctx, &crossknowledge.ListKnowledgeDetailRequest{KnowledgeIDs: knowledgeIDs})
+		if err != nil {
+			return nil, err
+		}
+		knowledgeDetailMap = slices.ToMap(details.KnowledgeDetails, func(kd *crossknowledge.KnowledgeDetail) (string, *workflow.DatasetDetail) {
+			return strconv.FormatInt(kd.ID, 10), &workflow.DatasetDetail{
+				ID:         strconv.FormatInt(kd.ID, 10),
+				Name:       kd.Name,
+				IconURL:    kd.IconURL,
+				FormatType: kd.FormatType,
+			}
+		})
+
+	}
+
 	response := &workflow.GetLLMNodeFCSettingDetailResponse{
 		PluginDetailMap:    pluginDetailMap,
 		PluginAPIDetailMap: toolsDetailInfo,
 		WorkflowDetailMap:  workflowDetailMap,
+		DatasetDetailMap:   knowledgeDetailMap,
 	}
 
 	return response, nil
@@ -2177,6 +2240,28 @@ func mergeWorkflowAPIParameters(latestAPIParameters []*workflow.APIParameter, ex
 			existAPIParameters = append(existAPIParameters, parameter)
 		}
 
+	}
+
+}
+
+func parseWorkflowTerminatePlanType(c *vo.Canvas) (int32, error) {
+	var endNode *vo.Node
+	for _, n := range c.Nodes {
+		if n.Type == vo.BlockTypeBotEnd {
+			endNode = n
+			break
+		}
+	}
+	if endNode == nil {
+		return 0, fmt.Errorf("can not find end node")
+	}
+	switch *endNode.Data.Inputs.TerminatePlan {
+	case vo.ReturnVariables:
+		return 0, nil
+	case vo.UseAnswerContent:
+		return 1, nil
+	default:
+		return 0, fmt.Errorf("invalid terminate plan type %v", *endNode.Data.Inputs.TerminatePlan)
 	}
 
 }

@@ -36,7 +36,7 @@ func (r *Runner) Run(ctx context.Context, request *code.RunRequest) (*code.RunRe
 
 func (r *Runner) pythonCmdRun(_ context.Context, code string, params map[string]any) (map[string]any, error) {
 	bs, _ := json.Marshal(params)
-	cmd := exec.Command("python3", "python_script.py", code, string(bs))
+	cmd := exec.Command(".venv/bin/python3", "python_script.py", code, string(bs))
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
 	cmd.Stdout = stdout

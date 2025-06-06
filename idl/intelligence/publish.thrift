@@ -56,7 +56,7 @@ struct PublishConnectorInfo {
     18: optional list<UIOption> UIOptions // UI选项
     19: optional bool support_monetization // 支持商业化
     20: optional string installation_guide  // 安装指引
-    21: optional UserAuthStatus auth_status   // 目前仅 bind_type == 8 时这个字段才有 https://bytedance.larkoffice.com/docx/KXNed5NWUoplVBxXdQxcfPNwnrf#Gn7dd2KoaoNZo6xw1tkcT92znbG
+    21: optional UserAuthStatus auth_status   // 目前仅 bind_type == 8 时这个字段才有 
     22: optional string config_status_toast // 配置状态toast
     23: optional string to_complete_info_url // connector_status为审核中时补全信息按钮的url
     24: optional string connector_tips // 渠道发布提示
@@ -81,7 +81,7 @@ enum ConnectorConfigStatus {
     NotConfigured     = 2 // 未配置
     Disconnected      = 3 // Token发生变化
     Configuring       = 4 // 配置中，授权中
-    NeedReconfiguring = 5 // 需要重新配置 https://bytedance.larkoffice.com/docx/KXNed5NWUoplVBxXdQxcfPNwnrf#Gn7dd2KoaoNZo6xw1tkcT92znbG
+    NeedReconfiguring = 5 // 需要重新配置 
 }
 
 enum ConnectorStatus {

@@ -48,7 +48,7 @@ type pluginServiceImpl struct {
 	toolRepo   repository.ToolRepository
 }
 
-func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDraftPluginRequest) (resp *CreateDraftPluginResponse, err error) {
+func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDraftPluginRequest) (pluginID int64, err error) {
 	mf := entity.NewDefaultPluginManifest()
 	mf.NameForHuman = req.Name
 	mf.DescriptionForHuman = req.Desc
@@ -57,14 +57,14 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 
 	authV2, err := convertPluginAuthInfoToAuthV2(req.AuthInfo)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	mf.Auth = authV2
 
 	for loc, params := range req.CommonParams {
 		location, ok := model.ToHTTPParamLocation(loc)
 		if !ok {
-			return nil, fmt.Errorf("invalid location '%s'", loc.String())
+			return 0, fmt.Errorf("invalid location '%s'", loc.String())
 		}
 		for _, param := range params {
 			mParams := mf.CommonParams[location]
@@ -93,40 +93,33 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 		OpenapiDoc:  doc,
 	})
 
-	res, err := p.pluginRepo.CreateDraftPlugin(ctx, &repository.CreateDraftPluginRequest{
-		Plugin: pl,
-	})
+	pluginID, err = p.pluginRepo.CreateDraftPlugin(ctx, pl)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &CreateDraftPluginResponse{
-		PluginID: res.PluginID,
-	}, nil
+	return pluginID, nil
 }
 
-func (p *pluginServiceImpl) GetDraftPlugin(ctx context.Context, req *GetDraftPluginRequest) (resp *GetDraftPluginResponse, err error) {
-	pl, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
+func (p *pluginServiceImpl) GetDraftPlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error) {
+	pl, exist, err := p.pluginRepo.GetDraftPlugin(ctx, pluginID)
 	if err != nil {
 		return nil, err
 	}
 	if !exist {
-		return nil, fmt.Errorf("draft plugin '%d' not found", req.PluginID)
+		return nil, fmt.Errorf("draft plugin '%d' not found", pluginID)
 	}
 
-	return &GetDraftPluginResponse{
-		Plugin: pl,
-	}, nil
+	return pl, nil
 }
 
-func (p *pluginServiceImpl) MGetDraftPlugins(ctx context.Context, req *MGetDraftPluginsRequest) (resp *MGetDraftPluginsResponse, err error) {
-	plugins, err := p.pluginRepo.MGetDraftPlugins(ctx, req.PluginIDs)
+func (p *pluginServiceImpl) MGetDraftPlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {
+	plugins, err = p.pluginRepo.MGetDraftPlugins(ctx, pluginIDs)
 	if err != nil {
 		return nil, err
 	}
-	return &MGetDraftPluginsResponse{
-		Plugins: plugins,
-	}, nil
+
+	return plugins, nil
 }
 
 func (p *pluginServiceImpl) ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error) {
@@ -590,26 +583,24 @@ func convertPluginAuthInfoToAuthV2(authInfo *PluginAuthInfo) (*model.AuthV2, err
 	}
 }
 
-func (p *pluginServiceImpl) DeleteDraftPlugin(ctx context.Context, req *DeleteDraftPluginRequest) (err error) {
-	return p.pluginRepo.DeleteDraftPlugin(ctx, req.PluginID)
+func (p *pluginServiceImpl) DeleteDraftPlugin(ctx context.Context, pluginID int64) (err error) {
+	return p.pluginRepo.DeleteDraftPlugin(ctx, pluginID)
 }
 
-func (p *pluginServiceImpl) GetOnlinePlugin(ctx context.Context, req *GetOnlinePluginRequest) (resp *GetOnlinePluginResponse, err error) {
-	pl, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+func (p *pluginServiceImpl) GetOnlinePlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error) {
+	pl, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, pluginID)
 	if err != nil {
 		return nil, err
 	}
 	if !exist {
-		return nil, fmt.Errorf("online plugin '%d' not found", req.PluginID)
+		return nil, fmt.Errorf("online plugin '%d' not found", pluginID)
 	}
 
-	return &GetOnlinePluginResponse{
-		Plugin: pl,
-	}, nil
+	return pl, nil
 }
 
-func (p *pluginServiceImpl) MGetOnlinePlugins(ctx context.Context, req *MGetOnlinePluginsRequest) (resp *MGetOnlinePluginsResponse, err error) {
-	plugins, err := p.pluginRepo.MGetOnlinePlugins(ctx, req.PluginIDs)
+func (p *pluginServiceImpl) MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {
+	plugins, err = p.pluginRepo.MGetOnlinePlugins(ctx, pluginIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -619,9 +610,7 @@ func (p *pluginServiceImpl) MGetOnlinePlugins(ctx context.Context, req *MGetOnli
 		res = append(res, pl.PluginInfo)
 	}
 
-	return &MGetOnlinePluginsResponse{
-		Plugins: res,
-	}, nil
+	return plugins, nil
 }
 
 func (p *pluginServiceImpl) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *MGetPluginLatestVersionResponse, err error) {
@@ -810,32 +799,22 @@ func (p *pluginServiceImpl) checkCanPublishAPPPlugins(ctx context.Context, versi
 	return failedPluginIDs, nil
 }
 
-func (p *pluginServiceImpl) MGetVersionPlugins(ctx context.Context, req *MGetVersionPluginsRequest) (resp *MGetVersionPluginsResponse, err error) {
-	plugins, err := p.pluginRepo.MGetVersionPlugins(ctx, req.VersionPlugins)
+func (p *pluginServiceImpl) MGetVersionPlugins(ctx context.Context, req *MGetVersionPluginsRequest) (plugins []*entity.PluginInfo, err error) {
+	plugins, err = p.pluginRepo.MGetVersionPlugins(ctx, req.VersionPlugins)
 	if err != nil {
 		return nil, err
 	}
 
-	res := slices.Transform(plugins, func(plugin *entity.PluginInfo) *model.PluginInfo {
-		return plugin.PluginInfo
-	})
-
-	return &MGetVersionPluginsResponse{
-		Plugins: res,
-	}, nil
+	return plugins, nil
 }
 
-func (p *pluginServiceImpl) MGetDraftTools(ctx context.Context, req *MGetDraftToolsRequest) (resp *MGetDraftToolsResponse, err error) {
-	tools, err := p.toolRepo.MGetDraftTools(ctx, req.ToolIDs)
+func (p *pluginServiceImpl) MGetDraftTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+	tools, err = p.toolRepo.MGetDraftTools(ctx, toolIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	resp = &MGetDraftToolsResponse{
-		Tools: tools,
-	}
-
-	return resp, nil
+	return tools, nil
 }
 
 func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateToolDraftRequest) (err error) {
@@ -991,53 +970,46 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 	return nil
 }
 
-func (p *pluginServiceImpl) GetOnlineTool(ctx context.Context, req *GetOnlineToolsRequest) (resp *GetOnlineToolsResponse, err error) {
-	tool, exist, err := p.toolRepo.GetOnlineTool(ctx, req.ToolID)
+func (p *pluginServiceImpl) GetOnlineTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, err error) {
+	tool, exist, err := p.toolRepo.GetOnlineTool(ctx, toolID)
 	if err != nil {
 		return nil, err
 	}
 	if !exist {
-		return nil, fmt.Errorf("online tool '%d' not found", req.ToolID)
+		return nil, fmt.Errorf("online tool '%d' not found", toolID)
 	}
 
-	return &GetOnlineToolsResponse{
-		Tool: tool,
-	}, nil
+	return tool, nil
 }
 
-func (p *pluginServiceImpl) MGetOnlineTools(ctx context.Context, req *MGetOnlineToolsRequest) (resp *MGetOnlineToolsResponse, err error) {
-	tools, err := p.toolRepo.MGetOnlineTools(ctx, req.ToolIDs)
+func (p *pluginServiceImpl) MGetOnlineTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+	tools, err = p.toolRepo.MGetOnlineTools(ctx, toolIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	return &MGetOnlineToolsResponse{
-		Tools: tools,
-	}, nil
+	return tools, nil
 }
 
-func (p *pluginServiceImpl) BindAgentTools(ctx context.Context, req *BindAgentToolsRequest) (err error) {
-	return p.toolRepo.BindDraftAgentTools(ctx, req.AgentID, req.ToolIDs)
+func (p *pluginServiceImpl) BindAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error) {
+	return p.toolRepo.BindDraftAgentTools(ctx, agentID, toolIDs)
 }
 
-func (p *pluginServiceImpl) GetDraftAgentTool(ctx context.Context, req *GetDraftAgentToolRequest) (resp *GetAgentToolResponse, err error) {
-	draftAgentTool, exist, err := p.toolRepo.GetDraftAgentToolWithToolName(ctx, &repository.GetDraftAgentToolWithToolNameRequest{
-		AgentID:  req.AgentID,
-		ToolName: req.ToolName,
-	})
+func (p *pluginServiceImpl) GetDraftAgentToolByName(ctx context.Context, agentID int64, toolName string) (tool *entity.ToolInfo, err error) {
+	draftAgentTool, exist, err := p.toolRepo.GetDraftAgentToolWithToolName(ctx, agentID, toolName)
 	if err != nil {
 		return nil, err
 	}
 	if !exist {
-		return nil, fmt.Errorf("agent tool '%s' not found", req.ToolName)
+		return nil, fmt.Errorf("agent tool '%s' not found", toolName)
 	}
 
-	tool, exist, err := p.toolRepo.GetOnlineTool(ctx, draftAgentTool.ID)
+	tool, exist, err = p.toolRepo.GetOnlineTool(ctx, draftAgentTool.ID)
 	if err != nil {
 		return nil, err
 	}
 	if !exist {
-		return nil, fmt.Errorf("online tool '%s' not found", req.ToolName)
+		return nil, fmt.Errorf("online tool '%s' not found", toolName)
 	}
 
 	op, err := syncToAgentTool(ctx, tool.Operation, draftAgentTool.Operation)
@@ -1047,9 +1019,7 @@ func (p *pluginServiceImpl) GetDraftAgentTool(ctx context.Context, req *GetDraft
 
 	draftAgentTool.Operation = op
 
-	return &GetAgentToolResponse{
-		Tool: draftAgentTool,
-	}, nil
+	return draftAgentTool, nil
 }
 
 func syncToAgentTool(ctx context.Context, dest, src *model.Openapi3Operation) (*model.Openapi3Operation, error) {
@@ -1197,7 +1167,7 @@ func syncResponseBody(ctx context.Context, dest, src openapi3.Responses) (openap
 	return dest, nil
 }
 
-func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentToolsRequest) (resp *MGetAgentToolsResponse, err error) {
+func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentToolsRequest) (tools []*entity.ToolInfo, err error) {
 	toolIDs := make([]int64, 0, len(req.VersionAgentTools))
 	for _, v := range req.VersionAgentTools {
 		toolIDs = append(toolIDs, v.ToolID)
@@ -1207,9 +1177,7 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentTo
 		return nil, err
 	}
 	if len(existMap) == 0 {
-		return &MGetAgentToolsResponse{
-			Tools: []*entity.ToolInfo{},
-		}, nil
+		return nil, nil
 	}
 
 	if req.IsDraft {
@@ -1220,17 +1188,12 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentTo
 			}
 		}
 
-		tools, err := p.toolRepo.MGetDraftAgentTools(ctx, &repository.MGetDraftAgentToolsRequest{
-			AgentID: req.AgentID,
-			ToolIDs: existToolIDs,
-		})
+		tools, err = p.toolRepo.MGetDraftAgentTools(ctx, req.AgentID, existToolIDs)
 		if err != nil {
 			return nil, err
 		}
 
-		return &MGetAgentToolsResponse{
-			Tools: tools,
-		}, nil
+		return tools, nil
 	}
 
 	vTools := make([]entity.VersionAgentTool, 0, len(existMap))
@@ -1240,23 +1203,21 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentTo
 		}
 	}
 
-	tools, err := p.toolRepo.MGetVersionAgentTool(ctx, req.AgentID, vTools)
+	tools, err = p.toolRepo.MGetVersionAgentTool(ctx, req.AgentID, vTools)
 	if err != nil {
 		return nil, err
 	}
 
-	return &MGetAgentToolsResponse{
-		Tools: tools,
-	}, nil
+	return tools, nil
 }
 
-func (p *pluginServiceImpl) PublishAgentTools(ctx context.Context, req *PublishAgentToolsRequest) (resp *PublishAgentToolsResponse, err error) {
-	tools, err := p.toolRepo.GetSpaceAllDraftAgentTools(ctx, req.AgentID)
+func (p *pluginServiceImpl) PublishAgentTools(ctx context.Context, agentID int64) (resp *PublishAgentToolsResponse, err error) {
+	tools, err := p.toolRepo.GetSpaceAllDraftAgentTools(ctx, agentID)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := p.toolRepo.BatchCreateVersionAgentTools(ctx, req.AgentID, tools)
+	res, err := p.toolRepo.BatchCreateVersionAgentTools(ctx, agentID, tools)
 	if err != nil {
 		return nil, err
 	}
@@ -1288,10 +1249,7 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 		return fmt.Errorf("online plugin '%d' not found", req.PluginID)
 	}
 
-	draftAgentTool, exist, err := p.toolRepo.GetDraftAgentToolWithToolName(ctx, &repository.GetDraftAgentToolWithToolNameRequest{
-		AgentID:  req.AgentID,
-		ToolName: req.ToolName,
-	})
+	draftAgentTool, exist, err := p.toolRepo.GetDraftAgentToolWithToolName(ctx, req.AgentID, req.ToolName)
 	if err != nil {
 		return err
 	}
@@ -1469,10 +1427,7 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 			return nil, fmt.Errorf("invalid userID")
 		}
 
-		tl, exist, err = p.toolRepo.GetDraftAgentTool(ctx, &repository.GetDraftAgentToolRequest{
-			AgentID: execOpts.AgentID,
-			ToolID:  req.ToolID,
-		})
+		tl, exist, err = p.toolRepo.GetDraftAgentTool(ctx, execOpts.AgentID, req.ToolID)
 		if err != nil {
 			return nil, err
 		}
@@ -1577,4 +1532,8 @@ func (p *pluginServiceImpl) GetPluginProductAllTools(ctx context.Context, plugin
 		return nil, err
 	}
 	return res, nil
+}
+
+func (p *pluginServiceImpl) DeleteAPPAllPlugins(ctx context.Context, appID int64) (pluginIDs []int64, err error) {
+	return p.pluginRepo.DeleteAPPAllPlugins(ctx, appID)
 }

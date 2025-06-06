@@ -242,16 +242,16 @@ func (t *toolRepoImpl) BindDraftAgentTools(ctx context.Context, agentID int64, t
 	return tx.Commit()
 }
 
-func (t *toolRepoImpl) GetDraftAgentTool(ctx context.Context, req *GetDraftAgentToolRequest) (tool *entity.ToolInfo, exist bool, err error) {
-	return t.agentToolDraftDAO.Get(ctx, req.AgentID, req.ToolID)
+func (t *toolRepoImpl) GetDraftAgentTool(ctx context.Context, agentID, toolID int64) (tool *entity.ToolInfo, exist bool, err error) {
+	return t.agentToolDraftDAO.Get(ctx, agentID, toolID)
 }
 
-func (t *toolRepoImpl) GetDraftAgentToolWithToolName(ctx context.Context, req *GetDraftAgentToolWithToolNameRequest) (tool *entity.ToolInfo, exist bool, err error) {
-	return t.agentToolDraftDAO.GetWithToolName(ctx, req.AgentID, req.ToolName)
+func (t *toolRepoImpl) GetDraftAgentToolWithToolName(ctx context.Context, agentID int64, toolName string) (tool *entity.ToolInfo, exist bool, err error) {
+	return t.agentToolDraftDAO.GetWithToolName(ctx, agentID, toolName)
 }
 
-func (t *toolRepoImpl) MGetDraftAgentTools(ctx context.Context, req *MGetDraftAgentToolsRequest) (tools []*entity.ToolInfo, err error) {
-	return t.agentToolDraftDAO.MGet(ctx, req.AgentID, req.ToolIDs)
+func (t *toolRepoImpl) MGetDraftAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+	return t.agentToolDraftDAO.MGet(ctx, agentID, toolIDs)
 }
 
 func (t *toolRepoImpl) UpdateDraftAgentTool(ctx context.Context, req *UpdateDraftAgentToolRequest) (err error) {

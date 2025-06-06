@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	contract "code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 func parseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR) parseFn {
@@ -143,40 +145,44 @@ func parseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 
 				if ps.ExtractImage {
 					imageURL := string(imageNode.Destination)
-					sp := strings.Split(imageURL, ".")
-					if len(sp) == 0 {
-						return ast.WalkStop, fmt.Errorf("failed to extract image extension, url=%s", imageURL)
-					}
-					ext := sp[len(sp)-1]
-
-					img, err := downloadImage(ctx, imageURL)
-					if err != nil {
-						return ast.WalkStop, fmt.Errorf("failed to download image: %w", err)
-					}
-
-					imgSrc, err := putImageObject(ctx, storage, ext, getCreatorIDFromExtraMeta(options.ExtraMeta), img)
-					if err != nil {
-						return ast.WalkStop, err
-					}
-
-					if !emptySlice && last.Content != "" {
-						pushSlice()
-					} else {
-						newSlice(false)
-					}
-
-					addSliceContent(fmt.Sprintf("\n%s\n", imgSrc))
-
-					if ps.ImageOCR && ocr != nil {
-						texts, err := ocr.FromBase64(ctx, base64.StdEncoding.EncodeToString(img))
-						if err != nil {
-							return ast.WalkStop, fmt.Errorf("failed to perform OCR on image: %w", err)
+					if _, err = url.ParseRequestURI(imageURL); err == nil {
+						sp := strings.Split(imageURL, ".")
+						if len(sp) == 0 {
+							return ast.WalkStop, fmt.Errorf("failed to extract image extension, url=%s", imageURL)
 						}
-						addSliceContent(strings.Join(texts, "\n"))
-					}
+						ext := sp[len(sp)-1]
 
-					if charCount(last.Content) >= cs.ChunkSize {
-						pushSlice()
+						img, err := downloadImage(ctx, imageURL)
+						if err != nil {
+							return ast.WalkStop, fmt.Errorf("failed to download image: %w", err)
+						}
+
+						imgSrc, err := putImageObject(ctx, storage, ext, getCreatorIDFromExtraMeta(options.ExtraMeta), img)
+						if err != nil {
+							return ast.WalkStop, err
+						}
+
+						if !emptySlice && last.Content != "" {
+							pushSlice()
+						} else {
+							newSlice(false)
+						}
+
+						addSliceContent(fmt.Sprintf("\n%s\n", imgSrc))
+
+						if ps.ImageOCR && ocr != nil {
+							texts, err := ocr.FromBase64(ctx, base64.StdEncoding.EncodeToString(img))
+							if err != nil {
+								return ast.WalkStop, fmt.Errorf("failed to perform OCR on image: %w", err)
+							}
+							addSliceContent(strings.Join(texts, "\n"))
+						}
+
+						if charCount(last.Content) >= cs.ChunkSize {
+							pushSlice()
+						}
+					} else {
+						logs.CtxInfof(ctx, "[parseMarkdown] not a valid image url, skip, got=%s", imageURL)
 					}
 				}
 			}

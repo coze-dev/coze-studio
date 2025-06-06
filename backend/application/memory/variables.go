@@ -250,7 +250,7 @@ func (v *VariableApplicationService) DeleteVariableInstance(ctx context.Context,
 	bizID := ternary.IFElse(req.BotID == 0, req.ProjectID, fmt.Sprintf("%d", req.BotID))
 
 	e := entity.UserVariableMeta{
-		BizType:      int32(bizType),
+		BizType:      bizType,
 		BizID:        bizID,
 		Version:      "",
 		ConnectorID:  req.GetConnectorID(),
@@ -284,14 +284,14 @@ func (v *VariableApplicationService) GetPlayGroundMemory(ctx context.Context, re
 	connectorUID := ternary.IFElse(req.UserID == 0, *uid, req.UserID)
 
 	entity := entity.UserVariableMeta{
-		BizType:      int32(bizType),
+		BizType:      bizType,
 		BizID:        bizID,
 		Version:      version,
 		ConnectorID:  connectId,
 		ConnectorUID: fmt.Sprintf("%d", connectorUID),
 	}
 
-	res, err := v.DomainSVC.GetVariableInstance(ctx, &entity, req.Keywords, req.VariableChannel)
+	res, err := v.DomainSVC.GetVariableChannelInstance(ctx, &entity, req.Keywords, req.VariableChannel)
 	if err != nil {
 		return nil, err
 	}
@@ -320,7 +320,7 @@ func (v *VariableApplicationService) SetVariableInstance(ctx context.Context, re
 	connectorUID := ternary.IFElse(req.GetUserID() == 0, *uid, req.GetUserID())
 
 	entity := entity.UserVariableMeta{
-		BizType:      int32(bizType),
+		BizType:      bizType,
 		BizID:        bizID,
 		Version:      version,
 		ConnectorID:  connectId,

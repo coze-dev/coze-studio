@@ -133,14 +133,13 @@ services:
     user: root
     privileged: true
     environment:
-      - ELASTICSEARCH_CONF_FILE=/bitnami/elasticsearch/elasticsearch.yml
       # Add Java certificate trust configuration
       - ES_JAVA_OPTS=-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djavax.net.ssl.trustAll=true
     ports:
       - "9200:9200"
     volumes:
-      - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data:rw,Z
-      - ./config/elasticsearch/elasticsearch.yml:/bitnami/elasticsearch/elasticsearch.yml:ro,Z
+      - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data
+      - ./config/elasticsearch/elasticsearch.yml:/opt/bitnami/elasticsearch/config/my_elasticsearch.yml
     healthcheck:
       test:
         [

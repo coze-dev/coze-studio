@@ -110,7 +110,7 @@ cond(no)->op
 > * 撰写发布技术文稿（代码支持）
 > * 撰写发布学术论文（LaTeX 公式支持）
 
-![cmd-markdown-logo](https://www.zybuluo.com/static/img/logo.png)
+![cmd-markdown-logo](logo.png)
 
 除了您现在看到的这个 Cmd Markdown 在线版本，您还可以前往以下网址下载：
 
@@ -197,7 +197,7 @@ Bob-->Alice: I am good thanks!
 
 也许您还是一个 Markdown 语法的新手，在您完全熟悉它之前，我们在 **编辑区** 的顶部放置了一个如下图所示的工具栏，您可以使用鼠标在工具栏上调整格式，不过我们仍旧鼓励你使用键盘标记格式，提高书写的流畅度。
 
-![tool-editor](https://www.zybuluo.com/static/img/toolbar-editor.png)
+![tool-editor](toolbar-editor.png)
 
 ### 1.3.3. 编辑模式
 
@@ -215,8 +215,6 @@ Bob-->Alice: I am good thanks!
 
 为了便于管理您的文稿，在 **预览区** 的顶部放置了如下所示的 **管理工具栏**：
 
-![tool-manager](https://www.zybuluo.com/static/img/toolbar-manager.jpg)
-
 通过管理工具栏可以：
 
 <i class="icon-share"></i> 发布：将当前的文稿生成固定链接，在网络上发布，分享
@@ -227,8 +225,6 @@ Bob-->Alice: I am good thanks!
 <i class="icon-pencil"></i> 模式：切换 普通/Vim/Emacs 编辑模式
 
 ### 1.3.7. 阅读工具栏
-
-![tool-manager](https://www.zybuluo.com/static/img/toolbar-reader.jpg)
 
 通过 **预览区** 右上角的 **阅读工具栏**，可以查看当前文稿的目录并增强阅读体验。
 
@@ -252,7 +248,7 @@ Bob-->Alice: I am good thanks!
 
 标签以后的文稿在【文件列表】（Ctrl+Alt+F）里会按照标签分类，用户可以同时使用键盘或者鼠标浏览查看，或者在【文件列表】的搜索文本框内搜索标题关键字过滤文稿，如下图所示：
 
-![file-list](https://www.zybuluo.com/static/img/file-list.png)
+![file-list](file-list.png)
 
 ### 1.3.10. 文稿发布和分享
 

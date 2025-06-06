@@ -12,13 +12,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossconnector"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossknowledge"
-	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
-	plugin "code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -41,7 +39,7 @@ type appServiceImpl struct {
 	*Components
 }
 
-func (a *appServiceImpl) CreateDraftAPP(ctx context.Context, req *CreateDraftAPPRequest) (resp *CreateDraftAPPResponse, err error) {
+func (a *appServiceImpl) CreateDraftAPP(ctx context.Context, req *CreateDraftAPPRequest) (appID int64, err error) {
 	app := &entity.APP{
 		SpaceID: req.SpaceID,
 		Name:    &req.Name,
@@ -49,54 +47,24 @@ func (a *appServiceImpl) CreateDraftAPP(ctx context.Context, req *CreateDraftAPP
 		IconURI: &req.IconURI,
 		OwnerID: req.OwnerID,
 	}
-	res, err := a.APPRepo.CreateDraftAPP(ctx, &repository.CreateDraftAPPRequest{
-		APP: app,
-	})
-	if err != nil {
-		return nil, err
-	}
 
-	resp = &CreateDraftAPPResponse{
-		APPID: res.APPID,
-	}
-
-	return resp, nil
+	return a.APPRepo.CreateDraftAPP(ctx, app)
 }
 
-func (a *appServiceImpl) GetDraftAPP(ctx context.Context, req *GetDraftAPPRequest) (resp *GetDraftAPPResponse, err error) {
-	app, exist, err := a.APPRepo.GetDraftAPP(ctx, &repository.GetDraftAPPRequest{
-		APPID: req.APPID,
-	})
+func (a *appServiceImpl) GetDraftAPP(ctx context.Context, appID int64) (app *entity.APP, err error) {
+	app, exist, err := a.APPRepo.GetDraftAPP(ctx, appID)
 	if err != nil {
 		return nil, err
 	}
 	if !exist {
-		return nil, fmt.Errorf("draft app '%d' not exist", req.APPID)
+		return nil, fmt.Errorf("draft app '%d' not exist", appID)
 	}
 
-	resp = &GetDraftAPPResponse{
-		APP: app,
-	}
-
-	return resp, nil
+	return app, nil
 }
 
-func (a *appServiceImpl) DeleteDraftAPP(ctx context.Context, req *DeleteDraftAPPRequest) (err error) {
-	err = a.APPRepo.DeleteDraftAPP(ctx, &repository.DeleteDraftAPPRequest{
-		APPID: req.APPID,
-	})
-	if err != nil {
-		return err
-	}
-
-	for _, r := range req.Resources {
-		err = a.deleteAPPResource(ctx, r)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+func (a *appServiceImpl) DeleteDraftAPP(ctx context.Context, appID int64) (err error) {
+	return a.APPRepo.DeleteDraftAPP(ctx, appID)
 }
 
 func (a *appServiceImpl) deleteAPPResource(ctx context.Context, resource *resourceEntity.ResourceDocument) (err error) {
@@ -104,9 +72,6 @@ func (a *appServiceImpl) deleteAPPResource(ctx context.Context, resource *resour
 	// TODO(@maronghong): 删除 variables
 	switch resource.ResType {
 	case resourceCommon.ResType_Plugin:
-		err = crossplugin.DefaultSVC().DeleteDraftPlugin(ctx, &plugin.DeleteDraftPluginRequest{
-			PluginID: resource.ResID,
-		})
 
 	case resourceCommon.ResType_Knowledge:
 		err = crossknowledge.DefaultSVC().DeleteKnowledge(ctx, &knowledge.DeleteKnowledgeRequest{
@@ -140,35 +105,19 @@ func (a *appServiceImpl) UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPP
 		Desc:    req.Desc,
 		IconURI: req.IconURI,
 	}
-	err = a.APPRepo.UpdateDraftAPP(ctx, &repository.UpdateDraftAPPRequest{
-		APP: app,
-	})
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return a.APPRepo.UpdateDraftAPP(ctx, app)
 }
 
-func (a *appServiceImpl) GetAPPPublishRecord(ctx context.Context, req *GetAPPPublishRecordRequest) (resp *GetAPPPublishRecordResponse, err error) {
-	res, err := a.APPRepo.GetPublishRecord(ctx, &repository.GetPublishRecordRequest{
+func (a *appServiceImpl) GetAPPPublishRecord(ctx context.Context, req *GetAPPPublishRecordRequest) (record *entity.PublishRecord, published bool, err error) {
+	return a.APPRepo.GetPublishRecord(ctx, &repository.GetPublishRecordRequest{
 		APPID:    req.APPID,
 		RecordID: req.RecordID,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	resp = &GetAPPPublishRecordResponse{
-		Published: res.Published,
-		Record:    res.Record,
-	}
-
-	return resp, nil
 }
 
-func (a *appServiceImpl) GetAPPAllPublishRecords(ctx context.Context, req *GetAPPAllPublishRecordsRequest) (resp *GetAPPAllPublishRecordsResponse, err error) {
-	res, err := a.APPRepo.GetAPPAllPublishRecords(ctx, req.APPID,
+func (a *appServiceImpl) GetAPPAllPublishRecords(ctx context.Context, appID int64) (records []*entity.PublishRecord, err error) {
+	records, err = a.APPRepo.GetAPPAllPublishRecords(ctx, appID,
 		repository.WithAPPID(),
 		repository.WithPublishRecordID(),
 		repository.WithAPPPublishAtMS(),
@@ -180,20 +129,16 @@ func (a *appServiceImpl) GetAPPAllPublishRecords(ctx context.Context, req *GetAP
 		return nil, err
 	}
 
-	sort.Slice(res.Records, func(i, j int) bool {
-		return res.Records[i].APP.GetPublishedAtMS() > res.Records[j].APP.GetPublishedAtMS()
+	sort.Slice(records, func(i, j int) bool {
+		return records[i].APP.GetPublishedAtMS() > records[j].APP.GetPublishedAtMS()
 	})
-	for _, r := range res.Records {
+	for _, r := range records {
 		sort.Slice(r.ConnectorPublishRecords, func(i, j int) bool {
 			return r.ConnectorPublishRecords[i].ConnectorID < r.ConnectorPublishRecords[j].ConnectorID
 		})
 	}
 
-	resp = &GetAPPAllPublishRecordsResponse{
-		Records: res.Records,
-	}
-
-	return resp, nil
+	return records, nil
 }
 
 func (a *appServiceImpl) GetPublishConnectorList(ctx context.Context, _ *GetPublishConnectorListRequest) (resp *GetPublishConnectorListResponse, err error) {

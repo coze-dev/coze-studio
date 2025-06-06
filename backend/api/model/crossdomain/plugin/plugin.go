@@ -13,10 +13,6 @@ type VersionPlugin struct {
 	Version  string
 }
 
-type MGetVersionPluginsResponse struct {
-	Plugins []*PluginInfo
-}
-
 type MGetPluginLatestVersionResponse struct {
 	Versions map[int64]string // pluginID vs version
 }
@@ -61,11 +57,6 @@ func (p PluginInfo) GetAuthInfo() *AuthV2 {
 	return p.Manifest.Auth
 }
 
-type BindAgentToolsRequest struct {
-	AgentID int64
-	ToolIDs []int64
-}
-
 type VersionAgentTool struct {
 	ToolName *string
 	ToolID   int64
@@ -79,10 +70,6 @@ type MGetAgentToolsRequest struct {
 	IsDraft bool
 
 	VersionAgentTools []VersionAgentTool
-}
-
-type MGetAgentToolsResponse struct {
-	Tools []*ToolInfo
 }
 
 type ExecuteToolRequest struct {
@@ -99,16 +86,8 @@ type ExecuteToolResponse struct {
 	RawResp     string
 }
 
-type PublishAgentToolsRequest struct {
-	AgentID int64
-}
-
 type PublishAgentToolsResponse struct {
 	VersionTools map[int64]VersionAgentTool
-}
-
-type DeleteDraftPluginRequest struct {
-	PluginID int64
 }
 
 type PublishPluginRequest struct {

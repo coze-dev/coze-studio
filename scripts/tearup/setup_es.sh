@@ -71,14 +71,20 @@ else
     done
 fi
 
-if ! curl -s -X PUT "localhost:9200/_cluster/settings" -H 'Content-Type: application/json' -d'
+if ! curl -s -f -X PUT "localhost:9200/coze_resource/_settings" -H 'Content-Type: application/json' -d'
   {
-    "persistent": {
-      "cluster.routing.allocation.disk.watermark.low": "99%",
-      "cluster.routing.allocation.disk.watermark.high": "99%",
-      "cluster.routing.allocation.disk.watermark.flood_stage": "99%",
-      "cluster.info.update.interval": "1m"
+    "index": {
+      "refresh_interval": "10ms"
     }
   }'; then
-    echo -e "${YELLOW}⚠️ 警告: 无法设置磁盘水位线。请手动检查并设置。${NC}"
+    echo -e "${YELLOW}⚠️ 警告: 无法设置 coze_resource 索引刷新频率。请手动检查并设置。${NC}"
+fi
+
+if ! curl -s -f -X PUT "localhost:9200/project_draft/_settings" -H 'Content-Type: application/json' -d'
+  {
+    "index": {
+      "refresh_interval": "10ms"
+    }
+  }'; then
+    echo -e "${YELLOW}⚠️ 警告: 无法设置 project_draft 索引刷新频率。请手动检查并设置。${NC}"
 fi

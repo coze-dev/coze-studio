@@ -57,7 +57,7 @@ func (v *varStore) Init(ctx context.Context) {
 
 func (v *varStore) Get(ctx context.Context, path compose.FieldPath) (any, error) {
 	meta := &entity.UserVariableMeta{
-		BizType:      int32(project_memory.VariableConnector_Project),
+		BizType:      project_memory.VariableConnector_Project,
 		BizID:        "", // project id
 		Version:      "", // project version
 		ConnectorUID: "", // user id  ?
@@ -67,7 +67,7 @@ func (v *varStore) Get(ctx context.Context, path compose.FieldPath) (any, error)
 		return nil, errors.New("field path is required")
 	}
 	key := path[0]
-	kvItems, err := v.vs.GetVariableInstance(ctx, meta, []string{key}, project_memory.VariableChannelPtr(v.variableChannel))
+	kvItems, err := v.vs.GetVariableChannelInstance(ctx, meta, []string{key}, project_memory.VariableChannelPtr(v.variableChannel))
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +135,7 @@ func (v *varStore) Get(ctx context.Context, path compose.FieldPath) (any, error)
 
 func (v *varStore) Set(ctx context.Context, path compose.FieldPath, value any) (err error) {
 	meta := &entity.UserVariableMeta{
-		BizType:      int32(project_memory.VariableConnector_Project),
+		BizType:      project_memory.VariableConnector_Project,
 		BizID:        "", // project id
 		Version:      "", // project version
 		ConnectorUID: "", // user id  ?

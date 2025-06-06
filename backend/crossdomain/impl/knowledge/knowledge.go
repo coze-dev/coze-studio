@@ -37,3 +37,7 @@ func (i *impl) DeleteKnowledge(ctx context.Context, req *model.DeleteKnowledgeRe
 func (i *impl) GetKnowledgeByID(ctx context.Context, request *model.GetKnowledgeByIDRequest) (response *model.GetKnowledgeByIDResponse, err error) {
 	return i.DomainSVC.GetKnowledgeByID(ctx, request)
 }
+
+func (i *impl) MGetKnowledgeByID(ctx context.Context, request *model.MGetKnowledgeByIDRequest) (response *model.MGetKnowledgeByIDResponse, err error) {
+	return i.DomainSVC.MGetKnowledgeByID(ctx, request)
+}

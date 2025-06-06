@@ -183,6 +183,10 @@ func (v *variablesImpl) GetVariableMeta(ctx context.Context, bizID string, bizTy
 	return resVarMetaList, nil
 }
 
+func (v *variablesImpl) DeleteAllVariable(ctx context.Context, bizType project_memory.VariableConnector, bizID string) (err error) {
+	return v.Repo.DeleteAllVariableData(ctx, bizType, bizID)
+}
+
 func (v *variablesImpl) DeleteVariableInstance(ctx context.Context, e *entity.UserVariableMeta, keywords []string) (err error) {
 	// if e.BizType == int32(project_memory.VariableConnector_Project) {
 	// 	keywords = v.removeProjectSysVariable(ctx, keywords)
@@ -249,7 +253,11 @@ func (v *variablesImpl) removeSysVariable(ctx context.Context, keywords []string
 	return filteredKeywords
 }
 
-func (v *variablesImpl) GetVariableInstance(ctx context.Context, e *entity.UserVariableMeta, keywords []string, varChannel *project_memory.VariableChannel) ([]*kvmemory.KVItem, error) {
+func (v *variablesImpl) GetVariableInstance(ctx context.Context, e *entity.UserVariableMeta, keywords []string) ([]*kvmemory.KVItem, error) {
+	return v.GetVariableChannelInstance(ctx, e, keywords, nil)
+}
+
+func (v *variablesImpl) GetVariableChannelInstance(ctx context.Context, e *entity.UserVariableMeta, keywords []string, varChannel *project_memory.VariableChannel) ([]*kvmemory.KVItem, error) {
 	meta, err := v.GetVariableMeta(ctx, e.BizID, project_memory.VariableConnector(e.BizType), e.Version)
 	if err != nil {
 		return nil, err
@@ -441,7 +449,7 @@ func (v *variablesImpl) SetVariableInstance(ctx context.Context, e *entity.UserV
 	needIndexKVs := make([]*entity.VariableInstance, 0, len(key2Item))
 	for _, v := range key2Item {
 		needIndexKVs = append(needIndexKVs, &entity.VariableInstance{
-			BizType:      int32(e.BizType),
+			BizType:      e.BizType,
 			BizID:        e.BizID,
 			Version:      e.Version,
 			ConnectorID:  e.ConnectorID,

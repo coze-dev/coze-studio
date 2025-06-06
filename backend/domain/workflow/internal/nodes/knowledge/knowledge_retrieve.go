@@ -60,8 +60,11 @@ func (kr *KnowledgeRetrieve) Retrieve(ctx context.Context, input map[string]any)
 		return nil, err
 	}
 	result := make(map[string]any)
-	result[outputList] = slices.Transform(response.RetrieveData, func(m map[string]any) any {
-		return m
+	result[outputList] = slices.Transform(response.Slices, func(m *knowledge.Slice) any {
+		return map[string]any{
+			"documentId": m.DocumentID,
+			"output":     m.Output,
+		}
 	})
 
 	return result, nil

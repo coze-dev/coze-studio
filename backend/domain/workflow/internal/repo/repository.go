@@ -21,6 +21,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/adaptor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	model2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -686,6 +687,21 @@ func (r *RepositoryImpl) UpdateNodeExecution(ctx context.Context, execution *ent
 		return fmt.Errorf("failed to update node execution: %w", err)
 	}
 
+	return nil
+}
+
+func (r *RepositoryImpl) CancelAllRunningNodes(ctx context.Context, wfExeID int64) error {
+	res, err := r.query.NodeExecution.WithContext(ctx).
+		Where(r.query.NodeExecution.ExecuteID.Eq(wfExeID), r.query.NodeExecution.Status.Eq(int32(entity.NodeRunning))).
+		Updates(map[string]interface{}{
+			"error_info":  "workflow cancel by user",
+			"error_level": execute.LevelCancel,
+			"status":      int32(entity.NodeFailed),
+		})
+	if err != nil {
+		return fmt.Errorf("failed to cancel running nodes: %w", err)
+	}
+	_ = res
 	return nil
 }
 

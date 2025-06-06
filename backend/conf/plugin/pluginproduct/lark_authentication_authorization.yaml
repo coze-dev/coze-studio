@@ -1,16 +1,3 @@
-components:
-  examples:
-    get_tenant_access_token:
-      value:
-        ReqExample:
-          app_id: cli_a61e0206cbfd9013
-          app_secret: 8lQ7Nfd0IgKuDRCBTdvXfKk4JUGxjJw4
-        RespExample:
-          code: 0
-          expire: 7200
-          log_id: 202407232130316AD38DF18B4020F0CCED
-          msg: ok
-          tenant_access_token: t-g1047nluENH3ATYGHIHJVX5LH7N447UMWPHZ2KHK
 info:
   description: 飞书认证及授权
   title: 飞书认证及授权

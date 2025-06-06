@@ -84,7 +84,7 @@ const (
 	ConnectorConfigStatus_Disconnected ConnectorConfigStatus = 3
 	// 配置中，授权中
 	ConnectorConfigStatus_Configuring ConnectorConfigStatus = 4
-	// 需要重新配置 https://bytedance.larkoffice.com/docx/KXNed5NWUoplVBxXdQxcfPNwnrf#Gn7dd2KoaoNZo6xw1tkcT92znbG
+	// 需要重新配置
 	ConnectorConfigStatus_NeedReconfiguring ConnectorConfigStatus = 5
 )
 
@@ -1763,7 +1763,7 @@ type PublishConnectorInfo struct {
 	SupportMonetization *bool `thrift:"support_monetization,19,optional" form:"support_monetization" json:"support_monetization,omitempty" query:"support_monetization"`
 	// 安装指引
 	InstallationGuide *string `thrift:"installation_guide,20,optional" form:"installation_guide" json:"installation_guide,omitempty" query:"installation_guide"`
-	// 目前仅 bind_type == 8 时这个字段才有 https://bytedance.larkoffice.com/docx/KXNed5NWUoplVBxXdQxcfPNwnrf#Gn7dd2KoaoNZo6xw1tkcT92znbG
+	// 目前仅 bind_type == 8 时这个字段才有
 	AuthStatus *UserAuthStatus `thrift:"auth_status,21,optional" form:"auth_status" json:"auth_status,omitempty" query:"auth_status"`
 	// 配置状态toast
 	ConfigStatusToast *string `thrift:"config_status_toast,22,optional" form:"config_status_toast" json:"config_status_toast,omitempty" query:"config_status_toast"`

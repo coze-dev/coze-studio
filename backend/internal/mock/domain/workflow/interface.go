@@ -13,15 +13,16 @@ import (
 	context "context"
 	reflect "reflect"
 
-	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
-	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	tool "github.com/cloudwego/eino/components/tool"
 	compose "github.com/cloudwego/eino/compose"
 	schema "github.com/cloudwego/eino/schema"
 	redis "github.com/redis/go-redis/v9"
 	gomock "go.uber.org/mock/gomock"
+
+	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
+	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 // MockService is a mock of Service interface.
@@ -577,6 +578,20 @@ func (m *MockRepository) BatchPublishWorkflows(ctx context.Context, workflows ma
 func (mr *MockRepositoryMockRecorder) BatchPublishWorkflows(ctx, workflows any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchPublishWorkflows", reflect.TypeOf((*MockRepository)(nil).BatchPublishWorkflows), ctx, workflows)
+}
+
+// CancelAllRunningNodes mocks base method.
+func (m *MockRepository) CancelAllRunningNodes(ctx context.Context, wfExeID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CancelAllRunningNodes", ctx, wfExeID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CancelAllRunningNodes indicates an expected call of CancelAllRunningNodes.
+func (mr *MockRepositoryMockRecorder) CancelAllRunningNodes(ctx, wfExeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CancelAllRunningNodes", reflect.TypeOf((*MockRepository)(nil).CancelAllRunningNodes), ctx, wfExeID)
 }
 
 // CopyWorkflow mocks base method.

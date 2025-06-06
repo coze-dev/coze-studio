@@ -9,10 +9,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	appService "code.byted.org/flow/opencoze/backend/domain/app/service"
-	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -25,9 +23,7 @@ type ProjectPacker interface {
 	GetProjectInfo(ctx context.Context) (*projectInfo, error)
 	GetPermissionInfo() *intelligence.IntelligencePermissionInfo
 	GetPublishedInfo(ctx context.Context) *intelligence.IntelligencePublishInfo
-	GetFavoriteInfo(ctx context.Context) *intelligence.FavoriteInfo
 	GetUserInfo(ctx context.Context, userID int64) *common.User
-	GetOtherInfo(ctx context.Context) *intelligence.OtherInfo
 }
 
 func NewPackProject(uid, projectID int64, tp common.IntelligenceType, s *SearchApplicationService) (ProjectPacker, error) {
@@ -70,54 +66,6 @@ func (p *projectBase) GetUserInfo(ctx context.Context, userID int64) *common.Use
 		AvatarURL:      u.IconURL,
 		UserUniqueName: u.UniqueName,
 	}
-}
-
-func (p *projectBase) GetFavoriteInfo(ctx context.Context) *intelligence.FavoriteInfo {
-	res, err := SearchSVC.DomainSVC.SearchProjects(ctx, &searchEntity.SearchProjectsRequest{
-		ProjectID: p.projectID,
-	})
-	if err != nil {
-		logs.CtxErrorf(ctx, "[projectBase-GetFavoriteInfo] failed to get favorite info uid: %d project_id: %d, type: %d, err: %v",
-			p.uid, p.projectID, p.iType, err)
-		return &intelligence.FavoriteInfo{}
-	}
-
-	if len(res.Data) == 0 {
-		return &intelligence.FavoriteInfo{}
-	}
-
-	isFav := res.Data[0].GetIsFav()
-	favTime := res.Data[0].GetFavTime()
-
-	return &intelligence.FavoriteInfo{
-		IsFav:   isFav,
-		FavTime: conv.Int64ToStr(favTime / 1000),
-	}
-}
-
-func (p *projectBase) GetOtherInfo(ctx context.Context) *intelligence.OtherInfo {
-	botMode := ternary.IFElse(p.iType == common.IntelligenceType_Bot, intelligence.BotMode_SingleMode, intelligence.BotMode_WorkflowMode)
-	otherInfo := &intelligence.OtherInfo{
-		BotMode: botMode,
-	}
-
-	res, err := SearchSVC.DomainSVC.SearchProjects(ctx, &searchEntity.SearchProjectsRequest{
-		ProjectID: p.projectID,
-	})
-	if err != nil {
-		logs.CtxErrorf(ctx, "[projectBase-GetFavoriteInfo] failed to get favorite info uid: %d project_id: %d, type: %d, err: %v",
-			p.uid, p.projectID, p.iType, err)
-		return otherInfo
-	}
-
-	if len(res.Data) == 0 {
-		return otherInfo
-	}
-
-	openTime := res.Data[0].GetRecentlyOpenTime()
-	otherInfo.RecentlyOpenTime = conv.Int64ToStr(openTime / 1000)
-
-	return otherInfo
 }
 
 type agentPacker struct {
@@ -176,20 +124,18 @@ type appPacker struct {
 }
 
 func (a *appPacker) GetProjectInfo(ctx context.Context) (*projectInfo, error) {
-	res, err := a.SVC.APPDomainSVC.GetDraftAPP(ctx, &appService.GetDraftAPPRequest{
-		APPID: a.projectID,
-	})
+	app, err := a.SVC.APPDomainSVC.GetDraftAPP(ctx, a.projectID)
 	if err != nil {
 		return nil, err
 	}
 	return &projectInfo{
-		iconURI: res.APP.GetIconURI(),
-		desc:    res.APP.GetDesc(),
+		iconURI: app.GetIconURI(),
+		desc:    app.GetDesc(),
 	}, nil
 }
 
 func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.IntelligencePublishInfo {
-	res, err := a.SVC.APPDomainSVC.GetAPPPublishRecord(ctx, &appService.GetAPPPublishRecordRequest{
+	record, published, err := a.SVC.APPDomainSVC.GetAPPPublishRecord(ctx, &appService.GetAPPPublishRecordRequest{
 		APPID: a.projectID,
 	})
 	if err != nil {
@@ -197,15 +143,13 @@ func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.Intellig
 		return nil
 	}
 
-	if res.Record == nil {
+	if !published {
 		return &intelligence.IntelligencePublishInfo{
 			PublishTime:  "",
 			HasPublished: false,
 			Connectors:   nil,
 		}
 	}
-
-	record := res.Record
 
 	connectorInfo := make([]*common.ConnectorInfo, 0, len(record.ConnectorPublishRecords))
 	connectorIDs := slices.Transform(record.ConnectorPublishRecords, func(c *entity.ConnectorPublishRecord) int64 {
@@ -228,7 +172,7 @@ func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.Intellig
 
 	return &intelligence.IntelligencePublishInfo{
 		PublishTime:  strconv.FormatInt(record.APP.GetPublishedAtMS()/1000, 10),
-		HasPublished: res.Published,
+		HasPublished: published,
 		Connectors:   connectorInfo,
 	}
 }

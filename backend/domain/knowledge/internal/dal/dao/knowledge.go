@@ -3,8 +3,10 @@ package dao
 import (
 	"context"
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
@@ -15,6 +17,7 @@ import (
 //go:generate mockgen -destination ../../mock/dal/dao/knowledge.go --package dao -source knowledge.go
 type KnowledgeRepo interface {
 	Create(ctx context.Context, knowledge *model.Knowledge) error
+	Upsert(ctx context.Context, knowledge *model.Knowledge) error
 	Update(ctx context.Context, knowledge *model.Knowledge) error
 	Delete(ctx context.Context, id int64) error
 	GetByID(ctx context.Context, id int64) (*model.Knowledge, error)
@@ -66,9 +69,12 @@ const (
 func (dao *knowledgeDAO) Create(ctx context.Context, knowledge *model.Knowledge) error {
 	return dao.query.Knowledge.WithContext(ctx).Create(knowledge)
 }
-
+func (dao *knowledgeDAO) Upsert(ctx context.Context, knowledge *model.Knowledge) error {
+	return dao.query.Knowledge.WithContext(ctx).Clauses(clause.OnConflict{UpdateAll: true}).Create(knowledge)
+}
 func (dao *knowledgeDAO) Update(ctx context.Context, knowledge *model.Knowledge) error {
 	k := dao.query.Knowledge
+	knowledge.UpdatedAt = time.Now().UnixMilli()
 	_, err := k.WithContext(ctx).Where(k.ID.Eq(knowledge.ID)).Updates(knowledge)
 	return err
 }

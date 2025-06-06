@@ -25,7 +25,7 @@ type KnowledgeDocumentRepo interface {
 	GetByID(ctx context.Context, id int64) (*model.KnowledgeDocument, error)
 	FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) (
 		[]*model.KnowledgeDocument, int64, error)
-	SoftDeleteDocuments(ctx context.Context, ids []int64) error
+	DeleteDocuments(ctx context.Context, ids []int64) error
 	SetStatus(ctx context.Context, documentID int64, status int32, reason string) error
 	CreateWithTx(ctx context.Context, tx *gorm.DB, document []*model.KnowledgeDocument) error
 	UpdateDocumentSliceInfo(ctx context.Context, documentID int64) error
@@ -45,6 +45,7 @@ func (dao *knowledgeDocumentDAO) Create(ctx context.Context, document *model.Kno
 }
 
 func (dao *knowledgeDocumentDAO) Update(ctx context.Context, document *model.KnowledgeDocument) error {
+	document.UpdatedAt = time.Now().UnixMilli()
 	_, err := dao.query.KnowledgeDocument.WithContext(ctx).Updates(document)
 	return err
 }
@@ -125,6 +126,7 @@ type WhereDocumentOpt struct {
 	Limit        int
 	Offset       *int
 	Cursor       *string
+	SelectAll    bool
 }
 
 func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) ([]*model.KnowledgeDocument, int64, error) {
@@ -154,7 +156,9 @@ func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 	if opts.Limit != 0 {
 		do = do.Limit(opts.Limit)
 	} else {
-		do = do.Limit(50)
+		if !opts.SelectAll {
+			do = do.Limit(50)
+		}
 	}
 	if opts.Offset != nil {
 		do = do.Offset(*opts.Offset)
@@ -177,7 +181,7 @@ func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 	return resp, total, nil
 }
 
-func (dao *knowledgeDocumentDAO) SoftDeleteDocuments(ctx context.Context, ids []int64) error {
+func (dao *knowledgeDocumentDAO) DeleteDocuments(ctx context.Context, ids []int64) error {
 	tx := dao.db.Begin()
 	var err error
 	defer func() {

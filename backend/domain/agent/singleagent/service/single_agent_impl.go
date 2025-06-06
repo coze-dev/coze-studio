@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/cloudwego/eino/schema"
 	"github.com/jinzhu/copier"
+
+	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/agentflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/repository"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/jsoncache"
@@ -117,10 +117,7 @@ func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo 
 		toolIDs := slices.Transform(agentInfo.Plugin, func(item *bot_common.PluginInfo) int64 {
 			return item.GetApiId()
 		})
-		err = crossplugin.DefaultSVC().BindAgentTools(ctx, &service.BindAgentToolsRequest{
-			AgentID: agentInfo.AgentID,
-			ToolIDs: toolIDs,
-		})
+		err = crossplugin.DefaultSVC().BindAgentTools(ctx, agentInfo.AgentID, toolIDs)
 		if err != nil {
 			return fmt.Errorf("bind agent tools failed, err=%v", err)
 		}

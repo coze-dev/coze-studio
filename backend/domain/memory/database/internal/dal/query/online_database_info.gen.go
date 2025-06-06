@@ -69,7 +69,7 @@ type onlineDatabaseInfo struct {
 	RwMode            field.Int64  // Read and write permission modes: 1. Limited read and write mode 2. Read-only mode 3. Full read and write mode
 	CreatedAt         field.Int64  // Create Time in Milliseconds
 	UpdatedAt         field.Int64  // Update Time in Milliseconds
-	DeletedAt         field.Field  // Delete Time in Milliseconds
+	DeletedAt         field.Field  // Delete Time
 
 	fieldMap map[string]field.Expr
 }

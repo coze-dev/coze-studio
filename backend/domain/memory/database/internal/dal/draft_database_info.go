@@ -57,7 +57,7 @@ func (d *DraftImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, databas
 			}
 		}(),
 		TableName_:        database.TableName,
-		TableDesc:         database.Description,
+		TableDesc:         database.TableDesc,
 		TableField:        database.FieldList,
 		CreatorID:         database.CreatorID,
 		IconURI:           database.IconURI,
@@ -109,6 +109,7 @@ func (d *DraftImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 		ActualTableName: info.PhysicalTableName,
 		RwMode:          table.BotTableRWMode(info.RwMode),
 		OnlineID:        &info.RelatedOnlineID,
+		DraftID:         &info.ID,
 	}
 
 	return db, nil
@@ -147,6 +148,7 @@ func (d *DraftImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 			ActualTableName: info.PhysicalTableName,
 			RwMode:          table.BotTableRWMode(info.RwMode),
 			OnlineID:        &info.RelatedOnlineID,
+			DraftID:         &info.ID,
 
 			CreatedAtMs: info.CreatedAt,
 			UpdatedAtMs: info.UpdatedAt,
@@ -168,10 +170,10 @@ func (d *DraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 	fieldJsonStr := string(fieldJson)
 	now := time.Now().UnixMilli()
 
-	updates := map[string]interface{}{ // todo lj 检查哪些可能被更新
+	updates := map[string]interface{}{
 		"app_id":      database.AppID,
 		"table_name":  database.TableName,
-		"table_desc":  database.Description,
+		"table_desc":  database.TableDesc,
 		"table_field": fieldJsonStr,
 		"icon_uri":    database.IconURI,
 		"prompt_disabled": func() int32 {
@@ -196,15 +198,8 @@ func (d *DraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 }
 
 func (d *DraftImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int64) error {
-	// 逻辑删除（更新状态为已删除）
-	now := time.Now().UnixMilli()
-	updates := map[string]interface{}{
-		"updated_at": now,
-		"deleted_at": now,
-	}
-
 	res := tx.DraftDatabaseInfo
-	_, err := res.WithContext(ctx).Where(res.ID.Eq(id)).Updates(updates)
+	_, err := res.WithContext(ctx).Where(res.ID.Eq(id)).Delete(&model.DraftDatabaseInfo{})
 	if err != nil {
 		return fmt.Errorf("delete draft database failed: %v", err)
 	}
@@ -301,10 +296,24 @@ func (d *DraftImpl) List(ctx context.Context, filter *entity.DatabaseFilter, pag
 			RwMode:          table.BotTableRWMode(info.RwMode),
 			TableType:       ptr.Of(table.TableType_DraftTable),
 			OnlineID:        &info.RelatedOnlineID,
+			DraftID:         &info.ID,
 		}
 
 		databases = append(databases, db)
 	}
 
 	return databases, count, nil
+}
+
+func (d *DraftImpl) BatchDeleteWithTX(ctx context.Context, tx *query.QueryTx, ids []int64) error {
+	if len(ids) == 0 {
+		return nil
+	}
+
+	res := tx.DraftDatabaseInfo
+	_, err := res.WithContext(ctx).Where(res.ID.In(ids...)).Delete()
+	if err != nil {
+		return fmt.Errorf("batch delete draft database failed: %v", err)
+	}
+	return nil
 }

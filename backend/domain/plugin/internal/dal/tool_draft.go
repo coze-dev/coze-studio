@@ -47,12 +47,12 @@ func (t toolDraftPO) ToDO() *entity.ToolInfo {
 	}
 }
 
-func (p *ToolDraftDAO) getSelected(opt *ToolSelectedOption) (selected []field.Expr) {
+func (t *ToolDraftDAO) getSelected(opt *ToolSelectedOption) (selected []field.Expr) {
 	if opt == nil {
 		return selected
 	}
 
-	table := p.query.ToolDraft
+	table := t.query.ToolDraft
 
 	if opt.ToolID {
 		selected = append(selected, table.ID)
@@ -299,7 +299,7 @@ func (t *ToolDraftDAO) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, p
 			return err
 		}
 
-		if info.RowsAffected == 0 || info.RowsAffected < limit {
+		if info.RowsAffected < limit {
 			break
 		}
 	}

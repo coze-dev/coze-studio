@@ -25,8 +25,6 @@ func convertAddDatabase(req *table.AddDatabaseRequest) *database.CreateDatabaseR
 
 	return &database.CreateDatabaseRequest{
 		Database: &entity.Database{
-			Name:           req.TableName,
-			Description:    req.TableDesc,
 			IconURI:        req.IconURI,
 			CreatorID:      req.CreatorID,
 			SpaceID:        req.SpaceID,
@@ -70,8 +68,6 @@ func ConvertUpdateDatabase(req *table.UpdateDatabaseRequest) *database.UpdateDat
 	return &database.UpdateDatabaseRequest{
 		Database: &entity.Database{
 			ID:             req.ID,
-			Name:           req.TableName,
-			Description:    req.TableDesc,
 			IconURI:        req.IconURI,
 			TableName:      req.TableName,
 			TableDesc:      req.TableDesc,

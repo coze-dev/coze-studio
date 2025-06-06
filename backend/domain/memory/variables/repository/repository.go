@@ -16,6 +16,7 @@ func NewVariableRepo(db *gorm.DB, generator idgen.IDGenerator) VariableRepositor
 }
 
 type VariableRepository interface {
+	DeleteAllVariableData(ctx context.Context, bizType project_memory.VariableConnector, bizID string) (err error)
 	DeleteVariableInstance(ctx context.Context, do *entity.UserVariableMeta, keywords []string) error
 	GetVariableInstances(ctx context.Context, do *entity.UserVariableMeta, keywords []string) ([]*entity.VariableInstance, error)
 	UpdateVariableInstance(ctx context.Context, KVs []*entity.VariableInstance) error

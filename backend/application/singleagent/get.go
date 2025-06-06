@@ -52,12 +52,12 @@ func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req
 		return nil, err
 	}
 
-	toolResp, err := s.fetchToolDetails(ctx, agentInfo, req)
+	toolInfos, err := s.fetchToolDetails(ctx, agentInfo, req)
 	if err != nil {
 		return nil, err
 	}
 
-	pluginResp, err := s.fetchPluginDetails(ctx, agentInfo, toolResp)
+	pluginInfos, err := s.fetchPluginDetails(ctx, agentInfo, toolInfos)
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +78,8 @@ func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req
 			BotOptionData: &playground.BotOptionData{
 				ModelDetailMap:      modelInfoDo2Vo(modelInfos),
 				KnowledgeDetailMap:  knowledgeInfoDo2Vo(klInfos),
-				PluginAPIDetailMap:  toolInfoDo2Vo(toolResp.Tools),
-				PluginDetailMap:     pluginInfoDo2Vo(pluginResp.Plugins),
+				PluginAPIDetailMap:  toolInfoDo2Vo(toolInfos),
+				PluginDetailMap:     pluginInfoDo2Vo(pluginInfos),
 				WorkflowDetailMap:   workflowDo2Vo(workflowInfos),
 				ShortcutCommandList: shortCutCmdResp,
 			},
@@ -171,7 +171,7 @@ func (s *SingleAgentApplicationService) fetchKnowledgeDetails(ctx context.Contex
 	return listResp.KnowledgeList, err
 }
 
-func (s *SingleAgentApplicationService) fetchToolDetails(ctx context.Context, agentInfo *entity.SingleAgent, req *playground.GetDraftBotInfoAgwRequest) (*service.MGetAgentToolsResponse, error) {
+func (s *SingleAgentApplicationService) fetchToolDetails(ctx context.Context, agentInfo *entity.SingleAgent, req *playground.GetDraftBotInfoAgwRequest) ([]*pluginEntity.ToolInfo, error) {
 	return s.appContext.PluginDomainSVC.MGetAgentTools(ctx, &service.MGetAgentToolsRequest{
 		SpaceID: agentInfo.SpaceID,
 		AgentID: req.GetBotID(),
@@ -184,10 +184,10 @@ func (s *SingleAgentApplicationService) fetchToolDetails(ctx context.Context, ag
 	})
 }
 
-func (s *SingleAgentApplicationService) fetchPluginDetails(ctx context.Context, agentInfo *entity.SingleAgent, toolResp *service.MGetAgentToolsResponse) (*service.MGetVersionPluginsResponse, error) {
+func (s *SingleAgentApplicationService) fetchPluginDetails(ctx context.Context, agentInfo *entity.SingleAgent, toolInfos []*pluginEntity.ToolInfo) ([]*pluginEntity.PluginInfo, error) {
 	vPlugins := make([]pluginEntity.VersionPlugin, 0, len(agentInfo.Plugin))
 	vPluginMap := make(map[string]bool, len(agentInfo.Plugin))
-	for _, v := range toolResp.Tools {
+	for _, v := range toolInfos {
 		k := fmt.Sprintf("%d:%s", v.PluginID, v.GetVersion())
 		if vPluginMap[k] {
 			continue
@@ -263,9 +263,9 @@ func toolInfoDo2Vo(toolInfos []*pluginEntity.ToolInfo) map[int64]*playground.Plu
 	})
 }
 
-func pluginInfoDo2Vo(pluginInfos []*plugin.PluginInfo) map[int64]*playground.PluginDetal {
-	return slices.ToMap(pluginInfos, func(v *plugin.PluginInfo) (int64, *playground.PluginDetal) {
-		e := pluginEntity.NewPluginInfo(v)
+func pluginInfoDo2Vo(pluginInfos []*pluginEntity.PluginInfo) map[int64]*playground.PluginDetal {
+	return slices.ToMap(pluginInfos, func(v *pluginEntity.PluginInfo) (int64, *playground.PluginDetal) {
+		e := v.PluginInfo
 		return e.ID, &playground.PluginDetal{
 			ID:           ptr.Of(e.ID),
 			Name:         ptr.Of(e.GetName()),

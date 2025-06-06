@@ -7693,7 +7693,7 @@ type CreateDocumentRequest struct {
 	FormatType FormatType `thrift:"format_type,4" form:"format_type" json:"format_type" query:"format_type"`
 	// 表格类型一次只能创建一个
 	DocumentBases []*DocumentBase `thrift:"document_bases,6" form:"document_bases" json:"document_bases" query:"document_bases"`
-	// 只在知识库中没有文档时需要传递，已有则从知识库获取.切片规则，为空则自动按段落切片，具体规则见IDP：https://bytedance.larkoffice.com/docx/Ro4tdG64VoogMlxWqgyc2lsjncf
+	// 只在知识库中没有文档时需要传递，已有则从知识库获取.切片规则，为空则自动按段落切片
 	ChunkStrategy *ChunkStrategy `thrift:"chunk_strategy,17,optional" form:"chunk_strategy" json:"chunk_strategy,omitempty" query:"chunk_strategy"`
 	// 数据导入的时候落库规则
 	SinkStrategy *SinkStrategy `thrift:"sink_strategy,18,optional" form:"sink_strategy" json:"sink_strategy,omitempty" query:"sink_strategy"`

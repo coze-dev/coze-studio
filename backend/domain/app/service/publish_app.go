@@ -102,10 +102,7 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 }
 
 func (a *appServiceImpl) checkCanPublishAPP(ctx context.Context, req *PublishAPPRequest) (err error) {
-	exist, err := a.APPRepo.CheckAPPVersionExist(ctx, &repository.GetVersionAPPRequest{
-		APPID:   req.APPID,
-		Version: req.Version,
-	})
+	exist, err := a.APPRepo.CheckAPPVersionExist(ctx, req.APPID, req.Version)
 	if err != nil {
 		return err
 	}
@@ -117,9 +114,7 @@ func (a *appServiceImpl) checkCanPublishAPP(ctx context.Context, req *PublishAPP
 }
 
 func (a *appServiceImpl) createPublishVersion(ctx context.Context, req *PublishAPPRequest) (recordID int64, err error) {
-	draftAPP, exist, err := a.APPRepo.GetDraftAPP(ctx, &repository.GetDraftAPPRequest{
-		APPID: req.APPID,
-	})
+	draftAPP, exist, err := a.APPRepo.GetDraftAPP(ctx, req.APPID)
 	if err != nil {
 		return 0, err
 	}
@@ -142,11 +137,9 @@ func (a *appServiceImpl) createPublishVersion(ctx context.Context, req *PublishA
 		draftAPP.ConnectorIDs = append(draftAPP.ConnectorIDs, cid)
 	}
 
-	recordID, err = a.APPRepo.CreateAPPPublishRecord(ctx, &repository.CreateAPPPublishRecordRequest{
-		PublishRecord: &entity.PublishRecord{
-			APP:                     draftAPP,
-			ConnectorPublishRecords: publishRecords,
-		},
+	recordID, err = a.APPRepo.CreateAPPPublishRecord(ctx, &entity.PublishRecord{
+		APP:                     draftAPP,
+		ConnectorPublishRecords: publishRecords,
 	})
 	if err != nil {
 		return 0, err

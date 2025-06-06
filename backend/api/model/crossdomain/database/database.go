@@ -90,10 +90,8 @@ type FieldItem struct {
 }
 
 type Database struct {
-	ID          int64
-	Name        string
-	Description string
-	IconURI     string
+	ID      int64
+	IconURI string
 
 	CreatorID int64
 	SpaceID   int64

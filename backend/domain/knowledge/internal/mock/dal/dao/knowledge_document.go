@@ -13,11 +13,10 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-	gorm "gorm.io/gorm"
-
 	dao "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	model "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
+	gomock "go.uber.org/mock/gomock"
+	gorm "gorm.io/gorm"
 )
 
 // MockKnowledgeDocumentRepo is a mock of KnowledgeDocumentRepo interface.
@@ -84,6 +83,20 @@ func (m *MockKnowledgeDocumentRepo) Delete(ctx context.Context, id int64) error 
 func (mr *MockKnowledgeDocumentRepoMockRecorder) Delete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockKnowledgeDocumentRepo)(nil).Delete), ctx, id)
+}
+
+// DeleteDocuments mocks base method.
+func (m *MockKnowledgeDocumentRepo) DeleteDocuments(ctx context.Context, ids []int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteDocuments", ctx, ids)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteDocuments indicates an expected call of DeleteDocuments.
+func (mr *MockKnowledgeDocumentRepoMockRecorder) DeleteDocuments(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDocuments", reflect.TypeOf((*MockKnowledgeDocumentRepo)(nil).DeleteDocuments), ctx, ids)
 }
 
 // FindDocumentByCondition mocks base method.
@@ -161,20 +174,6 @@ func (m *MockKnowledgeDocumentRepo) SetStatus(ctx context.Context, documentID in
 func (mr *MockKnowledgeDocumentRepoMockRecorder) SetStatus(ctx, documentID, status, reason any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStatus", reflect.TypeOf((*MockKnowledgeDocumentRepo)(nil).SetStatus), ctx, documentID, status, reason)
-}
-
-// SoftDeleteDocuments mocks base method.
-func (m *MockKnowledgeDocumentRepo) SoftDeleteDocuments(ctx context.Context, ids []int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SoftDeleteDocuments", ctx, ids)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SoftDeleteDocuments indicates an expected call of SoftDeleteDocuments.
-func (mr *MockKnowledgeDocumentRepoMockRecorder) SoftDeleteDocuments(ctx, ids any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SoftDeleteDocuments", reflect.TypeOf((*MockKnowledgeDocumentRepo)(nil).SoftDeleteDocuments), ctx, ids)
 }
 
 // Update mocks base method.

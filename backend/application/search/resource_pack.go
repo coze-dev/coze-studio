@@ -9,7 +9,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	dbservice "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -75,22 +74,20 @@ type pluginPacker struct {
 }
 
 func (p *pluginPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
-	res, err := p.appContext.PluginDomainSVC.GetDraftPlugin(ctx, &service.GetDraftPluginRequest{
-		PluginID: p.resID,
-	})
+	plugin, err := p.appContext.PluginDomainSVC.GetDraftPlugin(ctx, p.resID)
 	if err != nil {
 		return nil, err
 	}
 
-	iconURL, err := p.appContext.TOS.GetObjectUrl(ctx, res.Plugin.GetIconURI())
+	iconURL, err := p.appContext.TOS.GetObjectUrl(ctx, plugin.GetIconURI())
 	if err != nil {
-		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", res.Plugin.GetIconURI(), err)
+		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", plugin.GetIconURI(), err)
 	}
 
 	return &dataInfo{
-		iconURI: ptr.Of(res.Plugin.GetIconURI()),
+		iconURI: ptr.Of(plugin.GetIconURI()),
 		iconURL: iconURL,
-		desc:    ptr.Of(res.Plugin.GetDesc()),
+		desc:    ptr.Of(plugin.GetDesc()),
 	}, nil
 }
 
@@ -162,10 +159,6 @@ func (w *workflowPacker) GetProjectDefaultActions(ctx context.Context) []*common
 			Key:    common.ProjectResourceActionKey_UpdateDesc,
 			Enable: true,
 		},
-		{
-			Key:    common.ProjectResourceActionKey_SwitchToChatflow,
-			Enable: true,
-		},
 	}
 }
 
@@ -174,15 +167,14 @@ type knowledgePacker struct {
 }
 
 func (k *knowledgePacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
-	listResp, err := k.appContext.KnowledgeDomainSVC.ListKnowledge(ctx, &knowledge.ListKnowledgeRequest{IDs: []int64{k.resID}})
+	res, err := k.appContext.KnowledgeDomainSVC.GetKnowledgeByID(ctx, &knowledge.GetKnowledgeByIDRequest{
+		KnowledgeID: k.resID,
+	})
 	if err != nil {
 		return nil, err
 	}
-	if len(listResp.KnowledgeList) == 0 {
-		return nil, fmt.Errorf("knowledge not found by id: %d", k.resID)
-	}
 
-	kn := listResp.KnowledgeList[0]
+	kn := res.Knowledge
 
 	return &dataInfo{
 		iconURI: ptr.Of(kn.IconURI),
@@ -258,7 +250,7 @@ func (d *databasePacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	return &dataInfo{
 		iconURI: ptr.Of(listResp.Databases[0].IconURI),
 		iconURL: listResp.Databases[0].IconURL,
-		desc:    ptr.Of(listResp.Databases[0].Description),
+		desc:    ptr.Of(listResp.Databases[0].TableDesc),
 	}, nil
 }
 

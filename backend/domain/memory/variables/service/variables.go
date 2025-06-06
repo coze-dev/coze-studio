@@ -20,6 +20,8 @@ type Variables interface {
 	PublishMeta(ctx context.Context, variableMetaID int64, version string) (int64, error)
 
 	SetVariableInstance(ctx context.Context, e *entity.UserVariableMeta, items []*kvmemory.KVItem) ([]string, error)
-	GetVariableInstance(ctx context.Context, e *entity.UserVariableMeta, keywords []string, varChannel *project_memory.VariableChannel) ([]*kvmemory.KVItem, error)
+	GetVariableInstance(ctx context.Context, e *entity.UserVariableMeta, keywords []string) ([]*kvmemory.KVItem, error)
+	GetVariableChannelInstance(ctx context.Context, e *entity.UserVariableMeta, keywords []string, varChannel *project_memory.VariableChannel) ([]*kvmemory.KVItem, error)
 	DeleteVariableInstance(ctx context.Context, e *entity.UserVariableMeta, keywords []string) error
+	DeleteAllVariable(ctx context.Context, bizType project_memory.VariableConnector, bizID string) (err error)
 }

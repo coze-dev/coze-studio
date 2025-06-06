@@ -13,6 +13,7 @@ import (
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	contract "code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -152,7 +153,7 @@ func parseByPython(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 					continue
 				}
 				iterator := &pyPDFTableIterator{i: 0, rows: item.Table}
-				partDocs, err := parseByRowIterator(iterator, &contract.Config{
+				rawTableDocs, err := parseByRowIterator(iterator, &contract.Config{
 					FileExtension: contract.FileExtensionCSV,
 					ParsingStrategy: &contract.ParsingStrategy{
 						HeaderLine:    0,
@@ -164,7 +165,11 @@ func parseByPython(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 				if err != nil {
 					return nil, fmt.Errorf("[parseByPython] parse table failed, %w", err)
 				}
-				docs = append(docs, partDocs...)
+				fmtTableDocs, err := formatTablesInDocument(rawTableDocs)
+				if err != nil {
+					return nil, fmt.Errorf("[parseByPython] format table failed, %w", err)
+				}
+				docs = append(docs, fmtTableDocs...)
 			default:
 				return nil, fmt.Errorf("[parseByPython] invalid content type: %s", item.Type)
 			}
@@ -172,4 +177,76 @@ func parseByPython(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 
 		return docs, nil
 	}
+}
+
+func formatTablesInDocument(input []*schema.Document) (output []*schema.Document, err error) {
+	const (
+		maxSize              = 65535
+		tableStart, tableEnd = "<table>", "</table>"
+	)
+
+	var (
+		buffer   strings.Builder
+		firstDoc *schema.Document
+	)
+
+	endSize := len(tableEnd)
+	buffer.WriteString(tableStart)
+
+	push := func() {
+		newDoc := &schema.Document{
+			Content:  buffer.String() + tableEnd,
+			MetaData: map[string]any{},
+		}
+		for k, v := range firstDoc.MetaData {
+			if k == document.MetaDataKeyColumnData {
+				continue
+			}
+			newDoc.MetaData[k] = v
+		}
+		output = append(output, newDoc)
+		buffer.Reset()
+		buffer.WriteString(tableStart)
+	}
+
+	write := func(contents []string) {
+		row := fmt.Sprintf("<tr><td>%s</td></tr>", strings.Join(contents, "</td><td>"))
+		buffer.WriteString(row)
+		if buffer.Len()+endSize >= maxSize {
+			push()
+		}
+	}
+
+	for i := range input {
+		doc := input[i]
+
+		if i == 0 {
+			firstDoc = doc
+			cols, err := document.GetDocumentColumns(doc)
+			if err != nil {
+				return nil, fmt.Errorf("[formatTablesInDocument] invalid table columns, %w", err)
+			}
+			values := make([]string, 0, len(cols))
+			for _, col := range cols {
+				values = append(values, col.Name)
+			}
+			write(values)
+		}
+
+		data, err := document.GetDocumentColumnData(doc)
+		if err != nil {
+			return nil, fmt.Errorf("[formatTablesInDocument] invalid table data, %w", err)
+		}
+		values := make([]string, 0, len(data))
+		for _, col := range data {
+			values = append(values, col.GetNullableStringValue())
+		}
+		write(values)
+	}
+
+	if buffer.String() != tableStart {
+		push()
+	}
+
+	return
 }

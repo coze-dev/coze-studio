@@ -155,7 +155,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 				if err != nil {
 					_ = callbacks.OnError(ctx, err)
 				} else {
-					callbackOutput, err := s.ToSelectorCallbackOutput(out)
+					callbackOutput, err := s.toSelectorCallbackOutput(out)
 					if err != nil {
 						_ = callbacks.OnError(ctx, err)
 					} else {
@@ -164,7 +164,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 				}
 			}()
 
-			callbackInput, err := s.ToSelectorCallbackInput(in, sc)
+			callbackInput, err := s.toSelectorCallbackInput(in, sc)
 			if err != nil {
 				return -1, err
 			}
@@ -208,20 +208,56 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		}
 
 		i := func(ctx context.Context, in map[string]any, opts ...any) (out map[string]any, err error) {
-			newIn, err := s.variableAggregatorInputConverter(in)
-			if err != nil {
-				return nil, err
-			}
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					_ = callbacks.OnEnd(ctx, out)
+				}
+			}()
+
+			newIn := s.variableAggregatorInputConverter(in)
+			ctx = callbacks.OnStart(ctx, s.toVariableAggregatorCallbackInput(newIn, nil))
 			return va.Invoke(ctx, newIn)
 		}
 
 		i = postDecorateWO(i, s.outputValueFiller())
 
-		t := func(ctx context.Context, in *schema.StreamReader[map[string]any], opts ...any) (out *schema.StreamReader[map[string]any], err error) {
-			newIn, err := s.variableAggregatorStreamInputConverter(in)
+		t := func(ctx context.Context, in *schema.StreamReader[map[string]any], opts ...any) (
+			out *schema.StreamReader[map[string]any], err error) {
+			defer func() {
+				if err != nil {
+					_ = callbacks.OnError(ctx, err)
+				} else {
+					var dynamicStreamType map[string]nodes.FieldStreamType
+					e := compose.ProcessState(ctx, func(ctx context.Context, state *State) error {
+						var e1 error
+						dynamicStreamType, e1 = state.GetAllDynamicStreamTypes(s.Key)
+						return e1
+					})
+					if e != nil {
+						_ = callbacks.OnError(ctx, e)
+					} else {
+						outStreams := out.Copy(2)
+						_, notUsed := callbacks.OnEndWithStreamOutput(ctx, s.toVariableAggregatorStreamCallbackOutput(outStreams[0], dynamicStreamType))
+						notUsed.Close()
+						out = outStreams[1]
+					}
+				}
+			}()
+
+			newIn := s.variableAggregatorStreamInputConverter(in)
+
+			resolvedSources, err := nodes.ResolveStreamSources(ctx, conf.FullSources)
 			if err != nil {
 				return nil, err
 			}
+
+			copied := newIn.Copy(2)
+			newIn = copied[0]
+			var callbackSR *schema.StreamReader[map[string]any]
+			ctx, callbackSR = callbacks.OnStartWithStreamInput(ctx, s.toVariableAggregatorStreamCallbackInput(copied[1], resolvedSources))
+			callbackSR.Close()
 
 			groupToSkipped := map[string]map[int]bool{}
 
@@ -248,7 +284,9 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return va.Transform(ctx, newIn, groupToSkipped)
 		}
 
-		l, err := compose.AnyLambda(i, nil, nil, t, compose.WithLambdaType(string(entity.NodeTypeVariableAggregator)))
+		l, err := compose.AnyLambda(i, nil, nil, t,
+			compose.WithLambdaType(string(entity.NodeTypeVariableAggregator)),
+			compose.WithLambdaCallbackEnable(true))
 		if err != nil {
 			return nil, err
 		}
@@ -286,7 +324,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 					_ = callbacks.OnEnd(ctx, out)
 				}
 			}()
-			callbackInput, err := s.ToHttpRequesterCallbackInput(conf, in)
+			callbackInput, err := s.toHttpRequesterCallbackInput(conf, in)
 			if err != nil {
 				return nil, err
 			}
@@ -405,17 +443,16 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
-			if in == nil {
-				return inputR.Invoke(ctx, "")
+		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
+			var input string
+			if in != nil {
+				receivedData, ok := in[receiver.ReceivedDataKey]
+				if ok {
+					input = receivedData.(string)
+				}
 			}
 
-			receivedData, ok := in[receiver.ReceivedDataKey]
-			if !ok {
-				return inputR.Invoke(ctx, "")
-			}
-
-			return inputR.Invoke(ctx, receivedData.(string))
+			return inputR.Invoke(ctx, input)
 		}
 		i = postDecorate(i, s.outputValueFiller())
 		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeInputReceiver)))}, nil
@@ -562,7 +599,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			if err != nil {
 				return nil, err
 			}
-			callbackInput, err := s.ToDatabaseQueryCallbackInput(conf, conditionGroup)
+			callbackInput, err := s.toDatabaseQueryCallbackInput(conf, conditionGroup)
 			if err != nil {
 				return nil, err
 			}
@@ -592,7 +629,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 					_ = callbacks.OnEnd(ctx, out)
 				}
 			}()
-			callbackInput, err := s.ToDatabaseInsertCallbackInput(conf.DatabaseInfoID, in)
+			callbackInput, err := s.toDatabaseInsertCallbackInput(conf.DatabaseInfoID, in)
 			if err != nil {
 				return nil, err
 			}
@@ -625,7 +662,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			if err != nil {
 				return nil, err
 			}
-			callbackInput, err := s.ToDatabaseUpdateCallbackInput(conf.DatabaseInfoID, inventory)
+			callbackInput, err := s.toDatabaseUpdateCallbackInput(conf.DatabaseInfoID, inventory)
 			if err != nil {
 				return nil, err
 			}
@@ -658,7 +695,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			if err != nil {
 				return nil, err
 			}
-			callbackInput, err := s.ToDatabaseDeleteCallbackInput(conf.DatabaseInfoID, conditionGroup)
+			callbackInput, err := s.toDatabaseDeleteCallbackInput(conf.DatabaseInfoID, conditionGroup)
 			if err != nil {
 				return nil, err
 			}

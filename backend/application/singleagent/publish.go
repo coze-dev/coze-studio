@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
@@ -60,6 +60,7 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		publishAgentVariables,
 		publishAgentPlugins,
 		publishShortcutCommand,
+		publishDatabase,
 	}
 
 	for _, pubFn := range publishFns {
@@ -208,28 +209,10 @@ func publishAgentVariables(ctx context.Context, appContext *ServiceComponents, p
 }
 
 func publishAgentPlugins(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
-	_, err := appContext.PluginDomainSVC.PublishAgentTools(ctx, &service.PublishAgentToolsRequest{
-		AgentID: agent.AgentID,
-	})
+	_, err := appContext.PluginDomainSVC.PublishAgentTools(ctx, agent.AgentID)
 	if err != nil {
 		return nil, err
 	}
-
-	// existTools := make([]*bot_common.PluginInfo, 0, len(toolRes.VersionTools))
-	// for _, tl := range agent.Plugin {
-	// 	vs, ok := toolRes.VersionTools[tl.GetApiId()]
-	// 	if !ok {
-	// 		continue
-	// 	}
-	// 	existTools = append(existTools, &bot_common.PluginInfo{
-	// 		PluginId:     tl.PluginId,
-	// 		ApiId:        tl.ApiId,
-	// 		ApiName:      vs.ToolName,
-	// 		ApiVersionMs: vs.VersionMs,
-	// 	})
-	// }
-
-	// agent.Plugin = existTools
 
 	return agent, nil
 }
@@ -247,5 +230,15 @@ func publishShortcutCommand(ctx context.Context, appContext *ServiceComponents, 
 		return nil, err
 	}
 
+	return agent, nil
+}
+
+func publishDatabase(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
+	onlineResp, err := appContext.DatabaseDomainSVC.PublishDatabase(ctx, &database.PublishDatabaseRequest{AgentID: agent.AgentID})
+	if err != nil {
+		return nil, err
+	}
+
+	agent.Database = onlineResp.OnlineDatabases
 	return agent, nil
 }

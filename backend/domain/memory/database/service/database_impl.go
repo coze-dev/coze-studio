@@ -118,7 +118,7 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.Errorf("rollback failed, err=%v", e)
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -128,7 +128,7 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.Errorf("rollback failed, err=%v", e)
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -232,7 +232,7 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *UpdateDatabase
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.Errorf("rollback failed, err=%v", e)
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -242,7 +242,7 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *UpdateDatabase
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.Errorf("rollback failed, err=%v", e)
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -287,7 +287,7 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.Errorf("rollback failed, err=%v", e)
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -297,7 +297,7 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.Errorf("rollback failed, err=%v", e)
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -1886,4 +1886,125 @@ func (d databaseService) GetDraftDatabaseByOnlineID(ctx context.Context, req *Ge
 	return &GetDraftDatabaseByOnlineIDResponse{
 		Database: draftResp.Databases[0],
 	}, nil
+}
+
+// DeleteDatabaseByAppID delete all records and all physical tables by app id
+func (d databaseService) DeleteDatabaseByAppID(ctx context.Context, req *DeleteDatabaseByAppIDRequest) (*DeleteDatabaseByAppIDResponse, error) {
+	onlineDBInfos, err := d.listDatabasesByAppID(ctx, req.AppID, table.TableType_OnlineTable)
+	if err != nil {
+		return nil, err
+	}
+
+	draftDBInfos, err := d.listDatabasesByAppID(ctx, req.AppID, table.TableType_DraftTable)
+	if err != nil {
+		return nil, err
+	}
+
+	tx := query.Use(d.db).Begin()
+	if tx.Error != nil {
+		return nil, fmt.Errorf("start transaction failed, %v", tx.Error)
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			e := tx.Rollback()
+			if e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+
+			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
+			return
+		}
+
+		if err != nil {
+			e := tx.Rollback()
+			if e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+		}
+	}()
+
+	onlineIDs := make([]int64, 0, len(onlineDBInfos))
+	for _, db := range onlineDBInfos {
+		onlineIDs = append(onlineIDs, db.ID)
+	}
+
+	draftIDs := make([]int64, 0, len(draftDBInfos))
+	for _, db := range draftDBInfos {
+		draftIDs = append(draftIDs, db.ID)
+	}
+
+	if err = d.onlineDAO.BatchDeleteWithTX(ctx, tx, onlineIDs); err != nil {
+		return nil, err
+	}
+
+	if err = d.draftDAO.BatchDeleteWithTX(ctx, tx, draftIDs); err != nil {
+		return nil, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, fmt.Errorf("commit transaction failed: %v", err)
+	}
+
+	// delete draft and online physical table
+	onlinePhysicals := make([]string, 0, len(onlineDBInfos))
+	for _, db := range onlineDBInfos {
+		onlinePhysicals = append(onlinePhysicals, db.ActualTableName)
+	}
+
+	draftPhysicals := make([]string, 0, len(draftDBInfos))
+	for _, db := range draftDBInfos {
+		draftPhysicals = append(draftPhysicals, db.ActualTableName)
+	}
+
+	for _, physical := range onlinePhysicals {
+		_, err = d.rdb.DropTable(ctx, &rdb.DropTableRequest{
+			TableName: physical,
+		})
+		if err != nil {
+			logs.Errorf("drop online physical table failed: %v, table_name=%s", err, physical)
+		}
+	}
+	for _, physical := range draftPhysicals {
+		_, err = d.rdb.DropTable(ctx, &rdb.DropTableRequest{
+			TableName: physical,
+		})
+		if err != nil {
+			logs.Errorf("drop draft physical table failed: %v, table_name=%s", err, physical)
+		}
+	}
+
+	return &DeleteDatabaseByAppIDResponse{
+		DeletedDatabaseIDs: onlineIDs,
+	}, nil
+}
+
+func (d databaseService) listDatabasesByAppID(ctx context.Context, appID int64, tableType table.TableType) ([]*entity2.Database, error) {
+	const batchSize = 100
+	offset := 0
+	dbInfos := make([]*entity2.Database, 0)
+	for {
+		resp, err := d.ListDatabase(ctx, &ListDatabaseRequest{
+			AppID:     ptr.Of(appID),
+			TableType: tableType,
+			Limit:     batchSize,
+			Offset:    offset,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		for _, db := range resp.Databases {
+			dbInfos = append(dbInfos, db)
+		}
+
+		if !resp.HasMore {
+			break
+		}
+
+		offset += batchSize
+	}
+
+	return dbInfos, nil
 }

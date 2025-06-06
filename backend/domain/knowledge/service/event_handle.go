@@ -17,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/events"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
@@ -109,11 +110,7 @@ func (k *knowledgeSVC) indexDocuments(ctx context.Context, event *entity.Event) 
 			logs.CtxWarnf(ctx, "[indexDocuments] document not provided")
 			continue
 		}
-		e := &entity.Event{
-			Type:        entity.EventTypeIndexDocument,
-			Document:    doc,
-			KnowledgeID: doc.KnowledgeID,
-		}
+		e := events.NewIndexDocumentEvent(doc.KnowledgeID, doc)
 		msgData, err := sonic.Marshal(e)
 		if err != nil {
 			logs.CtxErrorf(ctx, "[indexDocuments] marshal event failed, err: %v", err)

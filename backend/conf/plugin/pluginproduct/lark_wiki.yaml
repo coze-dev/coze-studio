@@ -1,29 +1,3 @@
-components:
-  examples:
-    search_wiki:
-      value:
-        ReqExample:
-          page_size: 2
-          query: 测试文档
-          space_id: https://bytedance.larkoffice.com/wiki/settings/7045940265307078657
-        RespExample:
-          code: 0
-          data:
-            has_more: true
-            items:
-              - node_id: MH8XwUH6Mi54ZskP3rpc81RLnWe
-                obj_type: 8
-                space_id: "7045940265307078657"
-                title: 测试文档
-                url: https://bytedance.larkoffice.com/wiki/MH8XwUH6Mi54ZskP3rpc81RLnWe
-              - node_id: LPb5wfsWfipGJTk8FzTcgnqwnld
-                obj_type: 8
-                space_id: "7045940265307078657"
-                title: 测试文档
-                url: https://bytedance.larkoffice.com/wiki/LPb5wfsWfipGJTk8FzTcgnqwnld
-            page_token: 61f23dcb5683432b33a9b98ace5d9152c846bce1570016a7ea921b5d80
-          log_id: 202408160935386279C7CDA2D37C36F59B
-          msg: success
 info:
   description: 飞书知识库搜索Wiki、获取Wiki全部子节点列表
   title: 飞书知识库

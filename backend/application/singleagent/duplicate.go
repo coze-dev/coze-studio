@@ -2,15 +2,21 @@ package singleagent
 
 import (
 	"context"
+	"strconv"
 
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	intelligence "code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	shortcutCMDEntity "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
@@ -44,6 +50,7 @@ func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, r
 		duplicateVariables,
 		duplicatePlugin,
 		duplicateShortCommand,
+		duplicateDatabase,
 	}
 
 	for _, fn := range duplicateFns {
@@ -154,5 +161,71 @@ func duplicateShortCommand(ctx context.Context, appContext *ServiceComponents, o
 
 	newAgent.ShortcutCommand = shortcutCommandIDs
 
+	return newAgent, nil
+}
+
+func duplicateDatabase(ctx context.Context, appContext *ServiceComponents, oldAgent, newAgent *entity.SingleAgent) (*entity.SingleAgent, error) {
+	databases := oldAgent.Database
+	basics := make([]*model.DatabaseBasic, 0, len(databases))
+	for _, d := range databases {
+		tableID, err := strconv.ParseInt(d.GetTableId(), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		basics = append(basics, &model.DatabaseBasic{
+			ID:        tableID,
+			TableType: table.TableType_DraftTable,
+		})
+	}
+
+	res, err := appContext.DatabaseDomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{Basics: basics})
+	if err != nil {
+		return nil, err
+	}
+
+	duplicateDatabases := make([]*bot_common.Database, 0, len(databases))
+
+	for _, srcDB := range res.Databases {
+		srcDB.TableName += "_copy"
+		srcDB.CreatorID = newAgent.CreatorID
+		srcDB.SpaceID = newAgent.SpaceID
+		createDatabaseResp, err := appContext.DatabaseDomainSVC.CreateDatabase(ctx, &database.CreateDatabaseRequest{
+			Database: srcDB,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		draftResp, err := appContext.DatabaseDomainSVC.GetDraftDatabaseByOnlineID(ctx, &database.GetDraftDatabaseByOnlineIDRequest{
+			OnlineID: createDatabaseResp.Database.ID,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		draft := draftResp.Database
+		fields := make([]*bot_common.FieldItem, 0, len(draft.FieldList))
+		for _, field := range draft.FieldList {
+			fields = append(fields, &bot_common.FieldItem{
+				Name:         ptr.Of(field.Name),
+				Desc:         ptr.Of(field.Desc),
+				Type:         ptr.Of(bot_common.FieldItemType(field.Type)),
+				MustRequired: ptr.Of(field.MustRequired),
+				AlterId:      ptr.Of(field.AlterID),
+				Id:           ptr.Of(int64(0)),
+			})
+		}
+
+		duplicateDatabases = append(duplicateDatabases, &bot_common.Database{
+			TableId:   ptr.Of(strconv.FormatInt(draft.ID, 10)),
+			TableName: ptr.Of(draft.TableName),
+			TableDesc: ptr.Of(draft.TableDesc),
+			FieldList: fields,
+			RWMode:    ptr.Of(bot_common.BotTableRWMode(draft.RwMode)),
+		})
+	}
+
+	newAgent.Database = duplicateDatabases
 	return newAgent, nil
 }

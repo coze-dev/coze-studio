@@ -3,7 +3,7 @@ package builtin
 import (
 	"fmt"
 
-	"code.byted.org/flow/opencoze/backend/infra/contract/document/imageunderstand"
+	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -17,9 +17,9 @@ func NewManager(storage storage.Storage, ocr ocr.OCR) parser.Manager {
 }
 
 type manager struct {
-	ocr             ocr.OCR
-	storage         storage.Storage
-	imageUnderstand imageunderstand.ImageUnderstand
+	ocr     ocr.OCR
+	storage storage.Storage
+	model   chatmodel.BaseChatModel
 }
 
 func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
@@ -49,8 +49,8 @@ func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
 		pFn = parseJSON(config)
 	case parser.FileExtensionJsonMaps:
 		pFn = parseJSONMaps(config)
-	case parser.FileExtensionJPEG, parser.FileExtensionJPG, parser.FileExtensionPNG:
-		pFn = parseImage(config, m.imageUnderstand)
+	case parser.FileExtensionJPG, parser.FileExtensionJPEG, parser.FileExtensionPNG:
+		pFn = parseImage(config, m.model)
 	default:
 		return nil, fmt.Errorf("[Parse] document type not support, type=%s", config.FileExtension)
 	}

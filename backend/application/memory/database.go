@@ -127,7 +127,7 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 		Resource: &searchEntity.ResourceDocument{
 			ResType:      resCommon.ResType_Database,
 			ResID:        databaseRes.ID,
-			Name:         &databaseRes.Name,
+			Name:         &databaseRes.TableName,
 			APPID:        ptrAppID,
 			SpaceID:      &databaseRes.SpaceID,
 			OwnerID:      &databaseRes.CreatorID,
@@ -159,7 +159,7 @@ func (d *DatabaseApplicationService) UpdateDatabase(ctx context.Context, req *ta
 		Resource: &searchEntity.ResourceDocument{
 			ResType:      resCommon.ResType_Database,
 			ResID:        databaseRes.ID,
-			Name:         &databaseRes.Name,
+			Name:         &databaseRes.TableName,
 			UpdateTimeMS: ptr.Of(databaseRes.UpdatedAtMs),
 		},
 	})
@@ -738,6 +738,31 @@ func (d *DatabaseApplicationService) ValidateAccess(ctx context.Context, onlineD
 	if do.Databases[0].CreatorID != *uid {
 		logs.CtxErrorf(ctx, "user(%d) is not the creator(%d) of the database(%d)", *uid, do.Databases[0].CreatorID, onlineDatabaseID)
 		return errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("detail", "you are not the creator of the database"))
+	}
+
+	return nil
+}
+
+func (d *DatabaseApplicationService) DeleteDatabaseByAppID(ctx context.Context, appID int64) error {
+	resp, err := d.DomainSVC.DeleteDatabaseByAppID(ctx, &database.DeleteDatabaseByAppIDRequest{
+		AppID: appID,
+	})
+	if err != nil {
+		return err
+	}
+
+	deletedIDs := resp.DeletedDatabaseIDs
+	for _, deletedID := range deletedIDs {
+		err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+			OpType: searchEntity.Deleted,
+			Resource: &searchEntity.ResourceDocument{
+				ResType: resCommon.ResType_Database,
+				ResID:   deletedID,
+			},
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

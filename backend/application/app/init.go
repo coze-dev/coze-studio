@@ -6,6 +6,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/domain/app/service"
 	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
+	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -18,9 +19,9 @@ type ServiceComponents struct {
 	OSS             storage.Storage
 	ProjectEventBus search.ProjectEventBus
 
-	UserSVC      user.User
-	SearchSVC    search.Search
-	ConnectorSVC connector.Connector
+	UserSVC            user.User
+	ConnectorSVC       connector.Connector
+	VariablesDomainSVC variables.Variables
 }
 
 func InitService(components *ServiceComponents) (*APPApplicationService, error) {
@@ -43,9 +44,9 @@ func InitService(components *ServiceComponents) (*APPApplicationService, error) 
 	APPApplicationSVC.oss = components.OSS
 	APPApplicationSVC.projectEventBus = components.ProjectEventBus
 
-	APPApplicationSVC.searchSVC = components.SearchSVC
 	APPApplicationSVC.userSVC = components.UserSVC
 	APPApplicationSVC.connectorSVC = components.ConnectorSVC
+	APPApplicationSVC.VariablesDomainSVC = components.VariablesDomainSVC
 
 	return APPApplicationSVC, nil
 }

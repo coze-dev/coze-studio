@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"reflect"
 	"slices"
 	"strconv"
 	"strings"
@@ -15,11 +16,14 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	callbacks2 "github.com/cloudwego/eino/utils/callbacks"
+	"golang.org/x/exp/maps"
 
+	workflow2 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -642,12 +646,50 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		e.Answer = output.(map[string]any)["output"].(string)
 	} else if c.NodeType == entity.NodeTypeExit && *c.TerminatePlan == vo.UseAnswerContent {
 		e.Answer = output.(map[string]any)["output"].(string)
+	} else if c.NodeType == entity.NodeTypeVariableAggregator {
+		var groupChoices map[string]int
+		_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.DynamicStreamContainer) error {
+			groupChoices = state.GetDynamicChoice(n.nodeKey)
+			return nil
+		})
+		varSelect := make([]int, len(groupChoices))
+		keys := maps.Keys(groupChoices)
+		slices.Sort(keys)
+		for i, key := range keys {
+			varSelect[i] = groupChoices[key]
+		}
+		e.extra.ResponseExtra = &entity.ResponseExtra{
+			VariableSelect: varSelect,
+		}
 	}
 
 	if c.SubWorkflowCtx == nil {
 		e.extra.CurrentSubExecuteID = c.RootExecuteID
 	} else {
 		e.extra.CurrentSubExecuteID = c.SubExecuteID
+	}
+
+	if entity.NodeType(info.Type) == entity.NodeTypeExit {
+		terminatePlan := n.terminatePlan
+		if terminatePlan == nil {
+			terminatePlan = ptr.Of(vo.ReturnVariables)
+		}
+		if *terminatePlan == vo.UseAnswerContent {
+			e.extra = &entity.NodeExtra{
+				ResponseExtra: &entity.ResponseExtra{
+					TerminalPlan: workflow2.TerminatePlanType_USESETTING,
+				},
+			}
+			e.outputExtractor = func(o map[string]any) string {
+				return o["output"].(string)
+			}
+		}
+	} else if entity.NodeType(info.Type) == entity.NodeTypeOutputEmitter {
+		e.outputExtractor = func(o map[string]any) string {
+			return o["output"].(string)
+		}
+	} else if entity.NodeType(info.Type) == entity.NodeTypeInputReceiver {
+		e.Input = output.(map[string]any)
 	}
 
 	n.ch <- e
@@ -673,6 +715,33 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 			logs.Errorf("failed to process state: %v", err)
 		}
 
+		return ctx
+	}
+
+	if errors.Is(err, context.Canceled) {
+		if c == nil || c.NodeCtx == nil {
+			return ctx
+		}
+
+		e := &Event{
+			Type:     NodeError,
+			Context:  c,
+			Duration: time.Since(time.UnixMilli(c.StartTime)),
+			Err: &ErrorInfo{
+				Level: LevelCancel,
+				Err:   err,
+			},
+		}
+
+		if c.TokenCollector != nil {
+			usage := c.TokenCollector.wait()
+			e.Token = &TokenInfo{
+				InputToken:  int64(usage.PromptTokens),
+				OutputToken: int64(usage.CompletionTokens),
+				TotalToken:  int64(usage.TotalTokens),
+			}
+		}
+		n.ch <- e
 		return ctx
 	}
 
@@ -736,6 +805,7 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 	go func() {
 		defer input.Close()
 		fullInput := make(map[string]any)
+		var previous map[string]any
 		for {
 			chunk, e := input.Recv()
 			if e != nil {
@@ -744,13 +814,24 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 				}
 
 				logs.Errorf("node OnStartWithStreamInput failed to receive stream output: %v", e)
-				_ = n.OnError(ctx, info, e)
+				_ = n.OnError(newCtx, info, e)
 				return
 			}
+			previous = fullInput
 			fullInput, e = nodes.ConcatTwoMaps(fullInput, chunk.(map[string]any))
 			if e != nil {
 				logs.Errorf("failed to concat two maps: %v", e)
 				return
+			}
+
+			if info.Type == string(entity.NodeTypeVariableAggregator) {
+				if !reflect.DeepEqual(fullInput, previous) {
+					n.ch <- &Event{
+						Type:    NodeStreamingInput,
+						Context: c,
+						Input:   fullInput,
+					}
+				}
 			}
 		}
 		n.ch <- &Event{
@@ -772,7 +853,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 	c := GetExeCtx(ctx)
 
 	switch t := entity.NodeType(info.Type); t {
-	case entity.NodeTypeLLM, entity.NodeTypeVariableAggregator:
+	case entity.NodeTypeLLM:
 		go func() {
 			defer output.Close()
 			fullOutput := make(map[string]any)
@@ -819,32 +900,105 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				e.extra.CurrentSubExecuteID = c.SubExecuteID
 			}
 
-			if entity.NodeType(info.Type) == entity.NodeTypeLLM { // TODO: hard-coded string
-				if _, ok := fullOutput["output"]; ok {
-					if len(fullOutput) == 1 {
+			// TODO: hard-coded string
+			if _, ok := fullOutput["output"]; ok {
+				if len(fullOutput) == 1 {
+					e.outputExtractor = func(o map[string]any) string {
+						if o["output"] == nil {
+							return ""
+						}
+						return o["output"].(string)
+					}
+				} else if len(fullOutput) == 2 {
+					if reasoning, ok := fullOutput["reasoning_content"]; ok {
 						e.outputExtractor = func(o map[string]any) string {
 							if o["output"] == nil {
 								return ""
 							}
 							return o["output"].(string)
 						}
-					} else if len(fullOutput) == 2 {
-						if reasoning, ok := fullOutput["reasoning_content"]; ok {
-							e.outputExtractor = func(o map[string]any) string {
-								if o["output"] == nil {
-									return ""
-								}
-								return o["output"].(string)
-							}
 
-							if reasoning != nil {
-								e.extra.ResponseExtra = &entity.ResponseExtra{
-									ReasoningContent: fullOutput["reasoning_content"].(string),
-								}
+						if reasoning != nil {
+							e.extra.ResponseExtra = &entity.ResponseExtra{
+								ReasoningContent: fullOutput["reasoning_content"].(string),
 							}
 						}
 					}
 				}
+			}
+
+			n.ch <- e
+		}()
+	case entity.NodeTypeVariableAggregator:
+		go func() {
+			defer output.Close()
+
+			extra := &entity.NodeExtra{}
+			if c.SubWorkflowCtx == nil {
+				extra.CurrentSubExecuteID = c.RootExecuteID
+			} else {
+				extra.CurrentSubExecuteID = c.SubExecuteID
+			}
+
+			var groupChoices map[string]int
+			_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.DynamicStreamContainer) error {
+				groupChoices = state.GetDynamicChoice(n.nodeKey)
+				return nil
+			})
+			varSelect := make([]int, len(groupChoices))
+			keys := maps.Keys(groupChoices)
+			slices.Sort(keys)
+			for i, key := range keys {
+				varSelect[i] = groupChoices[key]
+			}
+			extra.ResponseExtra = &entity.ResponseExtra{
+				VariableSelect: varSelect,
+			}
+
+			fullOutput := make(map[string]any)
+			var (
+				previous map[string]any
+				first    = true
+			)
+			for {
+				chunk, e := output.Recv()
+				if e != nil {
+					if e == io.EOF {
+						break
+					}
+
+					logs.Errorf("node OnEndWithStreamOutput failed to receive stream output: %v", e)
+					_ = n.OnError(ctx, info, e)
+					return
+				}
+				previous = fullOutput
+				fullOutput, e = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
+				if e != nil {
+					logs.Errorf("failed to concat two maps: %v", e)
+					_ = n.OnError(ctx, info, e)
+					return
+				}
+
+				if !reflect.DeepEqual(fullOutput, previous) {
+					deltaEvent := &Event{
+						Type:    NodeStreamingOutput,
+						Context: c,
+						Output:  fullOutput,
+					}
+					if first {
+						deltaEvent.extra = extra
+						first = false
+					}
+					n.ch <- deltaEvent
+				}
+			}
+
+			e := &Event{
+				Type:      NodeEndStreaming,
+				Context:   c,
+				Output:    fullOutput,
+				RawOutput: fullOutput,
+				Duration:  time.Since(time.UnixMilli(c.StartTime)),
 			}
 
 			n.ch <- e
@@ -909,13 +1063,32 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				if delta, ok := chunk.(map[string]any)["output"]; ok {
 					if entity.NodeType(info.Type) == entity.NodeTypeOutputEmitter {
 						deltaEvent.Answer = strings.TrimSuffix(delta.(string), nodes.KeyIsFinished)
+						deltaEvent.outputExtractor = func(o map[string]any) string {
+							return o["output"].(string)
+						}
 					} else if n.terminatePlan != nil && *n.terminatePlan == vo.UseAnswerContent {
 						deltaEvent.Answer = strings.TrimSuffix(delta.(string), nodes.KeyIsFinished)
+						deltaEvent.outputExtractor = func(o map[string]any) string {
+							return o["output"].(string)
+						}
 					}
 				}
 
 				if firstEvent == nil { // prioritize sending the first event asap.
 					firstEvent = deltaEvent
+					if t == entity.NodeTypeExit {
+						terminatePlan := n.terminatePlan
+						if terminatePlan == nil {
+							terminatePlan = ptr.Of(vo.ReturnVariables)
+						}
+						if *terminatePlan == vo.UseAnswerContent {
+							firstEvent.extra = &entity.NodeExtra{
+								ResponseExtra: &entity.ResponseExtra{
+									TerminalPlan: workflow2.TerminatePlanType_USESETTING,
+								},
+							}
+						}
+					}
 					n.ch <- firstEvent
 				} else {
 					secondPreviousEvent = previousEvent
@@ -959,6 +1132,18 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				e.extra.CurrentSubExecuteID = c.RootExecuteID
 			} else {
 				e.extra.CurrentSubExecuteID = c.SubExecuteID
+			}
+
+			if t == entity.NodeTypeExit {
+				terminatePlan := n.terminatePlan
+				if terminatePlan == nil {
+					terminatePlan = ptr.Of(vo.ReturnVariables)
+				}
+				if *terminatePlan == vo.UseAnswerContent {
+					e.extra.ResponseExtra = &entity.ResponseExtra{
+						TerminalPlan: workflow2.TerminatePlanType_USESETTING,
+					}
+				}
 			}
 
 			n.ch <- e

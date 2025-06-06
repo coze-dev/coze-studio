@@ -39,30 +39,28 @@ func NewAPPRepo(components *APPRepoComponents) AppRepository {
 	}
 }
 
-func (a *appRepoImpl) CreateDraftAPP(ctx context.Context, req *CreateDraftAPPRequest) (resp *CreateDraftAPPResponse, err error) {
-	appID, err := a.appDraftDAO.Create(ctx, req.APP)
+func (a *appRepoImpl) CreateDraftAPP(ctx context.Context, app *entity.APP) (appID int64, err error) {
+	appID, err = a.appDraftDAO.Create(ctx, app)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	resp = &CreateDraftAPPResponse{
-		APPID: appID,
-	}
-	return resp, nil
+
+	return appID, nil
 }
 
-func (a *appRepoImpl) GetDraftAPP(ctx context.Context, req *GetDraftAPPRequest) (app *entity.APP, exist bool, err error) {
-	return a.appDraftDAO.Get(ctx, req.APPID)
+func (a *appRepoImpl) GetDraftAPP(ctx context.Context, appID int64) (app *entity.APP, exist bool, err error) {
+	return a.appDraftDAO.Get(ctx, appID)
 }
 
-func (a *appRepoImpl) CheckDraftAPPExist(ctx context.Context, req *CheckDraftAPPExistRequest) (exist bool, err error) {
-	return a.appDraftDAO.CheckExist(ctx, req.APPID)
+func (a *appRepoImpl) CheckDraftAPPExist(ctx context.Context, appID int64) (exist bool, err error) {
+	return a.appDraftDAO.CheckExist(ctx, appID)
 }
 
-func (a *appRepoImpl) DeleteDraftAPP(ctx context.Context, req *DeleteDraftAPPRequest) (err error) {
+func (a *appRepoImpl) DeleteDraftAPP(ctx context.Context, appID int64) (err error) {
 	table := a.query.AppDraft
 
 	_, err = table.WithContext(ctx).
-		Where(table.ID.Eq(req.APPID)).
+		Where(table.ID.Eq(appID)).
 		Delete()
 	if err != nil {
 		return err
@@ -71,51 +69,43 @@ func (a *appRepoImpl) DeleteDraftAPP(ctx context.Context, req *DeleteDraftAPPReq
 	return nil
 }
 
-func (a *appRepoImpl) UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPPRequest) (err error) {
-	return a.appDraftDAO.Update(ctx, req.APP)
+func (a *appRepoImpl) UpdateDraftAPP(ctx context.Context, app *entity.APP) (err error) {
+	return a.appDraftDAO.Update(ctx, app)
 }
 
-func (a *appRepoImpl) GetPublishRecord(ctx context.Context, req *GetPublishRecordRequest) (resp *GetPublishRecordResponse, err error) {
-	var (
-		app   *entity.APP
-		exist bool
-	)
+func (a *appRepoImpl) GetPublishRecord(ctx context.Context, req *GetPublishRecordRequest) (record *entity.PublishRecord, exist bool, err error) {
+	var app *entity.APP
 	if req.RecordID != nil {
 		app, exist, err = a.releaseRecordDAO.GetReleaseRecordWithID(ctx, *req.RecordID)
 	} else {
 		app, exist, err = a.releaseRecordDAO.GetLatestReleaseRecord(ctx, req.APPID)
 	}
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	if !exist {
-		return &GetPublishRecordResponse{
-			Published: false,
-		}, nil
+		return nil, false, nil
 	}
 
 	publishRecords, err := a.connectorRefDAO.GetAllConnectorRecords(ctx, app.GetPublishRecordID())
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
-	resp = &GetPublishRecordResponse{
-		Published: true,
-		Record: &entity.PublishRecord{
-			APP:                     app,
-			ConnectorPublishRecords: publishRecords,
-		},
+	record = &entity.PublishRecord{
+		APP:                     app,
+		ConnectorPublishRecords: publishRecords,
 	}
 
-	return resp, nil
+	return record, true, nil
 }
 
-func (a *appRepoImpl) CheckAPPVersionExist(ctx context.Context, req *GetVersionAPPRequest) (exist bool, err error) {
-	_, exist, err = a.releaseRecordDAO.GetReleaseRecordWithVersion(ctx, req.APPID, req.Version)
+func (a *appRepoImpl) CheckAPPVersionExist(ctx context.Context, appID int64, version string) (exist bool, err error) {
+	_, exist, err = a.releaseRecordDAO.GetReleaseRecordWithVersion(ctx, appID, version)
 	return exist, err
 }
 
-func (a *appRepoImpl) CreateAPPPublishRecord(ctx context.Context, req *CreateAPPPublishRecordRequest) (recordID int64, err error) {
+func (a *appRepoImpl) CreateAPPPublishRecord(ctx context.Context, record *entity.PublishRecord) (recordID int64, err error) {
 	tx := a.query.Begin()
 	if tx.Error != nil {
 		return 0, tx.Error
@@ -136,12 +126,12 @@ func (a *appRepoImpl) CreateAPPPublishRecord(ctx context.Context, req *CreateAPP
 		}
 	}()
 
-	recordID, err = a.releaseRecordDAO.CreateWithTX(ctx, tx, req.PublishRecord.APP)
+	recordID, err = a.releaseRecordDAO.CreateWithTX(ctx, tx, record.APP)
 	if err != nil {
 		return 0, err
 	}
 
-	err = a.connectorRefDAO.BatchCreateWithTX(ctx, tx, recordID, req.PublishRecord.ConnectorPublishRecords)
+	err = a.connectorRefDAO.BatchCreateWithTX(ctx, tx, recordID, record.ConnectorPublishRecords)
 	if err != nil {
 		return 0, err
 	}
@@ -162,7 +152,7 @@ func (a *appRepoImpl) UpdateConnectorPublishStatus(ctx context.Context, recordID
 	return a.connectorRefDAO.UpdatePublishStatus(ctx, recordID, status)
 }
 
-func (a *appRepoImpl) GetAPPAllPublishRecords(ctx context.Context, appID int64, opts ...APPSelectedOptions) (resp *GetAPPAllPublishRecordsResponse, err error) {
+func (a *appRepoImpl) GetAPPAllPublishRecords(ctx context.Context, appID int64, opts ...APPSelectedOptions) (records []*entity.PublishRecord, err error) {
 	var opt *dal.APPSelectedOption
 	for _, o := range opts {
 		o(opt)
@@ -172,8 +162,6 @@ func (a *appRepoImpl) GetAPPAllPublishRecords(ctx context.Context, appID int64, 
 	if err != nil {
 		return nil, err
 	}
-
-	appPublishRecords := make([]*entity.PublishRecord, 0, len(apps))
 
 	tasks := taskgroup.NewTaskGroup(ctx, 5)
 	lock := sync.Mutex{}
@@ -185,7 +173,7 @@ func (a *appRepoImpl) GetAPPAllPublishRecords(ctx context.Context, appID int64, 
 			}
 
 			lock.Lock()
-			appPublishRecords = append(appPublishRecords, &entity.PublishRecord{
+			records = append(records, &entity.PublishRecord{
 				APP:                     r,
 				ConnectorPublishRecords: connectorPublishRecords,
 			})
@@ -200,9 +188,5 @@ func (a *appRepoImpl) GetAPPAllPublishRecords(ctx context.Context, appID int64, 
 		return nil, err
 	}
 
-	resp = &GetAPPAllPublishRecordsResponse{
-		Records: appPublishRecords,
-	}
-
-	return resp, nil
+	return records, nil
 }

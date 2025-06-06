@@ -35,6 +35,7 @@ type DraftDAO interface {
 	CreateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database, draftID, onlineID int64, physicalTableName string) (*entity.Database, error)
 	UpdateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database) (*entity.Database, error)
 	DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int64) error
+	BatchDeleteWithTX(ctx context.Context, tx *query.QueryTx, ids []int64) error
 }
 
 func NewOnlineDatabaseDAO(db *gorm.DB, idGen idgen.IDGenerator) OnlineDAO {
@@ -49,4 +50,5 @@ type OnlineDAO interface {
 	UpdateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database) (*entity.Database, error)
 	CreateWithTX(ctx context.Context, tx *query.QueryTx, database *entity.Database, draftID, onlineID int64, physicalTableName string) (*entity.Database, error)
 	DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int64) error
+	BatchDeleteWithTX(ctx context.Context, tx *query.QueryTx, ids []int64) error
 }

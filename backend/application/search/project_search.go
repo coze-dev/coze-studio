@@ -44,6 +44,17 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 		return nil, err
 	}
 
+	if len(searchResp.Data) == 0 {
+		return &intelligence.GetDraftIntelligenceListResponse{
+			Data: &intelligence.DraftIntelligenceListData{
+				Intelligences: make([]*intelligence.IntelligenceData, 0),
+				Total:         0,
+				HasMore:       false,
+				NextCursorID:  "",
+			},
+		}, nil
+	}
+
 	tasks := taskgroup.NewUninterruptibleTaskGroup(ctx, len(searchResp.Data))
 	lock := sync.Mutex{}
 	intelligenceDataList := make([]*intelligence.IntelligenceData, 0, len(searchResp.Data))
@@ -337,10 +348,32 @@ func (s *SearchApplicationService) packIntelligenceData(ctx context.Context, doc
 
 	intelligenceData.OwnerInfo = packer.GetUserInfo(ctx, doc.GetOwnerID())
 	intelligenceData.LatestAuditInfo = &common.AuditInfo{}
-	intelligenceData.FavoriteInfo = packer.GetFavoriteInfo(ctx)
-	intelligenceData.OtherInfo = packer.GetOtherInfo(ctx)
+	intelligenceData.FavoriteInfo = s.buildProjectFavoriteInfo(doc)
+	intelligenceData.OtherInfo = s.buildProjectOtherInfo(doc)
 
 	return intelligenceData, nil
+}
+
+func (s *SearchApplicationService) buildProjectFavoriteInfo(doc *searchEntity.ProjectDocument) *intelligence.FavoriteInfo {
+	isFav := doc.GetIsFav()
+	favTime := doc.GetFavTime()
+
+	return &intelligence.FavoriteInfo{
+		IsFav:   isFav,
+		FavTime: conv.Int64ToStr(favTime / 1000),
+	}
+}
+
+func (s *SearchApplicationService) buildProjectOtherInfo(doc *searchEntity.ProjectDocument) *intelligence.OtherInfo {
+	otherInfo := &intelligence.OtherInfo{
+		BotMode:          intelligence.BotMode_SingleMode,
+		RecentlyOpenTime: conv.Int64ToStr(doc.GetRecentlyOpenTime() / 1000),
+	}
+	if doc.Type == common.IntelligenceType_Project {
+		otherInfo.BotMode = intelligence.BotMode_WorkflowMode
+	}
+
+	return otherInfo
 }
 
 func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceListRequest) *searchEntity.SearchProjectsRequest {
@@ -359,6 +392,7 @@ func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceList
 
 	searchReq := &searchEntity.SearchProjectsRequest{
 		SpaceID:        req.GetSpaceID(),
+		Name:           req.GetName(),
 		OwnerID:        0,
 		Limit:          req.GetSize(),
 		Cursor:         req.GetCursorID(),

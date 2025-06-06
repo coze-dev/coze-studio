@@ -49,17 +49,13 @@ func NewPluginRepo(components *PluginRepoComponents) PluginRepository {
 	}
 }
 
-func (p *pluginRepoImpl) CreateDraftPlugin(ctx context.Context, req *CreateDraftPluginRequest) (resp *CreateDraftPluginResponse, err error) {
-	pluginID, err := p.pluginDraftDAO.Create(ctx, req.Plugin)
+func (p *pluginRepoImpl) CreateDraftPlugin(ctx context.Context, plugin *entity.PluginInfo) (pluginID int64, err error) {
+	pluginID, err = p.pluginDraftDAO.Create(ctx, plugin)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	resp = &CreateDraftPluginResponse{
-		PluginID: pluginID,
-	}
-
-	return resp, nil
+	return pluginID, nil
 }
 
 func (p *pluginRepoImpl) GetDraftPlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {
@@ -78,7 +74,7 @@ func (p *pluginRepoImpl) MGetDraftPlugins(ctx context.Context, pluginIDs []int64
 }
 
 func (p *pluginRepoImpl) GetAPPAllDraftPlugins(ctx context.Context, appID int64) (plugins []*entity.PluginInfo, err error) {
-	return p.pluginDraftDAO.GetAPPAllPlugins(ctx, appID)
+	return p.pluginDraftDAO.GetAPPAllPlugins(ctx, appID, nil)
 }
 
 func (p *pluginRepoImpl) ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error) {
@@ -440,23 +436,80 @@ func (p *pluginRepoImpl) DeleteDraftPlugin(ctx context.Context, pluginID int64) 
 	if err != nil {
 		return err
 	}
-
 	err = p.pluginDAO.DeleteWithTX(ctx, tx, pluginID)
 	if err != nil {
 		return err
 	}
-
 	err = p.toolDraftDAO.DeleteAllWithTX(ctx, tx, pluginID)
 	if err != nil {
 		return err
 	}
-
 	err = p.toolDAO.DeleteAllWithTX(ctx, tx, pluginID)
 	if err != nil {
 		return err
 	}
 
 	return tx.Commit()
+}
+
+func (p *pluginRepoImpl) DeleteAPPAllPlugins(ctx context.Context, appID int64) (pluginIDs []int64, err error) {
+	opt := &dal.PluginSelectedOption{
+		PluginID: true,
+	}
+	plugins, err := p.pluginDraftDAO.GetAPPAllPlugins(ctx, appID, opt)
+	if err != nil {
+		return nil, err
+	}
+
+	pluginIDs = slices.Transform(plugins, func(plugin *entity.PluginInfo) int64 {
+		return plugin.ID
+	})
+
+	tx := p.query.Begin()
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			if e := tx.Rollback(); e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
+			return
+		}
+		if err != nil {
+			if e := tx.Rollback(); e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+		}
+	}()
+
+	for _, id := range pluginIDs {
+		err = p.pluginDraftDAO.DeleteWithTX(ctx, tx, id)
+		if err != nil {
+			return nil, err
+		}
+		err = p.pluginDAO.DeleteWithTX(ctx, tx, id)
+		if err != nil {
+			return nil, err
+		}
+		err = p.toolDraftDAO.DeleteAllWithTX(ctx, tx, id)
+		if err != nil {
+			return nil, err
+		}
+		err = p.toolDAO.DeleteAllWithTX(ctx, tx, id)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	return pluginIDs, nil
 }
 
 func (p *pluginRepoImpl) UpdateDraftPluginWithCode(ctx context.Context, req *UpdatePluginDraftWithCode) (err error) {

@@ -7,14 +7,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/spf13/cast"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
@@ -86,10 +84,6 @@ type IntentDetector struct {
 	runner compose.Runnable[map[string]any, *schema.Message]
 }
 
-func defaultFastModeChatModel() model.ChatModel {
-	return nil
-}
-
 func NewIntentDetector(ctx context.Context, cfg *Config) (*IntentDetector, error) {
 	if cfg == nil {
 		return nil, errors.New("cfg is required")
@@ -156,13 +150,6 @@ func (id *IntentDetector) parseToNodeOut(content string) (map[string]any, error)
 }
 
 func (id *IntentDetector) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
-	tokenHandler := execute.GetTokenCallbackHandler() // TODO: migrate them to designate_options
-
-	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
-		Component: compose.ComponentOfChain,
-		Name:      "intent_detector",
-	}, tokenHandler)
-
 	query, ok := input["query"]
 	if !ok {
 		return nil, errors.New("input query field required")

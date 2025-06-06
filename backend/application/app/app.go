@@ -11,18 +11,23 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	projectAPI "code.byted.org/flow/opencoze/backend/api/model/project"
+	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	publishAPI "code.byted.org/flow/opencoze/backend/api/model/publish"
-	resource "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	"code.byted.org/flow/opencoze/backend/application/memory"
+	"code.byted.org/flow/opencoze/backend/application/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/domain/app/service"
 	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
+	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
@@ -38,9 +43,11 @@ type APPApplicationService struct {
 	oss             storage.Storage
 	projectEventBus search.ProjectEventBus
 
-	userSVC      user.User
-	searchSVC    search.Search
-	connectorSVC connector.Connector
+	userSVC            user.User
+	searchSVC          search.Search
+	workflowSVC        workflow.Service
+	connectorSVC       connector.Connector
+	VariablesDomainSVC variables.Variables
 }
 
 func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *projectAPI.DraftProjectCreateRequest) (resp *projectAPI.DraftProjectCreateResponse, err error) {
@@ -49,7 +56,7 @@ func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *pro
 		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	res, err := a.DomainSVC.CreateDraftAPP(ctx, &service.CreateDraftAPPRequest{
+	appID, err := a.DomainSVC.CreateDraftAPP(ctx, &service.CreateDraftAPPRequest{
 		SpaceID: req.SpaceID,
 		OwnerID: *userID,
 		IconURI: req.IconURI,
@@ -65,7 +72,7 @@ func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *pro
 		Project: &searchEntity.ProjectDocument{
 			Status:  common.IntelligenceStatus_Using,
 			Type:    common.IntelligenceType_Project,
-			ID:      res.APPID,
+			ID:      appID,
 			SpaceID: &req.SpaceID,
 			OwnerID: userID,
 			Name:    &req.Name,
@@ -77,7 +84,7 @@ func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *pro
 
 	resp = &projectAPI.DraftProjectCreateResponse{
 		Data: &projectAPI.DraftProjectCreateData{
-			ProjectID: res.APPID,
+			ProjectID: appID,
 		},
 	}
 
@@ -85,38 +92,36 @@ func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *pro
 }
 
 func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, req *intelligenceAPI.GetDraftIntelligenceInfoRequest) (resp *intelligenceAPI.GetDraftIntelligenceInfoResponse, err error) {
-	res, err := a.DomainSVC.GetDraftAPP(ctx, &service.GetDraftAPPRequest{
-		APPID: req.IntelligenceID,
-	})
+	app, err := a.DomainSVC.GetDraftAPP(ctx, req.IntelligenceID)
 	if err != nil {
 		return nil, err
 	}
 
-	iconURL, err := a.oss.GetObjectUrl(ctx, res.APP.GetIconURI())
+	iconURL, err := a.oss.GetObjectUrl(ctx, app.GetIconURI())
 	if err != nil {
-		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", res.APP.GetIconURI(), err)
+		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", app.GetIconURI(), err)
 	}
 
 	basicInfo := &common.IntelligenceBasicInfo{
-		ID:          res.APP.ID,
-		SpaceID:     res.APP.SpaceID,
-		OwnerID:     res.APP.OwnerID,
-		Name:        res.APP.GetName(),
-		Description: res.APP.GetDesc(),
-		IconURI:     res.APP.GetIconURI(),
+		ID:          app.ID,
+		SpaceID:     app.SpaceID,
+		OwnerID:     app.OwnerID,
+		Name:        app.GetName(),
+		Description: app.GetDesc(),
+		IconURI:     app.GetIconURI(),
 		IconURL:     iconURL,
-		CreateTime:  res.APP.CreatedAtMS / 1000,
-		UpdateTime:  res.APP.UpdatedAtMS / 1000,
-		PublishTime: res.APP.GetPublishedAtMS() / 1000,
+		CreateTime:  app.CreatedAtMS / 1000,
+		UpdateTime:  app.UpdatedAtMS / 1000,
+		PublishTime: app.GetPublishedAtMS() / 1000,
 		Status:      common.IntelligenceStatus_Using, // TODO(@maronghong): 完善状态
 	}
 
 	publishRecord := &intelligenceAPI.IntelligencePublishInfo{
-		HasPublished: res.APP.Published(),
-		PublishTime:  strconv.FormatInt(res.APP.GetPublishedAtMS()/1000, 10),
+		HasPublished: app.Published(),
+		PublishTime:  strconv.FormatInt(app.GetPublishedAtMS()/1000, 10),
 	}
 
-	ui, err := a.userSVC.GetUserInfo(ctx, res.APP.OwnerID)
+	ui, err := a.userSVC.GetUserInfo(ctx, app.OwnerID)
 	if err != nil {
 		return nil, err
 	}
@@ -140,9 +145,7 @@ func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, re
 }
 
 func (a *APPApplicationService) DraftProjectDelete(ctx context.Context, req *projectAPI.DraftProjectDeleteRequest) (resp *projectAPI.DraftProjectDeleteResponse, err error) {
-	err = a.DomainSVC.DeleteDraftAPP(ctx, &service.DeleteDraftAPPRequest{
-		APPID: req.ProjectID,
-	})
+	err = a.DomainSVC.DeleteDraftAPP(ctx, req.ProjectID)
 	if err != nil {
 		return nil, err
 	}
@@ -154,10 +157,40 @@ func (a *APPApplicationService) DraftProjectDelete(ctx context.Context, req *pro
 			Type: common.IntelligenceType_Project,
 		},
 	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish project event failed, id=%d, err=%v", req.ProjectID, err)
+	}
+
+	err = a.deleteAPPResources(ctx, req.ProjectID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "delete app resources failed, id=%d, err=%v", req.ProjectID, err)
+	}
 
 	resp = &projectAPI.DraftProjectDeleteResponse{}
 
 	return resp, nil
+}
+
+func (a *APPApplicationService) deleteAPPResources(ctx context.Context, appID int64) (err error) {
+	err = plugin.PluginApplicationSVC.DeleteAPPAllPlugins(ctx, appID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "delete app plugins failed, err=%v", err)
+	}
+
+	err = memory.DatabaseApplicationSVC.DeleteDatabaseByAppID(ctx, appID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "delete app databases failed, err=%v", err)
+	}
+
+	err = a.VariablesDomainSVC.DeleteAllVariable(ctx, project_memory.VariableConnector_Project, conv.Int64ToStr(appID))
+	if err != nil {
+		logs.CtxErrorf(ctx, "delete app variables failed, err=%v", err)
+	}
+
+	// TODO(@liuyunchao): 删除应用 knowledge
+	// TODO(@zhuangjie): 删除应用 workflow
+
+	return nil
 }
 
 func (a *APPApplicationService) DraftProjectUpdate(ctx context.Context, req *projectAPI.DraftProjectUpdateRequest) (resp *projectAPI.DraftProjectUpdateResponse, err error) {
@@ -223,7 +256,7 @@ func (a *APPApplicationService) getAPPPublishConnectorList(ctx context.Context, 
 		return nil, err
 	}
 
-	hasWorkflow, err := a.hasWorkflow(ctx, appID)
+	hasWorkflow, err := a.workflowSVC.CheckWorkflowsExistByAppID(ctx, appID)
 	if err != nil {
 		return nil, err
 	}
@@ -273,38 +306,25 @@ func (a *APPApplicationService) packAPIConnectorInfo(ctx context.Context, c *con
 	return info, nil
 }
 
-func (a *APPApplicationService) hasWorkflow(ctx context.Context, appID int64) (bool, error) {
-	searchRes, err := a.searchSVC.SearchResources(ctx, &searchEntity.SearchResourcesRequest{
-		APPID:         appID,
-		ResTypeFilter: []resource.ResType{resource.ResType_Workflow},
-		Limit:         1,
-	})
-	if err != nil {
-		return false, err
-	}
-
-	return len(searchRes.Data) > 0, nil
-}
-
 func (a *APPApplicationService) getLatestPublishRecord(ctx context.Context, appID int64) (info *publishAPI.LastPublishInfo, published bool, err error) {
-	res, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
+	record, published, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
 		APPID: appID,
 	})
 	if err != nil {
 		return nil, false, err
 	}
 
-	if !res.Published {
+	if !published {
 		return nil, false, nil
 	}
 
 	latestPublishRecord := &publishAPI.LastPublishInfo{
-		VersionNumber:          res.Record.APP.GetVersion(),
+		VersionNumber:          record.APP.GetVersion(),
 		ConnectorIds:           []int64{},
 		ConnectorPublishConfig: map[int64]*publishAPI.ConnectorPublishConfig{},
 	}
 
-	for _, r := range res.Record.ConnectorPublishRecords {
+	for _, r := range record.ConnectorPublishRecords {
 		latestPublishRecord.ConnectorIds = append(latestPublishRecord.ConnectorIds, r.ConnectorID)
 	}
 
@@ -330,10 +350,10 @@ func (a *APPApplicationService) ReportUserBehavior(ctx context.Context, req *pla
 }
 
 func (a *APPApplicationService) CheckProjectVersionNumber(ctx context.Context, req *publishAPI.CheckProjectVersionNumberRequest) (resp *publishAPI.CheckProjectVersionNumberResponse, err error) {
-	exist, err := a.appRepo.CheckAPPVersionExist(ctx, &repository.GetVersionAPPRequest{
-		APPID:   req.ProjectID,
-		Version: req.VersionNumber,
-	})
+	exist, err := a.appRepo.CheckAPPVersionExist(ctx, req.ProjectID, req.VersionNumber)
+	if err != nil {
+		return nil, err
+	}
 
 	resp = &publishAPI.CheckProjectVersionNumberResponse{
 		Data: &publishAPI.CheckProjectVersionNumberData{
@@ -418,21 +438,19 @@ func (a *APPApplicationService) GetPublishRecordList(ctx context.Context, req *p
 		return nil, err
 	}
 
-	res, err := a.DomainSVC.GetAPPAllPublishRecords(ctx, &service.GetAPPAllPublishRecordsRequest{
-		APPID: req.ProjectID,
-	})
+	records, err := a.DomainSVC.GetAPPAllPublishRecords(ctx, req.ProjectID)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(res.Records) == 0 {
+	if len(records) == 0 {
 		return &publishAPI.GetPublishRecordListResponse{
 			Data: []*publishAPI.PublishRecordDetail{},
 		}, nil
 	}
 
-	data := make([]*publishAPI.PublishRecordDetail, 0, len(res.Records))
-	for _, r := range res.Records {
+	data := make([]*publishAPI.PublishRecordDetail, 0, len(records))
+	for _, r := range records {
 		connectorPublishRecords := make([]*publishAPI.ConnectorPublishResult, 0, len(r.ConnectorPublishRecords))
 		for _, c := range r.ConnectorPublishRecords {
 			info, exist := connectorInfo[c.ConnectorID]
@@ -472,7 +490,7 @@ func (a *APPApplicationService) GetPublishRecordDetail(ctx context.Context, req 
 		return nil, err
 	}
 
-	res, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
+	record, published, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
 		APPID:    req.ProjectID,
 		RecordID: req.PublishRecordID,
 	})
@@ -480,13 +498,11 @@ func (a *APPApplicationService) GetPublishRecordDetail(ctx context.Context, req 
 		return nil, err
 	}
 
-	if !res.Published {
+	if !published {
 		return &publishAPI.GetPublishRecordDetailResponse{
 			Data: nil,
 		}, nil
 	}
-
-	record := res.Record
 
 	connectorPublishRecords := make([]*publishAPI.ConnectorPublishResult, 0, len(record.ConnectorPublishRecords))
 	for _, c := range record.ConnectorPublishRecords {
