@@ -97,6 +97,7 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	h.POST("/api/workflow_api/nodeDebug", WorkflowNodeDebugV2)
 	h.GET("/api/workflow_api/get_node_execute_history", GetNodeExecuteHistory)
 	h.POST("/api/workflow_api/copy", CopyWorkflow)
+	h.POST("/api/workflow_api/batch_delete", BatchDeleteWorkflow)
 
 	ctrl := gomock.NewController(t)
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -4667,8 +4668,7 @@ func TestNodeDebugLoop(t *testing.T) {
 func TestCopyWorkflow(t *testing.T) {
 	mockey.PatchConvey("copy work flow", t, func() {
 
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		_ = ctrl
+		h, _, _ := prepareWorkflowIntegration(t, true)
 		idStr := loadWorkflowWithWorkflowName(t, h, "original_workflow", "publish/publish_workflow.json")
 
 		response := post[workflow.CopyWorkflowResponse](t, h, &workflow.CopyWorkflowRequest{
@@ -4689,6 +4689,17 @@ func TestCopyWorkflow(t *testing.T) {
 		assert.Equal(t, ptr.From(oldCanvasResponse.Data.Workflow.SchemaJSON), ptr.From(copiedCanvasResponse.Data.Workflow.SchemaJSON))
 
 		assert.Equal(t, "original_workflow_1", copiedCanvasResponse.Data.Workflow.Name)
+
+		_ = post[workflow.BatchDeleteWorkflowResponse](t, h, &workflow.BatchDeleteWorkflowRequest{
+			WorkflowIDList: []string{idStr, response.Data.WorkflowID},
+			SpaceID:        "123",
+		}, "/api/workflow_api/batch_delete")
+
+		wid, _ := strconv.ParseInt(idStr, 10, 64)
+
+		_, err := appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), wid)
+		assert.NotNil(t, err)
+		assert.Equal(t, fmt.Sprintf("workflow meta not found for ID %s: record not found", idStr), err.Error())
 
 	})
 }
@@ -4719,10 +4730,16 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 			},
 		})
 		mockVarGetter := mockvar.NewMockVariablesMetaGetter(ctrl)
+		ctx := t.Context()
+		ctx = ctxcache.Init(context.Background())
+		ctxcache.Store(ctx, consts.SessionDataKeyInCtx, &userentity.Session{
+			UserID: 123,
+		})
+
 		mockey.Mock(variable.GetVariablesMetaGetter).Return(mockVarGetter).Build()
 		mockVarGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
 
-		_, err := appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 100100100100)
+		_, err := appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(ctx, 100100100100)
 		if err != nil {
 			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(100100100100), nil).Times(1)
 			_ = loadWorkflowWithCreateReq(t, h, &workflow.CreateWorkflowRequest{
@@ -4734,7 +4751,7 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 			}, "publish/release_main_workflow.json")
 		}
 
-		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 7511615200781402118)
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(ctx, 7511615200781402118)
 		if err != nil {
 			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7511615200781402118), nil).Times(1)
 			_ = loadWorkflowWithCreateReq(t, h, &workflow.CreateWorkflowRequest{
@@ -4746,7 +4763,7 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 			}, "publish/release_c1_workflow.json")
 		}
 
-		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 7511616004728815618)
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(ctx, 7511616004728815618)
 		if err != nil {
 			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7511616004728815618), nil).Times(1)
 
@@ -4762,10 +4779,6 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
 			return time.Now().UnixNano(), nil
 		}).AnyTimes()
-		c := ctxcache.Init(context.Background())
-		ctxcache.Store(c, consts.SessionDataKeyInCtx, &userentity.Session{
-			UserID: 123,
-		})
 
 		wf, err := appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 7511616004728815618)
 		assert.NoError(t, err)
@@ -4781,14 +4794,14 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 			version = strings.Join(versionSchema, ".")
 		}
 
-		vIssues, err := appworkflow.GetWorkflowDomainSVC().ReleaseApplicationWorkflows(c, 10001000, &vo.ReleaseWorkflowConfig{
+		vIssues, err := appworkflow.GetWorkflowDomainSVC().ReleaseApplicationWorkflows(ctx, 10001000, &vo.ReleaseWorkflowConfig{
 			Version:   version,
 			PluginIDs: []int64{7511616454588891136},
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(vIssues))
 
-		wf, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowVersion(context.Background(), &entity.WorkflowIdentity{
+		wf, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowVersion(ctx, &entity.WorkflowIdentity{
 			ID:      100100100100,
 			Version: version,
 		})

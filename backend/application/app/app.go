@@ -188,7 +188,11 @@ func (a *APPApplicationService) deleteAPPResources(ctx context.Context, appID in
 	}
 
 	// TODO(@liuyunchao): 删除应用 knowledge
-	// TODO(@zhuangjie): 删除应用 workflow
+
+	err = a.workflowSVC.DeleteWorkflowsByAppID(ctx, appID)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

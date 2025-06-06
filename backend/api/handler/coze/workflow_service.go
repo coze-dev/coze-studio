@@ -129,7 +129,11 @@ func BatchDeleteWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.BatchDeleteWorkflowResponse)
+	resp, err := appworkflow.SVC.BatchDeleteWorkflow(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

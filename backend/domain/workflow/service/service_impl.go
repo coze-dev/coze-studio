@@ -11,6 +11,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/cast"
+	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
 
 	"github.com/cloudwego/eino/components/tool"
@@ -877,7 +878,7 @@ func (i *impl) GetLatestTestRunInput(ctx context.Context, wfID int64, userID int
 	return nodeExe, true, nil
 }
 
-func (i *impl) GetLastestNodeDebugInput(ctx context.Context, wfID int64, nodeID string, userID int64) (
+func (i *impl) GetLatestNodeDebugInput(ctx context.Context, wfID int64, nodeID string, userID int64) (
 	*entity.NodeExecution, *entity.NodeExecution, bool, error) {
 	exeID, err := i.repo.GetNodeDebugLatestExeID(ctx, wfID, nodeID, userID)
 	if err != nil {
@@ -1742,6 +1743,47 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 
 func (i *impl) CheckWorkflowsExistByAppID(ctx context.Context, appID int64) (bool, error) {
 	return i.repo.HasWorkflow(ctx, appID)
+}
+func (i *impl) BatchDeleteWorkflow(ctx context.Context, ids []int64) error {
+	if len(ids) == 1 {
+		return i.DeleteWorkflow(ctx, ids[0])
+	}
+	err := i.repo.BatchDeleteWorkflow(ctx, ids)
+	if err != nil {
+		return err
+	}
+
+	g := errgroup.Group{}
+	for _, id := range ids {
+		wid := id
+		g.Go(func() error {
+			err = search.GetNotifier().PublishWorkflowResource(ctx, search.Deleted, &search.Resource{
+				WorkflowID: wid,
+			})
+			return err
+		})
+	}
+
+	err = g.Wait()
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func (i *impl) DeleteWorkflowsByAppID(ctx context.Context, appID int64) error {
+	ids, err := i.repo.GetWorkflowIDsByAppId(ctx, appID)
+	if err != nil {
+		return err
+	}
+
+	err = i.BatchDeleteWorkflow(ctx, ids)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
 
 func (i *impl) shouldResetTestRun(ctx context.Context, c *vo.Canvas, wid int64) (bool, error) {
