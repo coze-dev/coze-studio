@@ -311,3 +311,21 @@ var d2sMapping = map[knowledge.DocumentType]document2SliceFn{
 		return slice, nil
 	},
 }
+
+func getCollectionName(knowledgeID int64) string {
+	return fmt.Sprintf("opencoze_%d", knowledgeID)
+}
+
+func getIndexingFields(fields []*searchstore.Field) []string {
+	var indexingFields []string
+	for _, field := range fields {
+		if field.Indexing {
+			indexingFields = append(indexingFields, field.Name)
+		}
+	}
+	return indexingFields
+}
+
+func getColName(colID int64) string {
+	return fmt.Sprintf("col_%d", colID)
+}

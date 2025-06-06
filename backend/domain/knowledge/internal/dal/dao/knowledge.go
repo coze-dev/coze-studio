@@ -104,13 +104,13 @@ func (dao *knowledgeDAO) FilterEnableKnowledge(ctx context.Context, knowledgeIDs
 		return nil, nil
 	}
 	k := dao.query.Knowledge
-	knowledges, err := k.WithContext(ctx).
+	knowledgeModels, err := k.WithContext(ctx).
 		Select(k.ID, k.FormatType).
 		Where(k.ID.In(knowledgeIDs...)).
 		Where(k.Status.Eq(int32(entity.DocumentStatusEnable))).
 		Find()
 
-	return knowledges, err
+	return knowledgeModels, err
 }
 
 func (dao *knowledgeDAO) InitTx() (tx *gorm.DB, err error) {
@@ -189,7 +189,7 @@ func (dao *knowledgeDAO) FindKnowledgeByCondition(ctx context.Context, opts *Whe
 	}
 	if opts.Page != nil && opts.PageSize != nil {
 		offset := (*opts.Page - 1) * (*opts.PageSize)
-		do = do.Limit(int(*opts.PageSize)).Offset(int(offset))
+		do = do.Limit(*opts.PageSize).Offset(offset)
 	}
 	knowledge, err = do.Find()
 	return knowledge, total, err

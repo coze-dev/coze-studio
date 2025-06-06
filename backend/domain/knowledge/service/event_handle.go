@@ -45,7 +45,6 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 		}
 	}()
 
-	// TODO: 确认下 retry ?
 	event := &entity.Event{}
 	if err = sonic.Unmarshal(msg.Body, event); err != nil {
 		return err
@@ -235,7 +234,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		return fmt.Errorf("[indexDocument] document convert fn not found, type=%d", doc.Type)
 	}
 
-	entitySlices, err := slices.TransformWithErrorCheck(parseResult, func(a *schema.Document) (*entity.Slice, error) {
+	sliceEntities, err := slices.TransformWithErrorCheck(parseResult, func(a *schema.Document) (*entity.Slice, error) {
 		return convertFn(a, doc.KnowledgeID, doc.ID, doc.CreatorID)
 	})
 	if err != nil {
@@ -245,7 +244,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	// save slices
 	if doc.Type == knowledge.DocumentTypeTable {
 		// 表格类型，将数据插入到数据库中
-		err = k.upsertDataToTable(ctx, &doc.TableInfo, entitySlices)
+		err = k.upsertDataToTable(ctx, &doc.TableInfo, sliceEntities)
 		if err != nil {
 			logs.CtxErrorf(ctx, "[indexDocument] insert data to table failed, err: %v", err)
 			return err
@@ -304,16 +303,10 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	if err != nil {
 		return err
 	}
-
-	var indexingFields []string
-	for _, field := range fields {
-		if field.Indexing {
-			indexingFields = append(indexingFields, field.Name)
-		}
-	}
+	indexingFields := getIndexingFields(fields)
 
 	// reformat docs, mainly for enableCompactTable
-	ssDocs, err := slices.TransformWithErrorCheck(entitySlices, func(a *entity.Slice) (*schema.Document, error) {
+	ssDocs, err := slices.TransformWithErrorCheck(sliceEntities, func(a *entity.Slice) (*schema.Document, error) {
 		return k.slice2Document(ctx, doc, a)
 	})
 	if err != nil {
@@ -337,7 +330,8 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 
 		if _, err = ss.Store(ctx, ssDocs,
 			searchstore.WithPartition(strconv.FormatInt(doc.ID, 10)),
-			searchstore.WithIndexingFields(indexingFields), searchstore.WithProgressBar(progressbar),
+			searchstore.WithIndexingFields(indexingFields),
+			searchstore.WithProgressBar(progressbar),
 		); err != nil {
 			return fmt.Errorf("[indexDocument] search store save failed, %w", err)
 		}
@@ -440,13 +434,7 @@ func (k *knowledgeSVC) indexSlice(ctx context.Context, event *entity.Event) (err
 		return err
 	}
 
-	var indexingFields []string
-	for _, field := range fields {
-		if field.Indexing {
-			indexingFields = append(indexingFields, field.Name)
-		}
-	}
-
+	indexingFields := getIndexingFields(fields)
 	collectionName := getCollectionName(slice.KnowledgeID)
 	for _, manager := range k.searchStoreManagers {
 		ss, err := manager.GetSearchStore(ctx, collectionName)
@@ -565,12 +553,4 @@ func (k *knowledgeSVC) slice2Document(ctx context.Context, src *entity.Document,
 		return nil, fmt.Errorf("[slice2Document] document type invalid, type=%d", src.Type)
 	}
 	return fn(ctx, slice, src.TableInfo.Columns, k.enableCompactTable)
-}
-
-func getCollectionName(knowledgeID int64) string {
-	return fmt.Sprintf("opencoze_%d", knowledgeID)
-}
-
-func getColName(colID int64) string {
-	return fmt.Sprintf("col_%d", colID)
 }
