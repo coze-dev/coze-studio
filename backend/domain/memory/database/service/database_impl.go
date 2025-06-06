@@ -1333,9 +1333,6 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 	if cond == nil {
 		return nil, nil
 	}
-	if len(params) != len(cond.Conditions) {
-		return nil, fmt.Errorf("params length must be equal to conditions length, but params length got %d and conditions length got %d", len(params), len(cond.Conditions))
-	}
 
 	result := &rdb.ComplexCondition{
 		Operator: convertor.ConvertLogicOperator(cond.Logic),
@@ -1348,6 +1345,14 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 			leftField := c.Left
 			if mapped, exists := fieldMap[c.Left]; exists {
 				leftField = mapped
+			}
+
+			if c.Operation == database.Operation_IS_NULL || c.Operation == database.Operation_IS_NOT_NULL {
+				conditions = append(conditions, &rdb.Condition{
+					Field:    leftField,
+					Operator: convertor.ConvertOperator(c.Operation),
+				})
+				continue
 			}
 
 			if params[index].ISNull || params[index].Value == nil {

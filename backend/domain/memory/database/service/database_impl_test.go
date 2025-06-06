@@ -513,6 +513,68 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.True(t, len(selectResp.Records) == 2)
 	assert.Equal(t, selectResp.Records[0]["name"], "Bob")
 
+	executeNotNullSelectReq := &ExecuteSQLRequest{
+		DatabaseID:      resp.Database.ID,
+		TableType:       table.TableType_OnlineTable,
+		OperateType:     database.OperateType_Select,
+		SelectFieldList: selectFields,
+		Limit:           &limit,
+		UserID:          1001,
+		SpaceID:         1,
+		OrderByList: []database.OrderBy{
+			{
+				Field:     "id",
+				Direction: table.SortDirection_Desc,
+			},
+		},
+		Condition: &database.ComplexCondition{
+			Conditions: []*database.Condition{
+				{
+					Left:      "name",
+					Operation: database.Operation_IS_NOT_NULL,
+				},
+			},
+			Logic: database.Logic_And,
+		},
+	}
+
+	selectNotNullResp, err := dbService.ExecuteSQL(context.Background(), executeNotNullSelectReq)
+	assert.NoError(t, err)
+	assert.NotNil(t, selectNotNullResp)
+	assert.NotNil(t, selectNotNullResp.Records)
+	assert.True(t, len(selectNotNullResp.Records) == 2)
+	assert.Equal(t, selectNotNullResp.Records[0]["name"], "Bob")
+
+	executeNullSelectReq := &ExecuteSQLRequest{
+		DatabaseID:      resp.Database.ID,
+		TableType:       table.TableType_OnlineTable,
+		OperateType:     database.OperateType_Select,
+		SelectFieldList: selectFields,
+		Limit:           &limit,
+		UserID:          1001,
+		SpaceID:         1,
+		OrderByList: []database.OrderBy{
+			{
+				Field:     "id",
+				Direction: table.SortDirection_Desc,
+			},
+		},
+		Condition: &database.ComplexCondition{
+			Conditions: []*database.Condition{
+				{
+					Left:      "name",
+					Operation: database.Operation_IS_NULL,
+				},
+			},
+			Logic: database.Logic_And,
+		},
+	}
+
+	selectNullResp, err := dbService.ExecuteSQL(context.Background(), executeNullSelectReq)
+	assert.NoError(t, err)
+	assert.NotNil(t, selectNullResp)
+	assert.True(t, len(selectNullResp.Records) == 0)
+
 	updateRows := []*database.UpsertRow{
 		{
 			Records: []*database.Record{
