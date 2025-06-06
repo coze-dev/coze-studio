@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/variables"
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
@@ -15,11 +16,13 @@ import (
 )
 
 type UserVariableMeta struct {
-	BizType      project_memory.VariableConnector
-	BizID        string
-	Version      string
-	ConnectorUID string
-	ConnectorID  int64
+	*variables.UserVariableMeta
+}
+
+func NewUserVariableMeta(v *variables.UserVariableMeta) *UserVariableMeta {
+	return &UserVariableMeta{
+		UserVariableMeta: v,
+	}
 }
 
 type VariableInstance struct {

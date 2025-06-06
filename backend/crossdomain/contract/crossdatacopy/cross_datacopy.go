@@ -3,8 +3,9 @@ package crossdatacopy
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain/datacopy"
 	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/domain/datacopy"
 )
 
 type DataCopy interface {

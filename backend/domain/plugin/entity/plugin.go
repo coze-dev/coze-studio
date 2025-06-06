@@ -107,13 +107,6 @@ func (p PluginInfo) GetToolExample(ctx context.Context, toolName string) *ToolEx
 
 type ToolInfo = plugin.ToolInfo
 
-type paramMetaInfo struct {
-	name     string
-	desc     string
-	required bool
-	location string
-}
-
 type AgentToolIdentity struct {
 	ToolID    int64
 	ToolName  *string
@@ -130,7 +123,9 @@ type VersionPlugin = plugin.VersionPlugin
 
 type VersionAgentTool = plugin.VersionAgentTool
 
-type ExecuteToolOpts = plugin.ExecuteToolOpts
+type ExecuteToolOpt = plugin.ExecuteToolOpt
+
+type ProjectInfo = plugin.ProjectInfo
 
 type PluginManifest = plugin.PluginManifest
 

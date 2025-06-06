@@ -61,7 +61,7 @@ type VersionAgentTool struct {
 	ToolName *string
 	ToolID   int64
 
-	VersionMS *int64
+	AgentVersion *string
 }
 
 type MGetAgentToolsRequest struct {
@@ -84,10 +84,6 @@ type ExecuteToolResponse struct {
 	Tool        *ToolInfo
 	TrimmedResp string
 	RawResp     string
-}
-
-type PublishAgentToolsResponse struct {
-	VersionTools map[int64]VersionAgentTool
 }
 
 type PublishPluginRequest struct {

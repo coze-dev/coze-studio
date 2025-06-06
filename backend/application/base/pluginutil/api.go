@@ -125,11 +125,14 @@ func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, err
 			plugin.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
 		},
 	}
-	if apiParam.LocalDefault != nil {
+	if apiParam.LocalDefault != nil && *apiParam.LocalDefault != "" {
 		paramSchema.Default = apiParam.LocalDefault
 	}
 	if apiParam.LocalDisable {
 		paramSchema.Extensions[plugin.APISchemaExtendLocalDisable] = true
+	}
+	if apiParam.VariableRef != nil && *apiParam.VariableRef != "" {
+		paramSchema.Extensions[plugin.APISchemaExtendVariableRef] = apiParam.VariableRef
 	}
 
 	if apiParam.GetAssistType() > 0 {
@@ -177,11 +180,14 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 			plugin.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
 		},
 	}
-	if apiParam.LocalDefault != nil {
+	if apiParam.LocalDefault != nil && *apiParam.LocalDefault != "" {
 		sc.Default = apiParam.LocalDefault
 	}
 	if apiParam.LocalDisable {
 		sc.Extensions[plugin.APISchemaExtendLocalDisable] = true
+	}
+	if apiParam.VariableRef != nil && *apiParam.VariableRef != "" {
+		sc.Extensions[plugin.APISchemaExtendVariableRef] = apiParam.VariableRef
 	}
 
 	if apiParam.GetAssistType() > 0 {

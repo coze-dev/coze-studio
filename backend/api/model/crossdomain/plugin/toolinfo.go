@@ -256,6 +256,12 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 			apiParam.LocalDisable = disable
 		}
 	}
+	if v, ok := sc.Extensions[APISchemaExtendVariableRef]; ok {
+		if ref, ok := v.(string); ok {
+			apiParam.VariableRef = ptr.Of(ref)
+			apiParam.DefaultParamSource = ptr.Of(common.DefaultParamSource_Variable)
+		}
+	}
 
 	switch sc.Type {
 	case openapi3.TypeObject:

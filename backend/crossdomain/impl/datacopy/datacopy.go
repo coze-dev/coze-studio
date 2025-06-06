@@ -3,11 +3,12 @@ package datacopy
 import (
 	"context"
 
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/application/base/appinfra"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatacopy"
 	"code.byted.org/flow/opencoze/backend/domain/datacopy"
 	"code.byted.org/flow/opencoze/backend/domain/datacopy/service"
-	"gorm.io/gorm"
 )
 
 var defaultSVC crossdatacopy.DataCopy

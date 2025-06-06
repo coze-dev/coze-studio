@@ -46,9 +46,9 @@ type PluginService interface {
 	MGetAgentTools(ctx context.Context, req *MGetAgentToolsRequest) (tools []*entity.ToolInfo, err error)
 	UpdateBotDefaultParams(ctx context.Context, req *UpdateBotDefaultParamsRequest) (err error)
 
-	PublishAgentTools(ctx context.Context, agentID int64) (resp *PublishAgentToolsResponse, err error)
+	PublishAgentTools(ctx context.Context, agentID int64, agentVersion string) (err error)
 
-	ExecuteTool(ctx context.Context, req *ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (resp *ExecuteToolResponse, err error)
+	ExecuteTool(ctx context.Context, req *ExecuteToolRequest, opts ...entity.ExecuteToolOpt) (resp *ExecuteToolResponse, err error)
 
 	// Product
 	ListPluginProducts(ctx context.Context, req *ListPluginProductsRequest) (resp *ListPluginProductsResponse, err error)
@@ -153,8 +153,6 @@ type UpdateBotDefaultParamsRequest struct {
 	RequestBody *openapi3.RequestBodyRef
 	Responses   openapi3.Responses
 }
-
-type PublishAgentToolsResponse = plugin.PublishAgentToolsResponse
 
 type ExecuteToolRequest = plugin.ExecuteToolRequest
 

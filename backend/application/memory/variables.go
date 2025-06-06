@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/base"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/variables"
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
@@ -249,15 +250,15 @@ func (v *VariableApplicationService) DeleteVariableInstance(ctx context.Context,
 	bizType := ternary.IFElse(req.BotID == 0, project_memory.VariableConnector_Project, project_memory.VariableConnector_Bot)
 	bizID := ternary.IFElse(req.BotID == 0, req.ProjectID, fmt.Sprintf("%d", req.BotID))
 
-	e := entity.UserVariableMeta{
+	e := entity.NewUserVariableMeta(&model.UserVariableMeta{
 		BizType:      bizType,
 		BizID:        bizID,
 		Version:      "",
 		ConnectorID:  req.GetConnectorID(),
 		ConnectorUID: fmt.Sprintf("%d", *uid),
-	}
+	})
 
-	err := v.DomainSVC.DeleteVariableInstance(ctx, &e, req.Keywords)
+	err := v.DomainSVC.DeleteVariableInstance(ctx, e, req.Keywords)
 	if err != nil {
 		return nil, err
 	}
@@ -283,15 +284,15 @@ func (v *VariableApplicationService) GetPlayGroundMemory(ctx context.Context, re
 	connectId := ternary.IFElse(req.ConnectorID == nil, consts.CozeConnectorID, req.GetConnectorID())
 	connectorUID := ternary.IFElse(req.UserID == 0, *uid, req.UserID)
 
-	entity := entity.UserVariableMeta{
+	e := entity.NewUserVariableMeta(&model.UserVariableMeta{
 		BizType:      bizType,
 		BizID:        bizID,
 		Version:      version,
 		ConnectorID:  connectId,
 		ConnectorUID: fmt.Sprintf("%d", connectorUID),
-	}
+	})
 
-	res, err := v.DomainSVC.GetVariableChannelInstance(ctx, &entity, req.Keywords, req.VariableChannel)
+	res, err := v.DomainSVC.GetVariableChannelInstance(ctx, e, req.Keywords, req.VariableChannel)
 	if err != nil {
 		return nil, err
 	}
@@ -319,15 +320,15 @@ func (v *VariableApplicationService) SetVariableInstance(ctx context.Context, re
 	connectId := ternary.IFElse(req.ConnectorID == nil, consts.CozeConnectorID, req.GetConnectorID())
 	connectorUID := ternary.IFElse(req.GetUserID() == 0, *uid, req.GetUserID())
 
-	entity := entity.UserVariableMeta{
+	e := entity.NewUserVariableMeta(&model.UserVariableMeta{
 		BizType:      bizType,
 		BizID:        bizID,
 		Version:      version,
 		ConnectorID:  connectId,
 		ConnectorUID: fmt.Sprintf("%d", connectorUID),
-	}
+	})
 
-	exitKeys, err := v.DomainSVC.SetVariableInstance(ctx, &entity, req.Data)
+	exitKeys, err := v.DomainSVC.SetVariableInstance(ctx, e, req.Data)
 	if err != nil {
 		return nil, err
 	}

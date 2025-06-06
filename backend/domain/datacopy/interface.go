@@ -3,8 +3,9 @@ package datacopy
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain/datacopy/entity"
 	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/domain/datacopy/entity"
 )
 
 type DataCopy interface {

@@ -73,7 +73,6 @@ type InterruptInfo struct {
 type ExecuteRequest struct {
 	Identity *AgentIdentity
 	UserID   int64
-	SpaceID  int64
 
 	Input        *schema.Message
 	History      []*schema.Message

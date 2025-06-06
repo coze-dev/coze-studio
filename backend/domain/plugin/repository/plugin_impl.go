@@ -440,11 +440,19 @@ func (p *pluginRepoImpl) DeleteDraftPlugin(ctx context.Context, pluginID int64) 
 	if err != nil {
 		return err
 	}
+	err = p.pluginVersionDAO.DeleteWithTX(ctx, tx, pluginID)
+	if err != nil {
+		return err
+	}
 	err = p.toolDraftDAO.DeleteAllWithTX(ctx, tx, pluginID)
 	if err != nil {
 		return err
 	}
 	err = p.toolDAO.DeleteAllWithTX(ctx, tx, pluginID)
+	if err != nil {
+		return err
+	}
+	err = p.toolVersionDAO.DeleteWithTX(ctx, tx, pluginID)
 	if err != nil {
 		return err
 	}
@@ -494,11 +502,19 @@ func (p *pluginRepoImpl) DeleteAPPAllPlugins(ctx context.Context, appID int64) (
 		if err != nil {
 			return nil, err
 		}
+		err = p.pluginVersionDAO.DeleteWithTX(ctx, tx, id)
+		if err != nil {
+			return nil, err
+		}
 		err = p.toolDraftDAO.DeleteAllWithTX(ctx, tx, id)
 		if err != nil {
 			return nil, err
 		}
 		err = p.toolDAO.DeleteAllWithTX(ctx, tx, id)
+		if err != nil {
+			return nil, err
+		}
+		err = p.toolVersionDAO.DeleteWithTX(ctx, tx, id)
 		if err != nil {
 			return nil, err
 		}

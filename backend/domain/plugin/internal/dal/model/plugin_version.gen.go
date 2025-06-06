@@ -4,7 +4,10 @@
 
 package model
 
-import "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+import (
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	"gorm.io/gorm"
+)
 
 const TableNamePluginVersion = "plugin_version"
 
@@ -18,11 +21,12 @@ type PluginVersion struct {
 	IconURI     string                 `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                             // Icon URI
 	ServerURL   string                 `gorm:"column:server_url;not null;comment:Server URL" json:"server_url"`                                       // Server URL
 	PluginType  int32                  `gorm:"column:plugin_type;not null;comment:Plugin Type, 1:http, 6:local" json:"plugin_type"`                   // Plugin Type, 1:http, 6:local
-	CreatedAt   int64                  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	Version     string                 `gorm:"column:version;not null;comment:Plugin Version, e.g. v1.0.0" json:"version"`                            // Plugin Version, e.g. v1.0.0
 	VersionDesc string                 `gorm:"column:version_desc;comment:Plugin Version Description" json:"version_desc"`                            // Plugin Version Description
 	Manifest    *plugin.PluginManifest `gorm:"column:manifest;comment:Plugin Manifest;serializer:json" json:"manifest"`                               // Plugin Manifest
 	OpenapiDoc  *plugin.Openapi3T      `gorm:"column:openapi_doc;comment:OpenAPI Document, only stores the root;serializer:json" json:"openapi_doc"`  // OpenAPI Document, only stores the root
+	CreatedAt   int64                  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	DeletedAt   gorm.DeletedAt         `gorm:"column:deleted_at;comment:Delete Time" json:"deleted_at"`                                               // Delete Time
 }
 
 // TableName PluginVersion's table name

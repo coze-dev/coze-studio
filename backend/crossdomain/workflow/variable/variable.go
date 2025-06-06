@@ -7,8 +7,10 @@ import (
 	"strconv"
 
 	"github.com/bytedance/sonic"
+
 	"github.com/cloudwego/eino/compose"
 
+	variablesModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/variables"
 	"code.byted.org/flow/opencoze/backend/api/model/kvmemory"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
@@ -56,13 +58,13 @@ func (v *varStore) Init(ctx context.Context) {
 }
 
 func (v *varStore) Get(ctx context.Context, path compose.FieldPath) (any, error) {
-	meta := &entity.UserVariableMeta{
+	meta := entity.NewUserVariableMeta(&variablesModel.UserVariableMeta{
 		BizType:      project_memory.VariableConnector_Project,
 		BizID:        "", // project id
 		Version:      "", // project version
 		ConnectorUID: "", // user id  ?
 		ConnectorID:  consts.CozeConnectorID,
-	}
+	})
 	if len(path) == 0 {
 		return nil, errors.New("field path is required")
 	}
@@ -134,13 +136,13 @@ func (v *varStore) Get(ctx context.Context, path compose.FieldPath) (any, error)
 }
 
 func (v *varStore) Set(ctx context.Context, path compose.FieldPath, value any) (err error) {
-	meta := &entity.UserVariableMeta{
+	meta := entity.NewUserVariableMeta(&variablesModel.UserVariableMeta{
 		BizType:      project_memory.VariableConnector_Project,
 		BizID:        "", // project id
 		Version:      "", // project version
 		ConnectorUID: "", // user id  ?
 		ConnectorID:  consts.CozeConnectorID,
-	}
+	})
 
 	if len(path) == 0 {
 		return errors.New("field path is required")

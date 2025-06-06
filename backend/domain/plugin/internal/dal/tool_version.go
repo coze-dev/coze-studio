@@ -131,3 +131,11 @@ func (t *ToolVersionDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryT
 
 	return nil
 }
+
+func (t *ToolVersionDAO) DeleteWithTX(ctx context.Context, tx *query.QueryTx, toolID int64) (err error) {
+	table := tx.ToolVersion
+	_, err = table.WithContext(ctx).
+		Where(table.ToolID.Eq(toolID)).
+		Delete()
+	return err
+}
