@@ -11,9 +11,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/events"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/repository"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
@@ -36,9 +36,9 @@ type baseDocProcessor struct {
 	docModels []*model.KnowledgeDocument
 
 	storage       storage.Storage
-	knowledgeRepo dao.KnowledgeRepo
-	documentRepo  dao.KnowledgeDocumentRepo
-	sliceRepo     dao.KnowledgeDocumentSliceRepo
+	knowledgeRepo repository.KnowledgeRepo
+	documentRepo  repository.KnowledgeDocumentRepo
+	sliceRepo     repository.KnowledgeDocumentSliceRepo
 	idgen         idgen.IDGenerator
 	rdb           rdb.RDB
 	producer      eventbus.Producer

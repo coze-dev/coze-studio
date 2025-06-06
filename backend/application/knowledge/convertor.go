@@ -13,8 +13,8 @@ import (
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -93,16 +93,16 @@ func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData
 	}
 }
 
-func convertTableDataType2Entity(t dataset.TableDataType) knowledge.TableDataType {
+func convertTableDataType2Entity(t dataset.TableDataType) service.TableDataType {
 	switch t {
 	case dataset.TableDataType_AllData:
-		return knowledge.AllData
+		return service.AllData
 	case dataset.TableDataType_OnlySchema:
-		return knowledge.OnlySchema
+		return service.OnlySchema
 	case dataset.TableDataType_OnlyPreview:
-		return knowledge.OnlyPreview
+		return service.OnlyPreview
 	default:
-		return knowledge.AllData
+		return service.AllData
 	}
 }
 
@@ -580,7 +580,7 @@ func convertDocumentTypeDataset2Entity(formatType dataset.FormatType) model.Docu
 func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*model.Knowledge) (map[int64]*dataset.Dataset, error) {
 	knowledgeMap := map[int64]*dataset.Dataset{}
 	for _, k := range knowledgeEntity {
-		documentEntity, err := KnowledgeSVC.DomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{
+		documentEntity, err := KnowledgeSVC.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{
 			KnowledgeID: k.ID,
 		})
 		if err != nil {
@@ -640,7 +640,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*m
 	return knowledgeMap, nil
 }
 
-func convertSourceInfo(sourceInfo *dataset.SourceInfo) (*knowledge.TableSourceInfo, error) {
+func convertSourceInfo(sourceInfo *dataset.SourceInfo) (*service.TableSourceInfo, error) {
 	if sourceInfo == nil {
 		return nil, nil
 	}
@@ -658,7 +658,7 @@ func convertSourceInfo(sourceInfo *dataset.SourceInfo) (*knowledge.TableSourceIn
 		}
 	}
 
-	return &knowledge.TableSourceInfo{
+	return &service.TableSourceInfo{
 		FileType:      fType,
 		Uri:           sourceInfo.TosURI,
 		FileBase64:    sourceInfo.FileBase64,
@@ -666,17 +666,17 @@ func convertSourceInfo(sourceInfo *dataset.SourceInfo) (*knowledge.TableSourceIn
 	}, nil
 }
 
-func convertCreateDocReviewReq(req *dataset.CreateDocumentReviewRequest) *knowledge.CreateDocumentReviewRequest {
+func convertCreateDocReviewReq(req *dataset.CreateDocumentReviewRequest) *service.CreateDocumentReviewRequest {
 	if req == nil {
 		return nil
 	}
-	resp := &knowledge.CreateDocumentReviewRequest{
+	resp := &service.CreateDocumentReviewRequest{
 		ChunkStrategy:   convertChunkingStrategy2Entity(req.ChunkStrategy),
 		ParsingStrategy: convertParsingStrategy2Entity(req.ParsingStrategy, nil),
 	}
 	resp.KnowledgeID = req.GetDatasetID()
-	resp.Reviews = slices.Transform(req.GetReviews(), func(r *dataset.ReviewInput) *knowledge.ReviewInput {
-		return &knowledge.ReviewInput{
+	resp.Reviews = slices.Transform(req.GetReviews(), func(r *dataset.ReviewInput) *service.ReviewInput {
+		return &service.ReviewInput{
 			DocumentName: r.GetDocumentName(),
 			DocumentType: r.GetDocumentType(),
 			TosUri:       r.GetTosURI(),

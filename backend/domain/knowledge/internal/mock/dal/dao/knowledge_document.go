@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	dao "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	model "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	gomock "go.uber.org/mock/gomock"
 	gorm "gorm.io/gorm"
@@ -100,7 +100,7 @@ func (mr *MockKnowledgeDocumentRepoMockRecorder) DeleteDocuments(ctx, ids any) *
 }
 
 // FindDocumentByCondition mocks base method.
-func (m *MockKnowledgeDocumentRepo) FindDocumentByCondition(ctx context.Context, opts *dao.WhereDocumentOpt) ([]*model.KnowledgeDocument, int64, error) {
+func (m *MockKnowledgeDocumentRepo) FindDocumentByCondition(ctx context.Context, opts *entity.WhereDocumentOpt) ([]*model.KnowledgeDocument, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindDocumentByCondition", ctx, opts)
 	ret0, _ := ret[0].([]*model.KnowledgeDocument)

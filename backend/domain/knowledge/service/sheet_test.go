@@ -10,7 +10,6 @@ import (
 	"go.uber.org/mock/gomock"
 
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
@@ -118,9 +117,9 @@ func TestValidateTableSchema(t *testing.T) {
 
 			mockRepo.EXPECT().MGetByID(gomock.Any(), gomock.Any()).Return([]*model.KnowledgeDocument{dst}, nil).Times(1)
 			Mock(GetMethod(k, "LoadSourceInfoSpecificSheet")).Return(src, nil).Build()
-			resp, err := k.ValidateTableSchema(ctx, &knowledge.ValidateTableSchemaRequest{
+			resp, err := k.ValidateTableSchema(ctx, &ValidateTableSchemaRequest{
 				DocumentID: 123,
-				SourceInfo: knowledge.TableSourceInfo{
+				SourceInfo: TableSourceInfo{
 					Uri: ptr.Of("zxcqwe"),
 				},
 				TableSheet: &entity.TableSheet{
@@ -196,9 +195,9 @@ func TestValidateTableSchema(t *testing.T) {
 
 			mockRepo.EXPECT().MGetByID(gomock.Any(), gomock.Any()).Return([]*model.KnowledgeDocument{dst}, nil).Times(1)
 			Mock(GetMethod(k, "LoadSourceInfoSpecificSheet")).Return(src, nil).Build()
-			resp, err := k.ValidateTableSchema(ctx, &knowledge.ValidateTableSchemaRequest{
+			resp, err := k.ValidateTableSchema(ctx, &ValidateTableSchemaRequest{
 				DocumentID: 123,
-				SourceInfo: knowledge.TableSourceInfo{
+				SourceInfo: TableSourceInfo{
 					Uri: ptr.Of("zxcqwe"),
 				},
 				TableSheet: &entity.TableSheet{
@@ -304,7 +303,7 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 			},
 		}
 
-		r := &knowledge.TableSchemaResponse{
+		r := &TableSchemaResponse{
 			TableSheet:     sheet,
 			AllTableSheets: allSheets,
 			TableMeta:      tblMeta,
@@ -329,10 +328,10 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 				},
 			}
 
-			resp, err := k.FormatTableSchemaResponse(r, p, knowledge.OnlySchema)
+			resp, err := k.FormatTableSchemaResponse(r, p, OnlySchema)
 			convey.So(err, convey.ShouldBeNil)
 			convey.So(resp, convey.ShouldNotBeNil)
-			convey.So(resp, convey.ShouldEqual, &knowledge.TableSchemaResponse{
+			convey.So(resp, convey.ShouldEqual, &TableSchemaResponse{
 				TableSheet:     r.TableSheet,
 				AllTableSheets: r.AllTableSheets,
 				TableMeta:      p,
@@ -340,17 +339,17 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 		})
 
 		PatchConvey("test prevTableMeta == nil && AllData", func() {
-			resp, err := k.FormatTableSchemaResponse(r, nil, knowledge.AllData)
+			resp, err := k.FormatTableSchemaResponse(r, nil, AllData)
 			convey.So(err, convey.ShouldBeNil)
 			convey.So(resp, convey.ShouldNotBeNil)
 			convey.So(resp, convey.ShouldEqual, r)
 		})
 
 		PatchConvey("test prevTableMeta == nil && OnlyPreview", func() {
-			resp, err := k.FormatTableSchemaResponse(r, nil, knowledge.OnlyPreview)
+			resp, err := k.FormatTableSchemaResponse(r, nil, OnlyPreview)
 			convey.So(err, convey.ShouldBeNil)
 			convey.So(resp, convey.ShouldNotBeNil)
-			convey.So(resp, convey.ShouldEqual, &knowledge.TableSchemaResponse{
+			convey.So(resp, convey.ShouldEqual, &TableSchemaResponse{
 				PreviewData: r.PreviewData,
 			})
 		})
@@ -430,14 +429,14 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 				},
 			}
 
-			rr := &knowledge.TableSchemaResponse{
+			rr := &TableSchemaResponse{
 				TableSheet:     sheet,
 				AllTableSheets: allSheets,
 				TableMeta:      tblMeta,
 				PreviewData:    rd,
 			}
 
-			resp, err := k.FormatTableSchemaResponse(rr, p, knowledge.AllData)
+			resp, err := k.FormatTableSchemaResponse(rr, p, AllData)
 			convey.So(err, convey.ShouldBeNil)
 			convey.So(resp, convey.ShouldNotBeNil)
 			exp := [][]*document.ColumnData{
@@ -492,7 +491,7 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 					},
 				},
 			}
-			convey.So(resp, convey.ShouldEqual, &knowledge.TableSchemaResponse{
+			convey.So(resp, convey.ShouldEqual, &TableSchemaResponse{
 				TableSheet:     r.TableSheet,
 				AllTableSheets: r.AllTableSheets,
 				TableMeta:      p,
@@ -532,7 +531,7 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 				},
 			}
 
-			resp, err := k.FormatTableSchemaResponse(r, p, knowledge.AllData)
+			resp, err := k.FormatTableSchemaResponse(r, p, AllData)
 			convey.So(err, convey.ShouldBeNil)
 			convey.So(resp, convey.ShouldNotBeNil)
 			exp := [][]*document.ColumnData{
@@ -585,7 +584,7 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 					},
 				},
 			}
-			convey.So(resp, convey.ShouldEqual, &knowledge.TableSchemaResponse{
+			convey.So(resp, convey.ShouldEqual, &TableSchemaResponse{
 				TableSheet:     r.TableSheet,
 				AllTableSheets: r.AllTableSheets,
 				TableMeta:      p,
@@ -722,7 +721,7 @@ func TestGetDocumentTableInfoByID(t *testing.T) {
 			mockRepo.EXPECT().MGetByID(gomock.Any(), gomock.Any()).Return([]*model.KnowledgeDocument{doc}, nil).Times(1)
 			resp, err := k.GetDocumentTableInfoByID(ctx, docID, false)
 			convey.So(err, convey.ShouldBeNil)
-			convey.So(resp, convey.ShouldEqual, &knowledge.TableSchemaResponse{
+			convey.So(resp, convey.ShouldEqual, &TableSchemaResponse{
 				TableSheet:     sheet,
 				AllTableSheets: []*entity.TableSheet{sheet},
 				TableMeta:      doc.TableInfo.Columns[:3],
@@ -759,7 +758,7 @@ func TestGetDocumentTableInfoByID(t *testing.T) {
 
 			resp, err := k.GetDocumentTableInfoByID(ctx, docID, true)
 			convey.So(err, convey.ShouldBeNil)
-			convey.So(resp, convey.ShouldEqual, &knowledge.TableSchemaResponse{
+			convey.So(resp, convey.ShouldEqual, &TableSchemaResponse{
 				TableSheet:     sheet,
 				AllTableSheets: []*entity.TableSheet{sheet},
 				TableMeta:      doc.TableInfo.Columns[:3],

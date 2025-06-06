@@ -20,11 +20,10 @@ import (
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/repository"
 
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/events"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
@@ -51,12 +50,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.ConsumerHandler) {
+func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHandler) {
 	svc := &knowledgeSVC{
-		knowledgeRepo:       dao.NewKnowledgeDAO(config.DB),
-		documentRepo:        dao.NewKnowledgeDocumentDAO(config.DB),
-		sliceRepo:           dao.NewKnowledgeDocumentSliceDAO(config.DB),
-		reviewRepo:          dao.NewKnowledgeDocumentReviewDAO(config.DB),
+		knowledgeRepo:       repository.NewKnowledgeDAO(config.DB),
+		documentRepo:        repository.NewKnowledgeDocumentDAO(config.DB),
+		sliceRepo:           repository.NewKnowledgeDocumentSliceDAO(config.DB),
+		reviewRepo:          repository.NewKnowledgeDocumentReviewDAO(config.DB),
 		idgen:               config.IDGen,
 		rdb:                 config.RDB,
 		producer:            config.Producer,
@@ -98,10 +97,10 @@ type KnowledgeSVCConfig struct {
 }
 
 type knowledgeSVC struct {
-	knowledgeRepo dao.KnowledgeRepo
-	documentRepo  dao.KnowledgeDocumentRepo
-	sliceRepo     dao.KnowledgeDocumentSliceRepo
-	reviewRepo    dao.KnowledgeDocumentReviewRepo
+	knowledgeRepo repository.KnowledgeRepo
+	documentRepo  repository.KnowledgeDocumentRepo
+	sliceRepo     repository.KnowledgeDocumentSliceRepo
+	reviewRepo    repository.KnowledgeDocumentReviewRepo
 
 	idgen               idgen.IDGenerator
 	rdb                 rdb.RDB
@@ -117,7 +116,7 @@ type knowledgeSVC struct {
 	enableCompactTable  bool // 表格数据压缩
 }
 
-func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.CreateKnowledgeRequest) (response *knowledge.CreateKnowledgeResponse, err error) {
+func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *CreateKnowledgeRequest) (response *CreateKnowledgeResponse, err error) {
 	now := time.Now().UnixMilli()
 	if len(request.Name) == 0 {
 		return nil, errors.New("knowledge name is empty")
@@ -149,13 +148,13 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *knowledge.C
 		return nil, err
 	}
 
-	return &knowledge.CreateKnowledgeResponse{
+	return &CreateKnowledgeResponse{
 		KnowledgeID: id,
 		CreatedAtMs: now,
 	}, err
 }
 
-func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, request *knowledge.UpdateKnowledgeRequest) error {
+func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, request *UpdateKnowledgeRequest) error {
 	if request.KnowledgeID == 0 {
 		return errors.New("knowledge id is empty")
 	}
@@ -191,7 +190,7 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, request *knowledge.U
 	return err
 }
 
-func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *knowledge.DeleteKnowledgeRequest) error {
+func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *DeleteKnowledgeRequest) error {
 	// 先获取一下knowledge的信息
 	knModel, err := k.knowledgeRepo.GetByID(ctx, request.KnowledgeID)
 	if err != nil {
@@ -201,7 +200,7 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *knowledge.D
 		return errors.New("knowledge not found")
 	}
 	if knModel.FormatType == int32(knowledgeModel.DocumentTypeTable) {
-		docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+		docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &entity.WhereDocumentOpt{
 			KnowledgeIDs: []int64{knModel.ID},
 		})
 		if err != nil {
@@ -234,7 +233,7 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *knowledge.D
 		return err
 	}
 
-	docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+	docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &entity.WhereDocumentOpt{
 		KnowledgeIDs: []int64{request.KnowledgeID},
 	})
 	if err != nil {
@@ -250,11 +249,11 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *knowledge.D
 	return err
 }
 
-func (k *knowledgeSVC) ListKnowledge(ctx context.Context, request *knowledge.ListKnowledgeRequest) (response *knowledge.ListKnowledgeResponse, err error) {
+func (k *knowledgeSVC) ListKnowledge(ctx context.Context, request *ListKnowledgeRequest) (response *ListKnowledgeResponse, err error) {
 	if len(request.IDs) == 0 && request.AppID == nil && request.SpaceID == nil {
 		return nil, errors.New("knowledge ids, project id, space id and query can not be all empty")
 	}
-	opts := &dao.WhereKnowledgeOption{
+	opts := &entity.WhereKnowledgeOption{
 		KnowledgeIDs: request.IDs,
 		AppID:        request.AppID,
 		SpaceID:      request.SpaceID,
@@ -282,13 +281,13 @@ func (k *knowledgeSVC) ListKnowledge(ctx context.Context, request *knowledge.Lis
 		knList[i] = k.fromModelKnowledge(ctx, pos[i])
 	}
 
-	return &knowledge.ListKnowledgeResponse{
+	return &ListKnowledgeResponse{
 		KnowledgeList: knList,
 		Total:         total,
 	}, nil
 }
 
-func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *knowledge.CreateDocumentRequest) (response *knowledge.CreateDocumentResponse, err error) {
+func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *CreateDocumentRequest) (response *CreateDocumentResponse, err error) {
 	if len(request.Documents) == 0 {
 		return nil, errors.New("document is empty")
 	}
@@ -335,12 +334,12 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *knowledge.Cr
 	}
 	// 5. 返回处理后的文档信息
 	docs := docProcessor.GetResp()
-	return &knowledge.CreateDocumentResponse{
+	return &CreateDocumentResponse{
 		Documents: docs,
 	}, nil
 }
 
-func (k *knowledgeSVC) UpdateDocument(ctx context.Context, request *knowledge.UpdateDocumentRequest) error {
+func (k *knowledgeSVC) UpdateDocument(ctx context.Context, request *UpdateDocumentRequest) error {
 	if request == nil {
 		return errors.New("request is null")
 	}
@@ -374,7 +373,7 @@ func (k *knowledgeSVC) UpdateDocument(ctx context.Context, request *knowledge.Up
 	return nil
 }
 
-func (k *knowledgeSVC) DeleteDocument(ctx context.Context, request *knowledge.DeleteDocumentRequest) error {
+func (k *knowledgeSVC) DeleteDocument(ctx context.Context, request *DeleteDocumentRequest) error {
 	if request == nil {
 		return errors.New("request is null")
 	}
@@ -416,11 +415,11 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, request *knowledge.De
 	return nil
 }
 
-func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.ListDocumentRequest) (response *knowledge.ListDocumentResponse, err error) {
+func (k *knowledgeSVC) ListDocument(ctx context.Context, request *ListDocumentRequest) (response *ListDocumentResponse, err error) {
 	if request == nil {
 		return nil, errors.New("request is null")
 	}
-	opts := dao.WhereDocumentOpt{
+	opts := entity.WhereDocumentOpt{
 		StatusNotIn: []int32{int32(entity.DocumentStatusDeleted)},
 	}
 	if request.Limit != nil {
@@ -446,7 +445,7 @@ func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.List
 		return nil, err
 	}
 
-	resp := &knowledge.ListDocumentResponse{
+	resp := &ListDocumentResponse{
 		Total: total,
 	}
 	if len(documents) < int(total) {
@@ -461,7 +460,7 @@ func (k *knowledgeSVC) ListDocument(ctx context.Context, request *knowledge.List
 	return resp, nil
 }
 
-func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, request *knowledge.MGetDocumentProgressRequest) (response *knowledge.MGetDocumentProgressResponse, err error) {
+func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, request *MGetDocumentProgressRequest) (response *MGetDocumentProgressResponse, err error) {
 	if request == nil {
 		return nil, errors.New("request is null")
 	}
@@ -470,9 +469,9 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, request *knowle
 		logs.CtxErrorf(ctx, "mget document failed, err: %v", err)
 		return nil, err
 	}
-	progresslist := []*knowledge.DocumentProgress{}
+	progresslist := []*DocumentProgress{}
 	for i := range documents {
-		item := knowledge.DocumentProgress{
+		item := DocumentProgress{
 			ID:            documents[i].ID,
 			Name:          documents[i].Name,
 			Size:          documents[i].Size,
@@ -491,12 +490,12 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, request *knowle
 		}
 		progresslist = append(progresslist, &item)
 	}
-	return &knowledge.MGetDocumentProgressResponse{
+	return &MGetDocumentProgressResponse{
 		ProgressList: progresslist,
 	}, nil
 }
 
-func (k *knowledgeSVC) getProgressFromCache(ctx context.Context, documentProgress *knowledge.DocumentProgress) (err error) {
+func (k *knowledgeSVC) getProgressFromCache(ctx context.Context, documentProgress *DocumentProgress) (err error) {
 	progressBar := progressbar.NewProgressBar(ctx, documentProgress.ID, 0, k.CacheCli, false)
 	percent, remainSec, errMsg := progressBar.GetProgress(ctx)
 	documentProgress.Progress = int(percent)
@@ -507,7 +506,7 @@ func (k *knowledgeSVC) getProgressFromCache(ctx context.Context, documentProgres
 	return err
 }
 
-func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request *knowledge.ResegmentDocumentRequest) (response *knowledge.ResegmentDocumentResponse, err error) {
+func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request *ResegmentDocumentRequest) (response *ResegmentDocumentResponse, err error) {
 	if request == nil {
 		return nil, errors.New("request is null")
 	}
@@ -537,12 +536,12 @@ func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request *knowledge
 		return nil, err
 	}
 	docEntity.Status = entity.DocumentStatusChunking
-	return &knowledge.ResegmentDocumentResponse{
+	return &ResegmentDocumentResponse{
 		Document: docEntity,
 	}, nil
 }
 
-func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *knowledge.CreateSliceRequest) (response *knowledge.CreateSliceResponse, err error) {
+func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *CreateSliceRequest) (response *CreateSliceResponse, err error) {
 	if request == nil {
 		return nil, errors.New("request is null")
 	}
@@ -555,7 +554,7 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *knowledge.Creat
 		return nil, errors.New("document not found")
 	}
 	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
-		_, total, err := k.sliceRepo.FindSliceByCondition(ctx, &dao.WhereSliceOpt{
+		_, total, err := k.sliceRepo.FindSliceByCondition(ctx, &entity.WhereSliceOpt{
 			DocumentID: docInfo.ID,
 		})
 		if err != nil {
@@ -652,12 +651,12 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *knowledge.Creat
 		logs.CtxErrorf(ctx, "update document slice info failed, err: %v", err)
 		return nil, err
 	}
-	return &knowledge.CreateSliceResponse{
+	return &CreateSliceResponse{
 		SliceID: id,
 	}, nil
 }
 
-func (k *knowledgeSVC) UpdateSlice(ctx context.Context, request *knowledge.UpdateSliceRequest) error {
+func (k *knowledgeSVC) UpdateSlice(ctx context.Context, request *UpdateSliceRequest) error {
 	if request == nil {
 		return errors.New("request is null")
 	}
@@ -723,7 +722,7 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, request *knowledge.Updat
 	return nil
 }
 
-func (k *knowledgeSVC) DeleteSlice(ctx context.Context, request *knowledge.DeleteSliceRequest) error {
+func (k *knowledgeSVC) DeleteSlice(ctx context.Context, request *DeleteSliceRequest) error {
 	if request == nil {
 		return errors.New("request is null")
 	}
@@ -779,7 +778,7 @@ func (k *knowledgeSVC) DeleteSlice(ctx context.Context, request *knowledge.Delet
 	return nil
 }
 
-func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSliceRequest) (response *knowledge.ListSliceResponse, err error) {
+func (k *knowledgeSVC) ListSlice(ctx context.Context, request *ListSliceRequest) (response *ListSliceResponse, err error) {
 	if request == nil {
 		return nil, fmt.Errorf("[ListSlice] request is null")
 	}
@@ -791,12 +790,12 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 		logs.CtxErrorf(ctx, "get document failed, err: %v", err)
 		return nil, err
 	}
-	resp := knowledge.ListSliceResponse{}
+	resp := ListSliceResponse{}
 	if doc.Status == int32(entity.DocumentStatusDeleted) {
 		return &resp, nil
 	}
 
-	slices, total, err := k.sliceRepo.FindSliceByCondition(ctx, &dao.WhereSliceOpt{
+	slices, total, err := k.sliceRepo.FindSliceByCondition(ctx, &entity.WhereSliceOpt{
 		KnowledgeID: ptr.From(request.KnowledgeID),
 		DocumentID:  ptr.From(request.DocumentID),
 		Keyword:     request.Keyword,
@@ -836,7 +835,7 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *knowledge.ListSli
 	return &resp, nil
 }
 
-func (k *knowledgeSVC) GetSlice(ctx context.Context, request *knowledge.GetSliceRequest) (response *knowledge.GetSliceResponse, err error) {
+func (k *knowledgeSVC) GetSlice(ctx context.Context, request *GetSliceRequest) (response *GetSliceResponse, err error) {
 	slices, err := k.sliceRepo.MGetSlices(ctx, []int64{request.SliceID})
 	if err != nil {
 		return nil, fmt.Errorf("[GetSlice] repo query failed, %w", err)
@@ -846,12 +845,12 @@ func (k *knowledgeSVC) GetSlice(ctx context.Context, request *knowledge.GetSlice
 		return nil, fmt.Errorf("[GetSlice] slice not found, id=%d", request.SliceID)
 	}
 
-	return &knowledge.GetSliceResponse{
+	return &GetSliceResponse{
 		Slice: k.fromModelSlice(ctx, slices[0]),
 	}, nil
 }
 
-func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *knowledge.CreateDocumentReviewRequest) (response *knowledge.CreateDocumentReviewResponse, err error) {
+func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *CreateDocumentReviewRequest) (response *CreateDocumentReviewResponse, err error) {
 	if request == nil {
 		return nil, errors.New("request is null")
 	}
@@ -958,12 +957,12 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *knowle
 			return nil, err
 		}
 	}
-	return &knowledge.CreateDocumentReviewResponse{
+	return &CreateDocumentReviewResponse{
 		Reviews: reviews,
 	}, nil
 }
 
-func (k *knowledgeSVC) MGetDocumentReview(ctx context.Context, request *knowledge.MGetDocumentReviewRequest) (response *knowledge.MGetDocumentReviewResponse, err error) {
+func (k *knowledgeSVC) MGetDocumentReview(ctx context.Context, request *MGetDocumentReviewRequest) (response *MGetDocumentReviewResponse, err error) {
 	reviews, err := k.reviewRepo.MGetByIDs(ctx, request.ReviewIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget review failed, err: %v", err)
@@ -1002,12 +1001,12 @@ func (k *knowledgeSVC) MGetDocumentReview(ctx context.Context, request *knowledg
 			PreviewTosUrl: ptr.Of(reviewTosURL),
 		})
 	}
-	return &knowledge.MGetDocumentReviewResponse{
+	return &MGetDocumentReviewResponse{
 		Reviews: reviewEntity,
 	}, nil
 }
 
-func (k *knowledgeSVC) SaveDocumentReview(ctx context.Context, request *knowledge.SaveDocumentReviewRequest) error {
+func (k *knowledgeSVC) SaveDocumentReview(ctx context.Context, request *SaveDocumentReviewRequest) error {
 	if request == nil {
 		return errors.New("request is null")
 	}
@@ -1217,41 +1216,37 @@ func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.Knowledg
 	return s
 }
 
-func convertOrderType(orderType *knowledgeModel.OrderType) *dao.OrderType {
+func convertOrderType(orderType *knowledgeModel.OrderType) *entity.OrderType {
 	if orderType == nil {
 		return nil
 	}
-	asc := dao.OrderTypeAsc
-	desc := dao.OrderTypeDesc
 	odType := *orderType
 	switch odType {
 	case knowledgeModel.OrderTypeAsc:
-		return &asc
+		return ptr.Of(entity.OrderTypeAsc)
 	case knowledgeModel.OrderTypeDesc:
-		return &desc
+		return ptr.Of(entity.OrderTypeDesc)
 	default:
-		return &desc
+		return ptr.Of(entity.OrderTypeDesc)
 	}
 }
 
-func convertOrder(order *knowledgeModel.Order) *dao.Order {
+func convertOrder(order *knowledgeModel.Order) *entity.Order {
 	if order == nil {
 		return nil
 	}
 	od := *order
-	createAt := dao.OrderCreatedAt
-	updateAt := dao.OrderUpdatedAt
 	switch od {
 	case knowledgeModel.OrderCreatedAt:
-		return &createAt
+		return ptr.Of(entity.OrderCreatedAt)
 	case knowledgeModel.OrderUpdatedAt:
-		return &updateAt
+		return ptr.Of(entity.OrderUpdatedAt)
 	default:
-		return &createAt
+		return ptr.Of(entity.OrderCreatedAt)
 	}
 }
 
-func (k *knowledgeSVC) GetKnowledgeByID(ctx context.Context, request *knowledge.GetKnowledgeByIDRequest) (response *knowledge.GetKnowledgeByIDResponse, err error) {
+func (k *knowledgeSVC) GetKnowledgeByID(ctx context.Context, request *GetKnowledgeByIDRequest) (response *GetKnowledgeByIDResponse, err error) {
 	if request == nil || request.KnowledgeID == 0 {
 		return nil, errors.New("request is null")
 	}
@@ -1264,12 +1259,12 @@ func (k *knowledgeSVC) GetKnowledgeByID(ctx context.Context, request *knowledge.
 	}
 	knEntity := k.fromModelKnowledge(ctx, kn)
 
-	return &knowledge.GetKnowledgeByIDResponse{
+	return &GetKnowledgeByIDResponse{
 		Knowledge: knEntity,
 	}, nil
 }
 
-func (k *knowledgeSVC) MGetKnowledgeByID(ctx context.Context, request *knowledge.MGetKnowledgeByIDRequest) (response *knowledge.MGetKnowledgeByIDResponse, err error) {
+func (k *knowledgeSVC) MGetKnowledgeByID(ctx context.Context, request *MGetKnowledgeByIDRequest) (response *MGetKnowledgeByIDResponse, err error) {
 	if request == nil || len(request.KnowledgeIDs) == 0 {
 		return nil, errors.New("request is null")
 	}
@@ -1279,7 +1274,7 @@ func (k *knowledgeSVC) MGetKnowledgeByID(ctx context.Context, request *knowledge
 		return nil, err
 	}
 
-	return &knowledge.MGetKnowledgeByIDResponse{
+	return &MGetKnowledgeByIDResponse{
 		Knowledge: slices.Transform(models, func(a *model.Knowledge) *knowledgeModel.Knowledge {
 			return k.fromModelKnowledge(ctx, a)
 		}),

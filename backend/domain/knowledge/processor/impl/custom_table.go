@@ -5,7 +5,6 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -16,7 +15,7 @@ type customTableProcessor struct {
 
 func (c *customTableProcessor) BeforeCreate() error {
 	if isTableAppend(c.Documents) {
-		tableDoc, _, err := c.documentRepo.FindDocumentByCondition(c.ctx, &dao.WhereDocumentOpt{KnowledgeIDs: []int64{c.Documents[0].KnowledgeID}})
+		tableDoc, _, err := c.documentRepo.FindDocumentByCondition(c.ctx, &entity.WhereDocumentOpt{KnowledgeIDs: []int64{c.Documents[0].KnowledgeID}})
 		if err != nil {
 			logs.CtxErrorf(c.ctx, "find document failed, err: %v", err)
 			return err

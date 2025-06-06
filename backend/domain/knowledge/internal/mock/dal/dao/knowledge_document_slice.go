@@ -15,7 +15,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 
-	dao "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	model "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 )
 
@@ -113,7 +113,7 @@ func (mr *MockKnowledgeDocumentSliceRepoMockRecorder) DeleteByDocument(ctx, docu
 }
 
 // FindSliceByCondition mocks base method.
-func (m *MockKnowledgeDocumentSliceRepo) FindSliceByCondition(ctx context.Context, opts *dao.WhereSliceOpt) ([]*model.KnowledgeDocumentSlice, int64, error) {
+func (m *MockKnowledgeDocumentSliceRepo) FindSliceByCondition(ctx context.Context, opts *entity.WhereSliceOpt) ([]*model.KnowledgeDocumentSlice, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindSliceByCondition", ctx, opts)
 	ret0, _ := ret[0].([]*model.KnowledgeDocumentSlice)

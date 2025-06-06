@@ -14,51 +14,30 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-//go:generate mockgen -destination ../../mock/dal/dao/knowledge_document.go --package dao -source knowledge_document.go
-type KnowledgeDocumentRepo interface {
-	Create(ctx context.Context, document *model.KnowledgeDocument) error
-	Update(ctx context.Context, document *model.KnowledgeDocument) error
-	Delete(ctx context.Context, id int64) error
-	List(ctx context.Context, knowledgeID int64, name *string, limit int, cursor *string) (
-		resp []*model.KnowledgeDocument, nextCursor *string, hasMore bool, err error)
-	MGetByID(ctx context.Context, ids []int64) ([]*model.KnowledgeDocument, error)
-	GetByID(ctx context.Context, id int64) (*model.KnowledgeDocument, error)
-	FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) (
-		[]*model.KnowledgeDocument, int64, error)
-	DeleteDocuments(ctx context.Context, ids []int64) error
-	SetStatus(ctx context.Context, documentID int64, status int32, reason string) error
-	CreateWithTx(ctx context.Context, tx *gorm.DB, document []*model.KnowledgeDocument) error
-	UpdateDocumentSliceInfo(ctx context.Context, documentID int64) error
+type KnowledgeDocumentDAO struct {
+	DB    *gorm.DB
+	Query *query.Query
 }
 
-func NewKnowledgeDocumentDAO(db *gorm.DB) KnowledgeDocumentRepo {
-	return &knowledgeDocumentDAO{db: db, query: query.Use(db)}
+func (dao *KnowledgeDocumentDAO) Create(ctx context.Context, document *model.KnowledgeDocument) error {
+	return dao.Query.KnowledgeDocument.WithContext(ctx).Create(document)
 }
 
-type knowledgeDocumentDAO struct {
-	db    *gorm.DB
-	query *query.Query
-}
-
-func (dao *knowledgeDocumentDAO) Create(ctx context.Context, document *model.KnowledgeDocument) error {
-	return dao.query.KnowledgeDocument.WithContext(ctx).Create(document)
-}
-
-func (dao *knowledgeDocumentDAO) Update(ctx context.Context, document *model.KnowledgeDocument) error {
+func (dao *KnowledgeDocumentDAO) Update(ctx context.Context, document *model.KnowledgeDocument) error {
 	document.UpdatedAt = time.Now().UnixMilli()
-	_, err := dao.query.KnowledgeDocument.WithContext(ctx).Updates(document)
+	_, err := dao.Query.KnowledgeDocument.WithContext(ctx).Updates(document)
 	return err
 }
 
-func (dao *knowledgeDocumentDAO) Delete(ctx context.Context, id int64) error {
-	k := dao.query.KnowledgeDocument
+func (dao *KnowledgeDocumentDAO) Delete(ctx context.Context, id int64) error {
+	k := dao.Query.KnowledgeDocument
 	_, err := k.WithContext(ctx).Where(k.ID.Eq(id)).Delete()
 	return err
 }
 
-func (dao *knowledgeDocumentDAO) List(ctx context.Context, knowledgeID int64, name *string, limit int, cursor *string) (
+func (dao *KnowledgeDocumentDAO) List(ctx context.Context, knowledgeID int64, name *string, limit int, cursor *string) (
 	pos []*model.KnowledgeDocument, nextCursor *string, hasMore bool, err error) {
-	k := dao.query.KnowledgeDocument
+	k := dao.Query.KnowledgeDocument
 
 	do := k.WithContext(ctx).
 		Where(k.KnowledgeID.Eq(knowledgeID))
@@ -93,12 +72,12 @@ func (dao *knowledgeDocumentDAO) List(ctx context.Context, knowledgeID int64, na
 	return pos, nextCursor, hasMore, err
 }
 
-func (dao *knowledgeDocumentDAO) MGetByID(ctx context.Context, ids []int64) ([]*model.KnowledgeDocument, error) {
+func (dao *KnowledgeDocumentDAO) MGetByID(ctx context.Context, ids []int64) ([]*model.KnowledgeDocument, error) {
 	if len(ids) == 0 {
 		return nil, nil
 	}
 
-	k := dao.query.KnowledgeDocument
+	k := dao.Query.KnowledgeDocument
 	pos, err := k.WithContext(ctx).Where(k.ID.In(ids...)).Find()
 	if err != nil {
 		return nil, err
@@ -107,30 +86,18 @@ func (dao *knowledgeDocumentDAO) MGetByID(ctx context.Context, ids []int64) ([]*
 	return pos, err
 }
 
-func (dao *knowledgeDocumentDAO) fromCursor(cursor string) (id int64, err error) {
+func (dao *KnowledgeDocumentDAO) fromCursor(cursor string) (id int64, err error) {
 	id, err = strconv.ParseInt(cursor, 10, 64)
 	return
 }
 
-func (dao *knowledgeDocumentDAO) toCursor(id int64) *string {
+func (dao *KnowledgeDocumentDAO) toCursor(id int64) *string {
 	c := strconv.FormatInt(id, 10)
 	return &c
 }
 
-type WhereDocumentOpt struct {
-	IDs          []int64
-	KnowledgeIDs []int64
-	StatusIn     []int32
-	StatusNotIn  []int32
-	CreatorID    int64
-	Limit        int
-	Offset       *int
-	Cursor       *string
-	SelectAll    bool
-}
-
-func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, opts *WhereDocumentOpt) ([]*model.KnowledgeDocument, int64, error) {
-	k := dao.query.KnowledgeDocument
+func (dao *KnowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, opts *entity.WhereDocumentOpt) ([]*model.KnowledgeDocument, int64, error) {
+	k := dao.Query.KnowledgeDocument
 	do := k.WithContext(ctx)
 	if opts == nil {
 		return nil, 0, nil
@@ -181,8 +148,8 @@ func (dao *knowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 	return resp, total, nil
 }
 
-func (dao *knowledgeDocumentDAO) DeleteDocuments(ctx context.Context, ids []int64) error {
-	tx := dao.db.Begin()
+func (dao *KnowledgeDocumentDAO) DeleteDocuments(ctx context.Context, ids []int64) error {
+	tx := dao.DB.Begin()
 	var err error
 	defer func() {
 		if err != nil {
@@ -204,8 +171,8 @@ func (dao *knowledgeDocumentDAO) DeleteDocuments(ctx context.Context, ids []int6
 	return nil
 }
 
-func (dao *knowledgeDocumentDAO) SetStatus(ctx context.Context, documentID int64, status int32, reason string) error {
-	k := dao.query.KnowledgeDocument
+func (dao *KnowledgeDocumentDAO) SetStatus(ctx context.Context, documentID int64, status int32, reason string) error {
+	k := dao.Query.KnowledgeDocument
 	if len(reason) > 255 { // TODO: tinytext 换成 text ?
 		reason = reason[:255]
 	}
@@ -214,7 +181,7 @@ func (dao *knowledgeDocumentDAO) SetStatus(ctx context.Context, documentID int64
 	return err
 }
 
-func (dao *knowledgeDocumentDAO) CreateWithTx(ctx context.Context, tx *gorm.DB, documents []*model.KnowledgeDocument) error {
+func (dao *KnowledgeDocumentDAO) CreateWithTx(ctx context.Context, tx *gorm.DB, documents []*model.KnowledgeDocument) error {
 	if len(documents) == 0 {
 		return nil
 	}
@@ -223,8 +190,8 @@ func (dao *knowledgeDocumentDAO) CreateWithTx(ctx context.Context, tx *gorm.DB, 
 	return tx.Error
 }
 
-func (dao *knowledgeDocumentDAO) GetByID(ctx context.Context, id int64) (*model.KnowledgeDocument, error) {
-	k := dao.query.KnowledgeDocument
+func (dao *KnowledgeDocumentDAO) GetByID(ctx context.Context, id int64) (*model.KnowledgeDocument, error) {
+	k := dao.Query.KnowledgeDocument
 	document, err := k.WithContext(ctx).Where(k.ID.Eq(id)).First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -235,8 +202,8 @@ func (dao *knowledgeDocumentDAO) GetByID(ctx context.Context, id int64) (*model.
 	return document, nil
 }
 
-func (dao *knowledgeDocumentDAO) UpdateDocumentSliceInfo(ctx context.Context, documentID int64) error {
-	s := dao.query.KnowledgeDocumentSlice
+func (dao *KnowledgeDocumentDAO) UpdateDocumentSliceInfo(ctx context.Context, documentID int64) error {
+	s := dao.Query.KnowledgeDocumentSlice
 	var err error
 	var sliceCount int64
 	var totalSize *int64
@@ -244,11 +211,11 @@ func (dao *knowledgeDocumentDAO) UpdateDocumentSliceInfo(ctx context.Context, do
 	if err != nil {
 		return err
 	}
-	err = dao.db.Raw("SELECT SUM(CHAR_LENGTH(content)) FROM knowledge_document_slice WHERE document_id = ? AND deleted_at IS NULL", documentID).Scan(&totalSize).Error
+	err = dao.DB.Raw("SELECT SUM(CHAR_LENGTH(content)) FROM knowledge_document_slice WHERE document_id = ? AND deleted_at IS NULL", documentID).Scan(&totalSize).Error
 	if err != nil {
 		return err
 	}
-	k := dao.query.KnowledgeDocument
+	k := dao.Query.KnowledgeDocument
 	d := &model.KnowledgeDocument{SliceCount: sliceCount, Size: ptr.From(totalSize), CreatedAt: time.Now().UnixMilli()}
 	_, err = k.WithContext(ctx).Debug().Where(k.ID.Eq(documentID)).Updates(d)
 	return err

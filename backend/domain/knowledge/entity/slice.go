@@ -5,3 +5,12 @@ import (
 )
 
 type Slice = knowledge.Slice
+
+type WhereSliceOpt struct {
+	KnowledgeID int64
+	DocumentID  int64
+	Keyword     *string
+	Sequence    int64
+	PageSize    int64
+	Offset      int64
+}

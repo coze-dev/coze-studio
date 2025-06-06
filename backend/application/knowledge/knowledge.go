@@ -17,8 +17,8 @@ import (
 	resource "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/application/search"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	cd "code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
@@ -33,7 +33,7 @@ import (
 )
 
 type KnowledgeApplicationService struct {
-	DomainSVC knowledge.Knowledge
+	DomainSVC service.Knowledge
 	eventBus  search.ResourceEventBus
 	storage   storage.Storage
 }
@@ -49,7 +49,7 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 	if uid == nil {
 		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
-	createReq := knowledge.CreateKnowledgeRequest{
+	createReq := service.CreateKnowledgeRequest{
 		Name:        req.Name,
 		Description: req.Description,
 		CreatorID:   ptr.From(uid),
@@ -106,7 +106,7 @@ func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *da
 		return dataset.NewDatasetDetailResponse(), err
 	}
 
-	domainResp, err := k.DomainSVC.ListKnowledge(ctx, &knowledge.ListKnowledgeRequest{
+	domainResp, err := k.DomainSVC.ListKnowledge(ctx, &service.ListKnowledgeRequest{
 		IDs:     datasetIDs,
 		SpaceID: &req.SpaceID,
 		AppID:   &req.ProjectID,
@@ -130,7 +130,7 @@ func (k *KnowledgeApplicationService) DatasetDetail(ctx context.Context, req *da
 func (k *KnowledgeApplicationService) ListKnowledge(ctx context.Context, req *dataset.ListDatasetRequest) (*dataset.ListDatasetResponse, error) {
 	var err error
 	var projectID int64
-	request := knowledge.ListKnowledgeRequest{}
+	request := service.ListKnowledgeRequest{}
 	page := 1
 	pageSize := 10
 	if req.Page != nil && *req.Page > 0 {
@@ -201,7 +201,7 @@ func (k *KnowledgeApplicationService) ListKnowledge(ctx context.Context, req *da
 }
 
 func (k *KnowledgeApplicationService) DeleteKnowledge(ctx context.Context, req *dataset.DeleteDatasetRequest) (*dataset.DeleteDatasetResponse, error) {
-	err := k.DomainSVC.DeleteKnowledge(ctx, &knowledge.DeleteKnowledgeRequest{
+	err := k.DomainSVC.DeleteKnowledge(ctx, &service.DeleteKnowledgeRequest{
 		KnowledgeID: req.GetDatasetID(),
 	})
 	if err != nil {
@@ -224,7 +224,7 @@ func (k *KnowledgeApplicationService) DeleteKnowledge(ctx context.Context, req *
 
 func (k *KnowledgeApplicationService) UpdateKnowledge(ctx context.Context, req *dataset.UpdateDatasetRequest) (*dataset.UpdateDatasetResponse, error) {
 	now := time.Now().UnixMilli()
-	updateReq := knowledge.UpdateKnowledgeRequest{
+	updateReq := service.UpdateKnowledgeRequest{
 		KnowledgeID: req.GetDatasetID(),
 		IconUri:     &req.IconURI,
 		Description: &req.Description,
@@ -261,7 +261,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 	if uid == nil {
 		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
-	listResp, err := k.DomainSVC.ListKnowledge(ctx, &knowledge.ListKnowledgeRequest{IDs: []int64{req.GetDatasetID()}})
+	listResp, err := k.DomainSVC.ListKnowledge(ctx, &service.ListKnowledgeRequest{IDs: []int64{req.GetDatasetID()}})
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget knowledge failed, err: %v", err)
 		return dataset.NewCreateDocumentResponse(), err
@@ -307,7 +307,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 		}
 		documents = append(documents, &document)
 	}
-	createResp, err := k.DomainSVC.CreateDocument(ctx, &knowledge.CreateDocumentRequest{
+	createResp, err := k.DomainSVC.CreateDocument(ctx, &service.CreateDocumentRequest{
 		Documents: documents,
 	})
 	if err != nil {
@@ -338,7 +338,7 @@ func (k *KnowledgeApplicationService) ListDocument(ctx context.Context, req *dat
 			return dataset.NewListDocumentResponse(), err
 		}
 	}
-	listResp, err := k.DomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{
+	listResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{
 		KnowledgeID: req.GetDatasetID(),
 		DocumentIDs: docIDs,
 		Limit:       &limit,
@@ -368,7 +368,7 @@ func (k *KnowledgeApplicationService) DeleteDocument(ctx context.Context, req *d
 			logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
 			return dataset.NewDeleteDocumentResponse(), err
 		}
-		err = k.DomainSVC.DeleteDocument(ctx, &knowledge.DeleteDocumentRequest{
+		err = k.DomainSVC.DeleteDocument(ctx, &service.DeleteDocumentRequest{
 			DocumentID: docID,
 		})
 		if err != nil {
@@ -380,7 +380,7 @@ func (k *KnowledgeApplicationService) DeleteDocument(ctx context.Context, req *d
 }
 
 func (k *KnowledgeApplicationService) UpdateDocument(ctx context.Context, req *dataset.UpdateDocumentRequest) (*dataset.UpdateDocumentResponse, error) {
-	err := k.DomainSVC.UpdateDocument(ctx, &knowledge.UpdateDocumentRequest{
+	err := k.DomainSVC.UpdateDocument(ctx, &service.UpdateDocumentRequest{
 		DocumentID:   req.GetDocumentID(),
 		DocumentName: req.DocumentName,
 		TableInfo: &entity.TableInfo{
@@ -403,7 +403,7 @@ func (k *KnowledgeApplicationService) GetDocumentProgress(ctx context.Context, r
 		logs.CtxErrorf(ctx, "convert string ids failed, err: %v", err)
 		return dataset.NewGetDocumentProgressResponse(), err
 	}
-	domainResp, err := k.DomainSVC.MGetDocumentProgress(ctx, &knowledge.MGetDocumentProgressRequest{
+	domainResp, err := k.DomainSVC.MGetDocumentProgress(ctx, &service.MGetDocumentProgressRequest{
 		DocumentIDs: docIDs,
 	})
 	if err != nil {
@@ -438,7 +438,7 @@ func (k *KnowledgeApplicationService) Resegment(ctx context.Context, req *datase
 			logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
 			return dataset.NewResegmentResponse(), err
 		}
-		resegmentResp, err := k.DomainSVC.ResegmentDocument(ctx, &knowledge.ResegmentDocumentRequest{
+		resegmentResp, err := k.DomainSVC.ResegmentDocument(ctx, &service.ResegmentDocumentRequest{
 			DocumentID:       docID,
 			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
 			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), nil),
@@ -460,7 +460,7 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 	if uid == nil {
 		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
-	listResp, err := k.DomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{
+	listResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{
 		DocumentIDs: []int64{req.GetDocumentID()},
 	})
 	if err != nil {
@@ -491,7 +491,7 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 			},
 		}
 	}
-	createResp, err := k.DomainSVC.CreateSlice(ctx, &knowledge.CreateSliceRequest{
+	createResp, err := k.DomainSVC.CreateSlice(ctx, &service.CreateSliceRequest{
 		DocumentID: req.GetDocumentID(),
 		CreatorID:  ptr.From(uid),
 		Position:   req.GetSequence(),
@@ -513,7 +513,7 @@ func (k *KnowledgeApplicationService) DeleteSlice(ctx context.Context, req *data
 			logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
 			return dataset.NewDeleteSliceResponse(), err
 		}
-		err = k.DomainSVC.DeleteSlice(ctx, &knowledge.DeleteSliceRequest{
+		err = k.DomainSVC.DeleteSlice(ctx, &service.DeleteSliceRequest{
 			SliceID: sliceID,
 		})
 		if err != nil {
@@ -531,7 +531,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 	}
 	docID := req.GetDocumentID()
 	if docID == 0 {
-		getSliceResp, err := k.DomainSVC.GetSlice(ctx, &knowledge.GetSliceRequest{
+		getSliceResp, err := k.DomainSVC.GetSlice(ctx, &service.GetSliceRequest{
 			SliceID: req.GetSliceID(),
 		})
 		if err != nil {
@@ -539,7 +539,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 		}
 		docID = getSliceResp.Slice.DocumentID
 	}
-	listResp, err := k.DomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{
+	listResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{
 		DocumentIDs: []int64{docID},
 	})
 	if err != nil {
@@ -570,7 +570,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 			},
 		}
 	}
-	err = k.DomainSVC.UpdateSlice(ctx, &knowledge.UpdateSliceRequest{
+	err = k.DomainSVC.UpdateSlice(ctx, &service.UpdateSliceRequest{
 		SliceID:    req.GetSliceID(),
 		DocumentID: docID,
 		CreatorID:  ptr.From(uid),
@@ -624,7 +624,7 @@ func packTableSliceColumnData(ctx context.Context, slice *knowledgeModel.Slice, 
 }
 
 func (k *KnowledgeApplicationService) ListSlice(ctx context.Context, req *dataset.ListSliceRequest) (*dataset.ListSliceResponse, error) {
-	listResp, err := k.DomainSVC.ListSlice(ctx, &knowledge.ListSliceRequest{
+	listResp, err := k.DomainSVC.ListSlice(ctx, &service.ListSliceRequest{
 		KnowledgeID: req.DatasetID,
 		DocumentID:  req.DocumentID,
 		Keyword:     req.Keyword,
@@ -655,29 +655,29 @@ func (k *KnowledgeApplicationService) GetTableSchema(ctx context.Context, req *d
 		}
 	}
 	if req.TableDataType == nil {
-		req.TableDataType = dataset.TableDataTypePtr(dataset.TableDataType(knowledge.AllData))
+		req.TableDataType = dataset.TableDataTypePtr(dataset.TableDataType(service.AllData))
 	}
 
 	var (
-		domainResp *knowledge.TableSchemaResponse
+		domainResp *service.TableSchemaResponse
 		err        error
 	)
 
 	if req.SourceFile == nil { // alter table
-		domainResp, err = k.DomainSVC.GetAlterTableSchema(ctx, &knowledge.AlterTableSchemaRequest{
+		domainResp, err = k.DomainSVC.GetAlterTableSchema(ctx, &service.AlterTableSchemaRequest{
 			DocumentID:       req.GetDocumentID(),
 			TableDataType:    convertTableDataType2Entity(req.GetTableDataType()),
 			OriginTableMeta:  convertTableColumns2Entity(req.GetOriginTableMeta()),
 			PreviewTableMeta: convertTableColumns2Entity(req.GetPreviewTableMeta()),
 		})
 	} else {
-		var srcInfo *knowledge.TableSourceInfo
+		var srcInfo *service.TableSourceInfo
 		srcInfo, err = convertSourceInfo(req.SourceFile)
 		if err != nil {
 			return resp, err
 		}
 
-		domainResp, err = k.DomainSVC.GetImportDataTableSchema(ctx, &knowledge.ImportDataTableSchemaRequest{
+		domainResp, err = k.DomainSVC.GetImportDataTableSchema(ctx, &service.ImportDataTableSchemaRequest{
 			SourceInfo:       *srcInfo,
 			TableSheet:       convertTableSheet2Entity(req.TableSheet),
 			TableDataType:    convertTableDataType2Entity(req.GetTableDataType()),
@@ -738,7 +738,7 @@ func (k *KnowledgeApplicationService) ValidateTableSchema(ctx context.Context, r
 			StartLineIdx:  req.TableSheet.StartLineIdx,
 		}
 	}
-	domainResp, err := k.DomainSVC.ValidateTableSchema(ctx, &knowledge.ValidateTableSchemaRequest{
+	domainResp, err := k.DomainSVC.ValidateTableSchema(ctx, &service.ValidateTableSchemaRequest{
 		DocumentID: req.GetDocumentID(),
 		SourceInfo: *srcInfo,
 		TableSheet: tableSheet,
@@ -752,9 +752,9 @@ func (k *KnowledgeApplicationService) ValidateTableSchema(ctx context.Context, r
 }
 
 func (k *KnowledgeApplicationService) GetDocumentTableInfo(ctx context.Context, req *document.GetDocumentTableInfoRequest) (*document.GetDocumentTableInfoResponse, error) {
-	domainResp, err := k.DomainSVC.GetDocumentTableInfo(ctx, &knowledge.GetDocumentTableInfoRequest{
+	domainResp, err := k.DomainSVC.GetDocumentTableInfo(ctx, &service.GetDocumentTableInfoRequest{
 		DocumentID: req.DocumentID,
-		SourceInfo: &knowledge.TableSourceInfo{
+		SourceInfo: &service.TableSourceInfo{
 			Uri: req.TosURI,
 		},
 	})
@@ -817,7 +817,7 @@ func (k *KnowledgeApplicationService) MGetDocumentReview(ctx context.Context, re
 		logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
 		return dataset.NewMGetDocumentReviewResponse(), err
 	}
-	mGetResp, err := k.DomainSVC.MGetDocumentReview(ctx, &knowledge.MGetDocumentReviewRequest{
+	mGetResp, err := k.DomainSVC.MGetDocumentReview(ctx, &service.MGetDocumentReviewRequest{
 		KnowledgeID: req.GetDatasetID(),
 		ReviewIDs:   reviewIDs,
 	})
@@ -846,7 +846,7 @@ func (k *KnowledgeApplicationService) SaveDocumentReview(ctx context.Context, re
 	if uid == nil {
 		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
-	err := k.DomainSVC.SaveDocumentReview(ctx, &knowledge.SaveDocumentReviewRequest{
+	err := k.DomainSVC.SaveDocumentReview(ctx, &service.SaveDocumentReviewRequest{
 		KnowledgeID: req.GetDatasetID(),
 		DocTreeJson: req.GetDocTreeJSON(),
 		ReviewID:    req.GetReviewID(),

@@ -5,8 +5,8 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/repository"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -20,9 +20,9 @@ type DocProcessorConfig struct {
 	DocumentSource entity.DocumentSource
 	Documents      []*entity.Document
 
-	KnowledgeRepo dao.KnowledgeRepo
-	DocumentRepo  dao.KnowledgeDocumentRepo
-	SliceRepo     dao.KnowledgeDocumentSliceRepo
+	KnowledgeRepo repository.KnowledgeRepo
+	DocumentRepo  repository.KnowledgeDocumentRepo
+	SliceRepo     repository.KnowledgeDocumentSliceRepo
 	Idgen         idgen.IDGenerator
 	Storage       storage.Storage
 	Rdb           rdb.RDB

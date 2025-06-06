@@ -18,7 +18,6 @@ import (
 	"gorm.io/gorm"
 
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
@@ -225,7 +224,7 @@ func (suite *KnowledgeTestSuite) clearDB() {
 }
 
 func (suite *KnowledgeTestSuite) TestTextKnowledge() {
-	createReq := knowledge.CreateKnowledgeRequest{
+	createReq := CreateKnowledgeRequest{
 		Name:        "test_knowledge",
 		Description: "test_description",
 		IconUri:     "test_icon_uri",
@@ -237,7 +236,7 @@ func (suite *KnowledgeTestSuite) TestTextKnowledge() {
 	createResp, err := suite.svc.CreateKnowledge(suite.ctx, &createReq)
 	assert.NoError(suite.T(), err)
 	fmt.Printf("%+v\n", createResp)
-	updateReq := knowledge.UpdateKnowledgeRequest{
+	updateReq := UpdateKnowledgeRequest{
 		KnowledgeID: createResp.KnowledgeID,
 		Name:        ptr.Of("test_new_name"),
 		Description: ptr.Of("test_new_description"),
@@ -245,26 +244,26 @@ func (suite *KnowledgeTestSuite) TestTextKnowledge() {
 	err = suite.svc.UpdateKnowledge(suite.ctx, &updateReq)
 	assert.NoError(suite.T(), err)
 
-	mGetResp, err := suite.svc.ListKnowledge(suite.ctx, &knowledge.ListKnowledgeRequest{
+	mGetResp, err := suite.svc.ListKnowledge(suite.ctx, &ListKnowledgeRequest{
 		IDs: []int64{createResp.KnowledgeID},
 	})
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), int64(1), mGetResp.Total)
 	fmt.Printf("%+v\n", mGetResp)
 
-	mGetResp, err = suite.svc.ListKnowledge(suite.ctx, &knowledge.ListKnowledgeRequest{
+	mGetResp, err = suite.svc.ListKnowledge(suite.ctx, &ListKnowledgeRequest{
 		SpaceID: ptr.Of(suite.spaceID),
 	})
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), int64(1), mGetResp.Total)
 	fmt.Printf("%+v\n", mGetResp)
 
-	mGetResp, err = suite.svc.ListKnowledge(suite.ctx, &knowledge.ListKnowledgeRequest{
+	mGetResp, err = suite.svc.ListKnowledge(suite.ctx, &ListKnowledgeRequest{
 		IDs: []int64{887766},
 	})
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), int64(0), mGetResp.Total)
-	err = suite.svc.DeleteKnowledge(suite.ctx, &knowledge.DeleteKnowledgeRequest{
+	err = suite.svc.DeleteKnowledge(suite.ctx, &DeleteKnowledgeRequest{
 		KnowledgeID: createResp.KnowledgeID,
 	})
 	assert.NoError(suite.T(), err)
@@ -272,7 +271,7 @@ func (suite *KnowledgeTestSuite) TestTextKnowledge() {
 
 func (suite *KnowledgeTestSuite) TestTextDocument() {
 	suite.clearDB()
-	createReq := knowledge.CreateKnowledgeRequest{
+	createReq := CreateKnowledgeRequest{
 		Name:        "test_knowledge",
 		Description: "test_description",
 		IconUri:     "test_icon_uri",
@@ -302,7 +301,7 @@ func (suite *KnowledgeTestSuite) TestTextDocument() {
 	assert.NoError(suite.T(), err)
 	fmt.Printf("%+v\n", createdKnowledge)
 
-	createdDocs, err := suite.svc.CreateDocument(suite.ctx, &knowledge.CreateDocumentRequest{
+	createdDocs, err := suite.svc.CreateDocument(suite.ctx, &CreateDocumentRequest{
 		Documents: []*entity.Document{
 			{
 				Info: knowledgeModel.Info{
@@ -353,7 +352,7 @@ func (suite *KnowledgeTestSuite) TestTextDocument() {
 }
 
 func (suite *KnowledgeTestSuite) TestTableKnowledge() {
-	createReq := knowledge.CreateKnowledgeRequest{
+	createReq := CreateKnowledgeRequest{
 		Name:        "test_knowledge",
 		Description: "test_description",
 		IconUri:     "test_icon_uri",
@@ -365,7 +364,7 @@ func (suite *KnowledgeTestSuite) TestTableKnowledge() {
 	createResp, err := suite.svc.CreateKnowledge(suite.ctx, &createReq)
 	assert.NoError(suite.T(), err)
 	fmt.Printf("%+v\n", createResp)
-	updateReq := knowledge.UpdateKnowledgeRequest{
+	updateReq := UpdateKnowledgeRequest{
 		KnowledgeID: createResp.KnowledgeID,
 		Name:        ptr.Of("test_new_name"),
 		Description: ptr.Of("test_new_description"),
@@ -373,27 +372,27 @@ func (suite *KnowledgeTestSuite) TestTableKnowledge() {
 	err = suite.svc.UpdateKnowledge(suite.ctx, &updateReq)
 	assert.NoError(suite.T(), err)
 
-	mgetResp, err := suite.svc.ListKnowledge(suite.ctx, &knowledge.ListKnowledgeRequest{
+	mgetResp, err := suite.svc.ListKnowledge(suite.ctx, &ListKnowledgeRequest{
 		IDs: []int64{createResp.KnowledgeID},
 	})
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), int64(1), mgetResp.Total)
 	fmt.Printf("%+v\n", mgetResp)
 
-	mgetResp, err = suite.svc.ListKnowledge(suite.ctx, &knowledge.ListKnowledgeRequest{
+	mgetResp, err = suite.svc.ListKnowledge(suite.ctx, &ListKnowledgeRequest{
 		SpaceID: ptr.Of(suite.spaceID),
 	})
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), int64(1), mgetResp.Total)
 	fmt.Printf("%+v\n", mgetResp)
 
-	mgetResp, err = suite.svc.ListKnowledge(suite.ctx, &knowledge.ListKnowledgeRequest{
+	mgetResp, err = suite.svc.ListKnowledge(suite.ctx, &ListKnowledgeRequest{
 		IDs: []int64{887766},
 	})
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), int64(0), mgetResp.Total)
 
-	err = suite.svc.DeleteKnowledge(suite.ctx, &knowledge.DeleteKnowledgeRequest{
+	err = suite.svc.DeleteKnowledge(suite.ctx, &DeleteKnowledgeRequest{
 		KnowledgeID: createResp.KnowledgeID,
 	})
 	assert.NoError(suite.T(), err)
@@ -401,7 +400,7 @@ func (suite *KnowledgeTestSuite) TestTableKnowledge() {
 
 func (suite *KnowledgeTestSuite) TestTableDocument() {
 	suite.clearDB()
-	createReq := knowledge.CreateKnowledgeRequest{
+	createReq := CreateKnowledgeRequest{
 		Name:        "test_knowledge",
 		Description: "test_description",
 		IconUri:     "test_icon_uri",
@@ -496,7 +495,7 @@ func (suite *KnowledgeTestSuite) TestTableDocument() {
 		Columns: createCols,
 	}
 
-	createdDocs, err := suite.svc.CreateDocument(suite.ctx, &knowledge.CreateDocumentRequest{Documents: []*entity.Document{rawDoc}})
+	createdDocs, err := suite.svc.CreateDocument(suite.ctx, &CreateDocumentRequest{Documents: []*entity.Document{rawDoc}})
 	assert.NoError(suite.T(), err)
 	fmt.Printf("%+v\n", createdDocs)
 
@@ -510,7 +509,7 @@ func (suite *KnowledgeTestSuite) TestDocRetrieve() {
 	knowledgeIDs := []int64{7504983031996743680}
 	docIDs := []int64{7504983394833399808}
 
-	slices, err := suite.svc.Retrieve(suite.ctx, &knowledge.RetrieveRequest{
+	slices, err := suite.svc.Retrieve(suite.ctx, &RetrieveRequest{
 		Query:        "tower",
 		ChatHistory:  nil,
 		KnowledgeIDs: knowledgeIDs,
@@ -536,7 +535,7 @@ func (suite *KnowledgeTestSuite) TestTableRetrieve() {
 	docIDs := []int64{7506054481226760192}
 	suite.svc.nl2Sql = &mockNL2SQL{tableName: "table_7506054481281286144"}
 
-	slices, err := suite.svc.Retrieve(suite.ctx, &knowledge.RetrieveRequest{
+	slices, err := suite.svc.Retrieve(suite.ctx, &RetrieveRequest{
 		Query:        "hello",
 		ChatHistory:  nil,
 		KnowledgeIDs: knowledgeIDs,
@@ -558,7 +557,7 @@ func (suite *KnowledgeTestSuite) TestTableRetrieve() {
 
 // call TestTextKnowledge and comment out SetupTest before using this
 func (suite *KnowledgeTestSuite) TestTextKnowledgeDelete() {
-	err := suite.svc.DeleteKnowledge(suite.ctx, &knowledge.DeleteKnowledgeRequest{
+	err := suite.svc.DeleteKnowledge(suite.ctx, &DeleteKnowledgeRequest{
 		KnowledgeID: 7501599196214984704,
 	})
 	assert.NoError(suite.T(), err)

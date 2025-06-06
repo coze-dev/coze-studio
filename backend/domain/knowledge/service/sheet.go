@@ -11,7 +11,6 @@ import (
 	"github.com/xuri/excelize/v2"
 
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
@@ -22,7 +21,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-func (k *knowledgeSVC) GetAlterTableSchema(ctx context.Context, req *knowledge.AlterTableSchemaRequest) (*knowledge.TableSchemaResponse, error) {
+func (k *knowledgeSVC) GetAlterTableSchema(ctx context.Context, req *AlterTableSchemaRequest) (*TableSchemaResponse, error) {
 	if (req.OriginTableMeta == nil && req.PreviewTableMeta != nil) ||
 		(req.OriginTableMeta != nil && req.PreviewTableMeta == nil) {
 		return nil, fmt.Errorf("[AlterTableSchema] invalid table meta param")
@@ -33,7 +32,7 @@ func (k *knowledgeSVC) GetAlterTableSchema(ctx context.Context, req *knowledge.A
 		return nil, fmt.Errorf("[AlterTableSchema] getDocumentTableInfoByID: %w", err)
 	}
 
-	return k.FormatTableSchemaResponse(&knowledge.TableSchemaResponse{
+	return k.FormatTableSchemaResponse(&TableSchemaResponse{
 		TableSheet:     tableInfo.TableSheet,
 		AllTableSheets: []*entity.TableSheet{tableInfo.TableSheet},
 		TableMeta:      tableInfo.TableMeta,
@@ -41,7 +40,7 @@ func (k *knowledgeSVC) GetAlterTableSchema(ctx context.Context, req *knowledge.A
 	}, req.PreviewTableMeta, req.TableDataType)
 }
 
-func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *knowledge.ImportDataTableSchemaRequest) (resp *knowledge.TableSchemaResponse, err error) {
+func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *ImportDataTableSchemaRequest) (resp *TableSchemaResponse, err error) {
 	if (req.OriginTableMeta == nil && req.PreviewTableMeta != nil) ||
 		(req.OriginTableMeta != nil && req.PreviewTableMeta == nil) {
 		return nil, fmt.Errorf("[GetImportDataTableSchema] invalid table meta param")
@@ -59,7 +58,7 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *knowle
 
 	var (
 		sheet             *rawSheet
-		savedDoc          = &knowledge.TableSchemaResponse{}
+		savedDoc          = &TableSchemaResponse{}
 		targetColumns     []*entity.TableColumn
 		alignCurrentTable = req.DocumentID != nil && req.PreviewTableMeta == nil
 	)
@@ -104,14 +103,14 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *knowle
 
 	// first time import / import with current document schema
 	if !alignCurrentTable {
-		return k.FormatTableSchemaResponse(&knowledge.TableSchemaResponse{
+		return k.FormatTableSchemaResponse(&TableSchemaResponse{
 			TableSheet:  sheet.sheet,
 			TableMeta:   sheet.cols,
 			PreviewData: sheet.vals,
 		}, req.PreviewTableMeta, req.TableDataType)
 	}
 
-	return k.FormatTableSchemaResponse(&knowledge.TableSchemaResponse{
+	return k.FormatTableSchemaResponse(&TableSchemaResponse{
 		TableSheet:  savedDoc.TableSheet,
 		TableMeta:   sheet.cols,
 		PreviewData: sheet.vals,
@@ -121,21 +120,21 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *knowle
 // FormatTableSchemaResponse format table schema and data
 // originalResp is raw data before format
 // prevTableMeta is table schema to be displayed
-func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSchemaResponse, prevTableMeta []*entity.TableColumn, tableDataType knowledge.TableDataType) (
-	*knowledge.TableSchemaResponse, error,
+func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *TableSchemaResponse, prevTableMeta []*entity.TableColumn, tableDataType TableDataType) (
+	*TableSchemaResponse, error,
 ) {
 	switch tableDataType {
-	case knowledge.AllData, knowledge.OnlyPreview:
+	case AllData, OnlyPreview:
 		if prevTableMeta == nil {
-			if tableDataType == knowledge.AllData {
-				return &knowledge.TableSchemaResponse{
+			if tableDataType == AllData {
+				return &TableSchemaResponse{
 					TableSheet:     originalResp.TableSheet,
 					AllTableSheets: originalResp.AllTableSheets,
 					TableMeta:      originalResp.TableMeta,
 					PreviewData:    originalResp.PreviewData,
 				}, nil
 			} else {
-				return &knowledge.TableSchemaResponse{
+				return &TableSchemaResponse{
 					PreviewData: originalResp.PreviewData,
 				}, nil
 			}
@@ -191,8 +190,8 @@ func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSc
 			prevData = append(prevData, prevRow)
 		}
 
-		if tableDataType == knowledge.AllData {
-			return &knowledge.TableSchemaResponse{
+		if tableDataType == AllData {
+			return &TableSchemaResponse{
 				TableSheet:     originalResp.TableSheet,
 				AllTableSheets: originalResp.AllTableSheets,
 				TableMeta:      prevTableMeta,
@@ -200,14 +199,14 @@ func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSc
 			}, nil
 		}
 
-		return &knowledge.TableSchemaResponse{
+		return &TableSchemaResponse{
 			PreviewData: prevData,
 			TableSheet:  originalResp.TableSheet,
 			TableMeta:   prevTableMeta,
 		}, nil
 
-	case knowledge.OnlySchema:
-		return &knowledge.TableSchemaResponse{
+	case OnlySchema:
+		return &TableSchemaResponse{
 			TableSheet:     originalResp.TableSheet,
 			AllTableSheets: originalResp.AllTableSheets,
 			TableMeta:      prevTableMeta,
@@ -218,7 +217,7 @@ func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *knowledge.TableSc
 	}
 }
 
-func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *knowledge.ValidateTableSchemaRequest) (*knowledge.ValidateTableSchemaResponse, error) {
+func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *ValidateTableSchemaRequest) (*ValidateTableSchemaResponse, error) {
 	if request.DocumentID == 0 {
 		return nil, fmt.Errorf("[ValidateTableSchema] document id not provided")
 	}
@@ -291,12 +290,12 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *knowled
 		}
 	}
 
-	return &knowledge.ValidateTableSchemaResponse{
+	return &ValidateTableSchemaResponse{
 		ColumnValidResult: result,
 	}, nil
 }
 
-func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowledge.GetDocumentTableInfoRequest) (*knowledge.GetDocumentTableInfoResponse, error) {
+func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *GetDocumentTableInfoRequest) (*GetDocumentTableInfoResponse, error) {
 	if request.DocumentID == nil && request.SourceInfo == nil {
 		return nil, fmt.Errorf("[GetDocumentTableInfo] invalid param")
 	}
@@ -308,7 +307,7 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowle
 		}
 
 		if info.Code != 0 {
-			return &knowledge.GetDocumentTableInfoResponse{
+			return &GetDocumentTableInfoResponse{
 				Code: info.Code,
 				Msg:  info.Msg,
 			}, nil
@@ -323,7 +322,7 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowle
 			prevData = append(prevData, mp)
 		}
 
-		return &knowledge.GetDocumentTableInfoResponse{
+		return &GetDocumentTableInfoResponse{
 			TableSheet:  []*entity.TableSheet{info.TableSheet},
 			TableMeta:   map[string][]*entity.TableColumn{"0": info.TableMeta},
 			PreviewData: map[string][]map[string]string{"0": prevData},
@@ -364,7 +363,7 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowle
 		prevData[strconv.FormatInt(int64(i), 10)] = data
 	}
 
-	return &knowledge.GetDocumentTableInfoResponse{
+	return &GetDocumentTableInfoResponse{
 		TableSheet:  tableSheet,
 		TableMeta:   tableMeta,
 		PreviewData: prevData,
@@ -372,7 +371,7 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *knowle
 }
 
 // GetDocumentTableInfoByID 先不作为接口，有需要再改
-func (k *knowledgeSVC) GetDocumentTableInfoByID(ctx context.Context, documentID int64, needData bool) (*knowledge.TableSchemaResponse, error) {
+func (k *knowledgeSVC) GetDocumentTableInfoByID(ctx context.Context, documentID int64, needData bool) (*TableSchemaResponse, error) {
 	docs, err := k.documentRepo.MGetByID(ctx, []int64{documentID})
 	if err != nil {
 		return nil, err
@@ -408,7 +407,7 @@ func (k *knowledgeSVC) GetDocumentTableInfoByID(ctx context.Context, documentID 
 		}
 	}
 	if !needData {
-		return &knowledge.TableSchemaResponse{
+		return &TableSchemaResponse{
 			TableSheet:     sheet,
 			AllTableSheets: []*entity.TableSheet{sheet},
 			TableMeta:      cols,
@@ -428,7 +427,7 @@ func (k *knowledgeSVC) GetDocumentTableInfoByID(ctx context.Context, documentID 
 		return nil, fmt.Errorf("[GetDocumentTableInfoByID] parse data failed, %w", err)
 	}
 
-	return &knowledge.TableSchemaResponse{
+	return &TableSchemaResponse{
 		TableSheet:     sheet,
 		AllTableSheets: []*entity.TableSheet{sheet},
 		TableMeta:      cols,
@@ -436,7 +435,7 @@ func (k *knowledgeSVC) GetDocumentTableInfoByID(ctx context.Context, documentID 
 	}, nil
 }
 
-func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo knowledge.TableSourceInfo, ps *entity.ParsingStrategy, columns []*entity.TableColumn) (
+func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo TableSourceInfo, ps *entity.ParsingStrategy, columns []*entity.TableColumn) (
 	sheets []*rawSheet, err error,
 ) {
 	switch {
@@ -495,7 +494,7 @@ func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo k
 	return sheets, nil
 }
 
-func (k *knowledgeSVC) LoadSourceInfoSpecificSheet(ctx context.Context, sourceInfo knowledge.TableSourceInfo, ps *entity.ParsingStrategy, columns []*entity.TableColumn) (
+func (k *knowledgeSVC) LoadSourceInfoSpecificSheet(ctx context.Context, sourceInfo TableSourceInfo, ps *entity.ParsingStrategy, columns []*entity.TableColumn) (
 	sheet *rawSheet, err error,
 ) {
 	var b []byte

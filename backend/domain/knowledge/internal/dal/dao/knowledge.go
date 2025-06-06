@@ -14,83 +14,36 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-//go:generate mockgen -destination ../../mock/dal/dao/knowledge.go --package dao -source knowledge.go
-type KnowledgeRepo interface {
-	Create(ctx context.Context, knowledge *model.Knowledge) error
-	Upsert(ctx context.Context, knowledge *model.Knowledge) error
-	Update(ctx context.Context, knowledge *model.Knowledge) error
-	Delete(ctx context.Context, id int64) error
-	GetByID(ctx context.Context, id int64) (*model.Knowledge, error)
-	MGetByID(ctx context.Context, ids []int64) ([]*model.Knowledge, error)
-	FilterEnableKnowledge(ctx context.Context, ids []int64) ([]*model.Knowledge, error)
-	InitTx() (tx *gorm.DB, err error)
-	UpdateWithTx(ctx context.Context, tx *gorm.DB, knowledgeID int64, updateMap map[string]interface{}) error
-	FindKnowledgeByCondition(ctx context.Context, opts *WhereKnowledgeOption) ([]*model.Knowledge, int64, error)
+type KnowledgeDAO struct {
+	DB    *gorm.DB
+	Query *query.Query
 }
 
-func NewKnowledgeDAO(db *gorm.DB) KnowledgeRepo {
-	return &knowledgeDAO{db: db, query: query.Use(db)}
+func (dao *KnowledgeDAO) Create(ctx context.Context, knowledge *model.Knowledge) error {
+	return dao.Query.Knowledge.WithContext(ctx).Create(knowledge)
 }
-
-type knowledgeDAO struct {
-	db    *gorm.DB
-	query *query.Query
+func (dao *KnowledgeDAO) Upsert(ctx context.Context, knowledge *model.Knowledge) error {
+	return dao.Query.Knowledge.WithContext(ctx).Clauses(clause.OnConflict{UpdateAll: true}).Create(knowledge)
 }
-
-type WhereKnowledgeOption struct {
-	KnowledgeIDs []int64
-	AppID        *int64
-	SpaceID      *int64
-	Name         *string // 完全匹配
-	Status       []int32
-	UserID       *int64
-	Query        *string // 模糊匹配
-	Page         *int
-	PageSize     *int
-	Order        *Order
-	OrderType    *OrderType
-	FormatType   *int64
-}
-
-type OrderType int32
-
-const (
-	OrderTypeAsc  OrderType = 1
-	OrderTypeDesc OrderType = 2
-)
-
-type Order int32
-
-const (
-	OrderCreatedAt Order = 1
-	OrderUpdatedAt Order = 2
-)
-
-func (dao *knowledgeDAO) Create(ctx context.Context, knowledge *model.Knowledge) error {
-	return dao.query.Knowledge.WithContext(ctx).Create(knowledge)
-}
-func (dao *knowledgeDAO) Upsert(ctx context.Context, knowledge *model.Knowledge) error {
-	return dao.query.Knowledge.WithContext(ctx).Clauses(clause.OnConflict{UpdateAll: true}).Create(knowledge)
-}
-func (dao *knowledgeDAO) Update(ctx context.Context, knowledge *model.Knowledge) error {
-	k := dao.query.Knowledge
+func (dao *KnowledgeDAO) Update(ctx context.Context, knowledge *model.Knowledge) error {
+	k := dao.Query.Knowledge
 	knowledge.UpdatedAt = time.Now().UnixMilli()
 	_, err := k.WithContext(ctx).Where(k.ID.Eq(knowledge.ID)).Updates(knowledge)
 	return err
 }
 
-func (dao *knowledgeDAO) Delete(ctx context.Context, id int64) error {
-	k := dao.query.Knowledge
+func (dao *KnowledgeDAO) Delete(ctx context.Context, id int64) error {
+	k := dao.Query.Knowledge
 	_, err := k.WithContext(ctx).Where(k.ID.Eq(id)).Delete()
 	return err
 }
 
-func (dao *knowledgeDAO) MGetByID(ctx context.Context, ids []int64) ([]*model.Knowledge, error) {
+func (dao *KnowledgeDAO) MGetByID(ctx context.Context, ids []int64) ([]*model.Knowledge, error) {
 	if len(ids) == 0 {
 		return nil, nil
 	}
 
-	k := dao.query.Knowledge
+	k := dao.Query.Knowledge
 	pos, err := k.WithContext(ctx).Where(k.ID.In(ids...)).Find()
 	if err != nil {
 		return nil, err
@@ -99,11 +52,11 @@ func (dao *knowledgeDAO) MGetByID(ctx context.Context, ids []int64) ([]*model.Kn
 	return pos, nil
 }
 
-func (dao *knowledgeDAO) FilterEnableKnowledge(ctx context.Context, knowledgeIDs []int64) ([]*model.Knowledge, error) {
+func (dao *KnowledgeDAO) FilterEnableKnowledge(ctx context.Context, knowledgeIDs []int64) ([]*model.Knowledge, error) {
 	if len(knowledgeIDs) == 0 {
 		return nil, nil
 	}
-	k := dao.query.Knowledge
+	k := dao.Query.Knowledge
 	knowledgeModels, err := k.WithContext(ctx).
 		Select(k.ID, k.FormatType).
 		Where(k.ID.In(knowledgeIDs...)).
@@ -113,20 +66,20 @@ func (dao *knowledgeDAO) FilterEnableKnowledge(ctx context.Context, knowledgeIDs
 	return knowledgeModels, err
 }
 
-func (dao *knowledgeDAO) InitTx() (tx *gorm.DB, err error) {
-	tx = dao.db.Begin()
+func (dao *KnowledgeDAO) InitTx() (tx *gorm.DB, err error) {
+	tx = dao.DB.Begin()
 	if tx.Error != nil {
 		return nil, err
 	}
 	return
 }
 
-func (dao *knowledgeDAO) UpdateWithTx(ctx context.Context, tx *gorm.DB, knowledgeID int64, updateMap map[string]interface{}) error {
+func (dao *KnowledgeDAO) UpdateWithTx(ctx context.Context, tx *gorm.DB, knowledgeID int64, updateMap map[string]interface{}) error {
 	return tx.WithContext(ctx).Model(&model.Knowledge{}).Where("id = ?", knowledgeID).Updates(updateMap).Error
 }
 
-func (dao *knowledgeDAO) FindKnowledgeByCondition(ctx context.Context, opts *WhereKnowledgeOption) (knowledge []*model.Knowledge, total int64, err error) {
-	k := dao.query.Knowledge
+func (dao *KnowledgeDAO) FindKnowledgeByCondition(ctx context.Context, opts *entity.WhereKnowledgeOption) (knowledge []*model.Knowledge, total int64, err error) {
+	k := dao.Query.Knowledge
 	do := k.WithContext(ctx).Debug()
 	if opts == nil {
 		return nil, 0, nil
@@ -165,9 +118,9 @@ func (dao *knowledgeDAO) FindKnowledgeByCondition(ctx context.Context, opts *Whe
 		return nil, 0, err
 	}
 	if opts.Order != nil {
-		if *opts.Order == OrderCreatedAt {
+		if *opts.Order == entity.OrderCreatedAt {
 			if opts.OrderType != nil {
-				if *opts.OrderType == OrderTypeAsc {
+				if *opts.OrderType == entity.OrderTypeAsc {
 					do = do.Order(k.CreatedAt.Asc())
 				} else {
 					do = do.Order(k.CreatedAt.Desc())
@@ -175,9 +128,9 @@ func (dao *knowledgeDAO) FindKnowledgeByCondition(ctx context.Context, opts *Whe
 			} else {
 				do = do.Order(k.CreatedAt.Desc())
 			}
-		} else if *opts.Order == OrderUpdatedAt {
+		} else if *opts.Order == entity.OrderUpdatedAt {
 			if opts.OrderType != nil {
-				if *opts.OrderType == OrderTypeAsc {
+				if *opts.OrderType == entity.OrderTypeAsc {
 					do = do.Order(k.UpdatedAt.Asc())
 				} else {
 					do = do.Order(k.UpdatedAt.Desc())
@@ -195,8 +148,8 @@ func (dao *knowledgeDAO) FindKnowledgeByCondition(ctx context.Context, opts *Whe
 	return knowledge, total, err
 }
 
-func (dao *knowledgeDAO) GetByID(ctx context.Context, id int64) (*model.Knowledge, error) {
-	k := dao.query.Knowledge
+func (dao *KnowledgeDAO) GetByID(ctx context.Context, id int64) (*model.Knowledge, error) {
+	k := dao.Query.Knowledge
 	knowledge, err := k.WithContext(ctx).Where(k.ID.Eq(id)).First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

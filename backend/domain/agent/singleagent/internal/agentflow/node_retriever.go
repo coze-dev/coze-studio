@@ -9,8 +9,8 @@ import (
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossknowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
@@ -63,8 +63,8 @@ func (r *knowledgeRetriever) Retrieve(ctx context.Context, req *AgentRequest) ([
 
 func genKnowledgeRequest(_ context.Context, ids []int64, conf *bot_common.Knowledge,
 	query string, history []*schema.Message,
-) (*knowledge.RetrieveRequest, error) {
-	rr := &knowledge.RetrieveRequest{
+) (*service.RetrieveRequest, error) {
+	rr := &service.RetrieveRequest{
 		Query:        query,
 		ChatHistory:  history,
 		KnowledgeIDs: ids,

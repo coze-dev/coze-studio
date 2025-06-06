@@ -8,8 +8,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/repository"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
-	service2 "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
+	knowledge "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
+	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
@@ -46,7 +46,7 @@ type ServiceComponents struct {
 	UserDomainSVC        user.User
 	VariablesDomainSVC   variables.Variables
 	ConnectorDomainSVC   connector.Connector
-	DatabaseDomainSVC    service2.Database
+	DatabaseDomainSVC    database.Database
 	ShortcutCMDDomainSVC shortcutCmd.ShortcutCmd
 }
 

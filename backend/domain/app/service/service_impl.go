@@ -15,7 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	resourceEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -74,7 +74,7 @@ func (a *appServiceImpl) deleteAPPResource(ctx context.Context, resource *resour
 	case resourceCommon.ResType_Plugin:
 
 	case resourceCommon.ResType_Knowledge:
-		err = crossknowledge.DefaultSVC().DeleteKnowledge(ctx, &knowledge.DeleteKnowledgeRequest{
+		err = crossknowledge.DefaultSVC().DeleteKnowledge(ctx, &service.DeleteKnowledgeRequest{
 			KnowledgeID: resource.ResID,
 		})
 

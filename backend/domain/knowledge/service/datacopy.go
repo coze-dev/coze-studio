@@ -16,11 +16,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatacopy"
 	"code.byted.org/flow/opencoze/backend/domain/datacopy"
 	copyEntity "code.byted.org/flow/opencoze/backend/domain/datacopy/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
@@ -31,7 +29,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *knowledge.CopyKnowledgeRequest) (*knowledge.CopyKnowledgeResponse, error) {
+func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *CopyKnowledgeRequest) (*CopyKnowledgeResponse, error) {
 	if request == nil {
 		return nil, errors.New("request is nil")
 	}
@@ -75,24 +73,24 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *knowledge.Cop
 	}
 	switch checkResult.CopyTaskStatus {
 	case copyEntity.DataCopyTaskStatusSuccess:
-		return &knowledge.CopyKnowledgeResponse{
+		return &CopyKnowledgeResponse{
 			OriginKnowledgeID: request.KnowledgeID,
 			TargetKnowledgeID: checkResult.TargetID,
-			CopyStatus:        knowledge.CopyStatus_Successful,
+			CopyStatus:        CopyStatus_Successful,
 			ErrMsg:            "",
 		}, nil
 	case copyEntity.DataCopyTaskStatusInProgress:
-		return &knowledge.CopyKnowledgeResponse{
+		return &CopyKnowledgeResponse{
 			OriginKnowledgeID: request.KnowledgeID,
 			TargetKnowledgeID: checkResult.TargetID,
-			CopyStatus:        knowledge.CopyStatus_Processing,
+			CopyStatus:        CopyStatus_Processing,
 			ErrMsg:            "",
 		}, nil
 	case copyEntity.DataCopyTaskStatusFail:
-		return &knowledge.CopyKnowledgeResponse{
+		return &CopyKnowledgeResponse{
 			OriginKnowledgeID: request.KnowledgeID,
 			TargetKnowledgeID: checkResult.TargetID,
-			CopyStatus:        knowledge.CopyStatus_Failed,
+			CopyStatus:        CopyStatus_Failed,
 			ErrMsg:            checkResult.FailReason,
 		}, nil
 	}
@@ -106,7 +104,7 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *knowledge.Cop
 	return copyResp, nil
 }
 
-func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*knowledge.CopyKnowledgeResponse, error) {
+func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*CopyKnowledgeResponse, error) {
 	var err error
 	tx, err := k.knowledgeRepo.InitTx()
 	if err != nil {
@@ -119,7 +117,7 @@ func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*
 		}
 		if err != nil {
 			tx.Rollback()
-			deleteErr := k.DeleteKnowledge(ctx, &knowledge.DeleteKnowledgeRequest{KnowledgeID: copyCtx.CopyTask.TargetDataID})
+			deleteErr := k.DeleteKnowledge(ctx, &DeleteKnowledgeRequest{KnowledgeID: copyCtx.CopyTask.TargetDataID})
 			if deleteErr != nil {
 				logs.CtxErrorf(ctx, "delete knowledge failed, err: %v", deleteErr)
 			}
@@ -163,10 +161,10 @@ func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*
 	if err != nil {
 		logs.CtxWarnf(ctx, "update copy task failed, err: %v", err)
 	}
-	return &knowledge.CopyKnowledgeResponse{
+	return &CopyKnowledgeResponse{
 		OriginKnowledgeID: copyCtx.OriginData.ID,
 		TargetKnowledgeID: copyCtx.CopyTask.TargetDataID,
-		CopyStatus:        knowledge.CopyStatus_Successful,
+		CopyStatus:        CopyStatus_Successful,
 		ErrMsg:            "",
 	}, nil
 }
@@ -190,7 +188,7 @@ func (k *knowledgeSVC) copyKnowledge(ctx context.Context, copyCtx *knowledgeCopy
 
 func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *knowledgeCopyCtx) (err error) {
 	// 查询document信息（仅处理完成的文档）
-	documents, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+	documents, _, err := k.documentRepo.FindDocumentByCondition(ctx, &entity.WhereDocumentOpt{
 		KnowledgeIDs: []int64{copyCtx.OriginData.ID},
 		StatusIn:     []int32{int32(entity.DocumentStatusEnable)},
 		SelectAll:    true,
@@ -219,7 +217,7 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 		}
 	}
 
-	targetDocuments, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+	targetDocuments, _, err := k.documentRepo.FindDocumentByCondition(ctx, &entity.WhereDocumentOpt{
 		KnowledgeIDs: []int64{copyCtx.CopyTask.TargetDataID},
 		SelectAll:    true,
 	})
@@ -228,7 +226,7 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 		return err
 	}
 	for i := range targetDocuments {
-		err = k.DeleteDocument(ctx, &knowledge.DeleteDocumentRequest{DocumentID: targetDocuments[i].ID})
+		err = k.DeleteDocument(ctx, &DeleteDocumentRequest{DocumentID: targetDocuments[i].ID})
 		if err != nil {
 			return err
 		}
@@ -497,7 +495,7 @@ type knowledgeCopyCtx struct {
 	NewRDBTableNames []string
 }
 
-func (k *knowledgeSVC) MigrateKnowledge(ctx context.Context, request *knowledge.MigrateKnowledgeRequest) error {
+func (k *knowledgeSVC) MigrateKnowledge(ctx context.Context, request *MigrateKnowledgeRequest) error {
 	if request == nil || request.KnowledgeID == 0 {
 		return errors.New("invalid request")
 	}

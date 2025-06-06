@@ -10,7 +10,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	app "code.byted.org/flow/opencoze/backend/domain/app/service"
 	connector "code.byted.org/flow/opencoze/backend/domain/connector/service"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	knowledge "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	prompt "code.byted.org/flow/opencoze/backend/domain/prompt/service"

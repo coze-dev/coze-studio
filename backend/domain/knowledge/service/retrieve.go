@@ -17,11 +17,9 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/rerank"
@@ -34,7 +32,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-func (k *knowledgeSVC) Retrieve(ctx context.Context, request *knowledge.RetrieveRequest) (response *knowledge.RetrieveResponse, err error) {
+func (k *knowledgeSVC) Retrieve(ctx context.Context, request *RetrieveRequest) (response *RetrieveResponse, err error) {
 	if request == nil {
 		return nil, errors.New("request is null")
 	}
@@ -42,7 +40,7 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, request *knowledge.Retrieve
 	if err != nil {
 		return nil, err
 	}
-	chain := compose.NewChain[*knowledge.RetrieveContext, []*knowledgeModel.RetrieveSlice]()
+	chain := compose.NewChain[*RetrieveContext, []*knowledgeModel.RetrieveSlice]()
 	rewriteNode := compose.InvokableLambda(k.queryRewriteNode)
 	// 向量化召回
 	vectorRetrieveNode := compose.InvokableLambda(k.vectorRetrieveNode)
@@ -79,12 +77,12 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, request *knowledge.Retrieve
 		logs.CtxErrorf(ctx, "invoke chain failed: %v", err)
 		return nil, err
 	}
-	return &knowledge.RetrieveResponse{
+	return &RetrieveResponse{
 		RetrieveSlices: output,
 	}, nil
 }
 
-func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.RetrieveRequest) (*knowledge.RetrieveContext, error) {
+func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *RetrieveRequest) (*RetrieveContext, error) {
 	if req.Strategy == nil {
 		return nil, errors.New("strategy is required")
 	}
@@ -95,10 +93,10 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.Re
 		logs.CtxErrorf(ctx, "prepare rag documents failed: %v", err)
 		return nil, err
 	}
-	knowledgeInfoMap := make(map[int64]*knowledge.KnowledgeInfo)
+	knowledgeInfoMap := make(map[int64]*KnowledgeInfo)
 	for _, kn := range enableKnowledge {
 		if knowledgeInfoMap[kn.ID] == nil {
-			knowledgeInfoMap[kn.ID] = &knowledge.KnowledgeInfo{}
+			knowledgeInfoMap[kn.ID] = &KnowledgeInfo{}
 			knowledgeInfoMap[kn.ID].DocumentType = knowledgeModel.DocumentType(kn.FormatType)
 			knowledgeInfoMap[kn.ID].DocumentIDs = []int64{}
 		}
@@ -113,7 +111,7 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *knowledge.Re
 			info.TableColumns = doc.TableInfo.Columns
 		}
 	}
-	resp := knowledge.RetrieveContext{
+	resp := RetrieveContext{
 		Ctx:              ctx,
 		OriginQuery:      req.Query,
 		ChatHistory:      append(req.ChatHistory, schema.UserMessage(req.Query)),
@@ -135,7 +133,7 @@ func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []in
 	for _, kn := range enableKnowledge {
 		enableKnowledgeIDs = append(enableKnowledgeIDs, kn.ID)
 	}
-	enableDocs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
+	enableDocs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &entity.WhereDocumentOpt{
 		IDs:          documentIDs,
 		KnowledgeIDs: enableKnowledgeIDs,
 		StatusIn:     []int32{int32(entity.DocumentStatusEnable)},
@@ -147,7 +145,7 @@ func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []in
 	return enableDocs, enableKnowledge, nil
 }
 
-func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.RetrieveContext) (newRetrieveContext *knowledge.RetrieveContext, err error) {
+func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *RetrieveContext) (newRetrieveContext *RetrieveContext, err error) {
 	if len(req.ChatHistory) == 0 {
 		// 没有上下文不需要改写
 		return req, nil
@@ -166,7 +164,7 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *knowledge.Retr
 	return req, nil
 }
 
-func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*schema.Document, err error) {
+func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *RetrieveContext) (retrieveResult []*schema.Document, err error) {
 	if req.Strategy.SearchType == knowledgeModel.SearchTypeFullText {
 		return nil, nil
 	}
@@ -186,7 +184,7 @@ func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *knowledge.Re
 	return k.retrieveChannels(ctx, req, manager)
 }
 
-func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*schema.Document, err error) {
+func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *RetrieveContext) (retrieveResult []*schema.Document, err error) {
 	if req.Strategy.SearchType == knowledgeModel.SearchTypeSemantic {
 		return nil, nil
 	}
@@ -206,7 +204,7 @@ func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *knowledge.Retrie
 	return k.retrieveChannels(ctx, req, manager)
 }
 
-func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *knowledge.RetrieveContext, manager searchstore.Manager) (result []*schema.Document, err error) {
+func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *RetrieveContext, manager searchstore.Manager) (result []*schema.Document, err error) {
 	query := req.OriginQuery
 	if req.Strategy.EnableQueryRewrite && req.RewrittenQuery != nil {
 		query = *req.RewrittenQuery
@@ -265,7 +263,7 @@ func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *knowledge.Retr
 	return
 }
 
-func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *knowledge.RetrieveContext) (retrieveResult []*schema.Document, err error) {
+func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *RetrieveContext) (retrieveResult []*schema.Document, err error) {
 	hasTable := false
 	var tableDocs []*model.KnowledgeDocument
 	for _, doc := range req.Documents {
@@ -301,7 +299,7 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *knowledge.Re
 	}
 }
 
-func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocument, retrieveCtx *knowledge.RetrieveContext) (retrieveResult []*schema.Document, err error) {
+func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocument, retrieveCtx *RetrieveContext) (retrieveResult []*schema.Document, err error) {
 	sql, err := k.nl2Sql.NL2SQL(ctx, retrieveCtx.ChatHistory, []*document.TableSchema{packNL2SqlRequest(doc)})
 	if err != nil {
 		logs.CtxErrorf(ctx, "nl2sql failed: %v", err)
@@ -406,13 +404,13 @@ func packNL2SqlRequest(doc *model.KnowledgeDocument) *document.TableSchema {
 	return res
 }
 
-func (k *knowledgeSVC) passRequestContext(ctx context.Context, req *knowledge.RetrieveContext) (context *knowledge.RetrieveContext, err error) {
+func (k *knowledgeSVC) passRequestContext(ctx context.Context, req *RetrieveContext) (context *RetrieveContext, err error) {
 	return req, nil
 }
 
 func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any) (retrieveResult []*schema.Document, err error) {
 	// 首先获取下retrieve上下文
-	retrieveCtx, ok := resultMap["passRequestContext"].(*knowledge.RetrieveContext)
+	retrieveCtx, ok := resultMap["passRequestContext"].(*RetrieveContext)
 	if !ok {
 		return nil, errors.New("retrieve context is not found")
 	}

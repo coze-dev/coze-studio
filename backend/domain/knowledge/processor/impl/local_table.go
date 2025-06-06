@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -14,7 +13,7 @@ type localTableProcessor struct {
 
 func (l *localTableProcessor) BeforeCreate() error {
 	if isTableAppend(l.Documents) {
-		tableDoc, _, err := l.documentRepo.FindDocumentByCondition(l.ctx, &dao.WhereDocumentOpt{
+		tableDoc, _, err := l.documentRepo.FindDocumentByCondition(l.ctx, &entity.WhereDocumentOpt{
 			KnowledgeIDs: []int64{l.Documents[0].KnowledgeID},
 			Limit:        1,
 		})
