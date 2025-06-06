@@ -29,7 +29,7 @@ type Service interface {
 	GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error)
 	GetNodeExecution(ctx context.Context, exeID int64, nodeID string) (*entity.NodeExecution, *entity.NodeExecution, error)
 	GetLatestTestRunInput(ctx context.Context, wfID int64, userID int64) (*entity.NodeExecution, bool, error)
-	GetLastestNodeDebugInput(ctx context.Context, wfID int64, nodeID string, userID int64) (
+	GetLatestNodeDebugInput(ctx context.Context, wfID int64, nodeID string, userID int64) (
 		*entity.NodeExecution, *entity.NodeExecution, bool, error)
 	GetWorkflowReference(ctx context.Context, id int64) (map[int64]*entity.Workflow, error)
 	GetReleasedWorkflows(ctx context.Context, ids []*entity.WorkflowIdentity) (map[int64]*entity.Workflow, error)
@@ -52,6 +52,8 @@ type Service interface {
 	CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (int64, error)
 	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
 	CheckWorkflowsExistByAppID(ctx context.Context, appID int64) (bool, error)
+	BatchDeleteWorkflow(ctx context.Context, ids []int64) error
+	DeleteWorkflowsByAppID(ctx context.Context, appID int64) error
 }
 
 type Repository interface {
@@ -62,6 +64,7 @@ type Repository interface {
 	CreateWorkflowVersion(ctx context.Context, wid int64, v *vo.VersionInfo) (int64, error)
 	CreateOrUpdateDraft(ctx context.Context, id int64, canvas, inputParams, outputParams string, resetTestRun bool) error
 	DeleteWorkflow(ctx context.Context, id int64) error
+	BatchDeleteWorkflow(ctx context.Context, ids []int64) error
 	GetWorkflowMeta(ctx context.Context, id int64) (*entity.Workflow, error)
 	UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) error
 	GetWorkflowVersion(ctx context.Context, id int64, version string) (*vo.VersionInfo, error)
@@ -106,6 +109,7 @@ type Repository interface {
 	GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error)
 	BatchPublishWorkflows(ctx context.Context, workflows map[int64]*vo.VersionInfo) error
 	HasWorkflow(ctx context.Context, appID int64) (bool, error)
+	GetWorkflowIDsByAppId(ctx context.Context, appID int64) (es []int64, err error)
 }
 
 type ToolFromWorkflow interface {

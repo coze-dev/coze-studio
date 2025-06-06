@@ -218,6 +218,26 @@ func (w *ApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.D
 	}, nil
 }
 
+func (w *ApplicationService) BatchDeleteWorkflow(ctx context.Context, req *workflow.BatchDeleteWorkflowRequest) (*workflow.BatchDeleteWorkflowResponse, error) {
+	ids, err := slices.TransformWithErrorCheck(req.GetWorkflowIDList(), func(a string) (int64, error) {
+		return strconv.ParseInt(a, 10, 64)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = GetWorkflowDomainSVC().BatchDeleteWorkflow(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	return &workflow.BatchDeleteWorkflowResponse{
+		Data: &workflow.DeleteWorkflowData{
+			Status: workflow.DeleteStatus_SUCCESS,
+		},
+	}, nil
+}
+
 func (w *ApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetCanvasInfoRequest) (*workflow.GetCanvasInfoResponse, error) {
 	wf, err := GetWorkflowDomainSVC().GetWorkflowDraft(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
@@ -478,7 +498,7 @@ func (w *ApplicationService) GetNodeExecuteHistory(ctx context.Context, req *wor
 				Data: result,
 			}, nil
 		} else {
-			nodeExe, innerExe, found, err := GetWorkflowDomainSVC().GetLastestNodeDebugInput(ctx, mustParseInt64(req.GetWorkflowID()), nodeID,
+			nodeExe, innerExe, found, err := GetWorkflowDomainSVC().GetLatestNodeDebugInput(ctx, mustParseInt64(req.GetWorkflowID()), nodeID,
 				ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0))
 			if err != nil {
 				return nil, err

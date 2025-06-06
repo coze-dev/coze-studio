@@ -160,6 +160,7 @@ func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest)
 			Type:             string(chunkMessageItem.MessageType),
 			Content:          chunkMessageItem.Content,
 			ReasoningContent: chunkMessageItem.ReasoningContent,
+			RequiredAction:   chunkMessageItem.RequiredAction,
 		},
 		Index: int32(chunkMessageItem.Index),
 		SeqID: int32(chunkMessageItem.SeqID),
@@ -182,6 +183,7 @@ func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest)
 
 	if chunk.ChunkMessageItem.IsFinish && chunkMessageItem.MessageType == model.MessageTypeAnswer {
 		chunkMessage.Message.Content = ""
+		chunkMessage.Message.ContentType = string(model.ContentTypeText)
 	}
 
 	mCM, _ := json.Marshal(chunkMessage)

@@ -15,18 +15,20 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-func newReplyCallback(_ context.Context) (clb callbacks.Handler,
+func newReplyCallback(_ context.Context, executeID string) (clb callbacks.Handler,
 	sr *schema.StreamReader[*entity.AgentEvent], sw *schema.StreamWriter[*entity.AgentEvent],
 ) {
 	sr, sw = schema.Pipe[*entity.AgentEvent](10)
 
 	rcc := &replyChunkCallback{
-		sw: sw,
+		sw:        sw,
+		executeID: executeID,
 	}
 
 	clb = callbacks.NewHandlerBuilder().
@@ -40,14 +42,46 @@ func newReplyCallback(_ context.Context) (clb callbacks.Handler,
 }
 
 type replyChunkCallback struct {
-	sw *schema.StreamWriter[*entity.AgentEvent]
+	sw        *schema.StreamWriter[*entity.AgentEvent]
+	executeID string
 }
 
 func (r *replyChunkCallback) OnError(ctx context.Context, info *callbacks.RunInfo, err error) context.Context {
 	logs.CtxInfof(ctx, "info-OnError, info=%v, err=%v", conv.DebugJsonToStr(info), err)
 
-	r.sw.Send(nil, fmt.Errorf("node execute failed, component=%v, name=%v, err=%w",
-		info.Component, info.Name, err))
+	switch info.Component {
+	case compose.ComponentOfGraph:
+		if interruptInfo, ok := compose.ExtractInterruptInfo(err); ok {
+			if info.Name != "" {
+				return ctx
+			}
+			interruptData := convInterruptInfo(ctx, interruptInfo)
+			interruptData.InterruptID = r.executeID
+
+			toolMessageEvent := &entity.AgentEvent{
+				EventType: singleagent.EventTypeOfToolsMessage,
+				ToolsMessage: []*schema.Message{
+					{
+						Role:       schema.Tool,
+						Content:    "directly streaming reply",
+						ToolCallID: interruptData.ToolCallID,
+					},
+				},
+			}
+			r.sw.Send(toolMessageEvent, nil)
+
+			interruptEvent := &entity.AgentEvent{
+				EventType: singleagent.EventTypeOfInterrupt,
+				Interrupt: interruptData,
+			}
+			r.sw.Send(interruptEvent, nil)
+
+		} else {
+			r.sw.Send(nil, fmt.Errorf("node execute failed, component=%v, name=%v, err=%w",
+				info.Component, info.Name, err))
+		}
+
+	}
 
 	return ctx
 }
@@ -155,6 +189,36 @@ func (r *replyChunkCallback) OnEndWithStreamOutput(ctx context.Context, info *ca
 	default:
 		return ctx
 	}
+}
+
+func convInterruptInfo(ctx context.Context, interruptInfo *compose.InterruptInfo) *singleagent.InterruptInfo {
+	var output *compose.InterruptInfo
+	output = interruptInfo.SubGraphs[keyOfReActAgent]
+	var extra any
+
+	for i := range output.RerunNodesExtra {
+		extra = output.RerunNodesExtra[i]
+		break
+	}
+	toolsNodeExtra, err := extra.(*compose.ToolsInterruptAndRerunExtra)
+	logs.CtxInfof(ctx, "toolsNodeExtra=%v, err=%v", toolsNodeExtra, err)
+
+	var toolCallID string
+	for _, toolCall := range toolsNodeExtra.ToolCalls {
+		toolCallID = toolCall.ID
+		break
+	}
+
+	resumeData := make(map[string]*crossworkflow.ToolInterruptEvent)
+	for k, v := range toolsNodeExtra.RerunExtraMap {
+		resumeData[k] = v.(*crossworkflow.ToolInterruptEvent)
+	}
+
+	interrupt := &singleagent.InterruptInfo{
+		AllToolInterruptData: resumeData,
+		ToolCallID:           toolCallID,
+	}
+	return interrupt
 }
 
 func concatToolsNodeOutput(ctx context.Context, output *schema.StreamReader[callbacks.CallbackOutput]) ([]*schema.Message, error) {

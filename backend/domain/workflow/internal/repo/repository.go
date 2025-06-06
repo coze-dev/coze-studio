@@ -30,6 +30,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 type RepositoryImpl struct {
@@ -293,6 +294,36 @@ func (r *RepositoryImpl) DeleteWorkflow(ctx context.Context, id int64) error {
 
 		return nil
 	})
+}
+func (r *RepositoryImpl) BatchDeleteWorkflow(ctx context.Context, ids []int64) error {
+	_, err := r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.ID.In(ids...)).Delete()
+	if err != nil {
+		return fmt.Errorf("delete workflow meta failed err=%w", err)
+	}
+
+	safego.Go(ctx, func() {
+		_, err = r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.In(ids...)).Delete()
+		if err != nil {
+			logs.Warnf("delete workflow draft failed err=%v, ids %v", err, ids)
+		}
+
+		_, err = r.query.WorkflowVersion.WithContext(ctx).Where(r.query.WorkflowVersion.ID.In(ids...)).Delete()
+		if err != nil {
+			logs.Warnf("delete workflow version failed err=%v, ids %v", err, ids)
+		}
+
+		_, err = r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowReference.ID.In(ids...)).Delete()
+		if err != nil {
+			logs.Warnf("delete workflow reference failed err=%v, ids %v", err, ids)
+
+		}
+		_, err = r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowReference.ReferringID.In(ids...)).Delete()
+		if err != nil {
+			logs.Warnf("delete workflow reference refer failed err=%v, ids %v", err, ids)
+		}
+	})
+
+	return nil
 }
 
 func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity.Workflow, error) {
@@ -1647,6 +1678,20 @@ func (r *RepositoryImpl) HasWorkflow(ctx context.Context, appID int64) (bool, er
 	}
 	return ternary.IFElse(ct > 0, true, false), nil
 
+}
+
+func (r *RepositoryImpl) GetWorkflowIDsByAppId(ctx context.Context, appID int64) (es []int64, err error) {
+	workflowMetas, err := r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.AppID.Eq(appID)).Select(r.query.WorkflowMeta.ID).Find()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return []int64{}, nil
+		}
+		return nil, err
+	}
+
+	return slices.Transform(workflowMetas, func(a *model2.WorkflowMeta) int64 {
+		return a.ID
+	}), nil
 }
 
 func filterDisabledAPIParameters(parametersCfg []*workflow3.APIParameter, m map[string]any) map[string]any {

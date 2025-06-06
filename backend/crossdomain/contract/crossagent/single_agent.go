@@ -16,6 +16,10 @@ type SingleAgent interface {
 	GetSingleAgent(ctx context.Context, agentID int64, version string) (agent *singleagent.SingleAgent, err error)
 }
 
+type ResumeInfo = singleagent.InterruptInfo
+
+type AgentEvent = singleagent.AgentEvent
+
 var defaultSVC SingleAgent
 
 func DefaultSVC() SingleAgent {

@@ -92,6 +92,20 @@ func (mr *MockServiceMockRecorder) AsyncResumeWorkflow(ctx, req, config any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AsyncResumeWorkflow", reflect.TypeOf((*MockService)(nil).AsyncResumeWorkflow), ctx, req, config)
 }
 
+// BatchDeleteWorkflow mocks base method.
+func (m *MockService) BatchDeleteWorkflow(ctx context.Context, ids []int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BatchDeleteWorkflow", ctx, ids)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BatchDeleteWorkflow indicates an expected call of BatchDeleteWorkflow.
+func (mr *MockServiceMockRecorder) BatchDeleteWorkflow(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchDeleteWorkflow", reflect.TypeOf((*MockService)(nil).BatchDeleteWorkflow), ctx, ids)
+}
+
 // CancelWorkflow mocks base method.
 func (m *MockService) CancelWorkflow(ctx context.Context, wfExeID, wfID, spaceID int64) error {
 	m.ctrl.T.Helper()
@@ -165,6 +179,20 @@ func (mr *MockServiceMockRecorder) DeleteWorkflow(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWorkflow", reflect.TypeOf((*MockService)(nil).DeleteWorkflow), ctx, id)
 }
 
+// DeleteWorkflowsByAppID mocks base method.
+func (m *MockService) DeleteWorkflowsByAppID(ctx context.Context, appID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteWorkflowsByAppID", ctx, appID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteWorkflowsByAppID indicates an expected call of DeleteWorkflowsByAppID.
+func (mr *MockServiceMockRecorder) DeleteWorkflowsByAppID(ctx, appID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWorkflowsByAppID", reflect.TypeOf((*MockService)(nil).DeleteWorkflowsByAppID), ctx, appID)
+}
+
 // GetExecution mocks base method.
 func (m *MockService) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error) {
 	m.ctrl.T.Helper()
@@ -180,10 +208,10 @@ func (mr *MockServiceMockRecorder) GetExecution(ctx, wfExe any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExecution", reflect.TypeOf((*MockService)(nil).GetExecution), ctx, wfExe)
 }
 
-// GetLastestNodeDebugInput mocks base method.
-func (m *MockService) GetLastestNodeDebugInput(ctx context.Context, wfID int64, nodeID string, userID int64) (*entity.NodeExecution, *entity.NodeExecution, bool, error) {
+// GetLatestNodeDebugInput mocks base method.
+func (m *MockService) GetLatestNodeDebugInput(ctx context.Context, wfID int64, nodeID string, userID int64) (*entity.NodeExecution, *entity.NodeExecution, bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLastestNodeDebugInput", ctx, wfID, nodeID, userID)
+	ret := m.ctrl.Call(m, "GetLatestNodeDebugInput", ctx, wfID, nodeID, userID)
 	ret0, _ := ret[0].(*entity.NodeExecution)
 	ret1, _ := ret[1].(*entity.NodeExecution)
 	ret2, _ := ret[2].(bool)
@@ -191,10 +219,10 @@ func (m *MockService) GetLastestNodeDebugInput(ctx context.Context, wfID int64, 
 	return ret0, ret1, ret2, ret3
 }
 
-// GetLastestNodeDebugInput indicates an expected call of GetLastestNodeDebugInput.
-func (mr *MockServiceMockRecorder) GetLastestNodeDebugInput(ctx, wfID, nodeID, userID any) *gomock.Call {
+// GetLatestNodeDebugInput indicates an expected call of GetLatestNodeDebugInput.
+func (mr *MockServiceMockRecorder) GetLatestNodeDebugInput(ctx, wfID, nodeID, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastestNodeDebugInput", reflect.TypeOf((*MockService)(nil).GetLastestNodeDebugInput), ctx, wfID, nodeID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestNodeDebugInput", reflect.TypeOf((*MockService)(nil).GetLatestNodeDebugInput), ctx, wfID, nodeID, userID)
 }
 
 // GetLatestTestRunInput mocks base method.
@@ -565,6 +593,20 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// BatchDeleteWorkflow mocks base method.
+func (m *MockRepository) BatchDeleteWorkflow(ctx context.Context, ids []int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BatchDeleteWorkflow", ctx, ids)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BatchDeleteWorkflow indicates an expected call of BatchDeleteWorkflow.
+func (mr *MockRepositoryMockRecorder) BatchDeleteWorkflow(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchDeleteWorkflow", reflect.TypeOf((*MockRepository)(nil).BatchDeleteWorkflow), ctx, ids)
+}
+
 // BatchPublishWorkflows mocks base method.
 func (m *MockRepository) BatchPublishWorkflows(ctx context.Context, workflows map[int64]*vo.VersionInfo) error {
 	m.ctrl.T.Helper()
@@ -920,6 +962,21 @@ func (m *MockRepository) GetWorkflowExecution(ctx context.Context, id int64) (*e
 func (mr *MockRepositoryMockRecorder) GetWorkflowExecution(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkflowExecution", reflect.TypeOf((*MockRepository)(nil).GetWorkflowExecution), ctx, id)
+}
+
+// GetWorkflowIDsByAppId mocks base method.
+func (m *MockRepository) GetWorkflowIDsByAppId(ctx context.Context, appID int64) ([]int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWorkflowIDsByAppId", ctx, appID)
+	ret0, _ := ret[0].([]int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWorkflowIDsByAppId indicates an expected call of GetWorkflowIDsByAppId.
+func (mr *MockRepositoryMockRecorder) GetWorkflowIDsByAppId(ctx, appID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkflowIDsByAppId", reflect.TypeOf((*MockRepository)(nil).GetWorkflowIDsByAppId), ctx, appID)
 }
 
 // GetWorkflowMeta mocks base method.

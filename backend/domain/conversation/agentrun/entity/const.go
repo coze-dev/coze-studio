@@ -65,4 +65,5 @@ type MessageSubType string
 const (
 	MessageSubTypeKnowledgeCall  MessageSubType = "knowledge_recall"
 	MessageSubTypeGenerateFinish MessageSubType = "generate_answer_finish"
+	MessageSubTypeInterrupt      MessageSubType = "interrupt"
 )

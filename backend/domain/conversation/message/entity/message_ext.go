@@ -19,6 +19,10 @@ const (
 	MessageExtKeyExecuteDisplayName  MessageExtKey = "execute_display_name"
 	MessageExtKeyTaskType            MessageExtKey = "task_type"
 	MessageExtKeyCallID              MessageExtKey = "call_id"
+	ExtKeyResumeInfo                 MessageExtKey = "resume_info"
+	ExtKeyBreakPoint                 MessageExtKey = "break_point"
+	ExtKeyToolCallsIDs               MessageExtKey = "tool_calls_ids"
+	ExtKeyRequiresAction             MessageExtKey = "requires_action"
 )
 
 type BotStateExt struct {

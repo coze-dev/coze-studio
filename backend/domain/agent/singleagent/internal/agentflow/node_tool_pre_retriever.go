@@ -2,10 +2,9 @@ package agentflow
 
 import (
 	"context"
-	"strconv"
-	"time"
 
 	"github.com/cloudwego/eino/schema"
+	"github.com/google/uuid"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
@@ -46,7 +45,8 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 		}
 
 		if execResp != nil && execResp.TrimmedResp != "" {
-			toolCallID := "call_" + strconv.Itoa(int(time.Now().UnixNano())) // TODO: generate tool call id
+			uID := uuid.New()
+			toolCallID := "call_" + uID.String()
 			tms = append(tms, &schema.Message{
 				Role: schema.Assistant,
 				ToolCalls: []schema.ToolCall{

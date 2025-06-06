@@ -11,6 +11,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/checkpoint"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -61,6 +62,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		return nil, err
 	}
 
+	requireCheckpoint := false
 	pluginTools, err := newPluginTools(ctx, &toolConfig{
 		toolConf: conf.Agent.Plugin,
 		agentID:  conf.Agent.AgentID,
@@ -106,6 +108,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	var isReActAgent bool
 	if len(agentTools) > 0 {
 		isReActAgent = true
+		requireCheckpoint = true
 	}
 
 	var agentGraph compose.AnyGraph
@@ -197,13 +200,19 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		_ = g.AddEdge(agentNodeName, compose.END)
 	}
 
-	runner, err := g.Compile(ctx)
+	var opts []compose.GraphCompileOption
+	if requireCheckpoint {
+		opts = append(opts, compose.WithCheckPointStore(checkpoint.GetStore()))
+	}
+
+	runner, err := g.Compile(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
 	return &AgentRunner{
-		runner: runner,
+		runner:            runner,
+		requireCheckpoint: requireCheckpoint,
 	}, nil
 }
 
