@@ -399,11 +399,10 @@ func convertColumnType2Entity(columnType dataset.ColumnType) document.TableColum
 }
 
 func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dataset.TableSheet, captionType *dataset.CaptionType) *entity.ParsingStrategy {
-	if strategy == nil && sheet == nil {
+	if strategy == nil && sheet == nil && captionType == nil {
 		return nil
 	}
 	res := &entity.ParsingStrategy{}
-	res.CaptionType = convertCaptionType2Entity(captionType)
 	if strategy != nil {
 		res.ExtractImage = strategy.GetImageExtraction()
 		res.ExtractTable = strategy.GetTableExtraction()
@@ -420,6 +419,8 @@ func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dat
 		res.HeaderLine = int(sheet.GetHeaderLineIdx())
 		res.DataStartLine = int(sheet.GetStartLineIdx())
 	}
+	res.CaptionType = convertCaptionType2Entity(captionType)
+
 	return res
 }
 

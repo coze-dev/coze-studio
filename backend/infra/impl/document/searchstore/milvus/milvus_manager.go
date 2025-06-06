@@ -26,7 +26,6 @@ type ManagerConfig struct {
 	SparseMetric mentity.MetricType // optional: default IP
 	ShardNum     int                // optional: default 1
 	BatchSize    int                // optional: default 100
-	AnnParam     mindex.AnnParam    // optional: default IndexHNSWSearchParam ef=100
 }
 
 func NewManager(config *ManagerConfig) (searchstore.Manager, error) {

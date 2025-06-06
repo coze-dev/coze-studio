@@ -96,3 +96,14 @@ func ToMap[E any, K comparable, V any](src []E, fn func(e E) (K, V)) map[K]V {
 
 	return dst
 }
+
+func Reverse[T any](slice []T) []T {
+	left := 0
+	right := len(slice) - 1
+	for left < right {
+		slice[left], slice[right] = slice[right], slice[left]
+		left++
+		right--
+	}
+	return slice
+}

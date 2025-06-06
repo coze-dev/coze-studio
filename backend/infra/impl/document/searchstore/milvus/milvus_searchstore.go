@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -401,11 +403,17 @@ func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schem
 
 func (m *milvusSearchStore) resultSet2Document(result []client.ResultSet) (docs []*schema.Document, err error) {
 	docs = make([]*schema.Document, 0, len(result))
+	minScore := math.MaxFloat64
+	maxScore := 0.0
+
 	for _, r := range result {
 		for i := 0; i < r.ResultCount; i++ {
 			ext := make(map[string]any)
 			doc := &schema.Document{MetaData: map[string]any{document.MetaDataKeyExternalStorage: ext}}
-			doc.WithScore(float64(r.Scores[i]))
+			score := float64(r.Scores[i])
+			minScore = min(minScore, score)
+			maxScore = max(maxScore, score)
+			doc.WithScore(score)
 
 			for _, field := range r.Fields {
 				switch field.Name() {
@@ -430,6 +438,35 @@ func (m *milvusSearchStore) resultSet2Document(result []client.ResultSet) (docs 
 			docs = append(docs, doc)
 		}
 	}
+
+	sort.Slice(docs, func(i, j int) bool {
+		return docs[i].Score() > docs[j].Score()
+	})
+
+	// norm score
+	if m.config.EnableHybrid != nil && *m.config.EnableHybrid {
+		return docs, nil
+	}
+
+	switch m.config.DenseMetric {
+	case mentity.L2:
+		base := maxScore - minScore
+		for i := range docs {
+			if base == 0 {
+				docs[i].WithScore(1.0)
+			} else {
+				docs[i].WithScore(1.0 - (docs[i].Score()-minScore)/base)
+			}
+		}
+		docs = slices.Reverse(docs)
+	case mentity.IP, mentity.COSINE:
+		for i := range docs {
+			docs[i].WithScore((docs[i].Score() + 1) / 2)
+		}
+	default:
+
+	}
+
 	return docs, nil
 }
 
