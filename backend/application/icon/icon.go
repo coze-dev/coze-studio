@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
+	"code.byted.org/flow/opencoze/backend/domain/icon/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
@@ -78,4 +80,20 @@ func (i *Icon) UploadFile(ctx context.Context, data []byte, objKey string) (*dev
 			UploadURI: objKey,
 		},
 	}, nil
+}
+
+func (i *Icon) GetShortcutIcons(ctx context.Context) ([]*playground.FileInfo, error) {
+	shortcutIcons := entity.GetDefaultShortcutIconURI()
+	fileList := make([]*playground.FileInfo, 0, len(shortcutIcons))
+	for _, uri := range shortcutIcons {
+		url, err := i.oss.GetObjectUrl(ctx, uri)
+		if err == nil {
+			fileList = append(fileList, &playground.FileInfo{
+				URL: url,
+				URI: uri,
+			})
+		}
+	}
+	return fileList, nil
+
 }

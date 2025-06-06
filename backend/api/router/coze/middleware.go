@@ -1355,3 +1355,8 @@ func _publicgetuserfavoritelistv2Mw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _getfileurlsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
