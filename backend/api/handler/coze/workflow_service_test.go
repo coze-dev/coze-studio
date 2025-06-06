@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -100,9 +101,14 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	ctrl := gomock.NewController(t)
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
 
+	var previousID atomic.Int64
 	if needMockIDGen {
 		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
-			return time.Now().UnixNano(), nil
+			newID := time.Now().UnixNano()
+			if newID == previousID.Load() {
+				newID = previousID.Add(1)
+			}
+			return newID, nil
 		}).AnyTimes()
 	}
 
@@ -890,7 +896,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 		var output string
 		var lastResult *workflow.GetWorkFlowProcessData
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running {
 				break
 			}
 
@@ -971,7 +977,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 			var output string
 			var lastResult *workflow.GetWorkFlowProcessData
 			for {
-				if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+				if workflowStatus != workflow.WorkflowExeStatus_Running {
 					break
 				}
 
@@ -1254,10 +1260,11 @@ func TestResumeWithQANode(t *testing.T) {
 
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
+		previousInterruptEventID := interruptEvents[0].ID
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 && interruptEvents[0].ID != previousInterruptEventID {
 				break
 			}
 
@@ -1514,10 +1521,11 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
+		eventID := interruptEvents[0].ID
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 && interruptEvents[0].ID != eventID {
 				break
 			}
 
@@ -1554,11 +1562,12 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
+		eventID = interruptEvents[0].ID
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		var output string
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 && interruptEvents[0].ID != eventID {
 				break
 			}
 
@@ -1653,10 +1662,11 @@ func TestInterruptWithinBatch(t *testing.T) {
 
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
+		eventID := interruptEvents[0].ID
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 && interruptEvents[0].ID != eventID {
 				break
 			}
 
@@ -1699,10 +1709,11 @@ func TestInterruptWithinBatch(t *testing.T) {
 
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
+		eventID = interruptEvents[0].ID
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 && interruptEvents[0].ID != eventID {
 				break
 			}
 
@@ -1739,10 +1750,11 @@ func TestInterruptWithinBatch(t *testing.T) {
 
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
+		eventID = interruptEvents[0].ID
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 && interruptEvents[0].ID != eventID {
 				break
 			}
 
@@ -1779,11 +1791,12 @@ func TestInterruptWithinBatch(t *testing.T) {
 
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
+		eventID = interruptEvents[0].ID
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		var output string
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 && interruptEvents[0].ID != eventID {
 				break
 			}
 
@@ -2461,12 +2474,13 @@ func TestSimpleInterruptibleTool(t *testing.T) {
 
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
+		eventID := interruptEvents[0].ID
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		var output string
 		var lastResult *workflow.GetWorkFlowProcessData
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 && interruptEvents[0].ID != eventID {
 				break
 			}
 
@@ -2610,10 +2624,11 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
+		eventID := interruptEvents[0].ID
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 && interruptEvents[0].ID != eventID {
 				break
 			}
 
@@ -3105,6 +3120,7 @@ func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 
 func TestParallelInterrupts(t *testing.T) {
 	mockey.PatchConvey("test parallel interrupts", t, func() {
+		defer time.Sleep(time.Second)
 		h, ctrl, _ := prepareWorkflowIntegration(t, true)
 		defer ctrl.Finish()
 		mockModelManager := mockmodel.NewMockManager(ctrl)
@@ -3210,10 +3226,11 @@ func TestParallelInterrupts(t *testing.T) {
 
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
+		eventID := testResumeReq.EventID
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 && interruptEvents[0].ID != eventID {
 				break
 			}
 
@@ -3263,10 +3280,11 @@ func TestParallelInterrupts(t *testing.T) {
 
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
+		eventID = testResumeReq.EventID
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 && interruptEvents[0].ID != eventID {
 				break
 			}
 
@@ -3315,10 +3333,11 @@ func TestParallelInterrupts(t *testing.T) {
 
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
+		eventID = testResumeReq.EventID
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 && interruptEvents[0].ID != eventID {
 				break
 			}
 
@@ -3369,10 +3388,11 @@ func TestParallelInterrupts(t *testing.T) {
 
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
+		eventID = testResumeReq.EventID
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 && interruptEvents[0].ID != eventID {
 				break
 			}
 
@@ -3426,11 +3446,12 @@ func TestParallelInterrupts(t *testing.T) {
 
 		_ = post[workflow.WorkflowTestResumeResponse](t, h, testResumeReq, "/api/workflow_api/test_resume")
 
+		eventID = testResumeReq.EventID
 		workflowStatus = workflow.WorkflowExeStatus_Running
 		interruptEvents = []*workflow.NodeEvent{}
 		var output string
 		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 {
+			if workflowStatus != workflow.WorkflowExeStatus_Running || len(interruptEvents) > 0 && interruptEvents[0].ID != eventID {
 				break
 			}
 

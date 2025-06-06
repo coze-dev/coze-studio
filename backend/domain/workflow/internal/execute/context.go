@@ -49,7 +49,8 @@ type NodeCtx struct {
 	NodePath      []string
 	TerminatePlan *vo.TerminatePlan
 
-	ResumingEvent *entity.InterruptEvent
+	ResumingEvent    *entity.InterruptEvent
+	SubWorkflowExeID int64 // if this node is subworkflow node, the execute id of the sub workflow
 }
 
 type BatchInfo struct {
@@ -60,7 +61,7 @@ type BatchInfo struct {
 
 type contextKey struct{}
 
-func restoreWorkflowCtx(ctx context.Context) (context.Context, error) {
+func restoreWorkflowCtx(ctx context.Context, event *entity.InterruptEvent) (context.Context, error) {
 	var storedCtx *Context
 	err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
 		if state == nil {
@@ -82,6 +83,15 @@ func restoreWorkflowCtx(ctx context.Context) (context.Context, error) {
 
 	if storedCtx == nil {
 		return ctx, errors.New("stored workflow context is nil")
+	}
+
+	storedCtx.ResumeEvent = event
+
+	// restore the parent-child relationship between token collectors
+	if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil {
+		currentC := GetExeCtx(ctx)
+		currentTokenCollector := currentC.TokenCollector
+		storedCtx.TokenCollector.Parent = currentTokenCollector
 	}
 
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil
@@ -113,6 +123,13 @@ func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey, resumeEvent *entity
 		storedCtx.NodeCtx.ResumingEvent = resumeEvent
 	} else {
 		storedCtx.NodeCtx.ResumingEvent = nil
+	}
+
+	// restore the parent-child relationship between token collectors
+	if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil {
+		currentC := GetExeCtx(ctx)
+		currentTokenCollector := currentC.TokenCollector
+		storedCtx.TokenCollector.Parent = currentTokenCollector
 	}
 
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil
@@ -195,6 +212,8 @@ func PrepareSubExeCtx(ctx context.Context, wb *entity.WorkflowBasic, requireChec
 			return ctx, err
 		}
 	}
+
+	newC.NodeCtx.SubWorkflowExeID = subExecuteID
 
 	return context.WithValue(ctx, contextKey{}, newC), nil
 }

@@ -32,7 +32,7 @@ type ParsingStrategy struct {
 	IgnoreColumnTypeErr bool               `json:"-"`               // true 时忽略 column type 与 value 未对齐的问题，此时 value 为空
 
 	// Image
-	ImageAnnotationType ImageAnnotationType `json:"model_annotation"` // 图片内容标注类型
+	ImageAnnotationType ImageAnnotationType `json:"image_annotation_type"` // 图片内容标注类型
 }
 
 type ChunkingStrategy struct {

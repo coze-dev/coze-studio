@@ -15,6 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
@@ -125,18 +126,15 @@ func Prepare(ctx context.Context,
 
 		composeOpts = append(composeOpts, stateOpt)
 
-		deletedEvent, deleted, err := repo.PopFirstInterruptEvent(ctx, executeID)
-		if err != nil {
-			return ctx, 0, nil, err
-		}
-
-		if !deleted {
-			return ctx, 0, nil, fmt.Errorf("interrupt events does not exist, wfExeID: %d", executeID)
-		}
-
-		if deletedEvent.ID != resumeReq.EventID {
-			return ctx, 0, nil, fmt.Errorf("interrupt event id mismatch when deleting, expect: %d, actual: %d",
-				resumeReq.EventID, deletedEvent.ID)
+		if interruptEvent.EventType == entity.InterruptEventQuestion {
+			modifiedData, err := qa.AppendInterruptData(interruptEvent.InterruptData, resumeReq.ResumeData)
+			if err != nil {
+				return ctx, 0, nil, fmt.Errorf("failed to append interrupt data: %w", err)
+			}
+			interruptEvent.InterruptData = modifiedData
+			if err = repo.UpdateFirstInterruptEvent(ctx, executeID, interruptEvent); err != nil {
+				return ctx, 0, nil, fmt.Errorf("failed to update interrupt event: %w", err)
+			}
 		}
 
 		success, currentStatus, err := repo.TryLockWorkflowExecution(ctx, executeID, resumeReq.EventID)
@@ -148,20 +146,22 @@ func Prepare(ctx context.Context,
 			return ctx, 0, nil, fmt.Errorf("workflow execution lock failed, current status is %v, executeID: %d", currentStatus, executeID)
 		}
 
-		fmt.Println("resume workflow with event: ", deletedEvent)
+		logs.CtxInfof(ctx, "resuming with eventID: %d, executeID: %d, nodeKey: %s", interruptEvent.ID,
+			executeID, interruptEvent.NodeKey)
 	}
 
 	if interruptEvent == nil {
 		wfExec := &entity.WorkflowExecution{
-			ID:               executeID,
-			WorkflowIdentity: wb.WorkflowIdentity,
-			SpaceID:          wb.SpaceID,
-			ExecuteConfig:    config,
-			Status:           entity.WorkflowRunning,
-			Input:            ptr.Of(in),
-			RootExecutionID:  executeID,
-			AppID:            wb.APPID,
-			NodeCount:        wb.NodeCount,
+			ID:                     executeID,
+			WorkflowIdentity:       wb.WorkflowIdentity,
+			SpaceID:                wb.SpaceID,
+			ExecuteConfig:          config,
+			Status:                 entity.WorkflowRunning,
+			Input:                  ptr.Of(in),
+			RootExecutionID:        executeID,
+			AppID:                  wb.APPID,
+			NodeCount:              wb.NodeCount,
+			CurrentResumingEventID: ptr.Of(int64(0)),
 		}
 
 		if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {

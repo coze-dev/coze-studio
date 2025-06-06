@@ -4,8 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
+
+	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/schema"
+	"golang.org/x/sync/errgroup"
 
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatacopy"
@@ -18,11 +23,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"github.com/bytedance/sonic"
 )
 
 func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *knowledge.CopyKnowledgeRequest) (*knowledge.CopyKnowledgeResponse, error) {
@@ -124,7 +130,7 @@ func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*
 						IfExists:  true,
 					})
 					if dropErr != nil {
-						logs.CtxErrorf(ctx, "drop table failed, err: %v", dropErr)
+						logs.CtxErrorf(ctx, "[copyDo] drop table failed, err: %v", dropErr)
 					}
 				}
 			}
@@ -138,9 +144,6 @@ func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*
 	}()
 	copyCtx.CopyTask.Status = copyEntity.DataCopyTaskStatusInProgress
 	err = crossdatacopy.DefaultSVC().UpdateCopyTaskWithTX(ctx, &datacopy.UpdateCopyTaskReq{Task: copyCtx.CopyTask}, tx)
-	if err != nil {
-		return nil, err
-	}
 	if err != nil {
 		return nil, err
 	}
@@ -200,6 +203,22 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 		return nil
 	}
 
+	// create search store collections
+	fields, err := k.mapSearchFields(k.fromModelDocument(ctx, documents[0]))
+	if err != nil {
+		return err
+	}
+	collectionName := getCollectionName(copyCtx.CopyTask.TargetDataID)
+	for _, ssMgr := range k.searchStoreManagers {
+		if err = ssMgr.Create(ctx, &searchstore.CreateRequest{
+			CollectionName: collectionName,
+			Fields:         fields,
+			CollectionMeta: nil,
+		}); err != nil {
+			return err
+		}
+	}
+
 	targetDocuments, _, err := k.documentRepo.FindDocumentByCondition(ctx, &dao.WhereDocumentOpt{
 		KnowledgeIDs: []int64{copyCtx.CopyTask.TargetDataID},
 		SelectAll:    true,
@@ -215,32 +234,39 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 		}
 	}
 	// 表格类复制
-	wg := sync.WaitGroup{}
-	failList := []int64{}
-	wg.Add(len(documents))
+	eg := errgroup.Group{}
+	eg.SetLimit(10)
+	mu := sync.Mutex{}
+	var failList []int64
+
 	newIDs, err := k.idgen.GenMultiIDs(ctx, len(documents))
 	if err != nil {
 		logs.CtxErrorf(ctx, "gen document id failed, err: %v", err)
 		return err
 	}
+
 	for i := range documents {
 		doc := documents[i]
 		newID := newIDs[i]
-		go func() error {
-			defer wg.Done()
-			err = k.copyDocument(ctx, copyCtx, doc, newID)
-			if err != nil {
-				logs.CtxErrorf(ctx, "copy document failed, document id: %d, err: %v", documents[i].ID, err)
-				failList = append(failList, documents[i].ID)
+
+		eg.Go(func() error {
+			cpErr := k.copyDocument(ctx, copyCtx, doc, newID)
+			if cpErr != nil {
+				mu.Lock()
+				failList = append(failList, doc.ID)
+				mu.Unlock()
+				logs.CtxErrorf(ctx, "copy document failed, src document id: %d, new id: %d, err: %v", doc.ID, newID, err)
+				return cpErr
 			}
-			return err
-		}()
+			return nil
+		})
 	}
-	wg.Wait()
-	if len(failList) > 0 {
-		logs.CtxErrorf(ctx, "copy document failed, document ids: %v", failList)
+
+	if err := eg.Wait(); err != nil {
+		logs.CtxErrorf(ctx, "copy document failed, document ids: %v, first-err: %v", failList, err)
 		return errors.New("copy document failed")
 	}
+
 	return nil
 }
 
@@ -299,6 +325,15 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 		}
 		copyCtx.NewRDBTableNames = append(copyCtx.NewRDBTableNames, newDoc.TableInfo.PhysicalTableName)
 	}
+
+	docEntity := k.fromModelDocument(ctx, &newDoc)
+	fields, err := k.mapSearchFields(docEntity)
+	if err != nil {
+		return err
+	}
+	indexingFields := getIndexingFields(fields)
+	collectionName := getCollectionName(newDoc.KnowledgeID)
+
 	sliceIDs, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{doc.ID})
 	if err != nil {
 		return err
@@ -339,6 +374,8 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 			}
 			newMap[newSliceIDs[t]] = &newSliceModel
 		}
+
+		var sliceEntities []*entity.Slice
 		if doc.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 			sliceMap, err := k.selectTableData(ctx, doc.TableInfo, sliceInfo)
 			if err != nil {
@@ -361,11 +398,35 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 				logs.CtxErrorf(ctx, "upsert data to table failed, err: %v", err)
 				return err
 			}
+			sliceEntities = newSlices
 		}
-		// todo，完成viking和es的复制
+
 		for _, v := range newMap {
-			newSliceModels = append(newSliceModels, v)
+			cpSlice := v
+			newSliceModels = append(newSliceModels, cpSlice)
+			if doc.DocumentType != int32(knowledgeModel.DocumentTypeTable) {
+				sliceEntities = append(sliceEntities, k.fromModelSlice(ctx, cpSlice))
+			}
 		}
+
+		ssDocs, err := slices.TransformWithErrorCheck(sliceEntities, func(a *entity.Slice) (*schema.Document, error) {
+			return k.slice2Document(ctx, docEntity, a)
+		})
+
+		for _, mgr := range k.searchStoreManagers {
+			ss, err := mgr.GetSearchStore(ctx, collectionName)
+			if err != nil {
+				return fmt.Errorf("[copyDocument] search store get failed, %w", err)
+			}
+
+			if _, err = ss.Store(ctx, ssDocs,
+				searchstore.WithPartition(strconv.FormatInt(doc.ID, 10)),
+				searchstore.WithIndexingFields(indexingFields),
+			); err != nil {
+				return fmt.Errorf("[copyDocument] search store save failed, %w", err)
+			}
+		}
+
 		err = k.sliceRepo.BatchCreate(ctx, newSliceModels)
 		if err != nil {
 			return err

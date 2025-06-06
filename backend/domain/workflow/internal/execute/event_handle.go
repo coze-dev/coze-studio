@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/schema"
@@ -108,6 +109,16 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
 				return noTerminate, fmt.Errorf("failed to create workflow execution: %v", err)
 			}
+
+			nodeExec := &entity.NodeExecution{
+				ID: event.NodeExecuteID,
+				SubWorkflowExecution: &entity.WorkflowExecution{
+					ID: exeID,
+				},
+			}
+			if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
+				return noTerminate, fmt.Errorf("failed to update subworkflow node execution with subExecuteID: %v", err)
+			}
 		} else if sw != nil {
 			sw.Send(&entity.Message{
 				StateMessage: &entity.StateMessage{
@@ -155,6 +166,9 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		if event.SubWorkflowCtx != nil {
 			exeID = event.SubExecuteID
 		}
+
+		logs.CtxErrorf(ctx, "workflow execution failed: %v", event.Err)
+
 		wfExec := &entity.WorkflowExecution{
 			ID:       exeID,
 			Duration: event.Duration,
@@ -195,6 +209,10 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			return workflowAbort, nil
 		}
 	case WorkflowInterrupt:
+		if event.done != nil {
+			defer close(event.done)
+		}
+
 		exeID := event.RootCtx.RootExecuteID
 		if event.SubWorkflowCtx != nil {
 			exeID = event.SubExecuteID
@@ -213,6 +231,35 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		} else if updatedRows == 0 {
 			return noTerminate, fmt.Errorf("failed to update workflow execution to interrupted for execution id %d, current status is %v", exeID, currentStatus)
 		}
+
+		if event.RootCtx.ResumeEvent != nil {
+			needPop := false
+			for _, ie := range event.InterruptEvents {
+				if ie.NodeKey == event.RootCtx.ResumeEvent.NodeKey {
+					if reflect.DeepEqual(ie.NodePath, event.RootCtx.ResumeEvent.NodePath) {
+						needPop = true
+					}
+				}
+			}
+
+			if needPop {
+				deletedEvent, deleted, err := repo.PopFirstInterruptEvent(ctx, exeID)
+				if err != nil {
+					return noTerminate, err
+				}
+
+				if !deleted {
+					return noTerminate, fmt.Errorf("interrupt events does not exist, wfExeID: %d", exeID)
+				}
+
+				if deletedEvent.ID != event.RootCtx.ResumeEvent.ID {
+					return noTerminate, fmt.Errorf("interrupt event id mismatch when deleting, expect: %d, actual: %d",
+						event.RootCtx.ResumeEvent.ID, deletedEvent.ID)
+				}
+			}
+		}
+
+		// TODO: there maybe time gap here
 
 		if err := repo.SaveInterruptEvents(ctx, event.RootExecuteID, event.InterruptEvents); err != nil {
 			return noTerminate, fmt.Errorf("failed to save interrupt events: %v", err)
@@ -332,6 +379,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			NodeType:  event.NodeType,
 			Status:    entity.NodeRunning,
 			Input:     ptr.Of(mustMarshalToString(event.Input)),
+			Extra:     event.extra,
 		}
 		if event.BatchInfo != nil {
 			nodeExec.Index = event.BatchInfo.Index
@@ -379,6 +427,28 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 		if event.Input != nil {
 			nodeExec.Input = ptr.Of(mustMarshalToString(event.Input))
+		}
+
+		if event.NodeCtx.ResumingEvent != nil {
+			deletedEvent, deleted, err := repo.PopFirstInterruptEvent(ctx, event.RootCtx.RootExecuteID)
+			if err != nil {
+				return noTerminate, err
+			}
+
+			if !deleted {
+				return noTerminate, fmt.Errorf("node end: interrupt events does not exist, wfExeID: %d", event.RootCtx.RootExecuteID)
+			}
+
+			if deletedEvent.ID != event.NodeCtx.ResumingEvent.ID {
+				return noTerminate, fmt.Errorf("interrupt event id mismatch when deleting, expect: %d, actual: %d",
+					event.RootCtx.ResumeEvent.ID, deletedEvent.ID)
+			}
+		}
+
+		if event.NodeCtx.SubWorkflowExeID > 0 {
+			nodeExec.SubWorkflowExecution = &entity.WorkflowExecution{
+				ID: event.NodeCtx.SubWorkflowExeID,
+			}
 		}
 
 		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {

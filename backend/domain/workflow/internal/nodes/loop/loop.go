@@ -92,7 +92,17 @@ const (
 	Count = "LoopCount"
 )
 
-func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (map[string]any, error) {
+func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (out map[string]any, err error) {
+	defer func() {
+		if err != nil {
+			_ = callbacks.OnError(ctx, err)
+		} else {
+			_ = callbacks.OnEnd(ctx, out)
+		}
+	}()
+
+	ctx = callbacks.OnStart(ctx, l.toCallbackInput(in))
+
 	maxIter, err := l.getMaxIter(in)
 	if err != nil {
 		return nil, err
@@ -106,11 +116,6 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.Nes
 		}
 		arrays[arrayKey] = a.([]any)
 	}
-
-	ctx = callbacks.InitCallbacks(ctx, &callbacks.RunInfo{
-		Component: compose.ComponentOfWorkflow,
-		Name:      string(l.config.LoopNodeKey),
-	})
 
 	options := &nodes.NestedWorkflowOptions{}
 	for _, opt := range opts {
@@ -160,7 +165,7 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.Nes
 		intermediateVars[BreakKey] = &hasBreak
 	}
 
-	ctx = nodes.InitIntermediateVars(ctx, intermediateVars)
+	ctx = nodes.InitIntermediateVars(ctx, intermediateVars, l.config.IntermediateVars)
 
 	getIthInput := func(i int) (map[string]any, map[string]any, error) {
 		input := make(map[string]any)
@@ -388,4 +393,14 @@ func convertIntermediateVars(vars map[string]*any) map[string]any {
 		ret[k] = *v
 	}
 	return ret
+}
+
+func (l *Loop) toCallbackInput(in map[string]any) map[string]any {
+	trimmed := make(map[string]any, len(l.config.InputArrays))
+	for _, arrayKey := range l.config.InputArrays {
+		if v, ok := in[arrayKey]; ok {
+			trimmed[arrayKey] = v
+		}
+	}
+	return trimmed
 }

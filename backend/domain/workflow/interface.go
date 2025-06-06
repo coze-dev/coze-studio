@@ -89,6 +89,7 @@ type Repository interface {
 
 	SaveInterruptEvents(ctx context.Context, wfExeID int64, events []*entity.InterruptEvent) error
 	GetFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error)
+	UpdateFirstInterruptEvent(ctx context.Context, wfExeID int64, event *entity.InterruptEvent) error
 	PopFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error)
 	ListInterruptEvents(ctx context.Context, wfExeID int64) ([]*entity.InterruptEvent, error)
 

@@ -462,7 +462,7 @@ func toLoopSetVariableNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 			return nil, fmt.Errorf("loop set variable node's param left's ref's variable type is not variable.ParentIntermediate")
 		}
 
-		rightSources, err := CanvasBlockInputToFieldInfo(param.Right, einoCompose.FieldPath{fmt.Sprintf("right_%d", i)}, n.Parent())
+		rightSources, err := CanvasBlockInputToFieldInfo(param.Right, leftSources[0].Source.Ref.FromPath, n.Parent())
 		if err != nil {
 			return nil, err
 		}

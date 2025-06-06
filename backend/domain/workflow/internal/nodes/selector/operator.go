@@ -86,6 +86,9 @@ func (o *Operator) WillAccept(leftT, rightT reflect.Type) error {
 			return fmt.Errorf("operator %v only accepts left operant of string or slice, not %v", *o, leftT)
 		}
 	case OperatorContainKey, OperatorNotContainKey:
+		if leftT == nil { // treat it as empty map
+			return nil
+		}
 		if leftT.Kind() != reflect.Map {
 			return fmt.Errorf("operator %v only accepts left operant of map, not %v", *o, leftT)
 		}

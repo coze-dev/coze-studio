@@ -104,29 +104,6 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 	out, err := i.invoke(cancelCtx, in, callOpts...)
 	if err != nil {
 		if _, ok := einoCompose.ExtractInterruptInfo(err); ok {
-			count := 0
-			for {
-				wfExe, found, err := i.repo.GetWorkflowExecution(ctx, executeID)
-				if err != nil {
-					return "", err
-				}
-
-				if !found {
-					return "", fmt.Errorf("workflow execution does not exist, id: %d", executeID)
-				}
-
-				if wfExe.Status == entity.WorkflowInterrupted {
-					break
-				}
-
-				time.Sleep(5 * time.Millisecond)
-				count++
-
-				if count >= 10 {
-					return "", fmt.Errorf("workflow execution %d is not interrupted, status is %v, cannot resume", executeID, wfExe.Status)
-				}
-			}
-
 			firstIE, found, err := i.repo.GetFirstInterruptEvent(ctx, executeID)
 			if err != nil {
 				return "", err

@@ -140,7 +140,7 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 	if w.subWorkflowBasic == nil {
 		if w.resumeEvent != nil {
 			resume = true
-			newCtx, err = restoreWorkflowCtx(ctx)
+			newCtx, err = restoreWorkflowCtx(ctx, w.resumeEvent)
 			if err != nil {
 				logs.Errorf("failed to restore root execute context: %v", err)
 				return ctx, false
@@ -184,7 +184,7 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 		}
 
 		if resume {
-			newCtx, err = restoreWorkflowCtx(ctx)
+			newCtx, err = restoreWorkflowCtx(ctx, nil)
 			if err != nil {
 				logs.Errorf("failed to restore sub execute context: %v", err)
 				return ctx, false
@@ -287,7 +287,6 @@ func extractInterruptEvents(interruptInfo *compose.InterruptInfo, prefixes ...st
 		}
 
 		if !ok {
-			logs.Errorf("failed to extract interrupt event from node key: %v", err)
 			extra := interruptInfo.RerunNodesExtra[nodeKey]
 			if extra == nil {
 				continue
@@ -355,14 +354,20 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 		}
 
 		for _, interruptEvent := range interruptEvents {
-			fmt.Println("emit interrupt event id= ", interruptEvent.ID, ", eventType= ", interruptEvent.EventType)
+			logs.CtxInfof(ctx, "emit interrupt event id= %d, eventType= %d, nodeID= %s", interruptEvent.ID,
+				interruptEvent.EventType, interruptEvent.NodeKey)
 		}
+
+		done := make(chan struct{})
 
 		w.ch <- &Event{
 			Type:            WorkflowInterrupt,
 			Context:         c,
 			InterruptEvents: interruptEvents,
+			done:            done,
 		}
+
+		<-done
 
 		return ctx
 	}
@@ -545,7 +550,8 @@ func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (con
 			exactlyResuming = resume && len(n.resumePath) == 1
 		} else {
 			path := slices.Clone(c.NodeCtx.NodePath)
-			if c.BatchInfo != nil { // inner node under composite node
+			// immediate inner node under composite node
+			if c.BatchInfo != nil && c.BatchInfo.CompositeNodeKey == c.NodeCtx.NodeKey {
 				path = append(path, InterruptEventIndexPrefix+strconv.Itoa(c.BatchInfo.Index))
 			}
 			path = append(path, string(n.nodeKey))
@@ -606,6 +612,13 @@ func (n *NodeHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, inpu
 		Type:    NodeStart,
 		Context: c,
 		Input:   input.(map[string]any),
+		extra:   &entity.NodeExtra{},
+	}
+
+	if c.SubWorkflowCtx == nil {
+		e.extra.CurrentSubExecuteID = c.RootExecuteID
+	} else {
+		e.extra.CurrentSubExecuteID = c.SubExecuteID
 	}
 
 	n.ch <- e
@@ -618,18 +631,33 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		return ctx
 	}
 
-	_, ok := output.(map[string]any)
-	if !ok {
-		return ctx
+	var (
+		outputMap, rawOutputMap map[string]any
+		ok                      bool
+	)
+
+	outputMap, ok = output.(map[string]any)
+	if ok {
+		rawOutputMap = outputMap
+	} else {
+		structuredOutput, ok := output.(*nodes.StructuredCallbackOutput)
+		if !ok {
+			return ctx
+		}
+		outputMap = structuredOutput.Output
+		rawOutputMap = structuredOutput.RawOutput
 	}
 
 	c := GetExeCtx(ctx)
+	startTime := time.UnixMilli(c.StartTime)
+	duration := time.Since(startTime)
+	_ = duration
 	e := &Event{
 		Type:      NodeEnd,
 		Context:   c,
 		Duration:  time.Since(time.UnixMilli(c.StartTime)),
-		Output:    output.(map[string]any),
-		RawOutput: output.(map[string]any),
+		Output:    outputMap,
+		RawOutput: rawOutputMap,
 		extra:     &entity.NodeExtra{},
 	}
 
@@ -669,7 +697,8 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		e.extra.CurrentSubExecuteID = c.SubExecuteID
 	}
 
-	if entity.NodeType(info.Type) == entity.NodeTypeExit {
+	switch t := entity.NodeType(info.Type); t {
+	case entity.NodeTypeExit:
 		terminatePlan := n.terminatePlan
 		if terminatePlan == nil {
 			terminatePlan = ptr.Of(vo.ReturnVariables)
@@ -684,12 +713,13 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 				return o["output"].(string)
 			}
 		}
-	} else if entity.NodeType(info.Type) == entity.NodeTypeOutputEmitter {
+	case entity.NodeTypeOutputEmitter:
 		e.outputExtractor = func(o map[string]any) string {
 			return o["output"].(string)
 		}
-	} else if entity.NodeType(info.Type) == entity.NodeTypeInputReceiver {
+	case entity.NodeTypeInputReceiver:
 		e.Input = output.(map[string]any)
+	default:
 	}
 
 	n.ch <- e

@@ -53,6 +53,8 @@ type Event struct {
 
 	outputExtractor func(o map[string]any) string
 	extra           *entity.NodeExtra
+
+	done chan struct{}
 }
 
 type ErrorLevel string

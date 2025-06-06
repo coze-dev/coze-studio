@@ -94,7 +94,8 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 		assert.NoError(t, err)
-		wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
+
+		wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(2))
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"input": "what's your name?",
@@ -248,7 +249,7 @@ func TestDatabaseCURD(t *testing.T) {
 
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 
-		wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
+		wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(2))
 		assert.NoError(t, err)
 
 		eventChan := make(chan *execute.Event)
@@ -454,7 +455,7 @@ func TestHttpRequester(t *testing.T) {
 		assert.NoError(t, err)
 		ctx := t.Context()
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
-		wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("3"))
+		wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(3))
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"v1":   "v1",
@@ -477,7 +478,7 @@ func TestHttpRequester(t *testing.T) {
 		ctx := t.Context()
 
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
-		wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
+		wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(2))
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{
 			"v1":    "v1",
@@ -584,7 +585,7 @@ func TestHttpRequester(t *testing.T) {
 
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 		assert.NoError(t, err)
-		wf, err := compose.NewWorkflow(ctx, workflowSC, einoCompose.WithGraphName("2"))
+		wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(2))
 
 		assert.NoError(t, err)
 		response, err := wf.Runner.Invoke(ctx, map[string]any{

@@ -59,9 +59,9 @@ func (s *Selector) Select(_ context.Context, in []Operants) (out int, err error)
 	for i, oneConf := range s.config.Clauses {
 		if oneConf.Single != nil {
 			left := in[i].Left
-			if left == nil {
+			/*if left == nil {
 				return -1, fmt.Errorf("failed to take left operant from input operants: %v, clause index= %d", in, i)
-			}
+			}*/
 
 			right := in[i].Right
 			if right != nil {
@@ -82,9 +82,9 @@ func (s *Selector) Select(_ context.Context, in []Operants) (out int, err error)
 			}
 			for j, singleConf := range oneConf.Multi.Clauses {
 				left := in[i].Multi[j].Left
-				if left == nil {
+				/*if left == nil {
 					return -1, fmt.Errorf("failed to take left operant from input operants: %v, clause index= %d, single clause index= %d", in, i, j)
-				}
+				}*/
 				right := in[i].Multi[j].Right
 				if right != nil {
 					multiClause.Clauses = append(multiClause.Clauses, &Clause{

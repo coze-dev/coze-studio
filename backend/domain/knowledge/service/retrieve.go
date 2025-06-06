@@ -249,7 +249,6 @@ func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *knowledge.Retr
 			if err != nil {
 				return err
 			}
-			// TODO: dsl
 			retrievedDocs, err := ss.Retrieve(ctx, query, opts...)
 			if err != nil {
 				return err

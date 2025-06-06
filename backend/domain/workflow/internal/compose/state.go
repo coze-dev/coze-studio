@@ -69,6 +69,14 @@ func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {
 	s.Questions[nodeKey] = append(s.Questions[nodeKey], question)
 }
 
+func (s *State) AddAnswer(nodeKey vo.NodeKey, answer string) {
+	s.Answers[nodeKey] = append(s.Answers[nodeKey], answer)
+}
+
+func (s *State) GetQuestionsAndAnswers(nodeKey vo.NodeKey) ([]*qa.Question, []string) {
+	return s.Questions[nodeKey], s.Answers[nodeKey]
+}
+
 func (s *State) GetNodeCtx(key vo.NodeKey) (*execute.Context, bool, error) {
 	c, ok := s.NodeExeContexts[key]
 	if ok {
@@ -447,8 +455,6 @@ func GenStateModifierByEventType(e entity.InterruptEventType,
 	switch e {
 	case entity.InterruptEventInput:
 		stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
-			fmt.Println("state modifier for input node happens. Path: ", path)
-
 			input := map[string]any{
 				receiver.ReceivedDataKey: resumeData,
 			}
@@ -457,14 +463,11 @@ func GenStateModifierByEventType(e entity.InterruptEventType,
 		}
 	case entity.InterruptEventQuestion:
 		stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
-			fmt.Println("state modifier for QA node happens. Path: ", path)
-
-			state.(*State).Answers[nodeKey] = append(state.(*State).Answers[nodeKey], resumeData)
+			state.(*State).AddAnswer(nodeKey, resumeData)
 			return nil
 		}
 	case entity.InterruptEventLLM:
 		stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
-			fmt.Println("state modifier for LLM node happens. Path: ", path)
 			state.(*State).LLMToResumeData[nodeKey] = resumeData
 			return nil
 		}

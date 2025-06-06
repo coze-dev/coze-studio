@@ -566,9 +566,13 @@ func (s *NodeSchema) ToIntentDetectorConfig(ctx context.Context) (*intentdetecto
 	return cfg, nil
 }
 
-func (s *NodeSchema) ToSubWorkflowConfig(ctx context.Context) (*subworkflow.Config, error) {
-	wf, err := NewWorkflow(ctx, s.SubWorkflowSchema, compose.WithGraphName(fmt.Sprintf("%d",
-		mustGetKey[int64]("WorkflowID", s.Configs))))
+func (s *NodeSchema) ToSubWorkflowConfig(ctx context.Context, requireCheckpoint bool) (*subworkflow.Config, error) {
+	var opts []WorkflowOption
+	opts = append(opts, WithIDAsName(mustGetKey[int64]("WorkflowID", s.Configs)))
+	if requireCheckpoint {
+		opts = append(opts, WithParentRequireCheckpoint())
+	}
+	wf, err := NewWorkflow(ctx, s.SubWorkflowSchema, opts...)
 	if err != nil {
 		return nil, err
 	}

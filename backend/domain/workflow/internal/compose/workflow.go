@@ -12,7 +12,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose/checkpoint"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
@@ -34,7 +33,28 @@ type Workflow struct { // TODO: too many fields in this struct, cut them down to
 	schema            *WorkflowSchema
 }
 
-func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphCompileOption) (*Workflow, error) {
+type workflowOptions struct {
+	wfID                    int64
+	idAsName                bool
+	parentRequireCheckpoint bool
+}
+
+type WorkflowOption func(*workflowOptions)
+
+func WithIDAsName(id int64) WorkflowOption {
+	return func(opts *workflowOptions) {
+		opts.wfID = id
+		opts.idAsName = true
+	}
+}
+
+func WithParentRequireCheckpoint() WorkflowOption {
+	return func(opts *workflowOptions) {
+		opts.parentRequireCheckpoint = true
+	}
+}
+
+func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...WorkflowOption) (*Workflow, error) {
 	sc.Init()
 
 	wf := &Workflow{
@@ -52,6 +72,15 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 	}
 
 	wf.requireCheckpoint = sc.RequireCheckpoint()
+
+	wfOpts := &workflowOptions{}
+	for _, opt := range opts {
+		opt(wfOpts)
+	}
+
+	if wfOpts.parentRequireCheckpoint {
+		wf.requireCheckpoint = true
+	}
 
 	// add all composite nodes with their inner workflow
 	compositeNodes := sc.GetCompositeNodes()
@@ -82,9 +111,11 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 	}
 
 	var compileOpts []compose.GraphCompileOption
-	compileOpts = append(compileOpts, opts...)
 	if wf.requireCheckpoint {
 		compileOpts = append(compileOpts, compose.WithCheckPointStore(checkpoint.GetStore()))
+	}
+	if wfOpts.idAsName {
+		compileOpts = append(compileOpts, compose.WithGraphName(strconv.FormatInt(wfOpts.wfID, 10)))
 	}
 
 	r, err := wf.Compile(ctx, compileOpts...)
@@ -104,19 +135,13 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...compose.GraphC
 func (w *Workflow) AsyncRun(ctx context.Context, in map[string]any, opts ...compose.Option) {
 	if w.streamRun {
 		safego.Go(ctx, func() {
-			_, err := w.Runner.Stream(ctx, in, opts...)
-			if err != nil {
-				logs.CtxErrorf(ctx, "workflow async run with stream failed: %v", err)
-			}
+			_, _ = w.Runner.Stream(ctx, in, opts...)
 		})
 		return
 	}
 
 	safego.Go(ctx, func() {
-		_, err := w.Runner.Invoke(ctx, in, opts...)
-		if err != nil {
-			logs.CtxErrorf(ctx, "workflow async run with invoke failed: %v", err)
-		}
+		_, _ = w.Runner.Invoke(ctx, in, opts...)
 	})
 
 }

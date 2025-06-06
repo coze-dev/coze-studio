@@ -55,7 +55,7 @@ const ReceivedDataKey = "$received_data"
 func (i *InputReceiver) Invoke(ctx context.Context, in string) (map[string]any, error) {
 	if len(in) == 0 {
 		err := compose.ProcessState(ctx, func(ctx context.Context, ieStore nodes.InterruptEventStore) error {
-			_, found, e := ieStore.GetInterruptEvent(i.nodeKey)
+			_, found, e := ieStore.GetInterruptEvent(i.nodeKey) // TODO: try not use InterruptEventStore or state in general
 			if e != nil {
 				return e
 			}

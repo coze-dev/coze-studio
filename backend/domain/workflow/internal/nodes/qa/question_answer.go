@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"unicode"
 
 	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
@@ -58,7 +60,7 @@ const (
 )
 
 const (
-	DynamicChoicesKey = "dynamic_choices"
+	DynamicChoicesKey = "dynamic_option"
 	QuestionsKey      = "$questions"
 	AnswersKey        = "$answers"
 	UserResponseKey   = "USER_RESPONSE"
@@ -160,14 +162,32 @@ type message struct {
 	Type        string `json:"type"`
 	ContentType string `json:"content_type"`
 	Content     any    `json:"content"` // either optionContent or string
-	ID          string `json:"id"`
+	ID          string `json:"id,omitempty"`
 }
 
 // Execute formats the question (optionally with choices), interrupts, then extracts the answer.
 // input: the references by input fields, as well as the dynamic choices array if needed.
 // output: USER_RESPONSE for direct answer, structured output if needs to extract from answer, and option ID / content for answer by choices.
-func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (map[string]any, error) {
-	questions, answers, isFirst, notResumed, err := q.extractCurrentState(in)
+func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (out map[string]any, err error) {
+	var (
+		questions  []*Question
+		answers    []string
+		isFirst    bool
+		notResumed bool
+		selected   string
+	)
+
+	defer func() {
+		if err != nil {
+			_ = callbacks.OnError(ctx, err)
+		} else {
+			_ = callbacks.OnEnd(ctx, q.toCallbackOutput(out, questions, answers, selected))
+		}
+	}()
+
+	ctx = callbacks.OnStart(ctx, in)
+
+	questions, answers, isFirst, notResumed, err = q.extractCurrentState(in)
 	if err != nil {
 		return nil, err
 	}
@@ -176,17 +196,17 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (map[st
 		return nil, compose.InterruptAndRerun
 	}
 
-	// format the question. Which is common to all use cases
-	firstQuestion, err := nodes.Jinja2TemplateRender(q.config.QuestionTpl, in)
-	if err != nil {
-		return nil, err
-	}
-
-	out := make(map[string]any)
+	out = make(map[string]any)
 
 	switch q.config.AnswerType {
 	case AnswerDirectly:
 		if isFirst { // first execution, ask the question
+			// format the question. Which is common to all use cases
+			firstQuestion, err := nodes.Jinja2TemplateRender(q.config.QuestionTpl, in)
+			if err != nil {
+				return nil, err
+			}
+
 			return nil, q.interrupt(ctx, firstQuestion, nil, nil, nil)
 		}
 
@@ -198,28 +218,39 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (map[st
 		return out, nil
 	case AnswerByChoices:
 		if !isFirst {
-			for i, choice := range questions[0].Choices {
-				if answers[0] == choice {
+			lastAnswer := answers[len(answers)-1]
+			lastQuestion := questions[len(questions)-1]
+			for i, choice := range lastQuestion.Choices {
+				if lastAnswer == choice {
 					out[OptionIDKey] = intToAlphabet(i)
 					out[OptionContentKey] = choice
+					selected = choice
 					return out, nil
 				}
 			}
 
-			index, err := q.intentDetect(ctx, answers[0], questions[0].Choices)
+			index, err := q.intentDetect(ctx, lastAnswer, lastQuestion.Choices)
 			if err != nil {
 				return nil, err
 			}
 
 			if index >= 0 {
 				out[OptionIDKey] = intToAlphabet(index)
-				out[OptionContentKey] = questions[0].Choices[index]
+				out[OptionContentKey] = lastQuestion.Choices[index]
+				selected = lastQuestion.Choices[index]
 				return out, nil
 			}
 
 			out[OptionIDKey] = "other"
-			out[OptionContentKey] = answers[0]
+			out[OptionContentKey] = lastAnswer
+			selected = lastAnswer
 			return out, nil
+		}
+
+		// format the question. Which is common to all use cases
+		firstQuestion, err := nodes.Jinja2TemplateRender(q.config.QuestionTpl, in)
+		if err != nil {
+			return nil, err
 		}
 
 		var formattedChoices []string
@@ -285,7 +316,7 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 	userPromptSuffix := fmt.Sprintf(extractUserPromptSuffix, requiredFields, formattedAdditionalPrompt)
 
 	var (
-		messages     []*schema.Message
+		messages     = make([]*schema.Message, 0, len(questions)*2+1)
 		userResponse string
 	)
 	messages = append(messages, schema.SystemMessage(sysPrompt))
@@ -308,7 +339,7 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 	content := nodes.ExtractJSONString(out.Content)
 
 	var outMap = make(map[string]any)
-	err = sonic.Unmarshal([]byte(content), &outMap)
+	err = sonic.UnmarshalString(content, &outMap)
 	if err != nil {
 		return nil, err
 	}
@@ -348,15 +379,15 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 func (q *QuestionAnswer) extractCurrentState(in map[string]any) (
 	qResult []*Question,
 	aResult []string,
-	isFirst bool, // whether this execution if the first ever execution for this node
+	isFirst bool,    // whether this execution if the first ever execution for this node
 	notResumed bool, // whether this node is previously interrupted, but not resumed this time, because another node is resumed
 	err error) {
-	questions, ok := nodes.TakeMapValue(in, compose.FieldPath{QuestionsKey})
+	questions, ok := in[QuestionsKey]
 	if ok {
 		qResult = questions.([]*Question)
 	}
 
-	answers, ok := nodes.TakeMapValue(in, compose.FieldPath{AnswersKey})
+	answers, ok := in[AnswersKey]
 	if ok {
 		aResult = answers.([]string)
 	}
@@ -410,106 +441,45 @@ func (q *QuestionAnswer) intentDetect(ctx context.Context, answer string, choice
 
 type QuestionAnswerAware interface {
 	AddQuestion(nodeKey vo.NodeKey, question *Question)
-}
-
-type qaInterruptible interface {
-	QuestionAnswerAware
-	nodes.InterruptEventStore
+	AddAnswer(nodeKey vo.NodeKey, answer string)
+	GetQuestionsAndAnswers(nodeKey vo.NodeKey) ([]*Question, []string)
 }
 
 func (q *QuestionAnswer) interrupt(ctx context.Context, newQuestion string, choices []string, oldQuestions []*Question, oldAnswers []string) error {
-	err := compose.ProcessState(ctx, func(ctx context.Context, setter qaInterruptible) error {
-		setter.AddQuestion(q.config.NodeKey, &Question{
-			Question: newQuestion,
-			Choices:  choices,
-		})
+	history := q.generateHistory(oldQuestions, oldAnswers, newQuestion, choices)
 
-		conv := func(opts []string) (namedOpts []namedOpt) {
-			for _, opt := range opts {
-				namedOpts = append(namedOpts, namedOpt{
-					Name: opt,
-				})
-			}
-			return namedOpts
-		}
-
-		history := make([]*message, 0, len(oldQuestions)+len(oldAnswers)+1)
-		for i := 0; i < len(oldQuestions); i++ {
-			oldQuestion := oldQuestions[i]
-			oldAnswer := oldAnswers[i]
-			contentType := ternary.IFElse(q.config.AnswerType == AnswerByChoices, "option", "text")
-			questionMsg := &message{
-				Type:        "question",
-				ContentType: contentType,
-				ID:          fmt.Sprintf("%s_%d", q.config.NodeKey, i*2),
-			}
-
-			if q.config.AnswerType == AnswerByChoices {
-				questionMsg.Content = optionContent{
-					Options:  conv(oldQuestion.Choices),
-					Question: oldQuestion.Question,
-				}
-			} else {
-				questionMsg.Content = oldQuestion.Question
-			}
-
-			answerMsg := &message{
-				Type:        "answer",
-				ContentType: contentType,
-				Content:     oldAnswer,
-				ID:          fmt.Sprintf("%s_%d", q.config.NodeKey, i+1),
-			}
-
-			history = append(history, questionMsg, answerMsg)
-		}
-
-		if q.config.AnswerType == AnswerByChoices {
-			history = append(history, &message{
-				Type:        "question",
-				ContentType: "option",
-				Content: optionContent{
-					Options:  conv(choices),
-					Question: newQuestion,
-				},
-				ID: fmt.Sprintf("%s_%d", q.config.NodeKey, len(oldQuestions)*2),
-			})
-		} else {
-			history = append(history, &message{
-				Type:        "question",
-				ContentType: "text",
-				Content:     newQuestion,
-				ID:          fmt.Sprintf("%s_%d", q.config.NodeKey, len(oldQuestions)*2),
-			})
-		}
-
-		historyList := map[string][]*message{
-			"messages": history,
-		}
-		interruptData, err := sonic.MarshalString(historyList)
-		if err != nil {
-			return err
-		}
-
-		eventID, err := workflow.GetRepository().GenID(ctx)
-		if err != nil {
-			return err
-		}
-		return setter.SetInterruptEvent(q.config.NodeKey, &entity.InterruptEvent{
-			ID:            eventID,
-			NodeKey:       q.config.NodeKey,
-			NodeType:      entity.NodeTypeQuestionAnswer,
-			NodeTitle:     q.nodeMeta.Name,
-			NodeIcon:      q.nodeMeta.IconURL,
-			InterruptData: interruptData,
-			EventType:     entity.InterruptEventQuestion,
-		})
-	})
-
+	historyList := map[string][]*message{
+		"messages": history,
+	}
+	interruptData, err := sonic.MarshalString(historyList)
 	if err != nil {
 		return err
 	}
 
-	return compose.InterruptAndRerun
+	eventID, err := workflow.GetRepository().GenID(ctx)
+	if err != nil {
+		return err
+	}
+
+	event := &entity.InterruptEvent{
+		ID:            eventID,
+		NodeKey:       q.config.NodeKey,
+		NodeType:      entity.NodeTypeQuestionAnswer,
+		NodeTitle:     q.nodeMeta.Name,
+		NodeIcon:      q.nodeMeta.IconURL,
+		InterruptData: interruptData,
+		EventType:     entity.InterruptEventQuestion,
+	}
+
+	_ = compose.ProcessState(ctx, func(ctx context.Context, setter QuestionAnswerAware) error {
+		setter.AddQuestion(q.config.NodeKey, &Question{
+			Question: newQuestion,
+			Choices:  choices,
+		})
+		return nil
+	})
+
+	return compose.NewInterruptAndRerunErr(event)
 }
 
 func intToAlphabet(num int) string {
@@ -530,4 +500,117 @@ func AlphabetToInt(str string) (int, bool) {
 		return int(char - 'A'), true
 	}
 	return 0, false
+}
+
+func (q *QuestionAnswer) generateHistory(oldQuestions []*Question, oldAnswers []string, newQuestion string, choices []string) []*message {
+	conv := func(opts []string) (namedOpts []namedOpt) {
+		for _, opt := range opts {
+			namedOpts = append(namedOpts, namedOpt{
+				Name: opt,
+			})
+		}
+		return namedOpts
+	}
+
+	history := make([]*message, 0, len(oldQuestions)+len(oldAnswers)+1)
+	for i := 0; i < len(oldQuestions); i++ {
+		oldQuestion := oldQuestions[i]
+		oldAnswer := oldAnswers[i]
+		contentType := ternary.IFElse(q.config.AnswerType == AnswerByChoices, "option", "text")
+		questionMsg := &message{
+			Type:        "question",
+			ContentType: contentType,
+			ID:          fmt.Sprintf("%s_%d", q.config.NodeKey, i*2),
+		}
+
+		if q.config.AnswerType == AnswerByChoices {
+			questionMsg.Content = optionContent{
+				Options:  conv(oldQuestion.Choices),
+				Question: oldQuestion.Question,
+			}
+		} else {
+			questionMsg.Content = oldQuestion.Question
+		}
+
+		answerMsg := &message{
+			Type:        "answer",
+			ContentType: contentType,
+			Content:     oldAnswer,
+			ID:          fmt.Sprintf("%s_%d", q.config.NodeKey, i+1),
+		}
+
+		history = append(history, questionMsg, answerMsg)
+	}
+
+	if len(newQuestion) > 0 {
+		if q.config.AnswerType == AnswerByChoices {
+			history = append(history, &message{
+				Type:        "question",
+				ContentType: "option",
+				Content: optionContent{
+					Options:  conv(choices),
+					Question: newQuestion,
+				},
+				ID: fmt.Sprintf("%s_%d", q.config.NodeKey, len(oldQuestions)*2),
+			})
+		} else {
+			history = append(history, &message{
+				Type:        "question",
+				ContentType: "text",
+				Content:     newQuestion,
+				ID:          fmt.Sprintf("%s_%d", q.config.NodeKey, len(oldQuestions)*2),
+			})
+		}
+	}
+
+	return history
+}
+
+func (q *QuestionAnswer) toCallbackOutput(out map[string]any, questions []*Question, answers []string, selected string) *nodes.StructuredCallbackOutput {
+	history := q.generateHistory(questions, answers, "", nil)
+	for _, msg := range history {
+		optionC, ok := msg.Content.(optionContent)
+		if ok {
+			msg.Content = optionC.Question
+		}
+		msg.ID = ""
+	}
+	return &nodes.StructuredCallbackOutput{
+		Output: out,
+		RawOutput: map[string]any{
+			"messages": history,
+			"select":   selected,
+		},
+	}
+}
+
+func AppendInterruptData(interruptData string, resumeData string) (string, error) {
+	var historyList = make(map[string][]*message)
+	err := sonic.UnmarshalString(interruptData, &historyList)
+	if err != nil {
+		return "", err
+	}
+
+	lastQuestion := historyList["messages"][len(historyList["messages"])-1]
+	segments := strings.Split(lastQuestion.ID, "_")
+	nodeKey := segments[0]
+	i, err := strconv.Atoi(segments[1])
+	if err != nil {
+		return "", err
+	}
+
+	answerMsg := &message{
+		Type:        "answer",
+		ContentType: lastQuestion.ContentType,
+		Content:     resumeData,
+		ID:          fmt.Sprintf("%s_%d", nodeKey, i+1),
+	}
+
+	historyList["messages"] = append(historyList["messages"], answerMsg)
+	m, err := sonic.MarshalString(historyList)
+	if err != nil {
+		return "", err
+	}
+
+	return m, nil
 }

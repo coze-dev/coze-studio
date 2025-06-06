@@ -360,11 +360,8 @@ func CanvasBlockInputRefToFieldSource(r *vo.BlockInputReference) (*vo.FieldSourc
 		if len(r.BlockID) == 0 {
 			return nil, fmt.Errorf("invalid BlockInputReference = %+v, BlockID is empty when source is block output", r)
 		}
-		// currently commented out the following lines to use empty name as full mapping
-		/*if len(r.Name) == 0 {
-			return nil, fmt.Errorf("invalid BlockInputReference = %+v, Name is empty when source is block output", r)
-		}*/
-		parts := strings.Split(r.Name, ".")
+
+		parts := strings.Split(r.Name, ".") // an empty r.Name signals an all-to-all mapping
 		return &vo.FieldSource{
 			Ref: &vo.Reference{
 				FromNodeKey: vo.NodeKey(r.BlockID),

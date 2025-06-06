@@ -570,18 +570,39 @@ func convertNodeExecution(nodeExe *entity.NodeExecution) (*workflow.NodeResult, 
 		}
 	}
 
-	if nodeExe.Index > 0 {
+	if nodeExe.ParentNodeID != nil {
 		nr.Index = ptr.Of(int32(nodeExe.Index))
 		nr.Items = nodeExe.Items
 	}
 
 	if len(nodeExe.IndexedExecutions) > 0 {
 		nr.IsBatch = ptr.Of(true)
-		m, err := sonic.MarshalString(nodeExe.IndexedExecutions) // TODO: convert to correct format
+		subResults := make([]*workflow.NodeResult, 0, len(nodeExe.IndexedExecutions))
+		for _, subNodeExe := range nodeExe.IndexedExecutions {
+			if subNodeExe == nil {
+				subResults = append(subResults, nil)
+				continue
+			}
+			subResult, err := convertNodeExecution(subNodeExe)
+			if err != nil {
+				return nil, err
+			}
+			subResults = append(subResults, subResult)
+		}
+		m, err := sonic.MarshalString(subResults)
 		if err != nil {
 			return nil, err
 		}
 		nr.Batch = ptr.Of(m)
+	}
+
+	if nodeExe.SubWorkflowExecution != nil {
+		if nodeExe.Extra == nil {
+			nodeExe.Extra = &entity.NodeExtra{}
+		}
+		nodeExe.Extra.SubExecuteID = nodeExe.SubWorkflowExecution.ID
+		nr.SubExecuteId = ptr.Of(strconv.FormatInt(nodeExe.SubWorkflowExecution.ID, 10))
+		nr.ExecuteId = ptr.Of(strconv.FormatInt(nodeExe.ExecuteID, 10))
 	}
 
 	if nodeExe.Extra != nil {

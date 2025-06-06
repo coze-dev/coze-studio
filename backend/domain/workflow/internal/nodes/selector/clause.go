@@ -84,6 +84,10 @@ func (c *Clause) Resolve() (bool, error) {
 			return strings.Contains(fmt.Sprintf("%v", leftV), rightV.(string)), nil
 		}
 
+		if leftV == nil { // treat it as empty slice
+			return false, nil
+		}
+
 		leftValue := reflect.ValueOf(leftV)
 		for i := 0; i < leftValue.Len(); i++ {
 			elem := leftValue.Index(i).Interface()
@@ -98,6 +102,10 @@ func (c *Clause) Resolve() (bool, error) {
 			return !strings.Contains(fmt.Sprintf("%v", leftV), rightV.(string)), nil
 		}
 
+		if leftV == nil { // treat it as empty slice
+			return false, nil
+		}
+
 		leftValue := reflect.ValueOf(leftV)
 		for i := 0; i < leftValue.Len(); i++ {
 			elem := leftValue.Index(i).Interface()
@@ -108,6 +116,10 @@ func (c *Clause) Resolve() (bool, error) {
 
 		return true, nil
 	case OperatorContainKey:
+		if leftV == nil { // treat it as empty map
+			return false, nil
+		}
+
 		if leftT.Kind() == reflect.Map {
 			leftValue := reflect.ValueOf(leftV)
 			for _, key := range leftValue.MapKeys() {
@@ -115,7 +127,7 @@ func (c *Clause) Resolve() (bool, error) {
 					return true, nil
 				}
 			}
-		} else {
+		} else { // struct, unreachable now
 			for i := 0; i < leftT.NumField(); i++ {
 				field := leftT.Field(i)
 				if field.IsExported() {
@@ -129,6 +141,10 @@ func (c *Clause) Resolve() (bool, error) {
 
 		return false, nil
 	case OperatorNotContainKey:
+		if leftV == nil { // treat it as empty map
+			return false, nil
+		}
+
 		if leftT.Kind() == reflect.Map {
 			leftValue := reflect.ValueOf(leftV)
 			for _, key := range leftValue.MapKeys() {
@@ -136,7 +152,7 @@ func (c *Clause) Resolve() (bool, error) {
 					return false, nil
 				}
 			}
-		} else {
+		} else { // struct, unreachable now
 			for i := 0; i < leftT.NumField(); i++ {
 				field := leftT.Field(i)
 				if field.IsExported() {
