@@ -282,7 +282,11 @@ func PhotoDetail(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.PhotoDetailResponse)
-
+	resp, err = application.KnowledgeSVC.PhotoDetail(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -498,6 +502,10 @@ func ExtractPhotoCaption(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.ExtractPhotoCaptionResponse)
-
+	resp, err = application.KnowledgeSVC.ExtractPhotoCaption(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
@@ -23,6 +24,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
@@ -1304,5 +1306,58 @@ func (k *knowledgeSVC) ListPhotoSlice(ctx context.Context, request *knowledge.Li
 	if request == nil {
 		return nil, errors.New("request is null")
 	}
-	return nil, nil
+	sliceArr, total, err := k.sliceRepo.FindSliceByCondition(ctx, &dao.WhereSliceOpt{
+		KnowledgeID: request.KnowledgeID,
+		DocumentIDs: request.DocumentIDs,
+		Offset:      int64(ptr.From(request.Offset)),
+		PageSize:    int64(ptr.From(request.Limit)),
+		IsEmpty:     request.HasCaption,
+	})
+	if err != nil {
+		return nil, err
+	}
+	response = &knowledge.ListPhotoSliceResponse{
+		Total: int(total),
+		Slices: slices.Transform(sliceArr, func(item *model.KnowledgeDocumentSlice) *entity.Slice {
+			res := k.fromModelSlice(ctx, item)
+			return res
+		}),
+	}
+	return response, nil
+}
+
+func (k *knowledgeSVC) ExtractPhotoCaption(ctx context.Context, request *knowledge.ExtractPhotoCaptionRequest) (response *knowledge.ExtractPhotoCaptionResponse, err error) {
+	response = &knowledge.ExtractPhotoCaptionResponse{}
+	if request == nil {
+		return nil, errors.New("request is null")
+	}
+	if !k.isAutoAnnotationSupported {
+		return nil, errors.New("auto annotation is not supported")
+	}
+	docInfo, err := k.documentRepo.GetByID(ctx, request.DocumentID)
+	if err != nil {
+		return nil, err
+	}
+	if docInfo == nil || docInfo.ID == 0 {
+		return nil, errors.New("document not found")
+	}
+	docEntity := k.fromModelDocument(ctx, docInfo)
+	parser, err := k.parseManager.GetParser(convert.DocumentToParseConfig(docEntity))
+	if err != nil {
+		return nil, err
+	}
+	imageByte, err := k.storage.GetObject(ctx, docEntity.URI)
+	if err != nil {
+		return nil, err
+	}
+	reader := bytes.NewReader(imageByte)
+	schemaDoc, err := parser.Parse(ctx, reader)
+	if err != nil {
+		return nil, err
+	}
+	if len(schemaDoc) == 0 {
+		return nil, errors.New("schema doc is empty")
+	}
+	response.Caption = schemaDoc[0].Content
+	return response, nil
 }

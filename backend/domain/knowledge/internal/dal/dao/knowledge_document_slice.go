@@ -48,10 +48,12 @@ func NewKnowledgeDocumentSliceDAO(db *gorm.DB) KnowledgeDocumentSliceRepo {
 type WhereSliceOpt struct {
 	KnowledgeID int64
 	DocumentID  int64
+	DocumentIDs []int64
 	Keyword     *string
 	Sequence    int64
 	PageSize    int64
 	Offset      int64
+	IsEmpty     *bool
 }
 type knowledgeDocumentSliceDAO struct {
 	db    *gorm.DB
@@ -258,10 +260,13 @@ func (dao *knowledgeDocumentSliceDAO) FindSliceByCondition(ctx context.Context, 
 	if opts.DocumentID != 0 {
 		do = do.Where(s.DocumentID.Eq(opts.DocumentID))
 	}
+	if len(opts.DocumentIDs) != 0 {
+		do = do.Where(s.DocumentID.In(opts.DocumentIDs...))
+	}
 	if opts.KnowledgeID != 0 {
 		do = do.Where(s.KnowledgeID.Eq(opts.KnowledgeID))
 	}
-	if opts.DocumentID == 0 && opts.KnowledgeID == 0 {
+	if opts.DocumentID == 0 && opts.KnowledgeID == 0 && len(opts.DocumentIDs) == 0 {
 		return nil, 0, errors.New("documentID and knowledgeID cannot be empty at the same time")
 	}
 	if opts.Keyword != nil && len(*opts.Keyword) != 0 {
@@ -273,6 +278,13 @@ func (dao *knowledgeDocumentSliceDAO) FindSliceByCondition(ctx context.Context, 
 		do = do.Limit(int(opts.PageSize))
 	} else {
 		do = do.Limit(50)
+	}
+	if opts.IsEmpty != nil {
+		if ptr.From(opts.IsEmpty) {
+			do = do.Where(s.Content.Eq(""))
+		} else {
+			do = do.Where(s.Content.Neq(""))
+		}
 	}
 	pos, err := do.Find()
 	if err != nil {

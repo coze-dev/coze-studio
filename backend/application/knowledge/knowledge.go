@@ -951,7 +951,7 @@ func (k *KnowledgeApplicationService) ListPhoto(ctx context.Context, req *datase
 		logs.CtxErrorf(ctx, "get documents by slice ids failed, err: %v", err)
 		return resp, err
 	}
-	photos := k.packPhotoInfo(ctx, listResp.Slices, listDocResp.Documents)
+	photos := k.packPhotoInfo(listResp.Slices, listDocResp.Documents)
 	sort.SliceStable(photos, func(i, j int) bool {
 		return photos[i].UpdateTime > photos[j].UpdateTime
 	})
@@ -960,7 +960,7 @@ func (k *KnowledgeApplicationService) ListPhoto(ctx context.Context, req *datase
 	return resp, nil
 }
 
-func (k *KnowledgeApplicationService) packPhotoInfo(ctx context.Context, slices []*entity.Slice, documents []*entity.Document) []*dataset.PhotoInfo {
+func (k *KnowledgeApplicationService) packPhotoInfo(slices []*entity.Slice, documents []*entity.Document) []*dataset.PhotoInfo {
 	captions := map[int64]string{}
 	for i := range slices {
 		captions[slices[i].DocumentID] = slices[i].GetSliceContent()
@@ -983,4 +983,60 @@ func (k *KnowledgeApplicationService) packPhotoInfo(ctx context.Context, slices 
 		})
 	}
 	return photoInfo
+}
+
+func (k *KnowledgeApplicationService) PhotoDetail(ctx context.Context, req *dataset.PhotoDetailRequest) (*dataset.PhotoDetailResponse, error) {
+	resp := dataset.NewPhotoDetailResponse()
+	if len(req.GetDocumentIds()) == 0 {
+		resp.Code = 400
+		resp.Msg = "document ids is empty"
+		return resp, nil
+	}
+	docIDs, err := slices.TransformWithErrorCheck(req.GetDocumentIds(), func(s string) (int64, error) {
+		id, err := strconv.ParseInt(s, 10, 64)
+		return id, err
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
+		return resp, err
+	}
+	listResp, err := k.DomainSVC.ListPhotoSlice(ctx, &knowledge.ListPhotoSliceRequest{DocumentIDs: docIDs})
+	if err != nil {
+		logs.CtxErrorf(ctx, "list photo slice failed, err: %v", err)
+		return resp, err
+	}
+	listDocResp, err := k.DomainSVC.ListDocument(ctx, &knowledge.ListDocumentRequest{DocumentIDs: docIDs})
+	if err != nil {
+		logs.CtxErrorf(ctx, "get documents by slice ids failed, err: %v", err)
+		return resp, err
+	}
+	if err != nil {
+		logs.CtxErrorf(ctx, "get documents by slice ids failed, err: %v", err)
+		return resp, err
+	}
+	photos := k.packPhotoInfo(listResp.Slices, listDocResp.Documents)
+	sort.SliceStable(photos, func(i, j int) bool {
+		return photos[i].UpdateTime > photos[j].UpdateTime
+	})
+	resp.PhotoInfos = slices.ToMap(photos, func(item *dataset.PhotoInfo) (string, *dataset.PhotoInfo) {
+		return strconv.FormatInt(item.DocumentID, 10), item
+	})
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) ExtractPhotoCaption(ctx context.Context, req *dataset.ExtractPhotoCaptionRequest) (*dataset.ExtractPhotoCaptionResponse, error) {
+	resp := dataset.NewExtractPhotoCaptionResponse()
+	if req.GetDocumentID() == 0 {
+		resp.Code = 400
+		resp.Msg = "document id is empty"
+		return resp, nil
+	}
+	extractResp, err := k.DomainSVC.ExtractPhotoCaption(ctx, &knowledge.ExtractPhotoCaptionRequest{DocumentID: req.GetDocumentID()})
+	if err != nil {
+		resp.Code = 500
+		resp.Msg = err.Error()
+		return resp, nil
+	}
+	resp.Caption = extractResp.Caption
+	return resp, nil
 }

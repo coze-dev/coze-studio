@@ -23,6 +23,7 @@ type Knowledge interface {
 	CreateDocument(ctx context.Context, request *CreateDocumentRequest) (response *CreateDocumentResponse, err error)
 	UpdateDocument(ctx context.Context, request *UpdateDocumentRequest) error
 	DeleteDocument(ctx context.Context, request *DeleteDocumentRequest) error
+	ExtractPhotoCaption(ctx context.Context, request *ExtractPhotoCaptionRequest) (response *ExtractPhotoCaptionResponse, err error)
 	ListDocument(ctx context.Context, request *ListDocumentRequest) (response *ListDocumentResponse, err error)
 	MGetDocumentProgress(ctx context.Context, request *MGetDocumentProgressRequest) (response *MGetDocumentProgressResponse, err error)
 	ResegmentDocument(ctx context.Context, request *ResegmentDocumentRequest) (response *ResegmentDocumentResponse, err error)
@@ -315,4 +316,12 @@ type ListPhotoSliceRequest struct {
 type ListPhotoSliceResponse struct {
 	Slices []*entity.Slice
 	Total  int
+}
+
+type ExtractPhotoCaptionRequest struct {
+	DocumentID int64
+}
+
+type ExtractPhotoCaptionResponse struct {
+	Caption string
 }
