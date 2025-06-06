@@ -250,7 +250,7 @@ func (d *databasePacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	return &dataInfo{
 		iconURI: ptr.Of(listResp.Databases[0].IconURI),
 		iconURL: listResp.Databases[0].IconURL,
-		desc:    ptr.Of(listResp.Databases[0].Description),
+		desc:    ptr.Of(listResp.Databases[0].TableDesc),
 	}, nil
 }
 

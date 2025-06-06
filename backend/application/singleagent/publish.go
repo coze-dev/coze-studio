@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
@@ -59,6 +60,7 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		publishAgentVariables,
 		publishAgentPlugins,
 		publishShortcutCommand,
+		publishDatabase,
 	}
 
 	for _, pubFn := range publishFns {
@@ -228,5 +230,15 @@ func publishShortcutCommand(ctx context.Context, appContext *ServiceComponents, 
 		return nil, err
 	}
 
+	return agent, nil
+}
+
+func publishDatabase(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
+	onlineResp, err := appContext.DatabaseDomainSVC.PublishDatabase(ctx, &database.PublishDatabaseRequest{AgentID: agent.AgentID})
+	if err != nil {
+		return nil, err
+	}
+
+	agent.Database = onlineResp.OnlineDatabases
 	return agent, nil
 }

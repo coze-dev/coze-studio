@@ -127,7 +127,7 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 		Resource: &searchEntity.ResourceDocument{
 			ResType:      resCommon.ResType_Database,
 			ResID:        databaseRes.ID,
-			Name:         &databaseRes.Name,
+			Name:         &databaseRes.TableName,
 			APPID:        ptrAppID,
 			SpaceID:      &databaseRes.SpaceID,
 			OwnerID:      &databaseRes.CreatorID,
@@ -159,7 +159,7 @@ func (d *DatabaseApplicationService) UpdateDatabase(ctx context.Context, req *ta
 		Resource: &searchEntity.ResourceDocument{
 			ResType:      resCommon.ResType_Database,
 			ResID:        databaseRes.ID,
-			Name:         &databaseRes.Name,
+			Name:         &databaseRes.TableName,
 			UpdateTimeMS: ptr.Of(databaseRes.UpdatedAtMs),
 		},
 	})

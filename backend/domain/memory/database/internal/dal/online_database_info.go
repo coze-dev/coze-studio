@@ -56,7 +56,7 @@ func (o *OlineImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, databas
 			}
 		}(),
 		TableName_:        database.TableName,
-		TableDesc:         database.Description,
+		TableDesc:         database.TableDesc,
 		TableField:        database.FieldList,
 		CreatorID:         database.CreatorID,
 		IconURI:           database.IconURI,
@@ -99,6 +99,7 @@ func (o *OlineImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 
 		AppID:           info.AppID,
 		DraftID:         &info.RelatedDraftID,
+		OnlineID:        &info.ID,
 		IsVisible:       info.IsVisible == 1,
 		PromptDisabled:  info.PromptDisabled == 1,
 		TableName:       info.TableName_,
@@ -126,7 +127,7 @@ func (o *OlineImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 	updates := map[string]interface{}{
 		"app_id":      database.AppID,
 		"table_name":  database.TableName,
-		"table_desc":  database.Description,
+		"table_desc":  database.TableDesc,
 		"table_field": fieldJsonStr,
 		"icon_uri":    database.IconURI,
 		"prompt_disabled": func() int32 {
@@ -188,7 +189,8 @@ func (o *OlineImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 			IconURI:   info.IconURI,
 
 			AppID:           info.AppID,
-			DraftID:         &info.RelatedDraftID, // todo online表可以获取到draftID
+			DraftID:         &info.RelatedDraftID,
+			OnlineID:        &info.ID,
 			IsVisible:       info.IsVisible == 1,
 			PromptDisabled:  info.PromptDisabled == 1,
 			TableName:       info.TableName_,

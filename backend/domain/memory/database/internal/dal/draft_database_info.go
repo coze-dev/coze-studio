@@ -57,7 +57,7 @@ func (d *DraftImpl) CreateWithTX(ctx context.Context, tx *query.QueryTx, databas
 			}
 		}(),
 		TableName_:        database.TableName,
-		TableDesc:         database.Description,
+		TableDesc:         database.TableDesc,
 		TableField:        database.FieldList,
 		CreatorID:         database.CreatorID,
 		IconURI:           database.IconURI,
@@ -109,6 +109,7 @@ func (d *DraftImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 		ActualTableName: info.PhysicalTableName,
 		RwMode:          table.BotTableRWMode(info.RwMode),
 		OnlineID:        &info.RelatedOnlineID,
+		DraftID:         &info.ID,
 	}
 
 	return db, nil
@@ -147,6 +148,7 @@ func (d *DraftImpl) MGet(ctx context.Context, ids []int64) ([]*entity.Database, 
 			ActualTableName: info.PhysicalTableName,
 			RwMode:          table.BotTableRWMode(info.RwMode),
 			OnlineID:        &info.RelatedOnlineID,
+			DraftID:         &info.ID,
 
 			CreatedAtMs: info.CreatedAt,
 			UpdatedAtMs: info.UpdatedAt,
@@ -168,10 +170,10 @@ func (d *DraftImpl) UpdateWithTX(ctx context.Context, tx *query.QueryTx, databas
 	fieldJsonStr := string(fieldJson)
 	now := time.Now().UnixMilli()
 
-	updates := map[string]interface{}{ // todo lj 检查哪些可能被更新
+	updates := map[string]interface{}{
 		"app_id":      database.AppID,
 		"table_name":  database.TableName,
-		"table_desc":  database.Description,
+		"table_desc":  database.TableDesc,
 		"table_field": fieldJsonStr,
 		"icon_uri":    database.IconURI,
 		"prompt_disabled": func() int32 {
