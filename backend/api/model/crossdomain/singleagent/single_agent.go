@@ -1,10 +1,12 @@
 package singleagent
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
+
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 )
 
 type AgentRuntime struct {
@@ -23,6 +25,7 @@ const (
 	EventTypeOfFuncCall     EventType = "func_call"
 	EventTypeOfSuggest      EventType = "suggest"
 	EventTypeOfKnowledge    EventType = "knowledge"
+	EventTypeOfInterrupt    EventType = "interrupt"
 )
 
 type AgentEvent struct {
@@ -33,6 +36,7 @@ type AgentEvent struct {
 	FuncCall     *schema.Message
 	Suggest      *schema.Message
 	Knowledge    []*schema.Document
+	Interrupt    *InterruptInfo
 }
 
 type SingleAgent struct {
@@ -60,6 +64,12 @@ type SingleAgent struct {
 	ShortcutCommand         []string
 }
 
+type InterruptInfo struct {
+	AllToolInterruptData map[string]*crossworkflow.ToolInterruptEvent
+	ToolCallID           string
+	InterruptID          string
+}
+
 type ExecuteRequest struct {
 	Identity *AgentIdentity
 	UserID   int64
@@ -67,6 +77,7 @@ type ExecuteRequest struct {
 
 	Input        *schema.Message
 	History      []*schema.Message
+	ResumeInfo   *InterruptInfo
 	PreCallTools []*agentrun.ToolsRetriever
 }
 

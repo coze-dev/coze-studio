@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/cloudwego/eino/components/tool"
+	einoCompose "github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
@@ -43,4 +44,8 @@ func (i *impl) DeleteWorkflow(ctx context.Context, id int64) error {
 
 func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error) {
 	return i.DomainSVC.ReleaseApplicationWorkflows(ctx, appID, config)
+}
+
+func (i *impl) WithResumeToolWorkflow(resumingEvent *workflowEntity.ToolInterruptEvent, resumeData string, allInterruptEvents map[string]*workflowEntity.ToolInterruptEvent) einoCompose.Option {
+	return i.DomainSVC.WithResumeToolWorkflow(resumingEvent, resumeData, allInterruptEvents)
 }

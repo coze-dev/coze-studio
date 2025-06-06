@@ -11,6 +11,7 @@ import (
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagent"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
+	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -33,19 +34,21 @@ func InitDomainService(c singleagent.SingleAgent) crossagent.SingleAgent {
 func (c *impl) StreamExecute(ctx context.Context, historyMsg []*message.Message,
 	query *message.Message, agentRuntime *model.AgentRuntime,
 ) (*schema.StreamReader[*model.AgentEvent], error) {
-	singleAgentStreamExecReq := c.buildReq2SingleAgentStreamExecute(historyMsg, query, agentRuntime)
+	singleAgentStreamExecReq := c.buildSingleAgentStreamExecuteReq(ctx, historyMsg, query, agentRuntime)
 
 	streamEvent, err := c.DomainSVC.StreamExecute(ctx, singleAgentStreamExecReq)
 	logs.CtxInfof(ctx, "agent StreamExecute req:%v, streamEvent:%v, err:%v", conv.DebugJsonToStr(singleAgentStreamExecReq), streamEvent, err)
 	return streamEvent, err
 }
 
-func (c *impl) buildReq2SingleAgentStreamExecute(historyMsg []*message.Message,
+func (c *impl) buildSingleAgentStreamExecuteReq(ctx context.Context, historyMsg []*message.Message,
 	input *message.Message, agentRuntime *model.AgentRuntime,
 ) *model.ExecuteRequest {
 	identity := c.buildIdentity(input, agentRuntime)
 	inputBuild := c.buildSchemaMessage([]*message.Message{input})
 	history := c.buildSchemaMessage(historyMsg)
+
+	resumeInfo := c.checkResumeInfo(ctx, historyMsg)
 
 	return &model.ExecuteRequest{
 		Identity: identity,
@@ -70,7 +73,29 @@ func (c *impl) buildReq2SingleAgentStreamExecute(historyMsg []*message.Message,
 				}(tool.Type),
 			}
 		}),
+
+		ResumeInfo: resumeInfo,
 	}
+}
+
+func (c *impl) checkResumeInfo(_ context.Context, historyMsg []*message.Message) *crossagent.ResumeInfo {
+
+	var resumeInfo *crossagent.ResumeInfo
+	for i := len(historyMsg) - 1; i >= 0; i-- {
+		if historyMsg[i].MessageType == message.MessageTypeQuestion {
+			break
+		}
+		if historyMsg[i].MessageType == message.MessageTypeVerbose {
+			if historyMsg[i].Ext[string(entity.ExtKeyResumeInfo)] != "" {
+				err := json.Unmarshal([]byte(historyMsg[i].Ext[string(entity.ExtKeyResumeInfo)]), &resumeInfo)
+				if err != nil {
+					return nil
+				}
+			}
+		}
+	}
+
+	return resumeInfo
 }
 
 func (c *impl) buildSchemaMessage(msgs []*message.Message) []*schema.Message {
@@ -83,12 +108,12 @@ func (c *impl) buildSchemaMessage(msgs []*message.Message) []*schema.Message {
 		if msgOne.MessageType == message.MessageTypeVerbose || msgOne.MessageType == message.MessageTypeFlowUp {
 			continue
 		}
-		var message *schema.Message
-		err := json.Unmarshal([]byte(msgOne.ModelContent), &message)
+		var sm *schema.Message
+		err := json.Unmarshal([]byte(msgOne.ModelContent), &sm)
 		if err != nil {
 			continue
 		}
-		schemaMessage = append(schemaMessage, message)
+		schemaMessage = append(schemaMessage, sm)
 	}
 
 	return schemaMessage

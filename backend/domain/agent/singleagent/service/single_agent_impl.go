@@ -94,6 +94,7 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 		Input:   req.Input,
 		History: req.History,
 
+		ResumeInfo:   req.ResumeInfo,
 		PreCallTools: req.PreCallTools,
 	}
 	return rn.StreamExecute(ctx, exeReq)

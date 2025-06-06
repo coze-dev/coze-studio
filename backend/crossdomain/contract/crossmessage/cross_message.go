@@ -14,6 +14,8 @@ type Message interface {
 
 var defaultSVC Message
 
+type MessageMeta = message.Message
+
 func DefaultSVC() Message {
 	return defaultSVC
 }
