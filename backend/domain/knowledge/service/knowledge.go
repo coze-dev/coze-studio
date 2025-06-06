@@ -55,22 +55,23 @@ import (
 
 func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.ConsumerHandler) {
 	svc := &knowledgeSVC{
-		knowledgeRepo:       dao.NewKnowledgeDAO(config.DB),
-		documentRepo:        dao.NewKnowledgeDocumentDAO(config.DB),
-		sliceRepo:           dao.NewKnowledgeDocumentSliceDAO(config.DB),
-		reviewRepo:          dao.NewKnowledgeDocumentReviewDAO(config.DB),
-		idgen:               config.IDGen,
-		rdb:                 config.RDB,
-		producer:            config.Producer,
-		searchStoreManagers: config.SearchStoreManagers,
-		parseManager:        config.ParseManager,
-		storage:             config.Storage,
-		imageX:              config.ImageX,
-		reranker:            config.Reranker,
-		rewriter:            config.Rewriter,
-		nl2Sql:              config.NL2Sql,
-		enableCompactTable:  ptr.FromOrDefault(config.EnableCompactTable, true),
-		CacheCli:            config.CacheCli,
+		knowledgeRepo:             dao.NewKnowledgeDAO(config.DB),
+		documentRepo:              dao.NewKnowledgeDocumentDAO(config.DB),
+		sliceRepo:                 dao.NewKnowledgeDocumentSliceDAO(config.DB),
+		reviewRepo:                dao.NewKnowledgeDocumentReviewDAO(config.DB),
+		idgen:                     config.IDGen,
+		rdb:                       config.RDB,
+		producer:                  config.Producer,
+		searchStoreManagers:       config.SearchStoreManagers,
+		parseManager:              config.ParseManager,
+		storage:                   config.Storage,
+		imageX:                    config.ImageX,
+		reranker:                  config.Reranker,
+		rewriter:                  config.Rewriter,
+		nl2Sql:                    config.NL2Sql,
+		enableCompactTable:        ptr.FromOrDefault(config.EnableCompactTable, true),
+		CacheCli:                  config.CacheCli,
+		isAutoAnnotationSupported: config.IsAutoAnnotationSupported,
 	}
 	if svc.reranker == nil {
 		svc.reranker = rrf.NewRRFReranker(0)
@@ -83,20 +84,21 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (knowledge.Knowledge, eventbus.
 }
 
 type KnowledgeSVCConfig struct {
-	DB                  *gorm.DB                       // required
-	IDGen               idgen.IDGenerator              // required
-	RDB                 rdb.RDB                        // required: 表格存储
-	Producer            eventbus.Producer              // required: 文档 indexing 过程走 mq 异步处理
-	SearchStoreManagers []searchstore.Manager          // required: 向量 / 全文
-	ParseManager        parser.Manager                 // optional: 文档切分与处理能力, default builtin parser
-	Storage             storage.Storage                // required: oss
-	ImageX              imagex.ImageX                  // TODO: 确认下 oss 是否返回 uri / url
-	Rewriter            messages2query.MessagesToQuery // optional: 未配置时不改写
-	Reranker            rerank.Reranker                // optional: 未配置时默认 rrf
-	NL2Sql              nl2sql.NL2SQL                  // optional: 未配置时默认不支持
-	EnableCompactTable  *bool                          // optional: 表格数据压缩，默认 true
-	OCR                 ocr.OCR                        // optional: ocr, 未提供时 ocr 功能不可用
-	CacheCli            cache.Cmdable                  // optional: 缓存实现
+	DB                        *gorm.DB                       // required
+	IDGen                     idgen.IDGenerator              // required
+	RDB                       rdb.RDB                        // required: 表格存储
+	Producer                  eventbus.Producer              // required: 文档 indexing 过程走 mq 异步处理
+	SearchStoreManagers       []searchstore.Manager          // required: 向量 / 全文
+	ParseManager              parser.Manager                 // optional: 文档切分与处理能力, default builtin parser
+	Storage                   storage.Storage                // required: oss
+	ImageX                    imagex.ImageX                  // TODO: 确认下 oss 是否返回 uri / url
+	Rewriter                  messages2query.MessagesToQuery // optional: 未配置时不改写
+	Reranker                  rerank.Reranker                // optional: 未配置时默认 rrf
+	NL2Sql                    nl2sql.NL2SQL                  // optional: 未配置时默认不支持
+	EnableCompactTable        *bool                          // optional: 表格数据压缩，默认 true
+	OCR                       ocr.OCR                        // optional: ocr, 未提供时 ocr 功能不可用
+	CacheCli                  cache.Cmdable                  // optional: 缓存实现
+	IsAutoAnnotationSupported bool                           // 是否支持了图片自动标注
 }
 
 type knowledgeSVC struct {
@@ -697,6 +699,9 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, request *knowledge.Updat
 		sliceEntity := entity.Slice{RawContent: request.RawContent}
 		sliceInfo[0].Content = sliceEntity.GetSliceContent()
 	}
+	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeImage) {
+		sliceInfo[0].Content = ptr.From(request.RawContent[0].Text)
+	}
 	sliceInfo[0].UpdatedAt = time.Now().UnixMilli()
 	sliceInfo[0].Status = int32(knowledgeModel.SliceStatusInit)
 	indexSliceEvent := events.NewIndexSliceEvent(&entity.Slice{
@@ -1292,7 +1297,7 @@ func (k *knowledgeSVC) ListPhotoSlice(ctx context.Context, request *knowledge.Li
 		DocumentIDs: request.DocumentIDs,
 		Offset:      int64(ptr.From(request.Offset)),
 		PageSize:    int64(ptr.From(request.Limit)),
-		IsEmpty:     request.HasCaption,
+		NotEmpty:    request.HasCaption,
 	})
 	if err != nil {
 		return nil, err

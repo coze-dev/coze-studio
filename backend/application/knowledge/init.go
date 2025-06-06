@@ -198,25 +198,26 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		}
 	}
 
-	imageAnnoChatModel, _, err := getBuiltinChatModel(ctx, "IA_")
+	imageAnnoChatModel, configured, err := getBuiltinChatModel(ctx, "IA_")
 	if err != nil {
 		return nil, err
 	}
 
 	knowledgeDomainSVC, knowledgeEventHandler := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
-		DB:                  c.DB,
-		IDGen:               c.IDGenSVC,
-		RDB:                 c.RDB,
-		Producer:            knowledgeProducer,
-		SearchStoreManagers: sManagers,
-		ParseManager:        builtinParser.NewManager(c.Storage, ocrImpl, imageAnnoChatModel), // default builtin
-		Storage:             c.Storage,
-		ImageX:              c.ImageX,
-		Rewriter:            rewriter,
-		Reranker:            rrf.NewRRFReranker(0), // default rrf
-		NL2Sql:              n2s,
-		OCR:                 ocrImpl,
-		CacheCli:            c.CacheCli,
+		DB:                        c.DB,
+		IDGen:                     c.IDGenSVC,
+		RDB:                       c.RDB,
+		Producer:                  knowledgeProducer,
+		SearchStoreManagers:       sManagers,
+		ParseManager:              builtinParser.NewManager(c.Storage, ocrImpl, imageAnnoChatModel), // default builtin
+		Storage:                   c.Storage,
+		ImageX:                    c.ImageX,
+		Rewriter:                  rewriter,
+		Reranker:                  rrf.NewRRFReranker(0), // default rrf
+		NL2Sql:                    n2s,
+		OCR:                       ocrImpl,
+		CacheCli:                  c.CacheCli,
+		IsAutoAnnotationSupported: configured,
 	})
 
 	if err = rmq.RegisterConsumer(nameServer, "opencoze_knowledge", "cg_knowledge", knowledgeEventHandler); err != nil {

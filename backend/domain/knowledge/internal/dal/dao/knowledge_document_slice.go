@@ -54,7 +54,7 @@ type WhereSliceOpt struct {
 	Sequence    int64
 	PageSize    int64
 	Offset      int64
-	IsEmpty     *bool
+	NotEmpty    *bool
 }
 type knowledgeDocumentSliceDAO struct {
 	db    *gorm.DB
@@ -82,7 +82,7 @@ func (dao *knowledgeDocumentSliceDAO) BatchSetStatus(ctx context.Context, ids []
 	if reason != "" {
 		updates[s.FailReason.ColumnName().String()] = reason
 	}
-
+	updates[s.UpdatedAt.ColumnName().String()] = time.Now().UnixMilli()
 	_, err := s.WithContext(ctx).Where(s.ID.In(ids...)).Updates(updates)
 	return err
 }
@@ -281,11 +281,11 @@ func (dao *knowledgeDocumentSliceDAO) FindSliceByCondition(ctx context.Context, 
 	} else {
 		do = do.Limit(50)
 	}
-	if opts.IsEmpty != nil {
-		if ptr.From(opts.IsEmpty) {
-			do = do.Where(s.Content.Eq(""))
-		} else {
+	if opts.NotEmpty != nil {
+		if ptr.From(opts.NotEmpty) {
 			do = do.Where(s.Content.Neq(""))
+		} else {
+			do = do.Where(s.Content.Eq(""))
 		}
 	}
 	pos, err := do.Find()
@@ -321,6 +321,10 @@ func (dao *knowledgeDocumentSliceDAO) IncrementHitCount(ctx context.Context, sli
 	}
 	s := dao.query.KnowledgeDocumentSlice
 	_, err := s.WithContext(ctx).Debug().Where(s.ID.In(sliceIDs...)).UpdateColumn(s.Hit, gorm.Expr("hit + ?", 1))
+	if err != nil {
+		return err
+	}
+	_, err = s.WithContext(ctx).Debug().Where(s.ID.In(sliceIDs...)).UpdateColumn(s.UpdatedAt, time.Now().UnixMilli())
 	return err
 }
 
