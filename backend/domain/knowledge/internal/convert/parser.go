@@ -30,6 +30,7 @@ func ToParseConfig(fileExtension parser.FileExtension, ps *entity.ParsingStrateg
 		IsAppend:            isAppend,
 		Columns:             convColumns(columns),
 		IgnoreColumnTypeErr: true, // default true
+		ImageAnnotationType: ptr.From(ptr.From(cs).CaptionType),
 	}
 
 	var c *parser.ChunkingStrategy
