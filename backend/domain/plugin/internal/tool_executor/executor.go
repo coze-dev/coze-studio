@@ -1,4 +1,4 @@
-package plugin
+package tool_executor
 
 import (
 	"bytes"
@@ -183,7 +183,7 @@ func (t *executorImpl) buildHTTPRequest(ctx context.Context, argumentsInJson str
 
 	bodyBytes, contentType, err := t.buildHTTPRequestBody(ctx, tool.Operation, bodyArgs)
 	if len(bodyBytes) > 0 {
-		httpReq.Header.Set("content-type", contentType)
+		httpReq.Header.Set("Content-Type", contentType)
 		httpReq.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 	}
 

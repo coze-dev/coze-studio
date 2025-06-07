@@ -4,7 +4,8 @@ include "./plugin_develop_common.thrift"
 namespace go ocean.cloud.plugin_develop
 
 service PluginDevelopService {
-    GetOAuthSchemaResponse GetOAuthSchema(1: GetOAuthSchemaRequest request)(api.post='/api/plugin_api/get_oauth_schema', api.category="plugin", api.gen_path='plugin')
+    GetOAuthSchemaResponse GetOAuthSchema(1: GetOAuthSchemaRequest request)(api.post='/api/plugin/get_oauth_schema', api.category="plugin", api.gen_path="plugin")
+    GetOAuthSchemaResponse GetOAuthSchemaAPI(1: GetOAuthSchemaRequest request)(api.post='/api/plugin_api/get_oauth_schema', api.category="plugin", api.gen_path='plugin')
     GetPlaygroundPluginListResponse GetPlaygroundPluginList(1: GetPlaygroundPluginListRequest request) (api.post = '/api/plugin_api/get_playground_plugin_list', api.category = "plugin")
     RegisterPluginResponse RegisterPlugin(1: RegisterPluginRequest request)(api.post='/api/plugin_api/register', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
     RegisterPluginMetaResponse RegisterPluginMeta(1: RegisterPluginMetaRequest request) (api.post = '/api/plugin_api/register_plugin_meta', api.category = "plugin")
@@ -27,6 +28,7 @@ service PluginDevelopService {
     DebugAPIResponse DebugAPI(1: DebugAPIRequest request)(api.post='/api/plugin_api/debug_api', api.category="plugin", api.gen_path='plugin')
     GetPluginNextVersionResponse GetPluginNextVersion(1: GetPluginNextVersionRequest request)(api.post='/api/plugin_api/get_plugin_next_version', api.category="plugin", api.gen_path='plugin')
     GetDevPluginListResponse GetDevPluginList(1: GetDevPluginListRequest request)(api.post='/api/plugin_api/get_dev_plugin_list', api.category="plugin", api.gen_path='plugin', agw.preserve_base="true")
+    Convert2OpenAPIResponse Convert2OpenAPI(1: Convert2OpenAPIRequest request)(api.post='/api/plugin_api/convert_to_openapi', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
 }
 
 struct GetPlaygroundPluginListRequest {
@@ -514,4 +516,29 @@ struct GetDevPluginListResponse{
     4  : i64                                                 total       (api.body = "total", api.js_conv="str", agw.js_conv="str", agw.cli_conv="str", agw.key="total"),
 
     255: base.BaseResp                                       baseResp                                                                                ,
+}
+
+struct Convert2OpenAPIRequest {
+    1  : optional string    plugin_name       ,
+    2  : optional string    plugin_url        ,
+    3  : required string    data              ,
+    4  : optional bool      merge_same_paths  ,
+    5  :          i64    space_id        (api.js_conv = "str")  ,
+    6  : optional string    plugin_description,
+
+    255: optional base.Base Base              ,
+}
+
+struct Convert2OpenAPIResponse {
+    1  :          i64                                          code               ,
+    2  :          string                                       msg                ,
+    3  : optional string                                       openapi            ,
+    4  : optional string                                       ai_plugin          ,
+    5  : optional plugin_develop_common.PluginDataFormat       plugin_data_format ,
+    6  :          list<plugin_develop_common.DuplicateAPIInfo> duplicate_api_infos,
+
+// BaseResp.StatusCode
+//     DuplicateAPIPath: 导入的文件中有重复的API Path，且 request.MergeSamePaths = false
+//     InvalidParam: 其他错误
+    255: optional base.BaseResp                                BaseResp           ,
 }

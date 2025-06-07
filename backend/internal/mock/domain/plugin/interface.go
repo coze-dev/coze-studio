@@ -55,6 +55,20 @@ func (mr *MockPluginServiceMockRecorder) BindAgentTools(ctx, agentID, toolIDs an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindAgentTools", reflect.TypeOf((*MockPluginService)(nil).BindAgentTools), ctx, agentID, toolIDs)
 }
 
+// ConvertToOpenapi3Doc mocks base method.
+func (m *MockPluginService) ConvertToOpenapi3Doc(ctx context.Context, req *service.ConvertToOpenapi3DocRequest) *service.ConvertToOpenapi3DocResponse {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConvertToOpenapi3Doc", ctx, req)
+	ret0, _ := ret[0].(*service.ConvertToOpenapi3DocResponse)
+	return ret0
+}
+
+// ConvertToOpenapi3Doc indicates an expected call of ConvertToOpenapi3Doc.
+func (mr *MockPluginServiceMockRecorder) ConvertToOpenapi3Doc(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConvertToOpenapi3Doc", reflect.TypeOf((*MockPluginService)(nil).ConvertToOpenapi3Doc), ctx, req)
+}
+
 // CreateDraftPlugin mocks base method.
 func (m *MockPluginService) CreateDraftPlugin(ctx context.Context, req *service.CreateDraftPluginRequest) (int64, error) {
 	m.ctrl.T.Helper()

@@ -18,7 +18,7 @@ type PluginManifest struct {
 	DescriptionForModel string                                         `json:"description_for_model" validate:"required" yaml:"description_for_model"`
 	DescriptionForHuman string                                         `json:"description_for_human" yaml:"description_for_human" validate:"required"`
 	Auth                *AuthV2                                        `json:"auth" yaml:"auth" validate:"required"`
-	LogoURL             string                                         `json:"logo_url" yaml:"logo_url" validate:"required"`
+	LogoURL             string                                         `json:"logo_url" yaml:"logo_url"`
 	API                 APIDesc                                        `json:"api" yaml:"api"`
 	CommonParams        map[HTTPParamLocation][]*api.CommonParamSchema `json:"common_params" yaml:"common_params"`
 }

@@ -1502,6 +1502,58 @@ func (p *PluginTypeForFilter) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
+type PluginDataFormat int64
+
+const (
+	PluginDataFormat_OpenAPI PluginDataFormat = 1
+	PluginDataFormat_Curl    PluginDataFormat = 2
+	PluginDataFormat_Postman PluginDataFormat = 3
+	PluginDataFormat_Swagger PluginDataFormat = 4
+)
+
+func (p PluginDataFormat) String() string {
+	switch p {
+	case PluginDataFormat_OpenAPI:
+		return "OpenAPI"
+	case PluginDataFormat_Curl:
+		return "Curl"
+	case PluginDataFormat_Postman:
+		return "Postman"
+	case PluginDataFormat_Swagger:
+		return "Swagger"
+	}
+	return "<UNSET>"
+}
+
+func PluginDataFormatFromString(s string) (PluginDataFormat, error) {
+	switch s {
+	case "OpenAPI":
+		return PluginDataFormat_OpenAPI, nil
+	case "Curl":
+		return PluginDataFormat_Curl, nil
+	case "Postman":
+		return PluginDataFormat_Postman, nil
+	case "Swagger":
+		return PluginDataFormat_Swagger, nil
+	}
+	return PluginDataFormat(0), fmt.Errorf("not a valid PluginDataFormat string")
+}
+
+func PluginDataFormatPtr(v PluginDataFormat) *PluginDataFormat { return &v }
+func (p *PluginDataFormat) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = PluginDataFormat(result.Int64)
+	return
+}
+
+func (p *PluginDataFormat) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
 type ResponseStyle struct {
 	WorkflowResponseMode WorkflowResponseMode `thrift:"workflow_response_mode,1" form:"workflow_response_mode" json:"workflow_response_mode" query:"workflow_response_mode"`
 }
@@ -10772,5 +10824,234 @@ func (p *RegisterPluginData) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("RegisterPluginData(%+v)", *p)
+
+}
+
+type DuplicateAPIInfo struct {
+	Method string `thrift:"method,1" form:"method" json:"method" query:"method"`
+	Path   string `thrift:"path,2" form:"path" json:"path" query:"path"`
+	Count  int64  `thrift:"count,3" form:"count" json:"count" query:"count"`
+}
+
+func NewDuplicateAPIInfo() *DuplicateAPIInfo {
+	return &DuplicateAPIInfo{}
+}
+
+func (p *DuplicateAPIInfo) InitDefault() {
+}
+
+func (p *DuplicateAPIInfo) GetMethod() (v string) {
+	return p.Method
+}
+
+func (p *DuplicateAPIInfo) GetPath() (v string) {
+	return p.Path
+}
+
+func (p *DuplicateAPIInfo) GetCount() (v int64) {
+	return p.Count
+}
+
+var fieldIDToName_DuplicateAPIInfo = map[int16]string{
+	1: "method",
+	2: "path",
+	3: "count",
+}
+
+func (p *DuplicateAPIInfo) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DuplicateAPIInfo[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DuplicateAPIInfo) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Method = _field
+	return nil
+}
+func (p *DuplicateAPIInfo) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Path = _field
+	return nil
+}
+func (p *DuplicateAPIInfo) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Count = _field
+	return nil
+}
+
+func (p *DuplicateAPIInfo) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("DuplicateAPIInfo"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DuplicateAPIInfo) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("method", thrift.STRING, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Method); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *DuplicateAPIInfo) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("path", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Path); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *DuplicateAPIInfo) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("count", thrift.I64, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.Count); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *DuplicateAPIInfo) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DuplicateAPIInfo(%+v)", *p)
 
 }

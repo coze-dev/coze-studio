@@ -1360,3 +1360,18 @@ func _getfileurlsMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _convert2openapiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _pluginMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getoauthschemaapiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
