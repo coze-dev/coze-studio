@@ -58,8 +58,9 @@ func (dao *UserDAO) UpdatePassword(ctx context.Context, email, password string) 
 	_, err := dao.query.User.WithContext(ctx).Where(
 		dao.query.User.Email.Eq(email),
 	).Updates(map[string]interface{}{
-		"password":   password,
-		"updated_at": time.Now().UnixMilli(),
+		"password":    password,
+		"session_key": "", // clear session key
+		"updated_at":  time.Now().UnixMilli(),
 	})
 	return err
 }
