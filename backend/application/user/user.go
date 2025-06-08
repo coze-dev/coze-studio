@@ -2,7 +2,7 @@ package user
 
 import (
 	"context"
-	"regexp"
+	"net/mail"
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
@@ -27,9 +27,9 @@ type UserApplicationService struct {
 
 // 添加一个简单的 email 验证函数
 func isValidEmail(email string) bool {
-	// 使用简单的正则表达式验证 email 格式
-	re := regexp.MustCompile(`^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$`)
-	return re.MatchString(email)
+	// 如果 email 字符串格式不正确，它会返回一个 error
+	_, err := mail.ParseAddress(email)
+	return err == nil
 }
 
 func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context, locale string, req *passport.PassportWebEmailRegisterV2PostRequest) (
