@@ -14,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	publishAPI "code.byted.org/flow/opencoze/backend/api/model/publish"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
 	"code.byted.org/flow/opencoze/backend/application/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
@@ -48,6 +49,7 @@ type APPApplicationService struct {
 	workflowSVC  workflow.Service
 	connectorSVC connector.Connector
 	variablesSVC variables.Variables
+	knowledgeSVC knowledge.KnowledgeApplicationService
 }
 
 func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *projectAPI.DraftProjectCreateRequest) (resp *projectAPI.DraftProjectCreateResponse, err error) {
@@ -187,8 +189,11 @@ func (a *APPApplicationService) deleteAPPResources(ctx context.Context, appID in
 		logs.CtxErrorf(ctx, "delete app variables failed, err=%v", err)
 	}
 
-	// TODO(@liuyunchao): 删除应用 knowledge
-
+	err = a.knowledgeSVC.DeleteAppKnowledge(ctx, &knowledge.DeleteAppKnowledgeRequest{AppID: appID})
+	if err != nil {
+		logs.CtxErrorf(ctx, "delete app knowledge failed, err=%v", err)
+		return err
+	}
 	err = a.workflowSVC.DeleteWorkflowsByAppID(ctx, appID)
 	if err != nil {
 		return err

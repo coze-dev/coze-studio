@@ -35,7 +35,7 @@ func parseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 		cs := config.ChunkingStrategy
 		ps := config.ParsingStrategy
 
-		if cs.ChunkType != contract.ChunkTypeCustom {
+		if cs.ChunkType != contract.ChunkTypeCustom && cs.ChunkType != contract.ChunkTypeDefault {
 			return nil, fmt.Errorf("[parseMarkdown] chunk type not support, chunk type=%d", cs.ChunkType)
 		}
 

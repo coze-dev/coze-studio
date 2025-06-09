@@ -235,3 +235,34 @@ type MGetKnowledgeByIDRequest struct {
 type MGetKnowledgeByIDResponse struct {
 	Knowledge []*Knowledge
 }
+
+type CopyKnowledgeRequest struct {
+	KnowledgeID   int64
+	OriginAppID   int64
+	TargetAppID   int64
+	OriginSpaceID int64
+	TargetSpaceID int64
+	TargetUserID  int64
+	TaskUniqKey   string
+}
+type CopyStatus int64
+
+const (
+	CopyStatus_Successful CopyStatus = 1
+	CopyStatus_Processing CopyStatus = 2
+	CopyStatus_Failed     CopyStatus = 3
+	CopyStatus_KeepOrigin CopyStatus = 4
+)
+
+type CopyKnowledgeResponse struct {
+	OriginKnowledgeID int64
+	TargetKnowledgeID int64
+	CopyStatus        CopyStatus
+	ErrMsg            string
+}
+type MigrateKnowledgeRequest struct {
+	KnowledgeID   int64
+	TargetAppID   *int64
+	TargetSpaceID int64
+	TaskUniqKey   string
+}

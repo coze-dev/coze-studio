@@ -888,6 +888,70 @@ func (k *KnowledgeApplicationService) GetIconForDataset(ctx context.Context, req
 	return resp, nil
 }
 
+func (k *KnowledgeApplicationService) DeleteAppKnowledge(ctx context.Context, req *DeleteAppKnowledgeRequest) error {
+	listResp, err := k.DomainSVC.ListKnowledge(ctx, &model.ListKnowledgeRequest{
+		AppID: &req.AppID,
+	})
+	if err != nil {
+		return err
+	}
+	if len(listResp.KnowledgeList) == 0 {
+		return nil
+	}
+	for i := range listResp.KnowledgeList {
+		err := k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
+			OpType: resourceEntity.Deleted,
+			Resource: &resourceEntity.ResourceDocument{
+				ResID:   listResp.KnowledgeList[i].ID,
+				ResType: resource.ResType_Knowledge,
+			},
+		})
+		if err != nil {
+			logs.CtxErrorf(ctx, "publish resources failed, err: %v", err)
+			return err
+		}
+		err = k.DomainSVC.DeleteKnowledge(ctx, &model.DeleteKnowledgeRequest{
+			KnowledgeID: listResp.KnowledgeList[i].ID,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (k *KnowledgeApplicationService) CopyKnowledge(ctx context.Context, req *model.CopyKnowledgeRequest) (*model.CopyKnowledgeResponse, error) {
+	resp, err := k.DomainSVC.CopyKnowledge(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	getResp, err := k.DomainSVC.GetKnowledgeByID(ctx, &model.GetKnowledgeByIDRequest{
+		KnowledgeID: resp.TargetKnowledgeID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if resp.CopyStatus == model.CopyStatus_Successful {
+		err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
+			OpType: resourceEntity.Created,
+			Resource: &resourceEntity.ResourceDocument{
+				ResID:        resp.TargetKnowledgeID,
+				ResType:      resource.ResType_Knowledge,
+				ResSubType:   ptr.Of(int32(getResp.Knowledge.Type)),
+				Name:         ptr.Of(getResp.Knowledge.Name),
+				OwnerID:      ptr.Of(getResp.Knowledge.CreatorID),
+				SpaceID:      ptr.Of(getResp.Knowledge.SpaceID),
+				APPID:        ptr.Of(getResp.Knowledge.AppID),
+				CreateTimeMS: ptr.Of(getResp.Knowledge.CreatedAtMs),
+				UpdateTimeMS: ptr.Of(getResp.Knowledge.CreatedAtMs),
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+	return resp, nil
+}
 func (k *KnowledgeApplicationService) UpdatePhotoCaption(ctx context.Context, req *dataset.UpdatePhotoCaptionRequest) (*dataset.UpdatePhotoCaptionResponse, error) {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
@@ -918,6 +982,25 @@ func (k *KnowledgeApplicationService) UpdatePhotoCaption(ctx context.Context, re
 	return resp, nil
 }
 
+func (k *KnowledgeApplicationService) MigrateKnowledge(ctx context.Context, req *model.MigrateKnowledgeRequest) error {
+	err := k.DomainSVC.MigrateKnowledge(ctx, req)
+	if err != nil {
+		return err
+	}
+	err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
+		OpType: resourceEntity.Updated,
+		Resource: &resourceEntity.ResourceDocument{
+			ResID:   req.KnowledgeID,
+			APPID:   req.TargetAppID,
+			SpaceID: &req.TargetSpaceID,
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish resources failed, err: %v", err)
+		return err
+	}
+	return nil
+}
 func (k *KnowledgeApplicationService) ListPhoto(ctx context.Context, req *dataset.ListPhotoRequest) (*dataset.ListPhotoResponse, error) {
 	resp := dataset.NewListPhotoResponse()
 	var err error
@@ -1038,4 +1121,8 @@ func (k *KnowledgeApplicationService) ExtractPhotoCaption(ctx context.Context, r
 	}
 	resp.Caption = extractResp.Caption
 	return resp, nil
+}
+
+type DeleteAppKnowledgeRequest struct {
+	AppID int64 `json:"app_id"`
 }

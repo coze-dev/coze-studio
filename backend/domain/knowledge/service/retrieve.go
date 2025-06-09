@@ -576,7 +576,13 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 			SliceStatus:  knowledgeModel.SliceStatus(slices[i].Status),
 			CharCount:    int64(utf8.RuneCountInString(slices[i].Content)),
 		}
-
+		docUri := documentMap[slices[i].DocumentID].URI
+		docUrl, err := k.storage.GetObjectUrl(ctx, docUri)
+		if err != nil {
+			logs.CtxErrorf(ctx, "get object url failed: %v", err)
+			return nil, err
+		}
+		sliceEntity.Extra = map[string]string{consts.SourceLink: docUrl}
 		switch knowledgeModel.DocumentType(doc.DocumentType) {
 		case knowledgeModel.DocumentTypeText:
 			sliceEntity.RawContent = []*knowledgeModel.SliceContent{

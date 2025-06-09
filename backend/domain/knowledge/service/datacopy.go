@@ -76,21 +76,21 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *CopyKnowledge
 		return &CopyKnowledgeResponse{
 			OriginKnowledgeID: request.KnowledgeID,
 			TargetKnowledgeID: checkResult.TargetID,
-			CopyStatus:        CopyStatus_Successful,
+			CopyStatus:        knowledgeModel.CopyStatus_Successful,
 			ErrMsg:            "",
 		}, nil
 	case copyEntity.DataCopyTaskStatusInProgress:
 		return &CopyKnowledgeResponse{
 			OriginKnowledgeID: request.KnowledgeID,
 			TargetKnowledgeID: checkResult.TargetID,
-			CopyStatus:        CopyStatus_Processing,
+			CopyStatus:        knowledgeModel.CopyStatus_Processing,
 			ErrMsg:            "",
 		}, nil
 	case copyEntity.DataCopyTaskStatusFail:
 		return &CopyKnowledgeResponse{
 			OriginKnowledgeID: request.KnowledgeID,
 			TargetKnowledgeID: checkResult.TargetID,
-			CopyStatus:        CopyStatus_Failed,
+			CopyStatus:        knowledgeModel.CopyStatus_Failed,
 			ErrMsg:            checkResult.FailReason,
 		}, nil
 	}
@@ -164,7 +164,7 @@ func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*
 	return &CopyKnowledgeResponse{
 		OriginKnowledgeID: copyCtx.OriginData.ID,
 		TargetKnowledgeID: copyCtx.CopyTask.TargetDataID,
-		CopyStatus:        CopyStatus_Successful,
+		CopyStatus:        knowledgeModel.CopyStatus_Successful,
 		ErrMsg:            "",
 	}, nil
 }
