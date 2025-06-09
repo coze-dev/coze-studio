@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"code.byted.org/flow/opencoze/backend/application/template"
+
 	"code.byted.org/flow/opencoze/backend/application/app"
 	"code.byted.org/flow/opencoze/backend/application/base/appinfra"
 	"code.byted.org/flow/opencoze/backend/application/connector"
@@ -60,6 +62,7 @@ type basicServices struct {
 	connectorSVC *connector.ConnectorApplicationService
 	userSVC      *user.UserApplicationService
 	promptSVC    *prompt.PromptApplicationService
+	templateSVC  *template.ApplicationService
 }
 
 type primaryServices struct {
@@ -136,6 +139,10 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 	modelMgrSVC := modelmgr.InitService(infra.DB, infra.IDGenSVC, infra.TOSClient)
 	connectorSVC := connector.InitService(infra.TOSClient)
 	userSVC := user.InitService(ctx, infra.DB, infra.TOSClient, infra.IDGenSVC)
+	templateSVC := template.InitService(ctx, &template.ServiceComponents{
+		DB:    infra.DB,
+		IDGen: infra.IDGenSVC,
+	})
 
 	return &basicServices{
 		infra:        infra,
@@ -144,6 +151,7 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 		connectorSVC: connectorSVC,
 		userSVC:      userSVC,
 		promptSVC:    promptSVC,
+		templateSVC:  templateSVC,
 	}, nil
 }
 

@@ -133,6 +133,7 @@ func Register(r *server.Hertz) {
 			{
 				_product := _marketplace.Group("/product", _productMw()...)
 				_product.GET("/detail", append(_publicgetproductdetailMw(), coze.PublicGetProductDetail)...)
+				_product.POST("/duplicate", append(_publicduplicateproductMw(), coze.PublicDuplicateProduct)...)
 				_product.POST("/favorite", append(_publicfavoriteproductMw(), coze.PublicFavoriteProduct)...)
 				_favorite := _product.Group("/favorite", _favoriteMw()...)
 				_favorite.GET("/list.v2", append(_publicgetuserfavoritelistv2Mw(), coze.PublicGetUserFavoriteListV2)...)

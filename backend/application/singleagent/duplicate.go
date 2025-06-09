@@ -23,7 +23,7 @@ import (
 type duplicateAgentResourceFn func(ctx context.Context, appContext *ServiceComponents, oldAgent, newAgent *entity.SingleAgent) (*entity.SingleAgent, error)
 
 func (s *SingleAgentApplicationService) DuplicateDraftBot(ctx context.Context, req *developer_api.DuplicateDraftBotRequest) (*developer_api.DuplicateDraftBotResponse, error) {
-	draftAgent, err := s.ValidateAgentDraftAccess(ctx, req.BotID)
+	draftAgent, err := s.ValidateAgentDraftAccess(ctx, req.BotID) // todo lj 模版使用的时候，不需要校验空间是否存在
 	if err != nil {
 		return nil, err
 	}

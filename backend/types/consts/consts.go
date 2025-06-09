@@ -46,3 +46,7 @@ const (
 	DefaultWorkflowIcon = "default_icon/default_workflow_icon.png"
 	DefaultTeamIcon     = "default_icon/team_default_icon.png"
 )
+
+const (
+	TemplateSpaceID = 1 // special space id for template
+)
