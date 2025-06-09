@@ -4,27 +4,26 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"strconv"
 
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	saEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
+	cmdEntity "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
-type OpenapiAgentRunApplication struct{}
-
-var OpenapiAgentRunApplicationService = new(OpenapiAgentRunApplication)
-
 func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, ar *run.ChatV3Request) (*schema.StreamReader[*entity.AgentRunResponse], error) {
-	_, caErr := a.checkAgent(ctx, ar)
+	agentInfo, caErr := a.checkAgent(ctx, ar)
 	if caErr != nil {
 		logs.CtxErrorf(ctx, "checkAgent err:%v", caErr)
 		return nil, caErr
@@ -43,7 +42,8 @@ func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, ar *ru
 		return nil, ccErr
 	}
 
-	arr, err := a.buildAgentRunRequest(ctx, ar, userID, connectorID, conversationData)
+	spaceID := agentInfo.SpaceID
+	arr, err := a.buildAgentRunRequest(ctx, ar, userID, connectorID, spaceID, conversationData)
 	if err != nil {
 		logs.CtxErrorf(ctx, "buildAgentRunRequest err:%v", err)
 		return nil, err
@@ -67,6 +67,7 @@ func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *
 			AgentID:     ar.BotID,
 			UserID:      userID,
 			ConnectorID: connectorID,
+			Scene:       conversation.SceneOpenApi,
 		})
 		if err != nil {
 			return nil, err
@@ -98,17 +99,24 @@ func (a *OpenapiAgentRunApplication) checkAgent(ctx context.Context, ar *run.Cha
 	return agentInfo, nil
 }
 
-func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.ChatV3Request, userID int64, connectorID int64, conversationData *convEntity.Conversation) (*entity.AgentRunMeta, error) {
-	var contentType message.ContentType
+func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.ChatV3Request, userID int64, connectorID int64, spaceID int64, conversationData *convEntity.Conversation) (*entity.AgentRunMeta, error) {
 
+	shortcutCMDData, err := a.buildTools(ctx, ar.ShortcutCommand)
+	if err != nil {
+		return nil, err
+	}
+	multiContent, contentType, err := a.buildMultiContent(ctx, ar)
+	if err != nil {
+		return nil, err
+	}
 	arm := &entity.AgentRunMeta{
 		ConversationID:   ptr.From(ar.ConversationID),
 		AgentID:          ar.BotID,
-		Content:          a.buildMultiContent(ctx, ar),
-		SpaceID:          666,
+		Content:          multiContent,
+		SpaceID:          spaceID,
 		UserID:           userID,
 		SectionID:        conversationData.SectionID,
-		PreRetrieveTools: a.buildTools(ar.Tools),
+		PreRetrieveTools: shortcutCMDData,
 		IsDraft:          true,
 		ConnectorID:      connectorID,
 		ContentType:      contentType,
@@ -117,37 +125,45 @@ func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, a
 	return arm, nil
 }
 
-func (a *OpenapiAgentRunApplication) buildTools(tools []*run.Tool) []*entity.Tool {
+func (a *OpenapiAgentRunApplication) buildTools(ctx context.Context, shortcmd *run.ShortcutCommandDetail) ([]*entity.Tool, error) {
 	var ts []*entity.Tool
-	for _, tool := range tools {
-		parameters, err := json.Marshal(tool.Parameters)
-		if err != nil {
-			continue
-		}
-		tID, err := strconv.ParseInt(tool.PluginID, 10, 64)
-		if err != nil {
-			continue
-		}
-		t := &entity.Tool{
-			PluginID:  tID,
-			Arguments: string(parameters),
-			ToolName:  tool.APIName,
-		}
-		ts = append(ts, t)
-	}
-	if len(ts) > 0 {
-		return ts
+
+	if shortcmd == nil {
+		return ts, nil
 	}
 
-	return nil
+	var shortcutCMD *cmdEntity.ShortcutCmd
+	cmdMeta, err := a.ShortcutDomainSVC.GetByCmdID(ctx, shortcmd.CommandID, 0)
+	if err != nil {
+		return nil, err
+	}
+	shortcutCMD = cmdMeta
+	if shortcutCMD != nil {
+		argBytes, err := json.Marshal(shortcmd.Parameters)
+		if err == nil {
+			ts = append(ts, &entity.Tool{
+				PluginID:  shortcutCMD.PluginID,
+				Arguments: string(argBytes),
+				ToolName:  shortcutCMD.PluginToolName,
+				ToolID:    shortcutCMD.PluginToolID,
+				Type:      agentrun.ToolType(shortcutCMD.ToolType),
+			})
+		}
+	}
+
+	return ts, nil
 }
 
-func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *run.ChatV3Request) []*message.InputMetaData {
+func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *run.ChatV3Request) ([]*message.InputMetaData, message.ContentType, error) {
 	var multiContents []*message.InputMetaData
+	contentType := message.ContentTypeText
 
 	for _, item := range ar.AdditionalMessages {
 		if item == nil {
 			continue
+		}
+		if item.Role != string(schema.User) {
+			return nil, contentType, errors.New("role not match")
 		}
 		if item.ContentType == run.ContentTypeText {
 			if item.Content == "" {
@@ -160,10 +176,40 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 		}
 
 		if item.ContentType == run.ContentTypeMixApi {
-			// todo implement
+			contentType = message.ContentTypeMix
+			var inputs []*run.AdditionalContent
+			err := json.Unmarshal([]byte(item.Content), &inputs)
+
+			logs.CtxInfof(ctx, "inputs:%v, err:%v", conv.DebugJsonToStr(inputs), err)
+			if err != nil {
+				continue
+			}
+			for _, one := range inputs {
+				if one == nil {
+					continue
+				}
+				switch message.InputType(one.Type) {
+				case message.InputTypeText:
+					multiContents = append(multiContents, &message.InputMetaData{
+						Type: message.InputTypeText,
+						Text: ptr.From(one.Text),
+					})
+				case message.InputTypeImage, message.InputTypeFile:
+					multiContents = append(multiContents, &message.InputMetaData{
+						Type: message.InputType(one.Type),
+						FileData: []*message.FileData{
+							{
+								Url: one.GetFileURL(),
+							},
+						},
+					})
+				default:
+					continue
+				}
+			}
 		}
 
 	}
 
-	return multiContents
+	return multiContents, contentType, nil
 }

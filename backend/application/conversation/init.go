@@ -54,5 +54,7 @@ func InitService(s *ServiceComponents) *ConversationApplicationService {
 	ConversationSVC.appContext = s
 	ConversationSVC.ShortcutDomainSVC = shortcutCmdDomainSVC
 
+	ConversationOpenAPISVC.ShortcutDomainSVC = shortcutCmdDomainSVC
+
 	return ConversationSVC
 }

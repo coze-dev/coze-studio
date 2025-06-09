@@ -19,6 +19,7 @@ const (
 	SceneAgentAPP          Scene = 6
 	ScenePromptOptimize    Scene = 7
 	SceneGenerateAgentInfo Scene = 8
+	SceneOpenApi           Scene = 9
 )
 
 type Conversation struct {

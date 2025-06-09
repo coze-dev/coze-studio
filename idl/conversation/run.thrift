@@ -64,9 +64,10 @@ struct Image  {
 
 
 struct Tool {
-    1 : string plugin_id
+    1 : i64 plugin_id (api.js_conv='true')
     2 : map<string,parametersStruct>  parameters
     3 : string api_name
+    4 : i64 tool_id  (api.js_conv='true')
 }
 
 enum DiffModeIdentifier {
@@ -74,6 +75,11 @@ enum DiffModeIdentifier {
     ChatWithB = 2
 }
 
+struct AdditionalContent {
+     1: required string type
+     2: optional string text
+     3: optional string file_url
+}
 
 struct AgentRunRequest  {
     1 :          i64             bot_id    (api.js_conv='true') ,
@@ -133,7 +139,7 @@ struct BotConfig{
     2: optional string Prompt (api.body="propmt")
 }
 struct ShortcutCommandDetail {
-    1: required string command_id
+    1: required i64 command_id (api.js_conv='true')
     2: map<string,string> parameters  // key=参数名 value=值  object_string object 数组序列化之后的 JSON String
 }
 
@@ -145,9 +151,7 @@ struct ChatV3Request {
     4: optional bool Stream (api.body = "stream"),
     5: optional list<EnterMessage> AdditionalMessages (api.body = "additional_messages"),
     6: optional map<string,string> CustomVariables (api.body = "custom_variables"),
-    7: optional bool AutoSaveHistory (api.body = "auto_save_history"),
     8: optional map<string, string> MetaData (api.body = "meta_data")
-    9: optional list<Tool> Tools (api.body = "tools"),
     10:optional CustomConfig CustomConfig (api.body = "custom_config")
     11:optional map<string, string> ExtraParams (api.body = "extra_params") // 透传参数到 plugin/workflow 等下游
     12:optional i64 ConnectorID (api.body="connector_id", api.js_conv='true') // 手动指定渠道 id 聊天。目前仅支持 websdk(=999)

@@ -183,7 +183,6 @@ func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest)
 
 	if chunk.ChunkMessageItem.IsFinish && chunkMessageItem.MessageType == model.MessageTypeAnswer {
 		chunkMessage.Message.Content = ""
-		chunkMessage.Message.ContentType = string(model.ContentTypeText)
 	}
 
 	mCM, _ := json.Marshal(chunkMessage)
@@ -225,8 +224,12 @@ func ChatV3(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, checkErr.Error())
 		return
 	}
-	arStream, err := conversation.OpenapiAgentRunApplicationService.OpenapiAgentRun(ctx, &req)
+	arStream, err := conversation.ConversationOpenAPISVC.OpenapiAgentRun(ctx, &req)
 
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 	sseSender := sse2.NewSSESender(sse.NewStream(c))
 
 	c.SetStatusCode(http.StatusOK)

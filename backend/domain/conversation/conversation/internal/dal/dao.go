@@ -131,11 +131,15 @@ func (dao *ConversationDAO) List(ctx context.Context, userID int64, agentID int6
 		return nil, hasMore, err
 	}
 
+	if len(poList) == 0 {
+		return nil, hasMore, nil
+	}
 	if len(poList) > limit {
 		hasMore = true
-	}
+		return dao.conversationBatchPO2DO(ctx, poList[:(len(poList)-1)]), hasMore, nil
 
-	return dao.conversationBatchPO2DO(ctx, poList[:(len(poList)-1)]), hasMore, nil
+	}
+	return dao.conversationBatchPO2DO(ctx, poList), hasMore, nil
 }
 
 func (dao *ConversationDAO) conversationDO2PO(ctx context.Context, conversation *entity.Conversation) *model.Conversation {

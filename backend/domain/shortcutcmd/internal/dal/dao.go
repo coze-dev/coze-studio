@@ -160,7 +160,7 @@ func (dao *ShortCutCmdDAO) PublishCMDs(ctx context.Context, objID int64, cmdIDs 
 	}
 	onelineCmdMap := make(map[int64]*model.ShortcutCommand)
 	for _, one := range onlineCmds {
-		onelineCmdMap[one.ObjectID] = one
+		onelineCmdMap[one.CommandID] = one
 	}
 
 	for _, item := range draftCmds {

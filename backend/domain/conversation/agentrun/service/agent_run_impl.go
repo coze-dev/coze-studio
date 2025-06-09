@@ -620,12 +620,12 @@ func (c *runImpl) parseInterruptData(ctx context.Context, interruptData *singlea
 			if err != nil {
 				return "", defaultContentType, err
 			}
-			return string(iMarshalData), message.ContentTypeText, nil
+			return string(iMarshalData), message.ContentTypeCard, nil
 		}
 	case entity.EventType_InputNode:
 		data := interruptData.AllToolInterruptData[interruptData.ToolCallID].InterruptData
 
-		return data, message.ContentTypeText, nil
+		return data, message.ContentTypeCard, nil
 	default:
 		return "", defaultContentType, errors.New("unknown interrupt event")
 	}

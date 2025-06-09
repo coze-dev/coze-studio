@@ -22,7 +22,7 @@ import (
 )
 
 func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentRunRequest) (*schema.StreamReader[*entity.AgentRunResponse], error) {
-	_, caErr := c.checkAgent(ctx, ar)
+	agentInfo, caErr := c.checkAgent(ctx, ar)
 	if caErr != nil {
 		logs.CtxErrorf(ctx, "checkAgent err:%v", caErr)
 		return nil, caErr
@@ -63,7 +63,7 @@ func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentR
 		shortcutCmd = cmdMeta
 	}
 
-	arr, err := c.buildAgentRunRequest(ctx, ar, userID, conversationData, shortcutCmd)
+	arr, err := c.buildAgentRunRequest(ctx, ar, userID, agentInfo.SpaceID, conversationData, shortcutCmd)
 	if err != nil {
 		logs.CtxErrorf(ctx, "buildAgentRunRequest err:%v", err)
 		return nil, err
@@ -117,7 +117,7 @@ func (c *ConversationApplicationService) checkAgent(ctx context.Context, ar *run
 	return agentInfo, nil
 }
 
-func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, conversationData *convEntity.Conversation, shortcutCMD *cmdEntity.ShortcutCmd) (*entity.AgentRunMeta, error) {
+func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, spaceID int64, conversationData *convEntity.Conversation, shortcutCMD *cmdEntity.ShortcutCmd) (*entity.AgentRunMeta, error) {
 	var contentType message.ContentType
 	if ptr.From(ar.ContentType) == string(message.ContentTypeText) {
 		contentType = message.ContentTypeText
@@ -136,7 +136,7 @@ func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Contex
 		AgentID:          ar.BotID,
 		Content:          c.buildMultiContent(ctx, ar),
 		DisplayContent:   c.buildDisplayContent(ctx, ar),
-		SpaceID:          ptr.From(ar.SpaceID),
+		SpaceID:          spaceID,
 		UserID:           userID,
 		SectionID:        conversationData.SectionID,
 		PreRetrieveTools: shortcutCMDData,

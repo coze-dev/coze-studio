@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/conversation"
+	crossconversation "code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	agentrun "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/service"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
@@ -29,6 +30,12 @@ type ConversationApplicationService struct {
 }
 
 var ConversationSVC = new(ConversationApplicationService)
+
+type OpenapiAgentRunApplication struct {
+	ShortcutDomainSVC service.ShortcutCmd
+}
+
+var ConversationOpenAPISVC = new(OpenapiAgentRunApplication)
 
 func (c *ConversationApplicationService) ClearHistory(ctx context.Context, req *conversation.ClearConversationHistoryRequest) (*entity.Conversation, error) {
 	conversationID, err := strconv.ParseInt(req.ConversationID, 10, 64)
@@ -108,6 +115,7 @@ func (c *ConversationApplicationService) CreateConversation(ctx context.Context,
 		AgentID:     agentID,
 		UserID:      userID,
 		ConnectorID: connectorID,
+		Scene:       crossconversation.SceneOpenApi,
 	})
 	if err != nil {
 		return nil, err
@@ -139,6 +147,7 @@ func (c *ConversationApplicationService) ListConversation(ctx context.Context, r
 		UserID:      userID,
 		AgentID:     req.GetBotID(),
 		ConnectorID: connectorID,
+		Scene:       crossconversation.SceneOpenApi,
 		Page:        int(req.GetPageNum()),
 		Limit:       int(req.GetPageSize()),
 	})
