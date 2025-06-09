@@ -381,7 +381,7 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *MGetDatabaseRequ
 			if onlineDatabase.FieldList == nil {
 				onlineDatabase.FieldList = make([]*database.FieldItem, 0, 3)
 			}
-			onlineDatabase.FieldList = append(onlineDatabase.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
+			onlineDatabase.FieldList = append(onlineDatabase.FieldList, physicaltable.GetDisplayCreateTimeField(), physicaltable.GetDisplayUidField(), physicaltable.GetDisplayIDField())
 		}
 		if onlineDatabase.IconURI != "" {
 			objURL, uRrr := d.storage.GetObjectUrl(ctx, onlineDatabase.IconURI)
@@ -395,7 +395,7 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *MGetDatabaseRequ
 			if draftDatabase.FieldList == nil {
 				draftDatabase.FieldList = make([]*database.FieldItem, 0, 3)
 			}
-			draftDatabase.FieldList = append(draftDatabase.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
+			draftDatabase.FieldList = append(draftDatabase.FieldList, physicaltable.GetDisplayCreateTimeField(), physicaltable.GetDisplayUidField(), physicaltable.GetDisplayIDField())
 		}
 		if draftDatabase.IconURI != "" {
 			objURL, uRrr := d.storage.GetObjectUrl(ctx, draftDatabase.IconURI)
@@ -502,9 +502,9 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *AddDatabase
 		if req.ConnectorID != nil {
 			cid = *req.ConnectorID
 		}
-		convertedRecord[entity3.DefaultUidColName] = req.UserID
-		convertedRecord[entity3.DefaultCidColName] = cid
-		convertedRecord[entity3.DefaultCreateTimeColName] = time.Now().UTC()
+		convertedRecord[database.DefaultUidColName] = req.UserID
+		convertedRecord[database.DefaultCidColName] = cid
+		convertedRecord[database.DefaultCreateTimeColName] = time.Now().UTC()
 
 		for fieldName, value := range record {
 			if _, fOk := fieldMap[fieldName]; !fOk {
@@ -568,9 +568,9 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *UpdateDa
 	})
 
 	for _, record := range req.Records {
-		idStr, exists := record[entity3.DefaultIDColName]
+		idStr, exists := record[database.DefaultIDColName]
 		if !exists {
-			return fmt.Errorf("record must contain %s field for update", entity3.DefaultIDColName)
+			return fmt.Errorf("record must contain %s field for update", database.DefaultIDColName)
 		}
 
 		id, err := strconv.ParseInt(idStr, 10, 64)
@@ -581,7 +581,7 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *UpdateDa
 		updateData := make(map[string]interface{})
 
 		for fieldName, valueStr := range record {
-			if fieldName == entity3.DefaultIDColName {
+			if fieldName == database.DefaultIDColName {
 				continue
 			}
 
@@ -610,7 +610,7 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *UpdateDa
 		condition := &rdb.ComplexCondition{
 			Conditions: []*rdb.Condition{
 				{
-					Field:    entity3.DefaultIDColName,
+					Field:    database.DefaultIDColName,
 					Operator: entity3.OperatorEqual,
 					Value:    id,
 				},
@@ -619,7 +619,7 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *UpdateDa
 
 		if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite {
 			cond := &rdb.Condition{
-				Field:    entity3.DefaultUidColName,
+				Field:    database.DefaultUidColName,
 				Operator: entity3.OperatorEqual,
 				Value:    req.UserID,
 			}
@@ -665,9 +665,9 @@ func (d databaseService) DeleteDatabaseRecord(ctx context.Context, req *DeleteDa
 
 	var ids []interface{}
 	for _, record := range req.Records {
-		idStr, exists := record[entity3.DefaultIDColName]
+		idStr, exists := record[database.DefaultIDColName]
 		if !exists {
-			return fmt.Errorf("record must contain %s field for deletion", entity3.DefaultIDColName)
+			return fmt.Errorf("record must contain %s field for deletion", database.DefaultIDColName)
 		}
 
 		id, err := strconv.ParseInt(idStr, 10, 64)
@@ -681,7 +681,7 @@ func (d databaseService) DeleteDatabaseRecord(ctx context.Context, req *DeleteDa
 	condition := &rdb.ComplexCondition{
 		Conditions: []*rdb.Condition{
 			{
-				Field:    entity3.DefaultIDColName,
+				Field:    database.DefaultIDColName,
 				Operator: entity3.OperatorIn,
 				Value:    ids,
 			},
@@ -690,7 +690,7 @@ func (d databaseService) DeleteDatabaseRecord(ctx context.Context, req *DeleteDa
 
 	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite {
 		cond := &rdb.Condition{
-			Field:    entity3.DefaultUidColName,
+			Field:    database.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
 			Value:    req.UserID,
 		}
@@ -745,7 +745,7 @@ func (d databaseService) ListDatabaseRecord(ctx context.Context, req *ListDataba
 
 	if req.ConnectorID != nil && *req.ConnectorID > 0 {
 		cond := &rdb.Condition{
-			Field:    entity3.DefaultCidColName,
+			Field:    database.DefaultCidColName,
 			Operator: entity3.OperatorEqual,
 			Value:    *req.ConnectorID,
 		}
@@ -757,7 +757,7 @@ func (d databaseService) ListDatabaseRecord(ctx context.Context, req *ListDataba
 
 	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite {
 		cond := &rdb.Condition{
-			Field:    entity3.DefaultUidColName,
+			Field:    database.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
 			Value:    req.UserID,
 		}
@@ -778,7 +778,7 @@ func (d databaseService) ListDatabaseRecord(ctx context.Context, req *ListDataba
 
 	orderBy := []*rdb.OrderBy{
 		{
-			Field:     entity3.DefaultCreateTimeColName,
+			Field:     database.DefaultCreateTimeColName,
 			Direction: entity3.SortDirectionDesc,
 		},
 	}
@@ -953,7 +953,7 @@ func (d databaseService) ExecuteSQL(ctx context.Context, req *ExecuteSQLRequest)
 		}
 
 	case database.OperateType_Insert:
-		rowsAffected, err = d.executeInsertSQL(ctx, req, physicalTableName, tableInfo)
+		resultSet, err = d.executeInsertSQL(ctx, req, physicalTableName, tableInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -982,6 +982,25 @@ func (d databaseService) ExecuteSQL(ctx context.Context, req *ExecuteSQLRequest)
 		response.Records = convertor.ConvertResultSet(resultSet, physicalToFieldName, physicalToFieldType)
 	} else {
 		response.Records = []map[string]string{}
+	}
+
+	// process special system fields
+	for _, record := range response.Records {
+		if val, ok := record[database.DefaultUidColName]; ok {
+			delete(record, database.DefaultUidColName)
+			record[database.DefaultUidDisplayColName] = val
+		}
+		if val, ok := record[database.DefaultCreateTimeColName]; ok {
+			delete(record, database.DefaultCreateTimeColName)
+			record[database.DefaultCreateTimeDisplayColName] = val
+		}
+		if val, ok := record[database.DefaultIDColName]; ok {
+			delete(record, database.DefaultIDColName)
+			record[database.DefaultIDDisplayColName] = val
+		}
+		if _, ok := record[database.DefaultCidColName]; ok {
+			delete(record, database.DefaultCidColName)
+		}
 	}
 
 	if resultSet != nil && resultSet.AffectedRows > 0 {
@@ -1035,8 +1054,8 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 			cid = *req.ConnectorID
 		}
 		parsedSQL, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, map[string]interface{}{
-			entity3.DefaultCidColName: cid,
-			entity3.DefaultUidColName: req.UserID,
+			database.DefaultCidColName: cid,
+			database.DefaultUidColName: req.UserID,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("add columns to insert sql failed: %v", err)
@@ -1093,7 +1112,7 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *ExecuteSQLRe
 	// add rw mode
 	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
 		cond := &rdb.Condition{
-			Field:    entity3.DefaultUidColName,
+			Field:    database.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
 			Value:    req.UserID,
 		}
@@ -1135,15 +1154,15 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *ExecuteSQLRe
 	return selectResp.ResultSet, nil
 }
 
-func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRequest, physicalTableName string, tableInfo *entity2.Database) (int64, error) {
+func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRequest, physicalTableName string, tableInfo *entity2.Database) (*entity3.ResultSet, error) {
 	if len(req.UpsertRows) == 0 {
-		return -1, fmt.Errorf("no data to insert")
+		return nil, fmt.Errorf("no data to insert")
 	}
 
 	insertData := make([]map[string]interface{}, 0, len(req.UpsertRows))
 	ids, err := d.generator.GenMultiIDs(ctx, len(req.UpsertRows))
 	if err != nil {
-		return -1, err
+		return nil, err
 	}
 
 	fieldList := append(tableInfo.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
@@ -1163,16 +1182,16 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 		}
 
 		if req.UserID != 0 {
-			rowData[entity3.DefaultUidColName] = req.UserID
+			rowData[database.DefaultUidColName] = req.UserID
 		}
-		rowData[entity3.DefaultCidColName] = cid
-		rowData[entity3.DefaultCreateTimeColName] = time.Now().UTC()
-		rowData[entity3.DefaultIDColName] = ids[index]
+		rowData[database.DefaultCidColName] = cid
+		rowData[database.DefaultCreateTimeColName] = time.Now().UTC()
+		rowData[database.DefaultIDColName] = ids[index]
 
 		for _, record := range upsertRow.Records {
 			field, exists := fieldMap[record.FieldId]
 			if !exists {
-				return -1, fmt.Errorf("field %s not found", record.FieldId)
+				return nil, fmt.Errorf("field %s not found", record.FieldId)
 			}
 
 			fieldVal := sqlParams[i].Value
@@ -1199,10 +1218,13 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 		Data:      insertData,
 	})
 	if err != nil {
-		return -1, fmt.Errorf("insert data failed: %v", err)
+		return nil, fmt.Errorf("insert data failed: %v", err)
 	}
 
-	return insertResp.AffectedRows, nil
+	return &entity3.ResultSet{
+		Rows:         insertData,
+		AffectedRows: insertResp.AffectedRows,
+	}, nil
 }
 
 func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRequest, physicalTableName string, tableInfo *entity2.Database, fieldNameToPhysical map[string]string) (int64, error) {
@@ -1247,7 +1269,7 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 	// add rw mode
 	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
 		cond := &rdb.Condition{
-			Field:    entity3.DefaultUidColName,
+			Field:    database.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
 			Value:    req.UserID,
 		}
@@ -1287,7 +1309,7 @@ func (d databaseService) executeDeleteSQL(ctx context.Context, req *ExecuteSQLRe
 	// add rw mode
 	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
 		cond := &rdb.Condition{
-			Field:    entity3.DefaultUidColName,
+			Field:    database.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
 			Value:    req.UserID,
 		}
@@ -1351,6 +1373,37 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 				conditions = append(conditions, &rdb.Condition{
 					Field:    leftField,
 					Operator: convertor.ConvertOperator(c.Operation),
+				})
+				continue
+			}
+
+			if c.Operation == database.Operation_IN || c.Operation == database.Operation_NOT_IN {
+				// c.Right: example: (?,?)
+				qCount := 0
+				for i := 0; i < len(c.Right); i++ {
+					if c.Right[i] == '?' {
+						qCount++
+					}
+				}
+				if qCount == 0 {
+					return nil, fmt.Errorf("IN/NOT_IN condition right side must contain ? placeholders")
+				}
+				vals := make([]interface{}, 0, qCount)
+				for j := 0; j < qCount; j++ {
+					if index >= len(params) {
+						return nil, fmt.Errorf("not enough params for IN/NOT_IN condition")
+					}
+					if params[index].ISNull || params[index].Value == nil {
+						index++
+						continue
+					}
+					vals = append(vals, *params[index].Value)
+					index++
+				}
+				conditions = append(conditions, &rdb.Condition{
+					Field:    leftField,
+					Operator: convertor.ConvertOperator(c.Operation),
+					Value:    vals,
 				})
 				continue
 			}

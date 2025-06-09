@@ -23,12 +23,12 @@ func CreatePhysicalTable(ctx context.Context, db rdb.RDB, columns []*entity3.Col
 	indexes = append(indexes, &entity3.Index{
 		Name:    "PRIMARY",
 		Type:    entity3.PrimaryKey,
-		Columns: []string{entity3.DefaultIDColName},
+		Columns: []string{database.DefaultIDColName},
 	})
 	indexes = append(indexes, &entity3.Index{
 		Name:    "idx_uid",
 		Type:    entity3.NormalKey,
-		Columns: []string{entity3.DefaultUidColName, entity3.DefaultCidColName},
+		Columns: []string{database.DefaultUidColName, database.DefaultCidColName},
 	})
 	table.Indexes = indexes
 
@@ -53,6 +53,10 @@ func CreateFieldInfo(ctx context.Context, generator idgen.IDGenerator, fieldItem
 			DataType: convertor.SwitchToDataType(field.Type),
 			NotNull:  field.MustRequired,
 			Comment:  &field.Desc,
+		}
+
+		if field.Type == table.FieldItemType_Text && !field.MustRequired {
+			columns[i].DefaultValue = ptr.Of("")
 		}
 
 		fieldID++ // field is incremented begin from 1
@@ -81,23 +85,23 @@ func GetDefaultColumns() []*entity3.Column {
 func getDefaultColumns() []*entity3.Column {
 	return []*entity3.Column{
 		{
-			Name:          entity3.DefaultIDColName,
+			Name:          database.DefaultIDColName,
 			DataType:      entity3.TypeBigInt,
 			NotNull:       true,
 			AutoIncrement: true,
 		},
 		{
-			Name:     entity3.DefaultUidColName,
+			Name:     database.DefaultUidColName,
 			DataType: entity3.TypeVarchar,
 			NotNull:  true,
 		},
 		{
-			Name:     entity3.DefaultCidColName,
+			Name:     database.DefaultCidColName,
 			DataType: entity3.TypeVarchar,
 			NotNull:  true,
 		},
 		{
-			Name:         entity3.DefaultCreateTimeColName,
+			Name:         database.DefaultCreateTimeColName,
 			DataType:     entity3.TypeTimestamp,
 			NotNull:      true,
 			DefaultValue: ptr.Of("CURRENT_TIMESTAMP"),
@@ -253,48 +257,84 @@ func GetTemplateTypeMap() map[table.FieldItemType]string {
 
 func GetCreateTimeField() *database.FieldItem {
 	return &database.FieldItem{
-		Name:          entity3.DefaultCreateTimeColName,
+		Name:          database.DefaultCreateTimeColName,
 		Desc:          "create time",
 		Type:          table.FieldItemType_Date,
 		MustRequired:  false,
 		IsSystemField: true,
 		AlterID:       103,
-		PhysicalName:  entity3.DefaultCreateTimeColName,
+		PhysicalName:  database.DefaultCreateTimeColName,
 	}
 }
 
 func GetUidField() *database.FieldItem {
 	return &database.FieldItem{
-		Name:          entity3.DefaultUidColName,
+		Name:          database.DefaultUidColName,
 		Desc:          "user id",
 		Type:          table.FieldItemType_Text,
 		MustRequired:  false,
 		IsSystemField: true,
 		AlterID:       101,
-		PhysicalName:  entity3.DefaultUidColName,
+		PhysicalName:  database.DefaultUidColName,
 	}
 }
 
 func GetConnectIDField() *database.FieldItem {
 	return &database.FieldItem{
-		Name:          entity3.DefaultCidColName,
+		Name:          database.DefaultCidColName,
 		Desc:          "connector id",
 		Type:          table.FieldItemType_Text,
 		MustRequired:  false,
 		IsSystemField: true,
 		AlterID:       104,
-		PhysicalName:  entity3.DefaultCidColName,
+		PhysicalName:  database.DefaultCidColName,
 	}
 }
 
 func GetIDField() *database.FieldItem {
 	return &database.FieldItem{
-		Name:          entity3.DefaultIDColName,
+		Name:          database.DefaultIDColName,
 		Desc:          "primary_key",
 		Type:          table.FieldItemType_Number,
 		MustRequired:  false,
 		IsSystemField: true,
 		AlterID:       102,
-		PhysicalName:  entity3.DefaultIDColName,
+		PhysicalName:  database.DefaultIDColName,
+	}
+}
+
+func GetDisplayCreateTimeField() *database.FieldItem {
+	return &database.FieldItem{
+		Name:          database.DefaultCreateTimeDisplayColName,
+		Desc:          "create time",
+		Type:          table.FieldItemType_Date,
+		MustRequired:  false,
+		IsSystemField: true,
+		AlterID:       103,
+		PhysicalName:  database.DefaultCreateTimeDisplayColName,
+	}
+}
+
+func GetDisplayUidField() *database.FieldItem {
+	return &database.FieldItem{
+		Name:          database.DefaultUidDisplayColName,
+		Desc:          "user id",
+		Type:          table.FieldItemType_Text,
+		MustRequired:  false,
+		IsSystemField: true,
+		AlterID:       101,
+		PhysicalName:  database.DefaultUidDisplayColName,
+	}
+}
+
+func GetDisplayIDField() *database.FieldItem {
+	return &database.FieldItem{
+		Name:          database.DefaultIDDisplayColName,
+		Desc:          "primary_key",
+		Type:          table.FieldItemType_Number,
+		MustRequired:  false,
+		IsSystemField: true,
+		AlterID:       102,
+		PhysicalName:  database.DefaultIDDisplayColName,
 	}
 }

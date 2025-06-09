@@ -67,17 +67,6 @@ const (
 	SortDirectionDesc SortDirection = "DESC" // 降序
 )
 
-const (
-	DefaultCreateTimeColName = "bstudio_create_time"
-	DefaultCidColName        = "bstudio_connector_id"
-	DefaultUidColName        = "bstudio_connector_uid"
-	DefaultIDColName         = "bstudio_id"
-	//DefaultRefTypeColName     = "bstudio_ref_type"
-	//DefaultRefIDColName       = "bstudio_ref_id"
-	//DefaultWFTestIDColName    = "bstudio_wftest_id"   // 标识 workflow test run 生成的数据
-	//DefaultBusinessKeyColName = "bstudio_business_id" // 标识记录所属业务ID
-)
-
 type SQLType int32
 
 const (

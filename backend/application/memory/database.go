@@ -15,7 +15,6 @@ import (
 	databaseEntity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -355,7 +354,7 @@ func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *tab
 		Condition: &model.ComplexCondition{
 			Conditions: []*model.Condition{
 				{
-					Left:      entity.DefaultIDColName,
+					Left:      model.DefaultIDColName,
 					Operation: model.Operation_GREATER_THAN,
 					Right:     "?",
 				},

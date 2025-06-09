@@ -138,15 +138,15 @@ func ConvertDBValueToString(value interface{}, fieldType table.FieldItemType) st
 // ConvertSystemFieldToString converts a system field value to a string.
 func ConvertSystemFieldToString(fieldName string, value interface{}) string {
 	switch fieldName {
-	case entity.DefaultIDColName:
+	case database.DefaultIDColName:
 		if intVal, ok := value.(int64); ok {
 			return strconv.FormatInt(intVal, 10)
 		}
-	case entity.DefaultUidColName, entity.DefaultCidColName:
+	case database.DefaultUidColName, database.DefaultCidColName:
 		if byteArray, ok := value.([]uint8); ok {
 			return string(byteArray)
 		}
-	case entity.DefaultCreateTimeColName:
+	case database.DefaultCreateTimeColName:
 		switch v := value.(type) {
 		case time.Time:
 			return v.Format(TimeFormat)

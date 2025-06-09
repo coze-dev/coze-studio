@@ -20,7 +20,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/repository"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
-	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	rdb2 "code.byted.org/flow/opencoze/backend/infra/impl/rdb"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
@@ -332,7 +331,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 	for _, record := range listResp.Records {
 		if record["name"] == "John Doe" && record["score"] == "80.5" {
 			foundJohn = true
-			bsID = record[entity.DefaultIDColName]
+			bsID = record[database.DefaultIDColName]
 		}
 		if record["name"] == "Jane Smith" && record["score"] == "90.5" {
 			foundSmith = true
@@ -347,9 +346,9 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 		UserID:     1001,
 		Records: []map[string]string{
 			{
-				entity.DefaultIDColName: bsID,
-				"name":                  "John Updated",
-				"score":                 "90",
+				database.DefaultIDColName: bsID,
+				"name":                    "John Updated",
+				"score":                   "90",
 			},
 		},
 	}
@@ -370,7 +369,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 
 	foundJohnUpdate := false
 	for _, record := range listRespAfterUpdate.Records {
-		if record[entity.DefaultIDColName] == bsID {
+		if record[database.DefaultIDColName] == bsID {
 			foundJohnUpdate = true
 			assert.Equal(t, "90", record["score"])
 		}
@@ -383,7 +382,7 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 		UserID:     1001,
 		Records: []map[string]string{
 			{
-				entity.DefaultIDColName: bsID,
+				database.DefaultIDColName: bsID,
 			},
 		},
 	}
@@ -483,6 +482,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, insertResp)
 	assert.NotNil(t, insertResp.RowsAffected)
+	assert.Equal(t, 2, len(insertResp.Records))
 	assert.Equal(t, int64(2), *insertResp.RowsAffected)
 
 	limit := int64(10)
@@ -491,13 +491,13 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	}
 
 	executeSelectReq := &ExecuteSQLRequest{
-		DatabaseID:      resp.Database.ID,
-		TableType:       table.TableType_OnlineTable,
-		OperateType:     database.OperateType_Select,
-		SelectFieldList: selectFields,
-		Limit:           &limit,
-		UserID:          1001,
-		SpaceID:         1,
+		DatabaseID:  resp.Database.ID,
+		TableType:   table.TableType_OnlineTable,
+		OperateType: database.OperateType_Select,
+		//SelectFieldList: selectFields,
+		Limit:   &limit,
+		UserID:  1001,
+		SpaceID: 1,
 		OrderByList: []database.OrderBy{
 			{
 				Field:     "id",
@@ -512,6 +512,9 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NotNil(t, selectResp.Records)
 	assert.True(t, len(selectResp.Records) == 2)
 	assert.Equal(t, selectResp.Records[0]["name"], "Bob")
+	assert.NotNil(t, selectResp.Records[0][database.DefaultUidDisplayColName])
+	assert.NotNil(t, selectResp.Records[0][database.DefaultIDDisplayColName])
+	assert.NotNil(t, selectResp.Records[0][database.DefaultCreateTimeDisplayColName])
 
 	executeNotNullSelectReq := &ExecuteSQLRequest{
 		DatabaseID:      resp.Database.ID,
@@ -574,6 +577,44 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, selectNullResp)
 	assert.True(t, len(selectNullResp.Records) == 0)
+
+	executeINSelectReq := &ExecuteSQLRequest{
+		DatabaseID:      resp.Database.ID,
+		TableType:       table.TableType_OnlineTable,
+		OperateType:     database.OperateType_Select,
+		SelectFieldList: selectFields,
+		Limit:           &limit,
+		UserID:          1001,
+		SpaceID:         1,
+		OrderByList: []database.OrderBy{
+			{
+				Field:     "id",
+				Direction: table.SortDirection_Desc,
+			},
+		},
+		SQLParams: []*database.SQLParamVal{
+			{
+				Value: ptr.Of("Alice"),
+			},
+			{
+				Value: ptr.Of("Bob"),
+			},
+		},
+		Condition: &database.ComplexCondition{
+			Conditions: []*database.Condition{
+				{
+					Left:      "name",
+					Operation: database.Operation_IN,
+					Right:     "(?,?)",
+				},
+			},
+			Logic: database.Logic_And,
+		},
+	}
+	selectINResp, err := dbService.ExecuteSQL(context.Background(), executeINSelectReq)
+	assert.NoError(t, err)
+	assert.NotNil(t, selectINResp)
+	assert.True(t, len(selectINResp.Records) == 2)
 
 	updateRows := []*database.UpsertRow{
 		{

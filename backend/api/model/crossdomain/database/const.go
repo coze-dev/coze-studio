@@ -63,3 +63,14 @@ const (
 	ColumnTypeCategoryText   ColumnTypeCategory = 0
 	ColumnTypeCategoryNumber ColumnTypeCategory = 1
 )
+
+const (
+	DefaultCreateTimeColName = "bstudio_create_time"
+	DefaultCidColName        = "bstudio_connector_id"
+	DefaultUidColName        = "bstudio_connector_uid"
+	DefaultIDColName         = "bstudio_id"
+
+	DefaultCreateTimeDisplayColName = "bstudio_create_time"
+	DefaultUidDisplayColName        = "uuid"
+	DefaultIDDisplayColName         = "id"
+)
