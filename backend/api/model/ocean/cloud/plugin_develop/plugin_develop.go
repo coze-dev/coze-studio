@@ -21053,12 +21053,12 @@ func (p *GetDevPluginListResponse) String() string {
 }
 
 type Convert2OpenAPIRequest struct {
-	PluginName        *string    `thrift:"plugin_name,1,optional" form:"plugin_name" json:"plugin_name,omitempty" query:"plugin_name"`
-	PluginURL         *string    `thrift:"plugin_url,2,optional" form:"plugin_url" json:"plugin_url,omitempty" query:"plugin_url"`
-	Data              string     `thrift:"data,3,required" form:"data,required" json:"data,required" query:"data,required"`
-	MergeSamePaths    *bool      `thrift:"merge_same_paths,4,optional" form:"merge_same_paths" json:"merge_same_paths,omitempty" query:"merge_same_paths"`
-	SpaceID           int64      `thrift:"space_id,5" form:"space_id" json:"space_id,string" query:"space_id"`
-	PluginDescription *string    `thrift:"plugin_description,6,optional" form:"plugin_description" json:"plugin_description,omitempty" query:"plugin_description"`
+	PluginName        *string    `thrift:"plugin_name,1,optional" form:"plugin_name" json:"plugin_name,omitempty"`
+	PluginURL         *string    `thrift:"plugin_url,2,optional" form:"plugin_url" json:"plugin_url,omitempty"`
+	Data              string     `thrift:"data,3,required" form:"data,required" json:"data,required"`
+	MergeSamePaths    *bool      `thrift:"merge_same_paths,4,optional" form:"merge_same_paths" json:"merge_same_paths,omitempty"`
+	SpaceID           int64      `thrift:"space_id,5" form:"space_id" json:"space_id,string"`
+	PluginDescription *string    `thrift:"plugin_description,6,optional" form:"plugin_description" json:"plugin_description,omitempty"`
 	Base              *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -21995,6 +21995,1004 @@ func (p *Convert2OpenAPIResponse) String() string {
 
 }
 
+type BatchCreateAPIRequest struct {
+	PluginID int64  `thrift:"plugin_id,1" form:"plugin_id" json:"plugin_id,string"`
+	AiPlugin string `thrift:"ai_plugin,2" form:"ai_plugin" json:"ai_plugin"`
+	// tools信息存在这里，OpenAPI yaml格式
+	Openapi string `thrift:"openapi,3" form:"openapi" json:"openapi"`
+	SpaceID int64  `thrift:"space_id,4" form:"space_id" json:"space_id,string"`
+	DevID   int64  `thrift:"dev_id,5" form:"dev_id" json:"dev_id,string"`
+	// false: 只创建不重复的 path
+	// true : 只替换已存在的 path
+	ReplaceSamePaths bool `thrift:"replace_same_paths,6" form:"replace_same_paths" json:"replace_same_paths"`
+	// 要替换的path列表
+	PathsToReplace []*plugin_develop_common.PluginAPIInfo `thrift:"paths_to_replace,7,optional" form:"paths_to_replace" json:"paths_to_replace,omitempty"`
+	EditVersion    *int32                                 `thrift:"edit_version,8,optional" form:"edit_version" json:"edit_version,omitempty"`
+	Base           *base.Base                             `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+}
+
+func NewBatchCreateAPIRequest() *BatchCreateAPIRequest {
+	return &BatchCreateAPIRequest{}
+}
+
+func (p *BatchCreateAPIRequest) InitDefault() {
+}
+
+func (p *BatchCreateAPIRequest) GetPluginID() (v int64) {
+	return p.PluginID
+}
+
+func (p *BatchCreateAPIRequest) GetAiPlugin() (v string) {
+	return p.AiPlugin
+}
+
+func (p *BatchCreateAPIRequest) GetOpenapi() (v string) {
+	return p.Openapi
+}
+
+func (p *BatchCreateAPIRequest) GetSpaceID() (v int64) {
+	return p.SpaceID
+}
+
+func (p *BatchCreateAPIRequest) GetDevID() (v int64) {
+	return p.DevID
+}
+
+func (p *BatchCreateAPIRequest) GetReplaceSamePaths() (v bool) {
+	return p.ReplaceSamePaths
+}
+
+var BatchCreateAPIRequest_PathsToReplace_DEFAULT []*plugin_develop_common.PluginAPIInfo
+
+func (p *BatchCreateAPIRequest) GetPathsToReplace() (v []*plugin_develop_common.PluginAPIInfo) {
+	if !p.IsSetPathsToReplace() {
+		return BatchCreateAPIRequest_PathsToReplace_DEFAULT
+	}
+	return p.PathsToReplace
+}
+
+var BatchCreateAPIRequest_EditVersion_DEFAULT int32
+
+func (p *BatchCreateAPIRequest) GetEditVersion() (v int32) {
+	if !p.IsSetEditVersion() {
+		return BatchCreateAPIRequest_EditVersion_DEFAULT
+	}
+	return *p.EditVersion
+}
+
+var BatchCreateAPIRequest_Base_DEFAULT *base.Base
+
+func (p *BatchCreateAPIRequest) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return BatchCreateAPIRequest_Base_DEFAULT
+	}
+	return p.Base
+}
+
+var fieldIDToName_BatchCreateAPIRequest = map[int16]string{
+	1:   "plugin_id",
+	2:   "ai_plugin",
+	3:   "openapi",
+	4:   "space_id",
+	5:   "dev_id",
+	6:   "replace_same_paths",
+	7:   "paths_to_replace",
+	8:   "edit_version",
+	255: "Base",
+}
+
+func (p *BatchCreateAPIRequest) IsSetPathsToReplace() bool {
+	return p.PathsToReplace != nil
+}
+
+func (p *BatchCreateAPIRequest) IsSetEditVersion() bool {
+	return p.EditVersion != nil
+}
+
+func (p *BatchCreateAPIRequest) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *BatchCreateAPIRequest) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 6:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField6(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 7:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField7(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 8:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField8(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 255:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField255(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_BatchCreateAPIRequest[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *BatchCreateAPIRequest) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.PluginID = _field
+	return nil
+}
+func (p *BatchCreateAPIRequest) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.AiPlugin = _field
+	return nil
+}
+func (p *BatchCreateAPIRequest) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Openapi = _field
+	return nil
+}
+func (p *BatchCreateAPIRequest) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.SpaceID = _field
+	return nil
+}
+func (p *BatchCreateAPIRequest) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.DevID = _field
+	return nil
+}
+func (p *BatchCreateAPIRequest) ReadField6(iprot thrift.TProtocol) error {
+
+	var _field bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ReplaceSamePaths = _field
+	return nil
+}
+func (p *BatchCreateAPIRequest) ReadField7(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]*plugin_develop_common.PluginAPIInfo, 0, size)
+	values := make([]plugin_develop_common.PluginAPIInfo, size)
+	for i := 0; i < size; i++ {
+		_elem := &values[i]
+		_elem.InitDefault()
+
+		if err := _elem.Read(iprot); err != nil {
+			return err
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.PathsToReplace = _field
+	return nil
+}
+func (p *BatchCreateAPIRequest) ReadField8(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.EditVersion = _field
+	return nil
+}
+func (p *BatchCreateAPIRequest) ReadField255(iprot thrift.TProtocol) error {
+	_field := base.NewBase()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Base = _field
+	return nil
+}
+
+func (p *BatchCreateAPIRequest) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("BatchCreateAPIRequest"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField6(oprot); err != nil {
+			fieldId = 6
+			goto WriteFieldError
+		}
+		if err = p.writeField7(oprot); err != nil {
+			fieldId = 7
+			goto WriteFieldError
+		}
+		if err = p.writeField8(oprot); err != nil {
+			fieldId = 8
+			goto WriteFieldError
+		}
+		if err = p.writeField255(oprot); err != nil {
+			fieldId = 255
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *BatchCreateAPIRequest) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("plugin_id", thrift.I64, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.PluginID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *BatchCreateAPIRequest) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("ai_plugin", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.AiPlugin); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *BatchCreateAPIRequest) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("openapi", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Openapi); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *BatchCreateAPIRequest) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("space_id", thrift.I64, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.SpaceID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+func (p *BatchCreateAPIRequest) writeField5(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("dev_id", thrift.I64, 5); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.DevID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+func (p *BatchCreateAPIRequest) writeField6(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("replace_same_paths", thrift.BOOL, 6); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteBool(p.ReplaceSamePaths); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
+}
+func (p *BatchCreateAPIRequest) writeField7(oprot thrift.TProtocol) (err error) {
+	if p.IsSetPathsToReplace() {
+		if err = oprot.WriteFieldBegin("paths_to_replace", thrift.LIST, 7); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.PathsToReplace)); err != nil {
+			return err
+		}
+		for _, v := range p.PathsToReplace {
+			if err := v.Write(oprot); err != nil {
+				return err
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
+}
+func (p *BatchCreateAPIRequest) writeField8(oprot thrift.TProtocol) (err error) {
+	if p.IsSetEditVersion() {
+		if err = oprot.WriteFieldBegin("edit_version", thrift.I32, 8); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.EditVersion); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
+}
+func (p *BatchCreateAPIRequest) writeField255(oprot thrift.TProtocol) (err error) {
+	if p.IsSetBase() {
+		if err = oprot.WriteFieldBegin("Base", thrift.STRUCT, 255); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Base.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
+}
+
+func (p *BatchCreateAPIRequest) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("BatchCreateAPIRequest(%+v)", *p)
+
+}
+
+type BatchCreateAPIResponse struct {
+	Code int64  `thrift:"code,1" form:"code" json:"code" query:"code"`
+	Msg  string `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
+	// PathsToReplace表示要覆盖的tools，
+	// 如果BaseResp.StatusCode = DuplicateAPIPath，那么PathsToReplace不为空
+	PathsDuplicated []*plugin_develop_common.PluginAPIInfo `thrift:"paths_duplicated,3,optional" form:"paths_duplicated" json:"paths_duplicated,omitempty" query:"paths_duplicated"`
+	PathsCreated    []*plugin_develop_common.PluginAPIInfo `thrift:"paths_created,4,optional" form:"paths_created" json:"paths_created,omitempty" query:"paths_created"`
+	EditVersion     int32                                  `thrift:"edit_version,5" form:"edit_version" json:"edit_version" query:"edit_version"`
+	// BaseResp.StatusCode
+	//     DuplicateAPIPath: 有重复的API Path，且 request.ReplaceDupPath = false
+	//     InvalidParam: 其他错误
+	BaseResp *base.BaseResp `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
+}
+
+func NewBatchCreateAPIResponse() *BatchCreateAPIResponse {
+	return &BatchCreateAPIResponse{}
+}
+
+func (p *BatchCreateAPIResponse) InitDefault() {
+}
+
+func (p *BatchCreateAPIResponse) GetCode() (v int64) {
+	return p.Code
+}
+
+func (p *BatchCreateAPIResponse) GetMsg() (v string) {
+	return p.Msg
+}
+
+var BatchCreateAPIResponse_PathsDuplicated_DEFAULT []*plugin_develop_common.PluginAPIInfo
+
+func (p *BatchCreateAPIResponse) GetPathsDuplicated() (v []*plugin_develop_common.PluginAPIInfo) {
+	if !p.IsSetPathsDuplicated() {
+		return BatchCreateAPIResponse_PathsDuplicated_DEFAULT
+	}
+	return p.PathsDuplicated
+}
+
+var BatchCreateAPIResponse_PathsCreated_DEFAULT []*plugin_develop_common.PluginAPIInfo
+
+func (p *BatchCreateAPIResponse) GetPathsCreated() (v []*plugin_develop_common.PluginAPIInfo) {
+	if !p.IsSetPathsCreated() {
+		return BatchCreateAPIResponse_PathsCreated_DEFAULT
+	}
+	return p.PathsCreated
+}
+
+func (p *BatchCreateAPIResponse) GetEditVersion() (v int32) {
+	return p.EditVersion
+}
+
+var BatchCreateAPIResponse_BaseResp_DEFAULT *base.BaseResp
+
+func (p *BatchCreateAPIResponse) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return BatchCreateAPIResponse_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+
+var fieldIDToName_BatchCreateAPIResponse = map[int16]string{
+	1:   "code",
+	2:   "msg",
+	3:   "paths_duplicated",
+	4:   "paths_created",
+	5:   "edit_version",
+	255: "BaseResp",
+}
+
+func (p *BatchCreateAPIResponse) IsSetPathsDuplicated() bool {
+	return p.PathsDuplicated != nil
+}
+
+func (p *BatchCreateAPIResponse) IsSetPathsCreated() bool {
+	return p.PathsCreated != nil
+}
+
+func (p *BatchCreateAPIResponse) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *BatchCreateAPIResponse) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetBaseResp bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 255:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField255(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetBaseResp = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetBaseResp {
+		fieldId = 255
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_BatchCreateAPIResponse[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_BatchCreateAPIResponse[fieldId]))
+}
+
+func (p *BatchCreateAPIResponse) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *BatchCreateAPIResponse) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
+	return nil
+}
+func (p *BatchCreateAPIResponse) ReadField3(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]*plugin_develop_common.PluginAPIInfo, 0, size)
+	values := make([]plugin_develop_common.PluginAPIInfo, size)
+	for i := 0; i < size; i++ {
+		_elem := &values[i]
+		_elem.InitDefault()
+
+		if err := _elem.Read(iprot); err != nil {
+			return err
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.PathsDuplicated = _field
+	return nil
+}
+func (p *BatchCreateAPIResponse) ReadField4(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]*plugin_develop_common.PluginAPIInfo, 0, size)
+	values := make([]plugin_develop_common.PluginAPIInfo, size)
+	for i := 0; i < size; i++ {
+		_elem := &values[i]
+		_elem.InitDefault()
+
+		if err := _elem.Read(iprot); err != nil {
+			return err
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.PathsCreated = _field
+	return nil
+}
+func (p *BatchCreateAPIResponse) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.EditVersion = _field
+	return nil
+}
+func (p *BatchCreateAPIResponse) ReadField255(iprot thrift.TProtocol) error {
+	_field := base.NewBaseResp()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.BaseResp = _field
+	return nil
+}
+
+func (p *BatchCreateAPIResponse) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("BatchCreateAPIResponse"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField255(oprot); err != nil {
+			fieldId = 255
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *BatchCreateAPIResponse) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I64, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *BatchCreateAPIResponse) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *BatchCreateAPIResponse) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetPathsDuplicated() {
+		if err = oprot.WriteFieldBegin("paths_duplicated", thrift.LIST, 3); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.PathsDuplicated)); err != nil {
+			return err
+		}
+		for _, v := range p.PathsDuplicated {
+			if err := v.Write(oprot); err != nil {
+				return err
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *BatchCreateAPIResponse) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetPathsCreated() {
+		if err = oprot.WriteFieldBegin("paths_created", thrift.LIST, 4); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.PathsCreated)); err != nil {
+			return err
+		}
+		for _, v := range p.PathsCreated {
+			if err := v.Write(oprot); err != nil {
+				return err
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+func (p *BatchCreateAPIResponse) writeField5(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("edit_version", thrift.I32, 5); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.EditVersion); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+func (p *BatchCreateAPIResponse) writeField255(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("BaseResp", thrift.STRUCT, 255); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.BaseResp.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
+}
+
+func (p *BatchCreateAPIResponse) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("BatchCreateAPIResponse(%+v)", *p)
+
+}
+
 type PluginDevelopService interface {
 	GetOAuthSchema(ctx context.Context, request *GetOAuthSchemaRequest) (r *GetOAuthSchemaResponse, err error)
 
@@ -22045,6 +23043,8 @@ type PluginDevelopService interface {
 	GetDevPluginList(ctx context.Context, request *GetDevPluginListRequest) (r *GetDevPluginListResponse, err error)
 
 	Convert2OpenAPI(ctx context.Context, request *Convert2OpenAPIRequest) (r *Convert2OpenAPIResponse, err error)
+
+	BatchCreateAPI(ctx context.Context, request *BatchCreateAPIRequest) (r *BatchCreateAPIResponse, err error)
 }
 
 type PluginDevelopServiceClient struct {
@@ -22298,6 +23298,15 @@ func (p *PluginDevelopServiceClient) Convert2OpenAPI(ctx context.Context, reques
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *PluginDevelopServiceClient) BatchCreateAPI(ctx context.Context, request *BatchCreateAPIRequest) (r *BatchCreateAPIResponse, err error) {
+	var _args PluginDevelopServiceBatchCreateAPIArgs
+	_args.Request = request
+	var _result PluginDevelopServiceBatchCreateAPIResult
+	if err = p.Client_().Call(ctx, "BatchCreateAPI", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 
 type PluginDevelopServiceProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
@@ -22344,6 +23353,7 @@ func NewPluginDevelopServiceProcessor(handler PluginDevelopService) *PluginDevel
 	self.AddToProcessorMap("GetPluginNextVersion", &pluginDevelopServiceProcessorGetPluginNextVersion{handler: handler})
 	self.AddToProcessorMap("GetDevPluginList", &pluginDevelopServiceProcessorGetDevPluginList{handler: handler})
 	self.AddToProcessorMap("Convert2OpenAPI", &pluginDevelopServiceProcessorConvert2OpenAPI{handler: handler})
+	self.AddToProcessorMap("BatchCreateAPI", &pluginDevelopServiceProcessorBatchCreateAPI{handler: handler})
 	return self
 }
 func (p *PluginDevelopServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -23547,6 +24557,54 @@ func (p *pluginDevelopServiceProcessorConvert2OpenAPI) Process(ctx context.Conte
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("Convert2OpenAPI", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type pluginDevelopServiceProcessorBatchCreateAPI struct {
+	handler PluginDevelopService
+}
+
+func (p *pluginDevelopServiceProcessorBatchCreateAPI) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := PluginDevelopServiceBatchCreateAPIArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("BatchCreateAPI", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := PluginDevelopServiceBatchCreateAPIResult{}
+	var retval *BatchCreateAPIResponse
+	if retval, err2 = p.handler.BatchCreateAPI(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing BatchCreateAPI: "+err2.Error())
+		oprot.WriteMessageBegin("BatchCreateAPI", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("BatchCreateAPI", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -30861,5 +31919,297 @@ func (p *PluginDevelopServiceConvert2OpenAPIResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("PluginDevelopServiceConvert2OpenAPIResult(%+v)", *p)
+
+}
+
+type PluginDevelopServiceBatchCreateAPIArgs struct {
+	Request *BatchCreateAPIRequest `thrift:"request,1"`
+}
+
+func NewPluginDevelopServiceBatchCreateAPIArgs() *PluginDevelopServiceBatchCreateAPIArgs {
+	return &PluginDevelopServiceBatchCreateAPIArgs{}
+}
+
+func (p *PluginDevelopServiceBatchCreateAPIArgs) InitDefault() {
+}
+
+var PluginDevelopServiceBatchCreateAPIArgs_Request_DEFAULT *BatchCreateAPIRequest
+
+func (p *PluginDevelopServiceBatchCreateAPIArgs) GetRequest() (v *BatchCreateAPIRequest) {
+	if !p.IsSetRequest() {
+		return PluginDevelopServiceBatchCreateAPIArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_PluginDevelopServiceBatchCreateAPIArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *PluginDevelopServiceBatchCreateAPIArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *PluginDevelopServiceBatchCreateAPIArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PluginDevelopServiceBatchCreateAPIArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceBatchCreateAPIArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewBatchCreateAPIRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *PluginDevelopServiceBatchCreateAPIArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("BatchCreateAPI_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceBatchCreateAPIArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceBatchCreateAPIArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("PluginDevelopServiceBatchCreateAPIArgs(%+v)", *p)
+
+}
+
+type PluginDevelopServiceBatchCreateAPIResult struct {
+	Success *BatchCreateAPIResponse `thrift:"success,0,optional"`
+}
+
+func NewPluginDevelopServiceBatchCreateAPIResult() *PluginDevelopServiceBatchCreateAPIResult {
+	return &PluginDevelopServiceBatchCreateAPIResult{}
+}
+
+func (p *PluginDevelopServiceBatchCreateAPIResult) InitDefault() {
+}
+
+var PluginDevelopServiceBatchCreateAPIResult_Success_DEFAULT *BatchCreateAPIResponse
+
+func (p *PluginDevelopServiceBatchCreateAPIResult) GetSuccess() (v *BatchCreateAPIResponse) {
+	if !p.IsSetSuccess() {
+		return PluginDevelopServiceBatchCreateAPIResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_PluginDevelopServiceBatchCreateAPIResult = map[int16]string{
+	0: "success",
+}
+
+func (p *PluginDevelopServiceBatchCreateAPIResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *PluginDevelopServiceBatchCreateAPIResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PluginDevelopServiceBatchCreateAPIResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceBatchCreateAPIResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewBatchCreateAPIResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *PluginDevelopServiceBatchCreateAPIResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("BatchCreateAPI_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceBatchCreateAPIResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceBatchCreateAPIResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("PluginDevelopServiceBatchCreateAPIResult(%+v)", *p)
 
 }

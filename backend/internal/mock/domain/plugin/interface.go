@@ -13,9 +13,10 @@ import (
 	context "context"
 	reflect "reflect"
 
+	gomock "go.uber.org/mock/gomock"
+
 	entity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	service "code.byted.org/flow/opencoze/backend/domain/plugin/service"
-	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPluginService is a mock of PluginService interface.
@@ -97,6 +98,21 @@ func (m *MockPluginService) CreateDraftPluginWithCode(ctx context.Context, req *
 func (mr *MockPluginServiceMockRecorder) CreateDraftPluginWithCode(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDraftPluginWithCode", reflect.TypeOf((*MockPluginService)(nil).CreateDraftPluginWithCode), ctx, req)
+}
+
+// CreateDraftToolsWithCode mocks base method.
+func (m *MockPluginService) CreateDraftToolsWithCode(ctx context.Context, req *service.CreateDraftToolsWithCodeRequest) (*service.CreateDraftToolsWithCodeResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateDraftToolsWithCode", ctx, req)
+	ret0, _ := ret[0].(*service.CreateDraftToolsWithCodeResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateDraftToolsWithCode indicates an expected call of CreateDraftToolsWithCode.
+func (mr *MockPluginServiceMockRecorder) CreateDraftToolsWithCode(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDraftToolsWithCode", reflect.TypeOf((*MockPluginService)(nil).CreateDraftToolsWithCode), ctx, req)
 }
 
 // DeleteAPPAllPlugins mocks base method.
@@ -359,18 +375,33 @@ func (mr *MockPluginServiceMockRecorder) MGetPluginLatestVersion(ctx, pluginIDs 
 }
 
 // MGetVersionPlugins mocks base method.
-func (m *MockPluginService) MGetVersionPlugins(ctx context.Context, req *service.MGetVersionPluginsRequest) ([]*entity.PluginInfo, error) {
+func (m *MockPluginService) MGetVersionPlugins(ctx context.Context, versionPlugins []entity.VersionPlugin) ([]*entity.PluginInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MGetVersionPlugins", ctx, req)
+	ret := m.ctrl.Call(m, "MGetVersionPlugins", ctx, versionPlugins)
 	ret0, _ := ret[0].([]*entity.PluginInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // MGetVersionPlugins indicates an expected call of MGetVersionPlugins.
-func (mr *MockPluginServiceMockRecorder) MGetVersionPlugins(ctx, req any) *gomock.Call {
+func (mr *MockPluginServiceMockRecorder) MGetVersionPlugins(ctx, versionPlugins any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetVersionPlugins", reflect.TypeOf((*MockPluginService)(nil).MGetVersionPlugins), ctx, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetVersionPlugins", reflect.TypeOf((*MockPluginService)(nil).MGetVersionPlugins), ctx, versionPlugins)
+}
+
+// MGetVersionTools mocks base method.
+func (m *MockPluginService) MGetVersionTools(ctx context.Context, versionTools []entity.VersionTool) ([]*entity.ToolInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MGetVersionTools", ctx, versionTools)
+	ret0, _ := ret[0].([]*entity.ToolInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetVersionTools indicates an expected call of MGetVersionTools.
+func (mr *MockPluginServiceMockRecorder) MGetVersionTools(ctx, versionTools any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetVersionTools", reflect.TypeOf((*MockPluginService)(nil).MGetVersionTools), ctx, versionTools)
 }
 
 // PublishAPPPlugins mocks base method.

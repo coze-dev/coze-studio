@@ -150,39 +150,3 @@ struct GetUserRecentlyEditIntelligenceResponse {
     254: string msg,
     255: optional base.BaseResp BaseResp,
 }
-
-struct PublishIntelligenceListRequest{
-    1: required intelligence_common_struct.IntelligenceType            intelligence_type
-    2: required i64                         space_id(agw.js_conv="str", api.js_conv="true")
-    3: optional i64                         owner_id(agw.js_conv="str", api.js_conv="true") //筛选项
-    4: optional string                      name   //搜索项：智能体or作者name
-    5: optional common_struct.OrderByType   order_last_publish_time
-    6: optional common_struct.OrderByType   order_total_token
-    7: required i64                         size
-    8: optional string                      cursor_id
-    9: optional list<i64>                   intelligence_ids(agw.js_conv="str", api.js_conv="true")
-    255: optional base.Base Base (api.none="true")
-}
-
-struct PublishIntelligenceData {
-    1: intelligence_common_struct.IntelligenceBasicInfo  basic_info //最近发布项目的信息
-    2: common_struct.User                                user_info
-    3: list<common_struct.ConnectorInfo>                 connectors //已发布渠道聚合
-    4: i64                         total_token (agw.js_conv="str", api.js_conv="true") //截止昨天总token消耗 纯数字
-    5: common_struct.PermissionType                     permission_type
-    6: bool                                             trigger //是否有触发器
-}
-
-struct PublishIntelligenceListData{
-    1: list<PublishIntelligenceData> intelligences,
-    2: i32 total,
-    3: bool has_more,
-    4: string next_cursor_id,
-}
-
-struct PublishIntelligenceListResponse{
-    1: PublishIntelligenceListData data
-    253: i64 code
-    254: string msg
-    255: optional base.BaseResp BaseResp (api.none="true")
-}

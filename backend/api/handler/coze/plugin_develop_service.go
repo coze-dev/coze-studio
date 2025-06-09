@@ -806,3 +806,40 @@ func GetOAuthSchema(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// BatchCreateAPI .
+// @router /api/plugin_api/batch_create_api [POST]
+func BatchCreateAPI(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.BatchCreateAPIRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.SpaceID <= 0 {
+		invalidParamRequestResponse(c, "spaceID is invalid")
+		return
+	}
+	if req.PluginID <= 0 {
+		invalidParamRequestResponse(c, "pluginID is invalid")
+		return
+	}
+	if req.AiPlugin == "" {
+		invalidParamRequestResponse(c, "plugin manifest is invalid")
+		return
+	}
+	if req.Openapi == "" {
+		invalidParamRequestResponse(c, "plugin openapi doc is invalid")
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.BatchCreateAPI(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

@@ -51,10 +51,8 @@ func (t *toolService) getPluginsWithTools(ctx context.Context, pluginEntity *cro
 		pluginsInfo = plugins
 
 	} else {
-		plugins, err := t.client.MGetVersionPlugins(ctx, &service.MGetVersionPluginsRequest{
-			VersionPlugins: []entity.VersionPlugin{
-				{PluginID: pluginID, Version: *pluginEntity.PluginVersion},
-			},
+		plugins, err := t.client.MGetVersionPlugins(ctx, []entity.VersionPlugin{
+			{PluginID: pluginID, Version: *pluginEntity.PluginVersion},
 		})
 		if err != nil {
 			return nil, nil, err

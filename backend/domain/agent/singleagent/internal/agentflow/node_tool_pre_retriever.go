@@ -3,8 +3,9 @@ package agentflow
 import (
 	"context"
 
-	"github.com/cloudwego/eino/schema"
 	"github.com/google/uuid"
+
+	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
@@ -27,6 +28,7 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 	var tms []*schema.Message
 	for _, item := range ar.PreCallTools {
 		execResp, err := crossplugin.DefaultSVC().ExecuteTool(ctx, &service.ExecuteToolRequest{
+			ExecDraftTool:   false,
 			PluginID:        item.PluginID,
 			ToolID:          item.ToolID,
 			ArgumentsInJson: item.Arguments,

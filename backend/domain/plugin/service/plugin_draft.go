@@ -809,3 +809,61 @@ func (p *pluginServiceImpl) validateConvertResult(ctx context.Context, req *Conv
 
 	return nil
 }
+
+func (p *pluginServiceImpl) CreateDraftToolsWithCode(ctx context.Context, req *CreateDraftToolsWithCodeRequest) (resp *CreateDraftToolsWithCodeResponse, err error) {
+	err = req.OpenapiDoc.Validate(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	toolAPIs := make([]entity.UniqueToolAPI, 0, len(req.OpenapiDoc.Paths))
+	for path, item := range req.OpenapiDoc.Paths {
+		for method := range item.Operations() {
+			toolAPIs = append(toolAPIs, entity.UniqueToolAPI{
+				SubURL: path,
+				Method: method,
+			})
+		}
+	}
+
+	existTools, err := p.toolRepo.MGetDraftToolWithAPI(ctx, req.PluginID, toolAPIs, repository.WithToolID())
+	if err != nil {
+		return nil, err
+	}
+
+	duplicatedTools := make([]entity.UniqueToolAPI, 0, len(existTools))
+	for _, api := range toolAPIs {
+		if _, exist := existTools[api]; exist {
+			duplicatedTools = append(duplicatedTools, api)
+		}
+	}
+
+	if !req.ConflictAndUpdate && len(duplicatedTools) > 0 {
+		return &CreateDraftToolsWithCodeResponse{
+			DuplicatedTools: duplicatedTools,
+		}, nil
+	}
+
+	tools := make([]*entity.ToolInfo, 0, len(toolAPIs))
+	for path, item := range req.OpenapiDoc.Paths {
+		for method, op := range item.Operations() {
+			tools = append(tools, &entity.ToolInfo{
+				PluginID:        req.PluginID,
+				Method:          ptr.Of(method),
+				SubURL:          ptr.Of(path),
+				ActivatedStatus: ptr.Of(model.ActivateTool),
+				DebugStatus:     ptr.Of(common.APIDebugStatus_DebugWaiting),
+				Operation:       ptr.Of(model.Openapi3Operation(*op)),
+			})
+		}
+	}
+
+	err = p.toolRepo.UpsertDraftTools(ctx, req.PluginID, tools)
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &CreateDraftToolsWithCodeResponse{}
+
+	return resp, nil
+}

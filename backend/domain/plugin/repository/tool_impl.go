@@ -50,6 +50,74 @@ func (t *toolRepoImpl) CreateDraftTool(ctx context.Context, tool *entity.ToolInf
 	return t.toolDraftDAO.Create(ctx, tool)
 }
 
+func (t *toolRepoImpl) UpsertDraftTools(ctx context.Context, pluginID int64, tools []*entity.ToolInfo) (err error) {
+	apis := slices.Transform(tools, func(tool *entity.ToolInfo) entity.UniqueToolAPI {
+		return entity.UniqueToolAPI{
+			SubURL: tool.GetSubURL(),
+			Method: tool.GetMethod(),
+		}
+	})
+
+	existTools, err := t.toolDraftDAO.MGetWithAPIs(ctx, pluginID, apis, nil)
+	if err != nil {
+		return err
+	}
+
+	tx := t.query.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			if e := tx.Rollback(); e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
+			return
+		}
+		if err != nil {
+			if e := tx.Rollback(); e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+		}
+	}()
+
+	createdTools := make([]*entity.ToolInfo, 0, len(tools))
+	updatedTools := make([]*entity.ToolInfo, 0, len(existTools))
+
+	for _, tool := range tools {
+		existTool, exist := existTools[entity.UniqueToolAPI{
+			SubURL: tool.GetSubURL(),
+			Method: tool.GetMethod(),
+		}]
+		if !exist {
+			createdTools = append(createdTools, tool)
+			continue
+		}
+
+		tool.ID = existTool.ID
+
+		updatedTools = append(updatedTools, tool)
+	}
+
+	if len(createdTools) > 0 {
+		_, err = t.toolDraftDAO.BatchCreateWithTX(ctx, tx, createdTools)
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(updatedTools) > 0 {
+		err = t.toolDraftDAO.BatchUpdateWithTX(ctx, tx, updatedTools)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
+}
+
 func (t *toolRepoImpl) UpdateDraftTool(ctx context.Context, tool *entity.ToolInfo) (err error) {
 	return t.toolDraftDAO.Update(ctx, tool)
 }
@@ -107,8 +175,15 @@ func (t *toolRepoImpl) GetDraftToolWithAPI(ctx context.Context, pluginID int64, 
 	return t.toolDraftDAO.GetWithAPI(ctx, pluginID, api)
 }
 
-func (t *toolRepoImpl) MGetDraftToolWithAPI(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error) {
-	return t.toolDraftDAO.MGetWithAPIs(ctx, pluginID, apis)
+func (t *toolRepoImpl) MGetDraftToolWithAPI(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI, opts ...ToolSelectedOptions) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error) {
+	var opt *dal.ToolSelectedOption
+	if len(opts) > 0 {
+		opt = &dal.ToolSelectedOption{}
+		for _, o := range opts {
+			o(opt)
+		}
+	}
+	return t.toolDraftDAO.MGetWithAPIs(ctx, pluginID, apis, opt)
 }
 
 func (t *toolRepoImpl) DeleteDraftTool(ctx context.Context, toolID int64) (err error) {
@@ -124,7 +199,7 @@ func (t *toolRepoImpl) GetOnlineTool(ctx context.Context, toolID int64) (tool *e
 	return t.toolDAO.Get(ctx, toolID)
 }
 
-func (t *toolRepoImpl) MGetOnlineTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+func (t *toolRepoImpl) MGetOnlineTools(ctx context.Context, toolIDs []int64, opts ...ToolSelectedOptions) (tools []*entity.ToolInfo, err error) {
 	toolProducts := pluginConf.MGetToolProducts(toolIDs)
 	tools = slices.Transform(toolProducts, func(tool *pluginConf.ToolInfo) *entity.ToolInfo {
 		return tool.Info
@@ -142,7 +217,15 @@ func (t *toolRepoImpl) MGetOnlineTools(ctx context.Context, toolIDs []int64) (to
 		customToolIDs = append(customToolIDs, id)
 	}
 
-	customTools, err := t.toolDAO.MGet(ctx, customToolIDs)
+	var opt *dal.ToolSelectedOption
+	if len(opts) > 0 {
+		opt = &dal.ToolSelectedOption{}
+		for _, o := range opts {
+			o(opt)
+		}
+	}
+
+	customTools, err := t.toolDAO.MGet(ctx, customToolIDs, opt)
 	if err != nil {
 		return nil, err
 	}
@@ -197,6 +280,15 @@ func (t *toolRepoImpl) GetVersionTool(ctx context.Context, vTool entity.VersionT
 	}
 
 	return t.toolVersionDAO.Get(ctx, vTool)
+}
+
+func (t *toolRepoImpl) MGetVersionTools(ctx context.Context, versionTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {
+	tools, err = t.toolVersionDAO.MGet(ctx, versionTools)
+	if err != nil {
+		return nil, err
+	}
+
+	return tools, nil
 }
 
 func (t *toolRepoImpl) BindDraftAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error) {

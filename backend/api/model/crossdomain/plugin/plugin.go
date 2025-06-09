@@ -4,13 +4,14 @@ import (
 	api "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 )
 
-type MGetVersionPluginsRequest struct {
-	VersionPlugins []VersionPlugin
-}
-
 type VersionPlugin struct {
 	PluginID int64
 	Version  string
+}
+
+type VersionTool struct {
+	ToolID  int64
+	Version string
 }
 
 type MGetPluginLatestVersionResponse struct {
@@ -73,9 +74,10 @@ type MGetAgentToolsRequest struct {
 }
 
 type ExecuteToolRequest struct {
-	PluginID  int64
-	ToolID    int64
-	ExecScene ExecuteScene
+	PluginID      int64
+	ToolID        int64
+	ExecDraftTool bool
+	ExecScene     ExecuteScene
 
 	ArgumentsInJson string
 }

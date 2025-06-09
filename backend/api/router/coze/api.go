@@ -76,7 +76,6 @@ func Register(r *server.Hertz) {
 				_search := _intelligence_api.Group("/search", _searchMw()...)
 				_search.POST("/get_draft_intelligence_info", append(_getdraftintelligenceinfoMw(), coze.GetDraftIntelligenceInfo)...)
 				_search.POST("/get_draft_intelligence_list", append(_getdraftintelligencelistMw(), coze.GetDraftIntelligenceList)...)
-				_search.POST("/get_publish_intelligence_list", append(_publishintelligencelistMw(), coze.PublishIntelligenceList)...)
 				_search.POST("/get_recently_edit_intelligence", append(_getuserrecentlyeditintelligenceMw(), coze.GetUserRecentlyEditIntelligence)...)
 			}
 		}
@@ -284,6 +283,7 @@ func Register(r *server.Hertz) {
 		}
 		{
 			_plugin_api := _api.Group("/plugin_api", _plugin_apiMw()...)
+			_plugin_api.POST("/batch_create_api", append(_batchcreateapiMw(), coze.BatchCreateAPI)...)
 			_plugin_api.POST("/check_and_lock_plugin_edit", append(_checkandlockplugineditMw(), coze.CheckAndLockPluginEdit)...)
 			_plugin_api.POST("/convert_to_openapi", append(_convert2openapiMw(), coze.Convert2OpenAPI)...)
 			_plugin_api.POST("/create_api", append(_createapiMw(), coze.CreateAPI)...)

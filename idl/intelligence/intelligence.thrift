@@ -15,7 +15,6 @@ service IntelligenceService {
     search.GetDraftIntelligenceListResponse GetDraftIntelligenceList(1: search.GetDraftIntelligenceListRequest req) (api.post='/api/intelligence_api/search/get_draft_intelligence_list', api.category="search",agw.preserve_base="true")
     search.GetDraftIntelligenceInfoResponse GetDraftIntelligenceInfo(1: search.GetDraftIntelligenceInfoRequest req) (api.post='/api/intelligence_api/search/get_draft_intelligence_info', api.category="search",agw.preserve_base="true")
     search.GetUserRecentlyEditIntelligenceResponse GetUserRecentlyEditIntelligence(1: search.GetUserRecentlyEditIntelligenceRequest req) (api.post='/api/intelligence_api/search/get_recently_edit_intelligence', api.category="search",agw.preserve_base="true")
-    search.PublishIntelligenceListResponse PublishIntelligenceList(1: search.PublishIntelligenceListRequest req) (api.post='/api/intelligence_api/search/get_publish_intelligence_list', api.category="search",agw.preserve_base="true")
 
     publish.PublishConnectorListResponse ProjectPublishConnectorList(1: publish.PublishConnectorListRequest request)(api.post='/api/intelligence_api/publish/connector_list', api.category="publish",agw.preserve_base="true")
     publish.GetProjectPublishedConnectorResponse GetProjectPublishedConnector(1: publish.GetProjectPublishedConnectorRequest request) (api.post='/api/intelligence_api/publish/get_published_connector', api.category="publish",agw.preserve_base="true")

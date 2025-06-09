@@ -90,6 +90,7 @@ func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error
 
 func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...tool.Option) (string, error) {
 	req := &service.ExecuteToolRequest{
+		ExecDraftTool: false,
 		ExecScene: func() plugin.ExecuteScene {
 			if p.isDraft {
 				return plugin.ExecSceneOfDraftAgent
@@ -100,6 +101,7 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 		ToolID:          p.toolInfo.ID,
 		ArgumentsInJson: argumentsInJSON,
 	}
+
 	opts := []pluginEntity.ExecuteToolOpt{
 		plugin.WithToolVersion(p.toolInfo.GetVersion()),
 		plugin.WithProjectInfo(p.projectInfo),

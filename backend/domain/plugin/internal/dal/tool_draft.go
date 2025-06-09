@@ -149,7 +149,7 @@ func (t *ToolDraftDAO) GetWithAPI(ctx context.Context, pluginID int64, api entit
 	return tool, true, nil
 }
 
-func (t *ToolDraftDAO) MGetWithAPIs(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error) {
+func (t *ToolDraftDAO) MGetWithAPIs(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI, opt *ToolSelectedOption) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error) {
 	tools = make(map[entity.UniqueToolAPI]*entity.ToolInfo, len(apis))
 
 	table := t.query.ToolDraft
@@ -172,6 +172,7 @@ func (t *ToolDraftDAO) MGetWithAPIs(ctx context.Context, pluginID int64, apis []
 		}
 
 		tls, err := table.WithContext(ctx).
+			Select(t.getSelected(opt)...).
 			Where(table.PluginID.Eq(pluginID)).
 			Where(sq).
 			Find()
@@ -337,6 +338,25 @@ func (t *ToolDraftDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx,
 	}
 
 	return toolIDs, nil
+}
+
+func (t *ToolDraftDAO) BatchUpdateWithTX(ctx context.Context, tx *query.QueryTx, tools []*entity.ToolInfo) (err error) {
+	for _, tool := range tools {
+		m, err := t.getToolDraftUpdateMap(tool)
+		if err != nil {
+			return err
+		}
+
+		table := tx.ToolDraft
+		_, err = table.WithContext(ctx).
+			Where(table.ID.Eq(tool.ID)).
+			Updates(m)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (t *ToolDraftDAO) UpdateWithTX(ctx context.Context, tx *query.QueryTx, tool *entity.ToolInfo) (err error) {

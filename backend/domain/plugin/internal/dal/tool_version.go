@@ -43,14 +43,14 @@ func (t toolVersionPO) ToDO() *entity.ToolInfo {
 func (t *ToolVersionDAO) Get(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, exist bool, err error) {
 	table := t.query.ToolVersion
 
-	if vTool.Version == nil || *vTool.Version == "" {
+	if vTool.Version == "" {
 		return nil, false, fmt.Errorf("invalid tool version")
 	}
 
 	tl, err := table.WithContext(ctx).
 		Where(
 			table.ToolID.Eq(vTool.ToolID),
-			table.Version.Eq(*vTool.Version),
+			table.Version.Eq(vTool.Version),
 		).
 		First()
 	if err != nil {
@@ -73,7 +73,7 @@ func (t *ToolVersionDAO) MGet(ctx context.Context, vTools []entity.VersionTool) 
 			Where(
 				table.Where(
 					table.ToolID.Eq(chunk[0].ToolID),
-					table.Version.Eq(*chunk[0].Version),
+					table.Version.Eq(chunk[0].Version),
 				),
 			)
 
@@ -83,7 +83,7 @@ func (t *ToolVersionDAO) MGet(ctx context.Context, vTools []entity.VersionTool) 
 			}
 			q = q.Or(
 				table.ToolID.Eq(v.ToolID),
-				table.Version.Eq(*v.Version),
+				table.Version.Eq(v.Version),
 			)
 		}
 

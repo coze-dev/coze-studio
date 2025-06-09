@@ -91,6 +91,10 @@ func (p *pluginServiceImpl) buildExecConfig(ctx context.Context, req *ExecuteToo
 }
 
 func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *ExecuteToolRequest, execOpt *model.ExecuteToolOption) (onlinePlugin *entity.PluginInfo, onlineTool *entity.ToolInfo, err error) {
+	if req.ExecDraftTool {
+		return nil, nil, fmt.Errorf("draft tool is not supported in online agent")
+	}
+
 	onlineTool, exist, err := p.toolRepo.GetOnlineTool(ctx, req.ToolID)
 	if err != nil {
 		return nil, nil, err
@@ -137,6 +141,10 @@ func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *Ex
 }
 
 func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *ExecuteToolRequest, execOpt *model.ExecuteToolOption) (onlinePlugin *entity.PluginInfo, onlineTool *entity.ToolInfo, err error) {
+	if req.ExecDraftTool {
+		return nil, nil, fmt.Errorf("draft tool is not supported in online agent")
+	}
+
 	onlineTool, exist, err := p.toolRepo.GetOnlineTool(ctx, req.ToolID)
 	if err != nil {
 		return nil, nil, err
@@ -186,32 +194,42 @@ func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *E
 }
 
 func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *ExecuteToolRequest, execOpt *model.ExecuteToolOption) (pl *entity.PluginInfo, tl *entity.ToolInfo, err error) {
-	if execOpt.ToolVersion == "" {
+	if req.ExecDraftTool {
 		var exist bool
-		pl, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+		pl, exist, err = p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 		if err != nil {
 			return nil, nil, err
 		}
 		if !exist {
-			return nil, nil, fmt.Errorf("online plugin '%d' not found", req.PluginID)
+			return nil, nil, fmt.Errorf("draft plugin '%d' not found", req.PluginID)
 		}
 	} else {
 		var exist bool
-		pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, entity.VersionPlugin{
-			PluginID: req.PluginID,
-			Version:  execOpt.ToolVersion,
-		})
-		if err != nil {
-			return nil, nil, err
-		}
-		if !exist {
-			return nil, nil, fmt.Errorf("plugin '%d' with version '%s' not found", req.PluginID, execOpt.ToolVersion)
+		if execOpt.ToolVersion == "" {
+			pl, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+			if err != nil {
+				return nil, nil, err
+			}
+			if !exist {
+				return nil, nil, fmt.Errorf("online plugin '%d' not found", req.PluginID)
+			}
+		} else {
+			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, entity.VersionPlugin{
+				PluginID: req.PluginID,
+				Version:  execOpt.ToolVersion,
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			if !exist {
+				return nil, nil, fmt.Errorf("plugin '%d' with version '%s' not found", req.PluginID, execOpt.ToolVersion)
+			}
 		}
 	}
 
 	tl, exist, err := p.toolRepo.GetVersionTool(ctx, entity.VersionTool{
 		ToolID:  req.ToolID,
-		Version: ptr.Of(execOpt.ToolVersion),
+		Version: execOpt.ToolVersion,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -224,24 +242,44 @@ func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *Exec
 }
 
 func (p *pluginServiceImpl) getToolDebugPluginInfo(ctx context.Context, req *ExecuteToolRequest, execOpt *model.ExecuteToolOption) (pl *entity.PluginInfo, tl *entity.ToolInfo, err error) {
-	tl, exist, err := p.toolRepo.GetDraftTool(ctx, req.ToolID)
+	if req.ExecDraftTool {
+		tl, exist, err := p.toolRepo.GetDraftTool(ctx, req.ToolID)
+		if err != nil {
+			return nil, nil, err
+		}
+		if !exist {
+			return nil, nil, fmt.Errorf("draft tool '%d' not found", req.ToolID)
+		}
+
+		pl, exist, err = p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
+		if err != nil {
+			return nil, nil, err
+		}
+		if !exist {
+			return nil, nil, fmt.Errorf("draft plugin '%d' not found", req.PluginID)
+		}
+
+		if tl.GetActivatedStatus() != model.ActivateTool {
+			return nil, nil, fmt.Errorf("tool '%s' is not activated", tl.GetName())
+		}
+
+		return pl, tl, nil
+	}
+
+	tl, exist, err := p.toolRepo.GetOnlineTool(ctx, req.ToolID)
 	if err != nil {
 		return nil, nil, err
 	}
 	if !exist {
-		return nil, nil, fmt.Errorf("draft tool '%d' not found", req.ToolID)
+		return nil, nil, fmt.Errorf("online tool '%d' not found", req.ToolID)
 	}
 
-	pl, exist, err = p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
+	pl, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
 	if err != nil {
 		return nil, nil, err
 	}
 	if !exist {
-		return nil, nil, fmt.Errorf("draft plugin '%d' not found", req.PluginID)
-	}
-
-	if tl.GetActivatedStatus() != model.ActivateTool {
-		return nil, nil, fmt.Errorf("tool '%s' is not activated", tl.GetName())
+		return nil, nil, fmt.Errorf("online plugin '%d' not found", req.PluginID)
 	}
 
 	return pl, tl, nil

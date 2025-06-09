@@ -157,14 +157,19 @@ func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context
 		logs.Errorf("get plugin icon url failed, err: %v", err)
 	}
 
+	authType, ok := model.ToThriftAuthType(pl.GetAuthInfo().Type)
+	if !ok {
+		return nil, fmt.Errorf("invalid auth type '%s'", pl.GetAuthInfo().Type)
+	}
+
 	pluginInfo := &common.PluginInfoForPlayground{
-		Auth:           0,
+		Auth:           int32(authType),
 		CreateTime:     strconv.FormatInt(pl.CreatedAt/1000, 10),
 		CreationMethod: common.CreationMethod_COZE,
 		Creator:        creator,
 		DescForHuman:   pl.GetDesc(),
 		ID:             strconv.FormatInt(pl.ID, 10),
-		IsOfficial:     false,
+		IsOfficial:     pl.RefProductID != nil,
 		MaterialID:     strconv.FormatInt(pl.ID, 10),
 		Name:           pl.GetName(),
 		PluginIcon:     iconURL,
@@ -173,6 +178,7 @@ func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context
 		StatisticData:  common.NewPluginStatisticData(),
 		Status:         common.PluginStatus_SUBMITTED,
 		UpdateTime:     strconv.FormatInt(pl.UpdatedAt/1000, 10),
+		ProjectID:      strconv.FormatInt(pl.GetAPPID(), 10),
 		VersionName:    pl.GetVersion(),
 		VersionTs:      pl.GetVersion(), // 兼容前端逻辑，理论上应该使用 VersionName
 		PluginApis:     pluginAPIs,
@@ -368,6 +374,21 @@ func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *plugi
 		}
 	}
 
+	if len(draftTools) == 0 {
+		return &pluginAPI.GetPluginAPIsResponse{
+			APIInfo: make([]*common.PluginAPIInfo, 0),
+			Total:   0,
+		}, nil
+	}
+
+	draftToolIDs := slices.Transform(draftTools, func(tl *entity.ToolInfo) int64 {
+		return tl.ID
+	})
+	onlineStatus, err := p.getToolOnlineStatus(ctx, draftToolIDs)
+	if err != nil {
+		return nil, err
+	}
+
 	apis := make([]*common.PluginAPIInfo, 0, len(draftTools))
 	for _, tool := range draftTools {
 		method, ok := model.ToThriftAPIMethod(tool.GetMethod())
@@ -396,12 +417,12 @@ func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *plugi
 			}(),
 			Method:         method,
 			Name:           tool.GetName(),
-			OnlineStatus:   common.OnlineStatus_ONLINE,
+			OnlineStatus:   onlineStatus[tool.ID],
 			Path:           tool.GetSubURL(),
 			PluginID:       strconv.FormatInt(tool.PluginID, 10),
 			RequestParams:  reqParams,
 			ResponseParams: respParams,
-			StatisticData:  common.NewPluginStatisticData(), // TODO(@maronghong): 补充统计数据
+			StatisticData:  common.NewPluginStatisticData(),
 		}
 		example := pl.GetToolExample(ctx, tool.GetName())
 		if example != nil {
@@ -421,6 +442,20 @@ func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *plugi
 	}
 
 	return resp, nil
+}
+
+func (p *PluginApplicationService) getToolOnlineStatus(ctx context.Context, toolIDs []int64) (map[int64]common.OnlineStatus, error) {
+	onlineTools, err := p.toolRepo.MGetOnlineTools(ctx, toolIDs, repository.WithToolID())
+	if err != nil {
+		return nil, err
+	}
+
+	onlineStatus := make(map[int64]common.OnlineStatus, len(onlineTools))
+	for _, tool := range onlineTools {
+		onlineStatus[tool.ID] = common.OnlineStatus_ONLINE
+	}
+
+	return onlineStatus, nil
 }
 
 func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfoRequest) (resp *pluginAPI.GetPluginInfoResponse, err error) {
@@ -924,6 +959,7 @@ func (p *PluginApplicationService) UpdateBotDefaultParams(ctx context.Context, r
 
 func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.DebugAPIRequest) (resp *pluginAPI.DebugAPIResponse, err error) {
 	res, err := p.DomainSVC.ExecuteTool(ctx, &service.ExecuteToolRequest{
+		ExecDraftTool:   true,
 		PluginID:        req.PluginID,
 		ToolID:          req.APIID,
 		ExecScene:       model.ExecSceneOfToolDebug,
@@ -1221,6 +1257,37 @@ func (p *PluginApplicationService) Convert2OpenAPI(ctx context.Context, req *plu
 		Openapi:           ptr.Of(string(doc)),
 		AiPlugin:          ptr.Of(string(mf)),
 		DuplicateAPIInfos: []*common.DuplicateAPIInfo{},
+	}
+
+	return resp, nil
+}
+
+func (p *PluginApplicationService) BatchCreateAPI(ctx context.Context, req *pluginAPI.BatchCreateAPIRequest) (resp *pluginAPI.BatchCreateAPIResponse, err error) {
+	loader := openapi3.NewLoader()
+	doc, err := loader.LoadFromData([]byte(req.Openapi))
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := p.DomainSVC.CreateDraftToolsWithCode(ctx, &service.CreateDraftToolsWithCodeRequest{
+		PluginID:          req.PluginID,
+		OpenapiDoc:        ptr.Of(model.Openapi3T(*doc)),
+		ConflictAndUpdate: req.ReplaceSamePaths,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	duplicated := slices.Transform(res.DuplicatedTools, func(e entity.UniqueToolAPI) *common.PluginAPIInfo {
+		method, _ := model.ToThriftAPIMethod(e.Method)
+		return &common.PluginAPIInfo{
+			Path:   e.SubURL,
+			Method: method,
+		}
+	})
+
+	resp = &pluginAPI.BatchCreateAPIResponse{
+		PathsDuplicated: duplicated,
 	}
 
 	return resp, nil

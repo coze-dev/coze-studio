@@ -9,20 +9,22 @@ import (
 
 type ToolRepository interface {
 	CreateDraftTool(ctx context.Context, tool *entity.ToolInfo) (toolID int64, err error)
+	UpsertDraftTools(ctx context.Context, pluginID int64, tools []*entity.ToolInfo) (err error)
 	UpdateDraftTool(ctx context.Context, tool *entity.ToolInfo) (err error)
 	GetDraftTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error)
 	MGetDraftTools(ctx context.Context, toolIDs []int64, opts ...ToolSelectedOptions) (tools []*entity.ToolInfo, err error)
 
 	GetDraftToolWithAPI(ctx context.Context, pluginID int64, api entity.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error)
-	MGetDraftToolWithAPI(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error)
+	MGetDraftToolWithAPI(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI, opts ...ToolSelectedOptions) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error)
 	DeleteDraftTool(ctx context.Context, toolID int64) (err error)
 
 	GetOnlineTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error)
-	MGetOnlineTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error)
+	MGetOnlineTools(ctx context.Context, toolIDs []int64, opts ...ToolSelectedOptions) (tools []*entity.ToolInfo, err error)
 	CheckOnlineToolExist(ctx context.Context, toolID int64) (exist bool, err error)
 	CheckOnlineToolsExist(ctx context.Context, toolIDs []int64) (exists map[int64]bool, err error)
 
 	GetVersionTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, exist bool, err error)
+	MGetVersionTools(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)
 
 	BindDraftAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error)
 	GetDraftAgentTool(ctx context.Context, agentID, toolID int64) (tool *entity.ToolInfo, exist bool, err error)

@@ -24,8 +24,8 @@ func InitDomainService(c plugin.PluginService) crossplugin.PluginService {
 	return defaultSVC
 }
 
-func (s *impl) MGetVersionPlugins(ctx context.Context, req *model.MGetVersionPluginsRequest) (mPlugins []*model.PluginInfo, err error) {
-	plugins, err := s.DomainSVC.MGetVersionPlugins(ctx, req)
+func (s *impl) MGetVersionPlugins(ctx context.Context, versionPlugins []model.VersionPlugin) (mPlugins []*model.PluginInfo, err error) {
+	plugins, err := s.DomainSVC.MGetVersionPlugins(ctx, versionPlugins)
 	if err != nil {
 		return nil, err
 	}
@@ -67,4 +67,8 @@ func (s *impl) PublishAPPPlugins(ctx context.Context, req *model.PublishAPPPlugi
 
 func (s *impl) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *model.MGetPluginLatestVersionResponse, err error) {
 	return s.DomainSVC.MGetPluginLatestVersion(ctx, pluginIDs)
+}
+
+func (s *impl) MGetVersionTools(ctx context.Context, versionTools []model.VersionTool) (tools []*model.ToolInfo, err error) {
+	return s.DomainSVC.MGetVersionTools(ctx, versionTools)
 }

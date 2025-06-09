@@ -116,10 +116,7 @@ type AgentToolIdentity struct {
 	VersionMs *int64
 }
 
-type VersionTool struct {
-	ToolID  int64
-	Version *string
-}
+type VersionTool = model.VersionTool
 
 type VersionPlugin = model.VersionPlugin
 

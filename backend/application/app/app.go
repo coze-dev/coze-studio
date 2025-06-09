@@ -43,11 +43,11 @@ type APPApplicationService struct {
 	oss             storage.Storage
 	projectEventBus search.ProjectEventBus
 
-	userSVC            user.User
-	searchSVC          search.Search
-	workflowSVC        workflow.Service
-	connectorSVC       connector.Connector
-	VariablesDomainSVC variables.Variables
+	userSVC      user.User
+	searchSVC    search.Search
+	workflowSVC  workflow.Service
+	connectorSVC connector.Connector
+	variablesSVC variables.Variables
 }
 
 func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *projectAPI.DraftProjectCreateRequest) (resp *projectAPI.DraftProjectCreateResponse, err error) {
@@ -182,7 +182,7 @@ func (a *APPApplicationService) deleteAPPResources(ctx context.Context, appID in
 		logs.CtxErrorf(ctx, "delete app databases failed, err=%v", err)
 	}
 
-	err = a.VariablesDomainSVC.DeleteAllVariable(ctx, project_memory.VariableConnector_Project, conv.Int64ToStr(appID))
+	err = a.variablesSVC.DeleteAllVariable(ctx, project_memory.VariableConnector_Project, conv.Int64ToStr(appID))
 	if err != nil {
 		logs.CtxErrorf(ctx, "delete app variables failed, err=%v", err)
 	}

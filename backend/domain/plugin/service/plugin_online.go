@@ -59,6 +59,15 @@ func (p *pluginServiceImpl) MGetOnlineTools(ctx context.Context, toolIDs []int64
 	return tools, nil
 }
 
+func (p *pluginServiceImpl) MGetVersionTools(ctx context.Context, versionTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {
+	tools, err = p.toolRepo.MGetVersionTools(ctx, versionTools)
+	if err != nil {
+		return nil, err
+	}
+
+	return tools, nil
+}
+
 func (p *pluginServiceImpl) ListPluginProducts(ctx context.Context, req *ListPluginProductsRequest) (resp *ListPluginProductsResponse, err error) {
 	plugins := slices.Transform(pluginConf.GetAllPluginProducts(), func(p *pluginConf.PluginInfo) *entity.PluginInfo {
 		return entity.NewPluginInfo(p.Info)
@@ -85,8 +94,8 @@ func (p *pluginServiceImpl) DeleteAPPAllPlugins(ctx context.Context, appID int64
 	return p.pluginRepo.DeleteAPPAllPlugins(ctx, appID)
 }
 
-func (p *pluginServiceImpl) MGetVersionPlugins(ctx context.Context, req *MGetVersionPluginsRequest) (plugins []*entity.PluginInfo, err error) {
-	plugins, err = p.pluginRepo.MGetVersionPlugins(ctx, req.VersionPlugins)
+func (p *pluginServiceImpl) MGetVersionPlugins(ctx context.Context, versionPlugins []entity.VersionPlugin) (plugins []*entity.PluginInfo, err error) {
+	plugins, err = p.pluginRepo.MGetVersionPlugins(ctx, versionPlugins)
 	if err != nil {
 		return nil, err
 	}

@@ -126,11 +126,6 @@ func _getdraftintelligencelistMw() []app.HandlerFunc {
 	return nil
 }
 
-func _publishintelligencelistMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
 func _getuserrecentlyeditintelligenceMw() []app.HandlerFunc {
 	// your code...
 	return nil
@@ -1376,6 +1371,11 @@ func _pluginMw() []app.HandlerFunc {
 }
 
 func _getoauthschemaapiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _batchcreateapiMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

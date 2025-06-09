@@ -29,6 +29,7 @@ service PluginDevelopService {
     GetPluginNextVersionResponse GetPluginNextVersion(1: GetPluginNextVersionRequest request)(api.post='/api/plugin_api/get_plugin_next_version', api.category="plugin", api.gen_path='plugin')
     GetDevPluginListResponse GetDevPluginList(1: GetDevPluginListRequest request)(api.post='/api/plugin_api/get_dev_plugin_list', api.category="plugin", api.gen_path='plugin', agw.preserve_base="true")
     Convert2OpenAPIResponse Convert2OpenAPI(1: Convert2OpenAPIRequest request)(api.post='/api/plugin_api/convert_to_openapi', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
+    BatchCreateAPIResponse BatchCreateAPI(1: BatchCreateAPIRequest request)(api.post='/api/plugin_api/batch_create_api', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
 }
 
 struct GetPlaygroundPluginListRequest {
@@ -519,12 +520,12 @@ struct GetDevPluginListResponse{
 }
 
 struct Convert2OpenAPIRequest {
-    1  : optional string    plugin_name       ,
-    2  : optional string    plugin_url        ,
-    3  : required string    data              ,
-    4  : optional bool      merge_same_paths  ,
-    5  :          i64    space_id        (api.js_conv = "str")  ,
-    6  : optional string    plugin_description,
+    1  : optional string    plugin_name  (api.body = "plugin_name")     ,
+    2  : optional string    plugin_url    (api.body = "plugin_url")    ,
+    3  : required string    data          (api.body = "data")    ,
+    4  : optional bool      merge_same_paths  (api.body = "merge_same_paths") ,
+    5  :          i64    space_id        (api.js_conv = "str", api.body = "space_id")  ,
+    6  : optional string    plugin_description (api.body = "plugin_description"),
 
     255: optional base.Base Base              ,
 }
@@ -541,4 +542,36 @@ struct Convert2OpenAPIResponse {
 //     DuplicateAPIPath: 导入的文件中有重复的API Path，且 request.MergeSamePaths = false
 //     InvalidParam: 其他错误
     255: optional base.BaseResp                                BaseResp           ,
+}
+
+struct BatchCreateAPIRequest {
+    1  :          i64                                    plugin_id (api.js_conv = "str", api.body = "plugin_id")        ,
+    2  :          string                                 ai_plugin         (api.body = "ai_plugin"),
+// tools信息存在这里，OpenAPI yaml格式
+    3  :          string                                 openapi           (api.body = "openapi"),
+    4  :          i64                                    space_id          (api.js_conv = "str", api.body = "space_id") ,
+    5  :          i64                                    dev_id            (api.js_conv = "str", api.body = "dev_id"),
+// false: 只创建不重复的 path
+// true : 只替换已存在的 path
+    6  :          bool                                      replace_same_paths (api.body = "replace_same_paths"),
+// 要替换的path列表
+    7  : optional list<plugin_develop_common.PluginAPIInfo> paths_to_replace  (api.body = "paths_to_replace"),
+    8  : optional i32                                       edit_version      (api.body = "edit_version"),
+
+    255: optional base.Base                                 Base              ,
+}
+
+struct BatchCreateAPIResponse {
+    1  :          i64                                       code            ,
+    2  :          string                                    msg             ,
+// PathsToReplace表示要覆盖的tools，
+// 如果BaseResp.StatusCode = DuplicateAPIPath，那么PathsToReplace不为空
+    3  : optional list<plugin_develop_common.PluginAPIInfo> paths_duplicated,
+    4  : optional list<plugin_develop_common.PluginAPIInfo> paths_created   ,
+    5  :          i32                                       edit_version    ,
+
+// BaseResp.StatusCode
+//     DuplicateAPIPath: 有重复的API Path，且 request.ReplaceDupPath = false
+//     InvalidParam: 其他错误
+    255: required base.BaseResp                             BaseResp        ,
 }

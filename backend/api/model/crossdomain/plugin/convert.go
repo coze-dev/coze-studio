@@ -178,6 +178,23 @@ func ToAuthType(typ common.AuthorizationType) (AuthType, bool) {
 	return _type, ok
 }
 
+var thriftAuthTypes = func() map[AuthType]common.AuthorizationType {
+	types := make(map[AuthType]common.AuthorizationType, len(authTypes))
+	for k, v := range authTypes {
+		if v == AuthTypeOfOAuth {
+			types[v] = common.AuthorizationType_OAuth
+		} else {
+			types[v] = k
+		}
+	}
+	return types
+}()
+
+func ToThriftAuthType(typ AuthType) (common.AuthorizationType, bool) {
+	_type, ok := thriftAuthTypes[typ]
+	return _type, ok
+}
+
 var subAuthTypes = map[int32]AuthSubType{
 	int32(common.ServiceAuthSubType_ApiKey): AuthSubTypeOfToken,
 }

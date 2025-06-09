@@ -5,7 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	parseCURL "parse-curl"
@@ -464,7 +466,11 @@ func fillManifestWithOpenapiDoc(mf *entity.PluginManifest, doc *model.Openapi3T)
 }
 
 func addHTTPProtocolHeadIfNeed(url string) string {
-	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+	if strings.HasPrefix(url, "https://") {
+		return url
+	}
+	if strings.HasPrefix(url, "http://") {
+		url = strings.Replace(url, "http://", "https://", 1)
 		return url
 	}
 	return "https://" + url
@@ -493,8 +499,21 @@ func fillNecessaryInfoForOpenapi3Doc(doc *model.Openapi3T) {
 			if op.OperationID == "" {
 				op.OperationID = gonanoid.MustID(6)
 			}
+
 			if op.Summary == "" {
 				op.Summary = op.OperationID
+			}
+
+			if op.Responses != nil {
+				defaultResp := entity.DefaultOpenapi3Responses()
+				respRef := op.Responses[strconv.Itoa(http.StatusOK)]
+				if respRef == nil || respRef.Value == nil || respRef.Value.Content == nil {
+					op.Responses = defaultResp
+					respRef = op.Responses[strconv.Itoa(http.StatusOK)]
+				}
+				if respRef.Value.Content[model.MIMETypeJson] == nil {
+					respRef.Value.Content[model.MIMETypeJson] = defaultResp[strconv.Itoa(http.StatusOK)].Value.Content[model.MIMETypeJson]
+				}
 			}
 		}
 	}

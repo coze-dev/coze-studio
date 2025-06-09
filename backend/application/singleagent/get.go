@@ -198,9 +198,7 @@ func (s *SingleAgentApplicationService) fetchPluginDetails(ctx context.Context, 
 			Version:  v.GetVersion(),
 		})
 	}
-	return s.appContext.PluginDomainSVC.MGetVersionPlugins(ctx, &service.MGetVersionPluginsRequest{
-		VersionPlugins: vPlugins,
-	})
+	return s.appContext.PluginDomainSVC.MGetVersionPlugins(ctx, vPlugins)
 }
 
 func (s *SingleAgentApplicationService) fetchWorkflowDetails(ctx context.Context, agentInfo *entity.SingleAgent) ([]*workflowEntity.Workflow, error) {

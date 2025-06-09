@@ -299,12 +299,6 @@ func (s *SearchApplicationService) GetUserRecentlyEditIntelligence(ctx context.C
 	return resp, nil
 }
 
-func (s *SearchApplicationService) PublishIntelligenceList(ctx context.Context, req intelligence.PublishIntelligenceListRequest) (
-	resp *intelligence.PublishIntelligenceListResponse, err error,
-) {
-	return nil, nil
-}
-
 func (s *SearchApplicationService) packIntelligenceData(ctx context.Context, doc *searchEntity.ProjectDocument) (*intelligence.IntelligenceData, error) {
 	intelligenceData := &intelligence.IntelligenceData{
 		Type: doc.Type,

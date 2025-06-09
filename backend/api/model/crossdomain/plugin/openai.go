@@ -36,12 +36,17 @@ func (ot Openapi3T) Validate(ctx context.Context) (err error) {
 	if len(ot.Servers) != 1 {
 		return fmt.Errorf("server is required and only one server is allowed, servers=%v", ot.Servers)
 	}
-	_, err = url.Parse(ot.Servers[0].URL)
+
+	serverURL := ot.Servers[0].URL
+	_, err = url.Parse(serverURL)
 	if err != nil {
-		return fmt.Errorf("invalid server url '%s'", ot.Servers[0].URL)
+		return fmt.Errorf("invalid server url '%s'", serverURL)
 	}
-	if len(ot.Servers[0].URL) > 512 {
-		return fmt.Errorf("server url too long")
+	if len(serverURL) > 512 {
+		return fmt.Errorf("server url '%s' too long", serverURL)
+	}
+	if !strings.HasPrefix(serverURL, "https://") {
+		return fmt.Errorf("server url must start with 'https://'")
 	}
 
 	for _, pathItem := range ot.Paths {
@@ -324,10 +329,6 @@ func validateOpenapi3Responses(responses openapi3.Responses) (err error) {
 	if resp.Value == nil {
 		return fmt.Errorf("response value is nil")
 	}
-	if resp.Value.Content == nil {
-		return fmt.Errorf("response content is empty")
-	}
-
 	if len(resp.Value.Content) != 1 {
 		return fmt.Errorf("the response only supports 'application/json' type")
 	}

@@ -82,22 +82,6 @@ func GetUserRecentlyEditIntelligence(ctx context.Context, c *app.RequestContext)
 	c.JSON(consts.StatusOK, resp)
 }
 
-// PublishIntelligenceList .
-// @router /api/intelligence_api/search/get_publish_intelligence_list [POST]
-func PublishIntelligenceList(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req intelligence.PublishIntelligenceListRequest
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
-	}
-
-	resp := new(intelligence.PublishIntelligenceListResponse)
-
-	c.JSON(consts.StatusOK, resp)
-}
-
 // DraftProjectCreate .
 // @router /api/intelligence_api/draft_project/create [POST]
 func DraftProjectCreate(ctx context.Context, c *app.RequestContext) {

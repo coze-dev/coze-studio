@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
@@ -42,6 +43,20 @@ func (t toolPO) ToDO() *entity.ToolInfo {
 		Operation:       t.Operation,
 		ActivatedStatus: ptr.Of(plugin.ActivatedStatus(t.ActivatedStatus)),
 	}
+}
+
+func (t *ToolDAO) getSelected(opt *ToolSelectedOption) (selected []field.Expr) {
+	if opt == nil {
+		return selected
+	}
+
+	table := t.query.Tool
+
+	if opt.ToolID {
+		selected = append(selected, table.ID)
+	}
+
+	return selected
 }
 
 func (t *ToolDAO) Get(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error) {
@@ -94,7 +109,7 @@ func (t *ToolDAO) CheckToolsExist(ctx context.Context, toolIDs []int64) (exist m
 	return existToolIDs, nil
 }
 
-func (t *ToolDAO) MGet(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
+func (t *ToolDAO) MGet(ctx context.Context, toolIDs []int64, opt *ToolSelectedOption) (tools []*entity.ToolInfo, err error) {
 	tools = make([]*entity.ToolInfo, 0, len(toolIDs))
 
 	table := t.query.Tool
@@ -102,6 +117,7 @@ func (t *ToolDAO) MGet(ctx context.Context, toolIDs []int64) (tools []*entity.To
 
 	for _, chunk := range chunks {
 		tls, err := table.WithContext(ctx).
+			Select(t.getSelected(opt)...).
 			Where(table.ID.In(chunk...)).
 			Find()
 		if err != nil {

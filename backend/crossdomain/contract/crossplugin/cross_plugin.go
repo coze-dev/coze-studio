@@ -3,19 +3,20 @@ package crossplugin
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 )
 
 type PluginService interface {
-	MGetVersionPlugins(ctx context.Context, req *plugin.MGetVersionPluginsRequest) (plugins []*plugin.PluginInfo, err error)
-	MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *plugin.MGetPluginLatestVersionResponse, err error)
+	MGetVersionPlugins(ctx context.Context, versionPlugins []model.VersionPlugin) (plugins []*model.PluginInfo, err error)
+	MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *model.MGetPluginLatestVersionResponse, err error)
 	BindAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error)
-	MGetAgentTools(ctx context.Context, req *plugin.MGetAgentToolsRequest) (tools []*plugin.ToolInfo, err error)
-	ExecuteTool(ctx context.Context, req *plugin.ExecuteToolRequest, opts ...plugin.ExecuteToolOpt) (resp *plugin.ExecuteToolResponse, err error)
+	MGetAgentTools(ctx context.Context, req *model.MGetAgentToolsRequest) (tools []*model.ToolInfo, err error)
+	ExecuteTool(ctx context.Context, req *model.ExecuteToolRequest, opts ...model.ExecuteToolOpt) (resp *model.ExecuteToolResponse, err error)
 	PublishAgentTools(ctx context.Context, agentID int64, agentVersion string) (err error)
 	DeleteDraftPlugin(ctx context.Context, PluginID int64) (err error)
-	PublishPlugin(ctx context.Context, req *plugin.PublishPluginRequest) (err error)
-	PublishAPPPlugins(ctx context.Context, req *plugin.PublishAPPPluginsRequest) (resp *plugin.PublishAPPPluginsResponse, err error)
+	PublishPlugin(ctx context.Context, req *model.PublishPluginRequest) (err error)
+	PublishAPPPlugins(ctx context.Context, req *model.PublishAPPPluginsRequest) (resp *model.PublishAPPPluginsResponse, err error)
+	MGetVersionTools(ctx context.Context, versionTools []model.VersionTool) (tools []*model.ToolInfo, err error)
 }
 
 var defaultSVC PluginService

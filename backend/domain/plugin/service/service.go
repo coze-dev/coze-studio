@@ -5,7 +5,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 )
@@ -30,16 +30,18 @@ type PluginService interface {
 	MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
 	MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *MGetPluginLatestVersionResponse, err error)
 	GetPluginNextVersion(ctx context.Context, pluginID int64) (version string, err error)
-	MGetVersionPlugins(ctx context.Context, req *MGetVersionPluginsRequest) (plugins []*entity.PluginInfo, err error)
+	MGetVersionPlugins(ctx context.Context, versionPlugins []entity.VersionPlugin) (plugins []*entity.PluginInfo, err error)
 
 	// Draft Tool
 	MGetDraftTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error)
 	UpdateDraftTool(ctx context.Context, req *UpdateToolDraftRequest) (err error)
 	ConvertToOpenapi3Doc(ctx context.Context, req *ConvertToOpenapi3DocRequest) (resp *ConvertToOpenapi3DocResponse)
+	CreateDraftToolsWithCode(ctx context.Context, req *CreateDraftToolsWithCodeRequest) (resp *CreateDraftToolsWithCodeResponse, err error)
 
 	// Online Tool
 	GetOnlineTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, err error)
 	MGetOnlineTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error)
+	MGetVersionTools(ctx context.Context, versionTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)
 
 	// Agent Tool
 	BindAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error)
@@ -71,7 +73,7 @@ type CreateDraftPluginRequest struct {
 
 type UpdateDraftPluginWithCodeRequest struct {
 	PluginID   int64
-	OpenapiDoc *plugin.Openapi3T
+	OpenapiDoc *model.Openapi3T
 	Manifest   *entity.PluginManifest
 }
 
@@ -101,7 +103,7 @@ type CreateDraftPluginWithCodeRequest struct {
 	DeveloperID int64
 	ProjectID   *int64
 	Manifest    *entity.PluginManifest
-	OpenapiDoc  *plugin.Openapi3T
+	OpenapiDoc  *model.Openapi3T
 }
 
 type CreateDraftPluginWithCodeResponse struct {
@@ -109,25 +111,34 @@ type CreateDraftPluginWithCodeResponse struct {
 	Tools  []*entity.ToolInfo
 }
 
+type CreateDraftToolsWithCodeRequest struct {
+	PluginID   int64
+	OpenapiDoc *model.Openapi3T
+
+	ConflictAndUpdate bool
+}
+
+type CreateDraftToolsWithCodeResponse struct {
+	DuplicatedTools []entity.UniqueToolAPI
+}
+
 type PluginAuthInfo struct {
-	AuthType     *plugin.AuthType
-	Location     *plugin.HTTPParamLocation
+	AuthType     *model.AuthType
+	Location     *model.HTTPParamLocation
 	Key          *string
 	ServiceToken *string
 	OauthInfo    *string
-	AuthSubType  *plugin.AuthSubType
+	AuthSubType  *model.AuthSubType
 	AuthPayload  *string
 }
 
-type PublishPluginRequest = plugin.PublishPluginRequest
+type PublishPluginRequest = model.PublishPluginRequest
 
-type PublishAPPPluginsRequest = plugin.PublishAPPPluginsRequest
+type PublishAPPPluginsRequest = model.PublishAPPPluginsRequest
 
-type PublishAPPPluginsResponse = plugin.PublishAPPPluginsResponse
+type PublishAPPPluginsResponse = model.PublishAPPPluginsResponse
 
-type MGetVersionPluginsRequest = plugin.MGetVersionPluginsRequest
-
-type MGetPluginLatestVersionResponse = plugin.MGetPluginLatestVersionResponse
+type MGetPluginLatestVersionResponse = model.MGetPluginLatestVersionResponse
 
 type UpdateToolDraftRequest struct {
 	PluginID     int64
@@ -144,7 +155,7 @@ type UpdateToolDraftRequest struct {
 	DebugExample *common.DebugExample
 }
 
-type MGetAgentToolsRequest = plugin.MGetAgentToolsRequest
+type MGetAgentToolsRequest = model.MGetAgentToolsRequest
 
 type UpdateBotDefaultParamsRequest struct {
 	PluginID    int64
@@ -155,9 +166,9 @@ type UpdateBotDefaultParamsRequest struct {
 	Responses   openapi3.Responses
 }
 
-type ExecuteToolRequest = plugin.ExecuteToolRequest
+type ExecuteToolRequest = model.ExecuteToolRequest
 
-type ExecuteToolResponse = plugin.ExecuteToolResponse
+type ExecuteToolResponse = model.ExecuteToolResponse
 
 type ListPluginProductsRequest struct{}
 
@@ -172,7 +183,7 @@ type ConvertToOpenapi3DocRequest struct {
 }
 
 type ConvertToOpenapi3DocResponse struct {
-	OpenapiDoc *plugin.Openapi3T
+	OpenapiDoc *model.Openapi3T
 	Manifest   *entity.PluginManifest
 	Format     common.PluginDataFormat
 	ErrMsg     string
