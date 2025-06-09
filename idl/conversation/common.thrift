@@ -11,4 +11,5 @@ enum Scene{
     AgentAPP = 6,
     PromptOptimize = 7, //prompt优化
     GenerateAgentInfo = 8 // createbot的nl2bot功能
+    SceneOpenApi = 9,
 }

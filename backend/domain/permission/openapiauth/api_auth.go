@@ -6,7 +6,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth/entity"
 )
 
-type ApiAuth interface {
+type APIAuth interface {
 	Create(ctx context.Context, req *entity.CreateApiKey) (*entity.ApiKey, error)
 	Delete(ctx context.Context, req *entity.DeleteApiKey) error
 	Get(ctx context.Context, req *entity.GetApiKey) (*entity.ApiKey, error)

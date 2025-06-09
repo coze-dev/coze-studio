@@ -23,6 +23,7 @@ const (
 	Scene_PromptOptimize Scene = 7
 	// createbot的nl2bot功能
 	Scene_GenerateAgentInfo Scene = 8
+	Scene_SceneOpenApi      Scene = 9
 )
 
 func (p Scene) String() string {
@@ -45,6 +46,8 @@ func (p Scene) String() string {
 		return "PromptOptimize"
 	case Scene_GenerateAgentInfo:
 		return "GenerateAgentInfo"
+	case Scene_SceneOpenApi:
+		return "SceneOpenApi"
 	}
 	return "<UNSET>"
 }
@@ -69,6 +72,8 @@ func SceneFromString(s string) (Scene, error) {
 		return Scene_PromptOptimize, nil
 	case "GenerateAgentInfo":
 		return Scene_GenerateAgentInfo, nil
+	case "SceneOpenApi":
+		return Scene_SceneOpenApi, nil
 	}
 	return Scene(0), fmt.Errorf("not a valid Scene string")
 }

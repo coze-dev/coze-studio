@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	openapiAuthDomainSVC openapiauth.ApiAuth
+	openapiAuthDomainSVC openapiauth.APIAuth
 )
 
 func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator) {

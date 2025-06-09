@@ -7,9 +7,9 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	saEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
@@ -67,7 +67,7 @@ func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *
 			AgentID:     ar.BotID,
 			UserID:      userID,
 			ConnectorID: connectorID,
-			Scene:       conversation.SceneOpenApi,
+			Scene:       common.Scene_SceneOpenApi,
 		})
 		if err != nil {
 			return nil, err

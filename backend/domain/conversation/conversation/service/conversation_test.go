@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/dal/model"
@@ -42,7 +43,7 @@ func TestCreateConversation(t *testing.T) {
 		AgentID:     100000,
 		UserID:      222222,
 		ConnectorID: 100001,
-		Scene:       conversation.ScenePlayground,
+		Scene:       common.Scene_Playground,
 		Ext:         "debug ext9999",
 	})
 	assert.NotNil(t, createData)

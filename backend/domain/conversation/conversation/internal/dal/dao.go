@@ -7,6 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/internal/dal/model"
@@ -164,7 +165,7 @@ func (dao *ConversationDAO) conversationPO2DO(ctx context.Context, c *model.Conv
 		ConnectorID: c.ConnectorID,
 		AgentID:     c.AgentID,
 		CreatorID:   c.CreatorID,
-		Scene:       conversation.Scene(c.Scene),
+		Scene:       common.Scene(c.Scene),
 		Status:      conversation.ConversationStatus(c.Status),
 		Ext:         c.Ext,
 		CreatedAt:   c.CreatedAt,
@@ -180,7 +181,7 @@ func (dao *ConversationDAO) conversationBatchPO2DO(ctx context.Context, conversa
 			ConnectorID: c.ConnectorID,
 			AgentID:     c.AgentID,
 			CreatorID:   c.CreatorID,
-			Scene:       conversation.Scene(c.Scene),
+			Scene:       common.Scene(c.Scene),
 			Status:      conversation.ConversationStatus(c.Status),
 			Ext:         c.Ext,
 			CreatedAt:   c.CreatedAt,
