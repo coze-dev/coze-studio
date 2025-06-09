@@ -11,6 +11,7 @@ services:
       - "3306:3306"
     volumes:
       - ./data/mysql:/var/lib/mysql
+      - ../docker/config/mysql:/docker-entrypoint-initdb.d
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
@@ -37,11 +38,11 @@ services:
         # Set proper permissions for data directories
         chown -R redis:redis /bitnami/redis/data
         chmod g+s /bitnami/redis/data
-      
+
         exec /opt/bitnami/scripts/redis/entrypoint.sh /opt/bitnami/scripts/redis/run.sh
       "
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 10s
       retries: 10
@@ -98,7 +99,7 @@ services:
         touch /home/rocketmq/logs/rocketmqlogs/tools_default.log
         chown -R rocketmq:rocketmq /home/rocketmq/logs /home/rocketmq/store
         chmod g+s /home/rocketmq/logs /home/rocketmq/store
-      
+
         echo 'Starting RocketMQ Broker...'
         sh mqbroker -n rocketmq-namesrv:9876 -c /home/rocketmq/conf/broker.conf &
 
@@ -121,7 +122,7 @@ services:
     depends_on:
       - rocketmq-namesrv
     healthcheck:
-      test: [ "CMD-SHELL", "[ -f /tmp/rocketmq_ready ]" ]
+      test: ["CMD-SHELL", "[ -f /tmp/rocketmq_ready ]"]
       interval: 10s
       timeout: 10s
       retries: 10
@@ -162,7 +163,7 @@ services:
 
         # Create plugin directory
         mkdir -p /bitnami/elasticsearch/plugins;
-      
+
         # Unzip plugin to plugin directory and set correct permissions
         echo 'Installing smartcn plugin...';
         if [ ! -d /opt/bitnami/elasticsearch/plugins/analysis-smartcn ]; then
@@ -183,14 +184,14 @@ services:
           fi;
           rm -f /tmp/analysis-smartcn.zip;
         fi;
-      
+
         # Create marker file indicating plugin installation success
         touch /tmp/es_plugins_ready;
         echo 'Plugin installation successful, marker file created';
-      
+
         # Start Elasticsearch
         exec /opt/bitnami/scripts/elasticsearch/entrypoint.sh /opt/bitnami/scripts/elasticsearch/run.sh
-      
+
         echo -e "${GREEN}⏳ Adjusting Elasticsearch disk watermark settings...${NC}"
       "
 
@@ -212,14 +213,14 @@ services:
         # Set proper permissions for data directories
         chown -R kibana:kibana /bitnami/kibana
         chmod g+s /bitnami/kibana
-      
+
         exec /opt/bitnami/scripts/kibana/entrypoint.sh /opt/bitnami/scripts/kibana/run.sh
       "
     depends_on:
       elasticsearch:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5601/api/status" ]
+      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
       interval: 5s
       timeout: 10s
       retries: 10
@@ -252,7 +253,7 @@ services:
         exec /opt/bitnami/scripts/minio/entrypoint.sh /opt/bitnami/scripts/minio/run.sh
       "
     healthcheck:
-      test: [ "CMD-SHELL", "mc mb --ignore-existing local/healthcheck-test" ]
+      test: ["CMD-SHELL", "mc mb --ignore-existing local/healthcheck-test"]
       interval: 5s
       timeout: 10s
       retries: 10
@@ -282,11 +283,11 @@ services:
         # Set proper permissions for data and config directories
         chown -R etcd:etcd /bitnami/etcd
         chmod g+s /bitnami/etcd
-      
+
         exec /opt/bitnami/scripts/etcd/entrypoint.sh /opt/bitnami/scripts/etcd/run.sh
       "
     healthcheck:
-      test: [ "CMD", "etcdctl", "endpoint", "health" ]
+      test: ["CMD", "etcdctl", "endpoint", "health"]
       interval: 5s
       timeout: 10s
       retries: 10
@@ -304,7 +305,7 @@ services:
         # Set proper permissions for data directories
         chown -R root:root /var/lib/milvus
         chmod g+s /var/lib/milvus
-      
+
         exec milvus run standalone
       "
     security_opt:
@@ -321,7 +322,7 @@ services:
       - ./data/milvus:/var/lib/milvus:rw,Z
       - ./config/milvus/milvus.yml:/milvus/configs/milvus.yml:ro,Z
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9091/healthz" ]
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
       interval: 5s
       timeout: 10s
       retries: 10

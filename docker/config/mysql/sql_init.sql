@@ -1,6 +1,7 @@
 -- 初始化用户表数据
 -- 使用 INSERT ON DUPLICATE KEY UPDATE 语句
 -- 当主键或唯一键冲突时，不会插入新记录，而是更新指定字段
+SET NAMES utf8mb4;
 
 -- email: developer@opencoze.com, password: 123456
 INSERT INTO user (id, name, unique_name, email, password, description, icon_uri, user_verified, locale, session_key, created_at, updated_at)
