@@ -27,7 +27,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	sqlparsercontract "code.byted.org/flow/opencoze/backend/infra/contract/sqlparser"
 	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -584,10 +583,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 			return nil, err
 		}
 		sliceEntity.Extra = map[string]string{
-			consts.KnowledgeID:   conv.Int64ToStr(kn.ID),
 			consts.KnowledgeName: kn.Name,
-			consts.DocumentID:    conv.Int64ToStr(doc.ID),
-			consts.DocumentName:  doc.Name,
 			consts.DocumentURL:   docUrl,
 		}
 		switch knowledgeModel.DocumentType(doc.DocumentType) {
