@@ -31,6 +31,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossvariables"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	agentrunImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/agentrun"
 	connectorImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/connector"
@@ -43,6 +44,7 @@ import (
 	modelmgrImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/modelmgr"
 	pluginImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/plugin"
 	singleagentImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/singleagent"
+	variablesImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/variables"
 	workflowImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/workflow"
 )
 
@@ -105,6 +107,7 @@ func Init(ctx context.Context) (err error) {
 	crossknowledge.SetDefaultSVC(knowledgeImpl.InitDomainService(primaryServices.knowledgeSVC.DomainSVC))
 	crossmodelmgr.SetDefaultSVC(modelmgrImpl.InitDomainService(basicServices.modelMgrSVC.DomainSVC))
 	crossplugin.SetDefaultSVC(pluginImpl.InitDomainService(primaryServices.pluginSVC.DomainSVC))
+	crossvariables.SetDefaultSVC(variablesImpl.InitDomainService(primaryServices.memorySVC.VariablesDomainSVC))
 	crossworkflow.SetDefaultSVC(workflowImpl.InitDomainService(primaryServices.workflowSVC.DomainSVC))
 	crossconversation.SetDefaultSVC(conversationImpl.InitDomainService(complexServices.conversationSVC.ConversationDomainSVC))
 	crossmessage.SetDefaultSVC(messageImpl.InitDomainService(complexServices.conversationSVC.MessageDomainSVC))
@@ -112,6 +115,7 @@ func Init(ctx context.Context) (err error) {
 	crossagent.SetDefaultSVC(singleagentImpl.InitDomainService(complexServices.singleAgentSVC.DomainSVC))
 	crossuser.SetDefaultSVC(crossuserImpl.InitDomainService(basicServices.userSVC.DomainSVC))
 	crossdatacopy.SetDefaultSVC(dataCopyImpl.InitDomainService(basicServices.infra))
+
 	return nil
 }
 

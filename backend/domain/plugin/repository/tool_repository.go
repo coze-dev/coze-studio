@@ -34,7 +34,7 @@ type ToolRepository interface {
 	GetVersionAgentTool(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error)
 	GetVersionAgentToolWithToolName(ctx context.Context, req *GetVersionAgentToolWithToolNameRequest) (tool *entity.ToolInfo, exist bool, err error)
 	MGetVersionAgentTool(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error)
-	BatchCreateVersionAgentTools(ctx context.Context, agentID int64, tools []*entity.ToolInfo) (toolVersions map[int64]int64, err error)
+	BatchCreateVersionAgentTools(ctx context.Context, agentID int64, agentVersion string, tools []*entity.ToolInfo) (err error)
 
 	UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, doc *plugin.Openapi3T, updatedTool *entity.ToolInfo) (err error)
 
@@ -44,9 +44,9 @@ type ToolRepository interface {
 }
 
 type GetVersionAgentToolWithToolNameRequest struct {
-	AgentID   int64
-	ToolName  string
-	VersionMs *int64
+	AgentID      int64
+	ToolName     string
+	AgentVersion *string
 }
 
 type UpdateDraftAgentToolRequest struct {

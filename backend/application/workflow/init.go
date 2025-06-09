@@ -10,11 +10,11 @@ import (
 	wfplugin "code.byted.org/flow/opencoze/backend/crossdomain/workflow/plugin"
 	wfsearch "code.byted.org/flow/opencoze/backend/crossdomain/workflow/search"
 	"code.byted.org/flow/opencoze/backend/crossdomain/workflow/variable"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	knowledge "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	dbservice "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
-	service2 "code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	plugin "code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	crosscode "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
@@ -37,7 +37,7 @@ type ServiceComponents struct {
 	Cache              *redis.Client
 	DatabaseDomainSVC  dbservice.Database
 	VariablesDomainSVC variables.Variables
-	PluginDomainSVC    service2.PluginService
+	PluginDomainSVC    plugin.PluginService
 	KnowledgeDomainSVC knowledge.Knowledge
 	ModelManager       modelmgr.Manager
 	DomainNotifier     search.ResourceEventBus

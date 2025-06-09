@@ -1,4 +1,4 @@
-package plugin
+package tool_executor
 
 import (
 	"encoding/json"

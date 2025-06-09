@@ -39,11 +39,18 @@ const (
 	DeactivateTool ActivatedStatus = 1
 )
 
+type ProjectType int8
+
+const (
+	ProjectTypeOfBot ProjectType = 1
+	ProjectTypeOfAPP ProjectType = 2
+)
+
 type ExecuteScene string
 
 const (
-	ExecSceneOfAgentOnline ExecuteScene = "agent_online"
-	ExecSceneOfAgentDraft  ExecuteScene = "agent_draft"
+	ExecSceneOfOnlineAgent ExecuteScene = "online_agent"
+	ExecSceneOfDraftAgent  ExecuteScene = "draft_agent"
 	ExecSceneOfWorkflow    ExecuteScene = "workflow"
 	ExecSceneOfToolDebug   ExecuteScene = "tool_debug"
 )

@@ -7,7 +7,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	dbservice "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -171,7 +171,7 @@ type knowledgePacker struct {
 }
 
 func (k *knowledgePacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
-	res, err := k.appContext.KnowledgeDomainSVC.GetKnowledgeByID(ctx, &knowledge.GetKnowledgeByIDRequest{
+	res, err := k.appContext.KnowledgeDomainSVC.GetKnowledgeByID(ctx, &service.GetKnowledgeByIDRequest{
 		KnowledgeID: k.resID,
 	})
 	if err != nil {

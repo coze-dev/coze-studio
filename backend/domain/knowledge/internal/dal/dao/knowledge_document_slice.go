@@ -12,6 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
@@ -20,30 +21,13 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-//go:generate mockgen -destination ../../mock/dal/dao/knowledge_document_slice.go --package dao -source knowledge_document_slice.go
-type KnowledgeDocumentSliceRepo interface {
-	Create(ctx context.Context, slice *model.KnowledgeDocumentSlice) error
-	Update(ctx context.Context, slice *model.KnowledgeDocumentSlice) error
-	Delete(ctx context.Context, slice *model.KnowledgeDocumentSlice) error
-
-	BatchCreate(ctx context.Context, slices []*model.KnowledgeDocumentSlice) error
-	BatchSetStatus(ctx context.Context, ids []int64, status int32, reason string) error
-	DeleteByDocument(ctx context.Context, documentID int64) error
-	MGetSlices(ctx context.Context, sliceIDs []int64) ([]*model.KnowledgeDocumentSlice, error)
-
-	FindSliceByCondition(ctx context.Context, opts *WhereSliceOpt) (
-		[]*model.KnowledgeDocumentSlice, int64, error)
-	GetDocumentSliceIDs(ctx context.Context, docIDs []int64) (sliceIDs []int64, err error)
-	GetSliceBySequence(ctx context.Context, documentID int64, sequence int64) (
-		[]*model.KnowledgeDocumentSlice, error)
-	IncrementHitCount(ctx context.Context, sliceIDs []int64) error
-	GetSliceHitByKnowledgeID(ctx context.Context, knowledgeID int64) (int64, error)
-	GetLastSequence(ctx context.Context, documentID int64) (float64, error)
+type KnowledgeDocumentSliceDAO struct {
+	DB    *gorm.DB
+	Query *query.Query
 }
 
-func NewKnowledgeDocumentSliceDAO(db *gorm.DB) KnowledgeDocumentSliceRepo {
-	return &knowledgeDocumentSliceDAO{db: db, query: query.Use(db)}
-
+func (dao *KnowledgeDocumentSliceDAO) Create(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
+	return dao.Query.KnowledgeDocumentSlice.WithContext(ctx).Create(slice)
 }
 
 type WhereSliceOpt struct {
@@ -65,19 +49,19 @@ func (dao *knowledgeDocumentSliceDAO) Create(ctx context.Context, slice *model.K
 	return dao.query.KnowledgeDocumentSlice.WithContext(ctx).Create(slice)
 }
 
-func (dao *knowledgeDocumentSliceDAO) Update(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
-	s := dao.query.KnowledgeDocumentSlice
+func (dao *KnowledgeDocumentSliceDAO) Update(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
+	s := dao.Query.KnowledgeDocumentSlice
 	slice.UpdatedAt = time.Now().UnixMilli()
 	_, err := s.WithContext(ctx).Updates(slice)
 	return err
 }
 
-func (dao *knowledgeDocumentSliceDAO) BatchCreate(ctx context.Context, slices []*model.KnowledgeDocumentSlice) error {
-	return dao.query.KnowledgeDocumentSlice.WithContext(ctx).CreateInBatches(slices, 100)
+func (dao *KnowledgeDocumentSliceDAO) BatchCreate(ctx context.Context, slices []*model.KnowledgeDocumentSlice) error {
+	return dao.Query.KnowledgeDocumentSlice.WithContext(ctx).CreateInBatches(slices, 100)
 }
 
-func (dao *knowledgeDocumentSliceDAO) BatchSetStatus(ctx context.Context, ids []int64, status int32, reason string) error {
-	s := dao.query.KnowledgeDocumentSlice
+func (dao *KnowledgeDocumentSliceDAO) BatchSetStatus(ctx context.Context, ids []int64, status int32, reason string) error {
+	s := dao.Query.KnowledgeDocumentSlice
 	updates := map[string]any{s.Status.ColumnName().String(): status}
 	if reason != "" {
 		updates[s.FailReason.ColumnName().String()] = reason
@@ -87,19 +71,19 @@ func (dao *knowledgeDocumentSliceDAO) BatchSetStatus(ctx context.Context, ids []
 	return err
 }
 
-func (dao *knowledgeDocumentSliceDAO) Delete(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
-	s := dao.query.KnowledgeDocumentSlice
+func (dao *KnowledgeDocumentSliceDAO) Delete(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
+	s := dao.Query.KnowledgeDocumentSlice
 	_, err := s.WithContext(ctx).Where(s.ID.Eq(slice.ID)).Delete()
 	return err
 }
 
-func (dao *knowledgeDocumentSliceDAO) DeleteByDocument(ctx context.Context, documentID int64) error {
-	s := dao.query.KnowledgeDocumentSlice
+func (dao *KnowledgeDocumentSliceDAO) DeleteByDocument(ctx context.Context, documentID int64) error {
+	s := dao.Query.KnowledgeDocumentSlice
 	_, err := s.WithContext(ctx).Where(s.DocumentID.Eq(documentID)).Delete()
 	return err
 }
 
-func (dao *knowledgeDocumentSliceDAO) List(ctx context.Context, knowledgeID int64, documentID int64, limit int, cursor *string) (
+func (dao *KnowledgeDocumentSliceDAO) List(ctx context.Context, knowledgeID int64, documentID int64, limit int, cursor *string) (
 	pos []*model.KnowledgeDocumentSlice, nextCursor *string, hasMore bool, err error) {
 
 	do, err := dao.listDo(ctx, knowledgeID, documentID, limit, cursor)
@@ -123,10 +107,10 @@ func (dao *knowledgeDocumentSliceDAO) List(ctx context.Context, knowledgeID int6
 	return pos, nextCursor, hasMore, err
 }
 
-func (dao *knowledgeDocumentSliceDAO) ListStatus(ctx context.Context, documentID int64, limit int, cursor *string) (
+func (dao *KnowledgeDocumentSliceDAO) ListStatus(ctx context.Context, documentID int64, limit int, cursor *string) (
 	resp []*model.SliceProgress, nextCursor *string, hasMore bool, err error) {
 
-	s := dao.query.KnowledgeDocumentSlice
+	s := dao.Query.KnowledgeDocumentSlice
 	do, err := dao.listDo(ctx, 0, documentID, limit, cursor)
 	if err != nil {
 		return nil, nil, false, err
@@ -155,10 +139,10 @@ func (dao *knowledgeDocumentSliceDAO) ListStatus(ctx context.Context, documentID
 	return resp, nextCursor, hasMore, nil
 }
 
-func (dao *knowledgeDocumentSliceDAO) listDo(ctx context.Context, knowledgeID int64, documentID int64, limit int, cursor *string) (
+func (dao *KnowledgeDocumentSliceDAO) listDo(ctx context.Context, knowledgeID int64, documentID int64, limit int, cursor *string) (
 	query.IKnowledgeDocumentSliceDo, error) {
 
-	s := dao.query.KnowledgeDocumentSlice
+	s := dao.Query.KnowledgeDocumentSlice
 	do := s.WithContext(ctx)
 	if documentID != 0 {
 		do = do.Where(s.DocumentID.Eq(documentID))
@@ -173,7 +157,7 @@ func (dao *knowledgeDocumentSliceDAO) listDo(ctx context.Context, knowledgeID in
 	return do, nil
 }
 
-func (dao *knowledgeDocumentSliceDAO) fromCursor(cursor string) (seq, id int64, err error) {
+func (dao *KnowledgeDocumentSliceDAO) fromCursor(cursor string) (seq, id int64, err error) {
 	parts := strings.Split(cursor, ",")
 	if len(parts) != 2 {
 		return 0, 0, fmt.Errorf("invalid cursor string")
@@ -192,12 +176,12 @@ func (dao *knowledgeDocumentSliceDAO) fromCursor(cursor string) (seq, id int64, 
 	return seq, id, nil
 }
 
-func (dao *knowledgeDocumentSliceDAO) toCursor(seq, id int64) *string {
+func (dao *KnowledgeDocumentSliceDAO) toCursor(seq, id int64) *string {
 	c := fmt.Sprintf("%d,%d", seq, id)
 	return &c
 }
 
-func (dao *knowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, docIDs []int64) (sliceIDs []int64, err error) {
+func (dao *KnowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, docIDs []int64) (sliceIDs []int64, err error) {
 	if len(docIDs) == 0 {
 		return nil, errors.New("empty document ids")
 	}
@@ -242,11 +226,11 @@ func (dao *knowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, d
 	return sliceIDs, nil
 }
 
-func (dao *knowledgeDocumentSliceDAO) MGetSlices(ctx context.Context, sliceIDs []int64) ([]*model.KnowledgeDocumentSlice, error) {
+func (dao *KnowledgeDocumentSliceDAO) MGetSlices(ctx context.Context, sliceIDs []int64) ([]*model.KnowledgeDocumentSlice, error) {
 	if len(sliceIDs) == 0 {
 		return nil, nil
 	}
-	s := dao.query.KnowledgeDocumentSlice
+	s := dao.Query.KnowledgeDocumentSlice
 	pos, err := s.WithContext(ctx).Where(s.ID.In(sliceIDs...)).Find()
 	if err != nil {
 		return nil, err
@@ -254,10 +238,10 @@ func (dao *knowledgeDocumentSliceDAO) MGetSlices(ctx context.Context, sliceIDs [
 	return pos, nil
 }
 
-func (dao *knowledgeDocumentSliceDAO) FindSliceByCondition(ctx context.Context, opts *WhereSliceOpt) (
+func (dao *KnowledgeDocumentSliceDAO) FindSliceByCondition(ctx context.Context, opts *entity.WhereSliceOpt) (
 	[]*model.KnowledgeDocumentSlice, int64, error) {
 
-	s := dao.query.KnowledgeDocumentSlice
+	s := dao.Query.KnowledgeDocumentSlice
 	do := s.WithContext(ctx)
 	if opts.DocumentID != 0 {
 		do = do.Where(s.DocumentID.Eq(opts.DocumentID))
@@ -299,11 +283,11 @@ func (dao *knowledgeDocumentSliceDAO) FindSliceByCondition(ctx context.Context, 
 	return pos, total, nil
 }
 
-func (dao *knowledgeDocumentSliceDAO) GetSliceBySequence(ctx context.Context, documentID, sequence int64) ([]*model.KnowledgeDocumentSlice, error) {
+func (dao *KnowledgeDocumentSliceDAO) GetSliceBySequence(ctx context.Context, documentID, sequence int64) ([]*model.KnowledgeDocumentSlice, error) {
 	if documentID == 0 {
 		return nil, errors.New("documentID cannot be empty")
 	}
-	s := dao.query.KnowledgeDocumentSlice
+	s := dao.Query.KnowledgeDocumentSlice
 	var offset int
 	if sequence >= 2 {
 		offset = int(sequence - 2)
@@ -315,11 +299,11 @@ func (dao *knowledgeDocumentSliceDAO) GetSliceBySequence(ctx context.Context, do
 	return pos, nil
 }
 
-func (dao *knowledgeDocumentSliceDAO) IncrementHitCount(ctx context.Context, sliceIDs []int64) error {
+func (dao *KnowledgeDocumentSliceDAO) IncrementHitCount(ctx context.Context, sliceIDs []int64) error {
 	if len(sliceIDs) == 0 {
 		return nil
 	}
-	s := dao.query.KnowledgeDocumentSlice
+	s := dao.Query.KnowledgeDocumentSlice
 	_, err := s.WithContext(ctx).Debug().Where(s.ID.In(sliceIDs...)).UpdateColumn(s.Hit, gorm.Expr("hit + ?", 1))
 	if err != nil {
 		return err
@@ -328,11 +312,11 @@ func (dao *knowledgeDocumentSliceDAO) IncrementHitCount(ctx context.Context, sli
 	return err
 }
 
-func (dao *knowledgeDocumentSliceDAO) GetSliceHitByKnowledgeID(ctx context.Context, knowledgeID int64) (int64, error) {
+func (dao *KnowledgeDocumentSliceDAO) GetSliceHitByKnowledgeID(ctx context.Context, knowledgeID int64) (int64, error) {
 	if knowledgeID == 0 {
 		return 0, errors.New("knowledgeID cannot be empty")
 	}
-	s := dao.query.KnowledgeDocumentSlice
+	s := dao.Query.KnowledgeDocumentSlice
 	var totalSliceHit *int64
 	err := s.WithContext(ctx).Debug().Select(s.Hit.Sum()).Where(s.KnowledgeID.Eq(knowledgeID)).Scan(&totalSliceHit)
 	if err != nil {
@@ -341,11 +325,11 @@ func (dao *knowledgeDocumentSliceDAO) GetSliceHitByKnowledgeID(ctx context.Conte
 	return ptr.From(totalSliceHit), nil
 }
 
-func (dao *knowledgeDocumentSliceDAO) GetLastSequence(ctx context.Context, documentID int64) (float64, error) {
+func (dao *KnowledgeDocumentSliceDAO) GetLastSequence(ctx context.Context, documentID int64) (float64, error) {
 	if documentID == 0 {
 		return 0, errors.New("[GetLastSequence] documentID cannot be empty")
 	}
-	s := dao.query.KnowledgeDocumentSlice
+	s := dao.Query.KnowledgeDocumentSlice
 	resp, err := s.WithContext(ctx).Debug().
 		Select(s.Sequence).
 		Where(s.DocumentID.Eq(documentID)).

@@ -410,3 +410,16 @@ enum PluginTypeForFilter {
     LocalPlugin    = 2, // 包含LOCAL
     WorkflowPlugin = 3, // 包含WORKFLOW和IMAGEFLOW
 }
+
+enum PluginDataFormat {
+    OpenAPI = 1,
+    Curl    = 2,
+    Postman = 3,
+    Swagger = 4,
+}
+
+struct DuplicateAPIInfo{
+    1: string method,
+    2: string path  ,
+    3: i64    count ,
+}

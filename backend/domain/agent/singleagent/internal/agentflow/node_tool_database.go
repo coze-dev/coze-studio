@@ -10,6 +10,9 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
 
+	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
@@ -19,22 +22,19 @@ import (
 )
 
 type databaseConfig struct {
-	userID      int64
-	spaceID     int64
-	connectorID *int64
-	isDraft     bool
-	agentID     int64
+	agentIdentity *entity.AgentIdentity
+	userID        int64
+	spaceID       int64
 
 	databaseConf []*bot_common.Database
 }
 
 type databaseTool struct {
-	userID      int64
-	spaceID     int64
-	connectorID *int64
-	isDraft     bool
-	databaseID  int64
-	agentID     int64
+	agentIdentity *entity.AgentIdentity
+	connectorUID  int64
+	spaceID       int64
+
+	databaseID int64
 
 	name           string
 	promptDisabled bool
@@ -53,7 +53,7 @@ func (d *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (strin
 	}
 
 	tableType := table.TableType_OnlineTable
-	if d.isDraft {
+	if d.agentIdentity.IsDraft {
 		tableType = table.TableType_DraftTable
 	}
 
@@ -69,9 +69,9 @@ func (d *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (strin
 		SQL:         &req.SQL,
 		DatabaseID:  d.databaseID,
 		SQLType:     database.SQLType_Raw,
-		UserID:      d.userID,
+		UserID:      d.connectorUID,
 		SpaceID:     d.spaceID,
-		ConnectorID: d.connectorID,
+		ConnectorID: ptr.Of(d.agentIdentity.ConnectorID),
 		TableType:   tableType,
 	}
 
@@ -91,11 +91,9 @@ func newDatabaseTools(ctx context.Context, conf *databaseConfig) ([]tool.Invokab
 	dbInfos := conf.databaseConf
 
 	d := &databaseTool{
-		userID:      conf.userID,
-		spaceID:     conf.spaceID,
-		connectorID: conf.connectorID,
-		isDraft:     conf.isDraft,
-		agentID:     conf.agentID,
+		spaceID:       conf.spaceID,
+		connectorUID:  conf.userID,
+		agentIdentity: conf.agentIdentity,
 	}
 
 	tools := make([]tool.InvokableTool, 0, len(dbInfos))

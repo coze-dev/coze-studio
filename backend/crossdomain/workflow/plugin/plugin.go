@@ -222,11 +222,11 @@ func (p *pluginInvokeTool) InvokableRun(ctx context.Context, argumentsInJSON str
 		ArgumentsInJson: argumentsInJSON,
 	}
 
-	execOpts := []entity.ExecuteToolOpts{
+	execOpts := []entity.ExecuteToolOpt{
 		plugin.WithInvalidRespProcessStrategy(plugin.InvalidResponseProcessStrategyOfReturnDefault),
 	}
 	if p.pluginEntity.PluginVersion != nil {
-		execOpts = append(execOpts, plugin.WithVersion(*p.pluginEntity.PluginVersion))
+		execOpts = append(execOpts, plugin.WithToolVersion(*p.pluginEntity.PluginVersion))
 	}
 
 	if p.toolOperation != nil {

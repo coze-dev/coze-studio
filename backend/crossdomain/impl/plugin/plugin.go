@@ -45,12 +45,12 @@ func (s *impl) MGetAgentTools(ctx context.Context, req *model.MGetAgentToolsRequ
 	return s.DomainSVC.MGetAgentTools(ctx, req)
 }
 
-func (s *impl) ExecuteTool(ctx context.Context, req *model.ExecuteToolRequest, opts ...model.ExecuteToolOpts) (resp *model.ExecuteToolResponse, err error) {
+func (s *impl) ExecuteTool(ctx context.Context, req *model.ExecuteToolRequest, opts ...model.ExecuteToolOpt) (resp *model.ExecuteToolResponse, err error) {
 	return s.DomainSVC.ExecuteTool(ctx, req, opts...)
 }
 
-func (s *impl) PublishAgentTools(ctx context.Context, agentID int64) (resp *model.PublishAgentToolsResponse, err error) {
-	return s.DomainSVC.PublishAgentTools(ctx, agentID)
+func (s *impl) PublishAgentTools(ctx context.Context, agentID int64, agentVersion string) (err error) {
+	return s.DomainSVC.PublishAgentTools(ctx, agentID, agentVersion)
 }
 
 func (s *impl) DeleteDraftPlugin(ctx context.Context, pluginID int64) (err error) {

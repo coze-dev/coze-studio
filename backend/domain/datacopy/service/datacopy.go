@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 
+	"gorm.io/gorm"
+
 	"code.byted.org/flow/opencoze/backend/domain/datacopy"
 	"code.byted.org/flow/opencoze/backend/domain/datacopy/entity"
 	"code.byted.org/flow/opencoze/backend/domain/datacopy/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/datacopy/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
-	"gorm.io/gorm"
 )
 
 type DataCopySVCConfig struct {

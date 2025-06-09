@@ -428,6 +428,25 @@ enum BehaviorType {
     Edit = 2
 }
 
+struct FileInfo {
+    1 : string url
+    2 : string uri
+}
+enum GetFileUrlsScene {
+    shorcutIcon = 1
+}
+struct GetFileUrlsRequest {
+    1 :  GetFileUrlsScene scene
+    255: base.Base Base
+}
+
+struct GetFileUrlsResponse {
+    1 : list<FileInfo> file_list
+    253: i64 code
+    254: string msg
+    255: base.BaseResp BaseResp
+}
+
 service PlaygroundService {
     UpdateDraftBotInfoAgwResponse UpdateDraftBotInfoAgw(1:UpdateDraftBotInfoAgwRequest request)(api.post='/api/playground_api/draftbot/update_draft_bot_info', api.category="draftbot",agw.preserve_base="true")
     GetDraftBotInfoAgwResponse GetDraftBotInfoAgw(1:GetDraftBotInfoAgwRequest request)(api.post='/api/playground_api/draftbot/get_draft_bot_info', api.category="draftbot",agw.preserve_base="true")
@@ -440,6 +459,7 @@ service PlaygroundService {
 
    // 创建快捷指令
     shortcut_command.CreateUpdateShortcutCommandResponse CreateUpdateShortcutCommand(1: shortcut_command.CreateUpdateShortcutCommandRequest req)(api.post='/api/playground_api/create_update_shortcut_command', api.category="playground_api", agw.preserve_base="true")
+    GetFileUrlsResponse GetFileUrls(1: GetFileUrlsRequest req)(api.post='/api/playground_api/get_file_list', api.category="playground_api", agw.preserve_base="true")
 
 
     // prompt resource

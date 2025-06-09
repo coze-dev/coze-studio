@@ -8,12 +8,14 @@ CREATE TABLE IF NOT EXISTS `plugin_version`
     `icon_uri`     varchar(512)        NOT NULL DEFAULT '' COMMENT 'Icon URI',
     `server_url`   varchar(512)        NOT NULL DEFAULT '' COMMENT 'Server URL',
     `plugin_type`  tinyint             NOT NULL DEFAULT 0 COMMENT 'Plugin Type, 1:http, 6:local',
-    `created_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
 
     `version`      varchar(255)        NOT NULL DEFAULT '' COMMENT 'Plugin Version, e.g. v1.0.0',
     `version_desc` text COMMENT 'Plugin Version Description',
     `manifest`     json COMMENT 'Plugin Manifest',
     `openapi_doc`  json COMMENT 'OpenAPI Document, only stores the root',
+
+    `created_at`   bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
+    `deleted_at`   datetime COMMENT 'Delete Time',
 
     PRIMARY KEY (`id`),
     UNIQUE KEY `uniq_idx_plugin_version` (`plugin_id`, `version`)

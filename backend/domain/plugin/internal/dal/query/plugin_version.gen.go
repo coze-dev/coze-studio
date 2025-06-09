@@ -35,11 +35,12 @@ func newPluginVersion(db *gorm.DB, opts ...gen.DOOption) pluginVersion {
 	_pluginVersion.IconURI = field.NewString(tableName, "icon_uri")
 	_pluginVersion.ServerURL = field.NewString(tableName, "server_url")
 	_pluginVersion.PluginType = field.NewInt32(tableName, "plugin_type")
-	_pluginVersion.CreatedAt = field.NewInt64(tableName, "created_at")
 	_pluginVersion.Version = field.NewString(tableName, "version")
 	_pluginVersion.VersionDesc = field.NewString(tableName, "version_desc")
 	_pluginVersion.Manifest = field.NewField(tableName, "manifest")
 	_pluginVersion.OpenapiDoc = field.NewField(tableName, "openapi_doc")
+	_pluginVersion.CreatedAt = field.NewInt64(tableName, "created_at")
+	_pluginVersion.DeletedAt = field.NewField(tableName, "deleted_at")
 
 	_pluginVersion.fillFieldMap()
 
@@ -59,11 +60,12 @@ type pluginVersion struct {
 	IconURI     field.String // Icon URI
 	ServerURL   field.String // Server URL
 	PluginType  field.Int32  // Plugin Type, 1:http, 6:local
-	CreatedAt   field.Int64  // Create Time in Milliseconds
 	Version     field.String // Plugin Version, e.g. v1.0.0
 	VersionDesc field.String // Plugin Version Description
 	Manifest    field.Field  // Plugin Manifest
 	OpenapiDoc  field.Field  // OpenAPI Document, only stores the root
+	CreatedAt   field.Int64  // Create Time in Milliseconds
+	DeletedAt   field.Field  // Delete Time
 
 	fieldMap map[string]field.Expr
 }
@@ -88,11 +90,12 @@ func (p *pluginVersion) updateTableName(table string) *pluginVersion {
 	p.IconURI = field.NewString(table, "icon_uri")
 	p.ServerURL = field.NewString(table, "server_url")
 	p.PluginType = field.NewInt32(table, "plugin_type")
-	p.CreatedAt = field.NewInt64(table, "created_at")
 	p.Version = field.NewString(table, "version")
 	p.VersionDesc = field.NewString(table, "version_desc")
 	p.Manifest = field.NewField(table, "manifest")
 	p.OpenapiDoc = field.NewField(table, "openapi_doc")
+	p.CreatedAt = field.NewInt64(table, "created_at")
+	p.DeletedAt = field.NewField(table, "deleted_at")
 
 	p.fillFieldMap()
 
@@ -109,7 +112,7 @@ func (p *pluginVersion) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (p *pluginVersion) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 13)
+	p.fieldMap = make(map[string]field.Expr, 14)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["space_id"] = p.SpaceID
 	p.fieldMap["developer_id"] = p.DeveloperID
@@ -118,11 +121,12 @@ func (p *pluginVersion) fillFieldMap() {
 	p.fieldMap["icon_uri"] = p.IconURI
 	p.fieldMap["server_url"] = p.ServerURL
 	p.fieldMap["plugin_type"] = p.PluginType
-	p.fieldMap["created_at"] = p.CreatedAt
 	p.fieldMap["version"] = p.Version
 	p.fieldMap["version_desc"] = p.VersionDesc
 	p.fieldMap["manifest"] = p.Manifest
 	p.fieldMap["openapi_doc"] = p.OpenapiDoc
+	p.fieldMap["created_at"] = p.CreatedAt
+	p.fieldMap["deleted_at"] = p.DeletedAt
 }
 
 func (p pluginVersion) clone(db *gorm.DB) pluginVersion {

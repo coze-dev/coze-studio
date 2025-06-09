@@ -2,27 +2,29 @@ package entity
 
 import (
 	"context"
+	"net/http"
+	"strconv"
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type PluginInfo struct {
-	*plugin.PluginInfo
+	*model.PluginInfo
 }
 
-func NewPluginInfo(info *plugin.PluginInfo) *PluginInfo {
+func NewPluginInfo(info *model.PluginInfo) *PluginInfo {
 	return &PluginInfo{
 		PluginInfo: info,
 	}
 }
 
-func NewPluginInfos(infos []*plugin.PluginInfo) []*PluginInfo {
+func NewPluginInfos(infos []*model.PluginInfo) []*PluginInfo {
 	res := make([]*PluginInfo, 0, len(infos))
 	for _, info := range infos {
 		res = append(res, NewPluginInfo(info))
@@ -105,14 +107,7 @@ func (p PluginInfo) GetToolExample(ctx context.Context, toolName string) *ToolEx
 	}
 }
 
-type ToolInfo = plugin.ToolInfo
-
-type paramMetaInfo struct {
-	name     string
-	desc     string
-	required bool
-	location string
-}
+type ToolInfo = model.ToolInfo
 
 type AgentToolIdentity struct {
 	ToolID    int64
@@ -126,39 +121,41 @@ type VersionTool struct {
 	Version *string
 }
 
-type VersionPlugin = plugin.VersionPlugin
+type VersionPlugin = model.VersionPlugin
 
-type VersionAgentTool = plugin.VersionAgentTool
+type VersionAgentTool = model.VersionAgentTool
 
-type ExecuteToolOpts = plugin.ExecuteToolOpts
+type ExecuteToolOpt = model.ExecuteToolOpt
 
-type PluginManifest = plugin.PluginManifest
+type ProjectInfo = model.ProjectInfo
+
+type PluginManifest = model.PluginManifest
 
 func NewDefaultPluginManifest() *PluginManifest {
-	return &plugin.PluginManifest{
+	return &model.PluginManifest{
 		SchemaVersion: "v1",
-		API: plugin.APIDesc{
-			Type: plugin.PluginTypeOfCloud,
+		API: model.APIDesc{
+			Type: model.PluginTypeOfCloud,
 		},
-		Auth: &plugin.AuthV2{
-			Type: plugin.AuthTypeOfNone,
+		Auth: &model.AuthV2{
+			Type: model.AuthTypeOfNone,
 		},
-		CommonParams: map[plugin.HTTPParamLocation][]*plugin_develop_common.CommonParamSchema{
-			plugin.ParamInBody: {},
-			plugin.ParamInHeader: {
+		CommonParams: map[model.HTTPParamLocation][]*plugin_develop_common.CommonParamSchema{
+			model.ParamInBody: {},
+			model.ParamInHeader: {
 				{
 					Name:  "User-Agent",
 					Value: "Coze/1.0",
 				},
 			},
-			plugin.ParamInPath:  {},
-			plugin.ParamInQuery: {},
+			model.ParamInPath:  {},
+			model.ParamInQuery: {},
 		},
 	}
 }
 
-func NewDefaultOpenapiDoc() *plugin.Openapi3T {
-	return &plugin.Openapi3T{
+func NewDefaultOpenapiDoc() *model.Openapi3T {
+	return &model.Openapi3T{
 		OpenAPI: "3.0.1",
 		Info: &openapi3.Info{
 			Version: "v1",
@@ -171,4 +168,41 @@ func NewDefaultOpenapiDoc() *plugin.Openapi3T {
 type UniqueToolAPI struct {
 	SubURL string
 	Method string
+}
+
+func DefaultOpenapi3Responses() openapi3.Responses {
+	return openapi3.Responses{
+		strconv.Itoa(http.StatusOK): {
+			Value: &openapi3.Response{
+				Description: ptr.Of("description is required"),
+				Content: openapi3.Content{
+					model.MIMETypeJson: &openapi3.MediaType{
+						Schema: &openapi3.SchemaRef{
+							Value: &openapi3.Schema{
+								Type:       openapi3.TypeObject,
+								Properties: map[string]*openapi3.SchemaRef{},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func DefaultOpenapi3RequestBody() *openapi3.RequestBodyRef {
+	return &openapi3.RequestBodyRef{
+		Value: &openapi3.RequestBody{
+			Content: map[string]*openapi3.MediaType{
+				model.MIMETypeJson: {
+					Schema: &openapi3.SchemaRef{
+						Value: &openapi3.Schema{
+							Type:       openapi3.TypeObject,
+							Properties: map[string]*openapi3.SchemaRef{},
+						},
+					},
+				},
+			},
+		},
+	}
 }

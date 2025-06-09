@@ -10,6 +10,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	appApplication "code.byted.org/flow/opencoze/backend/application/app"
+	"code.byted.org/flow/opencoze/backend/application/icon"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/shortcutcmd"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
@@ -329,6 +330,28 @@ func ReportUserBehavior(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetFileUrls .
+// @router /api/playground_api/get_file_list [POST]
+func GetFileUrls(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req playground.GetFileUrlsRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+	iconList, err := icon.SVC.GetShortcutIcons(ctx)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	resp := new(playground.GetFileUrlsResponse)
+	resp.FileList = iconList
+	resp.Code = 0
 
 	c.JSON(consts.StatusOK, resp)
 }

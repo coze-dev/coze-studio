@@ -1,48 +1,44 @@
 package plugin
 
-type ExecuteOptions struct {
-	AgentID                    int64
-	SpaceID                    int64
-	Version                    string
-	AgentToolVersion           int64
+type ExecuteToolOption struct {
+	ProjectInfo *ProjectInfo
+
+	ToolVersion                string
 	Operation                  *Openapi3Operation
 	InvalidRespProcessStrategy InvalidResponseProcessStrategy
 }
 
-type ExecuteToolOpts func(o *ExecuteOptions)
+type ExecuteToolOpt func(o *ExecuteToolOption)
 
-func WithAgentID(agentID int64) ExecuteToolOpts {
-	return func(o *ExecuteOptions) {
-		o.AgentID = agentID
+type ProjectInfo struct {
+	ProjectID      int64
+	ProjectVersion *string
+	ProjectType    ProjectType
+
+	ConnectorID int64
+	UserID      int64
+}
+
+func WithProjectInfo(info *ProjectInfo) ExecuteToolOpt {
+	return func(o *ExecuteToolOption) {
+		o.ProjectInfo = info
 	}
 }
 
-func WithVersion(version string) ExecuteToolOpts {
-	return func(o *ExecuteOptions) {
-		o.Version = version
+func WithToolVersion(version string) ExecuteToolOpt {
+	return func(o *ExecuteToolOption) {
+		o.ToolVersion = version
 	}
 }
 
-func WithAgentToolVersion(version int64) ExecuteToolOpts {
-	return func(o *ExecuteOptions) {
-		o.AgentToolVersion = version
-	}
-}
-
-func WithSpaceID(spaceID int64) ExecuteToolOpts {
-	return func(o *ExecuteOptions) {
-		o.SpaceID = spaceID
-	}
-}
-
-func WithOpenapiOperation(op *Openapi3Operation) ExecuteToolOpts {
-	return func(o *ExecuteOptions) {
+func WithOpenapiOperation(op *Openapi3Operation) ExecuteToolOpt {
+	return func(o *ExecuteToolOption) {
 		o.Operation = op
 	}
 }
 
-func WithInvalidRespProcessStrategy(strategy InvalidResponseProcessStrategy) ExecuteToolOpts {
-	return func(o *ExecuteOptions) {
+func WithInvalidRespProcessStrategy(strategy InvalidResponseProcessStrategy) ExecuteToolOpt {
+	return func(o *ExecuteToolOption) {
 		o.InvalidRespProcessStrategy = strategy
 	}
 }

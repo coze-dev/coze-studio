@@ -74,7 +74,7 @@ func PassportWebLogoutGet(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusUnauthorized, resp)
 }
 
 // PassportWebEmailLoginPost .
@@ -122,7 +122,7 @@ func PassportWebEmailPasswordResetGet(ctx context.Context, c *app.RequestContext
 		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusUnauthorized, resp)
 }
 
 // PassportAccountInfoV2 .

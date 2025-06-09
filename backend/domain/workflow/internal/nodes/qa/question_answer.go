@@ -379,7 +379,7 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 func (q *QuestionAnswer) extractCurrentState(in map[string]any) (
 	qResult []*Question,
 	aResult []string,
-	isFirst bool,    // whether this execution if the first ever execution for this node
+	isFirst bool, // whether this execution if the first ever execution for this node
 	notResumed bool, // whether this node is previously interrupted, but not resumed this time, because another node is resumed
 	err error) {
 	questions, ok := in[QuestionsKey]

@@ -209,7 +209,7 @@ func publishAgentVariables(ctx context.Context, appContext *ServiceComponents, p
 }
 
 func publishAgentPlugins(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
-	_, err := appContext.PluginDomainSVC.PublishAgentTools(ctx, agent.AgentID)
+	err := appContext.PluginDomainSVC.PublishAgentTools(ctx, agent.AgentID, publishInfo.Version)
 	if err != nil {
 		return nil, err
 	}

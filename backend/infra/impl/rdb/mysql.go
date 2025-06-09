@@ -945,6 +945,8 @@ func (m *mysqlService) buildWhereClause(condition *rdb.ComplexCondition) (string
 			} else {
 				return "", nil, fmt.Errorf("IN operator requires a slice of values")
 			}
+		} else if cond.Operator == entity2.OperatorIsNull || cond.Operator == entity2.OperatorIsNotNull {
+			whereClause.WriteString(fmt.Sprintf("`%s` %s", cond.Field, cond.Operator))
 		} else {
 			whereClause.WriteString(fmt.Sprintf("`%s` %s ?", cond.Field, cond.Operator))
 			values = append(values, cond.Value)

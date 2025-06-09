@@ -5,16 +5,16 @@ import (
 
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossknowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 )
 
 var defaultSVC crossknowledge.Knowledge
 
 type impl struct {
-	DomainSVC knowledge.Knowledge
+	DomainSVC service.Knowledge
 }
 
-func InitDomainService(c knowledge.Knowledge) crossknowledge.Knowledge {
+func InitDomainService(c service.Knowledge) crossknowledge.Knowledge {
 	defaultSVC = &impl{
 		DomainSVC: c,
 	}

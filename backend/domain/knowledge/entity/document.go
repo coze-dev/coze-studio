@@ -53,3 +53,15 @@ type TableColumn struct {
 	Indexing    bool  // 是否索引
 	Sequence    int64 // 表格中的原始序号
 }
+
+type WhereDocumentOpt struct {
+	IDs          []int64
+	KnowledgeIDs []int64
+	StatusIn     []int32
+	StatusNotIn  []int32
+	CreatorID    int64
+	Limit        int
+	Offset       *int
+	Cursor       *string
+	SelectAll    bool
+}

@@ -13,14 +13,13 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/checkpoint"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type Config struct {
 	Agent        *entity.SingleAgent
-	ConnectorID  int64
-	IsDraft      bool
+	UserID       int64
+	Identity     *entity.AgentIdentity
 	ModelFactory chatmodel.Factory
 }
 
@@ -64,10 +63,10 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	requireCheckpoint := false
 	pluginTools, err := newPluginTools(ctx, &toolConfig{
-		toolConf: conf.Agent.Plugin,
-		agentID:  conf.Agent.AgentID,
-		spaceID:  conf.Agent.SpaceID,
-		isDraft:  conf.IsDraft,
+		spaceID:       conf.Agent.SpaceID,
+		userID:        conf.UserID,
+		agentIdentity: conf.Identity,
+		toolConf:      conf.Agent.Plugin,
 	})
 	if err != nil {
 		return nil, err
@@ -84,12 +83,10 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	var dbTools []tool.InvokableTool
 	if len(conf.Agent.Database) > 0 {
 		dbTools, err = newDatabaseTools(ctx, &databaseConfig{
-			databaseConf: conf.Agent.Database,
-			connectorID:  ptr.Of(conf.ConnectorID),
-			userID:       conf.Agent.CreatorID,
-			agentID:      conf.Agent.AgentID,
-			spaceID:      conf.Agent.SpaceID,
-			isDraft:      conf.IsDraft,
+			spaceID:       conf.Agent.SpaceID,
+			userID:        conf.UserID,
+			agentIdentity: conf.Identity,
+			databaseConf:  conf.Agent.Database,
 		})
 		if err != nil {
 			return nil, err

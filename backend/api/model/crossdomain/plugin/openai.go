@@ -8,10 +8,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/getkin/kin-openapi/openapi3"
+
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"github.com/cloudwego/eino/schema"
-	"github.com/getkin/kin-openapi/openapi3"
 )
 
 type Openapi3T openapi3.T
@@ -22,9 +23,6 @@ func (ot Openapi3T) Validate(ctx context.Context) (err error) {
 		return fmt.Errorf("openapi validates failed, err=%v", err)
 	}
 
-	if ot.OpenAPI != "3.0.1" {
-		return fmt.Errorf("only support openapi '3.0.1' version")
-	}
 	if ot.Info == nil {
 		return fmt.Errorf("info is empty")
 	}
@@ -44,6 +42,15 @@ func (ot Openapi3T) Validate(ctx context.Context) (err error) {
 	}
 	if len(ot.Servers[0].URL) > 512 {
 		return fmt.Errorf("server url too long")
+	}
+
+	for _, pathItem := range ot.Paths {
+		for _, op := range pathItem.Operations() {
+			err = Openapi3Operation(*op).Validate()
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
@@ -168,32 +175,34 @@ func (op Openapi3Operation) ToEinoSchemaParameterInfo() (map[string]*schema.Para
 		result[paramVal.Name] = paramInfo
 	}
 
-	if op.RequestBody != nil {
-		for _, mType := range op.RequestBody.Value.Content {
-			schemaVal := mType.Schema.Value
-			if len(schemaVal.Properties) == 0 {
-				continue
-			}
+	if op.RequestBody == nil || op.RequestBody.Value == nil || len(op.RequestBody.Value.Content) == 0 {
+		return result, nil
+	}
 
-			required := slices.ToMap(schemaVal.Required, func(e string) (string, bool) {
-				return e, true
-			})
-
-			for paramName, prop := range schemaVal.Properties {
-				paramInfo, err := convertReqBody(prop.Value, required[paramName])
-				if err != nil {
-					return nil, err
-				}
-
-				if _, ok := result[paramName]; ok {
-					return nil, fmt.Errorf("duplicate param name '%s'", paramName)
-				}
-
-				result[paramName] = paramInfo
-			}
-
-			break // 只取一种 MIME
+	for _, mType := range op.RequestBody.Value.Content {
+		schemaVal := mType.Schema.Value
+		if len(schemaVal.Properties) == 0 {
+			continue
 		}
+
+		required := slices.ToMap(schemaVal.Required, func(e string) (string, bool) {
+			return e, true
+		})
+
+		for paramName, prop := range schemaVal.Properties {
+			paramInfo, err := convertReqBody(prop.Value, required[paramName])
+			if err != nil {
+				return nil, err
+			}
+
+			if _, ok := result[paramName]; ok {
+				return nil, fmt.Errorf("duplicate param name '%s'", paramName)
+			}
+
+			result[paramName] = paramInfo
+		}
+
+		break // 只取一种 MIME
 	}
 
 	return result, nil
@@ -243,8 +252,8 @@ func validateOpenapi3Parameters(params openapi3.Parameters) (err error) {
 	}
 
 	for _, param := range params {
-		if param.Value == nil {
-			return fmt.Errorf("parameter value is nil")
+		if param == nil || param.Value == nil {
+			return fmt.Errorf("parameter schema is nil")
 		}
 
 		if param.Value.In == "" {
@@ -309,7 +318,7 @@ func validateOpenapi3Responses(responses openapi3.Responses) (err error) {
 	}
 
 	resp, ok := responses[strconv.Itoa(http.StatusOK)]
-	if !ok {
+	if !ok || resp == nil {
 		return fmt.Errorf("the response only supports '200' status")
 	}
 	if resp.Value == nil {
@@ -323,7 +332,7 @@ func validateOpenapi3Responses(responses openapi3.Responses) (err error) {
 		return fmt.Errorf("the response only supports 'application/json' type")
 	}
 	mType, ok := resp.Value.Content[MIMETypeJson]
-	if !ok {
+	if !ok || mType == nil {
 		return fmt.Errorf("the response only supports 'application/json' type")
 	}
 	if mType.Schema == nil || mType.Schema.Value == nil {

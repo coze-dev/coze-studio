@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -623,39 +624,9 @@ func (p *PluginApplicationService) CreateAPI(ctx context.Context, req *pluginAPI
 			Summary:     req.Desc,
 			OperationID: req.Name,
 			Parameters:  []*openapi3.ParameterRef{},
-			RequestBody: &openapi3.RequestBodyRef{
-				Value: &openapi3.RequestBody{
-					Content: map[string]*openapi3.MediaType{
-						model.MIMETypeJson: {
-							Schema: &openapi3.SchemaRef{
-								Value: &openapi3.Schema{
-									Type:       openapi3.TypeObject,
-									Properties: map[string]*openapi3.SchemaRef{},
-								},
-							},
-						},
-					},
-				},
-			},
-			Responses: openapi3.Responses{
-				strconv.Itoa(http.StatusOK): {
-					Value: &openapi3.Response{
-						Content: map[string]*openapi3.MediaType{
-							model.MIMETypeJson: {
-								Schema: &openapi3.SchemaRef{
-									Value: &openapi3.Schema{
-										Type:       openapi3.TypeObject,
-										Properties: map[string]*openapi3.SchemaRef{},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			Extensions: map[string]interface{}{
-				model.APISchemaExtendGlobalDisable: false,
-			},
+			RequestBody: entity.DefaultOpenapi3RequestBody(),
+			Responses:   entity.DefaultOpenapi3Responses(),
+			Extensions:  map[string]any{},
 		},
 	}
 
@@ -1220,4 +1191,37 @@ func (p *PluginApplicationService) DeleteAPPAllPlugins(ctx context.Context, appI
 	}
 
 	return nil
+}
+
+func (p *PluginApplicationService) Convert2OpenAPI(ctx context.Context, req *pluginAPI.Convert2OpenAPIRequest) (resp *pluginAPI.Convert2OpenAPIResponse, err error) {
+	res := p.DomainSVC.ConvertToOpenapi3Doc(ctx, &service.ConvertToOpenapi3DocRequest{
+		RawInput:        req.Data,
+		PluginServerURL: req.PluginURL,
+	})
+
+	if res.ErrMsg != "" {
+		return &pluginAPI.Convert2OpenAPIResponse{
+			DuplicateAPIInfos: []*common.DuplicateAPIInfo{},
+			PluginDataFormat:  ptr.Of(res.Format),
+			Msg:               res.ErrMsg,
+		}, nil
+	}
+
+	doc, err := yaml.Marshal(res.OpenapiDoc)
+	if err != nil {
+		return nil, err
+	}
+	mf, err := json.Marshal(res.Manifest)
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &pluginAPI.Convert2OpenAPIResponse{
+		PluginDataFormat:  ptr.Of(res.Format),
+		Openapi:           ptr.Of(string(doc)),
+		AiPlugin:          ptr.Of(string(mf)),
+		DuplicateAPIInfos: []*common.DuplicateAPIInfo{},
+	}
+
+	return resp, nil
 }

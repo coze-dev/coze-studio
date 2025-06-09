@@ -15,26 +15,6 @@ import (
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 )
 
-// GetOAuthSchema .
-// @router /api/plugin_api/get_oauth_schema [POST]
-func GetOAuthSchema(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req plugin_develop.GetOAuthSchemaRequest
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		invalidParamRequestResponse(c, err.Error())
-		return
-	}
-
-	resp, err := plugin.PluginApplicationSVC.GetOAuthSchema(ctx, &req)
-	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
-		return
-	}
-
-	c.JSON(consts.StatusOK, resp)
-}
-
 // GetPlaygroundPluginList .
 // @router /api/plugin_api/get_playground_plugin_list [POST]
 func GetPlaygroundPluginList(ctx context.Context, c *app.RequestContext) {
@@ -746,6 +726,79 @@ func GetDevPluginList(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := plugin.PluginApplicationSVC.GetDevPluginList(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// Convert2OpenAPI .
+// @router /api/plugin_api/convert_to_openapi [POST]
+func Convert2OpenAPI(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.Convert2OpenAPIRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.SpaceID <= 0 {
+		invalidParamRequestResponse(c, "spaceID is invalid")
+		return
+	}
+	if req.Data == "" {
+		invalidParamRequestResponse(c, "data is invalid")
+		return
+	}
+	if req.PluginURL != nil && *req.PluginURL == "" {
+		invalidParamRequestResponse(c, "pluginURL is invalid")
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.Convert2OpenAPI(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetOAuthSchemaAPI .
+// @router /api/plugin_api/get_oauth_schema [POST]
+func GetOAuthSchemaAPI(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.GetOAuthSchemaRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.GetOAuthSchema(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetOAuthSchema .
+// @router /api/plugin/get_oauth_schema [POST]
+func GetOAuthSchema(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.GetOAuthSchemaRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.GetOAuthSchema(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

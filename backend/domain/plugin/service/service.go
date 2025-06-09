@@ -35,6 +35,7 @@ type PluginService interface {
 	// Draft Tool
 	MGetDraftTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error)
 	UpdateDraftTool(ctx context.Context, req *UpdateToolDraftRequest) (err error)
+	ConvertToOpenapi3Doc(ctx context.Context, req *ConvertToOpenapi3DocRequest) (resp *ConvertToOpenapi3DocResponse)
 
 	// Online Tool
 	GetOnlineTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, err error)
@@ -46,9 +47,9 @@ type PluginService interface {
 	MGetAgentTools(ctx context.Context, req *MGetAgentToolsRequest) (tools []*entity.ToolInfo, err error)
 	UpdateBotDefaultParams(ctx context.Context, req *UpdateBotDefaultParamsRequest) (err error)
 
-	PublishAgentTools(ctx context.Context, agentID int64) (resp *PublishAgentToolsResponse, err error)
+	PublishAgentTools(ctx context.Context, agentID int64, agentVersion string) (err error)
 
-	ExecuteTool(ctx context.Context, req *ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (resp *ExecuteToolResponse, err error)
+	ExecuteTool(ctx context.Context, req *ExecuteToolRequest, opts ...entity.ExecuteToolOpt) (resp *ExecuteToolResponse, err error)
 
 	// Product
 	ListPluginProducts(ctx context.Context, req *ListPluginProductsRequest) (resp *ListPluginProductsResponse, err error)
@@ -154,8 +155,6 @@ type UpdateBotDefaultParamsRequest struct {
 	Responses   openapi3.Responses
 }
 
-type PublishAgentToolsResponse = plugin.PublishAgentToolsResponse
-
 type ExecuteToolRequest = plugin.ExecuteToolRequest
 
 type ExecuteToolResponse = plugin.ExecuteToolResponse
@@ -165,4 +164,16 @@ type ListPluginProductsRequest struct{}
 type ListPluginProductsResponse struct {
 	Plugins []*entity.PluginInfo
 	Total   int64
+}
+
+type ConvertToOpenapi3DocRequest struct {
+	RawInput        string
+	PluginServerURL *string
+}
+
+type ConvertToOpenapi3DocResponse struct {
+	OpenapiDoc *plugin.Openapi3T
+	Manifest   *entity.PluginManifest
+	Format     common.PluginDataFormat
+	ErrMsg     string
 }

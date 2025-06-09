@@ -14,7 +14,6 @@ import (
 	"gorm.io/gorm"
 
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/impl/rdb"
@@ -24,7 +23,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
+func MockKnowledgeSVC(t *testing.T) Knowledge {
 	// os.Setenv("MYSQL_DSN", "coze:coze123@(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True")
 	dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
 	if os.Getenv("CI_JOB_NAME") != "" {
@@ -95,7 +94,7 @@ func MockKnowledgeSVC(t *testing.T) knowledge.Knowledge {
 func TestKnowledgeSVC_CreateKnowledge(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
-	resp, err := svc.CreateKnowledge(ctx, &knowledge.CreateKnowledgeRequest{
+	resp, err := svc.CreateKnowledge(ctx, &CreateKnowledgeRequest{
 		Name:        "test",
 		Description: "test knowledge",
 		IconUri:     "icon.png",
@@ -114,7 +113,7 @@ func TestKnowledgeSVC_UpdateKnowledge(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
 
-	err := svc.UpdateKnowledge(ctx, &knowledge.UpdateKnowledgeRequest{
+	err := svc.UpdateKnowledge(ctx, &UpdateKnowledgeRequest{
 		Name: ptr.Of("test"),
 	})
 	assert.Error(t, err, "knowledge id is empty")
@@ -124,7 +123,7 @@ func TestKnowledgeSVC_UpdateKnowledge(t *testing.T) {
 func TestKnowledgeSVC_DeleteKnowledge(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
-	createResp, err := svc.CreateKnowledge(ctx, &knowledge.CreateKnowledgeRequest{
+	createResp, err := svc.CreateKnowledge(ctx, &CreateKnowledgeRequest{
 		Name:        "test",
 		Description: "test knowledge",
 		IconUri:     "icon.png",
@@ -136,7 +135,7 @@ func TestKnowledgeSVC_DeleteKnowledge(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, createResp)
 	time.Sleep(time.Millisecond * 5)
-	err = svc.DeleteKnowledge(ctx, &knowledge.DeleteKnowledgeRequest{
+	err = svc.DeleteKnowledge(ctx, &DeleteKnowledgeRequest{
 		KnowledgeID: createResp.KnowledgeID,
 	})
 	assert.NoError(t, err)
@@ -227,7 +226,7 @@ func TestKnowledgeSVC_CreateDocument(t *testing.T) {
 				},
 			},
 		}
-		createResp, err := svc.CreateDocument(ctx, &knowledge.CreateDocumentRequest{
+		createResp, err := svc.CreateDocument(ctx, &CreateDocumentRequest{
 			Documents: []*entity.Document{document},
 		})
 		assert.NoError(t, err)
@@ -338,12 +337,12 @@ func TestKnowledgeSVC_DeleteDocument(t *testing.T) {
 			},
 		},
 	}
-	createResp, err := svc.CreateDocument(ctx, &knowledge.CreateDocumentRequest{
+	createResp, err := svc.CreateDocument(ctx, &CreateDocumentRequest{
 		Documents: []*entity.Document{document},
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(createResp.Documents))
-	err = svc.DeleteDocument(ctx, &knowledge.DeleteDocumentRequest{
+	err = svc.DeleteDocument(ctx, &DeleteDocumentRequest{
 		DocumentID: createResp.Documents[0].ID,
 	})
 	assert.NoError(t, err)
@@ -421,7 +420,7 @@ func TestKnowledgeSVC_ListDocument(t *testing.T) {
 	ctx := context.Background()
 	svc := MockKnowledgeSVC(t)
 	cursor := "1745907737419325000"
-	listResp, err := svc.ListDocument(ctx, &knowledge.ListDocumentRequest{
+	listResp, err := svc.ListDocument(ctx, &ListDocumentRequest{
 		KnowledgeID: 666,
 		DocumentIDs: []int64{1745826797157894000, 1745908100980977000},
 		Cursor:      &cursor,

@@ -55,7 +55,7 @@ func (c *impl) buildSingleAgentStreamExecuteReq(ctx context.Context, historyMsg 
 		Input:    inputBuild[0],
 		History:  history,
 		UserID:   input.UserID,
-		SpaceID:  agentRuntime.SpaceID,
+		//SpaceID:      agentRuntime.SpaceID, // TODO(@lijunwen): 梳理概念
 		PreCallTools: slices.Transform(agentRuntime.PreRetrieveTools, func(tool *agentrun.Tool) *agentrun.ToolsRetriever {
 			return &agentrun.ToolsRetriever{
 				PluginID:  tool.PluginID,

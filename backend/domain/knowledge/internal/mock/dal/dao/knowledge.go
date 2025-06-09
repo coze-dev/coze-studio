@@ -16,7 +16,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 	gorm "gorm.io/gorm"
 
-	dao "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	model "code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 )
 
@@ -87,7 +87,7 @@ func (mr *MockKnowledgeRepoMockRecorder) FilterEnableKnowledge(ctx, ids any) *go
 }
 
 // FindKnowledgeByCondition mocks base method.
-func (m *MockKnowledgeRepo) FindKnowledgeByCondition(ctx context.Context, opts *dao.WhereKnowledgeOption) ([]*model.Knowledge, int64, error) {
+func (m *MockKnowledgeRepo) FindKnowledgeByCondition(ctx context.Context, opts *entity.WhereKnowledgeOption) ([]*model.Knowledge, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindKnowledgeByCondition", ctx, opts)
 	ret0, _ := ret[0].([]*model.Knowledge)

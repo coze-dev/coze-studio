@@ -178,3 +178,11 @@ func (p *PluginVersionDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, 
 
 	return nil
 }
+
+func (p *PluginVersionDAO) DeleteWithTX(ctx context.Context, tx *query.QueryTx, pluginID int64) (err error) {
+	table := tx.PluginVersion
+	_, err = table.WithContext(ctx).
+		Where(table.PluginID.Eq(pluginID)).
+		Delete()
+	return err
+}

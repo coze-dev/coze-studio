@@ -72,39 +72,13 @@ func (t ToolInfo) GetResponseOpenapiSchema() (*openapi3.Schema, error) {
 	}
 
 	resp, ok := op.Responses[strconv.Itoa(http.StatusOK)]
-	if !ok {
-		if op.Responses == nil {
-			op.Responses = openapi3.Responses{}
-		}
-		op.Responses[strconv.Itoa(http.StatusOK)] = &openapi3.ResponseRef{
-			Value: &openapi3.Response{
-				Content: openapi3.Content{
-					MIMETypeJson: {
-						Schema: &openapi3.SchemaRef{
-							Value: &openapi3.Schema{
-								Type:       openapi3.TypeObject,
-								Properties: openapi3.Schemas{},
-							},
-						},
-					},
-				},
-			},
-		}
+	if !ok || resp == nil || resp.Value == nil || len(resp.Value.Content) == 0 {
+		return nil, fmt.Errorf("response status '%d' not found", http.StatusOK)
 	}
 
 	mType, ok := resp.Value.Content[MIMETypeJson] // only support application/json
-	if !ok {
-		if resp.Value.Content == nil {
-			resp.Value.Content = openapi3.Content{}
-		}
-		resp.Value.Content[MIMETypeJson] = &openapi3.MediaType{
-			Schema: &openapi3.SchemaRef{
-				Value: &openapi3.Schema{
-					Type:       openapi3.TypeObject,
-					Properties: openapi3.Schemas{},
-				},
-			},
-		}
+	if !ok || mType == nil || mType.Schema == nil || mType.Schema.Value == nil {
+		return nil, fmt.Errorf("response MIME type '%s' not found", MIMETypeJson)
 	}
 
 	return mType.Schema.Value, nil
@@ -137,17 +111,22 @@ func (t ToolInfo) ToRespAPIParameter() ([]*common.APIParameter, error) {
 		return e, true
 	})
 
-	for paramName, prop := range respSchema.Properties {
+	for subParamName, prop := range respSchema.Properties {
+		if prop == nil || prop.Value == nil {
+			return nil, fmt.Errorf("property '%s' schema is nil", subParamName)
+		}
+
 		paramMeta := paramMetaInfo{
-			name:     paramName,
+			name:     subParamName,
 			desc:     prop.Value.Description,
 			location: string(ParamInBody),
-			required: required[paramName],
+			required: required[subParamName],
 		}
 		apiParam, err := toAPIParameter(paramMeta, prop.Value)
 		if err != nil {
 			return nil, err
 		}
+
 		params = append(params, apiParam)
 	}
 
@@ -162,6 +141,10 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 
 	params := make([]*common.APIParameter, 0, len(op.Parameters))
 	for _, param := range op.Parameters {
+		if param == nil || param.Value == nil || param.Value.Schema == nil || param.Value.Schema.Value == nil {
+			return nil, fmt.Errorf("parameter schema is nil")
+		}
+
 		schemaVal := param.Value.Schema.Value
 		paramMeta := paramMetaInfo{
 			name:     param.Value.Name,
@@ -173,14 +156,19 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		params = append(params, apiParam)
 	}
 
-	if op.RequestBody == nil {
+	if op.RequestBody == nil || op.RequestBody.Value == nil || len(op.RequestBody.Value.Content) == 0 {
 		return params, nil
 	}
 
 	for _, mType := range op.RequestBody.Value.Content {
+		if mType == nil || mType.Schema == nil || mType.Schema.Value == nil {
+			return nil, fmt.Errorf("request body schema is nil")
+		}
+
 		schemaVal := mType.Schema.Value
 		if len(schemaVal.Properties) == 0 {
 			continue
@@ -190,17 +178,22 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 			return e, true
 		})
 
-		for paramName, prop := range schemaVal.Properties {
+		for subParamName, prop := range schemaVal.Properties {
+			if prop == nil || prop.Value == nil {
+				return nil, fmt.Errorf("property '%s' schema is nil", subParamName)
+			}
+
 			paramMeta := paramMetaInfo{
-				name:     paramName,
+				name:     subParamName,
 				desc:     prop.Value.Description,
 				location: string(ParamInBody),
-				required: required[paramName],
+				required: required[subParamName],
 			}
 			apiParam, err := toAPIParameter(paramMeta, prop.Value)
 			if err != nil {
 				return nil, err
 			}
+
 			params = append(params, apiParam)
 		}
 
@@ -211,6 +204,10 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 }
 
 func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIParameter, error) {
+	if sc == nil {
+		return nil, fmt.Errorf("schema is nil")
+	}
+
 	apiType, ok := ToThriftParamType(strings.ToLower(sc.Type))
 	if !ok {
 		return nil, fmt.Errorf("invalid type '%s'", sc.Type)
@@ -256,6 +253,12 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 			apiParam.LocalDisable = disable
 		}
 	}
+	if v, ok := sc.Extensions[APISchemaExtendVariableRef]; ok {
+		if ref, ok := v.(string); ok {
+			apiParam.VariableRef = ptr.Of(ref)
+			apiParam.DefaultParamSource = ptr.Of(common.DefaultParamSource_Variable)
+		}
+	}
 
 	switch sc.Type {
 	case openapi3.TypeObject:
@@ -267,6 +270,10 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 			return e, true
 		})
 		for subParamName, prop := range sc.Properties {
+			if prop == nil || prop.Value == nil {
+				return nil, fmt.Errorf("property '%s' schema is nil", subParamName)
+			}
+
 			subMeta := paramMetaInfo{
 				name:     subParamName,
 				desc:     prop.Value.Description,
@@ -284,12 +291,20 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 		return apiParam, nil
 
 	case openapi3.TypeArray:
+		if sc.Items == nil || sc.Items.Value == nil {
+			return nil, fmt.Errorf("array item schema is nil")
+		}
+
 		item := sc.Items.Value
 		if item.Type == openapi3.TypeObject {
 			required := slices.ToMap(item.Required, func(e string) (string, bool) {
 				return e, true
 			})
 			for subParamName, prop := range item.Properties {
+				if prop == nil || prop.Value == nil {
+					return nil, fmt.Errorf("property '%s' schema is nil", subParamName)
+				}
+
 				subMeta := paramMetaInfo{
 					name:     subParamName,
 					desc:     prop.Value.Description,
@@ -335,6 +350,10 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 	var params []*common.PluginParameter
 
 	for _, prop := range op.Parameters {
+		if prop == nil || prop.Value == nil || prop.Value.Schema == nil || prop.Value.Schema.Value == nil {
+			return nil, fmt.Errorf("parameter schema is nil")
+		}
+
 		paramVal := prop.Value
 		schemaVal := paramVal.Schema.Value
 		if schemaVal.Type == openapi3.TypeObject || schemaVal.Type == openapi3.TypeArray {
@@ -368,11 +387,15 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 		})
 	}
 
-	if op.RequestBody == nil {
+	if op.RequestBody == nil || op.RequestBody.Value == nil || len(op.RequestBody.Value.Content) == 0 {
 		return params, nil
 	}
 
 	for _, mType := range op.RequestBody.Value.Content {
+		if mType == nil || mType.Schema == nil || mType.Schema.Value == nil {
+			return nil, fmt.Errorf("request body schema is nil")
+		}
+
 		schemaVal := mType.Schema.Value
 		if len(schemaVal.Properties) == 0 {
 			continue
@@ -382,11 +405,15 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 			return e, true
 		})
 
-		for paramName, prop := range schemaVal.Properties {
+		for subParamName, prop := range schemaVal.Properties {
+			if prop == nil || prop.Value == nil {
+				return nil, fmt.Errorf("property '%s' schema is nil", subParamName)
+			}
+
 			paramMeta := paramMetaInfo{
-				name:     paramName,
+				name:     subParamName,
 				desc:     prop.Value.Description,
-				required: required[paramName],
+				required: required[subParamName],
 			}
 			paramInfo, err := toPluginParameter(paramMeta, prop.Value)
 			if err != nil {
@@ -404,6 +431,10 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 }
 
 func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.PluginParameter, error) {
+	if sc == nil {
+		return nil, fmt.Errorf("schema is nil")
+	}
+
 	if disabledParam(sc) {
 		return nil, nil
 	}
@@ -438,6 +469,10 @@ func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.Pl
 			return e, true
 		})
 		for subParamName, prop := range sc.Properties {
+			if prop == nil || prop.Value == nil {
+				return nil, fmt.Errorf("property '%s' schema is nil", subParamName)
+			}
+
 			subMeta := paramMetaInfo{
 				name:     subParamName,
 				desc:     prop.Value.Description,
@@ -447,12 +482,17 @@ func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.Pl
 			if err != nil {
 				return nil, err
 			}
+
 			pluginParam.SubParameters = append(pluginParam.SubParameters, subParam)
 		}
 
 		return pluginParam, nil
 
 	case openapi3.TypeArray:
+		if sc.Items == nil || sc.Items.Value == nil {
+			return nil, fmt.Errorf("array item schema is nil")
+		}
+
 		item := sc.Items.Value
 		pluginParam.SubType = item.Type
 
@@ -461,6 +501,10 @@ func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.Pl
 				return e, true
 			})
 			for subParamName, prop := range item.Properties {
+				if prop == nil || prop.Value == nil {
+					return nil, fmt.Errorf("property '%s' schema is nil", subParamName)
+				}
+
 				subMeta := paramMetaInfo{
 					name:     subParamName,
 					desc:     prop.Value.Description,
@@ -470,6 +514,7 @@ func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.Pl
 				if err != nil {
 					return nil, err
 				}
+
 				pluginParam.SubParameters = append(pluginParam.SubParameters, subParam)
 			}
 

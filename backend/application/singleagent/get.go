@@ -12,7 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge"
+	knowledge "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"

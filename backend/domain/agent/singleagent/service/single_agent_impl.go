@@ -81,8 +81,8 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 
 	conf := &agentflow.Config{
 		Agent:        ae,
-		ConnectorID:  req.Identity.ConnectorID,
-		IsDraft:      req.Identity.IsDraft,
+		UserID:       req.UserID,
+		Identity:     req.Identity,
 		ModelFactory: s.ModelFactory,
 	}
 	rn, err := agentflow.BuildAgent(ctx, conf)

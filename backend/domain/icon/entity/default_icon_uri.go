@@ -14,3 +14,22 @@ const (
 	EnterpriseIconURI = "default_icon/team_default_icon.png"
 	ModelIconURI      = "default_icon/team_default_icon.png"
 )
+
+func GetDefaultShortcutIconURI() []string {
+	return []string{
+		"default_icon/shortcut_1coz_ai.png",
+		"default_icon/shortcut_2icon_ai_writing.png",
+		"default_icon/shortcut_3coz_imageflow.png",
+		"default_icon/shortcut_4icon_aisearch.png",
+		"default_icon/shortcut_5icon_summary.png",
+		"default_icon/shortcut_6icon_digest.png",
+		"default_icon/shortcut_7icon_video.png",
+		"default_icon/shortcut_8icon_audio.png",
+		"default_icon/shortcut_9coz_variables.png",
+		"default_icon/shortcut_10coz_folder.png",
+		"default_icon/shortcut_11coz_trans_switch.png",
+		"default_icon/shortcut_12coz_location.png",
+		"default_icon/shortcut_13coz_link.png",
+		"default_icon/shortcut_14coz_clock.png",
+	}
+}

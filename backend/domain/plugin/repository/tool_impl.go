@@ -267,15 +267,15 @@ func (t *toolRepoImpl) GetVersionAgentTool(ctx context.Context, agentID int64, v
 }
 
 func (t *toolRepoImpl) GetVersionAgentToolWithToolName(ctx context.Context, req *GetVersionAgentToolWithToolNameRequest) (tool *entity.ToolInfo, exist bool, err error) {
-	return t.agentToolVersionDAO.GetWithToolName(ctx, req.AgentID, req.ToolName, req.VersionMs)
+	return t.agentToolVersionDAO.GetWithToolName(ctx, req.AgentID, req.ToolName, req.AgentVersion)
 }
 
 func (t *toolRepoImpl) MGetVersionAgentTool(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error) {
 	return t.agentToolVersionDAO.MGet(ctx, agentID, vAgentTools)
 }
 
-func (t *toolRepoImpl) BatchCreateVersionAgentTools(ctx context.Context, agentID int64, tools []*entity.ToolInfo) (toolVersions map[int64]int64, err error) {
-	return t.agentToolVersionDAO.BatchCreate(ctx, agentID, tools)
+func (t *toolRepoImpl) BatchCreateVersionAgentTools(ctx context.Context, agentID int64, agentVersion string, tools []*entity.ToolInfo) (err error) {
+	return t.agentToolVersionDAO.BatchCreate(ctx, agentID, agentVersion, tools)
 }
 
 func (t *toolRepoImpl) UpdateDraftToolAndDebugExample(ctx context.Context, pluginID int64, doc *plugin.Openapi3T, updatedTool *entity.ToolInfo) (err error) {

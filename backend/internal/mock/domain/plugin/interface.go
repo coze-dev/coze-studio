@@ -13,17 +13,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	entity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	service "code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPluginService is a mock of PluginService interface.
 type MockPluginService struct {
 	ctrl     *gomock.Controller
 	recorder *MockPluginServiceMockRecorder
-	isgomock struct{}
 }
 
 // MockPluginServiceMockRecorder is the mock recorder for MockPluginService.
@@ -55,6 +53,20 @@ func (m *MockPluginService) BindAgentTools(ctx context.Context, agentID int64, t
 func (mr *MockPluginServiceMockRecorder) BindAgentTools(ctx, agentID, toolIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindAgentTools", reflect.TypeOf((*MockPluginService)(nil).BindAgentTools), ctx, agentID, toolIDs)
+}
+
+// ConvertToOpenapi3Doc mocks base method.
+func (m *MockPluginService) ConvertToOpenapi3Doc(ctx context.Context, req *service.ConvertToOpenapi3DocRequest) *service.ConvertToOpenapi3DocResponse {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConvertToOpenapi3Doc", ctx, req)
+	ret0, _ := ret[0].(*service.ConvertToOpenapi3DocResponse)
+	return ret0
+}
+
+// ConvertToOpenapi3Doc indicates an expected call of ConvertToOpenapi3Doc.
+func (mr *MockPluginServiceMockRecorder) ConvertToOpenapi3Doc(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConvertToOpenapi3Doc", reflect.TypeOf((*MockPluginService)(nil).ConvertToOpenapi3Doc), ctx, req)
 }
 
 // CreateDraftPlugin mocks base method.
@@ -117,7 +129,7 @@ func (mr *MockPluginServiceMockRecorder) DeleteDraftPlugin(ctx, pluginID any) *g
 }
 
 // ExecuteTool mocks base method.
-func (m *MockPluginService) ExecuteTool(ctx context.Context, req *service.ExecuteToolRequest, opts ...entity.ExecuteToolOpts) (*service.ExecuteToolResponse, error) {
+func (m *MockPluginService) ExecuteTool(ctx context.Context, req *service.ExecuteToolRequest, opts ...entity.ExecuteToolOpt) (*service.ExecuteToolResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, req}
 	for _, a := range opts {
@@ -377,18 +389,17 @@ func (mr *MockPluginServiceMockRecorder) PublishAPPPlugins(ctx, req any) *gomock
 }
 
 // PublishAgentTools mocks base method.
-func (m *MockPluginService) PublishAgentTools(ctx context.Context, agentID int64) (*service.PublishAgentToolsResponse, error) {
+func (m *MockPluginService) PublishAgentTools(ctx context.Context, agentID int64, agentVersion string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublishAgentTools", ctx, agentID)
-	ret0, _ := ret[0].(*service.PublishAgentToolsResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "PublishAgentTools", ctx, agentID, agentVersion)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // PublishAgentTools indicates an expected call of PublishAgentTools.
-func (mr *MockPluginServiceMockRecorder) PublishAgentTools(ctx, agentID any) *gomock.Call {
+func (mr *MockPluginServiceMockRecorder) PublishAgentTools(ctx, agentID, agentVersion any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishAgentTools", reflect.TypeOf((*MockPluginService)(nil).PublishAgentTools), ctx, agentID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishAgentTools", reflect.TypeOf((*MockPluginService)(nil).PublishAgentTools), ctx, agentID, agentVersion)
 }
 
 // PublishPlugin mocks base method.
