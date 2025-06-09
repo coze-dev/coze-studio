@@ -10,6 +10,7 @@ service PublicProductService {
 
     FavoriteProductResponse PublicFavoriteProduct(1: FavoriteProductRequest req)(api.post = "/api/marketplace/product/favorite", api.category = "PublicAPI")
     GetUserFavoriteListV2Response PublicGetUserFavoriteListV2(1: GetUserFavoriteListV2Request req)(api.get = "/api/marketplace/product/favorite/list.v2", api.category = "PublicAPI")
+    DuplicateProductResponse PublicDuplicateProduct (1: DuplicateProductRequest req) (api.post = "/api/marketplace/product/duplicate", api.category = "PublicAPI")
 }
 
 struct FavoriteProductResponse {
@@ -533,3 +534,26 @@ enum TriggerEnable {
     Close = 2
 }
 
+struct DuplicateProductRequest {
+    1: required i64 ProductID (agw.js_conv="str", api.js_conv="true", agw.cli_conv="str", api.body = "product_id")
+    2: required product_common.ProductEntityType EntityType (api.body = "entity_type")
+    3: optional i64 SpaceID   (agw.js_conv="str", api.js_conv="true", agw.cli_conv="str", api.body = "space_id")
+    4: optional string Name (api.body = "name")
+
+    100: optional string Cookie     (agw.source = "header", agw.key = "Cookie", go.tag="jsonlog:\"-\" json:\"-\"" ),
+    255: optional base.Base Base
+
+}
+
+struct DuplicateProductResponse {
+    1: required i32           Code     (agw.key = "code"),
+    2: required string        Message  (agw.key = "message"),
+    3: DuplicateProductData   Data (agw.key = "data")
+    255: optional base.BaseResp BaseResp                   ,
+}
+
+struct DuplicateProductData {
+    // 复制后的新id
+    1: i64 NewEntityID (agw.js_conv="str", api.js_conv="str", agw.cli_conv="str", api.body = "new_entity_id")
+    2: optional i64 NewPluginID (agw.js_conv="str", api.js_conv="str", agw.cli_conv="str", api.body = "new_plugin_id") // workflow对应的插件id
+}

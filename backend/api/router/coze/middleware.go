@@ -1355,6 +1355,11 @@ func _extractphotocaptionMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+func _publicduplicateproductMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _getfileurlsMw() []app.HandlerFunc {
 	// your code...
 	return nil

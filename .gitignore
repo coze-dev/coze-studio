@@ -43,3 +43,5 @@ output/*
 bin/*
 
 docker/data/*
+
+backend/static

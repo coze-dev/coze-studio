@@ -3,7 +3,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRONTEND_DIR="${1:-${SCRIPT_DIR}/../frontend}"
 
-set -e
+set -ex
 
 # 设置颜色变量
 RED='\033[0;31m'
@@ -40,13 +40,14 @@ fi
 
 echo -e "${GREEN}环境检查完成！${NC}"
 
+echo -e "${YELLOW}开始安装依赖...${NC}"
 rush update
 
-echo -e "${GREEN}环境检查完成！${NC}"
+echo -e "${GREEN}依赖安装完成！${NC}"
 
-BUILD_BRANCH=opencoze-local rush build -o @coze-studio/app --verbose
 
-echo -e "${NC}"
-echo -e "${GREEN}构建完成！${NC}"
+
+# echo -e "${NC}"
+# echo -e "${GREEN}构建完成！${NC}"
 
 popd

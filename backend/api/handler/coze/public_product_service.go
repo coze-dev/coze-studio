@@ -3,16 +3,22 @@
 package coze
 
 import (
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	"context"
+	"strconv"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 
 	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_common"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
 	"code.byted.org/flow/opencoze/backend/application/plugin"
 	"code.byted.org/flow/opencoze/backend/application/search"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
+	"code.byted.org/flow/opencoze/backend/application/template"
 )
 
 // PublicGetProductList .
@@ -26,10 +32,21 @@ func PublicGetProductList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := plugin.PluginApplicationSVC.PublicGetProductList(ctx, &req) // todo lj 补充
-	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
-		return
+	var resp *product_public_api.GetProductListResponse
+	switch req.GetEntityType() {
+	case product_common.ProductEntityType_Plugin:
+		resp, err = plugin.PluginApplicationSVC.PublicGetProductList(ctx, &req)
+		if err != nil {
+			internalServerErrorResponse(ctx, c, err)
+			return
+		}
+
+	case product_common.ProductEntityType_TemplateCommon:
+		resp, err = template.ApplicationSVC.PublicGetProductList(ctx, &req)
+		if err != nil {
+			internalServerErrorResponse(ctx, c, err)
+			return
+		}
 	}
 
 	c.JSON(consts.StatusOK, resp)
@@ -121,6 +138,47 @@ func PublicGetUserFavoriteListV2(ctx context.Context, c *app.RequestContext) {
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PublicDuplicateProduct .
+// @router /api/marketplace/product/duplicate [POST]
+func PublicDuplicateProduct(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.DuplicateProductRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+	// todo lj
+
+	resp := new(product_public_api.DuplicateProductResponse)
+
+	switch req.GetEntityType() {
+	case product_common.ProductEntityType_BotTemplate:
+		bot, err := singleagent.SingleAgentSVC.DuplicateDraftBot(ctx, &developer_api.DuplicateDraftBotRequest{
+			BotID:   req.GetProductID(),
+			SpaceID: req.GetSpaceID(),
+		})
+		if err != nil {
+			return
+		}
+
+		resp.Data.NewEntityID = bot.Data.BotID
+
+	case product_common.ProductEntityType_WorkflowTemplateV2:
+		workflowResp, err := appworkflow.SVC.CopyWorkflow(ctx, &workflow.CopyWorkflowRequest{
+			WorkflowID: strconv.FormatInt(req.GetProductID(), 10),
+			SpaceID:    strconv.FormatInt(req.GetSpaceID(), 10),
+		})
+		if err != nil {
+			return
+		}
+
+		resp.Data.NewEntityID, err = strconv.ParseInt(workflowResp.Data.WorkflowID, 10, 64)
 	}
 
 	c.JSON(consts.StatusOK, resp)
