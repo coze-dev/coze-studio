@@ -633,7 +633,7 @@ func toSelectorNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 		})
 	}
 
-	ns.Configs = clauses
+	ns.Configs = map[string]any{"Clauses": clauses}
 	return ns, nil
 }
 

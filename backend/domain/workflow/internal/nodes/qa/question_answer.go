@@ -446,7 +446,7 @@ type QuestionAnswerAware interface {
 }
 
 func (q *QuestionAnswer) interrupt(ctx context.Context, newQuestion string, choices []string, oldQuestions []*Question, oldAnswers []string) error {
-	history := q.generateHistory(oldQuestions, oldAnswers, newQuestion, choices)
+	history := q.generateHistory(oldQuestions, oldAnswers, &newQuestion, choices)
 
 	historyList := map[string][]*message{
 		"messages": history,
@@ -502,7 +502,7 @@ func AlphabetToInt(str string) (int, bool) {
 	return 0, false
 }
 
-func (q *QuestionAnswer) generateHistory(oldQuestions []*Question, oldAnswers []string, newQuestion string, choices []string) []*message {
+func (q *QuestionAnswer) generateHistory(oldQuestions []*Question, oldAnswers []string, newQuestion *string, choices []string) []*message {
 	conv := func(opts []string) (namedOpts []namedOpt) {
 		for _, opt := range opts {
 			namedOpts = append(namedOpts, namedOpt{
@@ -542,14 +542,14 @@ func (q *QuestionAnswer) generateHistory(oldQuestions []*Question, oldAnswers []
 		history = append(history, questionMsg, answerMsg)
 	}
 
-	if len(newQuestion) > 0 {
+	if newQuestion != nil {
 		if q.config.AnswerType == AnswerByChoices {
 			history = append(history, &message{
 				Type:        "question",
 				ContentType: "option",
 				Content: optionContent{
 					Options:  conv(choices),
-					Question: newQuestion,
+					Question: *newQuestion,
 				},
 				ID: fmt.Sprintf("%s_%d", q.config.NodeKey, len(oldQuestions)*2),
 			})
@@ -557,7 +557,7 @@ func (q *QuestionAnswer) generateHistory(oldQuestions []*Question, oldAnswers []
 			history = append(history, &message{
 				Type:        "question",
 				ContentType: "text",
-				Content:     newQuestion,
+				Content:     *newQuestion,
 				ID:          fmt.Sprintf("%s_%d", q.config.NodeKey, len(oldQuestions)*2),
 			})
 		}
@@ -567,7 +567,7 @@ func (q *QuestionAnswer) generateHistory(oldQuestions []*Question, oldAnswers []
 }
 
 func (q *QuestionAnswer) toCallbackOutput(out map[string]any, questions []*Question, answers []string, selected string) *nodes.StructuredCallbackOutput {
-	history := q.generateHistory(questions, answers, "", nil)
+	history := q.generateHistory(questions, answers, nil, nil)
 	for _, msg := range history {
 		optionC, ok := msg.Content.(optionContent)
 		if ok {

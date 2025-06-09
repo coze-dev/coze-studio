@@ -35877,7 +35877,10 @@ type NodeEvent struct {
 	NodeTitle string    `thrift:"node_title,3" form:"node_title" json:"node_title" query:"node_title"`
 	Data      string    `thrift:"data,4" form:"data" json:"data" query:"data"`
 	NodeIcon  string    `thrift:"node_icon,5" form:"node_icon" json:"node_icon" query:"node_icon"`
-	NodeID    string    `thrift:"node_id,6" form:"node_id" json:"node_id" query:"node_id"`
+	// 实际为node_execute_id
+	NodeID string `thrift:"node_id,6" form:"node_id" json:"node_id" query:"node_id"`
+	// 与画布里的node_id对应
+	SchemaNodeID string `thrift:"schema_node_id,7" form:"schema_node_id" json:"schema_node_id" query:"schema_node_id"`
 }
 
 func NewNodeEvent() *NodeEvent {
@@ -35911,6 +35914,10 @@ func (p *NodeEvent) GetNodeID() (v string) {
 	return p.NodeID
 }
 
+func (p *NodeEvent) GetSchemaNodeID() (v string) {
+	return p.SchemaNodeID
+}
+
 var fieldIDToName_NodeEvent = map[int16]string{
 	1: "id",
 	2: "type",
@@ -35918,6 +35925,7 @@ var fieldIDToName_NodeEvent = map[int16]string{
 	4: "data",
 	5: "node_icon",
 	6: "node_id",
+	7: "schema_node_id",
 }
 
 func (p *NodeEvent) Read(iprot thrift.TProtocol) (err error) {
@@ -35981,6 +35989,14 @@ func (p *NodeEvent) Read(iprot thrift.TProtocol) (err error) {
 		case 6:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField6(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 7:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField7(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -36081,6 +36097,17 @@ func (p *NodeEvent) ReadField6(iprot thrift.TProtocol) error {
 	p.NodeID = _field
 	return nil
 }
+func (p *NodeEvent) ReadField7(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.SchemaNodeID = _field
+	return nil
+}
 
 func (p *NodeEvent) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -36110,6 +36137,10 @@ func (p *NodeEvent) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField6(oprot); err != nil {
 			fieldId = 6
+			goto WriteFieldError
+		}
+		if err = p.writeField7(oprot); err != nil {
+			fieldId = 7
 			goto WriteFieldError
 		}
 	}
@@ -36225,6 +36256,22 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
+}
+func (p *NodeEvent) writeField7(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("schema_node_id", thrift.STRING, 7); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.SchemaNodeID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 
 func (p *NodeEvent) String() string {

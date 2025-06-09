@@ -453,13 +453,26 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 	}
 
 	for _, ie := range wfExeEntity.InterruptEvents {
+		if ie.EventType == entity.InterruptEventLLM {
+			ie = &entity.InterruptEvent{
+				ID:            ie.ID,
+				NodeKey:       ie.ToolInterruptEvent.NodeKey,
+				NodeType:      ie.ToolInterruptEvent.NodeType,
+				NodeTitle:     ie.ToolInterruptEvent.NodeTitle,
+				NodeIcon:      ie.ToolInterruptEvent.NodeIcon,
+				EventType:     ie.ToolInterruptEvent.EventType,
+				InterruptData: ie.ToolInterruptEvent.InterruptData,
+			}
+		}
+
 		resp.Data.NodeEvents = append(resp.Data.NodeEvents, &workflow.NodeEvent{
-			ID:        strconv.FormatInt(ie.ID, 10),
-			NodeID:    string(ie.NodeKey),
-			NodeTitle: ie.NodeTitle,
-			NodeIcon:  ie.NodeIcon,
-			Data:      ie.InterruptData,
-			Type:      ie.EventType,
+			ID:           strconv.FormatInt(ie.ID, 10),
+			NodeID:       string(ie.NodeKey),
+			NodeTitle:    ie.NodeTitle,
+			NodeIcon:     ie.NodeIcon,
+			Data:         ie.InterruptData,
+			Type:         ie.EventType,
+			SchemaNodeID: string(ie.NodeKey),
 		})
 	}
 

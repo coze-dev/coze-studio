@@ -80,12 +80,12 @@ func (c *Clause) Resolve() (bool, error) {
 	case OperatorLengthLesserOrEqual:
 		return int64(reflect.ValueOf(leftV).Len()) <= rightV.(int64), nil
 	case OperatorContain:
-		if leftT.Kind() == reflect.String {
-			return strings.Contains(fmt.Sprintf("%v", leftV), rightV.(string)), nil
-		}
-
 		if leftV == nil { // treat it as empty slice
 			return false, nil
+		}
+
+		if leftT.Kind() == reflect.String {
+			return strings.Contains(fmt.Sprintf("%v", leftV), rightV.(string)), nil
 		}
 
 		leftValue := reflect.ValueOf(leftV)
@@ -98,12 +98,12 @@ func (c *Clause) Resolve() (bool, error) {
 
 		return false, nil
 	case OperatorNotContain:
-		if leftT.Kind() == reflect.String {
-			return !strings.Contains(fmt.Sprintf("%v", leftV), rightV.(string)), nil
-		}
-
 		if leftV == nil { // treat it as empty slice
 			return false, nil
+		}
+
+		if leftT.Kind() == reflect.String {
+			return !strings.Contains(fmt.Sprintf("%v", leftV), rightV.(string)), nil
 		}
 
 		leftValue := reflect.ValueOf(leftV)

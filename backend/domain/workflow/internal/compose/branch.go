@@ -17,7 +17,7 @@ import (
 func (s *NodeSchema) OutputPortCount() int {
 	switch s.Type {
 	case entity.NodeTypeSelector:
-		return len(s.Configs.([]*selector.OneClauseSchema)) + 1
+		return len(mustGetKey[[]*selector.OneClauseSchema]("Clauses", s.Configs)) + 1
 	case entity.NodeTypeQuestionAnswer:
 		if mustGetKey[qa.AnswerType]("AnswerType", s.Configs.(map[string]any)) == qa.AnswerByChoices {
 			if mustGetKey[qa.ChoiceType]("ChoiceType", s.Configs.(map[string]any)) == qa.FixedChoices {

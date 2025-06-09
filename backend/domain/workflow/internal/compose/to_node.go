@@ -223,24 +223,14 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 	return llmConf, nil
 }
 
-func (s *NodeSchema) ToSelectorConfig() (*selector.Config, error) {
-	conf := &selector.Config{}
-
-	orderedConfigs, ok := s.Configs.([]*selector.OneClauseSchema)
-	if !ok {
-		return nil, fmt.Errorf("invalid config for selector: %v", s.Configs)
+func (s *NodeSchema) ToSelectorConfig() *selector.Config {
+	return &selector.Config{
+		Clauses: mustGetKey[[]*selector.OneClauseSchema]("Clauses", s.Configs),
 	}
-
-	conf.Clauses = orderedConfigs
-
-	return conf, nil
 }
 
 func (s *NodeSchema) SelectorInputConverter(in map[string]any) (out []selector.Operants, err error) {
-	conf, ok := s.Configs.([]*selector.OneClauseSchema)
-	if !ok {
-		return nil, fmt.Errorf("invalid config for selector: %v", s.Configs)
-	}
+	conf := mustGetKey[[]*selector.OneClauseSchema]("Clauses", s.Configs)
 
 	for i, oneConf := range conf {
 		if oneConf.Single != nil {
@@ -297,14 +287,10 @@ func (s *NodeSchema) ToBatchConfig(inner compose.Runnable[map[string]any, map[st
 }
 
 func (s *NodeSchema) ToVariableAggregatorConfig(sc *WorkflowSchema) (*variableaggregator.Config, error) {
-	if err := s.SetFullSources(sc.GetAllNodes()); err != nil {
-		return nil, err
-	}
-
 	return &variableaggregator.Config{
 		MergeStrategy: s.Configs.(map[string]any)["MergeStrategy"].(variableaggregator.MergeStrategy),
 		GroupLen:      s.Configs.(map[string]any)["GroupToLen"].(map[string]int),
-		FullSources:   mustGetKey[map[string]*nodes.SourceInfo]("FullSources", s.Configs),
+		FullSources:   getKeyOrZero[map[string]*nodes.SourceInfo]("FullSources", s.Configs),
 		NodeKey:       s.Key,
 	}, nil
 }
@@ -432,10 +418,6 @@ func (s *NodeSchema) ToInputReceiverConfig() (*receiver.Config, error) {
 }
 
 func (s *NodeSchema) ToOutputEmitterConfig(sc *WorkflowSchema) (*emitter.Config, error) {
-	if err := s.SetFullSources(sc.GetAllNodes()); err != nil {
-		return nil, err
-	}
-
 	conf := &emitter.Config{
 		Template:    getKeyOrZero[string]("Template", s.Configs),
 		FullSources: getKeyOrZero[map[string]*nodes.SourceInfo]("FullSources", s.Configs),

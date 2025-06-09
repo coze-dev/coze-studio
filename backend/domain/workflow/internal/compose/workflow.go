@@ -220,7 +220,7 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 		innerWorkflow = inner.inner
 	}
 
-	ins, err := ns.New(ctx, innerWorkflow, w.schema)
+	ins, err := ns.New(ctx, innerWorkflow, w.schema, w.streamRun)
 	if err != nil {
 		return nil, err
 	}
@@ -228,12 +228,12 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 	var opts []compose.GraphAddNodeOpt
 	opts = append(opts, compose.WithNodeName(string(ns.Key)))
 
-	preHandler := ns.StatePreHandler()
+	preHandler := ns.StatePreHandler(w.streamRun)
 	if preHandler != nil {
 		opts = append(opts, preHandler)
 	}
 
-	postHandler := ns.StatePostHandler()
+	postHandler := ns.StatePostHandler(w.streamRun)
 	if postHandler != nil {
 		opts = append(opts, postHandler)
 	}

@@ -17,6 +17,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
+	"golang.org/x/exp/maps"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
@@ -443,14 +444,14 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	return llm, nil
 }
 
-func (l *LLM) prepare(ctx context.Context, in map[string]any, opts ...Option) (composeOpts []compose.Option, resumingEvent *entity.InterruptEvent, err error) {
+func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...Option) (composeOpts []compose.Option, resumingEvent *entity.InterruptEvent, err error) {
 	c := execute.GetExeCtx(ctx)
 	if c != nil {
 		resumingEvent = c.NodeCtx.ResumingEvent
 	}
 	var previousToolES map[string]*entity.ToolInterruptEvent
 
-	if len(in) == 0 && c != nil {
+	if c != nil && c.RootCtx.ResumeEvent != nil {
 		// check if we are not resuming, but previously interrupted. Interrupt immediately.
 		if resumingEvent == nil {
 			err := compose.ProcessState(ctx, func(ctx context.Context, state ToolInterruptEventStore) error {
@@ -471,8 +472,7 @@ func (l *LLM) prepare(ctx context.Context, in map[string]any, opts ...Option) (c
 		}
 	}
 
-	if l.requireCheckpoint {
-		c := execute.GetExeCtx(ctx)
+	if l.requireCheckpoint && c != nil {
 		checkpointID := fmt.Sprintf("%d_%s", c.RootCtx.RootExecuteID, c.NodeCtx.NodeKey)
 		composeOpts = append(composeOpts, compose.WithCheckPointID(checkpointID))
 	}
@@ -500,6 +500,8 @@ func (l *LLM) prepare(ctx context.Context, in map[string]any, opts ...Option) (c
 			if e != nil {
 				return e
 			}
+
+			allIEs = maps.Clone(allIEs)
 
 			resumeData, e = state.ResumeToolInterruptEvent(c.NodeKey, resumingEvent.ToolInterruptEvent.ToolCallID)
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
@@ -248,7 +249,7 @@ func GenState() compose.GenLocalState[*State] {
 	}
 }
 
-func (s *NodeSchema) StatePreHandler() compose.GraphAddNodeOpt {
+func (s *NodeSchema) StatePreHandler(stream bool) compose.GraphAddNodeOpt {
 	var (
 		handlers       []compose.StatePreHandler[map[string]any, *State]
 		streamHandlers []compose.StreamStatePreHandler[map[string]any, *State]
@@ -299,7 +300,7 @@ func (s *NodeSchema) StatePreHandler() compose.GraphAddNodeOpt {
 		})
 	}
 
-	if len(handlers) > 0 {
+	if len(handlers) > 0 || !stream {
 		handlerForVars := s.statePreHandlerForVars()
 		if handlerForVars != nil {
 			handlers = append(handlers, handlerForVars)
@@ -329,6 +330,12 @@ func (s *NodeSchema) StatePreHandler() compose.GraphAddNodeOpt {
 	if handlerForVars != nil {
 		streamHandlers = append(streamHandlers, handlerForVars)
 	}
+
+	handlerForStreamSource := s.streamStatePreHandlerForStreamSources()
+	if handlerForStreamSource != nil {
+		streamHandlers = append(streamHandlers, handlerForStreamSource)
+	}
+
 	if len(streamHandlers) > 0 {
 		streamHandler := func(ctx context.Context, in *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
 			var err error
@@ -432,20 +439,193 @@ func (s *NodeSchema) streamStatePreHandlerForVars() compose.StreamStatePreHandle
 	}
 }
 
-func (s *NodeSchema) StatePostHandler() compose.GraphAddNodeOpt {
-	if s.Type == entity.NodeTypeSelector {
-		handler := func(ctx context.Context, out *schema.StreamReader[int], state *State) (*schema.StreamReader[int], error) {
+func (s *NodeSchema) streamStatePreHandlerForStreamSources() compose.StreamStatePreHandler[map[string]any, *State] {
+	// if it does not have source info, do not add this pre handler
+	if s.Configs == nil {
+		return nil
+	}
+
+	switch s.Type {
+	case entity.NodeTypeVariableAggregator, entity.NodeTypeOutputEmitter:
+		return nil
+	case entity.NodeTypeExit:
+		terminatePlan := mustGetKey[vo.TerminatePlan]("TerminalPlan", s.Configs)
+		if terminatePlan != vo.ReturnVariables {
+			return nil
+		}
+	default:
+		// all other node can only accept non-stream inputs, relying on Eino's automatically stream concatenation.
+	}
+
+	sourceInfo := getKeyOrZero[map[string]*nodes.SourceInfo]("FullSources", s.Configs)
+	if len(sourceInfo) == 0 {
+		return nil
+	}
+	// check the node's input sources, if it does not have any streaming sources, no need to add pre handler
+	// if one input is a stream, then in the pre handler, will trim the KeyIsFinished suffix.
+	// if one input may be a stream, then in the pre handler, will resolve it first, then handle it.
+	type resolvedStreamSource struct {
+		intermediate     bool
+		mustBeStream     bool
+		subStreamSources map[string]resolvedStreamSource
+	}
+
+	var (
+		anyStream bool
+		checker   func(source *nodes.SourceInfo) bool
+	)
+	checker = func(source *nodes.SourceInfo) bool {
+		if source.FieldIsStream != nodes.FieldNotStream {
+			return true
+		}
+		for _, subSource := range source.SubSources {
+			if subAnyStream := checker(subSource); subAnyStream {
+				return true
+			}
+		}
+
+		return false
+	}
+	for _, source := range sourceInfo {
+		if hasStream := checker(source); hasStream {
+			anyStream = true
+			break
+		}
+	}
+
+	if !anyStream {
+		return nil
+	}
+
+	return func(ctx context.Context, in *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
+		resolved := map[string]resolvedStreamSource{}
+
+		var resolver func(source nodes.SourceInfo) (result *resolvedStreamSource, err error)
+		resolver = func(source nodes.SourceInfo) (result *resolvedStreamSource, err error) {
+			if source.IsIntermediate {
+				result = &resolvedStreamSource{
+					intermediate:     true,
+					subStreamSources: map[string]resolvedStreamSource{},
+				}
+				for key, subSource := range source.SubSources {
+					subResult, subE := resolver(*subSource)
+					if subE != nil {
+						return nil, subE
+					}
+					if subResult != nil {
+						result.subStreamSources[key] = *subResult
+					}
+				}
+
+				return result, nil
+			}
+
+			streamType := source.FieldIsStream
+			if streamType == nodes.FieldMaybeStream {
+				streamType, err = state.GetDynamicStreamType(source.FromNodeKey, source.FromPath[0])
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			if streamType == nodes.FieldNotStream {
+				return nil, nil
+			}
+
+			result = &resolvedStreamSource{
+				mustBeStream: true,
+			}
+			return result, nil
+		}
+
+		for key, source := range sourceInfo {
+			result, err := resolver(*source)
+			if err != nil {
+				return nil, err
+			}
+			if result != nil {
+				resolved[key] = *result
+			}
+		}
+
+		var converter func(v any, resolvedSource resolvedStreamSource) any
+		converter = func(v any, resolvedSource resolvedStreamSource) any {
+			if resolvedSource.intermediate {
+				vMap, ok := v.(map[string]any)
+				if !ok {
+					panic("intermediate value is not map[string]any")
+				}
+				outMap := make(map[string]any, len(vMap))
+				for k := range vMap {
+					subResolvedSource, ok := resolvedSource.subStreamSources[k]
+					if !ok { // not a stream field
+						outMap[k] = vMap[k]
+						continue
+					}
+
+					subV := converter(vMap[k], subResolvedSource)
+					outMap[k] = subV
+				}
+
+				return outMap
+			}
+
+			vStr, ok := v.(string)
+			if !ok {
+				panic("stream field is not string")
+			}
+
+			return strings.TrimSuffix(vStr, nodes.KeyIsFinished)
+		}
+
+		streamConverter := func(inChunk map[string]any) (outChunk map[string]any, chunkErr error) {
+			outChunk = make(map[string]any, len(inChunk))
+			for k, v := range inChunk {
+				if resolvedSource, ok := resolved[k]; !ok {
+					outChunk[k] = v // not a stream field
+				} else {
+					vOut := converter(v, resolvedSource)
+					outChunk[k] = vOut
+				}
+			}
+
+			return outChunk, nil
+		}
+
+		return schema.StreamReaderWithConvert(in, streamConverter), nil
+	}
+}
+
+func (s *NodeSchema) StatePostHandler(stream bool) compose.GraphAddNodeOpt {
+	if stream {
+		if s.Type == entity.NodeTypeSelector {
+			handler := func(ctx context.Context, out *schema.StreamReader[int], state *State) (*schema.StreamReader[int], error) {
+				state.ExecutedNodes[s.Key] = true
+				return out, nil
+			}
+			return compose.WithStreamStatePostHandler(handler)
+		}
+
+		handler := func(ctx context.Context, out *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
 			state.ExecutedNodes[s.Key] = true
 			return out, nil
 		}
 		return compose.WithStreamStatePostHandler(handler)
 	}
 
-	handler := func(ctx context.Context, out *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
+	if s.Type == entity.NodeTypeSelector {
+		handler := func(ctx context.Context, out int, state *State) (int, error) {
+			state.ExecutedNodes[s.Key] = true
+			return out, nil
+		}
+		return compose.WithStatePostHandler(handler)
+	}
+
+	handler := func(ctx context.Context, out map[string]any, state *State) (map[string]any, error) {
 		state.ExecutedNodes[s.Key] = true
 		return out, nil
 	}
-	return compose.WithStreamStatePostHandler(handler)
+	return compose.WithStatePostHandler(handler)
 }
 
 func GenStateModifierByEventType(e entity.InterruptEventType,

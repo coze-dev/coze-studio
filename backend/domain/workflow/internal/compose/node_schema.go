@@ -61,7 +61,14 @@ type Node struct {
 	Lambda *compose.Lambda
 }
 
-func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]any, map[string]any], sc *WorkflowSchema) (*Node, error) {
+func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]any, map[string]any],
+	sc *WorkflowSchema, streamRun bool) (*Node, error) {
+	if streamRun {
+		if err := s.SetFullSources(sc.GetAllNodes()); err != nil {
+			return nil, err
+		}
+	}
+
 	switch s.Type {
 	case entity.NodeTypeLambda:
 		if s.Lambda == nil {
@@ -141,10 +148,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 
 		return &Node{Lambda: lambda}, nil
 	case entity.NodeTypeSelector:
-		conf, err := s.ToSelectorConfig()
-		if err != nil {
-			return nil, err
-		}
+		conf := s.ToSelectorConfig()
 
 		sl, err := selector.NewSelector(ctx, conf)
 		if err != nil {

@@ -72,6 +72,10 @@ func (o *Operator) WillAccept(leftT, rightT reflect.Type) error {
 			return fmt.Errorf("operator %v right operant only accepts int64, not %v", *o, rightT)
 		}
 	case OperatorContain, OperatorNotContain:
+		if leftT == nil {
+			return nil
+		}
+
 		switch leftT.Kind() {
 		case reflect.String:
 			if rightT.Kind() != reflect.String {

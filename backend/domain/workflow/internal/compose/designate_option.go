@@ -250,6 +250,10 @@ func llmToolCallbackOptions(ctx context.Context, ns *NodeSchema, eventChan chan 
 					Type:                  entity.WorkflowTool,
 					WorkflowName:          wfTool.GetWorkflow().Name,
 					WorkflowTerminatePlan: wfTool.TerminatePlan(),
+					APIID:                 wfID,
+					APIName:               wfTool.GetWorkflow().Name,
+					PluginID:              wfID,
+					PluginName:            wfTool.GetWorkflow().Name,
 				}
 
 				toolHandler := execute.NewToolHandler(eventChan, funcInfo)

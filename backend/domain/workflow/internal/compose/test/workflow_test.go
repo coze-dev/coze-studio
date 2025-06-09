@@ -111,7 +111,7 @@ func TestAddSelector(t *testing.T) {
 	ns := &compose2.NodeSchema{
 		Key:  "selector",
 		Type: entity.NodeTypeSelector,
-		Configs: []*selector.OneClauseSchema{
+		Configs: map[string]any{"Clauses": []*selector.OneClauseSchema{
 			{
 				Single: ptr.Of(selector.OperatorEqual),
 			},
@@ -124,7 +124,7 @@ func TestAddSelector(t *testing.T) {
 					Relation: selector.ClauseRelationAND,
 				},
 			},
-		},
+		}},
 		InputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"0", selector.LeftKey},

@@ -1046,7 +1046,8 @@ struct NodeEvent{
     3: string node_title,
     4: string data,
     5: string node_icon,
-    6: string node_id,
+    6: string node_id, // 实际为node_execute_id
+    7: string schema_node_id, // 与画布里的node_id对应
 }
 
 struct GetUploadAuthTokenRequest {

@@ -21,6 +21,10 @@ func (s *NodeSchema) RequiresStreaming() bool {
 }
 
 func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema) error {
+	if len(s.InputSources) == 0 {
+		return nil
+	}
+
 	fullSource := make(map[string]*nodes.SourceInfo)
 	for i := range s.InputSources {
 		fInfo := s.InputSources[i]

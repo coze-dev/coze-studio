@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/components/tool"
@@ -234,29 +233,6 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 	outStream, err := s.stream(cancelCtx, in, callOpts...)
 	if err != nil {
 		if _, ok := einoCompose.ExtractInterruptInfo(err); ok {
-			count := 0
-			for {
-				wfExe, found, err := s.repo.GetWorkflowExecution(ctx, executeID)
-				if err != nil {
-					return nil, err
-				}
-
-				if !found {
-					return nil, fmt.Errorf("workflow execution does not exist, id: %d", executeID)
-				}
-
-				if wfExe.Status == entity.WorkflowInterrupted {
-					break
-				}
-
-				time.Sleep(5 * time.Millisecond)
-				count++
-
-				if count >= 10 {
-					return nil, fmt.Errorf("workflow execution %d is not interrupted, status is %v, cannot resume", executeID, wfExe.Status)
-				}
-			}
-
 			firstIE, found, err := s.repo.GetFirstInterruptEvent(ctx, executeID)
 			if err != nil {
 				return nil, err

@@ -42,7 +42,7 @@ type selectorBranch struct {
 }
 
 func (s *NodeSchema) toSelectorCallbackInput(in map[string]any, sc *WorkflowSchema) (map[string]any, error) {
-	config := s.Configs.([]*selector.OneClauseSchema)
+	config := mustGetKey[[]*selector.OneClauseSchema]("Clauses", s.Configs)
 	count := len(config)
 
 	output := make([]*selectorBranch, count)
@@ -186,7 +186,7 @@ func (s *NodeSchema) toSelectorCallbackInput(in map[string]any, sc *WorkflowSche
 }
 
 func (s *NodeSchema) toSelectorCallbackOutput(out int) (map[string]any, error) {
-	count := len(s.Configs.([]*selector.OneClauseSchema))
+	count := len(mustGetKey[[]*selector.OneClauseSchema]("Clauses", s.Configs))
 	if out == count {
 		return map[string]any{"result": "pass to else branch"}, nil
 	}
