@@ -22510,9 +22510,9 @@ func (p *UserTriggerConfig) String() string {
 }
 
 type DuplicateProductRequest struct {
-	ProductID  int64                            `thrift:"ProductID,1,required" form:"product_id,required" json:"product_id,required"`
+	ProductID  int64                            `thrift:"ProductID,1,required" form:"product_id,required" json:"product_id,string,required"`
 	EntityType product_common.ProductEntityType `thrift:"EntityType,2,required" form:"entity_type,required" json:"entity_type,required"`
-	SpaceID    *int64                           `thrift:"SpaceID,3,optional" form:"space_id" json:"space_id,omitempty"`
+	SpaceID    *int64                           `thrift:"SpaceID,3,optional" form:"space_id" json:"space_id,string,omitempty"`
 	Name       *string                          `thrift:"Name,4,optional" form:"name" json:"name,omitempty"`
 	Cookie     *string                          `thrift:"Cookie,100,optional" jsonlog:"-" json:"-" form:"Cookie" query:"Cookie"`
 	Base       *base.Base                       `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -23234,9 +23234,9 @@ func (p *DuplicateProductResponse) String() string {
 
 type DuplicateProductData struct {
 	// 复制后的新id
-	NewEntityID int64 `thrift:"NewEntityID,1" form:"new_entity_id" json:"new_entity_id"`
+	NewEntityID int64 `thrift:"NewEntityID,1" form:"new_entity_id" json:"new_entity_id,string"`
 	// workflow对应的插件id
-	NewPluginID *int64 `thrift:"NewPluginID,2,optional" form:"new_plugin_id" json:"new_plugin_id,omitempty"`
+	NewPluginID *int64 `thrift:"NewPluginID,2,optional" form:"new_plugin_id" json:"new_plugin_id,string,omitempty"`
 }
 
 func NewDuplicateProductData() *DuplicateProductData {

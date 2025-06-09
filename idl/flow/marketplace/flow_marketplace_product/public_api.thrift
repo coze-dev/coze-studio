@@ -535,9 +535,9 @@ enum TriggerEnable {
 }
 
 struct DuplicateProductRequest {
-    1: required i64 ProductID (agw.js_conv="str", agw.cli_conv="str", api.body = "product_id")
+    1: required i64 ProductID (agw.js_conv="str", api.js_conv="true", agw.cli_conv="str", api.body = "product_id")
     2: required product_common.ProductEntityType EntityType (api.body = "entity_type")
-    3: optional i64 SpaceID   (agw.js_conv="str", agw.cli_conv="str", api.body = "space_id")
+    3: optional i64 SpaceID   (agw.js_conv="str", api.js_conv="true", agw.cli_conv="str", api.body = "space_id")
     4: optional string Name (api.body = "name")
 
     100: optional string Cookie     (agw.source = "header", agw.key = "Cookie", go.tag="jsonlog:\"-\" json:\"-\"" ),
@@ -554,6 +554,6 @@ struct DuplicateProductResponse {
 
 struct DuplicateProductData {
     // 复制后的新id
-    1: i64 NewEntityID (agw.js_conv="str", agw.cli_conv="str", api.body = "new_entity_id")
-    2: optional i64 NewPluginID (agw.js_conv="str", agw.cli_conv="str", api.body = "new_plugin_id") // workflow对应的插件id
+    1: i64 NewEntityID (agw.js_conv="str", api.js_conv="str", agw.cli_conv="str", api.body = "new_entity_id")
+    2: optional i64 NewPluginID (agw.js_conv="str", api.js_conv="str", agw.cli_conv="str", api.body = "new_plugin_id") // workflow对应的插件id
 }
