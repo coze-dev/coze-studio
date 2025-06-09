@@ -215,7 +215,7 @@ func (dao *KnowledgeDocumentDAO) UpdateDocumentSliceInfo(ctx context.Context, do
 	if err != nil {
 		return err
 	}
-	k := dao.query.KnowledgeDocument
+	k := dao.Query.KnowledgeDocument
 	updates := map[string]any{}
 	updates[k.SliceCount.ColumnName().String()] = sliceCount
 	if totalSize != nil {

@@ -26,7 +26,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
-	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/dao"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/events"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
@@ -292,7 +291,7 @@ func (k *knowledgeSVC) ListKnowledge(ctx context.Context, request *ListKnowledge
 		Total:         total,
 	}, nil
 }
-func (k *knowledgeSVC) checkRequest(request *knowledge.CreateDocumentRequest) error {
+func (k *knowledgeSVC) checkRequest(request *CreateDocumentRequest) error {
 	if len(request.Documents) == 0 {
 		return errors.New("document is empty")
 	}
@@ -306,7 +305,7 @@ func (k *knowledgeSVC) checkRequest(request *knowledge.CreateDocumentRequest) er
 	return nil
 }
 
-func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *knowledge.CreateDocumentRequest) (response *knowledge.CreateDocumentResponse, err error) {
+func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *CreateDocumentRequest) (response *CreateDocumentResponse, err error) {
 	if err = k.checkRequest(request); err != nil {
 		return nil, err
 	}
@@ -1285,11 +1284,11 @@ func (k *knowledgeSVC) GetKnowledgeByID(ctx context.Context, request *GetKnowled
 	}, nil
 }
 
-func (k *knowledgeSVC) ListPhotoSlice(ctx context.Context, request *knowledge.ListPhotoSliceRequest) (response *knowledge.ListPhotoSliceResponse, err error) {
+func (k *knowledgeSVC) ListPhotoSlice(ctx context.Context, request *ListPhotoSliceRequest) (response *ListPhotoSliceResponse, err error) {
 	if request == nil {
 		return nil, errors.New("request is null")
 	}
-	sliceArr, total, err := k.sliceRepo.FindSliceByCondition(ctx, &dao.WhereSliceOpt{
+	sliceArr, total, err := k.sliceRepo.FindSliceByCondition(ctx, &entity.WhereSliceOpt{
 		KnowledgeID: request.KnowledgeID,
 		DocumentIDs: request.DocumentIDs,
 		Offset:      int64(ptr.From(request.Offset)),
@@ -1299,7 +1298,7 @@ func (k *knowledgeSVC) ListPhotoSlice(ctx context.Context, request *knowledge.Li
 	if err != nil {
 		return nil, err
 	}
-	response = &knowledge.ListPhotoSliceResponse{
+	response = &ListPhotoSliceResponse{
 		Total: int(total),
 		Slices: slices.Transform(sliceArr, func(item *model.KnowledgeDocumentSlice) *entity.Slice {
 			res := k.fromModelSlice(ctx, item)
@@ -1309,8 +1308,8 @@ func (k *knowledgeSVC) ListPhotoSlice(ctx context.Context, request *knowledge.Li
 	return response, nil
 }
 
-func (k *knowledgeSVC) ExtractPhotoCaption(ctx context.Context, request *knowledge.ExtractPhotoCaptionRequest) (response *knowledge.ExtractPhotoCaptionResponse, err error) {
-	response = &knowledge.ExtractPhotoCaptionResponse{}
+func (k *knowledgeSVC) ExtractPhotoCaption(ctx context.Context, request *ExtractPhotoCaptionRequest) (response *ExtractPhotoCaptionResponse, err error) {
+	response = &ExtractPhotoCaptionResponse{}
 	if request == nil {
 		return nil, errors.New("request is null")
 	}
