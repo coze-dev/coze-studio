@@ -586,8 +586,12 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 			if v, ok := sliceMap[slices[i].ID]; ok {
 				sliceEntity.RawContent = v.RawContent
 			}
+		case knowledgeModel.DocumentTypeImage:
+			img := fmt.Sprintf(`<img src="" data-tos-key="%s">`, documentMap[slices[i].DocumentID].URI)
+			sliceEntity.RawContent = []*knowledgeModel.SliceContent{
+				{Type: knowledgeModel.SliceContentTypeText, Text: ptr.Of(k.formatSliceContent(ctx, img+slices[i].Content))},
+			}
 		default:
-
 		}
 
 		results = append(results, &knowledgeModel.RetrieveSlice{

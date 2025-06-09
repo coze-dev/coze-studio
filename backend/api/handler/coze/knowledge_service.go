@@ -242,7 +242,11 @@ func UpdatePhotoCaption(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.UpdatePhotoCaptionResponse)
-
+	resp, err = application.KnowledgeSVC.UpdatePhotoCaption(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -258,7 +262,11 @@ func ListPhoto(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.ListPhotoResponse)
-
+	resp, err = application.KnowledgeSVC.ListPhoto(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -274,7 +282,11 @@ func PhotoDetail(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.PhotoDetailResponse)
-
+	resp, err = application.KnowledgeSVC.PhotoDetail(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -471,6 +483,26 @@ func GetIconForDataset(ctx context.Context, c *app.RequestContext) {
 
 	resp := new(dataset.GetIconResponse)
 	resp, err = application.KnowledgeSVC.GetIconForDataset(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ExtractPhotoCaption .
+// @router /api/knowledge/photo/extract_caption [POST]
+func ExtractPhotoCaption(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.ExtractPhotoCaptionRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.ExtractPhotoCaptionResponse)
+	resp, err = application.KnowledgeSVC.ExtractPhotoCaption(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

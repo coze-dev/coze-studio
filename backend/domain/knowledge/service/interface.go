@@ -25,6 +25,7 @@ type Knowledge interface {
 	CreateDocument(ctx context.Context, request *CreateDocumentRequest) (response *CreateDocumentResponse, err error)
 	UpdateDocument(ctx context.Context, request *UpdateDocumentRequest) error
 	DeleteDocument(ctx context.Context, request *DeleteDocumentRequest) error
+	ExtractPhotoCaption(ctx context.Context, request *ExtractPhotoCaptionRequest) (response *ExtractPhotoCaptionResponse, err error)
 	ListDocument(ctx context.Context, request *ListDocumentRequest) (response *ListDocumentResponse, err error)
 	MGetDocumentProgress(ctx context.Context, request *MGetDocumentProgressRequest) (response *MGetDocumentProgressResponse, err error)
 	ResegmentDocument(ctx context.Context, request *ResegmentDocumentRequest) (response *ResegmentDocumentResponse, err error)
@@ -37,6 +38,7 @@ type Knowledge interface {
 	UpdateSlice(ctx context.Context, request *UpdateSliceRequest) error
 	DeleteSlice(ctx context.Context, request *DeleteSliceRequest) error
 	ListSlice(ctx context.Context, request *ListSliceRequest) (response *ListSliceResponse, err error)
+	ListPhotoSlice(ctx context.Context, request *ListPhotoSliceRequest) (response *ListPhotoSliceResponse, err error)
 	GetSlice(ctx context.Context, request *GetSliceRequest) (response *GetSliceResponse, err error)
 	Retrieve(ctx context.Context, request *RetrieveRequest) (response *RetrieveResponse, err error)
 	CreateDocumentReview(ctx context.Context, request *CreateDocumentReviewRequest) (response *CreateDocumentReviewResponse, err error)
@@ -337,5 +339,24 @@ type MigrateKnowledgeRequest struct {
 type GetKnowledgeByIDRequest = knowledge.GetKnowledgeByIDRequest
 type GetKnowledgeByIDResponse = knowledge.GetKnowledgeByIDResponse
 
+type ListPhotoSliceRequest struct {
+	KnowledgeID int64
+	DocumentIDs []int64
+	Limit       *int
+	Offset      *int
+	HasCaption  *bool
+}
+type ListPhotoSliceResponse struct {
+	Slices []*entity.Slice
+	Total  int
+}
+
+type ExtractPhotoCaptionRequest struct {
+	DocumentID int64
+}
+
+type ExtractPhotoCaptionResponse struct {
+	Caption string
+}
 type MGetKnowledgeByIDRequest = knowledge.MGetKnowledgeByIDRequest
 type MGetKnowledgeByIDResponse = knowledge.MGetKnowledgeByIDResponse

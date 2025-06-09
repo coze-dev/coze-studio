@@ -107,6 +107,7 @@ func Register(r *server.Hertz) {
 				_photo := _knowledge.Group("/photo", _photoMw()...)
 				_photo.POST("/caption", append(_updatephotocaptionMw(), coze.UpdatePhotoCaption)...)
 				_photo.POST("/detail", append(_photodetailMw(), coze.PhotoDetail)...)
+				_photo.POST("/extract_caption", append(_extractphotocaptionMw(), coze.ExtractPhotoCaption)...)
 				_photo.POST("/list", append(_listphotoMw(), coze.ListPhoto)...)
 			}
 			{

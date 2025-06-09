@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 	"time"
 
 	"github.com/bytedance/sonic"
 
 	modelCommon "code.byted.org/flow/opencoze/backend/api/model/common"
-	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/api/model/knowledge/document"
@@ -299,7 +299,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 			FileExtension:    parser.FileExtension(GetExtension(req.GetDocumentBases()[i].GetSourceInfo().GetTosURI())),
 			Source:           docSource,
 			IsAppend:         req.GetIsAppend(),
-			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet),
+			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet, req.GetChunkStrategy().CaptionType),
 			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
 			TableInfo: entity.TableInfo{
 				Columns: convertTableColumns2Entity(req.GetDocumentBases()[i].GetTableMeta()),
@@ -312,7 +312,10 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "create document failed, err: %v", err)
-		return dataset.NewCreateDocumentResponse(), err
+		resp := dataset.NewCreateDocumentResponse()
+		resp.Code = 500
+		resp.Msg = fmt.Sprintf("create document failed, err: %v", err)
+		return resp, nil
 	}
 	resp := dataset.NewCreateDocumentResponse()
 	resp.DocumentInfos = make([]*dataset.DocumentInfo, 0)
@@ -441,7 +444,7 @@ func (k *KnowledgeApplicationService) Resegment(ctx context.Context, req *datase
 		resegmentResp, err := k.DomainSVC.ResegmentDocument(ctx, &service.ResegmentDocumentRequest{
 			DocumentID:       docID,
 			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
-			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), nil),
+			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), nil, req.GetChunkStrategy().CaptionType),
 		})
 		if err != nil {
 			logs.CtxErrorf(ctx, "resegment document failed, err: %v", err)
@@ -470,7 +473,7 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 	if len(listResp.Documents) != 1 {
 		return dataset.NewCreateSliceResponse(), errors.New("document not found")
 	}
-	sliceEntity := &knowledgeModel.Slice{
+	sliceEntity := &model.Slice{
 		Info: model.Info{
 			CreatorID: *uid,
 		},
@@ -484,9 +487,9 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 			return dataset.NewCreateSliceResponse(), err
 		}
 	} else {
-		sliceEntity.RawContent = []*knowledgeModel.SliceContent{
+		sliceEntity.RawContent = []*model.SliceContent{
 			{
-				Type: knowledgeModel.SliceContentTypeText,
+				Type: model.SliceContentTypeText,
 				Text: req.RawText,
 			},
 		}
@@ -549,7 +552,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 	if len(listResp.Documents) != 1 {
 		return dataset.NewUpdateSliceResponse(), errors.New("document not found")
 	}
-	sliceEntity := &knowledgeModel.Slice{
+	sliceEntity := &model.Slice{
 		Info: model.Info{
 			ID:        req.GetSliceID(),
 			CreatorID: *uid,
@@ -563,9 +566,9 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 			return dataset.NewUpdateSliceResponse(), err
 		}
 	} else {
-		sliceEntity.RawContent = []*knowledgeModel.SliceContent{
+		sliceEntity.RawContent = []*model.SliceContent{
 			{
-				Type: knowledgeModel.SliceContentTypeText,
+				Type: model.SliceContentTypeText,
 				Text: req.RawText,
 			},
 		}
@@ -583,7 +586,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 	return &dataset.UpdateSliceResponse{}, nil
 }
 
-func packTableSliceColumnData(ctx context.Context, slice *knowledgeModel.Slice, text string, doc *entity.Document) error {
+func packTableSliceColumnData(ctx context.Context, slice *model.Slice, text string, doc *entity.Document) error {
 	columnMap := map[int64]string{}
 	columnTypeMap := map[int64]cd.TableColumnType{}
 	for i := range doc.TableInfo.Columns {
@@ -596,10 +599,10 @@ func packTableSliceColumnData(ctx context.Context, slice *knowledgeModel.Slice, 
 		logs.CtxErrorf(ctx, "unmarshal raw text failed, err: %v", err)
 		return err
 	}
-	slice.RawContent = []*knowledgeModel.SliceContent{
+	slice.RawContent = []*model.SliceContent{
 		{
-			Type: knowledgeModel.SliceContentTypeTable,
-			Table: &knowledgeModel.SliceTable{
+			Type: model.SliceContentTypeTable,
+			Table: &model.SliceTable{
 				Columns: make([]*cd.ColumnData, 0, len(dataMap)),
 			},
 		},
@@ -882,5 +885,157 @@ func (k *KnowledgeApplicationService) GetIconForDataset(ctx context.Context, req
 		URL: iconUrl,
 		URI: uri,
 	}
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) UpdatePhotoCaption(ctx context.Context, req *dataset.UpdatePhotoCaptionRequest) (*dataset.UpdatePhotoCaptionResponse, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
+	}
+	resp := dataset.NewUpdatePhotoCaptionResponse()
+	listResp, err := k.DomainSVC.ListSlice(ctx, &service.ListSliceRequest{DocumentID: ptr.Of(req.DocumentID)})
+	if err != nil {
+		logs.CtxErrorf(ctx, "list slice failed, err: %v", err)
+		return resp, err
+	}
+	if len(listResp.Slices) == 0 {
+		return resp, nil
+	}
+	err = k.DomainSVC.UpdateSlice(ctx, &service.UpdateSliceRequest{
+		SliceID:    listResp.Slices[0].ID,
+		DocumentID: req.DocumentID,
+		CreatorID:  ptr.From(uid),
+		RawContent: []*model.SliceContent{{
+			Type: model.SliceContentTypeText,
+			Text: ptr.Of(req.Caption),
+		}},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "update slice failed, err: %v", err)
+		return resp, err
+	}
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) ListPhoto(ctx context.Context, req *dataset.ListPhotoRequest) (*dataset.ListPhotoResponse, error) {
+	resp := dataset.NewListPhotoResponse()
+	var err error
+	var offset int
+	if req.GetPage() >= 1 {
+		offset = int(req.GetSize() * (req.GetPage() - 1))
+	}
+	listPhotoSliceReq := service.ListPhotoSliceRequest{
+		KnowledgeID: req.GetDatasetID(),
+		Limit:       ptr.Of(int(req.GetSize())),
+		Offset:      &offset,
+	}
+	if req.Filter != nil {
+		listPhotoSliceReq.HasCaption = req.Filter.HasCaption
+	}
+	listResp, err := k.DomainSVC.ListPhotoSlice(ctx, &listPhotoSliceReq)
+	if err != nil {
+		logs.CtxErrorf(ctx, "list document failed, err: %v", err)
+		return resp, err
+	}
+	if len(listResp.Slices) == 0 {
+		resp.Total = int32(listResp.Total)
+		return resp, nil
+	}
+	docIDs := slices.Transform(listResp.Slices, func(item *entity.Slice) int64 {
+		return item.DocumentID
+	})
+	listDocResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{DocumentIDs: docIDs})
+	if err != nil {
+		logs.CtxErrorf(ctx, "get documents by slice ids failed, err: %v", err)
+		return resp, err
+	}
+	photos := k.packPhotoInfo(listResp.Slices, listDocResp.Documents)
+	sort.SliceStable(photos, func(i, j int) bool {
+		return photos[i].UpdateTime > photos[j].UpdateTime
+	})
+	resp.PhotoInfos = photos
+	resp.Total = int32(listResp.Total)
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) packPhotoInfo(slices []*entity.Slice, documents []*entity.Document) []*dataset.PhotoInfo {
+	captions := map[int64]string{}
+	for i := range slices {
+		captions[slices[i].DocumentID] = slices[i].GetSliceContent()
+	}
+	photoInfo := make([]*dataset.PhotoInfo, 0, len(documents))
+	for _, document := range documents {
+		photoStatus := convertDocumentStatus2Model(document.Status)
+		photoInfo = append(photoInfo, &dataset.PhotoInfo{
+			Name:       document.Name,
+			DocumentID: document.ID,
+			URL:        document.URL,
+			Caption:    captions[document.ID],
+			CreateTime: int32(document.CreatedAtMs / 1000),
+			UpdateTime: int32(document.UpdatedAtMs / 1000),
+			CreatorID:  document.CreatorID,
+			Type:       string(document.FileExtension),
+			Size:       int32(document.Size),
+			Status:     photoStatus,
+			SourceType: dataset.DocumentSource_Document,
+		})
+	}
+	return photoInfo
+}
+
+func (k *KnowledgeApplicationService) PhotoDetail(ctx context.Context, req *dataset.PhotoDetailRequest) (*dataset.PhotoDetailResponse, error) {
+	resp := dataset.NewPhotoDetailResponse()
+	if len(req.GetDocumentIds()) == 0 {
+		resp.Code = 400
+		resp.Msg = "document ids is empty"
+		return resp, nil
+	}
+	docIDs, err := slices.TransformWithErrorCheck(req.GetDocumentIds(), func(s string) (int64, error) {
+		id, err := strconv.ParseInt(s, 10, 64)
+		return id, err
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
+		return resp, err
+	}
+	listResp, err := k.DomainSVC.ListPhotoSlice(ctx, &service.ListPhotoSliceRequest{DocumentIDs: docIDs})
+	if err != nil {
+		logs.CtxErrorf(ctx, "list photo slice failed, err: %v", err)
+		return resp, err
+	}
+	listDocResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{DocumentIDs: docIDs})
+	if err != nil {
+		logs.CtxErrorf(ctx, "get documents by slice ids failed, err: %v", err)
+		return resp, err
+	}
+	if err != nil {
+		logs.CtxErrorf(ctx, "get documents by slice ids failed, err: %v", err)
+		return resp, err
+	}
+	photos := k.packPhotoInfo(listResp.Slices, listDocResp.Documents)
+	sort.SliceStable(photos, func(i, j int) bool {
+		return photos[i].UpdateTime > photos[j].UpdateTime
+	})
+	resp.PhotoInfos = slices.ToMap(photos, func(item *dataset.PhotoInfo) (string, *dataset.PhotoInfo) {
+		return strconv.FormatInt(item.DocumentID, 10), item
+	})
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) ExtractPhotoCaption(ctx context.Context, req *dataset.ExtractPhotoCaptionRequest) (*dataset.ExtractPhotoCaptionResponse, error) {
+	resp := dataset.NewExtractPhotoCaptionResponse()
+	if req.GetDocumentID() == 0 {
+		resp.Code = 400
+		resp.Msg = "document id is empty"
+		return resp, nil
+	}
+	extractResp, err := k.DomainSVC.ExtractPhotoCaption(ctx, &service.ExtractPhotoCaptionRequest{DocumentID: req.GetDocumentID()})
+	if err != nil {
+		resp.Code = 500
+		resp.Msg = err.Error()
+		return resp, nil
+	}
+	resp.Caption = extractResp.Caption
 	return resp, nil
 }

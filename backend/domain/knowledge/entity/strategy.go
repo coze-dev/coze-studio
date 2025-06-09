@@ -22,6 +22,7 @@ type ParsingStrategy struct {
 	RowsCount     int   `json:"rows_count"`      // 读取数据行数
 
 	// Image
+	CaptionType *parser.ImageAnnotationType `json:"caption_type"`
 }
 type ParsingType int64
 
@@ -33,7 +34,6 @@ const (
 // ChunkingStrategy for document chunk before indexing
 type ChunkingStrategy struct {
 	ChunkType parser.ChunkType `json:"chunk_type"`
-
 	// custom chunk config
 	ChunkSize       int64  `json:"chunk_size"` // 分段最大长度
 	Separator       string `json:"separator"`  // 分段标识符

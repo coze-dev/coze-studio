@@ -322,12 +322,14 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		}); err != nil {
 			return fmt.Errorf("[indexDocument] search store create failed, %w", err)
 		}
-
+		// 图片型知识库kn:doc:slice = 1:n:n，可能content为空，不需要写入
+		if doc.Type == knowledge.DocumentTypeImage && len(ssDocs) == 1 && len(ssDocs[0].Content) == 0 {
+			continue
+		}
 		ss, err := manager.GetSearchStore(ctx, collectionName)
 		if err != nil {
 			return fmt.Errorf("[indexDocument] search store get failed, %w", err)
 		}
-
 		if _, err = ss.Store(ctx, ssDocs,
 			searchstore.WithPartition(strconv.FormatInt(doc.ID, 10)),
 			searchstore.WithIndexingFields(indexingFields),

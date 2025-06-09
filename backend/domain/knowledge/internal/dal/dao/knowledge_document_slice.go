@@ -47,7 +47,7 @@ func (dao *KnowledgeDocumentSliceDAO) BatchSetStatus(ctx context.Context, ids []
 	if reason != "" {
 		updates[s.FailReason.ColumnName().String()] = reason
 	}
-
+	updates[s.UpdatedAt.ColumnName().String()] = time.Now().UnixMilli()
 	_, err := s.WithContext(ctx).Where(s.ID.In(ids...)).Updates(updates)
 	return err
 }
@@ -227,10 +227,13 @@ func (dao *KnowledgeDocumentSliceDAO) FindSliceByCondition(ctx context.Context, 
 	if opts.DocumentID != 0 {
 		do = do.Where(s.DocumentID.Eq(opts.DocumentID))
 	}
+	if len(opts.DocumentIDs) != 0 {
+		do = do.Where(s.DocumentID.In(opts.DocumentIDs...))
+	}
 	if opts.KnowledgeID != 0 {
 		do = do.Where(s.KnowledgeID.Eq(opts.KnowledgeID))
 	}
-	if opts.DocumentID == 0 && opts.KnowledgeID == 0 {
+	if opts.DocumentID == 0 && opts.KnowledgeID == 0 && len(opts.DocumentIDs) == 0 {
 		return nil, 0, errors.New("documentID and knowledgeID cannot be empty at the same time")
 	}
 	if opts.Keyword != nil && len(*opts.Keyword) != 0 {
@@ -242,6 +245,13 @@ func (dao *KnowledgeDocumentSliceDAO) FindSliceByCondition(ctx context.Context, 
 		do = do.Limit(int(opts.PageSize))
 	} else {
 		do = do.Limit(50)
+	}
+	if opts.NotEmpty != nil {
+		if ptr.From(opts.NotEmpty) {
+			do = do.Where(s.Content.Neq(""))
+		} else {
+			do = do.Where(s.Content.Eq(""))
+		}
 	}
 	pos, err := do.Find()
 	if err != nil {
@@ -275,7 +285,10 @@ func (dao *KnowledgeDocumentSliceDAO) IncrementHitCount(ctx context.Context, sli
 		return nil
 	}
 	s := dao.Query.KnowledgeDocumentSlice
-	_, err := s.WithContext(ctx).Debug().Where(s.ID.In(sliceIDs...)).UpdateColumn(s.Hit, gorm.Expr("hit + ?", 1))
+	_, err := s.WithContext(ctx).Debug().Where(s.ID.In(sliceIDs...)).Updates(map[string]interface{}{
+		s.Hit.ColumnName().String():       gorm.Expr("hit +?", 1),
+		s.UpdatedAt.ColumnName().String(): time.Now().UnixMilli(),
+	})
 	return err
 }
 

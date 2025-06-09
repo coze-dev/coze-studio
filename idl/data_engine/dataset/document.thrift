@@ -332,3 +332,15 @@ struct ValidateTableSchemaResponse {
     255: optional base.BaseResp BaseResp(api.none="true")
 }
 
+struct ExtractPhotoCaptionRequest {
+    1: required i64 document_id (agw.js_conv="str", agw.key="document_id", api.js_conv="true", api.body="document_id")
+
+    255: optional base.Base Base
+}
+
+struct ExtractPhotoCaptionResponse {
+    1: string caption
+    253: required i64 code
+    254: required string msg
+    255: required base.BaseResp BaseResp(api.none="true")
+}

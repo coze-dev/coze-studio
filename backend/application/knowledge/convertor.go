@@ -398,11 +398,12 @@ func convertColumnType2Entity(columnType dataset.ColumnType) document.TableColum
 	}
 }
 
-func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dataset.TableSheet) *entity.ParsingStrategy {
+func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dataset.TableSheet, captionType *dataset.CaptionType) *entity.ParsingStrategy {
 	if strategy == nil && sheet == nil {
 		return nil
 	}
 	res := &entity.ParsingStrategy{}
+	res.CaptionType = convertCaptionType2Entity(captionType)
 	if strategy != nil {
 		res.ExtractImage = strategy.GetImageExtraction()
 		res.ExtractTable = strategy.GetTableExtraction()
@@ -496,7 +497,19 @@ func GetExtension(uri string) string {
 	}
 	return ""
 }
-
+func convertCaptionType2Entity(ct *dataset.CaptionType) *parser.ImageAnnotationType {
+	if ct == nil {
+		return nil
+	}
+	switch ptr.From(ct) {
+	case dataset.CaptionType_Auto:
+		return ptr.Of(parser.ImageAnnotationTypeModel)
+	case dataset.CaptionType_Manual:
+		return ptr.Of(parser.ImageAnnotationTypeManual)
+	default:
+		return ptr.Of(parser.ImageAnnotationTypeModel)
+	}
+}
 func convertDatasetStatus2Entity(status dataset.DatasetStatus) model.KnowledgeStatus {
 	switch status {
 	case dataset.DatasetStatus_DatasetReady:
@@ -672,7 +685,7 @@ func convertCreateDocReviewReq(req *dataset.CreateDocumentReviewRequest) *servic
 	}
 	resp := &service.CreateDocumentReviewRequest{
 		ChunkStrategy:   convertChunkingStrategy2Entity(req.ChunkStrategy),
-		ParsingStrategy: convertParsingStrategy2Entity(req.ParsingStrategy, nil),
+		ParsingStrategy: convertParsingStrategy2Entity(req.ParsingStrategy, nil, req.GetChunkStrategy().CaptionType),
 	}
 	resp.KnowledgeID = req.GetDatasetID()
 	resp.Reviews = slices.Transform(req.GetReviews(), func(r *dataset.ReviewInput) *service.ReviewInput {

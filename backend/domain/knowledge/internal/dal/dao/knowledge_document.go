@@ -216,7 +216,12 @@ func (dao *KnowledgeDocumentDAO) UpdateDocumentSliceInfo(ctx context.Context, do
 		return err
 	}
 	k := dao.Query.KnowledgeDocument
-	d := &model.KnowledgeDocument{SliceCount: sliceCount, Size: ptr.From(totalSize), CreatedAt: time.Now().UnixMilli()}
-	_, err = k.WithContext(ctx).Debug().Where(k.ID.Eq(documentID)).Updates(d)
+	updates := map[string]any{}
+	updates[k.SliceCount.ColumnName().String()] = sliceCount
+	if totalSize != nil {
+		updates[k.Size.ColumnName().String()] = ptr.From(totalSize)
+	}
+	updates[k.UpdatedAt.ColumnName().String()] = time.Now().UnixMilli()
+	_, err = k.WithContext(ctx).Debug().Where(k.ID.Eq(documentID)).Updates(updates)
 	return err
 }

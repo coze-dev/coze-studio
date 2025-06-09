@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
@@ -24,6 +25,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/events"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
@@ -52,22 +54,23 @@ import (
 
 func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHandler) {
 	svc := &knowledgeSVC{
-		knowledgeRepo:       repository.NewKnowledgeDAO(config.DB),
-		documentRepo:        repository.NewKnowledgeDocumentDAO(config.DB),
-		sliceRepo:           repository.NewKnowledgeDocumentSliceDAO(config.DB),
-		reviewRepo:          repository.NewKnowledgeDocumentReviewDAO(config.DB),
-		idgen:               config.IDGen,
-		rdb:                 config.RDB,
-		producer:            config.Producer,
-		searchStoreManagers: config.SearchStoreManagers,
-		parseManager:        config.ParseManager,
-		storage:             config.Storage,
-		imageX:              config.ImageX,
-		reranker:            config.Reranker,
-		rewriter:            config.Rewriter,
-		nl2Sql:              config.NL2Sql,
-		enableCompactTable:  ptr.FromOrDefault(config.EnableCompactTable, true),
-		CacheCli:            config.CacheCli,
+		knowledgeRepo:             repository.NewKnowledgeDAO(config.DB),
+		documentRepo:              repository.NewKnowledgeDocumentDAO(config.DB),
+		sliceRepo:                 repository.NewKnowledgeDocumentSliceDAO(config.DB),
+		reviewRepo:                repository.NewKnowledgeDocumentReviewDAO(config.DB),
+		idgen:                     config.IDGen,
+		rdb:                       config.RDB,
+		producer:                  config.Producer,
+		searchStoreManagers:       config.SearchStoreManagers,
+		parseManager:              config.ParseManager,
+		storage:                   config.Storage,
+		imageX:                    config.ImageX,
+		reranker:                  config.Reranker,
+		rewriter:                  config.Rewriter,
+		nl2Sql:                    config.NL2Sql,
+		enableCompactTable:        ptr.FromOrDefault(config.EnableCompactTable, true),
+		CacheCli:                  config.CacheCli,
+		isAutoAnnotationSupported: config.IsAutoAnnotationSupported,
 	}
 	if svc.reranker == nil {
 		svc.reranker = rrf.NewRRFReranker(0)
@@ -80,20 +83,21 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHa
 }
 
 type KnowledgeSVCConfig struct {
-	DB                  *gorm.DB                       // required
-	IDGen               idgen.IDGenerator              // required
-	RDB                 rdb.RDB                        // required: 表格存储
-	Producer            eventbus.Producer              // required: 文档 indexing 过程走 mq 异步处理
-	SearchStoreManagers []searchstore.Manager          // required: 向量 / 全文
-	ParseManager        parser.Manager                 // optional: 文档切分与处理能力, default builtin parser
-	Storage             storage.Storage                // required: oss
-	ImageX              imagex.ImageX                  // TODO: 确认下 oss 是否返回 uri / url
-	Rewriter            messages2query.MessagesToQuery // optional: 未配置时不改写
-	Reranker            rerank.Reranker                // optional: 未配置时默认 rrf
-	NL2Sql              nl2sql.NL2SQL                  // optional: 未配置时默认不支持
-	EnableCompactTable  *bool                          // optional: 表格数据压缩，默认 true
-	OCR                 ocr.OCR                        // optional: ocr, 未提供时 ocr 功能不可用
-	CacheCli            cache.Cmdable                  // optional: 缓存实现
+	DB                        *gorm.DB                       // required
+	IDGen                     idgen.IDGenerator              // required
+	RDB                       rdb.RDB                        // required: 表格存储
+	Producer                  eventbus.Producer              // required: 文档 indexing 过程走 mq 异步处理
+	SearchStoreManagers       []searchstore.Manager          // required: 向量 / 全文
+	ParseManager              parser.Manager                 // optional: 文档切分与处理能力, default builtin parser
+	Storage                   storage.Storage                // required: oss
+	ImageX                    imagex.ImageX                  // TODO: 确认下 oss 是否返回 uri / url
+	Rewriter                  messages2query.MessagesToQuery // optional: 未配置时不改写
+	Reranker                  rerank.Reranker                // optional: 未配置时默认 rrf
+	NL2Sql                    nl2sql.NL2SQL                  // optional: 未配置时默认不支持
+	EnableCompactTable        *bool                          // optional: 表格数据压缩，默认 true
+	OCR                       ocr.OCR                        // optional: ocr, 未提供时 ocr 功能不可用
+	CacheCli                  cache.Cmdable                  // optional: 缓存实现
+	IsAutoAnnotationSupported bool                           // 是否支持了图片自动标注
 }
 
 type knowledgeSVC struct {
@@ -102,18 +106,19 @@ type knowledgeSVC struct {
 	sliceRepo     repository.KnowledgeDocumentSliceRepo
 	reviewRepo    repository.KnowledgeDocumentReviewRepo
 
-	idgen               idgen.IDGenerator
-	rdb                 rdb.RDB
-	producer            eventbus.Producer
-	searchStoreManagers []searchstore.Manager
-	parseManager        parser.Manager
-	rewriter            messages2query.MessagesToQuery
-	reranker            rerank.Reranker
-	storage             storage.Storage
-	nl2Sql              nl2sql.NL2SQL
-	imageX              imagex.ImageX
-	CacheCli            cache.Cmdable
-	enableCompactTable  bool // 表格数据压缩
+	idgen                     idgen.IDGenerator
+	rdb                       rdb.RDB
+	producer                  eventbus.Producer
+	searchStoreManagers       []searchstore.Manager
+	parseManager              parser.Manager
+	rewriter                  messages2query.MessagesToQuery
+	reranker                  rerank.Reranker
+	storage                   storage.Storage
+	nl2Sql                    nl2sql.NL2SQL
+	imageX                    imagex.ImageX
+	CacheCli                  cache.Cmdable
+	enableCompactTable        bool // 表格数据压缩
+	isAutoAnnotationSupported bool // 是否支持了图片自动标注
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *CreateKnowledgeRequest) (response *CreateKnowledgeResponse, err error) {
@@ -286,15 +291,27 @@ func (k *knowledgeSVC) ListKnowledge(ctx context.Context, request *ListKnowledge
 		Total:         total,
 	}, nil
 }
+func (k *knowledgeSVC) checkRequest(request *CreateDocumentRequest) error {
+	if len(request.Documents) == 0 {
+		return errors.New("document is empty")
+	}
+	for i := range request.Documents {
+		if request.Documents[i].Type == knowledgeModel.DocumentTypeImage && ptr.From(request.Documents[i].ParsingStrategy.CaptionType) == parser.ImageAnnotationTypeModel {
+			if !k.isAutoAnnotationSupported {
+				return errors.New("auto caption type is not supported")
+			}
+		}
+	}
+	return nil
+}
 
 func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *CreateDocumentRequest) (response *CreateDocumentResponse, err error) {
-	if len(request.Documents) == 0 {
-		return nil, errors.New("document is empty")
+	if err = k.checkRequest(request); err != nil {
+		return nil, err
 	}
 	if err = k.documentsURL2URI(ctx, request.Documents); err != nil {
 		return nil, errors.New("documents url to uri fail")
 	}
-
 	userID := request.Documents[0].CreatorID
 	spaceID := request.Documents[0].SpaceID
 	documentSource := request.Documents[0].Source
@@ -681,6 +698,9 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, request *UpdateSliceRequ
 		docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		sliceEntity := entity.Slice{RawContent: request.RawContent}
 		sliceInfo[0].Content = sliceEntity.GetSliceContent()
+	}
+	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeImage) {
+		sliceInfo[0].Content = ptr.From(request.RawContent[0].Text)
 	}
 	sliceInfo[0].UpdatedAt = time.Now().UnixMilli()
 	sliceInfo[0].Status = int32(knowledgeModel.SliceStatusInit)
@@ -1264,6 +1284,65 @@ func (k *knowledgeSVC) GetKnowledgeByID(ctx context.Context, request *GetKnowled
 	}, nil
 }
 
+func (k *knowledgeSVC) ListPhotoSlice(ctx context.Context, request *ListPhotoSliceRequest) (response *ListPhotoSliceResponse, err error) {
+	if request == nil {
+		return nil, errors.New("request is null")
+	}
+	sliceArr, total, err := k.sliceRepo.FindSliceByCondition(ctx, &entity.WhereSliceOpt{
+		KnowledgeID: request.KnowledgeID,
+		DocumentIDs: request.DocumentIDs,
+		Offset:      int64(ptr.From(request.Offset)),
+		PageSize:    int64(ptr.From(request.Limit)),
+		NotEmpty:    request.HasCaption,
+	})
+	if err != nil {
+		return nil, err
+	}
+	response = &ListPhotoSliceResponse{
+		Total: int(total),
+		Slices: slices.Transform(sliceArr, func(item *model.KnowledgeDocumentSlice) *entity.Slice {
+			res := k.fromModelSlice(ctx, item)
+			return res
+		}),
+	}
+	return response, nil
+}
+
+func (k *knowledgeSVC) ExtractPhotoCaption(ctx context.Context, request *ExtractPhotoCaptionRequest) (response *ExtractPhotoCaptionResponse, err error) {
+	response = &ExtractPhotoCaptionResponse{}
+	if request == nil {
+		return nil, errors.New("request is null")
+	}
+	if !k.isAutoAnnotationSupported {
+		return nil, errors.New("auto annotation is not supported")
+	}
+	docInfo, err := k.documentRepo.GetByID(ctx, request.DocumentID)
+	if err != nil {
+		return nil, err
+	}
+	if docInfo == nil || docInfo.ID == 0 {
+		return nil, errors.New("document not found")
+	}
+	docEntity := k.fromModelDocument(ctx, docInfo)
+	parser, err := k.parseManager.GetParser(convert.DocumentToParseConfig(docEntity))
+	if err != nil {
+		return nil, err
+	}
+	imageByte, err := k.storage.GetObject(ctx, docEntity.URI)
+	if err != nil {
+		return nil, err
+	}
+	reader := bytes.NewReader(imageByte)
+	schemaDoc, err := parser.Parse(ctx, reader)
+	if err != nil {
+		return nil, err
+	}
+	if len(schemaDoc) == 0 {
+		return nil, errors.New("schema doc is empty")
+	}
+	response.Caption = schemaDoc[0].Content
+	return response, nil
+}
 func (k *knowledgeSVC) MGetKnowledgeByID(ctx context.Context, request *MGetKnowledgeByIDRequest) (response *MGetKnowledgeByIDResponse, err error) {
 	if request == nil || len(request.KnowledgeIDs) == 0 {
 		return nil, errors.New("request is null")
