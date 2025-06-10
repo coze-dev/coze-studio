@@ -24,6 +24,8 @@ var needAuthPath = map[string]bool{
 	"/v1/conversation/create":       true,
 	"/v1/conversation/message/list": true,
 	"/v1/files/upload":              true,
+	"/v1/workflow/stream_run":       true,
+	"/v1/workflow/stream_resume":    true,
 }
 
 var needAuthFunc = map[string]bool{

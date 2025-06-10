@@ -22,10 +22,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/maps"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 type ApplicationService struct {
@@ -116,7 +118,7 @@ func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.C
 		Desc:        req.Desc,
 		IconURI:     req.IconURI,
 		Mode:        workflow.WorkflowMode_Workflow,
-		APPID:       parseInt64(req.ProjectID),
+		AppID:       parseInt64(req.ProjectID),
 	}
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -276,7 +278,7 @@ func (w *ApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetC
 				Self: ternary.IFElse[bool](wf.CreatorID == ptr.From(ctxutil.GetUIDFromCtx(ctx)), true, false),
 			},
 			FlowMode:  wf.Mode,
-			ProjectID: i64PtrToStringPtr(wf.APPID),
+			ProjectID: i64PtrToStringPtr(wf.AppID),
 
 			PersistenceModel: workflow.PersistenceModel_DB,
 		},
@@ -298,10 +300,26 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 
 	uID := ctxutil.GetUIDFromCtx(ctx)
 
-	exeID, err := GetWorkflowDomainSVC().AsyncExecuteWorkflow(ctx, wfID, req.Input, vo.ExecuteConfig{
+	var appID, agentID *int64
+	if req.IsSetProjectID() {
+		appID = ptr.Of(mustParseInt64(req.GetProjectID()))
+	}
+	if req.IsSetBotID() {
+		agentID = ptr.Of(mustParseInt64(req.GetBotID()))
+	}
+
+	exeCfg := vo.ExecuteConfig{
 		Operator: ptr.FromOrDefault(uID, 0),
 		Mode:     vo.ExecuteModeDebug,
-	})
+		AppID:    appID,
+		AgentID:  agentID,
+	}
+
+	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
+		return nil, errors.New("project_id and bot_id cannot be set at the same time")
+	}
+
+	exeID, err := GetWorkflowDomainSVC().AsyncExecuteWorkflow(ctx, wfID, maps.ToAnyValue(req.Input), exeCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -333,10 +351,26 @@ func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.Workfl
 
 	uID := ctxutil.GetUIDFromCtx(ctx)
 
-	exeID, err := GetWorkflowDomainSVC().AsyncExecuteNode(ctx, wfID, req.NodeID, mergedInput, vo.ExecuteConfig{
+	var appID, agentID *int64
+	if req.IsSetProjectID() {
+		appID = ptr.Of(mustParseInt64(req.GetProjectID()))
+	}
+	if req.IsSetBotID() {
+		agentID = ptr.Of(mustParseInt64(req.GetBotID()))
+	}
+
+	exeCfg := vo.ExecuteConfig{
 		Operator: ptr.FromOrDefault(uID, 0),
 		Mode:     vo.ExecuteModeNodeDebug,
-	})
+		AppID:    appID,
+		AgentID:  agentID,
+	}
+
+	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
+		return nil, errors.New("project_id and bot_id cannot be set at the same time")
+	}
+
+	exeID, err := GetWorkflowDomainSVC().AsyncExecuteNode(ctx, wfID, req.NodeID, maps.ToAnyValue(mergedInput), exeCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -806,10 +840,38 @@ func (w *ApplicationService) StreamRun(ctx context.Context, req *workflow.OpenAP
 		wfIdentity.Version = *req.Version
 	}
 
-	sr, err := GetWorkflowDomainSVC().StreamExecuteWorkflow(ctx, wfIdentity, parameters, vo.ExecuteConfig{
-		Operator: ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0),
-		Mode:     vo.ExecuteModeRelease,
-	})
+	var appID, agentID *int64
+	if req.IsSetProjectID() {
+		appID = ptr.Of(mustParseInt64(req.GetProjectID()))
+	}
+	if req.IsSetBotID() {
+		agentID = ptr.Of(mustParseInt64(req.GetBotID()))
+	}
+
+	var connectorID int64
+	if req.IsSetConnectorID() {
+		connectorID = mustParseInt64(req.GetConnectorID())
+	}
+
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	userID := apiKeyInfo.UserID
+	if connectorID != consts.WebSDKConnectorID {
+		connectorID = apiKeyInfo.ConnectorID
+	}
+
+	exeCfg := vo.ExecuteConfig{
+		Operator:    userID,
+		Mode:        vo.ExecuteModeRelease,
+		AppID:       appID,
+		AgentID:     agentID,
+		ConnectorID: connectorID,
+	}
+
+	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
+		return nil, errors.New("project_id and bot_id cannot be set at the same time")
+	}
+
+	sr, err := GetWorkflowDomainSVC().StreamExecuteWorkflow(ctx, wfIdentity, parameters, exeCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -844,9 +906,15 @@ func (w *ApplicationService) StreamResume(ctx context.Context, req *workflow.Ope
 		ResumeData: req.ResumeData,
 	}
 
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	userID := apiKeyInfo.UserID
+
+	connectorID := mustParseInt64(req.GetConnectorID())
+
 	sr, err := GetWorkflowDomainSVC().StreamResumeWorkflow(ctx, resumeReq, vo.ExecuteConfig{
-		Operator: ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0),
-		Mode:     vo.ExecuteModeRelease,
+		Operator:    userID,
+		Mode:        vo.ExecuteModeRelease,
+		ConnectorID: connectorID,
 	})
 	if err != nil {
 		return nil, err
@@ -920,8 +988,8 @@ func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *wor
 			wfw.UpdateTime = wk.UpdatedAt.UnixMilli()
 		}
 
-		if wk.APPID != nil {
-			wfw.ProjectID = ptr.Of(strconv.FormatInt(ptr.From(wk.APPID), 10))
+		if wk.AppID != nil {
+			wfw.ProjectID = ptr.Of(strconv.FormatInt(ptr.From(wk.AppID), 10))
 		}
 		response.Data.WorkflowList = append(response.Data.WorkflowList, wfw)
 	}
@@ -1246,8 +1314,8 @@ func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflo
 			return nil, err
 		}
 
-		if wf.APPID != nil {
-			wd.ProjectID = strconv.FormatInt(*wf.APPID, 10)
+		if wf.AppID != nil {
+			wd.ProjectID = strconv.FormatInt(*wf.AppID, 10)
 		}
 
 		if wf.UpdatedAt != nil {
@@ -1337,8 +1405,8 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 			wd.UpdateTime = wf.UpdatedAt.Unix()
 		}
 
-		if wf.APPID != nil {
-			wd.ProjectID = strconv.FormatInt(*wf.APPID, 10)
+		if wf.AppID != nil {
+			wd.ProjectID = strconv.FormatInt(*wf.AppID, 10)
 		}
 
 		inputs[wfIDStr], err = toVariables(wf.InputParams)

@@ -48,6 +48,7 @@ import (
 	singleagentImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/singleagent"
 	variablesImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/variables"
 	workflowImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/workflow"
+	"code.byted.org/flow/opencoze/backend/infra/impl/checkpoint"
 )
 
 type eventbusImpl struct {
@@ -259,6 +260,7 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 		KnowledgeDomainSVC: knowledgeSVC.DomainSVC,
 		ModelManager:       b.modelMgrSVC.DomainSVC,
 		DomainNotifier:     b.eventbus.resourceEventBus,
+		CPStore:            checkpoint.NewRedisStore(b.infra.CacheCli),
 	}
 }
 

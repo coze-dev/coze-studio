@@ -47,8 +47,9 @@ func NewWorkflowService(repo workflow.Repository) workflow.Service {
 	}
 }
 
-func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, tos storage.Storage) workflow.Repository {
-	return repo.NewRepository(idgen, db, redis, tos)
+func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, tos storage.Storage,
+	cpStore einoCompose.CheckPointStore) workflow.Repository {
+	return repo.NewRepository(idgen, db, redis, tos, cpStore)
 }
 
 func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowIdentity) ([]*entity.Workflow, error) {
@@ -197,7 +198,7 @@ func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *ent
 		URI:           &wf.IconURI,
 		Name:          &wf.Name,
 		Desc:          &wf.Desc,
-		APPID:         wf.APPID,
+		APPID:         wf.AppID,
 		SpaceID:       &wf.SpaceID,
 		OwnerID:       &wf.CreatorID,
 		Mode:          ptr.Of(int32(wf.Mode)),
@@ -547,7 +548,7 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 			}
 			issues, err = validateWorkflowTree(ctx, vo.ValidateTreeConfig{
 				CanvasSchema: ptr.From(wf.Canvas),
-				APPID:        wf.APPID, // application workflow use same app id
+				APPID:        wf.AppID, // application workflow use same app id
 			})
 			if err != nil {
 				return nil, err
@@ -570,7 +571,7 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 // AsyncExecuteWorkflow executes the specified workflow asynchronously, returning the execution ID.
 // Intermediate results are not emitted on the fly.
 // The caller is expected to poll the execution status using the GetExecution method and the returned execution ID.
-func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string, config vo.ExecuteConfig) (int64, error) {
+func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (int64, error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -602,6 +603,10 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 		return 0, fmt.Errorf("failed to create workflow: %w", err)
 	}
 
+	if wfEntity.AppID != nil && config.AppID == nil {
+		config.AppID = wfEntity.AppID
+	}
+
 	convertedInput, err := convertInputs(input, wf.Inputs())
 	if err != nil {
 		return 0, fmt.Errorf("failed to convert inputs: %w", err)
@@ -628,7 +633,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 	return executeID, nil
 }
 
-func (i *impl) AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]string, config vo.ExecuteConfig) (int64, error) {
+func (i *impl) AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]any, config vo.ExecuteConfig) (int64, error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -719,6 +724,15 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 	wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(wfEntity.ID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create workflow: %w", err)
+	}
+
+	if wfEntity.AppID != nil && config.AppID == nil {
+		config.AppID = wfEntity.AppID
+	}
+
+	input, err = convertInputs(input, wf.Inputs())
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert inputs: %w", err)
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -990,6 +1004,13 @@ func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeReques
 		return fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
+	config.AppID = wfExe.AppID
+	config.AgentID = wfExe.AgentID
+
+	if config.ConnectorID == 0 {
+		config.ConnectorID = wfExe.ConnectorID
+	}
+
 	if wfExe.Mode == vo.ExecuteModeNodeDebug {
 		nodeExes, err := i.repo.GetNodeExecutionsByWfExeID(ctx, wfExe.ID)
 		if err != nil {
@@ -1088,6 +1109,13 @@ func (i *impl) StreamResumeWorkflow(ctx context.Context, req *entity.ResumeReque
 	wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(wfExe.WorkflowIdentity.ID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create workflow: %w", err)
+	}
+
+	config.AppID = wfExe.AppID
+	config.AgentID = wfExe.AgentID
+
+	if config.ConnectorID == 0 {
+		config.ConnectorID = wfExe.ConnectorID
 	}
 
 	sr, sw := schema.Pipe[*entity.Message](10)
@@ -1594,7 +1622,7 @@ func (i *impl) CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64
 		URI:           &wf.IconURI,
 		Name:          &wf.Name,
 		Desc:          &wf.Desc,
-		APPID:         wf.APPID,
+		APPID:         wf.AppID,
 		SpaceID:       &wf.SpaceID,
 		OwnerID:       &wf.CreatorID,
 		PublishStatus: ptr.Of(search.UnPublished),

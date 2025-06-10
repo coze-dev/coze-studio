@@ -26,14 +26,8 @@ func (i *inMemoryStore) Set(_ context.Context, checkPointID string, checkPoint [
 	return nil
 }
 
-var checkpointStoreInstance compose.CheckPointStore
-
-func init() {
-	checkpointStoreInstance = &inMemoryStore{
+func NewInMemoryStore() compose.CheckPointStore {
+	return &inMemoryStore{
 		m: make(map[string][]byte),
 	}
-}
-
-func GetStore() compose.CheckPointStore {
-	return checkpointStoreInstance
 }

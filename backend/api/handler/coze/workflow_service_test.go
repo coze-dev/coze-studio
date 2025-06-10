@@ -36,8 +36,10 @@ import (
 
 	pluginModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	crossplugin "code.byted.org/flow/opencoze/backend/crossdomain/workflow/plugin"
+	entity2 "code.byted.org/flow/opencoze/backend/domain/permission/openapiauth/entity"
 	pluginentity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	pluginservice "code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
@@ -54,6 +56,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
+	"code.byted.org/flow/opencoze/backend/infra/impl/checkpoint"
 	mockPlugin "code.byted.org/flow/opencoze/backend/internal/mock/domain/plugin"
 	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
@@ -128,9 +131,12 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	redisClient := redis.NewClient(&redis.Options{
 		Addr: s.Addr(),
 	})
+
+	cpStore := checkpoint.NewRedisStore(redisClient)
+
 	mockTos := storageMock.NewMockStorage(ctrl)
 	mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
-	workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos)
+	workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos, cpStore)
 	mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 	mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
@@ -1870,7 +1876,7 @@ func TestPublishWorkflow(t *testing.T) {
 		})
 		mockTos := storageMock.NewMockStorage(ctrl)
 		mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
-		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos)
+		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos, nil)
 		mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 		mockSearchNotify := searchmock.NewMockNotifier(ctrl)
@@ -1964,7 +1970,7 @@ func TestGetCanvasInfo(t *testing.T) {
 		})
 		mockTos := storageMock.NewMockStorage(ctrl)
 		mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
-		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos)
+		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos, nil)
 		mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 
@@ -2219,6 +2225,10 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 			Parameters: ptr.Of(inputStr),
 		}
 
+		mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
+			UserID:      123,
+			ConnectorID: consts.APIConnectorID,
+		}).Build()
 		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
 		err = sseReader.ForEach(t.Context(), func(e *sse.Event) error {
 			t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
@@ -2380,6 +2390,10 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 			Parameters: ptr.Of(inputStr),
 		}
 
+		mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
+			UserID:      123,
+			ConnectorID: consts.APIConnectorID,
+		}).Build()
 		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
 		err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
 			t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
@@ -4097,6 +4111,10 @@ func TestStreamRun(t *testing.T) {
 			Parameters: ptr.Of(inputStr),
 		}
 
+		mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
+			UserID:      123,
+			ConnectorID: consts.APIConnectorID,
+		}).Build()
 		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
 		err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
 			t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
@@ -4231,6 +4249,10 @@ func TestStreamResume(t *testing.T) {
 			index    int
 		)
 
+		mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
+			UserID:      123,
+			ConnectorID: consts.APIConnectorID,
+		}).Build()
 		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
 		err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
 			t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
@@ -4293,9 +4315,10 @@ func TestStreamResume(t *testing.T) {
 		}
 
 		streamResumeReq := &workflow.OpenAPIStreamResumeFlowRequest{
-			WorkflowID: idStr,
-			EventID:    resumeID,
-			ResumeData: userInputStr,
+			WorkflowID:  idStr,
+			EventID:     resumeID,
+			ResumeData:  userInputStr,
+			ConnectorID: ptr.Of(strconv.FormatInt(consts.APIConnectorID, 10)),
 		}
 
 		index = 0

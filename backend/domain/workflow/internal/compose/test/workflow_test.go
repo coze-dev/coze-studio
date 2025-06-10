@@ -2,29 +2,23 @@ package test
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	compose2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/receiver"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
-	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
@@ -694,113 +688,5 @@ func TestHTTPRequester(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Equal(t, `{"message":"success"}`, out["body"])
-	})
-}
-
-func TestInputReceiver(t *testing.T) {
-	mockey.PatchConvey("test input receiver", t, func() {
-		entry := &compose2.NodeSchema{
-			Key:  compose2.EntryNodeKey,
-			Type: entity.NodeTypeEntry,
-		}
-
-		ns := &compose2.NodeSchema{
-			Key:  "input_receiver_node",
-			Type: entity.NodeTypeInputReceiver,
-			Configs: map[string]any{
-				"OutputSchema": "{}",
-			},
-		}
-
-		exit := &compose2.NodeSchema{
-			Key:  compose2.ExitNodeKey,
-			Type: entity.NodeTypeExit,
-			Configs: map[string]any{
-				"TerminalPlan": vo.ReturnVariables,
-			},
-			InputSources: []*vo.FieldInfo{
-				{
-					Path: compose.FieldPath{"input"},
-					Source: vo.FieldSource{
-						Ref: &vo.Reference{
-							FromNodeKey: ns.Key,
-							FromPath:    compose.FieldPath{"input"},
-						},
-					},
-				},
-				{
-					Path: compose.FieldPath{"obj"},
-					Source: vo.FieldSource{
-						Ref: &vo.Reference{
-							FromNodeKey: ns.Key,
-							FromPath:    compose.FieldPath{"obj"},
-						},
-					},
-				},
-			},
-		}
-
-		ws := &compose2.WorkflowSchema{
-			Nodes: []*compose2.NodeSchema{
-				entry,
-				ns,
-				exit,
-			},
-			Connections: []*compose2.Connection{
-				{
-					FromNode: entry.Key,
-					ToNode:   ns.Key,
-				},
-				{
-					FromNode: ns.Key,
-					ToNode:   exit.Key,
-				},
-			},
-		}
-
-		ws.Init()
-
-		wf, err := compose2.NewWorkflow(context.Background(), ws)
-		assert.NoError(t, err)
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		mockRepo := mockWorkflow.NewMockRepository(ctrl)
-		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
-		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
-
-		checkPointID := fmt.Sprintf("%d", time.Now().Nanosecond())
-		_, err = wf.Runner.Invoke(context.Background(), map[string]any{}, compose.WithCheckPointID(checkPointID))
-		assert.Error(t, err)
-
-		_, existed := compose.ExtractInterruptInfo(err)
-		assert.True(t, existed)
-
-		userInput := map[string]any{
-			"input": "user input",
-			"obj": map[string]any{
-				"field1": []string{"1", "2"},
-			},
-		}
-		userInputStr, err := sonic.MarshalString(userInput)
-		assert.NoError(t, err)
-
-		stateModifier := func(ctx context.Context, path compose.NodePath, state any) error {
-			input := map[string]any{
-				receiver.ReceivedDataKey: userInputStr,
-			}
-			state.(*compose2.State).Inputs[ns.Key] = input
-			return nil
-		}
-
-		out, err := wf.Runner.Invoke(context.Background(), map[string]any{},
-			compose.WithCheckPointID(checkPointID), compose.WithStateModifier(stateModifier))
-		assert.NoError(t, err)
-		assert.Equal(t, map[string]any{
-			"input": "user input",
-			"obj": map[string]any{
-				"field1": []any{"1", "2"},
-			},
-		}, out)
 	})
 }

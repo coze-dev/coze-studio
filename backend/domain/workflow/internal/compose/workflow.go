@@ -9,9 +9,9 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose/checkpoint"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
@@ -112,7 +112,7 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...WorkflowOption
 
 	var compileOpts []compose.GraphCompileOption
 	if wf.requireCheckpoint {
-		compileOpts = append(compileOpts, compose.WithCheckPointStore(checkpoint.GetStore()))
+		compileOpts = append(compileOpts, compose.WithCheckPointStore(workflow2.GetRepository()))
 	}
 	if wfOpts.idAsName {
 		compileOpts = append(compileOpts, compose.WithGraphName(strconv.FormatInt(wfOpts.wfID, 10)))
@@ -384,7 +384,7 @@ func (w *Workflow) getInnerWorkflow(ctx context.Context, cNode *CompositeNode) (
 
 	var opts []compose.GraphCompileOption
 	if inner.requireCheckpoint {
-		opts = append(opts, compose.WithCheckPointStore(checkpoint.GetStore()))
+		opts = append(opts, compose.WithCheckPointStore(workflow2.GetRepository()))
 	}
 
 	r, err := inner.Compile(ctx, opts...)

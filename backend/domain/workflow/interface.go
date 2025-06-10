@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/cloudwego/eino/components/tool"
-	einoCompose "github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/redis/go-redis/v9"
 
@@ -24,8 +24,8 @@ type Service interface {
 	GetWorkflowDraft(ctx context.Context, id int64) (*entity.Workflow, error)
 	GetWorkflowVersion(ctx context.Context, wfe *entity.WorkflowIdentity) (*entity.Workflow, error)
 	ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*workflow.ValidateTreeInfo, error)
-	AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string, config vo.ExecuteConfig) (int64, error)
-	AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]string, config vo.ExecuteConfig) (int64, error)
+	AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (int64, error)
+	AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]any, config vo.ExecuteConfig) (int64, error)
 	GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error)
 	GetNodeExecution(ctx context.Context, exeID int64, nodeID string) (*entity.NodeExecution, *entity.NodeExecution, error)
 	GetLatestTestRunInput(ctx context.Context, wfID int64, userID int64) (*entity.NodeExecution, bool, error)
@@ -45,10 +45,10 @@ type Service interface {
 	ListWorkflow(ctx context.Context, spaceID int64, page *vo.Page, queryOption *vo.QueryOption) ([]*entity.Workflow, error)
 	ListWorkflowAsToolData(ctx context.Context, spaceID int64, queryInfo *vo.QueryToolInfoOption) ([]*vo.WorkFlowAsToolInfo, error)
 	MGetWorkflowDetailInfo(ctx context.Context, ids []*entity.WorkflowIdentity) ([]*entity.Workflow, error)
-	WithMessagePipe() (einoCompose.Option, *schema.StreamReader[*entity.Message])
-	WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option
+	WithMessagePipe() (compose.Option, *schema.StreamReader[*entity.Message])
+	WithExecuteConfig(cfg vo.ExecuteConfig) compose.Option
 	WithResumeToolWorkflow(resumingEvent *entity.ToolInterruptEvent, resumeData string,
-		allInterruptEvents map[string]*entity.ToolInterruptEvent) einoCompose.Option
+		allInterruptEvents map[string]*entity.ToolInterruptEvent) compose.Option
 	CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (int64, error)
 	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
 	CheckWorkflowsExistByAppID(ctx context.Context, appID int64) (bool, error)
@@ -110,6 +110,8 @@ type Repository interface {
 	BatchPublishWorkflows(ctx context.Context, workflows map[int64]*vo.VersionInfo) error
 	HasWorkflow(ctx context.Context, appID int64) (bool, error)
 	GetWorkflowIDsByAppId(ctx context.Context, appID int64) (es []int64, err error)
+
+	compose.CheckPointStore
 }
 
 type ToolFromWorkflow interface {

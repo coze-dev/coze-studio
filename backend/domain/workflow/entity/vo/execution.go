@@ -1,8 +1,11 @@
 package vo
 
 type ExecuteConfig struct {
-	Operator int64
-	Mode     ExecuteMode
+	Operator    int64
+	Mode        ExecuteMode
+	AppID       *int64
+	AgentID     *int64
+	ConnectorID int64
 }
 
 type ExecuteMode string

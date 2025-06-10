@@ -23,7 +23,6 @@ import (
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose/checkpoint"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -422,7 +421,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 
 	var opts []compose.GraphCompileOption
 	if requireCheckpoint {
-		opts = append(opts, compose.WithCheckPointStore(checkpoint.GetStore()))
+		opts = append(opts, compose.WithCheckPointStore(workflow.GetRepository()))
 	}
 
 	r, err := g.Compile(ctx, opts...)

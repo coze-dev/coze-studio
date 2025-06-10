@@ -34,18 +34,21 @@ import (
 )
 
 type RepositoryImpl struct {
-	idGen idgen.IDGenerator
-	query *query.Query
-	redis *redis.Client
-	tos   storage.Storage
+	idGen           idgen.IDGenerator
+	query           *query.Query
+	redis           *redis.Client
+	tos             storage.Storage
+	checkpointStore einoCompose.CheckPointStore
 }
 
-func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, tos storage.Storage) workflow.Repository {
+func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, tos storage.Storage,
+	cpStore einoCompose.CheckPointStore) workflow.Repository {
 	return &RepositoryImpl{
-		idGen: idgen,
-		query: query.Use(db),
-		redis: redis,
-		tos:   tos,
+		idGen:           idgen,
+		query:           query.Use(db),
+		redis:           redis,
+		tos:             tos,
+		checkpointStore: cpStore,
 	}
 }
 
@@ -160,8 +163,8 @@ func (r *RepositoryImpl) CreateWorkflowMeta(ctx context.Context, wf *entity.Work
 		wfMeta.SourceID = *wf.SourceID
 	}
 
-	if wf.APPID != nil {
-		wfMeta.AppID = *wf.APPID
+	if wf.AppID != nil {
+		wfMeta.AppID = *wf.AppID
 	}
 
 	if ref == nil {
@@ -363,7 +366,7 @@ func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity
 		wf.SourceID = &meta.SourceID
 	}
 	if meta.AppID != 0 {
-		wf.APPID = &meta.AppID
+		wf.AppID = &meta.AppID
 	}
 	if meta.UpdatedAt > 0 {
 		wf.UpdatedAt = ptr.Of(time.UnixMilli(meta.UpdatedAt))
@@ -507,6 +510,8 @@ func (r *RepositoryImpl) CreateWorkflowExecution(ctx context.Context, execution 
 		RootExecutionID: execution.RootExecutionID,
 		ParentNodeID:    ptr.FromOrDefault(execution.ParentNodeID, ""),
 		AppID:           ptr.FromOrDefault(execution.AppID, 0),
+		AgentID:         ptr.FromOrDefault(execution.AgentID, 0),
+		ConnectorID:     execution.ConnectorID,
 		NodeCount:       execution.NodeCount,
 	}
 
@@ -634,14 +639,15 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 		},
 		SpaceID: rootExe.SpaceID,
 		ExecuteConfig: vo.ExecuteConfig{
-			Operator: rootExe.OperatorID,
-			Mode:     exeMode,
+			Operator:    rootExe.OperatorID,
+			Mode:        exeMode,
+			AppID:       ternary.IFElse(rootExe.AppID > 0, ptr.Of(rootExe.AppID), nil),
+			AgentID:     ternary.IFElse(rootExe.AgentID > 0, ptr.Of(rootExe.AgentID), nil),
+			ConnectorID: rootExe.ConnectorID,
 		},
-		ConnectorID:  rootExe.ConnectorID,
 		ConnectorUID: rootExe.ConnectorUID,
 		CreatedAt:    time.UnixMilli(rootExe.CreatedAt),
 		LogID:        rootExe.LogID,
-		AppID:        ternary.IFElse(rootExe.AppID > 0, ptr.Of(rootExe.AppID), nil),
 		NodeCount:    rootExe.NodeCount,
 		Status:       entity.WorkflowExecuteStatus(rootExe.Status),
 		Duration:     time.Duration(rootExe.Duration) * time.Millisecond,
@@ -1055,7 +1061,7 @@ func (r *RepositoryImpl) MGetWorkflowMeta(ctx context.Context, ids ...int64) (ma
 	for _, meta := range metas {
 		url, err := r.tos.GetObjectUrl(ctx, meta.IconURI)
 		if err != nil {
-			logs.Warnf("failed to get icon URL for workfolw id %d, icon uri %s: %w", meta.ID, meta.IconURI, err)
+			logs.Warnf("failed to get icon URL for workfolw id %d, icon uri %s: %v", meta.ID, meta.IconURI, err)
 		}
 
 		wf := &entity.Workflow{
@@ -1081,7 +1087,7 @@ func (r *RepositoryImpl) MGetWorkflowMeta(ctx context.Context, ids ...int64) (ma
 			wf.SourceID = &meta.SourceID
 		}
 		if meta.AppID != 0 {
-			wf.APPID = &meta.AppID
+			wf.AppID = &meta.AppID
 		}
 		if meta.UpdatedAt > 0 {
 			wf.UpdatedAt = ptr.Of(time.UnixMilli(meta.UpdatedAt))
@@ -1215,7 +1221,7 @@ func (r *RepositoryImpl) ListWorkflowMeta(ctx context.Context, spaceID int64, pa
 			wf.SourceID = &meta.SourceID
 		}
 		if meta.AppID != 0 {
-			wf.APPID = &meta.AppID
+			wf.AppID = &meta.AppID
 		}
 		if meta.UpdatedAt > 0 {
 			wf.UpdatedAt = ptr.Of(time.UnixMilli(meta.UpdatedAt))
@@ -1531,7 +1537,7 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, spaceID int64, workfl
 	}
 	err = r.redis.Expire(ctx, copiedWorkflowRedisKey, copyWorkflowRedisKeyExpireInterval).Err()
 	if err != nil {
-		logs.Warnf("failed to set the rediskey %v expiration time, err=%w", copiedWorkflowRedisKey, err)
+		logs.Warnf("failed to set the rediskey %v expiration time, err=%v", copiedWorkflowRedisKey, err)
 	}
 	var copiedWorkflow *entity.Workflow
 
@@ -1573,7 +1579,7 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, spaceID int64, workfl
 		copiedWorkflow.SpaceID = wfMeta.SpaceID
 		copiedWorkflow.Desc = wfMeta.Description
 		if wfMeta.AppID > 0 {
-			copiedWorkflow.APPID = &wfMeta.AppID
+			copiedWorkflow.AppID = &wfMeta.AppID
 		}
 		copiedWorkflow.CreatorID = wfMeta.CreatorID
 
@@ -1692,6 +1698,14 @@ func (r *RepositoryImpl) GetWorkflowIDsByAppId(ctx context.Context, appID int64)
 	return slices.Transform(workflowMetas, func(a *model2.WorkflowMeta) int64 {
 		return a.ID
 	}), nil
+}
+
+func (r *RepositoryImpl) Get(ctx context.Context, checkPointID string) ([]byte, bool, error) {
+	return r.checkpointStore.Get(ctx, checkPointID)
+}
+
+func (r *RepositoryImpl) Set(ctx context.Context, checkPointID string, checkPoint []byte) error {
+	return r.checkpointStore.Set(ctx, checkPointID, checkPoint)
 }
 
 func filterDisabledAPIParameters(parametersCfg []*workflow3.APIParameter, m map[string]any) map[string]any {

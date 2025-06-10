@@ -51,6 +51,7 @@ func newWorkflowExecution(db *gorm.DB, opts ...gen.DOOption) workflowExecution {
 	_workflowExecution.AppID = field.NewInt64(tableName, "app_id")
 	_workflowExecution.NodeCount = field.NewInt32(tableName, "node_count")
 	_workflowExecution.ResumeEventID = field.NewInt64(tableName, "resume_event_id")
+	_workflowExecution.AgentID = field.NewInt64(tableName, "agent_id")
 
 	_workflowExecution.fillFieldMap()
 
@@ -85,6 +86,7 @@ type workflowExecution struct {
 	AppID           field.Int64  // app id this workflow execution belongs to
 	NodeCount       field.Int32  // the total node count of the workflow
 	ResumeEventID   field.Int64  // the current event ID which is resuming
+	AgentID         field.Int64  // the agent that this execution binds to
 
 	fieldMap map[string]field.Expr
 }
@@ -125,6 +127,7 @@ func (w *workflowExecution) updateTableName(table string) *workflowExecution {
 	w.AppID = field.NewInt64(table, "app_id")
 	w.NodeCount = field.NewInt32(table, "node_count")
 	w.ResumeEventID = field.NewInt64(table, "resume_event_id")
+	w.AgentID = field.NewInt64(table, "agent_id")
 
 	w.fillFieldMap()
 
@@ -141,7 +144,7 @@ func (w *workflowExecution) GetFieldByName(fieldName string) (field.OrderExpr, b
 }
 
 func (w *workflowExecution) fillFieldMap() {
-	w.fieldMap = make(map[string]field.Expr, 24)
+	w.fieldMap = make(map[string]field.Expr, 25)
 	w.fieldMap["id"] = w.ID
 	w.fieldMap["workflow_id"] = w.WorkflowID
 	w.fieldMap["version"] = w.Version
@@ -166,6 +169,7 @@ func (w *workflowExecution) fillFieldMap() {
 	w.fieldMap["app_id"] = w.AppID
 	w.fieldMap["node_count"] = w.NodeCount
 	w.fieldMap["resume_event_id"] = w.ResumeEventID
+	w.fieldMap["agent_id"] = w.AgentID
 }
 
 func (w workflowExecution) clone(db *gorm.DB) workflowExecution {
