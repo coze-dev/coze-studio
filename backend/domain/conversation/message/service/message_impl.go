@@ -2,7 +2,6 @@ package message
 
 import (
 	"context"
-	"time"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
@@ -76,31 +75,7 @@ func (m *messageImpl) GetByRunIDs(ctx context.Context, conversationID int64, run
 }
 
 func (m *messageImpl) Edit(ctx context.Context, req *entity.Message) (*entity.Message, error) {
-	// build update column
-	updateColumns := make(map[string]interface{})
-
-	if len(req.Content) > 0 {
-		updateColumns["content"] = req.Content
-	}
-
-	if len(req.MessageType) > 0 {
-		updateColumns["message_type"] = req.MessageType
-	}
-
-	if len(req.ContentType) > 0 {
-		updateColumns["content_type"] = req.ContentType
-	}
-	if len(req.ModelContent) > 0 {
-		updateColumns["model_content"] = req.ModelContent
-	}
-
-	if len(req.ReasoningContent) > 0 {
-		updateColumns["reasoning_content"] = req.ReasoningContent
-	}
-
-	updateColumns["updated_at"] = time.Now().UnixMilli()
-
-	_, err := m.MessageRepo.Edit(ctx, req.ID, updateColumns)
+	_, err := m.MessageRepo.Edit(ctx, req.ID, req)
 	if err != nil {
 		return nil, err
 	}
@@ -118,22 +93,20 @@ func (m *messageImpl) Delete(ctx context.Context, req *entity.DeleteMeta) error 
 }
 
 func (m *messageImpl) GetByID(ctx context.Context, id int64) (*entity.Message, error) {
-	message, err := m.MessageRepo.GetByID(ctx, id)
+	msg, err := m.MessageRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return message, nil
+	return msg, nil
 }
 
 func (m *messageImpl) Broken(ctx context.Context, req *entity.BrokenMeta) error {
-	// broken message
-	updateColumns := make(map[string]interface{})
-	updateColumns["status"] = entity.MessageStatusBroken
-	updateColumns["broken_position"] = req.Position
-	updateColumns["updated_at"] = time.Now().UnixMilli()
 
-	_, err := m.MessageRepo.Edit(ctx, req.ID, updateColumns)
+	_, err := m.MessageRepo.Edit(ctx, req.ID, &message.Message{
+		Status:   message.MessageStatusBroken,
+		Position: ptr.From(req.Position),
+	})
 	if err != nil {
 		return err
 	}
