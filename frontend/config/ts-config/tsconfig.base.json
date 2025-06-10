@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "allowJs": false,
+    "allowSyntheticDefaultImports": true,
+    "alwaysStrict": true,
+    "declaration": true,
+    "composite": true,
+    "incremental": true,
+    "strictNullChecks": true,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "module": "CommonJS",
+    "noFallthroughCasesInSwitch": true,
+    // 这个普遍反馈会让代码变得啰嗦，暂定遵循原本 bot 的设置，关闭
+    "noImplicitReturns": false,
+    "removeComments": false,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "disableReferencedProjectLoad": true,
+    // "disableSolutionSearching": true,
+    // "disableSourceOfProjectReferenceRedirect": true,
+    "target": "es2018"
+  },
+  "watchOptions": {
+    "fallbackPolling": "dynamicpriority",
+    "synchronousWatchDirectory": false,
+    "watchDirectory": "fixedChunkSizePolling",
+    "watchFile": "useFsEventsOnParentDirectory",
+    "excludeDirectories": [
+      "../../**/__tests__/",
+      "../../**/__coverage__/",
+      "../../**/__mocks__/",
+      "/**/node_modules/**"
+    ],
+    "excludeFiles": [
+      "../../**/__tests__",
+      "../../**/__coverage__",
+      "../../**/__mocks__",
+      "/**/node_modules/**"
+    ]
+  }
+}

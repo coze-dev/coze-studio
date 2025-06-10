@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "rootDir": "./scripts",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "dist/build.tsbuildinfo"
+  }
+}

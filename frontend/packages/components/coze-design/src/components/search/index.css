@@ -1,0 +1,33 @@
+.coz-search {
+  min-width: 200px;
+  max-width: 100%;
+  padding: 4px;
+
+  &.semi-input-wrapper-focus {
+    padding: 4px 8px;
+
+    .semi-input {
+      padding: 0;
+    }
+
+    .semi-input-prefix{
+      display: none;
+    }
+  }
+
+  .coz-search-icon {
+    display: flex;
+    align-items: center;
+    padding: 0;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    &.coz-search-icon-active{
+      transition: color 0.2s ease;
+      @apply coz-fg-primary;
+    }
+  }
+}

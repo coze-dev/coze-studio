@@ -1,0 +1,17 @@
+diff --git a/lib/loaders/semi-theme-loader.js b/lib/loaders/semi-theme-loader.js
+index d43048cc5919b8720f6ebfba37c9313d89ae857c..863954ee319c964188b2272091b19c6e8f21b0b3 100644
+--- a/lib/loaders/semi-theme-loader.js
++++ b/lib/loaders/semi-theme-loader.js
+@@ -14,12 +14,6 @@ function SemiThemeLoader(source) {
+     // inject once
+     const cssVarStr = `@import "~${theme}/scss/global.scss";\n`;
+     let animationStr = `@import "~${theme}/scss/animation.scss";\n`;
+-    try {
+-        require.resolve(`${theme}/scss/animation.scss`);
+-    }
+-    catch (e) {
+-        animationStr = ''; // fallback to empty string
+-    }
+     const shouldInject = source.includes('semi-base');
+     let fileStr = source;
+     let componentVariables;

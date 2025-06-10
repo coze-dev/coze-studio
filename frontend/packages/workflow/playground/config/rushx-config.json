@@ -1,0 +1,6 @@
+{
+  "dupCheck": {
+    // 正在做迁移，有部分组件的复制，暂时忽略重复性校验
+    "ignoreGlobPatterns": ["src/**/*"]
+  }
+}

@@ -1,0 +1,17 @@
+/* stylelint-disable declaration-no-important */
+.action-button {
+  color: rgba(29, 28, 35, 60%) !important
+}
+
+.rename-form{
+  :global{
+    // 不需要 Form 默认 的padding 间距
+    .semi-form-field{
+      padding: 0;
+    }
+    // 不需要 Form 默认的校验 icon
+    .semi-form-field-validate-status-icon{
+      display: none;
+    }
+  }
+}

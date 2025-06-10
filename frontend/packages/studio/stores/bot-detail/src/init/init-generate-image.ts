@@ -1,0 +1,55 @@
+import { logger } from '@coze-arch/logger';
+import { getFlags } from '@coze-arch/bot-flags';
+import { PlaygroundApi } from '@coze-arch/bot-api';
+
+import { getBotDetailIsReadonly } from '../utils/get-read-only';
+import {
+  getInitAvatarInfo,
+  getInitBackgroundInfo,
+} from '../utils/generate-image';
+import { initAvatarBackgroundWebSocket } from '../utils/avatar-background-socket';
+import { useGenerateImageStore } from '../store/generate-image-store';
+import { useBotInfoStore } from '../store/bot-info';
+
+export const initGenerateImageStore = async () => {
+  try {
+    const {
+      updateImageList,
+      updateNoticeList,
+      setGenerateAvatarModalByImmer,
+      setGenerateBackgroundModalByImmer,
+      clearGenerateImageStore,
+    } = useGenerateImageStore.getState();
+    const { botId } = useBotInfoStore.getState();
+
+    const isReadOnly = getBotDetailIsReadonly();
+    const FLAGS = getFlags();
+
+    if (isReadOnly || !FLAGS['bot.studio.gif_avater_background']) {
+      return;
+    }
+
+    // 初始化一下，防止从创建页跳到编辑页把创建页的状态带过来
+    clearGenerateImageStore();
+
+    const resp = await PlaygroundApi.GetPicTask({
+      bot_id: botId,
+    });
+    const respData = resp?.data ?? {};
+    const { tasks = [], notices = [] } = respData;
+    updateImageList(tasks);
+    updateNoticeList(notices);
+    setGenerateAvatarModalByImmer(state => {
+      getInitAvatarInfo(respData, state);
+    });
+
+    setGenerateBackgroundModalByImmer(state => {
+      getInitBackgroundInfo(respData, state);
+    });
+
+    initAvatarBackgroundWebSocket();
+  } catch (error) {
+    const e = error instanceof Error ? error : new Error(error as string);
+    logger.error({ error: e });
+  }
+};

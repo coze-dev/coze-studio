@@ -1,0 +1,70 @@
+import { withSlardarIdButton } from '@coze-studio/bot-utils';
+import { I18n } from '@coze-arch/i18n';
+import { Toast } from '@coze-arch/bot-semi';
+import { AgentType } from '@coze-arch/bot-api/developer_api';
+
+import type { BotMultiAgent, Agent } from '../types/agent';
+
+export const findFirstAgent = (
+  multiAgent: BotMultiAgent,
+): Agent | undefined => {
+  const startNode = multiAgent.agents.find(
+    agent => agent.agent_type === AgentType.Start_Agent,
+  );
+  if (!startNode) {
+    // fixme 就离谱
+    Toast.error({
+      content: withSlardarIdButton(I18n.t('chatflow_error_miss_start')),
+    });
+    return;
+  }
+  const firstAgentId = multiAgent.edges.find(
+    edge => edge.sourceNodeID === startNode.id,
+  )?.targetNodeID;
+  if (!firstAgentId) {
+    Toast.error({
+      content: withSlardarIdButton(I18n.t('chatflow_error_miss_start_agent')),
+    });
+    return;
+  }
+  return findTargetAgent(multiAgent.agents, firstAgentId);
+};
+
+export const findTargetAgent = (agents: Agent[], agentId?: string) => {
+  if (!agentId) {
+    return;
+  }
+  return agents.find(item => item.id === agentId);
+};
+
+/** 寻找某个agent，其中该agent的intent的next_agent_id是当前的agent id */
+export const findAgentByNextIntentID = (
+  agents: Agent[],
+  nextAgentID?: string,
+) => {
+  if (!nextAgentID) {
+    return;
+  }
+  return agents.find(item =>
+    (item.intents || []).some(intent => intent.next_agent_id === nextAgentID),
+  );
+};
+
+export const findTargetAgentIndex = (agents: Agent[], agentId?: string) => {
+  if (!agentId) {
+    return -1;
+  }
+  return agents.findIndex(item => item.id === agentId);
+};
+
+/**
+ * start 节点指向的节点 id
+ */
+export const findFirstAgentId = ({
+  agents,
+}: Pick<BotMultiAgent, 'agents'>): string | undefined => {
+  const startNode = agents.find(
+    agent => agent.agent_type === AgentType.Start_Agent,
+  );
+  return startNode?.intents?.at(0)?.next_agent_id;
+};

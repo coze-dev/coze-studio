@@ -1,0 +1,30 @@
+.float-button {
+  cursor: pointer;
+
+  position: relative;
+  left: 50px;
+
+  display: flex;
+  column-gap: 10px;
+  align-items: center;
+
+  width: fit-content;
+  height: 28px;
+  padding: 0 12px;
+
+  background: var(--coz-bg-max);
+  border: 1px solid var(--coz-stroke-primary);
+  border-radius: 99px;
+
+  &:hover {
+    background: var(--coz-bg-plus);
+  }
+
+  &:active {
+    background: var(--coz-bg-plus);
+  }
+
+  :global .icon-icon {
+    font-size: 12px;
+  }
+}

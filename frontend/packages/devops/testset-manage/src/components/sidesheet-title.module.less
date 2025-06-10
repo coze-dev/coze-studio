@@ -1,0 +1,37 @@
+.container {
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 4px;
+  line-height: 0;
+
+  &:hover {
+    background-color: var(--semi-color-fill-0);
+    border-radius: 8px;
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+    font-size: 0;
+  }
+}
+
+.title {
+  overflow: hidden;
+  flex-grow: 1;
+
+  min-width: 0;
+  padding: 0 12px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action {
+  flex-shrink: 0;
+}

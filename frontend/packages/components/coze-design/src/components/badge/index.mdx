@@ -1,0 +1,359 @@
+import { Canvas, Meta, Controls, Story } from '@storybook/blocks';
+
+import * as BadgeStories from './stories/badge.stories';
+
+<Meta of={BadgeStories} name="Docs" />
+
+# COZBadge
+
+> COZ徽章图标, 给用户提示，基于semi的Badge封装实现 —— [API参考](https://semi.bytedance.net/zh-CN/show/badge)
+
+- [组件引入](#组件引入)
+- [交互预览](#交互预览)
+- [类型 (type)](#类型)
+- [提示数 (count)](#提示数)
+- [位置 (position)](#位置)
+- [自定义图标 (icon)](#图标)
+- [独立使用](#独立使用)
+- [Props](#props)
+- [Types](#types)
+
+## 组件引入
+
+可从 `@coze/coze-design` 中引入 `Badge` 组件，参考如下：
+
+```tsx
+import { Badge } from '@coze/coze-design';
+```
+
+## 交互预览
+
+`Badge` 组件支持如下属性配置，包含有: `type`, `position`, 和 `count`。
+
+NOTE：coze-design调整了position为TopRight的默认偏移，固定x、y偏移为8px（除mini类型外）。
+
+<Canvas of={BadgeStories.Default} />
+
+<Controls />
+
+## 类型
+
+`Badage` 支持三种类型，包括：`default`, `alt`, `mini`。
+
+- **default** ：现在为椭圆形样式，默认为红色，通常可以搭配`count`传入**数字**使用；
+- **alt** ：现在为圆角矩形，默认蓝色(coz-mg-hglt-plus)，通常可以搭配`count`传入**文字**使用；
+- **mini** ：现在为小红点样式，通常表示状态更新情况，优先渲染小圆点，当传入是节点类型时，将直接渲染该节点；
+
+NOTE：用户可以通过countStyle自己调整组件位置以满足业务要求。
+
+<Story of={BadgeStories.Type} />
+
+```tsx
+import { Badge } from '@coze/coze-design';
+
+<Badge>
+    <Avatar color="green" type="person" size="lg" count="666">BD</Avatar>
+</Badge>
+
+<Badge  type="alt" count="beta">
+     <AIButton color="aihglt">Bot竞技场</AIButton>
+</Badge>
+
+<Badge countStyle={{ right: 8, top: 6 }} type="mini">
+    <Avatar color="green" type="person" size="lg" >BD</Avatar>
+</Badge>
+
+```
+
+## 提示数
+
+`count` 支持传入文字和数字作为展示的内容，可以搭配 `overflowCount` 控制最大的显示数。
+
+<Story of={BadgeStories.Count} />
+
+```tsx
+<View>
+  <Badge
+    {...args}
+    type="default"
+    countStyle={{ right: 2, top: 2 }}
+    count="beta"
+  >
+    <Avatar color="orange" type="bot" size="lg">
+      BD
+    </Avatar>
+  </Badge>
+
+  <Badge
+    {...args}
+    countStyle={{ right: 2, top: 2 }}
+    count={1000}
+    overflowCount={999}
+  >
+    <Avatar color="orange" type="bot" size="lg">
+      BD
+    </Avatar>
+  </Badge>
+</View>
+```
+
+## 位置
+
+`position` 可以控制提醒图标的位置，包括：`leftTop` , `leftBottom` , `rightTop`(默认) , `rightBottom` 。
+
+<Story of={BadgeStories.Position} />
+
+```tsx
+import { Badge } from '@coze/coze-design';
+
+<Badge countStyle={{ right: 8, top: 6 }} position="rightTop">
+  <Avatar color="green" type="person" size="lg">
+    BD
+  </Avatar>
+</Badge>
+
+<Badge countStyle={{ right: 8, top: 6 }} position="rightBottom">
+  <Avatar color="green" type="person" size="lg">
+    BD
+  </Avatar>
+</Badge>
+```
+
+## 图标
+
+`Badge` 的基本显示内容为 `count`。如果传入`type` 则显示为对应类型，当传入是节点类型时，将直接渲染该节点，两者互斥，优先渲染 `count`，所以可以参考如下实现自定义渲染图标。
+
+<Story of={BadgeStories.Icon} />
+
+```tsx
+import { Badge } from '@coze/coze-design';
+
+<Badge
+  count={<IconCozFireFill className="coz-fg-hglt-red text-20px" />}
+  countStyle={{ top: -3, right: 8 }}
+>
+  <Avatar color="purple" type="person" size="lg">
+    BD
+  </Avatar>
+</Badge>;
+```
+
+## 独立使用
+
+`Badge` 支持不传入任何子节点内容，作为独立组件使用。
+
+<Story of={BadgeStories.Custom} />
+
+```tsx
+import { Badge } from '@coze/coze-design';
+
+<div>
+  <Badge />
+  <Badge count="beta" type="alt" />
+  <Badge
+    type="mini"
+    countStyle={{ backgroundColor: 'var(--coz-fg-hglt-green)' }}
+  />
+</div>;
+```
+
+### 与其他组件结合
+
+NOTE：与其他组件组合使用的样式包含在对应组件中，可以直接结合使用。具体请参考代码。
+
+<Story of={BadgeStories.WithButton} />
+
+```tsx
+export const WithButton: Story<BadgeProps> = args => (
+  <div>
+    <View prop="variant" value="TabBar" justify="start">
+      <TabBar mode="tab">
+        <TabBar.TabPanel tab="我的" itemKey="tab1">
+          我的
+        </TabBar.TabPanel>
+        <TabBar.TabPanel
+          tab={
+            <div className="flex items-center">
+              <span>插件</span> <Badge cozLayout count={99} />
+            </div>
+          }
+          itemKey="2"
+        >
+          插件
+        </TabBar.TabPanel>
+      </TabBar>
+    </View>
+
+    <View prop="variant" value="SegmentTag" justify="start">
+      <SegmentTab defaultValue={1} style={{ width: 300 }}>
+        <SegmentTab.Tab value={1}>123</SegmentTab.Tab>
+        <SegmentTab.Tab value={2}>
+          <div className="flex items-center justify-center">
+            123
+            <Badge type="default" cozLayout count={99}></Badge>
+          </div>
+        </SegmentTab.Tab>
+      </SegmentTab>
+
+      <SegmentTab defaultValue={1}>
+        <SegmentTab.Tab value={1}>123</SegmentTab.Tab>
+        <SegmentTab.Tab value={2}>
+          <div className="flex items-center justify-center">
+            123
+            <Badge type="mini" cozLayout></Badge>
+          </div>
+        </SegmentTab.Tab>
+      </SegmentTab>
+    </View>
+
+    <View prop="variant" value="Button" justify="start">
+      <div className="flex flex-col space-y-8">
+        <div className="flex space-x-5">
+          <Button icon={<IconCozPeopleFill />} size="large" showBadge={true}>
+            Button
+          </Button>
+
+          <Button icon={<IconCozPeopleFill />} showBadge={true}>
+            Button
+          </Button>
+
+          <Button icon={<IconCozPeopleFill />} size="small" showBadge={true}>
+            Button
+          </Button>
+
+          <Button
+            icon={<IconCozPeopleFill />}
+            size="small"
+            badgeColor="unset"
+            showBadge={true}
+            color="hgltplus"
+          >
+            Button
+          </Button>
+
+          <Button
+            icon={<IconCozPeopleFill />}
+            size="small"
+            showBadge={true}
+            color="highlight"
+          >
+            Button
+          </Button>
+
+          <Button
+            icon={<IconCozPeopleFill />}
+            size="small"
+            showBadge={true}
+            color="primary"
+          >
+            Button
+          </Button>
+
+          <Button
+            icon={<IconCozPeopleFill />}
+            size="small"
+            showBadge={true}
+            color="secondary"
+          >
+            Button
+          </Button>
+        </div>
+        <div className="flex space-x-5">
+          <span>size large: </span>
+
+          <Badge type="mini">
+            <IconButton size="large" icon={<IconCozMicrophone />} />
+          </Badge>
+          <Badge count={9}>
+            <IconButton size="large" icon={<IconCozMicrophone />} />
+          </Badge>
+
+          <Badge type="mini">
+            <IconButton
+              size="large"
+              icon={<IconCozMicrophone />}
+              color="secondary"
+            />
+          </Badge>
+          <Badge count={9}>
+            <IconButton
+              size="large"
+              icon={<IconCozMicrophone />}
+              color="secondary"
+            />
+          </Badge>
+        </div>
+
+        <div className="flex space-x-5">
+          <span>size default: </span>
+          <Badge type="mini">
+            <IconButton icon={<IconCozMicrophone />} />
+          </Badge>
+
+          <Badge count={9}>
+            <IconButton icon={<IconCozMicrophone />} />
+          </Badge>
+
+          <Badge type="mini">
+            <IconButton icon={<IconCozMicrophone />} color="secondary" />
+          </Badge>
+          <Badge count={9}>
+            <IconButton icon={<IconCozMicrophone />} color="secondary" />
+          </Badge>
+        </div>
+
+        <div className="flex space-x-5">
+          <span>size small: </span>
+          <Badge type="mini">
+            <IconButton size="small" icon={<IconCozMicrophone />} />
+          </Badge>
+          <Badge count={9}>
+            <IconButton size="small" icon={<IconCozMicrophone />} />
+          </Badge>
+
+          <Badge type="mini">
+            <IconButton
+              size="small"
+              icon={<IconCozMicrophone />}
+              color="secondary"
+            />
+          </Badge>
+          <Badge count={9}>
+            <IconButton
+              size="small"
+              icon={<IconCozMicrophone />}
+              color="secondary"
+            />
+          </Badge>
+        </div>
+      </div>
+    </View>
+  </div>
+);
+```
+
+## Props
+
+所有semi的`badge`属性都可以在`COZBadge`组件上使用，此外还支持以下属性：
+
+| Prop      | Type            | Description          | Default    |
+| :-------- | :-------------- | :------------------- | :--------- |
+| size      | `BadgeSize`     | Sets the size        | `default`  |
+| position  | `BadgePosition` | Sets the position    | `rightTop` |
+| className | `String`        | Sets the badge class |            |
+
+## Types
+
+COZBadge 扩展类型参考如下：
+
+```tsx
+export type BadgeSize = 'mini' | 'default' | 'alt';
+```
+
+```tsx
+export type BadgePosition =
+  | 'leftTop'
+  | 'leftBottom'
+  | 'rightTop'
+  | 'rightBottom';
+```

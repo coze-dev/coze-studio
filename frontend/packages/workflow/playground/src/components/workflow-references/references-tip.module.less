@@ -1,0 +1,62 @@
+.workflowReferencingListWrapper {
+  width: 560px;
+  padding: 24px;
+  position: relative;
+
+  .close {
+    position: absolute;
+    right: 24px;
+    top: 24px;
+    cursor: pointer;
+  }
+
+  .workflowReferencingListTitle {
+    margin-bottom: 16px;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .workflowReferencingListDesc {
+    color: var(--semi-color-text-1);
+    margin-bottom: 16px;
+  }
+
+  .workflowReferencingList {
+    max-height: 308px;
+    overflow: auto;
+    margin-bottom: 16px;
+  }
+
+  .workflowReferencingListItem {
+    display: flex;
+    align-items: center;
+    border-bottom: none;
+    padding: 12px 0;
+
+    .icon {
+      flex: 0;
+      display: block;
+      border-radius: 4px
+    }
+
+    .name {
+      flex: 1;
+      padding: 0 16px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .btn {
+      flex: 0;
+      color: rgb(28 29 35 / 100%);
+    }
+  }
+
+
+  .footer {
+    text-align: center;
+    color: var(--semi-color-text-1);
+  }
+}

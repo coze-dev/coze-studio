@@ -1,0 +1,33 @@
+.card {
+  background-color: var(--light-color-grey-grey-0, #f7f7fa);
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+}
+
+.sheet-header {
+  height: 64px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid theme('colors.stroke.5');
+}
+
+.sheet-header-title {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24px;
+  flex-shrink: 0;
+  margin-right: 24px;
+}
+
+.sheet-header-scope {
+  width: 0;
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 64px;
+}

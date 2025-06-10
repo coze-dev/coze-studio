@@ -1,0 +1,27 @@
+.coz-checkbox {
+  /* stylelint-disable-next-line selector-class-pattern */
+  &.semi-checkbox-unChecked:not(
+      .semi-checkbox-indeterminate,
+      .semi-checkbox-disabled
+    ) {
+    .semi-checkbox-inner-display {
+      @apply hover:coz-mg-secondary-hovered active:coz-mg-secondary-pressed;
+      @apply border border-solid coz-stroke-max;
+      @apply shadow-none;
+    }
+  }
+
+  &.semi-checkbox-disabled {
+    .semi-checkbox-inner {
+      .semi-checkbox-inner-display {
+        @apply border-none;
+        @apply shadow-none;
+        @apply opacity-100;
+      }
+
+      .semi-checkbox-inner-display svg {
+        @apply coz-fg-hglt-plus;
+      }
+    }
+  }
+}

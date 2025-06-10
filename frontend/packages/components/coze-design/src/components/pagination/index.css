@@ -1,0 +1,87 @@
+.coz-pagination {
+  .semi-page-item {
+    @apply coz-fg-primary font-medium border-none hover:coz-mg-secondary-hovered active:coz-mg-secondary-pressed;
+    @apply mx-0.5;
+  }
+
+  .semi-page-item-active {
+    @apply coz-mg-hglt coz-fg-hglt hover:coz-mg-hglt active:coz-mg-hglt;
+  }
+
+  .semi-input-wrapper {
+    input[type='text'] {
+      @apply rounded-lg px-4px py-0;
+    }
+  }
+
+  .semi-page-prev,
+  .semi-page-next {
+    @apply coz-fg-primary;
+
+    .icon-icon {
+      @apply text-18px font-normal;
+    }
+  }
+
+  .semi-page-item-disabled {
+    @apply coz-fg-dim hover:bg-transparent active:bg-transparent;
+  }
+
+  .semi-page-total,
+  .semi-page-switch .semi-select-selection {
+    @apply coz-fg-primary text-lg font-normal;
+  }
+
+  .semi-page-item + .semi-page-switch {
+    .semi-select {
+      @apply bg-transparent;
+    }
+  }
+
+  .semi-page-item + .semi-page-quickjump {
+    .semi-input-wrapper {
+      @apply bg-transparent h-32px;
+
+      input {
+        @apply bg-transparent;
+      }
+    }
+
+    .semi-input-wrapper-focus {
+      input {
+        @apply coz-stroke-hglt ring-0 shadow-none;
+      }
+    }
+  }
+}
+
+.coz-pagination-size-small {
+  .semi-page-total,
+  .semi-page-switch .semi-select-selection {
+    @apply text-base font-normal;
+  }
+
+  .semi-page-item {
+    @apply w-6 h-6 min-w-[24px] min-h-[24px] text-base;
+    @apply mx-[1.5px];
+  }
+
+  .semi-page-prev,
+  .semi-page-next {
+    .icon-icon {
+      @apply text-xxl;
+    }
+  }
+}
+
+.coz-pagination-layout-simple {
+  .semi-page-item {
+    @apply text-lg;
+  }
+}
+
+.coz-pagination-size-small.coz-pagination-layout-simple {
+  .semi-page-item {
+    @apply text-base;
+  }
+}

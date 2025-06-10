@@ -1,0 +1,74 @@
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable max-nesting-depth */
+.select-format-type {
+  display: flex !important;
+  gap: 8px;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+
+  :global {
+    .info-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+
+      display: none;
+
+      color: var(--coz-fg-dim);
+    }
+
+    .semi-radio-cardRadioGroup {
+      padding: 10px 16px;
+      border: 1px solid var(--coz-stroke-plus);
+
+      &:hover {
+        background: var(--coz-mg-secondary-hovered);
+      }
+
+      &:active {
+        background: var(--coz-mg-secondary-pressed);
+      }
+    }
+
+
+    .semi-radio-cardRadioGroup_checked {
+      background: var(--coz-mg-hglt);
+      border: 1px solid var(--coz-stroke-hglt);
+
+      &:hover {
+        background: var(--coz-mg-hglt-hovered);
+      }
+
+      &:active {
+        background: var(--coz-mg-hglt-pressed);
+      }
+    }
+
+    .semi-radio {
+      position: relative;
+      display: flex;
+      flex: 1;
+      justify-content: center;
+
+      &:hover {
+        .info-icon {
+          display: block;
+        }
+      }
+
+      .semi-radio-content {
+        height: 48px !important;
+
+        .semi-radio-addon {
+          display: flex !important;
+          flex-direction: column;
+
+          .radio-logo {
+            height: 28px;
+          }
+        }
+      }
+    }
+  }
+}

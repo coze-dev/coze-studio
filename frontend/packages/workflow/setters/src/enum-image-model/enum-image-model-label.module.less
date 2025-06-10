@@ -1,0 +1,35 @@
+/* stylelint-disable no-descending-specificity, no-duplicate-selectors */
+.label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  padding-right: 8px;
+
+  :global {
+    .semi-select-content-wrapper {
+      & {
+        width: auto;
+
+        .icon {
+          display: none;
+        }
+      }
+    }
+  }
+
+  .thumbnail {
+    flex-shrink: 0;
+    margin-right: 8px;
+    margin-left: 8px;
+  }
+
+  .content {
+    margin-right: auto;
+  }
+
+  .icon {
+    margin-left: auto;
+  }
+}

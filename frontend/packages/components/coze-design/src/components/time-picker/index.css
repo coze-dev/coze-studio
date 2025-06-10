@@ -1,0 +1,75 @@
+
+.coz-time-picker  {
+  .coz-time-picker-input {
+    @apply coz-stroke-plus hover:coz-stroke-plus;
+    @apply cursor-pointer;
+
+    &.semi-input-wrapper {
+      @apply bg-transparent coz-input-rounded-normal coz-input-height-normal;
+    }
+
+    &.semi-input-wrapper-small {
+      @apply coz-input-rounded-small coz-input-height-small;
+    }
+
+    &.semi-input-wrapper-large {
+      @apply coz-input-rounded-large coz-input-height-large;
+    }
+
+    .semi-input {
+      @apply text-lg;
+      @apply bg-transparent;
+      @apply cursor-pointer;
+      @apply focus:shadow-none focus:ring-0;
+      @apply placeholder:coz-fg-dim;
+
+      &.semi-input-disabled {
+        @apply cursor-not-allowed;
+      }
+    }
+
+    .semi-input-small {
+      @apply text-base h-16px;
+    }
+  }
+
+  .semi-input-prefix, .semi-input-suffix {
+    @apply mx-8px;
+  }
+}
+
+.coz-time-picker-popup  {
+  .semi-scrolllist-header-title {
+    @apply coz-fg-primary text-start text-xs;
+    @apply pt-12px pb-6px;
+  }
+
+  .semi-scrolllist {
+    @apply px-12px rounded;
+
+    .semi-scrolllist-body .semi-scrolllist-item {
+      @apply w-48px border-none;
+
+      & > ul > li {
+        @apply coz-fg-secondary;
+      }
+
+      & > ul > li.semi-scrolllist-item-sel {
+        @apply coz-mg-primary coz-fg-hglt text-xxl;
+      }
+
+      &:first-child .semi-scrolllist-item-sel{
+        @apply rounded-l;
+      }
+
+      &:last-child .semi-scrolllist-item-sel{
+        @apply rounded-r;
+      }
+    }
+  }
+}
+
+.coz-time-picker-popup.semi-timepicker-range-panel .semi-timepicker-lists > .semi-scrolllist:not(:last-child) .semi-scrolllist-body {
+  @apply border-none;
+}
+

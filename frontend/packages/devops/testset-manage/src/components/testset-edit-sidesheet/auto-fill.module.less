@@ -1,0 +1,23 @@
+.wrapper {
+  display: flex;
+
+  .stop {
+    width: 40px;
+    margin-right: 16px;
+
+    &.hidden {
+      display: none;
+    }
+  }
+
+  .generate {
+    :global {
+      .semi-button-content-right {
+        background-image: linear-gradient(90deg, #4D53E8, #4DCCE8);
+        background-clip: text;
+
+        -webkit-text-fill-color: transparent;
+      }
+    }
+  }
+}

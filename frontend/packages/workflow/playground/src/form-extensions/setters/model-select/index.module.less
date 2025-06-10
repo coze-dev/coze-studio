@@ -1,0 +1,34 @@
+.radio-group {
+  :global {
+    .semi-radio-content {
+      width: 100%;
+
+      span {
+        padding: 4px 8px;
+      }
+    }
+
+    .semi-radio {
+      @apply flex-1;
+    }
+
+
+  }
+}
+
+.slider {
+  :global {
+    .semi-slider {
+      .semi-slider-marks {
+        @apply hidden;
+      }
+
+      &:hover {
+        .semi-slider-marks {
+          @apply block;
+        }
+      }
+
+    }
+  }
+}

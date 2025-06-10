@@ -1,0 +1,92 @@
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable no-duplicate-selectors */
+/* stylelint-disable no-descending-specificity */
+.coz-radio {
+  &.semi-radio {
+    .semi-radio-addon {
+      @apply coz-fg-primary;
+    }
+
+    :not(.semi-radio-inner-checked) .semi-radio-inner-display {
+      @apply coz-stroke-max;
+    }
+
+    &:hover {
+      :not(.semi-radio-inner-checked) .semi-radio-inner-display {
+        @apply coz-mg-secondary-hovered;
+      }
+
+      .semi-radio-inner-checked .semi-radio-inner-display {
+        @apply coz-mg-hglt-plus-hovered;
+      }
+    }
+
+    &:active {
+      :not(.semi-radio-inner-checked) .semi-radio-inner-display {
+        @apply coz-mg-secondary-pressed;
+      }
+
+      .semi-radio-inner-checked .semi-radio-inner-display {
+        @apply coz-mg-hglt-plus-pressed;
+      }
+    }
+
+    .semi-radio-inner-checked .semi-radio-inner-display {
+      @apply coz-mg-hglt-plus;
+      @apply border-transparent;
+    }
+  }
+
+  &.semi-radio-cardRadioGroup {
+    @apply coz-mg-card hover:coz-mg-card-hovered active:coz-mg-card-pressed;
+    @apply coz-stroke-plus;
+
+    .semi-radio-extra {
+      @apply coz-fg-secondary;
+    }
+  }
+
+  &.semi-radio-cardRadioGroup_checked {
+    @apply coz-mg-hglt-secondary hover:coz-mg-hglt-secondary-hovered active:coz-mg-hglt-secondary-pressed;
+    @apply coz-stroke-hglt;
+  }
+
+  &.semi-radio-cardRadioGroup_checked_disabled.semi-radio-cardRadioGroup {
+    @apply coz-mg-hglt-secondary;
+    @apply coz-stroke-hglt;
+  }
+
+  &.semi-radio-disabled {
+    .semi-radio-extra {
+      @apply coz-fg-dim;
+    }
+
+    .semi-radio-addon {
+      @apply coz-fg-dim;
+    }
+
+    :not(.semi-radio-inner-checked) .semi-radio-inner-display {
+      @apply coz-mg-primary;
+    }
+
+    &:hover,
+    &:active {
+      :not(.semi-radio-inner-checked) .semi-radio-inner-display {
+        @apply coz-mg-primary;
+      }
+    }
+
+    .semi-radio-inner-checked .semi-radio-inner-display {
+      @apply border-transparent;
+      @apply coz-mg-hglt-plus-dim;
+    }
+
+    &:hover,
+    &:active {
+      .semi-radio-inner-checked .semi-radio-inner-display {
+        @apply border-transparent;
+        @apply coz-mg-hglt-plus-dim;
+      }
+    }
+  }
+}

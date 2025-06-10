@@ -1,0 +1,24 @@
+{
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "include": [
+    "__tests__",
+    "stories",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+    "tailwind.config.ts"
+  ],
+  "exclude": ["./dist"],
+  "references": [
+    {
+      "path": "./tsconfig.build.json"
+    }
+  ],
+  "compilerOptions": {
+    "rootDir": "./",
+    "outDir": "./dist",
+    "types": ["vitest/globals", "utility-types", "@testing-library/jest-dom"],
+    "strictNullChecks": true,
+    "noImplicitAny": true
+  }
+}

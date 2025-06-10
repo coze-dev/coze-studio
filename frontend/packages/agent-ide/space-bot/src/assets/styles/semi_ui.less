@@ -1,0 +1,23 @@
+.semi-modal-body {
+  overflow: auto;
+}
+
+// 统一button样式
+.semi-button {
+  font-size: 12px;
+  .semi-button-content-right {
+    margin-left: 4px;
+  }
+}
+// borderless取消hover样式
+.semi-button-borderless:not(.semi-button-disabled):hover {
+  background-color: inherit;
+  border: none;
+}
+.semi-button.semi-button-primary:focus-visible,
+.semi-button.semi-button-secondary:focus-visible,
+.semi-button.semi-button-tertiary:focus-visible,
+.semi-button.semi-button-warning:focus-visible,
+.semi-button.semi-button-danger:focus-visible {
+  outline: none;
+}

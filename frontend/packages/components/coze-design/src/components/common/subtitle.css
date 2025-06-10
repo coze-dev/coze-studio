@@ -1,0 +1,6 @@
+.coz-common-subtitle {
+  @apply text-base;
+  @apply text-foreground-2;
+  @apply font-medium;
+  @apply mt-[4px];
+}

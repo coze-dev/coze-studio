@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../",
+    "paths": {
+      "@coze-workflow/nodes": ["."],
+      "@coze-workflow/nodes/*": ["./*"]
+    }
+  },
+  "include": ["**/*"],
+  "exclude": ["**/node_modules"]
+}

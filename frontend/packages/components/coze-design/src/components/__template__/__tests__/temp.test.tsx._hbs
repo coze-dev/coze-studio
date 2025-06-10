@@ -1,0 +1,12 @@
+import '@testing-library/jest-dom';
+import { describe, it } from 'vitest';
+import { render } from '@testing-library/react';
+
+import { {{pascalName}} } from '..';
+
+describe('{{pascalName}}', () => {
+  it('should has className coz-{{name}}', () => {
+    const { container } = render(<{{pascalName}} />);
+    expect(container.getElementsByClassName('coz-{{name}}')).toHaveLength(1);
+  });
+});

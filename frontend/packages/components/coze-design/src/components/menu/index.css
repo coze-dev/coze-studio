@@ -1,0 +1,139 @@
+.coz-menu {
+  .coz-menu-divider {
+    width: calc(100% - 8px);
+    min-width: calc(100% - 8px);
+
+    @apply mt-6px mb-6px;
+  }
+}
+
+.coz-menu.semi-dropdown-menu {
+  @apply coz-bg-max px-4px rounded-normal;
+
+  .semi-dropdown-title,
+  .coz-list-item > .coz-item-text {
+    @apply font-normal;
+
+    &.coz-item-selected {
+      @apply font-medium;
+    }
+  }
+
+  .semi-dropdown-title,
+  .coz-list-item {
+    @apply pl-8px;
+    @apply pr-8px;
+  }
+
+  .semi-dropdown-title {
+    @apply text-foreground-2;
+  }
+
+  .coz-list-item {
+    @apply rounded-mini h-32px mb-2px;
+
+    &:last-child {
+      @apply mb-0;
+    }
+
+    &:hover {
+      @apply coz-mg-secondary-hovered;
+    }
+
+    &:active {
+      @apply coz-mg-secondary-pressed;
+    }
+
+    > .coz-item-text {
+      @apply mr-auto text-lg coz-fg-primary;
+    }
+
+    > .coz-item-danger {
+      @apply coz-fg-hglt-red;
+    }
+
+    > .coz-item-warning {
+      @apply coz-fg-hglt-yellow;
+    }
+
+    > .coz-item-primary {
+      @apply coz-fg-hglt;
+    }
+
+    > .coz-item-secondary {
+      @apply coz-fg-color-blue;
+    }
+  }
+
+  .semi-dropdown-item-disabled {
+    &:hover {
+      @apply bg-transparent cursor-not-allowed;
+    }
+
+    .coz-item-text {
+      @apply coz-fg-dim;
+
+      &.coz-item-danger {
+        @apply coz-fg-hglt-red-dim;
+      }
+
+      &.coz-item-warning {
+        @apply coz-fg-hglt-yellow-dim;
+      }
+
+      &.coz-item-primary {
+        @apply coz-fg-hglt-dim;
+      }
+
+      &.coz-item-secondary {
+        @apply coz-fg-color-blue-dim;
+      }
+    }
+  }
+}
+
+.coz-menu.coz-selection-mode.semi-dropdown-menu {
+  .semi-dropdown-item-icon {
+    @apply absolute left-8px;
+  }
+
+  .semi-dropdown-title,
+  .coz-list-item {
+    @apply pl-32px;
+  }
+
+  .coz-item-text {
+    @apply mr-auto coz-fg-primary;
+  }
+}
+
+.coz-menu-wrapper {
+  &:is(.semi-dropdown-wrapper) {
+    @apply border coz-stroke-primary coz-bg-max;
+    @apply border-solid shadow rounded-normal;
+  }
+
+  .semi-dropdown {
+    .semi-dropdown-menu:not(.coz-selection-mode) {
+      @apply px-4px;
+
+      .semi-dropdown-title {
+        @apply px-8px;
+      }
+
+      .semi-dropdown-item {
+        @apply flex items-center text-lg;
+
+        @apply rounded-mini mb-2px p-4px;
+
+        &:hover {
+          @apply coz-mg-secondary-hovered;
+        }
+
+        &:active {
+          @apply coz-mg-secondary-pressed;
+        }
+      }
+    }
+  }
+}

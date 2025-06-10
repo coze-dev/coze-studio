@@ -1,0 +1,34 @@
+/* stylelint-disable declaration-no-important */
+@import '../../assets/common.less';
+
+.navbar {
+  .brief {
+    display: flex;
+    align-items: center;
+    color: var(--coz-fg-primary);
+
+    :global {
+      .semi-avatar {
+        margin-right: 8px;
+        background: transparent;
+        border: 0.5px solid var(--coz-stroke-primary);
+        border-radius: 8px;
+      }
+    }
+  }
+
+  .back-icon {
+    padding: 8px!important;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    height: fit-content;
+  }
+}
+
+.doc-icon-note {
+  .common-svg-icon(36px, null);
+}

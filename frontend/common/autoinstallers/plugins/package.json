@@ -1,0 +1,22 @@
+{
+  "name": "plugins",
+  "version": "1.0.0",
+  "private": true,
+  "author": "liyubei@bytedance.com",
+  "maintainers": [
+    "fanwenjie.fe@bytedance.com"
+  ],
+  "dependencies": {
+    "@coze-arch/rush-dep-level-plugin": "link:../../../infra/plugins/rush-dep-level-plugin",
+    "@coze-arch/rush-fix-ts-refers-plugin": "alpha",
+    "@coze-arch/rush-increment-run-plugin": "alpha",
+    "@coze-arch/rush-publish-plugin": "alpha",
+    "@coze-arch/rush-run-tsc-plugin": "latest",
+    "json5": "^2.2.1",
+    "rush-init-project-plugin": "^0.11.0",
+    "typescript": "~5.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^18.6.3"
+  }
+}

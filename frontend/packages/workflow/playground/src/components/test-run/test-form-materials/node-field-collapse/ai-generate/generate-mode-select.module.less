@@ -1,0 +1,30 @@
+/* stylelint-disable selector-class-pattern */
+.popover-content {
+  width: 320px;
+  padding: 12px;
+
+  .radio-group {
+    row-gap: 6px;
+    margin-top: 6px;
+
+    :global {
+      .semi-radio-cardRadioGroup {
+        padding: 5px 7px;
+
+        .semi-radio-extra {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}
+
+.button-group {
+  display: flex;
+  column-gap: 8px;
+}
+
+.opened {
+  transform: rotate(180deg);
+}
+

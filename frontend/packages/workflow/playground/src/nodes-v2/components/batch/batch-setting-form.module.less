@@ -1,0 +1,43 @@
+/* stylelint-disable declaration-no-important */
+.workflow-batch-setting-panel {
+  position: relative;
+
+  padding: 24px;
+
+  background: rgba(247, 247, 250, 100%);
+  border-radius: 12px;
+  box-shadow: 0 0 1px 0 rgba(0, 0, 0, 30%);
+}
+
+.workflow-batch-setting-panel-title {
+  padding-bottom: 32px;
+  font-size: 18px !important;
+  line-height: 24px !important;
+}
+
+.form-field {
+  display: flex;
+
+  &:first-child {
+    margin-bottom: 16px !important;
+  }
+
+  :global {
+    .semi-form-field-label {
+      width: 200px;
+      padding-top: 4px;
+    }
+
+    .rc-slider {
+      width: 180px;
+    }
+
+    .rc-slider-disabled {
+      background-color: unset;
+    }
+
+    .rc-slider+div {
+      width: 108px;
+    }
+  }
+}

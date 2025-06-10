@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "unify_dependent2.proto";
+import "./dep/common.proto";
+
+package unify_dep1;
+
+message Foo {
+  string f_key1 = 1;
+  common.Common f_key2 = 2;
+}

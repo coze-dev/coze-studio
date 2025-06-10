@@ -1,0 +1,47 @@
+.assistant-message-pop {
+  margin: 0 auto 20px 52px;
+  padding: 16px;
+  background: #FFF;
+  border-radius: 16px;
+}
+
+@keyframes generating-dot-animation {
+  0% {
+    background-color: #2E3238;
+  }
+
+  50% {
+    background-color: #A7ABB0;
+  }
+
+  100% {
+    background-color: #2E3238;
+  }
+}
+
+.top-safe-area {
+  padding: 12px;
+}
+
+.bottom-safe-area {
+  padding: 32px;
+}
+
+.scroll-mask {
+  // 由于Chrome浏览器不兼容 父级使用mask 和 子级使用backdrop-filter，表现为backdrop-filter不生效
+  // 规划后期气泡改为实色方案，此方案效果更好
+  mask: linear-gradient(180deg, #FFF 91.89%, rgba(255, 255, 255, 0%) 100%);
+}
+
+.mask-scroll-header-top {
+  pointer-events: none;
+
+  position: absolute;
+  z-index: 100;
+  top: 0;
+
+  width: 100%;
+  height: 60px;
+
+  background: linear-gradient(180deg, rgba(0, 0, 0, 32%) 0%, rgba(0, 0, 0, 0%) 100%)
+}

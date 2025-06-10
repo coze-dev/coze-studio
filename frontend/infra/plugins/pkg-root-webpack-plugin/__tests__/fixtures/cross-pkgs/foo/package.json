@@ -1,0 +1,6 @@
+{
+  "name": "testing-bar",
+  "dependencies": {
+    "bar": "file:../bar"
+  }
+}

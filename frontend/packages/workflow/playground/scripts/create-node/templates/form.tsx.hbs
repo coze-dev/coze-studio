@@ -1,0 +1,26 @@
+import { I18n } from '@coze-arch/i18n';
+
+import { NodeConfigForm } from '@/node-registries/common/components';
+
+import { OutputsField, InputsParametersField } from '../common/fields';
+import { INPUT_PATH } from './constants';
+
+export const FormRender = () => (
+  <NodeConfigForm>
+    <InputsParametersField
+      name={INPUT_PATH}
+      title={I18n.t('node_http_request_params')}
+      tooltip={I18n.t('node_http_request_params_desc')}
+      defaultValue={[]}
+    />
+
+    <OutputsField
+      title={I18n.t('workflow_detail_node_output')}
+      tooltip={I18n.t('node_http_response_data')}
+      id="{{CAMEL_NAME_PLACE_HOLDER}}-node-outputs"
+      name="outputs"
+      topLevelReadonly={true}
+      customReadonly
+    />
+  </NodeConfigForm>
+);

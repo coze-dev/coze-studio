@@ -1,0 +1,64 @@
+.coz-banner {
+  @apply rounded-none font-normal coz-fg-primary;
+  @apply px-18px py-4px;
+
+  &:where(.semi-banner-info, .semi-banner-success, .semi-banner-warning, .semi-banner-danger) {
+    &.semi-banner-info {
+      @apply coz-mg-hglt-secondary;
+    }
+
+    &.semi-banner-success {
+      @apply coz-mg-hglt-secondary-green;
+    }
+
+    &.semi-banner-warning {
+      @apply coz-mg-hglt-secondary-yellow;
+    }
+
+    &.semi-banner-danger {
+      @apply coz-mg-hglt-secondary-red;
+    }
+
+    &.coz-banner-card {
+      @apply px-18px py-4px rounded-normal;
+    }
+
+    .semi-banner-title {
+      @apply text-lg font-medium coz-fg-plus;
+    }
+
+    .semi-banner-description {
+      @apply coz-fg-primary font-normal;
+    }
+
+    .semi-banner-content-wrapper {
+      .semi-button {
+        @apply rounded-mini ml-0;
+      }
+    }
+  }
+
+  &.coz-banner-content-start {
+    .semi-banner-content-wrapper {
+      .semi-banner-content{
+        @apply justify-start;
+      }
+    }
+  }
+
+  &.coz-banner-content-center {
+    .semi-banner-content-wrapper {
+      .semi-banner-content{
+        @apply justify-center;
+      }
+    }
+  }
+
+  &.coz-banner-card {
+    .semi-banner-content-wrapper {
+      .semi-button {
+        @apply mr-[-10px] ml-0;
+      }
+    }
+  }
+}

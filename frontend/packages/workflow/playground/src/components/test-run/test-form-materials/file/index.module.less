@@ -1,0 +1,107 @@
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable declaration-no-important */
+.container {
+  &.hide-upload-area {
+    :global {
+      .semi-upload-drag-area {
+        display: none;
+      }
+
+      .semi-upload-file-list {
+        margin-top: 0;
+      }
+    }
+  }
+
+  &.list-item-wrap {
+    :global {
+      .semi-upload-file-list-main {
+        column-gap: 4px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      .custom-upload-file-item {
+        width: calc(50% - 2px);
+      }
+    }
+  }
+
+  :global {
+    .semi-upload-file-list {
+      width: 100%;
+      margin-top: 32px;
+      margin-bottom: 0;
+    }
+
+    .semi-upload-drag-area {
+      .semi-upload-drag-area-sub-text {
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+        word-break: break-all;
+
+        @apply coz-fg-dim;
+      }
+    }
+
+    .semi-upload-file-card-preview-placeholder {
+      background-color: unset;
+    }
+
+    .semi-upload-file-card-info-main {
+      max-height: 100%;
+    }
+
+    .semi-upload-file-list-title {
+      display: none;
+    }
+
+    .semi-upload-drag-area-custom {
+      &:hover {
+        background: var(--coz-mg-hglt-secondary, rgba(181, 191, 255, 23%));
+      }
+    }
+  }
+
+  .upload-error-text {
+    color: var(--Light-usage-danger---color-danger, #FF441E);
+  }
+
+  .custom-upload-drag-actions {
+    position: absolute;
+    bottom: -28px;
+  }
+
+  .custom-upload-drag {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    padding: 12px;
+
+    background: var(--coz-mg-card, #FFF);
+    border: 1px dashed var(--coz-stroke-plus, rgba(68, 83, 130, 25%));
+    border-radius: 8px;
+
+    &:hover {
+      background: var(--coz-mg-hglt-secondary, rgba(181, 191, 255, 23%));
+      border: 1px dashed var(--coz-stroke-hglt, rgba(81, 71, 255, 100%));
+    }
+  }
+
+  :global(.semi-upload-drag-area-legal) .custom-upload-drag {
+    background: var(--coz-mg-hglt-secondary, rgba(181, 191, 255, 23%))!important;
+    border: 1px dashed var(--coz-stroke-hglt, rgba(81, 71, 255, 100%))!important;
+  }
+
+  :global(.has-error) .custom-upload-drag {
+    border: 1px solid var(--Light-usage-danger---color-danger, #FF441E);
+  }
+}
+

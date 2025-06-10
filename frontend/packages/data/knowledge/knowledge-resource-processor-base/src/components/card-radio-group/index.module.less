@@ -1,0 +1,37 @@
+.card-radio-group {
+  gap: 4px;
+
+  :global {
+    .semi-radio {
+      padding: 12px;
+      border-radius: 8px;
+
+      &:hover {
+        background-color: var(--coz-mg-secondary-hovered);
+      }
+
+      &:active {
+        background-color: var(--coz-mg-secondary-pressed);
+      }
+
+      &.semi-radio-checked {
+        padding: 11.5px;
+        background-color: var(--coz-mg-card);
+        border-width: 1.5px;
+      }
+    }
+
+    .semi-radio-content {
+      flex-grow: 1;
+
+      .semi-radio-addon {
+        font-weight: 500;
+      }
+
+      .semi-radio-extra {
+        font-size: 12px;
+        line-height: 16px;
+      }
+    }
+  }
+}

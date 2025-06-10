@@ -1,0 +1,178 @@
+.header {
+  display: grid;
+  grid-template-columns: 5fr 1fr;
+  align-items: center;
+
+  width: 100%;
+
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.header-no-expandable {
+  grid-template-columns: none;
+}
+
+.header-title {
+  line-height: 20px;
+
+  >span {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  :global {
+    .semi-icon {
+      margin-right: 8px;
+    }
+
+    .icon-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+.collapse-item-header-top-level {
+  justify-content: flex-start;
+  width: 100%;
+  padding: 12px;
+  border: none;
+
+  &:hover {
+    border: none;
+  }
+
+  &:active {
+    border: none;
+  }
+}
+
+.collapse-item-header {
+  justify-content: flex-start;
+  width: 100%;
+  border: none;
+
+  &:hover {
+    border: none;
+  }
+
+  &:active {
+    border: none;
+  }
+}
+
+
+.collapse-item-header-active {
+  background: #f0f0f5;
+  border-right: none;
+  border-left: none;
+  border-radius: 0;
+  box-shadow: 1px 0.5px rgb(46 50 56 / 9%),
+    -1px -0.5px rgb(46 50 56 / 9%);
+
+  &:hover {
+    border-right: none;
+    border-left: none;
+    border-radius: 0;
+  }
+}
+
+.llm-api-name {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.llm-api-content {
+  word-break: break-word;
+
+  .md-box-wrapper {
+    user-select: text;
+
+    overflow-y: auto;
+
+    width: 100%;
+    min-height: 32px;
+
+    /** 高度限制 */
+    max-height: 272px;
+    padding: 6px 12px;
+
+    background: rgba(46, 46, 56, 4%);
+    border: 1px solid rgba(29, 28, 35, 8%);
+    border-radius: 8px;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(29, 28, 35, 30%);
+      border-radius: 6px;
+
+      &:hover {
+        background: rgba(29, 28, 35, 60%);
+      }
+    }
+  }
+}
+
+.main-collapse {
+  overflow: hidden;
+}
+
+.collapse-item-header-main {
+  width: auto;
+}
+
+.collapsible {
+  box-shadow: 0 0.5px rgb(46 50 56 / 9%);
+}
+
+.llm-time {
+  display: flex;
+  justify-self: flex-end;
+
+  margin-left: 8px;
+
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.message-tip-ellipsis {
+  position: absolute;
+
+  overflow: hidden;
+  display: inline-block;
+
+  max-width: calc(100% - 270px);
+  margin-left: 4px;
+
+  text-overflow: ellipsis;
+}
+
+.collapse-background {
+  background: none;
+}
+
+.hook-label {
+  display: inline-block;
+
+  width: 48px;
+
+  font-weight: bold;
+  font-style: italic;
+  text-align: right;
+}

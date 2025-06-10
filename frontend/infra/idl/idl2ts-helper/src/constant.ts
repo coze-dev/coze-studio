@@ -1,0 +1,16 @@
+export const ReservedKeyWord = [
+  'class',
+  'const',
+  'var',
+  'arguments',
+  'import',
+  'export',
+  'from',
+  'extends',
+  'interface',
+  'enum',
+  'package',
+  'do',
+  'eval',
+  'object',
+];

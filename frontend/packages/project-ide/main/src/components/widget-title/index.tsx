@@ -1,0 +1,102 @@
+import React, { useMemo, useState, useCallback } from 'react';
+
+import cls from 'classnames';
+import {
+  IconCozCrossFill,
+  IconCozWarningCircleFill,
+} from '@coze/coze-design/icons';
+import { Typography, Loading, Skeleton } from '@coze/coze-design';
+import {
+  type TitlePropsType,
+  DISABLE_HANDLE_EVENT,
+  Command,
+  type ProjectIDEWidget,
+} from '@coze-project-ide/framework';
+
+import styles from './styles.module.less';
+
+export const WidgetTitle: React.FC<TitlePropsType> = ({
+  commandRegistry,
+  title,
+  widget,
+  uiState,
+  registry,
+}) => {
+  const [tabHovered, setTabHovered] = useState(false);
+  const renderIcon = useMemo(() => {
+    if (!registry?.renderIcon || typeof registry?.renderIcon !== 'function') {
+      return null;
+    }
+    return registry.renderIcon((widget as ProjectIDEWidget).context);
+  }, [registry]);
+
+  const renderTitle = useMemo(() => {
+    if (tabHovered) {
+      return (
+        <IconCozCrossFill
+          className="coz-fg-secondary"
+          style={{ fontSize: 16 }}
+          onClick={e => {
+            e.stopPropagation();
+            commandRegistry.executeCommand(
+              Command.Default.VIEW_SAVING_WIDGET_CLOSE_CONFIRM,
+              [widget?.title],
+            );
+          }}
+        />
+      );
+    }
+    // 没有标题还在骨架屏阶段
+    if (!title) {
+      return null;
+    } else if (uiState === 'saving') {
+      return <Loading size="mini" loading={true} />;
+    } else if (uiState === 'error') {
+      return <IconCozWarningCircleFill className="text-lg coz-fg-hglt-red" />;
+    }
+    return null;
+  }, [uiState, widget, tabHovered, commandRegistry, title]);
+
+  const handleTabHover = useCallback(() => {
+    setTabHovered(true);
+  }, []);
+
+  const handleTabBlur = useCallback(() => {
+    setTabHovered(false);
+  }, []);
+
+  return (
+    <div
+      className={styles['title-container']}
+      onMouseOver={handleTabHover}
+      onMouseLeave={handleTabBlur}
+    >
+      {uiState === 'loading' || !title ? (
+        <div className={styles['widget-title']}>
+          <div className={styles['title-label']}>
+            <Skeleton.Title style={{ width: '100px' }} />
+          </div>
+          <div className={cls(styles['close-icon'], DISABLE_HANDLE_EVENT)}>
+            {renderTitle}
+          </div>
+        </div>
+      ) : (
+        <div className={styles['widget-title']}>
+          <div className={styles['title-label']}>
+            <div className={styles['label-icon']}>{renderIcon}</div>
+            <div className={styles['label-text']}>
+              <Typography.Text ellipsis={{ showTooltip: true }}>
+                {title}
+              </Typography.Text>
+            </div>
+          </div>
+          <div className={cls(styles['close-icon'], DISABLE_HANDLE_EVENT)}>
+            {renderTitle}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const widgetTitleRender = props => <WidgetTitle {...props} />;

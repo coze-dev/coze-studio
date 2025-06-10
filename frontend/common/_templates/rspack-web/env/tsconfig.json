@@ -1,0 +1,9 @@
+{
+  "extends": "@coze-arch/ts-config/tsconfig.node.json",
+  "compilerOptions": {
+    "declaration": true,
+    "baseUrl": "./",
+    "strictNullChecks": true,
+    "emitDeclarationOnly": true
+  }
+}

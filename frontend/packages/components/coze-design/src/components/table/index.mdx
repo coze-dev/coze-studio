@@ -1,0 +1,56 @@
+import { Canvas, Meta, Controls, Story } from '@storybook/blocks';
+
+import * as TableStories from './stories/table.stories';
+
+<Meta of={TableStories} name="Docs" />
+
+# COZTable
+
+> COZTable, 基于semi的Table封装实现 —— [API参考](https://semi.bytedance.net/zh-CN/show/table)
+
+- [组件引入](#组件引入)
+- [交互预览](#交互预览)
+- [Types](#types)
+
+## 组件引入
+
+可从 `@coze/coze-design` 中引入 `Table` 组件，参考如下：
+
+```tsx
+import { Table } from '@coze/coze-design';
+```
+
+## 交互预览
+
+`Table` 组件主要扩展支持indexRowSelection属性，可通过调整Control参数来预览。
+
+<Canvas of={TableStories.Default} />
+
+<Controls />
+
+## Types
+
+SegmentTab扩展类型参考如下：
+
+```tsx
+export interface TableProps extends HTMLAttributes<HTMLDivElement> {
+  offsetY?: number;
+  scrollX?: number;
+  tableProps?: SemiTableProps;
+  bySearch?: boolean;
+  empty?: ReactElement;
+  enableLoad?: boolean;
+  loadMode?: 'page' | 'cursor'; // 分页、游标
+  hasMore?: boolean;
+  total?: number;
+  onLoad?: () => void;
+  wrapperClassName?: string;
+  useHoverStyle?: boolean;
+  strictDataSourceProp?: boolean; // 严格遵循传递的 dataSource
+  /**
+   * rowSelection样式为：checkbox和序号相互切换。
+   * 注意：获取值变化属性等仍然需要通过tableProps.rowSelection传参，注意不要覆盖ableProps.rowSelection.renderCell
+   * */
+  indexRowSelection?: boolean;
+}
+```

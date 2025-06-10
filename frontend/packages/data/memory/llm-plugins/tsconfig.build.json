@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "types": [],
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../../arch/bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/report-events/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/reporter/tsconfig.build.json"
+    },
+    {
+      "path": "../../../components/bot-semi/tsconfig.build.json"
+    }
+  ]
+}

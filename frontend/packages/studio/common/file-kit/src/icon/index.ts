@@ -1,0 +1,10 @@
+export { default as ZipIcon } from '../assets/file/zip-success.svg';
+export { default as XlsxIcon } from '../assets/file/xlsx-success.svg';
+export { default as VideoIcon } from '../assets/file/video-success.svg';
+export { default as TextIcon } from '../assets/file/txt-success.svg';
+export { default as PptIcon } from '../assets/file/ppt-success.svg';
+export { default as ImageIcon } from '../assets/file/image-success.svg';
+export { default as DocxIcon } from '../assets/file/docx-success.svg';
+export { default as CodeIcon } from '../assets/file/code-success.svg';
+export { default as AudioIcon } from '../assets/file/audio-success.svg';
+export { default as UnknownIcon } from '../assets/file/unknown-success.svg';

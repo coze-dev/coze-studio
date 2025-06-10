@@ -1,0 +1,41 @@
+.page-item {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: #fff;
+  border: 1px solid rgba(29, 28, 35, 0.08);
+  color: #1D1C23;
+  font-weight: 600;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  position: relative;
+
+  .icon {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+  }
+  &.error .icon {
+    color: #FF441E;
+  }
+  &.warning .icon {
+    color: #FF9600;
+  }
+  &.active {
+    border-color: #4d53e8;
+    font-weight: 500;
+    background: transparent;
+  }
+
+  &.empty {
+    color: rgba(29, 28, 35, 0.20);
+    background: rgba(46, 46, 56, 0.04);
+    cursor: not-allowed;
+    border-width: 0px;
+  }
+}

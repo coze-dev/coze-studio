@@ -1,0 +1,37 @@
+.connector-tip {
+  :global {
+    h3 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--coz-fg-plus, rgba(6, 7, 9, 96%));
+    }
+
+    h4 {
+      margin: 4px 0 12px;
+
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 16px;
+      color: var(--coz-fg-secondary, rgba(6, 7, 9, 50%));
+
+      a {
+        color: var(--coz-fg-hglt, #4E40E5);
+        text-decoration: none;
+      }
+    }
+
+    p:not(:first-child) {
+      margin: 0;
+      line-height: 0;
+      text-align: center;
+
+      img {
+        max-width: 150px;
+        height: 200px;
+        // border: 1px solid var(--coz-stroke-primary, rgba(6, 7, 9, 10%));
+        border-radius: 14px;
+      }
+    }
+  }
+}

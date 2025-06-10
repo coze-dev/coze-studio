@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../rushx-config.schema.json",
+  "packageAudit": {
+    "enable": true,
+    "rules": [
+      [
+        "essential-config-file",
+        "error",
+        { "essentialFiles": ["OWNERS", "eslint.config.js"] }
+      ]
+    ]
+  }
+}

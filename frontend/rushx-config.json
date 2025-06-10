@@ -1,0 +1,86 @@
+// 所有声明在 rush.json 中的包，需要在 tags 配置中，添加团队和分级描述。描述的枚举如下
+{
+  "$schema": "./rushx-config.schema.json",
+  // 团队情况，可以自行添加
+  "team": [
+    // 负责人：@xukai.luics
+    "team-automation",
+    // 负责人：@changyang.liu
+    "team-builder",
+    // 负责人：@linyibin
+    "team-community",
+    // 负责人：@sunshengda
+    "team-data",
+    // 负责人：@xuyuantong, @dingquan
+    "team-devops",
+    // 负责人：@fanwenjie.fe
+    "team-arch",
+    // 负责人：@sunkuo
+    "team-studio",
+    "team-qa"
+  ],
+  // 全部分级包
+  // delete 将被删除包，暂不做分级
+  "level": ["level-1", "level-2", "level-3", "level-4"],
+  "codecov": {
+    "coverage": 20,
+    "incrementCoverage": 80,
+    "level-1": {
+      "coverage": 80,
+      "incrementCoverage": 90
+    },
+    "level-2": {
+      "coverage": 30,
+      "incrementCoverage": 60
+    },
+    // 后续逐步提升这个 level 的增量覆盖率
+    "level-3": {
+      "coverage": 0,
+      "incrementCoverage": 0
+    },
+    "level-4": {
+      "coverage": 0,
+      "incrementCoverage": 0
+    }
+  },
+  "dupCheck": {
+    "ignoreGlobPatterns": [
+      "**/__mocks__/**",
+      "**/__mock__/**",
+      "**/__tests__/**",
+      "**/__test__/**",
+      "**/tests/**",
+      "**/*.spec.*",
+      "**/*.test.*",
+      "**/coverage/**",
+      "**/*auto-generate/**",
+      "**/template/**",
+      "common/**",
+      "**/.*/**",
+      "**/dist/**",
+      "**/lib/**",
+      "**/build/**",
+      "**/output/**",
+      "**/*.d.ts",
+      "**/*config*/**",
+      "**/*configs*/**",
+      "**/*config*",
+      "**/*configs*",
+      "**/*rc.*",
+      "**/*setup.*",
+      "**/idl/**",
+      "**/e2e/**",
+      "**/scripts/**",
+      "packages/builder/lynx-runtime-sdk/**",
+      "packages/builder/web-runtime-sdk/**",
+      "packages/studio/bot-creator/entry/**",
+      "packages/studio/open-platform/entry/**",
+      "packages/studio/components/src/dnd-provider/**",
+      "packages/common/prompt-kit/**",
+      "packages/common/editor-plugins/**",
+      "packages/workflow/playground/src/nodes-v2/components/system-prompt/**",
+      "packages/data/knowledge-page/**",
+      "packages/studio/bot-creator/layout/src/components/**"
+    ]
+  }
+}

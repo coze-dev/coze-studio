@@ -1,0 +1,58 @@
+.json-viewer-line {
+  position: relative;
+
+  // 一般来说一行高度为 24px，但由于支持换行所以这里只能自适应，因此 line 不再具有撑高元素的能力，需要在外部去设置 minHeight
+  // height: 100%;
+  width: 24px;
+
+  display: inline-block;
+
+  // 不能被压缩也不能扩展，防止样式错乱
+  flex-grow: 0;
+  flex-shrink: 0;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+  }
+
+  // 竖线
+  &::before {
+    top: 0;
+    // 左边留 6px 用于和顶部 icon 对齐
+    left: 6px;
+    width: 0;
+    // 这里同理，集成父元素的高度
+    height: 100%;
+    border-left: 1px solid transparent;
+  }
+
+  // 横线
+  &::after {
+    top: 5px;
+    left: 6px;
+    width: 12px;
+    height: 6px;
+    border-bottom: 1px solid transparent;
+    border-left: 1px solid transparent;
+    border-bottom-left-radius: 6px;
+  }
+
+  &.visible::before,
+  &.visible::after,
+  &.last::before,
+  &.last::after {
+    border-color: #C6C6CD;
+  }
+
+  // 最后的元素不需要延伸的竖线，缩短竖线
+  &.last::before {
+    height: 6px;
+  }
+
+  &.half::before {
+    border-color: #C6C6CD;
+  }
+
+}

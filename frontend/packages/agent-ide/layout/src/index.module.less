@@ -1,0 +1,263 @@
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable no-duplicate-selectors */
+/* stylelint-disable declaration-no-important */
+@import '@coze-common/assets/style/common.less';
+
+.wrapper {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  @apply bg-background-1;
+}
+
+.layout-hotzone {
+  z-index: calc(var(--chat-z-index-header, 50) + 1);
+}
+
+.text {
+  font-size: 12px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 16px;
+}
+
+.container {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+
+  width: 100%;
+  //  动态撑满父容器且可以滚动
+  //  @reference: https://stackoverflow.com/questions/14962468/how-can-i-combine-flexbox-and-vertical-scroll-in-a-full-height-app
+  min-height: 0;
+
+  &.store {
+    height: 100%;
+  }
+}
+
+
+.spin {
+  position: absolute;
+  z-index: 100;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background-color: rgb(255 255 255 / 50%);
+}
+
+.playground-neat {
+  .message-area {
+    min-width: 258px;
+  }
+}
+
+.develop-area {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  @apply coz-bg-plus;
+}
+
+.develop-area-scroll {
+  overflow: auto;
+  flex: 1;
+}
+
+.setting-area {
+  overflow: hidden;
+  display: flex;
+  flex: 1 1;
+  flex-direction: column;
+
+  border-left: 1px solid rgb(28 29 35 / 12%);
+
+  .setting-title-block {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin: 12px 0;
+  }
+
+  :global {
+    .semi-collapse-item {
+      border-bottom: none;
+    }
+
+    .semi-collapse-header {
+      margin-right: 0;
+      margin-left: 0;
+    }
+
+    .semi-collapse-content {
+      padding-right: 0;
+      padding-left: 0;
+    }
+
+    .semi-select {
+      width: 100%;
+      min-width: 80px;
+    }
+  }
+
+  :global {
+    .semi-collapsible-wrapper {
+      padding-left: 16px;
+    }
+  }
+}
+
+.message-area {
+  position: relative;
+
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  width: 100%;
+  min-width: 404px;
+  height: 100%;
+
+  transition: min-width 0.2s ease;
+
+  @apply bg-background-3;
+}
+
+.playground-neat {
+  .message-area {
+    min-width: 258px;
+  }
+}
+
+.title {
+  margin: 8px 0 0 4px !important;
+}
+
+.sheet-title-node-cover {
+  overflow: hidden;
+  display: flex;
+  flex: 1;
+  align-items: center;
+}
+
+.bj-cover {
+  @apply bg-background-3;
+
+  box-shadow: 0 2px 4px 0 rgb(0 0 0 / 4%),
+    0 0 1px 0 rgb(0 0 0 / 8%);
+
+}
+
+.bj-img-cover {
+  z-index: 20;
+  text-shadow: 0 0.5px 1px rgba(0, 0, 0, 25%);
+  // 有背景图时需要覆盖组件样式
+  background-color: transparent !important;
+}
+
+.bj-single-cover {
+  flex: 0 0 auto;
+  height: 64px !important;
+}
+
+.border-cover {
+  @apply bg-background-3;
+
+  border-bottom: none !important;
+}
+
+.spin-wrapper.top-level {
+  width: 100%;
+  height: 100% !important;
+
+  :global {
+    .semi-spin-children {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+  }
+}
+
+.sheet-view-new-header {
+  height: 64px !important;
+}
+
+.sheet-view-left-header {
+  padding: 16px 16px 16px 28px !important;
+}
+
+.icon-button-16 {
+  cursor: pointer;
+
+  &:hover {
+    border-radius: 4px;
+  }
+
+  :global {
+    .semi-button {
+      &.semi-button-size-small {
+        height: 16px;
+        padding: 1px !important;
+      }
+    }
+  }
+}
+
+// 能力模块默认说明文案样式
+.tip-text {
+  font-size: 14px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 22px;
+  color: var(--light-usage-text-color-text-2, rgb(28 29 35 / 60%));
+}
+
+.sheet-view-hidden {
+  display: none;
+}
+
+.left-sheet-config {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.wrapper-single-with-tool-area-hidden {
+  grid-template-columns: 26fr 14fr !important;
+}
+
+.tool-card {
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 13fr 13fr;
+  height: 100%;
+}
+
+.tool-card-with-tool-area-hidden {
+  grid-template-columns: 26fr !important;
+}
+
+.tool-hidden {
+  display: none;
+}
+
+.config-left {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.display-none {
+  display: none !important;
+}

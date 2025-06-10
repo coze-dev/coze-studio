@@ -1,0 +1,50 @@
+import { type UserAuthInfo } from '@coze-arch/idl/developer_api';
+import { I18n } from '@coze-arch/i18n';
+
+import { type UserInfo, type LoginStatus } from '../types';
+import { useUserStore } from '../store/user';
+
+/**
+ * 获取用户信息
+ * @returns UserInfo 用户信息
+ */
+export const getUserInfo = () => useUserStore.getState().userInfo;
+
+/**
+ * 获取登录状态
+ * @returns LoginStatus 登录状态
+ */
+export const getLoginStatus = (): LoginStatus => {
+  const state = useUserStore.getState();
+  if (state.isSettled) {
+    return state.userInfo?.user_id_str ? 'logined' : 'not_login';
+  }
+  return 'settling';
+};
+
+export const resetUserStore = () => useUserStore.getState().reset();
+
+export const setUserInfo = (userInfo: UserInfo | null) =>
+  useUserStore.getState().setUserInfo(userInfo);
+
+export const getUserLabel = () => useUserStore.getState().userLabel;
+
+export const getUserAuthInfos = () =>
+  useUserStore.getState().getUserAuthInfos();
+
+export const subscribeUserAuthInfos = (
+  callback: (state: UserAuthInfo[], prev: UserAuthInfo[]) => void,
+) => useUserStore.subscribe(state => state.userAuthInfos, callback);
+
+const usernameRegExp = /^[0-9A-Za-z_]+$/;
+const minLength = 4;
+export const usernameRegExpValidate = (value: string) => {
+  if (!usernameRegExp.exec(value)) {
+    return I18n.t('username_invalid_letter');
+  }
+  if (value.length < minLength) {
+    return I18n.t('username_too_short');
+  }
+
+  return null;
+};

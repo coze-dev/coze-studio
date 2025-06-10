@@ -1,0 +1,98 @@
+.json-editor {
+  position: relative;
+
+  width: 100%;
+
+  background: #fff;
+  border: 1px solid rgba(29, 28, 35, 12%);
+  border-radius: 8px;
+
+  .error {
+    border-color: rgb(255, 68, 30);
+  }
+
+  .focus {
+    height: 264px;
+  }
+
+
+  // disabled样式，对齐semi组件
+  .disabled {
+    cursor: not-allowed;
+    background-color: var(--semi-color-disabled-fill);
+
+    :global {
+      .monaco-editor,
+      .monaco-editor .margin,
+      .monaco-editor-background,
+      .monaco-mouse-cursor-text {
+        cursor: not-allowed;
+        background-color: transparent;
+      }
+    }
+
+  }
+
+  &.is-new-editor {
+    .header {
+      .title {
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+      }
+
+      :global(.semi-button) {
+        color: #FFFFFFC9;
+        border: none;
+      }
+    }
+
+    .focus {
+      height: unset;
+    }
+
+    &.is-dark-theme {
+      background: #151B27;
+
+      .header {
+        color: #FFFFFF63;
+        background: #1F2533;
+        border-bottom: solid 1px #99B6FF2B;
+      }
+
+      .icons svg {
+        color: #FFFFFFC9;
+      }
+
+      :global(.semi-button:hover) {
+        background: #FFFFFF17;
+      }
+
+      :global(.semi-button:active) {
+        background: #FFFFFF1F;
+      }
+    }
+
+    &.is-light-theme {
+      background: #F7F7FC;
+
+      .header {
+        color: #000A298A;
+        background: #FCFCFF;
+        border-bottom: solid 1px #54619C45;
+      }
+
+      .icons svg {
+        color: #0F1529D1;
+      }
+
+      :global(.semi-button:hover) {
+        background: #06070914;
+      }
+
+      :global(.semi-button:active) {
+        background: #0607091F;
+      }
+    }
+  }
+}

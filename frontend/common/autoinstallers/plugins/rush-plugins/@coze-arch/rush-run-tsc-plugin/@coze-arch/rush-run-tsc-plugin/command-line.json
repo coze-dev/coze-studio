@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
+  "commands": [
+    {
+      "commandKind": "bulk",
+      "name": "ts-check",
+      "ignoreMissingScript": false,
+      "enableParallelism": true,
+      "shellCommand": "npm run prets-check --if-present && NODE_OPTIONS='--max-old-space-size=16384' tsc -b tsconfig.build.json",
+      "ignoreDependencyOrder": true,
+      "allowWarningsInSuccessfulBuild": true,
+      "summary": "⭐️️ Run tsc command for each package",
+      "safeForSimultaneousRushProcesses": true
+      // "incremental": true
+    }
+  ],
+  "parameters": []
+}

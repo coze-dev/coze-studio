@@ -1,0 +1,26 @@
+diff --git a/es/useInfiniteScroll/index.js b/es/useInfiniteScroll/index.js
+index 55d84ef685df259db1fc3ab0e72f1dd2f9112685..1fb357f6bef8d9d3897b0f029ad0063092fad017 100644
+--- a/es/useInfiniteScroll/index.js
++++ b/es/useInfiniteScroll/index.js
+@@ -67,7 +67,7 @@ var useInfiniteScroll = function (service, options) {
+         setTimeout(function () {
+           // eslint-disable-next-line @typescript-eslint/no-use-before-define
+           scrollMethod();
+-        });
++        },10);
+         onSuccess === null || onSuccess === void 0 ? void 0 : onSuccess(d);
+       },
+       onError: function (e) {
+diff --git a/lib/useInfiniteScroll/index.js b/lib/useInfiniteScroll/index.js
+index 1316c779812180c4d85b52b226f8b0bf7cb6319e..2da9301551d1a939e94ca032e3bf28c5a061bd30 100644
+--- a/lib/useInfiniteScroll/index.js
++++ b/lib/useInfiniteScroll/index.js
+@@ -74,7 +74,7 @@ var useInfiniteScroll = function useInfiniteScroll(service, options) {
+         setTimeout(function () {
+           // eslint-disable-next-line @typescript-eslint/no-use-before-define
+           scrollMethod();
+-        });
++        },10);
+         _onSuccess === null || _onSuccess === void 0 ? void 0 : _onSuccess(d);
+       },
+       onError: function onError(e) {

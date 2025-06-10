@@ -1,0 +1,49 @@
+.main {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+  height: 100%;
+
+  .sider {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+
+    width: 218px;
+    padding: 12px;
+
+    background-color: #ebedf0;
+  }
+
+  .content {
+    overflow-y: hidden;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    height: 100%;
+
+    background: #f7f7fa;
+
+    .filter {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 8px 24px;
+    }
+
+    .content-inner {
+      overflow-y: hidden;
+      display: flex;
+      flex: 1;
+    }
+  }
+
+  :global(.tool-tag-list) {
+    overflow: inherit;
+  }
+}
+
+.data-sets-content {
+  padding: 16px 24px;
+}

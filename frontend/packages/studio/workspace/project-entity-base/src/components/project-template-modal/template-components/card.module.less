@@ -1,0 +1,12 @@
+.template-card-mask {
+  --template-card-mask-start: rgba(var(--coze-bg-3), 0);
+  --template-card-mask-end: rgba(var(--coze-bg-3), 0.96);
+  
+  background: linear-gradient(180deg, var(--template-card-mask-start) 0%, var(--template-card-mask-end) 100%);
+}
+
+.template-group {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px 1%;
+  // 根据 gpt 设置 1% 会根据父容器宽度计算
+}

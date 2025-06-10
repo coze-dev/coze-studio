@@ -1,0 +1,1 @@
+export { FailedTag } from './tag';

@@ -1,0 +1,1 @@
+export { useTableCheck } from './hooks';

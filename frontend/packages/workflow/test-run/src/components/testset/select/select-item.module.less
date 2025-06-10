@@ -1,0 +1,30 @@
+.base-item {
+  display: flex;
+  align-items: center;
+  column-gap: 4px;
+  width: 226px;
+  &:hover {
+    .item-operator {
+      display: flex;
+    }
+  }
+}
+
+.item-text-wrapper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding-right: 8px;
+}
+.item-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-operator {
+  display: none;
+  align-items: center;
+  column-gap: 4px;
+  padding-right: 4px;
+}

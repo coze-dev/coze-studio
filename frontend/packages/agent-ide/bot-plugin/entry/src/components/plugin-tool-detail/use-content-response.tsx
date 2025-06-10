@@ -1,0 +1,157 @@
+/* eslint-disable complexity */
+
+import { useEffect, useState } from 'react';
+
+import { I18n } from '@coze-arch/i18n';
+import {
+  PluginType,
+  type GetPluginInfoResponse,
+  type PluginAPIInfo,
+  DebugExampleStatus,
+  type UpdateAPIResponse,
+} from '@coze-arch/bot-api/plugin_develop';
+import { IconEdit } from '@coze-arch/bot-icons';
+import { useResponseParams } from '@coze-agent-ide/bot-plugin-tools/useResponseParams';
+import { type RenderEnhancedComponentProps } from '@coze-agent-ide/bot-plugin-tools/pluginModal/types';
+import { RESPONSENODE } from '@coze-agent-ide/bot-plugin-tools/pluginModal/config';
+import { Button } from '@coze/coze-design';
+
+import { OauthButtonAction } from '@/components/oauth-action';
+import { SecurityCheckFailed } from '@/components/check_failed';
+
+interface UseContentResponseProps
+  extends Pick<Partial<RenderEnhancedComponentProps>, 'renderParamsComponent'> {
+  apiInfo?: PluginAPIInfo;
+  plugin_id: string;
+  tool_id: string;
+  editVersion?: number;
+  pluginInfo?: GetPluginInfoResponse & { plugin_id?: string };
+  canEdit: boolean;
+  handleInit: (loading?: boolean) => Promise<void>;
+  wrapWithCheckLock: (fn: () => void) => () => Promise<void>;
+  debugApiInfo?: PluginAPIInfo;
+  setDebugApiInfo: (apiInfo: PluginAPIInfo) => void;
+  spaceID: string;
+  callback?: (params: UpdateAPIResponse) => void;
+}
+
+export const useContentResponse = ({
+  apiInfo,
+  plugin_id,
+  tool_id,
+  editVersion,
+  pluginInfo,
+  canEdit,
+  handleInit,
+  wrapWithCheckLock,
+  debugApiInfo,
+  setDebugApiInfo,
+  spaceID,
+  callback,
+  renderParamsComponent,
+}: UseContentResponseProps) => {
+  // 是否显示安全检查失败信息
+  const [showSecurityCheckFailedMsg, setShowSecurityCheckFailedMsg] =
+    useState(false);
+  const [isResponseParamsDisabled, setIsResponseParamsDisabled] =
+    useState(true);
+  // 第三步，设置相应参数的hooks组件
+  const { responseParamsNode, submitResponseParams, extra } = useResponseParams(
+    {
+      apiInfo,
+      pluginId: plugin_id || '',
+      responseParams: apiInfo?.response_params,
+      requestParams: apiInfo?.request_params,
+      apiId: tool_id || '',
+      disabled: isResponseParamsDisabled,
+      showSecurityCheckFailedMsg,
+      setShowSecurityCheckFailedMsg,
+      editVersion,
+      pluginType: pluginInfo?.plugin_type,
+      functionName:
+        pluginInfo?.plugin_type === PluginType.LOCAL
+          ? apiInfo?.function_name
+          : undefined,
+      spaceID,
+      callback,
+      renderEnhancedComponent: renderParamsComponent,
+    },
+  );
+
+  // 处理 debug 时 example数据先显示后隐藏的问题
+  useEffect(() => {
+    if (!isResponseParamsDisabled) {
+      setDebugApiInfo({
+        ...debugApiInfo,
+        debug_example: {},
+        debug_example_status: DebugExampleStatus.Disable,
+      });
+    }
+  }, [isResponseParamsDisabled]);
+
+  return {
+    isResponseParamsDisabled,
+    header: I18n.t('Create_newtool_s3_Outputparameters'),
+    itemKey: 'response',
+    extra: (
+      <>
+        {showSecurityCheckFailedMsg ? (
+          <SecurityCheckFailed step={RESPONSENODE} />
+        ) : null}
+        {!isResponseParamsDisabled && canEdit ? <OauthButtonAction /> : null}
+        {!isResponseParamsDisabled ? extra : null}
+        {!isResponseParamsDisabled ? (
+          <Button
+            onClick={e => {
+              e.stopPropagation();
+              setIsResponseParamsDisabled(true);
+            }}
+            color="primary"
+            className="mr-2"
+          >
+            {I18n.t('project_plugin_setup_metadata_cancel')}
+          </Button>
+        ) : null}
+        {canEdit && !isResponseParamsDisabled ? (
+          <Button
+            onClick={async e => {
+              e.stopPropagation();
+              const status = await submitResponseParams();
+              // 更新成功后进入下一步
+              if (status) {
+                handleInit();
+                setIsResponseParamsDisabled(true);
+              }
+            }}
+            className="mr-2"
+          >
+            {I18n.t('project_plugin_setup_metadata_save')}
+          </Button>
+        ) : null}
+
+        {canEdit && isResponseParamsDisabled ? (
+          <Button
+            icon={<IconEdit className="!pr-0" />}
+            color="primary"
+            className="!bg-transparent !coz-fg-secondary"
+            onClick={e => {
+              const el = document.querySelector(
+                '.plugin-tool-detail-response .semi-collapsible-wrapper',
+              ) as HTMLElement;
+              if (parseInt(el?.style?.height) !== 0) {
+                e.stopPropagation();
+              }
+              wrapWithCheckLock(() => {
+                setIsResponseParamsDisabled(false);
+              })();
+            }}
+          >
+            {I18n.t('project_plugin_setup_metadata_edit')}
+          </Button>
+        ) : null}
+      </>
+    ),
+    content: responseParamsNode,
+    classNameWrap: 'plugin-tool-detail-response',
+  };
+};

@@ -1,0 +1,37 @@
+/* stylelint-disable font-family-no-missing-generic-family-keyword */
+.table-setting-bar {
+  width: 100%;
+  margin-bottom: 30px;
+
+  :global {
+    .semi-form-horizontal .semi-form-field {
+      flex: 1;
+
+      .semi-select {
+        width: 100%;
+        border-radius: 8px;
+      }
+    }
+
+    .semi-form-field-label-text {
+      font-size: 14px;
+      font-weight: 500;
+      font-style: normal;
+      line-height: 24px;
+      color: var(--coz-fg-plus);
+    }
+
+    .semi-form-field-label {
+      display: flex;
+      align-items: center;
+      height: 24px;
+      margin-bottom: 4px;
+    }
+
+    .semi-form-horizontal .semi-form-field:last-child {
+      margin-right: 0;
+      padding-right: 0;
+    }
+  }
+
+}

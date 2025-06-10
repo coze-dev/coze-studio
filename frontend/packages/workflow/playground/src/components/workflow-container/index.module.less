@@ -1,0 +1,110 @@
+.workflow-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+
+  width: 100%;
+  height: 100%;
+
+  background-color: #eceeef;
+
+  // global 必须放到 class 里面防止全局污染
+  :global {
+    .semi-form-vertical .semi-form-field {
+      padding: 0;
+    }
+  }
+
+  .workflow-content {
+    position: relative;
+
+    overflow: auto;
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+
+    .workflow-playground {
+      position: relative;
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+
+      .workflow-playground-render {
+        position: relative;
+        flex: 1;
+      }
+    }
+
+    .workflow-sidesheet {
+      position: absolute;
+      z-index: 100;
+      top: 0;
+      right: 0;
+
+      overflow: hidden;
+
+      width: 100%;
+      height: 100%;
+    }
+
+
+    // 三期可能会需要，暂时先不删除
+    // .workflow-running {
+    //   position: absolute;
+    //   left: 50%;
+    //   top: 30px;
+    //   padding: 12px;
+    //   display: inline-flex;
+    //   align-items: center;
+    //   border-radius: 4px;
+    //   background: var(
+    //     --light-usage-info-light-color-info-light-default,
+    //     #eff4ff
+    //   );
+    //   /* shadow-knob */
+    //   box-shadow: 0px 4px 6px 0px rgba(0, 0, 0, 0.1),
+    //     0px 0px 1px 0px rgba(0, 0, 0, 0.3);
+
+    //   color: var(--light-usage-text-color-text-0, #1c1f23);
+    //   font-size: 14px;
+    //   font-style: normal;
+    //   font-weight: 400;
+    //   line-height: 20px;
+
+    //   .spin-container {
+    //     display: flex;
+    //     margin-right: 12px;
+
+    //     :global {
+    //       .semi-spin-wrapper {
+    //         display: flex;
+    //       }
+    //     }
+    //   }
+    // }
+  }
+}
+
+.workflow-container-op {
+  position: relative;
+}
+
+.banner-wrapper {
+  position: absolute;
+  z-index: 999;
+  top: 0;
+  right: 0;
+  left: 0;
+
+  &.add-node-hide {
+    left: 28px;
+  }
+
+  &.right-side-sheet-hide {
+    right: 32px;
+  }
+}

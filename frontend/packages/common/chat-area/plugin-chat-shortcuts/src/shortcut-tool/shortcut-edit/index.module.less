@@ -1,0 +1,479 @@
+@ide-tool-prefix: chat-studio-tool-content-block;
+
+.shortcut-tool-config {
+  padding-right: 0;
+  padding-left: 0;
+
+  :global {
+    .@{ide-tool-prefix}-content {
+      /* stylelint-disable declaration-no-important */
+      padding-right: 0 !important;
+      padding-left: 0 !important;
+    }
+
+    .semi-modal-body {
+      padding: 24px 0;
+    }
+  }
+}
+
+.shortcut-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.shortcut-item {
+  display: flex;
+  place-content: center space-between;
+
+  height: 48px;
+  margin-bottom: 4px;
+  padding: 8px;
+
+  background: rgba(6, 7, 9, 8%);
+  border-radius: 8px;
+
+  &:hover {
+    background: rgba(6, 7, 9, 16%);
+    border: 1px solid rgba(6, 7, 9, 10%);
+    border-radius: 8px;
+  }
+}
+
+.shortcut-item_title {
+  overflow: hidden;
+
+  font-size: 12px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 16px;
+  color: rgba(6, 7, 9, 80%);
+  text-overflow: ellipsis;
+}
+
+.shortcut-item_content {
+  overflow: hidden;
+
+  font-size: 12px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 16px;
+  color: rgba(6, 7, 9, 50%);
+  text-overflow: ellipsis;
+}
+
+.operation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.operation-item-icon {
+  cursor: pointer;
+
+  :global {
+    .semi-icon {
+      svg {
+        width: 14px;
+        height: 14px;
+      }
+    }
+  }
+}
+
+.operation-item-icon_hover {
+  &:hover {
+    background: rgba(6, 7, 9, 16%);
+    border-radius: 6px;
+  }
+}
+
+.delete-modal {
+  :global {
+    .semi-modal {
+      border-radius: 8px;
+
+      .semi-modal-content {
+        padding: 16px;
+        border-radius: 8px;
+
+        .semi-modal-header {
+          margin: 0;
+        }
+
+        .semi-modal-footer {
+          margin: 24px 0 0;
+        }
+      }
+    }
+  }
+}
+
+.delete-common-modal-button-style {
+  min-width: 56px;
+  height: 32px;
+  padding: 6px 16px;
+
+  font-size: 14px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 20px;
+
+  background: rgba(6, 7, 9, 8%);
+  border-radius: 8px;
+}
+
+.delete-modal-cancel-button {
+  .delete-common-modal-button-style;
+
+  color: rgba(6, 7, 9, 80%);
+}
+
+.delete-modal-ok-button {
+  .delete-common-modal-button-style;
+
+  color: #cc1424;
+  background-color: rgba(255, 115, 127, 20%);
+  border-radius: 8px;
+
+  &:hover {
+    background-color: rgba(255, 115, 127, 80%) !important;
+  }
+}
+
+.edit-form-wrapper {
+  overflow-y: auto;
+  flex: 1 1 auto;
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--coz-fg-dim);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar {
+    width: 4px;
+    background: transparent;
+  }
+
+  .shortcut-action-item {
+    overflow: hidden;
+
+    font-size: 14px;
+    font-weight: 400;
+    font-style: normal;
+    line-height: 20px;
+    color: rgba(6, 7, 9, 80%);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    .use-tool-checkbox {
+      margin-top: 4px;
+
+      :global {
+        .semi-form-field {
+          padding: 0;
+        }
+
+        .semi-modal-body {
+          padding-top: 24px;
+          padding-bottom: 0;
+        }
+      }
+    }
+  }
+
+  .shortcut-action-radio-group {
+    :global {
+      /* stylelint-disable */
+      .semi-radio-cardRadioGroup .semi-radio-addon,
+      .semi-checkbox-addon {
+        font-size: 14px;
+        font-weight: 400;
+        font-style: normal;
+        line-height: 20px;
+        color: rgba(6, 7, 9, 80%);
+      }
+    }
+  }
+
+  :global {
+    .semi-form-field-label {
+      margin-bottom: 6px;
+
+      font-size: 12px;
+      font-weight: 500;
+      font-style: normal;
+      line-height: 16px;
+      color: rgba(6, 7, 9, 50%);
+    }
+
+    .semi-input::placeholder,
+    .semi-input-textarea::placeholder {
+      font-size: 14px;
+      font-weight: 400;
+      font-style: normal;
+      line-height: 20px;
+      color: rgba(6, 7, 9, 30%);
+    }
+  }
+}
+
+.tool-params-table {
+  padding-bottom: 24px;
+
+  :global {
+    .semi-table-small
+      .semi-table-tbody
+      > .semi-table-row
+      > .semi-table-row-cell {
+      max-width: 200px;
+      padding: 12px 8px;
+    }
+  }
+
+  .table-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .params-value-component_name {
+    margin-left: 8px;
+  }
+
+  .params-value {
+    display: flex;
+    align-items: center;
+  }
+
+  .params-name-content {
+    .params-name {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-start;
+
+      height: 16px;
+      margin-bottom: 6px;
+    }
+
+    .name {
+      font-size: 14px;
+      font-weight: 400;
+      font-style: normal;
+      line-height: 20px;
+      color: rgba(6, 7, 9, 80%);
+    }
+
+    .params-field {
+      flex: 0 0 auto;
+      padding: 1px 6px;
+      background: rgba(6, 7, 9, 4%);
+      border-radius: 4px;
+    }
+  }
+
+  .footer {
+    font-size: 12px;
+    font-weight: 400;
+    font-style: normal;
+    line-height: 16px;
+    color: rgba(6, 7, 9, 50%);
+  }
+}
+
+.shortcut-edit-modal {
+  :global {
+    .semi-modal-content {
+      background-color: var(--coz-bg-plus);
+
+      .semi-modal-header {
+        margin-bottom: 0;
+      }
+
+      .semi-modal-body {
+        padding: 24px 0;
+      }
+    }
+
+    // 使 query字段(VarQueryTextarea) 的 popover 能够展示全
+    .semi-modal-wrap,
+    .semi-modal-content,
+    .semi-modal-body {
+      overflow: visible !important;
+    }
+  }
+}
+
+.edit-modal-wrapper {
+  position: relative;
+
+  display: flex;
+  flex: 1;
+  align-items: stretch;
+
+  box-sizing: content-box;
+  min-height: 0;
+  // 12px + 4px
+  margin: 0 -16px 24px 0;
+
+  > form {
+    padding-right: 12px;
+  }
+
+  &.wrapper-border {
+    margin-right: 0;
+    padding-left: 24px;
+    border: 1px solid var(--coz-stroke-plus);
+    border-radius: 8px;
+
+    > form {
+      padding-top: 18px;
+    }
+  }
+
+  .preview-component {
+    overflow-y: auto;
+    display: flex;
+
+    width: 400px;
+    margin-left: 8px;
+
+    background-color: var(--coz-bg-primary);
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+
+    animation: ease-in;
+
+    .shortcut-panel {
+      width: 100%;
+      margin-top: auto;
+      margin-bottom: 0;
+    }
+  }
+
+  :global {
+    .semi-form {
+      flex: 1;
+    }
+  }
+}
+
+.hidden {
+  display: none;
+}
+
+.form-item {
+  :global {
+    .semi-input-textarea-counter {
+      padding-right: 8px;
+    }
+
+    .semi-radioGroup-vertical {
+      row-gap: unset;
+    }
+
+    .semi-radio-cardRadioGroup,
+    .semi-radio-cardRadioGroup_checked,
+    .semi-radio-cardRadioGroup_hover {
+      margin-bottom: 4px;
+      padding: 0;
+      background: unset;
+      border: 0;
+
+      &:hover {
+        margin-bottom: 4px;
+        padding: 0;
+        background: unset;
+        border: 0;
+      }
+    }
+
+    .semi-form-field {
+      padding-top: 0;
+      padding-bottom: 16px;
+    }
+  }
+}
+
+.form-input-with-count {
+  overflow: hidden;
+
+  padding-right: 8px;
+
+  font-size: 12px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 16px;
+  color: rgba(6, 7, 9, 50%);
+  text-overflow: ellipsis;
+}
+
+.remove-popover-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  width: 320px;
+  padding: 16px;
+
+  .title {
+    margin-bottom: 4px;
+
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 22px;
+    color: rgba(6, 7, 9, 96%);
+  }
+
+  .desc {
+    margin-bottom: 24px;
+
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    color: rgba(6, 7, 9, 50%);
+  }
+
+  .delete-btn {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    align-self: flex-end;
+    justify-content: center;
+
+    min-width: 56px;
+    height: 32px;
+    padding: 6px 16px;
+
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: #fff;
+
+    background: #f22435;
+    border-radius: 8px;
+  }
+
+  :global {
+    .semi-button-light:not(.semi-button-disabled):hover {
+      background-color: #ba0010;
+    }
+
+    .semi-button-light:not(.semi-button-disabled):active {
+      background-color: #b0000f;
+    }
+  }
+}
+
+.switch-agent-input-wrapper {
+  :global {
+    .semi-portal-inner {
+      width: 100%;
+    }
+
+    .semi-form-vertical .semi-form-field {
+      padding-top: 0;
+    }
+  }
+}

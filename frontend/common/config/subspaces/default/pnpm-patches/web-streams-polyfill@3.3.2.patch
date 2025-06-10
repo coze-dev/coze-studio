@@ -1,0 +1,84 @@
+diff --git a/dist/types/ponyfill.d.ts b/dist/types/ponyfill.d.ts
+index f34e6659372d838f8f189f3f453eb664524e11f2..d1e9a9e65c4f95950f214704b3855ec97b861e3c 100644
+--- a/dist/types/ponyfill.d.ts
++++ b/dist/types/ponyfill.d.ts
+@@ -126,12 +126,12 @@ export declare class ReadableByteStreamController {
+  *
+  * @public
+  */
+-export declare class ReadableStream<R = any> {
+-    constructor(underlyingSource: UnderlyingByteSource, strategy?: {
++export interface ReadableStream<R = any> {
++    new(underlyingSource: UnderlyingByteSource, strategy?: {
+         highWaterMark?: number;
+         size?: undefined;
+     });
+-    constructor(underlyingSource?: UnderlyingSource<R>, strategy?: QueuingStrategy<R>);
++    new(underlyingSource?: UnderlyingSource<R>, strategy?: QueuingStrategy<R>);
+     /*
+     * Whether or not the readable stream is locked to a {@link ReadableStreamDefaultReader | reader}.
+     */
+@@ -220,7 +220,7 @@ export declare class ReadableStream<R = any> {
+      * This can be used to adapt various kinds of objects into a readable stream,
+      * such as an array, an async generator, or a Node.js readable stream.
+      */
+-    static from<R>(asyncIterable: Iterable<R> | AsyncIterable<R> | ReadableStreamLike<R>): ReadableStream<R>;
++    from<R>(asyncIterable: Iterable<R> | AsyncIterable<R> | ReadableStreamLike<R>): ReadableStream<R>;
+ }
+ /**
+  * An async iterator returned by {@link ReadableStream.values}.
+@@ -279,11 +279,8 @@ export declare interface ReadableStreamBYOBReaderReadOptions {
+  * @public
+  */
+ export declare type ReadableStreamBYOBReadResult<T extends ArrayBufferView> = {
+-    done: false;
++    done: boolean;
+     value: T;
+-} | {
+-    done: true;
+-    value: T | undefined;
+ };
+ /**
+  * A pull-into request in a {@link ReadableByteStreamController}.
+diff --git a/dist/types/ts3.6/ponyfill.d.ts b/dist/types/ts3.6/ponyfill.d.ts
+index 73058007c661c20662d5c9336cb272cc7b7948fe..02fc82bd0d38b3b50856dff6722c31990eaf3156 100644
+--- a/dist/types/ts3.6/ponyfill.d.ts
++++ b/dist/types/ts3.6/ponyfill.d.ts
+@@ -134,12 +134,12 @@ export declare class ReadableByteStreamController {
+  *
+  * @public
+  */
+-export declare class ReadableStream<R = any> {
+-    constructor(underlyingSource: UnderlyingByteSource, strategy?: {
++export interface ReadableStream<R = any> {
++    new(underlyingSource: UnderlyingByteSource, strategy?: {
+         highWaterMark?: number;
+         size?: undefined;
+     });
+-    constructor(underlyingSource?: UnderlyingSource<R>, strategy?: QueuingStrategy<R>);
++    new(underlyingSource?: UnderlyingSource<R>, strategy?: QueuingStrategy<R>);
+     /**
+      * Whether or not the readable stream is locked to a {@link ReadableStreamDefaultReader | reader}.
+      */
+@@ -225,7 +225,7 @@ export declare class ReadableStream<R = any> {
+      * This can be used to adapt various kinds of objects into a readable stream,
+      * such as an array, an async generator, or a Node.js readable stream.
+      */
+-    static from<R>(asyncIterable: Iterable<R> | AsyncIterable<R> | ReadableStreamLike<R>): ReadableStream<R>;
++    from<R>(asyncIterable: Iterable<R> | AsyncIterable<R> | ReadableStreamLike<R>): ReadableStream<R>;
+ }
+ 
+ /**
+@@ -288,11 +288,8 @@ export declare interface ReadableStreamBYOBReaderReadOptions {
+  * @public
+  */
+ export declare type ReadableStreamBYOBReadResult<T extends ArrayBufferView> = {
+-    done: false;
++    done: boolean;
+     value: T;
+-} | {
+-    done: true;
+-    value: T | undefined;
+ };
+ 
+ /**

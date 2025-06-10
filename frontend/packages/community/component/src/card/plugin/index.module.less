@@ -1,0 +1,79 @@
+.plugin {
+  margin-bottom: 0;
+
+  .plugin-wrapper {
+    position: relative;
+  }
+
+  .btn-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    display: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    width: 100%;
+
+    &.one-column-grid {
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+  }
+
+  &:hover {
+    .btn-container {
+      display: grid;
+    }
+
+    .description {
+      visibility: hidden;
+    }
+  }
+
+  .card-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+
+    /*
+   * 如此写边框和设置背景色的原因
+   * 1、边框是内边框，处于图片的边缘上，因此需要用after来写
+   * 2、背景色用before实体来写，是由于 border和背景色都是透明色，重叠会导致颜色加重，出现边框
+   */
+    &::after {
+      content: '';
+
+      position: absolute;
+      z-index: 2;
+
+      width: calc(100% - 2px);
+      height: calc(100% - 2px);
+
+      border-style: solid;
+      border-width: 1px;
+      border-radius: 6px;
+
+      @apply coz-stroke-primary;
+    }
+
+    &::before {
+      content: '';
+
+      position: absolute;
+      z-index: 1;
+      top: 1px;
+      left: 1px;
+
+      width: calc(100% - 2px);
+      height: calc(100% - 2px);
+
+      @apply bg-stroke-5;
+
+      border-radius: 5px;
+    }
+
+    & > img {
+      z-index: 2;
+    }
+  }
+}

@@ -1,0 +1,29 @@
+.link-list {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+
+  .link-list-item {
+    padding: 0 18px;
+    color: rgb(255 255 255 / 60%);
+    font-size: 14px;
+    line-height: 22px;
+    display: flex;
+    align-items: center;
+
+    .click-area {
+      display: flex;
+      align-items: center;
+
+      &.pointer {
+        cursor: pointer;
+        user-select: none;
+
+        &:hover,
+        &:active {
+          color: #fff;
+        }
+      }
+    }
+  }
+}

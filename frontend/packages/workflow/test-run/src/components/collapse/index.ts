@@ -1,0 +1,1 @@
+export { Collapse } from './collapse';

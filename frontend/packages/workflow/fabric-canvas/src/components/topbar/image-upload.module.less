@@ -1,0 +1,27 @@
+.loading-container{
+  :global{
+    .loading {
+      animation: semi-animation-rotate 0.6s linear infinite;
+      animation-fill-mode: forwards;
+    }
+  }
+
+  .hover-hidden{
+    @apply block;
+  }
+
+  .hover-visible{
+    @apply hidden;
+  }
+
+  &:hover{
+    .hover-hidden{
+      @apply hidden;
+    }
+
+    .hover-visible{
+      @apply block;
+    }
+  }
+
+}

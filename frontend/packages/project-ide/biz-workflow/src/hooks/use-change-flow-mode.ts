@@ -1,0 +1,40 @@
+import {
+  useIDENavigate,
+  getURIByResource,
+  useProjectIDEServices,
+} from '@coze-project-ide/framework';
+import { usePrimarySidebarStore } from '@coze-project-ide/biz-components';
+import { I18n } from '@coze-arch/i18n';
+import { WorkflowMode } from '@coze-arch/bot-api/workflow_api';
+import { workflowApi } from '@coze-arch/bot-api';
+import { Toast } from '@coze/coze-design';
+export const useChangeFlowMode = () => {
+  const refetch = usePrimarySidebarStore(state => state.refetch);
+  const navigate = useIDENavigate();
+  const { view } = useProjectIDEServices();
+
+  return async (
+    flowMode: WorkflowMode,
+    workflowId: string,
+    spaceId: string,
+  ) => {
+    await workflowApi.UpdateWorkflowMeta({
+      workflow_id: workflowId,
+      space_id: spaceId,
+      flow_mode: flowMode,
+    });
+    Toast.success(
+      I18n.t('wf_chatflow_123', {
+        Chatflow: I18n.t(
+          flowMode === WorkflowMode.ChatFlow ? 'wf_chatflow_76' : 'Workflow',
+        ),
+      }),
+    );
+    await refetch();
+    const uri = getURIByResource('workflow', workflowId);
+    const widgetContext = view.getWidgetContextFromURI(uri);
+    const widgetOpened = Boolean(widgetContext?.widget);
+    // 已经打开的 widget，加 refresh 参数刷新，未打开的直接打开会刷新
+    navigate(`/workflow/${workflowId}${widgetOpened ? '?refresh=true' : ''}`);
+  };
+};

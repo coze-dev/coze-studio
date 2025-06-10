@@ -1,0 +1,31 @@
+.preview-group {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+
+  &.only-one .image-item {
+    width: 100%;
+  }
+
+  &.columns-5 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.image-item {
+  max-height: 280px;
+  aspect-ratio: 1 / 1; /* 宽高比为1:1 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: var(--coz-bg-primary);
+
+  img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: fill;
+    border-radius: 4px;
+  }
+}

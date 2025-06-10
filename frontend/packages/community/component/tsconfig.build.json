@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "rootDirs": ["./"],
+    "types": [],
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src", "src/**/*.json"],
+  "references": [
+    {
+      "path": "../../arch/api-schema/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-env/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-hooks/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/logger/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/responsive-kit/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/tea/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/coze-mitt/tsconfig.build.json"
+    },
+    {
+      "path": "../../components/bot-icons/tsconfig.build.json"
+    },
+    {
+      "path": "../../components/bot-semi/tsconfig.build.json"
+    },
+    {
+      "path": "../../components/coze-design/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/components/tsconfig.build.json"
+    }
+  ]
+}

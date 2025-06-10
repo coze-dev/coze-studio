@@ -1,0 +1,137 @@
+.container{
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 22px;
+  color: #000;
+  word-break: break-all;
+  word-wrap: break-word;
+  // 必须设置
+  text-wrap-mode: wrap;
+
+  :global {
+    .semi-tag{
+      margin: 0 2px;
+      padding: 0;
+    }
+  }
+}
+
+.wrapper-error{
+  :global {
+    .semi-tag{
+      background: rgba(255, 173, 180, 23%);
+    }
+  }
+}
+
+.node {
+  height: 20px;
+
+  :global {
+    .semi-tag-content {
+      padding: 0 6px 0 4px;
+      background: var(--Bg-COZ-bg-secondary, #F0F0F7);
+    }
+  }
+}
+
+.node-title{
+  color: #060709F5;
+}
+
+.node-error{
+  :global {
+    .semi-tag-content {
+      background: rgba(255, 173, 180, 23%);
+    }
+  }
+}
+
+.wrapper{
+  display: inline-block;
+}
+
+.node-name {
+  display: inline;
+}
+
+.split{
+  overflow: hidden;
+
+  margin: 0 1px;
+
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--Fg-COZ-fg-dim, rgba(55, 67, 106, 38%));
+}
+
+.image {
+  display: inline;
+  align-items: center;
+  justify-content: center;
+
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+
+  background: var(--Mg-COZ-mg-plus, rgba(82, 100, 154, 13%));
+  border-radius: var(--mini, 5px);
+}
+
+.content {
+  overflow: hidden;
+  display: inline;
+
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--Fg-COZ-fg-hglt, #A6A6FF);
+  text-overflow: ellipsis;
+  word-break: break-all;
+  white-space: nowrap;
+
+  background: transparent;
+}
+
+.error-content {
+  color: var(--Fg-COZ-fg-hglt-red, #E53241);
+}
+
+.deleted-variable{
+  :global{
+    .semi-tag{
+      height: 20px;
+      padding: 0 4px;
+      background: rgba(237, 179, 130, 23%);
+    }
+
+    .semi-tag-prefix-icon{
+      color: var(--Fg-COZ-fg-hglt-yellow, #FF7300);
+    }
+
+    .semi-tag-content{
+      color: var(--Fg-COZ-fg-hglt-yellow, #FF7300);
+    }
+  }
+}
+
+.text-subfix{
+  position: absolute;
+  bottom: 0;
+
+  width: 100%;
+  height: 19px;
+
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0%) 0%, #FFF 100%);
+}
+
+.node-global{
+  :global {
+    .semi-tag{
+      padding: 0 4px;
+    }
+
+    .semi-tag-content{
+      padding: 0;
+    }
+  }
+}

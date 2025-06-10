@@ -1,0 +1,43 @@
+.ui-dropdown {
+
+  .title {
+    &:global(.semi-dropdown-title) {
+      padding: 8px 12px;
+    }
+  }
+
+  .menu,
+  [role="menu"] {
+    &:global(.semi-dropdown-menu) {
+      padding: 4px;
+      max-width: 480px;
+
+      :global {
+        .semi-dropdown-item:hover {
+          background-color: #1c1c230a;
+          border-radius: 4px;
+        }
+      }
+    }
+  }
+
+  .item {
+    &:global(.semi-dropdown-item) {
+      max-width: unset;
+      padding: 8px 12px;
+      height: 40px;
+      align-items: center;
+
+      &[aria-disabled='true'] {
+        opacity: 0.4;
+      }
+
+      :global {
+        .semi-icon {
+          font-size: 16px;
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+}

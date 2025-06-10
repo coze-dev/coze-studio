@@ -1,0 +1,25 @@
+.wrapper {
+  font-size: 12px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 16px;
+  color: var(--light-usage-text-color-text-0, #1D1C23);
+
+  .label {
+    display: inline-block;
+    font-weight: 600;
+    color: var(--semi-color-text-0);
+
+    &.required::after {
+      content: "*";
+      font-weight: 600;
+      color: var(--semi-color-danger);
+    }
+  }
+
+  .type-label {
+    display: inline-block;
+    margin-left: 8px;
+    color: var(--light-usage-text-color-text-3, rgb(29 28 35 / 35%));
+  }
+}

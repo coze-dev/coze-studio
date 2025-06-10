@@ -1,0 +1,119 @@
+/* eslint-disable  @typescript-eslint/naming-convention */
+import React, { useCallback, useRef } from 'react';
+
+import { useEditor } from '@flow-lang-sdk/editor/react';
+import type { EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import type { TreeNodeData } from '@coze-arch/bot-semi/Tree';
+import { Tree } from '@coze-arch/bot-semi';
+
+import styles from '../style.module.less';
+import { useDeepEqualMemo } from '../../../expression/shared';
+import {
+  applyNode,
+  getOptionInfoFromDOM,
+  selectNodeByIndex,
+} from '../../../expression/popover/shared';
+import type { CompletionContext } from '../../../expression/popover/hooks/types';
+import {
+  useDrillVariableTree,
+  useFilteredVariableTree,
+  useKeyboard,
+  useOptionsOperations,
+  useSelectedValue,
+  useTreeRefresh,
+  useTreeSearch,
+} from '../../../expression/popover/hooks';
+import type { ExpressionEditorTreeNode } from '../../../expression/core';
+
+interface Props {
+  variableTree: ExpressionEditorTreeNode[];
+  enableKeyboard: boolean;
+  completionContext?: CompletionContext;
+}
+
+export default function useVariablesTree({
+  variableTree: variableTreeFromProps,
+  enableKeyboard,
+  completionContext,
+}: Props) {
+  const editor = useEditor<EditorAPI>();
+  const variableTree = useDeepEqualMemo(variableTreeFromProps);
+  const treeRef = useRef<Tree | null>(null);
+  const treeContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const drilledVariableTree = useDrillVariableTree(
+    editor,
+    variableTree,
+    completionContext,
+  );
+
+  const selected = useSelectedValue(completionContext?.text, variableTree);
+
+  // 基于用户选中项，替换所在 {{}} 中的内容
+  const handleSelect = useCallback(
+    (_: string, __: boolean, node: TreeNodeData) => {
+      if (!editor || !completionContext) {
+        return;
+      }
+
+      applyNode(editor, node as ExpressionEditorTreeNode, completionContext);
+
+      editor.$view.focus();
+    },
+    [editor, completionContext],
+  );
+
+  const filteredVariableTree = useFilteredVariableTree(
+    completionContext,
+    drilledVariableTree,
+  );
+
+  const treeRefreshKey = useTreeRefresh(filteredVariableTree);
+  useTreeSearch(treeRefreshKey, treeRef, completionContext, () => {
+    const optionsInfo = getOptionInfoFromDOM(treeContainerRef.current);
+    if (!optionsInfo) {
+      return;
+    }
+    const { elements } = optionsInfo;
+    selectNodeByIndex(elements, 0);
+  });
+
+  const { prev, next, apply } = useOptionsOperations(
+    editor,
+    completionContext,
+    treeContainerRef,
+    treeRef,
+  );
+
+  // 上下键切换推荐项，回车填入
+  useKeyboard(enableKeyboard, {
+    ArrowUp: prev,
+    ArrowDown: next,
+    Enter: () => {
+      apply();
+      editor.$view.focus();
+    },
+  });
+
+  const variablesTreePanel = (
+    <div
+      className={styles['library-variable-insert-tree']}
+      ref={treeContainerRef}
+    >
+      <Tree
+        ref={treeRef}
+        showFilteredOnly
+        filterTreeNode
+        onChangeWithObject
+        treeData={drilledVariableTree}
+        searchRender={false}
+        value={selected}
+        onSelect={handleSelect}
+      />
+    </div>
+  );
+
+  return {
+    variablesTreePanel,
+  };
+}

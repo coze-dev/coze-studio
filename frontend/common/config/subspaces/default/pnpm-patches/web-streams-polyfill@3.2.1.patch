@@ -1,0 +1,53 @@
+diff --git a/dist/types/polyfill.d.ts b/dist/types/polyfill.d.ts
+index e44c6635e7579aa8abbd08c6ad3271ebbe60a464..b4bc055b17952a2c148d2e4b8588306099b8fea1 100644
+--- a/dist/types/polyfill.d.ts
++++ b/dist/types/polyfill.d.ts
+@@ -130,12 +130,12 @@ export declare class ReadableByteStreamController {
+  *
+  * @public
+  */
+-export declare class ReadableStream<R = any> {
+-    constructor(underlyingSource: UnderlyingByteSource, strategy?: {
++export interface ReadableStream<R = any> {
++    new (underlyingSource: UnderlyingByteSource, strategy?: {
+         highWaterMark?: number;
+         size?: undefined;
+     });
+-    constructor(underlyingSource?: UnderlyingSource<R>, strategy?: QueuingStrategy<R>);
++    new (underlyingSource?: UnderlyingSource<R>, strategy?: QueuingStrategy<R>);
+     /**
+      * Whether or not the readable stream is locked to a {@link ReadableStreamDefaultReader | reader}.
+      */
+@@ -267,11 +267,8 @@ export declare class ReadableStreamBYOBReader {
+  * @public
+  */
+ export declare type ReadableStreamBYOBReadResult<T extends ArrayBufferView> = {
+-    done: false;
++    done: boolean;
+     value: T;
+-} | {
+-    done: true;
+-    value: T | undefined;
+ };
+ 
+ /**
+diff --git a/dist/types/ts3.6/polyfill.d.ts b/dist/types/ts3.6/polyfill.d.ts
+index c398f7eb0a65382916e2a94490dab5c7f2d2d390..ffc798107af0cf83bb330caf9025838e23dcfcb7 100644
+--- a/dist/types/ts3.6/polyfill.d.ts
++++ b/dist/types/ts3.6/polyfill.d.ts
+@@ -130,12 +130,12 @@ export declare class ReadableByteStreamController {
+  *
+  * @public
+  */
+-export declare class ReadableStream<R = any> {
+-    constructor(underlyingSource: UnderlyingByteSource, strategy?: {
++export interface ReadableStream<R = any> {
++    new (underlyingSource: UnderlyingByteSource, strategy?: {
+         highWaterMark?: number;
+         size?: undefined;
+     });
+-    constructor(underlyingSource?: UnderlyingSource<R>, strategy?: QueuingStrategy<R>);
++    new (underlyingSource?: UnderlyingSource<R>, strategy?: QueuingStrategy<R>);
+     /**
+      * Whether or not the readable stream is locked to a {@link ReadableStreamDefaultReader | reader}.
+      */

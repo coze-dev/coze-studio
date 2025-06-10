@@ -1,0 +1,4 @@
+#!/bin/bash
+# avoid conflicts in pnpm lock
+# https://7tonshark.com/posts/avoid-conflicts-in-pnpm-lock/
+git config merge.ours.driver true

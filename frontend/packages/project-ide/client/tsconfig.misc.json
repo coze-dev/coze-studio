@@ -1,0 +1,11 @@
+{
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "include": ["__mocks__", "__tests__", "vitest.config.ts", "vitest.setup.ts"],
+  "exclude": ["**/node_modules", "./dist"],
+  "references": [
+    {
+      "path": "./tsconfig.build.json"
+    }
+  ]
+}

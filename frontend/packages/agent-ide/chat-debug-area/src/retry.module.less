@@ -1,0 +1,29 @@
+.home-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  height: 100%;
+
+  :global(.semi-spin-children) {
+    background: white !important;
+  }
+
+  .fail-page-icon {
+    font-size: 32px;
+    color: #FF2710;
+  }
+
+  .fail-page-text {
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+  }
+
+  .fail-page-retry {
+    cursor: pointer;
+    color: #4D53E8;
+  }
+}

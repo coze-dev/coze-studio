@@ -1,0 +1,130 @@
+import { useState } from 'react';
+
+import { I18n } from '@coze-arch/i18n';
+import {
+  PluginType,
+  type UpdateAPIResponse,
+  type GetPluginInfoResponse,
+  type PluginAPIInfo,
+} from '@coze-arch/bot-api/plugin_develop';
+import { IconEdit } from '@coze-arch/bot-icons';
+import { useRequestParams } from '@coze-agent-ide/bot-plugin-tools/useRequestParams';
+import { type RenderEnhancedComponentProps } from '@coze-agent-ide/bot-plugin-tools/pluginModal/types';
+import { RESPONSENODE } from '@coze-agent-ide/bot-plugin-tools/pluginModal/config';
+import { Button } from '@coze/coze-design';
+
+import { SecurityCheckFailed } from '@/components/check_failed';
+
+interface UseContentRequestProps
+  extends Pick<Partial<RenderEnhancedComponentProps>, 'renderParamsComponent'> {
+  apiInfo?: PluginAPIInfo;
+  plugin_id: string;
+  tool_id: string;
+  pluginInfo?: GetPluginInfoResponse & { plugin_id?: string };
+  canEdit: boolean;
+  handleInit: () => Promise<void>;
+  wrapWithCheckLock: (fn: () => void) => () => Promise<void>;
+  editVersion?: number;
+  spaceID: string;
+  callback?: (params: UpdateAPIResponse) => void;
+}
+
+export const useContentRequest = ({
+  apiInfo,
+  plugin_id,
+  tool_id,
+  pluginInfo,
+  canEdit,
+  handleInit,
+  wrapWithCheckLock,
+  editVersion,
+  spaceID,
+  callback,
+  renderParamsComponent,
+}: UseContentRequestProps) => {
+  // 是否显示安全检查失败信息
+  const [showSecurityCheckFailedMsg, setShowSecurityCheckFailedMsg] =
+    useState(false);
+  const [isRequestParamsDisabled, setIsRequestParamsDisabled] = useState(true);
+  // 设置请求参数
+  const { requestParamsNode, submitRequestParams, nlTool } = useRequestParams({
+    apiInfo,
+    pluginId: plugin_id || '',
+    requestParams: apiInfo?.request_params,
+    apiId: tool_id,
+    disabled: isRequestParamsDisabled,
+    showSecurityCheckFailedMsg,
+    setShowSecurityCheckFailedMsg,
+    editVersion,
+    functionName:
+      pluginInfo?.plugin_type === PluginType.LOCAL
+        ? apiInfo?.function_name
+        : undefined,
+    spaceID,
+    callback,
+    renderEnhancedComponent: renderParamsComponent,
+  });
+  return {
+    isRequestParamsDisabled,
+    itemKey: 'request',
+    header: I18n.t('Create_newtool_s2'),
+    extra: (
+      <>
+        {showSecurityCheckFailedMsg ? (
+          <SecurityCheckFailed step={RESPONSENODE} />
+        ) : null}
+        {!isRequestParamsDisabled ? nlTool : null}
+        {!isRequestParamsDisabled ? (
+          <Button
+            onClick={e => {
+              e.stopPropagation();
+              setIsRequestParamsDisabled(true);
+            }}
+            color="primary"
+            className="mr-2"
+          >
+            {I18n.t('project_plugin_setup_metadata_cancel')}
+          </Button>
+        ) : null}
+        {canEdit && !isRequestParamsDisabled ? (
+          <Button
+            onClick={async e => {
+              e.stopPropagation();
+              const status = await submitRequestParams();
+              // 更新成功后进入下一步
+              if (status) {
+                handleInit();
+                setIsRequestParamsDisabled(true);
+              }
+            }}
+            className="mr-2"
+          >
+            {I18n.t('project_plugin_setup_metadata_save')}
+          </Button>
+        ) : null}
+        {canEdit && isRequestParamsDisabled ? (
+          <Button
+            icon={<IconEdit className="!pr-0" />}
+            color="primary"
+            className="!bg-transparent !coz-fg-secondary"
+            onClick={e => {
+              const el = document.querySelector(
+                '.plugin-tool-detail-request .semi-collapsible-wrapper',
+              ) as HTMLElement;
+              if (parseInt(el?.style?.height) !== 0) {
+                e.stopPropagation();
+              }
+              wrapWithCheckLock(() => {
+                setIsRequestParamsDisabled(false);
+              })();
+            }}
+          >
+            {I18n.t('project_plugin_setup_metadata_edit')}
+          </Button>
+        ) : null}
+      </>
+    ),
+    content: requestParamsNode,
+    classNameWrap: 'plugin-tool-detail-request',
+  };
+};

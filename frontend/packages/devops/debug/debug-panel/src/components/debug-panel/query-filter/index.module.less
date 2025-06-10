@@ -1,0 +1,132 @@
+@import '../common/common.module.less';
+
+.query-filter {
+  width: 100%;
+
+  .query-filter-options {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+
+    height: 32px;
+    padding-right: 6px;
+    padding-left: 8px;
+
+    border: 1px solid  rgb(29 28 35 / 8%);
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+
+    .query-filter-options-button_active {
+      background:  rgb(46 46 56 / 12%);
+    }
+  }
+
+  .query-filter-select {
+    flex: 1;
+    width: 0;
+
+    .query-filter-select-search-icon {
+      padding: 0 8px;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+
+    }
+
+    .query-filter-select-tag {
+      overflow: hidden;
+
+      max-width: 100%;
+
+      text-overflow: ellipsis;
+      white-space: nowrap;
+
+      border-radius: 6px;
+    }
+
+    .query-execute-status_success {
+      color: var(#1D1C23);
+      background: var(#F0F0F5);
+    }
+
+    .query-execute-status_broken {
+      color: var(#4D53E8);
+      background: var(#F1F2FD);
+    }
+
+    .query-execute-status_error {
+      color: var(#FF441E);
+      background: var(#FFF3EE);
+    }
+
+  }
+
+}
+
+.query-filter-select-dropdown {
+  :global(.semi-select-loading-wrapper) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+  }
+
+  :global(.semi-select-option-selected .semi-select-option-icon) {
+    color: #4D53E8;
+  }
+
+  .query-filter-select-dropdown-option {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 0;
+
+    font-size: 12px;
+    color: var(rgb(29 28 35 / 60%));
+
+    .query-filter-select-dropdown-option-icon {
+      display: flex;
+      align-items: center;
+      margin-right: 8px;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    .query-filter-select-dropdown-option-text {
+      overflow: hidden;
+      flex: 1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .query-filter-select-dropdown-option-time {
+      color: var(rgb(29 28 35 / 35%));
+    }
+
+  }
+}
+
+.dropdown-content {
+  :global(.semi-dropdown-item > .semi-icon) {
+    color: #4D53E8;
+  }
+}
+
+.custom-tooltip {
+  padding-right: 0;
+
+  :global(.semi-tooltip-content) {
+    overflow-y: auto;
+    /* stylelint-disable-next-line declaration-no-important */
+    max-height: 500px;
+    padding-right: 12px;
+    .webkit-scrollbar_mixin();
+  }
+}

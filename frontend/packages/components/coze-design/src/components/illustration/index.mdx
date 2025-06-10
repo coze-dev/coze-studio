@@ -1,0 +1,65 @@
+import { Canvas, Meta, Controls, Story  } from '@storybook/blocks';
+
+import * as IllustrationStories from './stories/illustration.stories';
+
+<Meta of={IllustrationStories} name="Docs" />
+
+# COZIllustration
+
+> COZ统一插画, 可以平替`semi-illustration`，托管统一放至iconbox —— [设计参考](https://bytedance.larkoffice.com/wiki/CtEBwuwJuiq73fkXwYHcH6Honvd)
+
+- [组件引入](#组件引入)
+- [交互预览](#交互预览)
+- [尺寸 (size)](#尺寸)
+- [空状态 (emptyState)](#空状态)
+- [Props](#props)
+
+## 组件引入
+可从 `@coze/coze-design/illustrations` 中引入对应所需插画，因为插画多会自带色彩，所以如果需要适配暗黑模式，建议一种插画样式可以同时提两套设计，深色插图用Dark区分，尺寸需要保持一致，参考如下：
+
+```tsx
+import { IconCozIllusAdd, IconCozIllusAddDark } from '@coze/coze-design/illustrations';
+```
+
+## 交互预览
+`illustration` 组件支持如下属性配置，包含有: `width`, `height`, 可自定义尺寸。
+<Canvas of={IllustrationStories.Default} />
+
+<Controls  />
+
+## 尺寸
+`illustration` 的尺寸可以通过`width` 和 `height` 传入响应尺寸控制显示大小。
+<Story of={IllustrationStories.Size} />
+
+```tsx
+import { IconCozIllusDone, IconCozIllusAdd, IconCozIllus404 } from '@coze/coze-design/illustrations';
+
+<>
+  <IconCozIllusDone width="120" height="120"/>
+  <IconCozIllusAdd width="96" height="96"/>
+  <IconCozIllus404 width="64" height="64"/>
+</>
+```
+
+## 空状态
+`illustration` 可以搭配 `EmptyState`组件使用，一般用在空页面下的占位图，支持同时传入light和dark两份插图适配主题切换，
+<Story of={IllustrationStories.Empty} />
+
+```tsx
+import { EmptyState } from '@coze/coze-design';
+import { IconCozIllusAdd, IconCozIllusAddDark } from '@coze/coze-design/illustrations';
+
+ <EmptyState
+    size="full_screen"
+    icon={<IconCozIllusAdd />}
+    darkModeIcon={<IconCozIllusAddDark />}
+    title="An error occurred"
+    description="Please try again later"
+  />
+```
+
+## Props
+| Prop      | Type     | Description           | Default |
+|:----------|:---------|:----------------------|:--------|
+| height    | `Number` | Sets the width        | `1em`   |
+| width     | `Number` | Sets the height       | `1em`   |

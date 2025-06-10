@@ -1,0 +1,24 @@
+{
+  "name": "@coze-arch/arco-illustration",
+  "version": "0.0.11",
+  "description": "Arco illustration.",
+  "license": "ISC",
+  "author": "chenjiawei.inizio@bytedance.com",
+  "maintainers": [],
+  "main": "./src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./",
+    "test": "exit 0"
+  },
+  "dependencies": {
+    "react": "~18.2.0"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@types/react": "18.2.37",
+    "typescript": "~5.8.2"
+  }
+}
+

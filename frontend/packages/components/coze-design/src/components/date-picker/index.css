@@ -1,0 +1,37 @@
+.coz-date-picker {
+  @apply coz-bg-max;
+  @apply pt-12px;
+  @apply rounded-mini;
+
+  &.semi-datepicker-compact  {
+    .semi-datepicker-weekday {
+      @apply h-28px py-6px px-6px;
+      @apply border-none;
+    }
+
+    .semi-datepicker-weekday-item {
+      @apply w-32px h-16px;
+      @apply text-xs leading-4;
+    }
+
+    .semi-datepicker-weeks {
+      @apply flex flex-col gap-6px;
+      @apply px-6px pt-0 pb-12px;
+    }
+
+    .semi-datepicker-month {
+      @apply w-[236px];
+    }
+
+    .semi-datepicker-day {
+      @apply w-32px h-24px;
+    }
+  }
+}
+
+.coz-date-picker-select.semi-select {
+  @apply bg-transparent;
+  @apply coz-stroke-primary;
+}
+
+

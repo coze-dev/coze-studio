@@ -1,0 +1,56 @@
+/* stylelint-disable declaration-no-important */
+.selector-popover {
+  width: 480px !important;
+
+  &-library {
+    max-height: calc(100vh - 320px);
+  }
+
+  &-project {
+    max-height: calc(100vh - 356px);
+  }
+}
+
+.select {
+  padding: 3px;
+  border-color: rgba(var(--coze-stroke-6), var(--coze-stroke-6-alpha));
+  border-radius: 6px;
+
+  &:global(.coz-stroke-hglt) {
+    border-color: rgba(var(--coze-brand-5),1);
+  }
+
+  :global(.semi-avatar-extra-extra-small) {
+    width: 16px;
+    height: 16px;
+  }
+
+  &>div {
+    padding: 0 4px 0 0;
+  }
+
+  &>div span {
+    font-size: 12px !important;
+    line-height: 16px !important;
+  }
+
+  :global(.semi-icon) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 16px;
+    height: 16px;
+
+    svg {
+      width: 8px;
+      height: 8px;
+    }
+  }
+
+  &:global(+.coz-icon-button) {
+    svg {
+      font-size: 14px;
+    }
+  }
+}

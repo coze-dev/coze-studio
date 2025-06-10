@@ -1,0 +1,175 @@
+import React, { useMemo } from 'react';
+
+import {
+  useProjectId,
+  useSpaceId,
+  useCommitVersion,
+} from '@coze-project-ide/framework';
+import { useWorkflowResource } from '@coze-project-ide/biz-workflow';
+import { usePluginResource } from '@coze-project-ide/biz-plugin';
+import { useDataResource } from '@coze-project-ide/biz-data';
+import {
+  BizResourceTypeEnum,
+  ProjectResourceGroupType,
+  ResourceFolderCoze,
+  useResourceList,
+  VARIABLE_RESOURCE_ID,
+} from '@coze-project-ide/biz-components';
+import {
+  EProjectPermission,
+  useProjectAuth,
+  useProjectRole,
+} from '@coze-common/auth';
+import { FormatType } from '@coze-arch/bot-api/knowledge';
+import {
+  IconCozDatabase,
+  IconCozDocument,
+  IconCozImage,
+  IconCozPlugin,
+  IconCozTable,
+  IconCozVariables,
+} from '@coze/coze-design/icons';
+
+const datasetIconMap = {
+  [FormatType.Text]: <IconCozDocument />,
+  [FormatType.Table]: <IconCozTable />,
+  [FormatType.Image]: <IconCozImage />,
+};
+
+export const ResourceList = ({
+  idPrefix = 'fixed-sidebar',
+}: {
+  idPrefix?: string;
+}) => {
+  const {
+    onCustomCreate: createWorkflow,
+    onDelete: deleteWorkflow,
+    onChangeName: changeNameWorkflow,
+    onAction: handleWorkflowAction,
+    createResourceConfig: workflowCreateConfig,
+    iconRender: workflowIconRender,
+    modals: workflowModals,
+  } = useWorkflowResource();
+
+  const {
+    onCustomCreate: createPlugin,
+    onDelete: deletePlugin,
+    onChangeName: changeNamePlugin,
+    onAction: handlePluginAction,
+    // createResourceConfig: workflowCreateConfig,
+    validateConfig: validatePluginConfig,
+    modals: pluginModals,
+  } = usePluginResource();
+
+  const {
+    onCustomCreate: createData,
+    onDelete: deleteData,
+    onChangeName: changeNameData,
+    onAction: handleDataAction,
+    createResourceConfig: dataCreateConfig,
+    modals: dataModals,
+    validateConfig,
+  } = useDataResource();
+
+  const spaceId = useSpaceId();
+  const projectId = useProjectId();
+  const { version: commitVersion } = useCommitVersion();
+
+  let canCreate = useProjectAuth(
+    EProjectPermission.CREATE_RESOURCE,
+    projectId,
+    spaceId,
+  );
+
+  // 存在版本信息，预览状态无法创建资源
+  if (commitVersion) {
+    canCreate = false;
+  }
+
+  const projectRoles = useProjectRole(projectId);
+  const hideMoreBtn = useMemo(
+    // 没有任何权限，或者存在版本信息，需要隐藏操作按钮
+    () => (projectRoles?.length ?? 0) === 0 || !!commitVersion,
+    [projectRoles, commitVersion],
+  );
+  const { workflowResource, pluginResource, dataResource, initLoaded } =
+    useResourceList();
+
+  return (
+    <div>
+      <ResourceFolderCoze
+        id={`${idPrefix}_${ProjectResourceGroupType.Workflow}`}
+        groupType={ProjectResourceGroupType.Workflow}
+        defaultResourceType={BizResourceTypeEnum.Workflow}
+        resourceTree={workflowResource}
+        canCreate={canCreate}
+        initLoaded={initLoaded}
+        onChangeName={changeNameWorkflow}
+        onCustomCreate={createWorkflow}
+        onDelete={deleteWorkflow}
+        onAction={handleWorkflowAction}
+        createResourceConfig={workflowCreateConfig}
+        iconRender={workflowIconRender}
+        hideMoreBtn={hideMoreBtn}
+      />
+      <ResourceFolderCoze
+        id={`${idPrefix}_${ProjectResourceGroupType.Plugin}`}
+        groupType={ProjectResourceGroupType.Plugin}
+        defaultResourceType={BizResourceTypeEnum.Plugin}
+        resourceTree={pluginResource}
+        canCreate={canCreate}
+        initLoaded={initLoaded}
+        // 业务实现
+        onChangeName={changeNamePlugin}
+        onCustomCreate={createPlugin}
+        onDelete={deletePlugin}
+        onAction={handlePluginAction}
+        iconRender={() => <IconCozPlugin />}
+        hideMoreBtn={hideMoreBtn}
+        validateConfig={validatePluginConfig}
+      />
+      <ResourceFolderCoze
+        id={`${idPrefix}_${ProjectResourceGroupType.Data}`}
+        groupType={ProjectResourceGroupType.Data}
+        resourceTree={dataResource}
+        canCreate={canCreate}
+        initLoaded={initLoaded}
+        createResourceConfig={dataCreateConfig}
+        onChangeName={changeNameData}
+        onDelete={deleteData}
+        onAction={handleDataAction}
+        onCustomCreate={createData}
+        hideMoreBtn={hideMoreBtn}
+        validateConfig={validateConfig}
+        iconRender={({ resource }) => {
+          console.log(resource);
+          if (resource.id === VARIABLE_RESOURCE_ID) {
+            return <IconCozVariables />;
+          }
+          if (resource.type === BizResourceTypeEnum.Database) {
+            return <IconCozDatabase />;
+          }
+          if (resource.type === BizResourceTypeEnum.Knowledge) {
+            return (
+              <div className="flex items-center">
+                {datasetIconMap[resource.biz_extend?.format_type]}
+                {/**
+                 * 1: 启用
+                 * 2: 删除，一般没有
+                 * 3: 禁用
+                 */}
+                {resource.biz_res_status === 3 ? (
+                  <span className="ml-[3px]">已禁用</span>
+                ) : null}
+              </div>
+            );
+          }
+          return <></>;
+        }}
+      />
+      {workflowModals}
+      {pluginModals}
+      {dataModals}
+    </div>
+  );
+};

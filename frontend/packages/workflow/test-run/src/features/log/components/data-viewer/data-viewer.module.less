@@ -1,0 +1,26 @@
+.json-viewer-wrapper {
+  border-radius: 6px;
+  border: 1px solid var(--coz-stroke-primary);
+  padding: 2px 6px;
+  width: 100%;
+  user-select: text;
+
+  /** 高度限制 */
+  max-height: 272px;
+  min-height: 24px;
+  overflow-y: scroll;
+
+  &::-webkit-scrollbar {
+    background: transparent;
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(29, 28, 35, 0.3);
+    border-radius: 6px;
+
+    &:hover {
+      background: rgba(29, 28, 35, 0.6);
+    }
+  }
+}

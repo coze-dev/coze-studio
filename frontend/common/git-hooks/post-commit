@@ -1,0 +1,10 @@
+#!/bin/bash
+# rebase 过程中分支名格式为 (no branch, rebasing chore/replace-rushtool)
+# 正常提交时分支名格式为 chore/replace-rushtool
+BRANCH_NAME=$(git branch | grep '*' | sed 's/* //')
+# 如果匹配到 rebase 格式的输出，认为是在rebase ，则跳过自动推送
+if [[ "X${BRANCH_NAME}" == "X(no branch"* ]]; then
+  exit
+else
+  node common/scripts/install-run-rush.js change-x -a || exit 1
+fi

@@ -1,0 +1,98 @@
+@layer base {
+
+  // 新增css色值，仅业务使用；
+  :root {
+    --coze-fg-image-bots: rgba(6, 7, 9, 80%);
+    --coze-fg-image-white: rgba(255, 255, 255);
+    --coze-fg-image-user: rgba(255, 255, 255, 92%);
+    --coze-fg-image-user-name: rgba(255, 255, 255);
+    --coze-fg-image-secondary: rgba(255, 255, 255, 60%);
+    --coze-bg-image-user: rgba(56, 57, 58, 70%);
+    --coze-bg-image-bots: rgba(249, 249, 249, 80%);
+    --coze-bg-image-question: rgba(235, 235, 235, 65%);
+    --coze-stroke-image-bots: rgba(6, 7, 9, 10%);
+    --coze-stroke-image-user: rgba(255, 255, 255, 12%);
+    --coze-stroke-image-hover: rgba(255, 255, 255, 28%);
+  }
+}
+
+@layer components {
+
+  // 新增语义化class，仅业务使用；
+  .coz-fg-images-bots {
+    color: var(--coze-fg-images-bots);
+  }
+
+  .coz-fg-images-white {
+    color: var(--coze-fg-image-white);
+    text-shadow: 0 0.5px 1px rgba(0, 0, 0, 25%);
+  }
+
+  .coz-bg-images-white {
+    background-color: var(--coze-fg-image-white);
+
+  }
+
+  .coz-fg-images-user {
+    color: var(--coze-fg-image-user);
+  }
+
+  .coz-fg-images-user-name {
+    color: var(--coze-fg-image-user-name);
+    text-shadow: 0 0.5px 1px rgba(0, 0, 0, 50%);
+  }
+
+  .coz-fg-images-secondary {
+    color: var(--coze-fg-image-secondary);
+  }
+
+  .coz-bg-images-secondary {
+    background-color: var(--coze-fg-image-secondary);
+  }
+
+  .coz-bg-image-user {
+    background-color: var(--coze-bg-image-user);
+    //  由于Chrome浏览器不兼容 父级使用mask 和 子级使用backdrop-filter，表现为backdrop-filter不生效，这里增加滤镜替代方案
+    // 规划后期气泡改为实色方案，删除此属性
+    filter: drop-shadow(0 0 0 var(--coze-bg-image-user));
+    backdrop-filter: drop-shadow(0 0 0 var(--coze-bg-image-user));
+    // stylelint-disable-next-line -- 必须兼容这种情况
+    -webkit-backdrop-filter: drop-shadow(0 0 0 var(--coze-bg-image-user));
+  }
+
+  .coz-bg-image-bots {
+    background-color: var(--coze-bg-image-bots);
+    filter: drop-shadow(0 0 0 var(--coze-bg-image-bots));
+    backdrop-filter: drop-shadow(0 0 0 var(--coze-bg-image-bots));
+    // stylelint-disable-next-line -- 必须兼容这种情况
+    -webkit-backdrop-filter: drop-shadow(0 0 0 var(--coze-bg-image-bots));
+  }
+
+  .coz-bg-image-question {
+    background-color: var(--coze-bg-image-question);
+    filter: drop-shadow(0 0 0 var(--coze-bg-image-question));
+    backdrop-filter: drop-shadow(0 0 0 var(--coze-bg-image-question));
+    // stylelint-disable-next-line -- 必须兼容这种情况
+    -webkit-backdrop-filter: drop-shadow(0 0 0 var(--coze-bg-image-question));
+  }
+
+  .coz-stroke-image-bots {
+    border: 1px solid var(--coze-stroke-image-bots)
+  }
+
+  .coz-stroke-image-user {
+    border: 1px solid var(--coze-stroke-image-user)
+  }
+
+  .coz-stroke-image-hover {
+    border: 1px solid var(--coze-stroke-image-hover);
+  }
+
+  .coz-fg-images-bots-2 {
+    @apply text-foreground-3;
+  }
+
+  .coz-fg-images-bots-3 {
+    color: rgba(var(--coze-fg-3)); // 可以继续复用 base token 里的色值；
+  }
+}

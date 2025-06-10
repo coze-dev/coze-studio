@@ -1,0 +1,23 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  
+  .content {
+    overflow-y: auto;
+    flex: 1;
+    padding-bottom: 16px; // 给底部留出间距
+  }
+  
+  .footer {
+    flex-shrink: 0;
+
+    padding: 16px 24px;
+
+    background: #fff;
+    border-top: 1px solid var(--semi-color-border);
+    
+    // 如果需要阴影效果
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 6%);
+  }
+} 

@@ -1,0 +1,54 @@
+.coz-textarea-wrapper {
+  .coz-textarea {
+    .semi-input-textarea {
+      @apply placeholder:coz-fg-dim px-1 py-0 shadow-none ring-0;
+      @apply caret-brand-5;
+      @apply selection:coz-mg-hglt-plus-dim;
+    }
+
+    &.coz-textarea-with-suffix, &.coz-textarea-with-prefix {
+      .semi-input-textarea {
+        @apply mb-7;
+      }
+    }
+
+    .semi-input-textarea-counter {
+      @apply pr-4px;
+    }
+  }
+
+  .coz-textarea-loading {
+    @apply coz-fg-secondary;
+  }
+
+  .coz-textarea-prefix, .coz-textarea-suffix {
+    @apply absolute bottom-2 coz-fg-secondary text-xs;
+  }
+
+  .coz-textarea-prefix {
+    @apply left-2;
+  }
+
+  .coz-textarea-suffix {
+    @apply right-2;
+
+    svg {
+      @apply w-3.5 h-3.5 coz-fg-secondary;
+    }
+  }
+
+  /* 这里需要用coze-design的色彩单独覆写semi的样式 */
+  .semi-input-textarea-wrapper {
+    @apply coz-stroke-plus bg-transparent hover:coz-mg-secondary-hovered active:coz-mg-secondary-pressed;
+
+    &.coz-textarea-error,
+    &.semi-input-textarea-wrapper-error {
+      @apply coz-stroke-hglt-red;
+    }
+  }
+
+  .semi-input-textarea-wrapper-focus {
+    @apply coz-stroke-hglt;
+    @apply bg-transparent hover:bg-transparent active:bg-transparent;
+  }
+}

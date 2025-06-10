@@ -1,0 +1,54 @@
+import React from 'react';
+
+import classNames from 'classnames';
+import { type Model } from '@coze-arch/bot-api/developer_api';
+import {
+  ModelSelect,
+  type ModelSelectProps,
+} from '@coze-agent-ide/model-manager/model-select-v2';
+
+import { useGlobalState } from '@/hooks';
+
+import styles from './model-select-v2.module.less';
+
+export interface ModelSelectV2Props
+  extends Pick<ModelSelectProps, 'triggerRender' | 'popoverPosition'> {
+  className?: string;
+  value: number | undefined;
+  onChange: (value: number) => void;
+  models: Model[];
+  readonly?: boolean;
+}
+
+export const ModelSelectV2: React.FC<ModelSelectV2Props> = ({
+  className,
+  value,
+  onChange,
+  models,
+  readonly,
+  popoverPosition,
+  triggerRender,
+}) => {
+  const { spaceId, projectId, isBindDouyin } = useGlobalState();
+  return (
+    <ModelSelect
+      enableJumpDetail={isBindDouyin ? false : { spaceId }}
+      className={classNames(styles.select, className)}
+      popoverClassName={classNames(
+        styles['selector-popover'],
+        styles[`selector-popover-${projectId ? 'project' : 'library'}`],
+      )}
+      popoverPosition={popoverPosition || 'bottomRight'}
+      disabled={readonly}
+      selectedModelId={value ? `${value}` : ''}
+      modelList={models}
+      clickToHide
+      onModelChange={(model: Model) => {
+        if (model.model_type) {
+          onChange(Number(model.model_type));
+        }
+      }}
+      triggerRender={triggerRender}
+    />
+  );
+};

@@ -1,0 +1,49 @@
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 32px;
+  min-height: 32px;
+  padding: 6px 14px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  border-radius: 8px;
+
+  @apply coz-fg-secondary;
+
+  &:hover {
+    @apply coz-mg-primary coz-fg-primary;
+  }
+}
+
+.active {
+  @apply coz-mg-primary coz-fg-primary;
+}
+
+.item-link {
+  margin-bottom: 0;
+  text-decoration: none;
+}
+
+.tag-container {
+  @apply flex items-center gap-4px;
+
+  .label {
+    @apply px-4px text-foreground-2 font-semibold text-lg;
+  }
+
+  .tag {
+    @apply rounded-mini;
+
+    padding: 1px 6px;
+  }
+
+  &.active {
+    .label {
+      @apply coz-fg-primary;
+    }
+  }
+}

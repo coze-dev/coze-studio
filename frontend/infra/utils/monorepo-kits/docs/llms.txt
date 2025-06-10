@@ -1,0 +1,90 @@
+# @coze-arch/monorepo-kits
+
+## 功能概述
+
+`@coze-arch/monorepo-kits` 是一个用于管理 monorepo 项目的工具包，提供了基于 Rush 框架的项目查找、依赖分析和配置管理功能。
+
+## 主要功能模块
+
+### 1. 子包管理 (sub-packages.ts)
+
+#### lookupSubPackages(packageName: string): string[]
+- **功能**: 递归查找指定包的所有子依赖包
+- **特性**: 使用缓存机制避免重复计算
+- **返回**: 所有依赖包的名称数组（去重后）
+
+#### getPackageLocation(packageName: string): string
+- **功能**: 获取指定包的文件系统路径
+- **返回**: 包的项目文件夹路径
+
+#### getPackageJson(packageName: string): RushConfigurationProject['packageJson']
+- **功能**: 获取指定包的 package.json 配置信息
+- **返回**: 包的 package.json 对象
+
+### 2. Rush 配置管理 (rush-config.ts)
+
+#### getRushConfiguration(): RushConfiguration
+- **功能**: 获取 Rush 配置实例
+- **特性**: 单例模式，首次调用时从默认位置加载配置，后续调用复用实例
+- **返回**: RushConfiguration 对象
+
+### 3. 项目查找 (lookup.ts)
+
+#### lookupTo(to: string): string[]
+- **功能**: 查找指定包的直接依赖项
+- **参数**: 目标包名称
+- **返回**: 依赖包名称数组
+
+#### lookupFrom(from: string): void
+- **功能**: 查找从指定包出发的相关信息（当前实现不完整）
+- **参数**: 源包名称
+
+#### lookupOnly(packageName: string): RushConfigurationProject
+- **功能**: 查找并返回指定包的项目配置对象
+- **参数**: 包名称
+- **返回**: 完整的项目配置对象
+
+## 依赖关系
+
+- **主要依赖**: `@rushstack/rush-sdk@5.100.2`
+- **开发依赖**: 包含 ESLint、TypeScript、Vitest 等工具链
+
+## 使用场景
+
+1. **依赖分析**: 分析 monorepo 中包之间的依赖关系
+2. **路径解析**: 获取包在文件系统中的实际位置
+3. **配置查询**: 查询包的配置信息和元数据
+4. **自动化工具**: 为构建脚本、部署工具等提供 monorepo 项目信息
+
+## 架构特点
+
+- **缓存优化**: 对递归依赖查找进行缓存，提高性能
+- **错误处理**: 包含完善的包不存在异常处理
+- **单例模式**: Rush 配置采用单例模式，避免重复加载
+- **类型安全**: 基于 TypeScript，提供完整的类型定义
+
+## 代码结构
+
+```
+src/
+├── index.ts          # 主入口文件，导出所有公共 API
+├── sub-packages.ts   # 子包管理和依赖查找功能
+├── rush-config.ts    # Rush 配置管理
+└── lookup.ts         # 项目查找相关功能
+```
+
+## API 导出
+
+```typescript
+export {
+  lookupSubPackages,
+  getPackageLocation,
+  getPackageJson,
+} from './sub-packages';
+
+export { getRushConfiguration } from './rush-config';
+
+export { lookupTo, lookupFrom, lookupOnly } from './lookup';
+```
+
+这个工具包为 monorepo 环境下的包管理、依赖分析和自动化工具开发提供了基础支持。

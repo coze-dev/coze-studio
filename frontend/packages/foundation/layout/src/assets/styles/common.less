@@ -1,0 +1,13 @@
+@common-box-shadow: 0px 2px 8px 0px rgba(31, 35, 41, 0.02),
+  0px 2px 4px 0px rgba(31, 35, 41, 0.02), 0px 2px 2px 0px rgba(31, 35, 41, 0.02);
+
+.common-svg-icon(@size:14px, @color:#3370ff) {
+  > svg {
+    width: @size;
+    height: @size;
+
+    > path {
+      fill: @color;
+    }
+  }
+}

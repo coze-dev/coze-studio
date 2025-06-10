@@ -1,0 +1,5 @@
+.coz-form-field {
+  .semi-form-field-error-message {
+    @apply coz-fg-hglt-red;
+  }
+}

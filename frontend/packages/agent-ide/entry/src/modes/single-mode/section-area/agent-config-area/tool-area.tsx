@@ -1,0 +1,154 @@
+/* eslint-disable @coze-arch/no-deep-relative-import */
+import classNames from 'classnames';
+import { useModelStore } from '@coze-studio/bot-detail-store/model';
+import { ShortcutToolConfig } from '@coze-common/chat-area-plugins-chat-shortcuts/shortcut-tool';
+import { I18n } from '@coze-arch/i18n';
+import { LayoutContext, PlacementEnum } from '@coze-arch/bot-hooks';
+import { FormatType } from '@coze-arch/bot-api/knowledge';
+import { BotMode, WorkflowMode } from '@coze-arch/bot-api/developer_api';
+import {
+  WorkflowCard,
+  WorkflowModalFrom,
+} from '@coze-agent-ide/workflow-card-adapter';
+import { ToolGroupKey } from '@coze-agent-ide/tool-config';
+import { GroupingContainer, ToolKey, ToolView } from '@coze-agent-ide/tool';
+import { useDataSetArea } from '@coze-agent-ide/space-bot/hook';
+import {
+  ChatBackground,
+  DataMemory,
+  Setting as DataSetSetting,
+  settingAreaScrollId,
+  SuggestionBlock,
+} from '@coze-agent-ide/space-bot/component';
+import { PluginApisArea } from '@coze-agent-ide/plugin-area-adapter';
+import { OnboardingMessage } from '@coze-agent-ide/onboarding-message-adapter';
+
+import s from '../../../../index.module.less';
+import { SkillsModal } from '../../../../components/shortcut-skills-modal';
+
+export interface ToolAreaProps {
+  isAllToolHidden: boolean;
+  skillToolSlot?: React.ReactNode;
+  knowledgeToolSlot?: React.ReactNode;
+  memoryToolSlot?: React.ReactNode;
+  dialogToolSlot?: React.ReactNode;
+  debugToolSlot?: React.ReactNode;
+  extraToolSlot?: React.ReactNode;
+}
+
+export const ToolArea: React.FC<ToolAreaProps> = props => {
+  const {
+    isAllToolHidden,
+    skillToolSlot,
+    knowledgeToolSlot,
+    memoryToolSlot,
+    dialogToolSlot,
+    extraToolSlot,
+  } = props;
+  const { node: DataSetArea, initRef: DataSetAreaRef } = useDataSetArea();
+  const modelId = useModelStore(state => state.config.model);
+  // const { grayState } = useVoiceGrayState();
+  return (
+    <LayoutContext value={{ placement: PlacementEnum.CENTER }}>
+      <div
+        className={classNames(s['setting-area'], 'coz-bg-plus', {
+          [s['tool-hidden']]: isAllToolHidden,
+        })}
+      >
+        <div className="p-[12px] overflow-auto flex-1" id={settingAreaScrollId}>
+          <ToolView>
+            <GroupingContainer
+              title={I18n.t('bot_edit_type_skills')}
+              toolGroupKey={ToolGroupKey.SKILL}
+            >
+              {/* 工具 */}
+              <PluginApisArea
+                toolKey={ToolKey.PLUGIN}
+                title={I18n.t('Plugins')}
+              />
+              {/* Workflow */}
+              <WorkflowCard
+                flowMode={WorkflowMode.Workflow}
+                toolKey={ToolKey.WORKFLOW}
+                title={I18n.t('Workflows')}
+                from={WorkflowModalFrom.BotSkills}
+              />
+              {skillToolSlot}
+            </GroupingContainer>
+            <GroupingContainer
+              toolGroupKey={ToolGroupKey.KNOWLEDGE}
+              title={I18n.t('bot_edit_type_knowledge')}
+              actionNodes={<DataSetSetting modelId={modelId ?? ''} />}
+            >
+              {/* 知识库 */}
+              <DataSetArea
+                initRef={DataSetAreaRef}
+                toolKey={ToolKey.DOCUMENT}
+                title={I18n.t('dataset_detail_type_text')}
+                desc={I18n.t('bot_ide_knowledge_text_desc')}
+                formatType={FormatType.Text}
+              />
+
+              <DataSetArea
+                initRef={DataSetAreaRef}
+                toolKey={ToolKey.TABLE}
+                title={I18n.t('dataset_detail_type_table')}
+                formatType={FormatType.Table}
+                desc={I18n.t('bot_ide_knowledge_table_desc')}
+              />
+
+              <DataSetArea
+                initRef={DataSetAreaRef}
+                toolKey={ToolKey.PHOTO}
+                title={I18n.t('knowledge_photo_025')}
+                formatType={FormatType.Image}
+                desc={I18n.t('knowledge_photo_027')}
+              />
+              {knowledgeToolSlot}
+            </GroupingContainer>
+            <GroupingContainer
+              toolGroupKey={ToolGroupKey.MEMORY}
+              title={I18n.t('bot_edit_type_memory')}
+            >
+              {/* 变量存储 */}
+              <DataMemory
+                toolKey={ToolKey.VARIABLE}
+                title={I18n.t('user_profile')}
+              />
+              {memoryToolSlot}
+            </GroupingContainer>
+            <GroupingContainer
+              toolGroupKey={ToolGroupKey.DIALOG}
+              title={I18n.t('bot_edit_type_dialog')}
+            >
+              {/* 开场白 */}
+              <OnboardingMessage
+                toolKey={ToolKey.ONBOARDING}
+                title={I18n.t('bot_preview_opening_remarks')}
+              />
+              {/* suggestion 开关 */}
+              <SuggestionBlock
+                toolKey={ToolKey.SUGGEST}
+                title={I18n.t('bot_edit_suggestion')}
+              />
+              {/* 快捷键shortcut */}
+              <ShortcutToolConfig
+                skillModal={SkillsModal}
+                toolKey={ToolKey.SHORTCUT}
+                botMode={BotMode.SingleMode}
+                title={I18n.t('bot_ide_shortcut')}
+              />
+              {/* 聊天背景图片 */}
+              <ChatBackground
+                toolKey={ToolKey.BACKGROUND}
+                title={I18n.t('bgi_title')}
+              />
+              {dialogToolSlot}
+            </GroupingContainer>
+            {extraToolSlot}
+          </ToolView>
+        </div>
+      </div>
+    </LayoutContext>
+  );
+};

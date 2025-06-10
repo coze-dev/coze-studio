@@ -1,0 +1,106 @@
+/* stylelint-disable */
+.system-area {
+  position: relative;
+
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  height: 100%;
+
+  .bot-system-block {
+    position: relative;
+    overflow: auto;
+    flex: 1;
+
+    .prompt-optimize-area {
+      cursor: pointer;
+
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+
+      padding: 0 4px;
+
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 22px;
+
+      border-radius: 6px;
+
+      @apply coz-fg-secondary;
+
+      &.prompt-optimize-area-multiple {
+        padding: 1px;
+        border-radius: 4px;
+      }
+
+      &.disabled {
+        cursor: not-allowed;
+
+        @apply coz-fg-secondary;
+      }
+
+      &:hover {
+        background: var(--light-usage-fill-color-fill-0,
+            rgba(46, 46, 56, 4%));
+      }
+
+      .prompt-optimize-icon {
+        svg {
+          width: 14px;
+          height: 14px;
+        }
+
+        &.prompt-optimize-icon-single {
+          margin-right: 4px;
+        }
+      }
+    }
+  }
+
+  .bot-system-block-readOnly {
+    height: 274px;
+    padding-bottom: 24px;
+  }
+}
+
+.child-block {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.system-area-multi {
+  height: auto;
+  margin-bottom: 18px;
+
+  .bot-system-block {
+    padding-bottom: 0;
+  }
+
+  .bot-debug-system {
+    textarea {
+      height: 274px;
+      padding: 16px !important;
+      background-color: #fff;
+    }
+  }
+}
+
+.bot-system-block-no-border {
+  border-bottom: 1px solid transparent;
+}
+
+.ai-button-icon-color {
+  svg {
+    // 有神奇的全局覆盖。。。
+    @apply coz-fg-hglt !important;
+  }
+
+}
+
+.prompt-content-header {
+  height: 36px !important;
+  padding-top: 12px !important;
+}

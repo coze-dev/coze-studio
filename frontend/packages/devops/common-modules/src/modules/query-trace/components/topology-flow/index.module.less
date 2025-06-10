@@ -1,0 +1,32 @@
+.topology-flow {
+  .topology-flow-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    :global(.semi-spin-children) {
+      /* stylelint-disable-next-line declaration-no-important */
+      background: none !important;
+    }
+  }
+
+  .topology-flow-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+
+    .topology-flow-container-flow {
+      flex: 1;
+    }
+  }
+}
+
+.topology-flow_default {
+  width: 100%;
+  height: 300px;
+  padding: 24px;
+}

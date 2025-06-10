@@ -1,0 +1,75 @@
+.dataset-progress-wrap {
+  position: relative;
+  margin-bottom: 24px;
+
+  .dataset-progress {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+
+    .dataset-progress-content {
+      position: relative;
+
+      overflow: hidden;
+      flex: 1;
+
+      background-color: rgba(46, 50, 56, 5%);
+      border-radius: 8px;
+
+      .progress-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+
+        overflow: hidden;
+
+        height: 32px;
+
+        background-color: var(--semi-color-primary);
+        border-radius: 8px;
+
+        transition: width linear 300ms;
+      }
+
+      .text {
+        box-sizing: border-box;
+        height: 32px;
+        padding: 0 12px;
+
+        font-size: 14px;
+        line-height: 32px;
+        word-break: keep-all;
+      }
+    }
+
+    .dataset-progress-format {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: flex-end;
+
+      box-sizing: border-box;
+      width: 48px;
+      padding-right: 6px;
+
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 20px;
+      color: rgba(28, 31, 35, 60%);
+    }
+  }
+
+  .dataset-progress-error {
+    position: absolute;
+    top: 33px;
+    left: 4px;
+
+    font-size: 12px;
+    color: rgba(255, 39, 16, 100%)
+  }
+}
+
+.dataset-progress-wrap:last-child {
+  margin-bottom: 0;
+}

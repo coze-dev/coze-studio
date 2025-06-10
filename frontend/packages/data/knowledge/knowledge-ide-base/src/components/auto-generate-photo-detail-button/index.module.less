@@ -1,0 +1,37 @@
+// UI稿的 confirm modal 和 semi 默认的不一样，需要手动调整样式
+.confirm-modal {
+  :global {
+    .semi-modal-header {
+      margin-bottom: 16px;
+
+      // icon 和 title 的间距
+      .semi-modal-icon-wrapper {
+        margin-right: 8px;
+      }
+
+      // title 颜色
+      .semi-modal-confirm-title-text {
+        color: rgba(29, 28, 35, 100%);
+      }
+
+      // 关闭 icon 的 hover 颜色
+      .semi-button:hover {
+        background-color: rgba(46, 46, 56, 8%);
+      }
+    }
+
+    .semi-modal-body {
+      margin: 0;
+      padding: 16px 0;
+
+      .semi-modal-confirm-content {
+        color: rgba(29, 28, 35, 100%)
+      }
+    }
+
+    .semi-modal-footer button {
+      min-width: 96px;
+      margin-left: 16px;
+    }
+  }
+}

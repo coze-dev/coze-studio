@@ -1,0 +1,121 @@
+/* stylelint-disable no-duplicate-selectors */
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable max-nesting-depth */
+.structure-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 10px;
+
+  &-title {
+    font-size: 14px;
+    font-weight: 600;
+    font-style: normal;
+    line-height: 20px;
+    color: var(--coz-fg-primary);
+  }
+}
+
+.custom-table-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.unit-table-container {
+  border: 1px solid var(--coz-stroke-primary);
+  border-radius: 8px;
+
+  .unit-table-view {
+    min-height: 90px;
+    max-height: 540px;
+
+    :global {
+      .semi-table-wrapper {
+        margin-top: 0;
+      }
+
+      .coz-tag.coz-tag-primary {
+        font-weight: 400;
+      }
+
+      .semi-table-thead>.semi-table-row>.semi-table-row-head {
+        border-bottom: 1px solid var(--coz-stroke-primary);
+      }
+
+      .semi-table-header {
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+      }
+
+      .semi-table-row {
+        &:last-child {
+          .semi-table-row-cell {
+            border-bottom: 1px solid transparent;
+          }
+        }
+      }
+
+      .semi-table-row:hover>.semi-table-row-cell:first-child {
+        border-top-left-radius: 0 !important;
+        border-bottom-left-radius: 0 !important;
+      }
+
+      .semi-table-row:hover>.semi-table-row-cell:last-child {
+        border-top-right-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+      }
+
+      .semi-table-body {
+        max-height: 499px !important;
+        border-bottom-right-radius: 8px;
+        border-bottom-left-radius: 8px;
+      }
+    }
+  }
+
+  .table-view-title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .semantic-tag {
+      margin-left: 8px;
+    }
+  }
+
+  .unit-table-empty {
+    height: 64px;
+  }
+}
+
+.footer-toolbar {
+  margin-top: 10px;
+}
+
+.spin {
+  :global {
+    .semi-spin-wrapper {
+      position: absolute;
+    }
+
+    .semi-tabs-content {
+      padding: 0;
+    }
+
+    .semi-spin-children {
+      height: 100%;
+    }
+  }
+}
+
+.footer-sub-tip {
+  font-size: 12px;
+  color: var(--coz-fg-primary);
+}
+
+.column-type {
+  margin-left: 6px;
+}

@@ -1,0 +1,77 @@
+/* 定义滚动条默认隐藏样式 styled-scrollbar-hidden */
+.styled-scrollbar-hidden {
+  scrollbar-width: none; /* Firefox */
+
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.styled-scrollbar-hidden::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+.styled-scrollbar-hidden:hover {
+  scrollbar-width: auto;
+}
+
+.styled-scrollbar-hidden:hover::-webkit-scrollbar {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  background-color: transparent;
+}
+
+.styled-scrollbar-hidden:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(31, 35, 41, 30%);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 9999px;
+
+  transition: background 0.2s cubic-bezier(0.34, 0.69, 0.1, 1);
+}
+
+.styled-scrollbar-hidden:hover::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(31, 35, 41, 60%);
+}
+
+.styled-scrollbar-hidden:hover::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.list-top-mask,
+.list-bottom-mask {
+  position: relative;
+}
+
+.list-bottom-mask::after,
+.list-top-mask::before {
+  pointer-events: none; /* 确保伪元素不阻挡用户交互 */
+  content: '';
+
+  position: absolute;
+  right: 0;
+  left: 0;
+
+  height: 40px;
+}
+
+.list-top-mask::before {
+  top: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 100%),
+    transparent
+  );
+}
+
+.list-bottom-mask::after {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(255, 255, 255, 100%), transparent);
+}
+
+.list-top-mask-24::before {
+  top: 24px;
+}
+
+.list-bottom-mask-32::after {
+  bottom: 32px;
+}

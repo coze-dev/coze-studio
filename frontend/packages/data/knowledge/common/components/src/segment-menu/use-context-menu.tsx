@@ -1,0 +1,120 @@
+import { type NodeApi } from 'react-arborist';
+import { useState } from 'react';
+
+import { I18n } from '@coze-arch/i18n';
+import { Menu, MenuSubMenu } from '@coze/coze-design';
+import { useKnowledgeParams } from '@coze-data/knowledge-stores';
+
+import { type TreeNode } from '../utils/tree';
+
+interface IUseSegmentContextMenuProps {
+  onDelete: (node: TreeNode) => void;
+  onMerge: (node: TreeNode) => void;
+}
+
+export function useSegmentContextMenu({
+  onDelete,
+  onMerge,
+}: IUseSegmentContextMenuProps): {
+  popoverNode: React.ReactNode;
+  onContainerScroll: () => void;
+  onContextMenu: (
+    e: React.MouseEvent<HTMLDivElement>,
+    treeNode: NodeApi<TreeNode>,
+  ) => void;
+} {
+  const [treeNode, setTreeNode] = useState<NodeApi<TreeNode> | null>();
+  const [visible, setVisible] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const params = useKnowledgeParams();
+
+  return {
+    popoverNode: (
+      <Menu
+        visible={visible}
+        onVisibleChange={setVisible}
+        onClickOutSide={() => {
+          setVisible(false);
+          setTreeNode(null);
+        }}
+        trigger="custom"
+        position="bottomLeft"
+        render={
+          <MenuSubMenu mode="menu">
+            {treeNode && !treeNode.children?.length ? (
+              <>
+                <Menu.Item
+                  isMenu
+                  onClick={() => {
+                    onDelete(treeNode.data);
+                    setVisible(false);
+                  }}
+                >
+                  {I18n.t('knowledge_level_028')}
+                </Menu.Item>
+              </>
+            ) : null}
+            {treeNode && treeNode.children?.length ? (
+              <>
+                <Menu.Item
+                  isMenu
+                  onClick={() => {
+                    onMerge(treeNode.data);
+                    setVisible(false);
+                  }}
+                >
+                  {I18n.t('knowledge_level_029')}
+                </Menu.Item>
+                <Menu.Item
+                  isMenu
+                  onClick={() => {
+                    onDelete(treeNode.data);
+                    setVisible(false);
+                  }}
+                >
+                  {I18n.t('knowledge_level_028')}
+                </Menu.Item>
+              </>
+            ) : null}
+          </MenuSubMenu>
+        }
+      >
+        <div
+          style={{
+            height: 0,
+            width: 0,
+            position: 'fixed',
+            top: position.top,
+            left: position.left,
+          }}
+        />
+      </Menu>
+    ),
+    onContainerScroll: () => {
+      if (visible) {
+        setVisible(false);
+      }
+    },
+    onContextMenu: (e, node: NodeApi<TreeNode>) => {
+      e.preventDefault();
+      setTreeNode(node);
+      /** 在 project ide 里面，ide 容器设置了 contain: strict, 会导致 fixed position
+       *  的偏移基础不对，所以这里需要减去 ide 容器的 left 和 top 值
+       */
+      let clickX = e.pageX;
+      let clickY = e.pageY;
+      const ideDom = document.getElementById(
+        `coze-project:///knowledge/${params.datasetID}`,
+      );
+
+      if (ideDom) {
+        const { left, top } = ideDom.getBoundingClientRect();
+        clickX = clickX - left;
+        clickY = clickY - top;
+      }
+
+      setPosition({ left: clickX, top: clickY });
+      setVisible(true);
+    },
+  };
+}
