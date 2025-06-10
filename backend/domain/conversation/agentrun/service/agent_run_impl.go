@@ -811,6 +811,17 @@ func (c *runImpl) buildKnowledge(_ context.Context, arm *entity.AgentRunMeta, ch
 	for _, kOne := range chunk.Knowledge {
 		recallDatas = append(recallDatas, msgEntity.RecallDataInfo{
 			Slice: kOne.Content,
+			Meta: msgEntity.MetaInfo{
+				Dataset: msgEntity.DatasetInfo{
+					ID:   kOne.MetaData["dataset_id"].(string),
+					Name: kOne.MetaData["dataset_name"].(string),
+				},
+				Document: msgEntity.DocumentInfo{
+					ID:   kOne.MetaData["document_id"].(string),
+					Name: kOne.MetaData["document_name"].(string),
+				},
+			},
+			Score: kOne.Score(),
 		})
 	}
 
