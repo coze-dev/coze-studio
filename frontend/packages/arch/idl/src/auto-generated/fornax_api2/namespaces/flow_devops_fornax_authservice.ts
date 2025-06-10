@@ -8,7 +8,7 @@ import * as base from './base';
 export type Int64 = string | number;
 
 export interface AuthenticateServiceAccountReq {
-  /** 认证字符串，见 https://bytedance.larkoffice.com/docx/DGkndjU4uoYLt8xyQXHcLDLsnHA */
+  /** 认证字符串，见  */
   'Fornax-Auth': string;
   psm: string;
   cluster?: string;

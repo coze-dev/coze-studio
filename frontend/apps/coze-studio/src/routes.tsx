@@ -1,9 +1,9 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
-import { BaseEnum } from '@coze-arch/web-context';
-import { GlobalError } from '@coze-foundation/layout';
 import { SpaceSubModuleEnum } from '@coze-foundation/space-ui-adapter';
+import { GlobalError } from '@coze-foundation/layout';
+import { BaseEnum } from '@coze-arch/web-context';
 
 import { exploreRouter } from './pages/explore';
 import { Layout } from './layout';
@@ -100,6 +100,14 @@ export const router: ReturnType<typeof createBrowserRouter> =
   createBrowserRouter([
     {
       path: '/open/docs/*',
+      Component: DocsRedirect,
+      loader: () => ({
+        hasSider: false,
+        requireAuth: false,
+      }),
+    },
+    {
+      path: '/docs/*',
       Component: DocsRedirect,
       loader: () => ({
         hasSider: false,

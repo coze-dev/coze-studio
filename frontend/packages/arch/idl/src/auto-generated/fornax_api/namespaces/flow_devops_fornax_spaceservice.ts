@@ -13,7 +13,7 @@ export interface AddSpaceMemberOApiReq {
   space_id?: Int64;
   /** 添加空间成员 */
   space_members?: Array<space.SpaceMember>;
-  /** FornaxSDK 鉴权 https://bytedance.larkoffice.com/wiki/WF25wdNLniOEnckibBOc6FFuneh */
+  /** FornaxSDK 鉴权  */
   Authorization?: string;
   Base?: base.Base;
 }
@@ -165,7 +165,7 @@ export interface RemoveSpaceMemberOApiReq {
   space_id: Int64;
   /** 移除空间成员 */
   space_members?: Array<space.SpaceMember>;
-  /** FornaxSDK 鉴权 https://bytedance.larkoffice.com/wiki/WF25wdNLniOEnckibBOc6FFuneh */
+  /** FornaxSDK 鉴权  */
   Authorization?: string;
   Base?: base.Base;
 }

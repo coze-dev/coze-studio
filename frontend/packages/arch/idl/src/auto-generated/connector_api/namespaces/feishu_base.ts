@@ -38,7 +38,7 @@ export interface FeishuBaseConfig {
   input_type_list: Array<InputTypeInfo>;
   /** 输出类型选中 object 后，object value 可选的类型列表 */
   object_value_type_list: Array<OutputTypeInfo>;
-  /** 完善上架信息, https://bytedance.larkoffice.com/docx/F2bJdQdwTo7vyqxw4gycrmFonab */
+  /** 完善上架信息,  */
   to_complete_info?: ToCompleteInfo;
 }
 
@@ -102,7 +102,7 @@ export interface OutputSubComponentItem {
 }
 
 export interface OutputTypeInfo {
-  /** 会增加，就不整成 enum 了。https://bytedance.larkoffice.com/wiki/TEuGwYcL5i68wtkl9dCcA9manBd?table=tblq0K4pEpxT4ebv&view=vewdIpY99S */
+  /** 会增加，就不整成 enum 了。 */
   id: number;
   /** 名称，例如“文本”，“对象”等 */
   name: string;

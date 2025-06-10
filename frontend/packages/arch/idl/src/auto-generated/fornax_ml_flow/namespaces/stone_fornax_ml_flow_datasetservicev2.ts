@@ -595,7 +595,7 @@ export interface UpdateDatasetSchemaReq {
   datasetID: string;
   /** fieldSchema.key 为空时：插入新的一列
 fieldSchema.key 不为空时：更新对应的列
-使用示例参考：https://bytedance.larkoffice.com/wiki/BEbMwdYDQinYFckYbHVcW3DfnZx#doxcnCEi007nKCLwZ4o84nVivle */
+使用示例参考： */
   fields?: Array<datasetv2.FieldSchema>;
   base?: base.Base;
 }

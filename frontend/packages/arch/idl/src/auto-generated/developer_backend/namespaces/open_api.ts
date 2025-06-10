@@ -372,7 +372,7 @@ export interface RequestLimitRule {
 }
 
 /** 从 apihub 同步最新的 openapi 定义与接口描述
- apihub 地址: https://apihub.bytedance.net/project/3713/interface/api */
+ apihub 地址:  */
 export interface SyncFromApiHubReq {
   raw_body?: Blob;
   Base?: base.Base;

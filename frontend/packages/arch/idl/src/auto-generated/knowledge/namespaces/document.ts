@@ -97,7 +97,7 @@ export interface CreateDocumentRequest {
   /** 表格类型一次只能创建一个
 待创建的文档信息 */
   document_bases?: Array<DocumentBase>;
-  /** 只在知识库中没有文档时需要传递，已有则从知识库获取.切片规则，为空则自动按段落切片，具体规则见IDP：https://bytedance.larkoffice.com/docx/Ro4tdG64VoogMlxWqgyc2lsjncf */
+  /** 只在知识库中没有文档时需要传递，已有则从知识库获取.切片规则，为空则自动按段落切片，具体规则见IDP： */
   chunk_strategy?: common.ChunkStrategy;
   /** 数据导入的时候落库规则 */
   sink_strategy?: common.SinkStrategy;

@@ -14,7 +14,7 @@ export enum AsyncTaskStatus {
   WithResults = 3,
 }
 
-/** reference to copilot_common.ConversationType in "code.byted.org/obric/alice_idl/blob/master/thrift/copilot/copilot_common.thrift#L1037"
+/** reference to copilot_common.ConversationType in "
 Make it consist with copilot_common.ConversationType to help coping */
 export enum ConversationType {
   Unknown = 0,
@@ -57,7 +57,7 @@ export interface AsyncTaskInfo {
   enqueue_elements?: Array<AsyncResultElement>;
 }
 
-/** referecne to flow.bot.engine.BizInfo in code.byted.org/obric/alice_idl/blob/master/thrift/bot_hook/hook_common.thrift#L42 */
+/** referecne to flow.bot.engine.BizInfo in */
 export interface BizInfo {
   message_id?: Int64;
   conversation_id?: Int64;
@@ -65,7 +65,7 @@ export interface BizInfo {
   conversation_type?: ConversationType;
 }
 
-/** reference to copilot_common.CopilotContent in "code.byted.org/obric/alice_idl/blob/master/thrift/copilot/copilot_common.thrift"
+/** reference to copilot_common.CopilotContent in "
 Make it consist with copilot_common.CopilotContent to help coping */
 export interface ChatContext {
   /** 1:  map<string, string>        scene_context // tts, search, wiki, wiki_link
@@ -88,7 +88,7 @@ export interface CitationRankingResponse {
   BaseResp?: base.BaseResp;
 }
 
-/** reference to copilot_common.FileInfo in "code.byted.org/obric/alice_idl/blob/master/thrift/copilot/copilot_common.thrift"
+/** reference to copilot_common.FileInfo in "
 Use cast directly to simplify the struct construction */
 export interface FileInfo {
   name?: string;
@@ -97,7 +97,7 @@ export interface FileInfo {
   md5?: string;
 }
 
-/** reference to copilot_common.ImageInfo in "code.byted.org/obric/alice_idl/blob/master/thrift/copilot/copilot_common.thrift"
+/** reference to copilot_common.ImageInfo in "
 Use cast directly to simplify the struct construction */
 export interface ImageInfo {
   name?: string;
@@ -129,7 +129,7 @@ export interface LocationInfo {
   country_code?: string;
 }
 
-/** reference to flow.bot.engine.Message in "https://code.byted.org/obric/alice_idl/blob/master/thrift/bot_hook/hook_common.thrift#L55"
+/** reference to flow.bot.engine.Message in "
 Make it consist with copilot.Message to help coping */
 export interface Message {
   /** < 取值：system/user/assistant/tool/placeholder */

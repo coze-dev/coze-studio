@@ -84,7 +84,7 @@ export interface Capability {
   fixed_function?: boolean;
   /** for seed_strong_character_with_mem，在 bot_prompt_template_jinja 中引用 */
   profile_memory?: boolean;
-  /** 从历史消息中恢复，用于豆包语音链路，作用在 Seed SC 模型上 https://bytedance.larkoffice.com/wiki/Cfnjw6RhMi4dZukOgGjc7JE7nWe */
+  /** 从历史消息中恢复，用于豆包语音链路，作用在 Seed SC 模型上  */
   resume_segment?: boolean;
   /** 是否支持复杂参数调用，例如 */
   complex_function_call?: boolean;
@@ -96,7 +96,7 @@ export interface Capability {
   nameable?: boolean;
   /** 多模态支持的文件类型，遵循 MIME 标准 */
   multimodal_types?: Array<string>;
-  /** 是否支持预搜索，aka 续写 https://bytedance.larkoffice.com/wiki/AijRwjDzYiIztSkiLjNc0O2jndh#JEMFd2ZPjoPY8HxyGQxcSpmvntc */
+  /** 是否支持预搜索，aka 续写  */
   pre_query?: boolean;
   /** 是否支持搜索增强，会插入 type=search_enhance 的 tool */
   search_enhance?: boolean;
@@ -142,7 +142,7 @@ export interface MaasAuthConf {
 
 export interface MaasConf {
   auth?: MaasAuthConf;
-  /** https://bytedance.larkoffice.com/docx/Fm0fdtWA2oqoGoxGPu7cKwp4nTc */
+  /**  */
   plugins?: Array<string>;
   extra?: Record<string, string>;
   using_stream?: boolean;

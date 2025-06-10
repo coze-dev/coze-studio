@@ -200,7 +200,7 @@ export interface LastEvalTaskRes {
 }
 
 /** MarkdownBox 类型，用于展示markdown内容，字节基于标准 markdown 语法进行了扩展和修改
- @flow-web/md-box: https://bnpm.bytedance.net/package/@flow-web/md-box?tab=readme
+ @flow-web/md-box: 
  NEXT ID: 2 */
 export interface MarkdownBox {
   text?: string;

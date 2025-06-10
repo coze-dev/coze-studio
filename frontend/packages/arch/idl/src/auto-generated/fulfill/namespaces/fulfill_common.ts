@@ -34,7 +34,7 @@ export enum FulfillmentType {
 export enum SourceType {
   /** 未知 */
   Unknown = 0,
-  /** bot 运营平台, https://op-bots.bytedance.net/explore */
+  /** bot 运营平台,  */
   BotOperationPlatform = 1,
   /** 支付系统 */
   Trade = 2,

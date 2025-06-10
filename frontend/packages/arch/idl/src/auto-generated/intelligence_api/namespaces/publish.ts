@@ -58,7 +58,7 @@ export enum ConnectorConfigStatus {
   Disconnected = 3,
   /** 配置中，授权中 */
   Configuring = 4,
-  /** 需要重新配置 https://bytedance.larkoffice.com/docx/KXNed5NWUoplVBxXdQxcfPNwnrf#Gn7dd2KoaoNZo6xw1tkcT92znbG */
+  /** 需要重新配置  */
   NeedReconfiguring = 5,
 }
 
@@ -256,7 +256,7 @@ export interface PublishConnectorInfo {
   support_monetization?: boolean;
   /** 安装指引 */
   installation_guide?: string;
-  /** 目前仅 bind_type == 8 时这个字段才有 https://bytedance.larkoffice.com/docx/KXNed5NWUoplVBxXdQxcfPNwnrf#Gn7dd2KoaoNZo6xw1tkcT92znbG */
+  /** 目前仅 bind_type == 8 时这个字段才有  */
   auth_status?: UserAuthStatus;
   /** 配置状态toast */
   config_status_toast?: string;

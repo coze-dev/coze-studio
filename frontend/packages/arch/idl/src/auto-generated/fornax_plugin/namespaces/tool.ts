@@ -13,7 +13,7 @@ export enum HttpServiceAuthType {
 export enum ServiceType {
   FornaxHttp = 1,
   FornaxThrift = 2,
-  /** 详情见 https://bytedance.larkoffice.com/wiki/Ni16wTRyCipaKHkLiU9cjQrFnYf */
+  /** 详情见  */
   SeedPluginPlatform = 3,
 }
 

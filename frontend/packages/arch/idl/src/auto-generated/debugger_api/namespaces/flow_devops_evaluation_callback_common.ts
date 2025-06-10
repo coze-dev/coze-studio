@@ -8,7 +8,7 @@ export enum DataType {
   /** 默认，纯文本类型 */
   PlainText = 0,
   /** markdown-box 类型，用于展示markdown内容，字节基于标准 markdown 语法进行了扩展和修改
-@flow-web/md-box: https://bnpm.bytedance.net/package/@flow-web/md-box?tab=readme */
+@flow-web/md-box:  */
   MarkdownBox = 11,
   Image = 12,
   File = 13,
@@ -39,7 +39,7 @@ export enum Role {
 }
 
 export interface CardInfo {
-  /** card string 是json序列化字段，只透传obric/card返回的内容，具体cardBody，参考https://code.byted.org/obric/card/blob/HEAD/handler/bind_card_instance_info.go#L181
+  /** card string 是json序列化字段，只透传obric/card返回的内容，具体cardBody，参考
 前端可以直接根据前端组件解析这个字段 */
   card_body?: string;
 }

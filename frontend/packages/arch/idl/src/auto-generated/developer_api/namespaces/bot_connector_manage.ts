@@ -26,7 +26,7 @@ export enum BindStatus {
   ValidStatus = 1,
   SaveNotPublishStatus = 2,
   /** token 被 reset.
-Discord 发布流程简化 https://bytedance.larkoffice.com/docx/TJIbdVsjAoT6NAxTEOScWVBUnye */
+Discord 发布流程简化  */
   Disconnected = 3,
   /** 目前的配置不合法，需要重新配置。目前仅飞书多维表格使用 */
   NeedReconfigure = 4,
@@ -72,7 +72,7 @@ export enum ConnectorBindType {
 }
 
 /** Discord 发布流程简化
- https://bytedance.larkoffice.com/docx/TJIbdVsjAoT6NAxTEOScWVBUnye */
+  */
 export enum ConnectorStatus {
   /** 正常 */
   Normal = 0,

@@ -6,7 +6,7 @@ export type Int64 = string | number;
 
 /** DEFAULT是默认状态，若ReviewResult.Result=CheckType.DEFAULT可以跳过，
  表示业务方未传入该字段
- copy from: https://code.byted.org/cpputil/service_rpc_idl/blob/master/content/user_info_callback.thrift#L8 */
+ copy from:  */
 export enum CheckType {
   DEFAULT = 0,
   PASS = 1,

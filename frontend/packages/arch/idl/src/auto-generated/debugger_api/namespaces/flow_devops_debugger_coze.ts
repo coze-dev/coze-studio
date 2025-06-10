@@ -193,7 +193,7 @@ export interface MGetCaseDataResp {
 }
 
 export interface MGetDevopsFeatureGatesRequest {
-  /** fgName 需要注册在Bot Studio NameSpace下 https://cloud.bytedance.net/bytegate/workspace/52/gate?x-resource-account=public */
+  /** fgName 需要注册在Bot Studio NameSpace下  */
   fgNames?: Array<string>;
   /** 对应 ByteGate Custom Key space_id */
   spaceID?: Int64;

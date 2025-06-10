@@ -3,11 +3,6 @@ import { useEffect, useRef } from 'react';
 import dayjs from 'dayjs';
 import classNames from 'classnames';
 import { useHover } from 'ahooks';
-import { useDebugStore } from '@coze-agent-ide/space-bot/store';
-import { messageSource } from '@coze-common/chat-core';
-import { I18n } from '@coze-arch/i18n';
-import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
-import { Space, UITag } from '@coze-arch/bot-semi';
 import { useChatBackgroundState } from '@coze-studio/bot-detail-store';
 import {
   type ComponentTypesMap,
@@ -19,8 +14,8 @@ import {
   RegenerateMessage,
   QuoteMessage,
 } from '@coze-common/chat-answer-action';
-import { IconCozDebug } from '@coze/coze-design/icons';
-import { IconButton, Tooltip } from '@coze/coze-design';
+import { I18n } from '@coze-arch/i18n';
+import { Space, UITag } from '@coze-arch/bot-semi';
 
 import s from './index.module.less';
 
@@ -39,113 +34,82 @@ export const isQueryWithinOneWeek = (logId: string) => {
 
 const VerticalDivider = () => <div className={s['vertical-divider']} />;
 
-const ActionBarWithMultiActions =
-  // eslint-disable-next-line complexity
-  () => {
-    const { message, meta } = useMessageBoxContext();
-    const ref = useRef<HTMLDivElement>(null);
-    const hover = useHover(ref);
+const ActionBarWithMultiActions = () => {
+  const { message, meta } = useMessageBoxContext();
+  const ref = useRef<HTMLDivElement>(null);
+  const hover = useHover(ref);
 
-    const { role, type, source } = message;
-    const { time_cost, token, log_id } = message.extra_info;
+  const { role, type } = message;
+  const { time_cost, token } = message.extra_info;
 
-    const isLatestGroupAnswer = meta?.isFromLatestGroup;
+  const isLatestGroupAnswer = meta?.isFromLatestGroup;
 
-    const isTrigger = type === 'task_manual_trigger';
-    const isUserMessage = role === 'user';
-    const isAsyncResult = source === messageSource.AsyncResult;
-    const { showBackground, backgroundModeClassName: buttonClass } =
-      useChatBackgroundState();
+  const isTrigger = type === 'task_manual_trigger';
+  const isUserMessage = role === 'user';
+  const { showBackground, backgroundModeClassName: buttonClass } =
+    useChatBackgroundState();
 
-    const { setIsDebugPanelShow, setCurrentDebugQueryId } = useDebugStore();
+  const isEmptyTimeCost = time_cost === '';
+  const isEmptyToken = token === '';
 
-    const handleDebug = () => {
-      if (isQueryWithinOneWeek(log_id ?? '')) {
-        sendTeaEvent(EVENT_NAMES.open_debug_panel, {
-          path: 'msg_debug',
-        });
-        setCurrentDebugQueryId(log_id ?? '');
-        setIsDebugPanelShow(true);
-      }
-    };
+  const isTimeCostAndTokenNotEmpty = !isEmptyTimeCost && !isEmptyToken;
+  const isShowVerticalDivider = isTimeCostAndTokenNotEmpty || isTrigger;
 
-    const isEmptyTimeCost = time_cost === '';
-    const isEmptyToken = token === '';
-
-    const isTimeCostAndTokenNotEmpty = !isEmptyTimeCost && !isEmptyToken;
-    const isShowVerticalDivider = isTimeCostAndTokenNotEmpty || isTrigger;
-    const isShowDebugButton =
-      (FEATURE_ENABLE_MSG_DEBUG || isQueryWithinOneWeek(log_id ?? '')) &&
-      !isTrigger &&
-      !isAsyncResult;
-
-    return (
-      <>
+  return (
+    <>
+      <div
+        className={classNames(
+          s['message-info'],
+          isUserMessage && s['message-info-user-message-only'],
+        )}
+        ref={ref}
+      >
         <div
+          data-testid="chat-area.answer-action.left-content"
           className={classNames(
-            s['message-info'],
-            isUserMessage && s['message-info-user-message-only'],
+            s['message-info-text'],
+            'coz-fg-secondary',
+            showBackground && '!coz-fg-images-secondary',
           )}
-          ref={ref}
         >
-          <div
-            data-testid="chat-area.answer-action.left-content"
-            className={classNames(
-              s['message-info-text'],
-              'coz-fg-secondary',
-              showBackground && '!coz-fg-images-secondary',
+          <>
+            {!isTrigger && !isEmptyTimeCost && (
+              <Space spacing={4}>
+                <div>{time_cost}s</div>
+              </Space>
             )}
-          >
-            <>
-              {!isTrigger && !isEmptyTimeCost && (
+            {isTrigger ? (
+              <Space spacing={4}>
+                <UITag color="cyan">
+                  {I18n.t('platfrom_trigger_dialog_trigge_icon')}
+                </UITag>
+              </Space>
+            ) : null}
+            {isShowVerticalDivider ? <VerticalDivider /> : null}
+            {!isEmptyToken && (
+              <div>
                 <Space spacing={4}>
-                  <div>{time_cost}s</div>
+                  <div>{token} Tokens</div>
                 </Space>
-              )}
-              {isTrigger ? (
-                <Space spacing={4}>
-                  <UITag color="cyan">
-                    {I18n.t('platfrom_trigger_dialog_trigge_icon')}
-                  </UITag>
-                </Space>
-              ) : null}
-              {isShowVerticalDivider ? <VerticalDivider /> : null}
-              {!isEmptyToken && (
-                <div>
-                  <Space spacing={4}>
-                    <div>{token} Tokens</div>
-                  </Space>
-                </div>
-              )}
-            </>
-          </div>
-          {hover || isLatestGroupAnswer || isUserMessage ? (
-            <Space
-              spacing={4}
-              data-testid="chat-area.answer-action.right-content"
-            >
-              <CopyTextMessage className={buttonClass} />
-              {/* coze 隐藏Debug */}
-              {isShowDebugButton ? (
-                <Tooltip content={I18n.t('message_tool_debug')}>
-                  <IconButton
-                    size="small"
-                    icon={<IconCozDebug className="w-[14px] h-[14px]" />}
-                    color="secondary"
-                    onClick={handleDebug}
-                    className={classNames(buttonClass)}
-                  />
-                </Tooltip>
-              ) : null}
-              <QuoteMessage className={buttonClass} />
-              <RegenerateMessage className={buttonClass} />
-              <DeleteMessage className={classNames(buttonClass)} />
-            </Space>
-          ) : null}
+              </div>
+            )}
+          </>
         </div>
-      </>
-    );
-  };
+        {hover || isLatestGroupAnswer || isUserMessage ? (
+          <Space
+            spacing={4}
+            data-testid="chat-area.answer-action.right-content"
+          >
+            <CopyTextMessage className={buttonClass} />
+            <QuoteMessage className={buttonClass} />
+            <RegenerateMessage className={buttonClass} />
+            <DeleteMessage className={classNames(buttonClass)} />
+          </Space>
+        ) : null}
+      </div>
+    </>
+  );
+};
 
 /**
  * 带有标题的footer

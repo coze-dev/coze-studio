@@ -14,15 +14,13 @@
     "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
-    "@coze-agent-ide/space-bot": "workspace:*",
-    "@coze-common/chat-answer-action": "workspace:*",
-    "@coze-common/chat-area": "workspace:*",
-    "@coze-common/chat-core": "workspace:*",
-    "@coze-studio/bot-detail-store": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "@coze-arch/bot-semi": "workspace:*",
     "@coze-arch/bot-tea": "workspace:*",
     "@coze-arch/i18n": "workspace:*",
+    "@coze-common/chat-answer-action": "workspace:*",
+    "@coze-common/chat-area": "workspace:*",
+    "@coze-studio/bot-detail-store": "workspace:*",
+    "@coze/coze-design": "workspace:*",
     "ahooks": "^3.7.8",
     "classnames": "^2.3.2",
     "dayjs": "^1.11.7"
@@ -59,4 +57,3 @@
     "react-dom": ">=18.2.0"
   }
 }
-

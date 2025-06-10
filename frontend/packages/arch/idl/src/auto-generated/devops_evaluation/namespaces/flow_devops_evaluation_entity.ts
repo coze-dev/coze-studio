@@ -9,7 +9,7 @@ export enum CallbackType {
   RPC = 1,
   /** 通过psm，http协议访问服务 */
   PSMHTTP = 2,
-  /** 为开放评测对象类型；无法通过平台触发评测，被评测对象自行上报数据 https://bytedance.larkoffice.com/docx/IPbzdwLKRoGeiMxQTfBcA2uBnEd */
+  /** 为开放评测对象类型；无法通过平台触发评测，被评测对象自行上报数据  */
   Open = 3,
 }
 

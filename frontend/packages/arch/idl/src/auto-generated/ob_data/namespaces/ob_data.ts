@@ -29,7 +29,7 @@ export interface AddBotAuthReq {
   bot_id: string;
   /** 授权类型 */
   auth_type: BotAuthType;
-  /** AGW loader通用参数(https://bytedance.larkoffice.com/wiki/wikcnBevBcZqVc0bbuFr0JLr92d#) */
+  /** AGW loader通用参数( */
   agw_common_param?: agw_common.AgwCommonParam;
 }
 
@@ -336,7 +336,7 @@ export interface PreCheckAddBotAuthReq {
   bot_id: string;
   /** 授权类型 */
   auth_type: BotAuthType;
-  /** AGW loader通用参数(https://bytedance.larkoffice.com/wiki/wikcnBevBcZqVc0bbuFr0JLr92d#) */
+  /** AGW loader通用参数( */
   agw_common_param?: agw_common.AgwCommonParam;
 }
 

@@ -117,7 +117,7 @@ export interface PresetWebhookTriggerData {
 }
 
 /** bot 新增自动化
- https://bytedance.larkoffice.com/docx/WQNadMk9HoSuGgxuMNZcfTvTnOh */
+  */
 export interface TaskInfo {
   id: Int64;
   id_str: string;

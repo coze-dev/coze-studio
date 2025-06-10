@@ -130,7 +130,7 @@ export default class DeveloperBackendService<T> {
   /**
    * GET /api/open/playground/item_list
    *
-   * 以下是 playground 的接口, 技术方案： https://bytedance.larkoffice.com/docx/BkErdDuLlogJ3fxarAicyHAhnfg
+   * 以下是 playground 的接口, 技术方案： 
    *
    * 不需要登陆态
    *
@@ -186,7 +186,7 @@ export default class DeveloperBackendService<T> {
    *
    * 从 apihub 同步最新的 openapi 接口与描述
    *
-   * boe: op-bots-boe.bytedance.net
+   * boe:
    */
   SyncFromApiHub(
     req?: open_api.SyncFromApiHubReq,

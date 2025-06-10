@@ -5,7 +5,7 @@
 export type Int64 = string | number;
 
 export interface Operation {
-  /** 指标名称，参考https://bytedance.larkoffice.com/docx/OM9NdcvfJoY18SxkBm8cvY3gn2c */
+  /** 指标名称，参考 */
   operation_type: string;
   /** 指标的值 */
   operation_value: string;

@@ -4,7 +4,7 @@
 
 export type Int64 = string | number;
 
-/** 接入agw的公参（ClientIp）引入的通用结构体，copy from https://code.byted.org/cpputil/service_rpc_idl/blob/master/api_gateway/agw_common_param.thrift#L59 */
+/** 接入agw的公参（ClientIp）引入的通用结构体，copy from  */
 export interface UnifyArgs {
   platform_id?: number;
   is_ios?: boolean;
@@ -24,7 +24,7 @@ export interface UnifyArgs {
   install_id?: Int64;
   /** 来自query的"device_id", 或者是根据install_id从device_info服务获取的device_id */
   device_id?: Int64;
-  /** 最接近用户的ip, 获取逻辑参考: https://wiki.bytedance.net/pages/viewpage.action?pageId=119674842 */
+  /** 最接近用户的ip, 获取逻辑参考:  */
   client_ip?: string;
 }
 /* eslint-enable */

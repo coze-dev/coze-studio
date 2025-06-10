@@ -14,7 +14,7 @@ export interface GetGraphSlotsReq {
   isBOE?: boolean;
   env?: string;
   cluster?: string;
-  /** FornaxSDK 鉴权 https://bytedance.larkoffice.com/wiki/WF25wdNLniOEnckibBOc6FFuneh */
+  /** FornaxSDK 鉴权  */
   Authorization?: string;
 }
 
@@ -32,7 +32,7 @@ export interface GetNodeSlotsReq {
   isBOE?: boolean;
   env?: string;
   cluster?: string;
-  /** FornaxSDK 鉴权 https://bytedance.larkoffice.com/wiki/WF25wdNLniOEnckibBOc6FFuneh */
+  /** FornaxSDK 鉴权  */
   Authorization?: string;
 }
 

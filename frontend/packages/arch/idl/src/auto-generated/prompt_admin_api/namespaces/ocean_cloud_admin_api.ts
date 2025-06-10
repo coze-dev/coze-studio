@@ -337,7 +337,7 @@ export interface GetRoleListForModelResp {
 }
 
 /** 使用api.http_code来注解http_code，使用http_message来注解返回的message
- https://bytedance.larkoffice.com/wiki/wikcncmO7hvkPf3D0c83sjgrtkf */
+  */
 export interface HttpRequestParams {
   Referer?: string;
   'Ocean-Jwt-Token'?: string;

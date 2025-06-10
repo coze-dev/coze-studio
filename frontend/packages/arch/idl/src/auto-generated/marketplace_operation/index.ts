@@ -1300,7 +1300,7 @@ export default class MarketplaceOperationService<T> {
   /**
    * GET /api/marketplace/product/image/get_url
    *
-   * 图片上传采用 imageX 建议的方式，客户端上传：https://cloud-boe.bytedance.net/docs/imagex/wiki/ViwJdZcMxor0QzxGANlcwmXdncg?x-resource-account=boe&x-bc-region-id=bytedance
+   * 图片上传采用 imageX 建议的方式，客户端上传：
    *
    * 需要下面两个接口：获取临时上传 token；获取图片 url
    */

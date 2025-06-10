@@ -73,7 +73,7 @@ export enum IDC {
 export enum MerlinFramework {
   LLMServerPublic = 1,
   Laplace = 2,
-  /** 电商团队专用协议，详见 https://bytedance.larkoffice.com/wiki/XKkowK9iniaggakI5WeckszEnxb */
+  /** 电商团队专用协议，详见  */
   Mixinfer = 3,
 }
 

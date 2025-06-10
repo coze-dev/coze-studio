@@ -316,7 +316,7 @@ export enum ConfigStatus {
   Disconnected = 3,
   /** 配置中，授权中 */
   Configuring = 4,
-  /** 需要重新配置 https://bytedance.larkoffice.com/docx/KXNed5NWUoplVBxXdQxcfPNwnrf#Gn7dd2KoaoNZo6xw1tkcT92znbG */
+  /** 需要重新配置  */
   NeedReconfiguring = 5,
 }
 
@@ -914,7 +914,7 @@ export enum ReportMessageAction {
   UpdataCard = 2,
 }
 
-/** ---------------  conversation --------------- ---------------  https:// bytedance.larkoffice.com/docx/BtYmdgjDAoch7Oxlbs9cGZXqnee --------------- */
+/** ---------------  conversation --------------- ---------------   --------------- */
 export enum Scene {
   Default = 0,
   Explore = 1,
@@ -4163,7 +4163,7 @@ export interface LaunchConfig {
   frontier_domain?: string;
   message_service_id?: string;
   /** event_frontier 是 Coze 页面通用的上下行消息通道配置.
-详见: https://bytedance.larkoffice.com/wiki/WtbGwmM9ZiwclvkgF2RcluS2nDg */
+详见:  */
   event_frontier?: FrontierConfig;
   biz_config?: string;
 }
@@ -5092,7 +5092,7 @@ export interface PublishConnectorInfo {
   brand_id?: Int64;
   /** 支持商业化 */
   support_monetization?: boolean;
-  /** 1: 已授权，2:未授权. 目前仅 bind_type == 8 时这个字段才有 https://bytedance.larkoffice.com/docx/KXNed5NWUoplVBxXdQxcfPNwnrf#Gn7dd2KoaoNZo6xw1tkcT92znbG */
+  /** 1: 已授权，2:未授权. 目前仅 bind_type == 8 时这个字段才有  */
   auth_status?: bot_user_auth.UserAuthStatus;
   /** 补全信息按钮的 url */
   to_complete_info_url?: string;
