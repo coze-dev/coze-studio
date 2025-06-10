@@ -12,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/signal"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.ConsumerHandler, opts ...eventbus.ConsumerOpt) error {
@@ -91,12 +92,12 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 		return fmt.Errorf("consumer Start failed, err=%w", err)
 	}
 
-	go func() {
+	safego.Go(context.Background(), func() {
 		signal.WaitExit()
 		if err := c.Shutdown(); err != nil {
 			logs.Errorf("shutdown consumer error: %v", err)
 		}
-	}()
+	})
 
 	return nil
 }

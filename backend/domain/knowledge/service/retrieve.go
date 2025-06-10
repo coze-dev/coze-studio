@@ -30,6 +30,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 func (k *knowledgeSVC) Retrieve(ctx context.Context, request *RetrieveRequest) (response *RetrieveResponse, err error) {
@@ -279,7 +280,7 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *RetrieveCont
 		for i := range tableDocs {
 			wg.Add(1)
 			t := i
-			go func() {
+			safego.Go(ctx, func() {
 				doc := tableDocs[t]
 				defer wg.Done()
 				docs, execErr := k.nl2SqlExec(ctx, doc, req)
@@ -290,7 +291,7 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *RetrieveCont
 				mu.Lock()
 				res = append(res, docs...)
 				mu.Unlock()
-			}()
+			})
 		}
 		wg.Wait()
 		return res, nil

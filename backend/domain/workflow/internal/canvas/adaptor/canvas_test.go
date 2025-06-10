@@ -1,10 +1,11 @@
 package adaptor
 
 import (
+	"context"
+
 	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/types/consts"
-	"context"
 
 	"io"
 	"net"

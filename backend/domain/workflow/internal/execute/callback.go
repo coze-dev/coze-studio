@@ -25,6 +25,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 type NodeHandler struct {
@@ -65,7 +66,8 @@ func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler { 
 }
 
 func NewRootWorkflowHandler(wb *entity.WorkflowBasic, executeID int64, requireCheckpoint bool,
-	ch chan<- *Event, resumedEvent *entity.InterruptEvent, exeCfg vo.ExecuteConfig) callbacks.Handler {
+	ch chan<- *Event, resumedEvent *entity.InterruptEvent, exeCfg vo.ExecuteConfig,
+) callbacks.Handler {
 	return &WorkflowHandler{
 		ch:                ch,
 		rootWorkflowBasic: wb,
@@ -77,7 +79,8 @@ func NewRootWorkflowHandler(wb *entity.WorkflowBasic, executeID int64, requireCh
 }
 
 func NewSubWorkflowHandler(parent *WorkflowHandler, subWB *entity.WorkflowBasic,
-	resumedEvent *entity.InterruptEvent) callbacks.Handler {
+	resumedEvent *entity.InterruptEvent,
+) callbacks.Handler {
 	return &WorkflowHandler{
 		ch:                parent.ch,
 		rootWorkflowBasic: parent.rootWorkflowBasic,
@@ -418,7 +421,8 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 }
 
 func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *callbacks.RunInfo,
-	input *schema.StreamReader[callbacks.CallbackInput]) context.Context {
+	input *schema.StreamReader[callbacks.CallbackInput],
+) context.Context {
 	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.getRootWorkflowID(), 10) &&
 		info.Name != strconv.FormatInt(w.getSubWorkflowID(), 10)) {
 		input.Close()
@@ -480,7 +484,8 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 }
 
 func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo,
-	output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
+	output *schema.StreamReader[callbacks.CallbackOutput],
+) context.Context {
 	if info.Component != compose.ComponentOfWorkflow || (info.Name != strconv.FormatInt(w.getRootWorkflowID(), 10) &&
 		info.Name != strconv.FormatInt(w.getSubWorkflowID(), 10)) {
 		output.Close()
@@ -832,7 +837,7 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 	}
 	n.ch <- e
 
-	go func() {
+	safego.Go(ctx, func() {
 		defer input.Close()
 		fullInput := make(map[string]any)
 		var previous map[string]any
@@ -869,7 +874,7 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 			Context: c,
 			Input:   fullInput,
 		}
-	}()
+	})
 
 	return newCtx
 }
@@ -884,7 +889,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 
 	switch t := entity.NodeType(info.Type); t {
 	case entity.NodeTypeLLM:
-		go func() {
+		safego.Go(ctx, func() {
 			defer output.Close()
 			fullOutput := make(map[string]any)
 			for {
@@ -958,9 +963,9 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			}
 
 			n.ch <- e
-		}()
+		})
 	case entity.NodeTypeVariableAggregator:
-		go func() {
+		safego.Go(ctx, func() {
 			defer output.Close()
 
 			extra := &entity.NodeExtra{}
@@ -1032,7 +1037,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			}
 
 			n.ch <- e
-		}()
+		})
 	case entity.NodeTypeExit, entity.NodeTypeOutputEmitter, entity.NodeTypeSubWorkflow:
 		consumer := func(ctx context.Context) context.Context {
 			defer output.Close()
@@ -1195,7 +1200,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 }
 
 func (t *ToolHandler) OnStart(ctx context.Context, info *callbacks.RunInfo,
-	input *tool.CallbackInput) context.Context {
+	input *tool.CallbackInput,
+) context.Context {
 	if info.Name != t.info.Name {
 		return ctx
 	}
@@ -1214,7 +1220,8 @@ func (t *ToolHandler) OnStart(ctx context.Context, info *callbacks.RunInfo,
 }
 
 func (t *ToolHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo,
-	output *tool.CallbackOutput) context.Context {
+	output *tool.CallbackOutput,
+) context.Context {
 	if info.Name != t.info.Name {
 		return ctx
 	}
@@ -1233,13 +1240,14 @@ func (t *ToolHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo,
 }
 
 func (t *ToolHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo,
-	output *schema.StreamReader[*tool.CallbackOutput]) context.Context {
+	output *schema.StreamReader[*tool.CallbackOutput],
+) context.Context {
 	if info.Name != t.info.Name {
 		output.Close()
 		return ctx
 	}
 
-	go func() {
+	safego.Go(ctx, func() {
 		c := GetExeCtx(ctx)
 		defer output.Close()
 		var (
@@ -1295,7 +1303,7 @@ func (t *ToolHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				previousEvent = deltaEvent
 			}
 		}
-	}()
+	})
 
 	return ctx
 }

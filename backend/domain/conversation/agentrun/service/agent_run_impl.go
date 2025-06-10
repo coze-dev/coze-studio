@@ -28,6 +28,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 type runImpl struct {
@@ -73,10 +74,10 @@ func (c *runImpl) AgentRun(ctx context.Context, arm *entity.AgentRunMeta) (*sche
 		startTime: time.Now(),
 	}
 
-	go func() {
+	safego.Go(ctx, func() {
 		defer sw.Close()
 		_ = c.run(ctx, sw)
-	}()
+	})
 
 	return sr, nil
 }
@@ -153,15 +154,15 @@ func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWri
 
 	var wg sync.WaitGroup
 	wg.Add(2)
-	go func() {
+	safego.Go(ctx, func() {
 		defer wg.Done()
 		err = c.pull(ctx, mainChan, faChan, streamer)
-	}()
+	})
 
-	go func() {
+	safego.Go(ctx, func() {
 		defer wg.Done()
 		err = c.push(ctx, mainChan, faChan, sw, input.ID)
-	}()
+	})
 
 	wg.Wait()
 
@@ -540,7 +541,6 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 }
 
 func (c *runImpl) parseReasoningContent(ctx context.Context, chunk *entity.FinalAnswerEvent) string {
-
 	if rc, ok := chunk.Message.Extra["ark-reasoning-content"]; ok {
 		return rc.(string)
 	}
@@ -548,7 +548,6 @@ func (c *runImpl) parseReasoningContent(ctx context.Context, chunk *entity.Final
 }
 
 func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-
 	interruptData, cType, err := c.parseInterruptData(ctx, chunk.Interrupt)
 	if err != nil {
 		return err
@@ -593,7 +592,6 @@ func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespE
 }
 
 func (c *runImpl) parseInterruptData(ctx context.Context, interruptData *singleagent.InterruptInfo) (string, message.ContentType, error) {
-
 	defaultContentType := message.ContentTypeText
 	switch entity.EventType(interruptData.AllToolInterruptData[interruptData.ToolCallID].EventType) {
 	case entity.EventType_Question:

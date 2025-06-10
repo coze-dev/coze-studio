@@ -1,10 +1,11 @@
 package nodes
 
 import (
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"context"
 	"fmt"
 	"sync"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 
 	"github.com/cloudwego/eino/compose"
 

@@ -64,7 +64,6 @@ func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
 			} else {
 				composeOpts = append(composeOpts, compose.WithCheckPointID(executeID.String()))
 			}
-
 		}
 		_, _ = r.runner.Stream(ctx, req, composeOpts...)
 	}()

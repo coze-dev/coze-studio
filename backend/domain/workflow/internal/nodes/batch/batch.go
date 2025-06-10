@@ -15,6 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 type Batch struct {
@@ -79,7 +80,8 @@ func (b *Batch) initOutput(length int) map[string]any {
 }
 
 func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (
-	out map[string]any, err error) {
+	out map[string]any, err error,
+) {
 	defer func() {
 		if err != nil {
 			_ = callbacks.OnError(ctx, err)
@@ -313,11 +315,11 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 	} else {
 		taskChan := make(chan int, concurrency)
 		for i := 0; i < int(concurrency); i++ {
-			go func() {
+			safego.Go(ctx, func() {
 				for i := range taskChan {
 					ithTask(i)
 				}
-			}()
+			})
 		}
 		for i := 0; i < minLen; i++ {
 			taskChan <- i

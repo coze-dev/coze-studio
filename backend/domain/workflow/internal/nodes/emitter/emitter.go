@@ -12,6 +12,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 type OutputEmitter struct {
@@ -165,7 +166,8 @@ func (c *cacheStore) finished(k string) bool {
 }
 
 func (c *cacheStore) find(part templatePart) (root any, subCache *cachedVal, sourceInfo *nodes.SourceInfo,
-	actualPath []string) {
+	actualPath []string,
+) {
 	rootCached, ok := c.store[part.root]
 	if !ok {
 		return nil, nil, nil, nil
@@ -253,7 +255,7 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 
 	sr, sw := schema.Pipe[map[string]any](0)
 	parts := parseJinja2Template(e.cfg.Template)
-	go func() {
+	safego.Go(ctx, func() {
 		hasErr := false
 		defer func() {
 			if !hasErr {
@@ -411,7 +413,7 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 				}
 			}
 		}
-	}()
+	})
 
 	_, sr = callbacks.OnEndWithStreamOutput(ctx, sr)
 	return sr, nil
