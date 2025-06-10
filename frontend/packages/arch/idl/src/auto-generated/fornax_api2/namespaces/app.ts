@@ -1,0 +1,123 @@
+/* eslint-disable */
+/* tslint:disable */
+// @ts-nocheck
+
+import * as flow_devops_evaluation_entity from './flow_devops_evaluation_entity';
+import * as flow_devops_evaluation_object from './flow_devops_evaluation_object';
+
+export type Int64 = string | number;
+
+export enum AppClientEnvType {
+  Undefined = 0,
+  AllEnv = 1,
+  /** 返回PPE和Online的client */
+  PPEAndOnline = 2,
+  /** 仅返回BOE Client */
+  BOEOnly = 3,
+}
+
+export enum AppClientType {
+  Undefined = 0,
+  TCE = 1,
+}
+
+export enum AppType {
+  Undefined = 0,
+  TCE = 1,
+  CozeBot = 2,
+}
+
+export enum AppV2Type {
+  Undefined = 0,
+  PSM = 1,
+  FullCodeFlow = 2,
+}
+
+export interface App {
+  id?: string;
+  spaceID?: string;
+  /** 应用类型, 如 TCE */
+  type?: AppType;
+  /** 空间内唯一.对于 TCE 类型的app，其 uid 为 psm；对于 coze_bot 类型的 app，其 uid 为 BotID */
+  uid?: string;
+  /** TCE 类型的应用默认为 PSM, 可修改；CozeBot 类型的不可修改 */
+  name?: string;
+  description?: string;
+  ownerIDs?: Array<string>;
+  /** 头像，当前仅 cozeBot 展示使用 */
+  iconURL?: string;
+  /** 创建人 */
+  createdBy?: string;
+  /** 更新人 */
+  updatedBy?: string;
+  /** 创建时间 */
+  createdAt?: string;
+  /** 更新时间 */
+  updatedAt?: string;
+}
+
+/** AppClient 表示访问该应用数据的客户端, 一般为一个使用了 FornaxSDK 的 TCE 服务. */
+export interface AppClient {
+  id?: Int64;
+  spaceID?: Int64;
+  appID?: Int64;
+  /** TCE 类型的 client, 其值为 PSM */
+  appUID?: string;
+  /** 泳道env */
+  env?: string;
+  /** cluster */
+  cluster?: string;
+  /** TCE 类型的 client, 其值为 ${PSM}:${env}:${cluster} */
+  identity?: string;
+  labels?: Record<string, string>;
+  /** 创建人 */
+  createdBy?: string;
+  /** 创建时间 */
+  createdAt?: Int64;
+  /** 更新时间 */
+  updatedAt?: Int64;
+}
+
+export interface AppEvaluationInfo {
+  callbackType: flow_devops_evaluation_entity.CallbackType;
+  rpcCallbackObjectParams?: flow_devops_evaluation_object.RPCCallbackObjectParams;
+  faasCallbackObjectParams?: flow_devops_evaluation_object.FaasCallbackObjectParams;
+}
+
+export interface AppV2 {
+  id?: string;
+  spaceID?: string;
+  type?: AppV2Type;
+  entityID?: string;
+  name?: string;
+  description?: string;
+  version?: string;
+  psm?: string;
+  regions?: Array<string>;
+  appEvaluationInfo?: AppEvaluationInfo;
+  /** 创建人 */
+  createdBy?: string;
+  /** 更新人 */
+  updatedBy?: string;
+  /** 创建时间 */
+  createdAt?: string;
+  /** 更新时间 */
+  updatedAt?: string;
+}
+
+/** ClientEvaluationSetting 客户端的评测配置 */
+export interface ClientEvaluationSetting {
+  /** 是否写入数据集 (默认开启) */
+  enableWriteToDataSet: boolean;
+  /** 数据集ID */
+  dataSetID?: string;
+  /** 采样率 */
+  samplingRate?: number;
+  /** 采样上限 */
+  samplingLimit?: string;
+  /** 采样开始时间 */
+  fromMillis?: string;
+  /** 采样结束时间 */
+  toMillis?: string;
+}
+/* eslint-enable */

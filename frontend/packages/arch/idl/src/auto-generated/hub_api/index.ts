@@ -1,0 +1,96 @@
+/* eslint-disable */
+/* tslint:disable */
+// @ts-nocheck
+
+export enum DeployType {
+  CANARY = 1,
+  ONLINE = 2,
+}
+
+export interface CheckHealthRequest {}
+
+export interface CheckHealthResponse {
+  status?: string;
+  message?: string;
+}
+
+export interface GetDeployListRequest {
+  projectId?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface GetDeployListResponse {
+  list?: Array<OceanDeploy>;
+  total?: number;
+  code?: number;
+  message?: string;
+}
+
+export interface OceanDeploy {
+  deployId?: string;
+  pkgName?: string;
+  version?: string;
+  uid?: string;
+  pkgUrl?: string;
+  createTime?: number;
+  resourceUrls?: Record<string, string>;
+  deployType?: DeployType;
+}
+
+export default class HubApiService<T> {
+  private request: any = () => {
+    throw new Error('HubApiService.request is undefined');
+  };
+  private baseURL: string | ((path: string) => string) = '';
+
+  constructor(options?: {
+    baseURL?: string | ((path: string) => string);
+    request?<R>(
+      params: {
+        url: string;
+        method: 'GET' | 'DELETE' | 'POST' | 'PUT' | 'PATCH';
+        data?: any;
+        params?: any;
+        headers?: any;
+      },
+      options?: T,
+    ): Promise<R>;
+  }) {
+    this.request = options?.request || this.request;
+    this.baseURL = options?.baseURL || '';
+  }
+
+  private genBaseURL(path: string) {
+    return typeof this.baseURL === 'string'
+      ? this.baseURL + path
+      : this.baseURL(path);
+  }
+
+  /** GET /api/hub/ocean/deploy-list */
+  getDeployList(
+    req?: GetDeployListRequest,
+    options?: T,
+  ): Promise<GetDeployListResponse> {
+    const _req = req || {};
+    const url = this.genBaseURL('/api/hub/ocean/deploy-list');
+    const method = 'GET';
+    const params = {
+      projectId: _req['projectId'],
+      page: _req['page'],
+      pageSize: _req['pageSize'],
+    };
+    return this.request({ url, method, params }, options);
+  }
+
+  /** GET /api/hub/check-health */
+  checkHealth(
+    req?: CheckHealthRequest,
+    options?: T,
+  ): Promise<CheckHealthResponse> {
+    const url = this.genBaseURL('/api/hub/check-health');
+    const method = 'GET';
+    return this.request({ url, method }, options);
+  }
+}
+/* eslint-enable */
