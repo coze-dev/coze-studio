@@ -263,11 +263,10 @@ func (v *variablesImpl) GetVariableChannelInstance(ctx context.Context, e *entit
 		return nil, err
 	}
 
-	if varChannel != nil && *varChannel == project_memory.VariableChannel_APP {
-		return v.getAppKVItems(ctx, meta)
+	if varChannel != nil {
+		meta.FilterChannelVariable(*varChannel)
 	}
 
-	meta.RemoveVariableWithChannel(project_memory.VariableChannel_APP) // app can not be set
 	meta.RemoveDisableVariable()
 
 	metaKey2Variable := map[string]*entity.VariableMeta{}

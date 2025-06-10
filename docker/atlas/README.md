@@ -1,7 +1,7 @@
 ## 0. environment
 
 On Mac : brew install ariga/tap/atlas
-On Linux : curl -sSf https://atlasgo.sh | sh
+On Linux : curl -sSf https://atlasgo.sh | sh -s -- --community
 
 export ATLAS_URL="mysql://coze:coze123@localhost:3306/opencoze?charset=utf8mb4&parseTime=True"
 
