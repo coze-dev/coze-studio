@@ -1415,7 +1415,8 @@ func toVariableAssignerSchema(n *vo.Node) (*compose.NodeSchema, error) {
 		if *leftSources[0].Source.Ref.VariableType == variable.GlobalSystem {
 			return nil, fmt.Errorf("variable assigner node's param left's ref's variable type cannot be variable.GlobalSystem")
 		}
-		inputSource, err := CanvasBlockInputToFieldInfo(param.Input, einoCompose.FieldPath{fmt.Sprintf("right_%d", i)}, n.Parent())
+
+		inputSource, err := CanvasBlockInputToFieldInfo(param.Input, leftSources[0].Source.Ref.FromPath, n.Parent())
 		if err != nil {
 			return nil, err
 		}

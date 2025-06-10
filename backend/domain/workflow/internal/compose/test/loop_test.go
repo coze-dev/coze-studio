@@ -1,8 +1,17 @@
 package test
 
 import (
+	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
+	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 	"context"
+	"github.com/bytedance/mockey"
+	"go.uber.org/mock/gomock"
 	"testing"
+	"time"
 
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
@@ -453,13 +462,32 @@ func TestLoop(t *testing.T) {
 				},
 			},
 		}
+		ctx := t.Context()
+		ctx = ctxcache.Init(ctx)
+		ctxcache.Store(ctx, consts.SessionDataKeyInCtx, &userentity.Session{
+			UserID: 123,
+		})
 
+		ctx, err := execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
+			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
+			NodeCount:        ws.NodeCount(),
+		}, 1, false, nil, vo.ExecuteConfig{})
+		assert.NoError(t, err)
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		wfRepo := mockWorkflow.NewMockRepository(ctrl)
+		wfRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().Unix(), nil).AnyTimes()
+		defer mockey.Mock(workflow.GetRepository).Return(wfRepo).Build().UnPatch()
+
+		ctx, err = execute.PrepareNodeExeCtx(ctx, "loop_node_key", "loop", entity.NodeTypeBatch, ptr.Of(vo.ReturnVariables))
+		assert.NoError(t, err)
 		ws.Init()
 
 		wf, err := compose2.NewWorkflow(context.Background(), ws)
 		assert.NoError(t, err)
 
-		out, err := wf.Runner.Invoke(context.Background(), map[string]any{
+		out, err := wf.Runner.Invoke(ctx, map[string]any{
 			"items1": []any{"a", "b"},
 			"items2": []any{"a1", "b1", "c1"},
 		})

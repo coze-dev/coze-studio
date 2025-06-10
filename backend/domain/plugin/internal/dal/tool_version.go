@@ -30,7 +30,7 @@ type toolVersionPO model.ToolVersion
 
 func (t toolVersionPO) ToDO() *entity.ToolInfo {
 	return &entity.ToolInfo{
-		ID:        t.ID,
+		ID:        t.ToolID,
 		PluginID:  t.PluginID,
 		CreatedAt: t.CreatedAt,
 		Version:   &t.Version,

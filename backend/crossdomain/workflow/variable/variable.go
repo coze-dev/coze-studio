@@ -16,8 +16,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
-	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 type varStore struct {
@@ -57,13 +57,32 @@ func newSystemVarStore(vs variables.Variables) variable.Store {
 func (v *varStore) Init(ctx context.Context) {
 }
 
-func (v *varStore) Get(ctx context.Context, path compose.FieldPath) (any, error) {
+func (v *varStore) Get(ctx context.Context, path compose.FieldPath, opts ...variable.OptionFn) (any, error) {
+	opt := &variable.StoreConfig{}
+	for _, o := range opts {
+		o(opt)
+	}
+
+	var (
+		bizID   string
+		bizType project_memory.VariableConnector
+	)
+
+	if opt.StoreInfo.AppID != nil {
+		bizID = strconv.FormatInt(*opt.StoreInfo.AppID, 10)
+		bizType = project_memory.VariableConnector_Project
+	} else if opt.StoreInfo.AgentID != nil {
+		bizID = strconv.FormatInt(*opt.StoreInfo.AgentID, 10)
+		bizType = project_memory.VariableConnector_Bot
+	} else {
+		return nil, fmt.Errorf("there must be one of the App ID or Agent ID")
+	}
+
 	meta := entity.NewUserVariableMeta(&variablesModel.UserVariableMeta{
-		BizType:      project_memory.VariableConnector_Project,
-		BizID:        "", // project id
-		Version:      "", // project version
-		ConnectorUID: "", // user id  ?
-		ConnectorID:  consts.CozeConnectorID,
+		BizType:     bizType,
+		BizID:       bizID,
+		ConnectorID: opt.StoreInfo.ConnectorID,
+		//ConnectorUID:
 	})
 	if len(path) == 0 {
 		return nil, errors.New("field path is required")
@@ -86,7 +105,11 @@ func (v *varStore) Get(ctx context.Context, path compose.FieldPath) (any, error)
 	if err != nil {
 		return nil, err
 	}
+
 	if varSchema.IsArrayType() {
+		if value == "" {
+			return nil, nil
+		}
 		result := make([]interface{}, 0)
 		err = sonic.Unmarshal([]byte(value), &result)
 		if err != nil {
@@ -96,10 +119,19 @@ func (v *varStore) Get(ctx context.Context, path compose.FieldPath) (any, error)
 	}
 
 	if varSchema.IsObjectType() {
+		if value == "" {
+			return nil, nil
+		}
 		result := make(map[string]any)
 		err = sonic.Unmarshal([]byte(value), &result)
 		if err != nil {
 			return nil, err
+		}
+		if len(path) > 1 {
+			if val, ok := takeMapValue(result, path[1:]); ok {
+				return val, nil
+			}
+			return nil, nil
 		}
 		return result, nil
 	}
@@ -109,6 +141,9 @@ func (v *varStore) Get(ctx context.Context, path compose.FieldPath) (any, error)
 	}
 
 	if varSchema.IsBooleanType() {
+		if value == "" {
+			return false, nil
+		}
 		result, err := strconv.ParseBool(value)
 		if err != nil {
 			return nil, err
@@ -117,6 +152,9 @@ func (v *varStore) Get(ctx context.Context, path compose.FieldPath) (any, error)
 	}
 
 	if varSchema.IsNumberType() {
+		if value == "" {
+			return 0, nil
+		}
 		result, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return nil, err
@@ -125,6 +163,9 @@ func (v *varStore) Get(ctx context.Context, path compose.FieldPath) (any, error)
 	}
 
 	if varSchema.IsIntegerType() {
+		if value == "" {
+			return 0, nil
+		}
 		result, err := strconv.ParseInt(value, 64, 10)
 		if err != nil {
 			return nil, err
@@ -135,13 +176,32 @@ func (v *varStore) Get(ctx context.Context, path compose.FieldPath) (any, error)
 	return value, nil
 }
 
-func (v *varStore) Set(ctx context.Context, path compose.FieldPath, value any) (err error) {
+func (v *varStore) Set(ctx context.Context, path compose.FieldPath, value any, opts ...variable.OptionFn) (err error) {
+	opt := &variable.StoreConfig{}
+	for _, o := range opts {
+		o(opt)
+	}
+
+	var (
+		bizID   string
+		bizType project_memory.VariableConnector
+	)
+
+	if opt.StoreInfo.AppID != nil {
+		bizID = strconv.FormatInt(*opt.StoreInfo.AppID, 10)
+		bizType = project_memory.VariableConnector_Project
+	} else if opt.StoreInfo.AgentID != nil {
+		bizID = strconv.FormatInt(*opt.StoreInfo.AgentID, 10)
+		bizType = project_memory.VariableConnector_Bot
+	} else {
+		return fmt.Errorf("there must be one of the App ID or Agent ID")
+	}
+
 	meta := entity.NewUserVariableMeta(&variablesModel.UserVariableMeta{
-		BizType:      project_memory.VariableConnector_Project,
-		BizID:        "", // project id
-		Version:      "", // project version
-		ConnectorUID: "", // user id  ?
-		ConnectorID:  consts.CozeConnectorID,
+		BizType:     bizType,
+		BizID:       bizID,
+		ConnectorID: opt.StoreInfo.ConnectorID,
+		//ConnectorUID:
 	})
 
 	if len(path) == 0 {
@@ -242,4 +302,24 @@ func (v variablesMetaGetter) GetProjectVariablesMeta(ctx context.Context, projec
 	}
 
 	return metas, nil
+}
+
+func takeMapValue(m map[string]any, path []string) (any, bool) {
+	if m == nil {
+		return nil, false
+	}
+
+	container := m
+	for _, p := range path[:len(path)-1] {
+		if _, ok := container[p]; !ok {
+			return nil, false
+		}
+		container = container[p].(map[string]any)
+	}
+
+	if v, ok := container[path[len(path)-1]]; ok {
+		return v, true
+	}
+
+	return nil, false
 }

@@ -33,7 +33,7 @@ type pluginVersionPO model.PluginVersion
 
 func (p pluginVersionPO) ToDO() *entity.PluginInfo {
 	return entity.NewPluginInfo(&plugin.PluginInfo{
-		ID:          p.ID,
+		ID:          p.PluginID,
 		SpaceID:     p.SpaceID,
 		APPID:       &p.AppID,
 		DeveloperID: p.DeveloperID,

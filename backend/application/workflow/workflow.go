@@ -1035,8 +1035,8 @@ func (w *ApplicationService) GetReleasedWorkflows(ctx context.Context, req *work
 			Desc:                  wfMeta.Desc,
 			Type:                  int32(wfMeta.ContentType),
 			FlowVersion:           wfMeta.Version,
-			LatestFlowVersionDesc: wfMeta.LatestFlowVersionDesc,
-			LatestFlowVersion:     wfMeta.LatestFlowVersion,
+			LatestFlowVersionDesc: wfMeta.LatestVersion,
+			LatestFlowVersion:     wfMeta.LatestVersionDesc,
 			SubWorkflowList:       subWk,
 		}
 		inputs[wfIDStr], err = toVariables(wfMeta.InputParams)
@@ -1386,8 +1386,8 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 
 			FlowVersion:           wf.Version,
 			FlowVersionDesc:       wf.VersionDesc,
-			LatestFlowVersion:     wf.LatestFlowVersion,
-			LatestFlowVersionDesc: wf.LatestFlowVersionDesc,
+			LatestFlowVersion:     wf.LatestVersion,
+			LatestFlowVersionDesc: wf.LatestVersionDesc,
 		}
 
 		cv := &vo.Canvas{}
@@ -1473,7 +1473,6 @@ func (w *ApplicationService) SignImageURL(ctx context.Context, req *workflow.Sig
 }
 
 func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.GetApiDetailRequest) (*vo.ToolDetailInfo, error) {
-
 	toolID, err := strconv.ParseInt(req.GetAPIID(), 10, 64)
 	if err != nil {
 		return nil, err
@@ -1511,13 +1510,17 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 
 	toolDetailInfo := &vo.ToolDetailInfo{
 		ApiDetailData: &workflow.ApiDetailData{
-			PluginID:   req.GetPluginID(),
-			SpaceID:    req.GetSpaceID(),
-			Icon:       toolInfoResponse.IconURL,
-			Name:       toolInfoResponse.PluginName,
-			Desc:       toolInfoResponse.Description,
-			ApiName:    toolInfo.ToolName,
-			PluginType: workflow.PluginType(toolInfoResponse.PluginType),
+			PluginID:          req.GetPluginID(),
+			SpaceID:           req.GetSpaceID(),
+			Icon:              toolInfoResponse.IconURL,
+			Name:              toolInfoResponse.PluginName,
+			Desc:              toolInfoResponse.Description,
+			ApiName:           toolInfo.ToolName,
+			Version:           &toolInfoResponse.Version,
+			VersionName:       &toolInfoResponse.Version,
+			PluginType:        workflow.PluginType(toolInfoResponse.PluginType),
+			LatestVersionName: toolInfoResponse.LatestVersion,
+			LatestVersion:     toolInfoResponse.LatestVersion,
 		},
 		ToolInputs:  inputVars,
 		ToolOutputs: outputVars,
@@ -1527,7 +1530,7 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 
 }
 
-func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req *workflow.GetLLMNodeFCSettingDetailRequest) (*workflow.GetLLMNodeFCSettingDetailResponse, error) {
+func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req *workflow.GetLLMNodeFCSettingDetailRequest) (*GetLLMNodeFCSettingDetailResponse, error) {
 	var (
 		toolSvc             = plugin.GetToolService()
 		pluginToolsInfoReqs = make(map[int64]*plugin.PluginToolsInfoRequest)
@@ -1558,6 +1561,7 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 						PluginVersion: pl.PluginVersion,
 					},
 					ToolIDs: []int64{toolID},
+					IsDraft: pl.IsDraft,
 				}
 			}
 
@@ -1577,9 +1581,11 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 					Description: resp.Description,
 					PluginType:  resp.PluginType,
 					VersionName: resp.Version,
+					IsOfficial:  resp.IsOfficial,
+				}
 
-					//LatestVersionName: "",  // TODO plugin use version or version ts
-					//LatestVersionTs: "",
+				if resp.LatestVersion != nil {
+					pluginDetail.LatestVersionName = *resp.LatestVersion
 				}
 				pluginDetailMap[pluginIdStr] = pluginDetail
 			}
@@ -1685,7 +1691,9 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 		DatasetDetailMap:   knowledgeDetailMap,
 	}
 
-	return response, nil
+	return &GetLLMNodeFCSettingDetailResponse{
+		GetLLMNodeFCSettingDetailResponse: response,
+	}, nil
 }
 
 func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req *workflow.GetLLMNodeFCSettingsMergedRequest) (*workflow.GetLLMNodeFCSettingsMergedResponse, error) {
@@ -2386,4 +2394,24 @@ func parseWorkflowTerminatePlanType(c *vo.Canvas) (int32, error) {
 		return 0, fmt.Errorf("invalid terminate plan type %v", *endNode.Data.Inputs.TerminatePlan)
 	}
 
+}
+
+type GetLLMNodeFCSettingDetailResponse struct {
+	*workflow.GetLLMNodeFCSettingDetailResponse
+}
+
+func (g *GetLLMNodeFCSettingDetailResponse) MarshalJSON() ([]byte, error) {
+	bs, err := sonic.Marshal(g.GetLLMNodeFCSettingDetailResponse)
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]interface{})
+	_ = sonic.Unmarshal(bs, &result)
+	pluginDetailMaps := result["plugin_detail_map"].(map[string]interface{})
+	for k, value := range pluginDetailMaps {
+		pluginDetail := value.(map[string]interface{})
+		pluginDetail["latest_version_ts"] = pluginDetail["latest_version_name"]
+		pluginDetailMaps[k] = pluginDetail
+	}
+	return sonic.Marshal(result)
 }

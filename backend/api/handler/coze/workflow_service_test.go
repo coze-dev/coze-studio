@@ -418,7 +418,7 @@ func TestTestRunAndGetProcess(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockGlobalAppVarStore := mockvar.NewMockStore(ctrl)
-		mockGlobalAppVarStore.EXPECT().Get(gomock.Any(), gomock.Any()).Return(1.0, nil).AnyTimes()
+		mockGlobalAppVarStore.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(1.0, nil).AnyTimes()
 		mockey.Mock(variable.GetVariableHandler).Return(&variable.Handler{
 			AppVarStore: mockGlobalAppVarStore,
 		}).Build()
@@ -2961,7 +2961,7 @@ func TestAggregateStreamVariables(t *testing.T) {
 		}).AnyTimes()
 
 		mockUserVarStore := mockvar.NewMockStore(ctrl)
-		mockUserVarStore.EXPECT().Get(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+		mockUserVarStore.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 		mockey.Mock(variable.GetVariableHandler).Return(&variable.Handler{
 			UserVarStore: mockUserVarStore,
 		}).Build()
@@ -3002,7 +3002,8 @@ func TestAggregateStreamVariables(t *testing.T) {
 		assert.Equal(t, workflowStatus, workflow.WorkflowExeStatus_Success)
 
 		wfID, _ := strconv.ParseInt(idStr, 10, 64)
-		sr, err := appworkflow.GetWorkflowDomainSVC().StreamExecuteWorkflow(context.Background(), &entity.WorkflowIdentity{
+		ctx := t.Context()
+		sr, err := appworkflow.GetWorkflowDomainSVC().StreamExecuteWorkflow(ctx, &entity.WorkflowIdentity{
 			ID: wfID,
 		}, map[string]any{
 			"input": "I've got an important question",

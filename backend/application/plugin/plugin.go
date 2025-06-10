@@ -169,7 +169,7 @@ func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context
 		Creator:        creator,
 		DescForHuman:   pl.GetDesc(),
 		ID:             strconv.FormatInt(pl.ID, 10),
-		IsOfficial:     pl.RefProductID != nil,
+		IsOfficial:     pl.IsOfficial(),
 		MaterialID:     strconv.FormatInt(pl.ID, 10),
 		Name:           pl.GetName(),
 		PluginIcon:     iconURL,
@@ -1196,6 +1196,7 @@ func (p *PluginApplicationService) GetDevPluginList(ctx context.Context, req *pl
 			return nil, err
 		}
 
+		pluginInfo.VersionTs = "0" // when you get the plugin information in the project, version ts is set to 0 by default
 		pluginLists = append(pluginLists, pluginInfo)
 	}
 

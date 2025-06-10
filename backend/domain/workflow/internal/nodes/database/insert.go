@@ -3,8 +3,8 @@ package database
 import (
 	"context"
 	"errors"
-
 	"github.com/cloudwego/eino/compose"
+	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -14,6 +14,7 @@ import (
 type InsertConfig struct {
 	DatabaseInfoID int64
 	OutputConfig   map[string]*vo.TypeInfo
+	InputTimeTypes map[string]*vo.TypeInfo
 	Inserter       database.DatabaseOperator
 }
 
@@ -39,15 +40,23 @@ func NewInsert(ctx context.Context, cfg *InsertConfig) (*Insert, error) {
 }
 
 func (is *Insert) Insert(ctx context.Context, input map[string]any) (map[string]any, error) {
-
 	fs, ok := nodes.TakeMapValue(input, compose.FieldPath{"Fields"})
 	if !ok {
 		return nil, errors.New("cannot get key 'Fields' value from input")
 	}
 
+	fields := make(map[string]any)
+	for key, value := range fs.(map[string]any) {
+		if _, ok := is.config.InputTimeTypes[key]; ok {
+			fields[key] = value.(time.Time).Format(time.DateTime)
+		} else {
+			fields[key] = value
+		}
+	}
+
 	req := &database.InsertRequest{
 		DatabaseInfoID: is.config.DatabaseInfoID,
-		Fields:         fs.(map[string]any),
+		Fields:         fields,
 		IsDebugRun:     isDebugExecute(ctx),
 	}
 

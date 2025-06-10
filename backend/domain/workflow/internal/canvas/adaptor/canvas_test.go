@@ -1,6 +1,9 @@
 package adaptor
 
 import (
+	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 	"context"
 
 	"io"
@@ -810,7 +813,18 @@ func TestKnowledgeNodes(t *testing.T) {
 		})
 
 		ctx := t.Context()
+		ctx = ctxcache.Init(ctx)
+		ctxcache.Store(ctx, consts.SessionDataKeyInCtx, &userentity.Session{
+			UserID: 123,
+		})
+
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+
+		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
+			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
+			NodeCount:        workflowSC.NodeCount(),
+		}, 1, false, nil, vo.ExecuteConfig{})
+
 		assert.NoError(t, err)
 		wf, err := compose.NewWorkflow(ctx, workflowSC)
 		assert.NoError(t, err)

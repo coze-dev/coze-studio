@@ -1,6 +1,7 @@
 package nodes
 
 import (
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"context"
 	"fmt"
 	"sync"
@@ -20,7 +21,7 @@ func (p *ParentIntermediateStore) Init(_ context.Context) {
 	return
 }
 
-func (p *ParentIntermediateStore) Get(ctx context.Context, path compose.FieldPath) (any, error) {
+func (p *ParentIntermediateStore) Get(ctx context.Context, path compose.FieldPath, opts ...variable.OptionFn) (any, error) {
 	defer p.mu.RUnlock()
 	p.mu.RLock()
 
@@ -41,7 +42,7 @@ func (p *ParentIntermediateStore) Get(ctx context.Context, path compose.FieldPat
 	return *v, nil
 }
 
-func (p *ParentIntermediateStore) Set(ctx context.Context, path compose.FieldPath, value any) error {
+func (p *ParentIntermediateStore) Set(ctx context.Context, path compose.FieldPath, value any, opts ...variable.OptionFn) error {
 	defer p.mu.Unlock()
 	p.mu.Lock()
 

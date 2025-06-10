@@ -42,6 +42,7 @@ type ToolsInvokableInfo struct {
 	RequestAPIParametersConfig  WorkflowAPIParameters
 	ResponseAPIParametersConfig WorkflowAPIParameters
 }
+
 type PluginToolsInvokableRequest struct {
 	PluginEntity       PluginEntity
 	ToolsInvokableInfo map[int64]*ToolsInvokableInfo
@@ -59,12 +60,14 @@ type ToolInfo struct {
 }
 
 type PluginToolsInfoResponse struct {
-	PluginID     int64
-	SpaceID      int64
-	Version      string
-	PluginName   string
-	Description  string
-	IconURL      string
-	PluginType   int64
-	ToolInfoList map[int64]ToolInfo
+	PluginID      int64
+	SpaceID       int64
+	Version       string
+	PluginName    string
+	Description   string
+	IconURL       string
+	PluginType    int64
+	ToolInfoList  map[int64]ToolInfo
+	LatestVersion *string
+	IsOfficial    bool
 }

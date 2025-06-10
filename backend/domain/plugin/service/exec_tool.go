@@ -203,6 +203,15 @@ func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *Exec
 		if !exist {
 			return nil, nil, fmt.Errorf("draft plugin '%d' not found", req.PluginID)
 		}
+
+		tl, exist, err = p.toolRepo.GetDraftTool(ctx, req.ToolID)
+		if err != nil {
+			return nil, nil, err
+		}
+		if !exist {
+			return nil, nil, fmt.Errorf("draft tool '%d' not found", req.ToolID)
+		}
+
 	} else {
 		var exist bool
 		if execOpt.ToolVersion == "" {
@@ -213,6 +222,15 @@ func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *Exec
 			if !exist {
 				return nil, nil, fmt.Errorf("online plugin '%d' not found", req.PluginID)
 			}
+
+			tl, exist, err = p.toolRepo.GetOnlineTool(ctx, req.ToolID)
+			if err != nil {
+				return nil, nil, err
+			}
+			if !exist {
+				return nil, nil, fmt.Errorf("online tool '%d' not found", req.ToolID)
+			}
+
 		} else {
 			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, entity.VersionPlugin{
 				PluginID: req.PluginID,
@@ -224,18 +242,18 @@ func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *Exec
 			if !exist {
 				return nil, nil, fmt.Errorf("plugin '%d' with version '%s' not found", req.PluginID, execOpt.ToolVersion)
 			}
-		}
-	}
 
-	tl, exist, err := p.toolRepo.GetVersionTool(ctx, entity.VersionTool{
-		ToolID:  req.ToolID,
-		Version: execOpt.ToolVersion,
-	})
-	if err != nil {
-		return nil, nil, err
-	}
-	if !exist {
-		return nil, nil, fmt.Errorf("tool '%d' with version '%s' not found", req.ToolID, execOpt.ToolVersion)
+			tl, exist, err = p.toolRepo.GetVersionTool(ctx, entity.VersionTool{
+				ToolID:  req.ToolID,
+				Version: execOpt.ToolVersion,
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			if !exist {
+				return nil, nil, fmt.Errorf("tool '%d' with version '%s' not found", req.ToolID, execOpt.ToolVersion)
+			}
+		}
 	}
 
 	return pl, tl, nil

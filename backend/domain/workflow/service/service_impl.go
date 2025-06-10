@@ -223,10 +223,7 @@ func (i *impl) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
 	}
 
 	var inputParams, outputParams string
-	inputs, outputs, err := extractInputsAndOutputsNamedInfoList(c)
-	if err != nil {
-		return err
-	}
+	inputs, outputs := extractInputsAndOutputsNamedInfoList(c)
 	inputParams, err = sonic.MarshalString(inputs)
 	if err != nil {
 		return err
@@ -245,11 +242,18 @@ func (i *impl) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
 	return i.repo.CreateOrUpdateDraft(ctx, draft.ID, *draft.Canvas, inputParams, outputParams, resetTestRun)
 }
 
-func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeInfo, outputs []*vo.NamedTypeInfo, err error) {
+func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeInfo, outputs []*vo.NamedTypeInfo) {
+	defer func() {
+		if err := recover(); err != nil {
+			logs.Warnf("failed to extract inputs and outputs: %v", err)
+		}
+	}()
 	var (
 		startNode *vo.Node
 		endNode   *vo.Node
 	)
+	inputs = make([]*vo.NamedTypeInfo, 0)
+	outputs = make([]*vo.NamedTypeInfo, 0)
 	for _, node := range c.Nodes {
 		if startNode != nil && endNode != nil {
 			break
@@ -262,37 +266,34 @@ func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeI
 		}
 	}
 
-	if startNode == nil {
-		return nil, nil, fmt.Errorf("invalid canvas, can not find start node in canvas")
-	}
-
-	if endNode == nil {
-		return nil, nil, fmt.Errorf("invalid canvas, can not find end node in canvas")
-	}
-
-	inputs, err = slices.TransformWithErrorCheck(startNode.Data.Outputs, func(o any) (*vo.NamedTypeInfo, error) {
-		v, err := vo.ParseVariable(o)
+	var err error
+	if startNode != nil {
+		inputs, err = slices.TransformWithErrorCheck(startNode.Data.Outputs, func(o any) (*vo.NamedTypeInfo, error) {
+			v, err := vo.ParseVariable(o)
+			if err != nil {
+				return nil, err
+			}
+			nInfo, err := adaptor.VariableToNamedTypeInfo(v)
+			if err != nil {
+				return nil, err
+			}
+			return nInfo, nil
+		})
 		if err != nil {
-			return nil, err
+			logs.Warn(fmt.Sprintf("transform start node outputs to named info failed, err=%v", err))
 		}
-		nInfo, err := adaptor.VariableToNamedTypeInfo(v)
+	}
+
+	if endNode != nil {
+		outputs, err = slices.TransformWithErrorCheck(endNode.Data.Inputs.InputParameters, func(a *vo.Param) (*vo.NamedTypeInfo, error) {
+			return adaptor.BlockInputToNamedTypeInfo(a.Name, a.Input)
+		})
 		if err != nil {
-			return nil, err
+			logs.Warn(fmt.Sprintf("transform end node inputs to named info failed, err=%v", err))
 		}
-		return nInfo, nil
-	})
-	if err != nil {
-		return nil, nil, err
 	}
 
-	outputs, err = slices.TransformWithErrorCheck(endNode.Data.Inputs.InputParameters, func(a *vo.Param) (*vo.NamedTypeInfo, error) {
-		return adaptor.BlockInputToNamedTypeInfo(a.Name, a.Input)
-	})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return inputs, outputs, nil
+	return inputs, outputs
 }
 
 func (i *impl) DeleteWorkflow(ctx context.Context, id int64) error {
@@ -467,8 +468,8 @@ func (i *impl) GetReleasedWorkflows(ctx context.Context, wfEntities []*entity.Wo
 	for wfID, latestVersion := range wfID2LatestVersion {
 		if meta, ok := workflowMetas[wfID]; ok {
 			meta.Version = wfID2CurrentVersion[wfID]
-			meta.LatestFlowVersion = latestVersion.Version
-			meta.LatestFlowVersionDesc = latestVersion.VersionDescription
+			meta.LatestVersion = latestVersion.Version
+			meta.LatestVersionDesc = latestVersion.VersionDescription
 
 			inputNamedTypeInfos := make([]*vo.NamedTypeInfo, 0)
 			err = sonic.UnmarshalString(latestVersion.InputParams, &inputNamedTypeInfos)
@@ -1581,7 +1582,8 @@ func (i *impl) MGetWorkflowDetailInfo(ctx context.Context, identifies []*entity.
 	if err != nil {
 		return nil, err
 	}
-	for _, w := range wfs {
+	for idx := range wfs {
+		w := wfs[idx]
 		v, err := i.repo.GetLatestWorkflowVersion(ctx, w.ID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -1590,8 +1592,8 @@ func (i *impl) MGetWorkflowDetailInfo(ctx context.Context, identifies []*entity.
 			return nil, err
 		}
 
-		w.LatestFlowVersion = v.Version
-		w.LatestFlowVersionDesc = v.VersionDescription
+		w.LatestVersion = v.Version
+		w.LatestVersionDesc = v.VersionDescription
 	}
 	return wfs, nil
 }

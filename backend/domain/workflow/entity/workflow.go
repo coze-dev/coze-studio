@@ -43,16 +43,14 @@ type Workflow struct {
 	InputParams  []*vo.NamedTypeInfo
 	OutputParams []*vo.NamedTypeInfo
 
-	LatestFlowVersion     string
-	LatestFlowVersionDesc string
-
 	SubWorkflows []*Workflow
 
 	TestRunSuccess bool
 	Modified       bool
 
-	HasPublished  bool
-	LatestVersion string
+	HasPublished      bool
+	LatestVersion     string
+	LatestVersionDesc string
 }
 
 type WorkflowIdentity struct {
