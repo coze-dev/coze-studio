@@ -22,6 +22,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/application/base/pluginutil"
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
+	oauth "code.byted.org/flow/opencoze/backend/domain/openauth/oauth/service"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
@@ -44,6 +45,7 @@ type PluginApplicationService struct {
 	eventbus   search.ResourceEventBus
 	oss        storage.Storage
 	userSVC    user.User
+	oauthSVC   oauth.OAuthService
 	toolRepo   repository.ToolRepository
 	pluginRepo repository.PluginRepository
 }
@@ -213,7 +215,7 @@ func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *
 	}
 
 	var loc model.HTTPParamLocation
-	if *authType != model.AuthTypeOfNone {
+	if *authType == model.AuthTypeOfService {
 		if req.GetLocation() == common.AuthorizationServiceLocation_Query {
 			loc = model.ParamInQuery
 		} else if req.GetLocation() == common.AuthorizationServiceLocation_Header {
@@ -483,6 +485,39 @@ func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *plugi
 	}
 	draftPlugin.OpenapiDoc.Paths = paths
 
+	manifestStr, err := sonic.MarshalString(draftPlugin.Manifest)
+	if err != nil {
+		return nil, err
+	}
+
+	docBytes, err := yaml.Marshal(draftPlugin.OpenapiDoc)
+	if err != nil {
+		return nil, err
+	}
+
+	codeInfo := &common.CodeInfo{
+		OpenapiDesc: string(docBytes),
+		PluginDesc:  manifestStr,
+	}
+
+	metaInfo, err := p.getPluginMetaInfo(ctx, draftPlugin)
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &pluginAPI.GetPluginInfoResponse{
+		MetaInfo:       metaInfo,
+		CodeInfo:       codeInfo,
+		Creator:        common.NewCreator(),
+		StatisticData:  common.NewPluginStatisticData(),
+		PluginType:     draftPlugin.PluginType,
+		CreationMethod: common.CreationMethod_COZE,
+	}
+
+	return resp, nil
+}
+
+func (p *PluginApplicationService) getPluginMetaInfo(ctx context.Context, draftPlugin *entity.PluginInfo) (*common.PluginMetaInfo, error) {
 	commonParams := make(map[common.ParameterLocation][]*common.CommonParamSchema, len(draftPlugin.Manifest.CommonParams))
 	for loc, params := range draftPlugin.Manifest.CommonParams {
 		location, ok := model.ToThriftHTTPParamLocation(loc)
@@ -511,35 +546,60 @@ func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *plugi
 			URI: draftPlugin.GetIconURI(),
 			URL: iconURL,
 		},
-		AuthType:     []common.AuthorizationType{common.AuthorizationType_None},
 		CommonParams: commonParams,
 	}
 
-	manifestStr, err := sonic.MarshalString(draftPlugin.Manifest)
+	err = p.fillAuthInfoInMetaInfo(ctx, draftPlugin, metaInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	docBytes, err := yaml.Marshal(draftPlugin.OpenapiDoc)
-	if err != nil {
-		return nil, err
+	return metaInfo, nil
+}
+
+func (p *PluginApplicationService) fillAuthInfoInMetaInfo(ctx context.Context, draftPlugin *entity.PluginInfo, metaInfo *common.PluginMetaInfo) (err error) {
+	authInfo := draftPlugin.GetAuthInfo()
+	authType, ok := model.ToThriftAuthType(authInfo.Type)
+	if !ok {
+		return fmt.Errorf("invalid auth type '%s'", authInfo.Type)
 	}
 
-	codeInfo := &common.CodeInfo{
-		OpenapiDesc: string(docBytes),
-		PluginDesc:  manifestStr,
+	var subAuthType *int32
+	if authInfo.SubType != "" {
+		_subAuthType, ok := model.ToThriftAuthSubType(authInfo.SubType)
+		if !ok {
+			return fmt.Errorf("invalid sub auth type '%s'", authInfo.SubType)
+		}
+		subAuthType = &_subAuthType
 	}
 
-	resp = &pluginAPI.GetPluginInfoResponse{
-		MetaInfo:       metaInfo,
-		CodeInfo:       codeInfo,
-		Creator:        common.NewCreator(),
-		StatisticData:  common.NewPluginStatisticData(),
-		PluginType:     draftPlugin.PluginType,
-		CreationMethod: common.CreationMethod_COZE,
+	metaInfo.AuthType = append(metaInfo.AuthType, authType)
+	metaInfo.SubAuthType = subAuthType
+
+	if authType == common.AuthorizationType_None {
+		return nil
 	}
 
-	return resp, nil
+	if authType == common.AuthorizationType_Service {
+		var loc common.AuthorizationServiceLocation
+		if authInfo.AuthOfAPIToken.Location == model.ParamInHeader {
+			loc = common.AuthorizationServiceLocation_Header
+		} else if authInfo.AuthOfAPIToken.Location == model.ParamInQuery {
+			loc = common.AuthorizationServiceLocation_Query
+		} else {
+			return fmt.Errorf("invalid location '%s'", authInfo.AuthOfAPIToken.Location)
+		}
+
+		metaInfo.Location = ptr.Of(loc)
+		metaInfo.Key = ptr.Of(authInfo.AuthOfAPIToken.Key)
+		metaInfo.ServiceToken = ptr.Of(authInfo.AuthOfAPIToken.ServiceToken)
+	}
+
+	if authType == common.AuthorizationType_OAuth {
+		metaInfo.OauthInfo = authInfo.Payload
+	}
+
+	return nil
 }
 
 func (p *PluginApplicationService) GetUpdatedAPIs(ctx context.Context, req *pluginAPI.GetUpdatedAPIsRequest) (resp *pluginAPI.GetUpdatedAPIsResponse, err error) {
@@ -611,7 +671,6 @@ func (p *PluginApplicationService) GetUpdatedAPIs(ctx context.Context, req *plug
 }
 
 func (p *PluginApplicationService) GetUserAuthority(ctx context.Context, req *pluginAPI.GetUserAuthorityRequest) (resp *pluginAPI.GetUserAuthorityResponse, err error) {
-	// TDOO(@maronghong): 完善逻辑
 	resp = &pluginAPI.GetUserAuthorityResponse{
 		Data: &common.GetUserAuthorityData{
 			CanEdit:          true,
@@ -627,16 +686,20 @@ func (p *PluginApplicationService) GetUserAuthority(ctx context.Context, req *pl
 }
 
 func (p *PluginApplicationService) GetOAuthStatus(ctx context.Context, req *pluginAPI.GetOAuthStatusRequest) (resp *pluginAPI.GetOAuthStatusResponse, err error) {
-	// TDOO(@maronghong): 完善逻辑
+	res, err := p.DomainSVC.GetOAuthStatus(ctx, req.PluginID)
+	if err != nil {
+		return nil, err
+	}
 	resp = &pluginAPI.GetOAuthStatusResponse{
-		IsOauth: false,
+		IsOauth: res.IsOauth,
+		Status:  res.Status,
+		Content: res.OAuthURL,
 	}
 
 	return resp, nil
 }
 
 func (p *PluginApplicationService) CheckAndLockPluginEdit(ctx context.Context, req *pluginAPI.CheckAndLockPluginEditRequest) (resp *pluginAPI.CheckAndLockPluginEditResponse, err error) {
-	// TDOO(@maronghong): 完善逻辑
 	resp = &pluginAPI.CheckAndLockPluginEditResponse{
 		Data: &common.CheckAndLockPluginEditData{
 			Seized: true,
@@ -725,6 +788,11 @@ func (p *PluginApplicationService) UpdateAPI(ctx context.Context, req *pluginAPI
 }
 
 func (p *PluginApplicationService) UpdatePlugin(ctx context.Context, req *pluginAPI.UpdatePluginRequest) (resp *pluginAPI.UpdatePluginResponse, err error) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV("msg", "session required"))
+	}
+
 	loader := openapi3.NewLoader()
 	_doc, err := loader.LoadFromData([]byte(req.Openapi))
 	if err != nil {
@@ -740,6 +808,7 @@ func (p *PluginApplicationService) UpdatePlugin(ctx context.Context, req *plugin
 	}
 
 	err = p.DomainSVC.UpdateDraftPluginWithCode(ctx, &service.UpdateDraftPluginWithCodeRequest{
+		UserID:     *userID,
 		PluginID:   req.PluginID,
 		OpenapiDoc: doc,
 		Manifest:   manifest,
@@ -904,7 +973,7 @@ func (p *PluginApplicationService) UpdatePluginMeta(ctx context.Context, req *pl
 }
 
 func (p *PluginApplicationService) GetBotDefaultParams(ctx context.Context, req *pluginAPI.GetBotDefaultParamsRequest) (resp *pluginAPI.GetBotDefaultParamsResponse, err error) {
-	exist, err := p.pluginRepo.CheckOnlinePluginExist(ctx, req.PluginID)
+	_, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID, repository.WithPluginID())
 	if err != nil {
 		return nil, err
 	}
@@ -958,11 +1027,17 @@ func (p *PluginApplicationService) UpdateBotDefaultParams(ctx context.Context, r
 }
 
 func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.DebugAPIRequest) (resp *pluginAPI.DebugAPIResponse, err error) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV("msg", "session required"))
+	}
+
 	res, err := p.DomainSVC.ExecuteTool(ctx, &service.ExecuteToolRequest{
-		ExecDraftTool:   true,
+		UserID:          *userID,
 		PluginID:        req.PluginID,
 		ToolID:          req.APIID,
 		ExecScene:       model.ExecSceneOfToolDebug,
+		ExecDraftTool:   true,
 		ArgumentsInJson: req.Parameters,
 	})
 	if err != nil {
@@ -1291,5 +1366,10 @@ func (p *PluginApplicationService) BatchCreateAPI(ctx context.Context, req *plug
 		PathsDuplicated: duplicated,
 	}
 
+	return resp, nil
+}
+
+func (p *PluginApplicationService) RevokeAuthToken(ctx context.Context, req *pluginAPI.RevokeAuthTokenRequest) (resp *pluginAPI.RevokeAuthTokenResponse, err error) {
+	resp = &pluginAPI.RevokeAuthTokenResponse{}
 	return resp, nil
 }

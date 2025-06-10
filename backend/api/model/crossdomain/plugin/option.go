@@ -16,7 +16,6 @@ type ProjectInfo struct {
 	ProjectType    ProjectType
 
 	ConnectorID int64
-	UserID      int64
 }
 
 func WithProjectInfo(info *ProjectInfo) ExecuteToolOpt {

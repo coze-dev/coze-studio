@@ -2,7 +2,10 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
+	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
@@ -56,6 +59,8 @@ type PluginService interface {
 	// Product
 	ListPluginProducts(ctx context.Context, req *ListPluginProductsRequest) (resp *ListPluginProductsResponse, err error)
 	GetPluginProductAllTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
+
+	GetOAuthStatus(ctx context.Context, pluginID int64) (resp *GetOAuthStatusResponse, err error)
 }
 
 type CreateDraftPluginRequest struct {
@@ -72,6 +77,7 @@ type CreateDraftPluginRequest struct {
 }
 
 type UpdateDraftPluginWithCodeRequest struct {
+	UserID     int64
 	PluginID   int64
 	OpenapiDoc *model.Openapi3T
 	Manifest   *entity.PluginManifest
@@ -132,6 +138,141 @@ type PluginAuthInfo struct {
 	AuthPayload  *string
 }
 
+func (p PluginAuthInfo) toAuthV2() (*model.AuthV2, error) {
+	if p.AuthType == nil {
+		return nil, fmt.Errorf("auth type is empty")
+	}
+
+	switch *p.AuthType {
+	case model.AuthTypeOfNone:
+		return &model.AuthV2{
+			Type: model.AuthTypeOfNone,
+		}, nil
+
+	case model.AuthTypeOfOAuth:
+		m, err := p.authOfOAuthToAuthV2()
+		if err != nil {
+			return nil, err
+		}
+		return m, nil
+
+	case model.AuthTypeOfService:
+		m, err := p.authOfServiceToAuthV2()
+		if err != nil {
+			return nil, err
+		}
+		return m, nil
+
+	default:
+		return nil, fmt.Errorf("invalid auth type '%v'", p.AuthType)
+	}
+}
+
+func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
+	if p.AuthSubType == nil {
+		return nil, fmt.Errorf("auth sub type is empty")
+	}
+
+	if p.OauthInfo == nil || *p.OauthInfo == "" {
+		return nil, fmt.Errorf("oauth info is empty")
+	}
+
+	oauthInfo := make(map[string]string)
+	err := sonic.Unmarshal([]byte(*p.OauthInfo), &oauthInfo)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal oauth info failed, err=%v", err)
+	}
+
+	if *p.AuthSubType == model.AuthSubTypeOfOAuthClientCredentials {
+		_oauthInfo := &model.AuthOfOAuthClientCredentials{
+			ClientID:     oauthInfo["client_id"],
+			ClientSecret: oauthInfo["client_secret"],
+			TokenURL:     oauthInfo["token_url"],
+			Scopes:       strings.Split(oauthInfo["scope"], " "),
+		}
+
+		str, err := sonic.MarshalString(_oauthInfo)
+		if err != nil {
+			return nil, fmt.Errorf("marshal oauth info failed, err=%v", err)
+		}
+
+		return &model.AuthV2{
+			Type:                         model.AuthTypeOfOAuth,
+			SubType:                      model.AuthSubTypeOfOAuthClientCredentials,
+			Payload:                      &str,
+			AuthOfOAuthClientCredentials: _oauthInfo,
+		}, nil
+	}
+
+	if *p.AuthSubType == model.AuthSubTypeOfOAuthAuthorizationCode {
+		contentType := oauthInfo["authorization_content_type"]
+		if contentType != model.MIMETypeJson && contentType != model.MIMETypeForm { // only support application/json and application/x-www-form-urlencoded
+			return nil, fmt.Errorf("invalid authorization content type '%s'", contentType)
+		}
+
+		_oauthInfo := &model.AuthOfOAuthAuthorizationCode{
+			ClientID:                 oauthInfo["client_id"],
+			ClientSecret:             oauthInfo["client_secret"],
+			ClientURL:                oauthInfo["client_url"],
+			Scopes:                   strings.Split(oauthInfo["scope"], " "),
+			AuthorizationURL:         oauthInfo["authorization_url"],
+			AuthorizationContentType: contentType,
+		}
+
+		str, err := sonic.MarshalString(_oauthInfo)
+		if err != nil {
+			return nil, fmt.Errorf("marshal oauth info failed, err=%v", err)
+		}
+
+		return &model.AuthV2{
+			Type:                         model.AuthTypeOfOAuth,
+			SubType:                      model.AuthSubTypeOfOAuthAuthorizationCode,
+			Payload:                      &str,
+			AuthOfOAuthAuthorizationCode: _oauthInfo,
+		}, nil
+	}
+
+	return nil, fmt.Errorf("invalid sub auth type '%s'", *p.AuthSubType)
+}
+
+func (p PluginAuthInfo) authOfServiceToAuthV2() (*model.AuthV2, error) {
+	if p.AuthSubType == nil {
+		return nil, fmt.Errorf("auth sub type is empty")
+	}
+
+	if *p.AuthSubType == model.AuthSubTypeOfServiceAPIToken {
+		if p.Location == nil {
+			return nil, fmt.Errorf("location is empty")
+		}
+		if p.ServiceToken == nil {
+			return nil, fmt.Errorf("service token is empty")
+		}
+		if p.Key == nil {
+			return nil, fmt.Errorf("key is empty")
+		}
+
+		tokenAuth := &model.AuthOfAPIToken{
+			ServiceToken: *p.ServiceToken,
+			Location:     *p.Location,
+			Key:          *p.Key,
+		}
+
+		str, err := sonic.MarshalString(tokenAuth)
+		if err != nil {
+			return nil, fmt.Errorf("marshal token auth failed, err=%v", err)
+		}
+
+		return &model.AuthV2{
+			Type:           model.AuthTypeOfService,
+			SubType:        model.AuthSubTypeOfServiceAPIToken,
+			Payload:        &str,
+			AuthOfAPIToken: tokenAuth,
+		}, nil
+	}
+
+	return nil, fmt.Errorf("invalid sub auth type '%s'", *p.AuthSubType)
+}
+
 type PublishPluginRequest = model.PublishPluginRequest
 
 type PublishAPPPluginsRequest = model.PublishAPPPluginsRequest
@@ -187,4 +328,10 @@ type ConvertToOpenapi3DocResponse struct {
 	Manifest   *entity.PluginManifest
 	Format     common.PluginDataFormat
 	ErrMsg     string
+}
+
+type GetOAuthStatusResponse struct {
+	IsOauth  bool
+	Status   common.OAuthStatus
+	OAuthURL string
 }

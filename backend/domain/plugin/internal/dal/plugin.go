@@ -110,21 +110,6 @@ func (p *PluginDAO) MGet(ctx context.Context, pluginIDs []int64, opt *PluginSele
 	return plugins, nil
 }
 
-func (p *PluginDAO) CheckPluginExist(ctx context.Context, pluginID int64) (exist bool, err error) {
-	table := p.query.Plugin
-	_, err = table.WithContext(ctx).
-		Where(table.ID.Eq(pluginID)).
-		Select(table.ID).
-		First()
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
-}
-
 func (p *PluginDAO) List(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
 	if pageInfo.SortBy == nil || pageInfo.OrderByACS == nil {
 		return nil, 0, fmt.Errorf("sortBy or orderByACS is empty")

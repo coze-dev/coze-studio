@@ -28,6 +28,7 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 	var tms []*schema.Message
 	for _, item := range ar.PreCallTools {
 		execResp, err := crossplugin.DefaultSVC().ExecuteTool(ctx, &service.ExecuteToolRequest{
+			UserID:          ar.UserID,
 			ExecDraftTool:   false,
 			PluginID:        item.PluginID,
 			ToolID:          item.ToolID,

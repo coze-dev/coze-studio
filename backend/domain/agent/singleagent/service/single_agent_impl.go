@@ -91,6 +91,8 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 	}
 
 	exeReq := &agentflow.AgentRequest{
+		UserID: req.UserID,
+
 		Input:   req.Input,
 		History: req.History,
 

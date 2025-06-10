@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"code.byted.org/flow/opencoze/backend/application/template"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossopenauth"
 
 	"code.byted.org/flow/opencoze/backend/application/app"
 	"code.byted.org/flow/opencoze/backend/application/base/appinfra"
@@ -14,7 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
 	"code.byted.org/flow/opencoze/backend/application/modelmgr"
-	"code.byted.org/flow/opencoze/backend/application/openapiauth"
+	"code.byted.org/flow/opencoze/backend/application/openauth"
 	"code.byted.org/flow/opencoze/backend/application/plugin"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/search"
@@ -44,6 +45,7 @@ import (
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/knowledge"
 	messageImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/message"
 	modelmgrImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/modelmgr"
+	openauthImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/openauth"
 	pluginImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/plugin"
 	singleagentImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/singleagent"
 	variablesImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/variables"
@@ -64,6 +66,7 @@ type basicServices struct {
 	userSVC      *user.UserApplicationService
 	promptSVC    *prompt.PromptApplicationService
 	templateSVC  *template.ApplicationService
+	openAuthSVC  *openauth.OpenAuthApplicationService
 }
 
 type primaryServices struct {
@@ -119,6 +122,7 @@ func Init(ctx context.Context) (err error) {
 	crossagent.SetDefaultSVC(singleagentImpl.InitDomainService(complexServices.singleAgentSVC.DomainSVC))
 	crossuser.SetDefaultSVC(crossuserImpl.InitDomainService(basicServices.userSVC.DomainSVC))
 	crossdatacopy.SetDefaultSVC(dataCopyImpl.InitDomainService(basicServices.infra))
+	crossopenauth.SetDefaultOAuthSVC(openauthImpl.InitDomainService(basicServices.openAuthSVC.OAuthDomainSVC))
 
 	return nil
 }
@@ -134,7 +138,7 @@ func initEventBus(infra *appinfra.AppDependencies) *eventbusImpl {
 // initBasicServices init basic services that only depends on infra.
 func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *eventbusImpl) (*basicServices, error) {
 	icon.InitService(infra.TOSClient)
-	openapiauth.InitService(infra.DB, infra.IDGenSVC)
+	openAuthSVC := openauth.InitService(infra.DB, infra.CacheCli, infra.IDGenSVC)
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
 
 	modelMgrSVC := modelmgr.InitService(infra.DB, infra.IDGenSVC, infra.TOSClient)
@@ -153,6 +157,7 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 		userSVC:      userSVC,
 		promptSVC:    promptSVC,
 		templateSVC:  templateSVC,
+		openAuthSVC:  openAuthSVC,
 	}, nil
 }
 
@@ -220,6 +225,7 @@ func (b *basicServices) toPluginServiceComponents() *plugin.ServiceComponents {
 		EventBus: b.eventbus.resourceEventBus,
 		OSS:      b.infra.TOSClient,
 		UserSVC:  b.userSVC.DomainSVC,
+		OAuthSVC: b.openAuthSVC.OAuthDomainSVC,
 	}
 }
 

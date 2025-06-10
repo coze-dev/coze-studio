@@ -235,44 +235,6 @@ func (t *toolRepoImpl) MGetOnlineTools(ctx context.Context, toolIDs []int64, opt
 	return tools, nil
 }
 
-func (t *toolRepoImpl) CheckOnlineToolExist(ctx context.Context, toolID int64) (exist bool, err error) {
-	_, exist = pluginConf.GetToolProduct(toolID)
-	if exist {
-		return true, nil
-	}
-
-	return t.toolDAO.CheckToolExist(ctx, toolID)
-}
-
-func (t *toolRepoImpl) CheckOnlineToolsExist(ctx context.Context, toolIDs []int64) (exists map[int64]bool, err error) {
-	exists = make(map[int64]bool, len(toolIDs))
-
-	toolProducts := pluginConf.MGetToolProducts(toolIDs)
-	exists = slices.ToMap(toolProducts, func(tool *pluginConf.ToolInfo) (int64, bool) {
-		return tool.Info.ID, true
-	})
-
-	customToolIDs := make([]int64, 0, len(toolIDs))
-	for _, toolID := range toolIDs {
-		_, ok := exists[toolID]
-		if ok {
-			continue
-		}
-		customToolIDs = append(customToolIDs, toolID)
-	}
-
-	customExists, err := t.toolDAO.CheckToolsExist(ctx, customToolIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	for toolID := range customExists {
-		exists[toolID] = true
-	}
-
-	return exists, nil
-}
-
 func (t *toolRepoImpl) GetVersionTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, exist bool, err error) {
 	ti, exist := pluginConf.GetToolProduct(vTool.ToolID)
 	if exist {

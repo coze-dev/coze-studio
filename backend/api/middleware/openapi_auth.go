@@ -7,7 +7,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 
 	"code.byted.org/flow/opencoze/backend/api/internal/httputil"
-	"code.byted.org/flow/opencoze/backend/application/openapiauth"
+	"code.byted.org/flow/opencoze/backend/application/openauth"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
@@ -86,9 +86,9 @@ func OpenapiAuthMW() app.HandlerFunc {
 			return
 		}
 
-		apiKeyInfo, err := openapiauth.OpenApiAuthApplication.CheckPermission(ctx, apiKey)
+		apiKeyInfo, err := openauth.OpenAuthApplication.CheckPermission(ctx, apiKey)
 		if err != nil {
-			logs.CtxErrorf(ctx, "OpenApiAuthApplication.CheckPermission failed, err=%v", err)
+			logs.CtxErrorf(ctx, "OpenAuthApplication.CheckPermission failed, err=%v", err)
 			httputil.InternalError(ctx, c,
 				errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", err.Error())))
 			return

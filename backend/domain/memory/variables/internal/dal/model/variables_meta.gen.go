@@ -10,14 +10,14 @@ const TableNameVariablesMeta = "variables_meta"
 
 // VariablesMeta KV Memory meta
 type VariablesMeta struct {
-	ID           int64                  `gorm:"column:id;primaryKey;comment:主键ID" json:"id"`                                    // 主键ID
-	CreatorID    int64                  `gorm:"column:creator_id;not null;comment:创建者ID" json:"creator_id"`                     // 创建者ID
-	BizType      int32                  `gorm:"column:biz_type;not null;comment:1 for agent，2 for app" json:"biz_type"`         // 1 for agent，2 for app
-	BizID        string                 `gorm:"column:biz_id;not null;comment:1 for agent_id，2 for app_id" json:"biz_id"`       // 1 for agent_id，2 for app_id
-	VariableList []*entity.VariableMeta `gorm:"column:variable_list;comment:变量配置的json数据;serializer:json" json:"variable_list"`  // 变量配置的json数据
-	CreatedAt    int64                  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:创建时间" json:"created_at"` // 创建时间
-	UpdatedAt    int64                  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:更新时间" json:"updated_at"` // 更新时间
-	Version      string                 `gorm:"column:version;not null;comment:project版本,为空代表草稿态" json:"version"`               // project版本,为空代表草稿态
+	ID           int64                  `gorm:"column:id;primaryKey;comment:主键ID" json:"id"`                                           // 主键ID
+	CreatorID    int64                  `gorm:"column:creator_id;not null;comment:创建者ID" json:"creator_id"`                            // 创建者ID
+	BizType      int32                  `gorm:"column:biz_type;not null;comment:1 for agent，2 for app" json:"biz_type"`                // 1 for agent，2 for app
+	BizID        string                 `gorm:"column:biz_id;not null;comment:1 for agent_id，2 for app_id" json:"biz_id"`              // 1 for agent_id，2 for app_id
+	VariableList []*entity.VariableMeta `gorm:"column:variable_list;comment:变量配置的json数据;serializer:json" json:"variable_list"`         // 变量配置的json数据
+	CreatedAt    int64                  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:create time" json:"created_at"` // create time
+	UpdatedAt    int64                  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:update time" json:"updated_at"` // update time
+	Version      string                 `gorm:"column:version;not null;comment:project版本,为空代表草稿态" json:"version"`                      // project版本,为空代表草稿态
 }
 
 // TableName VariablesMeta's table name

@@ -149,8 +149,8 @@ enum AuthorizationType {
 
 enum ServiceAuthSubType {
     ApiKey             = 0,
-    BytedanceZeroTrust = 1,
-    OIDC               = 2,
+
+    OAuthClientCredentials  = 10, // for opencoze
 }
 
 enum AuthorizationServiceLocation {

@@ -13,10 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	entity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	service "code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPluginService is a mock of PluginService interface.
@@ -192,6 +191,21 @@ func (m *MockPluginService) GetDraftPlugin(ctx context.Context, pluginID int64) 
 func (mr *MockPluginServiceMockRecorder) GetDraftPlugin(ctx, pluginID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDraftPlugin", reflect.TypeOf((*MockPluginService)(nil).GetDraftPlugin), ctx, pluginID)
+}
+
+// GetOAuthStatus mocks base method.
+func (m *MockPluginService) GetOAuthStatus(ctx context.Context, pluginID int64) (*service.GetOAuthStatusResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOAuthStatus", ctx, pluginID)
+	ret0, _ := ret[0].(*service.GetOAuthStatusResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOAuthStatus indicates an expected call of GetOAuthStatus.
+func (mr *MockPluginServiceMockRecorder) GetOAuthStatus(ctx, pluginID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOAuthStatus", reflect.TypeOf((*MockPluginService)(nil).GetOAuthStatus), ctx, pluginID)
 }
 
 // GetOnlinePlugin mocks base method.

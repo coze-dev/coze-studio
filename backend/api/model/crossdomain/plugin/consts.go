@@ -19,8 +19,9 @@ const (
 type AuthSubType string
 
 const (
-	AuthSubTypeOfOIDC  AuthSubType = "oidc"
-	AuthSubTypeOfToken AuthSubType = "token/api_key"
+	AuthSubTypeOfServiceAPIToken        AuthSubType = "token/api_key"
+	AuthSubTypeOfOAuthAuthorizationCode AuthSubType = "authorization_code"
+	AuthSubTypeOfOAuthClientCredentials AuthSubType = "client_credentials"
 )
 
 type HTTPParamLocation string

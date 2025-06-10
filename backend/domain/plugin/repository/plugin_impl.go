@@ -134,15 +134,6 @@ func (p *pluginRepoImpl) UpdateDraftPluginWithoutURLChanged(ctx context.Context,
 	return p.pluginDraftDAO.Update(ctx, plugin)
 }
 
-func (p *pluginRepoImpl) CheckOnlinePluginExist(ctx context.Context, pluginID int64) (exist bool, err error) {
-	_, exist = pluginConf.GetPluginProduct(pluginID)
-	if exist {
-		return true, nil
-	}
-
-	return p.pluginDAO.CheckPluginExist(ctx, pluginID)
-}
-
 func (p *pluginRepoImpl) GetOnlinePlugin(ctx context.Context, pluginID int64, opts ...PluginSelectedOptions) (plugin *entity.PluginInfo, exist bool, err error) {
 	pi, exist := pluginConf.GetPluginProduct(pluginID)
 	if exist {
@@ -592,15 +583,6 @@ func (p *pluginRepoImpl) UpdateDraftPluginWithCode(ctx context.Context, req *Upd
 func (p *pluginRepoImpl) CreateDraftPluginWithCode(ctx context.Context, req *CreateDraftPluginWithCodeRequest) (resp *CreateDraftPluginWithCodeResponse, err error) {
 	doc := req.OpenapiDoc
 	mf := req.Manifest
-
-	err = doc.Validate(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("openapi doc validates failed, err=%v", err)
-	}
-	err = mf.Validate()
-	if err != nil {
-		return nil, fmt.Errorf("plugin manifest validated failed, err=%v", err)
-	}
 
 	pluginType, _ := plugin.ToThriftPluginType(mf.API.Type)
 

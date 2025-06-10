@@ -28,11 +28,16 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 	mf.API.Type, _ = model.ToPluginType(req.PluginType)
 	mf.LogoURL = req.IconURI
 
-	authV2, err := convertPluginAuthInfoToAuthV2(req.AuthInfo)
+	authV2, err := req.AuthInfo.toAuthV2()
 	if err != nil {
 		return 0, err
 	}
 	mf.Auth = authV2
+
+	err = p.validateOAuthInfo(ctx, req.DeveloperID, mf.Auth)
+	if err != nil {
+		return 0, err
+	}
 
 	for loc, params := range req.CommonParams {
 		location, ok := model.ToHTTPParamLocation(loc)
@@ -111,6 +116,20 @@ func (p *pluginServiceImpl) ListDraftPlugins(ctx context.Context, req *ListDraft
 }
 
 func (p *pluginServiceImpl) CreateDraftPluginWithCode(ctx context.Context, req *CreateDraftPluginWithCodeRequest) (resp *CreateDraftPluginWithCodeResponse, err error) {
+	err = req.OpenapiDoc.Validate(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("openapi doc validates failed, err=%v", err)
+	}
+	err = req.Manifest.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("plugin manifest validated failed, err=%v", err)
+	}
+
+	err = p.validateOAuthInfo(ctx, req.DeveloperID, req.Manifest.Auth)
+	if err != nil {
+		return nil, err
+	}
+
 	res, err := p.pluginRepo.CreateDraftPluginWithCode(ctx, &repository.CreateDraftPluginWithCodeRequest{
 		SpaceID:     req.SpaceID,
 		DeveloperID: req.DeveloperID,
@@ -141,6 +160,11 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 	err = mf.Validate()
 	if err != nil {
 		return fmt.Errorf("plugin manifest validated failed, err=%v", err)
+	}
+
+	err = p.validateOAuthInfo(ctx, req.UserID, mf.Auth)
+	if err != nil {
+		return err
 	}
 
 	apiSchemas := make(map[entity.UniqueToolAPI]*model.Openapi3Operation, len(doc.Paths))
@@ -371,6 +395,11 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 		return err
 	}
 
+	err = p.validateOAuthInfo(ctx, oldPlugin.DeveloperID, mf.Auth)
+	if err != nil {
+		return err
+	}
+
 	newPlugin := entity.NewPluginInfo(&model.PluginInfo{
 		ID:         req.PluginID,
 		IconURI:    ptr.Of(req.Icon.URI),
@@ -440,7 +469,7 @@ func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *Upd
 		}
 	}
 
-	authV2, err := convertPluginAuthInfoToAuthV2(req.AuthInfo)
+	authV2, err := req.AuthInfo.toAuthV2()
 	if err != nil {
 		return nil, err
 	}
@@ -448,112 +477,6 @@ func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *Upd
 	mf.Auth = authV2
 
 	return mf, nil
-}
-
-func convertPluginAuthInfoToAuthV2(authInfo *PluginAuthInfo) (*model.AuthV2, error) {
-	if authInfo.AuthType == nil {
-		return nil, fmt.Errorf("auth type is empty")
-	}
-
-	switch *authInfo.AuthType {
-	case model.AuthTypeOfNone:
-		return &model.AuthV2{
-			Type: model.AuthTypeOfNone,
-		}, nil
-
-	case model.AuthTypeOfOAuth:
-		if authInfo.OauthInfo == nil || *authInfo.OauthInfo == "" {
-			return nil, fmt.Errorf("oauth info is empty")
-		}
-
-		oauthInfo := make(map[string]string)
-		err := sonic.Unmarshal([]byte(*authInfo.OauthInfo), &oauthInfo)
-		if err != nil {
-			return nil, fmt.Errorf("unmarshal oauth info failed, err=%v", err)
-		}
-
-		contentType := oauthInfo["authorization_content_type"]
-		if contentType != model.MIMETypeJson { // only support application/json
-			return nil, fmt.Errorf("invalid authorization content type '%s'", contentType)
-		}
-
-		_oauthInfo := &model.AuthOfOAuth{
-			ClientID:                 oauthInfo["client_id"],
-			ClientSecret:             oauthInfo["client_secret"],
-			ClientURL:                oauthInfo["client_url"],
-			AuthorizationURL:         oauthInfo["authorization_url"],
-			AuthorizationContentType: contentType,
-			Scope:                    oauthInfo["scope"],
-		}
-
-		str, err := sonic.MarshalString(_oauthInfo)
-		if err != nil {
-			return nil, fmt.Errorf("marshal oauth info failed, err=%v", err)
-		}
-
-		return &model.AuthV2{
-			Type:    model.AuthTypeOfOAuth,
-			Payload: &str,
-		}, nil
-
-	case model.AuthTypeOfService:
-		if authInfo.AuthSubType == nil {
-			return nil, fmt.Errorf("auth sub type is empty")
-		}
-
-		switch *authInfo.AuthSubType {
-		case model.AuthSubTypeOfToken:
-			if authInfo.Location == nil {
-				return nil, fmt.Errorf("location is empty")
-			}
-			if authInfo.ServiceToken == nil {
-				return nil, fmt.Errorf("service token is empty")
-			}
-			if authInfo.Key == nil {
-				return nil, fmt.Errorf("key is empty")
-			}
-
-			tokenAuth := &model.AuthOfToken{
-				ServiceToken: *authInfo.ServiceToken,
-				Location:     *authInfo.Location,
-				Key:          *authInfo.Key,
-			}
-
-			str, err := sonic.MarshalString(tokenAuth)
-			if err != nil {
-				return nil, fmt.Errorf("marshal token auth failed, err=%v", err)
-			}
-
-			return &model.AuthV2{
-				Type:    model.AuthTypeOfService,
-				SubType: model.AuthSubTypeOfToken,
-				Payload: &str,
-			}, nil
-
-		case model.AuthSubTypeOfOIDC:
-			if authInfo.AuthPayload == nil || *authInfo.AuthPayload == "" {
-				return nil, fmt.Errorf("auth payload is empty")
-			}
-
-			oidcAuth := &model.AuthOfOIDC{}
-			err := sonic.UnmarshalString(*authInfo.AuthPayload, &oidcAuth)
-			if err != nil {
-				return nil, fmt.Errorf("unmarshal oidc auth info failed, err=%v", err)
-			}
-
-			return &model.AuthV2{
-				Type:    model.AuthTypeOfService,
-				SubType: model.AuthSubTypeOfToken,
-				Payload: authInfo.AuthPayload,
-			}, nil
-
-		default:
-			return nil, fmt.Errorf("invalid sub auth type '%s'", *authInfo.AuthSubType)
-		}
-
-	default:
-		return nil, fmt.Errorf("invalid auth type '%v'", authInfo.AuthType)
-	}
 }
 
 func (p *pluginServiceImpl) DeleteDraftPlugin(ctx context.Context, pluginID int64) (err error) {

@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth/entity"
-	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
+	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/internal/dal/model"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/orm"
 )

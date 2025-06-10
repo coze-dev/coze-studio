@@ -33,10 +33,6 @@ func NewPluginInfos(infos []*model.PluginInfo) []*PluginInfo {
 	return res
 }
 
-func (p PluginInfo) GetIconURI() string {
-	return ptr.FromOrDefault(p.IconURI, "")
-}
-
 func (p PluginInfo) GetServerURL() string {
 	return ptr.FromOrDefault(p.ServerURL, "")
 }

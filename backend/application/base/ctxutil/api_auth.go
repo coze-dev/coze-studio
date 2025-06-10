@@ -3,7 +3,7 @@ package ctxutil
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain/permission/openapiauth/entity"
+	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )

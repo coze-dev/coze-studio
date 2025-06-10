@@ -25,6 +25,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
+	entity2 "code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
 	"github.com/cloudwego/hertz/pkg/app"
@@ -39,7 +40,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	crossplugin "code.byted.org/flow/opencoze/backend/crossdomain/workflow/plugin"
-	entity2 "code.byted.org/flow/opencoze/backend/domain/permission/openapiauth/entity"
 	pluginentity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	pluginservice "code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"

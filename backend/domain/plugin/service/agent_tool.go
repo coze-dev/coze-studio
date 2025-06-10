@@ -47,12 +47,19 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentTo
 	for _, v := range req.VersionAgentTools {
 		toolIDs = append(toolIDs, v.ToolID)
 	}
-	existMap, err := p.toolRepo.CheckOnlineToolsExist(ctx, toolIDs)
+
+	existTools, err := p.toolRepo.MGetOnlineTools(ctx, toolIDs, repository.WithToolID())
 	if err != nil {
 		return nil, err
 	}
-	if len(existMap) == 0 {
+
+	if len(existTools) == 0 {
 		return nil, nil
+	}
+
+	existMap := make(map[int64]bool, len(existTools))
+	for _, tool := range existTools {
+		existMap[tool.ID] = true
 	}
 
 	if req.IsDraft {
@@ -96,7 +103,7 @@ func (p *pluginServiceImpl) PublishAgentTools(ctx context.Context, agentID int64
 }
 
 func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *UpdateBotDefaultParamsRequest) (err error) {
-	exist, err := p.pluginRepo.CheckOnlinePluginExist(ctx, req.PluginID)
+	_, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID, repository.WithPluginID())
 	if err != nil {
 		return err
 	}

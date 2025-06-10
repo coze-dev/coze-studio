@@ -1095,19 +1095,17 @@ func (p *AuthorizationType) Value() (driver.Value, error) {
 type ServiceAuthSubType int64
 
 const (
-	ServiceAuthSubType_ApiKey             ServiceAuthSubType = 0
-	ServiceAuthSubType_BytedanceZeroTrust ServiceAuthSubType = 1
-	ServiceAuthSubType_OIDC               ServiceAuthSubType = 2
+	ServiceAuthSubType_ApiKey ServiceAuthSubType = 0
+	// for opencoze
+	ServiceAuthSubType_OAuthClientCredentials ServiceAuthSubType = 10
 )
 
 func (p ServiceAuthSubType) String() string {
 	switch p {
 	case ServiceAuthSubType_ApiKey:
 		return "ApiKey"
-	case ServiceAuthSubType_BytedanceZeroTrust:
-		return "BytedanceZeroTrust"
-	case ServiceAuthSubType_OIDC:
-		return "OIDC"
+	case ServiceAuthSubType_OAuthClientCredentials:
+		return "OAuthClientCredentials"
 	}
 	return "<UNSET>"
 }
@@ -1116,10 +1114,8 @@ func ServiceAuthSubTypeFromString(s string) (ServiceAuthSubType, error) {
 	switch s {
 	case "ApiKey":
 		return ServiceAuthSubType_ApiKey, nil
-	case "BytedanceZeroTrust":
-		return ServiceAuthSubType_BytedanceZeroTrust, nil
-	case "OIDC":
-		return ServiceAuthSubType_OIDC, nil
+	case "OAuthClientCredentials":
+		return ServiceAuthSubType_OAuthClientCredentials, nil
 	}
 	return ServiceAuthSubType(0), fmt.Errorf("not a valid ServiceAuthSubType string")
 }

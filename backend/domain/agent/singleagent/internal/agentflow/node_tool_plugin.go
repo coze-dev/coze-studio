@@ -46,12 +46,12 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 		ProjectType:    plugin.ProjectTypeOfBot,
 		ProjectVersion: ptr.Of(conf.agentIdentity.Version),
 		ConnectorID:    conf.agentIdentity.ConnectorID,
-		UserID:         conf.userID,
 	}
 
 	tools := make([]tool.InvokableTool, 0, len(agentTools))
 	for _, ti := range agentTools {
 		tools = append(tools, &pluginInvokableTool{
+			userID:      conf.userID,
 			isDraft:     conf.agentIdentity.IsDraft,
 			projectInfo: projectInfo,
 			toolInfo:    ti,
@@ -62,6 +62,7 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 }
 
 type pluginInvokableTool struct {
+	userID      int64
 	isDraft     bool
 	toolInfo    *pluginEntity.ToolInfo
 	projectInfo *plugin.ProjectInfo
@@ -90,16 +91,17 @@ func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error
 
 func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...tool.Option) (string, error) {
 	req := &service.ExecuteToolRequest{
-		ExecDraftTool: false,
+		UserID:          p.userID,
+		PluginID:        p.toolInfo.PluginID,
+		ToolID:          p.toolInfo.ID,
+		ExecDraftTool:   false,
+		ArgumentsInJson: argumentsInJSON,
 		ExecScene: func() plugin.ExecuteScene {
 			if p.isDraft {
 				return plugin.ExecSceneOfDraftAgent
 			}
 			return plugin.ExecSceneOfOnlineAgent
 		}(),
-		PluginID:        p.toolInfo.PluginID,
-		ToolID:          p.toolInfo.ID,
-		ArgumentsInJson: argumentsInJSON,
 	}
 
 	opts := []pluginEntity.ExecuteToolOpt{

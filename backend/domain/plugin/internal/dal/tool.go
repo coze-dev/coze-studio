@@ -55,6 +55,9 @@ func (t *ToolDAO) getSelected(opt *ToolSelectedOption) (selected []field.Expr) {
 	if opt.ToolID {
 		selected = append(selected, table.ID)
 	}
+	if opt.ActivatedStatus {
+		selected = append(selected, table.ActivatedStatus)
+	}
 
 	return selected
 }
@@ -74,39 +77,6 @@ func (t *ToolDAO) Get(ctx context.Context, toolID int64) (tool *entity.ToolInfo,
 	tool = toolPO(*tl).ToDO()
 
 	return tool, true, nil
-}
-
-func (t *ToolDAO) CheckToolExist(ctx context.Context, toolID int64) (exist bool, err error) {
-	table := t.query.Tool
-	_, err = table.WithContext(ctx).
-		Where(table.ID.Eq(toolID)).
-		Select(table.ID).
-		First()
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
-}
-
-func (t *ToolDAO) CheckToolsExist(ctx context.Context, toolIDs []int64) (exist map[int64]bool, err error) {
-	table := t.query.Tool
-	existTools, err := table.WithContext(ctx).
-		Where(table.ID.In(toolIDs...)).
-		Select(table.ID).
-		Find()
-	if err != nil {
-		return nil, err
-	}
-
-	existToolIDs := make(map[int64]bool, len(toolIDs))
-	for _, tl := range existTools {
-		existToolIDs[tl.ID] = true
-	}
-
-	return existToolIDs, nil
 }
 
 func (t *ToolDAO) MGet(ctx context.Context, toolIDs []int64, opt *ToolSelectedOption) (tools []*entity.ToolInfo, err error) {

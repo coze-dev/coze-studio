@@ -1,8 +1,8 @@
 [
   {
-    "key": "standard",
-    "value": 4,
-    "label": "standard",
+    "key": "client_credentials",
+    "value": 10,
+    "label": "Client Credentials",
     "items": [
       {
         "key": "client_id",
@@ -17,7 +17,7 @@
         "required": true
       },
       {
-        "key": "client_url",
+        "key": "token_url",
         "type": "url",
         "required": true
       },
@@ -25,17 +25,6 @@
         "key": "scope",
         "type": "text",
         "max_len": 500
-      },
-      {
-        "key": "authorization_url",
-        "type": "url",
-        "required": true
-      },
-      {
-        "key": "authorization_content_type",
-        "type": "text",
-        "default": "application/json",
-        "required": true
       }
     ]
   }

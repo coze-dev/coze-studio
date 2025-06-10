@@ -49,7 +49,6 @@ type APPApplicationService struct {
 	workflowSVC  workflow.Service
 	connectorSVC connector.Connector
 	variablesSVC variables.Variables
-	knowledgeSVC knowledge.KnowledgeApplicationService
 }
 
 func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *projectAPI.DraftProjectCreateRequest) (resp *projectAPI.DraftProjectCreateResponse, err error) {
@@ -189,11 +188,12 @@ func (a *APPApplicationService) deleteAPPResources(ctx context.Context, appID in
 		logs.CtxErrorf(ctx, "delete app variables failed, err=%v", err)
 	}
 
-	err = a.knowledgeSVC.DeleteAppKnowledge(ctx, &knowledge.DeleteAppKnowledgeRequest{AppID: appID})
+	err = knowledge.KnowledgeSVC.DeleteAppKnowledge(ctx, &knowledge.DeleteAppKnowledgeRequest{AppID: appID})
 	if err != nil {
 		logs.CtxErrorf(ctx, "delete app knowledge failed, err=%v", err)
 		return err
 	}
+
 	err = a.workflowSVC.DeleteWorkflowsByAppID(ctx, appID)
 	if err != nil {
 		return err

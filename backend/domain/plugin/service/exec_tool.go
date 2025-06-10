@@ -73,6 +73,7 @@ func (p *pluginServiceImpl) buildExecConfig(ctx context.Context, req *ExecuteToo
 	}
 
 	config = &tool_executor.ExecutorConfig{
+		UserID:                     req.UserID,
 		Plugin:                     pl,
 		Tool:                       tl,
 		ProjectInfo:                execOpt.ProjectInfo,

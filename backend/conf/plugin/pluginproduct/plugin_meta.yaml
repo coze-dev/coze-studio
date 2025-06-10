@@ -506,7 +506,11 @@
 
       4. 获取指定话题的消息历史；'
     auth:
-      type: none
+      type: oauth
+      service_token: ''
+      sub_type: client_credentials
+      payload: '{"client_id": "********", "client_secret": "********",
+       "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
@@ -587,11 +591,9 @@
     auth:
       type: oauth
       service_token: ''
-      sub_type: ''
-      payload: '{"client_url": "https://open.feishu.cn/open-apis/authen/v1/index",
-        "scope": "search:docs:read", "authorization_url": "https://open.feishu.cn/open-apis/authen/v1/access_token",
-        "authorization_content_type": "application/json", "platform": "standard",
-        "client_id": "********", "client_secret": "********"}'
+      sub_type: client_credentials
+      payload: '{"client_id": "********", "client_secret": "********",
+       "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
@@ -706,11 +708,9 @@
     auth:
       type: oauth
       service_token: ''
-      sub_type: ''
-      payload: '{"client_url": "https://open.feishu.cn/open-apis/authen/v1/index",
-        "scope": "sheets:spreadsheet", "authorization_url": "https://open.feishu.cn/open-apis/authen/v1/access_token",
-        "authorization_content_type": "application/json", "platform": "standard",
-        "client_id": "********", "client_secret": "********"}'
+      sub_type: client_credentials
+      payload: '{"client_id": "********", "client_secret": "********",
+       "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
@@ -797,11 +797,9 @@
     auth:
       type: oauth
       service_token: ''
-      sub_type: ''
-      payload: '{"client_url": "https://open.feishu.cn/open-apis/authen/v1/index",
-        "scope": "task:task:write", "authorization_url": "https://open.feishu.cn/open-apis/authen/v1/access_token",
-        "authorization_content_type": "application/json", "platform": "standard",
-        "client_id": "********", "client_secret": "********"}'
+      sub_type: client_credentials
+      payload: '{"client_id": "********", "client_secret": "********",
+       "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
@@ -874,11 +872,9 @@
     auth:
       type: oauth
       service_token: ''
-      sub_type: ''
-      payload: '{"client_url": "https://open.feishu.cn/open-apis/authen/v1/index",
-        "scope": "search:docs:read", "authorization_url": "https://open.feishu.cn/open-apis/authen/v1/access_token",
-        "authorization_content_type": "application/json", "platform": "standard",
-        "client_id": "********", "client_secret": "********"}'
+      sub_type: client_credentials
+      payload: '{"client_id": "********", "client_secret": "********",
+       "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
@@ -941,11 +937,9 @@
     auth:
       type: oauth
       service_token: ''
-      sub_type: ''
-      payload: '{"client_url": "https://open.feishu.cn/open-apis/authen/v1/index",
-        "scope": "wiki:wiki:readonly", "authorization_url": "https://open.feishu.cn/open-apis/authen/v1/access_token",
-        "authorization_content_type": "application/json", "platform": "standard",
-        "client_id": "********", "client_secret": "********"}'
+      sub_type: client_credentials
+      payload: '{"client_id": "********", "client_secret": "********",
+       "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
@@ -976,11 +970,9 @@
     auth:
       type: oauth
       service_token: ''
-      sub_type: ''
-      payload: '{"client_url": "https://open.feishu.cn/open-apis/authen/v1/index",
-        "scope": "calendar:calendar", "authorization_url": "https://open.feishu.cn/open-apis/authen/v1/access_token",
-        "authorization_content_type": "application/json", "platform": "standard",
-        "client_id": "********", "client_secret": "********"}'
+      sub_type: client_credentials
+      payload: '{"client_id": "********", "client_secret": "********",
+       "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi

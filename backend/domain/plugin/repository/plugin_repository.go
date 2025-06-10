@@ -21,7 +21,6 @@ type PluginRepository interface {
 	DeleteAPPAllPlugins(ctx context.Context, appID int64) (pluginIDs []int64, err error)
 
 	GetOnlinePlugin(ctx context.Context, pluginID int64, opts ...PluginSelectedOptions) (plugin *entity.PluginInfo, exist bool, err error)
-	CheckOnlinePluginExist(ctx context.Context, pluginID int64) (exist bool, err error)
 	MGetOnlinePlugins(ctx context.Context, pluginIDs []int64, opts ...PluginSelectedOptions) (plugins []*entity.PluginInfo, err error)
 	ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
 

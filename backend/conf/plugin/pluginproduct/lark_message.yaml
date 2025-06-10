@@ -24,7 +24,7 @@ paths:
           name: appsecret
           schema:
             type: string
-        - description: 群聊或单聊的 ID，获取方式参见群 ID 说明。https://open.feishu.cn/document/server-docs/group/chat/chat-id-description
+        - description: 群聊或单聊的 ID，获取方式参见群 ID 说明。https://open.larkoffice.com/document/server-docs/group/chat/chat-id-description
           in: query
           name: container_id
           required: true
@@ -96,7 +96,7 @@ paths:
                                   type: string
                               type: object
                             chat_id:
-                              description: 消息所属的群 ID。你可以调用获取群信息接口，根据群 ID 获取群详情。https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/chat/get
+                              description: 消息所属的群 ID。你可以调用获取群信息接口，根据群 ID 获取群详情。https://open.larkoffice.com/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/chat/get
                               type: string
                             create_time:
                               description: 消息生成的时间
@@ -127,13 +127,13 @@ paths:
                               description: 消息 ID，由系统生成的唯一 ID 标识。后续对消息的管理维护操作均需要使用该 ID。
                               type: string
                             msg_type:
-                              description: 消息类型。各类型详情参考 https://open.feishu.cn/document/server-docs/im-v1/message-content-description/message_content
+                              description: 消息类型。各类型详情参考 https://open.larkoffice.com/document/server-docs/im-v1/message-content-description/message_content
                               type: string
                             parent_id:
-                              description: 父消息 ID。在有多个回复的消息树中，parent_id 为当前消息上一层的消息 message_id。如果回复的是话题，则 parent_id 始终为话题内根消息的 message_id。关于 parent_id 的更多说明，参见消息管理概述。https://open.feishu.cn/document/server-docs/im-v1/message/intro
+                              description: 父消息 ID。在有多个回复的消息树中，parent_id 为当前消息上一层的消息 message_id。如果回复的是话题，则 parent_id 始终为话题内根消息的 message_id。关于 parent_id 的更多说明，参见消息管理概述。https://open.larkoffice.com/document/server-docs/im-v1/message/intro
                               type: string
                             root_id:
-                              description: 根消息 ID。在有多个回复的消息树中，root_id 为根消息的 message_id。如果回复的是话题，则 root_id 为话题内根消息的 message_id。关于 root_id 的更多说明，参见消息管理概述。https://open.feishu.cn/document/server-docs/im-v1/message/intro
+                              description: 根消息 ID。在有多个回复的消息树中，root_id 为根消息的 message_id。如果回复的是话题，则 root_id 为话题内根消息的 message_id。关于 root_id 的更多说明，参见消息管理概述。https://open.larkoffice.com/document/server-docs/im-v1/message/intro
                               type: string
                             sender:
                               description: 当前消息的发送者信息。
@@ -152,7 +152,7 @@ paths:
                                   type: string
                               type: object
                             thread_id:
-                              description: 消息所属的话题 ID（不返回说明该消息不是话题形式的消息）。了解话题可参见话题概述。https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message/thread-introduction
+                              description: 消息所属的话题 ID（不返回说明该消息不是话题形式的消息）。了解话题可参见话题概述。https://open.larkoffice.com/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message/thread-introduction
                               type: string
                             update_time:
                               description: 消息更新的时间
@@ -161,7 +161,7 @@ paths:
                               description: 消息是否被更新。 true：是，false：否。
                               type: boolean
                             upper_message_id:
-                              description: 合并转发消息中，上一层级的消息 ID，仅在合并转发场景会有返回值。了解 upper_message_id 可参见消息管理概述。https://open.feishu.cn/document/server-docs/im-v1/message/intro
+                              description: 合并转发消息中，上一层级的消息 ID，仅在合并转发场景会有返回值。了解 upper_message_id 可参见消息管理概述。https://open.larkoffice.com/document/server-docs/im-v1/message/intro
                               type: string
                           type: object
                         type: array
@@ -194,7 +194,7 @@ paths:
           name: appsecret
           schema:
             type: string
-        - description: 话题 ID，获取方式参见话题概述的如何获取 thread_id 章节。https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message/thread-introduction
+        - description: 话题 ID，获取方式参见话题概述的如何获取 thread_id 章节。https://open.larkoffice.com/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message/thread-introduction
           in: query
           name: container_id
           required: true
@@ -268,7 +268,7 @@ paths:
                                   type: string
                               type: object
                             chat_id:
-                              description: 消息所属的群 ID。你可以调用获取群信息接口，根据群 ID 获取群详情。https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/chat/get
+                              description: 消息所属的群 ID。你可以调用获取群信息接口，根据群 ID 获取群详情。https://open.larkoffice.com/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/chat/get
                               type: string
                             create_time:
                               description: 消息生成的时间
@@ -299,13 +299,13 @@ paths:
                               description: 消息 ID，由系统生成的唯一 ID 标识。后续对消息的管理维护操作均需要使用该 ID。
                               type: string
                             msg_type:
-                              description: 消息类型。各类型详情参考 https://open.feishu.cn/document/server-docs/im-v1/message-content-description/message_content
+                              description: 消息类型。各类型详情参考 https://open.larkoffice.com/document/server-docs/im-v1/message-content-description/message_content
                               type: string
                             parent_id:
-                              description: 父消息 ID。在有多个回复的消息树中，parent_id 为当前消息上一层的消息 message_id。如果回复的是话题，则 parent_id 始终为话题内根消息的 message_id。关于 parent_id 的更多说明，参见消息管理概述。https://open.feishu.cn/document/server-docs/im-v1/message/intro
+                              description: 父消息 ID。在有多个回复的消息树中，parent_id 为当前消息上一层的消息 message_id。如果回复的是话题，则 parent_id 始终为话题内根消息的 message_id。关于 parent_id 的更多说明，参见消息管理概述。https://open.larkoffice.com/document/server-docs/im-v1/message/intro
                               type: string
                             root_id:
-                              description: 根消息 ID。在有多个回复的消息树中，root_id 为根消息的 message_id。如果回复的是话题，则 root_id 为话题内根消息的 message_id。关于 root_id 的更多说明，参见消息管理概述。https://open.feishu.cn/document/server-docs/im-v1/message/intro
+                              description: 根消息 ID。在有多个回复的消息树中，root_id 为根消息的 message_id。如果回复的是话题，则 root_id 为话题内根消息的 message_id。关于 root_id 的更多说明，参见消息管理概述。https://open.larkoffice.com/document/server-docs/im-v1/message/intro
                               type: string
                             sender:
                               description: 当前消息的发送者信息。
@@ -324,7 +324,7 @@ paths:
                                   type: string
                               type: object
                             thread_id:
-                              description: 消息所属的话题 ID（不返回说明该消息不是话题形式的消息）。了解话题可参见话题概述。https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message/thread-introduction
+                              description: 消息所属的话题 ID（不返回说明该消息不是话题形式的消息）。了解话题可参见话题概述。https://open.larkoffice.com/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message/thread-introduction
                               type: string
                             update_time:
                               description: 消息更新的时间
@@ -333,7 +333,7 @@ paths:
                               description: 消息是否被更新。 true：是，false：否。
                               type: boolean
                             upper_message_id:
-                              description: 合并转发消息中，上一层级的消息 ID，仅在合并转发场景会有返回值。了解 upper_message_id 可参见消息管理概述。https://open.feishu.cn/document/server-docs/im-v1/message/intro
+                              description: 合并转发消息中，上一层级的消息 ID，仅在合并转发场景会有返回值。了解 upper_message_id 可参见消息管理概述。https://open.larkoffice.com/document/server-docs/im-v1/message/intro
                               type: string
                           type: object
                         type: array

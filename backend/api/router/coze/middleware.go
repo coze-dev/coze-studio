@@ -1384,3 +1384,8 @@ func _batchcreateapiMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _revokeauthtokenMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

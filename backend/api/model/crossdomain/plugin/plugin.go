@@ -62,6 +62,13 @@ func (p PluginInfo) IsOfficial() bool {
 	return p.RefProductID != nil
 }
 
+func (p PluginInfo) GetIconURI() string {
+	if p.IconURI == nil {
+		return ""
+	}
+	return *p.IconURI
+}
+
 type VersionAgentTool struct {
 	ToolName *string
 	ToolID   int64
@@ -78,6 +85,7 @@ type MGetAgentToolsRequest struct {
 }
 
 type ExecuteToolRequest struct {
+	UserID        int64
 	PluginID      int64
 	ToolID        int64
 	ExecDraftTool bool

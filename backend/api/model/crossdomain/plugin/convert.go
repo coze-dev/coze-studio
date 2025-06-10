@@ -196,11 +196,25 @@ func ToThriftAuthType(typ AuthType) (common.AuthorizationType, bool) {
 }
 
 var subAuthTypes = map[int32]AuthSubType{
-	int32(common.ServiceAuthSubType_ApiKey): AuthSubTypeOfToken,
+	int32(common.ServiceAuthSubType_ApiKey):                 AuthSubTypeOfServiceAPIToken,
+	int32(common.ServiceAuthSubType_OAuthClientCredentials): AuthSubTypeOfOAuthClientCredentials,
 }
 
 func ToAuthSubType(typ int32) (AuthSubType, bool) {
 	_type, ok := subAuthTypes[typ]
+	return _type, ok
+}
+
+var thriftSubAuthTypes = func() map[AuthSubType]int32 {
+	types := make(map[AuthSubType]int32, len(subAuthTypes))
+	for k, v := range subAuthTypes {
+		types[v] = int32(k)
+	}
+	return types
+}()
+
+func ToThriftAuthSubType(typ AuthSubType) (int32, bool) {
+	_type, ok := thriftSubAuthTypes[typ]
 	return _type, ok
 }
 

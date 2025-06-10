@@ -51,8 +51,8 @@ type variablesMeta struct {
 	BizType      field.Int32  // 1 for agent，2 for app
 	BizID        field.String // 1 for agent_id，2 for app_id
 	VariableList field.Field  // 变量配置的json数据
-	CreatedAt    field.Int64  // 创建时间
-	UpdatedAt    field.Int64  // 更新时间
+	CreatedAt    field.Int64  // create time
+	UpdatedAt    field.Int64  // update time
 	Version      field.String // project版本,为空代表草稿态
 
 	fieldMap map[string]field.Expr

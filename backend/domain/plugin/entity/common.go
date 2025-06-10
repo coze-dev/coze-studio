@@ -6,10 +6,3 @@ type PageInfo struct {
 	SortBy     *SortField
 	OrderByACS *bool
 }
-
-type SortField string
-
-const (
-	SortByCreatedAt SortField = "created_at"
-	SortByUpdatedAt SortField = "updated_at"
-)

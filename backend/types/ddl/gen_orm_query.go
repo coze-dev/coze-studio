@@ -131,7 +131,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"node_execution":     {},
 	},
 
-	"domain/permission/openapiauth/internal/dal/query": {
+	"domain/openauth/openapiauth/internal/dal/query": {
 		"api_key": {},
 	},
 	"domain/shortcutcmd/internal/dal/query": {

@@ -51,12 +51,12 @@ func (mf PluginManifest) Validate() (err error) {
 		mf.Auth.Type != AuthTypeOfService {
 		return fmt.Errorf("invalid auth type '%s'", mf.Auth.Type)
 	}
-	if mf.Auth.Type != AuthTypeOfNone && mf.Auth.Type != AuthTypeOfOAuth {
+	if mf.Auth.Type != AuthTypeOfNone {
 		if mf.Auth.SubType == "" {
 			return fmt.Errorf("auth sub type is empty")
 		}
-		if mf.Auth.SubType != AuthSubTypeOfToken &&
-			mf.Auth.SubType != AuthSubTypeOfOIDC {
+		if mf.Auth.SubType != AuthSubTypeOfServiceAPIToken &&
+			mf.Auth.SubType != AuthSubTypeOfOAuthClientCredentials {
 			return fmt.Errorf("invalid auth sub type '%s'", mf.Auth.SubType)
 		}
 	}
@@ -96,20 +96,15 @@ type Auth struct {
 }
 
 type AuthV2 struct {
-	Type        AuthType     `json:"type" validate:"required" yaml:"type"`
-	SubType     AuthSubType  `json:"sub_type" yaml:"sub_type"`
-	Payload     *string      `json:"payload,omitempty" yaml:"payload,omitempty"`
-	AuthOfOIDC  *AuthOfOIDC  `json:"-"`
-	AuthOfToken *AuthOfToken `json:"-"`
-	AuthOfOAuth *AuthOfOAuth `json:"-"`
-}
+	Type    AuthType    `json:"type" validate:"required" yaml:"type"`
+	SubType AuthSubType `json:"sub_type" yaml:"sub_type"`
+	Payload *string     `json:"payload,omitempty" yaml:"payload,omitempty"`
+	// service
+	AuthOfAPIToken *AuthOfAPIToken `json:"-"`
 
-type AuthOfOIDC struct {
-	GrantType    string `json:"grant_type"`
-	EndpointURL  string `json:"endpoint_url"`
-	Audience     string `json:"audience,omitempty"`
-	ODICScope    string `json:"oidc_scope,omitempty"`
-	ODICClientID string `json:"oidc_client_id,omitempty"`
+	// oauth
+	AuthOfOAuthAuthorizationCode *AuthOfOAuthAuthorizationCode `json:"-"`
+	AuthOfOAuthClientCredentials *AuthOfOAuthClientCredentials `json:"-"`
 }
 
 func (au *AuthV2) UnmarshalJSON(data []byte) error {
@@ -122,92 +117,142 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 	au.Type = AuthType(auth.Type)
 	au.SubType = AuthSubType(auth.SubType)
 
-	if au.Type == AuthTypeOfNone {
+	switch au.Type {
+	case AuthTypeOfNone:
 		return nil
-	}
 
-	if au.Type == AuthTypeOfOAuth {
-		if len(auth.ClientSecret) > 0 {
-			au.AuthOfOAuth = &AuthOfOAuth{
-				ClientID:                 auth.ClientID,
-				ClientSecret:             auth.ClientSecret,
-				ClientURL:                auth.ClientURL,
-				Scope:                    auth.Scope,
-				AuthorizationURL:         auth.AuthorizationURL,
-				AuthorizationContentType: auth.AuthorizationContentType,
-			}
-		} else {
-			oauth := &AuthOfOAuth{}
-			err = json.Unmarshal([]byte(auth.Payload), oauth)
-			if err != nil {
-				return err
-			}
-			au.AuthOfOAuth = oauth
-		}
-
-		payload, err := json.Marshal(au.AuthOfOAuth)
+	case AuthTypeOfOAuth:
+		err = au.unmarshalOAuth(auth)
 		if err != nil {
 			return err
 		}
 
-		au.Payload = ptr.Of(string(payload))
-	}
-
-	if au.Type == AuthTypeOfService {
-		if au.SubType == "" && (au.Payload == nil || *au.Payload == "") { // 兼容老数据
-			au.SubType = AuthSubTypeOfToken
+	case AuthTypeOfService:
+		err = au.unmarshalService(auth)
+		if err != nil {
+			return err
 		}
-		switch au.SubType {
-		case AuthSubTypeOfOIDC:
-			oidc := &AuthOfOIDC{}
-			err = json.Unmarshal([]byte(auth.Payload), oidc)
-			if err != nil {
-				return err
-			}
 
-			au.Payload = &auth.Payload
-
-		case AuthSubTypeOfToken:
-			if len(auth.ServiceToken) > 0 {
-				au.AuthOfToken = &AuthOfToken{
-					Location:     HTTPParamLocation(auth.Location),
-					Key:          auth.Key,
-					ServiceToken: auth.ServiceToken,
-				}
-			} else {
-				token := &AuthOfToken{}
-				err = json.Unmarshal([]byte(auth.Payload), token)
-				if err != nil {
-					return err
-				}
-				au.AuthOfToken = token
-			}
-
-			payload, err := json.Marshal(au.AuthOfToken)
-			if err != nil {
-				return err
-			}
-
-			au.Payload = ptr.Of(string(payload))
-		}
+	default:
+		return fmt.Errorf("invalid auth type '%s'", au.Type)
 	}
 
 	return nil
 }
 
-type AuthOfToken struct {
+func (au *AuthV2) unmarshalService(auth *Auth) (err error) {
+	if au.SubType == "" && (au.Payload == nil || *au.Payload == "") { // 兼容老数据
+		au.SubType = AuthSubTypeOfServiceAPIToken
+	}
+
+	var payload []byte
+
+	if au.SubType == AuthSubTypeOfServiceAPIToken {
+		if len(auth.ServiceToken) > 0 {
+			au.AuthOfAPIToken = &AuthOfAPIToken{
+				Location:     HTTPParamLocation(auth.Location),
+				Key:          auth.Key,
+				ServiceToken: auth.ServiceToken,
+			}
+		} else {
+			token := &AuthOfAPIToken{}
+			err = json.Unmarshal([]byte(auth.Payload), token)
+			if err != nil {
+				return err
+			}
+			au.AuthOfAPIToken = token
+		}
+
+		payload, err = json.Marshal(au.AuthOfAPIToken)
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(payload) == 0 {
+		return fmt.Errorf("invalid auth sub type '%s'", au.SubType)
+	}
+
+	au.Payload = ptr.Of(string(payload))
+
+	return nil
+}
+
+func (au *AuthV2) unmarshalOAuth(auth *Auth) (err error) {
+	if au.SubType == "" { // 兼容老数据
+		au.SubType = AuthSubTypeOfOAuthAuthorizationCode
+	}
+
+	var payload []byte
+
+	if au.SubType == AuthSubTypeOfOAuthAuthorizationCode {
+		if len(auth.ClientSecret) > 0 {
+			au.AuthOfOAuthAuthorizationCode = &AuthOfOAuthAuthorizationCode{
+				ClientID:                 auth.ClientID,
+				ClientSecret:             auth.ClientSecret,
+				ClientURL:                auth.ClientURL,
+				Scopes:                   []string{auth.Scope},
+				AuthorizationURL:         auth.AuthorizationURL,
+				AuthorizationContentType: auth.AuthorizationContentType,
+			}
+		} else {
+			oauth := &AuthOfOAuthAuthorizationCode{}
+			err = json.Unmarshal([]byte(auth.Payload), oauth)
+			if err != nil {
+				return err
+			}
+			au.AuthOfOAuthAuthorizationCode = oauth
+		}
+
+		payload, err = json.Marshal(au.AuthOfOAuthClientCredentials)
+		if err != nil {
+			return err
+		}
+	}
+
+	if au.SubType == AuthSubTypeOfOAuthClientCredentials {
+		oauth := &AuthOfOAuthClientCredentials{}
+		err = json.Unmarshal([]byte(auth.Payload), oauth)
+		if err != nil {
+			return err
+		}
+		au.AuthOfOAuthClientCredentials = oauth
+
+		payload, err = json.Marshal(au.AuthOfOAuthClientCredentials)
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(payload) == 0 {
+		return fmt.Errorf("invalid auth sub type '%s'", au.SubType)
+	}
+
+	au.Payload = ptr.Of(string(payload))
+
+	return nil
+}
+
+type AuthOfAPIToken struct {
 	Location     HTTPParamLocation `json:"location"` // header or query
 	Key          string            `json:"key"`
 	ServiceToken string            `json:"service_token"`
 }
 
-type AuthOfOAuth struct {
-	ClientID                 string `json:"client_id"`
-	ClientSecret             string `json:"client_secret"`
-	ClientURL                string `json:"client_url"`
-	Scope                    string `json:"scope,omitempty"`
-	AuthorizationURL         string `json:"authorization_url"`
-	AuthorizationContentType string `json:"authorization_content_type"` // only support application/json
+type AuthOfOAuthAuthorizationCode struct {
+	ClientID                 string   `json:"client_id"`
+	ClientSecret             string   `json:"client_secret"`
+	ClientURL                string   `json:"client_url"`
+	Scopes                   []string `json:"scopes,omitempty"`
+	AuthorizationURL         string   `json:"authorization_url"`
+	AuthorizationContentType string   `json:"authorization_content_type"` // only support application/json
+}
+
+type AuthOfOAuthClientCredentials struct {
+	ClientID     string   `json:"client_id"`
+	ClientSecret string   `json:"client_secret"`
+	TokenURL     string   `json:"token_url"`
+	Scopes       []string `json:"scopes,omitempty"`
 }
 
 type APIDesc struct {

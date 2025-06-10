@@ -20,8 +20,6 @@ type ToolRepository interface {
 
 	GetOnlineTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, exist bool, err error)
 	MGetOnlineTools(ctx context.Context, toolIDs []int64, opts ...ToolSelectedOptions) (tools []*entity.ToolInfo, err error)
-	CheckOnlineToolExist(ctx context.Context, toolID int64) (exist bool, err error)
-	CheckOnlineToolsExist(ctx context.Context, toolIDs []int64) (exists map[int64]bool, err error)
 
 	GetVersionTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, exist bool, err error)
 	MGetVersionTools(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)

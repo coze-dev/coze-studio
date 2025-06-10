@@ -16,9 +16,11 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-resty/resty/v2"
 
+	openauthModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/openauth"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/variables"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossopenauth"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossvariables"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -31,6 +33,7 @@ type Executor interface {
 }
 
 type ExecutorConfig struct {
+	UserID int64
 	Plugin *entity.PluginInfo
 	Tool   *entity.ToolInfo
 
@@ -309,7 +312,7 @@ func (t *executorImpl) getVariableValue(ctx context.Context, keyword string) (an
 		BizType:      project_memory.VariableConnector_Bot,
 		BizID:        strconv.FormatInt(info.ProjectID, 10),
 		Version:      ptr.FromOrDefault(info.ProjectVersion, ""),
-		ConnectorUID: strconv.FormatInt(info.UserID, 10),
+		ConnectorUID: strconv.FormatInt(t.config.UserID, 10),
 		ConnectorID:  info.ConnectorID,
 	}
 	vals, err := crossvariables.DefaultSVC().GetVariableInstance(ctx, meta, []string{keyword})
@@ -330,23 +333,82 @@ func (t *executorImpl) injectAuthInfo(_ context.Context, httpReq *http.Request) 
 		return nil
 	}
 
-	if authInfo.AuthOfToken != nil {
-		loc := strings.ToLower(string(authInfo.AuthOfToken.Location))
+	if authInfo.Type == plugin.AuthTypeOfService {
+		return t.injectServiceAPIToken(httpReq.Context(), httpReq, authInfo)
+	}
+
+	if authInfo.Type == plugin.AuthTypeOfOAuth {
+		return t.injectOAuthAccessToken(httpReq.Context(), httpReq, authInfo)
+	}
+
+	return nil
+}
+
+func (t *executorImpl) injectServiceAPIToken(ctx context.Context, httpReq *http.Request, authInfo *plugin.AuthV2) (err error) {
+	if authInfo.SubType == plugin.AuthSubTypeOfServiceAPIToken {
+		authOfAPIToken := authInfo.AuthOfAPIToken
+		if authOfAPIToken == nil {
+			return fmt.Errorf("auth of api token is nil")
+		}
+
+		loc := strings.ToLower(string(authOfAPIToken.Location))
+
 		if loc == openapi3.ParameterInQuery {
 			query := httpReq.URL.Query()
-			if query.Get(authInfo.AuthOfToken.Key) == "" {
-				query.Set(authInfo.AuthOfToken.Key, authInfo.AuthOfToken.ServiceToken)
+			if query.Get(authOfAPIToken.Key) == "" {
+				query.Set(authOfAPIToken.Key, authOfAPIToken.ServiceToken)
 				httpReq.URL.RawQuery = query.Encode()
 			}
 		}
+
 		if loc == openapi3.ParameterInHeader {
-			if httpReq.Header.Get(authInfo.AuthOfToken.Key) == "" {
-				httpReq.Header.Set(authInfo.AuthOfToken.Key, authInfo.AuthOfToken.ServiceToken)
+			if httpReq.Header.Get(authOfAPIToken.Key) == "" {
+				httpReq.Header.Set(authOfAPIToken.Key, authOfAPIToken.ServiceToken)
 			}
 		}
 	}
 
-	// TODO(@maronghong): 支持 oauth
+	return nil
+}
+
+func (t *executorImpl) injectOAuthAccessToken(ctx context.Context, httpReq *http.Request, authInfo *plugin.AuthV2) (err error) {
+	var accessToken string
+
+	if authInfo.SubType == plugin.AuthSubTypeOfOAuthClientCredentials {
+		oauth := authInfo.AuthOfOAuthClientCredentials
+		if oauth == nil {
+			return fmt.Errorf("auth of oauth client credentials is nil")
+		}
+
+		accessToken, err = crossopenauth.DefaultOAuthSVC().GetAccessToken(ctx, &openauthModel.GetAccessTokenRequest{
+			UserID: t.config.UserID,
+			OAuthInfo: &openauthModel.OAuthInfo{
+				OAuthProvider: entity.GetOAuthProvider(oauth.TokenURL),
+				OAuthMode:     openauthModel.OAuthModeClientCredentials,
+				ClientCredentials: &openauthModel.ClientCredentials{
+					ClientID:     oauth.ClientID,
+					ClientSecret: oauth.ClientSecret,
+					TokenURL:     oauth.TokenURL,
+					Scopes:       oauth.Scopes,
+				},
+			},
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	if accessToken == "" {
+		return fmt.Errorf("access token is empty")
+	}
+
+	provider := entity.GetOAuthProvider(authInfo.AuthOfOAuthClientCredentials.TokenURL)
+	switch provider {
+	case openauthModel.OAuthProviderOfLark:
+		httpReq.Header.Set("tenant-access-token", accessToken)
+	default:
+		httpReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+	}
 
 	return nil
 }

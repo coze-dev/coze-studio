@@ -6,9 +6,10 @@ import (
 	"runtime/debug"
 	"slices"
 
+	"github.com/google/uuid"
+
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
-	"github.com/google/uuid"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
@@ -24,6 +25,7 @@ type AgentState struct {
 }
 
 type AgentRequest struct {
+	UserID  int64
 	Input   *schema.Message
 	History []*schema.Message
 

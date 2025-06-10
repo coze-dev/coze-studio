@@ -843,3 +843,28 @@ func BatchCreateAPI(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// RevokeAuthToken .
+// @router /api/plugin_api/revoke_auth_token [POST]
+func RevokeAuthToken(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.RevokeAuthTokenRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.PluginID <= 0 {
+		invalidParamRequestResponse(c, "pluginID is invalid")
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.RevokeAuthToken(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

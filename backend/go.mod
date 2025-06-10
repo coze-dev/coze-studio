@@ -63,6 +63,7 @@ require (
 	github.com/jinzhu/copier v0.4.0
 	github.com/rbretecher/go-postman-collection v0.9.0
 	github.com/yuin/goldmark v1.4.13
+	golang.org/x/oauth2 v0.23.0
 	parse-curl v0.0.0-00010101000000-000000000000
 )
 

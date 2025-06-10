@@ -79,7 +79,7 @@ func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req
 				ModelDetailMap:      modelInfoDo2Vo(modelInfos),
 				KnowledgeDetailMap:  knowledgeInfoDo2Vo(klInfos),
 				PluginAPIDetailMap:  toolInfoDo2Vo(toolInfos),
-				PluginDetailMap:     pluginInfoDo2Vo(pluginInfos),
+				PluginDetailMap:     s.pluginInfoDo2Vo(ctx, pluginInfos),
 				WorkflowDetailMap:   workflowDo2Vo(workflowInfos),
 				ShortcutCommandList: shortCutCmdResp,
 			},
@@ -233,7 +233,7 @@ func knowledgeInfoDo2Vo(klInfos []*knowledgeModel.Knowledge) map[string]*playgro
 		return fmt.Sprintf("%v", e.ID), &playground.KnowledgeDetail{
 			ID:      ptr.Of(fmt.Sprintf("%d", e.ID)),
 			Name:    ptr.Of(e.Name),
-			IconURL: ptr.Of(e.IconURI),
+			IconURL: ptr.Of(e.IconURL),
 			FormatType: func() playground.DataSetType {
 				switch e.Type {
 				case knowledgeModel.DocumentTypeText:
@@ -261,14 +261,25 @@ func toolInfoDo2Vo(toolInfos []*pluginEntity.ToolInfo) map[int64]*playground.Plu
 	})
 }
 
-func pluginInfoDo2Vo(pluginInfos []*pluginEntity.PluginInfo) map[int64]*playground.PluginDetal {
+func (s *SingleAgentApplicationService) pluginInfoDo2Vo(ctx context.Context, pluginInfos []*pluginEntity.PluginInfo) map[int64]*playground.PluginDetal {
 	return slices.ToMap(pluginInfos, func(v *pluginEntity.PluginInfo) (int64, *playground.PluginDetal) {
 		e := v.PluginInfo
+
+		var iconURL string
+		if e.GetIconURI() != "" {
+			var err error
+			iconURL, err = s.appContext.TosClient.GetObjectUrl(ctx, e.GetIconURI())
+			if err != nil {
+				logs.CtxErrorf(ctx, "get icon url failed, err = %v", err)
+			}
+		}
+
 		return e.ID, &playground.PluginDetal{
 			ID:           ptr.Of(e.ID),
 			Name:         ptr.Of(e.GetName()),
 			Description:  ptr.Of(e.GetDesc()),
 			PluginType:   (*int64)(&e.PluginType),
+			IconURL:      &iconURL,
 			PluginStatus: (*int64)(ptr.Of(plugin_develop_common.PluginStatus_PUBLISHED)),
 			IsOfficial: func() *bool {
 				if e.SpaceID == 0 {
@@ -433,7 +444,7 @@ func workflowDo2Vo(wfInfos []*workflowEntity.Workflow) map[int64]*playground.Wor
 			ID:          ptr.Of(e.ID),
 			Name:        ptr.Of(e.Name),
 			Description: ptr.Of(e.Desc),
-			IconURL:     ptr.Of(e.IconURI),
+			IconURL:     ptr.Of(e.IconURL),
 			APIDetail: &playground.PluginAPIDetal{
 				ID:          ptr.Of(e.ID),
 				Name:        ptr.Of(e.Name),

@@ -30,6 +30,7 @@ service PluginDevelopService {
     GetDevPluginListResponse GetDevPluginList(1: GetDevPluginListRequest request)(api.post='/api/plugin_api/get_dev_plugin_list', api.category="plugin", api.gen_path='plugin', agw.preserve_base="true")
     Convert2OpenAPIResponse Convert2OpenAPI(1: Convert2OpenAPIRequest request)(api.post='/api/plugin_api/convert_to_openapi', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
     BatchCreateAPIResponse BatchCreateAPI(1: BatchCreateAPIRequest request)(api.post='/api/plugin_api/batch_create_api', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
+    RevokeAuthTokenResponse RevokeAuthToken(1: RevokeAuthTokenRequest request)(api.post='/api/plugin_api/revoke_auth_token', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
 }
 
 struct GetPlaygroundPluginListRequest {
@@ -381,11 +382,14 @@ struct GetOAuthStatusRequest {
 
     255:          base.Base Base     ,
 }
+
 struct GetOAuthStatusResponse {
     1  :          bool                              is_oauth, // 是否为授权插件
     2  :          plugin_develop_common.OAuthStatus status  , // 用户授权状态
     3  :          string                            content , // 未授权，返回授权url
 
+    253: i64 code
+    254: string msg
     255: required base.BaseResp                     BaseResp,
 }
 
@@ -574,4 +578,15 @@ struct BatchCreateAPIResponse {
 //     DuplicateAPIPath: 有重复的API Path，且 request.ReplaceDupPath = false
 //     InvalidParam: 其他错误
     255: required base.BaseResp                             BaseResp        ,
+}
+
+struct RevokeAuthTokenRequest {
+    1  : required i64    plugin_id (api.js_conv = "str", api.body = "plugin_id"),
+    2  : optional i64    bot_id   (api.js_conv = "str", api.body = "bot_id"), // 如果不传使用uid赋值 bot_id = connector_uid
+    3  : optional i32       context_type (api.body = "context_type"),
+    255:          base.Base Base     ,
+}
+
+struct RevokeAuthTokenResponse {
+    255: required base.BaseResp BaseResp,
 }
