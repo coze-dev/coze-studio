@@ -79,8 +79,7 @@ autoinstaller*.lock
 
 dist
 dist_*
-
-!**/auto-generate/*
+!**/auto-generated/*
 doc_build
 build_cn
 

@@ -1,0 +1,138 @@
+/* stylelint-disable no-descending-specificity */
+.font-normal {
+  font-size: 12px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 20px;
+  color: rgba(28, 31, 35, 80%);
+}
+
+.param-container {
+  position: relative;
+  display: flex;
+  /* stylelint-disable-next-line declaration-no-important */
+  align-items: center !important;
+  height: 100%;
+
+  // 下面是兼容线的样式的，不要动
+  &:first-child {
+    &>div:first-child {
+      &>div {
+        &>div:first-child {
+          top: 12px;
+        }
+
+        &>div:last-child {
+          top: 12px;
+        }
+      }
+    }
+  }
+
+  .expand-wrapper {
+    display: flex;
+    flex-direction: column;
+
+    max-width: 100%;
+    margin-top: 4px;
+    padding: 4px;
+
+    border-radius: 9px;
+
+    transition: background-color 0.2s ease;
+  }
+
+  :global {
+    .semi-form-field {
+      flex: 1;
+    }
+
+    .semi-tree-option-expand-icon {
+      display: flex;
+      align-items: center;
+      height: 24px;
+    }
+
+    .semi-input-wrapper-disabled,
+    .semi-select-disabled .semi-select-selection-text {
+      color: var(--semi-color-text-0);
+
+      -webkit-text-fill-color: var(--semi-color-text-0);
+    }
+
+    .semi-cascader-disabled {
+      &:active, &:hover {
+        background-color: var(--semi-color-disabled-fill);
+        border-color: var(--coz-stroke-primary);
+      }
+
+      .semi-cascader-arrow, .semi-cascader-selection {
+        color: var(--semi-color-text-0);
+
+        -webkit-text-fill-color: var(--semi-color-text-0);
+      }
+    }
+  }
+
+  .wrapper {
+    display: flex;
+    flex: 1;
+    gap: 4px;
+    align-items: center;
+
+    &.preset-disabled {
+      :global {
+        .semi-input-wrapper-disabled,
+        .semi-select-disabled .semi-select-selection-text {
+          color: var(--semi-color-disabled-text);
+
+          -webkit-text-fill-color: var(--semi-color-disabled-text);
+        }
+      }
+    }
+
+    &.preset-enabled {
+      :global {
+        .semi-input-textarea-disabled {
+          color: var(--semi-color-text-0);
+
+          -webkit-text-fill-color: var(--semi-color-text-0);
+        }
+      }
+    }
+  }
+
+}
+
+.readonly-container {
+  display: flex;
+  align-items: center;
+  height: 24px;
+
+  .name {
+    .font-normal();
+
+    font-weight: normal;
+    color: var(--coz-fg-primary);
+    word-break: keep-all;
+  }
+
+  .tag {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+
+    margin-left: 8px;
+    padding: 2px 8px;
+
+    background-color: var(--coz-mg-plus);
+    border-radius: 3px;
+
+    .label {
+      .font-normal();
+
+      font-size: 10px;
+      color: rgba(28, 31, 35, 60%);
+    }
+  }
+}
