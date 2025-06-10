@@ -495,7 +495,7 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *AddDatabase
 
 	convertedRecords := make([]map[string]interface{}, 0, len(req.Records))
 
-	for _, record := range req.Records {
+	for _, recordMap := range req.Records {
 		convertedRecord := make(map[string]interface{})
 
 		cid := consts.CozeConnectorID
@@ -506,7 +506,11 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *AddDatabase
 		convertedRecord[database.DefaultCidColName] = cid
 		convertedRecord[database.DefaultCreateTimeColName] = time.Now().UTC()
 
-		for fieldName, value := range record {
+		if _, ok := recordMap[database.DefaultIDColName]; ok {
+			delete(recordMap, database.DefaultIDColName)
+		}
+
+		for fieldName, value := range recordMap {
 			if _, fOk := fieldMap[fieldName]; !fOk {
 				return fmt.Errorf("field %s not found in table definition", fieldName)
 			}

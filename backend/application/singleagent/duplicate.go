@@ -166,6 +166,10 @@ func duplicateShortCommand(ctx context.Context, appContext *ServiceComponents, o
 
 func duplicateDatabase(ctx context.Context, appContext *ServiceComponents, oldAgent, newAgent *entity.SingleAgent) (*entity.SingleAgent, error) {
 	databases := oldAgent.Database
+	if len(databases) == 0 {
+		return newAgent, nil
+	}
+
 	basics := make([]*model.DatabaseBasic, 0, len(databases))
 	for _, d := range databases {
 		tableID, err := strconv.ParseInt(d.GetTableId(), 10, 64)

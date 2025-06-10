@@ -302,10 +302,11 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 				"date":  "2025-01-01 00:00:00",
 			},
 			{
-				"id":    "2",
-				"name":  "Jane Smith",
-				"score": "90.5",
-				"date":  "2025-01-01 01:00:00",
+				"id":         "2",
+				"name":       "Jane Smith",
+				"score":      "90.5",
+				"date":       "2025-01-01 01:00:00",
+				"bstudio_id": "1",
 			},
 		},
 	}
