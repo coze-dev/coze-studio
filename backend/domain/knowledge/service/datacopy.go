@@ -336,6 +336,10 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 	if err != nil {
 		return err
 	}
+	err = k.documentRepo.Create(ctx, &newDoc)
+	if err != nil {
+		return err
+	}
 	batchSize := 100
 	for i := 0; i < len(sliceIDs); i += batchSize {
 		end := i + batchSize
@@ -410,7 +414,9 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 		ssDocs, err := slices.TransformWithErrorCheck(sliceEntities, func(a *entity.Slice) (*schema.Document, error) {
 			return k.slice2Document(ctx, docEntity, a)
 		})
-
+		if err != nil {
+			return err
+		}
 		for _, mgr := range k.searchStoreManagers {
 			ss, err := mgr.GetSearchStore(ctx, collectionName)
 			if err != nil {

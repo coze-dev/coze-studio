@@ -13,7 +13,7 @@ import (
 type DataCopyTaskRepo interface {
 	UpsertCopyTask(ctx context.Context, task *model.DataCopyTask) error
 	UpsertCopyTaskWithTX(ctx context.Context, task *model.DataCopyTask, tx *gorm.DB) error
-	GetCopyTaskByTaskID(ctx context.Context, taskID string) (*model.DataCopyTask, error)
+	GetCopyTask(ctx context.Context, taskID string, originDataID int64, dataType int32) (*model.DataCopyTask, error)
 }
 type dataCopyTaskDAO struct {
 	db    *gorm.DB
@@ -32,14 +32,16 @@ func (dao *dataCopyTaskDAO) UpsertCopyTask(ctx context.Context, task *model.Data
 	).Create(task)
 }
 
-func (dao *dataCopyTaskDAO) GetCopyTaskByTaskID(ctx context.Context, taskID string) (*model.DataCopyTask, error) {
-	return dao.query.DataCopyTask.WithContext(ctx).Debug().Where(dao.query.DataCopyTask.MasterTaskID.Eq(taskID)).First()
+func (dao *dataCopyTaskDAO) GetCopyTask(ctx context.Context, taskID string, originDataID int64, dataType int32) (*model.DataCopyTask, error) {
+	q := dao.query.DataCopyTask
+	return q.WithContext(ctx).Debug().Where(q.MasterTaskID.Eq(taskID)).Where(q.OriginDataID.Eq(originDataID)).Where(q.DataType.Eq(dataType)).First()
 }
 
 func (dao *dataCopyTaskDAO) UpsertCopyTaskWithTX(ctx context.Context, task *model.DataCopyTask, tx *gorm.DB) error {
 	return tx.WithContext(ctx).Model(&model.DataCopyTask{}).Debug().Clauses(
 		clause.OnConflict{
-			UpdateAll: true,
+			// UpdateAll: true,
+			Columns: []clause.Column{},
 		},
 	).Create(task).Error
 }

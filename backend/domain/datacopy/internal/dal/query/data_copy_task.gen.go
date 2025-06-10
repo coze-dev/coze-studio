@@ -27,7 +27,6 @@ func newDataCopyTask(db *gorm.DB, opts ...gen.DOOption) dataCopyTask {
 
 	tableName := _dataCopyTask.dataCopyTaskDo.TableName()
 	_dataCopyTask.ALL = field.NewAsterisk(tableName)
-	_dataCopyTask.ID = field.NewInt64(tableName, "id")
 	_dataCopyTask.MasterTaskID = field.NewString(tableName, "master_task_id")
 	_dataCopyTask.OriginDataID = field.NewInt64(tableName, "origin_data_id")
 	_dataCopyTask.TargetDataID = field.NewInt64(tableName, "target_data_id")
@@ -54,7 +53,6 @@ type dataCopyTask struct {
 	dataCopyTaskDo
 
 	ALL           field.Asterisk
-	ID            field.Int64  // 主键ID
 	MasterTaskID  field.String // 复制任务ID
 	OriginDataID  field.Int64  // 源id
 	TargetDataID  field.Int64  // 目标id
@@ -86,7 +84,6 @@ func (d dataCopyTask) As(alias string) *dataCopyTask {
 
 func (d *dataCopyTask) updateTableName(table string) *dataCopyTask {
 	d.ALL = field.NewAsterisk(table)
-	d.ID = field.NewInt64(table, "id")
 	d.MasterTaskID = field.NewString(table, "master_task_id")
 	d.OriginDataID = field.NewInt64(table, "origin_data_id")
 	d.TargetDataID = field.NewInt64(table, "target_data_id")
@@ -118,8 +115,7 @@ func (d *dataCopyTask) GetFieldByName(fieldName string) (field.OrderExpr, bool) 
 }
 
 func (d *dataCopyTask) fillFieldMap() {
-	d.fieldMap = make(map[string]field.Expr, 16)
-	d.fieldMap["id"] = d.ID
+	d.fieldMap = make(map[string]field.Expr, 15)
 	d.fieldMap["master_task_id"] = d.MasterTaskID
 	d.fieldMap["origin_data_id"] = d.OriginDataID
 	d.fieldMap["target_data_id"] = d.TargetDataID

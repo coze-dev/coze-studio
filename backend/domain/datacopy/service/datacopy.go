@@ -44,7 +44,7 @@ func (svc *dataCopySVC) CheckAndGenCopyTask(ctx context.Context, req *datacopy.C
 	var err error
 	resp := datacopy.CheckAndGenCopyTaskResp{}
 	// 检查是否已经存在任务
-	task, err := svc.dataCopyTaskRepo.GetCopyTaskByTaskID(ctx, req.Task.TaskUniqKey)
+	task, err := svc.dataCopyTaskRepo.GetCopyTask(ctx, req.Task.TaskUniqKey, req.Task.OriginDataID, int32(req.Task.DataType))
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
@@ -53,22 +53,16 @@ func (svc *dataCopySVC) CheckAndGenCopyTask(ctx context.Context, req *datacopy.C
 		taskStatus := entity.DataCopyTaskStatus(task.Status)
 		resp.CopyTaskStatus = taskStatus
 		resp.TargetID = task.TargetDataID
-		resp.CopyTaskID = task.ID
 		return &resp, nil
 	}
 
 	task = convert.ConvertToDataCopyTaskModel(req.Task)
-	task.ID, err = svc.idgen.GenID(ctx)
-	if err != nil {
-		return nil, err
-	}
 	task.Status = int32(entity.DataCopyTaskStatusCreate)
 	err = svc.dataCopyTaskRepo.UpsertCopyTask(ctx, task)
 	if err != nil {
 		return nil, err
 	}
 	resp.CopyTaskStatus = entity.DataCopyTaskStatusCreate
-	resp.CopyTaskID = task.ID
 	resp.TargetID = task.TargetDataID
 	return &resp, nil
 
