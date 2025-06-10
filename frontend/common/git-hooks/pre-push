@@ -1,5 +1,0 @@
-#!/bin/bash
-
-source scripts/block-unresolved-conflict.sh
-
-source scripts/pre-push-hook.sh
