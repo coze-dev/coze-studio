@@ -812,7 +812,12 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 	}
 
 	if found {
-		wfExeEntity.InterruptEvents = []*entity.InterruptEvent{interruptEvent}
+		// if we are currently interrupted, return this interrupt event,
+		// otherwise only return this event if it's the current resuming event
+		if wfExeEntity.Status == entity.WorkflowInterrupted ||
+			(wfExeEntity.CurrentResumingEventID != nil && *wfExeEntity.CurrentResumingEventID == interruptEvent.ID) {
+			wfExeEntity.InterruptEvents = []*entity.InterruptEvent{interruptEvent}
+		}
 	}
 
 	return wfExeEntity, nil
