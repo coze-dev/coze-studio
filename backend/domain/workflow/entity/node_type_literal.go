@@ -5,10 +5,10 @@ package entity
 var NodeTypeMetas = []*NodeTypeMeta{
 	{
 		ID:           1,
-		Name:         "开始",
+		Name:         "Start",
 		Type:         NodeTypeEntry,
-		Category:     "输入&输出", // Mapped from cate_list
-		Desc:         "工作流的起始节点，用于设定启动工作流需要的信息",
+		Category:     "Input&Output", // Mapped from cate_list
+		Desc:         "The starting node of the workflow, used to set the information needed to initiate the workflow.",
 		Color:        "#5C62FF",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
 		IsComposite:  false,
@@ -17,10 +17,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:              2,
-		Name:            "结束",
+		Name:            "End",
 		Type:            NodeTypeExit,
-		Category:        "输入&输出", // Mapped from cate_list
-		Desc:            "工作流的最终节点，用于返回工作流运行后的结果信息",
+		Category:        "Input&Output", // Mapped from cate_list
+		Desc:            "The final node of the workflow, used to return the result information after the workflow runs.",
 		Color:           "#5C62FF",
 		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
 		IsComposite:     false,
@@ -30,10 +30,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               3,
-		Name:             "大模型",
+		Name:             "LLM",
 		Type:             NodeTypeLLM,
 		Category:         "", // Mapped from cate_list
-		Desc:             "调用大语言模型,使用变量和提示词生成回复",
+		Desc:             "Invoke the large language model, generate responses using variables and prompt words.",
 		Color:            "#5C62FF",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg",
 		IsComposite:      false,
@@ -45,10 +45,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               4,
-		Name:             "插件",
+		Name:             "Plugin",
 		Type:             NodeTypePlugin,
 		Category:         "", // Mapped from cate_list
-		Desc:             "通过添加工具访问实时数据和执行外部操作",
+		Desc:             "Used to access external real-time data and perform operations",
 		Color:            "#CA61FF",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg",
 		IsComposite:      false,
@@ -59,10 +59,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               5,
-		Name:             "代码",
+		Name:             "Code",
 		Type:             NodeTypeCodeRunner,
-		Category:         "业务逻辑", // Mapped from cate_list
-		Desc:             "编写代码，处理输入变量来生成返回值",
+		Category:         "Logic", // Mapped from cate_list
+		Desc:             "Write code to process input variables to generate return values.",
 		Color:            "#00B2B2",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
 		IsComposite:      false,
@@ -74,10 +74,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               6,
-		Name:             "知识库检索",
+		Name:             "Knowledge retrieval",
 		Type:             NodeTypeKnowledgeRetriever,
-		Category:         "知识库&数据", // Mapped from cate_list
-		Desc:             "在选定的知识中,根据输入变量召回最匹配的信息,并以列表形式返回",
+		Category:         "Data", // Mapped from cate_list
+		Desc:             "In the selected knowledge, the best matching information is recalled based on the input variable and returned as an Array.",
 		Color:            "#FF811A",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeQuery-v2.jpg",
 		IsComposite:      false,
@@ -88,10 +88,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:              8,
-		Name:            "选择器",
+		Name:            "Condition",
 		Type:            NodeTypeSelector,
-		Category:        "业务逻辑", // Mapped from cate_list
-		Desc:            "连接多个下游分支，若设定的条件成立则仅运行对应的分支，若均不成立则只运行“否则”分支",
+		Category:        "Logic", // Mapped from cate_list
+		Desc:            "Connect multiple downstream branches. Only the corresponding branch will be executed if the set conditions are met. If none are met, only the 'else' branch will be executed.",
 		Color:           "#00B2B2",
 		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Condition-v2.jpg",
 		IsComposite:     false,
@@ -100,10 +100,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:              9,
-		Name:            "工作流",
+		Name:            "Workflow",
 		Type:            NodeTypeSubWorkflow,
 		Category:        "", // Mapped from cate_list
-		Desc:            "集成已发布工作流，可以执行嵌套子任务",
+		Desc:            "Add published workflows to execute subtasks",
 		Color:           "#00B83E",
 		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
 		IsComposite:     false, // Assuming false as it's not explicitly composite like Loop/Batch
@@ -112,10 +112,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               12,
-		Name:             "SQL自定义",
+		Name:             "SQL Customization",
 		Type:             NodeTypeDatabaseCustomSQL,
-		Category:         "数据库", // Mapped from cate_list
-		Desc:             "基于用户自定义的 SQL 完成对数据库的增删改查操作",
+		Category:         "Database", // Mapped from cate_list
+		Desc:             "Complete the operations of adding, deleting, modifying and querying the database based on user-defined SQL",
 		Color:            "#FF811A",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Database-v2.jpg",
 		IsComposite:      false,
@@ -126,10 +126,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:              13,
-		Name:            "输出",
+		Name:            "Output",
 		Type:            NodeTypeOutputEmitter,
-		Category:        "输入&输出", // Mapped from cate_list
-		Desc:            "节点从“消息”更名为“输出”，支持中间过程的消息输出，支持流式和非流式两种方式",
+		Category:        "Input&Output", // Mapped from cate_list
+		Desc:            "The node is renamed from \"message\" to \"output\", Supports message output in the intermediate process and streaming and non-streaming methods",
 		Color:           "#5C62FF",
 		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Output-v2.jpg",
 		IsComposite:     false,
@@ -139,10 +139,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:              15,
-		Name:            "文本处理",
+		Name:            "Text Processing",
 		Type:            NodeTypeTextProcessor,
-		Category:        "组件", // Mapped from cate_list
-		Desc:            "用于处理多个字符串类型变量的格式",
+		Category:        "Utilities", // Mapped from cate_list
+		Desc:            "The format used for handling multiple string-type variables.",
 		Color:           "#3071F2",
 		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
 		IsComposite:     false,
@@ -152,10 +152,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               18,
-		Name:             "问答",
+		Name:             "Question",
 		Type:             NodeTypeQuestionAnswer,
-		Category:         "组件", // Mapped from cate_list
-		Desc:             "支持中间向用户提问问题,支持预置选项提问和开放式问题提问两种方式",
+		Category:         "Utilities", // Mapped from cate_list
+		Desc:             "Support asking questions to the user in the middle of the conversation, with both preset options and open-ended questions",
 		Color:            "#3071F2",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Direct-Question-v2.jpg",
 		IsComposite:      false,
@@ -167,10 +167,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:           19,
-		Name:         "终止循环",
+		Name:         "Break",
 		Type:         NodeTypeBreak,
-		Category:     "业务逻辑", // Mapped from cate_list
-		Desc:         "用于立即终止当前所在的循环，跳出循环体",
+		Category:     "Logic", // Mapped from cate_list
+		Desc:         "Used to immediately terminate the current loop and jump out of the loop",
 		Color:        "#00B2B2",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Break-v2.jpg",
 		IsComposite:  false,
@@ -178,10 +178,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:           20,
-		Name:         "设置变量",
+		Name:         "Set Variable",
 		Type:         NodeTypeVariableAssignerWithinLoop,
-		Category:     "业务逻辑", // Mapped from cate_list
-		Desc:         "用于重置循环变量的值，使其下次循环使用重置后的值",
+		Category:     "Logic", // Mapped from cate_list
+		Desc:         "Used to reset the value of the loop variable so that it uses the reset value in the next iteration",
 		Color:        "#00B2B2",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LoopSetVariable-v2.jpg",
 		IsComposite:  false,
@@ -189,10 +189,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               21,
-		Name:             "循环",
+		Name:             "Loop",
 		Type:             NodeTypeLoop,
-		Category:         "业务逻辑", // Mapped from cate_list
-		Desc:             "用于通过设定循环次数和逻辑，重复执行一系列任务",
+		Category:         "Logic", // Mapped from cate_list
+		Desc:             "Used to repeatedly execute a series of tasks by setting the number of iterations and logic",
 		Color:            "#00B2B2",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Loop-v2.jpg",
 		IsComposite:      true,      // Assuming true based on functionality
@@ -204,10 +204,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               22,
-		Name:             "意图识别",
+		Name:             "Intent recognition",
 		Type:             NodeTypeIntentDetector,
-		Category:         "业务逻辑", // Mapped from cate_list
-		Desc:             "用于用户输入的意图识别，并将其与预设意图选项进行匹配。",
+		Category:         "Logic", // Mapped from cate_list
+		Desc:             "Used for recognizing the intent in user input and matching it with preset intent options.",
 		Color:            "#00B2B2",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Intent-v2.jpg",
 		IsComposite:      false,
@@ -219,10 +219,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               27,
-		Name:             "知识库写入",
+		Name:             "Knowledge writing",
 		Type:             NodeTypeKnowledgeIndexer,
-		Category:         "知识库&数据", // Mapped from cate_list
-		Desc:             "写入节点可以添加 文本类型 的知识库，仅可以添加一个知识库",
+		Category:         "Data", // Mapped from cate_list
+		Desc:             "The write node can add a knowledge base of type text. Only one knowledge base can be added.",
 		Color:            "#FF811A",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeWriting-v2.jpg",
 		IsComposite:      false,
@@ -233,10 +233,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               28,
-		Name:             "批处理",
+		Name:             "Batch",
 		Type:             NodeTypeBatch,
-		Category:         "业务逻辑", // Mapped from cate_list
-		Desc:             "通过设定批量运行次数和逻辑，运行批处理体内的任务",
+		Category:         "Logic", // Mapped from cate_list
+		Desc:             "By setting the number of batch runs and logic, run the tasks in the batch body.",
 		Color:            "#00B2B2",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Batch-v2.jpg",
 		IsComposite:      true,      // Assuming true based on functionality
@@ -248,10 +248,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:           29,
-		Name:         "继续循环",
+		Name:         "Continue",
 		Type:         NodeTypeContinue,
-		Category:     "业务逻辑", // Mapped from cate_list
-		Desc:         "用于终止当前循环，执行下次循环",
+		Category:     "Logic", // Mapped from cate_list
+		Desc:         "Used to immediately terminate the current loop and execute next loop",
 		Color:        "#00B2B2",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Continue-v2.jpg",
 		IsComposite:  false,
@@ -259,10 +259,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:           30,
-		Name:         "输入",
+		Name:         "Input",
 		Type:         NodeTypeInputReceiver,
-		Category:     "输入&输出", // Mapped from cate_list
-		Desc:         "支持中间过程的信息输入",
+		Category:     "Input&Output", // Mapped from cate_list
+		Desc:         "Support intermediate information input",
 		Color:        "#5C62FF",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Input-v2.jpg",
 		IsComposite:  false,
@@ -282,10 +282,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:              32,
-		Name:            "变量聚合",
+		Name:            "Variable Merge",
 		Type:            NodeTypeVariableAggregator,
-		Category:        "业务逻辑", // Mapped from cate_list
-		Desc:            "对多个分支的输出进行聚合处理",
+		Category:        "Logic", // Mapped from cate_list
+		Desc:            "Aggregate the outputs of multiple branches.",
 		Color:           "#00B2B2",
 		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/VariableMerge-icon.jpg",
 		IsComposite:     false,
@@ -295,49 +295,52 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:           37,
-		Name:         "查询消息列表",
+		Name:         "Query message list",
 		Type:         NodeTypeMessageList,
 		Category:     "会话管理", // Mapped from cate_list
-		Desc:         "用于查询消息列表",
+		Desc:         "Used to query the message list",
 		Color:        "#F2B600",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-List.jpeg",
 		IsComposite:  false,
 		SupportBatch: false, // supportBatch: 1
 		PreFillZero:  true,
 		PostFillNil:  true,
+		Disabled:     true,
 	},
 	{
 		ID:           38,
-		Name:         "清除上下文",
+		Name:         "Clear conversation history",
 		Type:         NodeTypeClearMessage,
 		Category:     "会话管理", // Mapped from cate_list
-		Desc:         "用于清空会话历史，清空后LLM看到的会话历史为空",
+		Desc:         "Used to clear conversation history. After clearing, the conversation history visible to the LLM node will be empty.",
 		Color:        "#F2B600",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Delete.jpeg",
 		IsComposite:  false,
 		SupportBatch: false, // supportBatch: 1
 		PreFillZero:  true,
 		PostFillNil:  true,
+		Disabled:     true,
 	},
 	{
 		ID:           39,
-		Name:         "创建会话",
+		Name:         "Create conversation",
 		Type:         NodeTypeCreateConversation,
 		Category:     "会话管理", // Mapped from cate_list
-		Desc:         "用于创建会话",
+		Desc:         "This node is used to create a conversation.",
 		Color:        "#F2B600",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Create.jpeg",
 		IsComposite:  false,
 		SupportBatch: false, // supportBatch: 1
 		PreFillZero:  true,
 		PostFillNil:  true,
+		Disabled:     true,
 	},
 	{
 		ID:           40,
-		Name:         "变量赋值",
+		Name:         "Variable assign",
 		Type:         NodeTypeVariableAssigner,
-		Category:     "知识库&数据", // Mapped from cate_list
-		Desc:         "用于给支持写入的变量赋值，包括应用变量、用户变量",
+		Category:     "Data", // Mapped from cate_list
+		Desc:         "Assigns values to variables that support the write operation, including app and user variables.",
 		Color:        "#FF811A",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/Variable.jpg",
 		IsComposite:  false,
@@ -345,10 +348,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               42,
-		Name:             "更新数据",
+		Name:             "Update Data",
 		Type:             NodeTypeDatabaseUpdate,
-		Category:         "数据库", // Mapped from cate_list
-		Desc:             "修改表中已存在的数据记录，用户指定更新条件和内容来更新数据",
+		Category:         "Database", // Mapped from cate_list
+		Desc:             "Modify the existing data records in the table, and the user specifies the update conditions and contents to update the data",
 		Color:            "#F2B600",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-update.jpg", // Corrected Icon URL from JSON
 		IsComposite:      false,
@@ -359,10 +362,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               43,
-		Name:             "查询数据", // Corrected Name from JSON (was "插入数据")
+		Name:             "Query Data", // Corrected Name from JSON (was "插入数据")
 		Type:             NodeTypeDatabaseQuery,
-		Category:         "数据库",                             // Mapped from cate_list
-		Desc:             "从表获取数据，用户可定义查询条件、选择列等，输出符合条件的数据", // Corrected Desc from JSON
+		Category:         "Database",                                                                                                                                 // Mapped from cate_list
+		Desc:             "Query data from the table, and the user can define query conditions, select columns, etc., and output the data that meets the conditions", // Corrected Desc from JSON
 		Color:            "#F2B600",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icaon-database-select.jpg", // Corrected Icon URL from JSON
 		IsComposite:      false,
@@ -373,10 +376,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               44,
-		Name:             "删除数据",
+		Name:             "Delete Data",
 		Type:             NodeTypeDatabaseDelete,
-		Category:         "数据库",                          // Mapped from cate_list
-		Desc:             "从表中删除数据记录，用户指定删除条件来删除符合条件的记录", // Corrected Desc from JSON
+		Category:         "Database",                                                                                                                          // Mapped from cate_list
+		Desc:             "Delete data records from the table, and the user specifies the deletion conditions to delete the records that meet the conditions", // Corrected Desc from JSON
 		Color:            "#F2B600",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-delete.jpg", // Corrected Icon URL from JSON
 		IsComposite:      false,
@@ -387,10 +390,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               45,
-		Name:             "HTTP 请求",
+		Name:             "HTTP request",
 		Type:             NodeTypeHTTPRequester,
-		Category:         "组件",                // Mapped from cate_list
-		Desc:             "用于发送API请求，从接口返回数据", // Corrected Desc from JSON
+		Category:         "Utilities",                                                           // Mapped from cate_list
+		Desc:             "It is used to send API requests and return data from the interface.", // Corrected Desc from JSON
 		Color:            "#3071F2",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-HTTP.png", // Corrected Icon URL from JSON
 		IsComposite:      false,
@@ -402,10 +405,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 	},
 	{
 		ID:               46,
-		Name:             "新增数据", // Corrected Name from JSON (was "查询数据")
+		Name:             "Add Data", // Corrected Name from JSON (was "查询数据")
 		Type:             NodeTypeDatabaseInsert,
-		Category:         "数据库",                      // Mapped from cate_list
-		Desc:             "向表添加新数据记录，用户输入数据内容后插入数据库", // Corrected Desc from JSON
+		Category:         "Database",                                                                                                    // Mapped from cate_list
+		Desc:             "Add new data records to the table, and insert them into the database after the user enters the data content", // Corrected Desc from JSON
 		Color:            "#F2B600",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-insert.jpg", // Corrected Icon URL from JSON
 		IsComposite:      false,

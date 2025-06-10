@@ -8,68 +8,76 @@ import (
 const defaultInitCanvasJsonSchema = `{
  "nodes": [
   {
-   "blocks": [],
-   "data": {
-    "nodeMeta": {
-     "description": "工作流的起始节点，用于设定启动工作流需要的信息",
-     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start.png",
-     "subTitle": "",
-     "title": "开始"
-    },
-    "outputs": [
-     {
-      "name": "input",
-      "required": false,
-      "type": "string"
-     }
-    ]
-   },
-   "edges": null,
    "id": "100001",
+   "type": "1",
    "meta": {
     "position": {
      "x": 0,
      "y": 0
     }
    },
-   "type": "1"
+   "data": {
+    "nodeMeta": {
+     "description": "The starting node of the workflow, used to set the information needed to initiate the workflow.",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start.png",
+     "subTitle": "",
+     "title": "Start"
+    },
+    "outputs": [
+     {
+      "type": "string",
+      "name": "input",
+      "required": false
+     }
+    ],
+    "trigger_parameters": [
+     {
+      "type": "string",
+      "name": "input",
+      "required": false
+     }
+    ]
+   }
   },
   {
-   "blocks": [],
-   "data": {
-    "inputs": {
-     "inputParameters": [
-      {
-       "input": {
-        "type": "string",
-        "value": {
-         "type": "ref"
-        }
-       },
-       "name": "output"
-      }
-     ],
-     "terminatePlan": "returnVariables"
-    },
-    "nodeMeta": {
-     "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
-     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End.png",
-     "subTitle": "",
-     "title": "结束"
-    }
-   },
-   "edges": null,
    "id": "900001",
+   "type": "2",
    "meta": {
     "position": {
      "x": 1000,
      "y": 0
     }
    },
-   "type": "2"
+   "data": {
+    "nodeMeta": {
+     "description": "The final node of the workflow, used to return the result information after the workflow runs.",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End.png",
+     "subTitle": "",
+     "title": "End"
+    },
+    "inputs": {
+     "terminatePlan": "returnVariables",
+     "inputParameters": [
+      {
+       "name": "output",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "ref",
+         "content": {
+          "source": "block-output",
+          "blockID": "",
+          "name": ""
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
   }
  ],
- "edges": null,
+ "edges": [],
  "versions": {
   "loop": "v2"
  }
@@ -80,16 +88,19 @@ func GetDefaultInitCanvasJsonSchema() string {
 }
 
 type Canvas struct {
-	Nodes []*Node `json:"nodes"`
-	Edges []*Edge `json:"edges"`
+	Nodes    []*Node `json:"nodes"`
+	Edges    []*Edge `json:"edges"`
+	Versions any     `json:"versions"`
 }
 
 type Node struct {
-	ID     string    `json:"id"`
-	Type   BlockType `json:"type"`
-	Data   *Data     `json:"data"`
-	Blocks []*Node   `json:"blocks,omitempty"`
-	Edges  []*Edge   `json:"edges,omitempty"`
+	ID      string    `json:"id"`
+	Type    BlockType `json:"type"`
+	Meta    any       `json:"meta"`
+	Data    *Data     `json:"data"`
+	Blocks  []*Node   `json:"blocks,omitempty"`
+	Edges   []*Edge   `json:"edges,omitempty"`
+	Version string    `json:"version,omitempty"`
 
 	parent *Node
 }
@@ -103,7 +114,11 @@ func (n *Node) Parent() *Node {
 }
 
 type NodeMeta struct {
-	Title string `json:"title"`
+	Title       string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+	Icon        string `json:"icon,omitempty"`
+	SubTitle    string `json:"subTitle,omitempty"`
+	MainColor   string `json:"mainColor,omitempty"`
 }
 
 type Edge struct {
@@ -117,17 +132,23 @@ type Data struct {
 	Meta    *NodeMeta `json:"nodeMeta,omitempty"`
 	Outputs []any     `json:"outputs,omitempty"` // either []*Variable or []*Param
 	Inputs  *Inputs   `json:"inputs,omitempty"`
+	Size    any       `json:"size,omitempty"`
 }
 
 type Inputs struct {
-	InputParameters []*Param       `json:"inputParameters,omitempty"`
-	Content         *BlockInput    `json:"content"`
-	TerminatePlan   *TerminatePlan `json:"terminatePlan,omitempty"`
-	StreamingOutput bool           `json:"streamingOutput,omitempty"`
+	InputParameters    []*Param        `json:"inputParameters"`
+	Content            *BlockInput     `json:"content"`
+	TerminatePlan      *TerminatePlan  `json:"terminatePlan,omitempty"`
+	StreamingOutput    bool            `json:"streamingOutput,omitempty"`
+	CallTransferVoice  bool            `json:"callTransferVoice,omitempty"`
+	ChatHistoryWriting string          `json:"chatHistoryWriting,omitempty"`
+	LLMParam           any             `json:"llmParam,omitempty"` // The LLMParam type may be one of the LLMParam or IntentDetectorLLMParam type or QALLMParam type
+	FCParam            *FCParam        `json:"fcParam,omitempty"`
+	SettingOnError     *SettingOnError `json:"settingOnError,omitempty"`
 
-	LLMParam       any             `json:"llmParam,omitempty"` // The LLMParam type may be one of the LLMParam or IntentDetectorLLMParam type or QALLMParam type
-	FCParam        *FCParam        `json:"fcParam,omitempty"`
-	SettingOnError *SettingOnError `json:"settingOnError,omitempty"`
+	LoopType           LoopType    `json:"loopType,omitempty"`
+	LoopCount          *BlockInput `json:"loopCount,omitempty"`
+	VariableParameters []*Param    `json:"variableParameters,omitempty"`
 
 	Branches []*struct {
 		Condition struct {
@@ -136,18 +157,10 @@ type Inputs struct {
 		} `json:"condition"`
 	} `json:"branches,omitempty"`
 
-	Method       TextProcessingMethod `json:"method,omitempty"`
-	ConcatParams []*Param             `json:"concatParams,omitempty"`
-	SplitParams  []*Param             `json:"splitParams,omitempty"`
-
-	LoopType           LoopType    `json:"loopType,omitempty"`
-	LoopCount          *BlockInput `json:"loopCount,omitempty"`
-	VariableParameters []*Param    `json:"variableParameters,omitempty"`
-
 	NodeBatchInfo *NodeBatch `json:"batch,omitempty"` // node in batch mode
 
+	*TextProcessor
 	*SubWorkflow
-
 	*IntentDetector
 	*DatabaseNode
 	*HttpRequestNode
@@ -155,10 +168,27 @@ type Inputs struct {
 	*CodeRunner
 	*PluginAPIParam
 	*VariableAggregator
+	*VariableAssigner
 	*QA
 	*Batch
+	*Comment
 
 	OutputSchema string `json:"outputSchema,omitempty"`
+}
+
+type Comment struct {
+	SchemaType string `json:"schemaType,omitempty"`
+	Note       any    `json:"note,omitempty"`
+}
+
+type TextProcessor struct {
+	Method       TextProcessingMethod `json:"method,omitempty"`
+	ConcatParams []*Param             `json:"concatParams,omitempty"`
+	SplitParams  []*Param             `json:"splitParams,omitempty"`
+}
+
+type VariableAssigner struct {
+	VariableTypeMap map[string]any `json:"variableTypeMap,omitempty"`
 }
 
 type LLMParam = []*Param
@@ -303,15 +333,16 @@ type StrategyParam struct {
 		MaxToken      int64   `json:"maxToken,omitempty"`
 		Overlap       float64 `json:"overlap,omitempty"`
 	} `json:"chunkStrategy,omitempty"`
+	IndexStrategy any `json:"indexStrategy"`
 }
 
 type HttpRequestNode struct {
 	APIInfo APIInfo             `json:"apiInfo,omitempty"`
 	Body    Body                `json:"body,omitempty"`
-	Headers []*Param            `json:"headers,omitempty"`
-	Params  []*Param            `json:"params,omitempty"`
-	Auth    *Auth               `json:"auth,omitempty"`
-	Setting *HttpRequestSetting `json:"setting,omitempty"`
+	Headers []*Param            `json:"headers"`
+	Params  []*Param            `json:"params"`
+	Auth    *Auth               `json:"auth"`
+	Setting *HttpRequestSetting `json:"setting"`
 }
 
 type APIInfo struct {
@@ -323,12 +354,12 @@ type Body struct {
 	BodyData *BodyData `json:"bodyData"`
 }
 type BodyData struct {
-	Json     string `json:"json"`
-	FormData struct {
+	Json     string `json:"json,omitempty"`
+	FormData *struct {
 		Data []*Param `json:"data"`
-	} `json:"formData"`
-	FormURLEncoded []*Param `json:"formURLEncoded"`
-	RawText        string   `json:"rawText"`
+	} `json:"formData,omitempty"`
+	FormURLEncoded []*Param `json:"formURLEncoded,omitempty"`
+	RawText        string   `json:"rawText,omitempty"`
 	Binary         struct {
 		FileURL *BlockInput `json:"fileURL"`
 	} `json:"binary"`
@@ -339,9 +370,9 @@ type Auth struct {
 	AuthData struct {
 		CustomData struct {
 			AddTo string   `json:"addTo"`
-			Data  []*Param `json:"data"`
+			Data  []*Param `json:"data,omitempty"`
 		} `json:"customData"`
-		BearerTokenData []*Param `json:"bearerTokenData"`
+		BearerTokenData []*Param `json:"bearerTokenData,omitempty"`
 	} `json:"authData"`
 
 	AuthOpen bool `json:"authOpen"`
@@ -407,8 +438,13 @@ type DatabaseInfo struct {
 }
 
 type IntentDetector struct {
-	Intents []*Intent `json:"intents,omitempty"`
-	Mode    string    `json:"mode,omitempty"`
+	ChatHistorySetting *ChatHistorySetting `json:"chatHistorySetting,omitempty"`
+	Intents            []*Intent           `json:"intents,omitempty"`
+	Mode               string              `json:"mode,omitempty"`
+}
+type ChatHistorySetting struct {
+	EnableChatHistory bool  `json:"enableChatHistory,omitempty"`
+	ChatHistoryRound  int64 `json:"chatHistoryRound,omitempty"`
 }
 
 type Intent struct {
@@ -442,6 +478,7 @@ type BlockInput struct {
 type BlockInputValue struct {
 	Type    BlockInputValueType `json:"type"`
 	Content any                 `json:"content,omitempty"` // either string for text such as template, or BlockInputReference
+	RawMeta any                 `json:"rawMeta,omitempty"`
 }
 
 type BlockInputReference struct {

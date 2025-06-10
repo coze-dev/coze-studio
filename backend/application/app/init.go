@@ -9,7 +9,6 @@ import (
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 )
@@ -22,7 +21,6 @@ type ServiceComponents struct {
 
 	UserSVC      user.User
 	ConnectorSVC connector.Connector
-	WorkflowSVC  workflow.Service
 	VariablesSVC variables.Variables
 }
 
@@ -48,7 +46,6 @@ func InitService(components *ServiceComponents) (*APPApplicationService, error) 
 
 	APPApplicationSVC.userSVC = components.UserSVC
 	APPApplicationSVC.connectorSVC = components.ConnectorSVC
-	APPApplicationSVC.workflowSVC = components.WorkflowSVC
 	APPApplicationSVC.variablesSVC = components.VariablesSVC
 
 	return APPApplicationSVC, nil

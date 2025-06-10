@@ -17,7 +17,7 @@ import (
 type Service interface {
 	MGetWorkflows(ctx context.Context, ids []*entity.WorkflowIdentity) ([]*entity.Workflow, error)
 	WorkflowAsModelTool(ctx context.Context, ids []*entity.WorkflowIdentity) ([]tool.BaseTool, error)
-	ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, map[string][]*entity.PluginNodeMeta, map[string][]*entity.PluginCategoryMeta, error)
+	ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, error)
 	CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *entity.WorkflowReference) (int64, error)
 	SaveWorkflow(ctx context.Context, draft *entity.Workflow) error
 	DeleteWorkflow(ctx context.Context, id int64) error
@@ -52,11 +52,12 @@ type Service interface {
 	WithExecuteConfig(cfg vo.ExecuteConfig) compose.Option
 	WithResumeToolWorkflow(resumingEvent *entity.ToolInterruptEvent, resumeData string,
 		allInterruptEvents map[string]*entity.ToolInterruptEvent) compose.Option
-	CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (int64, error)
+	CopyWorkflow(ctx context.Context, workflowID int64, cfg vo.CopyWorkflowConfig) (int64, error)
 	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
 	CheckWorkflowsExistByAppID(ctx context.Context, appID int64) (bool, error)
 	BatchDeleteWorkflow(ctx context.Context, ids []int64) error
 	DeleteWorkflowsByAppID(ctx context.Context, appID int64) error
+	CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, appID int64, relatedPlugins map[int64]entity.PluginEntity) ([]*vo.ValidateIssue, error)
 }
 
 type Repository interface {
@@ -103,7 +104,7 @@ type Repository interface {
 	SubscribeWorkflowCancelSignal(ctx context.Context, wfExeID int64) (<-chan *redis.Message, func(), error)
 	GetWorkflowCancelFlag(ctx context.Context, wfExeID int64) (bool, error)
 	WorkflowAsTool(ctx context.Context, wfID entity.WorkflowIdentity, wfToolConfig vo.WorkflowToolConfig) (ToolFromWorkflow, error)
-	CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (*entity.Workflow, error)
+	CopyWorkflow(ctx context.Context, workflowID int64, cfg vo.CopyWorkflowConfig) (*entity.Workflow, error)
 	SetTestRunLatestExeID(ctx context.Context, wfID int64, uID int64, exeID int64) error
 	GetTestRunLatestExeID(ctx context.Context, wfID int64, uID int64) (int64, error)
 	SetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64, exeID int64) error
@@ -113,6 +114,7 @@ type Repository interface {
 	BatchPublishWorkflows(ctx context.Context, workflows map[int64]*vo.VersionInfo) error
 	HasWorkflow(ctx context.Context, appID int64) (bool, error)
 	GetWorkflowIDsByAppId(ctx context.Context, appID int64) (es []int64, err error)
+	CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, modifiedCanvasSchema string) (*entity.Workflow, error)
 
 	compose.CheckPointStore
 }

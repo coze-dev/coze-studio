@@ -16,6 +16,7 @@ type NodeTypeMeta struct {
 	PreFillZero      bool     `json:"pre_fill_zero,omitempty"`
 	PostFillNil      bool     `json:"post_fill_nil,omitempty"`
 	CallbackEnabled  bool     `json:"callback_enabled,omitempty"` // is false, Eino framework will inject callbacks for this node
+	Disabled         bool     `json:"disabled,omitempty"`
 }
 
 type PluginNodeMeta struct {

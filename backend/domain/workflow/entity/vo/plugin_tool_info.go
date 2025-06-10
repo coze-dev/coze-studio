@@ -19,11 +19,6 @@ type WorkFlowAsToolInfo struct {
 	UpdatedAt     *int64
 }
 
-type DebugExample struct {
-	ReqExample  string
-	RespExample string
-}
-
 type ToolDetailInfo struct {
 	ApiDetailData *workflow.ApiDetailData
 	ToolInputs    any

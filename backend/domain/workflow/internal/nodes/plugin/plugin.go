@@ -9,6 +9,7 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
 
@@ -58,11 +59,11 @@ func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map
 	})
 
 	var (
-		invokeTool tool.InvokableTool
-		ok         bool
+		pTool plugin.PluginInvokableTool
+		ok    bool
 	)
 
-	if invokeTool, ok = invokeMap[p.config.ToolID]; !ok {
+	if pTool, ok = invokeMap[p.config.ToolID]; !ok {
 		return nil, fmt.Errorf("tool not found, tool id=%v", p.config.ToolID)
 	}
 
@@ -71,7 +72,12 @@ func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map
 		return nil, err
 	}
 
-	data, err := invokeTool.InvokableRun(ctx, argumentsInJSON)
+	opts := make([]tool.Option, 0)
+	if execute.GetExeCtx(ctx) != nil {
+		opts = append(opts, execute.WithExecuteConfig(execute.GetExeCtx(ctx).ExeCfg))
+	}
+
+	data, err := plugin.NewInvokableTool(pTool).InvokableRun(ctx, argumentsInJSON, opts...)
 	if err != nil {
 		return nil, err
 	}

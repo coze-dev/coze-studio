@@ -2,7 +2,7 @@ package vo
 
 type ValidateTreeConfig struct {
 	CanvasSchema string
-	APPID        *int64
+	AppID        *int64
 	AgentID      *int64
 }
 

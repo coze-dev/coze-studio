@@ -184,7 +184,7 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 					return nil, err
 				}
 				for _, t := range toolMap {
-					inInvokableTools = append(inInvokableTools, t)
+					inInvokableTools = append(inInvokableTools, crossplugin.NewInvokableTool(t))
 				}
 			}
 			if len(inInvokableTools) > 0 {

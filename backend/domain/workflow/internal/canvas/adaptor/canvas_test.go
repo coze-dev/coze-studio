@@ -18,7 +18,6 @@ import (
 
 	"github.com/bytedance/mockey"
 	"github.com/bytedance/sonic"
-	"github.com/cloudwego/eino/components/tool"
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
@@ -858,7 +857,7 @@ func (m *mockInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error) 
 	return &schema.ToolInfo{}, nil
 }
 
-func (m *mockInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
+func (m *mockInvokableTool) PluginInvoke(ctx context.Context, argumentsInJSON string, cfg vo.ExecuteConfig) (string, error) {
 	r := map[string]any{
 		"log_id": "20240617191637796DF3F4453E16AF3615",
 		"msg":    "success",
@@ -893,7 +892,7 @@ func TestCodeAndPluginNodes(t *testing.T) {
 
 		mockToolService := pluginmock.NewMockToolService(ctrl)
 		mockey.Mock(plugin.GetToolService).Return(mockToolService).Build()
-		mockToolService.EXPECT().GetPluginInvokableTools(gomock.Any(), gomock.Any()).Return(map[int64]tool.InvokableTool{
+		mockToolService.EXPECT().GetPluginInvokableTools(gomock.Any(), gomock.Any()).Return(map[int64]plugin.PluginInvokableTool{
 			7348853341923016714: &mockInvokableTool{},
 		}, nil)
 

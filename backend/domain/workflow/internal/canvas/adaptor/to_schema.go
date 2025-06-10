@@ -1745,7 +1745,9 @@ func PruneIsolatedNodes(nodes []*vo.Node, edges []*vo.Edge, parentNode *vo.Node)
 		}
 		nodeDependencyCount[node.ID] = 0
 	}
+
 	nodeDependencyCount[compose.EntryNodeKey] = 1 // entry node is considered to be 1
+	nodeDependencyCount[compose.ExitNodeKey] = 1  // exit node is considered to be 1
 	for _, edge := range edges {
 		if _, ok := nodeDependencyCount[edge.TargetNodeID]; ok {
 			nodeDependencyCount[edge.TargetNodeID]++

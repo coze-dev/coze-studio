@@ -17,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
 	"code.byted.org/flow/opencoze/backend/application/plugin"
+	"code.byted.org/flow/opencoze/backend/application/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/domain/app/service"
@@ -25,7 +26,6 @@ import (
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
-	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
@@ -44,9 +44,9 @@ type APPApplicationService struct {
 	oss             storage.Storage
 	projectEventBus search.ProjectEventBus
 
-	userSVC      user.User
-	searchSVC    search.Search
-	workflowSVC  workflow.Service
+	userSVC   user.User
+	searchSVC search.Search
+
 	connectorSVC connector.Connector
 	variablesSVC variables.Variables
 }
@@ -193,8 +193,7 @@ func (a *APPApplicationService) deleteAPPResources(ctx context.Context, appID in
 		logs.CtxErrorf(ctx, "delete app knowledge failed, err=%v", err)
 		return err
 	}
-
-	err = a.workflowSVC.DeleteWorkflowsByAppID(ctx, appID)
+	err = workflow.SVC.DeleteWorkflowsByAppID(ctx, appID)
 	if err != nil {
 		return err
 	}
@@ -265,7 +264,7 @@ func (a *APPApplicationService) getAPPPublishConnectorList(ctx context.Context, 
 		return nil, err
 	}
 
-	hasWorkflow, err := a.workflowSVC.CheckWorkflowsExistByAppID(ctx, appID)
+	hasWorkflow, err := workflow.SVC.CheckWorkflowsExistByAppID(ctx, appID)
 	if err != nil {
 		return nil, err
 	}

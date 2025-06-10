@@ -1,0 +1,205 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": -135,
+          "y": -63
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start.png",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 1313,
+          "y": 19.25
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End.png",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "191100",
+      "type": "9",
+      "meta": {
+        "position": {
+          "x": 634.5,
+          "y": -171
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "child_1",
+          "description": "1",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
+          "isImageflow": false
+        },
+        "inputs": {
+          "workflowId": "7515027150387281920",
+          "spaceId": "666",
+          "workflowVersion": "",
+          "inputDefs": [
+            {
+              "name": "input",
+              "type": "string"
+            }
+          ],
+          "type": 0,
+          "inputParameters": [],
+          "settingOnError": {}
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output"
+          }
+        ]
+      }
+    },
+    {
+      "id": "167855",
+      "type": "9",
+      "meta": {
+        "position": {
+          "x": 1026,
+          "y": -240.5
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "child_2",
+          "description": "2",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
+          "isImageflow": false
+        },
+        "inputs": {
+          "workflowId": "7515027182796668928",
+          "spaceId": "666",
+          "workflowVersion": "",
+          "inputDefs": [
+            {
+              "name": "input",
+              "type": "string"
+            }
+          ],
+          "type": 0,
+          "inputParameters": [],
+          "settingOnError": {}
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output"
+          }
+        ]
+      }
+    },
+    {
+      "id": "125555",
+      "type": "9",
+      "meta": {
+        "position": {
+          "x": 243,
+          "y": -258.9
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "child_child_child_4",
+          "description": "4",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
+          "isImageflow": false
+        },
+        "inputs": {
+          "workflowId": "7515027325977624576",
+          "spaceId": "666",
+          "workflowVersion": "",
+          "inputDefs": [
+            {
+              "name": "input",
+              "type": "string"
+            }
+          ],
+          "type": 0,
+          "inputParameters": [],
+          "settingOnError": {}
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output"
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "125555"
+    },
+    {
+      "sourceNodeID": "167855",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "125555",
+      "targetNodeID": "191100"
+    },
+    {
+      "sourceNodeID": "191100",
+      "targetNodeID": "167855"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

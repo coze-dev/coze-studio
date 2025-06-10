@@ -28,7 +28,7 @@ type Workflow struct {
 	VersionDesc string
 	// BaseVersion *string TODO: may need to provide relationships between versions, such as to know which version is the latest
 
-	Stage
+	Stage     Stage
 	Name      string
 	Desc      string
 	IconURI   string

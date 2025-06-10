@@ -7,7 +7,6 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"golang.org/x/exp/maps"
 
-	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
@@ -17,7 +16,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -122,42 +120,6 @@ func (t *toolService) getPluginsWithTools(ctx context.Context, pluginEntity *cro
 	return &pluginInfo{PluginInfo: pInfo}, toolsInfo, nil
 }
 
-func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplugin.PluginToolsInvokableRequest) (map[int64]tool.InvokableTool, error) {
-	var toolsInfo []*entity.ToolInfo
-	isDraft := req.IsDraft || (req.PluginEntity.PluginVersion != nil && *req.PluginEntity.PluginVersion == "0")
-	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, &crossplugin.PluginEntity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, maps.Keys(req.ToolsInvokableInfo), isDraft)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make(map[int64]tool.InvokableTool, len(toolsInfo))
-	for _, tf := range toolsInfo {
-		tl := &pluginInvokeTool{
-			pluginEntity: crossplugin.PluginEntity{
-				PluginID:      pInfo.ID,
-				PluginVersion: pInfo.Version,
-			},
-			client:   t.client,
-			toolInfo: tf,
-			IsDraft:  isDraft,
-		}
-
-		if r, ok := req.ToolsInvokableInfo[tf.ID]; ok && (r.RequestAPIParametersConfig != nil && r.ResponseAPIParametersConfig != nil) {
-			reqPluginCommonAPIParameters := slices.Transform(r.RequestAPIParametersConfig, toPluginCommonAPIParameter)
-			respPluginCommonAPIParameters := slices.Transform(r.ResponseAPIParametersConfig, toPluginCommonAPIParameter)
-			tl.toolOperation, err = pluginutil.APIParamsToOpenapiOperation(reqPluginCommonAPIParameters, respPluginCommonAPIParameters)
-			if err != nil {
-				return nil, err
-			}
-
-		}
-
-		result[tf.ID] = tl
-
-	}
-	return result, nil
-}
-
 func (t *toolService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.PluginToolsInfoRequest) (*crossplugin.PluginToolsInfoResponse, error) {
 	var toolsInfo []*entity.ToolInfo
 	isDraft := req.IsDraft || (req.PluginEntity.PluginVersion != nil && *req.PluginEntity.PluginVersion == "0")
@@ -210,7 +172,7 @@ func (t *toolService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.P
 			Inputs:      slices.Transform(inputs, toWorkflowAPIParameter),
 			Outputs:     slices.Transform(outputs, toWorkflowAPIParameter),
 			Description: tf.GetDesc(),
-			DebugExample: &vo.DebugExample{
+			DebugExample: &crossplugin.DebugExample{
 				ReqExample:  requestExample,
 				RespExample: responseExample,
 			},
@@ -218,6 +180,42 @@ func (t *toolService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.P
 
 	}
 	return response, nil
+}
+
+func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplugin.PluginToolsInvokableRequest) (map[int64]crossplugin.PluginInvokableTool, error) {
+	var toolsInfo []*entity.ToolInfo
+	isDraft := req.IsDraft || (req.PluginEntity.PluginVersion != nil && *req.PluginEntity.PluginVersion == "0")
+	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, &crossplugin.PluginEntity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, maps.Keys(req.ToolsInvokableInfo), isDraft)
+	if err != nil {
+		return nil, err
+	}
+
+	result := map[int64]crossplugin.PluginInvokableTool{}
+	for _, tf := range toolsInfo {
+		tl := &pluginInvokeTool{
+			pluginEntity: crossplugin.PluginEntity{
+				PluginID:      pInfo.ID,
+				PluginVersion: pInfo.Version,
+			},
+			client:   t.client,
+			toolInfo: tf,
+			IsDraft:  isDraft,
+		}
+
+		if r, ok := req.ToolsInvokableInfo[tf.ID]; ok && (r.RequestAPIParametersConfig != nil && r.ResponseAPIParametersConfig != nil) {
+			reqPluginCommonAPIParameters := slices.Transform(r.RequestAPIParametersConfig, toPluginCommonAPIParameter)
+			respPluginCommonAPIParameters := slices.Transform(r.ResponseAPIParametersConfig, toPluginCommonAPIParameter)
+			tl.toolOperation, err = pluginutil.APIParamsToOpenapiOperation(reqPluginCommonAPIParameters, respPluginCommonAPIParameters)
+			if err != nil {
+				return nil, err
+			}
+
+		}
+
+		result[tf.ID] = tl
+
+	}
+	return result, nil
 }
 
 type pluginInvokeTool struct {
@@ -251,14 +249,14 @@ func (p *pluginInvokeTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	}, nil
 }
 
-func (p *pluginInvokeTool) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
+func (p *pluginInvokeTool) PluginInvoke(ctx context.Context, argumentsInJSON string, cfg crossplugin.ExecConfig) (string, error) {
 	req := &service.ExecuteToolRequest{
+		UserID:          cfg.Operator,
 		PluginID:        p.pluginEntity.PluginID,
 		ToolID:          p.toolInfo.ID,
 		ExecScene:       plugin.ExecSceneOfWorkflow,
 		ArgumentsInJson: argumentsInJSON,
 	}
-
 	execOpts := []entity.ExecuteToolOpt{
 		plugin.WithInvalidRespProcessStrategy(plugin.InvalidResponseProcessStrategyOfReturnDefault),
 	}

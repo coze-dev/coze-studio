@@ -324,7 +324,6 @@ func (p *primaryServices) toAPPServiceComponents() *app.ServiceComponents {
 		ProjectEventBus: basic.eventbus.projectEventBus,
 		UserSVC:         basic.userSVC.DomainSVC,
 		ConnectorSVC:    basic.connectorSVC.DomainSVC,
-		WorkflowSVC:     p.workflowSVC.DomainSVC,
 		VariablesSVC:    p.memorySVC.VariablesDomainSVC,
 	}
 }

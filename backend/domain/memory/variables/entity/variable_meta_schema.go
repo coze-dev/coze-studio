@@ -11,7 +11,7 @@ import (
 
 const (
 	variableMetaSchemaTypeObject  = "object"
-	variableMetaSchemaTypeArray   = "array"
+	variableMetaSchemaTypeArray   = "list"
 	variableMetaSchemaTypeInteger = "integer"
 	variableMetaSchemaTypeString  = "string"
 	variableMetaSchemaTypeBoolean = "boolean"

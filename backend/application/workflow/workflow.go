@@ -53,7 +53,7 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 		toQueryTypes[entityType] = true
 	}
 
-	category2NodeMetaList, _, _, err := GetWorkflowDomainSVC().ListNodeMeta(ctx, toQueryTypes)
+	category2NodeMetaList, err := GetWorkflowDomainSVC().ListNodeMeta(ctx, toQueryTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -307,7 +307,7 @@ func (w *ApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetC
 		VcsData: &workflow.VCSCanvasData{
 			Type: vcsType,
 		},
-		WorkflowVersion: &wf.LatestVersion, // TODO: now if you have published it, return to the
+		WorkflowVersion: &wf.LatestVersion,
 	}
 
 	return &workflow.GetCanvasInfoResponse{
@@ -654,6 +654,28 @@ func (w *ApplicationService) GetNodeExecuteHistory(ctx context.Context, req *wor
 			Data: result,
 		}, nil
 	}
+}
+
+func (w *ApplicationService) DeleteWorkflowsByAppID(ctx context.Context, appID int64) error {
+	return GetWorkflowDomainSVC().DeleteWorkflowsByAppID(ctx, appID)
+}
+
+func (w *ApplicationService) CheckWorkflowsExistByAppID(ctx context.Context, appID int64) (bool, error) {
+	return GetWorkflowDomainSVC().CheckWorkflowsExistByAppID(ctx, appID)
+}
+
+func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, appID int64, relatedPlugins map[int64]entity.PluginEntity) ([]*vo.ValidateIssue, error) {
+	return GetWorkflowDomainSVC().CopyWorkflowFromAppToLibrary(ctx, workflowID, appID, relatedPlugins)
+}
+
+func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, workflowID int64, appID int64) error {
+	_, err := GetWorkflowDomainSVC().CopyWorkflow(ctx, workflowID, vo.CopyWorkflowConfig{
+		TargetAppID: &appID,
+	})
+	if err != nil {
+		return err
+	}
+	return err
 }
 
 func convertNodeExecution(nodeExe *entity.NodeExecution) (*workflow.NodeResult, error) {
@@ -1187,7 +1209,7 @@ func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.Val
 		if err != nil {
 			return nil, err
 		}
-		validateTreeCfg.APPID = ptr.Of(pId)
+		validateTreeCfg.AppID = ptr.Of(pId)
 	}
 
 	wfValidateInfos, err := GetWorkflowDomainSVC().ValidateTree(ctx, mustParseInt64(req.GetWorkflowID()), validateTreeCfg)
@@ -2199,7 +2221,7 @@ func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.Cop
 		return nil, err
 	}
 
-	copiedID, err := GetWorkflowDomainSVC().CopyWorkflow(ctx, spaceID, workflowID)
+	copiedID, err := GetWorkflowDomainSVC().CopyWorkflow(ctx, workflowID, vo.CopyWorkflowConfig{})
 	if err != nil {
 		return nil, err
 	}

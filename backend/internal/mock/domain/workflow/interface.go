@@ -13,16 +13,15 @@ import (
 	context "context"
 	reflect "reflect"
 
+	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
+	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	tool "github.com/cloudwego/eino/components/tool"
 	compose "github.com/cloudwego/eino/compose"
 	schema "github.com/cloudwego/eino/schema"
 	redis "github.com/redis/go-redis/v9"
 	gomock "go.uber.org/mock/gomock"
-
-	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
-	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 // MockService is a mock of Service interface.
@@ -138,18 +137,33 @@ func (mr *MockServiceMockRecorder) CheckWorkflowsExistByAppID(ctx, appID any) *g
 }
 
 // CopyWorkflow mocks base method.
-func (m *MockService) CopyWorkflow(ctx context.Context, spaceID, workflowID int64) (int64, error) {
+func (m *MockService) CopyWorkflow(ctx context.Context, workflowID int64, cfg vo.CopyWorkflowConfig) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CopyWorkflow", ctx, spaceID, workflowID)
+	ret := m.ctrl.Call(m, "CopyWorkflow", ctx, workflowID, cfg)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CopyWorkflow indicates an expected call of CopyWorkflow.
-func (mr *MockServiceMockRecorder) CopyWorkflow(ctx, spaceID, workflowID any) *gomock.Call {
+func (mr *MockServiceMockRecorder) CopyWorkflow(ctx, workflowID, cfg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflow", reflect.TypeOf((*MockService)(nil).CopyWorkflow), ctx, spaceID, workflowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflow", reflect.TypeOf((*MockService)(nil).CopyWorkflow), ctx, workflowID, cfg)
+}
+
+// CopyWorkflowFromAppToLibrary mocks base method.
+func (m *MockService) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID, appID int64, relatedPlugins map[int64]entity.PluginEntity) ([]*vo.ValidateIssue, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CopyWorkflowFromAppToLibrary", ctx, workflowID, appID, relatedPlugins)
+	ret0, _ := ret[0].([]*vo.ValidateIssue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CopyWorkflowFromAppToLibrary indicates an expected call of CopyWorkflowFromAppToLibrary.
+func (mr *MockServiceMockRecorder) CopyWorkflowFromAppToLibrary(ctx, workflowID, appID, relatedPlugins any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflowFromAppToLibrary", reflect.TypeOf((*MockService)(nil).CopyWorkflowFromAppToLibrary), ctx, workflowID, appID, relatedPlugins)
 }
 
 // CreateWorkflow mocks base method.
@@ -335,14 +349,12 @@ func (mr *MockServiceMockRecorder) GetWorkflowVersion(ctx, wfe any) *gomock.Call
 }
 
 // ListNodeMeta mocks base method.
-func (m *MockService) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, map[string][]*entity.PluginNodeMeta, map[string][]*entity.PluginCategoryMeta, error) {
+func (m *MockService) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListNodeMeta", ctx, nodeTypes)
 	ret0, _ := ret[0].(map[string][]*entity.NodeTypeMeta)
-	ret1, _ := ret[1].(map[string][]*entity.PluginNodeMeta)
-	ret2, _ := ret[2].(map[string][]*entity.PluginCategoryMeta)
-	ret3, _ := ret[3].(error)
-	return ret0, ret1, ret2, ret3
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ListNodeMeta indicates an expected call of ListNodeMeta.
@@ -669,18 +681,33 @@ func (mr *MockRepositoryMockRecorder) CancelAllRunningNodes(ctx, wfExeID any) *g
 }
 
 // CopyWorkflow mocks base method.
-func (m *MockRepository) CopyWorkflow(ctx context.Context, spaceID, workflowID int64) (*entity.Workflow, error) {
+func (m *MockRepository) CopyWorkflow(ctx context.Context, workflowID int64, cfg vo.CopyWorkflowConfig) (*entity.Workflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CopyWorkflow", ctx, spaceID, workflowID)
+	ret := m.ctrl.Call(m, "CopyWorkflow", ctx, workflowID, cfg)
 	ret0, _ := ret[0].(*entity.Workflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CopyWorkflow indicates an expected call of CopyWorkflow.
-func (mr *MockRepositoryMockRecorder) CopyWorkflow(ctx, spaceID, workflowID any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) CopyWorkflow(ctx, workflowID, cfg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflow", reflect.TypeOf((*MockRepository)(nil).CopyWorkflow), ctx, spaceID, workflowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflow", reflect.TypeOf((*MockRepository)(nil).CopyWorkflow), ctx, workflowID, cfg)
+}
+
+// CopyWorkflowFromAppToLibrary mocks base method.
+func (m *MockRepository) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, modifiedCanvasSchema string) (*entity.Workflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CopyWorkflowFromAppToLibrary", ctx, workflowID, modifiedCanvasSchema)
+	ret0, _ := ret[0].(*entity.Workflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CopyWorkflowFromAppToLibrary indicates an expected call of CopyWorkflowFromAppToLibrary.
+func (mr *MockRepositoryMockRecorder) CopyWorkflowFromAppToLibrary(ctx, workflowID, modifiedCanvasSchema any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflowFromAppToLibrary", reflect.TypeOf((*MockRepository)(nil).CopyWorkflowFromAppToLibrary), ctx, workflowID, modifiedCanvasSchema)
 }
 
 // CreateNodeExecution mocks base method.

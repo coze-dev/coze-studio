@@ -14,7 +14,7 @@ import (
 	reflect "reflect"
 
 	plugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
-	tool "github.com/cloudwego/eino/components/tool"
+	schema "github.com/cloudwego/eino/schema"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -43,10 +43,10 @@ func (m *MockToolService) EXPECT() *MockToolServiceMockRecorder {
 }
 
 // GetPluginInvokableTools mocks base method.
-func (m *MockToolService) GetPluginInvokableTools(ctx context.Context, req *plugin.PluginToolsInvokableRequest) (map[int64]tool.InvokableTool, error) {
+func (m *MockToolService) GetPluginInvokableTools(ctx context.Context, req *plugin.PluginToolsInvokableRequest) (map[int64]plugin.PluginInvokableTool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPluginInvokableTools", ctx, req)
-	ret0, _ := ret[0].(map[int64]tool.InvokableTool)
+	ret0, _ := ret[0].(map[int64]plugin.PluginInvokableTool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -70,4 +70,58 @@ func (m *MockToolService) GetPluginToolsInfo(ctx context.Context, req *plugin.Pl
 func (mr *MockToolServiceMockRecorder) GetPluginToolsInfo(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginToolsInfo", reflect.TypeOf((*MockToolService)(nil).GetPluginToolsInfo), ctx, req)
+}
+
+// MockPluginInvokableTool is a mock of PluginInvokableTool interface.
+type MockPluginInvokableTool struct {
+	ctrl     *gomock.Controller
+	recorder *MockPluginInvokableToolMockRecorder
+	isgomock struct{}
+}
+
+// MockPluginInvokableToolMockRecorder is the mock recorder for MockPluginInvokableTool.
+type MockPluginInvokableToolMockRecorder struct {
+	mock *MockPluginInvokableTool
+}
+
+// NewMockPluginInvokableTool creates a new mock instance.
+func NewMockPluginInvokableTool(ctrl *gomock.Controller) *MockPluginInvokableTool {
+	mock := &MockPluginInvokableTool{ctrl: ctrl}
+	mock.recorder = &MockPluginInvokableToolMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockPluginInvokableTool) EXPECT() *MockPluginInvokableToolMockRecorder {
+	return m.recorder
+}
+
+// Info mocks base method.
+func (m *MockPluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Info", ctx)
+	ret0, _ := ret[0].(*schema.ToolInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Info indicates an expected call of Info.
+func (mr *MockPluginInvokableToolMockRecorder) Info(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Info", reflect.TypeOf((*MockPluginInvokableTool)(nil).Info), ctx)
+}
+
+// PluginInvoke mocks base method.
+func (m *MockPluginInvokableTool) PluginInvoke(ctx context.Context, argumentsInJSON string, cfg plugin.ExecConfig) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PluginInvoke", ctx, argumentsInJSON, cfg)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PluginInvoke indicates an expected call of PluginInvoke.
+func (mr *MockPluginInvokableToolMockRecorder) PluginInvoke(ctx, argumentsInJSON, cfg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PluginInvoke", reflect.TypeOf((*MockPluginInvokableTool)(nil).PluginInvoke), ctx, argumentsInJSON, cfg)
 }

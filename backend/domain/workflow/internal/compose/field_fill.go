@@ -115,6 +115,9 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 				}
 			}
 		} else {
+			if v == nil {
+				return nil
+			}
 			// recursively handle the layered object.
 			subContainer, ok := v.(map[string]any)
 			if !ok {

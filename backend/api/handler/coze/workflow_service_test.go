@@ -53,6 +53,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
 	crosssearch "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search/searchmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
@@ -70,6 +71,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
@@ -424,7 +426,7 @@ func TestNodeTemplateList(t *testing.T) {
 		defer f()
 
 		req := &workflow.NodeTemplateListRequest{
-			NodeTypes: []string{"1", "5", "18"},
+			NodeTypes: []string{"3", "5", "18"},
 		}
 
 		resp := post[workflow.NodeTemplateListResponse](t, h, req, "/api/workflow_api/node_template_list")
@@ -4215,7 +4217,7 @@ func TestStreamResume(t *testing.T) {
 				Data: &streamRunData{
 					NodeID:       ptr.Of("191011"),
 					NodeType:     ptr.Of("Input"),
-					NodeTitle:    ptr.Of("输入"),
+					NodeTitle:    ptr.Of("Input"),
 					NodeSeqID:    ptr.Of("0"),
 					NodeIsFinish: ptr.Of(true),
 					Content:      ptr.Of("{\"content\":\"[{\\\"type\\\":\\\"object\\\",\\\"name\\\":\\\"input\\\",\\\"schema\\\":[{\\\"type\\\":\\\"string\\\",\\\"name\\\":\\\"name\\\",\\\"required\\\":false},{\\\"type\\\":\\\"integer\\\",\\\"name\\\":\\\"age\\\",\\\"required\\\":false}],\\\"required\\\":false},{\\\"type\\\":\\\"list\\\",\\\"name\\\":\\\"input_list\\\",\\\"schema\\\":{\\\"type\\\":\\\"object\\\",\\\"schema\\\":[{\\\"type\\\":\\\"string\\\",\\\"name\\\":\\\"name\\\",\\\"required\\\":false},{\\\"type\\\":\\\"integer\\\",\\\"name\\\":\\\"age\\\",\\\"required\\\":false}]},\\\"required\\\":false}]\",\"content_type\":\"form_schema\"}"),
@@ -5265,5 +5267,209 @@ func TestCodeExceptionBranch(t *testing.T) {
 				}, m)
 			})
 		})
+	})
+}
+
+func TestCopyWorkflowByScenario(t *testing.T) {
+	h := server.Default()
+	h.Use(func(c context.Context, ctx *app.RequestContext) {
+		c = ctxcache.Init(c)
+		ctxcache.Store(c, consts.SessionDataKeyInCtx, &userentity.Session{
+			UserID: 123,
+		})
+		ctx.Next(c)
+	})
+	h.POST("/api/workflow_api/create", CreateWorkflow)
+	h.POST("/api/workflow_api/save", SaveWorkflow)
+	h.POST("/api/workflow_api/delete", DeleteWorkflow)
+
+	ctrl := gomock.NewController(t)
+	mockIDGen := mock.NewMockIDGenerator(ctrl)
+	mockCU := mockCrossUser.NewMockUser(ctrl)
+	mockCU.EXPECT().GetUserSpaceList(gomock.Any(), gomock.Any()).Return([]*crossuser.EntitySpace{
+		{
+			ID: 123,
+		},
+	}, nil).AnyTimes()
+
+	defer mockey.Mock(crossuser.DefaultSVC).Return(mockCU).Build().UnPatch()
+	dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
+	if os.Getenv("CI_JOB_NAME") != "" {
+		dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
+	}
+	db, err := gorm.Open(mysql.Open(dsn))
+	assert.NoError(t, err)
+
+	s, err := miniredis.Run()
+	if err != nil {
+		t.Fatalf("Failed to start miniredis: %v", err)
+	}
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: s.Addr(),
+	})
+
+	cpStore := checkpoint.NewRedisStore(redisClient)
+
+	mockTos := storageMock.NewMockStorage(ctrl)
+	mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+	workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos, cpStore)
+	mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
+	mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
+
+	mockSearchNotify := searchmock.NewMockNotifier(ctrl)
+	mockey.Mock(crosssearch.GetNotifier).Return(mockSearchNotify).Build()
+
+	vars := make([]*variable.VarMeta, 0)
+	vars = append(vars, &variable.VarMeta{
+		Name: "app_v1",
+		TypeInfo: variable.VarTypeInfo{
+			Type: variable.VarTypeString,
+		},
+	})
+	vars = append(vars, &variable.VarMeta{
+		Name: "app_list_v1",
+		TypeInfo: variable.VarTypeInfo{
+			Type: variable.VarTypeArray,
+			ElemTypeInfo: &variable.VarTypeInfo{
+				Type: variable.VarTypeString,
+			},
+		},
+	})
+	vars = append(vars, &variable.VarMeta{
+		Name: "app_list_v2",
+		TypeInfo: variable.VarTypeInfo{
+			Type: variable.VarTypeString,
+		},
+	})
+	mockVarGetter := mockvar.NewMockVariablesMetaGetter(ctrl)
+	mockey.Mock(variable.GetVariablesMetaGetter).Return(mockVarGetter).Build()
+	mockVarGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
+
+	mockey.PatchConvey("test copy ", t, func() {
+		var copiedIDs = make([]int64, 0)
+		var mockPublishWorkflowResource func(ctx context.Context, OpType search.OpType, event *search.Resource) error
+		var ignoreIDs = map[int64]bool{
+			7515027325977624576: true,
+			7515027249628708864: true,
+			7515027182796668928: true,
+			7515027150387281920: true,
+			7515027091302121472: true,
+		}
+		mockPublishWorkflowResource = func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error {
+			if ignoreIDs[event.WorkflowID] {
+				return nil
+			}
+			wf, err := appworkflow.GetWorkflowDomainSVC().GetWorkflowLatestVersion(ctx, event.WorkflowID)
+			copiedIDs = append(copiedIDs, event.WorkflowID)
+			assert.NoError(t, err)
+			assert.Equal(t, "v0.0.1", wf.Version)
+			canvas := &vo.Canvas{}
+			err = sonic.UnmarshalString(*wf.Canvas, canvas)
+			assert.NoError(t, err)
+
+			copiedIDMap := slices.ToMap(copiedIDs, func(e int64) (string, bool) {
+				return strconv.FormatInt(e, 10), true
+			})
+			var validateSubWorkflowIDs func(nodes []*vo.Node)
+			validateSubWorkflowIDs = func(nodes []*vo.Node) {
+				for _, node := range nodes {
+					if node.Type == vo.BlockTypeBotSubWorkflow {
+						assert.True(t, copiedIDMap[node.Data.Inputs.WorkflowID])
+					}
+					if node.Type == vo.BlockTypeBotLLM {
+						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+							for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+								assert.True(t, copiedIDMap[w.WorkflowID])
+							}
+						}
+					}
+
+				}
+			}
+
+			validateSubWorkflowIDs(canvas.Nodes)
+			return nil
+
+		}
+
+		mockSearchNotify.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(mockPublishWorkflowResource).AnyTimes()
+
+		ctx := t.Context()
+		ctx = ctxcache.Init(context.Background())
+		ctxcache.Store(ctx, consts.SessionDataKeyInCtx, &userentity.Session{
+			UserID: 123,
+		})
+
+		appID := "7513788954458456064"
+		appIDInt64, _ := strconv.ParseInt(appID, 10, 64)
+
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(ctx, 7515027325977624576)
+		if err != nil {
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7515027325977624576), nil).Times(1)
+			_ = loadWorkflowWithCreateReq(t, h, &workflow.CreateWorkflowRequest{
+				Name:      "child_4",
+				Desc:      "child_4",
+				IconURI:   consts.DefaultWorkflowIcon,
+				SpaceID:   "123",
+				ProjectID: ptr.Of(appID),
+			}, "copy_to_app/child_4.json")
+		}
+
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(ctx, 7515027249628708864)
+		if err != nil {
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7515027249628708864), nil).Times(1)
+			_ = loadWorkflowWithCreateReq(t, h, &workflow.CreateWorkflowRequest{
+				Name:      "child_3",
+				Desc:      "child_3",
+				IconURI:   consts.DefaultWorkflowIcon,
+				SpaceID:   "123",
+				ProjectID: ptr.Of(appID),
+			}, "copy_to_app/child_3.json")
+		}
+
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(ctx, 7515027182796668928)
+		if err != nil {
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7515027182796668928), nil).Times(1)
+			_ = loadWorkflowWithCreateReq(t, h, &workflow.CreateWorkflowRequest{
+				Name:      "child_2",
+				Desc:      "child_2",
+				IconURI:   consts.DefaultWorkflowIcon,
+				SpaceID:   "123",
+				ProjectID: ptr.Of(appID),
+			}, "copy_to_app/child_2.json")
+		}
+
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(ctx, 7515027150387281920)
+		if err != nil {
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7515027150387281920), nil).Times(1)
+			_ = loadWorkflowWithCreateReq(t, h, &workflow.CreateWorkflowRequest{
+				Name:      "child_1",
+				Desc:      "child_1",
+				IconURI:   consts.DefaultWorkflowIcon,
+				SpaceID:   "123",
+				ProjectID: ptr.Of(appID),
+			}, "copy_to_app/child_1.json")
+		}
+
+		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(ctx, 7515027091302121472)
+		if err != nil {
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7515027091302121472), nil).Times(1)
+			_ = loadWorkflowWithCreateReq(t, h, &workflow.CreateWorkflowRequest{
+				Name:      "main",
+				Desc:      "main",
+				IconURI:   consts.DefaultWorkflowIcon,
+				SpaceID:   "123",
+				ProjectID: ptr.Of(appID),
+			}, "copy_to_app/main.json")
+		}
+
+		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+			return time.Now().UnixNano(), nil
+		}).AnyTimes()
+
+		is, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(ctx, 7515027091302121472, appIDInt64, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(is))
 	})
 }

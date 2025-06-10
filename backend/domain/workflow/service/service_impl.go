@@ -138,14 +138,20 @@ func (i *impl) WorkflowAsModelTool(ctx context.Context, ids []*entity.WorkflowId
 	return tools, nil
 }
 
-func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, map[string][]*entity.PluginNodeMeta, map[string][]*entity.PluginCategoryMeta, error) {
+func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, error) {
 	// Initialize result maps
 	nodeMetaMap := make(map[string][]*entity.NodeTypeMeta)
-	pluginNodeMetaMap := make(map[string][]*entity.PluginNodeMeta)
-	pluginCategoryMetaMap := make(map[string][]*entity.PluginCategoryMeta)
 
 	// Helper function to check if a type should be included based on the filter
-	shouldInclude := func(nodeType entity.NodeType) bool {
+	shouldInclude := func(meta *entity.NodeTypeMeta) bool {
+		if meta.Disabled {
+			return false
+		}
+		nodeType := meta.Type
+		if nodeType == entity.NodeTypeEntry || nodeType == entity.NodeTypeExit {
+			return false
+		}
+
 		if nodeTypes == nil || len(nodeTypes) == 0 {
 			return true // No filter, include all
 		}
@@ -155,29 +161,13 @@ func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]boo
 
 	// Process standard node types
 	for _, meta := range entity.NodeTypeMetas {
-		if shouldInclude(meta.Type) {
+		if shouldInclude(meta) {
 			category := meta.Category
 			nodeMetaMap[category] = append(nodeMetaMap[category], meta)
 		}
 	}
 
-	// Process plugin node types
-	for _, meta := range entity.PluginNodeMetas {
-		if shouldInclude(meta.NodeType) {
-			category := meta.Category
-			pluginNodeMetaMap[category] = append(pluginNodeMetaMap[category], meta)
-		}
-	}
-
-	// Process plugin category node types
-	for _, meta := range entity.PluginCategoryMetas {
-		if shouldInclude(meta.NodeType) {
-			category := meta.Category
-			pluginCategoryMetaMap[category] = append(pluginCategoryMetaMap[category], meta)
-		}
-	}
-
-	return nodeMetaMap, pluginNodeMetaMap, pluginCategoryMetaMap, nil
+	return nodeMetaMap, nil
 }
 
 func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *entity.WorkflowReference) (int64, error) {
@@ -587,7 +577,7 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 			}
 			issues, err = validateWorkflowTree(ctx, vo.ValidateTreeConfig{
 				CanvasSchema: ptr.From(wf.Canvas),
-				APPID:        wf.AppID, // application workflow use same app id
+				AppID:        wf.AppID, // application workflow use same app id
 			})
 			if err != nil {
 				return nil, err
@@ -1805,8 +1795,8 @@ func (i *impl) WithResumeToolWorkflow(resumingEvent *entity.ToolInterruptEvent, 
 			}, allInterruptEvents)))
 }
 
-func (i *impl) CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64) (int64, error) {
-	wf, err := i.repo.CopyWorkflow(ctx, spaceID, workflowID)
+func (i *impl) CopyWorkflow(ctx context.Context, workflowID int64, cfg vo.CopyWorkflowConfig) (int64, error) {
+	wf, err := i.repo.CopyWorkflow(ctx, workflowID, cfg)
 	if err != nil {
 		return 0, err
 	}
@@ -1841,73 +1831,27 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 		return nil, err
 	}
 
-	allPluginIDMap := slices.ToMap(config.PluginIDs, func(e int64) (string, bool) {
-		return strconv.FormatInt(e, 10), true
-	})
-	var processWfNodes func(nodes []*vo.Node) error
-	processWfNodes = func(nodes []*vo.Node) error {
-		for _, n := range nodes {
-			if n.Type == vo.BlockTypeBotSubWorkflow {
-				workflowID, err := strconv.ParseInt(n.Data.Inputs.WorkflowID, 10, 64)
-				if err != nil {
-					return err
-				}
-				// in the current app
-				if _, ok := draftVersions[workflowID]; ok {
-					n.Data.Inputs.WorkflowVersion = config.Version
-				}
-			}
+	relatedPlugins := make(map[int64]entity.PluginEntity, len(draftVersions))
+	relatedWorkflow := make(map[int64]entity.WorkflowIdentity, len(config.PluginIDs))
 
-			if n.Type == vo.BlockTypeBotLLM {
-				if n.Data.Inputs.FCParam != nil && n.Data.Inputs.FCParam.WorkflowFCParam != nil {
-					for idx := range n.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
-						w := n.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList[idx]
-						workflowID, err := strconv.ParseInt(w.WorkflowID, 10, 64)
-						if err != nil {
-							return err
-						}
-						if _, ok := draftVersions[workflowID]; ok {
-							w.WorkflowVersion = config.Version
-						}
-					}
-				}
-				if n.Data.Inputs.FCParam != nil && n.Data.Inputs.FCParam.PluginFCParam != nil {
-					// In the application, the workflow llm node When the plugin version is equal to 0, the plugin is a plugin created in the application
-					for idx := range n.Data.Inputs.FCParam.PluginFCParam.PluginList {
-						p := n.Data.Inputs.FCParam.PluginFCParam.PluginList[idx]
-						if allPluginIDMap[p.PluginID] {
-							p.PluginVersion = config.Version
-						}
-
-					}
-				}
-			}
-
-			if n.Type == vo.BlockTypeBotAPI {
-				for _, apiParam := range n.Data.Inputs.APIParams {
-					// In the application, the workflow plugin node When the plugin version is equal to 0, the plugin is a plugin created in the application
-					if apiParam.Name == "pluginVersion" && apiParam.Input.Value.Content == "0" {
-						apiParam.Input.Value.Content = config.Version
-					}
-				}
-			}
-
-			if len(n.Blocks) > 0 {
-				err = processWfNodes(n.Blocks)
-				if err != nil {
-					return err
-				}
-			}
-
+	for id := range draftVersions {
+		relatedWorkflow[id] = entity.WorkflowIdentity{
+			ID:      id,
+			Version: config.Version,
 		}
-		return nil
+	}
+	for _, id := range config.PluginIDs {
+		relatedPlugins[id] = entity.PluginEntity{
+			PluginID:      id,
+			PluginVersion: &config.Version,
+		}
 	}
 
 	vIssues := make([]*vo.ValidateIssue, 0)
 	for id, draftVersion := range draftVersions {
 		issues, err := validateWorkflowTree(ctx, vo.ValidateTreeConfig{
 			CanvasSchema: draftVersion.Canvas,
-			APPID:        ptr.Of(appID),
+			AppID:        ptr.Of(appID),
 		})
 
 		if err != nil {
@@ -1924,15 +1868,14 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 	}
 
 	for _, draftVersion := range draftVersions {
-		//TODO(zhuangjie): When a new canvas is generated for storage, the front-end description information of the original canvas will be lost,
-		// and the front-end description field needs to be completed in the canvas structure later
 		c := &vo.Canvas{}
 		err := sonic.UnmarshalString(draftVersion.Canvas, c)
 		if err != nil {
 			return nil, err
 		}
 
-		err = processWfNodes(c.Nodes)
+		err = replaceRelatedWorkflowOrPluginInWorkflowNodes(c.Nodes, relatedWorkflow, relatedPlugins)
+
 		if err != nil {
 			return nil, err
 		}
@@ -2009,6 +1952,271 @@ func (i *impl) DeleteWorkflowsByAppID(ctx context.Context, appID int64) error {
 
 }
 
+func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, appID int64, relatedPlugins map[int64]entity.PluginEntity) ([]*vo.ValidateIssue, error) {
+
+	type copiedWorkflow struct {
+		id        int64
+		draftInfo *vo.DraftInfo
+		refWfs    map[int64]*copiedWorkflow
+	}
+	var (
+		err          error
+		vIssues      = make([]*vo.ValidateIssue, 0)
+		draftVersion *vo.DraftInfo
+	)
+
+	draftVersion, err = i.repo.GetWorkflowDraft(ctx, workflowID)
+	if err != nil {
+		return nil, err
+	}
+
+	issues, err := validateWorkflowTree(ctx, vo.ValidateTreeConfig{
+		CanvasSchema: draftVersion.Canvas,
+		AppID:        ptr.Of(appID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	draftWorkflows, wid2Named, err := i.repo.GetDraftWorkflowsByAppID(ctx, appID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(issues) > 0 {
+		vIssues = append(vIssues, toValidateIssue(workflowID, wid2Named[workflowID], issues))
+	}
+
+	var validateAndBuildWorkflowReference func(nodes []*vo.Node, wf *copiedWorkflow) error
+	hasVerifiedWorkflowIDMap := make(map[int64]bool)
+
+	validateAndBuildWorkflowReference = func(nodes []*vo.Node, wf *copiedWorkflow) error {
+		for _, node := range nodes {
+			if node.Type == vo.BlockTypeBotSubWorkflow {
+				var (
+					v    *vo.DraftInfo
+					wfID int64
+					ok   bool
+				)
+				wfID, err = strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+				if err != nil {
+					return err
+				}
+
+				if v, ok = draftWorkflows[wfID]; !ok {
+					continue
+				}
+				if _, ok = wf.refWfs[wfID]; ok {
+					continue
+				}
+
+				if !hasVerifiedWorkflowIDMap[wfID] {
+					issues, err = validateWorkflowTree(ctx, vo.ValidateTreeConfig{
+						CanvasSchema: v.Canvas,
+						AppID:        ptr.Of(appID),
+					})
+					if err != nil {
+						return err
+					}
+
+					if len(issues) > 0 {
+						vIssues = append(vIssues, toValidateIssue(wfID, wid2Named[wfID], issues))
+					}
+					hasVerifiedWorkflowIDMap[wfID] = true
+				}
+
+				swf := &copiedWorkflow{
+					id:        wfID,
+					draftInfo: v,
+					refWfs:    make(map[int64]*copiedWorkflow),
+				}
+				wf.refWfs[wfID] = swf
+				var subCanvas *vo.Canvas
+				err = sonic.UnmarshalString(v.Canvas, &subCanvas)
+				if err != nil {
+					return err
+				}
+				err = validateAndBuildWorkflowReference(subCanvas.Nodes, swf)
+				if err != nil {
+					return err
+				}
+
+			}
+
+			if node.Type == vo.BlockTypeBotLLM {
+				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+					for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+						var (
+							v    *vo.DraftInfo
+							wfID int64
+							ok   bool
+						)
+						wfID, err = strconv.ParseInt(w.WorkflowID, 10, 64)
+						if err != nil {
+							return err
+						}
+
+						if v, ok = draftWorkflows[wfID]; !ok {
+							continue
+						}
+
+						if _, ok = wf.refWfs[wfID]; ok {
+							continue
+						}
+
+						if !hasVerifiedWorkflowIDMap[wfID] {
+							issues, err = validateWorkflowTree(ctx, vo.ValidateTreeConfig{
+								CanvasSchema: v.Canvas,
+								AppID:        ptr.Of(appID),
+							})
+							if err != nil {
+								return err
+							}
+
+							if len(issues) > 0 {
+								vIssues = append(vIssues, toValidateIssue(wfID, wid2Named[wfID], issues))
+							}
+							hasVerifiedWorkflowIDMap[wfID] = true
+						}
+
+						swf := &copiedWorkflow{
+							id:        wfID,
+							draftInfo: v,
+							refWfs:    make(map[int64]*copiedWorkflow),
+						}
+						wf.refWfs[wfID] = swf
+						var subCanvas *vo.Canvas
+						err = sonic.UnmarshalString(v.Canvas, &subCanvas)
+						if err != nil {
+							return err
+						}
+
+						err = validateAndBuildWorkflowReference(subCanvas.Nodes, swf)
+						if err != nil {
+							return err
+						}
+					}
+
+				}
+
+			}
+
+			if len(node.Blocks) > 0 {
+				err := validateAndBuildWorkflowReference(node.Blocks, wf)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+
+	copiedWf := &copiedWorkflow{
+		id:        workflowID,
+		draftInfo: draftVersion,
+		refWfs:    make(map[int64]*copiedWorkflow),
+	}
+	draftCanvas := &vo.Canvas{}
+	err = sonic.UnmarshalString(draftVersion.Canvas, &draftCanvas)
+	if err != nil {
+		return nil, err
+	}
+
+	err = validateAndBuildWorkflowReference(draftCanvas.Nodes, copiedWf)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(vIssues) > 0 {
+		return vIssues, nil
+	}
+
+	var copyAndPublishWorkflowProcess func(wf *copiedWorkflow) error
+
+	hasPublishedWorkflows := make(map[int64]entity.WorkflowIdentity)
+
+	workflowPublishVersion := "v0.0.1"
+
+	if relatedPlugins == nil {
+		relatedPlugins = map[int64]entity.PluginEntity{}
+	}
+	copyAndPublishWorkflowProcess = func(wf *copiedWorkflow) error {
+		for _, refWorkflow := range wf.refWfs {
+			err := copyAndPublishWorkflowProcess(refWorkflow)
+			if err != nil {
+				return err
+			}
+		}
+		if _, ok := hasPublishedWorkflows[wf.id]; !ok {
+
+			var (
+				draftCanvasString = wf.draftInfo.Canvas
+				inputParams       = wf.draftInfo.InputParams
+				outputParams      = wf.draftInfo.OutputParams
+			)
+
+			canvas := &vo.Canvas{}
+			err = sonic.UnmarshalString(draftCanvasString, &canvas)
+			if err != nil {
+				return err
+			}
+			err = replaceRelatedWorkflowOrPluginInWorkflowNodes(canvas.Nodes, hasPublishedWorkflows, relatedPlugins)
+			if err != nil {
+				return err
+			}
+
+			modifiedCanvasString, err := sonic.MarshalString(canvas)
+			if err != nil {
+				return err
+			}
+
+			cwf, err := i.repo.CopyWorkflowFromAppToLibrary(ctx, wf.id, modifiedCanvasString)
+			if err != nil {
+				return err
+			}
+
+			_, err = i.repo.CreateWorkflowVersion(ctx, cwf.ID, &vo.VersionInfo{
+				Version:      workflowPublishVersion,
+				Canvas:       modifiedCanvasString,
+				InputParams:  inputParams,
+				OutputParams: outputParams,
+				CreatorID:    ctxutil.MustGetUIDFromCtx(ctx),
+			})
+			if err != nil {
+				return err
+			}
+
+			err = search.GetNotifier().PublishWorkflowResource(ctx, search.Created, &search.Resource{
+				WorkflowID:    cwf.ID,
+				URI:           &cwf.IconURI,
+				Name:          &cwf.Name,
+				Desc:          &cwf.Desc,
+				SpaceID:       &cwf.SpaceID,
+				OwnerID:       &cwf.CreatorID,
+				PublishStatus: ptr.Of(search.Published),
+				CreatedAt:     ptr.Of(time.Now().UnixMilli()),
+			})
+			if err != nil {
+				return err
+			}
+
+			hasPublishedWorkflows[wf.id] = entity.WorkflowIdentity{
+				ID:      cwf.ID,
+				Version: workflowPublishVersion,
+			}
+		}
+		return nil
+	}
+
+	err = copyAndPublishWorkflowProcess(copiedWf)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+
+}
+
 func (i *impl) shouldResetTestRun(ctx context.Context, c *vo.Canvas, wid int64) (bool, error) {
 
 	sc, err := adaptor.CanvasToWorkflowSchema(ctx, c)
@@ -2048,7 +2256,7 @@ func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]
 	}
 	validator, err := validate.NewCanvasValidator(ctx, &validate.Config{
 		Canvas:              c,
-		APPID:               config.APPID,
+		AppID:               config.AppID,
 		VariablesMetaGetter: variable.GetVariablesMetaGetter(),
 	})
 	if err != nil {
@@ -2196,4 +2404,89 @@ func isIncremental(prev version, next version) bool {
 	}
 
 	return next.Patch > prev.Patch
+}
+
+func replaceRelatedWorkflowOrPluginInWorkflowNodes(nodes []*vo.Node, relatedWorkflows map[int64]entity.WorkflowIdentity, relatedPlugins map[int64]entity.PluginEntity) error {
+	for _, node := range nodes {
+		if node.Type == vo.BlockTypeBotSubWorkflow {
+			workflowID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+			if err != nil {
+				return err
+			}
+			if wf, ok := relatedWorkflows[workflowID]; ok {
+				node.Data.Inputs.WorkflowID = strconv.FormatInt(wf.ID, 10)
+				node.Data.Inputs.WorkflowVersion = wf.Version
+			}
+		}
+		if node.Type == vo.BlockTypeBotAPI {
+			apiParams := slices.ToMap(node.Data.Inputs.APIParams, func(e *vo.Param) (string, *vo.Param) {
+				return e.Name, e
+			})
+			pluginIDParam, ok := apiParams["pluginID"]
+			if !ok {
+				return fmt.Errorf("plugin id param is not found")
+			}
+
+			pID, err := strconv.ParseInt(pluginIDParam.Input.Value.Content.(string), 10, 64)
+			if err != nil {
+				return err
+			}
+
+			pluginVersionParam, ok := apiParams["pluginVersion"]
+			if !ok {
+				return fmt.Errorf("plugin version param is not found")
+			}
+
+			if refPlugin, ok := relatedPlugins[pID]; ok {
+				pluginIDParam.Input.Value.Content = refPlugin.PluginID
+				if refPlugin.PluginVersion != nil {
+					pluginVersionParam.Input.Value.Content = *refPlugin.PluginVersion
+				}
+
+			}
+		}
+
+		if node.Type == vo.BlockTypeBotLLM {
+			if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+				for idx := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+					wf := node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList[idx]
+					workflowID, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
+					if err != nil {
+						return err
+					}
+					if refWf, ok := relatedWorkflows[workflowID]; ok {
+						wf.WorkflowID = strconv.FormatInt(refWf.ID, 10)
+						wf.WorkflowVersion = refWf.Version
+					}
+
+				}
+			}
+			if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.PluginFCParam != nil {
+				for idx := range node.Data.Inputs.FCParam.PluginFCParam.PluginList {
+					pl := node.Data.Inputs.FCParam.PluginFCParam.PluginList[idx]
+					pluginID, err := strconv.ParseInt(pl.PluginID, 10, 64)
+					if err != nil {
+						return err
+					}
+					if refPlugin, ok := relatedPlugins[pluginID]; ok {
+						pl.PluginID = strconv.FormatInt(refPlugin.PluginID, 10)
+						if refPlugin.PluginVersion != nil {
+							pl.PluginVersion = *refPlugin.PluginVersion
+						}
+
+					}
+
+				}
+			}
+
+		}
+		if len(node.Blocks) > 0 {
+			err := replaceRelatedWorkflowOrPluginInWorkflowNodes(node.Blocks, relatedWorkflows, relatedPlugins)
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+	return nil
 }

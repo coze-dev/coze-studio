@@ -4,16 +4,18 @@ import (
 	"context"
 
 	"github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/schema"
 
 	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 )
 
 //go:generate  mockgen -destination pluginmock/plugin_mock.go --package pluginmock -source plugin.go
 type ToolService interface {
-	GetPluginInvokableTools(ctx context.Context, req *PluginToolsInvokableRequest) (map[int64]tool.InvokableTool, error)
 	GetPluginToolsInfo(ctx context.Context, req *PluginToolsInfoRequest) (*PluginToolsInfoResponse, error)
+	GetPluginInvokableTools(ctx context.Context, req *PluginToolsInvokableRequest) (map[int64]PluginInvokableTool, error)
 }
 
 func GetToolService() ToolService {
@@ -26,10 +28,7 @@ func SetToolService(ts ToolService) {
 
 var toolSrvImpl ToolService
 
-type PluginEntity struct {
-	PluginID      int64
-	PluginVersion *string
-}
+type PluginEntity = entity.PluginEntity
 
 type WorkflowAPIParameters = []*workflow3.APIParameter
 type PluginToolsInfoRequest struct {
@@ -49,11 +48,16 @@ type PluginToolsInvokableRequest struct {
 	IsDraft            bool
 }
 
+type DebugExample struct {
+	ReqExample  string
+	RespExample string
+}
+
 type ToolInfo struct {
 	ToolName     string
 	ToolID       int64
 	Description  string
-	DebugExample *vo.DebugExample
+	DebugExample *DebugExample
 
 	Inputs  []*workflow3.APIParameter
 	Outputs []*workflow3.APIParameter
@@ -70,4 +74,31 @@ type PluginToolsInfoResponse struct {
 	ToolInfoList  map[int64]ToolInfo
 	LatestVersion *string
 	IsOfficial    bool
+}
+
+type ExecConfig = vo.ExecuteConfig
+
+type PluginInvokableTool interface {
+	Info(ctx context.Context) (*schema.ToolInfo, error)
+	PluginInvoke(ctx context.Context, argumentsInJSON string, cfg ExecConfig) (string, error)
+}
+
+type pluginInvokableTool struct {
+	pluginInvokableTool PluginInvokableTool
+}
+
+func NewInvokableTool(pl PluginInvokableTool) tool.InvokableTool {
+	return &pluginInvokableTool{
+		pluginInvokableTool: pl,
+	}
+}
+
+func (p pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
+	return p.pluginInvokableTool.Info(ctx)
+}
+
+func (p pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
+	execCfg := execute.GetExecuteConfig(opts...)
+	return p.pluginInvokableTool.PluginInvoke(ctx, argumentsInJSON, execCfg)
+
 }
