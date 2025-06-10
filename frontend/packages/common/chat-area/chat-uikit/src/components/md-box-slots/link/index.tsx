@@ -3,7 +3,10 @@ import React, { type FC, useEffect, useRef } from 'react';
 import { isObject, isString, omit } from 'lodash-es';
 import cs from 'classnames';
 import { typeSafeJsonParse } from '@coze-common/chat-area-utils';
-import { LinkType, type MdBoxLinkProps } from '@coze-arch/bot-md-box/lazy';
+import {
+  LinkType,
+  type MdBoxLinkProps,
+} from '@coze-arch/bot-md-box-adapter/lazy';
 
 import { useOnboardingContext } from '../../../context/onboarding';
 import { useUiKitMessageBoxContext } from '../../../context/message-box';

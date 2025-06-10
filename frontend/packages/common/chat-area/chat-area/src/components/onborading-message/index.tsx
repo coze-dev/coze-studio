@@ -11,7 +11,7 @@ import {
 } from '@coze-common/chat-uikit';
 import { exhaustiveCheckSimple } from '@coze-common/chat-area-utils';
 import { Checkbox } from '@coze-arch/bot-semi';
-import { MdBoxLazy } from '@coze-arch/bot-md-box/lazy';
+import { MdBoxLazy } from '@coze-arch/bot-md-box-adapter/lazy';
 
 import { usePluginCustomComponents } from '../../plugin/hooks/use-plugin-custom-components';
 import { useUIKitMessageImageAutoSizeConfig } from '../../hooks/uikit/use-ui-kit-message-image-auto-size-config';

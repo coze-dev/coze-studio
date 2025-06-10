@@ -1,5 +1,5 @@
 import { type ContentType } from '@coze-common/chat-core';
-import { type InsertedElementItem } from '@coze-arch/bot-md-box';
+import { type InsertedElementItem } from '@coze-arch/bot-md-box-adapter';
 
 import { type CustomComponent } from '../plugin-component';
 import { type MessageMeta, type Message } from '../../../store/types';

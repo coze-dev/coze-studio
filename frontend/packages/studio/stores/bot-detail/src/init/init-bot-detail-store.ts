@@ -6,8 +6,6 @@ import { type BotMonetizationConfigData } from '@coze-arch/idl/benefit';
 import { type GetDraftBotInfoAgwData } from '@coze-arch/bot-api/playground_api';
 import { type HistoryInfo } from '@coze-arch/bot-api/developer_api';
 
-import { useAuditInfoStore } from '@/store/audit-info';
-
 import { useQueryCollectStore } from '../store/query-collect';
 import { usePersonaStore } from '../store/persona';
 import { usePageRuntimeStore } from '../store/page-runtime';
@@ -18,6 +16,7 @@ import { useBotDetailStoreSet } from '../store/index';
 import { useCollaborationStore } from '../store/collaboration';
 import { useBotSkillStore } from '../store/bot-skill';
 import { useBotInfoStore } from '../store/bot-info';
+import { useAuditInfoStore } from '../store/audit-info';
 import { getBotDataService } from '../services/get-bot-data-service';
 
 export async function initBotDetailStore(params?: {

@@ -10,14 +10,14 @@
    *
    * See https://rushjs.io/pages/maintainer/build_cache/ for details about this experimental feature.
    */
-  "buildCacheEnabled": true,
+  "buildCacheEnabled": false,
 
   /**
    * (Required) Choose where project build outputs will be cached.
    *
    * Possible values: "local-only", "azure-blob-storage", "amazon-s3"
    */
-  "cacheProvider": "bytedance",
+  "cacheProvider": "local-only",
 
   /**
    * Setting this property overrides the cache entry ID.  If this property is set, it must contain

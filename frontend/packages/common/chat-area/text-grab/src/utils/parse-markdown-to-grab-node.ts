@@ -1,5 +1,5 @@
 import { parseMarkdownHelper } from '@coze-common/chat-area-utils';
-import { parseMarkdown } from '@coze-arch/bot-md-box/lazy';
+import { parseMarkdown } from '@coze-arch/bot-md-box-adapter/lazy';
 
 import { GrabElementType, type GrabNode } from '../types/node';
 

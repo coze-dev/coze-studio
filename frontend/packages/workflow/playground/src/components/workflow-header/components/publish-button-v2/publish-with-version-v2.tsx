@@ -4,13 +4,8 @@ import semver from 'semver';
 import type { PublishWorkflowRequest } from '@coze-arch/idl/workflow_api';
 import { type SetDefaultTestCaseReq } from '@coze-arch/idl/debugger_api';
 import { I18n } from '@coze-arch/i18n';
-import {
-  Form,
-  Button,
-  Popover,
-  type useFormApi,
-} from '@coze/coze-design';
 import { debuggerApi } from '@coze-arch/bot-api';
+import { Form, Button, Popover, type useFormApi } from '@coze/coze-design';
 
 import { useGlobalState } from '@/hooks';
 import { BasePublishButton } from '@/components/workflow-header/components/publish-button-v2/base-publish-button';
@@ -106,7 +101,7 @@ const VersionForm: React.FC<{
   const renderBtn = () => {
     if (forcePushVisible) {
       return (
-        <div className={'flex flex-row-reverse'}>
+        <div className={'flex flex-row-reverse mt-12px'}>
           <Button color="highlight" onClick={onTestRun}>
             {I18n.t('workflow_detail_title_testrun')}
           </Button>
@@ -129,7 +124,7 @@ const VersionForm: React.FC<{
     }
 
     return (
-      <div className={'flex flex-row-reverse'}>
+      <div className={'flex flex-row-reverse mt-12px'}>
         <Button onClick={() => handleSubmit()}>
           {I18n.t('workflow_detail_title_publish')}
         </Button>
@@ -218,7 +213,8 @@ const VersionForm: React.FC<{
           ]}
         />
 
-        <TestSetSelect onSelect={handleTestSetSelect} />
+        {/* The community version does not currently support testset, for future expansion */}
+        {!IS_OPEN_SOURCE && <TestSetSelect onSelect={handleTestSetSelect} />}
 
         {renderBtn()}
       </Form>

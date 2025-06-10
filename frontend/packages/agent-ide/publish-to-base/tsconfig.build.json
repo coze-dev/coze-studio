@@ -29,7 +29,7 @@
       "path": "../../arch/bot-http/tsconfig.build.json"
     },
     {
-      "path": "../../arch/bot-md-box/tsconfig.build.json"
+      "path": "../../arch/bot-md-box-adapter/tsconfig.build.json"
     },
     {
       "path": "../../arch/bot-space-api/tsconfig.build.json"

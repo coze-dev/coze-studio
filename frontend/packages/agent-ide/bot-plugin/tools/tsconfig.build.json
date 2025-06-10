@@ -15,7 +15,7 @@
       "path": "../../../arch/bot-api/tsconfig.build.json"
     },
     {
-      "path": "../../../arch/bot-md-box/tsconfig.build.json"
+      "path": "../../../arch/bot-md-box-adapter/tsconfig.build.json"
     },
     {
       "path": "../../../arch/bot-store/tsconfig.build.json"

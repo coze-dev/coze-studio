@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import { MdBoxLazy } from '@coze-arch/bot-md-box/lazy';
+import { MdBoxLazy } from '@coze-arch/bot-md-box-adapter/lazy';
 
 import css from './markdown-viewer.module.less';
 

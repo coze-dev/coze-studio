@@ -1,11 +1,8 @@
 {
-  // "incrementalBuildIgnoredGlobs": [],
-  // "disableBuildCacheForProject": false,
   "operationSettings": [
     {
       "operationName": "build",
       "outputFolderNames": ["output"]
-      // "disableBuildCacheForOperation": false
     },
     {
       "operationName": "test:cov",

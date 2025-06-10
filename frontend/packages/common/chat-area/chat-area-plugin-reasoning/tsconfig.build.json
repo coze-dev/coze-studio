@@ -15,7 +15,7 @@
   "exclude": ["node_modules", "dist"],
   "references": [
     {
-      "path": "../../../arch/bot-md-box/tsconfig.build.json"
+      "path": "../../../arch/bot-md-box-adapter/tsconfig.build.json"
     },
     {
       "path": "../chat-area/tsconfig.build.json"

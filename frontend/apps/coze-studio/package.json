@@ -21,6 +21,7 @@
     "@coze-agent-ide/entry-adapter": "workspace:*",
     "@coze-agent-ide/layout-adapter": "workspace:*",
     "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/bot-md-box-adapter": "workspace:*",
     "@coze-arch/foundation-sdk": "workspace:*",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/logger": "workspace:*",

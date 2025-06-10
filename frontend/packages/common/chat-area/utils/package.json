@@ -17,7 +17,7 @@
     "mdast": "3.0.0-alpha.6"
   },
   "devDependencies": {
-    "@coze-arch/bot-md-box": "workspace:*",
+    "@coze-arch/bot-md-box-adapter": "workspace:*",
     "@coze-arch/bot-typings": "workspace:*",
     "@coze-arch/eslint-config": "workspace:*",
     "@coze-arch/ts-config": "workspace:*",

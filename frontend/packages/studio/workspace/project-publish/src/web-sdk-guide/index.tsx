@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { getOpenSDKUrl } from '@coze-studio/open-env-adapter';
 import { I18n } from '@coze-arch/i18n';
-import { MdBoxLazy } from '@coze-arch/bot-md-box/lazy';
+import { MdBoxLazy } from '@coze-arch/bot-md-box-adapter/lazy';
 import { Button, Modal, Typography } from '@coze/coze-design';
 
 import s from './index.module.less';

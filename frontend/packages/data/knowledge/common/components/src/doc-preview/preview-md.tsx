@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 
 import { Spin } from '@coze/coze-design';
-// import { MdBoxLazy } from '@coze-arch/bot-md-box/lazy';
+// import { MdBoxLazy } from '@coze-arch/bot-md-box-adapter/lazy';
 
 interface IPreviewMdProps {
   fileUrl: string;

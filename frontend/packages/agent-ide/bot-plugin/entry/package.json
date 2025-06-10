@@ -64,7 +64,7 @@
     "@coze-arch/bot-flags": "workspace:*",
     "@coze-arch/bot-hooks": "workspace:*",
     "@coze-arch/bot-icons": "workspace:*",
-    "@coze-arch/bot-md-box": "workspace:*",
+    "@coze-arch/bot-md-box-adapter": "workspace:*",
     "@coze-arch/bot-monaco-editor": "workspace:*",
     "@coze-arch/bot-semi": "workspace:*",
     "@coze-arch/bot-space-api": "workspace:*",
@@ -151,3 +151,4 @@
   },
   "// deps": "debug@^4.3.4 为脚本自动补齐，请勿改动"
 }
+

@@ -268,7 +268,7 @@ export {
  */
 export { useLatestSectionId } from './hooks/public/use-latest-section-id';
 export { PluginAsyncQuote } from './components/plugin-async-quote';
-export { type InsertedElementItem } from '@coze-arch/bot-md-box';
+export { type InsertedElementItem } from '@coze-arch/bot-md-box-adapter';
 
 export { MessageListFloatSlot } from './plugin/types/plugin-component/content-box';
 export { proxyFreeze } from './utils/proxy-freeze';

@@ -8,8 +8,14 @@
     "lib": ["DOM", "ESNext"],
     "module": "ESNext",
     "target": "ES2020",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    {
+      "path": "../../../arch/logger/tsconfig.build.json"
+    }
+  ]
 }

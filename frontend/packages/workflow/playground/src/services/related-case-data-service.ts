@@ -54,6 +54,11 @@ export class RelatedCaseDataService {
       node => node.type === StandardNodeType.Start,
     );
 
+    /* The community version does not currently support testset, for future expansion */
+    if (IS_OPEN_SOURCE) {
+      return;
+    }
+
     const caseData = await debuggerApi.MGetCaseData({
       bizCtx: {
         connectorID: TESTSET_CONNECTOR_ID,

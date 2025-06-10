@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState, type FC } from 'react';
 
 import { type Message, type ContentType } from '@coze-common/chat-core';
-import { MdBoxLazy } from '@coze-arch/bot-md-box/lazy';
+import { MdBoxLazy } from '@coze-arch/bot-md-box-adapter/lazy';
 
 type IProps = Record<'message', Message<ContentType>>;
 

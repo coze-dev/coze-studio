@@ -14,21 +14,23 @@ import { GlobalLayoutComposed } from '@/components/global-layout-composed';
 export const GlobalLayout: FC = () => {
   const userInfo = useUserInfo();
   const update = useUpdate();
+  const currentLocale = userInfo?.locale ?? navigator.language ?? 'en-US';
+
   // 历史原因，en-US 需要被转换为 en
-  const currentLocale =
-    userInfo?.locale === 'en-US' ? 'en' : (userInfo?.locale ?? 'zh-CN');
+  const transformedCurrentLocale =
+    currentLocale === 'en-US' ? 'en' : currentLocale;
 
   useEffect(() => {
-    if (userInfo && I18n.language !== currentLocale) {
-      I18n.setLang(currentLocale);
+    if (userInfo && I18n.language !== transformedCurrentLocale) {
+      I18n.setLang(transformedCurrentLocale);
       // 强制更新，否则切换语言不生效
       update();
     }
-  }, [userInfo, currentLocale, update]);
+  }, [userInfo, transformedCurrentLocale, update]);
 
   return (
     <I18nProvider i18n={I18n}>
-      <LocaleProvider locale={userInfo?.locale === 'en-US' ? enUS : zhCN}>
+      <LocaleProvider locale={currentLocale === 'en-US' ? enUS : zhCN}>
         <ThemeProvider
           defaultTheme="light"
           changeSemiTheme={true}
