@@ -76,3 +76,7 @@ func (v *VariableMeta) SetupIsReadOnly() {
 		v.IsReadOnly = true
 	}
 }
+
+func (v *VariableMeta) IsSystem() bool {
+	return v.Channel == project_memory.VariableChannel_System
+}

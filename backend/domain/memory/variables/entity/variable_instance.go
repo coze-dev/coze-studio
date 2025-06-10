@@ -70,7 +70,7 @@ func (v *UserVariableMeta) genUUID(ctx context.Context) (*kvmemory.KVItem, error
 	return &kvmemory.KVItem{
 		Keyword:    sysUUIDKey,
 		Value:      encryptSysUUIDKey,
-		Schema:     "string",
+		Schema:     stringSchema,
 		CreateTime: now,
 		UpdateTime: now,
 		IsSystem:   true,
