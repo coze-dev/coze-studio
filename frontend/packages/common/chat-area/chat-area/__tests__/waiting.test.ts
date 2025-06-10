@@ -39,7 +39,7 @@ vi.mock('@coze-common/chat-uikit', () => ({
   MentionList: vi.fn(),
 }));
 
-vi.mock('@coze-arch/bot-md-box', () => ({
+vi.mock('@coze-arch/bot-md-box-adapter', () => ({
   MdBoxLazy: vi.fn(),
 }));
 

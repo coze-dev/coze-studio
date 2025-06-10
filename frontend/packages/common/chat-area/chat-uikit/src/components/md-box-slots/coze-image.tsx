@@ -11,8 +11,8 @@ import {
 import { isEqual } from 'lodash-es';
 import classNames from 'classnames';
 import { ImagePreview, Skeleton } from '@coze/coze-design';
-import { ImageStatus } from '@coze-arch/bot-md-box/lazy';
-import { type MdBoxImageProps } from '@coze-arch/bot-md-box';
+import { ImageStatus } from '@coze-arch/bot-md-box-adapter/lazy';
+import { type MdBoxImageProps } from '@coze-arch/bot-md-box-adapter';
 
 import { getImageDisplayAttribute } from '../../utils/image/get-image-display-attribute';
 import { useOnboardingContext } from '../../context/onboarding';

@@ -706,13 +706,6 @@
       ]
     },
     {
-      "packageName": "@coze-arch/bot-md-box",
-      "projectFolder": "packages/arch/bot-md-box",
-      "tags": [
-        "level-2"
-      ]
-    },
-    {
       "packageName": "@coze-arch/import-watch-loader",
       "projectFolder": "infra/plugins/import-watch-loader",
       "tags": [
@@ -819,6 +812,7 @@
     },
     {
       "packageName": "@coze-data/e2e",
+      "subspaceName": "e2e",
       "projectFolder": "packages/data/common/e2e",
       "tags": [
         "level-2"
@@ -2019,6 +2013,13 @@
       "projectFolder": "packages/common/chat-area/chat-workflow-render",
       "tags": [
         "level-3"
+      ]
+    },
+    {
+      "packageName": "@coze-arch/bot-md-box-adapter",
+      "projectFolder": "packages/arch/bot-md-box-adapter",
+      "tags": [
+        "level-2"
       ]
     }
   ]

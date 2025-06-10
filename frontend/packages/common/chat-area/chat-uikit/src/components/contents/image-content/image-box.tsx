@@ -2,11 +2,11 @@ import { type FC } from 'react';
 
 import classNames from 'classnames';
 import { Row, Col } from '@coze/coze-design';
-import { Image } from '@coze-arch/bot-md-box/slots';
+import { Image } from '@coze-arch/bot-md-box-adapter/slots';
 import {
   type OnImageClickCallback,
   type OnImageRenderCallback,
-} from '@coze-arch/bot-md-box';
+} from '@coze-arch/bot-md-box-adapter';
 
 import './index.less';
 

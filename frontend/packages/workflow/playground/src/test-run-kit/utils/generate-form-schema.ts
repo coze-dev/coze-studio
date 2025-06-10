@@ -47,7 +47,9 @@ export const generateFormSchema = async (
   /**
    * 若支持测试集且输入不为空，则添加测试集的组件
    */
+  /* The community version does not currently support testset, for future expansion */
   if (
+    !IS_OPEN_SOURCE &&
     spaceId !== PUBLIC_SPACE_ID &&
     !isPreview &&
     testset &&

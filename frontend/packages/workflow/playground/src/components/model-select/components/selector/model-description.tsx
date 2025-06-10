@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { MdBoxLazy } from '@coze-arch/bot-md-box/lazy';
+import { MdBoxLazy } from '@coze-arch/bot-md-box-adapter/lazy';
 import { type ModelDescGroup } from '@coze-arch/bot-api/developer_api';
 
 export const ModelDescription: React.FC<{

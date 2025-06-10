@@ -22,7 +22,9 @@
   "subspaceNames": [
     // The "default" subspace always exists even if you don't define it,
     // but let's include it for clarity
-    "default"
+    "default",
 
+    "e2e", // 👈👈👈 Our secondary subspace name
+    "e2e-opencoze"
   ]
 }

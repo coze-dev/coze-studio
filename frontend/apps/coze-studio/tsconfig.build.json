@@ -40,6 +40,9 @@
       "path": "../../packages/arch/bot-flags/tsconfig.build.json"
     },
     {
+      "path": "../../packages/arch/bot-md-box-adapter/tsconfig.build.json"
+    },
+    {
       "path": "../../packages/arch/default-slardar/tsconfig.build.json"
     },
     {

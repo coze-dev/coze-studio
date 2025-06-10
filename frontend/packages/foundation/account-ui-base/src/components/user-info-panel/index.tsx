@@ -134,7 +134,9 @@ export const UserInfoPanel = () => {
 
   const [userNameErrorInfo, setUsernameErrorInfo] = useState('');
 
-  const [lang, setLang] = useState(userInfo?.locale ?? 'zh-CN');
+  const [lang, setLang] = useState(
+    userInfo?.locale ?? navigator.language ?? 'en-US',
+  );
 
   const [password, setPassword] = useState('');
 

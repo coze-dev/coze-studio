@@ -41,7 +41,7 @@
     "zustand": "^4.4.7"
   },
   "devDependencies": {
-    "@coze-arch/bot-md-box": "workspace:*",
+    "@coze-arch/bot-md-box-adapter": "workspace:*",
     "@coze-arch/bot-typings": "workspace:*",
     "@coze-arch/bot-utils": "workspace:*",
     "@coze-arch/eslint-config": "workspace:*",

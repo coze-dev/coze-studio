@@ -2,7 +2,7 @@ import copy from 'copy-to-clipboard';
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
 import { Space, Toast } from '@coze-arch/bot-semi';
-import { MdBoxLazy } from '@coze-arch/bot-md-box/lazy';
+import { MdBoxLazy } from '@coze-arch/bot-md-box-adapter/lazy';
 import { IconCopy } from '@coze-arch/bot-icons';
 
 import s from './index.module.less';

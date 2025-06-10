@@ -7,7 +7,17 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
 import { useRequest, useUpdateEffect } from 'ahooks';
+import { useGetToolColumnsAdapter } from '@coze-studio/plugin-tool-columns-adapter';
+import { InitialAction } from '@coze-studio/plugin-shared';
+import { BizPluginPublishPopover } from '@coze-studio/plugin-publish-ui-adapter';
 import { UIBreadcrumb } from '@coze-studio/components';
+import {
+  usePluginCallbacks,
+  usePluginHistoryController,
+  usePluginNavigate,
+  usePluginStore,
+  useUnmountUnlock,
+} from '@coze-studio/bot-plugin-store';
 import { useReportTti } from '@coze-arch/report-tti';
 import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { useErrorHandler } from '@coze-arch/logger';
@@ -15,7 +25,8 @@ import { I18n } from '@coze-arch/i18n';
 import { renderHtmlTitle } from '@coze-arch/bot-utils';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { UIEmpty } from '@coze-arch/bot-semi';
-import { useFlags } from '@coze-arch/bot-flags';
+import { IconCodeOutlined } from '@coze-arch/bot-icons';
+import { CustomError } from '@coze-arch/bot-error';
 import {
   type PluginAPIInfo,
   type GetUpdatedAPIsResponse,
@@ -25,18 +36,6 @@ import {
   type GetPluginInfoResponse,
 } from '@coze-arch/bot-api/plugin_develop';
 import { PluginDevelopApi } from '@coze-arch/bot-api';
-import { useGetToolColumnsAdapter } from '@coze-studio/plugin-tool-columns-adapter';
-import { InitialAction } from '@coze-studio/plugin-shared';
-import { BizPluginPublishPopover } from '@coze-studio/plugin-publish-ui-adapter';
-import {
-  usePluginCallbacks,
-  usePluginHistoryController,
-  usePluginNavigate,
-  usePluginStore,
-  useUnmountUnlock,
-} from '@coze-studio/bot-plugin-store';
-import { IconCodeOutlined } from '@coze-arch/bot-icons';
-import { CustomError } from '@coze-arch/bot-error';
 import { useEditExample } from '@coze-agent-ide/bot-plugin-tools';
 import {
   IconButton,
@@ -149,8 +148,6 @@ const PluginDetailPage = ({
   const [showDropdownItem, setShowDropDownItem] = useState<
     PluginAPIInfo | undefined
   >();
-
-  const [FLAGS2] = useFlags();
 
   const { modal: codeModal, setShowCodePluginModel } = useBotCodeEditInPlugin({
     modalProps: {
@@ -387,8 +384,7 @@ const PluginDetailPage = ({
 
   const isRenderCreateToolButton = canEdit && Boolean(data?.total);
 
-  const isRenderImportButton =
-    canEdit && FLAGS2['bot.devops.plugin_import_export'] && !isCloudIDEPlugin;
+  const isRenderImportButton = canEdit && !isCloudIDEPlugin;
 
   const isRenderPublishButton = isRenderCreateToolButton && isInLibraryScope;
 

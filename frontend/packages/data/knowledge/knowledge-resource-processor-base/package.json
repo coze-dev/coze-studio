@@ -82,7 +82,7 @@
     "@coze-arch/bot-flags": "workspace:*",
     "@coze-arch/bot-http": "workspace:*",
     "@coze-arch/bot-icons": "workspace:*",
-    "@coze-arch/bot-md-box": "workspace:*",
+    "@coze-arch/bot-md-box-adapter": "workspace:*",
     "@coze-arch/bot-semi": "workspace:*",
     "@coze-arch/bot-studio-store": "workspace:*",
     "@coze-arch/bot-utils": "workspace:*",

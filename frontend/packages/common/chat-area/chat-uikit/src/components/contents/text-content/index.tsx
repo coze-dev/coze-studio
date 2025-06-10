@@ -1,6 +1,6 @@
 import { type MouseEvent, type FC, useRef } from 'react';
 
-import { type ImageOptions } from '@coze-arch/bot-md-box';
+import { type ImageOptions } from '@coze-arch/bot-md-box-adapter';
 import {
   type IOnImageClickParams,
   type IOnLinkClickParams,

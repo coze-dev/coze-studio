@@ -7,7 +7,7 @@ import { IconInfo } from '@coze-arch/bot-icons';
 import styles from '../index.module.less';
 
 const LazyMdbox = lazy(async () => {
-  const { MdBoxLazy } = await import('@coze-arch/bot-md-box/lazy');
+  const { MdBoxLazy } = await import('@coze-arch/bot-md-box-adapter/lazy');
   return {
     default: MdBoxLazy,
   };

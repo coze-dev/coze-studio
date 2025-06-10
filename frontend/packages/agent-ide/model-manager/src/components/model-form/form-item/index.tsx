@@ -3,7 +3,7 @@ import { type PropsWithChildren, type ReactNode } from 'react';
 import { useField } from '@formily/react';
 import { type Field } from '@formily/core';
 import { Popover } from '@coze-arch/bot-semi';
-import { MdBoxLazy } from '@coze-arch/bot-md-box/lazy';
+import { MdBoxLazy } from '@coze-arch/bot-md-box-adapter/lazy';
 import { IconInfo } from '@coze-arch/bot-icons';
 
 import commonStyles from '../index.module.less';

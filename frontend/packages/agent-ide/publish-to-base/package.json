@@ -25,7 +25,7 @@
     "@coze-arch/bot-hooks": "workspace:*",
     "@coze-arch/bot-http": "workspace:*",
     "@coze-arch/bot-icons": "workspace:*",
-    "@coze-arch/bot-md-box": "workspace:*",
+    "@coze-arch/bot-md-box-adapter": "workspace:*",
     "@coze-arch/bot-semi": "workspace:*",
     "@coze-arch/bot-space-api": "workspace:*",
     "@coze-arch/bot-studio-store": "workspace:*",
@@ -95,3 +95,4 @@
     "react-dom": ">=18.2.0"
   }
 }
+

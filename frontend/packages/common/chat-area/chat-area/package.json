@@ -108,7 +108,7 @@
   "peerDependencies": {
     "@coze-arch/bot-api": "workspace:*",
     "@coze-arch/bot-icons": "workspace:*",
-    "@coze-arch/bot-md-box": "workspace:*",
+    "@coze-arch/bot-md-box-adapter": "workspace:*",
     "@coze-arch/bot-semi": "workspace:*",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/logger": "workspace:*",

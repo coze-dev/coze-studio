@@ -2,7 +2,7 @@ import {
   type FileMessageContent,
   type ImageMessageContent,
 } from '@coze-common/chat-core';
-import { type MdBoxLazyProps } from '@coze-arch/bot-md-box/lazy';
+import { type MdBoxLazyProps } from '@coze-arch/bot-md-box-adapter/lazy';
 
 import { type IMessage } from './common';
 

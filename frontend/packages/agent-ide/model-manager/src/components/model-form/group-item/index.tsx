@@ -12,7 +12,7 @@ import { I18n } from '@coze-arch/i18n';
 import { IconCozArrowDown } from '@coze/coze-design/icons';
 import { Button, Collapsible } from '@coze/coze-design';
 import { Popover } from '@coze-arch/bot-semi';
-import { MdBoxLazy } from '@coze-arch/bot-md-box/lazy';
+import { MdBoxLazy } from '@coze-arch/bot-md-box-adapter/lazy';
 import { IconInfo } from '@coze-arch/bot-icons';
 import { ModelStyle } from '@coze-arch/bot-api/developer_api';
 

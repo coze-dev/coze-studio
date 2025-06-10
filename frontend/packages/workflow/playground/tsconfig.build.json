@@ -69,7 +69,7 @@
       "path": "../../arch/bot-http/tsconfig.build.json"
     },
     {
-      "path": "../../arch/bot-md-box/tsconfig.build.json"
+      "path": "../../arch/bot-md-box-adapter/tsconfig.build.json"
     },
     {
       "path": "../../arch/bot-monaco-editor/tsconfig.build.json"

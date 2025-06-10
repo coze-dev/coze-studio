@@ -9,7 +9,10 @@ import {
 import classNames from 'classnames';
 import { useUpdateEffect } from 'ahooks';
 import { Avatar, Typography } from '@coze/coze-design';
-import { MdBoxLazy, type MdBoxLazyProps } from '@coze-arch/bot-md-box/lazy';
+import {
+  MdBoxLazy,
+  type MdBoxLazyProps,
+} from '@coze-arch/bot-md-box-adapter/lazy';
 import {
   Layout,
   type IMessage,

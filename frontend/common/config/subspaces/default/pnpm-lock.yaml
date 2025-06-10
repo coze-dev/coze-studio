@@ -55,6 +55,9 @@ importers:
       '@coze-arch/bot-flags':
         specifier: workspace:*
         version: link:../../packages/arch/bot-flags
+      '@coze-arch/bot-md-box-adapter':
+        specifier: workspace:*
+        version: link:../../packages/arch/bot-md-box-adapter
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../packages/arch/foundation-sdk
@@ -1922,9 +1925,9 @@ importers:
       '@coze-arch/bot-icons':
         specifier: workspace:*
         version: link:../../../components/bot-icons
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../../arch/bot-md-box
+        version: link:../../../arch/bot-md-box-adapter
       '@coze-arch/bot-monaco-editor':
         specifier: workspace:*
         version: link:../../../arch/bot-monaco-editor
@@ -2679,9 +2682,9 @@ importers:
       '@coze-arch/bot-icons':
         specifier: workspace:*
         version: link:../../../components/bot-icons
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../../arch/bot-md-box
+        version: link:../../../arch/bot-md-box-adapter
       '@coze-arch/bot-semi':
         specifier: workspace:*
         version: link:../../../components/bot-semi
@@ -5438,9 +5441,9 @@ importers:
       '@coze-arch/bot-icons':
         specifier: workspace:*
         version: link:../../components/bot-icons
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../arch/bot-md-box
+        version: link:../../arch/bot-md-box-adapter
       '@coze-arch/bot-semi':
         specifier: workspace:*
         version: link:../../components/bot-semi
@@ -5701,9 +5704,9 @@ importers:
       '@coze-arch/bot-icons':
         specifier: workspace:*
         version: link:../../components/bot-icons
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../arch/bot-md-box
+        version: link:../../arch/bot-md-box-adapter
       '@coze-arch/bot-semi':
         specifier: workspace:*
         version: link:../../components/bot-semi
@@ -6968,9 +6971,9 @@ importers:
       '@coze-arch/bot-icons':
         specifier: workspace:*
         version: link:../../components/bot-icons
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../arch/bot-md-box
+        version: link:../../arch/bot-md-box-adapter
       '@coze-arch/bot-semi':
         specifier: workspace:*
         version: link:../../components/bot-semi
@@ -7011,7 +7014,7 @@ importers:
         specifier: workspace:*
         version: link:../../data/memory/database-creator
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../data/common/e2e
         version: link:../../data/common/e2e
       '@coze-data/knowledge-modal-base':
         specifier: workspace:*
@@ -7318,9 +7321,9 @@ importers:
       '@coze-arch/bot-icons':
         specifier: workspace:*
         version: link:../../components/bot-icons
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../arch/bot-md-box
+        version: link:../../arch/bot-md-box-adapter
       '@coze-arch/bot-semi':
         specifier: workspace:*
         version: link:../../components/bot-semi
@@ -7391,7 +7394,7 @@ importers:
         specifier: workspace:*
         version: link:../../data/memory/database-v2-main
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../data/common/e2e
         version: link:../../data/common/e2e
       '@coze-data/knowledge-data-set-for-agent':
         specifier: workspace:*
@@ -9219,11 +9222,11 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/arch/bot-md-box:
+  ../../../packages/arch/bot-md-box-adapter:
     dependencies:
-      '@flow-web/md-box':
-        specifier: 1.9.8
-        version: 1.9.8(react-dom@18.2.0)(react@18.2.0)
+      '@bytedance/calypso':
+        specifier: 0.1.0-beta.8
+        version: 0.1.0-beta.8(@babel/runtime@7.27.6)(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@mui/material@5.17.1)(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0)
     devDependencies:
       '@coze-arch/bot-typings':
         specifier: workspace:*
@@ -10645,7 +10648,7 @@ importers:
         specifier: workspace:*
         version: link:../../arch/semi-theme-hand01
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../data/common/e2e
         version: link:../../data/common/e2e
       '@coze-foundation/local-storage':
         specifier: workspace:*
@@ -10925,9 +10928,9 @@ importers:
       '@coze-arch/bot-http':
         specifier: workspace:*
         version: link:../../../arch/bot-http
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../../arch/bot-md-box
+        version: link:../../../arch/bot-md-box-adapter
       '@coze-arch/bot-utils':
         specifier: workspace:*
         version: link:../../../arch/bot-utils
@@ -11112,9 +11115,9 @@ importers:
 
   ../../../packages/common/chat-area/chat-area-plugin-reasoning:
     dependencies:
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../../arch/bot-md-box
+        version: link:../../../arch/bot-md-box-adapter
       '@coze-common/chat-area':
         specifier: workspace:*
         version: link:../chat-area
@@ -11300,9 +11303,9 @@ importers:
       '@coze-arch/bot-icons':
         specifier: workspace:*
         version: link:../../../components/bot-icons
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../../arch/bot-md-box
+        version: link:../../../arch/bot-md-box-adapter
       '@coze-arch/bot-semi':
         specifier: workspace:*
         version: link:../../../components/bot-semi
@@ -11514,9 +11517,9 @@ importers:
 
   ../../../packages/common/chat-area/chat-uikit-shared:
     dependencies:
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../../arch/bot-md-box
+        version: link:../../../arch/bot-md-box-adapter
       '@coze-common/chat-core':
         specifier: workspace:*
         version: link:../chat-core
@@ -12070,9 +12073,9 @@ importers:
       '@coze-arch/bot-flags':
         specifier: workspace:*
         version: link:../../../arch/bot-flags
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../../arch/bot-md-box
+        version: link:../../../arch/bot-md-box-adapter
       '@coze-arch/bot-semi':
         specifier: workspace:*
         version: link:../../../components/bot-semi
@@ -12300,9 +12303,9 @@ importers:
 
   ../../../packages/common/chat-area/text-grab:
     dependencies:
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../../arch/bot-md-box
+        version: link:../../../arch/bot-md-box-adapter
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -12410,9 +12413,9 @@ importers:
         specifier: 3.0.0-alpha.6
         version: 3.0.0-alpha.6
     devDependencies:
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../../arch/bot-md-box
+        version: link:../../../arch/bot-md-box-adapter
       '@coze-arch/bot-typings':
         specifier: workspace:*
         version: link:../../../arch/bot-typings
@@ -14869,7 +14872,7 @@ importers:
         specifier: workspace:*
         version: link:../virtual-list
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../data/common/e2e
         version: link:../../data/common/e2e
       '@coze-data/utils':
         specifier: workspace:*
@@ -14999,21 +15002,6 @@ importers:
       vitest:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
-
-  ../../../packages/data/common/e2e:
-    devDependencies:
-      '@coze-arch/eslint-config':
-        specifier: workspace:*
-        version: link:../../../../config/eslint-config
-      '@coze-arch/stylelint-config':
-        specifier: workspace:*
-        version: link:../../../../config/stylelint-config
-      '@coze-arch/ts-config':
-        specifier: workspace:*
-        version: link:../../../../config/ts-config
-      stylelint:
-        specifier: ^15.11.0
-        version: 15.11.0(typescript@5.8.2)
 
   ../../../packages/data/common/feature-register:
     dependencies:
@@ -15236,7 +15224,7 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/report-events
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../e2e
         version: link:../e2e
       '@coze-data/knowledge-resource-processor-core':
         specifier: workspace:*
@@ -15335,9 +15323,9 @@ importers:
       '@coze-arch/bot-error':
         specifier: workspace:*
         version: link:../../../../arch/bot-error
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../../../arch/bot-md-box
+        version: link:../../../../arch/bot-md-box-adapter
       '@coze-arch/bot-semi':
         specifier: workspace:*
         version: link:../../../../components/bot-semi
@@ -15348,7 +15336,7 @@ importers:
         specifier: workspace:*
         version: link:../../../../components/virtual-list
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../../common/e2e
         version: link:../../../common/e2e
       '@coze-data/knowledge-stores':
         specifier: workspace:*
@@ -15960,7 +15948,7 @@ importers:
         specifier: workspace:*
         version: link:../../../common/chat-area/utils
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../common/e2e
         version: link:../../common/e2e
       '@coze-data/feature-register':
         specifier: workspace:*
@@ -16147,7 +16135,7 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/i18n
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../common/e2e
         version: link:../../common/e2e
       '@coze-data/knowledge-modal-base':
         specifier: workspace:*
@@ -16292,7 +16280,7 @@ importers:
         specifier: workspace:*
         version: link:../../../components/table-view
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../common/e2e
         version: link:../../common/e2e
       '@coze-data/knowledge-resource-processor-core':
         specifier: workspace:*
@@ -16539,9 +16527,9 @@ importers:
       '@coze-arch/bot-icons':
         specifier: workspace:*
         version: link:../../../components/bot-icons
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../../arch/bot-md-box
+        version: link:../../../arch/bot-md-box-adapter
       '@coze-arch/bot-semi':
         specifier: workspace:*
         version: link:../../../components/bot-semi
@@ -16579,7 +16567,7 @@ importers:
         specifier: workspace:*
         version: link:../../../components/virtual-list
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../common/e2e
         version: link:../../common/e2e
       '@coze-data/knowledge-common-components':
         specifier: workspace:*
@@ -16863,7 +16851,7 @@ importers:
         specifier: workspace:*
         version: link:../../../common/chat-area/plugin-message-grab
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../common/e2e
         version: link:../../common/e2e
       '@coze-data/knowledge-resource-processor-base':
         specifier: workspace:*
@@ -17071,7 +17059,7 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/report-events
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../common/e2e
         version: link:../../common/e2e
       '@coze-data/reporter':
         specifier: workspace:*
@@ -17292,7 +17280,7 @@ importers:
         specifier: workspace:*
         version: link:../../../common/biz-components
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../common/e2e
         version: link:../../common/e2e
       '@coze-data/reporter':
         specifier: workspace:*
@@ -17443,7 +17431,7 @@ importers:
         specifier: workspace:*
         version: link:../database-v2-base
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../common/e2e
         version: link:../../common/e2e
       '@coze-data/knowledge-resource-processor-base':
         specifier: workspace:*
@@ -17745,7 +17733,7 @@ importers:
         specifier: workspace:*
         version: link:../../../common/chat-area/utils
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../common/e2e
         version: link:../../common/e2e
       '@coze-data/knowledge-common-components':
         specifier: workspace:*
@@ -21606,9 +21594,9 @@ importers:
       '@coze-arch/bot-icons':
         specifier: workspace:*
         version: link:../../components/bot-icons
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../arch/bot-md-box
+        version: link:../../arch/bot-md-box-adapter
       '@coze-arch/bot-semi':
         specifier: workspace:*
         version: link:../../components/bot-semi
@@ -21643,7 +21631,7 @@ importers:
         specifier: workspace:*
         version: link:../../common/websocket-manager-adapter
       '@coze-data/e2e':
-        specifier: workspace:*
+        specifier: link:../../data/common/e2e
         version: link:../../data/common/e2e
       '@coze-foundation/space-store':
         specifier: workspace:*
@@ -24291,9 +24279,9 @@ importers:
         specifier: ^4.4.7
         version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
     devDependencies:
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../../arch/bot-md-box
+        version: link:../../../arch/bot-md-box-adapter
       '@coze-arch/bot-typings':
         specifier: workspace:*
         version: link:../../../arch/bot-typings
@@ -25766,9 +25754,9 @@ importers:
       '@coze-arch/bot-icons':
         specifier: workspace:*
         version: link:../../components/bot-icons
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../arch/bot-md-box
+        version: link:../../arch/bot-md-box-adapter
       '@coze-arch/bot-monaco-editor':
         specifier: workspace:*
         version: link:../../arch/bot-monaco-editor
@@ -26556,9 +26544,9 @@ importers:
       '@coze-arch/bot-flags':
         specifier: workspace:*
         version: link:../../arch/bot-flags
-      '@coze-arch/bot-md-box':
+      '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
-        version: link:../../arch/bot-md-box
+        version: link:../../arch/bot-md-box-adapter
       '@coze-arch/bot-utils':
         specifier: workspace:*
         version: link:../../arch/bot-utils
@@ -27075,6 +27063,16 @@ packages:
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
 
+  /@asamuzakjp/css-color@3.2.0:
+    resolution: {integrity: sha512-K1A6z8tS3XsmCMM86xoWdn7Fkdn9m6RSVtocUrJYIwZnFVkng/PvkEoWtOWmP+Scc6saYWHWZYbndEEXxl24jw==}
+    dependencies:
+      '@csstools/css-calc': 2.1.4(@csstools/css-parser-algorithms@3.0.5)(@csstools/css-tokenizer@3.0.4)
+      '@csstools/css-color-parser': 3.0.10(@csstools/css-parser-algorithms@3.0.5)(@csstools/css-tokenizer@3.0.4)
+      '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
+      '@csstools/css-tokenizer': 3.0.4
+      lru-cache: 10.4.3
+    dev: false
+
   /@aw-web-design/x-default-browser@1.4.126:
     resolution: {integrity: sha512-Xk1sIhyNC/esHGGVjL/niHLowM0csl/kFO5uawBy4IrWwy0o1G8LGt3jP6nmWGz+USxeeqbihAmp/oVZju6wug==}
     hasBin: true
@@ -27177,7 +27175,7 @@ packages:
     resolution: {integrity: sha512-F3fZga2uv09wFdEjEQIJxXALXfz0+JaOb7SabvVMmjHxeVTuGW8wgE8Vp1Hd7O+zMTYtcfEISGRzPkeiaPPsvg==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@babel/types': 7.21.5
+      '@babel/types': 7.27.3
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
       jsesc: 2.5.2
@@ -27650,7 +27648,7 @@ packages:
       '@babel/core': ^7.0.0-0
     dependencies:
       '@babel/core': 7.12.9
-      '@babel/helper-plugin-utils': 7.10.4
+      '@babel/helper-plugin-utils': 7.27.1
       '@babel/plugin-syntax-object-rest-spread': 7.8.3(@babel/core@7.12.9)
       '@babel/plugin-transform-parameters': 7.27.1(@babel/core@7.12.9)
     dev: true
@@ -28950,13 +28948,13 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       '@babel/code-frame': 7.27.1
-      '@babel/generator': 7.21.9
+      '@babel/generator': 7.27.5
       '@babel/helper-environment-visitor': 7.24.7
       '@babel/helper-function-name': 7.24.7
       '@babel/helper-hoist-variables': 7.24.7
       '@babel/helper-split-export-declaration': 7.24.7
-      '@babel/parser': 7.21.9
-      '@babel/types': 7.21.5
+      '@babel/parser': 7.27.5
+      '@babel/types': 7.27.3
       debug: 4.3.3(supports-color@5.5.0)
       globals: 11.12.0
     transitivePeerDependencies:
@@ -29059,14 +29057,70 @@ packages:
   /@bufbuild/protobuf@2.5.1:
     resolution: {integrity: sha512-lut4UTvKL8tqtend0UDu7R79/n9jA7Jtxf77RNPbxtmWqfWI4qQ9bTjf7KCS4vfqLmpQbuHr1ciqJumAgJODdw==}
 
-  /@byted-imagex/viewer-react@0.3.15(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-qATtfUWyrDsP5jbX6ARgoI8zY47em743LSu0j3oiHyAfcx6517j/x6GXu1x2QOpLB98UFLhAPdbhb0OY/WC37A==}
+  /@bytedance/calypso@0.1.0-beta.8(@babel/runtime@7.27.6)(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@mui/material@5.17.1)(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-noJz3Ohh8eBxSPHjuH3ZB4FEt+9jT6fYMlhLf6Kpn0UUbOYsF85Qi43nsHf/rgjlgQFykYrv8MnNlld139bKig==}
     peerDependencies:
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
+      '@douyinfe/semi-icons': 2.53.2(react@18.2.0)
+      '@douyinfe/semi-ui': 2.53.2(react-dom@18.2.0)(react@18.2.0)
+      '@textea/json-viewer': 3.5.0(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@mui/material@5.17.1)(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0)
+      '@volcengine/imagex-react': 2.1.1(react-dom@18.2.0)(react@18.2.0)
+      ahooks: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
+      buffer: 6.0.3
+      classnames: 2.5.1
+      copy-to-clipboard: 3.3.3
+      devlop: 1.1.0
+      dom-serializer: 2.0.0
+      domhandler: 5.0.3
+      dompurify: 3.2.4
+      domutils: 3.2.2
+      email-validator: 2.0.4
+      franc: 6.2.0
+      he: 1.2.0
+      highlight.js: 11.11.1
+      html-react-parser: 3.0.15(react@18.2.0)
+      isomorphic-dompurify: 2.22.0
+      katex: 0.16.22
+      lodash-es: 4.17.21
+      marked: 15.0.7
+      marked-mangle: 1.1.10(marked@15.0.7)
+      marked-smartypants: 1.1.9(marked@15.0.7)
+      mathjax-full: 3.2.2
+      mdast-util-from-markdown: 1.3.1
+      mdast-util-gfm-strikethrough: 1.0.3
+      mdast-util-gfm-table: 1.0.7
+      mdast-util-gfm-task-list-item: 1.0.2
+      mdast-util-math: 2.0.2
+      mdast-util-to-markdown: 1.5.0
+      micromark-extension-gfm-strikethrough: 1.0.7
+      micromark-extension-gfm-table: 1.0.7
+      micromark-extension-gfm-task-list-item: 1.0.5
+      micromark-extension-math: 3.1.0
+      micromark-factory-space: 1.1.0
+      micromark-util-character: 1.2.0
+      micromark-util-symbol: 1.1.0
+      micromark-util-types: 1.1.0
+      pangu: 4.0.7
+      prismjs: 1.30.0
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
+      react-image: 4.1.0(@babel/runtime@7.27.6)(react-dom@18.2.0)(react@18.2.0)
+      shallow-equal: 3.1.0
+      xregexp: 5.1.2
+      xss: 1.0.15
+    transitivePeerDependencies:
+      - '@babel/runtime'
+      - '@emotion/react'
+      - '@emotion/styled'
+      - '@mui/material'
+      - '@types/react'
+      - bufferutil
+      - canvas
+      - immer
+      - supports-color
+      - utf-8-validate
     dev: false
 
   /@codemirror/autocomplete@6.18.6:
@@ -29241,6 +29295,35 @@ packages:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
+  /@csstools/color-helpers@5.0.2:
+    resolution: {integrity: sha512-JqWH1vsgdGcw2RR6VliXXdA0/59LttzlU8UlRT/iUUsEeWfYq8I+K0yhihEUTTHLRm1EXvpsCx3083EU15ecsA==}
+    engines: {node: '>=18'}
+    dev: false
+
+  /@csstools/css-calc@2.1.4(@csstools/css-parser-algorithms@3.0.5)(@csstools/css-tokenizer@3.0.4):
+    resolution: {integrity: sha512-3N8oaj+0juUw/1H3YwmDDJXCgTB1gKU6Hc/bB502u9zR0q2vd786XJH9QfrKIEgFlZmhZiq6epXl4rHqhzsIgQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@csstools/css-parser-algorithms': ^3.0.5
+      '@csstools/css-tokenizer': ^3.0.4
+    dependencies:
+      '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
+      '@csstools/css-tokenizer': 3.0.4
+    dev: false
+
+  /@csstools/css-color-parser@3.0.10(@csstools/css-parser-algorithms@3.0.5)(@csstools/css-tokenizer@3.0.4):
+    resolution: {integrity: sha512-TiJ5Ajr6WRd1r8HSiwJvZBiJOqtH86aHpUjq5aEKWHiII2Qfjqd/HCWKPOW8EP4vcspXbHnXrwIDlu5savQipg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@csstools/css-parser-algorithms': ^3.0.5
+      '@csstools/css-tokenizer': ^3.0.4
+    dependencies:
+      '@csstools/color-helpers': 5.0.2
+      '@csstools/css-calc': 2.1.4(@csstools/css-parser-algorithms@3.0.5)(@csstools/css-tokenizer@3.0.4)
+      '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
+      '@csstools/css-tokenizer': 3.0.4
+    dev: false
+
   /@csstools/css-parser-algorithms@2.7.1(@csstools/css-tokenizer@2.4.1):
     resolution: {integrity: sha512-2SJS42gxmACHgikc1WGesXLIT8d/q2l0UFM7TaEeIzdFCE/FPMtTiizcPGGJtlPo2xuQzY09OhrLTzRxqJqwGw==}
     engines: {node: ^14 || ^16 || >=18}
@@ -29249,9 +29332,23 @@ packages:
     dependencies:
       '@csstools/css-tokenizer': 2.4.1
 
+  /@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4):
+    resolution: {integrity: sha512-DaDeUkXZKjdGhgYaHNJTV9pV7Y9B3b644jCLs9Upc3VeNGg6LWARAT6O+Q+/COo+2gg/bM5rhpMAtf70WqfBdQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@csstools/css-tokenizer': ^3.0.4
+    dependencies:
+      '@csstools/css-tokenizer': 3.0.4
+    dev: false
+
   /@csstools/css-tokenizer@2.4.1:
     resolution: {integrity: sha512-eQ9DIktFJBhGjioABJRtUucoWR2mwllurfnM8LuNGAqX3ViZXaUchqk+1s7jjtkFiT9ySdACsFEA3etErkALUg==}
     engines: {node: ^14 || ^16 || >=18}
+
+  /@csstools/css-tokenizer@3.0.4:
+    resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
+    engines: {node: '>=18'}
+    dev: false
 
   /@csstools/media-query-list-parser@2.1.13(@csstools/css-parser-algorithms@2.7.1)(@csstools/css-tokenizer@2.4.1):
     resolution: {integrity: sha512-XaHr+16KRU9Gf8XLi3q8kDlI18d5vzKSKCY510Vrtc9iNR0NJzbY9hhTmwhzYZj/ZwGL4VmB3TA9hJW0Um2qFA==}
@@ -29361,12 +29458,24 @@ packages:
       react: 18.2.0
       tslib: 2.8.1
 
+  /@douyinfe/semi-animation-react@2.53.2:
+    resolution: {integrity: sha512-lRJkdoK/FAA5hfmb+ePUP4QCJWgA5wwSNgvNHBplgl1Mhzc2vIGcrpWNPIDb6Zfx/jD/vnjggIjipQfKasvqsQ==}
+    dependencies:
+      '@douyinfe/semi-animation': 2.53.2
+      '@douyinfe/semi-animation-styled': 2.53.2
+      classnames: 2.5.1
+    dev: false
+
   /@douyinfe/semi-animation-react@2.72.3:
     resolution: {integrity: sha512-OfThQVe3rP1v70Y4SSC5dkrLzNy7QkedbqfQvknqKB2onP7lGB6ePc3K3vACBxEKKL6dXzTlMs6XoR5SBD6iyA==}
     dependencies:
       '@douyinfe/semi-animation': 2.72.3
       '@douyinfe/semi-animation-styled': 2.72.3
       classnames: 2.5.1
+
+  /@douyinfe/semi-animation-styled@2.53.2:
+    resolution: {integrity: sha512-hszJo3oRzngK9mvin6iHMzn5nPC6/x4XIIi4deojlhFCWGM54PW9OEmf/Cf0ztGM3z1hEIyaHOX70gb1m45A+Q==}
+    dev: false
 
   /@douyinfe/semi-animation-styled@2.72.3:
     resolution: {integrity: sha512-ME6DE8UdBRHf00OCgxoA9jjZef/2c/QWpUy7vtkwUIfwENCanpU61apoLk5jprTLG7y/Zq8Vjm4O5h0eMep1pw==}
@@ -29375,6 +29484,12 @@ packages:
     resolution: {integrity: sha512-OAfL9Nk38ZPqfdKm9k4cvVXXzm16ALI4LxGNZ0qfe2RCLLnYGB/hNzTctoTDjYD35dFv0yroh3qsXtZuP2xNdg==}
     dependencies:
       '@babel/runtime-corejs3': 7.27.6
+      bezier-easing: 2.1.0
+    dev: false
+
+  /@douyinfe/semi-animation@2.53.2:
+    resolution: {integrity: sha512-T965+DlxXGh60sAnDW2G6zZH2J7Hr7vLNivlUvGLD/f8UAWPAr7xpgWWmgNHeUoUIJO/Rh2L1TGV8XeQDU48RQ==}
+    dependencies:
       bezier-easing: 2.1.0
     dev: false
 
@@ -29391,6 +29506,20 @@ packages:
       classnames: 2.5.1
       date-fns: 2.30.0
       date-fns-tz: 1.3.8(date-fns@2.30.0)
+      lodash: 4.17.21
+      memoize-one: 5.2.1
+      scroll-into-view-if-needed: 2.2.31
+    dev: false
+
+  /@douyinfe/semi-foundation@2.53.2:
+    resolution: {integrity: sha512-8/zMDbr9UvKzGE7IhBHVY4u6tfjwzcoQlG1fawjD51qCDshntEZtgU/P6SfHYejZwezBsVSIRCThP7hnZTpJkw==}
+    dependencies:
+      '@douyinfe/semi-animation': 2.53.2
+      async-validator: 3.5.2
+      classnames: 2.5.1
+      date-fns: 2.30.0
+      date-fns-tz: 1.3.8(date-fns@2.30.0)
+      fast-copy: 3.0.2
       lodash: 4.17.21
       memoize-one: 5.2.1
       scroll-into-view-if-needed: 2.2.31
@@ -29417,6 +29546,15 @@ packages:
       - acorn
       - supports-color
 
+  /@douyinfe/semi-icons@2.53.2(react@18.2.0):
+    resolution: {integrity: sha512-ZIxNBrZn3tAd347f3FbcvQSJpr5oX7b/BoUTGK16Mkguqp6Kd9gzWTURixRxIfBaCkZ5ftvS+m9x1jSx6RnkkA==}
+    peerDependencies:
+      react: 18.2.0
+    dependencies:
+      classnames: 2.5.1
+      react: 18.2.0
+    dev: false
+
   /@douyinfe/semi-icons@2.72.3(react@18.2.0):
     resolution: {integrity: sha512-ZsbHin7dJXX4JWpKykqJhH4hlNi9uTHKUi2ylpyMpIl08ROetojkDKj6TcTd9mRMILGpQHCH7hd5uYGo1xb3ew==}
     peerDependencies:
@@ -29432,6 +29570,14 @@ packages:
     dependencies:
       classnames: 2.5.1
       react: 18.2.0
+
+  /@douyinfe/semi-illustrations@2.53.2(react@18.2.0):
+    resolution: {integrity: sha512-vYgt4eQcnYCPWgJQg7QUIrz2teKoZ3Iwg/rLcpgL6NT4YKY7TDNeUN1ROwO1FpGqaBv2Mcfcr5BNo1siOJDIdg==}
+    peerDependencies:
+      react: 18.2.0
+    dependencies:
+      react: 18.2.0
+    dev: false
 
   /@douyinfe/semi-illustrations@2.72.3(react@18.2.0):
     resolution: {integrity: sha512-jfsH/4TogOFQ5dWUdm6X6fVLQzGTjBFVHRyiqSrUnLWVuSqQaUtMRJguxEtcFN9D+fjdvG6sToqTHOygQsAp8Q==}
@@ -29471,8 +29617,45 @@ packages:
     dev: false
     patched: true
 
+  /@douyinfe/semi-theme-default@2.53.2:
+    resolution: {integrity: sha512-2RhUGg3T6wmNicRpfDo/SNHuq3jqNKk/FjSMtquM2S/q/L1DPa6ONrjPfED0vsD/uMHCfrJmH38tjT2OnxmKEA==}
+    dependencies:
+      glob: 7.2.3
+    dev: false
+
   /@douyinfe/semi-theme-default@2.72.3:
     resolution: {integrity: sha512-qCR5OCztuIWyLhntcj61kXp02dZCKC4H/12p394rGOkpie8E/MkBQMFvVxFPsasuN3MWWdUNefYsERe4cjXuhw==}
+
+  /@douyinfe/semi-ui@2.53.2(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-JS+H869MeF+lKXxzNcmWmx26em+8jPq1eUyevojt0Q36juAA0F4cDQpQ3Juv0cplkFHB92ScieadFUkwyZub4g==}
+    peerDependencies:
+      react: 18.2.0
+      react-dom: 18.2.0
+    dependencies:
+      '@dnd-kit/core': 6.3.1(react-dom@18.2.0)(react@18.2.0)
+      '@dnd-kit/sortable': 7.0.2(@dnd-kit/core@6.3.1)(react@18.2.0)
+      '@dnd-kit/utilities': 3.2.2(react@18.2.0)
+      '@douyinfe/semi-animation': 2.53.2
+      '@douyinfe/semi-animation-react': 2.53.2
+      '@douyinfe/semi-foundation': 2.53.2
+      '@douyinfe/semi-icons': 2.53.2(react@18.2.0)
+      '@douyinfe/semi-illustrations': 2.53.2(react@18.2.0)
+      '@douyinfe/semi-theme-default': 2.53.2
+      async-validator: 3.5.2
+      classnames: 2.5.1
+      copy-text-to-clipboard: 2.2.0
+      date-fns: 2.30.0
+      date-fns-tz: 1.3.8(date-fns@2.30.0)
+      fast-copy: 3.0.2
+      lodash: 4.17.21
+      prop-types: 15.8.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      react-resizable: 3.0.5(react-dom@18.2.0)(react@18.2.0)
+      react-window: 1.8.11(react-dom@18.2.0)(react@18.2.0)
+      scroll-into-view-if-needed: 2.2.31
+      utility-types: 3.11.0
+    dev: false
 
   /@douyinfe/semi-ui@2.72.3(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-7QsusUkzD7gDST3dEPLq1jvaderR8d9RM/Y1h31weZUM1DBVCUIVGDYW6oVFsUKzMAPdeOlTvnFJmPlEL+7k6g==}
@@ -31016,54 +31199,6 @@ packages:
       '@codemirror/view': 6.37.0
       '@lezer/highlight': 1.2.1
       crelt: 1.0.6
-    dev: false
-
-  /@flow-web/md-box@1.9.8(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-6qu4BDstHy57RDKR6HY27ByE43q8LG4hFCDG5460m3O//GhQdM2BB8zMPRx9KW89+34zx66IghgTz/csuI24YA==}
-    peerDependencies:
-      react: 18.2.0
-      react-dom: 18.2.0
-    dependencies:
-      '@byted-imagex/viewer-react': 0.3.15(react-dom@18.2.0)(react@18.2.0)
-      ahooks: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
-      buffer: 6.0.3
-      classnames: 2.5.1
-      copy-to-clipboard: 3.3.3
-      devlop: 1.1.0
-      dompurify: 2.5.8
-      domutils: 3.2.2
-      email-validator: 2.0.4
-      franc: 6.2.0
-      he: 1.2.0
-      highlight.js: 11.11.1
-      html-react-parser: 3.0.15(react@18.2.0)
-      katex: 0.16.22
-      lodash-es: 4.17.21
-      marked: 13.0.0
-      marked-mangle: 1.1.10(marked@13.0.0)
-      marked-smartypants: 1.1.9(marked@13.0.0)
-      mathjax-full: 3.2.2
-      mdast-util-from-markdown: 1.3.1
-      mdast-util-gfm-strikethrough: 1.0.3
-      mdast-util-gfm-table: 1.0.7
-      mdast-util-gfm-task-list-item: 1.0.2
-      mdast-util-math: 2.0.2
-      mdast-util-to-markdown: 1.5.0
-      micromark-extension-gfm-strikethrough: 1.0.7
-      micromark-extension-gfm-table: 1.0.7
-      micromark-extension-gfm-task-list-item: 1.0.5
-      micromark-factory-space: 1.1.0
-      micromark-util-character: 1.2.0
-      micromark-util-symbol: 1.1.0
-      pangu: 4.0.7
-      prismjs: 1.30.0
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      shallow-equal: 3.1.0
-      xregexp: 5.1.2
-      xss: 1.0.15
-    transitivePeerDependencies:
-      - supports-color
     dev: false
 
   /@flowgram.ai/background-plugin@0.1.28(react-dom@18.2.0)(react@18.2.0):
@@ -38416,6 +38551,10 @@ packages:
     resolution: {integrity: sha512-oBnY3csYnXfqZXDRBJwP1nDDJCW/+VMJ88UHT4DCy0deSXpJIQvMCwYlnmdW4M+u7PiSfQc44LmiFcUbJ8hLEw==}
     dev: true
 
+  /@types/katex@0.16.7:
+    resolution: {integrity: sha512-HMwFiRujE5PjrgwHQ25+bsLJgowjGjm5Z8FVSf0N6PwgJrwxH0QxzHYDcKsTfV3wva0vzrpqMTJS2jXPr5BMEQ==}
+    dev: false
+
   /@types/liftoff@4.0.3:
     resolution: {integrity: sha512-UgbL2kR5pLrWICvr8+fuSg0u43LY250q7ZMkC+XKC3E+rs/YBDEnQIzsnhU5dYsLlwMi3R75UvCL87pObP1sxw==}
     dependencies:
@@ -38727,7 +38866,6 @@ packages:
 
   /@types/trusted-types@2.0.7:
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
-    dev: true
 
   /@types/ua-parser-js@0.7.39:
     resolution: {integrity: sha512-P/oDfpofrdtF5xw433SPALpdSchtJmY7nsJItf8h3KXqOslkbySh8zq4dSWXH2oTjRvJ5PczVEoCZPow6GicLg==}
@@ -38758,7 +38896,7 @@ packages:
     resolution: {integrity: sha512-b3nLFGaGkJ9rzOcuXRfHkZMdjsawuDD0ENL9fzTophtBg8FJHSGbH7daXkEpcwy3v7Xol3pAvsmlYyFhR4pqJw==}
     dependencies:
       '@types/node': 18.18.9
-      '@types/unist': 2.0.11
+      '@types/unist': 3.0.3
       '@types/vfile-message': 2.0.0
     dev: true
 
@@ -39764,6 +39902,16 @@ packages:
       tinyrainbow: 2.0.0
     dev: true
 
+  /@volcengine/imagex-react@2.1.1(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-Liwk4dBsB+Xry8ywzjpnE6+Fjugxx1Yc9LRei0ceNHQl1C1LAJyZJ6ccQnUT3W/nY3mF3fsMtZAAMoAGPCzvzg==}
+    peerDependencies:
+      react: 18.2.0
+      react-dom: 18.2.0
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
   /@vscode/codicons@0.0.36:
     resolution: {integrity: sha512-wsNOvNMMJ2BY8rC2N2MNBG7yOowV3ov8KlvUE/AiVUlHKTfWsw3OgAOQduX7h0Un6GssKD3aoTVH+TF3DSQwKQ==}
     dev: false
@@ -40148,6 +40296,11 @@ packages:
       debug: 4.3.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
+
+  /agent-base@7.1.3:
+    resolution: {integrity: sha512-jRR5wdylq8CkOe6hei19GGZnxM6rBGwFl3Bg0YItGDimvjGtAvdZk4Pu6Cl4u4Igsws4a1fd1Vq3ezrhn4KmFw==}
+    engines: {node: '>= 14'}
+    dev: false
 
   /aggregate-error@3.1.0:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
@@ -41385,7 +41538,7 @@ packages:
     resolution: {integrity: sha512-ds37W8CytHgwnhGGTi88pcPyR15qoNkOpYwmMMfnWqqWgESapLqvDx6huFjQ5vqWSn2Z06173XNA7LtMOeUh1A==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
       upper-case-first: 2.0.2
 
   /case-sensitive-paths-webpack-plugin@2.4.0:
@@ -41481,7 +41634,7 @@ packages:
       path-case: 3.0.4
       sentence-case: 3.0.4
       snake-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   /character-entities-html4@1.1.4:
     resolution: {integrity: sha512-HRcDxZuZqMx3/a+qrzxdBKBPUpxWEq9xw2OPZ3a/174ihfrQKVsFhqtthBInFy1zZ9GgZyFXOatNujm8M+El3g==}
@@ -42033,7 +42186,7 @@ packages:
     resolution: {integrity: sha512-I2hSBi7Vvs7BEuJDr5dDHfzb/Ruj3FyvFyh7KLilAjNQw3Be+xgqUBA2W6scVEcL0hL1dwPRtIqEPVUCKkSsyQ==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
       upper-case: 2.0.2
 
   /constants-browserify@1.0.0:
@@ -42269,7 +42422,7 @@ packages:
       camelcase: 6.3.0
       cssesc: 3.0.0
       icss-utils: 4.1.1
-      loader-utils: 2.0.0
+      loader-utils: 2.0.4
       postcss: 7.0.39
       postcss-modules-extract-imports: 2.0.0
       postcss-modules-local-by-default: 3.0.3
@@ -42560,6 +42713,14 @@ packages:
       rrweb-cssom: 0.6.0
     dev: true
 
+  /cssstyle@4.3.1:
+    resolution: {integrity: sha512-ZgW+Jgdd7i52AaLYCriF8Mxqft0gD/R9i9wi6RWBhs1pqdPEzPjym7rvRKi397WmQFf3SlyUsszhw+VVCbx79Q==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@asamuzakjp/css-color': 3.2.0
+      rrweb-cssom: 0.8.0
+    dev: false
+
   /csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
 
@@ -42717,6 +42878,14 @@ packages:
       whatwg-mimetype: 3.0.0
       whatwg-url: 12.0.1
     dev: true
+
+  /data-urls@5.0.0:
+    resolution: {integrity: sha512-ZYP5VBHshaDAiVZxjbRVcFJpc+4xGgT0bK3vzy1HLN8jTO975HEbuYzZJcHoQEY5K1a0z8YayJkyVETa08eNTg==}
+    engines: {node: '>=18'}
+    dependencies:
+      whatwg-mimetype: 4.0.0
+      whatwg-url: 14.2.0
+    dev: false
 
   /data-view-buffer@1.0.2:
     resolution: {integrity: sha512-EmKO5V3OLXh1rtK2wgXRansaK1/mtVdTUEiEI0W8RkvgT05kfxaH29PliLnpLP73yYO6142Q72QNa8Wx/A5CqQ==}
@@ -43244,12 +43413,14 @@ packages:
     dependencies:
       domelementtype: 2.3.0
 
-  /dompurify@2.5.8:
-    resolution: {integrity: sha512-o1vSNgrmYMQObbSSvF/1brBYEQPHhV1+gsmrusO7/GXtp1T9rCS8cXFqVxK/9crT1jA6Ccv+5MTSjBNqr7Sovw==}
-    dev: false
-
   /dompurify@3.0.8:
     resolution: {integrity: sha512-b7uwreMYL2eZhrSCRC4ahLTeZcPZxSmYfmcQGXGkXiZSNW1X85v+SDM5KsWcpivIiUBH47Ji7NtyUdpLeF5JZQ==}
+    dev: false
+
+  /dompurify@3.2.4:
+    resolution: {integrity: sha512-ysFSFEDVduQpyhzAob/kkuJjf5zWkZD8/A9ywSp1byueyuCfHamrCBa14/Oc2iiB0e51B+NpxSl5gmzn+Ms/mg==}
+    optionalDependencies:
+      '@types/trusted-types': 2.0.7
     dev: false
 
   /domutils@1.7.0:
@@ -46396,7 +46567,7 @@ packages:
     resolution: {integrity: sha512-H/vuk5TEEVZwrR0lp2zed9OCo1uAILMlx0JEMgC26rzyJJ3N1v6XkwHHXJQdR2doSjcGPM6OKPYoJgf0plJ11Q==}
     dependencies:
       capital-case: 1.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   /helpertypes@0.0.19:
     resolution: {integrity: sha512-J00e55zffgi3yVnUp0UdbMztNkr2PnizEkOe9URNohnrNhW5X0QpegkuLpOmFQInpi93Nb8MCjQRHAiCDF42NQ==}
@@ -46461,6 +46632,13 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       whatwg-encoding: 2.0.0
+
+  /html-encoding-sniffer@4.0.0:
+    resolution: {integrity: sha512-Y22oTqIU4uuPgEemfz7NDJz6OeKf12Lsu+QC+s3BVpda64lTiMYCyGwg5ki4vFxkMwQdeZDl2adZoqUgdFuTgQ==}
+    engines: {node: '>=18'}
+    dependencies:
+      whatwg-encoding: 3.1.1
+    dev: false
 
   /html-entities@2.6.0:
     resolution: {integrity: sha512-kig+rMn/QOVRvr7c86gQ8lWXq+Hkv6CbAH1hLu+RG338StTpE8Z0b44SDVaqVu7HGKf27frdmUYEs9hTUX/cLQ==}
@@ -46623,6 +46801,16 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
+  /http-proxy-agent@7.0.2:
+    resolution: {integrity: sha512-T1gkAiYYDWYx3V5Bmyu7HcfcvL7mUrTWiM6yOfa3PIphViJ/gFPbvidQ+veqSOHci/PxBcDabeUNCzpOODJZig==}
+    engines: {node: '>= 14'}
+    dependencies:
+      agent-base: 7.1.3
+      debug: 4.3.3(supports-color@5.5.0)
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /http-proxy-middleware@2.0.6(@types/express@4.17.22):
     resolution: {integrity: sha512-ya/UeJ6HVBYxrgYotAZo1KvPWlgB48kUJLDePFeneHsVujFaW5WNj2NgWCAE//B1Dl02BIfYlpNgBy8Kf8Rjmw==}
     engines: {node: '>=12.0.0'}
@@ -46680,6 +46868,16 @@ packages:
       debug: 4.3.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
+
+  /https-proxy-agent@7.0.6:
+    resolution: {integrity: sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw==}
+    engines: {node: '>= 14'}
+    dependencies:
+      agent-base: 7.1.3
+      debug: 4.3.3(supports-color@5.5.0)
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
 
   /human-signals@2.1.0:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
@@ -47586,6 +47784,19 @@ packages:
     resolution: {integrity: sha512-WhB9zCku7EGTj/HQQRz5aUQEUeoQZH2bWcltRErOpymJ4boYE6wL9Tbr23krRPSZ+C5zqNSrSw+Cc7sZZ4b7vg==}
     engines: {node: '>=0.10.0'}
 
+  /isomorphic-dompurify@2.22.0:
+    resolution: {integrity: sha512-A2xsDNST1yB94rErEnwqlzSvGllCJ4e8lDMe1OWBH2hvpfc/2qzgMEiDshTO1HwO+PIDTiYeOc7ZDB7Ds49BOg==}
+    engines: {node: '>=18'}
+    dependencies:
+      dompurify: 3.2.4
+      jsdom: 26.1.0
+    transitivePeerDependencies:
+      - bufferutil
+      - canvas
+      - supports-color
+      - utf-8-validate
+    dev: false
+
   /isstream@0.1.2:
     resolution: {integrity: sha512-Yljz7ffyPbrLpLngrMtZ7NduUgVvi6wG9RJ9IUcyCd59YQ911PBJphODUcbOVbqYfxe1wuYf/LJ8PauMRwsM/g==}
     dev: false
@@ -47948,6 +48159,41 @@ packages:
       - supports-color
       - utf-8-validate
     dev: true
+
+  /jsdom@26.1.0:
+    resolution: {integrity: sha512-Cvc9WUhxSMEo4McES3P7oK3QaXldCfNWp7pl2NNeiIFlCoLr3kfq9kb1fxftiwk1FLV7CvpvDfonxtzUDeSOPg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      canvas: ^3.0.0
+    peerDependenciesMeta:
+      canvas:
+        optional: true
+    dependencies:
+      cssstyle: 4.3.1
+      data-urls: 5.0.0
+      decimal.js: 10.5.0
+      html-encoding-sniffer: 4.0.0
+      http-proxy-agent: 7.0.2
+      https-proxy-agent: 7.0.6
+      is-potential-custom-element-name: 1.0.1
+      nwsapi: 2.2.20
+      parse5: 7.3.0
+      rrweb-cssom: 0.8.0
+      saxes: 6.0.0
+      symbol-tree: 3.2.4
+      tough-cookie: 5.1.2
+      w3c-xmlserializer: 5.0.0
+      webidl-conversions: 7.0.0
+      whatwg-encoding: 3.1.1
+      whatwg-mimetype: 4.0.0
+      whatwg-url: 14.2.0
+      ws: 8.18.2
+      xml-name-validator: 5.0.0
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+    dev: false
 
   /jsesc@0.5.0:
     resolution: {integrity: sha512-uZz5UnB7u4T9LvwmFqXii7pZSouaRPorGs5who1Ip7VO0wxanFvBL7GkM6dTHlgX+jhBApRetaWpnDabOeTcnA==}
@@ -48729,12 +48975,12 @@ packages:
       react: 18.2.0
     dev: true
 
-  /marked-mangle@1.1.10(marked@13.0.0):
+  /marked-mangle@1.1.10(marked@15.0.7):
     resolution: {integrity: sha512-TrpN67SMJJdzXXWIzOd/QmnpsC5o1B44PUYaG2bh1XEbqVjA0UCI2ijFuE5LWESwKeI2gCP5FqcUHRGQwFtDIA==}
     peerDependencies:
       marked: '>=4 <16'
     dependencies:
-      marked: 13.0.0
+      marked: 15.0.7
     dev: false
 
   /marked-shiki@1.2.0(marked@15.0.12)(shiki@3.4.2):
@@ -48747,23 +48993,23 @@ packages:
       shiki: 3.4.2
     dev: false
 
-  /marked-smartypants@1.1.9(marked@13.0.0):
+  /marked-smartypants@1.1.9(marked@15.0.7):
     resolution: {integrity: sha512-VPeuaUr5IWptI7nJdgQ9ugrLWYGv13NdzEXTtKY3cmB4aRWOI2RzhLlf+xQp6Wnob9SAPO2sNVlfSJr+nflk/A==}
     peerDependencies:
       marked: '>=4 <16'
     dependencies:
-      marked: 13.0.0
+      marked: 15.0.7
       smartypants: 0.2.2
-    dev: false
-
-  /marked@13.0.0:
-    resolution: {integrity: sha512-VTeDCd9txf4KLLljUZ0nljE/Incb9SrWuueE44QVuU0pkOdh4sfCeW1Z6lPcxyDRSVY6rm8db/0OPaN75RNUmw==}
-    engines: {node: '>= 18'}
-    hasBin: true
     dev: false
 
   /marked@15.0.12:
     resolution: {integrity: sha512-8dD6FusOQSrpv9Z1rdNMdlSgQOIP880DHqnohobOmYLElGEqAL/JvxvuxZO16r4HtjTlfPRDC1hbvxC9dPN2nA==}
+    engines: {node: '>= 18'}
+    hasBin: true
+    dev: false
+
+  /marked@15.0.7:
+    resolution: {integrity: sha512-dgLIeKGLx5FwziAnsk4ONoGwHwGPJzselimvlVskE9XLN4Orv9u2VA3GWw/lYUqjfA0rUT/6fqKwfZJapP9BEg==}
     engines: {node: '>= 18'}
     hasBin: true
     dev: false
@@ -49450,6 +49696,18 @@ packages:
       micromark-extension-gfm-task-list-item: 2.1.0
       micromark-util-combine-extensions: 2.0.1
       micromark-util-types: 2.0.2
+
+  /micromark-extension-math@3.1.0:
+    resolution: {integrity: sha512-lvEqd+fHjATVs+2v/8kg9i5Q0AP2k85H0WUOwpIVvUML8BapsMvh1XAogmQjOCsLpoKRCVQqEkQBB3NhVBcsOg==}
+    dependencies:
+      '@types/katex': 0.16.7
+      devlop: 1.1.0
+      katex: 0.16.22
+      micromark-factory-space: 2.0.1
+      micromark-util-character: 2.1.1
+      micromark-util-symbol: 2.0.1
+      micromark-util-types: 2.0.2
+    dev: false
 
   /micromark-extension-mdx-expression@3.0.1:
     resolution: {integrity: sha512-dD/ADLJ1AeMvSAKBwO22zG22N4ybhe7kFIZ3LsDI0GlsNr2A3KYxb0LdC1u5rj4Nw+CHKY0RVdnHX8vj8ejm4Q==}
@@ -50929,7 +51187,7 @@ packages:
     resolution: {integrity: sha512-qO4qCFjXqVTrcbPt/hQfhTQ+VhFsqNKOPtytgNKkKxSoEp3XPUQ8ObFuePylOIok5gjn69ry8XiULxCwot3Wfg==}
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   /path-data-parser@0.1.0:
     resolution: {integrity: sha512-NOnmBpt5Y2RWbuv0LMzsayp3lVylAHLPUTut412ZA3l+C4uw4ZVkQbjShYCQ8TCpUMdPapr4YjUqLYD6v68j+w==}
@@ -52286,7 +52544,7 @@ packages:
     peerDependencies:
       webpack: ^4.0.0 || ^5.0.0
     dependencies:
-      loader-utils: 2.0.0
+      loader-utils: 2.0.4
       schema-utils: 3.3.0
       webpack: 5.89.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
     dev: true
@@ -52700,6 +52958,18 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
+  /react-image@4.1.0(@babel/runtime@7.27.6)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-qwPNlelQe9Zy14K2pGWSwoL+vHsAwmJKS6gkotekDgRpcnRuzXNap00GfibD3eEPYu3WCPlyIUUNzcyHOrLHjw==}
+    peerDependencies:
+      '@babel/runtime': '>=7'
+      react: 18.2.0
+      react-dom: 18.2.0
+    dependencies:
+      '@babel/runtime': 7.27.6
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
   /react-innertext@1.1.5(@types/react@18.2.37)(react@18.2.0):
     resolution: {integrity: sha512-PWAqdqhxhHIv80dT9znP2KvS+hfkbRovFp4zFYHFFlOoQLRiawIic81gKb3U1wEyJZgMwgs3JoLtwryASRWP3Q==}
     peerDependencies:
@@ -53092,7 +53362,7 @@ packages:
     dependencies:
       '@types/react': 18.2.37
       react: 18.2.0
-      tslib: 2.6.3
+      tslib: 2.8.1
     dev: false
 
   /react-virtualized-auto-sizer@1.0.26(react-dom@18.2.0)(react@18.2.0):
@@ -54022,6 +54292,10 @@ packages:
     resolution: {integrity: sha512-APM0Gt1KoXBz0iIkkdB/kfvGOwC4UuJFeG/c+yV7wSc7q96cG/kJ0HiYCnzivD9SB53cLV1MlHFNfOuPaadYSw==}
     dev: true
 
+  /rrweb-cssom@0.8.0:
+    resolution: {integrity: sha512-guoltQEx+9aMf2gDZ0s62EcV8lsXR+0w8915TC3ITdn2YueuNjdAYh/levpU9nFaoChh9RUS5ZdQMrKfVEN9tw==}
+    dev: false
+
   /rsc-html-stream@0.0.5:
     resolution: {integrity: sha512-UhLsi8XLAu1NIBcFZjykoPiSLEAxfkGxkmr/Tnv4KnqhG18A65dVTCWovRvFdpzng6IyVW2f6nTAKz7lw+QhgQ==}
     dev: true
@@ -54533,7 +54807,7 @@ packages:
     resolution: {integrity: sha512-8LS0JInaQMCRoQ7YUytAo/xUu5W2XnQxV2HI/6uM6U7CITS1RqPElr30V6uIqyMKM9lJGRVFy5/4CuzcixNYSg==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
       upper-case-first: 2.0.2
 
   /serialize-javascript@6.0.2:
@@ -56601,6 +56875,17 @@ packages:
       tslib: 2.8.1
     dev: true
 
+  /tldts-core@6.1.86:
+    resolution: {integrity: sha512-Je6p7pkk+KMzMv2XXKmAE3McmolOQFdxkKw0R8EYNr7sELW46JqnNeTX8ybPiQgvg1ymCoF8LXs5fzFaZvJPTA==}
+    dev: false
+
+  /tldts@6.1.86:
+    resolution: {integrity: sha512-WMi/OQ2axVTf/ykqCQgXiIct+mSQDFdH2fkwhPwgEwvJ1kSzZRiinb0zF2Xb8u4+OqPChmyI6MEu4EezNJz+FQ==}
+    hasBin: true
+    dependencies:
+      tldts-core: 6.1.86
+    dev: false
+
   /tmp@0.0.33:
     resolution: {integrity: sha512-jRCJlojKnZ3addtTOjdIqoRuPEKBvNXcGYqzO6zWZX8KfKEpnGY5jfggJQ3EjKuu8D4bJRr0y+cYJFmYbImXGw==}
     engines: {node: '>=0.6.0'}
@@ -56704,6 +56989,13 @@ packages:
       universalify: 0.2.0
       url-parse: 1.5.10
 
+  /tough-cookie@5.1.2:
+    resolution: {integrity: sha512-FVDYdxtnj0G6Qm/DhNPSb8Ju59ULcup3tuJxkFb5K8Bv2pUXILbf0xZWU8PX8Ov19OXljbUyveOFwRMwkXzO+A==}
+    engines: {node: '>=16'}
+    dependencies:
+      tldts: 6.1.86
+    dev: false
+
   /tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
 
@@ -56728,6 +57020,13 @@ packages:
     dependencies:
       punycode: 2.3.1
     dev: true
+
+  /tr46@5.1.1:
+    resolution: {integrity: sha512-hdF5ZgjTqgAntKkklYw0R03MG2x/bSzTtkxmIRw/sTNV8YXsCJ1tfLAX23lhxhHJlEf3CRCOCGGWw3vI3GaSPw==}
+    engines: {node: '>=18'}
+    dependencies:
+      punycode: 2.3.1
+    dev: false
 
   /tree-changes@0.11.3:
     resolution: {integrity: sha512-r14mvDZ6tqz8PRQmlFKjhUVngu4VZ9d92ON3tp0EGpFBE6PAHOq8Bx8m8ahbNoGE3uI/npjYcJiqVydyOiYXag==}
@@ -56928,6 +57227,7 @@ packages:
 
   /tslib@2.6.3:
     resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
+    dev: false
 
   /tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
@@ -57506,7 +57806,7 @@ packages:
   /upper-case-first@2.0.2:
     resolution: {integrity: sha512-514ppYHBaKwfJRK/pNC6c/OxfGa0obSnAl106u97Ed0I625Nin96KAjttZF6ZL3e1XLtphxnqrOi9iWgm+u+bg==}
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   /upper-case@2.0.2:
     resolution: {integrity: sha512-KgdgDGJt2TpuwBUIjgG6lzw2GWFRCW9Qkfkiv0DxqHHLYJHmtmdUIKcZd8rHgFSjopVTlw6ggzCm1b8MFQwikg==}
@@ -58898,6 +59198,13 @@ packages:
     dependencies:
       xml-name-validator: 4.0.0
 
+  /w3c-xmlserializer@5.0.0:
+    resolution: {integrity: sha512-o8qghlI8NZHU1lLPrpi2+Uq7abh4GGPpYANlalzWxyWteJOCsr/P+oPBA49TOLu5FTZO4d3F9MnWJfiMo4BkmA==}
+    engines: {node: '>=18'}
+    dependencies:
+      xml-name-validator: 5.0.0
+    dev: false
+
   /walker@1.0.8:
     resolution: {integrity: sha512-ts/8E8l5b7kY0vlWLewOkDXMmPdLcVV4GmOQLyxuSswIJsweeFZtAsMF7k1Nszz+TYBQrlYRmzOnr398y1JemQ==}
     dependencies:
@@ -59138,7 +59445,7 @@ packages:
       compression: 1.8.0
       connect-history-api-fallback: 2.0.0
       default-gateway: 6.0.3
-      express: 4.18.1
+      express: 4.21.2
       graceful-fs: 4.2.11
       html-entities: 2.6.0
       http-proxy-middleware: 2.0.6(@types/express@4.17.22)
@@ -59500,9 +59807,21 @@ packages:
     dependencies:
       iconv-lite: 0.6.3
 
+  /whatwg-encoding@3.1.1:
+    resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
+    engines: {node: '>=18'}
+    dependencies:
+      iconv-lite: 0.6.3
+    dev: false
+
   /whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
     engines: {node: '>=12'}
+
+  /whatwg-mimetype@4.0.0:
+    resolution: {integrity: sha512-QaKxh0eNIi2mE9p2vEdzfagOKHCcj1pJ56EEHGQOVxp8r9/iszLUUV7v89x9O1p/T+NlTM5W7jW6+cz4Fq1YVg==}
+    engines: {node: '>=18'}
+    dev: false
 
   /whatwg-url@11.0.0:
     resolution: {integrity: sha512-RKT8HExMpoYx4igMiVMY83lN6UeITKJlBQ+vR/8ZJ8OCdSiN3RwCq+9gH0+Xzj0+5IrM6i4j/6LuvzbZIQgEcQ==}
@@ -59521,6 +59840,14 @@ packages:
       tr46: 4.1.1
       webidl-conversions: 7.0.0
     dev: true
+
+  /whatwg-url@14.2.0:
+    resolution: {integrity: sha512-De72GdQZzNTUBBChsXueQUnPKDkg/5A5zp7pFDuQAj5UFoENpiACU0wlCvzpAGnTkj++ihpKwKyYewn/XNUbKw==}
+    engines: {node: '>=18'}
+    dependencies:
+      tr46: 5.1.1
+      webidl-conversions: 7.0.0
+    dev: false
 
   /whatwg-url@5.0.0:
     resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
@@ -59765,6 +60092,11 @@ packages:
   /xml-name-validator@4.0.0:
     resolution: {integrity: sha512-ICP2e+jsHvAj2E2lIHxa5tjXRlKDJo4IdvPvCXbXQGdzSfmSpNVyIKMvoZHjDY9DP0zV17iI85o90vRFXNccRw==}
     engines: {node: '>=12'}
+
+  /xml-name-validator@5.0.0:
+    resolution: {integrity: sha512-EvGK8EJ3DhaHfbRlETOWAS5pO9MZITeauHKJyb8wyajUfQUenkIg2MvLDTZ4T/TgIcm3HU0TFBgWWboAZ30UHg==}
+    engines: {node: '>=18'}
+    dev: false
 
   /xmlchars@2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}

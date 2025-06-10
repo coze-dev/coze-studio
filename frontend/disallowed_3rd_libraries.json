@@ -12,5 +12,5 @@
   // todo: should turn on this
   // ["valtio", null, "请使用 zustand"],
   // ["jotai", null, "请使用 zustand"]
-  ["@flow-web/md-box", null, "请使用 @coze-arch/bot-md-box 代替"],
+  ["@flow-web/md-box", null, "请使用 @coze-arch/bot-md-box-adapter 代替"]
 ]
