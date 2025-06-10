@@ -183,7 +183,7 @@ func (s *SearchApplicationService) packResource(ctx context.Context, doc *entity
 
 		return ri, nil // Warn : weak dependency data
 	}
-
+	ri.BizResStatus = data.status
 	ri.Desc = data.desc
 	ri.Icon = ternary.IFElse(len(data.iconURL) > 0,
 		&data.iconURL, ptr.Of(s.getResourceIconURL(ctx, data.iconURI, doc.ResType)))

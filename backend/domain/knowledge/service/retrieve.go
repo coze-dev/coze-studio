@@ -41,6 +41,9 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, request *RetrieveRequest) (
 	if err != nil {
 		return nil, err
 	}
+	if len(retrieveContext.Documents) == 0 {
+		return &knowledgeModel.RetrieveResponse{}, nil
+	}
 	chain := compose.NewChain[*RetrieveContext, []*knowledgeModel.RetrieveSlice]()
 	rewriteNode := compose.InvokableLambda(k.queryRewriteNode)
 	// 向量化召回
