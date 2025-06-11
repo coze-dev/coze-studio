@@ -10,5 +10,16 @@
     "moduleResolution": "node"
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist", "**/__tests__/*"]
+  "exclude": ["node_modules", "dist", "**/__tests__/*"],
+  "references": [
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/vitest-config/tsconfig.build.json"
+    }
+  ]
 }

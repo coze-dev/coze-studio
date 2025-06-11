@@ -16,6 +16,15 @@
       "path": "../bot-http/tsconfig.build.json"
     },
     {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
       "path": "../../../infra/idl/idl2ts-cli/tsconfig.build.json"
     },
     {

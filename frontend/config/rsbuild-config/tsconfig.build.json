@@ -13,6 +13,9 @@
   "exclude": ["node_modules", "dist"],
   "references": [
     {
+      "path": "../eslint-config/tsconfig.build.json"
+    },
+    {
       "path": "../../infra/plugins/pkg-root-webpack-plugin/tsconfig.build.json"
     },
     {
@@ -23,6 +26,12 @@
     },
     {
       "path": "../../packages/common/assets/tsconfig.build.json"
+    },
+    {
+      "path": "../ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../vitest-config/tsconfig.build.json"
     }
   ]
 }

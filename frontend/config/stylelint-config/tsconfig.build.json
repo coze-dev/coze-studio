@@ -10,5 +10,13 @@
     "rootDir": "./src",
     "outDir": "./output",
     "tsBuildInfoFile": "output/tsconfig.build.tsbuildinfo"
-  }
+  },
+  "references": [
+    {
+      "path": "../eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../ts-config/tsconfig.build.json"
+    }
+  ]
 }

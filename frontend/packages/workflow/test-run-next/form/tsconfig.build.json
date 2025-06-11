@@ -10,6 +10,9 @@
   "include": ["./src", "./src/**/*.json"],
   "references": [
     {
+      "path": "../../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
       "path": "../../../arch/i18n/tsconfig.build.json"
     },
     {
@@ -26,6 +29,15 @@
     },
     {
       "path": "../../components/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/vitest-config/tsconfig.build.json"
     },
     {
       "path": "../shared/tsconfig.build.json"

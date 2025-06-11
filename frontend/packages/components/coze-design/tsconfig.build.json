@@ -37,6 +37,24 @@
     },
     {
       "path": "../../arch/semi-theme-hand01/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/postcss-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/tailwind-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/vitest-config/tsconfig.build.json"
     }
   ]
 }
