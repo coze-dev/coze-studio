@@ -12,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/application/search"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
+	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	databaseEntity "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
@@ -765,4 +766,160 @@ func (d *DatabaseApplicationService) DeleteDatabaseByAppID(ctx context.Context, 
 	}
 
 	return nil
+}
+
+func (d *DatabaseApplicationService) DuplicateDatabase(ctx context.Context, req DuplicateDatabaseRequest) (*DuplicateDatabaseResponse, error) {
+	var err error
+
+	basics := make([]*model.DatabaseBasic, 0, len(req.DatabaseIDs))
+	for _, id := range req.DatabaseIDs {
+		basics = append(basics, &model.DatabaseBasic{
+			ID:        id,
+			TableType: req.TableType,
+		})
+	}
+
+	res, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{Basics: basics})
+	if err != nil {
+		return nil, err
+	}
+
+	duplicateDatabases := make([]*entity.Database, 0, len(req.DatabaseIDs))
+	draftMaps := make(map[int64]int64)
+	onlineMaps := make(map[int64]int64)
+
+	for _, srcDB := range res.Databases {
+		if req.Suffix != nil {
+			srcDB.TableName += *req.Suffix
+		} else {
+			srcDB.TableName += "_copy"
+		}
+		if req.TargetAppID != nil {
+			srcDB.AppID = *req.TargetAppID
+		}
+		if req.TargetSpaceID != nil {
+			srcDB.SpaceID = *req.TargetSpaceID
+		}
+
+		srcDB.CreatorID = req.CreatorID
+		if req.TargetSpaceID != nil {
+
+		}
+		createDatabaseResp, err := d.DomainSVC.CreateDatabase(ctx, &database.CreateDatabaseRequest{
+			Database: srcDB,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		onlineDatabase := createDatabaseResp.Database
+		draftResp, err := d.DomainSVC.GetDraftDatabaseByOnlineID(ctx, &database.GetDraftDatabaseByOnlineIDRequest{
+			OnlineID: onlineDatabase.ID,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		draftDatabase := draftResp.Database
+		duplicateDatabases = append(duplicateDatabases, draftDatabase)
+		draftMaps[srcDB.GetDraftID()] = draftDatabase.ID
+		onlineMaps[srcDB.GetOnlineID()] = onlineDatabase.ID
+
+		// publish resource event
+		var ptrAppID *int64
+		if onlineDatabase.AppID != 0 {
+			ptrAppID = ptr.Of(onlineDatabase.AppID)
+		}
+		err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+			OpType: searchEntity.Created,
+			Resource: &searchEntity.ResourceDocument{
+				ResType:      resCommon.ResType_Database,
+				ResID:        onlineDatabase.ID,
+				Name:         &onlineDatabase.TableName,
+				APPID:        ptrAppID,
+				SpaceID:      &onlineDatabase.SpaceID,
+				OwnerID:      &onlineDatabase.CreatorID,
+				CreateTimeMS: ptr.Of(onlineDatabase.CreatedAtMs),
+				UpdateTimeMS: ptr.Of(onlineDatabase.UpdatedAtMs),
+			},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("publish resource failed, err=%w", err)
+		}
+	}
+
+	if !req.IsCopyData {
+		return &DuplicateDatabaseResponse{
+			Databases: duplicateDatabases,
+		}, nil
+	}
+
+	for srcID, targetID := range draftMaps {
+		err = d.duplicateRecords(ctx, srcID, targetID, req.CreatorID, table.TableType_DraftTable)
+		if err != nil {
+			return nil, err
+		}
+	}
+	for srcID, targetID := range onlineMaps {
+		err = d.duplicateRecords(ctx, srcID, targetID, req.CreatorID, table.TableType_OnlineTable)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &DuplicateDatabaseResponse{
+		Databases: duplicateDatabases,
+	}, nil
+}
+
+func (d *DatabaseApplicationService) duplicateRecords(ctx context.Context, srcDatabaseID, targetDatabaseID, userID int64, tableType table.TableType) error {
+	listReq := &database.ListDatabaseRecordRequest{
+		DatabaseID: srcDatabaseID,
+		TableType:  tableType,
+		UserID:     userID,
+		Limit:      1000,
+		Offset:     0,
+	}
+	for {
+		listResp, err := d.DomainSVC.ListDatabaseRecord(ctx, listReq)
+		if err != nil {
+			return fmt.Errorf("list source database records failed: %v", err)
+		}
+
+		if len(listResp.Records) == 0 {
+			break
+		}
+		addReq := &database.AddDatabaseRecordRequest{
+			DatabaseID: targetDatabaseID,
+			TableType:  tableType,
+			UserID:     userID,
+			Records:    listResp.Records,
+		}
+		err = d.DomainSVC.AddDatabaseRecord(ctx, addReq)
+		if err != nil {
+			return fmt.Errorf("copy data failed: %v", err)
+		}
+
+		if !listResp.HasMore {
+			break
+		}
+		listReq.Offset += listReq.Limit
+	}
+
+	return nil
+}
+
+type DuplicateDatabaseRequest struct {
+	DatabaseIDs []int64
+	TableType   table.TableType // table type of the source databases
+	CreatorID   int64
+
+	IsCopyData    bool    // is need to copy data
+	TargetSpaceID *int64  // if is nil, it will be set to the same space as the original database
+	TargetAppID   *int64  // if is nil, it will be set to the same app as the original database
+	Suffix        *string // table name suffix for the copied table, default is "_copy"
+}
+
+type DuplicateDatabaseResponse struct {
+	Databases []*entity.Database // the new draft databases
 }
