@@ -23,11 +23,11 @@ import (
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose/checkpoint"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 type Format int
@@ -364,7 +364,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 		tConvert := func(_ context.Context, s *schema.StreamReader[*schema.Message], _ ...struct{}) (*schema.StreamReader[map[string]any], error) {
 			sr, sw := schema.Pipe[map[string]any](0)
 
-			go func() {
+			safego.Go(ctx, func() {
 				reasoningDone := false
 				for {
 					msg, err := s.Recv()
@@ -399,7 +399,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 						sw.Send(map[string]any{outputKey: msg.Content}, nil)
 					}
 				}
-			}()
+			})
 
 			return sr, nil
 		}
@@ -422,7 +422,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 
 	var opts []compose.GraphCompileOption
 	if requireCheckpoint {
-		opts = append(opts, compose.WithCheckPointStore(checkpoint.GetStore()))
+		opts = append(opts, compose.WithCheckPointStore(workflow.GetRepository()))
 	}
 
 	r, err := g.Compile(ctx, opts...)
@@ -528,7 +528,7 @@ func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...Option) (co
 		toolMsgOpt, toolMsgSR := execute.WithMessagePipe()
 		composeOpts = append(composeOpts, toolMsgOpt)
 
-		go func() {
+		safego.Go(ctx, func() {
 			defer toolMsgSR.Close()
 			for {
 				msg, err := toolMsgSR.Recv()
@@ -544,7 +544,7 @@ func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...Option) (co
 
 				llmOpts.toolWorkflowSW.Send(msg, nil)
 			}
-		}()
+		})
 	}
 
 	return composeOpts, resumingEvent, nil
@@ -694,7 +694,6 @@ func injectKnowledgeTool(_ context.Context, g *compose.Graph[map[string]any, map
 	_ = g.AddChatModelNode(knowledgeChatModelKey, cfg.ChatModel)
 
 	_ = g.AddLambdaNode(knowledgeLambdaKey, compose.InvokableLambda(func(ctx context.Context, input *schema.Message) (output map[string]any, err error) {
-
 		modelPredictionIDs := strings.Split(input.Content, ",")
 		selectKwIDs := slices.ToMap(cfg.SelectedKnowledgeDetails, func(e *crossknowledge.KnowledgeDetail) (string, int64) {
 			return strconv.Itoa(int(e.ID)), e.ID

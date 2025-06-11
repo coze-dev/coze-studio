@@ -27,6 +27,10 @@ func DesignateOptions(ctx context.Context,
 	resumedEvent *entity.InterruptEvent,
 	sw *schema.StreamWriter[*entity.Message],
 	exeCfg vo.ExecuteConfig) ([]einoCompose.Option, error) {
+	if wb.AppID != nil && exeCfg.AppID == nil {
+		exeCfg.AppID = wb.AppID
+	}
+
 	rootHandler := execute.NewRootWorkflowHandler(
 		wb,
 		executeID,
@@ -134,7 +138,7 @@ func designateOptionsForSubWorkflow(ctx context.Context,
 		&entity.WorkflowBasic{
 			WorkflowIdentity: *subWorkflowIdentity,
 			SpaceID:          0,   // TODO: fill this
-			APPID:            nil, // TODO: fill this
+			AppID:            nil, // TODO: fill this
 			NodeCount:        ns.SubWorkflowSchema.NodeCount(),
 		},
 		resumeEvent,

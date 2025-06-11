@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "codecov": {
+      "$ref": "#/definitions/codecov",
+      "description": "单测相关配置，如卡点阈值、diff 目录配置"
+    },
+    "team": {
+      "type": "array",
+      "description": "所属团队",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "level": {
+      "type": "array",
+      "description": "包所属分级",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "packageAudit": {
+      "$ref": "#/definitions/packageAudit",
+      "description": "包质量检测工具相关配置"
+    },
+    "dupCheck": {
+      "$ref": "#/definitions/dupCheck",
+      "description": "代码重复检测相关配置"
+    }
+  },
+  "definitions": {
+    "codecov": {
+      "type": "object",
+      "properties": {
+        "coverage": {
+          "type": "number",
+          "description": "覆盖率卡点"
+        },
+        "incrementCoverage": {
+          "type": "number",
+          "description": "增量覆盖率卡点"
+        },
+        "ignoreDiff": {
+          "type": "array",
+          "description": "配置忽略增量覆盖率计算的目录，支持 glob 匹配",
+          "items": [
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "level-0": {
+          "$ref": "#/definitions/level"
+        },
+        "level-1": {
+          "$ref": "#/definitions/level"
+        },
+        "level-2": {
+          "$ref": "#/definitions/level"
+        },
+        "level-3": {
+          "$ref": "#/definitions/level"
+        },
+        "level-4": {
+          "$ref": "#/definitions/level"
+        }
+      }
+    },
+    "level": {
+      "type": "object",
+      "properties": {
+        "coverage": {
+          "type": "number",
+          "description": "覆盖率卡点"
+        },
+        "incrementCoverage": {
+          "type": "number",
+          "description": "增量覆盖率卡点"
+        }
+      }
+    },
+    "packageAudit": {
+      "type": "object",
+      "description": "扫描规则相关配置",
+      "properties": {
+        "enable": { "type": "boolean" },
+        "rules": {
+          "type": "array",
+          "items": [
+            {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string",
+                  "description": "规则名称，目前支持：owners/rule-project.json/essential-config-file 三种类型",
+                  "enum": [
+                    "rule-project.json",
+                    "owners",
+                    "essential-config-file"
+                  ]
+                },
+                { "type": "string", "enum": ["error", "warn"] },
+                {
+                  "type": "object",
+                  "description": "针对 rule 的补充配置，可空类型",
+                  "required": false
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "dupCheck": {
+      "type": "object",
+      "description": "代码重复检测相关配置",
+      "properties": {
+        "ignoreGlobPatterns": {
+          "title": "需要忽略检测的globPattern（相对于当前pkg的目录，而不是配置文件目录）",
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+.collapse-title {
+  position: relative;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  height: 24px;
+  margin-bottom: 12px;
+
+  &.collapse-title-sticky {
+    position: sticky;
+    top: 0;
+    background: var(--coz-bg-plus, rgba(252, 252, 255, 1));
+    z-index: 1;
+  }
+}
+.collapse-label {
+  font-size: 14px;
+  font-weight: 500;
+  height: 20px;
+  color: var(--coz-fg-primary);
+}
+.collapse-icon {
+  transition: transform 0.3s ease-in-out, opacity 0.2s ease-in-out;
+  opacity: 0;
+  color: var(--coz-fg-dim);
+  font-size: 14px;
+  margin: 0 1px;
+  &.is-show {
+    opacity: 1;
+  }
+  &.is-close {
+    transform: rotate(-90deg);
+  }
+}
+
+.collapse-extra {
+  position: absolute;
+  right: 0;
+}

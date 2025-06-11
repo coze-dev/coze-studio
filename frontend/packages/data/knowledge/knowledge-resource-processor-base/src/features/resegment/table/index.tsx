@@ -1,0 +1,1 @@
+export { TableResegmentConfig } from './config';

@@ -74,11 +74,20 @@ func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentR
 func (c *ConversationApplicationService) checkConversation(ctx context.Context, ar *run.AgentRunRequest, userID int64) (*convEntity.Conversation, error) {
 	var conversationData *convEntity.Conversation
 	if ar.ConversationID > 0 {
-		conData, err := c.ConversationDomainSVC.GetByID(ctx, ar.ConversationID)
+
+		realCurrCon, err := c.ConversationDomainSVC.GetCurrentConversation(ctx, &convEntity.GetCurrent{
+			UserID:      userID,
+			AgentID:     ar.BotID,
+			Scene:       ptr.From(ar.Scene),
+			ConnectorID: consts.CozeConnectorID,
+		})
 		if err != nil {
 			return nil, err
 		}
-		conversationData = conData
+		if realCurrCon != nil {
+			conversationData = realCurrCon
+		}
+
 	}
 
 	if ar.ConversationID == 0 || conversationData == nil {

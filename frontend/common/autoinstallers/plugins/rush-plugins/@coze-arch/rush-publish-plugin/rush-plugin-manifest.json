@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush-plugin-manifest.schema.json",
+  "plugins": [
+    {
+      "pluginName": "@coze-arch/rush-publish-plugin",
+      "description": "rush plugin to generate change log and publish packages",
+      "commandLineJsonFilePath": "./command-line.json"
+    }
+  ]
+}

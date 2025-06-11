@@ -1,0 +1,1 @@
+export { TableConfiguration } from './configuration';

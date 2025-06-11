@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -244,7 +243,6 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 	if err != nil {
 		return nil, err
 	}
-
 	return toNodeDateBaseResponse(response), nil
 }
 
@@ -336,6 +334,24 @@ func toOperation(operator nodedatabase.Operator) (database.Operation, error) {
 }
 
 func resolveRightValue(operator database.Operation, right any) (string, []*database.SQLParamVal, error) {
+
+	if isInOrNotIn(operator) {
+		var (
+			vals    = make([]*database.SQLParamVal, 0)
+			anyVals = make([]any, 0)
+			commas  = make([]string, 0, len(anyVals))
+		)
+
+		anyVals = right.([]any)
+		for i := range anyVals {
+			v := cast.ToString(anyVals[i])
+			vals = append(vals, &database.SQLParamVal{ValueType: table.FieldItemType_Text, Value: &v})
+			commas = append(commas, "?")
+		}
+		value := "(" + strings.Join(commas, ",") + ")"
+		return value, vals, nil
+	}
+
 	rightValue, err := cast.ToStringE(right)
 	if err != nil {
 		return "", nil, err
@@ -349,32 +365,12 @@ func resolveRightValue(operator database.Operation, right any) (string, []*datab
 		return value, []*database.SQLParamVal{{ValueType: table.FieldItemType_Text, Value: &v}}, nil
 	}
 
-	if isInOrNotIn(operator) {
-		var (
-			vals    = make([]*database.SQLParamVal, 0)
-			anyVals = make([]any, 0)
-			commas  = make([]string, 0, len(anyVals))
-		)
-		err = json.Unmarshal([]byte(rightValue), &anyVals)
-		if err != nil {
-			return "", nil, err
-		}
-		for i := range anyVals {
-			v := cast.ToString(anyVals[i])
-			vals = append(vals, &database.SQLParamVal{ValueType: table.FieldItemType_Text, Value: &v})
-			commas = append(commas, "?")
-		}
-		value := "(" + strings.Join(commas, ",") + ")"
-		return value, vals, nil
-	}
-
 	return "?", []*database.SQLParamVal{{ValueType: table.FieldItemType_Text, Value: &rightValue}}, nil
 }
 
 func resolveUpsertRow(fields map[string]any) ([]*database.UpsertRow, []*database.SQLParamVal, error) {
 	upsertRow := &database.UpsertRow{Records: make([]*database.Record, 0, len(fields))}
 	params := make([]*database.SQLParamVal, 0)
-
 	for key, value := range fields {
 		val, err := cast.ToStringE(value)
 		if err != nil {

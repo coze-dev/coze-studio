@@ -449,9 +449,18 @@ func (s *NodeSchema) ToDatabaseQueryConfig() (*database.QueryConfig, error) {
 }
 
 func (s *NodeSchema) ToDatabaseInsertConfig() (*database.InsertConfig, error) {
+	inputTimeTypes := make(map[string]*vo.TypeInfo, len(s.InputTypes))
+	fieldTypes := s.InputTypes["Fields"]
+	for key, t := range fieldTypes.Properties {
+		if t.Type == vo.DataTypeTime {
+			inputTimeTypes[key] = t
+		}
+	}
+
 	return &database.InsertConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		OutputConfig:   s.OutputTypes,
+		InputTimeTypes: inputTimeTypes,
 		Inserter:       crossdatabase.GetDatabaseOperator(),
 	}, nil
 }
@@ -466,10 +475,18 @@ func (s *NodeSchema) ToDatabaseDeleteConfig() (*database.DeleteConfig, error) {
 }
 
 func (s *NodeSchema) ToDatabaseUpdateConfig() (*database.UpdateConfig, error) {
+	inputTimeTypes := make(map[string]*vo.TypeInfo, len(s.InputTypes))
+	fieldTypes := s.InputTypes["Fields"]
+	for key, t := range fieldTypes.Properties {
+		if t.Type == vo.DataTypeTime {
+			inputTimeTypes[key] = t
+		}
+	}
 	return &database.UpdateConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
 		OutputConfig:   s.OutputTypes,
+		InputTimeTypes: inputTimeTypes,
 		Updater:        crossdatabase.GetDatabaseOperator(),
 	}, nil
 }
@@ -495,6 +512,7 @@ func (s *NodeSchema) ToPluginConfig() (*plugin.Config, error) {
 	return &plugin.Config{
 		PluginID:        mustGetKey[int64]("PluginID", s.Configs),
 		ToolID:          mustGetKey[int64]("ToolID", s.Configs),
+		PluginVersion:   mustGetKey[string]("PluginVersion", s.Configs),
 		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
 		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
 		ToolService:     crossplugin.GetToolService(),

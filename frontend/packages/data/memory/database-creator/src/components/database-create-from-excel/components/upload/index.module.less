@@ -1,0 +1,64 @@
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable no-descending-specificity */
+.file-name-wrapper {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+
+.file-name-label {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--Light-usage-text---color-text-0, #1D1C23);
+}
+
+
+.file-list-table {
+  :global {
+    .semi-table-container {
+      padding: 0 20px;
+      border: 1px solid var(--Light-usage-border---color-border-1, rgba(29, 28, 35, 12%));
+      border-radius: 8px;
+    }
+
+    // 此处不加 !important 优先级不够，会被 semi 的样式覆盖掉
+    .semi-table-row:hover {
+      cursor: default !important;
+
+      >.semi-table-row-cell {
+        background: none !important;
+        border-bottom: none !important;
+      }
+    }
+
+    // 此处不加 !important 优先级不够，会被 semi 的样式覆盖掉
+    .semi-table-row {
+      >.semi-table-row-cell {
+        border-bottom: none !important;
+      }
+    }
+
+    .semi-table-header {
+      border-radius: 8px;
+    }
+
+    .semi-table-body {
+      border-radius: 8px;
+    }
+
+    .semi-table-row-cell {
+      border: none
+    }
+  }
+}
+
+
+.upload {
+  :global {
+    .semi-upload-drag-area-sub-text {
+      color: rgba(136, 141, 146, 100%)
+    }
+  }
+}

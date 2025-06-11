@@ -1,0 +1,41 @@
+.form-section :global .coz-icon-button-mini {
+  line-height: 0px;
+}
+
+.form-section {
+  border-bottom: 1px solid var(--coz-stroke-primary);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 10px 2px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  column-gap: 4px;
+  cursor: pointer;
+
+  .title-collapsible {
+    color: var(--coz-fg-secondary);
+    font-size: 12px;
+    margin-right: -2px;
+  }
+
+  .is-close {
+    transform: rotate(-90deg);
+  }
+
+  .title-tooltip {
+    font-size: 14px;
+    color: var(--coz-fg-secondary);
+  }
+}
+
+
+.section-context {
+  padding: 0 16px 10px 16px ;
+}

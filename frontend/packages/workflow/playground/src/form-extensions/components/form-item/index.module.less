@@ -1,0 +1,39 @@
+.form-item {
+  margin-bottom: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .popover {
+    display: inline-block;
+    margin-top: 2px;
+    margin-left: 4px;
+  }
+
+  .form-item-label {
+    margin-bottom: 2px;
+    font-size: 14px;
+    overflow-wrap: break-word;
+  }
+
+  &.form-item-vertical {
+    .form-item-label {
+      height: 20px;
+      margin-bottom: 4px;
+      padding-right: 16px;
+      line-height: 20px;
+
+      &.form-item-label-right {
+        text-align: right;
+      }
+    }
+  }
+
+  .form-item-error {
+    font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 22px;
+    color: rgb(255, 68, 30)
+  }
+}

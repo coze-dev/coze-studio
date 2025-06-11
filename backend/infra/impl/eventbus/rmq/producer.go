@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/signal"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 type producerImpl struct {
@@ -42,12 +43,12 @@ func NewProducer(nameServer, topic, group string, retries int) (eventbus.Produce
 		return nil, fmt.Errorf("start producer error: %w", err)
 	}
 
-	go func() {
+	safego.Go(context.Background(), func() {
 		signal.WaitExit()
 		if err := p.Shutdown(); err != nil {
 			logs.Errorf("shutdown producer error: %s", err.Error())
 		}
-	}()
+	})
 
 	return &producerImpl{
 		nameServer: nameServer,

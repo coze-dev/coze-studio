@@ -1,0 +1,92 @@
+.scroll-view {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+
+  .before,
+  .after {
+    flex-shrink: 0;
+    width: 100%;
+    height: fit-content;
+  }
+
+  .content {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 1;
+    justify-content: flex-start;
+
+    width: 100%;
+
+    .scrollable {
+      position: relative;
+
+      overflow: hidden scroll;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      width: 100%;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+
+      &.scrollbar-width-none {
+        scrollbar-width: none;
+      }
+
+      &.reverse {
+        flex-direction: column-reverse;
+      }
+
+      &.disable-scroll {
+        overflow: hidden;
+        height: 100%;
+      }
+
+      &.show-scrollbar,
+      &.auto-show-scrollbar {
+        &::-webkit-scrollbar {
+          display: block;
+          width: 9px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: rgb(0 0 0 / 0%);
+          // 只有右侧存在border，border-radius需要特别处理
+          border-radius: 9px 14px 14px 9px;
+        }
+
+        &:hover::-webkit-scrollbar-thumb {
+          opacity: 1;
+          background: var(--scrollbar-color, #ccc);
+          // 滚动条留白：
+          background-clip: padding-box;
+          border-right: 3px solid transparent;
+
+          &:hover {
+            background: var(--scrollbar-hover-color, #999);
+            background-clip: padding-box;
+            border-right: 3px solid transparent;
+          }
+        }
+      }
+
+      &.show-scrollbar {
+        overflow-y: scroll;
+      }
+
+      &.auto-show-scrollbar {
+        overflow-y: auto;
+      }
+    }
+
+
+  }
+}

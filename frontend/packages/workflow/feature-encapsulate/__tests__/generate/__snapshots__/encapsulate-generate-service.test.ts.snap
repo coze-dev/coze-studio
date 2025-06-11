@@ -1,0 +1,98 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`encapsulate-generate-service > should generate sub workflow node 1`] = `
+{
+  "data": {
+    "inputs": {
+      "spaceId": "1",
+      "workflowId": "1",
+      "workflowVersion": "v0.0.1",
+    },
+    "nodeMeta": {
+      "description": "test",
+      "icon": undefined,
+      "isImageflow": false,
+      "title": "test",
+    },
+  },
+}
+`;
+
+exports[`encapsulate-generate-service > should generate workflow json 1`] = `
+{
+  "edges": [
+    {
+      "sourceNodeID": "154702",
+      "targetNodeID": "102906",
+    },
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "154702",
+    },
+    {
+      "sourceNodeID": "102906",
+      "targetNodeID": "900001",
+    },
+  ],
+  "nodes": [
+    {
+      "data": {
+        "nodeMeta": {},
+        "outputs": [],
+      },
+      "id": "100001",
+      "meta": {
+        "position": {
+          "x": 0,
+          "y": 0,
+        },
+      },
+      "type": "1",
+    },
+    {
+      "data": {
+        "inputs": {
+          "inputParameters": [],
+          "terminatePlan": "returnVariables",
+        },
+        "nodeMeta": {},
+      },
+      "id": "900001",
+      "meta": {
+        "position": {
+          "x": 1000,
+          "y": 0,
+        },
+      },
+      "type": "2",
+    },
+    {
+      "data": {},
+      "id": "154702",
+      "meta": {
+        "position": {
+          "x": 918.2411574431025,
+          "y": 109.52852376445134,
+        },
+      },
+      "type": "3",
+    },
+    {
+      "data": {
+        "inputs": {
+          "spaceId": "test_space_id",
+          "workflowId": "test_workflow_id",
+        },
+      },
+      "id": "102906",
+      "meta": {
+        "position": {
+          "x": 779.2423264779079,
+          "y": -161.54447093414998,
+        },
+      },
+      "type": "9",
+    },
+  ],
+}
+`;

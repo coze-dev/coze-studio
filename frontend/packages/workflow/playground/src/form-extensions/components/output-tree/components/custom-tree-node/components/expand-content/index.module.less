@@ -1,0 +1,124 @@
+
+.field-content {
+  :global {
+    .field-input {
+      width: 100%;
+
+      &.coz-input {
+        background: #fff;
+
+
+        -webkit-text-fill-color: unset;
+
+        &:not(.semi-input-wrapper-focus, .semi-input-wrapper-disabled) {
+          &:hover {
+            background-color: rgba(var(--coze-bg-5),var(--coze-bg-5-alpha));
+          }
+
+          &:active {
+            background-color: rgba(var(--coze-bg-6), var(--coze-bg-6-alpha));
+          }
+        }
+
+        &.semi-input-wrapper-disabled {
+          background-color: var(--coz-mg-primary);
+        }
+
+        .semi-input-disabled {
+          color: var(--semi-color-text-0);
+        }
+      }
+
+      &.coz-select:not(.semi-select-disabled) {
+        background-color: white;
+
+      }
+
+      &.coz-select.semi-select-disabled {
+        opacity: 1;
+        background-color: var(--coz-mg-primary);
+      }
+
+      &.coz-input-number {
+        .semi-input-wrapper {
+          -webkit-text-fill-color: unset;
+
+          &:not(.semi-input-wrapper-disabled) {
+            background-color: white;
+          }
+        }
+      }
+
+      &:not(.coz-input-number, .semi-input-wrapper-disabled, .coz-select) {
+        background-color: white;
+      }
+
+      &.coz-textarea {
+        line-height: 16px;
+        background: #FFF;
+        border-radius: 6px;
+
+        &:not(.semi-input-textarea-wrapper-focus, .semi-input-textarea-wrapper-disabled) {
+          &:hover {
+            background-color: rgba(var(--coze-bg-5),var(--coze-bg-5-alpha));
+          }
+
+          &:active {
+            background-color: rgba(var(--coze-bg-6), var(--coze-bg-6-alpha));
+          }
+        }
+
+        .semi-input-textarea {
+          max-height: 72px;
+          font-size: 12px;
+          line-height: 16px;
+        }
+      }
+    }
+  }
+}
+
+.expand-content-file-adapter {
+  :global {
+    .semi-upload-drag-area-sub-text {
+      display: none;
+    }
+  }
+}
+
+
+.file-type-select {
+  top: -28px;
+
+  :global {
+    .coz-select.semi-select {
+      background-color: #FFF;
+
+      &:not(.semi-input-wrapper-focus, .semi-input-wrapper-disabled) {
+        &:hover {
+          background-color: rgba(var(--coze-bg-5),var(--coze-bg-5-alpha));
+        }
+
+        &:active {
+          background-color: rgba(var(--coze-bg-6), var(--coze-bg-6-alpha));
+        }
+      }
+    }
+  }
+}
+
+.url-input {
+  background: #fff;
+
+  &:not(.semi-input-wrapper-focus, .semi-input-wrapper-disabled) {
+    &:hover {
+      background-color: rgba(var(--coze-bg-5),var(--coze-bg-5-alpha));
+    }
+
+    &:active {
+      background-color: rgba(var(--coze-bg-6), var(--coze-bg-6-alpha));
+    }
+  }
+}
+
+

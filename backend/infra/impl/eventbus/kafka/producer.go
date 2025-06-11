@@ -8,6 +8,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/signal"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 type producerImpl struct {
@@ -26,12 +27,12 @@ func NewProducer(broker, topic string) (eventbus.Producer, error) {
 		return nil, err
 	}
 
-	go func() {
+	safego.Go(context.Background(), func() {
 		signal.WaitExit()
 		if err := producer.Close(); err != nil {
 			logs.Errorf("close producer error: %s", err.Error())
 		}
-	}()
+	})
 
 	return &producerImpl{
 		topic: topic,

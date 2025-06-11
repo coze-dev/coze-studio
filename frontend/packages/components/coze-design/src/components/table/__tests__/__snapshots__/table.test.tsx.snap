@@ -1,0 +1,5 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Table > indexRowSelection > should render checkbox cell with index and checkbox 1`] = `"<span class="semi-checkbox semi-checkbox-unChecked semi-checkbox-cardType_enable coz-checkbox"><span class="semi-checkbox-inner"><input type="checkbox" aria-label="Select all rows" aria-disabled="false" aria-checked="false" class="semi-checkbox-input"><span class="semi-checkbox-inner-display"></span></span></span>"`;
+
+exports[`Table > indexRowSelection > should render checkbox cell with index and checkbox 2`] = `"<span class="coz-table-checkbox-cell-index coz-fg-secondary text-sm font-normal">1</span><span class="coz-table-checkbox-cell-checkbox"><span class="semi-checkbox semi-checkbox-unChecked semi-checkbox-cardType_enable coz-checkbox"><span class="semi-checkbox-inner"><input type="checkbox" aria-label="Select this row" aria-disabled="false" aria-checked="false" class="semi-checkbox-input"><span class="semi-checkbox-inner-display"></span></span></span></span>"`;

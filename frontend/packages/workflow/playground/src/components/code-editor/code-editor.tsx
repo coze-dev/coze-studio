@@ -1,0 +1,136 @@
+import { createRenderer, option } from '@flow-lang-sdk/editor/react';
+import preset, { languages, themes } from '@flow-lang-sdk/editor/preset-code';
+import { shell } from '@flow-lang-sdk/editor/language-shell';
+import { json } from '@flow-lang-sdk/editor/language-json';
+import { mixLanguages } from '@flow-lang-sdk/editor';
+import { EditorView } from '@codemirror/view';
+
+import { cozeLight } from './themes/coze-light';
+import { cozeDark } from './themes/coze-dark';
+
+// 注册语言
+languages.register('json', {
+  // mixLanguages 用于解决 「插值也使用了括号，导致无法正确高亮」的问题
+  language: mixLanguages({
+    outerLanguage: json.language,
+  }),
+  languageService: json.languageService,
+});
+
+languages.register('shell', shell);
+
+// 注册主题
+themes.register('coze-light', cozeLight);
+themes.register('coze-dark', cozeDark);
+
+const minHeightOption = (value?: string | number) =>
+  EditorView.theme({
+    '.cm-content, .cm-gutter, .cm-right-gutter': {
+      minHeight:
+        typeof value === 'number'
+          ? `${value}px`
+          : typeof value === 'string'
+            ? value
+            : 'unset',
+    },
+    '&.cm-editor': {
+      minHeight:
+        typeof value === 'number'
+          ? `${value}px`
+          : typeof value === 'string'
+            ? value
+            : 'unset',
+    },
+  });
+
+const maxHeightOption = (value?: string | number) =>
+  EditorView.theme({
+    '&.cm-editor': {
+      maxHeight:
+        typeof value === 'number'
+          ? `${value}px`
+          : typeof value === 'string'
+            ? value
+            : 'unset',
+    },
+  });
+
+const heightOption = (value?: string | number) =>
+  EditorView.theme({
+    '&.cm-editor': {
+      height:
+        typeof value === 'number'
+          ? `${value}px`
+          : typeof value === 'string'
+            ? value
+            : 'unset',
+    },
+  });
+
+const paddingOption = (value?: string | number) =>
+  EditorView.theme({
+    '&.cm-editor': {
+      padding:
+        typeof value === 'number'
+          ? `${value}px`
+          : typeof value === 'string'
+            ? value
+            : 'unset',
+    },
+  });
+
+const borderRadiusOption = (value?: string | number) =>
+  EditorView.theme({
+    '&.cm-editor, .cm-gutters': {
+      borderRadius:
+        typeof value === 'number'
+          ? `${value}px`
+          : typeof value === 'string'
+            ? value
+            : 'unset',
+    },
+  });
+
+const lineHeightOption = (value?: string | number) =>
+  EditorView.theme({
+    '.cm-content, .cm-gutter, .cm-right-gutter': {
+      lineHeight:
+        typeof value === 'number'
+          ? `${value}px`
+          : typeof value === 'string'
+            ? value
+            : 'unset',
+    },
+  });
+
+function createStyleOptions() {
+  return [
+    option('minHeight', minHeightOption),
+    option('maxHeight', maxHeightOption),
+    option('editerHeight', heightOption),
+    option('borderRadius', borderRadiusOption),
+    option('padding', paddingOption),
+    option('lineHeight', lineHeightOption),
+  ];
+}
+
+const builtinExtensions = [
+  EditorView.theme({
+    '&.cm-focused': {
+      outline: 'none',
+    },
+    '& *': {
+      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+    },
+  }),
+  EditorView.theme({
+    '&.cm-content': {
+      wordBreak: 'break-all',
+    },
+  }),
+];
+
+export const CodeEditor = createRenderer(
+  [...preset, ...createStyleOptions()],
+  builtinExtensions,
+);

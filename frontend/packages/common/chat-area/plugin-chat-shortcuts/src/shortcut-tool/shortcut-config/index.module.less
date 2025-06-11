@@ -1,0 +1,197 @@
+@ide-tool-prefix: chat-studio-tool-content-block;
+
+.shortcut-tool-config {
+  padding-right: 0;
+  padding-left: 0;
+
+  :global {
+    .@{ide-tool-prefix}-content {
+      /* stylelint-disable declaration-no-important */
+      padding-right: 0 !important;
+      padding-left: 0 !important;
+    }
+  }
+}
+
+.shortcut-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.shortcut-item {
+  display: flex;
+  place-content: center space-between;
+
+  height: 52px;
+  margin-bottom: 4px;
+  padding: 8px;
+
+  background: rgba(6, 7, 9, 4%);
+  border-radius: 8px;
+
+  &.shortcut-item-mouse_hover {
+    background: rgba(6, 7, 9, 12%);
+    border: 1px solid rgba(6, 7, 9, 10%);
+  }
+
+  &.shortcut-item_hovered {
+    background: rgba(6, 7, 9, 4%);
+  }
+}
+
+.shortcut-item_title {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+
+  font-size: 12px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 16px;
+  color: rgba(6, 7, 9, 80%);
+  text-overflow: ellipsis;
+}
+
+.shortcut-item_header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: calc(100% - 80px);
+}
+
+.operation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.operation-item-icon {
+  cursor: pointer;
+
+  :global {
+    .semi-icon {
+      svg {
+        width: 14px;
+        height: 14px;
+      }
+    }
+  }
+}
+
+.operation-item-icon_drag {
+  cursor: grab;
+  background: unset !important;
+
+  &.operation-dragging {
+    cursor: grabbing;
+  }
+}
+
+.operation-item-icon_hover {
+  &:hover {
+    background: rgba(6, 7, 9, 16%);
+    border-radius: 6px;
+  }
+}
+
+.delete-modal {
+  :global {
+    .semi-modal {
+      border-radius: 8px;
+
+      .semi-modal-content {
+        padding: 16px;
+        border-radius: 8px;
+
+        .semi-modal-header {
+          margin: 0;
+        }
+
+        .semi-modal-footer {
+          margin: 24px 0 0;
+        }
+      }
+    }
+  }
+}
+
+.delete-common-modal-button-style {
+  min-width: 56px;
+  height: 32px;
+  padding: 6px 16px;
+
+  font-size: 14px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 20px;
+
+  background: rgba(6, 7, 9, 8%);
+  border-radius: 8px;
+}
+
+.delete-modal-cancel-button {
+  .delete-common-modal-button-style;
+
+  color: rgba(6, 7, 9, 80%);
+}
+
+.delete-modal-ok-button {
+  .delete-common-modal-button-style;
+
+  color: #fff;
+  background-color: #f22435;
+  border-radius: 8px;
+
+  &:hover {
+    background-color: #ba0010 !important;
+  }
+
+  &:active {
+    background-color: #b0000f !important;
+  }
+}
+
+.icon-button-16 {
+  cursor: pointer;
+
+  &:hover {
+    border-radius: 4px;
+  }
+
+  :global {
+    .semi-button {
+      &.semi-button-size-small {
+        height: 16px;
+        padding: 1px !important;
+
+        svg {
+          @apply text-foreground-2;
+        }
+      }
+    }
+  }
+}
+
+.tip-content {
+  display: flex;
+  flex-direction: column;
+
+  width: 416px;
+
+  font-size: 14px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 20px;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.shortcut-config-empty {
+  font-size: 14px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 20px;
+  color: var(--coz-fg-secondary);
+}

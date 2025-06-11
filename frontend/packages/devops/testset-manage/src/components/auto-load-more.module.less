@@ -1,0 +1,32 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+}
+
+.spin {
+  width: 16px;
+  height: 16px;
+
+  :global {
+    .semi-spin-wrapper {
+      line-height: 16px;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+}
+
+.text {
+  margin-left: 8px;
+
+  font-size: 12px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 16px;
+  color: var(--light-usage-primary-color-primary, #4D53E8);
+}

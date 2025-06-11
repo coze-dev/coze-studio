@@ -1,0 +1,57 @@
+/* stylelint-disable declaration-no-important */
+.node-side-sheet {
+  position: relative;
+  border: 1px solid var(--coz-stroke-primary);
+
+  :global(.node-header) {
+    position: sticky;
+    z-index: 10;
+    top: 0;
+  }
+
+  // 临时hack代码，coze-design 升级解决后可以删除这段代码 @10.29
+  // 1. 覆盖coze-design 小尺寸下input的对齐问题 
+  :global(.coz-input.semi-input-wrapper-small) {
+    display: flex;
+    align-items: center;
+
+    > :global(.semi-input-small) {
+      padding: 0;
+    }
+  }
+  // 2. 覆盖select选中的文字大小
+  :global(.semi-select-small .semi-select-selection-text) {
+    font-size:12px !important;
+  }
+
+  // 3. 覆盖cascader选中的文字大小
+  :global(.semi-cascader-small .semi-cascader-selection) {
+    font-size:12px !important;
+  }
+}
+
+.node-side-sheet-form {
+  overflow-y: auto;
+  width: 100%;
+  height: 100%;
+
+  &.has-result-notice {
+    padding-bottom: 60px;
+  }
+
+  > div {
+    width: auto;
+    margin: 0 -12px;
+    padding: 12px;
+    border-bottom: 1px solid rgba(var(--coze-stroke-6),var(--coze-stroke-6-alpha));
+  }
+
+  :global(.node-header-title) {
+    padding: 0;
+    border: none;
+  }
+
+  > div:last-child {
+    border-bottom: none;
+  }
+}

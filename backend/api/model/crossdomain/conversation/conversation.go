@@ -1,10 +1,12 @@
 package conversation
 
+import "code.byted.org/flow/opencoze/backend/api/model/conversation/common"
+
 type GetCurrent struct {
-	UserID      int64 `json:"user_id"`
-	Scene       Scene `json:"scene"`
-	AgentID     int64 `json:"agent_id"`
-	ConnectorID int64 `json:"connector_id"`
+	UserID      int64        `json:"user_id"`
+	Scene       common.Scene `json:"scene"`
+	AgentID     int64        `json:"agent_id"`
+	ConnectorID int64        `json:"connector_id"`
 }
 
 type Scene int32
@@ -28,7 +30,7 @@ type Conversation struct {
 	AgentID     int64              `json:"agent_id"`
 	ConnectorID int64              `json:"connector_id"`
 	CreatorID   int64              `json:"creator_id"`
-	Scene       Scene              `json:"scene"`
+	Scene       common.Scene       `json:"scene"`
 	Status      ConversationStatus `json:"status"`
 	Ext         string             `json:"ext"`
 	CreatedAt   int64              `json:"created_at"`

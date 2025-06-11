@@ -1,0 +1,44 @@
+.unit-name-wrap {
+  display: flex;
+  align-items: center;
+  margin-left: 3px;
+
+  :global {
+    .semi-icon {
+      margin-right: 12px;
+    }
+
+    .view-name {
+      display: inline-block;
+      height: 32px;
+      font-size: 14px;
+      line-height: 32px;
+    }
+
+    .input-suffix {
+      display: inline-block;
+      margin-right: 5px;
+      font-size: 12px;
+      color: rgb(28 29 35 / 35%);
+    }
+
+    .unit-name-input {
+      width: 100%;
+
+      .error {
+        position: absolute;
+        color: rgb(249 57 32 / 100%);
+      }
+    }
+
+    .unit-name-error {
+      display: flex;
+      flex-direction: column;
+
+      .error {
+        color: rgb(249 57 32 / 100%);
+      }
+    }
+  }
+
+}

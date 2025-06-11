@@ -1,0 +1,1 @@
+export { createTableCustomAddStore } from './store';

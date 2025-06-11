@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "./unify_dependent1.proto";
+import "unify_dependent2.proto";
+
+package unify_idx;
+
+// c0
+enum Gender {
+  // c1
+  MALE = 1; // c2
+  // c3
+  FEMAL = 2; // c4
+}
+
+/* cm1 */
+message Request {
+  // cm2
+  // repeated string key1 = 1[(api.key) = 'f'];
+  // unify_dep1.Foo key2 = 2;
+  Number key3 = 3 [(api.position) = 'query'];
+}
+
+service Example {
+  option (api.uri_prefix) = "//example.com";
+  rpc Biz1(Request) returns (Number) {
+    option (api.uri) = '/api/biz1';
+  }
+}

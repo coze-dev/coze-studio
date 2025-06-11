@@ -120,7 +120,7 @@ func sendDoneEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, event string)
 
 func sendErrorEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, errCode int64, errMsg string) error {
 	errData := run.ErrorData{
-		Coze: errCode,
+		Code: errCode,
 		Msg:  errMsg,
 	}
 	ed, _ := json.Marshal(errData)

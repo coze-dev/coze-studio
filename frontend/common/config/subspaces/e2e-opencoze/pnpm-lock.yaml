@@ -1,0 +1,30 @@
+lockfileVersion: '6.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+neverBuiltDependencies:
+  - better-sqlite3
+  - canvas
+
+overrides:
+  sass@1.74.1>immutable: 3.8.2
+  web-streams-polyfill: 3.3.2
+  vitest@1.4.0>vite: 5.1.6
+  debug: 4.3.3
+  type-fest: 3.13.1
+  '@types/node': 18.18.9
+  leveldown: 6.1.1
+  ahooks: 3.7.8
+  terser-webpack-plugin@5.3.10>webpack: 5.89.0
+  react: 18.2.0
+  react-dom: 18.2.0
+  tailwindcss@3.3.6>postcss: 8.4.49
+  '@types/react': 18.2.37
+  '@types/react-dom': 18.2.15
+  typescript: 5.8.2
+
+importers:
+
+  .: {}

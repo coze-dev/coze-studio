@@ -1,0 +1,43 @@
+.suggestion-message-item {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  margin-bottom: 8px;
+
+  .no-icon {
+    position: absolute;
+    right: 16px;
+  }
+
+  :global {
+    .semi-input-textarea-wrapper {
+      padding-right: 48px;
+    }
+  }
+}
+
+.tooltip-wrapper {
+  position: relative;
+}
+
+.icon-button-16 {
+  &:hover {
+    border-radius: 4px;
+  }
+
+  :global {
+    .semi-button {
+      &.semi-button-size-small {
+        height: 16px;
+        padding: 1px;
+      }
+    }
+  }
+}
+
+.icon-no-disabled {
+  color: rgb(29 28 35 / 20%);
+}

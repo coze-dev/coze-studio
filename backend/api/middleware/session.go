@@ -15,23 +15,25 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
-var noNeedLoginPath = map[string]bool{
+var noNeedSessionCheckPath = map[string]bool{
 	"/api/passport/web/email/login/":       true,
 	"/api/passport/web/email/register/v2/": true,
 }
 
 func SessionAuthMW() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
-		if isNeedOpenapiAuth(ctx) {
+		requestAuthType := ctx.GetInt32(RequestAuthTypeStr)
+		if requestAuthType != int32(RequestAuthTypeWebAPI) {
 			ctx.Next(c)
 			return
 		}
 
-		if noNeedLoginPath[string(ctx.GetRequest().URI().Path())] {
+		if noNeedSessionCheckPath[string(ctx.GetRequest().URI().Path())] {
 			ctx.Next(c)
 			return
 		}
 
+		// session auth check
 		s := ctx.Cookie(entity.SessionKey)
 		if len(s) == 0 {
 			logs.Errorf("[SessionAuthMW] session id is nil")

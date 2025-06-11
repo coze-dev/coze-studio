@@ -696,9 +696,11 @@ func applyDBConditionToSchema(ns *compose.NodeSchema, condition *vo.DBCondition,
 					break
 				}
 			}
+
 			if right == nil {
-				return fmt.Errorf("db conditon not found right param")
+				return nil
 			}
+
 			name := "SingleRight"
 			tInfo, err := CanvasBlockInputToTypeInfo(right.Input)
 			if err != nil {
@@ -724,8 +726,9 @@ func applyDBConditionToSchema(ns *compose.NodeSchema, condition *vo.DBCondition,
 						break
 					}
 				}
+
 				if right == nil {
-					return fmt.Errorf("db conditon not found right param")
+					continue
 				}
 				name := fmt.Sprintf("Multi_%d_Right", idx)
 				tInfo, err := CanvasBlockInputToTypeInfo(right.Input)

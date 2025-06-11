@@ -1,0 +1,30 @@
+.container {
+  margin-top: 8px;
+  &:first-child {
+    margin-top: 0;
+  }
+  .icon {
+    width: 20px;
+    height: 20px;
+
+    &>span {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  :global {
+    .semi-toast-content {
+      padding: 12px 16px;
+      border-radius: 8px;
+      & > .semi-toast-content-text {
+        color: var(--light-usage-text-color-text-0, #1D1C23);
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 20px;
+        margin-right: 0;
+      }
+    }
+  }
+}

@@ -1,0 +1,54 @@
+// bad
+.a1_b1_c1 {
+  margin: auto;
+}
+
+// bad
+.a2-b2_c2-d2 {
+  margin: auto;
+}
+
+// bad
+.a3-b3_c3_d3 {
+  margin: auto;
+}
+
+// bad
+.a4-b4 {
+  &_c4_d4 {
+    margin: auto;
+  }
+}
+
+// bad
+.a5-cammelCase {
+  margin: auto;
+}
+
+// good
+.a5-b5-c5 {
+  margin: auto;
+}
+
+// good
+.a6-b6-c6_d6 {
+  margin: auto;
+}
+
+// good
+.a7_b7 {
+  margin: auto;
+}
+
+// good
+.a8 {
+  &-b8 {
+    &-c8 {
+      margin: auto;
+    }
+
+    &_d8 {
+      margin: auto;
+    }
+  }
+}

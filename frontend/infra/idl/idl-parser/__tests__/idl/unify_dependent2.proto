@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+import "./unify_dependent1.proto";
+
+package unify_idx;
+
+enum Number {
+  ONE = 1;
+}

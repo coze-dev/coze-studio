@@ -1,0 +1,46 @@
+.container {
+  // flex: 1;
+  position: relative;
+
+  display: flex;
+  flex: 0 0 120px;
+  flex-direction: column;
+  align-self: stretch;
+
+  margin-left: 8px;
+
+  .desc {
+    textarea {
+      width: 120px;
+      height: 30px;
+    }
+  }
+
+  .desc-object-like {
+    textarea {
+      width: 120px;
+    }
+  }
+
+  .desc-focus {
+    textarea {
+      height: 54px;
+    }
+  }
+
+  .desc-not-focus {
+    textarea {
+      overflow: hidden;
+      padding: 5px 12px 0;
+      white-space: nowrap;
+    }
+  }
+
+  .desc-not-focus-with-value {
+    textarea {
+      padding: 5px 12px 0;
+
+      -webkit-line-clamp: 1;
+    }
+  }
+}

@@ -25,7 +25,7 @@ type Components struct {
 	DB    *gorm.DB
 }
 
-func NewService(c *Components) ApiAuth {
+func NewService(c *Components) APIAuth {
 	return &apiAuthImpl{
 		IDGen: c.IDGen,
 		DB:    c.DB,

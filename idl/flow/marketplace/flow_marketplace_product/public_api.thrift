@@ -546,10 +546,10 @@ struct DuplicateProductRequest {
 }
 
 struct DuplicateProductResponse {
-    1: required i32           Code     (agw.key = "code"),
-    2: required string        Message  (agw.key = "message"),
-    3: DuplicateProductData   Data (agw.key = "data")
-    255: optional base.BaseResp BaseResp                   ,
+    1: required i32           Code     (agw.key = "code", api.body= "code"),
+    2: required string        Message  (agw.key = "message", api.body= "message"),
+    3: DuplicateProductData   Data (agw.key = "data", api.body= "data"),
+    255: optional base.BaseResp BaseResp
 }
 
 struct DuplicateProductData {

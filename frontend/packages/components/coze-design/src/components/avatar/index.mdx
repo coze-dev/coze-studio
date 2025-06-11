@@ -1,0 +1,171 @@
+import { Canvas, Meta, Controls, Story } from '@storybook/blocks';
+
+import * as AvatarStories from './stories/avatar.stories';
+
+<Meta of={AvatarStories} name="Docs" />
+
+# COZAvatar
+
+> COZ头像控件, 支持图片或字符展示，基于semi的Avatar封装实现    —— [API参考](https://semi.bytedance.net/zh-CN/show/avatar)
+
+- [组件引入](#组件引入)
+- [交互预览](#交互预览)
+- [尺寸 (size)](#尺寸)
+- [事件 (hoverMask)](#事件)
+- [颜色 (color)](#颜色)
+- [类型 (type)](#类型)
+- [头像组 (AvatarGroup)](#头像组)
+- [Props](#props)
+- [Types](#types)
+
+## 组件引入
+可从 `@coze/coze-design` 中引入 `COZAvatar` 组件，参考如下：
+
+```tsx
+import { COZAvatar, Avatar } from '@coze/coze-design';
+```
+
+> 注：这里的2.0组件叫 `COZAvatar`， 是因为coze-design同时也透传了semi的原生`Avatar`组件，由于早期的`Avatar`组件使用较广泛并且coze-design的`COZAvatar`组件默认样式和semi的`Avatar`存在部分差异，所以在存量业务未替换前先保持两者同时可用，推荐新需求应该优先用`COZAvatar`。
+
+## 交互预览
+`COZAvatar` 组件支持如下基础属性配置，包含有: `size`, `type`、`color`、`src` 和 `hoverMask`，可通过调整Control参数来预览。`COZAvatar`支持`src` 和 `color`两中形态，其中`src`为图像的地址，`color`为预设背景色值，两者同时传入时，`src`会优先生效，不传则默认使用`color`。
+
+<Canvas of={AvatarStories.Default} />
+
+<Controls  />
+
+
+## 尺寸
+可以通过 size 属性设置图标大小，支持九种预设尺寸： `ultra`，`xxl`，`xl`，`lg`，`plus`，`default`，`small`，`mini`，`micro`;
+<Story of={AvatarStories.Size} />
+
+```tsx
+import { COZAvatar } from '@coze/coze-design';
+
+<Avatar size="mini">COZE</Avatar>
+<Avatar size="small">COZE</Avatar>
+<Avatar size="default">COZE</Avatar>
+<Avatar size="plus">COZE</Avatar>
+<Avatar size="lg">COZE</Avatar>
+<Avatar size="xl">COZE</Avatar>
+<Avatar size="xxl">COZE</Avatar>
+```
+
+## 事件
+Avatar 支持 onClick、onMouseEnter、onMouseLeave。其中 hover 状态下可以通过 `hoverMask` 属性传入覆盖层的内容。相较于之前的semi实现，这里的`hoverMask`我们改成了`boolean`值并预设了编辑态的图标样式，传入`true`即可开启使用。
+<Story of={AvatarStories.HoverMask} />
+
+```tsx
+import { COZAvatar } from '@coze/coze-design';
+
+<Avatar
+  hoverMask={true}
+  onClick={() => {
+    console.log('click avatar');
+  }}
+>
+  COZE
+</Avatar>
+```
+
+## 颜色
+Avatar 支持8种颜色，包括：`blue`, `cyan`, `green`, `yellow`, `purple`, `orange`, `grey`, `red`, `pink`, `indigo`, 也可以通过 `style` 来自定义`background-color`颜色样式传入生效。默认为: `blue`。
+<Story of={AvatarStories.Color} />
+
+```tsx
+import { COZAvatar } from '@coze/coze-design';
+
+<Avatar size="blue">COZE</Avatar>
+<Avatar size="red">COZE</Avatar>
+<Avatar size="cyan">COZE</Avatar>
+<Avatar size="grey">COZE</Avatar>
+<Avatar size="cyan">COZE</Avatar>
+<Avatar size="green">COZE</Avatar>
+<Avatar size="orange">COZE</Avatar>
+<Avatar size="yellow">COZE</Avatar>
+```
+
+## 类型
+Avatar 支持四种类型，包括：`bot`, `platform`, `person`, `team`，对应semi中的`Shape`。
+- **bot** ：现在为圆角矩形，后续会改造成椭圆形；
+- **platform** ：现在为圆角矩形，圆角尺寸会跟随`size`变化适配，对应semi的`Shape`中的 `square`
+- **person** ：现在为标准圆形，圆角尺寸会跟随`size`变化适配，对应semi的`Shape`中的 `circle`；
+- **team** ：现在为标准圆形，圆角尺寸会跟随`size`变化适配，对应semi的`Shape`中的 `circle`；
+
+<Story of={AvatarStories.Type} />
+
+```tsx
+import { COZAvatar } from '@coze/coze-design';
+
+<Avatar type="person">COZE</Avatar>
+<Avatar size="team">COZE</Avatar>
+<Avatar size="bot">COZE</Avatar>
+<Avatar size="platform">COZE</Avatar>
+```
+
+## 头像组
+可以通过 AvatarGroup 将 avatar 显示为组，为semi的`AvatarGroup`透传，预设尺寸：`small`，`default`, `medium` 和 `large`; 也支持配置`maxCount` 控制`avatar`数量。
+<Story of={AvatarStories.Group} />
+
+```tsx
+import { COZAvatar } from '@coze/coze-design';
+
+<AvatarGroup overlapFrom={'end'} size="medium" maxCount={3}>
+  <Avatar color="red" alt="Lisa LeBlanc">LL</Avatar>
+  <Avatar alt="Caroline Xiao" color="pink">CX</Avatar>
+  <Avatar color="orange" alt="Rafal Matin">RM</Avatar>
+  <Avatar
+    style={{ color: '#f56a00', backgroundColor: '#fde3cf' }}
+    alt="Zank Lance"
+  >
+    ZL
+  </Avatar>
+  <Avatar style={{ backgroundColor: '#87d068' }} alt="Youself Zhang">
+    YZ
+  </Avatar>
+</AvatarGroup>
+```
+## Props
+所有semi的按钮属性都可以在`COZAvatar`组件上使用，此外还支持以下属性：
+
+| Prop      | Type          | Description           | Default   |
+|:----------|:--------------|:----------------------|:----------|
+| color     | `AvatarColor` | Sets the color        | `blue`    |
+| size      | `AvatarSize`  | Sets the size         | `default` |
+| hoverMask | `Boolean`     | Sets the hover state  | `false`   |
+| type      | `AvatarType`  | Sets the avatar type  | `person`  |
+| className | `String`      | Sets the avatar class |           |
+
+## Types
+COZAvatar扩展类型参考如下：
+
+```tsx
+export type AvatarColor =
+  | 'blue'
+  | 'cyan'
+  | 'green'
+  | 'yellow'
+  | 'purple'
+  | 'orange'
+  | 'grey'
+  | 'red'
+  | 'pink'
+  | 'indigo';
+```
+
+```tsx
+export type AvatarSize =
+  | 'ultra'
+  | 'xxl'
+  | 'xl'
+  | 'lg'
+  | 'plus'
+  | 'default'
+  | 'small'
+  | 'mini'
+  | 'micro';
+```
+
+```tsx
+export type AvatarType = 'bot' | 'platform' | 'person' | 'team';
+```

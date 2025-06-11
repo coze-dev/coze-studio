@@ -1,0 +1,8 @@
+{
+  "operationSettings": [
+    {
+      "operationName": "ts-check",
+      "outputFolderNames": ["./dist"]
+    }
+  ]
+}

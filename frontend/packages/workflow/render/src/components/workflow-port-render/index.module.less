@@ -1,0 +1,157 @@
+/* stylelint-disable selector-class-pattern */
+// 背景的白色圆圈
+.workflow-point {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  // 非 hover 状态下的样式
+  border: none;
+  border-radius: 50%;
+
+  & > .symbol {
+    opacity: 0;
+  }
+
+  .bg-circle {
+    position: absolute;
+    transform: scale(0.5);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 20px;
+    height: 20px;
+
+    background-color: #fff;
+    border-radius: 50%;
+
+    transition: all 0.2s linear 0s;
+  }
+
+  .bg {
+    position: relative;
+    transform: scale(0.4, 0.4);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    background: #9197f1;
+    border-radius: 50%;
+
+    transition: all 0.2s linear 0s;
+
+    &.hasError {
+      background: red;
+    }
+
+    .symbol {
+      pointer-events: none;
+
+      position: absolute;
+
+      width: 14px;
+      height: 14px;
+
+      color: #fff;
+
+      opacity: 0;
+
+      transition: opacity 0.2s linear 0s;
+
+      & > svg {
+        width: 14px;
+        height: 14px;
+      }
+    }
+
+    .focus-circle {
+      position: absolute;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 8px;
+      height: 8px;
+
+      opacity: 0;
+      background: #9197f1;
+      border-radius: 50%;
+
+      transition: opacity 0.2s linear 0s;
+    }
+  }
+
+  &.linked .bg:not(.hasError) {
+    background: #4d53e8;
+  }
+
+  &.hovered .bg:not(.hasError) {
+    cursor: crosshair;
+    transform: scale(1, 1);
+    background: #4d53e8;
+    border: none;
+
+    & > .symbol {
+      opacity: 1;
+    }
+  }
+
+  &:hover .bg:is(.hasError) {
+    transform: scale(1, 1);
+    background: red;
+    border: none;
+
+    & > .symbol {
+      opacity: 1;
+    }
+  }
+}
+
+.cross-hair {
+  position: relative;
+  top: 2px;
+  left: 2px;
+
+  &::after,
+  &::before {
+    content: '';
+    position: absolute;
+    background: #fff;
+    border-radius: 2px;
+  }
+
+  &::after {
+    left: 4px;
+    width: 2px;
+    height: 6px;
+    box-shadow: 0 4px #fff;
+  }
+
+  &::before {
+    top: 4px;
+    width: 6px;
+    height: 2px;
+    box-shadow: 4px 0 #fff;
+  }
+}
+
+.warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tooltip {
+  transform: translateY(-8px);
+}

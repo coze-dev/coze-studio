@@ -1,0 +1,68 @@
+/* stylelint-disable custom-property-pattern */
+@import '../common/common.module.less';
+
+.chat-trace-tabs {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  :global {
+    .semi-tabs-content {
+      overflow: hidden;
+      flex: 1;
+      padding: 0;
+    }
+
+    .semi-tabs-pane-motion-overlay {
+      height: 100%;
+    }
+  }
+}
+
+
+.chat-trace-tabs-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 24px 24px 10px;
+
+  .chat-trace-tabs-bar-tab-bar {
+    cursor: pointer;
+
+    padding: 0 4px;
+
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+    color: var(--Light-usage-text---color-text-1, rgb(29 28 35 / 80%));
+
+    &.active {
+      color: var(--Light-color-brand---brand-5, #4D53E8);
+    }
+  }
+}
+
+.chat-trace-tab-pane_scroll {
+  .webkit-scrollbar_mixin();
+
+  overflow: auto;
+  height: 100%;
+}
+
+.chat-trace-tree {
+  overflow: visible;
+  height: 100%;
+  padding: 8px 24px 20px;
+}
+
+.chat-flamethread {
+  overflow: hidden;
+  height: 100%;
+  padding: 0 10px 20px 24px;
+}
+
+.resize-container-chat {
+  width: 100%;
+  height: 100%;
+}

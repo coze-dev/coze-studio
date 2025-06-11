@@ -1,0 +1,254 @@
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable selector-class-pattern */
+
+/** 覆盖 flowide 默认样式 **/
+
+body {
+  overscroll-behavior: none;
+  background: var(--coz-bg-primary);
+}
+
+.flowide-container {
+  padding: 0 8px 8px;
+  background: var(--coz-bg-primary) !important;
+
+  // IDE 内部画布颜色色值和 tabbar 对齐
+  .gedit-playground {
+    background-color: transparent !important;
+  }
+
+  .project-ide-workflow-playground {
+    background-color: rgba(0, 0, 0, 3%) !important;
+  }
+
+  #flowide-top-bar {
+    min-height: 56px!important;
+    background: var(--coz-bg-primary) !important;
+    border-bottom: none !important;
+  }
+
+  #flowide-main-panel {
+    background: var(--coz-bg-primary) !important;
+    border-radius: 8px;
+  }
+
+  #flowide-secondary-sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    background: var(--coz-bg-primary) !important;
+    border: none !important;
+  }
+
+  .lm-DockPanel-widget {
+    min-width: 360px !important;
+    border-radius: 0 0 8px 8px;
+  }
+
+  .lm-BoxPanel #flowide-primary-sidebar {
+    width: 268px !important;
+    min-width: 268px!important;
+    max-width: 500px!important;
+
+    background: var(--coz-bg-primary) !important;
+    border: none !important;
+
+    .lm-SplitPanel-child {
+      min-height: 44px;
+    }
+
+    .lm-SplitPanel-handle {
+      background: linear-gradient(to right, white 6px, var(--coz-stroke-primary) 6px, var(--coz-stroke-primary) calc(100% - 6px), white calc(100% - 6px)) !important;
+      border-right: 1px solid var(--coz-stroke-primary);
+      border-left: 1px solid var(--coz-stroke-primary);
+      transition: transform 0.2s ease-in-out;
+
+      &::after {
+        min-height: 4px !important;
+        margin-right: 6px;
+      }
+    }
+
+    .lm-SplitPanel-handle:hover::after {
+      background: linear-gradient(to right, white 6px, var(--coz-stroke-hglt) 6px, var(--coz-stroke-hglt) calc(100% - 6px), white calc(100% - 6px)) !important;
+    }
+
+    .lm-SplitPanel-handle:active::after {
+      background: linear-gradient(to right, white 6px, var(--coz-stroke-hglt) 6px, var(--coz-stroke-hglt) calc(100% - 6px), white calc(100% - 6px)) !important;
+    }
+  }
+
+  .lm-TabBar {
+    height: 44px!important;
+    min-height: 44px!important;
+    max-height: 44px!important;
+    padding: 6px 8px;
+
+    background: rgba(0, 0, 0, 3%) !important;
+    border-radius: 8px 8px 0 0!important;
+  }
+
+  // 分屏遮盖层
+  .lm-DockPanel-overlay {
+    margin-top: 44px;
+    background: rgba(148, 152, 247, 16%);
+    border: none;
+    border-radius: 0 0 8px 8px;
+  }
+
+  .lm-DockPanel-handle {
+    opacity: 0;
+    background: transparent !important;
+    transition: opacity 0.35s ease-out;
+
+    // 边上预留 1px 底色边
+    // 之所以不直接改变 handle width，是因为 handle width 和激活拖拽区域判断有关。直接更改底部颜色。
+    &:hover {
+      opacity: 1;
+      background: linear-gradient(to right, var(--coz-bg-plus) 0, var(--coz-bg-plus) 1px, var(--coz-stroke-hglt) 1px, var(--coz-stroke-hglt) 5px, var(--coz-bg-plus) 5px) !important;
+    }
+
+    &:active {
+      opacity: 1;
+      background: linear-gradient(to right, var(--coz-bg-plus) 0, var(--coz-bg-plus) 1px, var(--coz-stroke-hglt) 1px, var(--coz-stroke-hglt) 5px, var(--coz-bg-plus) 5px) !important;
+    }
+  }
+
+  .lm-TabBar-tab {
+    position: relative;
+
+    overflow: visible !important;
+
+    min-height: 32px!important;
+    max-height: 32px!important;
+    margin: 0 4px !important;
+    padding: 0 !important;
+
+    border-radius: 6px;
+
+    &:not(:first-child)::after {
+      content: '';
+
+      position: absolute;
+      top: 8px;
+      left: -4px;
+
+      width: 1px;
+      height: 16px;
+
+      background: var(--coz-stroke-primary);
+    }
+
+    // tabbar 设计稿地址：https://www.figma.com/design/EsMau3yKaVNb5q2HESGTdu/Coze-2.0-Redesign?node-id=4994-35024&node-type=canvas&t=us9tc6NhroPJoYVy-0
+    // hover、activate 前后的 tab 不展示竖线
+    &.lm-mod-current &:not(:first-child)::after {
+      display: none;
+    }
+
+    &.lm-mod-current + .lm-TabBar-tab:not(:first-child)::after {
+      display: none;
+    }
+
+    &:hover::after {
+      display: none;
+    }
+
+    &:hover + .lm-TabBar-tab {
+      &::after {
+        display: none;
+      }
+    }
+
+    .lm-TabBar-tabCloseIcon {
+      display: none;
+    }
+  }
+
+  .lm-TabBar-tab:hover:not(.lm-mod-current) {
+    background: var(--coz-mg-secondary-hovered);
+  }
+
+  .lm-TabBar-tab.lm-mod-current {
+    &::before {
+      display: none !important;
+    }
+
+    &::after {
+      display: none !important;
+    }
+
+    span {
+      font-weight: 500 !important;
+    }
+  }
+
+  .lm-TabBar-tabIcon {
+    display: block;
+    width: 100%;
+  }
+}
+
+.lm-mod-drag-image {
+  position: relative;
+
+  overflow: visible !important;
+
+  min-height: 32px!important;
+  max-height: 32px!important;
+  margin: 0 4px !important;
+  padding: 0 !important;
+
+  border-radius: 6px;
+
+  .flow-tab-icon-label {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    .flow-TabBar-tabLabel-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-break: keep-all;
+      white-space: nowrap;
+    }
+
+    span {
+      font-weight: 500 !important;
+    }
+
+    .lm-TabBar-tabIcon {
+      display: block;
+      width: 100%;
+    }
+  }
+}
+
+.flow-tab-icon-label {
+  cursor: pointer !important;
+}
+
+.flow-Menu {
+  .flow-Menu-item {
+    .flow-Menu-itemLabel {
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    .flow-Menu-itemShortcut {
+      font-weight: 700;
+      color: var(--coz-fg-dim);
+      letter-spacing: 1.2px;
+    }
+
+    &[role~="menuitem"] {
+      min-height: 32px !important;
+    }
+
+    &[role~="presentation"] {
+      height: 1px !important;
+      margin: 4px 0;
+      background-color: var(--coz-stroke-primary);
+    }
+  }
+}

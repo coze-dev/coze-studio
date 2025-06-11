@@ -1,0 +1,25 @@
+.cropper-container {
+  position: relative;
+  width: 100%;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+
+  :global {
+    .cropper-wrap-box {
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+    }
+
+    .cropper-view-box {
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+      outline: none;
+    }
+
+    .cropper-container {
+      transition: opacity 300ms cubic-bezier(0.34, 0.69, 0.1, 1);
+    }
+
+
+  }
+}

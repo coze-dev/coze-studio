@@ -1,0 +1,152 @@
+/* stylelint-disable declaration-no-important */
+@import '@coze-common/assets/style/common.less';
+
+.profile-modal {
+  .profile-left {
+    position: relative;
+    min-width: 200px;
+    padding: 0 8px;
+
+    :global {
+      .semi-tabs-tab-button.semi-tabs-tab {
+        @apply coz-fg-plus;
+
+        padding: 8px;
+
+        font-size: 14px;
+        font-weight: 500;
+        font-style: normal;
+        line-height: 20px;
+      }
+
+      .semi-tabs-tab-button.semi-tabs-tab-active,
+      .semi-tabs-tab-button:hover {
+        @apply coz-mg-primary;
+      }
+
+      .semi-tabs-tab:focus {
+        outline: none;
+      }
+
+      .semi-tabs-bar-left {
+        width: 184px;
+      }
+
+      .semi-tabs-tab-button.semi-tabs-tab-disabled {
+        cursor: default;
+        background-color: transparent;
+
+        @apply coz-fg-secondary;
+
+      }
+
+      .semi-tabs-bar-button.semi-tabs-bar-left .semi-tabs-tab:not(:last-of-type) {
+        margin-bottom: 6px;
+      }
+
+      .semi-tabs-tab:last-child::before {
+        content: none;
+      }
+    }
+  }
+
+  .divider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 200px;
+
+    height: 600px;
+
+    border-right: 1px solid var(--coz-stroke-primary);
+  }
+
+  .text-20 {
+    @apply coz-fg-plus;
+
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 28px;
+  }
+
+  .text-16 {
+    @apply coz-fg-plus;
+
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 22px;
+  }
+
+  .profile-right {
+    overflow-y: auto;
+    padding: 0 8px;
+
+    .title {
+      position: sticky;
+      z-index: 1;
+      top:0;
+
+      width: 100%;
+
+      font-size: 20px;
+      font-weight: 500 !important;
+      line-height: 40px;
+
+      @apply coz-fg-plus bg-background-2;
+    }
+
+  }
+
+  .container{
+    width: 100%;
+    height: calc(100% - 86px);
+  }
+
+  :global {
+    .semi-modal .semi-modal-content {
+      max-height: 600px;
+      padding-top:0;
+      padding-left: 0;
+
+      .semi-modal-body {
+        padding-top: 0;
+
+      }
+    }
+
+    .semi-modal-close {
+      position: absolute;
+      z-index: 2;
+      right:24px;
+      background-color: rgba(var(--coze-bg-2), 1);
+    }
+  }
+
+  /* 当浏览器窗口的高度大于等于760px时, 高度固定 */
+  @media screen and (min-height: 760px) {
+      :global {
+        .semi-modal {
+          height: 600px;
+        }
+      }
+
+      .profile-right {
+        height: 574px; // = 600px - 26px(margin-top + border)
+      }
+  }
+
+  /* 当浏览器窗口的高度小于760px时， 高度 100vh - 160px */
+  @media screen and (max-height: 759px) {
+      :global {
+        .semi-modal {
+          height: calc(100vh - 160px);
+        }
+      }
+
+      .profile-right {
+        height:  max(448px, calc(100vh - 160px - 26px));
+      }
+  }
+}
+
+

@@ -1,0 +1,27 @@
+.test-form-core {
+  padding: 12px;
+}
+
+.test-form-header {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 0;
+  padding-right: 8px;
+}
+
+.resizable-panel {
+  // 覆盖在 chat 组件输入框上方
+  // chat 组件输入框 z-index 为 50
+  z-index: 51;
+  background: var(--coz-bg-plus, rgba(252, 252, 255, 100%));
+}
+
+.form-input-operate {
+  display: flex;
+  column-gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+}

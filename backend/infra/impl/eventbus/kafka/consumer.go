@@ -9,6 +9,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/signal"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 type consumerImpl struct {
@@ -44,22 +45,22 @@ func NewConsumer(broker string, topic, groupID string, handler eventbus.Consumer
 	}
 
 	ctx := context.Background()
-	go func() {
+	safego.Go(ctx, func() {
 		for {
 			if err := consumerGroup.Consume(ctx, []string{topic}, c); err != nil {
 				logs.Errorf("consumer group consume: %v", err)
 				break
 			}
 		}
-	}()
+	})
 
-	go func() {
+	safego.Go(ctx, func() {
 		signal.WaitExit()
 
 		if err := c.consumerGroup.Close(); err != nil {
 			logs.Errorf("consumer group close: %v", err)
 		}
-	}()
+	})
 
 	return c, nil
 }

@@ -1,0 +1,28 @@
+// bad
+.a1 {
+  .b1 {
+    .c1 {
+      .d1 {
+        .e1 {
+          margin: auto;
+        }
+      }
+    }
+  }
+}
+
+// good
+.a2 .b2 .c2 .d2 .e2 {
+  margin: auto;
+}
+
+// still good
+.a3 .b3 {
+  .c3 {
+    .d3 {
+      .e3 {
+        margin: auto;
+      }
+    }
+  }
+}

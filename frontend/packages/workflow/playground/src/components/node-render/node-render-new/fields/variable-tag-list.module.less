@@ -1,0 +1,48 @@
+
+.variable-tag {
+  @apply flex items-center coz-mg-primary rounded-mini cursor-pointer coz-fg-secondary font-medium;
+
+  max-width: 100%;
+
+  .variable-tag-label {
+    @apply leading-4 text-base coz-fg-primary;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .variable-tag-icon {
+    @apply flex grow shrink-0;
+  }
+
+  &.variable-tag_default {
+    &:hover {
+      @apply coz-mg-primary-pressed;
+    }
+  }
+
+  &.variable-tag_warning {
+    @apply coz-fg-hglt-yellow coz-mg-hglt-yellow;
+
+    .variable-tag-label {
+      @apply coz-fg-hglt-yellow;
+    }
+
+    .variable-tag-icon {
+      @apply coz-fg-hglt-yellow-dim;
+    }
+  }
+
+  &.variable-tag_success {
+    @apply coz-fg-hglt-green coz-mg-hglt-green;
+
+    .variable-tag-label {
+      @apply coz-fg-hglt-green;
+    }
+
+    .variable-tag-icon {
+      @apply coz-fg-hglt-green-dim;
+    }
+  }
+}

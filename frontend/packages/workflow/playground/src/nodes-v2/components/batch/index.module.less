@@ -1,0 +1,85 @@
+/* stylelint-disable max-nesting-depth */
+/* stylelint-disable no-descending-specificity */
+
+.batch-container {
+  .input-item {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    align-items: flex-start;
+
+    margin-bottom: 8px;
+
+    .input-item-name {
+      width: 100px;
+      margin-right: 16px;
+      text-align: right;
+    }
+
+    .input-item-input {
+      flex: 1;
+    }
+  }
+
+  .input-add-icon {
+    position: absolute;
+    top: 14px;
+    right: 0
+  }
+}
+
+.batch-content {
+  padding: 12px 0 0;
+}
+
+
+.del {
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  height: 32px;
+
+  .icon {
+    padding: 4px;
+
+    &.disabled {
+      cursor: not-allowed;
+      color: var(--semi-color-disabled-text);
+
+      >svg {
+        >path {
+          fill: var(--semi-color-disabled-text);
+        }
+      }
+    }
+
+    >svg {
+      width: 20px;
+      height: 20px;
+      color: var(--light-usage-text-color-text-3, rgb(28 29 35 / 35%));
+    }
+  }
+}
+
+.columns-title{
+  padding-bottom: 8px;
+}
+
+.action-button-content {
+  display: flex;
+}
+
+.batch-form-card {
+  :global(.custom-action-button) {
+    margin-right: 32px;
+  }
+
+  :global(.array-render-rehaje-add-btn) {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+  }
+}

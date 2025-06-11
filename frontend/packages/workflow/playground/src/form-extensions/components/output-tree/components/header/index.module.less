@@ -1,0 +1,36 @@
+.header {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 0 4px;
+
+  .name {
+    flex: 1;
+  }
+
+  .type {
+    flex: 0 0 120px;
+  }
+
+  .required {
+    position: absolute;
+    left: 0;
+  }
+
+  .description {
+    width: 110px;
+
+    .description-title {
+      display: inline-flex;
+      justify-content: center;
+    }
+  }
+}
+
+.text {
+  font-size: 12px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 16px;
+  color: var(--light-usage-text-color-text-3, rgb(28 31 35 / 35%));
+}

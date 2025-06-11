@@ -22,7 +22,7 @@ type Workflow struct {
 	CreatedAt   time.Time
 	ContentType ContentType
 	Tag         *Tag
-	APPID       *int64
+	AppID       *int64
 	SourceID    *int64
 	AuthorID    int64
 	VersionDesc string
@@ -43,16 +43,14 @@ type Workflow struct {
 	InputParams  []*vo.NamedTypeInfo
 	OutputParams []*vo.NamedTypeInfo
 
-	LatestFlowVersion     string
-	LatestFlowVersionDesc string
-
 	SubWorkflows []*Workflow
 
 	TestRunSuccess bool
 	Modified       bool
 
-	HasPublished  bool
-	LatestVersion string
+	HasPublished      bool
+	LatestVersion     string
+	LatestVersionDesc string
 }
 
 type WorkflowIdentity struct {
@@ -70,7 +68,7 @@ const (
 type WorkflowBasic struct {
 	WorkflowIdentity
 	SpaceID   int64
-	APPID     *int64
+	AppID     *int64
 	NodeCount int32
 }
 
@@ -81,7 +79,7 @@ func (w *Workflow) GetBasic(nodeCount int32) *WorkflowBasic {
 			Version: w.Version,
 		},
 		SpaceID:   w.SpaceID,
-		APPID:     w.APPID,
+		AppID:     w.AppID,
 		NodeCount: nodeCount,
 	}
 }

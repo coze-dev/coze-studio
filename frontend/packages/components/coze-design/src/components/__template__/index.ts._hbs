@@ -1,0 +1,2 @@
+export { type {{pascalName}}Props } from './{{name}}-types';
+export { {{pascalName}} } from './{{name}}';

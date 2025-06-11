@@ -1,0 +1,123 @@
+import { Canvas, Meta, Controls, Story  } from '@storybook/blocks';
+
+import * as BannerStories from './stories/banner.stories';
+
+<Meta of={BannerStories} name="Docs" />
+
+# COZBanner
+
+> COZ通知横幅, 基于semi的Banner封装实现，可用于标识全页的状态或通知等，通常是常驻的，需要用户主动将其关闭。   —— [API参考](https://semi.bytedance.net/zh-CN/feedback/banner)
+
+- [组件引入](#组件引入)
+- [交互预览](#交互预览)
+- [类型 (type)](#类型)
+- [关闭 (close)](#关闭)
+- [卡片 (card)](#卡片)
+- [Props](#props)
+- [Types](#types)
+
+## 组件引入
+可从 `@coze/coze-design` 中引入 `Banner` 组件，参考如下：
+
+```tsx
+import { Banner } from '@coze/coze-design';
+```
+
+## 交互预览
+`Banner` 组件支持如下属性配置，包含有: `type`, `description`, `card` 和 `icon`，可通过调整Control参数来预览。
+
+<Canvas of={BannerStories.Default} />
+
+<Controls  />
+
+## 类型
+> `Banner` 组件支持四种预设类型，包含有: `info`, `danger`，`warning` 和 `success`
+
+- **info** ：对应color为 `brand`, token色为：`coz-mg-hglt`;
+- **success** ：对应color为 `green`, token色为：`coz-mg-hglt-green`;
+- **warning** ：对应color为 `yellow`, token色为：`coz-mg-hglt-yellow`;
+- **danger** ：对应color为 `red`, token色为：`coz-mg-hglt-red`;
+
+<Story of={BannerStories.Type} />
+
+```tsx
+import { Banner } from '@coze/coze-design';
+
+<Banner type='info' description='this is coz banner' />
+<Banner type='success' description='this is coz banner' />
+<Banner type='warning' description='this is coz banner' />
+<Banner type='danger' description='this is coz banner' />
+
+```
+## 关闭
+> `Banner` 组件支持自定义关闭样式。
+
+<Story of={BannerStories.Close} />
+
+```tsx
+import { Banner } from '@coze/coze-design';
+
+<Banner
+  fullMode={true}
+  description={(
+    <div>
+      Do not share your API key with others, or expose it in the
+      browser or other client-side.
+      <span className="coz-fg-hglt pl-2 cursor-pointer">
+        Don't Show Again
+      </span>
+    </div>
+  )}
+/>
+```
+
+## 卡片
+> `Banner` 组件支持通过组合属性模拟出卡片样式，配置属性需加上`card=true` 和 `fullMode=false`。
+
+<Story of={BannerStories.Card} />
+
+```tsx
+import { Banner } from '@coze/coze-design';
+
+<div className="coz-stroke-primary rounded w-480px p-20px">
+  <Banner
+    card={true}
+    fullMode={false}
+    title="Title"
+    type="info"
+    bordered={false}
+    description={
+      <div>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+        eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        <span className="text-brand-6 pl-2 cursor-pointer">
+          Don't Show Again
+        </span>
+      </div>
+    }
+  >
+    <div className="text-right px-12px my-12px">
+      <Button color="hgltplus" size="default">
+        No, thanks.
+      </Button>
+    </div>
+  </Banner>
+</div>
+```
+## Props
+所有semi的`banner`属性都可以在`COZbanner`组件上使用，此外还支持以下属性：
+
+| Prop        | Type                    | Description                   | Default |
+|:------------|:------------------------|:------------------------------|:--------|
+| type        | `BannerType`            | Sets the type                 | `info`  |
+| description | `string` or `ReactNode` | Sets the description          | `null`  |
+| card        | `Boolean`               | Sets the the banner card mode | `false` |
+| icon        | `null` or `ReactNode`   | Sets the the banner icon      | `null`  |
+| className   | `String`                | Sets the banner class         |         |
+
+## Types
+COZBanner 扩展类型参考如下：
+
+```tsx
+export type BannerType= 'info' | 'danger' | 'warning' | 'success'
+```

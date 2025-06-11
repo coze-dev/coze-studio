@@ -302,10 +302,11 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 				"date":  "2025-01-01 00:00:00",
 			},
 			{
-				"id":    "2",
-				"name":  "Jane Smith",
-				"score": "90.5",
-				"date":  "2025-01-01 01:00:00",
+				"id":         "2",
+				"name":       "Jane Smith",
+				"score":      "90.5",
+				"date":       "2025-01-01 01:00:00",
+				"bstudio_id": "1",
 			},
 		},
 	}
@@ -483,6 +484,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NotNil(t, insertResp)
 	assert.NotNil(t, insertResp.RowsAffected)
 	assert.Equal(t, 2, len(insertResp.Records))
+	assert.Equal(t, 1, len(insertResp.Records[0]))
 	assert.Equal(t, int64(2), *insertResp.RowsAffected)
 
 	limit := int64(10)

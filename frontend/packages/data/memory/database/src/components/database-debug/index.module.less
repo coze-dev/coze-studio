@@ -1,0 +1,50 @@
+/* stylelint-disable declaration-no-important */
+
+.modal-content-tabs {
+  :global {
+    .semi-tabs {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+
+    }
+
+    .semi-tabs-content {
+      height: calc(100% - 40px);
+      padding: 0 !important;
+      padding-bottom: 0;
+    }
+
+    .semi-tabs-pane {
+      height: 100%;
+    }
+
+    .semi-tabs-pane-motion-overlay {
+      height: 100%;
+    }
+  }
+}
+
+.tab-bar-box {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: flex-start;
+
+  padding: 8px 0 8px 16px;
+}
+
+.tab-bar-item {
+  cursor: pointer;
+
+  font-size: 18px;
+  font-weight: 600;
+  font-style: normal;
+  line-height: 24px;
+  color: var(--Light-usage-text---color-text-2, rgba(29, 28, 35, 60%));
+  text-overflow: ellipsis;
+}
+
+.tab-bar-item-active {
+  color: #4D53E8;
+}

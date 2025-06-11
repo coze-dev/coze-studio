@@ -22,7 +22,6 @@ type CheckAndGenCopyTaskResp struct {
 	CopyTaskStatus entity.DataCopyTaskStatus
 	FailReason     string
 	TargetID       int64
-	CopyTaskID     int64
 }
 
 type UpdateCopyTaskReq struct {

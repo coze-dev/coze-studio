@@ -1,6 +1,7 @@
 package workflow
 
 import (
+	"github.com/cloudwego/eino/compose"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
@@ -43,10 +44,12 @@ type ServiceComponents struct {
 	DomainNotifier     search.ResourceEventBus
 	Tos                storage.Storage
 	ImageX             imagex.ImageX
+	CPStore            compose.CheckPointStore
 }
 
 func InitService(components *ServiceComponents) *ApplicationService {
-	workflowRepo := service.NewWorkflowRepository(components.IDGen, components.DB, components.Cache, components.Tos)
+	workflowRepo := service.NewWorkflowRepository(components.IDGen, components.DB, components.Cache,
+		components.Tos, components.CPStore)
 	workflow.SetRepository(workflowRepo)
 
 	workflowDomainSVC := service.NewWorkflowService(workflowRepo)

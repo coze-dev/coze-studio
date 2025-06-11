@@ -1,0 +1,44 @@
+.upload-status-wrap {
+  display: flex;
+  align-items: center;
+  line-height: 22px;
+
+  :global {
+    .semi-icon {
+      float: left;
+      margin: 0 5px -3px 0;
+    }
+
+    .semi-progress-horizontal {
+      margin-top: 2px;
+    }
+  }
+}
+
+.retry {
+  cursor: pointer;
+
+  :global {
+    .semi-icon {
+      float: left;
+      margin: 3px 3px 0 0;
+    }
+  }
+}
+
+.retry-text {
+  margin-left: 3px;
+  color: rgb(77 83 232 / 100%);
+}
+
+
+.disabled-retry {
+  .retry-text {
+    cursor: not-allowed;
+    color: #ccc;
+  }
+}
+
+.no-retry-text {
+  cursor: not-allowed;
+}

@@ -1,0 +1,17 @@
+/* stylelint-disable declaration-no-important */
+.node-render-new-header {
+  width: 100%;
+
+  >div:first-child {
+    width: 100%;
+    margin-bottom: 0;
+  }
+
+  >div:not(:first-child) {
+    display: none;
+  }
+
+  :global(.node-header-description) {
+    display: block !important;
+  }
+}

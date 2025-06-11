@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"errors"
+	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -12,6 +13,7 @@ type UpdateConfig struct {
 	DatabaseInfoID int64
 	ClauseGroup    *database.ClauseGroup
 	OutputConfig   map[string]*vo.TypeInfo
+	InputTimeTypes map[string]*vo.TypeInfo
 	Updater        database.DatabaseOperator
 }
 
@@ -43,11 +45,20 @@ func NewUpdate(ctx context.Context, cfg *UpdateConfig) (*Update, error) {
 }
 
 func (u *Update) Update(ctx context.Context, inventory *UpdateInventory) (map[string]any, error) {
+	fields := make(map[string]any)
+
+	for key, value := range inventory.Fields {
+		if _, ok := u.config.InputTimeTypes[key]; ok {
+			fields[key] = value.(time.Time).Format(time.DateTime)
+		} else {
+			fields[key] = value
+		}
+	}
 
 	req := &database.UpdateRequest{
 		DatabaseInfoID: u.config.DatabaseInfoID,
 		ConditionGroup: inventory.ConditionGroup,
-		Fields:         inventory.Fields,
+		Fields:         fields,
 		IsDebugRun:     isDebugExecute(ctx),
 	}
 

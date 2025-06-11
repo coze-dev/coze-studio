@@ -1,0 +1,72 @@
+.markdown-editor {
+  position: relative;
+
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  padding: 6px 12px;
+
+  background-color: #fff;
+  // rgb mark
+  border: 1px solid;
+  border-color: rgb(6 7 9 / 10%);
+  border-radius: 8px;
+
+  &.markdown-editor-drag {
+    box-shadow: 0 0 0 2px #DADCFB;
+  }
+
+  &:focus-within {
+    border-color: #34F;
+  }
+
+  .markdown-action-bar {
+    flex-shrink: 0;
+
+    box-sizing: border-box;
+    width: 100%;
+    height: 40px;
+    margin-bottom: 8px;
+    padding: 8px 0;
+
+    border-bottom: 1px solid rgb(6 7 9 / 10%);
+  }
+
+  .markdown-editor-wrapper {
+    flex: 1;
+
+  }
+
+  .markdown-editor-content {
+    resize: none;
+
+    width: 100%;
+    height: 100%;
+    padding: 0;
+
+    // 这里不需要背景色 强行覆盖
+    /* stylelint-disable-next-line declaration-no-important */
+    background-color: inherit !important;
+    border: none;
+    outline: none;
+
+    &::selection {
+      background: rgb(77 83 232 / 20%);
+    }
+
+    >textarea {
+      width: 100%;
+      height: 100%;
+      /* stylelint-disable-next-line declaration-no-important */
+      padding: 0 !important;
+
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 22px;
+
+      // rgb mark
+      color: #383743;
+    }
+  }
+}

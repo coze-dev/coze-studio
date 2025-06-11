@@ -3,10 +3,11 @@
 package coze
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	"context"
 	"strconv"
+
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -156,6 +157,7 @@ func PublicDuplicateProduct(ctx context.Context, c *app.RequestContext) {
 	// todo lj
 
 	resp := new(product_public_api.DuplicateProductResponse)
+	resp.Data = new(product_public_api.DuplicateProductData)
 
 	switch req.GetEntityType() {
 	case product_common.ProductEntityType_BotTemplate:

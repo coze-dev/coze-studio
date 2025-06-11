@@ -1,0 +1,21 @@
+{
+  "name": "rush-commitlint",
+  "version": "1.0.0",
+  "private": true,
+  "author": "fanwenjie.fe@bytedance.com",
+  "config": {
+    "commitizen": {
+      "path": "common/autoinstallers/rush-commitlint/node_modules/cz-customizable"
+    }
+  },
+  "dependencies": {
+    "@commitlint/cli": "^17.2.0",
+    "@commitlint/config-conventional": "^17.2.0",
+    "@rushstack/rush-sdk": "5.100.2",
+    "commitizen": "^4.2.6",
+    "cz-customizable": "^7.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.9"
+  }
+}

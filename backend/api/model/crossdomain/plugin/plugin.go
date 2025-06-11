@@ -58,6 +58,10 @@ func (p PluginInfo) GetAuthInfo() *AuthV2 {
 	return p.Manifest.Auth
 }
 
+func (p PluginInfo) IsOfficial() bool {
+	return p.RefProductID != nil
+}
+
 type VersionAgentTool struct {
 	ToolName *string
 	ToolID   int64

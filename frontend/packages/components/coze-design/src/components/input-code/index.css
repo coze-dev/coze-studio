@@ -1,0 +1,5 @@
+.coz-input-code {
+  input {
+    @apply text-center;
+  }
+}

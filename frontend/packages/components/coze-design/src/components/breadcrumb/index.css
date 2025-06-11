@@ -1,0 +1,18 @@
+.coz-breadcrumb {
+  .semi-breadcrumb-item-wrap {
+    @apply mr-8px;
+  }
+
+  .semi-breadcrumb-item {
+    @apply coz-fg-secondary hover:coz-fg-primary active:coz-fg-plus;
+    @apply mr-8px;
+  }
+
+  .semi-breadcrumb-separator, {
+    @apply coz-fg-secondary;
+  }
+
+  .semi-breadcrumb-item-active {
+    @apply coz-fg-plus hover:coz-fg-plus active:coz-fg-plus;
+  }
+}

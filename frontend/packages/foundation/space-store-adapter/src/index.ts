@@ -1,0 +1,1 @@
+export { useSpaceStore } from './space';

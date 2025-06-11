@@ -24,6 +24,8 @@ var needAuthPath = map[string]bool{
 	"/v1/conversation/create":       true,
 	"/v1/conversation/message/list": true,
 	"/v1/files/upload":              true,
+	"/v1/workflow/stream_run":       true,
+	"/v1/workflow/stream_resume":    true,
 }
 
 var needAuthFunc = map[string]bool{
@@ -64,11 +66,13 @@ func isNeedOpenapiAuth(c *app.RequestContext) bool {
 
 func OpenapiAuthMW() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
-		if !isNeedOpenapiAuth(c) {
+		requestAuthType := c.GetInt32(RequestAuthTypeStr)
+		if requestAuthType != int32(RequestAuthTypeOpenAPI) {
 			c.Next(ctx)
 			return
 		}
 
+		// open api auth
 		if len(c.Request.Header.Get(HeaderAuthorizationKey)) == 0 {
 			httputil.InternalError(ctx, c,
 				errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "missing authorization in header")))

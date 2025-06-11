@@ -1,0 +1,17 @@
+// bad
+// bad
+/* stylelint-disable plugin/disallow-first-level-global */
+:global {
+  .semi-button {
+    width: 300px;
+  }
+}
+
+// ok
+.a {
+  :global {
+    .semi-button {
+      width: 300px;
+    }
+  }
+}

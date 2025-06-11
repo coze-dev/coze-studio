@@ -1,0 +1,27 @@
+{
+  "name": "@coze-arch/postcss-config",
+  "version": "0.0.1",
+  "author": "huangjian@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.js",
+  "scripts": {
+    "build": "exit",
+    "dev": "npm run build -- -w",
+    "lint": "eslint ./ --cache --quiet",
+    "test": "exit",
+    "test:cov": "exit"
+  },
+  "dependencies": {
+    "@csstools/postcss-is-pseudo-class": "^4.0.5",
+    "@tailwindcss/nesting": "latest",
+    "postcss": "^8.4.32",
+    "postcss-import": "^16.1.0",
+    "postcss-loader": "^7.3.3",
+    "postcss-nesting": "^12.1.0"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@types/node": "^18"
+  }
+}

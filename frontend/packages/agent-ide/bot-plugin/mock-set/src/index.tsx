@@ -1,0 +1,1 @@
+// export { DemoComponent } from './demo';

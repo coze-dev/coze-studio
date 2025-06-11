@@ -32,18 +32,22 @@ func NewToolService(client service.PluginService, tos storage.Storage) crossplug
 	return &toolService{client: client, tos: tos}
 }
 
-func (t *toolService) getPluginsWithTools(ctx context.Context, pluginEntity *crossplugin.PluginEntity, toolIDs []int64, isDraft bool) (*entity.PluginInfo, []*entity.ToolInfo, error) {
+type pluginInfo struct {
+	*entity.PluginInfo
+	LatestVersion *string
+}
 
+func (t *toolService) getPluginsWithTools(ctx context.Context, pluginEntity *crossplugin.PluginEntity, toolIDs []int64, isDraft bool) (*pluginInfo, []*entity.ToolInfo, error) {
 	var pluginsInfo []*entity.PluginInfo
+	var latestPluginInfo *entity.PluginInfo
 	pluginID := pluginEntity.PluginID
-	isDraft = isDraft || (pluginEntity.PluginVersion != nil && *pluginEntity.PluginVersion == "0") // application plugin version use 0 for draft
 	if isDraft {
 		plugins, err := t.client.MGetDraftPlugins(ctx, []int64{pluginID})
 		if err != nil {
 			return nil, nil, err
 		}
 		pluginsInfo = plugins
-	} else if pluginEntity.PluginVersion == nil {
+	} else if pluginEntity.PluginVersion == nil || (pluginEntity.PluginVersion != nil && *pluginEntity.PluginVersion == "") {
 		plugins, err := t.client.MGetOnlinePlugins(ctx, []int64{pluginID})
 		if err != nil {
 			return nil, nil, err
@@ -59,6 +63,17 @@ func (t *toolService) getPluginsWithTools(ctx context.Context, pluginEntity *cro
 		}
 		pluginsInfo = plugins
 
+		onlinePlugins, err := t.client.MGetOnlinePlugins(ctx, []int64{pluginID})
+		if err != nil {
+			return nil, nil, err
+		}
+		for _, pi := range onlinePlugins {
+			if pi.ID == pluginID {
+				latestPluginInfo = pi
+				break
+			}
+		}
+
 	}
 
 	var pInfo *entity.PluginInfo
@@ -73,27 +88,44 @@ func (t *toolService) getPluginsWithTools(ctx context.Context, pluginEntity *cro
 	}
 
 	var toolsInfo []*entity.ToolInfo
+
 	if isDraft {
 		tools, err := t.client.MGetDraftTools(ctx, toolIDs)
 		if err != nil {
 			return nil, nil, err
 		}
 		toolsInfo = tools
-	} else {
+	} else if pluginEntity.PluginVersion == nil || (pluginEntity.PluginVersion != nil && *pluginEntity.PluginVersion == "") {
 		tools, err := t.client.MGetOnlineTools(ctx, toolIDs)
+		if err != nil {
+			return nil, nil, err
+		}
+		toolsInfo = tools
+	} else {
+		eVersionTools := slices.Transform(toolIDs, func(tid int64) entity.VersionTool {
+			return entity.VersionTool{
+				ToolID:  tid,
+				Version: *pluginEntity.PluginVersion,
+			}
+		})
+		tools, err := t.client.MGetVersionTools(ctx, eVersionTools)
 		if err != nil {
 			return nil, nil, err
 		}
 		toolsInfo = tools
 	}
 
-	return pInfo, toolsInfo, nil
+	if latestPluginInfo != nil {
+		return &pluginInfo{PluginInfo: pInfo, LatestVersion: latestPluginInfo.Version}, toolsInfo, nil
+	}
+
+	return &pluginInfo{PluginInfo: pInfo}, toolsInfo, nil
 }
 
 func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplugin.PluginToolsInvokableRequest) (map[int64]tool.InvokableTool, error) {
 	var toolsInfo []*entity.ToolInfo
-
-	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, &crossplugin.PluginEntity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, maps.Keys(req.ToolsInvokableInfo), req.IsDraft)
+	isDraft := req.IsDraft || (req.PluginEntity.PluginVersion != nil && *req.PluginEntity.PluginVersion == "0")
+	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, &crossplugin.PluginEntity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, maps.Keys(req.ToolsInvokableInfo), isDraft)
 	if err != nil {
 		return nil, err
 	}
@@ -107,14 +139,17 @@ func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplu
 			},
 			client:   t.client,
 			toolInfo: tf,
+			IsDraft:  isDraft,
 		}
-		if r, ok := req.ToolsInvokableInfo[tf.ID]; ok {
+
+		if r, ok := req.ToolsInvokableInfo[tf.ID]; ok && (r.RequestAPIParametersConfig != nil && r.ResponseAPIParametersConfig != nil) {
 			reqPluginCommonAPIParameters := slices.Transform(r.RequestAPIParametersConfig, toPluginCommonAPIParameter)
 			respPluginCommonAPIParameters := slices.Transform(r.ResponseAPIParametersConfig, toPluginCommonAPIParameter)
 			tl.toolOperation, err = pluginutil.APIParamsToOpenapiOperation(reqPluginCommonAPIParameters, respPluginCommonAPIParameters)
 			if err != nil {
 				return nil, err
 			}
+
 		}
 
 		result[tf.ID] = tl
@@ -125,8 +160,8 @@ func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplu
 
 func (t *toolService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.PluginToolsInfoRequest) (*crossplugin.PluginToolsInfoResponse, error) {
 	var toolsInfo []*entity.ToolInfo
-
-	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, &crossplugin.PluginEntity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, req.ToolIDs, req.IsDraft)
+	isDraft := req.IsDraft || (req.PluginEntity.PluginVersion != nil && *req.PluginEntity.PluginVersion == "0")
+	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, &crossplugin.PluginEntity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, req.ToolIDs, isDraft)
 	if err != nil {
 		return nil, err
 	}
@@ -135,15 +170,18 @@ func (t *toolService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.P
 	if err != nil {
 		return nil, err
 	}
+
 	response := &crossplugin.PluginToolsInfoResponse{
-		PluginID:     pInfo.ID,
-		SpaceID:      pInfo.SpaceID,
-		Version:      pInfo.GetVersion(),
-		PluginName:   pInfo.GetName(),
-		Description:  pInfo.GetDesc(),
-		IconURL:      url,
-		PluginType:   int64(pInfo.PluginType),
-		ToolInfoList: make(map[int64]crossplugin.ToolInfo),
+		PluginID:      pInfo.ID,
+		SpaceID:       pInfo.SpaceID,
+		Version:       pInfo.GetVersion(),
+		PluginName:    pInfo.GetName(),
+		Description:   pInfo.GetDesc(),
+		IconURL:       url,
+		PluginType:    int64(pInfo.PluginType),
+		ToolInfoList:  make(map[int64]crossplugin.ToolInfo),
+		LatestVersion: pInfo.LatestVersion,
+		IsOfficial:    pInfo.IsOfficial(),
 	}
 
 	for _, tf := range toolsInfo {
@@ -187,6 +225,7 @@ type pluginInvokeTool struct {
 	client        service.PluginService
 	toolInfo      *entity.ToolInfo
 	toolOperation *openapi3.Operation
+	IsDraft       bool
 }
 
 func (p *pluginInvokeTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
@@ -223,13 +262,19 @@ func (p *pluginInvokeTool) InvokableRun(ctx context.Context, argumentsInJSON str
 	execOpts := []entity.ExecuteToolOpt{
 		plugin.WithInvalidRespProcessStrategy(plugin.InvalidResponseProcessStrategyOfReturnDefault),
 	}
+
 	if p.pluginEntity.PluginVersion != nil {
 		execOpts = append(execOpts, plugin.WithToolVersion(*p.pluginEntity.PluginVersion))
+	}
+
+	if p.IsDraft {
+		req.ExecDraftTool = true
 	}
 
 	if p.toolOperation != nil {
 		execOpts = append(execOpts, plugin.WithOpenapiOperation(ptr.Of(plugin.Openapi3Operation(*p.toolOperation))))
 	}
+
 	r, err := p.client.ExecuteTool(ctx, req, execOpts...)
 	if err != nil {
 		return "", err

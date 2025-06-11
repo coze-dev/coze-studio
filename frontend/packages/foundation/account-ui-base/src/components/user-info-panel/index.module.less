@@ -1,0 +1,92 @@
+.update-avatar {
+  margin-bottom: 24px;
+}
+
+.edit-profile {
+  :global {
+    .coz-icon-button-mini {
+      line-height: 1;
+    }
+
+    .coz-typography {
+      @apply coz-fg-primary;
+    }
+  }
+}
+
+.label-wrap {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  align-self: flex-start;
+  justify-content: flex-start;
+
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.label {
+  width: 76px;
+  margin-bottom: 0;
+
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.submit {
+  width: 100%;
+  margin-top: 48px;
+}
+
+.count {
+  margin: 0 12px 0 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: #737577;
+}
+
+.upload-button {
+  font-size: 12px;
+  line-height: 16px;
+
+  a {
+    font-weight: 400;
+    color: var(--light-usage-primary-color-primary, #0077fa);
+  }
+}
+
+.filed-readonly {
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  .text {
+    line-height: 20px;
+  }
+
+  > button {
+    > button:last-child,
+    > span:last-child {
+      margin-left: 4px;
+    }
+  }
+}
+
+.field-edit {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+
+  .field-edit-children {
+    flex: 1;
+  }
+
+  .field-btn {
+    align-self: end;
+  }
+
+  .btn {
+    margin-left: 16px;
+  }
+}

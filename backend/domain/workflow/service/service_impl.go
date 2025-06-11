@@ -47,8 +47,9 @@ func NewWorkflowService(repo workflow.Repository) workflow.Service {
 	}
 }
 
-func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, tos storage.Storage) workflow.Repository {
-	return repo.NewRepository(idgen, db, redis, tos)
+func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, tos storage.Storage,
+	cpStore einoCompose.CheckPointStore) workflow.Repository {
+	return repo.NewRepository(idgen, db, redis, tos, cpStore)
 }
 
 func (i *impl) MGetWorkflows(ctx context.Context, identifies []*entity.WorkflowIdentity) ([]*entity.Workflow, error) {
@@ -197,7 +198,7 @@ func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *ent
 		URI:           &wf.IconURI,
 		Name:          &wf.Name,
 		Desc:          &wf.Desc,
-		APPID:         wf.APPID,
+		APPID:         wf.AppID,
 		SpaceID:       &wf.SpaceID,
 		OwnerID:       &wf.CreatorID,
 		Mode:          ptr.Of(int32(wf.Mode)),
@@ -222,10 +223,7 @@ func (i *impl) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
 	}
 
 	var inputParams, outputParams string
-	inputs, outputs, err := extractInputsAndOutputsNamedInfoList(c)
-	if err != nil {
-		return err
-	}
+	inputs, outputs := extractInputsAndOutputsNamedInfoList(c)
 	inputParams, err = sonic.MarshalString(inputs)
 	if err != nil {
 		return err
@@ -244,11 +242,18 @@ func (i *impl) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
 	return i.repo.CreateOrUpdateDraft(ctx, draft.ID, *draft.Canvas, inputParams, outputParams, resetTestRun)
 }
 
-func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeInfo, outputs []*vo.NamedTypeInfo, err error) {
+func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeInfo, outputs []*vo.NamedTypeInfo) {
+	defer func() {
+		if err := recover(); err != nil {
+			logs.Warnf("failed to extract inputs and outputs: %v", err)
+		}
+	}()
 	var (
 		startNode *vo.Node
 		endNode   *vo.Node
 	)
+	inputs = make([]*vo.NamedTypeInfo, 0)
+	outputs = make([]*vo.NamedTypeInfo, 0)
 	for _, node := range c.Nodes {
 		if startNode != nil && endNode != nil {
 			break
@@ -261,37 +266,34 @@ func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeI
 		}
 	}
 
-	if startNode == nil {
-		return nil, nil, fmt.Errorf("invalid canvas, can not find start node in canvas")
-	}
-
-	if endNode == nil {
-		return nil, nil, fmt.Errorf("invalid canvas, can not find end node in canvas")
-	}
-
-	inputs, err = slices.TransformWithErrorCheck(startNode.Data.Outputs, func(o any) (*vo.NamedTypeInfo, error) {
-		v, err := vo.ParseVariable(o)
+	var err error
+	if startNode != nil {
+		inputs, err = slices.TransformWithErrorCheck(startNode.Data.Outputs, func(o any) (*vo.NamedTypeInfo, error) {
+			v, err := vo.ParseVariable(o)
+			if err != nil {
+				return nil, err
+			}
+			nInfo, err := adaptor.VariableToNamedTypeInfo(v)
+			if err != nil {
+				return nil, err
+			}
+			return nInfo, nil
+		})
 		if err != nil {
-			return nil, err
+			logs.Warn(fmt.Sprintf("transform start node outputs to named info failed, err=%v", err))
 		}
-		nInfo, err := adaptor.VariableToNamedTypeInfo(v)
+	}
+
+	if endNode != nil {
+		outputs, err = slices.TransformWithErrorCheck(endNode.Data.Inputs.InputParameters, func(a *vo.Param) (*vo.NamedTypeInfo, error) {
+			return adaptor.BlockInputToNamedTypeInfo(a.Name, a.Input)
+		})
 		if err != nil {
-			return nil, err
+			logs.Warn(fmt.Sprintf("transform end node inputs to named info failed, err=%v", err))
 		}
-		return nInfo, nil
-	})
-	if err != nil {
-		return nil, nil, err
 	}
 
-	outputs, err = slices.TransformWithErrorCheck(endNode.Data.Inputs.InputParameters, func(a *vo.Param) (*vo.NamedTypeInfo, error) {
-		return adaptor.BlockInputToNamedTypeInfo(a.Name, a.Input)
-	})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return inputs, outputs, nil
+	return inputs, outputs
 }
 
 func (i *impl) DeleteWorkflow(ctx context.Context, id int64) error {
@@ -466,8 +468,8 @@ func (i *impl) GetReleasedWorkflows(ctx context.Context, wfEntities []*entity.Wo
 	for wfID, latestVersion := range wfID2LatestVersion {
 		if meta, ok := workflowMetas[wfID]; ok {
 			meta.Version = wfID2CurrentVersion[wfID]
-			meta.LatestFlowVersion = latestVersion.Version
-			meta.LatestFlowVersionDesc = latestVersion.VersionDescription
+			meta.LatestVersion = latestVersion.Version
+			meta.LatestVersionDesc = latestVersion.VersionDescription
 
 			inputNamedTypeInfos := make([]*vo.NamedTypeInfo, 0)
 			err = sonic.UnmarshalString(latestVersion.InputParams, &inputNamedTypeInfos)
@@ -547,7 +549,7 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 			}
 			issues, err = validateWorkflowTree(ctx, vo.ValidateTreeConfig{
 				CanvasSchema: ptr.From(wf.Canvas),
-				APPID:        wf.APPID, // application workflow use same app id
+				APPID:        wf.AppID, // application workflow use same app id
 			})
 			if err != nil {
 				return nil, err
@@ -570,7 +572,7 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 // AsyncExecuteWorkflow executes the specified workflow asynchronously, returning the execution ID.
 // Intermediate results are not emitted on the fly.
 // The caller is expected to poll the execution status using the GetExecution method and the returned execution ID.
-func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string, config vo.ExecuteConfig) (int64, error) {
+func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (int64, error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -602,6 +604,10 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 		return 0, fmt.Errorf("failed to create workflow: %w", err)
 	}
 
+	if wfEntity.AppID != nil && config.AppID == nil {
+		config.AppID = wfEntity.AppID
+	}
+
 	convertedInput, err := convertInputs(input, wf.Inputs())
 	if err != nil {
 		return 0, fmt.Errorf("failed to convert inputs: %w", err)
@@ -628,7 +634,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 	return executeID, nil
 }
 
-func (i *impl) AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]string, config vo.ExecuteConfig) (int64, error) {
+func (i *impl) AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]any, config vo.ExecuteConfig) (int64, error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -721,6 +727,15 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 		return nil, fmt.Errorf("failed to create workflow: %w", err)
 	}
 
+	if wfEntity.AppID != nil && config.AppID == nil {
+		config.AppID = wfEntity.AppID
+	}
+
+	input, err = convertInputs(input, wf.Inputs())
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert inputs: %w", err)
+	}
+
 	inStr, err := sonic.MarshalString(input)
 	if err != nil {
 		return nil, err
@@ -798,7 +813,12 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 	}
 
 	if found {
-		wfExeEntity.InterruptEvents = []*entity.InterruptEvent{interruptEvent}
+		// if we are currently interrupted, return this interrupt event,
+		// otherwise only return this event if it's the current resuming event
+		if wfExeEntity.Status == entity.WorkflowInterrupted ||
+			(wfExeEntity.CurrentResumingEventID != nil && *wfExeEntity.CurrentResumingEventID == interruptEvent.ID) {
+			wfExeEntity.InterruptEvents = []*entity.InterruptEvent{interruptEvent}
+		}
 	}
 
 	return wfExeEntity, nil
@@ -990,6 +1010,13 @@ func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeReques
 		return fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
+	config.AppID = wfExe.AppID
+	config.AgentID = wfExe.AgentID
+
+	if config.ConnectorID == 0 {
+		config.ConnectorID = wfExe.ConnectorID
+	}
+
 	if wfExe.Mode == vo.ExecuteModeNodeDebug {
 		nodeExes, err := i.repo.GetNodeExecutionsByWfExeID(ctx, wfExe.ID)
 		if err != nil {
@@ -1088,6 +1115,13 @@ func (i *impl) StreamResumeWorkflow(ctx context.Context, req *entity.ResumeReque
 	wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(wfExe.WorkflowIdentity.ID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create workflow: %w", err)
+	}
+
+	config.AppID = wfExe.AppID
+	config.AgentID = wfExe.AgentID
+
+	if config.ConnectorID == 0 {
+		config.ConnectorID = wfExe.ConnectorID
 	}
 
 	sr, sw := schema.Pipe[*entity.Message](10)
@@ -1548,7 +1582,8 @@ func (i *impl) MGetWorkflowDetailInfo(ctx context.Context, identifies []*entity.
 	if err != nil {
 		return nil, err
 	}
-	for _, w := range wfs {
+	for idx := range wfs {
+		w := wfs[idx]
 		v, err := i.repo.GetLatestWorkflowVersion(ctx, w.ID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -1557,8 +1592,8 @@ func (i *impl) MGetWorkflowDetailInfo(ctx context.Context, identifies []*entity.
 			return nil, err
 		}
 
-		w.LatestFlowVersion = v.Version
-		w.LatestFlowVersionDesc = v.VersionDescription
+		w.LatestVersion = v.Version
+		w.LatestVersionDesc = v.VersionDescription
 	}
 	return wfs, nil
 }
@@ -1594,7 +1629,7 @@ func (i *impl) CopyWorkflow(ctx context.Context, spaceID int64, workflowID int64
 		URI:           &wf.IconURI,
 		Name:          &wf.Name,
 		Desc:          &wf.Desc,
-		APPID:         wf.APPID,
+		APPID:         wf.AppID,
 		SpaceID:       &wf.SpaceID,
 		OwnerID:       &wf.CreatorID,
 		PublishStatus: ptr.Of(search.UnPublished),

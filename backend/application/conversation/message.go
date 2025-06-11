@@ -5,8 +5,8 @@ import (
 	"errors"
 	"strconv"
 
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	singleAgentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
@@ -26,7 +26,7 @@ func (c *ConversationApplicationService) GetMessageList(ctx context.Context, mr 
 		return nil, err
 	}
 
-	currentConversation, isNewCreate, err := c.getCurrentConversation(ctx, *userID, agentID, conversation.Scene(*mr.Scene), nil)
+	currentConversation, isNewCreate, err := c.getCurrentConversation(ctx, *userID, agentID, *mr.Scene, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -104,11 +104,11 @@ func (c *ConversationApplicationService) buildAgentInfo(ctx context.Context, age
 	return result, nil
 }
 
-func (c *ConversationApplicationService) getCurrentConversation(ctx context.Context, userID int64, agentID int64, scene conversation.Scene, connectorID *int64) (*convEntity.Conversation, bool, error) {
+func (c *ConversationApplicationService) getCurrentConversation(ctx context.Context, userID int64, agentID int64, scene common.Scene, connectorID *int64) (*convEntity.Conversation, bool, error) {
 	var currentConversation *convEntity.Conversation
 	var isNewCreate bool
 
-	if connectorID == nil && scene == conversation.ScenePlayground {
+	if connectorID == nil && scene == common.Scene_Playground {
 		connectorID = ptr.Of(consts.CozeConnectorID)
 	}
 

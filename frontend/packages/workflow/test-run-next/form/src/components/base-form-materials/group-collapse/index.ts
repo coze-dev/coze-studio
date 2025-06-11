@@ -1,0 +1,1 @@
+export { GroupCollapse } from './collapse';

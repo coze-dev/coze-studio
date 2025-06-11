@@ -1,0 +1,88 @@
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable no-descending-specificity */
+.ui-modal {
+  :global {
+    .semi-modal {
+      width: 446px;
+    }
+
+    .semi-modal-content {
+      position: relative;
+      min-height: 144px;
+      // 上下边距 70px
+      max-height: calc(100vh - 140px);
+      background-color: #f5f7fa;
+
+      .semi-modal-header {
+        margin-bottom: 16px;
+      }
+
+      .semi-modal-body {
+        overflow: auto;
+        padding: 16px 0;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
+
+        &.semi-modal-withIcon {
+          margin-left: unset;
+        }
+      }
+    }
+
+    // header关闭iconbtn样式
+    .semi-modal-header {
+      .semi-button-with-icon-only {
+        height: 24px;
+        padding: 4px !important;
+        border-radius: 4px;
+
+        svg {
+          width: 16px;
+          height: 16px;
+        }
+      }
+
+      //图标按钮hover
+      .semi-button-with-icon-only.semi-button-borderless:not(.semi-button-disabled):hover {
+        background: var(--light-usage-fill-color-fill-1,
+            rgb(46 46 56 / 8%));
+      }
+
+      //图标按钮active
+      .semi-button-with-icon-only.semi-button-borderless:not(.semi-button-disabled):active {
+        background: var(--light-usage-fill-color-fill-2,
+            rgb(46 46 56 / 12%));
+      }
+    }
+  }
+}
+
+.modal-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  align-items: flex-start;
+
+  width: 382px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.modal-item {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  align-self: stretch;
+}
+
+.modal-text {
+  font-size: 12px;
+  font-weight: 600;
+  font-style: normal;
+  line-height: 16px;
+  color: #1D1C23;
+  text-align: justify;
+}

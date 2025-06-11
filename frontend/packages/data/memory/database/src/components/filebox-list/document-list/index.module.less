@@ -1,0 +1,47 @@
+/* stylelint-disable max-nesting-depth */
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable selector-class-pattern */
+.table {
+  :global {
+
+    // 去除顶部 margin 防止 header 出现意外的滚动
+    .semi-table-wrapper {
+      margin-top: 0 !important;
+    }
+
+    // 去除 table 自身的滚动，使用外层容器的滚动加载，配合 useInfiniteScroll 使用
+    .semi-table-body {
+      overflow: visible !important;
+      max-height: none !important;
+    }
+  }
+}
+
+// 文档名称列
+.column-document-name {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: rgba(29, 28, 35, 100%)
+}
+
+// 文件大小列
+.column-document-size {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: rgba(29, 28, 35, 60%)
+}
+
+// 上传时间列
+.column-document-update-time {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: rgba(29, 28, 35, 60%)
+}

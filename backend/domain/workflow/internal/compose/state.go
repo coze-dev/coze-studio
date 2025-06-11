@@ -36,6 +36,7 @@ type State struct {
 
 	ToolInterruptEvents map[vo.NodeKey]map[string] /*ToolCallID*/ *entity.ToolInterruptEvent `json:"tool_interrupt_events,omitempty"`
 	LLMToResumeData     map[vo.NodeKey]string                                                `json:"llm_to_resume_data,omitempty"`
+	AppVariableStore    map[string]any                                                       `json:"variable_app_store,omitempty"`
 }
 
 func init() {
@@ -64,6 +65,15 @@ func init() {
 	_ = compose.RegisterSerializableType[*entity.ToolInterruptEvent]("tool_interrupt_event")
 	_ = compose.RegisterSerializableType[vo.ExecuteConfig]("execute_config")
 	_ = compose.RegisterSerializableType[vo.ExecuteMode]("execute_mode")
+}
+
+func (s *State) SetAppVariableValue(key string, value any) {
+	s.AppVariableStore[key] = value
+}
+
+func (s *State) GetAppVariableValue(key string) (any, bool) {
+	v, ok := s.AppVariableStore[key]
+	return v, ok
 }
 
 func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {
@@ -245,6 +255,7 @@ func GenState() compose.GenLocalState[*State] {
 			GroupChoices:         make(map[vo.NodeKey]map[string]int),
 			ToolInterruptEvents:  make(map[vo.NodeKey]map[string]*entity.ToolInterruptEvent),
 			LLMToResumeData:      make(map[vo.NodeKey]string),
+			AppVariableStore:     make(map[string]any),
 		}
 	}
 }
@@ -370,21 +381,44 @@ func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string
 	intermediateVarStore := &nodes.ParentIntermediateStore{}
 
 	return func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
+
+		opts := make([]variable.OptionFn, 0, 1)
+		exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
+
+		opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
+			AgentID:     exeCfg.AgentID,
+			AppID:       exeCfg.AppID,
+			ConnectorID: exeCfg.ConnectorID,
+			//ConnectorUID:
+		}))
 		out := make(map[string]any)
 		for k, v := range in {
 			out[k] = v
 		}
-
 		for _, input := range vars {
 			if input == nil {
 				continue
 			}
 			var v any
 			var err error
-			if *input.Source.Ref.VariableType == variable.ParentIntermediate {
-				v, err = intermediateVarStore.Get(ctx, input.Source.Ref.FromPath)
-			} else {
-				v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath)
+			switch *input.Source.Ref.VariableType {
+			case variable.ParentIntermediate:
+				v, err = intermediateVarStore.Get(ctx, input.Source.Ref.FromPath, opts...)
+			case variable.GlobalSystem, variable.GlobalUser:
+				v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
+			case variable.GlobalAPP:
+				var ok bool
+				path := strings.Join(input.Source.Ref.FromPath, ".")
+				if v, ok = state.GetAppVariableValue(path); !ok {
+					v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
+					if err != nil {
+						return nil, err
+					}
+
+					state.SetAppVariableValue(path, v)
+				}
+			default:
+				return nil, fmt.Errorf("invalid variable type: %v", *input.Source.Ref.VariableType)
 			}
 			if err != nil {
 				return nil, err
@@ -414,7 +448,18 @@ func (s *NodeSchema) streamStatePreHandlerForVars() compose.StreamStatePreHandle
 	intermediateVarStore := &nodes.ParentIntermediateStore{}
 
 	return func(ctx context.Context, in *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
-		variables := make(map[string]any)
+		var (
+			variables = make(map[string]any)
+			opts      = make([]variable.OptionFn, 0, 1)
+			exeCfg    = execute.GetExeCtx(ctx).RootCtx.ExeCfg
+		)
+
+		opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
+			AgentID:     exeCfg.AgentID,
+			AppID:       exeCfg.AppID,
+			ConnectorID: exeCfg.ConnectorID,
+			//ConnectorUID:
+		}))
 
 		for _, input := range vars {
 			if input == nil {
@@ -422,10 +467,27 @@ func (s *NodeSchema) streamStatePreHandlerForVars() compose.StreamStatePreHandle
 			}
 			var v any
 			var err error
-			if *input.Source.Ref.VariableType == variable.ParentIntermediate {
-				v, err = intermediateVarStore.Get(ctx, input.Source.Ref.FromPath)
-			} else {
-				v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath)
+			switch *input.Source.Ref.VariableType {
+			case variable.ParentIntermediate:
+				v, err = intermediateVarStore.Get(ctx, input.Source.Ref.FromPath, opts...)
+			case variable.GlobalSystem, variable.GlobalUser:
+				v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
+			case variable.GlobalAPP:
+				if len(input.Source.Ref.FromPath) != 1 {
+					return nil, fmt.Errorf("invalid path: %v", input.Source.Ref.FromPath)
+				}
+				var ok bool
+				path := input.Source.Ref.FromPath[0]
+				if v, ok = state.GetAppVariableValue(path); !ok {
+					v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
+					if err != nil {
+						return nil, err
+					}
+
+					state.SetAppVariableValue(path, v)
+				}
+			default:
+				return nil, fmt.Errorf("invalid variable type: %v", *input.Source.Ref.VariableType)
 			}
 			if err != nil {
 				return nil, err

@@ -1,0 +1,9 @@
+import { type HTMLAttributes } from 'react';
+
+import { type IComponentBaseProps } from '@/typings';
+
+export interface {{pascalName}}Props
+  extends IComponentBaseProps,
+    HTMLAttributes<HTMLDivElement> {
+  size?: 'small' | 'default' | 'large';
+}

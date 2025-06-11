@@ -41,10 +41,13 @@ func main() {
 
 	s := server.Default(server.WithHostPorts(addr),
 		server.WithMaxRequestBodySize(int(maxSize)))
+
+	// ContextCacheMW -> RequestInspectorMW -> AccessLogMW -> OtherMiddleware
 	s.Use(middleware.ContextCacheMW())
+	s.Use(middleware.RequestInspectorMW())
+	s.Use(middleware.AccessLogMW())
 	s.Use(middleware.OpenapiAuthMW())
 	s.Use(middleware.SessionAuthMW())
-	s.Use(middleware.AccessLogMW())
 	router.GeneratedRegister(s)
 	s.Spin()
 }

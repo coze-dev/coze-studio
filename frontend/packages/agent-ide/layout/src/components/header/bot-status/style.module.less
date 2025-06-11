@@ -1,0 +1,153 @@
+.bot-info-background() {
+  padding: 0 6px;
+  background: var(--Light-color-grey---grey-1, #F0F0F5);
+  border-radius: 4px;
+}
+
+.status-tag {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--light-usage-text-color-text-2, rgba(29, 28, 35, 60%));
+  letter-spacing: 0.12px;
+
+  &-success-box {
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    border-radius: 4px;
+  }
+
+  &-warning-box {
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+
+    padding: 4px;
+
+    border-radius: 4px;
+
+    &:hover {
+      background-color: rgba(46, 47, 56, 5%);
+    }
+
+    &-icon {
+      color: var(--semi-color-warning);
+
+      svg {
+        width: 10px;
+        height: 10px;
+      }
+    }
+
+  }
+}
+
+.status-tag-dot {
+  display: flex;
+  align-items: center;
+
+  svg {
+    margin-right: 4px;
+  }
+  
+  img {
+    margin-right: 4px;
+  }
+}
+
+.saving-info {
+  margin-left: 8px;
+
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--light-usage-text-color-text-3, rgba(29, 28, 35, 35%));
+  .bot-info-background();
+
+  .status-tag-spin {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.warning-content {
+  width: 400px;
+  padding: 16px;
+
+  .title-box {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+
+    .title {
+      margin-left: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 24px;
+    }
+  }
+
+  .main {
+    margin: 0 0 16px 28px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22px;
+
+    .warning-list {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 8px;
+
+      span {
+        color: rgba(29, 28, 35, 60%);
+      }
+    }
+  }
+
+  .footer {
+    display: flex;
+    justify-content: flex-end;
+
+    .cancel-btn {
+      height: 38px;
+      margin-right: 16px;
+    }
+  }
+}
+
+
+
+// collaboration
+.collaboration-tag {
+  display: flex;
+  align-items: center;
+
+  font-size: 12px;
+  font-style: normal;
+  line-height: 16px;
+  color: var(--Light-usage-text---color-text-2, rgba(29, 28, 35, 60%));
+  .bot-info-background();
+
+  :global(.semi-icon) {
+    margin-right: 4px;
+  }
+
+  .icon-submitted {
+    color: var(--semi-color-primary)
+  }
+
+  .icon-published {
+    color: var(--semi-color-success)
+  }
+
+  .icon-warning {
+    color: var(--semi-color-warning);
+  }
+}

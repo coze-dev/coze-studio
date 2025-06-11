@@ -1,0 +1,1 @@
+export { isOutputLog } from './field';

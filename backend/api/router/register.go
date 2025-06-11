@@ -4,6 +4,9 @@ package router
 
 import (
 	"context"
+	"os"
+	"path"
+	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
@@ -15,10 +18,9 @@ import (
 func GeneratedRegister(r *server.Hertz) {
 	// INSERT_POINT: DO NOT DELETE THIS LINE!
 	coze.Register(r)
-	type data struct {
-		Code int32  `json:"code"`
-		Msg  string `json:"msg"`
-	}
+	staticFileRegister(r)
+
+
 	// TODO: remove me later
 	// 不需要的接口，但是阻塞了测试，开源场景后续要下掉。
 
@@ -31,23 +33,39 @@ func GeneratedRegister(r *server.Hertz) {
 			"nextToken": "",
 		})
 	})
+}
 
-	// r.POST("/api/bot/get_type_list", func(c context.Context, ctx *app.RequestContext) {
-	// 	modelObj := map[string]interface{}{}
-	// 	err := sonic.UnmarshalString(mockChatModelObject, &modelObj)
-	// 	if err != nil {
-	// 		ctx.JSON(500, map[string]interface{}{
-	// 			"code": -1,
-	// 			"msg":  err.Error(),
-	// 		})
-	// 		return
-	// 	}
-	// 	response := make(map[string]interface{})
-	// 	response["code"] = 0
-	// 	response["msg"] = "success"
-	// 	response["data"] = map[string]interface{}{"model_list": []interface{}{modelObj}}
-	// 	ctx.JSON(200, response)
-	//
-	// })
+
+// TODO(@fanlv): To be discussed: whether the frontend needs to run a separate HTTP server
+// staticFileRegister registers web page router.
+func staticFileRegister(r *server.Hertz) {
+	pwd := os.Getenv("PWD")
+	staticFile := path.Join(pwd, "resources/static/index.html")
+
+	r.Static("/static",path.Join(pwd,"/resources/static"))
+	r.StaticFile("/favicon.png","./resources/static/favicon.png")
+	r.StaticFile("/",staticFile)
+	r.StaticFile("/sign",staticFile)
+
+	type data struct {
+		Code int32  `json:"code"`
+		Msg  string `json:"msg"`
+	}
+
+	r.NoRoute(func(c context.Context, ctx *app.RequestContext) {
+		path := string(ctx.GetRequest().URI().Path())
+		if strings.HasPrefix(path, "/api/")||
+		strings.HasPrefix(path, "/v1/")||
+		strings.HasPrefix(path, "/v3/") { 
+			ctx.JSON(404, data{
+				Code: 404,
+				Msg:  "not found",
+			})
+			return
+		}
+
+		// index page will show 404 error
+		ctx.File(staticFile)
+	})
 
 }

@@ -6,9 +6,9 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"golang.org/x/exp/maps"
 
+	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose/checkpoint"
 )
 
 func NewWorkflowFromNode(ctx context.Context, sc *WorkflowSchema, nodeKey vo.NodeKey, opts ...compose.GraphCompileOption) (
@@ -180,7 +180,7 @@ func NewWorkflowFromNode(ctx context.Context, sc *WorkflowSchema, nodeKey vo.Nod
 	var compileOpts []compose.GraphCompileOption
 	compileOpts = append(compileOpts, opts...)
 	if wf.requireCheckpoint {
-		compileOpts = append(compileOpts, compose.WithCheckPointStore(checkpoint.GetStore()))
+		compileOpts = append(compileOpts, compose.WithCheckPointStore(workflow2.GetRepository()))
 	}
 
 	r, err := wf.Compile(ctx, compileOpts...)

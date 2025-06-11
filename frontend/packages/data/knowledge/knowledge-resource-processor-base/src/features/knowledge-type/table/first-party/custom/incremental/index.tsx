@@ -1,0 +1,1 @@
+export { TableCustomIncrementalConfig } from './config';

@@ -11,6 +11,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
+type AppVariableStore interface {
+	GetAppVariableValue(key string) (any, bool)
+	SetAppVariableValue(key string, value any)
+}
+
 type VariableAssigner struct {
 	config *Config
 }
@@ -46,9 +51,20 @@ func (v *VariableAssigner) Assign(ctx context.Context, in map[string]any) error 
 			return fmt.Errorf("failed to extract right value for path %s", pair.Right)
 		}
 
-		err := v.config.Handler.Set(ctx, *pair.Left.VariableType, pair.Left.FromPath, right)
-		if err != nil {
-			return err
+		vType := *pair.Left.VariableType
+		switch vType {
+		case variable.GlobalAPP:
+			return compose.ProcessState(ctx, func(ctx context.Context, appVarsStore AppVariableStore) error {
+				if len(pair.Left.FromPath) != 1 {
+					return fmt.Errorf("invalid path: %v", pair.Left.FromPath)
+				}
+				appVarsStore.SetAppVariableValue(pair.Left.FromPath[0], right)
+				return nil
+			})
+		case variable.GlobalUser:
+			return v.config.Handler.Set(ctx, *pair.Left.VariableType, pair.Left.FromPath, right)
+		default:
+			return fmt.Errorf("cannot assign to variable type %s in VariableAssigner", vType)
 		}
 	}
 

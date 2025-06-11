@@ -1,0 +1,16 @@
+[
+  // 可使用 @vitest/coverage-v8 替代
+  ["@vitest/coverage-c8", null, "请使用 @vitest/coverage-v8"],
+  "husky",
+  "lint-staged",
+  "jest",
+  ["jsdom", null, "请使用 happy-dom 代替"],
+  // TODO: 等待完全修复后开启@tanjizhen
+  // "@oceanos/logger",
+  ["inquirer", null, "请使用 @inquirer/prompts 代替"],
+  ["pdfjs-dist", null, "请使用 @coze-arch/pdfjs-shadow 代替"],
+  // todo: should turn on this
+  // ["valtio", null, "请使用 zustand"],
+  // ["jotai", null, "请使用 zustand"]
+  ["@flow-web/md-box", null, "请使用 @coze-arch/bot-md-box-adapter 代替"]
+]

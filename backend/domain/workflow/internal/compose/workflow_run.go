@@ -159,7 +159,6 @@ func Prepare(ctx context.Context,
 			Status:                 entity.WorkflowRunning,
 			Input:                  ptr.Of(in),
 			RootExecutionID:        executeID,
-			AppID:                  wb.APPID,
 			NodeCount:              wb.NodeCount,
 			CurrentResumingEventID: ptr.Of(int64(0)),
 		}

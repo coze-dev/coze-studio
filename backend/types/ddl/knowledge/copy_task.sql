@@ -1,5 +1,4 @@
 CREATE TABLE `data_copy_task` (
-  `id` bigint unsigned NOT NULL COMMENT '主键ID',
   `master_task_id` varchar(128) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '复制任务ID',
   `origin_data_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '源id',
   `target_data_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '目标id',
@@ -15,6 +14,5 @@ CREATE TABLE `data_copy_task` (
   `finish_time` bigint(20) NULL DEFAULT NULL COMMENT '任务结束时间',
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '1:创建 2:执行中 3:成功 4:失败',
   `error_msg` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '错误信息',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_task` (`master_task_id`,`origin_data_id`,`data_type`)
+  PRIMARY KEY (`master_task_id`,`origin_data_id`,`data_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='data方向复制任务记录表'

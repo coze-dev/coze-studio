@@ -1,0 +1,20 @@
+.container {
+  position: relative;
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-self: stretch;
+
+  :global {
+    .coz-input {
+      input {
+        @apply truncate;
+      }
+
+      &.semi-input-wrapper-focus {
+        @apply truncate;
+      }
+    }
+  }
+}

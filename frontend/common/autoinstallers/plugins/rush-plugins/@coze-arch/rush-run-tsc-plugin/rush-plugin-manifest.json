@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush-plugin-manifest.schema.json",
+  "plugins": [
+    {
+      "pluginName": "@coze-arch/rush-run-tsc-plugin",
+      "description": "Rush plugin for run tsc",
+      "commandLineJsonFilePath": "./command-line.json"
+    }
+  ]
+}

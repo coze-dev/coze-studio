@@ -1,0 +1,9 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush-project.schema.json",
+  "operationSettings": [
+    {
+      "operationName": "ts-check",
+      "outputFolderNames": ["./lib-ts"]
+    }
+  ]
+}

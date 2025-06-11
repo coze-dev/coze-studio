@@ -5,6 +5,7 @@ BASE_DIR="$(dirname "$SCRIPT_DIR")"
 BACKEND_DIR="$BASE_DIR/backend"
 BIN_DIR="$BASE_DIR/bin"
 CONFIG_DIR="$BIN_DIR/resources/conf"
+RESOURCES_DIR="$BIN_DIR/resources/"
 
 echo "🧹 Checking for goimports availability..."
 
@@ -53,6 +54,7 @@ mkdir -p "$CONFIG_DIR/prompt"
 cp "$BACKEND_DIR/conf/plugin/pluginproduct/"* "$CONFIG_DIR/plugin/pluginproduct"
 cp "$BACKEND_DIR/conf/plugin/common/"* "$CONFIG_DIR/plugin/common"
 cp "$BACKEND_DIR/conf/prompt/"* "$CONFIG_DIR/prompt"
+cp -r "$BACKEND_DIR/static" "$RESOURCES_DIR"
 
 for arg in "$@"; do
     if [[ "$arg" == "-start" ]]; then

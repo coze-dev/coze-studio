@@ -1,0 +1,58 @@
+import { parseMarkdownHelper } from '@coze-common/chat-area-utils';
+import { parseMarkdown } from '@coze-arch/bot-md-box-adapter/lazy';
+
+import { GrabElementType, type GrabNode } from '../types/node';
+
+const { isImage, isLink, isParent, isText } = parseMarkdownHelper;
+
+/**
+ * 获取GrabNode节点
+ * @param markdown string
+ * @returns GrabNode[]
+ */
+export const parseMarkdownToGrabNode = (markdown: string) => {
+  const ast = parseMarkdown(markdown);
+
+  return getGrabNodeFromAst(ast);
+};
+
+/**
+ * 从Markdown的AST解析成GrabNode节点
+ * @param ast markdown ast by parseMarkdown (md-box)
+ * @returns GrabNode[]
+ */
+export const getGrabNodeFromAst = (ast: unknown): GrabNode[] => {
+  const normalizedNodeList: GrabNode[] = [];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 符合预期
+  const traverseAst = (_ast: any) => {
+    if (isText(_ast)) {
+      normalizedNodeList.push({
+        text: _ast.value,
+      });
+    } else if (isLink(_ast)) {
+      const children = _ast.children.map(getGrabNodeFromAst).flat(1);
+      normalizedNodeList.push({
+        type: GrabElementType.LINK,
+        url: _ast.url,
+        children,
+      });
+    } else if (isImage(_ast)) {
+      normalizedNodeList.push({
+        type: GrabElementType.IMAGE,
+        src: _ast.url,
+        children: [
+          {
+            text: _ast.alt ?? '',
+          },
+        ],
+      });
+    } else if (isParent(_ast)) {
+      _ast.children.forEach(traverseAst);
+    }
+  };
+
+  traverseAst(ast);
+
+  return normalizedNodeList;
+};

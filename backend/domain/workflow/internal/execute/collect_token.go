@@ -8,6 +8,8 @@ import (
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
 	callbacks2 "github.com/cloudwego/eino/utils/callbacks"
+
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 type TokenCollector struct {
@@ -84,7 +86,7 @@ func GetTokenCallbackHandler() callbacks.Handler {
 				output.Close()
 				return ctx
 			}
-			go func() {
+			safego.Go(ctx, func() {
 				defer func() {
 					output.Close()
 					c.wg.Done()
@@ -107,7 +109,7 @@ func GetTokenCallbackHandler() callbacks.Handler {
 				}
 
 				c.addTokenUsage(newC)
-			}()
+			})
 			return ctx
 		},
 		OnError: func(ctx context.Context, runInfo *callbacks.RunInfo, runErr error) context.Context {

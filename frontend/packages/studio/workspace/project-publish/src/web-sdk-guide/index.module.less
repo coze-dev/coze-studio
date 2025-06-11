@@ -1,0 +1,21 @@
+.web-sdk-guide {
+  :global {
+    ol li::marker {
+      font-weight: 500;
+      color: var(--coz-fg-secondary);
+    }
+
+    [class^="code-block-element"] {
+      height: 160px;
+
+      [class^="content"] {
+        overflow: auto;
+        flex-shrink: 1;
+
+        pre {
+          overflow: visible;
+        }
+      }
+    }
+  }
+}

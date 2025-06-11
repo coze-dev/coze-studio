@@ -1,0 +1,76 @@
+.normal-file {
+  position: relative;
+
+  display: flex;
+  column-gap: 8px;
+  align-items: center;
+
+  max-width: 252px;
+  padding: 12px;
+
+  background-color: #F7F7FA;
+  border-radius: 8px;
+
+  .file-icon {
+    width: 28px;
+    height: 36px;
+  }
+
+  .file-info {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    row-gap: 4px;
+
+    font-size: 12px;
+    line-height: 16px;
+
+    .file-name {
+      font-weight: 600;
+      color: #2E2E38;
+    }
+
+    .file-text {
+      font-weight: 400;
+      color: #6B6B75;
+    }
+
+  }
+
+  .retry-button {
+    margin-left: auto;
+    color: #6B6B75;
+  }
+}
+
+.normal-file-not-success {
+  .file-icon {
+    opacity: 0.4;
+  }
+
+  .file-info {
+    .file-name {
+      color: #7E7E86;
+    }
+
+    .file-text {
+      color: #9C9CA4;
+    }
+
+    .file-error-text {
+      font-weight: 400;
+      color: #FC8C76;
+    }
+  }
+}
+
+.progress-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  height: 100%;
+
+  background: rgb(0 0 0 / 6%);
+  border-radius: 8px;
+}

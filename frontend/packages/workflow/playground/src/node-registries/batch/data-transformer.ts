@@ -1,0 +1,117 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { set } from 'lodash-es';
+import { variableUtils } from '@coze-workflow/variable';
+import { type NodeDataDTO } from '@coze-workflow/base';
+
+/**
+ * 节点后端数据 -> 前端表单数据
+ */
+export const transformOnInit = (formData: any, ctx: any) => {
+  const inputParameters = formData?.inputs?.inputParameters;
+  const outputValues = formData?.outputs;
+  const concurrentSize = formData?.inputs?.concurrentSize;
+  const batchSize = formData?.inputs?.batchSize;
+
+  if (!Array.isArray(inputParameters) || inputParameters?.length === 0) {
+    set(formData, 'inputs.inputParameters', [{ name: 'input' }]);
+  }
+
+  if (outputValues && Array.isArray(outputValues)) {
+    outputValues.map((outputValue, index) => {
+      set(
+        outputValues,
+        index,
+        variableUtils.inputValueToVO(
+          outputValue,
+          ctx.playgroundContext.variableService,
+        ),
+      );
+    });
+  }
+
+  if (concurrentSize) {
+    set(
+      formData,
+      'inputs.concurrentSize',
+      variableUtils.valueExpressionToVO(
+        concurrentSize,
+        ctx.playgroundContext.variableService,
+      ),
+    );
+  }
+
+  if (batchSize) {
+    set(
+      formData,
+      'inputs.batchSize',
+      variableUtils.valueExpressionToVO(
+        batchSize,
+        ctx.playgroundContext.variableService,
+      ),
+    );
+  }
+
+  return formData;
+};
+
+/**
+ * 前端表单数据 -> 节点后端数据
+ * @param value
+ * @returns
+ */
+export const transformOnSubmit = (formData: any, ctx: any): NodeDataDTO => {
+  const outputValues = formData?.outputs;
+  const concurrentSize = formData?.inputs?.concurrentSize;
+  const batchSize = formData?.inputs?.batchSize;
+
+  if (outputValues && Array.isArray(outputValues)) {
+    outputValues.map((outputValue, index) => {
+      const dto = variableUtils.inputValueToDTO(
+        outputValue,
+        ctx.playgroundContext.variableService,
+        { node: ctx.node },
+      );
+
+      // 定制逻辑：如果选择了循环体内的变量，则输出变量的类型套一层 list
+      if (
+        outputValue?.input?.content?.keyPath?.[0] !== ctx.node.id &&
+        dto?.input
+      ) {
+        set(dto, 'input.schema', {
+          type: dto.input?.type,
+          schema: dto.input?.schema,
+        });
+        set(dto, 'input.type', 'list');
+      }
+
+      set(outputValues, index, dto);
+    });
+    set(formData, 'outputs', outputValues.filter(Boolean));
+  }
+
+  if (concurrentSize) {
+    set(
+      formData,
+      'inputs.concurrentSize',
+      variableUtils.valueExpressionToDTO(
+        concurrentSize,
+        ctx.playgroundContext.variableService,
+        { node: ctx.node },
+      ),
+    );
+  }
+
+  if (batchSize) {
+    set(
+      formData,
+      'inputs.batchSize',
+      variableUtils.valueExpressionToDTO(
+        batchSize,
+        ctx.playgroundContext.variableService,
+        { node: ctx.node },
+      ),
+    );
+  }
+
+  return formData;
+};

@@ -50,7 +50,7 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 }
 
 // AsyncExecuteNode mocks base method.
-func (m *MockService) AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]string, config vo.ExecuteConfig) (int64, error) {
+func (m *MockService) AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]any, config vo.ExecuteConfig) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AsyncExecuteNode", ctx, id, nodeID, input, config)
 	ret0, _ := ret[0].(int64)
@@ -65,7 +65,7 @@ func (mr *MockServiceMockRecorder) AsyncExecuteNode(ctx, id, nodeID, input, conf
 }
 
 // AsyncExecuteWorkflow mocks base method.
-func (m *MockService) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]string, config vo.ExecuteConfig) (int64, error) {
+func (m *MockService) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AsyncExecuteWorkflow", ctx, id, input, config)
 	ret0, _ := ret[0].(int64)
@@ -766,6 +766,22 @@ func (mr *MockRepositoryMockRecorder) GenID(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenID", reflect.TypeOf((*MockRepository)(nil).GenID), ctx)
 }
 
+// Get mocks base method.
+func (m *MockRepository) Get(ctx context.Context, checkPointID string) ([]byte, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, checkPointID)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockRepositoryMockRecorder) Get(ctx, checkPointID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRepository)(nil).Get), ctx, checkPointID)
+}
+
 // GetDraftWorkflowsByAppID mocks base method.
 func (m *MockRepository) GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error) {
 	m.ctrl.T.Helper()
@@ -1168,6 +1184,20 @@ func (m *MockRepository) SaveInterruptEvents(ctx context.Context, wfExeID int64,
 func (mr *MockRepositoryMockRecorder) SaveInterruptEvents(ctx, wfExeID, events any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveInterruptEvents", reflect.TypeOf((*MockRepository)(nil).SaveInterruptEvents), ctx, wfExeID, events)
+}
+
+// Set mocks base method.
+func (m *MockRepository) Set(ctx context.Context, checkPointID string, checkPoint []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Set", ctx, checkPointID, checkPoint)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Set indicates an expected call of Set.
+func (mr *MockRepositoryMockRecorder) Set(ctx, checkPointID, checkPoint any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockRepository)(nil).Set), ctx, checkPointID, checkPoint)
 }
 
 // SetNodeDebugLatestExeID mocks base method.

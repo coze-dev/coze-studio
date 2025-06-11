@@ -1,0 +1,24 @@
+.container {
+  display: flex;
+  position: relative;
+  align-self: stretch;
+  flex-direction: column;
+  flex: 1;
+
+  &.withDescription {
+    flex: auto;
+    flex-grow: 0;
+    flex-shrink: 0;
+  }
+
+  .name {
+    display: flex;
+    align-items: flex-start;
+    align-self: stretch;
+    width: 100%;
+
+    &>div:first-child {
+      flex: 1;
+    }
+  }
+}

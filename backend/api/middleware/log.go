@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path/filepath"
+	"strings"
 	"time"
 	"unsafe"
 
@@ -22,7 +24,16 @@ func AccessLogMW() app.HandlerFunc {
 		latency := time.Since(start)
 		method := bytesToString(ctx.Request.Header.Method())
 		clientIP := ctx.ClientIP()
-		baseLog := fmt.Sprintf("| %s | %d | %v | %s | %s | %v", ctx.Host(), status, latency, clientIP, method, path)
+
+		handlerPkgPath := strings.Split(ctx.HandlerName(), "/")
+		handleName := ""
+		if len(handlerPkgPath) > 0 {
+			handleName = handlerPkgPath[len(handlerPkgPath)-1]
+		}
+
+		requestType := ctx.GetInt32(RequestAuthTypeStr)
+		baseLog := fmt.Sprintf("| %s | %d | %v | %s | %s | %v | %s | %d",
+			ctx.Host(), status, latency, clientIP, method, path, handleName, requestType)
 
 		switch {
 		case status >= http.StatusInternalServerError:
@@ -34,8 +45,11 @@ func AccessLogMW() app.HandlerFunc {
 			reqBody := bytesToString(ctx.Request.Body())
 			respBody := bytesToString(ctx.Response.Body())
 
-			logs.CtxDebugf(c, "%s \nquery : %s \nreq : %s \nresp: %s",
-				baseLog, urlQuery, reqBody, respBody)
+			requestAuthType := ctx.GetInt32(RequestAuthTypeStr)
+			if requestAuthType != int32(RequestAuthTypeStaticFile) && filepath.Ext(path) == "" {
+				logs.CtxDebugf(c, "%s \nquery : %s \nreq : %s \nresp: %s",
+					baseLog, urlQuery, reqBody, respBody)
+			}
 		}
 	}
 }

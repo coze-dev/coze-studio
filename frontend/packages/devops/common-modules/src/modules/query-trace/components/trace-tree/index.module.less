@@ -1,0 +1,56 @@
+.trace-tree {
+  .trace-tree-node {
+    cursor: pointer;
+    display: flex;
+    align-items: stretch;
+
+    .title {
+      display: flex;
+      align-items: center;
+
+      margin-left: 4px;
+      padding: 0 4px;
+
+      font-size: 12px;
+      color: #1D1C23;
+      white-space: nowrap;
+
+      border-radius: 2px;
+    }
+
+    &:global(.selected) {
+      .title {
+        background: #2E2E381F;
+      }
+    }
+
+    &:global(.hover) {
+      .title {
+        background: #2E2E3814;
+      }
+    }
+
+    &:global(.error) {
+      .title {
+        color: #FF441E;
+      }
+
+      &:global(.selected) {
+        .title {
+          background: #FFE0D2;
+        }
+      }
+
+      &:global(.hover) {
+        .title {
+          background: #FFF3EE;
+        }
+      }
+    }
+
+    /* stylelint-disable-next-line no-descending-specificity */
+    &:global(.disabled) {
+      cursor: default;
+    }
+  }
+}

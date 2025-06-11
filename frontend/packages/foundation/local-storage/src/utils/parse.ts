@@ -1,0 +1,76 @@
+import { type CacheDataItems, type LocalStorageCacheData } from '../types';
+import { LOCAL_STORAGE_CACHE_KEYS } from '../config';
+
+const isValidDataItem = (data: unknown): data is CacheDataItems => {
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
+  return Object.values(data).every(value => typeof value === 'string');
+};
+
+const isObject = (value: unknown): value is object =>
+  !!value && typeof value === 'object' && value !== null;
+
+// 判断本地缓存中的值是否与 LocalStorageCacheData 类型定义匹配
+const isValidCacheData = (value: unknown): value is LocalStorageCacheData => {
+  if (!isObject(value)) {
+    return false;
+  }
+  if ('permanent' in value && !isValidDataItem(value.permanent)) {
+    return false;
+  }
+  if ('userRelated' in value) {
+    const { userRelated } = value;
+    if (!isObject(userRelated)) {
+      return false;
+    }
+    if (
+      Object.values(userRelated).some(dateItem => !isValidDataItem(dateItem))
+    ) {
+      return false;
+    }
+  }
+  return true;
+};
+
+export const paseLocalStorageValue = (value: string | null) => {
+  if (!value) {
+    return {};
+  }
+  try {
+    const raw = JSON.parse(value);
+    return isValidCacheData(raw) ? raw : ({} satisfies LocalStorageCacheData);
+  } catch (e) {
+    // TODO dwh report error
+    return {} satisfies LocalStorageCacheData;
+  }
+};
+
+const filterDataItems = (data: CacheDataItems): CacheDataItems =>
+  Object.entries(data).reduce((res, [key, item]) => {
+    if ((LOCAL_STORAGE_CACHE_KEYS as unknown as string[]).includes(key)) {
+      return {
+        ...res,
+        [key]: item,
+      };
+    }
+    return res;
+  }, {});
+
+export const filterCacheData = (
+  cacheData: LocalStorageCacheData,
+): LocalStorageCacheData => {
+  if (cacheData.permanent) {
+    cacheData.permanent = filterDataItems(cacheData.permanent);
+  }
+  if (cacheData.userRelated) {
+    cacheData.userRelated = Object.entries(cacheData.userRelated).reduce(
+      (res, [key, value]) => ({
+        ...res,
+        [key]: filterDataItems(value),
+      }),
+      {},
+    );
+  }
+  return cacheData;
+};

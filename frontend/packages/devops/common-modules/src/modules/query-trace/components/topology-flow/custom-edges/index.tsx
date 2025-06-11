@@ -1,0 +1,1 @@
+export { CommonEdge } from './common';

@@ -106,13 +106,54 @@ func (dao *MessageDAO) GetByRunIDs(ctx context.Context, runIDs []int64, orderBy 
 	return dao.batchMessagePO2DO(poList), nil
 }
 
-func (dao *MessageDAO) Edit(ctx context.Context, msgID int64, columns map[string]interface{}) (int64, error) {
+func (dao *MessageDAO) Edit(ctx context.Context, msgID int64, msg *message.Message) (int64, error) {
 	m := dao.query.Message
+	columns := dao.buildEditColumns(msg)
 	do, err := m.WithContext(ctx).Where(m.ID.Eq(msgID)).UpdateColumns(columns)
 	if err != nil {
 		return 0, err
 	}
 	return do.RowsAffected, nil
+}
+
+func (dao *MessageDAO) buildEditColumns(msg *message.Message) map[string]interface{} {
+	columns := make(map[string]interface{})
+	if msg.Content != "" {
+		columns["content"] = msg.Content
+	}
+	if msg.MessageType != "" {
+		columns["message_type"] = msg.MessageType
+	}
+	if msg.ContentType != "" {
+		columns["content_type"] = msg.ContentType
+	}
+	if len(msg.ReasoningContent) > 0 {
+		columns["reasoning_content"] = msg.ReasoningContent
+	}
+
+	if msg.Position > 0 {
+		columns["position"] = msg.Position
+	}
+	if msg.Status > 0 {
+		columns["status"] = msg.Status
+	}
+
+	if len(msg.MessageType) > 0 {
+		columns["message_type"] = msg.MessageType
+	}
+
+	if len(msg.ModelContent) > 0 {
+		columns["model_content"] = msg.ModelContent
+	}
+
+	columns["created_at"] = time.Now().UnixMilli()
+	if msg.Ext != nil {
+		ext, err := json.Marshal(msg.Ext)
+		if err == nil {
+			columns["ext"] = string(ext)
+		}
+	}
+	return columns
 }
 
 func (dao *MessageDAO) GetByID(ctx context.Context, msgID int64) (*entity.Message, error) {

@@ -1,0 +1,30 @@
+.table {
+  padding: 0 12px;
+  border: 1px solid var(--coz-stroke-primary);
+  border-radius: 8px;
+
+  :global {
+    .semi-table-placeholder {
+      border-bottom: 0;
+    }
+
+    .semi-form-field {
+      padding: 4px 0;
+    }
+
+    .semi-table-tbody {
+      tr:first-child td {
+        padding-top: 8px;
+      }
+
+      tr:last-child td {
+        padding-bottom: 12px;
+      }
+    }
+  }
+}
+
+.empty {
+  color: var(--coz-fg-dim);
+  text-align: left;
+}

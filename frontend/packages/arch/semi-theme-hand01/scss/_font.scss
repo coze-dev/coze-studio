@@ -1,0 +1,56 @@
+@mixin font-size-header-1 {
+font-size: 32px;
+font-family:       'PingFang SC',  'Noto Sans SC',                  sans-serif;
+line-height: 60px;
+
+
+}
+@mixin font-size-header-2 {
+font-size: 28px;
+font-family:       'PingFang SC',  'Noto Sans SC',                  sans-serif;
+line-height: 40px;
+
+
+}
+@mixin font-size-header-3 {
+font-size: 24px;
+font-family:       'PingFang SC',  'Noto Sans SC',                  sans-serif;
+line-height: 32px;
+
+
+}
+@mixin font-size-header-4 {
+font-size: 20px;
+font-family:       'PingFang SC',  'Noto Sans SC',                  sans-serif;
+line-height: 28px;
+
+
+}
+@mixin font-size-header-5 {
+font-size: 18px;
+font-family:       'PingFang SC',  'Noto Sans SC',                  sans-serif;
+line-height: 24px;
+
+
+}
+@mixin font-size-header-6 {
+font-size: 16px;
+font-family:       'PingFang SC',  'Noto Sans SC',                  sans-serif;
+line-height: 22px;
+
+
+}
+@mixin font-size-small {
+font-size: 12px;
+font-family:       'PingFang SC',  'Noto Sans SC',                  sans-serif;
+line-height: 16px;
+
+
+}
+@mixin font-size-regular {
+font-size: 14px;
+font-family:       'PingFang SC',  'Noto Sans SC',                  sans-serif;
+line-height: 22px;
+
+
+}

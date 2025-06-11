@@ -22930,9 +22930,9 @@ func (p *DuplicateProductRequest) String() string {
 }
 
 type DuplicateProductResponse struct {
-	Code     int32                 `thrift:"Code,1,required" form:"Code,required" json:"Code,required" query:"Code,required"`
-	Message  string                `thrift:"Message,2,required" form:"Message,required" json:"Message,required" query:"Message,required"`
-	Data     *DuplicateProductData `thrift:"Data,3" form:"Data" json:"Data" query:"Data"`
+	Code     int32                 `thrift:"Code,1,required" form:"code,required" json:"code,required"`
+	Message  string                `thrift:"Message,2,required" form:"message,required" json:"message,required"`
+	Data     *DuplicateProductData `thrift:"Data,3" form:"data" json:"data"`
 	BaseResp *base.BaseResp        `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
 }
 

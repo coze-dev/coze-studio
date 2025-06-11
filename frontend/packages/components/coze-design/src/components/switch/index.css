@@ -1,0 +1,121 @@
+/* stylelint-disable no-descending-specificity */
+.coz-switch {
+  line-height: 1;
+  vertical-align: middle;
+
+  &.semi-switch-disabled.semi-switch-checked {
+    @apply coz-mg-hglt-plus-dim;
+  }
+
+  &.semi-switch-loading.semi-switch-checked {
+    @apply coz-mg-hglt-plus-dim;
+  }
+
+  /* ----------------------------- default尺寸 ----------------------------- */
+
+  &.semi-switch {
+    @apply h-20px w-[36px];
+
+    .semi-spin {
+      @apply w-16px h-16px;
+    }
+
+    &.semi-switch-loading.semi-switch-checked .semi-spin {
+      transform: translateX(17px);
+    }
+  }
+
+  &.semi-switch .semi-switch-knob {
+    @apply w-16px h-16px;
+
+    top: 1px;
+    transform: translateX(1px);
+  }
+
+  &.semi-switch.semi-switch-checked .semi-switch-knob {
+    transform: translateX(17px);
+  }
+
+  /* 果冻效果 */
+  &.semi-switch:active .semi-switch-knob {
+    @apply w-22px;
+  }
+
+  &.semi-switch.semi-switch-checked:active .semi-switch-knob {
+    @apply w-22px;
+
+    transform: translateX(10px);
+  }
+
+  /* ----------------------------- large 尺寸 ----------------------------- */
+
+  &.semi-switch-large {
+    @apply h-28px w-[50px];
+
+    .semi-spin {
+      @apply w-22px h-22px;
+    }
+
+    &.semi-switch-loading.semi-switch-checked .semi-spin-large {
+      transform: translateX(24px);
+    }
+  }
+
+  &.semi-switch-large .semi-switch-knob {
+    @apply w-22px h-22px;
+
+    top: 2px;
+    transform: translateX(2px);
+  }
+
+  &.semi-switch-large.semi-switch-checked .semi-switch-knob {
+    transform: translateX(24px);
+  }
+
+  /* 果冻效果 */
+  &.semi-switch-large:active .semi-switch-knob {
+    @apply w-32px;
+  }
+
+  &.semi-switch-large.semi-switch-checked:active .semi-switch-knob {
+    @apply w-32px;
+
+    transform: translateX(14px);
+  }
+
+  /* ----------------------------- mini 尺寸 ----------------------------- */
+
+  &.semi-switch-small {
+    @apply h-16px w-[28px];
+
+    .semi-spin {
+      @apply w-12px h-12px;
+    }
+
+    &.semi-switch-loading.semi-switch-checked .semi-spin-small {
+      transform: translateX(14px);
+    }
+  }
+
+  &.semi-switch-small .semi-switch-knob {
+    @apply w-12px h-12px;
+
+    top: 1px;
+    transform: translateX(1px);
+  }
+
+  &.semi-switch-small.semi-switch-checked .semi-switch-knob {
+    transform: translateX(13px);
+  }
+
+  /* 果冻效果 */
+  &.semi-switch-small:active .semi-switch-knob {
+    @apply w-18px;
+  }
+
+  &.semi-switch-small.semi-switch-checked:active .semi-switch-knob {
+    @apply w-18px;
+
+    transform: translateX(7px);
+  }
+}

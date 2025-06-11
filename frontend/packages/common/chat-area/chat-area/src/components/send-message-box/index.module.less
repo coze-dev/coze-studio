@@ -1,0 +1,45 @@
+.wrapper {
+  display: flex;
+  flex: 1 1;
+  align-items: center;
+
+  width: 100%;
+  margin-bottom: 8px;
+
+
+  .icon-sending {
+    color: #4D53E8;
+  }
+
+  .icon-fail {
+    cursor: pointer;
+    color: #FF441E;
+
+    &>svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .icon-fail-readonly {
+    cursor: not-allowed;
+  }
+}
+
+.wrapper--short-spacing {
+  margin-bottom: 4px;
+}
+
+.message-right {
+  position: relative;
+  width: 16px;
+  height: 16px;
+}
+
+.message-right-pc {
+  left: 24px;
+}
+
+.message-right-mobile {
+  left: 14px;
+}

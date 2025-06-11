@@ -135,7 +135,7 @@ func TestDatabase_Database(t *testing.T) {
 			ConditionGroup: &nodedatabase.ConditionGroup{
 				Conditions: []*nodedatabase.Condition{
 					{Left: "v1", Operator: nodedatabase.OperatorEqual, Right: "1"},
-					{Left: "v2", Operator: nodedatabase.OperatorIn, Right: `["v2_1", "v2_2"]`},
+					{Left: "v2", Operator: nodedatabase.OperatorIn, Right: []any{"v2_1", "v2_2"}},
 					{Left: "v3", Operator: nodedatabase.OperatorIsNull},
 					{Left: "v4", Operator: nodedatabase.OperatorLike, Right: "v4"},
 				},
@@ -154,7 +154,7 @@ func TestDatabase_Database(t *testing.T) {
 			ConditionGroup: &nodedatabase.ConditionGroup{
 				Conditions: []*nodedatabase.Condition{
 					{Left: "v1", Operator: nodedatabase.OperatorEqual, Right: "1"},
-					{Left: "v2", Operator: nodedatabase.OperatorNotIn, Right: `["v2_1", "v2_2"]`},
+					{Left: "v2", Operator: nodedatabase.OperatorNotIn, Right: []any{"v2_1", "v2_2"}},
 					{Left: "v3", Operator: nodedatabase.OperatorIsNotNull},
 					{Left: "v4", Operator: nodedatabase.OperatorNotLike, Right: "v4"},
 				},
@@ -186,7 +186,7 @@ func TestDatabase_Database(t *testing.T) {
 			ConditionGroup: &nodedatabase.ConditionGroup{
 				Conditions: []*nodedatabase.Condition{
 					{Left: "v1", Operator: nodedatabase.OperatorEqual, Right: "1"},
-					{Left: "v2", Operator: nodedatabase.OperatorIn, Right: `["v2_1", "v2_2"]`},
+					{Left: "v2", Operator: nodedatabase.OperatorIn, Right: []any{"v2_1", "v2_2"}},
 					{Left: "v3", Operator: nodedatabase.OperatorIsNull},
 					{Left: "v4", Operator: nodedatabase.OperatorLike, Right: "v4"},
 				},

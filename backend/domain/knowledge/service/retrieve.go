@@ -30,6 +30,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
 func (k *knowledgeSVC) Retrieve(ctx context.Context, request *RetrieveRequest) (response *RetrieveResponse, err error) {
@@ -39,6 +40,9 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, request *RetrieveRequest) (
 	retrieveContext, err := k.newRetrieveContext(ctx, request)
 	if err != nil {
 		return nil, err
+	}
+	if len(retrieveContext.Documents) == 0 {
+		return &knowledgeModel.RetrieveResponse{}, nil
 	}
 	chain := compose.NewChain[*RetrieveContext, []*knowledgeModel.RetrieveSlice]()
 	rewriteNode := compose.InvokableLambda(k.queryRewriteNode)
@@ -229,6 +233,9 @@ func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *RetrieveContex
 				partitions = append(partitions, strconv.FormatInt(doc.ID, 10))
 			}
 		}
+		if len(partitions) == 0 {
+			continue
+		}
 		opts := []retriever.Option{
 			searchstore.WithPartitions(partitions),
 			retriever.WithDSLInfo(dsl.DSL()),
@@ -279,7 +286,7 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *RetrieveCont
 		for i := range tableDocs {
 			wg.Add(1)
 			t := i
-			go func() {
+			safego.Go(ctx, func() {
 				doc := tableDocs[t]
 				defer wg.Done()
 				docs, execErr := k.nl2SqlExec(ctx, doc, req)
@@ -290,7 +297,7 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *RetrieveCont
 				mu.Lock()
 				res = append(res, docs...)
 				mu.Unlock()
-			}()
+			})
 		}
 		wg.Wait()
 		return res, nil
@@ -577,14 +584,17 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 			CharCount:    int64(utf8.RuneCountInString(slices[i].Content)),
 		}
 		docUri := documentMap[slices[i].DocumentID].URI
-		docUrl, err := k.storage.GetObjectUrl(ctx, docUri)
-		if err != nil {
-			logs.CtxErrorf(ctx, "get object url failed: %v", err)
-			return nil, err
+		var docURL string
+		if len(docUri) != 0 {
+			docURL, err = k.storage.GetObjectUrl(ctx, docUri)
+			if err != nil {
+				logs.CtxErrorf(ctx, "get object url failed: %v", err)
+				return nil, err
+			}
 		}
 		sliceEntity.Extra = map[string]string{
 			consts.KnowledgeName: kn.Name,
-			consts.DocumentURL:   docUrl,
+			consts.DocumentURL:   docURL,
 		}
 		switch knowledgeModel.DocumentType(doc.DocumentType) {
 		case knowledgeModel.DocumentTypeText:

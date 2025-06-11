@@ -1,0 +1,35 @@
+/* stylelint-disable-next-line selector-class-pattern */
+.question_pairs_content{
+  height: 20px;
+
+  font-size: 14px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 20px;
+  color: var(--Fg-COZ-fg-primary, rgba(6, 7, 9, 80%));
+}
+
+.tag-item {
+  @apply flex items-center coz-mg-primary rounded-mini;
+
+  .tag-item-icon {
+    @apply flex grow shrink-0;
+  }
+
+  .tag-item-label {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    color: #000;
+  }
+
+  &.limit-width {
+    max-width: 100%;
+
+    .tag-item-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}

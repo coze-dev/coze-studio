@@ -1,0 +1,20 @@
+/* stylelint-disable declaration-no-important */
+.publish-env {
+  display: inline-flex;
+  align-items: center;
+
+  .last-btn {
+    border-radius: 0!important;
+    border-top-right-radius: var(--semi-border-radius-small)!important;
+    border-bottom-right-radius: var(--semi-border-radius-small)!important;
+  }
+
+  // coze-design 有 bug
+  :global {
+    .semi-button-first {
+      border-radius: 0!important;
+      border-top-left-radius: var(--semi-border-radius-small)!important;
+      border-bottom-left-radius: var(--semi-border-radius-small)!important;
+    }
+  }
+}

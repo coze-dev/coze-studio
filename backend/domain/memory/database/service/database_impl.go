@@ -495,7 +495,7 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *AddDatabase
 
 	convertedRecords := make([]map[string]interface{}, 0, len(req.Records))
 
-	for _, record := range req.Records {
+	for _, recordMap := range req.Records {
 		convertedRecord := make(map[string]interface{})
 
 		cid := consts.CozeConnectorID
@@ -506,7 +506,11 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *AddDatabase
 		convertedRecord[database.DefaultCidColName] = cid
 		convertedRecord[database.DefaultCreateTimeColName] = time.Now().UTC()
 
-		for fieldName, value := range record {
+		if _, ok := recordMap[database.DefaultIDColName]; ok {
+			delete(recordMap, database.DefaultIDColName)
+		}
+
+		for fieldName, value := range recordMap {
 			if _, fOk := fieldMap[fieldName]; !fOk {
 				return fmt.Errorf("field %s not found in table definition", fieldName)
 			}
@@ -1173,6 +1177,7 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 	sqlParams := req.SQLParams
 	i := 0
 
+	insertResult := make([]map[string]interface{}, 0, len(req.UpsertRows))
 	for index, upsertRow := range req.UpsertRows {
 		rowData := make(map[string]interface{})
 
@@ -1211,6 +1216,9 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 		}
 
 		insertData = append(insertData, rowData)
+		insertResult = append(insertResult, map[string]interface{}{
+			database.DefaultIDColName: ids[index],
+		})
 	}
 
 	insertResp, err := d.rdb.InsertData(ctx, &rdb.InsertDataRequest{
@@ -1222,7 +1230,7 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 	}
 
 	return &entity3.ResultSet{
-		Rows:         insertData,
+		Rows:         insertResult,
 		AffectedRows: insertResp.AffectedRows,
 	}, nil
 }

@@ -3982,7 +3982,7 @@ func (p *AgentRunResponse) String() string {
 }
 
 type ErrorData struct {
-	Coze int64  `thrift:"coze,1" form:"coze" json:"coze" query:"coze"`
+	Code int64  `thrift:"code,1" form:"code" json:"code" query:"code"`
 	Msg  string `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
 }
 
@@ -3993,8 +3993,8 @@ func NewErrorData() *ErrorData {
 func (p *ErrorData) InitDefault() {
 }
 
-func (p *ErrorData) GetCoze() (v int64) {
-	return p.Coze
+func (p *ErrorData) GetCode() (v int64) {
+	return p.Code
 }
 
 func (p *ErrorData) GetMsg() (v string) {
@@ -4002,7 +4002,7 @@ func (p *ErrorData) GetMsg() (v string) {
 }
 
 var fieldIDToName_ErrorData = map[int16]string{
-	1: "coze",
+	1: "code",
 	2: "msg",
 }
 
@@ -4077,7 +4077,7 @@ func (p *ErrorData) ReadField1(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.Coze = _field
+	p.Code = _field
 	return nil
 }
 func (p *ErrorData) ReadField2(iprot thrift.TProtocol) error {
@@ -4125,10 +4125,10 @@ WriteStructEndError:
 }
 
 func (p *ErrorData) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("coze", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("code", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.Coze); err != nil {
+	if err := oprot.WriteI64(p.Code); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

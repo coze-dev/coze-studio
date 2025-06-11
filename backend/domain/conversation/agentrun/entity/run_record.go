@@ -3,9 +3,9 @@ package entity
 import (
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
 	message2 "code.byted.org/flow/opencoze/backend/api/model/conversation/message"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal/dal/model"
@@ -99,7 +99,7 @@ type AgentRunMeta struct {
 	ConversationID   int64                    `json:"conversation_id"`
 	ConnectorID      int64                    `json:"connector_id"`
 	SpaceID          int64                    `json:"space_id"`
-	Scene            conversation.Scene       `json:"scene"`
+	Scene            common.Scene             `json:"scene"`
 	SectionID        int64                    `json:"section_id"`
 	Name             string                   `json:"name"`
 	UserID           int64                    `json:"user_id"`

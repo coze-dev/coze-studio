@@ -1,0 +1,67 @@
+.icon-button {
+  line-height: 1;
+
+  :global {
+    .semi-button-with-icon-only {
+      // background-color: lightgreen;
+    }
+
+    //图标按钮hover
+    .semi-button-with-icon-only.semi-button-borderless:not(.semi-button-disabled):hover {
+      background: var(--light-usage-fill-color-fill-1, rgb(46 46 56 / 8%));
+    }
+
+    //图标按钮active
+    .semi-button-with-icon-only.semi-button-borderless:not(.semi-button-disabled):active {
+      background: var(--light-usage-fill-color-fill-2, rgb(46 46 56 / 12%));
+    }
+  }
+}
+
+//small size
+.icon-button-small {
+  :global {
+    .semi-button-with-icon-only {
+      padding: 2px !important;
+      border-radius: 4px;
+      height: 18px;
+    }
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+}
+
+//default size
+.icon-button-default {
+  :global {
+    .semi-button-with-icon-only {
+      padding: 4px !important;
+      border-radius: 4px;
+      height: 24px;
+    }
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+//large size
+.icon-button-large {
+  :global {
+    .semi-button-with-icon-only {
+      padding: 4px !important;
+      border-radius: 6px;
+      height: 32px;
+    }
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+}

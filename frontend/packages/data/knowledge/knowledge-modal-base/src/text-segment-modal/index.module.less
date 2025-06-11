@@ -1,0 +1,32 @@
+/* stylelint-disable declaration-no-important */
+.text-area {
+  textarea {
+    overflow-y: auto;
+    max-height: 472px !important;
+  }
+}
+
+.text-area-readonly {
+  margin-bottom: -16px;
+  padding-bottom: 24px;
+
+  :global {
+    .semi-input-textarea-wrapper-disabled,
+    .semi-input-textarea-wrapper-readonly,
+    .semi-input-textarea-disabled,
+    .semi-input-textarea-readonly {
+      cursor: default;
+      color: #1c1f23;
+      background-color: var(--semi-color-tertiary-light-default);
+    }
+
+    .semi-input-textarea,
+    .semi-input-textarea-wrapper {
+      border: 0;
+    }
+  }
+
+  textarea {
+    max-height: unset !important;
+  }
+}

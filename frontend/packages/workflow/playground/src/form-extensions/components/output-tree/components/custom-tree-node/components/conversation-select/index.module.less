@@ -1,0 +1,37 @@
+
+.dropdown {
+  width: 100%;
+  min-height: 50px;
+
+  :global {
+    .semi-select-option-list {
+      &::-webkit-scrollbar {
+        height: 0;
+        min-height: 42px;
+        background: transparent;
+      }
+
+      .semi-select-loading-wrapper {
+        min-height: 40px;
+        text-align: center;
+      }
+
+      .semi-select-option-selected {
+        .semi-icon-tick {
+          color: var(--light-usage-primary-color-primary, #4d53e8);
+        }
+      }
+    }
+  }
+}
+
+.bot-option {
+  display: flex;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 24px;
+
+  .option-prefix-icon {
+    display: none;
+  }
+}

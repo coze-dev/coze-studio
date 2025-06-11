@@ -1,0 +1,243 @@
+/* stylelint-disable declaration-no-important */
+.photo-list {
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+
+  height: calc(100vh - 170px);
+  padding: 0 24px;
+
+  .photo-list-spin {
+    flex: 1
+  }
+
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+
+  .spin {
+    width: 100%;
+    height: 60px;
+    font-size: 14px;
+  }
+}
+
+.card-group {
+  margin-bottom: 25px;
+}
+
+
+// Card 整体
+.card {
+  cursor: auto;
+  width: 222px;
+  height: 258px;
+  border-radius: 8px;
+
+  &:hover {
+    box-shadow: 0 2px 14px 0 rgba(0, 0, 0, 8%);
+  }
+
+  :global {
+    // 固定高度142，超出高度的图片，截取居中部分展示
+    .semi-card-cover {
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      height: 142px;
+    }
+  }
+}
+
+.card-disabled {
+  :global {
+    .semi-card-cover {
+      background: var(--Light-usage-fill---color-fill-0, rgba(46, 46, 57, 4%));
+      border-radius: var(--default, 8px) var(--default, 8px) 0 0;
+
+      svg {
+        width: 32px;
+        height: 32px;
+      }
+    }
+  }
+}
+
+// Card 封面
+.card-cover {
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+
+  // 设置最小高度142，保证填满封面
+  img {
+    min-height: 142px;
+  }
+}
+
+.prohibit-cover {
+  overflow: hidden;
+
+  font-size: 12px;
+  line-height: 16px; /* 133.333% */
+  color: var(--Light-usage-text---color-text-3, rgba(29, 28, 36, 35%));
+  text-align: center;
+  text-overflow: ellipsis;
+
+}
+
+
+// Card 内容区 (title + description)
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .photo-name {
+    font-weight: 600;
+    line-height: 20px;
+    color: rgba(29, 28, 35, 100%);
+  }
+
+  .photo-description {
+    height: 32px;
+    font-size: 12px;
+    line-height: 16px;
+
+    .failed-tag {
+      padding: 0 6px;
+      color: rgba(219, 46, 19, 100%);
+      background-color: rgba(255, 224, 210, 100%);
+      border-radius: 4px;
+    }
+
+    .processing-tag {
+      padding: 0 6px;
+      color: #304cdb;
+      background-color: #d9e2ff;
+      border-radius: 4px;
+    }
+  }
+}
+
+// Card 底部栏（时间 + 操作按钮）
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 24px;
+
+  .create-time {
+    font-size: 12px;
+    line-height: 16px;
+    color: rgba(28, 29, 35, 35%)
+  }
+}
+
+
+// UI稿的 confirm modal 和 semi 默认的不一样，需要手动调整样式
+.confirm-modal {
+  :global {
+    .semi-modal-header {
+      margin-bottom: 16px;
+
+      // icon 和 title 的间距
+      .semi-modal-icon-wrapper {
+        margin-right: 8px;
+      }
+
+      // title 颜色
+      .semi-modal-confirm-title-text {
+        color: rgba(29, 28, 35, 100%);
+      }
+
+      // 关闭 icon 的 hover 颜色
+      .semi-button:hover {
+        background-color: rgba(46, 46, 56, 8%);
+      }
+    }
+
+    .semi-modal-body {
+      margin: 0;
+      padding: 16px 0;
+
+      .semi-modal-confirm-content {
+        color: rgba(29, 28, 35, 100%)
+      }
+    }
+
+    .semi-modal-footer button {
+      min-width: 96px;
+      margin-left: 16px;
+    }
+  }
+}
+
+
+// 编辑 photo 信息的弹窗
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+
+  // photo 大图展示
+  // 用 flex 解决宽高和内部 image 不一致的问题
+  .photo-large {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+
+    .arrow-button {
+      position: absolute;
+      top: 126px;
+
+      width: 48px;
+      height: 48px;
+      padding: 12px;
+
+      color: #1D1C23;
+
+      background-color: rgba(255, 255, 255, 50%);
+      border: none;
+      border-radius: 26px;
+      box-shadow: 0 0 4px 0 rgba(0, 0, 0, 20%), 0 0 1px 0 rgba(0, 0, 0, 20%);
+
+      transition: all 0.3s;
+
+      &:hover {
+        color: #4D53E8;
+        background-color: rgba(255, 255, 255, 80%);
+      }
+    }
+  }
+
+  // photo 描述输入框
+  .photo-caption-textarea {
+    position: relative;
+
+    :global {
+      .semi-input-textarea-counter {
+        height: 40px;
+      }
+    }
+
+    .ai-generate-button {
+      position: absolute;
+      bottom: 8px;
+      left: 12px;
+    }
+
+    // 解决 disabled button 样式错位的问题
+    >span {
+      display: inline !important;
+    }
+  }
+}

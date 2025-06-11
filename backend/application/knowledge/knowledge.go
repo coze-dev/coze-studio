@@ -285,6 +285,10 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 		if req.GetDocumentBases()[i].GetSourceInfo().GetTosURI() != "" {
 			docSource = entity.DocumentSourceLocal
 		}
+		var captionType *dataset.CaptionType
+		if req.GetChunkStrategy() != nil {
+			captionType = req.GetChunkStrategy().CaptionType
+		}
 		document := entity.Document{
 			Info: model.Info{
 				Name:      req.GetDocumentBases()[i].GetName(),
@@ -299,7 +303,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 			FileExtension:    parser.FileExtension(GetExtension(req.GetDocumentBases()[i].GetSourceInfo().GetTosURI())),
 			Source:           docSource,
 			IsAppend:         req.GetIsAppend(),
-			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet, req.GetChunkStrategy().CaptionType),
+			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet, captionType),
 			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
 			TableInfo: entity.TableInfo{
 				Columns: convertTableColumns2Entity(req.GetDocumentBases()[i].GetTableMeta()),
@@ -441,10 +445,14 @@ func (k *KnowledgeApplicationService) Resegment(ctx context.Context, req *datase
 			logs.CtxErrorf(ctx, "parse int failed, err: %v", err)
 			return dataset.NewResegmentResponse(), err
 		}
+		var captionType *dataset.CaptionType
+		if req.GetChunkStrategy() != nil {
+			captionType = req.GetChunkStrategy().CaptionType
+		}
 		resegmentResp, err := k.DomainSVC.ResegmentDocument(ctx, &service.ResegmentDocumentRequest{
 			DocumentID:       docID,
 			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
-			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), nil, req.GetChunkStrategy().CaptionType),
+			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), nil, captionType),
 		})
 		if err != nil {
 			logs.CtxErrorf(ctx, "resegment document failed, err: %v", err)
@@ -931,6 +939,10 @@ func (k *KnowledgeApplicationService) CopyKnowledge(ctx context.Context, req *mo
 	if err != nil {
 		return nil, err
 	}
+	var appIDPtr *int64
+	if req.TargetAppID != 0 {
+		appIDPtr = &req.TargetAppID
+	}
 	if resp.CopyStatus == model.CopyStatus_Successful {
 		err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 			OpType: resourceEntity.Created,
@@ -941,7 +953,7 @@ func (k *KnowledgeApplicationService) CopyKnowledge(ctx context.Context, req *mo
 				Name:         ptr.Of(getResp.Knowledge.Name),
 				OwnerID:      ptr.Of(getResp.Knowledge.CreatorID),
 				SpaceID:      ptr.Of(getResp.Knowledge.SpaceID),
-				APPID:        ptr.Of(getResp.Knowledge.AppID),
+				APPID:        appIDPtr,
 				CreateTimeMS: ptr.Of(getResp.Knowledge.CreatedAtMs),
 				UpdateTimeMS: ptr.Of(getResp.Knowledge.CreatedAtMs),
 			},

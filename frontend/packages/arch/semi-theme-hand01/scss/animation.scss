@@ -1,0 +1,39 @@
+
+        body{
+            --semi-transform_scale-none:scale(1,1);
+    --semi-transform_scale-small:scale(1,1);
+    --semi-transform_scale-medium:scale(1,1);
+    --semi-transform_scale-large:scale(1,1);
+
+    --semi-transform-rotate-none:rotate(0deg);
+    --semi-transform_rotate-clockwise90deg:rotate(90deg);
+    --semi-transform_rotate-clockwise180deg:rotate(180deg);
+    --semi-transform_rotate-clockwise270deg:rotate(270deg);
+    --semi-transform_rotate-clockwise360deg:rotate(360deg);
+    --semi-transform_rotate-anticlockwise90deg:rotate(-90deg);
+    --semi-transform_rotate-anticlockwise180deg:rotate(-180deg);
+    --semi-transform_rotate-anticlockwise270deg:rotate(-270deg);
+    --semi-transform_rotate-anticlockwise360deg:rotate(-360deg);
+            --semi-transition_delay-fast:180ms; 
+--semi-transition_delay-none:0ms; 
+--semi-transition_delay-slow:1000ms; 
+--semi-transition_delay-faster:120ms; 
+--semi-transition_delay-normal:600ms; 
+--semi-transition_delay-slower:1200ms; 
+--semi-transition_delay-fastest:90ms; 
+--semi-transition_delay-slowest:1800ms; 
+--semi-transition_duration-fast:180ms; 
+--semi-transition_duration-none:0ms; 
+--semi-transition_duration-slow:1000ms; 
+--semi-transition_duration-faster:120ms; 
+--semi-transition_duration-normal:600ms; 
+--semi-transition_duration-slower:1200ms; 
+--semi-transition_duration-fastest:90ms; 
+--semi-transition_duration-slowest:1800ms; 
+--semi-transition_function-easeIn:cubic-bezier(0.4, 0, 1, 1); 
+--semi-transition_function-linear:linear; 
+--semi-transition_function-easeOut:cubic-bezier(0, 0, 0.2, 1); 
+--semi-transition_function-easeInOut:cubic-bezier(0.4, 0, 0.2, 1); 
+
+        }
+        

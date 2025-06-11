@@ -188,6 +188,22 @@ func (k *knowledgePacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	}, nil
 }
 
+func (k *knowledgePacker) GetActions(ctx context.Context) []*common.ResourceAction {
+	return []*common.ResourceAction{
+		{
+			Key:    common.ActionKey_Delete,
+			Enable: true,
+		},
+		{
+			Key:    common.ActionKey_EnableSwitch,
+			Enable: true,
+		},
+		{
+			Key:    common.ActionKey_Edit,
+			Enable: true,
+		},
+	}
+}
 func (k *knowledgePacker) GetProjectDefaultActions(ctx context.Context) []*common.ProjectResourceAction {
 	return []*common.ProjectResourceAction{
 		{

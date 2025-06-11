@@ -263,11 +263,10 @@ func (v *variablesImpl) GetVariableChannelInstance(ctx context.Context, e *entit
 		return nil, err
 	}
 
-	if varChannel != nil && *varChannel == project_memory.VariableChannel_APP {
-		return v.getAppKVItems(ctx, meta)
+	if varChannel != nil {
+		meta.FilterChannelVariable(*varChannel)
 	}
 
-	meta.RemoveVariableWithChannel(project_memory.VariableChannel_APP) // app can not be set
 	meta.RemoveDisableVariable()
 
 	metaKey2Variable := map[string]*entity.VariableMeta{}
@@ -298,19 +297,26 @@ func (v *variablesImpl) GetVariableChannelInstance(ctx context.Context, e *entit
 	resMemory := make([]*kvmemory.KVItem, 0, len(newKeywords))
 	for _, v := range newKeywords {
 		if vv, ok := varBothInMetaAndInstance[v]; ok {
+			meta := metaKey2Variable[v]
 			resMemory = append(resMemory, &kvmemory.KVItem{
-				Keyword:    vv.Keyword,
-				Value:      vv.Content,
-				CreateTime: vv.CreatedAt,
-				UpdateTime: vv.UpdatedAt,
+				Keyword:        vv.Keyword,
+				Value:          vv.Content,
+				CreateTime:     vv.CreatedAt,
+				UpdateTime:     vv.UpdatedAt,
+				Schema:         meta.Schema,
+				IsSystem:       meta.IsSystem(),
+				PromptDisabled: meta.PromptDisabled,
 			})
 		} else if vv, ok := metaKey2Variable[v]; ok { // only in meta
 			now := time.Now()
 			resMemory = append(resMemory, &kvmemory.KVItem{
-				Keyword:    vv.Keyword,
-				Value:      vv.DefaultValue,
-				CreateTime: now.Unix(),
-				UpdateTime: now.Unix(),
+				Keyword:        vv.Keyword,
+				Value:          vv.DefaultValue,
+				CreateTime:     now.Unix(),
+				UpdateTime:     now.Unix(),
+				Schema:         vv.Schema,
+				IsSystem:       vv.IsSystem(),
+				PromptDisabled: vv.PromptDisabled,
 			})
 		}
 	}

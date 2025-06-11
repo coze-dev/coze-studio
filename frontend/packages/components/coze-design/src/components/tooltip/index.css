@@ -1,0 +1,25 @@
+.coz-tooltip {
+  &.semi-tooltip-wrapper {
+    @apply coz-bg-max coz-fg-primary shadow;
+
+    @apply min-w-[36px];
+
+    .semi-tooltip-icon-arrow {
+      @apply text-background-3;
+    }
+
+    .semi-tooltip-content {
+      @apply font-medium text-lg;
+    }
+  }
+
+  &.coz-tooltip-dark {
+    &.semi-tooltip-wrapper {
+      @apply bg-black-5 text-white-1 shadow;
+
+      .semi-tooltip-icon-arrow {
+        @apply text-black-5;
+      }
+    }
+  }
+}

@@ -1,0 +1,62 @@
+.coz-modal {
+  @apply bg-mask;
+
+  .semi-modal-mask {
+    @apply bg-mask;
+  }
+
+  .semi-modal {
+    @apply overflow-hidden;
+  }
+
+  .semi-modal-content {
+    @apply bg-background-2;
+    @apply border-none;
+    @apply rounded-normal;
+
+    .semi-modal-body {
+      @apply overflow-hidden;
+    }
+  }
+
+  &.as-modal {
+    .semi-modal-content {
+      @apply px-24px py-16px;
+      @apply gap-16px;
+    }
+
+    .semi-modal-footer {
+      @apply m-0;
+    }
+  }
+
+  &.as-dialog {
+    .semi-modal-content {
+      @apply p-16px;
+    }
+
+    .semi-modal-footer {
+      @apply m-0 mt-12px;
+    }
+  }
+
+  .semi-modal-header {
+    @apply m-0;
+    @apply text-foreground-5;
+    @apply font-medium;
+    @apply text-24px;
+  }
+
+  h5.semi-typography,
+  .semi-typography-h5.semi-typography {
+    @apply leading-22px;
+  }
+
+  .coz-modal-footer.footer-fill {
+    @apply flex;
+
+    .semi-button {
+      @apply flex-1;
+    }
+  }
+}

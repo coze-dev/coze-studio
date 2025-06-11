@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossknowledge"
 	knowledgeEntity "code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/service"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
@@ -107,9 +108,14 @@ func genKnowledgeRequest(_ context.Context, ids []int64, conf *bot_common.Knowle
 func convertDocument(_ context.Context, docSlice []*knowledgeModel.RetrieveSlice) ([]*schema.Document, error) {
 	return slices.Transform(docSlice, func(a *knowledgeModel.RetrieveSlice) *schema.Document {
 		doc := &schema.Document{
-			ID:       strconv.FormatInt(a.Slice.ID, 10),
-			Content:  a.Slice.GetSliceContent(),
-			MetaData: make(map[string]any),
+			ID:      strconv.FormatInt(a.Slice.ID, 10),
+			Content: a.Slice.GetSliceContent(),
+			MetaData: map[string]any{
+				"dataset_id":    conv.Int64ToStr(a.Slice.KnowledgeID),
+				"dataset_name":  a.Slice.Name,
+				"document_id":   conv.Int64ToStr(a.Slice.DocumentID),
+				"document_name": a.Slice.DocumentName,
+			},
 		}
 		doc.WithScore(a.Score)
 		return doc

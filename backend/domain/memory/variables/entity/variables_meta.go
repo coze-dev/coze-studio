@@ -130,10 +130,10 @@ func (v *VariablesMeta) RemoveDisableVariable() {
 	v.Variables = res
 }
 
-func (v *VariablesMeta) RemoveVariableWithChannel(ch project_memory.VariableChannel) {
+func (v *VariablesMeta) FilterChannelVariable(ch project_memory.VariableChannel) {
 	var res []*VariableMeta
 	for _, vv := range v.Variables {
-		if vv.Channel == ch {
+		if vv.Channel != ch {
 			continue
 		}
 

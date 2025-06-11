@@ -1,0 +1,72 @@
+.permission-form-content {
+  overflow-y: auto;
+
+  width: 417px;
+  max-height: 522px;
+  margin-top: 16px;
+  margin-right: -11px;
+  padding-right: 8px;
+  .scroll-wrap;
+
+  :global {
+    /* stylelint-disable-next-line no-descending-specificity */
+    .semi-form-field {
+      padding: 0;
+      padding-bottom: 16px;
+    }
+
+    .semi-form-field-label {
+      margin-bottom: 6px;
+      padding: 0 8px;
+
+      font-size: 12px;
+      font-weight: 500;
+      font-style: normal;
+      line-height: 16px;
+      color: var(--coz-fg-primary);
+    }
+
+    .semi-form-field-error-message {
+      padding-left: 8px;
+    }
+
+    .semi-form-field-main {
+      padding: 0;
+    }
+
+    .semi-form-field-label-required .semi-form-field-label-text::after,
+    .semi-form-field-label-with-extra .semi-form-field-label-extra {
+      margin-left: 0;
+    }
+  }
+}
+
+.scroll-wrap {
+  &::-webkit-scrollbar-thumb {
+    background: var(--coz-fg-dim, rgba(6, 7, 9, 30%));
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar {
+    // stylelint-disable-next-line declaration-no-important
+    display: block !important;
+    width: 4px;
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar:hover {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+}

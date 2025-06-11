@@ -1,0 +1,95 @@
+@import '../common/common.module.less';
+
+.side-debug-panel {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: 100%;
+
+  background-color: #fff;
+  box-shadow: 0 6px 8px 0 rgb(29 28 35 / 6%), 0 0 2px 0 rgb(29 28 35 / 18%);
+
+  .side-debug-panel-divider {
+    position: relative;
+    margin: 0;
+    border-bottom: 1px solid #EFEFF0;
+  }
+
+  .side-debug-panel-no-data {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+
+    height: 0;
+
+    :global(.semi-empty-description) {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--Light-usage-text---color-text-0, #1D1C23);
+    }
+
+  }
+
+  .side-debug-panel-container {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    width: 100%;
+    height: 0;
+
+    .side-debug-panel-container-sheet {
+      width: 100%;
+      padding: 24px 24px 4px;
+    }
+
+    .side-debug-panel-container-scroll-box {
+      .webkit-scrollbar_mixin();
+
+      overflow-y: auto;
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+
+      height: 0;
+
+      .side-debug-panel-container-scroll-box-summary {
+        position: relative;
+
+
+        width: 100%;
+        min-height: 145px;
+        padding: 16px 24px 24px;
+
+        background-color: #fff;
+      }
+
+      .side-debug-panel-container-scroll-box-sub-loading {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+
+        height: 0;
+      }
+
+      .side-debug-panel-container-scroll-box-chat {
+        position: relative;
+        width: 100%;
+        background-color: #fff;
+      }
+
+      .side-debug-panel-container-scroll-box-detail {
+        position: relative;
+        width: 100%;
+        padding: 0 24px 20px;
+        background-color: #fff;
+      }
+    }
+
+  }
+}

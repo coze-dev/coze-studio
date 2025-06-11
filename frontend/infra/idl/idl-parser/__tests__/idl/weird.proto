@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+message Common {}
+
+service Example {
+  rpc Func1 (Common) returns (Common) {
+    option (google.api.http) = {
+      get: "/ezo/web/v1/user_camp_result"
+      body: "*"
+    };
+  }
+}

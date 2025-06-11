@@ -4,8 +4,8 @@ import (
 	"context"
 	"strconv"
 
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/conversation"
-	crossconversation "code.byted.org/flow/opencoze/backend/api/model/crossdomain/conversation"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	agentrun "code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/service"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
@@ -115,7 +115,7 @@ func (c *ConversationApplicationService) CreateConversation(ctx context.Context,
 		AgentID:     agentID,
 		UserID:      userID,
 		ConnectorID: connectorID,
-		Scene:       crossconversation.SceneOpenApi,
+		Scene:       common.Scene_SceneOpenApi,
 	})
 	if err != nil {
 		return nil, err
@@ -147,7 +147,7 @@ func (c *ConversationApplicationService) ListConversation(ctx context.Context, r
 		UserID:      userID,
 		AgentID:     req.GetBotID(),
 		ConnectorID: connectorID,
-		Scene:       crossconversation.SceneOpenApi,
+		Scene:       common.Scene_SceneOpenApi,
 		Page:        int(req.GetPageNum()),
 		Limit:       int(req.GetPageSize()),
 	})

@@ -1,0 +1,1 @@
+export { CommentRender } from './render';

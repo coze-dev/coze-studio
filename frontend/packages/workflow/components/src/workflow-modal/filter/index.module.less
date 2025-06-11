@@ -1,0 +1,32 @@
+/* stylelint-disable selector-class-pattern */
+.header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.workflow-status-radio {
+  :global(.semi-radio-buttonRadioGroup) {
+    padding: 0;
+  }
+
+  :global(.semi-radio-buttonRadioGroup:first-child .semi-radio-addon-buttonRadio) {
+    border-radius: 0;
+    border-right: 1px solid var(--semi-color-fill-2);
+  }
+
+  :global(.semi-radio-addon-buttonRadio) {
+    font-size: 14px;
+    padding: 0 16px;
+    color: rgb(28 31 35 / 40%);
+  }
+
+  :global(.semi-radio-addon-buttonRadio-hover) {
+    background-color: transparent;
+  }
+
+  :global(.semi-radio-addon-buttonRadio-checked) {
+    background-color: transparent;
+    color: var(--light-usage-text-color-text-0, #1c1d23)
+  }
+}

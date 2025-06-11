@@ -261,6 +261,7 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 		StatusDescript:        &documentEntity.StatusMsg,
 		SpaceID:               ptr.Of(documentEntity.SpaceID),
 		EditableAppendContent: nil,
+		PreviewTosURL:         &documentEntity.URL,
 		ChunkStrategy:         chunkStrategy,
 		ParsingStrategy:       parseStrategy,
 		IndexStrategy:         nil, // todo，好像没啥用
@@ -558,7 +559,6 @@ func convertChunkingStrategy2Model(chunkingStrategy *entity.ChunkingStrategy) *d
 		RemoveExtraSpaces: chunkingStrategy.TrimSpace,
 		RemoveUrlsEmails:  chunkingStrategy.TrimURLAndEmail,
 		ChunkType:         convertChunkType2model(chunkingStrategy.ChunkType),
-		CaptionType:       nil, // todo，图片型知识
 		Overlap:           &chunkingStrategy.Overlap,
 		MaxLevel:          &chunkingStrategy.MaxDepth,
 		SaveTitle:         &chunkingStrategy.SaveTitle,
@@ -684,9 +684,13 @@ func convertCreateDocReviewReq(req *dataset.CreateDocumentReviewRequest) *servic
 	if req == nil {
 		return nil
 	}
+	var captionType *dataset.CaptionType
+	if req.GetChunkStrategy() != nil {
+		captionType = req.GetChunkStrategy().CaptionType
+	}
 	resp := &service.CreateDocumentReviewRequest{
 		ChunkStrategy:   convertChunkingStrategy2Entity(req.ChunkStrategy),
-		ParsingStrategy: convertParsingStrategy2Entity(req.ParsingStrategy, nil, req.GetChunkStrategy().CaptionType),
+		ParsingStrategy: convertParsingStrategy2Entity(req.ParsingStrategy, nil, captionType),
 	}
 	resp.KnowledgeID = req.GetDatasetID()
 	resp.Reviews = slices.Transform(req.GetReviews(), func(r *dataset.ReviewInput) *service.ReviewInput {
