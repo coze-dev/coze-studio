@@ -45,3 +45,7 @@ bin/*
 docker/data/*
 
 backend/static
+
+node_modules
+common/temp
+.rush

@@ -62,7 +62,6 @@ jobs:
       - &install_deps_step
         name: Install dependencies
         commands:
-          - cd frontend
           - node common/scripts/install-run-rush.js install
       # 暂时不启用，因为eslintignore文件移除会导致解析报错，后期接入可考虑动态读取eslint ignore配置
       # - name: PreLint
@@ -71,7 +70,6 @@ jobs:
       #     - npx oxlint@latest -A all .
       - name: Lint
         commands:
-          - cd frontend
           - NODE_OPTIONS="--max-old-space-size=4096" node common/scripts/install-run-rush.js lint
 
   ts_check:
@@ -89,7 +87,6 @@ jobs:
       - *install_deps_step
       - name: Check TS Type
         commands:
-          - cd frontend
           - node common/scripts/install-run-rush.js ts-check -v
 
   build:
@@ -106,7 +103,6 @@ jobs:
       - *install_deps_step
       - name: Build
         commands:
-          - cd frontend
           - CUSTOM_VERSION=release REGION=sg BUILD_BRANCH=test node common/scripts/install-run-rush.js build -v
 
   test:
@@ -160,7 +156,6 @@ jobs:
       - name: Test Coverage
         id: test
         commands:
-          - cd frontend
           - node common/scripts/install-run-rush.js test:cov -v
       # https://bytedance.feishu.cn/wiki/wikcn9Z4azEdfJalVPKcOs9vxsR
 
@@ -178,7 +173,6 @@ jobs:
       - *install_deps_step
       - name: build
         commands:
-          - cd frontend
           - CUSTOM_VERSION=release REGION=sg node common/scripts/install-run-rush.js build -o app-botstudio-main -v
       - id: Argus
         commands:

@@ -7,7 +7,7 @@
     "fanwenjie.fe@bytedance.com"
   ],
   "dependencies": {
-    "@coze-arch/rush-dep-level-plugin": "link:../../../infra/plugins/rush-dep-level-plugin",
+    "@coze-arch/rush-dep-level-plugin": "link:../../../frontend/infra/plugins/rush-dep-level-plugin",
     "@coze-arch/rush-fix-ts-refers-plugin": "alpha",
     "@coze-arch/rush-increment-run-plugin": "alpha",
     "@coze-arch/rush-publish-plugin": "alpha",

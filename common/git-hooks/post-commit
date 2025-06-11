@@ -6,7 +6,5 @@ BRANCH_NAME=$(git branch | grep '*' | sed 's/* //')
 if [[ "X${BRANCH_NAME}" == "X(no branch"* ]]; then
   exit
 else
-  pushd frontend
   node common/scripts/install-run-rush.js change-x -a || exit 1
-  popd
 fi

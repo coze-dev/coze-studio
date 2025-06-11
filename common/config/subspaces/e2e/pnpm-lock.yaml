@@ -29,7 +29,7 @@ importers:
 
   .: {}
 
-  ../../../packages/data/common/e2e:
+  ../../../frontend/packages/data/common/e2e:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: link:../../../../config/eslint-config

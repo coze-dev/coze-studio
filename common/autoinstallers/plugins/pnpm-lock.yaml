@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@coze-arch/rush-dep-level-plugin':
-    specifier: link:../../../infra/plugins/rush-dep-level-plugin
-    version: link:../../../infra/plugins/rush-dep-level-plugin
+    specifier: link:../../../frontend/infra/plugins/rush-dep-level-plugin
+    version: link:../../../frontend/infra/plugins/rush-dep-level-plugin
   '@coze-arch/rush-fix-ts-refers-plugin':
     specifier: alpha
     version: 0.0.1-alpha.bf1426(commander@13.1.0)
@@ -121,7 +121,7 @@ packages:
       commander: ^13.1.0
     dependencies:
       '@inquirer/prompts': 3.3.2
-      '@rushstack/rush-sdk': 5.153.2(@types/node@18.19.111)
+      '@rushstack/rush-sdk': 5.154.0(@types/node@18.19.111)
       chalk: 4.1.2
       commander: 13.1.0
       conventional-changelog-angular: 5.0.13
@@ -430,8 +430,8 @@ packages:
       - '@types/node'
     dev: false
 
-  /@rushstack/rush-sdk@5.153.2(@types/node@18.19.111):
-    resolution: {integrity: sha512-fowe+spR+iupeK0Xu4pGParD1uTh3MzMyLeDtIaPZBIqnp7wKZtRW8Id3wkNEY/YbA0ON4ctROkfJqYpK/xAnQ==}
+  /@rushstack/rush-sdk@5.154.0(@types/node@18.19.111):
+    resolution: {integrity: sha512-fQSlFzgfxWUOhd6c0R2UVFkZUa3nKyhFSvK3d3aVgSp1Tx0TJ0mCbds2dDunrgXYYYJE/sKY0Q04+0RJIAcIAQ==}
     dependencies:
       '@pnpm/lockfile.types': 1.0.3
       '@rushstack/lookup-by-path': 0.7.0(@types/node@18.19.111)

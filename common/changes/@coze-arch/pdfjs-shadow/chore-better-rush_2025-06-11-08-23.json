@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@coze-arch/pdfjs-shadow",
+      "comment": "update lock",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@coze-arch/pdfjs-shadow",
+  "email": "tecvan.fe@gmail.com"
+}

@@ -7,5 +7,4 @@
 1. 收敛 pdfjs-dist 调用，避免 bot 环境中多出定义 pdfjs-dist 版本；
 2. 收敛 worker src url 的计算逻辑。
 
-
 注意，该 package 仅供 coze 消费。

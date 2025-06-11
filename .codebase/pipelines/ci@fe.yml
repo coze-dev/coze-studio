@@ -4,6 +4,8 @@ trigger:
   change:
     source-branches: ['!release/**', '!task/**']
     types: [create, push, restore]
+    paths:
+      - "frontend/**"
     notification:
       when: failure
 
@@ -81,12 +83,10 @@ jobs:
       - &install_deps_step
         name: Install dependencies
         commands:
-          - cd frontend
           - npx why-is-node-running@v2.x common/scripts/install-run-rush.js increment --action install -p ${{Steps.RemoteInfo.Outputs.changed_files_path}}
 
       - name: Check Lint
         commands:
-          - cd frontend
           - node common/scripts/install-run-rush.js increment --action lint -p ${{Steps.RemoteInfo.Outputs.changed_files_path}}
 
   style_check:
@@ -105,7 +105,6 @@ jobs:
       - *install_deps_step
       - name: Check Stylelint
         commands:
-          - cd frontend
           - node common/scripts/install-run-rush.js increment --action style -p ${{Steps.RemoteInfo.Outputs.changed_files_path}}
 
   build:
@@ -127,7 +126,6 @@ jobs:
         id: build
         if: ${{ Steps.InitEnv.Outputs.ShouldRunBuild }}
         commands:
-          - cd frontend
           - node common/scripts/install-run-rush.js increment --action build -p ${{Steps.RemoteInfo.Outputs.changed_files_path}}
 
   test:
@@ -183,5 +181,4 @@ jobs:
       - name: Test Coverage
         commands:
           - git fetch --filter=blob:none --unshallow -q
-          - cd frontend
           - node common/scripts/install-run-rush.js increment --action test:cov -p ${{Steps.RemoteInfo.Outputs.changed_files_path}}

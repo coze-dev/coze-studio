@@ -5,6 +5,8 @@ trigger:
     # 临时支持 project-ide 项目需求，临时修改为如下格式
     # 后续需调整回 integration/**
     types: [create, push, restore]
+    paths:
+      - "frontend/**"
     notification:
       when: failure
 
@@ -77,14 +79,11 @@ jobs:
       - &install_deps_step
         name: Install dependencies
         commands:
-          - cd frontend
           - npx why-is-node-running@v2.x common/scripts/install-run-rush.js increment --action install -p ${{Steps.RemoteInfo.Outputs.changed_files_path}}
 
       - name: Prepare basic packages
         commands:
-          - cd frontend
           - node common/scripts/install-run-rush.js pre-build -v
       - name: Check TS Type
         commands:
-          - cd frontend
           - node common/scripts/install-run-rush.js increment --action ts-check -p ${{Steps.RemoteInfo.Outputs.changed_files_path}}

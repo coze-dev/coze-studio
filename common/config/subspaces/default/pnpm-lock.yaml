@@ -41,7 +41,7 @@ importers:
 
   .: {}
 
-  ../../../apps/coze-studio:
+  ../../../frontend/apps/coze-studio:
     dependencies:
       '@coze-agent-ide/agent-publish':
         specifier: workspace:*
@@ -219,7 +219,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../config/eslint-config:
+  ../../../frontend/config/eslint-config:
     dependencies:
       '@babel/eslint-parser':
         specifier: ~7.25.8
@@ -382,7 +382,7 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  ../../../config/postcss-config:
+  ../../../frontend/config/postcss-config:
     dependencies:
       '@csstools/postcss-is-pseudo-class':
         specifier: ^4.0.5
@@ -413,7 +413,7 @@ importers:
         specifier: 18.18.9
         version: 18.18.9
 
-  ../../../config/rsbuild-config:
+  ../../../frontend/config/rsbuild-config:
     dependencies:
       '@coze-arch/bot-env':
         specifier: workspace:*
@@ -483,7 +483,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../config/stylelint-config:
+  ../../../frontend/config/stylelint-config:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: workspace:*
@@ -516,7 +516,7 @@ importers:
         specifier: ^3.32.0
         version: 3.35.0
 
-  ../../../config/tailwind-config:
+  ../../../frontend/config/tailwind-config:
     dependencies:
       '@coze-arch/monorepo-kits':
         specifier: workspace:*
@@ -553,7 +553,7 @@ importers:
         specifier: 18.18.9
         version: 18.18.9
 
-  ../../../config/ts-config:
+  ../../../frontend/config/ts-config:
     devDependencies:
       eslint:
         specifier: ~9.12.0
@@ -562,7 +562,7 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  ../../../config/vitest-config:
+  ../../../frontend/config/vitest-config:
     dependencies:
       vite-tsconfig-paths:
         specifier: ^4.2.1
@@ -593,7 +593,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../infra/eslint-plugin:
+  ../../../frontend/infra/eslint-plugin:
     dependencies:
       '@typescript-eslint/utils':
         specifier: ~8.10.0
@@ -675,7 +675,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../infra/idl/idl-parser:
+  ../../../frontend/infra/idl/idl-parser:
     dependencies:
       '@coze-arch/rush-logger':
         specifier: workspace:*
@@ -709,7 +709,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../infra/idl/idl2ts-cli:
+  ../../../frontend/infra/idl/idl2ts-cli:
     dependencies:
       '@babel/types':
         specifier: ^7.20.7
@@ -764,7 +764,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(tsx@4.19.4)
 
-  ../../../infra/idl/idl2ts-generator:
+  ../../../frontend/infra/idl/idl2ts-generator:
     dependencies:
       '@babel/core':
         specifier: ^7.20.2
@@ -852,7 +852,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(tsx@4.19.4)
 
-  ../../../infra/idl/idl2ts-helper:
+  ../../../frontend/infra/idl/idl2ts-helper:
     dependencies:
       '@babel/parser':
         specifier: ^7.12.14
@@ -907,7 +907,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(tsx@4.19.4)
 
-  ../../../infra/idl/idl2ts-plugin:
+  ../../../frontend/infra/idl/idl2ts-plugin:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: workspace:*
@@ -931,7 +931,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(tsx@4.19.4)
 
-  ../../../infra/idl/idl2ts-runtime:
+  ../../../frontend/infra/idl/idl2ts-runtime:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: workspace:*
@@ -958,7 +958,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(tsx@4.19.4)
 
-  ../../../infra/plugins/import-watch-loader:
+  ../../../frontend/infra/plugins/import-watch-loader:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: workspace:*
@@ -976,7 +976,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../infra/plugins/pkg-root-webpack-plugin:
+  ../../../frontend/infra/plugins/pkg-root-webpack-plugin:
     dependencies:
       json5:
         specifier: ^2.2.1
@@ -1022,7 +1022,7 @@ importers:
         specifier: ~5.89.0
         version: 5.89.0
 
-  ../../../infra/utils/fs-enhance:
+  ../../../frontend/infra/utils/fs-enhance:
     dependencies:
       json5:
         specifier: ^2.2.1
@@ -1053,7 +1053,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(less@3.13.1)(yaml@2.8.0)
 
-  ../../../infra/utils/monorepo-kits:
+  ../../../frontend/infra/utils/monorepo-kits:
     dependencies:
       '@rushstack/rush-sdk':
         specifier: 5.100.2
@@ -1081,7 +1081,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../infra/utils/rush-logger:
+  ../../../frontend/infra/utils/rush-logger:
     dependencies:
       '@rushstack/node-core-library':
         specifier: 3.55.2
@@ -1103,7 +1103,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/agent-publish:
+  ../../../frontend/packages/agent-ide/agent-publish:
     dependencies:
       '@blueprintjs/core':
         specifier: ^5.1.5
@@ -1284,7 +1284,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/bot-audit-adapter:
+  ../../../frontend/packages/agent-ide/bot-audit-adapter:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -1345,7 +1345,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/agent-ide/bot-audit-base:
+  ../../../frontend/packages/agent-ide/bot-audit-base:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -1433,7 +1433,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/bot-config-area:
+  ../../../frontend/packages/agent-ide/bot-config-area:
     dependencies:
       '@coze-agent-ide/bot-creator-context':
         specifier: workspace:*
@@ -1566,7 +1566,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/bot-config-area-adapter:
+  ../../../frontend/packages/agent-ide/bot-config-area-adapter:
     dependencies:
       '@coze-agent-ide/bot-config-area':
         specifier: workspace:*
@@ -1678,7 +1678,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/bot-editor-context-store:
+  ../../../frontend/packages/agent-ide/bot-editor-context-store:
     dependencies:
       classnames:
         specifier: ^2.3.2
@@ -1781,7 +1781,7 @@ importers:
         specifier: ^4.4.7
         version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
 
-  ../../../packages/agent-ide/bot-input-length-limit:
+  ../../../frontend/packages/agent-ide/bot-input-length-limit:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -1878,7 +1878,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/bot-plugin/entry:
+  ../../../frontend/packages/agent-ide/bot-plugin/entry:
     dependencies:
       '@blueprintjs/core':
         specifier: ^5.1.5
@@ -2161,7 +2161,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0(esbuild@0.18.20)
 
-  ../../../packages/agent-ide/bot-plugin/export:
+  ../../../frontend/packages/agent-ide/bot-plugin/export:
     dependencies:
       '@blueprintjs/core':
         specifier: ^5.1.5
@@ -2402,7 +2402,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0(esbuild@0.18.20)
 
-  ../../../packages/agent-ide/bot-plugin/mock-set:
+  ../../../frontend/packages/agent-ide/bot-plugin/mock-set:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -2574,7 +2574,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/bot-plugin/plugin-risk-warning:
+  ../../../frontend/packages/agent-ide/bot-plugin/plugin-risk-warning:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -2674,7 +2674,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/bot-plugin/tools:
+  ../../../frontend/packages/agent-ide/bot-plugin/tools:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -2819,7 +2819,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/chat-answer-action-adapter:
+  ../../../frontend/packages/agent-ide/chat-answer-action-adapter:
     dependencies:
       '@coze-arch/bot-semi':
         specifier: workspace:*
@@ -2928,7 +2928,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/chat-area-plugin-debug-common:
+  ../../../frontend/packages/agent-ide/chat-area-plugin-debug-common:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -3043,7 +3043,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/chat-area-provider:
+  ../../../frontend/packages/agent-ide/chat-area-provider:
     dependencies:
       '@coze-arch/bot-hooks':
         specifier: workspace:*
@@ -3149,7 +3149,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/chat-area-provider-adapter:
+  ../../../frontend/packages/agent-ide/chat-area-provider-adapter:
     dependencies:
       '@coze-agent-ide/chat-area-plugin-debug-common':
         specifier: workspace:*
@@ -3273,7 +3273,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/chat-background:
+  ../../../frontend/packages/agent-ide/chat-background:
     dependencies:
       '@coze-agent-ide/chat-background-config-content-adapter':
         specifier: workspace:*
@@ -3433,7 +3433,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/chat-background-config-content:
+  ../../../frontend/packages/agent-ide/chat-background-config-content:
     dependencies:
       '@coze-agent-ide/chat-background-shared':
         specifier: workspace:*
@@ -3566,7 +3566,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/chat-background-config-content-adapter:
+  ../../../frontend/packages/agent-ide/chat-background-config-content-adapter:
     dependencies:
       '@coze-agent-ide/chat-background-config-content':
         specifier: workspace:*
@@ -3651,7 +3651,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/chat-background-shared:
+  ../../../frontend/packages/agent-ide/chat-background-shared:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -3790,7 +3790,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/chat-components-adapter:
+  ../../../frontend/packages/agent-ide/chat-components-adapter:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -3893,7 +3893,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/chat-debug-area:
+  ../../../frontend/packages/agent-ide/chat-debug-area:
     dependencies:
       '@coze-agent-ide/chat-answer-action-adapter':
         specifier: workspace:*
@@ -4125,7 +4125,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0(esbuild@0.18.20)
 
-  ../../../packages/agent-ide/commons:
+  ../../../frontend/packages/agent-ide/commons:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -4240,7 +4240,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/context:
+  ../../../frontend/packages/agent-ide/context:
     dependencies:
       classnames:
         specifier: ^2.3.2
@@ -4322,7 +4322,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/debug-tool-list:
+  ../../../frontend/packages/agent-ide/debug-tool-list:
     dependencies:
       '@blueprintjs/core':
         specifier: ^5.1.5
@@ -4434,7 +4434,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/entry:
+  ../../../frontend/packages/agent-ide/entry:
     dependencies:
       '@coze-agent-ide/bot-config-area-adapter':
         specifier: workspace:*
@@ -4690,7 +4690,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0(esbuild@0.18.20)
 
-  ../../../packages/agent-ide/entry-adapter:
+  ../../../frontend/packages/agent-ide/entry-adapter:
     dependencies:
       '@coze-agent-ide/bot-creator':
         specifier: workspace:*
@@ -4916,7 +4916,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/layout:
+  ../../../frontend/packages/agent-ide/layout:
     dependencies:
       '@coze-agent-ide/agent-ide-commons':
         specifier: workspace:*
@@ -5154,7 +5154,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0(esbuild@0.18.20)
 
-  ../../../packages/agent-ide/layout-adapter:
+  ../../../frontend/packages/agent-ide/layout-adapter:
     dependencies:
       '@coze-agent-ide/bot-creator-context':
         specifier: workspace:*
@@ -5275,7 +5275,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/memory-tool-pane-adapter:
+  ../../../frontend/packages/agent-ide/memory-tool-pane-adapter:
     dependencies:
       '@coze-agent-ide/space-bot':
         specifier: workspace:*
@@ -5381,7 +5381,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/model-manager:
+  ../../../frontend/packages/agent-ide/model-manager:
     dependencies:
       '@blueprintjs/core':
         specifier: ^5.1.5
@@ -5553,7 +5553,7 @@ importers:
         specifier: ^4.4.7
         version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
 
-  ../../../packages/agent-ide/navigate:
+  ../../../frontend/packages/agent-ide/navigate:
     dependencies:
       '@coze-agent-ide/space-bot':
         specifier: workspace:*
@@ -5653,7 +5653,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/onboarding:
+  ../../../frontend/packages/agent-ide/onboarding:
     dependencies:
       '@coze-arch/bot-error':
         specifier: workspace:*
@@ -5795,7 +5795,7 @@ importers:
         specifier: ^4.4.7
         version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
 
-  ../../../packages/agent-ide/onboarding-message-adapter:
+  ../../../frontend/packages/agent-ide/onboarding-message-adapter:
     dependencies:
       '@coze-agent-ide/space-bot':
         specifier: workspace:*
@@ -5880,7 +5880,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/plugin-area-adapter:
+  ../../../frontend/packages/agent-ide/plugin-area-adapter:
     dependencies:
       '@coze-agent-ide/bot-plugin':
         specifier: workspace:*
@@ -6013,7 +6013,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/plugin-content:
+  ../../../frontend/packages/agent-ide/plugin-content:
     dependencies:
       '@coze-agent-ide/plugin-setting-adapter':
         specifier: workspace:*
@@ -6131,7 +6131,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/plugin-content-adapter:
+  ../../../frontend/packages/agent-ide/plugin-content-adapter:
     dependencies:
       '@coze-agent-ide/plugin-content':
         specifier: workspace:*
@@ -6216,7 +6216,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/plugin-modal-adapter:
+  ../../../frontend/packages/agent-ide/plugin-modal-adapter:
     dependencies:
       '@coze-agent-ide/plugin-shared':
         specifier: workspace:*
@@ -6322,7 +6322,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/plugin-setting:
+  ../../../frontend/packages/agent-ide/plugin-setting:
     dependencies:
       '@coze-agent-ide/bot-plugin-mock-set':
         specifier: workspace:*
@@ -6464,7 +6464,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/plugin-setting-adapter:
+  ../../../frontend/packages/agent-ide/plugin-setting-adapter:
     dependencies:
       '@coze-agent-ide/plugin-setting':
         specifier: workspace:*
@@ -6549,7 +6549,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/plugin-shared:
+  ../../../frontend/packages/agent-ide/plugin-shared:
     dependencies:
       '@blueprintjs/core':
         specifier: ^5.1.5
@@ -6706,7 +6706,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/prompt:
+  ../../../frontend/packages/agent-ide/prompt:
     dependencies:
       '@coze-agent-ide/tool':
         specifier: workspace:*
@@ -6830,7 +6830,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/prompt-adapter:
+  ../../../frontend/packages/agent-ide/prompt-adapter:
     dependencies:
       '@coze-agent-ide/prompt':
         specifier: workspace:*
@@ -6927,7 +6927,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/publish-to-base:
+  ../../../frontend/packages/agent-ide/publish-to-base:
     dependencies:
       '@blueprintjs/core':
         specifier: ^5.1.5
@@ -7159,7 +7159,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/agent-ide/skills-pane-adapter:
+  ../../../frontend/packages/agent-ide/skills-pane-adapter:
     dependencies:
       '@coze-agent-ide/debug-tool-list':
         specifier: workspace:*
@@ -7256,7 +7256,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/space-bot:
+  ../../../frontend/packages/agent-ide/space-bot:
     dependencies:
       '@blueprintjs/core':
         specifier: ^5.1.5
@@ -7620,7 +7620,7 @@ importers:
         specifier: ^1.0.21
         version: 1.1.1(core-js@3.42.0)
 
-  ../../../packages/agent-ide/tool:
+  ../../../frontend/packages/agent-ide/tool:
     dependencies:
       '@coze-agent-ide/bot-editor-context-store':
         specifier: workspace:*
@@ -7847,9 +7847,9 @@ importers:
         version: 3.0.9(@types/node@18.18.9)(less@4.3.0)
       webpack:
         specifier: ~5.91.0
-        version: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)
+        version: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
 
-  ../../../packages/agent-ide/tool-config:
+  ../../../frontend/packages/agent-ide/tool-config:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -7934,7 +7934,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/workflow:
+  ../../../frontend/packages/agent-ide/workflow:
     dependencies:
       '@coze-agent-ide/bot-plugin-export':
         specifier: workspace:*
@@ -8109,7 +8109,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/workflow-as-agent-adapter:
+  ../../../frontend/packages/agent-ide/workflow-as-agent-adapter:
     dependencies:
       '@coze-agent-ide/tool':
         specifier: workspace:*
@@ -8203,7 +8203,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/workflow-card-adapter:
+  ../../../frontend/packages/agent-ide/workflow-card-adapter:
     dependencies:
       '@coze-agent-ide/navigate':
         specifier: workspace:*
@@ -8327,7 +8327,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/workflow-item:
+  ../../../frontend/packages/agent-ide/workflow-item:
     dependencies:
       '@coze-agent-ide/navigate':
         specifier: workspace:*
@@ -8448,7 +8448,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/agent-ide/workflow-modal:
+  ../../../frontend/packages/agent-ide/workflow-modal:
     dependencies:
       '@coze-agent-ide/navigate':
         specifier: workspace:*
@@ -8566,7 +8566,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/arch/api-schema:
+  ../../../frontend/packages/arch/api-schema:
     dependencies:
       '@coze-arch/bot-http':
         specifier: workspace:*
@@ -8600,7 +8600,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/arco-icon:
+  ../../../frontend/packages/arch/arco-icon:
     dependencies:
       react:
         specifier: 18.2.0
@@ -8619,7 +8619,7 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  ../../../packages/arch/arco-illustration:
+  ../../../frontend/packages/arch/arco-illustration:
     dependencies:
       react:
         specifier: 18.2.0
@@ -8638,7 +8638,7 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  ../../../packages/arch/bot-api:
+  ../../../frontend/packages/arch/bot-api:
     dependencies:
       '@coze-arch/bot-http':
         specifier: workspace:*
@@ -8690,7 +8690,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/bot-env:
+  ../../../frontend/packages/arch/bot-env:
     dependencies:
       '@coze-studio/bot-env-adapter':
         specifier: workspace:*
@@ -8721,7 +8721,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/bot-env-adapter:
+  ../../../frontend/packages/arch/bot-env-adapter:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: workspace:*
@@ -8748,7 +8748,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/bot-error:
+  ../../../frontend/packages/arch/bot-error:
     dependencies:
       '@coze-arch/bot-http':
         specifier: workspace:*
@@ -8803,7 +8803,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/arch/bot-flags:
+  ../../../frontend/packages/arch/bot-flags:
     dependencies:
       '@coze-arch/logger':
         specifier: workspace:*
@@ -8852,7 +8852,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/bot-hooks:
+  ../../../frontend/packages/arch/bot-hooks:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -8973,7 +8973,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/arch/bot-hooks-adapter:
+  ../../../frontend/packages/arch/bot-hooks-adapter:
     dependencies:
       '@coze-arch/bot-hooks-base':
         specifier: workspace:*
@@ -9058,7 +9058,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/arch/bot-hooks-base:
+  ../../../frontend/packages/arch/bot-hooks-base:
     dependencies:
       '@coze-agent-ide/tool-config':
         specifier: workspace:*
@@ -9173,7 +9173,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/arch/bot-http:
+  ../../../frontend/packages/arch/bot-http:
     dependencies:
       '@coze-arch/logger':
         specifier: workspace:*
@@ -9216,7 +9216,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/arch/bot-md-box-adapter:
+  ../../../frontend/packages/arch/bot-md-box-adapter:
     dependencies:
       '@bytedance/calypso':
         specifier: 0.1.0-beta.8
@@ -9298,7 +9298,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/arch/bot-monaco-editor:
+  ../../../frontend/packages/arch/bot-monaco-editor:
     dependencies:
       '@monaco-editor/react':
         specifier: ^4.5.2
@@ -9386,7 +9386,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/arch/bot-space-api:
+  ../../../frontend/packages/arch/bot-space-api:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -9435,7 +9435,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/bot-store:
+  ../../../frontend/packages/arch/bot-store:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -9511,7 +9511,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/arch/bot-tea:
+  ../../../frontend/packages/arch/bot-tea:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -9545,7 +9545,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/arch/bot-typings:
+  ../../../frontend/packages/arch/bot-typings:
     devDependencies:
       '@coze-arch/bot-env':
         specifier: workspace:*
@@ -9587,7 +9587,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/arch/bot-utils:
+  ../../../frontend/packages/arch/bot-utils:
     dependencies:
       '@coze-agent-ide/tool-config':
         specifier: workspace:*
@@ -9690,7 +9690,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/default-slardar:
+  ../../../frontend/packages/arch/default-slardar:
     dependencies:
       '@coze-studio/slardar-interface':
         specifier: workspace:*
@@ -9718,7 +9718,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/fetch-stream:
+  ../../../frontend/packages/arch/fetch-stream:
     dependencies:
       '@mattiasbuelens/web-streams-adapter':
         specifier: ~0.1.0
@@ -9752,7 +9752,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/foundation-sdk:
+  ../../../frontend/packages/arch/foundation-sdk:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: workspace:*
@@ -9788,7 +9788,7 @@ importers:
         specifier: ^4.4.7
         version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
 
-  ../../../packages/arch/hooks:
+  ../../../frontend/packages/arch/hooks:
     dependencies:
       lodash-es:
         specifier: ^4.17.21
@@ -9837,7 +9837,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/i18n:
+  ../../../frontend/packages/arch/i18n:
     dependencies:
       '@coze-studio/studio-i18n-resource-adapter':
         specifier: workspace:*
@@ -9901,7 +9901,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/idl:
+  ../../../frontend/packages/arch/idl:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: workspace:*
@@ -9913,7 +9913,7 @@ importers:
         specifier: 18.18.9
         version: 18.18.9
 
-  ../../../packages/arch/load-remote-worker:
+  ../../../frontend/packages/arch/load-remote-worker:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: workspace:*
@@ -9937,7 +9937,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/logger:
+  ../../../frontend/packages/arch/logger:
     dependencies:
       '@coze-arch/bot-env':
         specifier: workspace:*
@@ -9983,7 +9983,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/pdfjs-shadow:
+  ../../../frontend/packages/arch/pdfjs-shadow:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: workspace:*
@@ -10019,7 +10019,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/report-events:
+  ../../../frontend/packages/arch/report-events:
     dependencies:
       '@coze-arch/logger':
         specifier: workspace:*
@@ -10071,7 +10071,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/arch/report-tti:
+  ../../../frontend/packages/arch/report-tti:
     dependencies:
       '@coze-arch/logger':
         specifier: workspace:*
@@ -10129,7 +10129,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/arch/resources/studio-i18n-resource:
+  ../../../frontend/packages/arch/resources/studio-i18n-resource:
     dependencies:
       react:
         specifier: 18.2.0
@@ -10151,7 +10151,7 @@ importers:
         specifier: 18.18.9
         version: 18.18.9
 
-  ../../../packages/arch/responsive-kit:
+  ../../../frontend/packages/arch/responsive-kit:
     dependencies:
       '@coze-arch/bot-semi':
         specifier: workspace:*
@@ -10239,7 +10239,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/arch/semi-theme-hand01:
+  ../../../frontend/packages/arch/semi-theme-hand01:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: workspace:*
@@ -10251,7 +10251,7 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  ../../../packages/arch/slardar-adapter:
+  ../../../frontend/packages/arch/slardar-adapter:
     dependencies:
       '@coze-studio/default-slardar':
         specifier: workspace:*
@@ -10276,7 +10276,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/slardar-interface:
+  ../../../frontend/packages/arch/slardar-interface:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: workspace:*
@@ -10300,7 +10300,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/tea:
+  ../../../frontend/packages/arch/tea:
     dependencies:
       '@coze-arch/bot-typings':
         specifier: workspace:*
@@ -10349,7 +10349,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/arch/tea-adapter:
+  ../../../frontend/packages/arch/tea-adapter:
     dependencies:
       '@coze-studio/tea-interface':
         specifier: workspace:*
@@ -10377,7 +10377,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/tea-interface:
+  ../../../frontend/packages/arch/tea-interface:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -10405,7 +10405,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/utils:
+  ../../../frontend/packages/arch/utils:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: workspace:*
@@ -10432,7 +10432,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/arch/web-context:
+  ../../../frontend/packages/arch/web-context:
     dependencies:
       eventemitter3:
         specifier: ^5.0.1
@@ -10460,7 +10460,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/common/assets:
+  ../../../frontend/packages/common/assets:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: workspace:*
@@ -10484,7 +10484,7 @@ importers:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
 
-  ../../../packages/common/auth:
+  ../../../frontend/packages/common/auth:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -10554,7 +10554,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/common/auth-adapter:
+  ../../../frontend/packages/common/auth-adapter:
     dependencies:
       '@coze-arch/idl':
         specifier: workspace:*
@@ -10609,7 +10609,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/common/biz-components:
+  ../../../frontend/packages/common/biz-components:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -10766,7 +10766,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0(esbuild@0.18.20)
 
-  ../../../packages/common/chat-area/chat-answer-action:
+  ../../../frontend/packages/common/chat-area/chat-answer-action:
     dependencies:
       '@coze-arch/bot-flags':
         specifier: workspace:*
@@ -10914,7 +10914,7 @@ importers:
         specifier: ^4.4.7
         version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
 
-  ../../../packages/common/chat-area/chat-area:
+  ../../../frontend/packages/common/chat-area/chat-area:
     dependencies:
       '@coze-arch/bot-flags':
         specifier: workspace:*
@@ -11107,7 +11107,7 @@ importers:
         specifier: ^4.4.7
         version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
 
-  ../../../packages/common/chat-area/chat-area-plugin-reasoning:
+  ../../../frontend/packages/common/chat-area/chat-area-plugin-reasoning:
     dependencies:
       '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
@@ -11201,7 +11201,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/common/chat-area/chat-core:
+  ../../../frontend/packages/common/chat-area/chat-core:
     dependencies:
       '@coze-arch/bot-flags':
         specifier: workspace:*
@@ -11292,7 +11292,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/common/chat-area/chat-uikit:
+  ../../../frontend/packages/common/chat-area/chat-uikit:
     dependencies:
       '@coze-arch/bot-icons':
         specifier: workspace:*
@@ -11509,7 +11509,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(less@4.3.0)
 
-  ../../../packages/common/chat-area/chat-uikit-shared:
+  ../../../frontend/packages/common/chat-area/chat-uikit-shared:
     dependencies:
       '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
@@ -11606,7 +11606,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/common/chat-area/chat-workflow-render:
+  ../../../frontend/packages/common/chat-area/chat-workflow-render:
     dependencies:
       '@coze-arch/i18n':
         specifier: workspace:*
@@ -11715,7 +11715,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/common/chat-area/hooks:
+  ../../../frontend/packages/common/chat-area/hooks:
     devDependencies:
       '@coze-arch/bot-typings':
         specifier: workspace:*
@@ -11769,7 +11769,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/common/chat-area/plugin-chat-background:
+  ../../../frontend/packages/common/chat-area/plugin-chat-background:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -11875,7 +11875,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/common/chat-area/plugin-chat-shortcuts:
+  ../../../frontend/packages/common/chat-area/plugin-chat-shortcuts:
     dependencies:
       '@coze-agent-ide/tool':
         specifier: workspace:*
@@ -12062,7 +12062,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/common/chat-area/plugin-message-grab:
+  ../../../frontend/packages/common/chat-area/plugin-message-grab:
     dependencies:
       '@coze-arch/bot-flags':
         specifier: workspace:*
@@ -12192,7 +12192,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/common/chat-area/plugin-resume:
+  ../../../frontend/packages/common/chat-area/plugin-resume:
     dependencies:
       '@coze-arch/bot-semi':
         specifier: workspace:*
@@ -12295,7 +12295,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/common/chat-area/text-grab:
+  ../../../frontend/packages/common/chat-area/text-grab:
     dependencies:
       '@coze-arch/bot-md-box-adapter':
         specifier: workspace:*
@@ -12398,7 +12398,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/common/chat-area/utils:
+  ../../../frontend/packages/common/chat-area/utils:
     dependencies:
       '@coze-arch/bot-env':
         specifier: workspace:*
@@ -12447,7 +12447,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/common/coze-mitt:
+  ../../../frontend/packages/common/coze-mitt:
     dependencies:
       classnames:
         specifier: ^2.3.2
@@ -12496,7 +12496,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/common/editor-plugins:
+  ../../../frontend/packages/common/editor-plugins:
     dependencies:
       '@codemirror/language':
         specifier: ^6.10.1
@@ -12638,7 +12638,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/common/flowgram-adapter/common:
+  ../../../frontend/packages/common/flowgram-adapter/common:
     dependencies:
       '@flowgram.ai/command':
         specifier: 0.1.28
@@ -12711,7 +12711,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/common/flowgram-adapter/fixed-layout-editor:
+  ../../../frontend/packages/common/flowgram-adapter/fixed-layout-editor:
     dependencies:
       '@flowgram.ai/fixed-layout-editor':
         specifier: 0.1.28
@@ -12775,7 +12775,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/common/flowgram-adapter/free-layout-editor:
+  ../../../frontend/packages/common/flowgram-adapter/free-layout-editor:
     dependencies:
       '@flowgram.ai/core':
         specifier: 0.1.28
@@ -12893,7 +12893,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/common/md-editor-adapter:
+  ../../../frontend/packages/common/md-editor-adapter:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -12981,7 +12981,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/common/prompt-kit/adapter:
+  ../../../frontend/packages/common/prompt-kit/adapter:
     dependencies:
       '@coze-arch/i18n':
         specifier: workspace:*
@@ -13072,7 +13072,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/common/prompt-kit/base:
+  ../../../frontend/packages/common/prompt-kit/base:
     dependencies:
       '@codemirror/view':
         specifier: ^6.34.1
@@ -13196,7 +13196,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/common/prompt-kit/main:
+  ../../../frontend/packages/common/prompt-kit/main:
     dependencies:
       '@codemirror/state':
         specifier: ^6.4.1
@@ -13386,7 +13386,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/common/uploader-adapter:
+  ../../../frontend/packages/common/uploader-adapter:
     dependencies:
       '@coze-arch/uploader-interface':
         specifier: workspace:*
@@ -13417,7 +13417,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/common/uploader-interface:
+  ../../../frontend/packages/common/uploader-interface:
     devDependencies:
       '@coze-arch/eslint-config':
         specifier: workspace:*
@@ -13441,7 +13441,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/common/websocket-manager-adapter:
+  ../../../frontend/packages/common/websocket-manager-adapter:
     dependencies:
       classnames:
         specifier: ^2.3.2
@@ -13523,7 +13523,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/community/component:
+  ../../../frontend/packages/community/component:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -13750,12 +13750,12 @@ importers:
         version: 3.0.9(happy-dom@12.10.3)(less@3.13.1)
       webpack:
         specifier: ~5.91.0
-        version: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)
+        version: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
       xgplayer-subtitles:
         specifier: ^1.0.21
         version: 1.1.1(core-js@3.42.0)
 
-  ../../../packages/community/explore:
+  ../../../frontend/packages/community/explore:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -13864,7 +13864,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/components/biz-tooltip-ui:
+  ../../../frontend/packages/components/biz-tooltip-ui:
     dependencies:
       '@coze-arch/i18n':
         specifier: workspace:*
@@ -13949,7 +13949,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/components/bot-icons:
+  ../../../frontend/packages/components/bot-icons:
     dependencies:
       '@douyinfe/semi-icons':
         specifier: ^2.36.0
@@ -13983,7 +13983,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/components/bot-semi:
+  ../../../frontend/packages/components/bot-semi:
     dependencies:
       '@coze-arch/bot-icons':
         specifier: workspace:*
@@ -14086,7 +14086,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/components/coze-design:
+  ../../../frontend/packages/components/coze-design:
     dependencies:
       '@coze-arch/arco-icon':
         specifier: workspace:*
@@ -14321,7 +14321,7 @@ importers:
         specifier: ^5.1.4
         version: 5.1.4(webpack@5.89.0)
 
-  ../../../packages/components/json-viewer:
+  ../../../frontend/packages/components/json-viewer:
     dependencies:
       '@coze-arch/bot-semi':
         specifier: workspace:*
@@ -14430,7 +14430,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/components/loading-button:
+  ../../../frontend/packages/components/loading-button:
     dependencies:
       '@coze-arch/bot-semi':
         specifier: workspace:*
@@ -14521,7 +14521,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/components/mouse-pad-selector:
+  ../../../frontend/packages/components/mouse-pad-selector:
     dependencies:
       '@coze-arch/bot-semi':
         specifier: workspace:*
@@ -14618,7 +14618,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/components/resource-tree:
+  ../../../frontend/packages/components/resource-tree:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -14754,7 +14754,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/components/scroll-view:
+  ../../../frontend/packages/components/scroll-view:
     dependencies:
       classnames:
         specifier: ^2.3.2
@@ -14842,7 +14842,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/components/table-view:
+  ../../../frontend/packages/components/table-view:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -14969,7 +14969,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/components/virtual-list:
+  ../../../frontend/packages/components/virtual-list:
     dependencies:
       react-virtualized-auto-sizer:
         specifier: ^1.0.7
@@ -14997,7 +14997,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/common/feature-register:
+  ../../../frontend/packages/data/common/feature-register:
     dependencies:
       '@coze-arch/logger':
         specifier: workspace:*
@@ -15097,7 +15097,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/common/reporter:
+  ../../../frontend/packages/data/common/reporter:
     dependencies:
       '@coze-arch/i18n':
         specifier: workspace:*
@@ -15200,7 +15200,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(less@4.3.0)
 
-  ../../../packages/data/common/utils:
+  ../../../frontend/packages/data/common/utils:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -15309,7 +15309,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/data/knowledge/common/components:
+  ../../../frontend/packages/data/knowledge/common/components:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -15436,7 +15436,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/knowledge/common/hooks:
+  ../../../frontend/packages/data/knowledge/common/hooks:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -15545,7 +15545,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/knowledge/common/services:
+  ../../../frontend/packages/data/knowledge/common/services:
     dependencies:
       classnames:
         specifier: ^2.3.2
@@ -15627,7 +15627,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/knowledge/common/stores:
+  ../../../frontend/packages/data/knowledge/common/stores:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -15703,7 +15703,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/knowledge/knowledge-data-set-for-agent:
+  ../../../frontend/packages/data/knowledge/knowledge-data-set-for-agent:
     dependencies:
       '@coze-arch/idl':
         specifier: workspace:*
@@ -15794,7 +15794,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/knowledge/knowledge-ide-adapter:
+  ../../../frontend/packages/data/knowledge/knowledge-ide-adapter:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -15894,7 +15894,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/knowledge/knowledge-ide-base:
+  ../../../frontend/packages/data/knowledge/knowledge-ide-base:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -16117,7 +16117,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/knowledge/knowledge-modal-adapter:
+  ../../../frontend/packages/data/knowledge/knowledge-modal-adapter:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -16226,7 +16226,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/knowledge/knowledge-modal-base:
+  ../../../frontend/packages/data/knowledge/knowledge-modal-base:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -16407,7 +16407,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/knowledge/knowledge-resource-processor-adapter:
+  ../../../frontend/packages/data/knowledge/knowledge-resource-processor-adapter:
     dependencies:
       '@coze-data/knowledge-resource-processor-base':
         specifier: workspace:*
@@ -16504,7 +16504,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/knowledge/knowledge-resource-processor-base:
+  ../../../frontend/packages/data/knowledge/knowledge-resource-processor-base:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -16724,7 +16724,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/knowledge/knowledge-resource-processor-core:
+  ../../../frontend/packages/data/knowledge/knowledge-resource-processor-core:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -16827,7 +16827,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/memory/database:
+  ../../../frontend/packages/data/memory/database:
     dependencies:
       '@coze-arch/bot-error':
         specifier: workspace:*
@@ -17032,7 +17032,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(less@4.3.0)
 
-  ../../../packages/data/memory/database-creator:
+  ../../../frontend/packages/data/memory/database-creator:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -17144,7 +17144,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/memory/database-v2-adapter:
+  ../../../frontend/packages/data/memory/database-v2-adapter:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -17244,7 +17244,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/memory/database-v2-base:
+  ../../../frontend/packages/data/memory/database-v2-base:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -17383,7 +17383,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/memory/database-v2-main:
+  ../../../frontend/packages/data/memory/database-v2-main:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -17582,7 +17582,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/memory/llm-plugins:
+  ../../../frontend/packages/data/memory/llm-plugins:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -17679,7 +17679,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/data/memory/variables:
+  ../../../frontend/packages/data/memory/variables:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -17881,7 +17881,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/devops/common-modules:
+  ../../../frontend/packages/devops/common-modules:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -18002,7 +18002,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/devops/debug/debug-panel:
+  ../../../frontend/packages/devops/debug/debug-panel:
     dependencies:
       '@coze-devops/json-link-preview':
         specifier: workspace:*
@@ -18162,7 +18162,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/devops/json-link-preview:
+  ../../../frontend/packages/devops/json-link-preview:
     dependencies:
       '@coze-arch/bot-tea':
         specifier: workspace:*
@@ -18283,7 +18283,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(less@4.3.0)
 
-  ../../../packages/devops/mockset-manage:
+  ../../../frontend/packages/devops/mockset-manage:
     devDependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -18409,7 +18409,7 @@ importers:
         specifier: ^4.4.7
         version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
 
-  ../../../packages/devops/testset-manage:
+  ../../../frontend/packages/devops/testset-manage:
     dependencies:
       immer:
         specifier: ^10.0.3
@@ -18488,7 +18488,7 @@ importers:
         specifier: ^4.4.7
         version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
 
-  ../../../packages/foundation/account-adapter:
+  ../../../frontend/packages/foundation/account-adapter:
     dependencies:
       '@coze-foundation/account-base':
         specifier: workspace:*
@@ -18549,7 +18549,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/foundation/account-base:
+  ../../../frontend/packages/foundation/account-base:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -18625,7 +18625,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/foundation/account-ui-adapter:
+  ../../../frontend/packages/foundation/account-ui-adapter:
     dependencies:
       '@coze-arch/bot-semi':
         specifier: workspace:*
@@ -18734,7 +18734,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/foundation/account-ui-base:
+  ../../../frontend/packages/foundation/account-ui-base:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -18858,7 +18858,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/foundation/browser-upgrade-banner:
+  ../../../frontend/packages/foundation/browser-upgrade-banner:
     dependencies:
       '@coze-arch/i18n':
         specifier: workspace:*
@@ -18955,7 +18955,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/foundation/enterprise-store-adapter:
+  ../../../frontend/packages/foundation/enterprise-store-adapter:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -19058,7 +19058,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/foundation/foundation-sdk:
+  ../../../frontend/packages/foundation/foundation-sdk:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -19101,7 +19101,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/foundation/global:
+  ../../../frontend/packages/foundation/global:
     dependencies:
       '@coze-agent-ide/space-bot':
         specifier: workspace:*
@@ -19213,7 +19213,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/foundation/global-adapter:
+  ../../../frontend/packages/foundation/global-adapter:
     dependencies:
       '@coze-agent-ide/space-bot':
         specifier: workspace:*
@@ -19361,7 +19361,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/foundation/global-store:
+  ../../../frontend/packages/foundation/global-store:
     dependencies:
       classnames:
         specifier: ^2.3.2
@@ -19455,7 +19455,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/foundation/layout:
+  ../../../frontend/packages/foundation/layout:
     dependencies:
       '@blueprintjs/core':
         specifier: ^5.1.5
@@ -19621,7 +19621,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0(esbuild@0.18.20)
 
-  ../../../packages/foundation/local-storage:
+  ../../../frontend/packages/foundation/local-storage:
     dependencies:
       eventemitter3:
         specifier: ^5.0.1
@@ -19709,7 +19709,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/foundation/space-store:
+  ../../../frontend/packages/foundation/space-store:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -19821,7 +19821,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/foundation/space-store-adapter:
+  ../../../frontend/packages/foundation/space-store-adapter:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -19927,7 +19927,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/foundation/space-ui-adapter:
+  ../../../frontend/packages/foundation/space-ui-adapter:
     dependencies:
       '@coze-arch/bot-hooks':
         specifier: workspace:*
@@ -20027,7 +20027,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/foundation/space-ui-base:
+  ../../../frontend/packages/foundation/space-ui-base:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -20160,7 +20160,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/project-ide/base-adapter:
+  ../../../frontend/packages/project-ide/base-adapter:
     dependencies:
       '@coze-arch/bot-typings':
         specifier: workspace:*
@@ -20203,7 +20203,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/project-ide/base-interface:
+  ../../../frontend/packages/project-ide/base-interface:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -20240,7 +20240,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/project-ide/biz-components:
+  ../../../frontend/packages/project-ide/biz-components:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -20364,7 +20364,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/project-ide/biz-data:
+  ../../../frontend/packages/project-ide/biz-data:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -20509,7 +20509,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/project-ide/biz-plugin:
+  ../../../frontend/packages/project-ide/biz-plugin:
     dependencies:
       '@coze-agent-ide/bot-plugin':
         specifier: workspace:*
@@ -20582,7 +20582,7 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  ../../../packages/project-ide/biz-plugin-registry-adapter:
+  ../../../frontend/packages/project-ide/biz-plugin-registry-adapter:
     dependencies:
       '@coze-project-ide/biz-plugin':
         specifier: workspace:*
@@ -20673,7 +20673,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/project-ide/biz-workflow:
+  ../../../frontend/packages/project-ide/biz-workflow:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -20776,7 +20776,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/project-ide/client:
+  ../../../frontend/packages/project-ide/client:
     dependencies:
       '@coze-project-ide/core':
         specifier: workspace:*
@@ -20834,7 +20834,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/project-ide/core:
+  ../../../frontend/packages/project-ide/core:
     dependencies:
       '@flowgram-adapter/common':
         specifier: workspace:*
@@ -20895,7 +20895,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(jsdom@22.1.0)
 
-  ../../../packages/project-ide/framework:
+  ../../../frontend/packages/project-ide/framework:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -20983,7 +20983,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/project-ide/main:
+  ../../../frontend/packages/project-ide/main:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -21164,7 +21164,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/project-ide/ui-adapter:
+  ../../../frontend/packages/project-ide/ui-adapter:
     dependencies:
       '@coze-project-ide/base-interface':
         specifier: workspace:*
@@ -21198,7 +21198,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/project-ide/view:
+  ../../../frontend/packages/project-ide/view:
     dependencies:
       '@coze-project-ide/core':
         specifier: workspace:*
@@ -21277,7 +21277,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(jsdom@22.1.0)(sass-embedded@1.89.1)
 
-  ../../../packages/studio/autosave:
+  ../../../frontend/packages/studio/autosave:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -21395,7 +21395,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(less@4.3.0)
 
-  ../../../packages/studio/bot-utils:
+  ../../../frontend/packages/studio/bot-utils:
     dependencies:
       '@coze-arch/i18n':
         specifier: workspace:*
@@ -21510,7 +21510,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0(esbuild@0.18.20)
 
-  ../../../packages/studio/common/file-kit:
+  ../../../frontend/packages/studio/common/file-kit:
     dependencies:
       '@coze-arch/i18n':
         specifier: workspace:*
@@ -21565,7 +21565,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/components:
+  ../../../frontend/packages/studio/components:
     dependencies:
       '@blueprintjs/core':
         specifier: ^5.1.5
@@ -21749,7 +21749,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/studio/entity-adapter:
+  ../../../frontend/packages/studio/entity-adapter:
     dependencies:
       '@coze-agent-ide/space-bot':
         specifier: workspace:*
@@ -21858,7 +21858,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/mockset-edit-modal-adapter:
+  ../../../frontend/packages/studio/mockset-edit-modal-adapter:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -21961,7 +21961,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/mockset-editor:
+  ../../../frontend/packages/studio/mockset-editor:
     dependencies:
       '@coze-arch/bot-monaco-editor':
         specifier: workspace:*
@@ -22055,7 +22055,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/mockset-editor-adapter:
+  ../../../frontend/packages/studio/mockset-editor-adapter:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -22152,7 +22152,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/mockset-shared:
+  ../../../frontend/packages/studio/mockset-shared:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -22246,7 +22246,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/open-platform/open-auth:
+  ../../../frontend/packages/studio/open-platform/open-auth:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -22382,7 +22382,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/studio/open-platform/open-chat:
+  ../../../frontend/packages/studio/open-platform/open-chat:
     dependencies:
       '@coze-arch/i18n':
         specifier: workspace:*
@@ -22479,7 +22479,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/studio/open-platform/open-env-adapter:
+  ../../../frontend/packages/studio/open-platform/open-env-adapter:
     devDependencies:
       '@coze-arch/bot-env':
         specifier: workspace:*
@@ -22563,7 +22563,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/studio/plugin-form-adapter:
+  ../../../frontend/packages/studio/plugin-form-adapter:
     dependencies:
       '@coze-agent-ide/bot-plugin-tools':
         specifier: workspace:*
@@ -22684,7 +22684,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/plugin-publish-ui-adapter:
+  ../../../frontend/packages/studio/plugin-publish-ui-adapter:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -22796,7 +22796,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/plugin-shared:
+  ../../../frontend/packages/studio/plugin-shared:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -22887,7 +22887,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/plugin-tool-columns:
+  ../../../frontend/packages/studio/plugin-tool-columns:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -22996,7 +22996,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/plugin-tool-columns-adapter:
+  ../../../frontend/packages/studio/plugin-tool-columns-adapter:
     dependencies:
       '@coze-studio/plugin-tool-columns':
         specifier: workspace:*
@@ -23081,7 +23081,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/premium/premium-components-adapter:
+  ../../../frontend/packages/studio/premium/premium-components-adapter:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -23172,7 +23172,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/premium/premium-store-adapter:
+  ../../../frontend/packages/studio/premium/premium-store-adapter:
     dependencies:
       '@coze-arch/idl':
         specifier: workspace:*
@@ -23239,7 +23239,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/publish-manage-hooks:
+  ../../../frontend/packages/studio/publish-manage-hooks:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -23327,7 +23327,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/stores/bot-detail:
+  ../../../frontend/packages/studio/stores/bot-detail:
     dependencies:
       '@coze-agent-ide/bot-input-length-limit':
         specifier: workspace:*
@@ -23466,7 +23466,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(less@3.13.1)(yaml@2.8.0)
 
-  ../../../packages/studio/stores/bot-plugin:
+  ../../../frontend/packages/studio/stores/bot-plugin:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -23530,7 +23530,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(happy-dom@12.10.3)
 
-  ../../../packages/studio/user-store:
+  ../../../frontend/packages/studio/user-store:
     dependencies:
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
@@ -23621,7 +23621,7 @@ importers:
         specifier: ^4.4.7
         version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
 
-  ../../../packages/studio/workspace/entry-adapter:
+  ../../../frontend/packages/studio/workspace/entry-adapter:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -23727,7 +23727,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/workspace/entry-base:
+  ../../../frontend/packages/studio/workspace/entry-base:
     dependencies:
       '@coze-agent-ide/bot-plugin':
         specifier: workspace:*
@@ -23986,7 +23986,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0(esbuild@0.18.20)
 
-  ../../../packages/studio/workspace/project-entity-adapter:
+  ../../../frontend/packages/studio/workspace/project-entity-adapter:
     dependencies:
       '@coze-arch/idl':
         specifier: workspace:*
@@ -24050,7 +24050,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/workspace/project-entity-base:
+  ../../../frontend/packages/studio/workspace/project-entity-base:
     dependencies:
       '@coze-agent-ide/bot-input-length-limit':
         specifier: workspace:*
@@ -24195,7 +24195,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/studio/workspace/project-publish:
+  ../../../frontend/packages/studio/workspace/project-publish:
     dependencies:
       '@coze-agent-ide/agent-ide-commons':
         specifier: workspace:*
@@ -24388,7 +24388,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0(esbuild@0.18.20)
 
-  ../../../packages/workflow/adapter/base:
+  ../../../frontend/packages/workflow/adapter/base:
     dependencies:
       '@coze-workflow/base':
         specifier: workspace:*
@@ -24470,7 +24470,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/workflow/adapter/code-editor:
+  ../../../frontend/packages/workflow/adapter/code-editor:
     dependencies:
       '@codemirror/state':
         specifier: ^6.4.1
@@ -24570,7 +24570,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/workflow/adapter/nodes:
+  ../../../frontend/packages/workflow/adapter/nodes:
     dependencies:
       classnames:
         specifier: ^2.3.2
@@ -24652,7 +24652,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/workflow/adapter/playground:
+  ../../../frontend/packages/workflow/adapter/playground:
     dependencies:
       '@coze-arch/bot-error':
         specifier: workspace:*
@@ -24806,7 +24806,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0(esbuild@0.18.20)
 
-  ../../../packages/workflow/adapter/resources:
+  ../../../frontend/packages/workflow/adapter/resources:
     dependencies:
       classnames:
         specifier: ^2.3.2
@@ -24891,7 +24891,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/workflow/base:
+  ../../../frontend/packages/workflow/base:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -24994,7 +24994,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(less@3.13.1)(yaml@2.8.0)
 
-  ../../../packages/workflow/components:
+  ../../../frontend/packages/workflow/components:
     dependencies:
       '@codemirror/language':
         specifier: ^6.10.1
@@ -25253,7 +25253,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0(esbuild@0.18.20)
 
-  ../../../packages/workflow/fabric-canvas:
+  ../../../frontend/packages/workflow/fabric-canvas:
     dependencies:
       '@coze-arch/i18n':
         specifier: workspace:*
@@ -25377,7 +25377,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/workflow/feature-encapsulate:
+  ../../../frontend/packages/workflow/feature-encapsulate:
     dependencies:
       '@coze-arch/bot-flags':
         specifier: workspace:*
@@ -25486,7 +25486,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(@types/node@18.18.9)(less@3.13.1)(yaml@2.8.0)
 
-  ../../../packages/workflow/history:
+  ../../../frontend/packages/workflow/history:
     dependencies:
       '@coze-arch/bot-flags':
         specifier: workspace:*
@@ -25544,7 +25544,7 @@ importers:
         specifier: '>=0.19.0'
         version: 0.26.0
 
-  ../../../packages/workflow/nodes:
+  ../../../frontend/packages/workflow/nodes:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -25701,7 +25701,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/workflow/playground:
+  ../../../frontend/packages/workflow/playground:
     dependencies:
       '@codemirror/commands':
         specifier: ^6.3.3
@@ -26242,7 +26242,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0(esbuild@0.18.20)
 
-  ../../../packages/workflow/render:
+  ../../../frontend/packages/workflow/render:
     dependencies:
       '@coze-arch/bot-flags':
         specifier: workspace:*
@@ -26333,7 +26333,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0
 
-  ../../../packages/workflow/sdk:
+  ../../../frontend/packages/workflow/sdk:
     dependencies:
       '@coze-workflow/base':
         specifier: workspace:*
@@ -26385,7 +26385,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/workflow/setters:
+  ../../../frontend/packages/workflow/setters:
     dependencies:
       '@coze-arch/i18n':
         specifier: workspace:*
@@ -26527,7 +26527,7 @@ importers:
         specifier: ~5.91.0
         version: 5.91.0(esbuild@0.18.20)
 
-  ../../../packages/workflow/test-run:
+  ../../../frontend/packages/workflow/test-run:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -26678,7 +26678,7 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  ../../../packages/workflow/test-run-next/form:
+  ../../../frontend/packages/workflow/test-run-next/form:
     dependencies:
       '@coze-arch/i18n':
         specifier: workspace:*
@@ -26763,7 +26763,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/workflow/test-run-next/main:
+  ../../../frontend/packages/workflow/test-run-next/main:
     dependencies:
       '@coze-workflow/test-run-form':
         specifier: workspace:*
@@ -26788,7 +26788,7 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  ../../../packages/workflow/test-run-next/shared:
+  ../../../frontend/packages/workflow/test-run-next/shared:
     dependencies:
       '@codemirror/language':
         specifier: ^6.10.1
@@ -26852,7 +26852,7 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
-  ../../../packages/workflow/test-run-next/trace:
+  ../../../frontend/packages/workflow/test-run-next/trace:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -26934,7 +26934,7 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  ../../../packages/workflow/variable:
+  ../../../frontend/packages/workflow/variable:
     dependencies:
       '@coze-arch/bot-api':
         specifier: workspace:*
@@ -29601,7 +29601,7 @@ packages:
       css-loader: 4.3.0(webpack@5.91.0)
       enhanced-resolve: 5.12.0
       raw-loader: 4.0.2(webpack@5.91.0)
-      sass-loader: 10.5.2(webpack@5.91.0)
+      sass-loader: 10.5.2(sass@1.89.0)(webpack@5.91.0)
       webpack: 5.91.0
     transitivePeerDependencies:
       - fibers
@@ -33298,7 +33298,7 @@ packages:
       webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.17.19)
     dev: true
 
-  /@pmmmwh/react-refresh-webpack-plugin@0.5.16(react-refresh@0.14.2)(webpack@5.89.0):
+  /@pmmmwh/react-refresh-webpack-plugin@0.5.16(react-refresh@0.14.2)(webpack@5.91.0):
     resolution: {integrity: sha512-kLQc9xz6QIqd2oIYyXRUiAp79kGpFBm3fEM9ahfG1HI0WI5gdZ2OVHWdmZYnwODt7ISck+QuQ6sBPrtvUBML7Q==}
     engines: {node: '>= 10.13'}
     peerDependencies:
@@ -33332,7 +33332,7 @@ packages:
       react-refresh: 0.14.2
       schema-utils: 4.3.2
       source-map: 0.7.4
-      webpack: 5.89.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
+      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
     dev: true
 
   /@polka/url@1.0.0-next.29:
@@ -36409,31 +36409,31 @@ packages:
       '@swc/core': 1.11.29(@swc/helpers@0.4.37)
       '@types/node': 18.18.9
       '@types/semver': 7.7.0
-      babel-loader: 9.1.3(@babel/core@7.27.4)(webpack@5.89.0)
+      babel-loader: 9.1.3(@babel/core@7.27.4)(webpack@5.91.0)
       browser-assert: 1.2.1
       case-sensitive-paths-webpack-plugin: 2.4.0
       cjs-module-lexer: 1.4.3
       constants-browserify: 1.0.0
-      css-loader: 6.11.0(webpack@5.89.0)
+      css-loader: 6.11.0(webpack@5.91.0)
       es-module-lexer: 1.7.0
       express: 4.21.2
-      fork-ts-checker-webpack-plugin: 8.0.0(typescript@5.8.2)(webpack@5.89.0)
+      fork-ts-checker-webpack-plugin: 8.0.0(typescript@5.8.2)(webpack@5.91.0)
       fs-extra: 11.3.0
-      html-webpack-plugin: 5.6.3(webpack@5.89.0)
+      html-webpack-plugin: 5.6.3(webpack@5.91.0)
       magic-string: 0.30.17
       path-browserify: 1.0.1
       process: 0.11.10
       semver: 7.7.2
-      style-loader: 3.3.4(webpack@5.89.0)
-      swc-loader: 0.2.6(@swc/core@1.11.29)(webpack@5.89.0)
-      terser-webpack-plugin: 5.3.14(@swc/core@1.11.29)(esbuild@0.18.20)(webpack@5.89.0)
+      style-loader: 3.3.4(webpack@5.91.0)
+      swc-loader: 0.2.6(@swc/core@1.11.29)(webpack@5.91.0)
+      terser-webpack-plugin: 5.3.14(@swc/core@1.11.29)(esbuild@0.18.20)(webpack@5.91.0)
       ts-dedent: 2.2.0
       typescript: 5.8.2
       url: 0.11.4
       util: 0.12.5
       util-deprecate: 1.0.2
-      webpack: 5.89.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
-      webpack-dev-middleware: 6.1.3(webpack@5.89.0)
+      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
+      webpack-dev-middleware: 6.1.3(webpack@5.91.0)
       webpack-hot-middleware: 2.26.1
       webpack-virtual-modules: 0.5.0
     transitivePeerDependencies:
@@ -37041,12 +37041,12 @@ packages:
       '@babel/core': 7.27.4
       '@babel/preset-flow': 7.27.1(@babel/core@7.27.4)
       '@babel/preset-react': 7.27.1(@babel/core@7.27.4)
-      '@pmmmwh/react-refresh-webpack-plugin': 0.5.16(react-refresh@0.14.2)(webpack@5.89.0)
+      '@pmmmwh/react-refresh-webpack-plugin': 0.5.16(react-refresh@0.14.2)(webpack@5.91.0)
       '@storybook/core-webpack': 7.6.20
       '@storybook/docs-tools': 7.6.20
       '@storybook/node-logger': 7.6.20
       '@storybook/react': 7.6.20(react-dom@18.2.0)(react@18.2.0)(typescript@5.8.2)
-      '@storybook/react-docgen-typescript-plugin': 1.0.6--canary.9.0c3f3b7.0(typescript@5.8.2)(webpack@5.89.0)
+      '@storybook/react-docgen-typescript-plugin': 1.0.6--canary.9.0c3f3b7.0(typescript@5.8.2)(webpack@5.91.0)
       '@types/node': 18.18.9
       '@types/semver': 7.7.0
       babel-plugin-add-react-displayname: 0.0.5
@@ -37058,7 +37058,7 @@ packages:
       react-refresh: 0.14.2
       semver: 7.7.2
       typescript: 5.8.2
-      webpack: 5.89.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
+      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
     transitivePeerDependencies:
       - '@swc/core'
       - '@types/webpack'
@@ -37140,7 +37140,7 @@ packages:
     resolution: {integrity: sha512-cxYlZ5uKbCYMHoFpgleZqqGWEnqHrk5m5fT8bYSsDsdQ+X5wPcwI/V+v8dxYAdQcMphZVIlTjo6Dno9WG8qmVA==}
     dev: true
 
-  /@storybook/react-docgen-typescript-plugin@1.0.6--canary.9.0c3f3b7.0(typescript@5.8.2)(webpack@5.89.0):
+  /@storybook/react-docgen-typescript-plugin@1.0.6--canary.9.0c3f3b7.0(typescript@5.8.2)(webpack@5.91.0):
     resolution: {integrity: sha512-KUqXC3oa9JuQ0kZJLBhVdS4lOneKTOopnNBK4tUAgoxWQ3u/IjzdueZjFr7gyBrXMoU6duutk3RQR9u8ZpYJ4Q==}
     peerDependencies:
       typescript: 5.8.2
@@ -37154,7 +37154,7 @@ packages:
       react-docgen-typescript: 2.2.2(typescript@5.8.2)
       tslib: 2.8.1
       typescript: 5.8.2
-      webpack: 5.89.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
+      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -38790,7 +38790,7 @@ packages:
   /@types/rimraf@2.0.5:
     resolution: {integrity: sha512-YyP+VfeaqAyFmXoTh3HChxOQMyjByRMsHU7kc5KOJkSlXudhMhQIALbYV7rHh/l8d2lX3VUQzprrcAgWdRuU8g==}
     dependencies:
-      '@types/glob': 5.0.38
+      '@types/glob': 7.2.0
       '@types/node': 18.18.9
     dev: true
 
@@ -45649,7 +45649,7 @@ packages:
       webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.17.19)
     dev: true
 
-  /fork-ts-checker-webpack-plugin@8.0.0(typescript@5.8.2)(webpack@5.89.0):
+  /fork-ts-checker-webpack-plugin@8.0.0(typescript@5.8.2)(webpack@5.91.0):
     resolution: {integrity: sha512-mX3qW3idpueT2klaQXBzrIM/pHw+T0B/V9KHEvNrqijTq9NFnMZU6oreVxDYcf33P8a5cW+67PjodNHthGnNVg==}
     engines: {node: '>=12.13.0', yarn: '>=1.0.0'}
     peerDependencies:
@@ -45669,7 +45669,7 @@ packages:
       semver: 7.7.2
       tapable: 2.2.2
       typescript: 5.8.2
-      webpack: 5.89.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
+      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
     dev: true
 
   /form-data@2.3.3:
@@ -46698,7 +46698,7 @@ packages:
     resolution: {integrity: sha512-bEqo66MRXsUGxWHV5IP0PUiAWwoEjba4VCzg0LjFJBpchPaTfyfCKTG6bc5F8ucKec3q5y6qOdGyYTSBEvhCrg==}
     dev: false
 
-  /html-webpack-plugin@5.6.3(webpack@5.89.0):
+  /html-webpack-plugin@5.6.3(webpack@5.91.0):
     resolution: {integrity: sha512-QSf1yjtSAsmf7rYBV7XX86uua4W/vkhIt0xNXKbsi2foEeW7vjJQz4bhnpL3xH+l1ryl1680uNv968Z+X6jSYg==}
     engines: {node: '>=10.13.0'}
     peerDependencies:
@@ -46715,7 +46715,7 @@ packages:
       lodash: 4.17.21
       pretty-error: 4.0.0
       tapable: 2.2.2
-      webpack: 5.89.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
+      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
     dev: true
 
   /htmlparser2@10.0.0:
@@ -48420,7 +48420,7 @@ packages:
       webpack: ^5.0.0
     dependencies:
       less: 3.13.1
-      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)
+      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
     dev: true
 
   /less-loader@11.1.4(less@4.3.0)(webpack@5.89.0):
@@ -48442,7 +48442,7 @@ packages:
       webpack: ^5.0.0
     dependencies:
       less: 4.3.0
-      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)
+      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
     dev: true
 
   /less-loader@7.3.0(less@3.13.1)(webpack@5.91.0):
@@ -54549,7 +54549,7 @@ packages:
         optional: true
     dependencies:
       klona: 2.0.6
-      loader-utils: 2.0.0
+      loader-utils: 2.0.4
       neo-async: 2.6.2
       sass: 1.89.0
       schema-utils: 3.3.0
@@ -54574,36 +54574,12 @@ packages:
         optional: true
     dependencies:
       klona: 2.0.6
-      loader-utils: 2.0.0
+      loader-utils: 2.0.4
       neo-async: 2.6.2
       sass: 1.89.0
       schema-utils: 3.3.0
       semver: 7.7.2
       webpack: 5.91.0
-
-  /sass-loader@10.5.2(webpack@5.91.0):
-    resolution: {integrity: sha512-vMUoSNOUKJILHpcNCCyD23X34gve1TS7Rjd9uXHeKqhvBG39x6XbswFDtpbTElj6XdMFezoWhkh5vtKudf2cgQ==}
-    engines: {node: '>= 10.13.0'}
-    peerDependencies:
-      fibers: '>= 3.1.0'
-      node-sass: ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
-      sass: ^1.3.0
-      webpack: ^4.36.0 || ^5.0.0
-    peerDependenciesMeta:
-      fibers:
-        optional: true
-      node-sass:
-        optional: true
-      sass:
-        optional: true
-    dependencies:
-      klona: 2.0.6
-      loader-utils: 2.0.4
-      neo-async: 2.6.2
-      schema-utils: 3.3.0
-      semver: 7.7.2
-      webpack: 5.91.0
-    dev: false
 
   /sass-loader@14.2.1(webpack@5.89.0):
     resolution: {integrity: sha512-G0VcnMYU18a4N7VoNDegg2OuMjYtxnqzQWARVWCIVSZwJeiL9kg8QMsuIZOplsJgTzZLF6jGxI3AClj8I9nRdQ==}
@@ -55961,7 +55937,7 @@ packages:
     peerDependencies:
       webpack: ^4.0.0 || ^5.0.0
     dependencies:
-      loader-utils: 2.0.0
+      loader-utils: 2.0.4
       schema-utils: 2.7.1
       webpack: 5.89.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
     dev: true
@@ -55972,7 +55948,7 @@ packages:
     peerDependencies:
       webpack: ^4.0.0 || ^5.0.0
     dependencies:
-      loader-utils: 2.0.0
+      loader-utils: 2.0.4
       schema-utils: 2.7.1
       webpack: 5.91.0
 
@@ -56400,7 +56376,7 @@ packages:
       csso: 5.0.5
       picocolors: 1.1.1
 
-  /swc-loader@0.2.6(@swc/core@1.11.29)(webpack@5.89.0):
+  /swc-loader@0.2.6(@swc/core@1.11.29)(webpack@5.91.0):
     resolution: {integrity: sha512-9Zi9UP2YmDpgmQVbyOPJClY0dwf58JDyDMQ7uRc4krmc72twNI2fvlBWHLqVekBpPc7h5NJkGVT1zNDxFrqhvg==}
     peerDependencies:
       '@swc/core': ^1.2.147
@@ -56408,7 +56384,7 @@ packages:
     dependencies:
       '@swc/core': 1.11.29(@swc/helpers@0.4.37)
       '@swc/counter': 0.1.3
-      webpack: 5.89.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
+      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
     dev: true
 
   /symbol-tree@3.2.4:
@@ -56672,7 +56648,7 @@ packages:
       schema-utils: 4.3.2
       serialize-javascript: 6.0.2
       terser: 5.40.0
-      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)
+      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
     dev: true
 
   /terser-webpack-plugin@5.3.14(esbuild@0.18.20)(webpack@5.91.0):
@@ -59336,7 +59312,7 @@ packages:
     peerDependencies:
       webpack: ^4.0.0 || ^5.0.0
     dependencies:
-      colorette: 2.0.19
+      colorette: 2.0.20
       memfs: 3.5.3
       mime-types: 2.1.35
       range-parser: 1.2.1
@@ -59353,7 +59329,7 @@ packages:
       webpack:
         optional: true
     dependencies:
-      colorette: 2.0.19
+      colorette: 2.0.20
       memfs: 3.5.3
       mime-types: 2.1.35
       range-parser: 1.2.1
@@ -59370,29 +59346,12 @@ packages:
       webpack:
         optional: true
     dependencies:
-      colorette: 2.0.19
-      memfs: 3.5.3
-      mime-types: 2.1.35
-      range-parser: 1.2.1
-      schema-utils: 4.3.2
-      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.17.19)
-    dev: true
-
-  /webpack-dev-middleware@6.1.3(webpack@5.89.0):
-    resolution: {integrity: sha512-A4ChP0Qj8oGociTs6UdlRUGANIGrCDL3y+pmQMc+dSsraXHCatFpmMey4mYELA+juqwUqwQsUgJJISXl1KWmiw==}
-    engines: {node: '>= 14.15.0'}
-    peerDependencies:
-      webpack: ^5.0.0
-    peerDependenciesMeta:
-      webpack:
-        optional: true
-    dependencies:
       colorette: 2.0.20
       memfs: 3.5.3
       mime-types: 2.1.35
       range-parser: 1.2.1
       schema-utils: 4.3.2
-      webpack: 5.89.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4)
+      webpack: 5.91.0(@swc/core@1.11.29)(esbuild@0.17.19)
     dev: true
 
   /webpack-dev-middleware@6.1.3(webpack@5.91.0):
@@ -59434,8 +59393,8 @@ packages:
       '@types/ws': 8.18.1
       ansi-html-community: 0.0.8
       bonjour-service: 1.3.0
-      chokidar: 3.5.3
-      colorette: 2.0.19
+      chokidar: 3.6.0
+      colorette: 2.0.20
       compression: 1.8.0
       connect-history-api-fallback: 2.0.0
       default-gateway: 6.0.3
@@ -59701,7 +59660,7 @@ packages:
       - uglify-js
     dev: true
 
-  /webpack@5.91.0(@swc/core@1.11.29)(esbuild@0.18.20):
+  /webpack@5.91.0(@swc/core@1.11.29)(esbuild@0.18.20)(webpack-cli@5.1.4):
     resolution: {integrity: sha512-rzVwlLeBWHJbmgTC/8TvAcu5vpJNII+MelQpylD4jNERPwpBJOE2lEcko1zJX3QJeLjTTAnQxn/OJ8bjDzVQaw==}
     engines: {node: '>=10.13.0'}
     hasBin: true
@@ -59734,6 +59693,7 @@ packages:
       tapable: 2.2.2
       terser-webpack-plugin: 5.3.14(@swc/core@1.11.29)(esbuild@0.18.20)(webpack@5.91.0)
       watchpack: 2.4.4
+      webpack-cli: 5.1.4(webpack@5.89.0)
       webpack-sources: 3.3.2
     transitivePeerDependencies:
       - '@swc/core'
