@@ -369,10 +369,11 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "[insertDataToTable] insert data failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KVf("msg", "insert data failed, err: %v", err))
 	}
 	if resp.AffectedRows != int64(len(slices)) {
-		return fmt.Errorf("insert data failed, affected rows: %d, expect: %d", resp.AffectedRows, len(slices))
+		logs.CtxErrorf(ctx, "[insertDataToTable] insert data failed, affected rows: %d, expect: %d", resp.AffectedRows, len(slices))
+		return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KVf("msg", "insert data failed, affected rows: %d, expect: %d", resp.AffectedRows, len(slices)))
 	}
 	return nil
 }
@@ -381,7 +382,7 @@ func packInsertData(slices []*entity.Slice) (data []map[string]interface{}, err 
 	defer func() {
 		if r := recover(); r != nil {
 			logs.Errorf("[packInsertData] panic: %v", r)
-			err = fmt.Errorf("[packInsertData] panic: %v", r)
+			err = errorx.New(errno.ErrKnowledgeSystemCode, errorx.KVf("msg", "panic: %v", r))
 			return
 		}
 	}()
@@ -411,7 +412,10 @@ func (k *knowledgeSVC) indexSlice(ctx context.Context, event *entity.Event) (err
 		if err != nil {
 			return err
 		}
-		event.Document = k.fromModelDocument(ctx, doc)
+		event.Document, err = k.fromModelDocument(ctx, doc)
+		if err != nil {
+			return err
+		}
 	}
 	if slice == nil {
 		return fmt.Errorf("[indexSlice] slice not provided")

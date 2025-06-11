@@ -202,7 +202,11 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 	}
 
 	// create search store collections
-	fields, err := k.mapSearchFields(k.fromModelDocument(ctx, documents[0]))
+	docItem, err := k.fromModelDocument(ctx, documents[0])
+	if err != nil {
+		return err
+	}
+	fields, err := k.mapSearchFields(docItem)
 	if err != nil {
 		return err
 	}
@@ -324,7 +328,10 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 		copyCtx.NewRDBTableNames = append(copyCtx.NewRDBTableNames, newDoc.TableInfo.PhysicalTableName)
 	}
 
-	docEntity := k.fromModelDocument(ctx, &newDoc)
+	docEntity, err := k.fromModelDocument(ctx, &newDoc)
+	if err != nil {
+		return err
+	}
 	fields, err := k.mapSearchFields(docEntity)
 	if err != nil {
 		return err

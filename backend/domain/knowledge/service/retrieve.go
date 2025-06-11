@@ -27,15 +27,17 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	sqlparsercontract "code.byted.org/flow/opencoze/backend/infra/contract/sqlparser"
 	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func (k *knowledgeSVC) Retrieve(ctx context.Context, request *RetrieveRequest) (response *RetrieveResponse, err error) {
 	if request == nil {
-		return nil, errors.New("request is null")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is nil"))
 	}
 	retrieveContext, err := k.newRetrieveContext(ctx, request)
 	if err != nil {
@@ -74,12 +76,12 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, request *RetrieveRequest) (
 		Compile(ctx)
 	if err != nil {
 		logs.CtxErrorf(ctx, "compile chain failed: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeBuildRetrieveChainFailCode, errorx.KV("msg", err.Error()))
 	}
 	output, err := r.Invoke(ctx, retrieveContext)
 	if err != nil {
 		logs.CtxErrorf(ctx, "invoke chain failed: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeRetrieveExecFailCode, errorx.KV("msg", err.Error()))
 	}
 	return &RetrieveResponse{
 		RetrieveSlices: output,
@@ -88,7 +90,7 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, request *RetrieveRequest) (
 
 func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *RetrieveRequest) (*RetrieveContext, error) {
 	if req.Strategy == nil {
-		return nil, errors.New("strategy is required")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "strategy is required"))
 	}
 	knowledgeIDSets := sets.FromSlice(req.KnowledgeIDs)
 	docIDSets := sets.FromSlice(req.DocumentIDs)
@@ -131,7 +133,7 @@ func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []in
 	enableKnowledge, err := k.knowledgeRepo.FilterEnableKnowledge(ctx, knowledgeIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "filter enable knowledge failed: %v", err)
-		return nil, nil, err
+		return nil, nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	var enableKnowledgeIDs []int64
 	for _, kn := range enableKnowledge {
@@ -144,7 +146,7 @@ func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []in
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "find document by condition failed: %v", err)
-		return nil, nil, err
+		return nil, nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	return enableDocs, enableKnowledge, nil
 }

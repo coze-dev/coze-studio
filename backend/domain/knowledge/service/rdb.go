@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -12,8 +11,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.TableInfo, slices []*model.KnowledgeDocumentSlice) (sliceEntityMap map[int64]*entity.Slice, err error) {
@@ -37,23 +38,21 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "execute sql failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 	}
 	rows := resp.ResultSet.Rows
 	virtualColumnMap := map[string]*entity.TableColumn{}
 	for i := range tableInfo.Columns {
 		virtualColumnMap[convert.ColumnIDToRDBField(tableInfo.Columns[i].ID)] = tableInfo.Columns[i]
 	}
-	var ids []int64
 	valMap := map[int64]map[string]interface{}{}
 	for i := range rows {
 		sliceID, ok := rows[i][consts.RDBFieldID].(int64)
 		if !ok {
 			logs.CtxErrorf(ctx, "slice id is not int64")
-			return nil, fmt.Errorf("slice id is not int64")
+			return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "slice id is not int64"))
 		}
 		delete(rows[i], consts.RDBFieldID)
-		ids = append(ids, sliceID)
 		valMap[sliceID] = resp.ResultSet.Rows[i]
 	}
 	for i := range slices {
@@ -72,7 +71,7 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 			columnData, err := convert.ParseAnyData(column, val)
 			if err != nil {
 				logs.CtxErrorf(ctx, "parse any data failed: %v", err)
-				return nil, err
+				return nil, errorx.New(errno.ErrKnowledgeColumnParseFailCode, errorx.KV("msg", err.Error()))
 			}
 			if columnData.Type == document.TableColumnTypeString || columnData.Type == document.TableColumnTypeImage {
 				processedVal := k.formatSliceContent(ctx, columnData.GetStringValue())
@@ -103,7 +102,7 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 			columnID, err := k.idgen.GenID(ctx)
 			if err != nil {
 				logs.CtxErrorf(ctx, "gen id failed, err: %v", err)
-				return nil, err
+				return nil, errorx.New(errno.ErrKnowledgeIDGenCode)
 			}
 			targetColumns[i].ID = columnID
 			alterRequest.Operations = append(alterRequest.Operations, &rdb.AlterTableOperation{
@@ -151,7 +150,7 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 	_, err = k.rdb.AlterTable(ctx, alterRequest)
 	if err != nil {
 		logs.CtxErrorf(ctx, "[alterTableSchema] alter table failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 	}
 	return finalColumns, nil
 }

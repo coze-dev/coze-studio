@@ -158,7 +158,7 @@ func (dao *KnowledgeDocumentDAO) DeleteDocuments(ctx context.Context, ids []int6
 			tx.Commit()
 		}
 	}()
-	// 软删除document
+	// 删除document
 	err = tx.WithContext(ctx).Model(&model.KnowledgeDocument{}).Where("id in ?", ids).Delete(&model.KnowledgeDocument{}).Error
 	if err != nil {
 		return err
