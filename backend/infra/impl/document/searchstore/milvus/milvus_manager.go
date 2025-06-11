@@ -184,7 +184,7 @@ func (m *milvusManager) tryCreateIndex(ctx context.Context, collectionName, fiel
 		if _, found := createdIndexes[indexName]; found {
 			logs.CtxInfof(ctx, "[tryCreateIndex] index exists, so skip, collectionName=%s, fieldName=%s, idx=%v, type=%s\n",
 				collectionName, fieldName, indexName, idx.IndexType())
-			
+
 			return nil
 		}
 

@@ -45,7 +45,9 @@ func isStaticFile(ctx *app.RequestContext) bool {
 		return true
 	}
 
-	if strings.HasPrefix(string(path), "/static/") {
+	if strings.HasPrefix(string(path), "/static/") ||
+		strings.HasPrefix(string(path), "/explore/") ||
+		strings.HasPrefix(string(path), "/space/") {
 		return true
 	}
 
