@@ -2821,9 +2821,6 @@ importers:
 
   ../../../packages/agent-ide/chat-answer-action-adapter:
     dependencies:
-      '@coze-agent-ide/space-bot':
-        specifier: workspace:*
-        version: link:../space-bot
       '@coze-arch/bot-semi':
         specifier: workspace:*
         version: link:../../components/bot-semi
@@ -2839,9 +2836,6 @@ importers:
       '@coze-common/chat-area':
         specifier: workspace:*
         version: link:../../common/chat-area/chat-area
-      '@coze-common/chat-core':
-        specifier: workspace:*
-        version: link:../../common/chat-area/chat-core
       '@coze-studio/bot-detail-store':
         specifier: workspace:*
         version: link:../../studio/stores/bot-detail
