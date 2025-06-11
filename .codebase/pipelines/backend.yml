@@ -1,8 +1,9 @@
-name: "ci pipeline"
+name: "ci@backend pipeline"
 
 trigger:
   change:
-  manual:
+    paths:
+      - "backend/**"
 
 jobs:
   unit_test:
