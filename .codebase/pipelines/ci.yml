@@ -2,7 +2,8 @@ name: "ci pipeline"
 
 trigger:
   change:
-  manual:
+    source-branches: [ "feat/**" ]
+    branches: [ "master" ]
 
 jobs:
   unit_test:
