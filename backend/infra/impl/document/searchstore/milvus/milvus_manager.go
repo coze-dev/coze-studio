@@ -12,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -23,7 +24,7 @@ type ManagerConfig struct {
 
 	EnableHybrid *bool              // optional: default Embedding.SupportStatus() == embedding.SupportDenseAndSparse
 	DenseIndex   mindex.Index       // optional: default HNSW, M=30, efConstruction=360
-	DenseMetric  mentity.MetricType // optional: default L2
+	DenseMetric  mentity.MetricType // optional: default IP
 	SparseIndex  mindex.Index       // optional: default SPARSE_INVERTED_INDEX, drop_ratio=0.2
 	SparseMetric mentity.MetricType // optional: default IP
 	ShardNum     int                // optional: default 1
@@ -37,12 +38,16 @@ func NewManager(config *ManagerConfig) (searchstore.Manager, error) {
 	if config.Embedding == nil {
 		return nil, fmt.Errorf("[NewManager] milvus embedder not provided")
 	}
+
+	enableSparse := config.Embedding.SupportStatus() == embedding.SupportDenseAndSparse
 	if config.EnableHybrid == nil {
-		enable := config.Embedding.SupportStatus() == embedding.SupportDenseAndSparse
-		config.EnableHybrid = &enable
+		config.EnableHybrid = ptr.Of(enableSparse)
+	} else if !enableSparse && ptr.From(config.EnableHybrid) {
+		logs.Warnf("[NewManager] milvus embedding not support sparse, so hybrid search is disabled.")
+		config.EnableHybrid = ptr.Of(false)
 	}
 	if config.DenseMetric == "" {
-		config.DenseMetric = mentity.L2
+		config.DenseMetric = mentity.IP
 	}
 	if config.DenseIndex == nil {
 		config.DenseIndex = mindex.NewHNSWIndex(config.DenseMetric, 30, 360)

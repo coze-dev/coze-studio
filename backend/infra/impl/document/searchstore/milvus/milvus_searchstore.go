@@ -157,16 +157,30 @@ func (m *milvusSearchStore) Retrieve(ctx context.Context, query string, opts ...
 		outputFields = append(outputFields, field.Name)
 	}
 
+	var scoreNormType *mindex.MetricType
+
 	if enableSparse {
 		var annRequests []*client.AnnRequest
 		for _, field := range fields {
+			var (
+				vector      []mentity.Vector
+				metricsType mindex.MetricType
+			)
 			if field.DataType == mentity.FieldTypeFloatVector {
-				annRequests = append(annRequests, client.NewAnnRequest(field.Name, ptr.From(options.TopK), dv...).
-					WithSearchParam(mindex.MetricTypeKey, string(m.config.DenseMetric)).WithFilter(expr))
+				vector = dv
+				metricsType, err = m.getIndexMetricsType(ctx, denseIndexName(field.Name))
 			} else if field.DataType == mentity.FieldTypeSparseVector {
-				annRequests = append(annRequests, client.NewAnnRequest(field.Name, ptr.From(options.TopK), sv...).
-					WithSearchParam(mindex.MetricTypeKey, string(m.config.SparseMetric)).WithFilter(expr))
+				vector = sv
+				metricsType, err = m.getIndexMetricsType(ctx, sparseIndexName(field.Name))
 			}
+			if err != nil {
+				return nil, err
+			}
+			annRequests = append(annRequests,
+				client.NewAnnRequest(field.Name, ptr.From(options.TopK), vector...).
+					WithSearchParam(mindex.MetricTypeKey, string(metricsType)).
+					WithFilter(expr),
+			)
 		}
 
 		searchOption := client.NewHybridSearchOption(m.collectionName, ptr.From(options.TopK), annRequests...).
@@ -179,17 +193,31 @@ func (m *milvusSearchStore) Retrieve(ctx context.Context, query string, opts ...
 			return nil, fmt.Errorf("[Retrieve] HybridSearch failed, %w", err)
 		}
 	} else {
+		indexes, err := cli.ListIndexes(ctx, client.NewListIndexOption(m.collectionName))
+		if err != nil {
+			return nil, fmt.Errorf("[Retrieve] ListIndexes failed, %w", err)
+		}
+		if len(indexes) != 1 {
+			return nil, fmt.Errorf("[Retrieve] restrict single index ann search, but got %d, collection=%s",
+				len(indexes), m.collectionName)
+		}
+		metricsType, err := m.getIndexMetricsType(ctx, indexes[0])
+		if err != nil {
+			return nil, err
+		}
+		scoreNormType = &metricsType
 		searchOption := client.NewSearchOption(m.collectionName, ptr.From(options.TopK), dv).
 			WithPartitions(implSpecOptions.Partitions...).
 			WithFilter(expr).
-			WithOutputFields(outputFields...)
+			WithOutputFields(outputFields...).
+			WithSearchParam(mindex.MetricTypeKey, string(metricsType))
 		result, err = cli.Search(ctx, searchOption)
 		if err != nil {
 			return nil, fmt.Errorf("[Retrieve] Search failed, %w", err)
 		}
 	}
 
-	docs, err := m.resultSet2Document(result)
+	docs, err := m.resultSet2Document(result, scoreNormType)
 	if err != nil {
 		return nil, fmt.Errorf("[Retrieve] resultSet2Document failed, %w", err)
 	}
@@ -401,7 +429,7 @@ func (m *milvusSearchStore) documents2Columns(ctx context.Context, docs []*schem
 	return cols, nil
 }
 
-func (m *milvusSearchStore) resultSet2Document(result []client.ResultSet) (docs []*schema.Document, err error) {
+func (m *milvusSearchStore) resultSet2Document(result []client.ResultSet, metricsType *mindex.MetricType) (docs []*schema.Document, err error) {
 	docs = make([]*schema.Document, 0, len(result))
 	minScore := math.MaxFloat64
 	maxScore := 0.0
@@ -444,11 +472,11 @@ func (m *milvusSearchStore) resultSet2Document(result []client.ResultSet) (docs 
 	})
 
 	// norm score
-	if m.config.EnableHybrid != nil && *m.config.EnableHybrid {
+	if (m.config.EnableHybrid != nil && *m.config.EnableHybrid) || metricsType == nil {
 		return docs, nil
 	}
 
-	switch m.config.DenseMetric {
+	switch *metricsType {
 	case mentity.L2:
 		base := maxScore - minScore
 		for i := range docs {
@@ -538,4 +566,19 @@ func (m *milvusSearchStore) dsl2Expr(src map[string]interface{}) (string, error)
 	}
 
 	return travDSL(dsl)
+}
+
+func (m *milvusSearchStore) getIndexMetricsType(ctx context.Context, indexName string) (mindex.MetricType, error) {
+	index, err := m.config.Client.DescribeIndex(ctx, client.NewDescribeIndexOption(m.collectionName, indexName))
+	if err != nil {
+		return "", fmt.Errorf("[getIndexMetricsType] describe index failed, collection=%s, index=%s, %w",
+			m.collectionName, indexName, err)
+	}
+
+	typ, found := index.Params()[mindex.MetricTypeKey]
+	if !found { // unexpected
+		return "", fmt.Errorf("[getIndexMetricsType] invalid index params, collection=%s, index=%s", m.collectionName, indexName)
+	}
+
+	return mindex.MetricType(typ), nil
 }
