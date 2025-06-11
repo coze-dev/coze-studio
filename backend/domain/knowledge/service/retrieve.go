@@ -233,6 +233,9 @@ func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *RetrieveContex
 				partitions = append(partitions, strconv.FormatInt(doc.ID, 10))
 			}
 		}
+		if len(partitions) == 0 {
+			continue
+		}
 		opts := []retriever.Option{
 			searchstore.WithPartitions(partitions),
 			retriever.WithDSLInfo(dsl.DSL()),
