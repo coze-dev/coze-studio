@@ -13,7 +13,13 @@
   "include": ["./src/**/*.ts", "./src/**/*.json"],
   "references": [
     {
+      "path": "../eslint-config/tsconfig.build.json"
+    },
+    {
       "path": "../../infra/utils/monorepo-kits/tsconfig.build.json"
+    },
+    {
+      "path": "../ts-config/tsconfig.build.json"
     }
   ]
 }

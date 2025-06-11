@@ -28,10 +28,22 @@
       "path": "../bot-store/tsconfig.build.json"
     },
     {
+      "path": "../bot-typings/tsconfig.build.json"
+    },
+    {
       "path": "../../common/chat-area/chat-core/tsconfig.build.json"
     },
     {
       "path": "../../common/uploader-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/vitest-config/tsconfig.build.json"
     },
     {
       "path": "../i18n/tsconfig.build.json"

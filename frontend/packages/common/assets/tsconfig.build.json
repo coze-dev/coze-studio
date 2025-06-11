@@ -9,6 +9,16 @@
     "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
   },
   "include": ["./src"],
-  "references": [],
+  "references": [
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    }
+  ],
   "$schema": "https://json.schemastore.org/tsconfig"
 }

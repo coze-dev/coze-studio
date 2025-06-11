@@ -25,6 +25,11 @@
       "packageName": "@coze-arch/rush-fix-ts-refers-plugin",
       "pluginName": "@coze-arch/rush-fix-ts-refers-plugin",
       "autoinstallerName": "plugins"
+    },
+    {
+      "packageName": "@coze-arch/rush-increment-run-plugin",
+      "pluginName": "@coze-arch/rush-increment-run",
+      "autoinstallerName": "plugins"
     }
   ]
 }

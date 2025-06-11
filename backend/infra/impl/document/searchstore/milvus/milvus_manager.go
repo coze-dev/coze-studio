@@ -12,6 +12,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -152,10 +154,8 @@ func (m *milvusManager) createIndexes(ctx context.Context, req *searchstore.Crea
 			return fmt.Errorf("[createIndexes] ListIndexes failed, %w", err)
 		}
 	}
-	created := make(map[string]struct{})
-	for _, index := range indexes {
-		created[index] = struct{}{}
-	}
+
+	createdIndexes := sets.FromSlice(indexes)
 
 	var ops []func() error
 	for i := range req.Fields {
@@ -164,9 +164,9 @@ func (m *milvusManager) createIndexes(ctx context.Context, req *searchstore.Crea
 			continue
 		}
 
-		ops = append(ops, m.tryCreateIndex(ctx, collectionName, denseFieldName(f.Name), denseIndexName(f.Name), m.config.DenseIndex))
+		ops = append(ops, m.tryCreateIndex(ctx, collectionName, denseFieldName(f.Name), denseIndexName(f.Name), m.config.DenseIndex, createdIndexes))
 		if m.config.Embedding.SupportStatus() == embedding.SupportDenseAndSparse {
-			ops = append(ops, m.tryCreateIndex(ctx, collectionName, sparseFieldName(f.Name), sparseIndexName(f.Name), m.config.SparseIndex))
+			ops = append(ops, m.tryCreateIndex(ctx, collectionName, sparseFieldName(f.Name), sparseIndexName(f.Name), m.config.SparseIndex, createdIndexes))
 		}
 	}
 
@@ -179,8 +179,15 @@ func (m *milvusManager) createIndexes(ctx context.Context, req *searchstore.Crea
 	return nil
 }
 
-func (m *milvusManager) tryCreateIndex(ctx context.Context, collectionName, fieldName, indexName string, idx mindex.Index) func() error {
+func (m *milvusManager) tryCreateIndex(ctx context.Context, collectionName, fieldName, indexName string, idx mindex.Index, createdIndexes sets.Set[string]) func() error {
 	return func() error {
+		if _, found := createdIndexes[indexName]; found {
+			logs.CtxInfof(ctx, "[tryCreateIndex] index exists, so skip, collectionName=%s, fieldName=%s, idx=%v, type=%s\n",
+				collectionName, fieldName, indexName, idx.IndexType())
+
+			return nil
+		}
+
 		cli := m.config.Client
 
 		task, err := cli.CreateIndex(ctx, client.NewCreateIndexOption(collectionName, fieldName, idx).WithIndexName(indexName))
@@ -192,7 +199,8 @@ func (m *milvusManager) tryCreateIndex(ctx context.Context, collectionName, fiel
 			return fmt.Errorf("[tryCreateIndex] await failed, %w", err)
 		}
 
-		fmt.Printf("[tryCreateIndex] CreateIndex success, collectionName=%s, fieldName=%s, idx=%v, type=%s\n", collectionName, fieldName, indexName, idx.IndexType())
+		logs.CtxInfof(ctx, "[tryCreateIndex] CreateIndex success, collectionName=%s, fieldName=%s, idx=%v, type=%s\n",
+			collectionName, fieldName, indexName, idx.IndexType())
 
 		return nil
 	}

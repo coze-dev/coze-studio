@@ -10,5 +10,16 @@
     "tsBuildInfoFile": "./dist/tsconfig.build.tsbuildinfo"
   },
   "exclude": ["./src/**/__tests__/**", "./src/**/__mocks__/**", "node_modules"],
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/vitest-config/tsconfig.build.json"
+    }
+  ]
 }

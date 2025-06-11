@@ -39,6 +39,9 @@
       "path": "../../../arch/bot-tea/tsconfig.build.json"
     },
     {
+      "path": "../../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
       "path": "../../../arch/bot-utils/tsconfig.build.json"
     },
     {
@@ -91,6 +94,18 @@
     },
     {
       "path": "../../../components/table-view/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/vitest-config/tsconfig.build.json"
     },
     {
       "path": "../../../foundation/local-storage/tsconfig.build.json"

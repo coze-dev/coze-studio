@@ -11,5 +11,10 @@
   },
   "include": ["./src"],
   "exclude": ["./src/**/*.test.ts"],
-  "$schema": "https://json.schemastore.org/tsconfig"
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "references": [
+    {
+      "path": "../../config/ts-config/tsconfig.build.json"
+    }
+  ]
 }

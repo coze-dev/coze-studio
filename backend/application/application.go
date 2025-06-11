@@ -274,6 +274,7 @@ func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceC
 		ModelMgrDomainSVC:    p.basicServices.modelMgrSVC.DomainSVC,
 		UserDomainSVC:        p.basicServices.userSVC.DomainSVC,
 		EventBus:             p.basicServices.eventbus.projectEventBus,
+		DatabaseDomainSVC:    p.memorySVC.DatabaseDomainSVC,
 		ConnectorDomainSVC:   p.basicServices.connectorSVC.DomainSVC,
 		KnowledgeDomainSVC:   p.knowledgeSVC.DomainSVC,
 		PluginDomainSVC:      p.pluginSVC.DomainSVC,

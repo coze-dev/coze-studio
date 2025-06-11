@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 RUN_NAME=hertz_service
 mkdir -p output/bin
 cp script/* output 2>/dev/null

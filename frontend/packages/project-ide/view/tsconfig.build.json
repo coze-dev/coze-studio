@@ -20,6 +20,12 @@
       "path": "../../common/flowgram-adapter/common/tsconfig.build.json"
     },
     {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
       "path": "../core/tsconfig.build.json"
     }
   ]

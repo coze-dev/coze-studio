@@ -18,6 +18,9 @@
       "path": "../../arch/bot-flags/tsconfig.build.json"
     },
     {
+      "path": "../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
       "path": "../base/tsconfig.build.json"
     },
     {
@@ -25,6 +28,12 @@
     },
     {
       "path": "../../common/flowgram-adapter/free-layout-editor/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
     },
     {
       "path": "../render/tsconfig.build.json"

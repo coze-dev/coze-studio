@@ -15,10 +15,25 @@
       "path": "../bot-hooks-base/tsconfig.build.json"
     },
     {
+      "path": "../bot-typings/tsconfig.build.json"
+    },
+    {
       "path": "../bot-utils/tsconfig.build.json"
     },
     {
       "path": "../../common/assets/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/vitest-config/tsconfig.build.json"
     }
   ]
 }

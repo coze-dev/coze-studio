@@ -19,6 +19,9 @@
       "path": "../../../arch/bot-md-box-adapter/tsconfig.build.json"
     },
     {
+      "path": "../../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
       "path": "../../../arch/i18n/tsconfig.build.json"
     },
     {
@@ -38,6 +41,18 @@
     },
     {
       "path": "../../../components/coze-design/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/vitest-config/tsconfig.build.json"
     },
     {
       "path": "../hooks/tsconfig.build.json"
