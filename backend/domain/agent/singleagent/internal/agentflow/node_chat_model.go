@@ -4,39 +4,24 @@ import (
 	"context"
 	"fmt"
 
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type config struct {
 	modelFactory chatmodel.Factory
-	modelInfo    *bot_common.ModelInfo
+	modelInfo    *crossmodelmgr.Model
 }
 
 func newChatModel(ctx context.Context, conf *config) (chatmodel.ToolCallingChatModel, error) {
+
 	if conf.modelInfo == nil {
-		return nil, fmt.Errorf("expect ModelMgr and ModelInfo for NewChatModel")
+		return nil, fmt.Errorf("model is nil")
 	}
-
-	modelInfo := conf.modelInfo
-
-	models, err := crossmodelmgr.DefaultSVC().MGetModelByID(ctx, &modelmgr.MGetModelRequest{
-		IDs: []int64{ptr.From(modelInfo.ModelId)},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("MGetModelByID failed, err=%w", err)
-	}
-
-	if len(models) == 0 {
-		return nil, fmt.Errorf("chatModel not found, modelID=%v", ptr.From(modelInfo.ModelId))
-	}
-
-	modelDetail := models[0]
+	modelDetail := conf.modelInfo
 	modelMeta := modelDetail.Meta
 
 	if !conf.modelFactory.SupportProtocol(modelMeta.Protocol) {
@@ -54,4 +39,23 @@ func newChatModel(ctx context.Context, conf *config) (chatmodel.ToolCallingChatM
 	}
 
 	return cm, nil
+}
+
+func loadModelInfo(ctx context.Context, modelID int64) (*crossmodelmgr.Model, error) {
+	if modelID == 0 {
+		return nil, fmt.Errorf("modelID is required")
+	}
+
+	models, err := crossmodelmgr.DefaultSVC().MGetModelByID(ctx, &modelmgr.MGetModelRequest{
+		IDs: []int64{modelID},
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("MGetModelByID failed, err=%w", err)
+	}
+	if len(models) == 0 {
+		return nil, fmt.Errorf("model not found, modelID=%v", modelID)
+	}
+
+	return models[0], nil
 }

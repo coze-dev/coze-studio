@@ -97,7 +97,7 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 		ResumeInfo:   req.ResumeInfo,
 		PreCallTools: req.PreCallTools,
 	}
-	return rn.StreamExecute(ctx, exeReq)
+	return rn.StreamExecute(ctx, rn.PreHandlerReq(ctx, exeReq))
 }
 
 func (s *singleAgentImpl) GetSingleAgent(ctx context.Context, agentID int64, version string) (botInfo *entity.SingleAgent, err error) {

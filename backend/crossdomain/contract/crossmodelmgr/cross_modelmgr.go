@@ -10,6 +10,8 @@ type ModelMgr interface {
 	MGetModelByID(ctx context.Context, req *modelmgr.MGetModelRequest) ([]*modelmgr.Model, error)
 }
 
+type Model = modelmgr.Model
+
 var defaultSVC ModelMgr
 
 func DefaultSVC() ModelMgr {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"runtime/debug"
+	"slices"
 
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
@@ -11,6 +12,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 )
@@ -33,6 +35,8 @@ type AgentRequest struct {
 type AgentRunner struct {
 	runner            compose.Runnable[*AgentRequest, *schema.Message]
 	requireCheckpoint bool
+
+	modelInfo *crossmodelmgr.Model
 }
 
 func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
@@ -69,4 +73,43 @@ func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
 	}()
 
 	return sr, nil
+}
+
+func (r *AgentRunner) PreHandlerReq(ctx context.Context, req *AgentRequest) *AgentRequest {
+	req.Input = r.preHandlerInput(req.Input)
+	req.History = r.preHandlerHistory(req.History)
+
+	return req
+}
+
+func (r *AgentRunner) preHandlerInput(input *schema.Message) *schema.Message {
+	var multiContent []schema.ChatMessagePart
+	for _, v := range input.MultiContent {
+		switch v.Type {
+		case schema.ChatMessagePartTypeImageURL:
+			if !slices.Contains(r.modelInfo.Meta.Capability.InputModal, "image") {
+				input.Content = input.Content + ": " + v.ImageURL.URL
+			} else {
+				multiContent = append(multiContent, v)
+			}
+		case schema.ChatMessagePartTypeText:
+			break
+
+		default:
+			multiContent = append(multiContent, v)
+		}
+	}
+	input.MultiContent = multiContent
+	return input
+}
+
+func (r *AgentRunner) preHandlerHistory(history []*schema.Message) []*schema.Message {
+	var hm []*schema.Message
+	for _, msg := range history {
+		if msg.Role == schema.User {
+			msg = r.preHandlerInput(msg)
+		}
+		hm = append(hm, msg)
+	}
+	return hm
 }

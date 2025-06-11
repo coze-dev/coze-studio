@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/checkpoint"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
@@ -53,10 +54,16 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		return nil, err
 	}
 
+	modelInfo, err := loadModelInfo(ctx, ptr.From(conf.Agent.ModelInfo.ModelId))
+	if err != nil {
+		return nil, err
+	}
+
 	chatModel, err := newChatModel(ctx, &config{
 		modelFactory: conf.ModelFactory,
-		modelInfo:    conf.Agent.ModelInfo,
+		modelInfo:    modelInfo,
 	})
+
 	if err != nil {
 		return nil, err
 	}
@@ -210,6 +217,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	return &AgentRunner{
 		runner:            runner,
 		requireCheckpoint: requireCheckpoint,
+		modelInfo:         modelInfo,
 	}, nil
 }
 

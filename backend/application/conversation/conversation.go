@@ -64,9 +64,10 @@ func (c *ConversationApplicationService) ClearHistory(ctx context.Context, req *
 	}
 	// create new conversation
 	convRes, err := c.ConversationDomainSVC.Create(ctx, &entity.CreateMeta{
-		AgentID: currentRes.AgentID,
-		UserID:  currentRes.CreatorID,
-		Scene:   currentRes.Scene,
+		AgentID:     currentRes.AgentID,
+		UserID:      currentRes.CreatorID,
+		Scene:       currentRes.Scene,
+		ConnectorID: currentRes.ConnectorID,
 	})
 	if err != nil {
 		return nil, err

@@ -95,12 +95,10 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 				Code: 10000,
 				Msg:  err.Error(),
 			}
-			_ = c.runProcess.StepToFailed(ctx, srRecord, sw) // todo:: 处理error
+			c.runProcess.StepToFailed(ctx, srRecord, sw)
 			return
 		}
-		_ = c.runProcess.StepToComplete(ctx, srRecord, sw) // todo:: 处理error
-
-		c.runProcess.StepToDone(sw)
+		c.runProcess.StepToComplete(ctx, srRecord, sw)
 	}()
 
 	agentInfo, err := c.handlerAgent(ctx, c.rtDependence.runMeta.AgentID)
@@ -156,12 +154,12 @@ func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWri
 	wg.Add(2)
 	safego.Go(ctx, func() {
 		defer wg.Done()
-		err = c.pull(ctx, mainChan, faChan, streamer)
+		c.pull(ctx, mainChan, faChan, streamer)
 	})
 
 	safego.Go(ctx, func() {
 		defer wg.Done()
-		err = c.push(ctx, mainChan, faChan, sw, input.ID)
+		c.push(ctx, mainChan, faChan, sw, input.ID)
 	})
 
 	wg.Wait()
@@ -366,6 +364,7 @@ func (c *runImpl) getRunID(rr []*model.RunRecord) []int64 {
 func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse]) (*entity.RunRecordMeta, error) {
 	runPoData, err := c.RunRecordRepo.Create(ctx, c.rtDependence.runMeta)
 	if err != nil {
+		logs.CtxErrorf(ctx, "RunRecordRepo.Create error: %v", err)
 		return nil, err
 	}
 
@@ -377,6 +376,7 @@ func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*
 
 	err = c.runProcess.StepToInProgress(ctx, srRecord, sw)
 	if err != nil {
+		logs.CtxErrorf(ctx, "runProcess.StepToInProgress error: %v", err)
 		return nil, err
 	}
 
@@ -398,43 +398,47 @@ func (c *runImpl) handlerInput(ctx context.Context, sw *schema.StreamWriter[*ent
 	return cm, nil
 }
 
-func (c *runImpl) pull(ctx context.Context, mainChan chan *entity.AgentRespEvent, faChan chan *entity.FinalAnswerEvent, events *schema.StreamReader[*crossagent.AgentEvent]) (err error) {
+func (c *runImpl) pull(_ context.Context, mainChan chan *entity.AgentRespEvent, faChan chan *entity.FinalAnswerEvent, events *schema.StreamReader[*crossagent.AgentEvent]) {
 	defer func() {
 		close(mainChan)
 		close(faChan)
 	}()
 
 	for {
-		var resp *crossagent.AgentEvent
-		if resp, err = events.Recv(); err != nil {
+		rm, re := events.Recv()
+		if re != nil {
 			errChunk := &entity.AgentRespEvent{
-				Err: err,
+				Err: re,
 			}
 			mainChan <- errChunk
-			return nil
+			return
 		}
 
-		eventType, tErr := transformEventMap(resp.EventType)
+		eventType, tErr := transformEventMap(rm.EventType)
 
 		if tErr != nil {
-			return tErr
+			errChunk := &entity.AgentRespEvent{
+				Err: tErr,
+			}
+			mainChan <- errChunk
+			return
 		}
 
 		respChunk := &entity.AgentRespEvent{
 			EventType:    eventType,
-			FinalAnswer:  resp.FinalAnswer,
-			ToolsMessage: resp.ToolsMessage,
-			FuncCall:     resp.FuncCall,
-			Knowledge:    resp.Knowledge,
-			Suggest:      resp.Suggest,
-			Interrupt:    resp.Interrupt,
+			FinalAnswer:  rm.FinalAnswer,
+			ToolsMessage: rm.ToolsMessage,
+			FuncCall:     rm.FuncCall,
+			Knowledge:    rm.Knowledge,
+			Suggest:      rm.Suggest,
+			Interrupt:    rm.Interrupt,
 		}
 
 		mainChan <- respChunk
 
-		if resp.EventType == singleagent.EventTypeOfFinalAnswer {
+		if rm.EventType == singleagent.EventTypeOfFinalAnswer {
 			for {
-				answer, answerErr := resp.FinalAnswer.Recv()
+				answer, answerErr := rm.FinalAnswer.Recv()
 
 				faChan <- &entity.FinalAnswerEvent{
 					Message: answer,
@@ -448,43 +452,53 @@ func (c *runImpl) pull(ctx context.Context, mainChan chan *entity.AgentRespEvent
 	}
 }
 
-func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent, faChan chan *entity.FinalAnswerEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], queryMsgID int64) error {
+func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent, faChan chan *entity.FinalAnswerEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], queryMsgID int64) {
+
+	var err error
+	defer func() {
+		if err != nil {
+			logs.CtxErrorf(ctx, "run.push error: %v", err)
+			c.handlerErr(ctx, err, sw)
+		}
+	}()
+
 	for {
 		chunk, ok := <-mainChan
 		if !ok || chunk == nil {
-			return nil
+			return
 		}
 		logs.CtxInfof(ctx, "hanlder event:%v,err:%v", conv.DebugJsonToStr(chunk), chunk.Err)
 		if chunk.Err != nil {
 			if errors.Is(chunk.Err, io.EOF) {
-				return nil
+				return
 			}
 			c.handlerErr(ctx, chunk.Err, sw)
-			return nil
+			return
 		}
 
 		switch chunk.EventType {
 		case message.MessageTypeFunctionCall:
-			err := c.handlerFunctionCall(ctx, chunk, sw)
+			err = c.handlerFunctionCall(ctx, chunk, sw)
 			if err != nil {
-				return err
+				return
 			}
 		case message.MessageTypeToolResponse:
-			err := c.handlerTooResponse(ctx, chunk, sw)
+			err = c.handlerTooResponse(ctx, chunk, sw)
 			if err != nil {
-				return err
+				return
 			}
 		case message.MessageTypeKnowledge:
-			err := c.handlerKnowledge(ctx, chunk, sw)
+			err = c.handlerKnowledge(ctx, chunk, sw)
 			if err != nil {
-				return err
+				return
 			}
 		case message.MessageTypeAnswer:
 			fullContent := bytes.NewBuffer([]byte{})
 			reasoningContent := bytes.NewBuffer([]byte{})
-			preMsg, err := c.handlerPreAnswer(ctx)
-			if err != nil {
-				return err
+			preMsg, pErr := c.handlerPreAnswer(ctx)
+			if pErr != nil {
+				err = pErr
+				return
 			}
 			var usage *msgEntity.UsageExt
 			for {
@@ -501,16 +515,19 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 						finalAnswer.ReasoningContent = ptr.Of(reasoningContent.String())
 						hfErr := c.handlerFinalAnswer(ctx, finalAnswer, sw, usage)
 						if hfErr != nil {
-							return err
+							err = hfErr
+							return
 						}
 
 						finishErr := c.handlerFinalAnswerFinish(ctx, sw)
 						if finishErr != nil {
-							return err
+							err = finishErr
+							return
 						}
 						break
 					}
-					return answerEvent.Err
+					err = answerEvent.Err
+					return
 				}
 				rc := c.parseReasoningContent(ctx, answerEvent)
 				reasoningContent.WriteString(rc)
@@ -525,16 +542,15 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 			}
 
 		case message.MessageTypeFlowUp:
-			err := c.handlerSuggest(ctx, chunk, sw)
+			err = c.handlerSuggest(ctx, chunk, sw)
 			if err != nil {
-				return err
+				return
 			}
 
 		case message.MessageTypeInterrupt:
-			logs.CtxInfof(ctx, "hanlder interrupt event:%v,err:%v", conv.DebugJsonToStr(chunk), chunk.Err)
-			err := c.handlerInterrupt(ctx, chunk, sw)
+			err = c.handlerInterrupt(ctx, chunk, sw)
 			if err != nil {
-				return err
+				return
 			}
 		}
 	}
