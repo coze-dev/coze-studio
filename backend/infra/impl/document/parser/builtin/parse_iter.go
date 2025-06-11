@@ -99,17 +99,31 @@ func parseByRowIterator(iter rowIterator, config *contract.Config, opts ...parse
 	}
 
 	if !columnsProvides {
+		// align data type when columns are provided
 		for _, col := range expColumns {
 			if col.Type == document.TableColumnTypeUnknown {
 				col.Type = document.TableColumnTypeString
 			}
 		}
-
 		for _, row := range expData {
 			if err = alignTableSliceValue(expColumns, row); err != nil {
 				return nil, err
 			}
 		}
+	}
+
+	if len(expData) == 0 {
+		// return a special document with columns only if there is no data
+		doc := &schema.Document{
+			MetaData: map[string]any{
+				document.MetaDataKeyColumns:     expColumns,
+				document.MetaDataKeyColumnsOnly: struct{}{},
+			},
+		}
+		for k, v := range options.ExtraMeta {
+			doc.MetaData[k] = v
+		}
+		return []*schema.Document{doc}, nil
 	}
 
 	for j := range expData {
@@ -128,11 +142,9 @@ func parseByRowIterator(iter rowIterator, config *contract.Config, opts ...parse
 				document.MetaDataKeyColumnData: expData[j],
 			},
 		}
-
 		for k, v := range options.ExtraMeta {
 			doc.MetaData[k] = v
 		}
-
 		docs = append(docs, doc)
 	}
 

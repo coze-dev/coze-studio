@@ -539,6 +539,16 @@ func (k *knowledgeSVC) LoadSheet(ctx context.Context, b []byte, ps *entity.Parsi
 		return nil, fmt.Errorf("[LoadSheet] result is empty")
 	}
 
+	sheet := &entity.TableSheet{
+		SheetId:       ps.SheetID,
+		HeaderLineIdx: int64(ps.HeaderLine),
+		StartLineIdx:  int64(ps.DataStartLine),
+		TotalRows:     int64(len(docs)),
+	}
+	if sheetName != nil {
+		sheet.SheetName = ptr.From(sheetName)
+	}
+
 	srcColumns, err := document.GetDocumentColumns(docs[0])
 	if err != nil {
 		return nil, fmt.Errorf("[LoadSheet] get columns failed, %w", err)
@@ -556,6 +566,15 @@ func (k *knowledgeSVC) LoadSheet(ctx context.Context, b []byte, ps *entity.Parsi
 		})
 	}
 
+	if columnsOnly, err := document.GetDocumentsColumnsOnly(docs); err != nil { // unexpected
+		return nil, fmt.Errorf("[LoadSheet] get data status failed, %w", err)
+	} else if columnsOnly {
+		return &rawSheet{
+			sheet: sheet,
+			cols:  cols,
+		}, nil
+	}
+
 	vals := make([][]*document.ColumnData, 0, len(docs))
 	for _, doc := range docs {
 		v, ok := doc.MetaData[document.MetaDataKeyColumnData].([]*document.ColumnData)
@@ -563,16 +582,6 @@ func (k *knowledgeSVC) LoadSheet(ctx context.Context, b []byte, ps *entity.Parsi
 			return nil, fmt.Errorf("[LoadSheet] get columns data failed")
 		}
 		vals = append(vals, v)
-	}
-
-	sheet := &entity.TableSheet{
-		SheetId:       ps.SheetID,
-		HeaderLineIdx: int64(ps.HeaderLine),
-		StartLineIdx:  int64(ps.DataStartLine),
-		TotalRows:     int64(len(docs)),
-	}
-	if sheetName != nil {
-		sheet.SheetName = *sheetName
 	}
 
 	return &rawSheet{

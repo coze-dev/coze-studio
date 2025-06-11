@@ -215,6 +215,17 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		return fmt.Errorf("[indexDocument] parse document failed, %w", err)
 	}
 
+	if doc.Type == knowledge.DocumentTypeTable {
+		noData, err := document.GetDocumentsColumnsOnly(parseResult)
+		if err != nil { // unexpected
+			return errorx.New(errno.ErrKnowledgeNonRetryableCode,
+				errorx.KVf("reason", "[indexDocument] get table data status failed, err: %v", err))
+		}
+		if noData {
+			parseResult = nil // clear parse result
+		}
+	}
+
 	// set id
 	allIDs := make([]int64, 0, len(parseResult))
 	for l := 0; l < len(parseResult); l += 100 {
@@ -358,6 +369,9 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 }
 
 func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.TableInfo, slices []*entity.Slice) (err error) {
+	if len(slices) == 0 {
+		return nil
+	}
 	insertData, err := packInsertData(slices)
 	if err != nil {
 		logs.CtxErrorf(ctx, "[insertDataToTable] pack insert data failed, err: %v", err)

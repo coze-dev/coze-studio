@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	MetaDataKeyColumns    = "table_columns"     // val: []*Column
-	MetaDataKeyColumnData = "table_column_data" // val: []*ColumnData
+	MetaDataKeyColumns     = "table_columns"      // val: []*Column
+	MetaDataKeyColumnData  = "table_column_data"  // val: []*ColumnData
+	MetaDataKeyColumnsOnly = "table_columns_only" // val: struct{}, which means table has no data, only header.
 
 	MetaDataKeyCreatorID       = "creator_id"       // val: int64
 	MetaDataKeyExternalStorage = "external_storage" // val: map[string]any
@@ -48,6 +49,28 @@ func GetDocumentColumnData(doc *schema.Document) ([]*ColumnData, error) {
 func WithDocumentColumnData(doc *schema.Document, data []*ColumnData) *schema.Document {
 	doc.MetaData[MetaDataKeyColumnData] = data
 	return doc
+}
+
+func WithDocumentColumnsOnly(doc *schema.Document) *schema.Document {
+	doc.MetaData[MetaDataKeyColumnsOnly] = struct{}{}
+	return doc
+}
+
+func GetDocumentColumnsOnly(doc *schema.Document) (bool, error) {
+	if doc == nil || doc.MetaData == nil {
+		return false, fmt.Errorf("invalid document")
+	}
+
+	_, ok := doc.MetaData[MetaDataKeyColumnsOnly].(struct{})
+	return ok, nil
+}
+
+func GetDocumentsColumnsOnly(docs []*schema.Document) (bool, error) {
+	if len(docs) != 1 {
+		return false, nil
+	}
+
+	return GetDocumentColumnsOnly(docs[0])
 }
 
 func GetDocumentCreatorID(doc *schema.Document) (int64, error) {
