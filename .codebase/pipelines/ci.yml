@@ -1,4 +1,4 @@
-name: "ci pipeline"
+name: "ci@backend pipeline"
 
 trigger:
   change:
