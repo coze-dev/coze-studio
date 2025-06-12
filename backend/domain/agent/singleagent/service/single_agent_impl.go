@@ -79,6 +79,10 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 		return nil, err
 	}
 
+	if req.Identity.Version == "" {
+		req.Identity.Version = ae.Version
+	}
+
 	conf := &agentflow.Config{
 		Agent:        ae,
 		UserID:       req.UserID,
@@ -91,10 +95,10 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 	}
 
 	exeReq := &agentflow.AgentRequest{
-		UserID: req.UserID,
-
-		Input:   req.Input,
-		History: req.History,
+		UserID:   req.UserID,
+		Input:    req.Input,
+		History:  req.History,
+		Identity: req.Identity,
 
 		ResumeInfo:   req.ResumeInfo,
 		PreCallTools: req.PreCallTools,

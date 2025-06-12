@@ -48,6 +48,7 @@ type SingleAgent struct {
 	IconURI   string
 	CreatedAt int64
 	UpdatedAt int64
+	Version   string
 	DeletedAt gorm.DeletedAt
 
 	VariablesMetaID         *int64

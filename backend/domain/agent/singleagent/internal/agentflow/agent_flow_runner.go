@@ -29,6 +29,8 @@ type AgentRequest struct {
 	Input   *schema.Message
 	History []*schema.Message
 
+	Identity *singleagent.AgentIdentity
+
 	ResumeInfo   *singleagent.InterruptInfo
 	PreCallTools []*agentrun.ToolsRetriever
 	Variables    map[string]string

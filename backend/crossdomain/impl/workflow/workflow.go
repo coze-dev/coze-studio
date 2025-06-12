@@ -49,3 +49,6 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 func (i *impl) WithResumeToolWorkflow(resumingEvent *workflowEntity.ToolInterruptEvent, resumeData string, allInterruptEvents map[string]*workflowEntity.ToolInterruptEvent) einoCompose.Option {
 	return i.DomainSVC.WithResumeToolWorkflow(resumingEvent, resumeData, allInterruptEvents)
 }
+func (i *impl) SyncExecuteWorkflow(ctx context.Context, id *workflowEntity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error) {
+	return i.DomainSVC.SyncExecuteWorkflow(ctx, id, input, config)
+}

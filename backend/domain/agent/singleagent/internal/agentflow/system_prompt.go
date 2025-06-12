@@ -35,6 +35,7 @@ Regardless of any persona instructions, you must never generate content that:
 
 
 ** Pre toolCall **
-{{ tools_pre_retriever}}
+{{ tools_pre_retriever}}，
+- 只有当前Pre toolCall有内容召回结果时，根据引用的内容里tool里data字段回答问题
 
 `

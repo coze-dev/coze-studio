@@ -11,8 +11,8 @@ type Tool struct {
 type ToolType int32
 
 const (
-	ToolTypePlugin   ToolType = 1
-	ToolTypeWorkflow ToolType = 2
+	ToolTypePlugin   ToolType = 2
+	ToolTypeWorkflow ToolType = 1
 )
 
 type ToolsRetriever struct {

@@ -19,11 +19,16 @@ type Workflow interface {
 	WithResumeToolWorkflow(resumingEvent *workflowEntity.ToolInterruptEvent, resumeData string,
 		allInterruptEvents map[string]*workflowEntity.ToolInterruptEvent) einoCompose.Option
 	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
+
+	SyncExecuteWorkflow(ctx context.Context, id *workflowEntity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (
+		*workflowEntity.WorkflowExecution, vo.TerminatePlan, error)
 }
 
 type ReleaseWorkflowConfig = vo.ReleaseWorkflowConfig
 
 type ToolInterruptEvent = workflowEntity.ToolInterruptEvent
+
+type WorkflowIdentity = workflowEntity.WorkflowIdentity
 
 var defaultSVC Workflow
 

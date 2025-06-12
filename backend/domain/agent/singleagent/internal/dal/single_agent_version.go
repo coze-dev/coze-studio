@@ -88,6 +88,7 @@ func (sa *SingleAgentVersionDAO) singleAgentVersionPo2Do(po *model.SingleAgentVe
 			VariablesMetaID: po.VariablesMetaID,
 			Database:        po.Database,
 			ShortcutCommand: po.ShortcutCommand,
+			Version:         po.Version,
 		},
 	}
 }
