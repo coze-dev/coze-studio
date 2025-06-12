@@ -309,10 +309,12 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 	}
 
 	exeCfg := vo.ExecuteConfig{
-		Operator: ptr.FromOrDefault(uID, 0),
-		Mode:     vo.ExecuteModeDebug,
-		AppID:    appID,
-		AgentID:  agentID,
+		Operator:    ptr.FromOrDefault(uID, 0),
+		Mode:        vo.ExecuteModeDebug,
+		AppID:       appID,
+		AgentID:     agentID,
+		ConnectorID: consts.CozeConnectorID,
+		TaskType:    vo.TaskTypeForeground,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -360,10 +362,12 @@ func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.Workfl
 	}
 
 	exeCfg := vo.ExecuteConfig{
-		Operator: ptr.FromOrDefault(uID, 0),
-		Mode:     vo.ExecuteModeNodeDebug,
-		AppID:    appID,
-		AgentID:  agentID,
+		Operator:    ptr.FromOrDefault(uID, 0),
+		Mode:        vo.ExecuteModeNodeDebug,
+		AppID:       appID,
+		AgentID:     agentID,
+		ConnectorID: consts.CozeConnectorID,
+		TaskType:    vo.TaskTypeForeground,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -865,6 +869,7 @@ func (w *ApplicationService) StreamRun(ctx context.Context, req *workflow.OpenAP
 		AppID:       appID,
 		AgentID:     agentID,
 		ConnectorID: connectorID,
+		TaskType:    vo.TaskTypeForeground,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {

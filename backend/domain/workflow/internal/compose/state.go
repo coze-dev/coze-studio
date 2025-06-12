@@ -65,6 +65,7 @@ func init() {
 	_ = compose.RegisterSerializableType[*entity.ToolInterruptEvent]("tool_interrupt_event")
 	_ = compose.RegisterSerializableType[vo.ExecuteConfig]("execute_config")
 	_ = compose.RegisterSerializableType[vo.ExecuteMode]("execute_mode")
+	_ = compose.RegisterSerializableType[vo.TaskType]("task_type")
 }
 
 func (s *State) SetAppVariableValue(key string, value any) {
@@ -239,6 +240,11 @@ func (s *State) ResumeToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID strin
 	delete(s.ToolInterruptEvents[llmNodeKey], toolCallID)
 	delete(s.LLMToResumeData, llmNodeKey)
 	return resumeData, nil
+}
+
+func (s *State) NodeExecuted(key vo.NodeKey) bool {
+	_, ok := s.ExecutedNodes[key]
+	return ok
 }
 
 func GenState() compose.GenLocalState[*State] {
@@ -660,27 +666,11 @@ func (s *NodeSchema) streamStatePreHandlerForStreamSources() compose.StreamState
 
 func (s *NodeSchema) StatePostHandler(stream bool) compose.GraphAddNodeOpt {
 	if stream {
-		if s.Type == entity.NodeTypeSelector {
-			handler := func(ctx context.Context, out *schema.StreamReader[int], state *State) (*schema.StreamReader[int], error) {
-				state.ExecutedNodes[s.Key] = true
-				return out, nil
-			}
-			return compose.WithStreamStatePostHandler(handler)
-		}
-
 		handler := func(ctx context.Context, out *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
 			state.ExecutedNodes[s.Key] = true
 			return out, nil
 		}
 		return compose.WithStreamStatePostHandler(handler)
-	}
-
-	if s.Type == entity.NodeTypeSelector {
-		handler := func(ctx context.Context, out int, state *State) (int, error) {
-			state.ExecutedNodes[s.Key] = true
-			return out, nil
-		}
-		return compose.WithStatePostHandler(handler)
 	}
 
 	handler := func(ctx context.Context, out map[string]any, state *State) (map[string]any, error) {

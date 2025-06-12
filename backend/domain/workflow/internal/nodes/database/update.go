@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
@@ -25,7 +26,7 @@ type UpdateInventory struct {
 	Fields         map[string]any
 }
 
-func NewUpdate(ctx context.Context, cfg *UpdateConfig) (*Update, error) {
+func NewUpdate(_ context.Context, cfg *UpdateConfig) (*Update, error) {
 	if cfg == nil {
 		return nil, errors.New("config is required")
 	}
@@ -44,7 +45,12 @@ func NewUpdate(ctx context.Context, cfg *UpdateConfig) (*Update, error) {
 	return &Update{config: cfg}, nil
 }
 
-func (u *Update) Update(ctx context.Context, inventory *UpdateInventory) (map[string]any, error) {
+func (u *Update) Update(ctx context.Context, in map[string]any) (map[string]any, error) {
+	inventory, err := ConvertClauseGroupToUpdateInventory(ctx, u.config.ClauseGroup, in)
+	if err != nil {
+		return nil, err
+	}
+
 	fields := make(map[string]any)
 
 	for key, value := range inventory.Fields {
@@ -74,5 +80,43 @@ func (u *Update) Update(ctx context.Context, inventory *UpdateInventory) (map[st
 	}
 
 	return ret, nil
+}
+
+func (u *Update) ToCallbackInput(_ context.Context, in map[string]any) (map[string]any, error) {
+	inventory, err := ConvertClauseGroupToUpdateInventory(context.Background(), u.config.ClauseGroup, in)
+	if err != nil {
+		return nil, err
+	}
+	return u.toDatabaseUpdateCallbackInput(inventory)
+}
+
+func (u *Update) toDatabaseUpdateCallbackInput(inventory *UpdateInventory) (map[string]any, error) {
+	databaseID := u.config.DatabaseInfoID
+	result := make(map[string]any)
+	result["databaseInfoList"] = []string{fmt.Sprintf("%d", databaseID)}
+	result["updateParam"] = map[string]any{}
+
+	condition, err := convertToCondition(inventory.ConditionGroup)
+	if err != nil {
+		return nil, err
+	}
+	type FieldInfo struct {
+		fieldID    string
+		fieldValue any
+	}
+
+	fieldInfo := make([]FieldInfo, 0)
+	for k, v := range inventory.Fields {
+		fieldInfo = append(fieldInfo, FieldInfo{
+			fieldID:    k,
+			fieldValue: v,
+		})
+	}
+
+	result["updateParam"] = map[string]any{
+		"condition": condition,
+		"fieldInfo": fieldInfo,
+	}
+	return result, nil
 
 }

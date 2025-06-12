@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -19,7 +20,7 @@ type Delete struct {
 	config *DeleteConfig
 }
 
-func NewDelete(ctx context.Context, cfg *DeleteConfig) (*Delete, error) {
+func NewDelete(_ context.Context, cfg *DeleteConfig) (*Delete, error) {
 	if cfg == nil {
 		return nil, errors.New("config is required")
 	}
@@ -40,8 +41,11 @@ func NewDelete(ctx context.Context, cfg *DeleteConfig) (*Delete, error) {
 
 }
 
-func (d *Delete) Delete(ctx context.Context, conditionGroup *database.ConditionGroup) (map[string]any, error) {
-
+func (d *Delete) Delete(ctx context.Context, in map[string]any) (map[string]any, error) {
+	conditionGroup, err := ConvertClauseGroupToConditionGroup(ctx, d.config.ClauseGroup, in)
+	if err != nil {
+		return nil, err
+	}
 	request := &database.DeleteRequest{
 		DatabaseInfoID: d.config.DatabaseInfoID,
 		ConditionGroup: conditionGroup,
@@ -60,4 +64,33 @@ func (d *Delete) Delete(ctx context.Context, conditionGroup *database.ConditionG
 	ret[rowNum] = response.RowNumber
 
 	return ret, nil
+}
+
+func (d *Delete) ToCallbackInput(_ context.Context, in map[string]any) (map[string]any, error) {
+	conditionGroup, err := ConvertClauseGroupToConditionGroup(context.Background(), d.config.ClauseGroup, in)
+	if err != nil {
+		return nil, err
+	}
+	return d.toDatabaseDeleteCallbackInput(conditionGroup)
+}
+
+func (d *Delete) toDatabaseDeleteCallbackInput(conditionGroup *database.ConditionGroup) (map[string]any, error) {
+	databaseID := d.config.DatabaseInfoID
+	result := make(map[string]any)
+
+	result["databaseInfoList"] = []string{fmt.Sprintf("%d", databaseID)}
+	result["deleteParam"] = map[string]any{}
+
+	condition, err := convertToCondition(conditionGroup)
+	if err != nil {
+		return nil, err
+	}
+	type Field struct {
+		FieldID    string `json:"fieldId"`
+		IsDistinct bool   `json:"isDistinct"`
+	}
+	result["deleteParam"] = map[string]any{
+		"condition": condition}
+
+	return result, nil
 }

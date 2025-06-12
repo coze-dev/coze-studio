@@ -1421,7 +1421,13 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, wfID entity.Workflo
 		return nil, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
-	wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(wfID.ID))
+	var opts []compose.WorkflowOption
+	opts = append(opts, compose.WithIDAsName(wfID.ID))
+	if s := execute.GetStaticConfig(); s != nil && s.MaxNodeCountPerWorkflow > 0 {
+		opts = append(opts, compose.WithMaxNodeCount(s.MaxNodeCountPerWorkflow))
+	}
+
+	wf, err := compose.NewWorkflow(ctx, workflowSC, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create workflow: %w", err)
 	}

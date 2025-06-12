@@ -3,15 +3,19 @@ package entity
 type NodeType string
 
 type NodeTypeMeta struct {
-	ID           int64    `json:"id"`
-	Name         string   `json:"name"`
-	Type         NodeType `json:"type"`
-	Category     string   `json:"category"`
-	Color        string   `json:"color"`
-	Desc         string   `json:"desc"`
-	IconURL      string   `json:"icon_url"`
-	IsComposite  bool     `json:"is_composite"`
-	SupportBatch bool     `json:"support_batch"`
+	ID               int64    `json:"id"`
+	Name             string   `json:"name"`
+	Type             NodeType `json:"type"`
+	Category         string   `json:"category"`
+	Color            string   `json:"color"`
+	Desc             string   `json:"desc"`
+	IconURL          string   `json:"icon_url"`
+	IsComposite      bool     `json:"is_composite"`
+	SupportBatch     bool     `json:"support_batch"`
+	DefaultTimeoutMS int64    `json:"default_timeout_ms,omitempty"` // default timeout in milliseconds, 0 means no timeout
+	PreFillZero      bool     `json:"pre_fill_zero,omitempty"`
+	PostFillNil      bool     `json:"post_fill_nil,omitempty"`
+	CallbackEnabled  bool     `json:"callback_enabled,omitempty"` // is false, Eino framework will inject callbacks for this node
 }
 
 type PluginNodeMeta struct {

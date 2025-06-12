@@ -2,7 +2,6 @@ package code
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"testing"
 
@@ -15,10 +14,6 @@ import (
 )
 
 var codeTpl string
-
-func ToPtr[T any](t T) *T {
-	return &t
-}
 
 func TestCode_RunCode(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -239,65 +234,4 @@ async def main(args:Args)->Output:
 		assert.Contains(t, ret[occurWarnErrorKey], "field key1.1 is not a number")
 
 	})
-
-	t.Run("run code error", func(t *testing.T) {
-		codeTpl = `
-async def main(args:Args)->Output:
-    params = args.params
-    ret: Output = {
-        "key0": params['input'] + params['input'],
-        "key1": ["hello", "world"], 
-  		"key2": [123, "345"], 
-        "key3": { 
-            "key31": "hi",
-			"key32": "hello",
-			"key34": {
-				"key341":"123",
-				"key343": ["hello", "world"],
-				}
-        },
-    }
-    return ret
-`
-		ctx := t.Context()
-
-		mockRunner.EXPECT().Run(gomock.Any(), gomock.Any()).Return(nil, errors.New("error"))
-
-		c := &CodeRunner{
-			config: &Config{
-				Code:     codeTpl,
-				Language: code.Python,
-				OutputConfig: map[string]*vo.TypeInfo{
-					"key0": {Type: vo.DataTypeInteger},
-					"key1": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
-					"key2": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
-					"key3": {Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
-						"key31": &vo.TypeInfo{Type: vo.DataTypeString},
-						"key32": &vo.TypeInfo{Type: vo.DataTypeString},
-						"key33": &vo.TypeInfo{Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
-						"key34": &vo.TypeInfo{Type: vo.DataTypeObject, Properties: map[string]*vo.TypeInfo{
-							"key341": &vo.TypeInfo{Type: vo.DataTypeString},
-							"key342": &vo.TypeInfo{Type: vo.DataTypeString},
-							"key343": &vo.TypeInfo{Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
-						}},
-					},
-					},
-				},
-				Runner:          mockRunner,
-				IgnoreException: true,
-				DefaultOutput: map[string]any{
-					"key1": 0,
-				},
-			},
-		}
-		ret, err := c.RunCode(ctx, map[string]any{
-			"input": "1123",
-		})
-		assert.NoError(t, err)
-
-		assert.Equal(t, int(0), ret["key1"])
-		assert.Equal(t, errors.New("error").Error(), ret["errorBody"].(map[string]interface{})["errorMessage"])
-
-	})
-
 }

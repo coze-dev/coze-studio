@@ -2,6 +2,7 @@ package adaptor
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"runtime/debug"
 	"strconv"
@@ -30,6 +31,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
@@ -164,7 +166,10 @@ func normalizePorts(connections []*compose.Connection, nodeMap map[string]*vo.No
 		case vo.BlockTypeQuestion:
 			newPort = *conn.FromPort
 		default:
-			return nil, fmt.Errorf("node type %s should not have ports", node.Type)
+			if *conn.FromPort != "default" && *conn.FromPort != "branch_error" {
+				return nil, fmt.Errorf("invalid port name: %s", *conn.FromPort)
+			}
+			newPort = *conn.FromPort
 		}
 
 		normalized = append(normalized, &compose.Connection{
@@ -216,6 +221,10 @@ func NodeToNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, m
 			return nil, nil, err
 		}
 
+		if ns.MetaConfigs, err = toMetaConfig(n, ns.Type); err != nil {
+			return nil, nil, err
+		}
+
 		return []*compose.NodeSchema{ns}, nil, nil
 	}
 
@@ -227,6 +236,9 @@ func NodeToNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, m
 	if n.Type == vo.BlockTypeBotSubWorkflow {
 		ns, err := toSubWorkflowNodeSchema(ctx, n)
 		if err != nil {
+			return nil, nil, err
+		}
+		if ns.MetaConfigs, err = toMetaConfig(n, ns.Type); err != nil {
 			return nil, nil, err
 		}
 		return []*compose.NodeSchema{ns}, nil, nil
@@ -255,6 +267,46 @@ func EdgeToConnection(e *vo.Edge) *compose.Connection {
 	}
 
 	return conn
+}
+
+func toMetaConfig(n *vo.Node, nType entity.NodeType) (*compose.MetaConfig, error) {
+	nodeMeta := entity.NodeMetaByNodeType(nType)
+
+	var settingOnErr *vo.SettingOnError
+
+	if n.Data.Inputs != nil {
+		settingOnErr = n.Data.Inputs.SettingOnError
+	}
+
+	// settingOnErr.Switch seems to be useless, because if set to false, the timeout still takes effect
+	if settingOnErr == nil && nodeMeta.DefaultTimeoutMS == 0 {
+		return nil, nil
+	}
+
+	metaConf := &compose.MetaConfig{
+		TimeoutMS: nodeMeta.DefaultTimeoutMS,
+	}
+
+	if settingOnErr != nil {
+		metaConf = &compose.MetaConfig{
+			TimeoutMS:   settingOnErr.TimeoutMs,
+			MaxRetry:    settingOnErr.RetryTimes,
+			DataOnErr:   settingOnErr.DataOnErr,
+			ProcessType: settingOnErr.ProcessType,
+		}
+
+		if metaConf.ProcessType != nil && *metaConf.ProcessType == vo.ErrorProcessTypeDefault {
+			if len(metaConf.DataOnErr) == 0 {
+				return nil, errors.New("error process type is returning default value, but dataOnError is not specified")
+			}
+		}
+
+		if metaConf.ProcessType == nil && len(metaConf.DataOnErr) > 0 && settingOnErr.Switch {
+			metaConf.ProcessType = ptr.Of(vo.ErrorProcessTypeDefault)
+		}
+	}
+
+	return metaConf, nil
 }
 
 func toEntryNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
@@ -403,15 +455,6 @@ func toLLMNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	}
 
 	ns.SetConfigKV("OutputFormat", resFormat)
-	ns.SetConfigKV("IgnoreException", n.Data.Inputs.SettingOnError.Switch)
-	if n.Data.Inputs.SettingOnError.Switch {
-		defaultOut := make(map[string]any)
-		err = sonic.UnmarshalString(n.Data.Inputs.SettingOnError.DataOnErr, &defaultOut)
-		if err != nil {
-			return nil, err
-		}
-		ns.SetConfigKV("DefaultOutput", defaultOut)
-	}
 
 	if err = SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
@@ -423,6 +466,21 @@ func toLLMNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 
 	if n.Data.Inputs.FCParam != nil {
 		ns.SetConfigKV("FCParam", n.Data.Inputs.FCParam)
+	}
+
+	if se := n.Data.Inputs.SettingOnError; se != nil {
+		if se.Ext != nil && len(se.Ext.BackupLLMParam) > 0 {
+			var backupLLMParam vo.QALLMParam
+			if err = sonic.UnmarshalString(se.Ext.BackupLLMParam, &backupLLMParam); err != nil {
+				return nil, err
+			}
+
+			backupModel, err := qaLLMParamsToLLMParams(backupLLMParam)
+			if err != nil {
+				return nil, err
+			}
+			ns.SetConfigKV("BackupLLMParams", backupModel)
+		}
 	}
 
 	return ns, nil
@@ -759,6 +817,10 @@ func toLoopNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, m
 		ns.AddInputSource(sources...)
 	}
 
+	if ns.MetaConfigs, err = toMetaConfig(n, entity.NodeTypeLoop); err != nil {
+		return nil, nil, err
+	}
+
 	allNS = append(allNS, ns)
 
 	return allNS, hierarchy, nil
@@ -817,6 +879,10 @@ func toBatchNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, 
 	}
 
 	if err := SetOutputsForNodeSchema(n, ns); err != nil {
+		return nil, nil, err
+	}
+
+	if ns.MetaConfigs, err = toMetaConfig(n, entity.NodeTypeBatch); err != nil {
 		return nil, nil, err
 	}
 
@@ -1204,18 +1270,6 @@ func toHttpRequesterSchema(n *vo.Node) (*compose.NodeSchema, error) {
 		ns.SetConfigKV("RetryTimes", uint64(inputs.Setting.RetryTimes))
 	}
 
-	if inputs.SettingOnError != nil {
-		ns.SetConfigKV("IgnoreException", inputs.SettingOnError.Switch)
-		if inputs.SettingOnError.Switch {
-			defaultOut := make(map[string]any)
-			err := sonic.UnmarshalString(inputs.SettingOnError.DataOnErr, &defaultOut)
-			if err != nil {
-				return nil, err
-			}
-			ns.SetConfigKV("DefaultOutput", defaultOut)
-		}
-	}
-
 	if err := SetHttpRequesterInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
@@ -1449,18 +1503,6 @@ func toCodeRunnerSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	}
 	ns.SetConfigKV("Language", language)
 
-	if inputs.SettingOnError != nil {
-		ns.SetConfigKV("IgnoreException", inputs.SettingOnError.Switch)
-		if inputs.SettingOnError.Switch {
-			defaultOut := make(map[string]any)
-			err := sonic.UnmarshalString(inputs.SettingOnError.DataOnErr, &defaultOut)
-			if err != nil {
-				return nil, err
-			}
-			ns.SetConfigKV("DefaultOutput", defaultOut)
-		}
-	}
-
 	if err := SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
@@ -1511,18 +1553,6 @@ func toPluginSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	}
 	version := ps.Input.Value.Content.(string)
 	ns.SetConfigKV("PluginVersion", version)
-
-	if inputs.SettingOnError != nil {
-		ns.SetConfigKV("IgnoreException", inputs.SettingOnError.Switch)
-		if inputs.SettingOnError.Switch {
-			defaultOut := make(map[string]any)
-			err := sonic.UnmarshalString(inputs.SettingOnError.DataOnErr, &defaultOut)
-			if err != nil {
-				return nil, err
-			}
-			ns.SetConfigKV("DefaultOutput", defaultOut)
-		}
-	}
 
 	if err := SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err

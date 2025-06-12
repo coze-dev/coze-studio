@@ -1,4 +1,4 @@
-package service
+package nodes
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
-func convertInputs(in map[string]any, tInfo map[string]*vo.TypeInfo) (map[string]any, error) {
+func ConvertInputs(in map[string]any, tInfo map[string]*vo.TypeInfo) (map[string]any, error) {
 	out := make(map[string]any)
 	for k, v := range in {
 		t, ok := tInfo[k]
@@ -21,62 +21,51 @@ func convertInputs(in map[string]any, tInfo map[string]*vo.TypeInfo) (map[string
 			out[k] = in[k]
 			continue
 		}
-		switch t.Type {
-		case vo.DataTypeString, vo.DataTypeFile, vo.DataTypeTime, vo.DataTypeInteger, vo.DataTypeNumber, vo.DataTypeBoolean:
-			converted, err := convertSingleInput(v, t)
-			if err != nil {
-				return nil, err
-			}
-			out[k] = converted
-		case vo.DataTypeObject:
-			vMap, ok := v.(map[string]any)
-			if !ok {
-				vStr, ok := v.(string)
-				if !ok {
-					return nil, fmt.Errorf("map input %s is not a map or string: %v", k, v)
-				}
-				err := sonic.UnmarshalString(vStr, &vMap)
-				if err != nil {
-					return nil, fmt.Errorf("failed to unmarshal input %s as object: %w", k, err)
-				}
-			}
-			converted, err := convertMapInput(vMap, t)
-			if err != nil {
-				return nil, err
-			}
-			out[k] = converted
-		case vo.DataTypeArray:
-			vArr, ok := v.([]any)
-			if !ok {
-				vStr, ok := v.(string)
-				if !ok {
-					return nil, fmt.Errorf("array input %s is not a array or string: %v", k, v)
-				}
-				err := sonic.UnmarshalString(vStr, &vArr)
-				if err != nil {
-					return nil, fmt.Errorf("failed to unmarshal input %s as array: %w", k, err)
-				}
-			}
 
-			converted, err := convertArrInput(vArr, t)
-			if err != nil {
-				return nil, err
-			}
-			out[k] = converted
-		default:
-			return nil, fmt.Errorf("unknown input type %s", t.Type)
+		converted, err := Convert(v, t)
+		if err != nil {
+			return nil, err
 		}
+		out[k] = converted
 	}
 
 	return out, nil
 }
 
-func convertStringInputs(in map[string]string, tInfo map[string]*vo.TypeInfo) (map[string]any, error) {
-	anyIn := make(map[string]any, len(in))
-	for k, v := range in {
-		anyIn[k] = v
+func Convert(in any, t *vo.TypeInfo) (out any, err error) {
+	switch t.Type {
+	case vo.DataTypeString, vo.DataTypeFile, vo.DataTypeTime, vo.DataTypeInteger, vo.DataTypeNumber, vo.DataTypeBoolean:
+		return convertSingleInput(in, t)
+	case vo.DataTypeObject:
+		vMap, ok := in.(map[string]any)
+		if !ok {
+			vStr, ok := in.(string)
+			if !ok {
+				return nil, fmt.Errorf("map input is not a map or string: %v", in)
+			}
+			err := sonic.UnmarshalString(vStr, &vMap)
+			if err != nil {
+				return nil, fmt.Errorf("failed to unmarshal input as object: %w", err)
+			}
+		}
+		return convertMapInput(vMap, t)
+	case vo.DataTypeArray:
+		vArr, ok := in.([]any)
+		if !ok {
+			vStr, ok := in.(string)
+			if !ok {
+				return nil, fmt.Errorf("array input is not a array or string: %v", in)
+			}
+			err := sonic.UnmarshalString(vStr, &vArr)
+			if err != nil {
+				return nil, fmt.Errorf("failed to unmarshal input as array: %w", err)
+			}
+		}
+
+		return convertArrInput(vArr, t)
+	default:
+		return nil, fmt.Errorf("unknown input type %s", t.Type)
 	}
-	return convertInputs(anyIn, tInfo)
 }
 
 func convertSingleInput(in any, t *vo.TypeInfo) (out any, err error) {

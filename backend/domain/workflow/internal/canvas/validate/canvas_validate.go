@@ -435,6 +435,10 @@ func validateConnections(ctx context.Context, c *vo.Canvas) (issues []*Issue, er
 				selectorPorts[nodeID][fmt.Sprintf("branch_%v", index)] = true
 			}
 			selectorPorts[nodeID]["default"] = true
+			if node.Data.Inputs.SettingOnError != nil && node.Data.Inputs.SettingOnError.ProcessType != nil &&
+				*node.Data.Inputs.SettingOnError.ProcessType == vo.ErrorProcessTypeExceptionBranch {
+				selectorPorts[nodeID]["branch_error"] = true
+			}
 		case vo.BlockTypeQuestion:
 			if node.Data.Inputs.QA.AnswerType == vo.QAAnswerTypeOption {
 				if _, exists := selectorPorts[nodeID]; !exists {
@@ -452,7 +456,14 @@ func validateConnections(ctx context.Context, c *vo.Canvas) (issues []*Issue, er
 
 			}
 		default:
-			outDegree[node.ID] = 0
+			if node.Data.Inputs != nil && node.Data.Inputs.SettingOnError != nil &&
+				node.Data.Inputs.SettingOnError.ProcessType != nil &&
+				*node.Data.Inputs.SettingOnError.ProcessType == vo.ErrorProcessTypeExceptionBranch {
+				selectorPorts[nodeID]["branch_error"] = true
+				selectorPorts[nodeID]["default"] = true
+			} else {
+				outDegree[node.ID] = 0
+			}
 		}
 
 	}

@@ -37,6 +37,7 @@ type workflowOptions struct {
 	wfID                    int64
 	idAsName                bool
 	parentRequireCheckpoint bool
+	maxNodeCount            int
 }
 
 type WorkflowOption func(*workflowOptions)
@@ -51,6 +52,12 @@ func WithIDAsName(id int64) WorkflowOption {
 func WithParentRequireCheckpoint() WorkflowOption {
 	return func(opts *workflowOptions) {
 		opts.parentRequireCheckpoint = true
+	}
+}
+
+func WithMaxNodeCount(c int) WorkflowOption {
+	return func(opts *workflowOptions) {
+		opts.maxNodeCount = c
 	}
 }
 
@@ -76,6 +83,12 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...WorkflowOption
 	wfOpts := &workflowOptions{}
 	for _, opt := range opts {
 		opt(wfOpts)
+	}
+
+	if wfOpts.maxNodeCount > 0 {
+		if sc.NodeCount() > int32(wfOpts.maxNodeCount) {
+			return nil, fmt.Errorf("node count %d exceeds the limit: %d", sc.NodeCount(), wfOpts.maxNodeCount)
+		}
 	}
 
 	if wfOpts.parentRequireCheckpoint {
@@ -268,8 +281,8 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 		w.entry = wNode
 	}
 
-	outputPortCount := ns.OutputPortCount()
-	if outputPortCount > 1 {
+	outputPortCount, hasExceptionPort := ns.OutputPortCount()
+	if outputPortCount > 1 || hasExceptionPort {
 		bMapping, err := w.resolveBranch(key, outputPortCount)
 		if err != nil {
 			return nil, err
@@ -464,6 +477,7 @@ type staticValue struct {
 
 func (w *Workflow) resolveBranch(n vo.NodeKey, portCount int) (*BranchMapping, error) {
 	m := make([]map[string]bool, portCount)
+	var exception map[string]bool
 
 	for _, conn := range w.connections {
 		if conn.FromNode != n {
@@ -479,18 +493,23 @@ func (w *Workflow) resolveBranch(n vo.NodeKey, portCount int) (*BranchMapping, e
 				m[portCount-1] = make(map[string]bool)
 			}
 			m[portCount-1][string(conn.ToNode)] = true
+		} else if *conn.FromPort == "branch_error" {
+			if exception == nil {
+				exception = make(map[string]bool)
+			}
+			exception[string(conn.ToNode)] = true
 		} else {
 			if !strings.HasPrefix(*conn.FromPort, "branch_") {
-				return nil, fmt.Errorf("outgoing connections from selector has invalid port= %s", *conn.FromPort)
+				return nil, fmt.Errorf("outgoing connections has invalid port= %s", *conn.FromPort)
 			}
 
 			index := (*conn.FromPort)[7:]
 			i, err := strconv.Atoi(index)
 			if err != nil {
-				return nil, fmt.Errorf("outgoing connections from selector has invalid port index= %s", *conn.FromPort)
+				return nil, fmt.Errorf("outgoing connections has invalid port index= %s", *conn.FromPort)
 			}
 			if i < 0 || i >= portCount {
-				return nil, fmt.Errorf("outgoing connections from selector has invalid port index range= %d, condition count= %d", i, portCount)
+				return nil, fmt.Errorf("outgoing connections has invalid port index range= %d, condition count= %d", i, portCount)
 			}
 			if m[i] == nil {
 				m[i] = make(map[string]bool)
@@ -498,7 +517,11 @@ func (w *Workflow) resolveBranch(n vo.NodeKey, portCount int) (*BranchMapping, e
 			m[i][string(conn.ToNode)] = true
 		}
 	}
-	return (*BranchMapping)(&m), nil
+
+	return &BranchMapping{
+		Normal:    m,
+		Exception: exception,
+	}, nil
 }
 
 func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.FieldInfo) (*dependencyInfo, error) {

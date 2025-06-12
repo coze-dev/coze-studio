@@ -29,6 +29,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/validate"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -599,7 +600,13 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 		return 0, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
-	wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(wfEntity.ID))
+	var wfOpts []compose.WorkflowOption
+	wfOpts = append(wfOpts, compose.WithIDAsName(wfEntity.ID))
+	if s := execute.GetStaticConfig(); s != nil && s.MaxNodeCountPerWorkflow > 0 {
+		wfOpts = append(wfOpts, compose.WithMaxNodeCount(s.MaxNodeCountPerWorkflow))
+	}
+
+	wf, err := compose.NewWorkflow(ctx, workflowSC, wfOpts...)
 	if err != nil {
 		return 0, fmt.Errorf("failed to create workflow: %w", err)
 	}
@@ -608,7 +615,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 		config.AppID = wfEntity.AppID
 	}
 
-	convertedInput, err := convertInputs(input, wf.Inputs())
+	convertedInput, err := nodes.ConvertInputs(input, wf.Inputs())
 	if err != nil {
 		return 0, fmt.Errorf("failed to convert inputs: %w", err)
 	}
@@ -666,7 +673,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity
 		return 0, fmt.Errorf("failed to create workflow: %w", err)
 	}
 
-	convertedInput, err := convertInputs(input, wf.Inputs())
+	convertedInput, err := nodes.ConvertInputs(input, wf.Inputs())
 	if err != nil {
 		return 0, fmt.Errorf("failed to convert inputs: %w", err)
 	}
@@ -722,6 +729,12 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 		return nil, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
+	var wfOpts []compose.WorkflowOption
+	wfOpts = append(wfOpts, compose.WithIDAsName(wfEntity.ID))
+	if s := execute.GetStaticConfig(); s != nil && s.MaxNodeCountPerWorkflow > 0 {
+		wfOpts = append(wfOpts, compose.WithMaxNodeCount(s.MaxNodeCountPerWorkflow))
+	}
+
 	wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(wfEntity.ID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create workflow: %w", err)
@@ -731,7 +744,7 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 		config.AppID = wfEntity.AppID
 	}
 
-	input, err = convertInputs(input, wf.Inputs())
+	input, err = nodes.ConvertInputs(input, wf.Inputs())
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert inputs: %w", err)
 	}
@@ -1050,6 +1063,12 @@ func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeReques
 		return nil
 	}
 
+	var wfOpts []compose.WorkflowOption
+	wfOpts = append(wfOpts, compose.WithIDAsName(wfExe.WorkflowIdentity.ID))
+	if s := execute.GetStaticConfig(); s != nil && s.MaxNodeCountPerWorkflow > 0 {
+		wfOpts = append(wfOpts, compose.WithMaxNodeCount(s.MaxNodeCountPerWorkflow))
+	}
+
 	wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(wfExe.WorkflowIdentity.ID))
 	if err != nil {
 		return fmt.Errorf("failed to create workflow: %w", err)
@@ -1110,6 +1129,12 @@ func (i *impl) StreamResumeWorkflow(ctx context.Context, req *entity.ResumeReque
 	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, &canvas)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
+	}
+
+	var wfOpts []compose.WorkflowOption
+	wfOpts = append(wfOpts, compose.WithIDAsName(wfExe.WorkflowIdentity.ID))
+	if s := execute.GetStaticConfig(); s != nil && s.MaxNodeCountPerWorkflow > 0 {
+		wfOpts = append(wfOpts, compose.WithMaxNodeCount(s.MaxNodeCountPerWorkflow))
 	}
 
 	wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(wfExe.WorkflowIdentity.ID))

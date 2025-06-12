@@ -3,6 +3,11 @@ package selector
 import (
 	"context"
 	"fmt"
+	"strconv"
+
+	"github.com/cloudwego/eino/compose"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
 type Selector struct {
@@ -50,11 +55,17 @@ type Operants struct {
 }
 
 const (
-	LeftKey  = "left"
-	RightKey = "right"
+	LeftKey   = "left"
+	RightKey  = "right"
+	SelectKey = "selected"
 )
 
-func (s *Selector) Select(_ context.Context, in []Operants) (out int, err error) {
+func (s *Selector) Select(_ context.Context, input map[string]any) (out map[string]any, err error) {
+	in, err := s.SelectorInputConverter(input)
+	if err != nil {
+		return nil, err
+	}
+
 	predicates := make([]Predicate, 0, len(s.config.Clauses))
 	for i, oneConf := range s.config.Clauses {
 		if oneConf.Single != nil {
@@ -94,22 +105,22 @@ func (s *Selector) Select(_ context.Context, in []Operants) (out int, err error)
 			}
 			predicates = append(predicates, multiClause)
 		} else {
-			return -1, fmt.Errorf("invalid clause config, both single and multi are nil: %v", oneConf)
+			return nil, fmt.Errorf("invalid clause config, both single and multi are nil: %v", oneConf)
 		}
 	}
 
 	for i, p := range predicates {
 		isTrue, err := p.Resolve()
 		if err != nil {
-			return -1, err
+			return nil, err
 		}
 
 		if isTrue {
-			return i, nil
+			return map[string]any{SelectKey: i}, nil
 		}
 	}
 
-	return len(in), nil // default choice
+	return map[string]any{SelectKey: len(in)}, nil // default choice
 }
 
 func (s *Selector) GetType() string {
@@ -118,4 +129,65 @@ func (s *Selector) GetType() string {
 
 func (s *Selector) ConditionCount() int {
 	return len(s.config.Clauses)
+}
+
+func (s *Selector) SelectorInputConverter(in map[string]any) (out []Operants, err error) {
+	conf := s.config.Clauses
+
+	for i, oneConf := range conf {
+		if oneConf.Single != nil {
+			left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), LeftKey})
+			if !ok {
+				return nil, fmt.Errorf("failed to take left operant from input map: %v, clause index= %d", in, i)
+			}
+
+			right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), RightKey})
+			if ok {
+				out = append(out, Operants{Left: left, Right: right})
+			} else {
+				out = append(out, Operants{Left: left})
+			}
+		} else if oneConf.Multi != nil {
+			multiClause := make([]*Operants, 0)
+			for j := range oneConf.Multi.Clauses {
+				left, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), LeftKey})
+				if !ok {
+					return nil, fmt.Errorf("failed to take left operant from input map: %v, clause index= %d, single clause index= %d", in, i, j)
+				}
+				right, ok := nodes.TakeMapValue(in, compose.FieldPath{strconv.Itoa(i), strconv.Itoa(j), RightKey})
+				if ok {
+					multiClause = append(multiClause, &Operants{Left: left, Right: right})
+				} else {
+					multiClause = append(multiClause, &Operants{Left: left})
+				}
+			}
+			out = append(out, Operants{Multi: multiClause})
+		} else {
+			return nil, fmt.Errorf("invalid clause config, both single and multi are nil: %v", oneConf)
+		}
+	}
+
+	return out, nil
+}
+
+func (s *Selector) ToCallbackOutput(_ context.Context, output map[string]any) (*nodes.StructuredCallbackOutput, error) {
+	count := len(s.config.Clauses)
+	out := output[SelectKey].(int)
+	if out == count {
+		cOutput := map[string]any{"result": "pass to else branch"}
+		return &nodes.StructuredCallbackOutput{
+			Output:    cOutput,
+			RawOutput: cOutput,
+		}, nil
+	}
+
+	if out >= 0 && out < count {
+		cOutput := map[string]any{"result": fmt.Sprintf("pass to condition %d branch", out+1)}
+		return &nodes.StructuredCallbackOutput{
+			Output:    cOutput,
+			RawOutput: cOutput,
+		}, nil
+	}
+
+	return nil, fmt.Errorf("out of range: %d", out)
 }

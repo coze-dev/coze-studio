@@ -52,8 +52,16 @@ func New(_ context.Context, cfg *Config) (*InputReceiver, error) {
 
 const ReceivedDataKey = "$received_data"
 
-func (i *InputReceiver) Invoke(ctx context.Context, in string) (map[string]any, error) {
-	if len(in) == 0 {
+func (i *InputReceiver) Invoke(ctx context.Context, in map[string]any) (map[string]any, error) {
+	var input string
+	if in != nil {
+		receivedData, ok := in[ReceivedDataKey]
+		if ok {
+			input = receivedData.(string)
+		}
+	}
+
+	if len(input) == 0 {
 		err := compose.ProcessState(ctx, func(ctx context.Context, ieStore nodes.InterruptEventStore) error {
 			_, found, e := ieStore.GetInterruptEvent(i.nodeKey) // TODO: try not use InterruptEventStore or state in general
 			if e != nil {
@@ -84,7 +92,7 @@ func (i *InputReceiver) Invoke(ctx context.Context, in string) (map[string]any, 
 		return nil, compose.InterruptAndRerun
 	}
 
-	out, err := jsonParseRelaxed(in, i.outputTypes)
+	out, err := jsonParseRelaxed(input, i.outputTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +110,7 @@ func jsonParseRelaxed(data string, schema_ map[string]*vo.TypeInfo) (map[string]
 
 	for k, v := range result {
 		if s, ok := schema_[k]; ok {
-			if val, ok_ := vo.TypeValidateAndConvert(s, v); ok_ {
+			if val, err := nodes.Convert(v, s); err == nil {
 				result[k] = val
 			}
 		}

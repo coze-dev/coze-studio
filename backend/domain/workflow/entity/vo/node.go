@@ -232,64 +232,6 @@ func convertDataType(d DataType) schema.DataType {
 	}
 }
 
-func TypeValidateAndConvert(t *TypeInfo, v any) (any, bool) {
-	switch t.Type {
-	case DataTypeString:
-		if _, ok := v.(string); ok {
-			return v, true
-		}
-		return nil, false
-	case DataTypeInteger:
-		return toInt64(v)
-	case DataTypeNumber:
-		if _, ok := v.(float64); ok {
-			return v, true
-		}
-		return nil, false
-	case DataTypeBoolean:
-		if _, ok := v.(bool); ok {
-			return v, true
-		}
-		return nil, false
-	case DataTypeTime:
-		if _, ok := v.(time.Time); ok {
-			return v, true
-		}
-		return nil, false
-	case DataTypeObject:
-		if _, ok := v.(map[string]any); ok {
-			return v, true
-		}
-		return nil, false
-	case DataTypeArray:
-		if val, ok := v.([]any); ok {
-			elemTypeInfo := t.ElemTypeInfo
-			if elemTypeInfo.Type == DataTypeArray {
-				panic("not support")
-			}
-			for i := range val {
-				elem, ok_ := TypeValidateAndConvert(elemTypeInfo, val[i])
-				if !ok_ {
-					return nil, false
-				}
-
-				val[i] = elem
-			}
-
-			return v, true
-		}
-
-		return nil, false
-	case DataTypeFile:
-		if _, ok := v.(string); ok {
-			return v, true
-		}
-		return nil, false
-	default:
-		panic("impossible")
-	}
-}
-
 func TypeInfoToJSONSchema(tis map[string]*TypeInfo, structName *string) (string, error) {
 	schema_ := map[string]any{
 		"type":       "object",
@@ -306,11 +248,11 @@ func TypeInfoToJSONSchema(tis map[string]*TypeInfo, structName *string) (string,
 		if typeInfo == nil {
 			continue
 		}
-		schema, err := typeInfoToJSONSchema(typeInfo)
+		sc, err := typeInfoToJSONSchema(typeInfo)
 		if err != nil {
 			return "", err
 		}
-		properties[key] = schema
+		properties[key] = sc
 		if typeInfo.Required {
 			schema_["required"] = append(schema_["required"].([]string), key)
 		}
@@ -325,35 +267,35 @@ func TypeInfoToJSONSchema(tis map[string]*TypeInfo, structName *string) (string,
 
 func typeInfoToJSONSchema(info *TypeInfo) (map[string]interface{}, error) {
 
-	schema := make(map[string]interface{})
+	sc := make(map[string]interface{})
 
 	switch info.Type {
 	case DataTypeString:
-		schema["type"] = "string"
+		sc["type"] = "string"
 	case DataTypeInteger:
-		schema["type"] = "integer"
+		sc["type"] = "integer"
 	case DataTypeNumber:
-		schema["type"] = "number"
+		sc["type"] = "number"
 	case DataTypeBoolean:
-		schema["type"] = "boolean"
+		sc["type"] = "boolean"
 	case DataTypeTime:
-		schema["type"] = "string"
-		schema["format"] = "date-time"
+		sc["type"] = "string"
+		sc["format"] = "date-time"
 	case DataTypeObject:
-		schema["type"] = "object"
+		sc["type"] = "object"
 	case DataTypeArray:
-		schema["type"] = "array"
+		sc["type"] = "array"
 	case DataTypeFile:
-		schema["type"] = "string"
+		sc["type"] = "string"
 		if info.FileType != nil {
-			schema["contentMediaType"] = string(*info.FileType)
+			sc["contentMediaType"] = string(*info.FileType)
 		}
 	default:
 		return nil, fmt.Errorf("impossible")
 	}
 
 	if info.Desc != "" {
-		schema["description"] = info.Desc
+		sc["description"] = info.Desc
 	}
 
 	if info.Type == DataTypeArray && info.ElemTypeInfo != nil {
@@ -361,7 +303,7 @@ func typeInfoToJSONSchema(info *TypeInfo) (map[string]interface{}, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert array element type: %v", err)
 		}
-		schema["items"] = itemsSchema
+		sc["items"] = itemsSchema
 	}
 	if info.Type == DataTypeObject && info.Properties != nil {
 		properties := make(map[string]interface{})
@@ -380,14 +322,14 @@ func typeInfoToJSONSchema(info *TypeInfo) (map[string]interface{}, error) {
 			}
 		}
 
-		schema["properties"] = properties
+		sc["properties"] = properties
 
 		if len(required) > 0 {
-			schema["required"] = required
+			sc["required"] = required
 		}
 	}
 
-	return schema, nil
+	return sc, nil
 }
 
 type FileSubType string

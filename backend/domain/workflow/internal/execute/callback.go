@@ -715,12 +715,20 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 				},
 			}
 			e.outputExtractor = func(o map[string]any) string {
-				return o["output"].(string)
+				str, ok := o["output"].(string)
+				if ok {
+					return str
+				}
+				return fmt.Sprint(o["output"])
 			}
 		}
 	case entity.NodeTypeOutputEmitter:
 		e.outputExtractor = func(o map[string]any) string {
-			return o["output"].(string)
+			str, ok := o["output"].(string)
+			if ok {
+				return str
+			}
+			return fmt.Sprint(o["output"])
 		}
 	case entity.NodeTypeInputReceiver:
 		e.Input = output.(map[string]any)
@@ -1099,12 +1107,20 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					if entity.NodeType(info.Type) == entity.NodeTypeOutputEmitter {
 						deltaEvent.Answer = strings.TrimSuffix(delta.(string), nodes.KeyIsFinished)
 						deltaEvent.outputExtractor = func(o map[string]any) string {
-							return o["output"].(string)
+							str, ok := o["output"].(string)
+							if ok {
+								return str
+							}
+							return fmt.Sprint(o["output"])
 						}
 					} else if n.terminatePlan != nil && *n.terminatePlan == vo.UseAnswerContent {
 						deltaEvent.Answer = strings.TrimSuffix(delta.(string), nodes.KeyIsFinished)
 						deltaEvent.outputExtractor = func(o map[string]any) string {
-							return o["output"].(string)
+							str, ok := o["output"].(string)
+							if ok {
+								return str
+							}
+							return fmt.Sprint(o["output"])
 						}
 					}
 				}
@@ -1144,12 +1160,20 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				if entity.NodeType(info.Type) == entity.NodeTypeOutputEmitter {
 					e.Answer = answer.(string)
 					e.outputExtractor = func(o map[string]any) string {
-						return o["output"].(string)
+						str, ok := o["output"].(string)
+						if ok {
+							return str
+						}
+						return fmt.Sprint(o["output"])
 					}
 				} else if n.terminatePlan != nil && *n.terminatePlan == vo.UseAnswerContent {
 					e.Answer = answer.(string)
 					e.outputExtractor = func(o map[string]any) string {
-						return o["output"].(string)
+						str, ok := o["output"].(string)
+						if ok {
+							return str
+						}
+						return fmt.Sprint(o["output"])
 					}
 				}
 			}

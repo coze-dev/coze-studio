@@ -40,6 +40,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/database"
 	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
@@ -300,8 +301,8 @@ func TestDatabaseCURD(t *testing.T) {
 				}
 			case execute.NodeStart:
 				if event.NodeKey == "178557" {
-					assert.Equal(t, event.Input["selectParam"].(map[string]any)["condition"], &compose.Condition{
-						ConditionList: []compose.ConditionItem{
+					assert.Equal(t, event.Input["selectParam"].(map[string]any)["condition"], &database.Condition{
+						ConditionList: []database.ConditionItem{
 							{
 								Left:      "v1",
 								Operation: "EQUAL",
@@ -313,15 +314,15 @@ func TestDatabaseCURD(t *testing.T) {
 
 				}
 				if event.NodeKey == "169400" {
-					assert.Equal(t, event.Input["deleteParam"].(map[string]any)["condition"].(*compose.Condition).ConditionList[0].Left, "v2")
-					assert.Equal(t, event.Input["deleteParam"].(map[string]any)["condition"].(*compose.Condition).ConditionList[0].Operation, "EQUAL")
+					assert.Equal(t, event.Input["deleteParam"].(map[string]any)["condition"].(*database.Condition).ConditionList[0].Left, "v2")
+					assert.Equal(t, event.Input["deleteParam"].(map[string]any)["condition"].(*database.Condition).ConditionList[0].Operation, "EQUAL")
 				}
 				if event.NodeKey == "122439" {
-					assert.Equal(t, compose.ConditionItem{
+					assert.Equal(t, database.ConditionItem{
 						Left:      "v1",
 						Operation: "EQUAL",
 						Right:     "abc",
-					}, event.Input["updateParam"].(map[string]any)["condition"].(*compose.Condition).ConditionList[1])
+					}, event.Input["updateParam"].(map[string]any)["condition"].(*database.Condition).ConditionList[1])
 				}
 				if event.NodeKey == "125902" {
 					bs, _ := sonic.Marshal(event.Input)

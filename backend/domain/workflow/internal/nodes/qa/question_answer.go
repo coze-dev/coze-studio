@@ -9,7 +9,6 @@ import (
 	"unicode"
 
 	"github.com/bytedance/sonic"
-	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
@@ -174,18 +173,7 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (out ma
 		answers    []string
 		isFirst    bool
 		notResumed bool
-		selected   string
 	)
-
-	defer func() {
-		if err != nil {
-			_ = callbacks.OnError(ctx, err)
-		} else {
-			_ = callbacks.OnEnd(ctx, q.toCallbackOutput(out, questions, answers, selected))
-		}
-	}()
-
-	ctx = callbacks.OnStart(ctx, in)
 
 	questions, answers, isFirst, notResumed, err = q.extractCurrentState(in)
 	if err != nil {
@@ -197,6 +185,8 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (out ma
 	}
 
 	out = make(map[string]any)
+	out[QuestionsKey] = questions
+	out[AnswersKey] = answers
 
 	switch q.config.AnswerType {
 	case AnswerDirectly:
@@ -224,7 +214,6 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (out ma
 				if lastAnswer == choice {
 					out[OptionIDKey] = intToAlphabet(i)
 					out[OptionContentKey] = choice
-					selected = choice
 					return out, nil
 				}
 			}
@@ -237,13 +226,11 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (out ma
 			if index >= 0 {
 				out[OptionIDKey] = intToAlphabet(index)
 				out[OptionContentKey] = lastQuestion.Choices[index]
-				selected = lastQuestion.Choices[index]
 				return out, nil
 			}
 
 			out[OptionIDKey] = "other"
 			out[OptionContentKey] = lastAnswer
-			selected = lastAnswer
 			return out, nil
 		}
 
@@ -364,15 +351,17 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 	realOutput := make(map[string]any)
 	for k, v := range fields.(map[string]any) {
 		if s, ok := q.config.OutputFields[k]; ok {
-			if val, ok_ := vo.TypeValidateAndConvert(s, v); ok_ {
+			if val, err := nodes.Convert(v, s); err == nil {
 				realOutput[k] = val
 			} else {
-				return nil, fmt.Errorf("invalid type: %v", k)
+				return nil, fmt.Errorf("invalid type: %v, %v", k, err)
 			}
 		}
 	}
 
 	realOutput[UserResponseKey] = userResponse
+	realOutput[QuestionsKey] = questions
+	realOutput[AnswersKey] = answers
 	return realOutput, nil
 }
 
@@ -566,7 +555,10 @@ func (q *QuestionAnswer) generateHistory(oldQuestions []*Question, oldAnswers []
 	return history
 }
 
-func (q *QuestionAnswer) toCallbackOutput(out map[string]any, questions []*Question, answers []string, selected string) *nodes.StructuredCallbackOutput {
+func (q *QuestionAnswer) ToCallbackOutput(_ context.Context, out map[string]any) (*nodes.StructuredCallbackOutput, error) {
+	questions := out[QuestionsKey].([]*Question)
+	answers := out[AnswersKey].([]string)
+	selected, hasSelected := out[OptionContentKey]
 	history := q.generateHistory(questions, answers, nil, nil)
 	for _, msg := range history {
 		optionC, ok := msg.Content.(optionContent)
@@ -575,13 +567,19 @@ func (q *QuestionAnswer) toCallbackOutput(out map[string]any, questions []*Quest
 		}
 		msg.ID = ""
 	}
-	return &nodes.StructuredCallbackOutput{
+
+	sOut := &nodes.StructuredCallbackOutput{
 		Output: out,
 		RawOutput: map[string]any{
 			"messages": history,
-			"select":   selected,
 		},
 	}
+
+	if hasSelected {
+		sOut.RawOutput["selected"] = selected
+	}
+
+	return sOut, nil
 }
 
 func AppendInterruptData(interruptData string, resumeData string) (string, error) {

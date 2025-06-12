@@ -428,7 +428,8 @@ type Variable struct {
 	Required    bool         `json:"required,omitempty"`
 	AssistType  AssistType   `json:"assistType,omitempty"`
 	Schema      any          `json:"schema,omitempty"` // either []*Variable (for object) or *Variable (for list)
-	Description string       `json:"description,omitempty" yaml:"Description,omitempty"`
+	Description string       `json:"description,omitempty"`
+	ReadOnly    bool         `json:"readOnly,omitempty"`
 }
 
 type BlockInput struct {
@@ -581,9 +582,23 @@ const (
 	UseAnswerContent TerminatePlan = "useAnswerContent"
 )
 
+type ErrorProcessType int
+
+const (
+	ErrorProcessTypeThrow           ErrorProcessType = 1
+	ErrorProcessTypeDefault         ErrorProcessType = 2
+	ErrorProcessTypeExceptionBranch ErrorProcessType = 3
+)
+
 type SettingOnError struct {
-	DataOnErr string `json:"dataOnErr"`
-	Switch    bool   `json:"switch"`
+	DataOnErr   string            `json:"dataOnErr,omitempty"`
+	Switch      bool              `json:"switch,omitempty"`
+	ProcessType *ErrorProcessType `json:"processType,omitempty"`
+	RetryTimes  int64             `json:"retryTimes,omitempty"`
+	TimeoutMs   int64             `json:"timeoutMs,omitempty"`
+	Ext         *struct {
+		BackupLLMParam string `json:"backupLLMParam,omitempty"` // only for LLM Node, marshaled from QALLMParam
+	} `json:"ext,omitempty"`
 }
 
 type LogicType int

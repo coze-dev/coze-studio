@@ -8,7 +8,6 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
@@ -80,18 +79,7 @@ func (b *Batch) initOutput(length int) map[string]any {
 }
 
 func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (
-	out map[string]any, err error,
-) {
-	defer func() {
-		if err != nil {
-			_ = callbacks.OnError(ctx, err)
-		} else {
-			_ = callbacks.OnEnd(ctx, out)
-		}
-	}()
-
-	ctx = callbacks.OnStart(ctx, b.toCallbackInput(in))
-
+	out map[string]any, err error) {
 	arrays := make(map[string]any, len(b.config.InputArrays))
 	minLen := math.MaxInt64
 	for _, arrayKey := range b.config.InputArrays {
@@ -399,12 +387,12 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 	return output, nil
 }
 
-func (b *Batch) toCallbackInput(in map[string]any) map[string]any {
+func (b *Batch) ToCallbackInput(_ context.Context, in map[string]any) (map[string]any, error) {
 	trimmed := make(map[string]any, len(b.config.InputArrays))
 	for _, arrayKey := range b.config.InputArrays {
 		if v, ok := in[arrayKey]; ok {
 			trimmed[arrayKey] = v
 		}
 	}
-	return trimmed
+	return trimmed, nil
 }

@@ -24,6 +24,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/batch"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/code"
@@ -49,12 +50,10 @@ import (
 
 func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 	llmConf := &llm.Config{
-		SystemPrompt:    getKeyOrZero[string]("SystemPrompt", s.Configs),
-		UserPrompt:      getKeyOrZero[string]("UserPrompt", s.Configs),
-		OutputFormat:    mustGetKey[llm.Format]("OutputFormat", s.Configs),
-		OutputFields:    s.OutputTypes,
-		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
-		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
+		SystemPrompt: getKeyOrZero[string]("SystemPrompt", s.Configs),
+		UserPrompt:   getKeyOrZero[string]("UserPrompt", s.Configs),
+		OutputFormat: mustGetKey[llm.Format]("OutputFormat", s.Configs),
+		OutputFields: s.OutputTypes,
 	}
 
 	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", s.Configs)
@@ -71,9 +70,32 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	metaConfigs := s.MetaConfigs
+	if metaConfigs != nil && metaConfigs.MaxRetry > 0 {
+		backupModelParams := getKeyOrZero[*model.LLMParams]("BackupLLMParams", s.Configs)
+		if backupModelParams != nil {
+			backupChatModel, err := model.GetManager().GetModel(ctx, backupModelParams)
+			if err != nil {
+				return nil, err
+			}
+			chatModel = &llm.ModelWithFallback{
+				Model:         chatModel,
+				FallbackModel: backupChatModel,
+				UseFallback: func(ctx context.Context) bool {
+					exeCtx := execute.GetExeCtx(ctx)
+					if exeCtx == nil || exeCtx.NodeCtx == nil {
+						return false
+					}
+
+					return exeCtx.CurrentRetryCount > 0
+				},
+			}
+		}
+	}
+
 	llmConf.ChatModel = chatModel
 
-	// TODO: inject plugin tools and knowledge tools
 	fcParams := getKeyOrZero[*vo.FCParam]("FCParam", s.Configs)
 	if fcParams != nil {
 		if fcParams.WorkflowFCParam != nil {
@@ -286,12 +308,13 @@ func (s *NodeSchema) ToBatchConfig(inner compose.Runnable[map[string]any, map[st
 	return conf, nil
 }
 
-func (s *NodeSchema) ToVariableAggregatorConfig(sc *WorkflowSchema) (*variableaggregator.Config, error) {
+func (s *NodeSchema) ToVariableAggregatorConfig() (*variableaggregator.Config, error) {
 	return &variableaggregator.Config{
 		MergeStrategy: s.Configs.(map[string]any)["MergeStrategy"].(variableaggregator.MergeStrategy),
 		GroupLen:      s.Configs.(map[string]any)["GroupToLen"].(map[string]int),
 		FullSources:   getKeyOrZero[map[string]*nodes.SourceInfo]("FullSources", s.Configs),
 		NodeKey:       s.Key,
+		InputSources:  s.InputSources,
 	}, nil
 }
 
@@ -339,14 +362,12 @@ func (s *NodeSchema) ToTextProcessorConfig() (*textprocessor.Config, error) {
 
 func (s *NodeSchema) ToHTTPRequesterConfig() (*httprequester.Config, error) {
 	return &httprequester.Config{
-		URLConfig:       mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs),
-		AuthConfig:      getKeyOrZero[*httprequester.AuthenticationConfig]("AuthConfig", s.Configs),
-		BodyConfig:      mustGetKey[httprequester.BodyConfig]("BodyConfig", s.Configs),
-		Method:          mustGetKey[string]("Method", s.Configs),
-		Timeout:         mustGetKey[time.Duration]("Timeout", s.Configs),
-		RetryTimes:      mustGetKey[uint64]("RetryTimes", s.Configs),
-		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
-		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
+		URLConfig:  mustGetKey[httprequester.URLConfig]("URLConfig", s.Configs),
+		AuthConfig: getKeyOrZero[*httprequester.AuthenticationConfig]("AuthConfig", s.Configs),
+		BodyConfig: mustGetKey[httprequester.BodyConfig]("BodyConfig", s.Configs),
+		Method:     mustGetKey[string]("Method", s.Configs),
+		Timeout:    mustGetKey[time.Duration]("Timeout", s.Configs),
+		RetryTimes: mustGetKey[uint64]("RetryTimes", s.Configs),
 	}, nil
 }
 
@@ -444,7 +465,7 @@ func (s *NodeSchema) ToDatabaseQueryConfig() (*database.QueryConfig, error) {
 		ClauseGroup:    getKeyOrZero[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
 		OutputConfig:   s.OutputTypes,
 		Limit:          mustGetKey[int64]("Limit", s.Configs),
-		Queryer:        crossdatabase.GetDatabaseOperator(),
+		Op:             crossdatabase.GetDatabaseOperator(),
 	}, nil
 }
 
@@ -510,24 +531,20 @@ func (s *NodeSchema) ToKnowledgeRetrieveConfig() (*knowledge.RetrieveConfig, err
 
 func (s *NodeSchema) ToPluginConfig() (*plugin.Config, error) {
 	return &plugin.Config{
-		PluginID:        mustGetKey[int64]("PluginID", s.Configs),
-		ToolID:          mustGetKey[int64]("ToolID", s.Configs),
-		PluginVersion:   mustGetKey[string]("PluginVersion", s.Configs),
-		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
-		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
-		ToolService:     crossplugin.GetToolService(),
+		PluginID:      mustGetKey[int64]("PluginID", s.Configs),
+		ToolID:        mustGetKey[int64]("ToolID", s.Configs),
+		PluginVersion: mustGetKey[string]("PluginVersion", s.Configs),
+		ToolService:   crossplugin.GetToolService(),
 	}, nil
 
 }
 
 func (s *NodeSchema) ToCodeRunnerConfig() (*code.Config, error) {
 	return &code.Config{
-		Code:            mustGetKey[string]("Code", s.Configs),
-		Language:        mustGetKey[crosscode.Language]("Language", s.Configs),
-		OutputConfig:    s.OutputTypes,
-		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
-		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
-		Runner:          crosscode.GetCodeRunner(),
+		Code:         mustGetKey[string]("Code", s.Configs),
+		Language:     mustGetKey[crosscode.Language]("Language", s.Configs),
+		OutputConfig: s.OutputTypes,
+		Runner:       crosscode.GetCodeRunner(),
 	}, nil
 }
 
@@ -571,6 +588,9 @@ func (s *NodeSchema) ToSubWorkflowConfig(ctx context.Context, requireCheckpoint 
 	opts = append(opts, WithIDAsName(mustGetKey[int64]("WorkflowID", s.Configs)))
 	if requireCheckpoint {
 		opts = append(opts, WithParentRequireCheckpoint())
+	}
+	if s := execute.GetStaticConfig(); s != nil && s.MaxNodeCountPerWorkflow > 0 {
+		opts = append(opts, WithMaxNodeCount(s.MaxNodeCountPerWorkflow))
 	}
 	wf, err := NewWorkflow(ctx, s.SubWorkflowSchema, opts...)
 	if err != nil {

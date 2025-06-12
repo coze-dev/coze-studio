@@ -11,12 +11,10 @@ import (
 const occurWarnErrorKey = "#occur_code_warn_errors"
 
 type Config struct {
-	Code            string
-	Language        code.Language
-	OutputConfig    map[string]*vo.TypeInfo
-	Runner          code.Runner
-	IgnoreException bool
-	DefaultOutput   map[string]any
+	Code         string
+	Language     code.Language
+	OutputConfig map[string]*vo.TypeInfo
+	Runner       code.Runner
 }
 
 type CodeRunner struct {
@@ -54,18 +52,6 @@ func NewCodeRunner(ctx context.Context, cfg *Config) (*CodeRunner, error) {
 }
 
 func (c *CodeRunner) RunCode(ctx context.Context, input map[string]any) (ret map[string]any, err error) {
-
-	defer func() {
-		if err != nil && c.config.IgnoreException {
-			ret = c.config.DefaultOutput
-			ret["errorBody"] = map[string]interface{}{
-				"errorMessage": err.Error(),
-				"errorCode":    -1,
-			}
-			err = nil
-		}
-	}()
-
 	response, err := c.config.Runner.Run(ctx, &code.RunRequest{Code: c.config.Code, Language: c.config.Language, Params: input})
 	if err != nil {
 		return nil, err

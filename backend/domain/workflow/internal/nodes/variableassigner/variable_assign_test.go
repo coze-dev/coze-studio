@@ -64,7 +64,7 @@ func TestVariableAssigner(t *testing.T) {
 		"arr_var_s": &arrVar,
 	}, nil)
 
-	err := va.Assign(ctx, map[string]any{
+	_, err := va.Assign(ctx, map[string]any{
 		"int_var_t": 2,
 		"str_var_t": "str2",
 		"obj_var_t": map[string]any{

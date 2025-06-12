@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
@@ -240,14 +239,6 @@ func merge(a, b any) any {
 const outputKey = "output"
 
 func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[map[string]any]) (out *schema.StreamReader[map[string]any], err error) {
-	defer func() {
-		if err != nil {
-			_ = callbacks.OnError(ctx, err)
-		}
-	}()
-
-	ctx, in = callbacks.OnStartWithStreamInput(ctx, in)
-
 	resolvedSources, err := nodes.ResolveStreamSources(ctx, e.cfg.FullSources)
 	if err != nil {
 		return nil, err
@@ -301,7 +292,7 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 
 			for {
 				select {
-				case <-ctx.Done(): // canceled by Eino workflow engine
+				case <-ctx.Done(): // canceled by Eino workflow engine or timeout
 					sw.Send(nil, ctx.Err())
 					hasErr = true
 					return
@@ -311,7 +302,9 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 				chunk, err := in.Recv()
 				if err != nil {
 					if err == io.EOF {
-						return
+						// current part is not fulfilled, emit the literal part content and move on to next part
+						sw.Send(map[string]any{outputKey: part.value}, nil)
+						break
 					}
 
 					hasErr = true
@@ -415,19 +408,10 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 		}
 	})
 
-	_, sr = callbacks.OnEndWithStreamOutput(ctx, sr)
 	return sr, nil
 }
 
-func (e *OutputEmitter) Emit(ctx context.Context, in map[string]any) (output map[string]any, err error) {
-	defer func() {
-		if err != nil {
-			_ = callbacks.OnError(ctx, err)
-		}
-	}()
-
-	ctx = callbacks.OnStart(ctx, in)
-
+func (e *OutputEmitter) Emit(_ context.Context, in map[string]any) (output map[string]any, err error) {
 	var out string
 	out, err = nodes.Jinja2TemplateRender(e.cfg.Template, in)
 	if err != nil {
@@ -438,7 +422,6 @@ func (e *OutputEmitter) Emit(ctx context.Context, in map[string]any) (output map
 		outputKey: out,
 	}
 
-	_ = callbacks.OnEnd(ctx, output)
 	return output, nil
 }
 

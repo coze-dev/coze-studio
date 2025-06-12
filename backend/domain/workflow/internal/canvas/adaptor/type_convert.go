@@ -820,8 +820,10 @@ func SetOutputTypesForNodeSchema(n *vo.Node, ns *compose.NodeSchema) error {
 		if err != nil {
 			return err
 		}
-		if v.Name == "errorBody" {
-			continue
+		if v.ReadOnly {
+			if v.Name == "errorBody" { //  reserved output fields when exception happens
+				continue
+			}
 		}
 		ns.SetOutputType(v.Name, tInfo)
 	}

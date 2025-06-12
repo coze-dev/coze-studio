@@ -51,6 +51,8 @@ type NodeCtx struct {
 
 	ResumingEvent    *entity.InterruptEvent
 	SubWorkflowExeID int64 // if this node is subworkflow node, the execute id of the sub workflow
+
+	CurrentRetryCount int
 }
 
 type BatchInfo struct {
@@ -131,6 +133,8 @@ func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey, resumeEvent *entity
 		currentTokenCollector := currentC.TokenCollector
 		storedCtx.TokenCollector.Parent = currentTokenCollector
 	}
+
+	storedCtx.NodeCtx.CurrentRetryCount = 0
 
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil
 }

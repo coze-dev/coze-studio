@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/cloudwego/eino/compose"
@@ -23,7 +24,7 @@ type Insert struct {
 	config *InsertConfig
 }
 
-func NewInsert(ctx context.Context, cfg *InsertConfig) (*Insert, error) {
+func NewInsert(_ context.Context, cfg *InsertConfig) (*Insert, error) {
 	if cfg == nil {
 		return nil, errors.New("config is required")
 	}
@@ -73,4 +74,35 @@ func (is *Insert) Insert(ctx context.Context, input map[string]any) (map[string]
 	ret[rowNum] = response.RowNumber
 
 	return ret, nil
+}
+
+func (is *Insert) ToCallbackInput(_ context.Context, input map[string]any) (map[string]any, error) {
+	databaseID := is.config.DatabaseInfoID
+
+	fs, ok := input["Fields"]
+	if !ok {
+		return nil, fmt.Errorf("failed to take right value of %s", compose.FieldPath{"Fields"})
+	}
+
+	result := make(map[string]any)
+	result["databaseInfoList"] = []string{fmt.Sprintf("%d", databaseID)}
+
+	type FieldInfo struct {
+		FieldID    string `json:"fieldId"`
+		FieldValue any    `json:"fieldValue"`
+	}
+
+	fieldInfo := make([]*FieldInfo, 0)
+	for k, v := range fs.(map[string]any) {
+		fieldInfo = append(fieldInfo, &FieldInfo{
+			FieldID:    k,
+			FieldValue: v,
+		})
+	}
+	result["insertParam"] = map[string]any{
+		"fieldInfo": fieldInfo,
+	}
+
+	return result, nil
+
 }

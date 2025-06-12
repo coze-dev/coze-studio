@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bytedance/sonic"
+
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
@@ -154,18 +156,6 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 		contentType string
 		response    *http.Response
 	)
-	defer func() {
-		if err != nil {
-			if hg.config.IgnoreException {
-				output = hg.config.DefaultOutput
-				output["errorBody"] = map[string]any{
-					"errorMessage": err.Error(),
-					"errorCode":    -1,
-				}
-				err = nil
-			}
-		}
-	}()
 
 	bsIn, _ := json.Marshal(input)
 	err = json.Unmarshal(bsIn, &req)
@@ -398,4 +388,79 @@ func httpGet(ctx context.Context, url string) (*http.Response, error) {
 
 	http.DefaultClient.Timeout = time.Second * defaultGetFileTimeout
 	return http.DefaultClient.Do(request)
+}
+
+func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any) (map[string]any, error) {
+	var (
+		request = &Request{}
+		config  = hg.config
+	)
+	bs, _ := sonic.Marshal(input)
+	if err := sonic.Unmarshal(bs, request); err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]any)
+	result["method"] = config.Method
+
+	u, err := nodes.Jinja2TemplateRender(config.URLConfig.Tpl, request.URLVars)
+	if err != nil {
+		return nil, err
+	}
+	result["url"] = u
+
+	params := make(map[string]any, len(request.Params))
+	for k, v := range request.Params {
+		params[k] = v
+	}
+	result["param"] = params
+
+	headers := make(map[string]any, len(request.Headers))
+	for k, v := range request.Headers {
+		headers[k] = v
+	}
+	result["header"] = headers
+	result["auth"] = nil
+	if config.AuthConfig != nil {
+		if config.AuthConfig.Type == Custom {
+			result["auth"] = map[string]interface{}{
+				"Key":   request.Authentication.Key,
+				"Value": request.Authentication.Value,
+			}
+		} else if config.AuthConfig.Type == BearToken {
+			result["auth"] = map[string]interface{}{
+				"token": request.Authentication.Token,
+			}
+		}
+	}
+
+	result["body"] = nil
+	switch config.BodyConfig.BodyType {
+	case BodyTypeJSON:
+		js, err := nodes.Jinja2TemplateRender(config.BodyConfig.TextJsonConfig.Tpl, request.JsonVars)
+		if err != nil {
+			return nil, err
+		}
+		ret := make(map[string]any)
+		err = sonic.Unmarshal([]byte(js), &ret)
+		if err != nil {
+			return nil, err
+		}
+		result["body"] = ret
+	case BodyTypeRawText:
+		tx, err := nodes.Jinja2TemplateRender(config.BodyConfig.TextPlainConfig.Tpl, request.TextPlainVars)
+		if err != nil {
+
+			return nil, err
+		}
+		result["body"] = tx
+	case BodyTypeFormData:
+		result["body"] = request.FormDataVars
+	case BodyTypeFormURLEncoded:
+		result["body"] = request.FormURLEncodedVars
+	case BodyTypeBinary:
+		result["body"] = request.FileURL
+
+	}
+	return result, nil
 }

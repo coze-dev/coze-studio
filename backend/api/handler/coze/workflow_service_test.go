@@ -44,6 +44,7 @@ import (
 	pluginservice "code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge/knowledgemock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
@@ -57,8 +58,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
 	"code.byted.org/flow/opencoze/backend/infra/impl/checkpoint"
+	"code.byted.org/flow/opencoze/backend/infra/impl/coderunner"
 	mockPlugin "code.byted.org/flow/opencoze/backend/internal/mock/domain/plugin"
 	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
+	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
 	mock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/idgen"
 	storageMock "code.byted.org/flow/opencoze/backend/internal/mock/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
@@ -4950,4 +4953,284 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 
 	})
 
+}
+
+func TestLLMException(t *testing.T) {
+	mockey.PatchConvey("test llm exception", t, func() {
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
+		defer ctrl.Finish()
+		idStr := loadWorkflow(t, h, "exception/llm_default_output_retry_timeout.json")
+
+		mockModelManager := mockmodel.NewMockManager(ctrl)
+		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
+
+		mainChatModel := &testutil.UTChatModel{
+			InvokeResultProvider: func(index int, in []*schema.Message) (*schema.Message, error) {
+				return nil, errors.New("first invoke error")
+			},
+		}
+
+		fallbackChatModel := &testutil.UTChatModel{
+			InvokeResultProvider: func(index int, in []*schema.Message) (*schema.Message, error) {
+				return &schema.Message{
+					Role:    schema.Assistant,
+					Content: `{"name":"eino","age":1}`,
+				}, nil
+			},
+		}
+
+		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+			if params.ModelType == 1737521813 {
+				return mainChatModel, nil
+			} else {
+				return fallbackChatModel, nil
+			}
+		}).AnyTimes()
+
+		mockey.PatchConvey("two retries to succeed", func() {
+			nodeDebugReq := &workflow.WorkflowNodeDebugV2Request{
+				WorkflowID: idStr,
+				NodeID:     "103929",
+				Input:      map[string]string{"input": "hello"},
+				SpaceID:    ptr.Of("123"),
+			}
+
+			nodeDebugResp := post[workflow.WorkflowNodeDebugV2Response](t, h, nodeDebugReq, "/api/workflow_api/nodeDebug")
+			executeID := nodeDebugResp.Data.ExecuteID
+
+			workflowStatus := workflow.WorkflowExeStatus_Running
+			var output string
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running {
+					break
+				}
+
+				getProcessResp := getProcess(t, h, idStr, executeID)
+				if len(getProcessResp.Data.NodeResults) > 0 {
+					output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+				}
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				t.Logf("run llm node with exception status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+			}
+
+			assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
+
+			var outputMap = map[string]any{}
+			err := sonic.UnmarshalString(output, &outputMap)
+			assert.NoError(t, err)
+			assert.Equal(t, map[string]any{
+				"name":      "eino",
+				"age":       float64(1),
+				"isSuccess": true,
+			}, outputMap)
+		})
+
+		mockey.PatchConvey("timeout then use default output", func() {
+			fallbackChatModel.InvokeResultProvider = func(index int, in []*schema.Message) (*schema.Message, error) {
+				time.Sleep(500 * time.Millisecond)
+				return &schema.Message{
+					Role:    schema.Assistant,
+					Content: `{"name":"eino","age":1}`,
+				}, nil
+			}
+
+			nodeDebugReq := &workflow.WorkflowNodeDebugV2Request{
+				WorkflowID: idStr,
+				NodeID:     "103929",
+				Input:      map[string]string{"input": "hello"},
+				SpaceID:    ptr.Of("123"),
+			}
+
+			nodeDebugResp := post[workflow.WorkflowNodeDebugV2Response](t, h, nodeDebugReq, "/api/workflow_api/nodeDebug")
+			executeID := nodeDebugResp.Data.ExecuteID
+
+			workflowStatus := workflow.WorkflowExeStatus_Running
+			var output string
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running {
+					break
+				}
+
+				getProcessResp := getProcess(t, h, idStr, executeID)
+				if len(getProcessResp.Data.NodeResults) > 0 {
+					output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+				}
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				t.Logf("run llm node with exception status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+			}
+
+			assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
+
+			var outputMap = map[string]any{}
+			err := sonic.UnmarshalString(output, &outputMap)
+			assert.NoError(t, err)
+			assert.Equal(t, map[string]any{
+				"name":      "zhangsan",
+				"age":       float64(3),
+				"isSuccess": false,
+				"errorBody": map[string]any{
+					"errorMessage": "[GraphRunError]\ncontext has been canceled: context deadline exceeded",
+					"errorCode":    float64(-1),
+				},
+			}, outputMap)
+		})
+	})
+}
+
+func TestLLMExceptionThenThrow(t *testing.T) {
+	mockey.PatchConvey("test llm exception then throw", t, func() {
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
+		defer ctrl.Finish()
+		idStr := loadWorkflow(t, h, "exception/llm_timeout_throw.json")
+
+		mockModelManager := mockmodel.NewMockManager(ctrl)
+		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
+
+		mainChatModel := &testutil.UTChatModel{
+			InvokeResultProvider: func(index int, in []*schema.Message) (*schema.Message, error) {
+				return nil, errors.New("first invoke error")
+			},
+		}
+
+		fallbackChatModel := &testutil.UTChatModel{
+			InvokeResultProvider: func(index int, in []*schema.Message) (*schema.Message, error) {
+				time.Sleep(500 * time.Millisecond)
+				return &schema.Message{
+					Role:    schema.Assistant,
+					Content: `{"name":"eino","age":1}`,
+				}, nil
+			},
+		}
+
+		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+			if params.ModelType == 1737521813 {
+				return mainChatModel, nil
+			} else {
+				return fallbackChatModel, nil
+			}
+		}).AnyTimes()
+
+		nodeDebugReq := &workflow.WorkflowNodeDebugV2Request{
+			WorkflowID: idStr,
+			NodeID:     "103929",
+			Input:      map[string]string{"input": "hello"},
+			SpaceID:    ptr.Of("123"),
+		}
+
+		nodeDebugResp := post[workflow.WorkflowNodeDebugV2Response](t, h, nodeDebugReq, "/api/workflow_api/nodeDebug")
+		executeID := nodeDebugResp.Data.ExecuteID
+
+		workflowStatus := workflow.WorkflowExeStatus_Running
+		var reason *string
+		for {
+			if workflowStatus != workflow.WorkflowExeStatus_Running {
+				break
+			}
+
+			getProcessResp := getProcess(t, h, idStr, executeID)
+			reason = getProcessResp.Data.Reason
+
+			workflowStatus = getProcessResp.Data.ExecuteStatus
+			t.Logf("run llm node with exception status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+		}
+
+		assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowFailed), workflowStatus)
+		assert.Contains(t, *reason, "context deadline exceeded")
+	})
+}
+
+func TestCodeExceptionBranch(t *testing.T) {
+	mockey.PatchConvey("test code exception branch", t, func() {
+		h, ctrl, _ := prepareWorkflowIntegration(t, true)
+		defer ctrl.Finish()
+		idStr := loadWorkflow(t, h, "exception/code_exception_branch.json")
+
+		mockey.PatchConvey("exception branch", func() {
+			code.SetCodeRunner(coderunner.NewRunner())
+
+			testRunReq := &workflow.WorkFlowTestRunRequest{
+				WorkflowID: idStr,
+				Input:      map[string]string{"input": "hello"},
+				SpaceID:    ptr.Of("123"),
+			}
+
+			testRunResp := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
+			executeID := testRunResp.Data.ExecuteID
+
+			workflowStatus := workflow.WorkflowExeStatus_Running
+			var output string
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running {
+					break
+				}
+
+				getProcessResp := getProcess(t, h, idStr, executeID)
+				if len(getProcessResp.Data.NodeResults) > 0 {
+					output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+				}
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				t.Logf("run code node with exception branch status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+			}
+
+			assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
+
+			var outputMap = map[string]any{}
+			err := sonic.UnmarshalString(output, &outputMap)
+			assert.NoError(t, err)
+			assert.Equal(t, map[string]any{
+				"output":  false,
+				"output1": "code result: False",
+			}, outputMap)
+		})
+
+		mockey.PatchConvey("normal branch", func() {
+			mockCodeRunner := mockcode.NewMockRunner(ctrl)
+			mockey.Mock(code.GetCodeRunner).Return(mockCodeRunner).Build()
+			mockCodeRunner.EXPECT().Run(gomock.Any(), gomock.Any()).Return(&code.RunResponse{
+				Result: map[string]any{
+					"key0": "value0",
+					"key1": []string{"value1", "value2"},
+					"key2": map[string]any{},
+				},
+			}, nil)
+
+			testRunReq := &workflow.WorkFlowTestRunRequest{
+				WorkflowID: idStr,
+				Input:      map[string]string{"input": "hello"},
+				SpaceID:    ptr.Of("123"),
+			}
+
+			testRunResp := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
+			executeID := testRunResp.Data.ExecuteID
+
+			workflowStatus := workflow.WorkflowExeStatus_Running
+			var output string
+			for {
+				if workflowStatus != workflow.WorkflowExeStatus_Running {
+					break
+				}
+
+				getProcessResp := getProcess(t, h, idStr, executeID)
+				if len(getProcessResp.Data.NodeResults) > 0 {
+					output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+				}
+
+				workflowStatus = getProcessResp.Data.ExecuteStatus
+				t.Logf("run code node with exception branch status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
+			}
+
+			assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
+
+			var outputMap = map[string]any{}
+			err := sonic.UnmarshalString(output, &outputMap)
+			assert.NoError(t, err)
+			assert.Equal(t, map[string]any{
+				"output":  true,
+				"output1": "",
+			}, outputMap)
+		})
+	})
 }

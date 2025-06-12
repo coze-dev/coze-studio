@@ -7,7 +7,6 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
@@ -93,16 +92,6 @@ const (
 )
 
 func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (out map[string]any, err error) {
-	defer func() {
-		if err != nil {
-			_ = callbacks.OnError(ctx, err)
-		} else {
-			_ = callbacks.OnEnd(ctx, out)
-		}
-	}()
-
-	ctx = callbacks.OnStart(ctx, l.toCallbackInput(in))
-
 	maxIter, err := l.getMaxIter(in)
 	if err != nil {
 		return nil, err
@@ -395,12 +384,12 @@ func convertIntermediateVars(vars map[string]*any) map[string]any {
 	return ret
 }
 
-func (l *Loop) toCallbackInput(in map[string]any) map[string]any {
+func (l *Loop) ToCallbackInput(_ context.Context, in map[string]any) (map[string]any, error) {
 	trimmed := make(map[string]any, len(l.config.InputArrays))
 	for _, arrayKey := range l.config.InputArrays {
 		if v, ok := in[arrayKey]; ok {
 			trimmed[arrayKey] = v
 		}
 	}
-	return trimmed
+	return trimmed, nil
 }

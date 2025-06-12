@@ -17,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
@@ -174,6 +175,15 @@ func Prepare(ctx context.Context,
 	}
 
 	cancelCtx, cancelFn := context.WithCancel(ctx)
+	var timeoutFn context.CancelFunc
+	if s := execute.GetStaticConfig(); s != nil {
+		timeout := ternary.IFElse(config.TaskType == vo.TaskTypeBackground, s.BackgroundRunTimeout, s.ForegroundRunTimeout)
+		if timeout > 0 {
+			cancelCtx, timeoutFn = context.WithTimeout(cancelCtx, timeout)
+		}
+	}
+
+	cancelCtx = execute.InitExecutedNodesCounter(cancelCtx)
 
 	go func() {
 		defer func() {
@@ -188,7 +198,8 @@ func Prepare(ctx context.Context,
 		}()
 
 		// this goroutine should not use the cancelCtx because it needs to be alive to receive workflow cancel events
-		execute.HandleExecuteEvent(ctx, eventChan, cancelFn, cancelSignalChan, clearFn, wf.GetRepository(), sw, config)
+		execute.HandleExecuteEvent(ctx, eventChan, cancelFn, timeoutFn,
+			cancelSignalChan, clearFn, wf.GetRepository(), sw, config)
 	}()
 
 	return cancelCtx, executeID, composeOpts, nil

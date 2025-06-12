@@ -144,8 +144,6 @@ type Config struct {
 	UserPrompt          string
 	OutputFormat        Format
 	OutputFields        map[string]*vo.TypeInfo
-	IgnoreException     bool
-	DefaultOutput       map[string]any
 	ToolsReturnDirectly map[string]bool
 	// TODO: needs to support descriptions for output fields
 
@@ -154,7 +152,6 @@ type Config struct {
 
 type LLM struct {
 	r                 compose.Runnable[map[string]any, map[string]any]
-	defaultOutput     map[string]any
 	outputFormat      Format
 	outputFields      map[string]*vo.TypeInfo
 	canStream         bool
@@ -173,10 +170,10 @@ func jsonParse(data string, schema_ map[string]*vo.TypeInfo) (map[string]any, er
 
 	for k, v := range result {
 		if s, ok := schema_[k]; ok {
-			if val, ok_ := vo.TypeValidateAndConvert(s, v); ok_ {
+			if val, err := nodes.Convert(v, s); err == nil {
 				result[k] = val
 			} else {
-				return nil, fmt.Errorf("invalid type: %v", k)
+				return nil, fmt.Errorf("invalid type: %v, %v", k, err)
 			}
 		}
 	}
@@ -317,7 +314,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 			return nil, err
 		}
 
-		agentNode, opts := reactAgent.ExportGraph() // TODO: need to pipe the intermediate content to the final output
+		agentNode, opts := reactAgent.ExportGraph()
 		_ = g.AddGraphNode(llmNodeKey, agentNode, opts...)
 	} else {
 		_ = g.AddChatModelNode(llmNodeKey, cfg.ChatModel)
@@ -435,10 +432,6 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 		outputFormat:      format,
 		canStream:         canStream,
 		requireCheckpoint: requireCheckpoint,
-	}
-
-	if cfg.IgnoreException {
-		llm.defaultOutput = cfg.DefaultOutput
 	}
 
 	return llm, nil
@@ -634,17 +627,6 @@ func (l *LLM) Chat(ctx context.Context, in map[string]any, opts ...Option) (out 
 	out, err = l.r.Invoke(ctx, in, composeOpts...)
 	if err != nil {
 		err = handleInterrupt(ctx, err, resumingEvent)
-		if _, ok := compose.IsInterruptRerunError(err); ok {
-			return nil, err
-		}
-
-		if l.defaultOutput != nil {
-			l.defaultOutput["errorBody"] = map[string]any{
-				"errorMessage": err.Error(),
-				"errorCode":    -1,
-			}
-			return l.defaultOutput, nil
-		}
 		return nil, err
 	}
 
@@ -660,17 +642,6 @@ func (l *LLM) ChatStream(ctx context.Context, in map[string]any, opts ...Option)
 	out, err = l.r.Stream(ctx, in, composeOpts...)
 	if err != nil {
 		err = handleInterrupt(ctx, err, resumingEvent)
-		if _, ok := compose.IsInterruptRerunError(err); ok {
-			return nil, err
-		}
-
-		if l.defaultOutput != nil {
-			l.defaultOutput["errorBody"] = map[string]any{
-				"errorMessage": err.Error(),
-				"errorCode":    -1,
-			}
-			return schema.StreamReaderFromArray([]map[string]any{l.defaultOutput}), nil
-		}
 		return nil, err
 	}
 

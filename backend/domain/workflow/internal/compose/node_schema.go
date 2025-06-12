@@ -3,11 +3,8 @@ package compose
 import (
 	"context"
 	"fmt"
-	"strconv"
 
-	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
-	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
@@ -22,7 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/intentdetector"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
-	loop2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/receiver"
@@ -50,11 +47,20 @@ type NodeSchema struct {
 	InputSources []*vo.FieldInfo         `json:"input_sources,omitempty"`
 
 	OutputTypes   map[string]*vo.TypeInfo `json:"output_types,omitempty"`
-	OutputSources []*vo.FieldInfo         `json:"output_sources,omitempty"`
+	OutputSources []*vo.FieldInfo         `json:"output_sources,omitempty"` // only applicable to composite nodes such as Batch or Loop
+
+	MetaConfigs *MetaConfig `json:"meta_configs,omitempty"` // generic configurations applicable to most nodes
 
 	SubWorkflowSchema *WorkflowSchema `json:"sub_workflow_schema,omitempty"`
 
 	Lambda *compose.Lambda // not serializable, used for internal test.
+}
+
+type MetaConfig struct {
+	TimeoutMS   int64                `json:"timeout_ms,omitempty"`   // timeout in milliseconds, 0 means no timeout
+	MaxRetry    int64                `json:"max_retry,omitempty"`    // max retry times, 0 means no retry
+	ProcessType *vo.ErrorProcessType `json:"process_type,omitempty"` // error process type, 0 means throw error
+	DataOnErr   string               `json:"data_on_err,omitempty"`  // data to return when error, effective when ProcessType==Default occurs
 }
 
 type Node struct {
@@ -87,66 +93,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any, opts ...llm.Option) (out map[string]any, err error) {
-			defer func() {
-				if err != nil {
-					_ = callbacks.OnError(ctx, err)
-				} else {
-					_ = callbacks.OnEnd(ctx, out)
-				}
-			}()
-
-			ctx = callbacks.OnStart(ctx, in)
-
-			pre := s.inputValueFiller()
-			if pre != nil {
-				if in, err = pre(ctx, in); err != nil {
-					return nil, err
-				}
-			}
-
-			if out, err = l.Chat(ctx, in, opts...); err != nil {
-				return nil, err
-			}
-
-			post := s.outputValueFiller()
-			if post != nil {
-				if out, err = post(ctx, out); err != nil {
-					return nil, err
-				}
-			}
-
-			return out, nil
-		}
-
-		s := func(ctx context.Context, in map[string]any, opts ...llm.Option) (out *schema.StreamReader[map[string]any], err error) {
-			defer func() {
-				if err != nil {
-					_ = callbacks.OnError(ctx, err)
-				} else {
-					_, out = callbacks.OnEndWithStreamOutput(ctx, out)
-				}
-			}()
-
-			ctx = callbacks.OnStart(ctx, in)
-
-			pre := s.inputValueFiller()
-			if pre != nil {
-				if in, err = pre(ctx, in); err != nil {
-					return nil, err
-				}
-			}
-
-			return l.ChatStream(ctx, in, opts...)
-		}
-
-		lambda, err := compose.AnyLambda(i, s, nil, nil, compose.WithLambdaType(string(entity.NodeTypeLLM)),
-			compose.WithLambdaCallbackEnable(true))
-		if err != nil {
-			return nil, err
-		}
-
-		return &Node{Lambda: lambda}, nil
+		return invokableStreamableNodeWO(s, l.Chat, l.ChatStream), nil
 	case entity.NodeTypeSelector:
 		conf := s.ToSelectorConfig()
 
@@ -155,37 +102,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any) (out int, err error) {
-			defer func() {
-				if err != nil {
-					_ = callbacks.OnError(ctx, err)
-				} else {
-					var callbackOutput map[string]any
-					callbackOutput, err = s.toSelectorCallbackOutput(out)
-					if err != nil {
-						_ = callbacks.OnError(ctx, err)
-					} else {
-						_ = callbacks.OnEnd(ctx, callbackOutput)
-					}
-				}
-			}()
-
-			callbackInput, err := s.toSelectorCallbackInput(in, sc)
-			if err != nil {
-				return -1, err
-			}
-			ctx = callbacks.OnStart(ctx, callbackInput)
-
-			newIn, err := s.SelectorInputConverter(in)
-			if err != nil {
-				return -1, err
-			}
-
-			return sl.Select(ctx, newIn)
-		}
-
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeSelector)),
-			compose.WithLambdaCallbackEnable(true))}, nil
+		return invokableNode(s, sl.Select, withCallbackInputConverter(s.toSelectorCallbackInput(sc)), withCallbackOutputConverter(sl.ToCallbackOutput)), nil
 	case entity.NodeTypeBatch:
 		if inner == nil {
 			return nil, fmt.Errorf("inner workflow must not be nil when creating batch node")
@@ -201,11 +118,9 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := postDecorateWO(preDecorateWO(b.Execute, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambdaWithOption(i, compose.WithLambdaType(string(entity.NodeTypeBatch)),
-			compose.WithLambdaCallbackEnable(true))}, nil
+		return invokableNodeWO(s, b.Execute, withCallbackInputConverter(b.ToCallbackInput)), nil
 	case entity.NodeTypeVariableAggregator:
-		conf, err := s.ToVariableAggregatorConfig(sc)
+		conf, err := s.ToVariableAggregatorConfig()
 		if err != nil {
 			return nil, err
 		}
@@ -215,91 +130,10 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any, opts ...any) (out map[string]any, err error) {
-			defer func() {
-				if err != nil {
-					_ = callbacks.OnError(ctx, err)
-				} else {
-					_ = callbacks.OnEnd(ctx, out)
-				}
-			}()
-
-			newIn := s.variableAggregatorInputConverter(in)
-			ctx = callbacks.OnStart(ctx, s.toVariableAggregatorCallbackInput(newIn, nil))
-			return va.Invoke(ctx, newIn)
-		}
-
-		i = postDecorateWO(i, s.outputValueFiller())
-
-		t := func(ctx context.Context, in *schema.StreamReader[map[string]any], opts ...any) (
-			out *schema.StreamReader[map[string]any], err error) {
-			defer func() {
-				if err != nil {
-					_ = callbacks.OnError(ctx, err)
-				} else {
-					var dynamicStreamType map[string]nodes.FieldStreamType
-					e := compose.ProcessState(ctx, func(ctx context.Context, state *State) error {
-						var e1 error
-						dynamicStreamType, e1 = state.GetAllDynamicStreamTypes(s.Key)
-						return e1
-					})
-					if e != nil {
-						_ = callbacks.OnError(ctx, e)
-					} else {
-						outStreams := out.Copy(2)
-						_, notUsed := callbacks.OnEndWithStreamOutput(ctx, toVariableAggregatorStreamCallbackOutput(outStreams[0], dynamicStreamType))
-						notUsed.Close()
-						out = outStreams[1]
-					}
-				}
-			}()
-
-			newIn := s.variableAggregatorStreamInputConverter(in)
-
-			resolvedSources, err := nodes.ResolveStreamSources(ctx, conf.FullSources)
-			if err != nil {
-				return nil, err
-			}
-
-			copied := newIn.Copy(2)
-			newIn = copied[0]
-			var callbackSR *schema.StreamReader[map[string]any]
-			ctx, callbackSR = callbacks.OnStartWithStreamInput(ctx, s.toVariableAggregatorStreamCallbackInput(copied[1], resolvedSources))
-			callbackSR.Close()
-
-			groupToSkipped := map[string]map[int]bool{}
-
-			err = compose.ProcessState(ctx, func(ctx context.Context, state *State) error {
-				for _, fieldInfo := range s.InputSources {
-					if fieldInfo.Source.Ref != nil && fieldInfo.Source.Ref.VariableType == nil {
-						fromNodeKey := fieldInfo.Source.Ref.FromNodeKey
-						if _, ok := state.ExecutedNodes[fromNodeKey]; !ok {
-							group := fieldInfo.Path[0]
-							indexStr := fieldInfo.Path[1]
-							index, err := strconv.Atoi(indexStr)
-							if err != nil {
-								return err
-							}
-							if _, ok := groupToSkipped[group]; !ok {
-								groupToSkipped[group] = map[int]bool{}
-							}
-							groupToSkipped[group][index] = true
-						}
-					}
-				}
-				return nil
-			})
-			return va.Transform(ctx, newIn, groupToSkipped)
-		}
-
-		l, err := compose.AnyLambda(i, nil, nil, t,
-			compose.WithLambdaType(string(entity.NodeTypeVariableAggregator)),
-			compose.WithLambdaCallbackEnable(true))
-		if err != nil {
-			return nil, err
-		}
-
-		return &Node{Lambda: l}, nil
+		return invokableTransformableNode(s, va.Invoke, va.Transform,
+			withCallbackInputConverter(va.ToCallbackInput),
+			withCallbackOutputConverter(va.ToCallbackOutput),
+			withInit(va.Init)), nil
 	case entity.NodeTypeTextProcessor:
 		conf, err := s.ToTextProcessorConfig()
 		if err != nil {
@@ -311,8 +145,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := postDecorate(preDecorate(tp.Invoke, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeTextProcessor)))}, nil
+		return invokableNode(s, tp.Invoke), nil
 	case entity.NodeTypeHTTPRequester:
 		conf, err := s.ToHTTPRequesterConfig()
 		if err != nil {
@@ -324,60 +157,18 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-			defer func() {
-				if err != nil {
-					_ = callbacks.OnError(ctx, err)
-				} else {
-					_ = callbacks.OnEnd(ctx, out)
-				}
-			}()
-			callbackInput, err := s.toHttpRequesterCallbackInput(conf, in)
-			if err != nil {
-				return nil, err
-			}
-			ctx = callbacks.OnStart(ctx, callbackInput)
-			return hr.Invoke(ctx, in)
-		}
-
-		i = postDecorate(preDecorate(i, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaCallbackEnable(true), compose.WithLambdaType(string(entity.NodeTypeHTTPRequester)))}, nil
+		return invokableNode(s, hr.Invoke, withCallbackInputConverter(hr.ToCallbackInput)), nil
 	case entity.NodeTypeContinue:
-		i := func(ctx context.Context, in map[string]any, opts ...any) (map[string]any, error) {
+		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
 			return map[string]any{}, nil
 		}
-		c := func(ctx context.Context, in *schema.StreamReader[map[string]any], opts ...any) (map[string]any, error) {
-			in.Close()
-			return map[string]any{}, nil
-		}
-		l, err := compose.AnyLambda(i, nil, c, nil, compose.WithLambdaType(string(entity.NodeTypeContinue)))
-		if err != nil {
-			return nil, err
-		}
-		return &Node{Lambda: l}, nil
+		return invokableNode(s, i), nil
 	case entity.NodeTypeBreak:
-		b, err := loop2.NewBreak(ctx, &nodes.ParentIntermediateStore{})
+		b, err := loop.NewBreak(ctx, &nodes.ParentIntermediateStore{})
 		if err != nil {
 			return nil, err
 		}
-		i := func(ctx context.Context, in map[string]any, opts ...any) (map[string]any, error) {
-			if err := b.DoBreak(ctx); err != nil {
-				return nil, err
-			}
-			return map[string]any{}, nil
-		}
-		c := func(ctx context.Context, in *schema.StreamReader[map[string]any], opts ...any) (map[string]any, error) {
-			in.Close()
-			if err := b.DoBreak(ctx); err != nil {
-				return nil, err
-			}
-			return map[string]any{}, nil
-		}
-		l, err := compose.AnyLambda(i, nil, c, nil, compose.WithLambdaType(string(entity.NodeTypeBreak)))
-		if err != nil {
-			return nil, err
-		}
-		return &Node{Lambda: l}, nil
+		return invokableNode(s, b.DoBreak), nil
 	case entity.NodeTypeVariableAssigner:
 		handler := variable.GetVariableHandler()
 
@@ -389,19 +180,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
-			err := va.Assign(ctx, in)
-			if err != nil {
-				return nil, err
-			}
 
-			// TODO if not error considered successful
-			return map[string]any{
-				"isSuccess": true,
-			}, nil
-		}
-
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeVariableAssigner)))}, nil
+		return invokableNode(s, va.Assign), nil
 	case entity.NodeTypeVariableAssignerWithinLoop:
 		conf, err := s.ToVariableAssignerInLoopConfig()
 		if err != nil {
@@ -412,26 +192,18 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
-			err := va.Assign(ctx, in)
-			if err != nil {
-				return nil, err
-			}
-			return map[string]any{}, nil
-		}
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeVariableAssignerWithinLoop)))}, nil
+
+		return invokableNode(s, va.Assign), nil
 	case entity.NodeTypeLoop:
 		conf, err := s.ToLoopConfig(inner)
 		if err != nil {
 			return nil, err
 		}
-		l, err := loop2.NewLoop(ctx, conf)
+		l, err := loop.NewLoop(ctx, conf)
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorateWO(preDecorateWO(l.Execute, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambdaWithOption(i, compose.WithLambdaType(string(entity.NodeTypeLoop)),
-			compose.WithLambdaCallbackEnable(true))}, nil
+		return invokableNodeWO(s, l.Execute, withCallbackInputConverter(l.ToCallbackInput)), nil
 	case entity.NodeTypeQuestionAnswer:
 		conf, err := s.ToQAConfig(ctx)
 		if err != nil {
@@ -441,9 +213,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorate(preDecorate(qA.Execute, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeQuestionAnswer)),
-			compose.WithLambdaCallbackEnable(true))}, nil
+		return invokableNode(s, qA.Execute, withCallbackOutputConverter(qA.ToCallbackOutput)), nil
 	case entity.NodeTypeInputReceiver:
 		conf, err := s.ToInputReceiverConfig()
 		if err != nil {
@@ -453,19 +223,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-			var input string
-			if in != nil {
-				receivedData, ok := in[receiver.ReceivedDataKey]
-				if ok {
-					input = receivedData.(string)
-				}
-			}
-
-			return inputR.Invoke(ctx, input)
-		}
-		i = postDecorate(i, s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeInputReceiver)))}, nil
+		return invokableNode(s, inputR.Invoke), nil
 	case entity.NodeTypeOutputEmitter:
 		conf, err := s.ToOutputEmitterConfig(sc)
 		if err != nil {
@@ -477,55 +235,19 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any, _ ...any) (map[string]any, error) {
-			pre := s.inputValueFiller()
-			if pre != nil {
-				in, err = pre(ctx, in)
-				if err != nil {
-					return nil, err
-				}
-			}
-
-			_, err := e.Emit(ctx, in)
-			if err != nil {
-				return nil, err
-			}
-
-			return map[string]any{}, nil
-		}
-
-		t := func(ctx context.Context, in *schema.StreamReader[map[string]any], _ ...any) (*schema.StreamReader[map[string]any], error) {
-			outStream, err := e.EmitStream(ctx, in)
-			if err != nil {
-				return nil, err
-			}
-			outStream.Close()
-			sr, sw := schema.Pipe[map[string]any](0)
-			sw.Close()
-			sr.Close()
-			return sr, nil
-		}
-
-		lambda, err := compose.AnyLambda(i, nil, nil, t, compose.WithLambdaCallbackEnable(e.IsCallbacksEnabled()), compose.WithLambdaType(string(entity.NodeTypeOutputEmitter)))
-		if err != nil {
-			return nil, err
-		}
-
-		return &Node{Lambda: lambda}, nil
+		return invokableTransformableNode(s, e.Emit, e.EmitStream), nil
 	case entity.NodeTypeEntry:
 		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
 			return in, nil
 		}
-		i = postDecorate(i, s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeEntry)))}, nil
+		return invokableNode(s, i), nil
 	case entity.NodeTypeExit:
 		terminalPlan := mustGetKey[vo.TerminatePlan]("TerminalPlan", s.Configs)
 		if terminalPlan == vo.ReturnVariables {
 			i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
 				return in, nil
 			}
-			i = postDecorate(preDecorate(i, s.inputValueFiller()), s.outputValueFiller())
-			return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeExit)))}, nil
+			return invokableNode(s, i), nil
 		}
 
 		conf, err := s.ToOutputEmitterConfig(sc)
@@ -538,42 +260,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any, _ ...any) (out map[string]any, err error) {
-			pre := s.inputValueFiller()
-			if pre != nil {
-				in, err = pre(ctx, in)
-				if err != nil {
-					return nil, err
-				}
-			}
-
-			_, err = e.Emit(ctx, in)
-			if err != nil {
-				return nil, err
-			}
-
-			post := s.outputValueFiller()
-			if post != nil {
-				out, err = post(ctx, in)
-				if err != nil {
-					return nil, err
-				}
-				return out, nil
-			}
-
-			return in, nil
-		}
-
-		t := func(ctx context.Context, in *schema.StreamReader[map[string]any], _ ...any) (*schema.StreamReader[map[string]any], error) {
-			return e.EmitStream(ctx, in)
-		}
-
-		lambda, err := compose.AnyLambda(i, nil, nil, t, compose.WithLambdaCallbackEnable(true), compose.WithLambdaType(string(entity.NodeTypeExit)))
-		if err != nil {
-			return nil, err
-		}
-
-		return &Node{Lambda: lambda}, nil
+		return invokableTransformableNode(s, e.Emit, e.EmitStream), nil
 	case entity.NodeTypeDatabaseCustomSQL:
 		conf, err := s.ToDatabaseCustomSQLConfig()
 		if err != nil {
@@ -584,8 +271,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorate(preDecorate(sqlER.Execute, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeDatabaseCustomSQL)))}, nil
+		return invokableNode(s, sqlER.Execute), nil
 	case entity.NodeTypeDatabaseQuery:
 		conf, err := s.ToDatabaseQueryConfig()
 		if err != nil {
@@ -597,30 +283,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-			defer func() {
-				if err != nil {
-					_ = callbacks.OnError(ctx, err)
-				} else {
-					_ = callbacks.OnEnd(ctx, out)
-				}
-			}()
-			conditionGroup, err := database.ConvertClauseGroupToConditionGroup(ctx, conf.ClauseGroup, in)
-			if err != nil {
-				return nil, err
-			}
-			callbackInput, err := s.toDatabaseQueryCallbackInput(conf, conditionGroup)
-			if err != nil {
-				return nil, err
-			}
-			ctx = callbacks.OnStart(ctx, callbackInput)
-
-			return query.Query(ctx, conditionGroup)
-		}
-		i = preDecorate(i, s.inputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaCallbackEnable(true), compose.WithLambdaType(string(entity.NodeTypeDatabaseQuery)))}, nil
+		return invokableNode(s, query.Query, withCallbackInputConverter(query.ToCallbackInput)), nil
 	case entity.NodeTypeDatabaseInsert:
-
 		conf, err := s.ToDatabaseInsertConfig()
 		if err != nil {
 			return nil, err
@@ -631,27 +295,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-			defer func() {
-				if err != nil {
-					_ = callbacks.OnError(ctx, err)
-				} else {
-					_ = callbacks.OnEnd(ctx, out)
-				}
-			}()
-			callbackInput, err := s.toDatabaseInsertCallbackInput(conf.DatabaseInfoID, in)
-			if err != nil {
-				return nil, err
-			}
-			ctx = callbacks.OnStart(ctx, callbackInput)
-
-			return insert.Insert(ctx, in)
-		}
-
-		i = preDecorate(i, s.inputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaCallbackEnable(true), compose.WithLambdaType(string(entity.NodeTypeDatabaseInsert)))}, nil
+		return invokableNode(s, insert.Insert, withCallbackInputConverter(insert.ToCallbackInput)), nil
 	case entity.NodeTypeDatabaseUpdate:
-
 		conf, err := s.ToDatabaseUpdateConfig()
 		if err != nil {
 			return nil, err
@@ -660,30 +305,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-			defer func() {
-				if err != nil {
-					_ = callbacks.OnError(ctx, err)
-				} else {
-					_ = callbacks.OnEnd(ctx, out)
-				}
-			}()
-			inventory, err := database.ConvertClauseGroupToUpdateInventory(ctx, conf.ClauseGroup, in)
-			if err != nil {
-				return nil, err
-			}
-			callbackInput, err := s.toDatabaseUpdateCallbackInput(conf.DatabaseInfoID, inventory)
-			if err != nil {
-				return nil, err
-			}
-			ctx = callbacks.OnStart(ctx, callbackInput)
-
-			return update.Update(ctx, inventory)
-		}
-
-		i = preDecorate(i, s.inputValueFiller())
-
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaCallbackEnable(true), compose.WithLambdaType(string(entity.NodeTypeDatabaseUpdate)))}, nil
+		return invokableNode(s, update.Update, withCallbackInputConverter(update.ToCallbackInput)), nil
 	case entity.NodeTypeDatabaseDelete:
 		conf, err := s.ToDatabaseDeleteConfig()
 		if err != nil {
@@ -693,29 +315,8 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-			defer func() {
-				if err != nil {
-					_ = callbacks.OnError(ctx, err)
-				} else {
-					_ = callbacks.OnEnd(ctx, out)
-				}
-			}()
-			conditionGroup, err := database.ConvertClauseGroupToConditionGroup(ctx, conf.ClauseGroup, in)
-			if err != nil {
-				return nil, err
-			}
-			callbackInput, err := s.toDatabaseDeleteCallbackInput(conf.DatabaseInfoID, conditionGroup)
-			if err != nil {
-				return nil, err
-			}
-			ctx = callbacks.OnStart(ctx, callbackInput)
 
-			return del.Delete(ctx, conditionGroup)
-		}
-
-		i = preDecorate(i, s.inputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaCallbackEnable(true), compose.WithLambdaType(string(entity.NodeTypeDatabaseDelete)))}, nil
+		return invokableNode(s, del.Delete, withCallbackInputConverter(del.ToCallbackInput)), nil
 	case entity.NodeTypeKnowledgeIndexer:
 		conf, err := s.ToKnowledgeIndexerConfig()
 		if err != nil {
@@ -725,8 +326,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorate(preDecorate(w.Store, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeKnowledgeIndexer)))}, nil
+		return invokableNode(s, w.Store), nil
 	case entity.NodeTypeKnowledgeRetriever:
 		conf, err := s.ToKnowledgeRetrieveConfig()
 		if err != nil {
@@ -736,8 +336,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorate(preDecorate(r.Retrieve, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeKnowledgeRetriever)))}, nil
+		return invokableNode(s, r.Retrieve), nil
 	case entity.NodeTypeCodeRunner:
 		conf, err := s.ToCodeRunnerConfig()
 		if err != nil {
@@ -747,8 +346,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorate(preDecorate(r.RunCode, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeCodeRunner)))}, nil
+		return invokableNode(s, r.RunCode), nil
 	case entity.NodeTypePlugin:
 		conf, err := s.ToPluginConfig()
 		if err != nil {
@@ -758,8 +356,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorate(preDecorate(r.Invoke, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypePlugin)))}, nil
+		return invokableNode(s, r.Invoke), nil
 	case entity.NodeTypeCreateConversation:
 		conf, err := s.ToCreateConversationConfig()
 		if err != nil {
@@ -769,8 +366,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorate(preDecorate(r.Create, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeCreateConversation)))}, nil
+		return invokableNode(s, r.Create), nil
 	case entity.NodeTypeMessageList:
 		conf, err := s.ToMessageListConfig()
 		if err != nil {
@@ -780,8 +376,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorate(preDecorate(r.List, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeMessageList)))}, nil
+		return invokableNode(s, r.List), nil
 	case entity.NodeTypeClearMessage:
 		conf, err := s.ToClearMessageConfig()
 		if err != nil {
@@ -791,8 +386,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := postDecorate(preDecorate(r.Clear, s.inputValueFiller()), s.outputValueFiller())
-		return &Node{Lambda: compose.InvokableLambda(i, compose.WithLambdaType(string(entity.NodeTypeClearMessage)))}, nil
+		return invokableNode(s, r.Clear), nil
 	case entity.NodeTypeIntentDetector:
 		conf, err := s.ToIntentDetectorConfig(ctx)
 		if err != nil {
@@ -803,25 +397,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		i := func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
-			defer func() {
-				if err != nil {
-					_ = callbacks.OnError(ctx, err)
-				} else {
-					_ = callbacks.OnEnd(ctx, out)
-				}
-			}()
-
-			ctx = callbacks.OnStart(ctx, in)
-
-			return r.Invoke(ctx, in)
-		}
-
-		i = postDecorate(preDecorate(i, s.inputValueFiller()), s.outputValueFiller())
-
-		return &Node{Lambda: compose.InvokableLambda(i,
-			compose.WithLambdaCallbackEnable(true),
-			compose.WithLambdaType(string(entity.NodeTypeIntentDetector)))}, nil
+		return invokableNode(s, r.Invoke), nil
 	case entity.NodeTypeSubWorkflow:
 		conf, err := s.ToSubWorkflowConfig(ctx, sc.requireCheckPoint)
 		if err != nil {
@@ -831,43 +407,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		i := func(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (out map[string]any, err error) {
-			defer func() {
-				if err != nil {
-					_ = callbacks.OnError(ctx, err)
-				} else {
-					_ = callbacks.OnEnd(ctx, out)
-				}
-			}()
-
-			ctx = callbacks.OnStart(ctx, in)
-
-			return postDecorateWO(preDecorateWO(r.Invoke, s.inputValueFiller()), s.outputValueFiller())(ctx, in, opts...)
-		}
-
-		s := func(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (out *schema.StreamReader[map[string]any], err error) {
-			defer func() {
-				if err != nil {
-					_ = callbacks.OnError(ctx, err)
-				} else {
-					_, out = callbacks.OnEndWithStreamOutput(ctx, out)
-				}
-			}()
-
-			ctx = callbacks.OnStart(ctx, in)
-
-			in, err = s.inputValueFiller()(ctx, in)
-			if err != nil {
-				return nil, err
-			}
-			return r.Stream(ctx, in, opts...)
-		}
-
-		l, err := compose.AnyLambda(i, s, nil, nil, compose.WithLambdaType(string(entity.NodeTypeSubWorkflow)), compose.WithLambdaCallbackEnable(true))
-		if err != nil {
-			return nil, err
-		}
-		return &Node{Lambda: l}, nil
+		return invokableStreamableNodeWO(s, r.Invoke, r.Stream), nil
 	default:
 		panic("not implemented")
 	}

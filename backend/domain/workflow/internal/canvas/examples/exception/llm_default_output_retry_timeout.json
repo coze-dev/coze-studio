@@ -1,0 +1,323 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "trigger_parameters": []
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "position": {
+          "x": 119.72615956319696,
+          "y": -224.00378240856207
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "103929",
+                    "name": "name",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "name"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": {
+                    "blockID": "103929",
+                    "name": "age",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "age"
+            }
+          ],
+          "terminatePlan": "returnVariables"
+        },
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "position": {
+          "x": 209.3767670011393,
+          "y": 394.57856844750563
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            }
+          ],
+          "llmParam": [
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "1737521813",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "modelType"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "豆包·1.5·Pro·32k",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "modleName"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "balance",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "generationDiversity"
+            },
+            {
+              "input": {
+                "type": "float",
+                "value": {
+                  "content": "0.8",
+                  "rawMeta": {
+                    "type": 4
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "temperature"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "4096",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "maxTokens"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "2",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "responseFormat"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "{{input}}",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "prompt"
+            },
+            {
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "content": false,
+                  "rawMeta": {
+                    "type": 3
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "enableChatHistory"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "3",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "chatHistoryRound"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "systemPrompt"
+            }
+          ],
+          "settingOnError": {
+            "dataOnErr": "{\n    \"name\": \"zhangsan\",\n    \"age\": 3\n}",
+            "ext": {
+              "backupLLmParam": "{\"temperature\":1,\"topP\":0.7,\"responseFormat\":2,\"maxTokens\":1024,\"modelName\":\"豆包·工具调用\",\"modelType\":1706077826,\"generationDiversity\":\"default_val\"}"
+            },
+            "processType": 2,
+            "retryTimes": 1,
+            "switch": true,
+            "timeoutMs": 300
+          }
+        },
+        "nodeMeta": {
+          "description": "调用大语言模型,使用变量和提示词生成回复",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg",
+          "mainColor": "#5C62FF",
+          "subTitle": "大模型",
+          "title": "大模型"
+        },
+        "outputs": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "age",
+            "type": "integer"
+          },
+          {
+            "name": "errorBody",
+            "readonly": true,
+            "schema": [
+              {
+                "name": "errorMessage",
+                "readonly": true,
+                "type": "string"
+              },
+              {
+                "name": "errorCode",
+                "readonly": true,
+                "type": "string"
+              }
+            ],
+            "type": "object"
+          },
+          {
+            "name": "isSuccess",
+            "readonly": true,
+            "type": "boolean"
+          }
+        ],
+        "version": "3"
+      },
+      "edges": null,
+      "id": "103929",
+      "meta": {
+        "position": {
+          "x": 190.39267558532714,
+          "y": -61.87783756395649
+        }
+      },
+      "type": "3"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "103929",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "103929",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

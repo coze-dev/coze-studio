@@ -43,17 +43,6 @@ func NewPlugin(ctx context.Context, cfg *Config) (*Plugin, error) {
 }
 
 func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map[string]any, err error) {
-	defer func() {
-		if p.config.IgnoreException && err != nil {
-			ret = p.config.DefaultOutput
-			ret["errorBody"] = map[string]interface{}{
-				"errorMessage": err.Error(),
-				"errorCode":    -1,
-			}
-			err = nil
-		}
-	}()
-
 	invokeMap, err := p.config.ToolService.GetPluginInvokableTools(ctx, &plugin.PluginToolsInvokableRequest{
 		PluginEntity: plugin.PluginEntity{
 			PluginID: p.config.PluginID,

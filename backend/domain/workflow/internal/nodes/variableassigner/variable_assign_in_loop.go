@@ -20,7 +20,7 @@ func NewVariableAssignerInLoop(_ context.Context, conf *Config) (*InLoop, error)
 	}, nil
 }
 
-func (v *InLoop) Assign(ctx context.Context, in map[string]any) (err error) {
+func (v *InLoop) Assign(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 	for _, pair := range v.config.Pairs {
 		if pair.Left.VariableType == nil || *pair.Left.VariableType != variable.ParentIntermediate {
 			panic(fmt.Errorf("dest is %+v in VariableAssignerInloop, invalid", pair.Left))
@@ -28,14 +28,14 @@ func (v *InLoop) Assign(ctx context.Context, in map[string]any) (err error) {
 
 		right, ok := nodes.TakeMapValue(in, pair.Right)
 		if !ok {
-			return fmt.Errorf("failed to extract right value for path %s", pair.Right)
+			return nil, fmt.Errorf("failed to extract right value for path %s", pair.Right)
 		}
 
 		err := v.intermediateVarStore.Set(ctx, pair.Left.FromPath, right)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return map[string]any{}, nil
 }

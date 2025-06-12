@@ -9,33 +9,43 @@ import (
 	"github.com/spf13/cast"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
 )
 
-func (s *NodeSchema) OutputPortCount() int {
+func (s *NodeSchema) OutputPortCount() (int, bool) {
+	var hasExceptionPort bool
+	if s.MetaConfigs != nil && s.MetaConfigs.ProcessType != nil &&
+		*s.MetaConfigs.ProcessType == vo.ErrorProcessTypeExceptionBranch {
+		hasExceptionPort = true
+	}
+
 	switch s.Type {
 	case entity.NodeTypeSelector:
-		return len(mustGetKey[[]*selector.OneClauseSchema]("Clauses", s.Configs)) + 1
+		return len(mustGetKey[[]*selector.OneClauseSchema]("Clauses", s.Configs)) + 1, hasExceptionPort
 	case entity.NodeTypeQuestionAnswer:
 		if mustGetKey[qa.AnswerType]("AnswerType", s.Configs.(map[string]any)) == qa.AnswerByChoices {
 			if mustGetKey[qa.ChoiceType]("ChoiceType", s.Configs.(map[string]any)) == qa.FixedChoices {
-				return len(mustGetKey[[]string]("FixedChoices", s.Configs.(map[string]any))) + 1
+				return len(mustGetKey[[]string]("FixedChoices", s.Configs.(map[string]any))) + 1, hasExceptionPort
 			} else {
-				return 2
+				return 2, hasExceptionPort
 			}
 		}
-		return 1
+		return 1, hasExceptionPort
 	case entity.NodeTypeIntentDetector:
 		intents := mustGetKey[[]string]("Intents", s.Configs.(map[string]any))
-		return len(intents) + 1
+		return len(intents) + 1, hasExceptionPort
 	default:
-		return 1
+		return 1, hasExceptionPort
 	}
 }
 
-type BranchMapping []map[string]bool
+type BranchMapping struct {
+	Normal    []map[string]bool
+	Exception map[string]bool
+}
 
 const (
 	DefaultBranch = "default"
@@ -43,26 +53,33 @@ const (
 )
 
 func (s *NodeSchema) GetBranch(bMapping *BranchMapping) (*compose.GraphBranch, error) {
-	if bMapping == nil || len(*bMapping) == 0 {
+	if bMapping == nil {
 		return nil, errors.New("no branch mapping")
 	}
 
 	endNodes := make(map[string]bool)
-	for i := range *bMapping {
-		for k := range (*bMapping)[i] {
+	for i := range bMapping.Normal {
+		for k := range bMapping.Normal[i] {
+			endNodes[k] = true
+		}
+	}
+
+	if bMapping.Exception != nil {
+		for k := range bMapping.Exception {
 			endNodes[k] = true
 		}
 	}
 
 	switch s.Type {
 	case entity.NodeTypeSelector:
-		condition := func(ctx context.Context, choice int) (map[string]bool, error) {
-			if choice < 0 || choice > len(*bMapping) {
+		condition := func(ctx context.Context, in map[string]any) (map[string]bool, error) {
+			choice := in[selector.SelectKey].(int)
+			if choice < 0 || choice > len(bMapping.Normal) {
 				return nil, fmt.Errorf("node %s choice out of range: %d", s.Key, choice)
 			}
 
-			choices := make(map[string]bool, len((*bMapping)[choice]))
-			for k := range (*bMapping)[choice] {
+			choices := make(map[string]bool, len((bMapping.Normal)[choice]))
+			for k := range (bMapping.Normal)[choice] {
 				choices[k] = true
 			}
 
@@ -79,7 +96,7 @@ func (s *NodeSchema) GetBranch(bMapping *BranchMapping) (*compose.GraphBranch, e
 				}
 
 				if optionID.(string) == "other" {
-					return (*bMapping)[len(*bMapping)-1], nil
+					return (bMapping.Normal)[len(bMapping.Normal)-1], nil
 				}
 
 				optionIDInt, ok := qa.AlphabetToInt(optionID.(string))
@@ -87,11 +104,11 @@ func (s *NodeSchema) GetBranch(bMapping *BranchMapping) (*compose.GraphBranch, e
 					return nil, fmt.Errorf("failed to convert option id from input map: %v", optionID)
 				}
 
-				if optionIDInt < 0 || optionIDInt >= len(*bMapping)-1 {
+				if optionIDInt < 0 || optionIDInt >= len(bMapping.Normal)-1 {
 					return nil, fmt.Errorf("failed to take option id from input map: %v", in)
 				}
 
-				return (*bMapping)[optionIDInt], nil
+				return (bMapping.Normal)[optionIDInt], nil
 			}
 			return compose.NewGraphMultiBranch(condition, endNodes), nil
 		}
@@ -99,6 +116,11 @@ func (s *NodeSchema) GetBranch(bMapping *BranchMapping) (*compose.GraphBranch, e
 
 	case entity.NodeTypeIntentDetector:
 		condition := func(ctx context.Context, in map[string]any) (map[string]bool, error) {
+			isSuccess, ok := in["isSuccess"]
+			if ok && isSuccess != nil && !isSuccess.(bool) {
+				return bMapping.Exception, nil
+			}
+
 			classificationId, ok := nodes.TakeMapValue(in, compose.FieldPath{"classificationId"})
 			if !ok {
 				return nil, fmt.Errorf("failed to take classification id from input map: %v", in)
@@ -113,18 +135,26 @@ func (s *NodeSchema) GetBranch(bMapping *BranchMapping) (*compose.GraphBranch, e
 			}
 			realID := id - 1
 
-			if realID >= int64(len(*bMapping)) {
+			if realID >= int64(len(bMapping.Normal)) {
 				return nil, fmt.Errorf("invalid classification id from input, classification id: %v", classificationId)
 			}
 
 			if realID < 0 {
-				realID = int64(len(*bMapping)) - 1
+				realID = int64(len(bMapping.Normal)) - 1
 			}
 
-			return (*bMapping)[realID], nil
+			return (bMapping.Normal)[realID], nil
 		}
 		return compose.NewGraphMultiBranch(condition, endNodes), nil
 	default:
-		return nil, fmt.Errorf("this node should not have branches: %s", s.Key)
+		condition := func(ctx context.Context, in map[string]any) (map[string]bool, error) {
+			isSuccess, ok := in["isSuccess"]
+			if ok && isSuccess != nil && !isSuccess.(bool) {
+				return bMapping.Exception, nil
+			}
+
+			return (bMapping.Normal)[0], nil
+		}
+		return compose.NewGraphMultiBranch(condition, endNodes), nil
 	}
 }
