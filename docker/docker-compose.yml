@@ -62,6 +62,11 @@ services:
       timeout: 10s
       retries: 10
       start_period: 10s
+    depends_on:
+      minio-setup:
+        condition: service_completed_successfully
+      elasticsearch-setup:
+        condition: service_completed_successfully
     networks:
       - coze-network
 
@@ -363,18 +368,11 @@ services:
       sh -c "
         apk add --no-cache bash curl && \
         (bash -x /setup_es.sh || exit 1) && \
-        echo 'Elasticsearch setup complete, container will keep running.' && \
-        sleep 60
+        echo 'Elasticsearch setup complete, container will keep running.'
       "
     networks:
       - coze-network
-    restart: "on-failure"
-    healthcheck:
-      test: ["CMD-SHELL", "exit 0"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 0s
+    restart: "no"
   minio-setup:
     image: minio/mc
     container_name: coze-minio-setup
@@ -384,22 +382,15 @@ services:
     volumes:
       - ./volumes/minio/default_icon/:/default_icon
     entrypoint: >
-      /bin/sh -c "
+      /bin/sh -c  "
         (/usr/bin/mc alias set localminio http://coze-minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin123} && \
         /usr/bin/mc mb --ignore-existing localminio/opencoze && \
         /usr/bin/mc cp --recursive /default_icon/ localminio/opencoze/default_icon/ && \
         echo 'MinIO setup complete: Files uploaded to opencoze bucket. Container will keep running.') || exit 1; \
-        sleep 60
       "
     networks:
       - coze-network
-    restart: "on-failure"
-    healthcheck:
-      test: ["CMD-SHELL", "exit 0"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 0s
+    restart: "no"
 networks:
   coze-network:
     driver: bridge
