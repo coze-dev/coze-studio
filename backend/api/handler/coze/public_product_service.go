@@ -151,10 +151,9 @@ func PublicDuplicateProduct(ctx context.Context, c *app.RequestContext) {
 	var req product_public_api.DuplicateProductRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
-	// todo lj
 
 	resp := new(product_public_api.DuplicateProductResponse)
 	resp.Data = new(product_public_api.DuplicateProductData)
@@ -166,6 +165,7 @@ func PublicDuplicateProduct(ctx context.Context, c *app.RequestContext) {
 			SpaceID: req.GetSpaceID(),
 		})
 		if err != nil {
+			internalServerErrorResponse(ctx, c, err)
 			return
 		}
 
@@ -177,10 +177,17 @@ func PublicDuplicateProduct(ctx context.Context, c *app.RequestContext) {
 			SpaceID:    strconv.FormatInt(req.GetSpaceID(), 10),
 		})
 		if err != nil {
+			internalServerErrorResponse(ctx, c, err)
 			return
 		}
 
-		resp.Data.NewEntityID, err = strconv.ParseInt(workflowResp.Data.WorkflowID, 10, 64)
+		newWorkflowID, err := strconv.ParseInt(workflowResp.Data.WorkflowID, 10, 64)
+		if err != nil {
+			internalServerErrorResponse(ctx, c, err)
+			return
+		}
+		resp.Data.NewEntityID = newWorkflowID
+		resp.Data.NewPluginID = &newWorkflowID
 	}
 
 	c.JSON(consts.StatusOK, resp)
