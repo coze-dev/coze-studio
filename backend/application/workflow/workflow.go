@@ -15,6 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
 	domainWorkflow "code.byted.org/flow/opencoze/backend/domain/workflow"
 	workflowDomain "code.byted.org/flow/opencoze/backend/domain/workflow"
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
@@ -111,7 +112,6 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 }
 
 func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.CreateWorkflowRequest) (*workflow.CreateWorkflowResponse, error) {
-
 	wf := &entity.Workflow{
 		ContentType: workflow.WorkFlowType_User,
 		Name:        req.Name,
@@ -121,10 +121,8 @@ func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.C
 		AppID:       parseInt64(req.ProjectID),
 	}
 
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	if uid != nil {
-		wf.CreatorID = *uid
-	}
+	uID := ctxutil.MustGetUIDFromCtx(ctx)
+	wf.CreatorID = uID
 
 	if req.IsSetFlowMode() {
 		wf.Mode = *req.FlowMode
@@ -135,6 +133,10 @@ func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.C
 		return nil, err
 	}
 	wf.SpaceID = spaceID
+
+	if err = checkUserSpace(ctx, uID, spaceID); err != nil {
+		return nil, err
+	}
 
 	var ref *entity.WorkflowReference
 	if req.IsSetBindBizID() {
@@ -175,6 +177,10 @@ func (w *ApplicationService) SaveWorkflow(ctx context.Context, req *workflow.Sav
 		Canvas:  req.Schema,
 	}
 
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), draft.SpaceID); err != nil {
+		return nil, err
+	}
+
 	err := GetWorkflowDomainSVC().SaveWorkflow(ctx, draft)
 	if err != nil {
 		return nil, err
@@ -196,6 +202,10 @@ func (w *ApplicationService) UpdateWorkflowMeta(ctx context.Context, req *workfl
 		IconURI: req.GetIconURI(),
 	}
 
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), wf.SpaceID); err != nil {
+		return nil, err
+	}
+
 	err := GetWorkflowDomainSVC().UpdateWorkflowMeta(ctx, wf)
 	if err != nil {
 		return nil, err
@@ -204,6 +214,10 @@ func (w *ApplicationService) UpdateWorkflowMeta(ctx context.Context, req *workfl
 }
 
 func (w *ApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.DeleteWorkflowRequest) (*workflow.DeleteWorkflowResponse, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
 	err := GetWorkflowDomainSVC().DeleteWorkflow(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
 		return &workflow.DeleteWorkflowResponse{
@@ -221,6 +235,10 @@ func (w *ApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.D
 }
 
 func (w *ApplicationService) BatchDeleteWorkflow(ctx context.Context, req *workflow.BatchDeleteWorkflowRequest) (*workflow.BatchDeleteWorkflowResponse, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
 	ids, err := slices.TransformWithErrorCheck(req.GetWorkflowIDList(), func(a string) (int64, error) {
 		return strconv.ParseInt(a, 10, 64)
 	})
@@ -241,6 +259,10 @@ func (w *ApplicationService) BatchDeleteWorkflow(ctx context.Context, req *workf
 }
 
 func (w *ApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetCanvasInfoRequest) (*workflow.GetCanvasInfoResponse, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
 	wf, err := GetWorkflowDomainSVC().GetWorkflowDraft(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
 		return nil, err
@@ -298,7 +320,11 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 		ID: mustParseInt64(req.GetWorkflowID()),
 	}
 
-	uID := ctxutil.GetUIDFromCtx(ctx)
+	uID := ctxutil.MustGetUIDFromCtx(ctx)
+
+	if err := checkUserSpace(ctx, uID, mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
 
 	var appID, agentID *int64
 	if req.IsSetProjectID() {
@@ -309,12 +335,13 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 	}
 
 	exeCfg := vo.ExecuteConfig{
-		Operator:    ptr.FromOrDefault(uID, 0),
-		Mode:        vo.ExecuteModeDebug,
-		AppID:       appID,
-		AgentID:     agentID,
-		ConnectorID: consts.CozeConnectorID,
-		TaskType:    vo.TaskTypeForeground,
+		Operator:     uID,
+		Mode:         vo.ExecuteModeDebug,
+		AppID:        appID,
+		AgentID:      agentID,
+		ConnectorID:  consts.CozeConnectorID,
+		ConnectorUID: strconv.FormatInt(uID, 10),
+		TaskType:     vo.TaskTypeForeground,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -339,6 +366,12 @@ func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.Workfl
 		ID: mustParseInt64(req.GetWorkflowID()),
 	}
 
+	uID := ctxutil.MustGetUIDFromCtx(ctx)
+
+	if err := checkUserSpace(ctx, uID, mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
 	// merge input, batch and setting, they are all the same when executing
 	mergedInput := make(map[string]string, len(req.Input)+len(req.Batch)+len(req.Setting))
 	for k, v := range req.Input {
@@ -351,8 +384,6 @@ func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.Workfl
 		mergedInput[k] = v
 	}
 
-	uID := ctxutil.GetUIDFromCtx(ctx)
-
 	var appID, agentID *int64
 	if req.IsSetProjectID() {
 		appID = ptr.Of(mustParseInt64(req.GetProjectID()))
@@ -362,12 +393,13 @@ func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.Workfl
 	}
 
 	exeCfg := vo.ExecuteConfig{
-		Operator:    ptr.FromOrDefault(uID, 0),
-		Mode:        vo.ExecuteModeNodeDebug,
-		AppID:       appID,
-		AgentID:     agentID,
-		ConnectorID: consts.CozeConnectorID,
-		TaskType:    vo.TaskTypeForeground,
+		Operator:     uID,
+		Mode:         vo.ExecuteModeNodeDebug,
+		AppID:        appID,
+		AgentID:      agentID,
+		ConnectorID:  consts.CozeConnectorID,
+		ConnectorUID: strconv.FormatInt(uID, 10),
+		TaskType:     vo.TaskTypeForeground,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -389,6 +421,10 @@ func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.Workfl
 }
 
 func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWorkflowProcessRequest) (*workflow.GetWorkflowProcessResponse, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
 	var wfExeEntity *entity.WorkflowExecution
 	if req.SubExecuteID == nil {
 		wfExeEntity = &entity.WorkflowExecution{
@@ -519,6 +555,10 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 
 func (w *ApplicationService) GetNodeExecuteHistory(ctx context.Context, req *workflow.GetNodeExecuteHistoryRequest) (
 	*workflow.GetNodeExecuteHistoryResponse, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
 	executeID := req.GetExecuteID()
 	scene := req.GetNodeHistoryScene()
 
@@ -870,12 +910,13 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 	}
 
 	exeCfg := vo.ExecuteConfig{
-		Operator:    userID,
-		Mode:        vo.ExecuteModeRelease,
-		AppID:       appID,
-		AgentID:     agentID,
-		ConnectorID: connectorID,
-		TaskType:    vo.TaskTypeForeground,
+		Operator:     userID,
+		Mode:         vo.ExecuteModeRelease,
+		AppID:        appID,
+		AgentID:      agentID,
+		ConnectorID:  connectorID,
+		ConnectorUID: strconv.FormatInt(userID, 10),
+		TaskType:     vo.TaskTypeForeground,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -923,9 +964,10 @@ func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workf
 	connectorID := mustParseInt64(req.GetConnectorID())
 
 	sr, err := GetWorkflowDomainSVC().StreamResumeWorkflow(ctx, resumeReq, vo.ExecuteConfig{
-		Operator:    userID,
-		Mode:        vo.ExecuteModeRelease,
-		ConnectorID: connectorID,
+		Operator:     userID,
+		Mode:         vo.ExecuteModeRelease,
+		ConnectorID:  connectorID,
+		ConnectorUID: strconv.FormatInt(userID, 10),
 	})
 	if err != nil {
 		return nil, err
@@ -980,12 +1022,13 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	}
 
 	exeCfg := vo.ExecuteConfig{
-		Operator:    userID,
-		Mode:        vo.ExecuteModeRelease,
-		AppID:       appID,
-		AgentID:     agentID,
-		ConnectorID: connectorID,
-		TaskType:    vo.TaskTypeForeground,
+		Operator:     userID,
+		Mode:         vo.ExecuteModeRelease,
+		AppID:        appID,
+		AgentID:      agentID,
+		ConnectorID:  connectorID,
+		ConnectorUID: strconv.FormatInt(userID, 10),
+		TaskType:     vo.TaskTypeForeground,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -1017,18 +1060,9 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	if tPlan == vo.ReturnVariables {
 		data = wfExe.Output
 	} else {
-		var m map[string]any
-		if err = sonic.UnmarshalString(*wfExe.Output, &m); err != nil {
-			return nil, err
-		}
-		dataStr, ok := m["output"].(string)
-		if !ok {
-			logs.CtxWarnf(ctx, "openapi sync run workflow with answer mode, output is not str: %T", m["output"])
-		}
-
 		answerOutput := map[string]any{
 			"content_type":   1,
-			"data":           dataStr,
+			"data":           *wfExe.Output,
 			"type_for_model": 2,
 		}
 
@@ -1077,6 +1111,10 @@ func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.Val
 }
 
 func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *workflow.GetWorkflowReferencesRequest) (*workflow.GetWorkflowReferencesResponse, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
 	workflows, err := GetWorkflowDomainSVC().GetWorkflowReference(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
 		return nil, err
@@ -1123,6 +1161,10 @@ func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *wor
 
 // GetReleasedWorkflows TODO currently, the online version of this API is no longer used, and you need to confirm with the front-end
 func (w *ApplicationService) GetReleasedWorkflows(ctx context.Context, req *workflow.GetReleasedWorkflowsRequest) (*vo.ReleasedWorkflowData, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
 	wfEntities := make([]*entity.WorkflowIdentity, 0)
 	for _, wf := range req.WorkflowFilterList {
 		wfID, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
@@ -1184,6 +1226,10 @@ func (w *ApplicationService) GetReleasedWorkflows(ctx context.Context, req *work
 }
 
 func (w *ApplicationService) TestResume(ctx context.Context, req *workflow.WorkflowTestResumeRequest) (*workflow.WorkflowTestResumeResponse, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
 	resumeReq := &entity.ResumeRequest{
 		ExecuteID:  mustParseInt64(req.GetExecuteID()),
 		EventID:    mustParseInt64(req.GetEventID()),
@@ -1201,6 +1247,10 @@ func (w *ApplicationService) TestResume(ctx context.Context, req *workflow.Workf
 }
 
 func (w *ApplicationService) Cancel(ctx context.Context, req *workflow.CancelWorkFlowRequest) (*workflow.CancelWorkFlowResponse, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
 	err := GetWorkflowDomainSVC().CancelWorkflow(ctx, mustParseInt64(req.GetExecuteID()),
 		mustParseInt64(req.GetWorkflowID()), mustParseInt64(req.GetSpaceID()))
 	if err != nil {
@@ -1211,6 +1261,10 @@ func (w *ApplicationService) Cancel(ctx context.Context, req *workflow.CancelWor
 }
 
 func (w *ApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *workflow.QueryWorkflowNodeTypeRequest) (*workflow.QueryWorkflowNodeTypeResponse, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
 	nodeProperties, err := GetWorkflowDomainSVC().QueryWorkflowNodeTypes(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
 		return nil, err
@@ -1272,6 +1326,9 @@ func (w *ApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *wo
 }
 
 func (w *ApplicationService) PublishWorkflow(ctx context.Context, req *workflow.PublishWorkflowRequest) (*workflow.PublishWorkflowResponse, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
 
 	err := GetWorkflowDomainSVC().PublishWorkflow(ctx, mustParseInt64(req.GetWorkflowID()), req.GetWorkflowVersion(), req.GetVersionDescription(), req.GetForce())
 	if err != nil {
@@ -1289,6 +1346,10 @@ func (w *ApplicationService) PublishWorkflow(ctx context.Context, req *workflow.
 func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.GetWorkFlowListRequest) (*workflow.GetWorkFlowListResponse, error) {
 	if req.GetSpaceID() == "" {
 		return nil, errors.New("space id is required")
+	}
+
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
 	}
 
 	page := &vo.Page{}
@@ -1389,6 +1450,10 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 }
 
 func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflow.GetWorkflowDetailRequest) (*vo.WorkflowDetailDataList, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
 	entities, err := slices.TransformWithErrorCheck(req.GetWorkflowIds(), func(s string) (*entity.WorkflowIdentity, error) {
 		wid, err := strconv.ParseInt(s, 10, 64)
 		if err != nil {
@@ -1463,6 +1528,9 @@ func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflo
 }
 
 func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *workflow.GetWorkflowDetailInfoRequest) (*vo.WorkflowDetailInfoDataList, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
 
 	entities, err := slices.TransformWithErrorCheck(req.GetWorkflowFilterList(), func(wf *workflow.WorkflowFilter) (*entity.WorkflowIdentity, error) {
 		wid, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
@@ -1549,7 +1617,6 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 }
 
 func (w *ApplicationService) GetWorkflowUploadAuthToken(ctx context.Context, req *workflow.GetUploadAuthTokenRequest) (*workflow.GetUploadAuthTokenResponse, error) {
-
 	var (
 		sceneToUploadPrefixMap = map[string]string{
 			"imageflow": "imageflow-",
@@ -1597,6 +1664,10 @@ func (w *ApplicationService) SignImageURL(ctx context.Context, req *workflow.Sig
 }
 
 func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.GetApiDetailRequest) (*vo.ToolDetailInfo, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
 	toolID, err := strconv.ParseInt(req.GetAPIID(), 10, 64)
 	if err != nil {
 		return nil, err
@@ -1655,6 +1726,10 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 }
 
 func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req *workflow.GetLLMNodeFCSettingDetailRequest) (*GetLLMNodeFCSettingDetailResponse, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
 	var (
 		toolSvc             = plugin.GetToolService()
 		pluginToolsInfoReqs = make(map[int64]*plugin.PluginToolsInfoRequest)
@@ -1821,6 +1896,9 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 }
 
 func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req *workflow.GetLLMNodeFCSettingsMergedRequest) (*workflow.GetLLMNodeFCSettingsMergedResponse, error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
 
 	var fcPluginSetting *workflow.FCPluginSetting
 	if req.GetPluginFcSetting() != nil {
@@ -1942,6 +2020,9 @@ func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req
 }
 
 func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), req.GetSpaceID()); err != nil {
+		return nil, err
+	}
 
 	var (
 		toolsInfo []*vo.WorkFlowAsToolInfo
@@ -2015,9 +2096,12 @@ func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *p
 }
 
 func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.CopyWorkflowRequest) (resp *workflow.CopyWorkflowResponse, err error) {
-
 	spaceID, err := strconv.ParseInt(req.GetSpaceID(), 10, 64)
 	if err != nil {
+		return nil, err
+	}
+
+	if err = checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), spaceID); err != nil {
 		return nil, err
 	}
 
@@ -2538,4 +2622,25 @@ func (g *GetLLMNodeFCSettingDetailResponse) MarshalJSON() ([]byte, error) {
 		pluginDetailMaps[k] = pluginDetail
 	}
 	return sonic.Marshal(result)
+}
+
+func checkUserSpace(ctx context.Context, uid int64, spaceID int64) error {
+	spaces, err := crossuser.DefaultSVC().GetUserSpaceList(ctx, uid)
+	if err != nil {
+		return err
+	}
+
+	var match bool
+	for _, s := range spaces {
+		if s.ID == spaceID {
+			match = true
+			break
+		}
+	}
+
+	if !match {
+		return fmt.Errorf("user %d does not have access to space %d", uid, spaceID)
+	}
+
+	return nil
 }

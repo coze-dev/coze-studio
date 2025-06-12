@@ -5,7 +5,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 )
 
@@ -16,8 +15,15 @@ const (
 	maxNodeCountPerExecution = 1000
 )
 
-func GetStaticConfig() *vo.StaticConfig {
-	return &vo.StaticConfig{
+type StaticConfig struct {
+	ForegroundRunTimeout     time.Duration
+	BackgroundRunTimeout     time.Duration
+	MaxNodeCountPerWorkflow  int
+	MaxNodeCountPerExecution int
+}
+
+func GetStaticConfig() *StaticConfig {
+	return &StaticConfig{
 		ForegroundRunTimeout:     foregroundRunTimeout,
 		BackgroundRunTimeout:     backgroundRunTimeout,
 		MaxNodeCountPerWorkflow:  maxNodeCountPerWorkflow,
@@ -29,7 +35,7 @@ const (
 	executedNodeCountKey = "executed_node_count"
 )
 
-func IncreAndCheckExecutedNodes(ctx context.Context) (int64, bool) {
+func IncrAndCheckExecutedNodes(ctx context.Context) (int64, bool) {
 	counter, ok := ctxcache.Get[atomic.Int64](ctx, executedNodeCountKey)
 	if !ok {
 		return 0, false

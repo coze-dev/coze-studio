@@ -678,9 +678,14 @@ func (i *impl) SyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdent
 
 	updateTime := time.Now()
 
-	outStr, err := sonic.MarshalString(out)
-	if err != nil {
-		return nil, "", err
+	var outStr string
+	if wf.TerminatePlan() == vo.ReturnVariables {
+		outStr, err = sonic.MarshalString(out)
+		if err != nil {
+			return nil, "", err
+		}
+	} else {
+		outStr = out["output"].(string)
 	}
 
 	var status entity.WorkflowExecuteStatus

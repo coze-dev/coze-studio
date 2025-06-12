@@ -73,7 +73,7 @@ func newNodeRunConfig[O any](ns *NodeSchema,
 	}
 
 	opts.init = append(opts.init, func(ctx context.Context) (context.Context, error) {
-		current, exceeded := execute.IncreAndCheckExecutedNodes(ctx)
+		current, exceeded := execute.IncrAndCheckExecutedNodes(ctx)
 		if exceeded {
 			return nil, fmt.Errorf("exceeded max executed node count: %d, current: %d", execute.GetStaticConfig().MaxNodeCountPerExecution, current)
 		}

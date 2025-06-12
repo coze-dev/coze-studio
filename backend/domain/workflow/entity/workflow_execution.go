@@ -15,10 +15,9 @@ type WorkflowExecution struct {
 	WorkflowIdentity
 	SpaceID int64
 	vo.ExecuteConfig
-	ConnectorUID string
-	CreatedAt    time.Time
-	LogID        string
-	NodeCount    int32
+	CreatedAt time.Time
+	LogID     string
+	NodeCount int32
 
 	Status     WorkflowExecuteStatus
 	Duration   time.Duration

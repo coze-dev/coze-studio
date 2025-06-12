@@ -512,6 +512,7 @@ func (r *RepositoryImpl) CreateWorkflowExecution(ctx context.Context, execution 
 		AppID:           ptr.FromOrDefault(execution.AppID, 0),
 		AgentID:         ptr.FromOrDefault(execution.AgentID, 0),
 		ConnectorID:     execution.ConnectorID,
+		ConnectorUID:    execution.ConnectorUID,
 		NodeCount:       execution.NodeCount,
 	}
 
@@ -639,22 +640,22 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 		},
 		SpaceID: rootExe.SpaceID,
 		ExecuteConfig: vo.ExecuteConfig{
-			Operator:    rootExe.OperatorID,
-			Mode:        exeMode,
-			AppID:       ternary.IFElse(rootExe.AppID > 0, ptr.Of(rootExe.AppID), nil),
-			AgentID:     ternary.IFElse(rootExe.AgentID > 0, ptr.Of(rootExe.AgentID), nil),
-			ConnectorID: rootExe.ConnectorID,
+			Operator:     rootExe.OperatorID,
+			Mode:         exeMode,
+			AppID:        ternary.IFElse(rootExe.AppID > 0, ptr.Of(rootExe.AppID), nil),
+			AgentID:      ternary.IFElse(rootExe.AgentID > 0, ptr.Of(rootExe.AgentID), nil),
+			ConnectorID:  rootExe.ConnectorID,
+			ConnectorUID: rootExe.ConnectorUID,
 		},
-		ConnectorUID: rootExe.ConnectorUID,
-		CreatedAt:    time.UnixMilli(rootExe.CreatedAt),
-		LogID:        rootExe.LogID,
-		NodeCount:    rootExe.NodeCount,
-		Status:       entity.WorkflowExecuteStatus(rootExe.Status),
-		Duration:     time.Duration(rootExe.Duration) * time.Millisecond,
-		Input:        &rootExe.Input,
-		Output:       &rootExe.Output,
-		ErrorCode:    &rootExe.ErrorCode,
-		FailReason:   &rootExe.FailReason,
+		CreatedAt:  time.UnixMilli(rootExe.CreatedAt),
+		LogID:      rootExe.LogID,
+		NodeCount:  rootExe.NodeCount,
+		Status:     entity.WorkflowExecuteStatus(rootExe.Status),
+		Duration:   time.Duration(rootExe.Duration) * time.Millisecond,
+		Input:      &rootExe.Input,
+		Output:     &rootExe.Output,
+		ErrorCode:  &rootExe.ErrorCode,
+		FailReason: &rootExe.FailReason,
 		TokenInfo: &entity.TokenUsage{
 			InputTokens:  rootExe.InputTokens,
 			OutputTokens: rootExe.OutputTokens,
@@ -1196,7 +1197,7 @@ func (r *RepositoryImpl) ListWorkflowMeta(ctx context.Context, spaceID int64, pa
 	for _, meta := range result {
 		url, err := r.tos.GetObjectUrl(ctx, meta.IconURI)
 		if err != nil {
-			logs.Warnf("failed to get icon URL for workfolw id %d, icon uri %s: %w", meta.ID, meta.IconURI, err)
+			logs.Warnf("failed to get icon URL for workfolw id %d, icon uri %s: %v", meta.ID, meta.IconURI, err)
 		}
 		wf := &entity.Workflow{
 			WorkflowIdentity: entity.WorkflowIdentity{

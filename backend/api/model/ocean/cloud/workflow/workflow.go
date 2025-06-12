@@ -69091,7 +69091,7 @@ func (p *OpenAPIRunFlowRequest) writeField255(oprot thrift.TProtocol) (err error
 	if p.IsSetBase() {
 		if err = oprot.WriteFieldBegin("Base", thrift.STRUCT, 255); err != nil {
 			goto WriteFieldBeginError
-		}
+			}
 		if err := p.Base.Write(oprot); err != nil {
 			return err
 		}

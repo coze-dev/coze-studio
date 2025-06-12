@@ -34,12 +34,15 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
 
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
+	entity2 "code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
+	mockCrossUser "code.byted.org/flow/opencoze/backend/internal/mock/crossdomain/crossuser"
+
 	pluginModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	crossplugin "code.byted.org/flow/opencoze/backend/crossdomain/workflow/plugin"
-	entity2 "code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
 	pluginentity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	pluginservice "code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
@@ -71,7 +74,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
-func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz, *gomock.Controller, *mock.MockIDGenerator) {
+func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz, *gomock.Controller, *mock.MockIDGenerator, func()) {
 	h := server.Default()
 
 	h.Use(func(c context.Context, ctx *app.RequestContext) {
@@ -105,6 +108,7 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	h.GET("/api/workflow_api/get_node_execute_history", GetNodeExecuteHistory)
 	h.POST("/api/workflow_api/copy", CopyWorkflow)
 	h.POST("/api/workflow_api/batch_delete", BatchDeleteWorkflow)
+	h.POST("/api/workflow_api/node_type", QueryWorkflowNodeTypes)
 
 	ctrl := gomock.NewController(t)
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -148,7 +152,22 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	mockey.Mock(crosssearch.GetNotifier).Return(mockSearchNotify).Build()
 	mockSearchNotify.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
-	return h, ctrl, mockIDGen
+	mockCU := mockCrossUser.NewMockUser(ctrl)
+	mockCU.EXPECT().GetUserSpaceList(gomock.Any(), gomock.Any()).Return([]*crossuser.EntitySpace{
+		{
+			ID: 123,
+		},
+	}, nil).AnyTimes()
+
+	m := mockey.Mock(crossuser.DefaultSVC).Return(mockCU).Build()
+
+	f := func() {
+		m.UnPatch()
+		ctrl.Finish()
+		_ = h.Close()
+	}
+
+	return h, ctrl, mockIDGen, f
 }
 
 func post[T any](t *testing.T, h *server.Hertz, req any, url string) *T {
@@ -388,8 +407,8 @@ func getSuccessStringResult(t *testing.T, h *server.Hertz, idStr string, exeID s
 
 func TestNodeTemplateList(t *testing.T) {
 	mockey.PatchConvey("test node template list", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, _, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
 		req := &workflow.NodeTemplateListRequest{
 			NodeTypes: []string{"1", "5", "18"},
@@ -403,8 +422,8 @@ func TestNodeTemplateList(t *testing.T) {
 
 func TestCRUD(t *testing.T) {
 	mockey.PatchConvey("test CRUD", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, _, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
 		createReq := &workflow.CreateWorkflowRequest{
 			Name:     "test_wf",
@@ -459,8 +478,8 @@ func TestCRUD(t *testing.T) {
 
 func TestTestRunAndGetProcess(t *testing.T) {
 	mockey.PatchConvey("test test_run and get_process", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, ctrl, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
 		mockGlobalAppVarStore := mockvar.NewMockStore(ctrl)
 		mockGlobalAppVarStore.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(1.0, nil).AnyTimes()
@@ -819,8 +838,8 @@ func TestValidateTree(t *testing.T) {
 
 func TestTestResumeWithInputNode(t *testing.T) {
 	mockey.PatchConvey("test test_resume with input node", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, _, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
 		idStr := loadWorkflow(t, h, "input_receiver.json")
 
@@ -1080,6 +1099,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 		mockey.PatchConvey("sync run", func() {
 			_ = post[workflow.PublishWorkflowResponse](t, h, &workflow.PublishWorkflowRequest{
 				WorkflowID:         idStr,
+				SpaceID:            "123",
 				WorkflowVersion:    ptr.Of("v1.0.0"),
 				VersionDescription: ptr.Of("test"),
 			}, "api/workflow_api/publish")
@@ -1103,42 +1123,22 @@ func TestTestResumeWithInputNode(t *testing.T) {
 
 func TestQueryTypes(t *testing.T) {
 	mockey.PatchConvey("test workflow node types", t, func() {
-		h := server.Default()
-		h.POST("/api/workflow_api/node_type", QueryWorkflowNodeTypes)
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+		h, _, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
 
 		t.Run("not sub workflow", func(t *testing.T) {
-			workflowRepo := mockWorkflow.NewMockRepository(ctrl)
-			srv := service.NewWorkflowService(workflowRepo)
-			defer mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
+			mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+				return time.Now().UnixNano(), nil
+			}).Times(1)
 
-			defer mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build().UnPatch()
+			idStr := loadWorkflow(t, h, "query_types/llm_intent_http_nodes.json")
 
-			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/query_types/llm_intent_http_nodes.json")
-			assert.NoError(t, err)
-
-			mockDraftInfo := &vo.DraftInfo{
-				Canvas: string(data),
+			req := &workflow.QueryWorkflowNodeTypeRequest{
+				SpaceID:    "123",
+				WorkflowID: idStr,
 			}
 
-			workflowRepo.EXPECT().GetWorkflowDraft(gomock.Any(), gomock.Any()).Return(mockDraftInfo, nil).AnyTimes()
-
-			req := new(workflow.QueryWorkflowNodeTypeRequest)
-
-			req.WorkflowID = "1"
-
-			m, err := sonic.Marshal(req)
-			assert.NoError(t, err)
-			w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/node_type", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-				ut.Header{Key: "Content-Type", Value: "application/json"})
-
-			res := w.Result()
-			assert.Equal(t, http.StatusOK, res.StatusCode())
-
-			response := &workflow.QueryWorkflowNodeTypeResponse{}
-			err = sonic.Unmarshal(res.Body(), response)
+			response := post[workflow.QueryWorkflowNodeTypeResponse](t, h, req, "/api/workflow_api/node_type")
 			assert.Contains(t, response.Data.NodeTypes, "1")
 			assert.Contains(t, response.Data.NodeTypes, "2")
 			assert.Contains(t, response.Data.NodeTypes, "5")
@@ -1161,35 +1161,18 @@ func TestQueryTypes(t *testing.T) {
 		})
 
 		t.Run("loop conditions", func(t *testing.T) {
-			workflowRepo := mockWorkflow.NewMockRepository(ctrl)
-			srv := service.NewWorkflowService(workflowRepo)
-			defer mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
+			mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+				return time.Now().UnixNano(), nil
+			}).Times(1)
 
-			defer mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build().UnPatch()
+			idStr := loadWorkflow(t, h, "query_types/loop_condition.json")
 
-			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/query_types/loop_condition.json")
-			assert.NoError(t, err)
-
-			mockDraftInfo := &vo.DraftInfo{
-				Canvas: string(data),
+			req := &workflow.QueryWorkflowNodeTypeRequest{
+				SpaceID:    "123",
+				WorkflowID: idStr,
 			}
 
-			workflowRepo.EXPECT().GetWorkflowDraft(gomock.Any(), gomock.Any()).Return(mockDraftInfo, nil).AnyTimes()
-
-			req := new(workflow.QueryWorkflowNodeTypeRequest)
-
-			req.WorkflowID = "1"
-
-			m, err := sonic.Marshal(req)
-			assert.NoError(t, err)
-			w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/node_type", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-				ut.Header{Key: "Content-Type", Value: "application/json"})
-
-			res := w.Result()
-			assert.Equal(t, http.StatusOK, res.StatusCode())
-
-			response := &workflow.QueryWorkflowNodeTypeResponse{}
-			err = sonic.Unmarshal(res.Body(), response)
+			response := post[workflow.QueryWorkflowNodeTypeResponse](t, h, req, "/api/workflow_api/node_type")
 			assert.Contains(t, response.Data.NodeTypes, "1")
 			assert.Contains(t, response.Data.NodeTypes, "2")
 			assert.Contains(t, response.Data.NodeTypes, "21")
@@ -1212,56 +1195,23 @@ func TestQueryTypes(t *testing.T) {
 		})
 
 		t.Run("has sub workflow", func(t *testing.T) {
-			workflowRepo := mockWorkflow.NewMockRepository(ctrl)
-			srv := service.NewWorkflowService(workflowRepo)
-			defer mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(srv).Build().UnPatch()
-			defer mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build().UnPatch()
+			ensureWorkflowVersion(t, h, 7498668117704163337, "v0.0.1",
+				"query_types/wf2.json", mockIDGen)
 
-			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/query_types/subworkflows.json")
-			assert.NoError(t, err)
+			ensureWorkflowVersion(t, h, 7498674832255615002, "v0.0.1", "query_types/wf2child.json", mockIDGen)
 
-			mockDraftInfo := &vo.DraftInfo{
-				Canvas: string(data),
-			}
-			subWf2Data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/query_types/wf2.json")
-			assert.NoError(t, err)
+			mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+				return time.Now().UnixNano(), nil
+			}).AnyTimes()
 
-			subWf2ChildData, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/query_types/wf2child.json")
-			assert.NoError(t, err)
+			idStr := loadWorkflow(t, h, "query_types/subworkflows.json")
 
-			workflowRepo.EXPECT().GetWorkflowDraft(gomock.Any(), gomock.Any()).Return(mockDraftInfo, nil).AnyTimes()
-
-			mockGetWorkflowMeta := func(ctx context.Context, id int64, version string) (*vo.VersionInfo, error) {
-				if id == 7498668117704163337 {
-					return &vo.VersionInfo{
-						Canvas: string(subWf2Data),
-					}, nil
-				}
-				if id == 7498674832255615002 {
-					return &vo.VersionInfo{
-						Canvas: string(subWf2ChildData),
-					}, nil
-				}
-				return nil, fmt.Errorf("not found")
+			req := &workflow.QueryWorkflowNodeTypeRequest{
+				SpaceID:    "123",
+				WorkflowID: idStr,
 			}
 
-			workflowRepo.EXPECT().GetWorkflowVersion(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(mockGetWorkflowMeta).AnyTimes()
-
-			req := new(workflow.QueryWorkflowNodeTypeRequest)
-
-			req.WorkflowID = "1"
-
-			m, err := sonic.Marshal(req)
-			assert.NoError(t, err)
-			w := ut.PerformRequest(h.Engine, "POST", "/api/workflow_api/node_type", &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-				ut.Header{Key: "Content-Type", Value: "application/json"})
-
-			res := w.Result()
-			assert.Equal(t, http.StatusOK, res.StatusCode())
-
-			response := &workflow.QueryWorkflowNodeTypeResponse{}
-			err = sonic.Unmarshal(res.Body(), response)
-			assert.NoError(t, err)
+			response := post[workflow.QueryWorkflowNodeTypeResponse](t, h, req, "/api/workflow_api/node_type")
 
 			assert.Contains(t, response.Data.NodeTypes, "1")
 			assert.Contains(t, response.Data.NodeTypes, "2")
@@ -1291,8 +1241,8 @@ func TestQueryTypes(t *testing.T) {
 
 func TestResumeWithQANode(t *testing.T) {
 	mockey.PatchConvey("test test_resume with qa node", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, ctrl, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
@@ -1490,7 +1440,8 @@ func TestResumeWithQANode(t *testing.T) {
 
 func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 	mockey.PatchConvey("test nested sub workflow with interrupt", t, func() {
-		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
+		h, ctrl, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
@@ -1689,8 +1640,8 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 
 func TestInterruptWithinBatch(t *testing.T) {
 	mockey.PatchConvey("test interrupt within batch", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, ctrl, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
@@ -1935,54 +1886,17 @@ func TestInterruptWithinBatch(t *testing.T) {
 
 func TestPublishWorkflow(t *testing.T) {
 	mockey.PatchConvey("publish work flow", t, func() {
-		h := server.Default()
-		h.POST("/api/workflow_api/create", CreateWorkflow)
-		h.POST("/api/workflow_api/save", SaveWorkflow)
-		h.POST("/api/workflow_api/delete", DeleteWorkflow)
-		h.POST("/api/workflow_api/publish", PublishWorkflow)
-		h.POST("/api/workflow_api/workflow_list", GetWorkFlowList)
+		h, _, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		mockIDGen := mock.NewMockIDGenerator(ctrl)
-
-		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
-		if os.Getenv("CI_JOB_NAME") != "" {
-			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
-		}
-		db, err := gorm.Open(mysql.Open(dsn))
-		assert.NoError(t, err)
-
-		s, err := miniredis.Run()
-		if err != nil {
-			t.Fatalf("Failed to start miniredis: %v", err)
-		}
-
-		redisClient := redis.NewClient(&redis.Options{
-			Addr: s.Addr(),
-		})
-		mockTos := storageMock.NewMockStorage(ctrl)
-		mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
-		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos, nil)
-		mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
-		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
-		mockSearchNotify := searchmock.NewMockNotifier(ctrl)
-		mockey.Mock(crosssearch.GetNotifier).Return(mockSearchNotify).Build()
-		mockSearchNotify.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-
-		id := time.Now().UnixMilli()
-		idStr := strconv.FormatInt(id, 10)
-
-		mockIDGen.EXPECT().GenID(gomock.Any()).Return(id, nil).Times(1)
-
-		loadWorkflowWithWorkflowName(t, h, "pb_wf", "publish/publish_workflow.json")
+		idStr := loadWorkflowWithWorkflowName(t, h, "pb_wa", "publish/publish_workflow.json")
 
 		listResponse := post[workflow.GetWorkFlowListResponse](t, h, &workflow.GetWorkFlowListRequest{
 			Page:    ptr.Of(int32(1)),
 			Size:    ptr.Of(int32(10)),
 			Type:    ptr.Of(workflow.WorkFlowType_User),
 			Status:  ptr.Of(workflow.WorkFlowListStatus_UnPublished),
-			Name:    ptr.Of("pb_wf"),
+			Name:    ptr.Of("pb_wa"),
 			SpaceID: ptr.Of("123"),
 		}, "/api/workflow_api/workflow_list")
 
@@ -2027,50 +1941,10 @@ func TestPublishWorkflow(t *testing.T) {
 
 func TestGetCanvasInfo(t *testing.T) {
 	mockey.PatchConvey("test get canvas info", t, func() {
-		h := server.Default()
-		h.POST("/api/workflow_api/create", CreateWorkflow)
-		h.POST("/api/workflow_api/save", SaveWorkflow)
-		h.POST("/api/workflow_api/delete", DeleteWorkflow)
-		h.POST("/api/workflow_api/canvas", GetCanvasInfo)
-		h.POST("/api/workflow_api/publish", PublishWorkflow)
-		h.POST("/api/workflow_api/test_run", WorkFlowTestRun)
-		h.GET("/api/workflow_api/get_process", GetWorkFlowProcess)
+		h, _, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		mockIDGen := mock.NewMockIDGenerator(ctrl)
-
-		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
-		if os.Getenv("CI_JOB_NAME") != "" {
-			dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")
-		}
-		db, err := gorm.Open(mysql.Open(dsn))
-		assert.NoError(t, err)
-
-		s, err := miniredis.Run()
-		if err != nil {
-			t.Fatalf("Failed to start miniredis: %v", err)
-		}
-
-		redisClient := redis.NewClient(&redis.Options{
-			Addr: s.Addr(),
-		})
-		mockTos := storageMock.NewMockStorage(ctrl)
-		mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
-		workflowRepo := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos, nil)
-		mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
-		mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
-
-		mockSearchNotify := searchmock.NewMockNotifier(ctrl)
-		mockey.Mock(crosssearch.GetNotifier).Return(mockSearchNotify).Build()
-		mockSearchNotify.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-
-		id := time.Now().UnixMilli()
-		idStr := strconv.FormatInt(id, 10)
-
-		mockIDGen.EXPECT().GenID(gomock.Any()).Return(id, nil).Times(1)
-
-		loadWorkflow(t, h, "get_canvas/get_canvas.json")
+		idStr := loadWorkflow(t, h, "get_canvas/get_canvas.json")
 
 		getCanvas := &workflow.GetCanvasInfoRequest{
 			SpaceID:    "123",
@@ -2090,10 +1964,6 @@ func TestGetCanvasInfo(t *testing.T) {
 				"e":     "e",
 			},
 		}
-
-		mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
-			return time.Now().UnixNano(), nil
-		}).AnyTimes()
 
 		testRunResponse := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
 		workflowStatus := workflow.WorkflowExeStatus_Running
@@ -2123,6 +1993,7 @@ func TestGetCanvasInfo(t *testing.T) {
 			WorkflowID:         idStr,
 			WorkflowVersion:    ptr.Of("v0.0.1"),
 			VersionDescription: ptr.Of("version v0.1.1"),
+			SpaceID:            "123",
 		}
 		_ = post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
 
@@ -2166,8 +2037,8 @@ func TestGetCanvasInfo(t *testing.T) {
 
 func TestUpdateWorkflowMeta(t *testing.T) {
 	mockey.PatchConvey("update workflow meta", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, _, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
 		idStr := loadWorkflow(t, h, "entry_exit.json")
 
@@ -2195,8 +2066,8 @@ func TestUpdateWorkflowMeta(t *testing.T) {
 
 func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 	mockey.PatchConvey("simple invokable tool with return variables", t, func() {
-		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
-		defer ctrl.Finish()
+		h, ctrl, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
 
 		ensureWorkflowVersion(t, h, 7492075279843737651, "v0.0.1", "function_call/tool_workflow_1.json", mockIDGen)
 
@@ -2311,6 +2182,7 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 			WorkflowID:         idStr,
 			WorkflowVersion:    ptr.Of("v1.0.0"),
 			VersionDescription: ptr.Of("desc"),
+			SpaceID:            "123",
 		}, "api/workflow_api/publish")
 
 		streamRunReq := &workflow.OpenAPIRunFlowRequest{
@@ -2333,8 +2205,8 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 
 func TestReturnDirectlyStreamableTool(t *testing.T) {
 	mockey.PatchConvey("return directly streamable tool", t, func() {
-		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
-		defer ctrl.Finish()
+		h, ctrl, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
@@ -2482,6 +2354,7 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 			WorkflowID:         idStr,
 			WorkflowVersion:    ptr.Of("v1.0.0"),
 			VersionDescription: ptr.Of("desc"),
+			SpaceID:            "123",
 		}, "api/workflow_api/publish")
 
 		streamRunReq := &workflow.OpenAPIRunFlowRequest{
@@ -2504,8 +2377,8 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 
 func TestSimpleInterruptibleTool(t *testing.T) {
 	mockey.PatchConvey("test simple interruptible tool", t, func() {
-		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
-		defer ctrl.Finish()
+		h, ctrl, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
 
 		ensureWorkflowVersion(t, h, 7492075279843737652, "v0.0.1", "input_receiver.json", mockIDGen)
 
@@ -2625,8 +2498,8 @@ func TestSimpleInterruptibleTool(t *testing.T) {
 
 func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 	mockey.PatchConvey("return directly streamable tool with multiple interrupts", t, func() {
-		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
-		defer ctrl.Finish()
+		h, ctrl, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
@@ -2792,8 +2665,8 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 
 func TestNodeWithBatchEnabled(t *testing.T) {
 	mockey.PatchConvey("test node with batch enabled", t, func() {
-		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
-		defer ctrl.Finish()
+		h, ctrl, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
 
 		ensureWorkflowVersion(t, h, 7469707607914217512, "v0.0.1", "batch/sub_workflow_as_batch.json", mockIDGen)
 
@@ -2967,8 +2840,8 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 
 func TestAggregateStreamVariables(t *testing.T) {
 	mockey.PatchConvey("test aggregate stream variables", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, ctrl, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
@@ -3125,8 +2998,8 @@ func TestAggregateStreamVariables(t *testing.T) {
 
 func TestListWorkflowAsToolData(t *testing.T) {
 	mockey.PatchConvey("publish list workflow & list workflow as tool data", t, func() {
-		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
-		defer ctrl.Finish()
+		h, _, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
 
 		id := time.Now().UnixMilli()
 		idStr := strconv.FormatInt(id, 10)
@@ -3150,6 +3023,7 @@ func TestListWorkflowAsToolData(t *testing.T) {
 			WorkflowID:         idStr,
 			WorkflowVersion:    ptr.Of("v0.0.1"),
 			VersionDescription: ptr.Of("version v0.1.1"),
+			SpaceID:            "123",
 		}
 
 		_ = post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
@@ -3166,7 +3040,7 @@ func TestListWorkflowAsToolData(t *testing.T) {
 		assert.Equal(t, "field1", toolInfoList[0].InputParams[1].Properties[0].Name)
 		assert.Equal(t, "arr", toolInfoList[0].InputParams[2].Name)
 		assert.Equal(t, vo.DataTypeString, toolInfoList[0].InputParams[2].ElemTypeInfo.Type)
-		//
+
 		deleteReq := &workflow.DeleteWorkflowRequest{
 			WorkflowID: idStr,
 			SpaceID:    "123",
@@ -3177,8 +3051,8 @@ func TestListWorkflowAsToolData(t *testing.T) {
 
 func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 	mockey.PatchConvey("workflow detail & detail info", t, func() {
-		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
-		defer ctrl.Finish()
+		h, _, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
 
 		id := time.Now().UnixMilli()
 		idStr := strconv.FormatInt(id, 10)
@@ -3199,6 +3073,7 @@ func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 			WorkflowID:         idStr,
 			WorkflowVersion:    ptr.Of("v0.0.1"),
 			VersionDescription: ptr.Of("version v0.1.1"),
+			SpaceID:            "123",
 		}
 
 		_ = post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
@@ -3207,6 +3082,7 @@ func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 			WorkflowID:         idStr,
 			WorkflowVersion:    ptr.Of("v0.0.2"),
 			VersionDescription: ptr.Of("version v0.0.2"),
+			SpaceID:            "123",
 		}
 
 		_ = post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
@@ -3236,8 +3112,8 @@ func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 func TestParallelInterrupts(t *testing.T) {
 	mockey.PatchConvey("test parallel interrupts", t, func() {
 		defer time.Sleep(time.Second)
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, ctrl, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 		mockModelManager := mockmodel.NewMockManager(ctrl)
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
 
@@ -3598,8 +3474,8 @@ func TestParallelInterrupts(t *testing.T) {
 
 func TestInputComplex(t *testing.T) {
 	mockey.PatchConvey("test input complex", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, _, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
 		idStr := loadWorkflow(t, h, "input_complex.json")
 		testRunReq := &workflow.WorkFlowTestRunRequest{
@@ -3688,8 +3564,8 @@ func TestInputComplex(t *testing.T) {
 
 func TestLLMWithSkills(t *testing.T) {
 	mockey.PatchConvey("workflow llm node with plugin", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, ctrl, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
 		utChatModel := &testutil.UTChatModel{
 			InvokeResultProvider: func(index int, in []*schema.Message) (*schema.Message, error) {
@@ -3874,8 +3750,8 @@ func TestLLMWithSkills(t *testing.T) {
 	})
 
 	mockey.PatchConvey("workflow llm node with workflow as tool", t, func() {
-		h, ctrl, mockIdGen := prepareWorkflowIntegration(t, false)
-		defer ctrl.Finish()
+		h, ctrl, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
 		utChatModel := &testutil.UTChatModel{
 			InvokeResultProvider: func(index int, in []*schema.Message) (*schema.Message, error) {
 				if index == 0 {
@@ -3927,9 +3803,9 @@ func TestLLMWithSkills(t *testing.T) {
 		model.SetManager(mockModelMgr)
 
 		t.Run("llm with workflow tool", func(t *testing.T) {
-			ensureWorkflowVersion(t, h, 7509120431183544356, "v0.0.1", "llm_node_with_skills/llm_workflow_as_tool.json", mockIdGen)
+			ensureWorkflowVersion(t, h, 7509120431183544356, "v0.0.1", "llm_node_with_skills/llm_workflow_as_tool.json", mockIDGen)
 
-			mockIdGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+			mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
 				return time.Now().UnixNano(), nil
 			}).AnyTimes()
 
@@ -3969,8 +3845,8 @@ func TestLLMWithSkills(t *testing.T) {
 	})
 
 	mockey.PatchConvey("workflow llm node with knowledge skill", t, func() {
-		h, ctrl, mockIdGen := prepareWorkflowIntegration(t, false)
-		defer ctrl.Finish()
+		h, ctrl, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
 		utChatModel := &testutil.UTChatModel{
 			InvokeResultProvider: func(index int, in []*schema.Message) (*schema.Message, error) {
 				if index == 0 {
@@ -4029,7 +3905,8 @@ func TestLLMWithSkills(t *testing.T) {
 		}, nil).AnyTimes()
 
 		t.Run("llm node with knowledge skill", func(t *testing.T) {
-			mockIdGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+
+			mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
 				return time.Now().UnixNano(), nil
 			}).AnyTimes()
 
@@ -4070,11 +3947,8 @@ func TestLLMWithSkills(t *testing.T) {
 
 func TestStreamRun(t *testing.T) {
 	mockey.PatchConvey("test stream run", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer func() {
-			ctrl.Finish()
-			_ = h.Close()
-		}()
+		h, ctrl, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
 		go func() {
 			_ = h.Run()
@@ -4296,11 +4170,8 @@ func TestStreamRun(t *testing.T) {
 
 func TestStreamResume(t *testing.T) {
 	mockey.PatchConvey("test stream resume", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer func() {
-			ctrl.Finish()
-			_ = h.Close()
-		}()
+		h, _, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
 		go func() {
 			_ = h.Run()
@@ -4358,6 +4229,7 @@ func TestStreamResume(t *testing.T) {
 			WorkflowID:         idStr,
 			WorkflowVersion:    ptr.Of("v1.0.0"),
 			VersionDescription: ptr.Of("desc"),
+			SpaceID:            "123",
 		}, "api/workflow_api/publish")
 
 		mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
@@ -4531,8 +4403,8 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 }`
 		operation := &pluginModel.Openapi3Operation{}
 		_ = sonic.UnmarshalString(operationString, operation)
-		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
-		defer ctrl.Finish()
+		h, ctrl, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
 
 		mPlugin := mockPlugin.NewMockPluginService(ctrl)
 		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return([]*pluginentity.PluginInfo{
@@ -4558,6 +4430,7 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 				PluginList: []*workflow.PluginFCItem{
 					{PluginID: "123", APIID: "123"},
 				},
+				SpaceID: "123",
 			}
 			response := post[map[string]any](t, h, fcSettingDetailReq, "/api/workflow_api/llm_fc_setting_detail")
 			assert.Equal(t, (*response)["plugin_detail_map"].(map[string]any)["123"].(map[string]any)["description"], "desc")
@@ -4573,6 +4446,7 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 				WorkflowList: []*workflow.WorkflowFCItem{
 					{WorkflowID: "123", PluginID: "123", WorkflowVersion: ptr.Of("v0.0.1")},
 				},
+				SpaceID: "123",
 			}
 			response := post[map[string]any](t, h, fcSettingDetailReq, "/api/workflow_api/llm_fc_setting_detail")
 			mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
@@ -4654,8 +4528,8 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 
 		operation := &pluginModel.Openapi3Operation{}
 		_ = sonic.UnmarshalString(operationString, operation)
-		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
-		defer ctrl.Finish()
+		h, ctrl, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
 
 		mPlugin := mockPlugin.NewMockPluginService(ctrl)
 		mPlugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return([]*pluginentity.PluginInfo{
@@ -4687,6 +4561,7 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 						{Name: "data123", LocalDisable: true},
 					},
 				},
+				SpaceID: "123",
 			}
 			response := post[map[string]any](t, h, fcSettingMergedReq, "/api/workflow_api/llm_fc_setting_merged")
 
@@ -4717,6 +4592,7 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 						{Name: "literal_key_bak", LocalDisable: true},
 					},
 				},
+				SpaceID: "123",
 			}
 
 			response := post[map[string]any](t, h, fcSettingMergedReq, "/api/workflow_api/llm_fc_setting_merged")
@@ -4739,8 +4615,8 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 
 func TestNodeDebugLoop(t *testing.T) {
 	mockey.PatchConvey("test node debug loop", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, _, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 
 		idStr := loadWorkflow(t, h, "loop_selector_variable_assign_text_processor.json")
 
@@ -4801,7 +4677,9 @@ func TestNodeDebugLoop(t *testing.T) {
 
 func TestCopyWorkflow(t *testing.T) {
 	mockey.PatchConvey("copy work flow", t, func() {
-		h, _, _ := prepareWorkflowIntegration(t, true)
+		h, _, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
+
 		idStr := loadWorkflowWithWorkflowName(t, h, "original_workflow", "publish/publish_workflow.json")
 
 		response := post[workflow.CopyWorkflowResponse](t, h, &workflow.CopyWorkflowRequest{
@@ -4838,7 +4716,9 @@ func TestCopyWorkflow(t *testing.T) {
 
 func TestReleaseApplicationWorkflows(t *testing.T) {
 	mockey.PatchConvey("normal release application workflow", t, func() {
-		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
+		h, ctrl, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
+
 		vars := make([]*variable.VarMeta, 0)
 		vars = append(vars, &variable.VarMeta{
 			Name: "app_v1",
@@ -4983,7 +4863,9 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 		}
 	})
 	mockey.PatchConvey("has issues release application workflow", t, func() {
-		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
+		h, ctrl, mockIDGen, f := prepareWorkflowIntegration(t, false)
+		defer f()
+
 		vars := make([]*variable.VarMeta, 0)
 		vars = append(vars, &variable.VarMeta{
 			Name: "app_v1",
@@ -5058,8 +4940,8 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 
 func TestLLMException(t *testing.T) {
 	mockey.PatchConvey("test llm exception", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, ctrl, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 		idStr := loadWorkflow(t, h, "exception/llm_default_output_retry_timeout.json")
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
@@ -5182,8 +5064,8 @@ func TestLLMException(t *testing.T) {
 
 func TestLLMExceptionThenThrow(t *testing.T) {
 	mockey.PatchConvey("test llm exception then throw", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, ctrl, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 		idStr := loadWorkflow(t, h, "exception/llm_timeout_throw.json")
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
@@ -5244,8 +5126,8 @@ func TestLLMExceptionThenThrow(t *testing.T) {
 
 func TestCodeExceptionBranch(t *testing.T) {
 	mockey.PatchConvey("test code exception branch", t, func() {
-		h, ctrl, _ := prepareWorkflowIntegration(t, true)
-		defer ctrl.Finish()
+		h, ctrl, _, f := prepareWorkflowIntegration(t, true)
+		defer f()
 		idStr := loadWorkflow(t, h, "exception/code_exception_branch.json")
 
 		mockey.PatchConvey("exception branch", func() {
@@ -5338,6 +5220,7 @@ func TestCodeExceptionBranch(t *testing.T) {
 					WorkflowID:         idStr,
 					WorkflowVersion:    ptr.Of("v1.0.0"),
 					VersionDescription: ptr.Of("test"),
+					SpaceID:            "123",
 				}, "api/workflow_api/publish")
 
 				mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
