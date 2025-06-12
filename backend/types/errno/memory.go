@@ -20,6 +20,16 @@ const (
 	ErrMemorySetKvMemoryItemInstanceCode = 106000013
 	ErrMemoryUpdateVariableInstanceCode  = 106000014
 	ErrMemoryInsertVariableInstanceCode  = 106000015
+	ErrMemoryDatabaseFieldNotFoundCode   = 106000016
+	ErrMemoryDatabaseNotFoundCode        = 106000017
+	ErrMemoryDatabaseCannotAddData       = 106000018
+	ErrMemoryDatabaseColumnNotMatch      = 106000019
+	ErrMemoryDatabaseXlsSheetEmpty       = 106000020
+	ErrMemoryDatabaseSheetSizeExceed     = 106000021
+	ErrMemoryDatabaseUnsupportedFileType = 106000022
+	ErrMemoryDatabaseSheetRowCountExceed = 106000023
+	ErrMemoryDatabaseSheetIndexExceed    = 106000024
+	ErrMemoryDatabaseNoSheetFound        = 106000025
 )
 
 func init() {
@@ -115,6 +125,66 @@ func init() {
 	code.Register(
 		ErrMemoryInvalidParamCode,
 		"invalid parameter : {msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrMemoryDatabaseFieldNotFoundCode,
+		"database field not found",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrMemoryDatabaseNotFoundCode,
+		"database not found",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrMemoryDatabaseCannotAddData,
+		"database cannot add data",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrMemoryDatabaseColumnNotMatch,
+		"database column not match : {msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrMemoryDatabaseXlsSheetEmpty,
+		"database xls sheet empty",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrMemoryDatabaseSheetSizeExceed,
+		"database sheet size exceed",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrMemoryDatabaseUnsupportedFileType,
+		"database unsupported file type",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrMemoryDatabaseSheetRowCountExceed,
+		"database sheet row count exceed : {msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrMemoryDatabaseSheetIndexExceed,
+		"database sheet index exceed",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrMemoryDatabaseNoSheetFound,
+		"database no sheet found",
 		code.WithAffectStability(false),
 	)
 }

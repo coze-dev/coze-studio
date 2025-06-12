@@ -16,7 +16,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 var (
@@ -87,7 +89,7 @@ func (d *DraftImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 	info, err := res.WithContext(ctx).Where(res.ID.Eq(id)).First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("draft database not found, id=%d", id)
+			return nil, errorx.New(errno.ErrMemoryDatabaseNotFoundCode)
 		}
 		return nil, fmt.Errorf("query draft database failed: %v", err)
 	}
@@ -201,6 +203,9 @@ func (d *DraftImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int6
 	res := tx.DraftDatabaseInfo
 	_, err := res.WithContext(ctx).Where(res.ID.Eq(id)).Delete(&model.DraftDatabaseInfo{})
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errorx.New(errno.ErrMemoryDatabaseNotFoundCode)
+		}
 		return fmt.Errorf("delete draft database failed: %v", err)
 	}
 

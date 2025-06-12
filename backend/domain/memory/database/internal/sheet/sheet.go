@@ -23,8 +23,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type CellTypeIdentifier struct {
@@ -62,16 +64,16 @@ func (t *TosTableParser) GetTableDataBySheetIDx(ctx context.Context, rMeta entit
 	}()
 
 	if len(meta.SheetsRowCount) == 0 {
-		return nil, nil, fmt.Errorf("sheet count is 0")
+		return nil, nil, errorx.New(errno.ErrMemoryDatabaseNoSheetFound)
 	}
 
 	if int(rMeta.SheetId) >= len(meta.SheetsRowCount) {
-		return nil, nil, fmt.Errorf("start sheet index out of range")
+		return nil, nil, errorx.New(errno.ErrMemoryDatabaseSheetIndexExceed)
 	}
 
 	// get execl range: sheetIdx + headerIdx + startLineIdx
 	if rMeta.StartLineIdx > int64(meta.SheetsRowCount[rMeta.SheetId]) {
-		return nil, nil, fmt.Errorf("start line index out of range")
+		return nil, nil, errorx.New(errno.ErrMemoryDatabaseSheetIndexExceed)
 	}
 	extra := &entity.ExcelExtraInfo{
 		ExtensionName: meta.ExtensionName,
@@ -151,7 +153,7 @@ func (t *TosTableParser) getLocalSheetMeta(ctx context.Context, maxLine int64) (
 		for rows.Next() {
 			total++
 			if int64(total) > maxLine {
-				return nil, fmt.Errorf("row count exceed limit when database importing excel, limit: %v", maxLine)
+				return nil, errorx.New(errno.ErrMemoryDatabaseSheetRowCountExceed, errorx.KVf("msg", "row count exceed limit when database importing excel, limit: %v", maxLine))
 			}
 		}
 		meta.SheetsRowCount = append(meta.SheetsRowCount, total)
@@ -166,7 +168,7 @@ func (t *TosTableParser) GetTosTableFile(ctx context.Context) (string, []byte, e
 	objectName := strings.Split(names[len(names)-1], ".")
 	documentExtension := objectName[len(objectName)-1]
 	if documentExtension != "csv" && documentExtension != "xlsx" {
-		return "", nil, fmt.Errorf("unsupported file type")
+		return "", nil, errorx.New(errno.ErrMemoryDatabaseUnsupportedFileType)
 	}
 
 	object, err := t.TosServ.GetObject(ctx, t.TosURI)
@@ -175,7 +177,7 @@ func (t *TosTableParser) GetTosTableFile(ctx context.Context) (string, []byte, e
 	}
 
 	if len(object) > 104857600 {
-		return "", nil, fmt.Errorf("file size exceed limit")
+		return "", nil, errorx.New(errno.ErrMemoryDatabaseSheetSizeExceed)
 	}
 
 	return documentExtension, object, nil
@@ -411,12 +413,12 @@ func getXlsLocalSheetMetaWithTmpFileCallback(ctx context.Context, tmpFile string
 
 	sheet := xlFile.GetSheet(0)
 	if sheet == nil {
-		return nil, fmt.Errorf("get xls sheet nil")
+		return nil, errorx.New(errno.ErrMemoryDatabaseXlsSheetEmpty)
 	}
 
 	records := make([][]string, 0)
 	if sheet.MaxRow < 1 {
-		return nil, fmt.Errorf("get empty xls sheet")
+		return nil, errorx.New(errno.ErrMemoryDatabaseXlsSheetEmpty)
 	}
 	for i := 0; i <= int(sheet.MaxRow); i++ {
 		row := sheet.Row(i)
@@ -451,7 +453,7 @@ func (t *TosTableParser) PredictColumnType(columns []*common.DocTableColumn, sam
 	}
 
 	if len(columns) != len(columnInfos) {
-		return nil, fmt.Errorf("columnType length is not match with column count, column length:%d, predict column length:%d", len(columns), len(columnInfos))
+		return nil, errorx.New(errno.ErrMemoryDatabaseColumnNotMatch, errorx.KVf("msg", "columnType length is not match with column count, column length:%d, predict column length:%d", len(columns), len(columnInfos)))
 	}
 
 	for i := range columns {

@@ -31,10 +31,12 @@ import (
 	sqlparsercontract "code.byted.org/flow/opencoze/backend/infra/contract/sqlparser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type databaseService struct {
@@ -63,11 +65,7 @@ func NewService(rdb rdb.RDB, db *gorm.DB, generator idgen.IDGenerator, storage s
 
 func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabaseRequest) (*CreateDatabaseResponse, error) {
 	draftEntity, onlineEntity := req.Database, req.Database
-
-	fieldItems, columns, err := physicaltable.CreateFieldInfo(ctx, d.generator, req.Database.FieldList)
-	if err != nil {
-		return nil, err
-	}
+	fieldItems, columns := physicaltable.CreateFieldInfo(req.Database.FieldList)
 
 	// create physical draft table
 	draftEntity.FieldList = fieldItems
@@ -82,7 +80,7 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 
 	draftID, err := d.generator.GenID(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errorx.WrapByCode(err, errno.ErrMemoryIDGenFailCode, errorx.KV("msg", "CreateDatabase"))
 	}
 
 	// create physical online table
@@ -98,7 +96,7 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 
 	onlineID, err := d.generator.GenID(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errorx.WrapByCode(err, errno.ErrMemoryIDGenFailCode, errorx.KV("msg", "CreateDatabase"))
 	}
 
 	// insert draft and online database info
@@ -164,10 +162,6 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 func (d databaseService) UpdateDatabase(ctx context.Context, req *UpdateDatabaseRequest) (*UpdateDatabaseResponse, error) {
 	// req.Database.ID is the id of online database
 	input := req.Database
-	if input == nil {
-		return nil, fmt.Errorf("input database is nil")
-	}
-
 	onlineInfo, err := d.onlineDAO.Get(ctx, req.Database.ID)
 	if err != nil {
 		return nil, fmt.Errorf("get online database info failed: %v", err)
@@ -480,7 +474,7 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *AddDatabase
 	}
 
 	if tableInfo.RwMode == table.BotTableRWMode_ReadOnly {
-		return fmt.Errorf("table is readonly, cannot add records")
+		return errorx.New(errno.ErrMemoryDatabaseCannotAddData)
 	}
 
 	physicalTableName := tableInfo.ActualTableName
@@ -512,7 +506,7 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *AddDatabase
 
 		for fieldName, value := range recordMap {
 			if _, fOk := fieldMap[fieldName]; !fOk {
-				return fmt.Errorf("field %s not found in table definition", fieldName)
+				return errorx.New(errno.ErrMemoryDatabaseFieldNotFoundCode, errorx.KV("msg", fmt.Sprintf("field %s not found in table definition", fieldName)))
 			}
 
 			fieldInfo, _ := fieldMap[fieldName]
@@ -558,7 +552,7 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *UpdateDa
 	}
 
 	if tableInfo.RwMode == table.BotTableRWMode_ReadOnly {
-		return fmt.Errorf("table is readonly, cannot add records")
+		return errorx.New(errno.ErrMemoryDatabaseCannotAddData)
 	}
 
 	physicalTableName := tableInfo.ActualTableName
@@ -590,7 +584,7 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *UpdateDa
 			}
 
 			if _, fOk := fieldMap[fieldName]; !fOk {
-				return fmt.Errorf("field %s not found in table definition", fieldName)
+				return errorx.New(errno.ErrMemoryDatabaseFieldNotFoundCode, errorx.KV("msg", fmt.Sprintf("field %s not found in table definition", fieldName)))
 			}
 
 			fieldInfo, _ := fieldMap[fieldName]
@@ -653,13 +647,12 @@ func (d databaseService) DeleteDatabaseRecord(ctx context.Context, req *DeleteDa
 	} else {
 		tableInfo, err = d.draftDAO.Get(ctx, req.DatabaseID)
 	}
-
 	if err != nil {
-		return fmt.Errorf("get table info failed: %v", err)
+		return err
 	}
 
 	if tableInfo.RwMode == table.BotTableRWMode_ReadOnly {
-		return fmt.Errorf("table is readonly, cannot add records")
+		return errorx.New(errno.ErrMemoryDatabaseCannotAddData)
 	}
 
 	physicalTableName := tableInfo.ActualTableName
@@ -919,7 +912,7 @@ func (d databaseService) ExecuteSQL(ctx context.Context, req *ExecuteSQLRequest)
 	if tableInfo.RwMode == table.BotTableRWMode_ReadOnly &&
 		(req.OperateType == database.OperateType_Insert || req.OperateType == database.OperateType_Update ||
 			req.OperateType == database.OperateType_Delete) {
-		return nil, fmt.Errorf("table is readonly, cannot add records")
+		return nil, errorx.New(errno.ErrMemoryDatabaseCannotAddData)
 	}
 
 	physicalTableName := tableInfo.ActualTableName
@@ -1166,7 +1159,7 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 	insertData := make([]map[string]interface{}, 0, len(req.UpsertRows))
 	ids, err := d.generator.GenMultiIDs(ctx, len(req.UpsertRows))
 	if err != nil {
-		return nil, err
+		return nil, errorx.WrapByCode(err, errno.ErrMemoryIDGenFailCode, errorx.KV("msg", "executeInsertSQL"))
 	}
 
 	fieldList := append(tableInfo.FieldList, physicaltable.GetCreateTimeField(), physicaltable.GetUidField(), physicaltable.GetIDField(), physicaltable.GetConnectIDField())
@@ -1196,7 +1189,7 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 		for _, record := range upsertRow.Records {
 			field, exists := fieldMap[record.FieldId]
 			if !exists {
-				return nil, fmt.Errorf("field %s not found", record.FieldId)
+				return nil, errorx.New(errno.ErrMemoryDatabaseFieldNotFoundCode)
 			}
 
 			fieldVal := sqlParams[i].Value
@@ -1250,7 +1243,7 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 	for _, record := range req.UpsertRows[0].Records {
 		field, exists := fieldMap[record.FieldId]
 		if !exists {
-			return -1, fmt.Errorf("field %s not found", record.FieldId)
+			return -1, errorx.New(errno.ErrMemoryDatabaseFieldNotFoundCode)
 		}
 
 		fieldVal := req.SQLParams[index].Value

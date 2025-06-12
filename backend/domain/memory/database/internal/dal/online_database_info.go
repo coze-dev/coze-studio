@@ -16,7 +16,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 var (
@@ -86,7 +88,7 @@ func (o *OlineImpl) Get(ctx context.Context, id int64) (*entity.Database, error)
 	info, err := res.WithContext(ctx).Where(res.ID.Eq(id)).First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("online database not found, id=%d", id)
+			return nil, errorx.New(errno.ErrMemoryDatabaseNotFoundCode)
 		}
 		return nil, fmt.Errorf("query online database failed: %v", err)
 	}
@@ -157,6 +159,9 @@ func (o *OlineImpl) DeleteWithTX(ctx context.Context, tx *query.QueryTx, id int6
 	res := tx.OnlineDatabaseInfo
 	_, err := res.WithContext(ctx).Where(res.ID.Eq(id)).Delete(&model.OnlineDatabaseInfo{})
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errorx.New(errno.ErrMemoryDatabaseNotFoundCode)
+		}
 		return fmt.Errorf("delete online database failed: %v", err)
 	}
 

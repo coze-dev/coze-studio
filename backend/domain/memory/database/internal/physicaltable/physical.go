@@ -8,7 +8,6 @@ import (
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/convertor"
-	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	entity3 "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -40,7 +39,7 @@ func CreatePhysicalTable(ctx context.Context, db rdb.RDB, columns []*entity3.Col
 	return physicalTableRes, nil
 }
 
-func CreateFieldInfo(ctx context.Context, generator idgen.IDGenerator, fieldItems []*model.FieldItem) ([]*model.FieldItem, []*entity3.Column, error) {
+func CreateFieldInfo(fieldItems []*model.FieldItem) ([]*model.FieldItem, []*entity3.Column) {
 	columns := make([]*entity3.Column, len(fieldItems))
 
 	fieldID := int64(1)
@@ -64,18 +63,7 @@ func CreateFieldInfo(ctx context.Context, generator idgen.IDGenerator, fieldItem
 
 	columns = append(columns, GetDefaultColumns()...)
 
-	return fieldItems, columns, nil
-}
-
-func IsDefaultColumn(colName string) bool {
-	defaultCols := getDefaultColumns()
-
-	for _, defaultCol := range defaultCols {
-		if colName == defaultCol.Name {
-			return true
-		}
-	}
-	return false
+	return fieldItems, columns
 }
 
 func GetDefaultColumns() []*entity3.Column {
