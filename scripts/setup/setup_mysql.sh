@@ -18,20 +18,20 @@ echo "ATLAS_URL: $ATLAS_URL"
 OS=$(uname -s)
 
 if command -v atlas &>/dev/null; then
-    echo -e "${GREEN}Atlas is installed."
+    echo -e "${GREEN}Atlas is installed.${NC}"
 else
     if [ "$OS" = "Darwin" ]; then
         # macOS prompt
-        echo "${RED}Atlas is not installed. Please execute the following command to install:"
-        echo "${RED}brew install ariga/tap/atlas"
+        echo -e "${RED}Atlas is not installed. Please execute the following command to install:${NC}"
+        echo -e "${RED}brew install ariga/tap/atlas${NC}"
         exit 1
     elif [ "$OS" = "Linux" ]; then
         # Linux prompt
-        echo "${RED}Atlas is not installed. Please execute the following command to install:"
-        echo "${RED}curl -sSf https://atlasgo.sh | sh -s -- --community"
+        echo -e "${RED}Atlas is not installed. Please execute the following command to install:${NC}"
+        echo -e "${RED}curl -sSf https://atlasgo.sh | sh -s -- --community${NC}"
         exit 1
     else
-        echo "${RED}Unsupported operating system. Please install Atlas manually."
+        echo -e "${RED}Unsupported operating system. Please install Atlas manually.${NC}"
         exit 1
     fi
 fi
@@ -39,16 +39,16 @@ fi
 cd "$DOCKER_DIR/atlas"
 
 if [ "$OS" = "Darwin" ]; then
-    atlas schema apply -u $ATLAS_URL --to file://opencoze_latest_schema.hcl
-    echo -e "${GREEN}✅ apply mysql schema successfully"
+    atlas schema apply -u $ATLAS_URL --to file://opencoze_latest_schema.hcl --auto-approve
+    echo -e "${GREEN}✅ apply mysql schema successfully${NC}"
 elif [ "$OS" = "Linux" ]; then
     atlas migrate apply \
         --url "$ATLAS_URL" \
         --dir "file://migrations" \
         --revisions-schema opencoze \
         --baseline "20250609083036"
-    echo -e "${GREEN}✅ migrate mysql successfully"
-else
-    echo "${RED}Unsupported operating system. Please install Atlas manually."
+    echo -e "${GREEN}✅ migrate mysql successfully${NC}"
+elif [ "$OS" = "Windows" ]; then
+    echo -e "${RED}Windows is not supported. Please install Atlas manually.${NC}"
     exit 1
 fi

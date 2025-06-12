@@ -281,7 +281,7 @@ func (p *PluginApplicationService) RegisterPlugin(ctx context.Context, req *plug
 	mf := &entity.PluginManifest{}
 	err = sonic.UnmarshalString(req.AiPlugin, &mf)
 	if err != nil {
-		return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey, err.Error()))
+		return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey, err.Error()))
 	}
 
 	mf.LogoURL = commonConsts.DefaultPluginIcon
@@ -801,7 +801,7 @@ func (p *PluginApplicationService) UpdatePlugin(ctx context.Context, req *plugin
 	manifest := &entity.PluginManifest{}
 	err = sonic.UnmarshalString(req.AiPlugin, manifest)
 	if err != nil {
-		return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey, err.Error()))
+		return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey, err.Error()))
 	}
 
 	err = p.DomainSVC.UpdateDraftPluginWithCode(ctx, &service.UpdateDraftPluginWithCodeRequest{

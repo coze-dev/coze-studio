@@ -27,14 +27,6 @@ fi
     echo -e "${RED}❌ setup_mysql.sh failed${NC}"
     exit 1
 }
-"${SCRIPT_DIR}"/setup/setup_es.sh || {
-    echo -e "${RED}❌ setup_es.sh failed${NC}"
-    exit 1
-}
-"${SCRIPT_DIR}"/setup/setup_minio.sh || {
-    echo -e "${RED}❌ setup_minio.sh failed${NC}"
-    exit 1
-}
 "${SCRIPT_DIR}"/setup/setup_python.sh || {
     echo -e "${RED}❌ setup_python.sh failed${NC}"
     exit 1

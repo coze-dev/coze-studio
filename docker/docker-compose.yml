@@ -3,18 +3,33 @@ services:
     image: mysql:8.4.5
     container_name: coze-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: opencoze
-      MYSQL_USER: coze
-      MYSQL_PASSWORD: coze123
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-opencoze}
+      MYSQL_USER: ${MYSQL_USER:-coze}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-coze123}
     ports:
       - "3306:3306"
     volumes:
       - ./data/mysql:/var/lib/mysql
-      - ../docker/config/mysql:/docker-entrypoint-initdb.d
+      - ../docker/volumes/mysql:/docker-entrypoint-initdb.d
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u$${MYSQL_USER}",
+          "-p$${MYSQL_PASSWORD}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - coze-network
 
@@ -24,10 +39,10 @@ services:
     user: root
     privileged: true
     environment:
-      - REDIS_AOF_ENABLED=no
-      - REDIS_PORT_NUMBER=6379
-      - REDIS_IO_THREADS=4
-      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_AOF_ENABLED=${REDIS_AOF_ENABLED:-no}
+      - REDIS_PORT_NUMBER=${REDIS_PORT_NUMBER:-6379}
+      - REDIS_IO_THREADS=${REDIS_IO_THREADS:-4}
+      - ALLOW_EMPTY_PASSWORD=${ALLOW_EMPTY_PASSWORD:-yes}
     ports:
       - "6379:6379"
     volumes:
@@ -42,7 +57,7 @@ services:
         exec /opt/bitnami/scripts/redis/entrypoint.sh /opt/bitnami/scripts/redis/run.sh
       "
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 10s
       retries: 10
@@ -87,7 +102,7 @@ services:
     volumes:
       - ./data/rocketmq/broker/logs:/home/rocketmq/logs:rw,Z
       - ./data/rocketmq/broker/store:/home/rocketmq/store:rw,Z
-      - ./config/rocketmq/broker.conf:/home/rocketmq/conf/broker.conf:rw,Z
+      - ./volumes/rocketmq/broker.conf:/home/rocketmq/conf/broker.conf:rw,Z
     networks:
       - coze-network
     command: >
@@ -122,7 +137,7 @@ services:
     depends_on:
       - rocketmq-namesrv
     healthcheck:
-      test: [ "CMD-SHELL", "[ -f /tmp/rocketmq_ready ]" ]
+      test: ["CMD-SHELL", "[ -f /tmp/rocketmq_ready ]"]
       interval: 10s
       timeout: 10s
       retries: 10
@@ -140,7 +155,8 @@ services:
       - "9200:9200"
     volumes:
       - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data
-      - ./config/elasticsearch/elasticsearch.yml:/opt/bitnami/elasticsearch/config/my_elasticsearch.yml
+      - ./volumes/elasticsearch/elasticsearch.yml:/opt/bitnami/elasticsearch/config/my_elasticsearch.yml
+      - ./volumes/elasticsearch/analysis-smartcn.zip:/opt/bitnami/elasticsearch/analysis-smartcn.zip:rw,Z
     healthcheck:
       test:
         [
@@ -169,12 +185,8 @@ services:
         if [ ! -d /opt/bitnami/elasticsearch/plugins/analysis-smartcn ]; then
 
           # Download plugin package locally
-          echo 'Downloading smartcn plugin...';
-          curl -k -L -o /tmp/analysis-smartcn.zip https://artifacts.elastic.co/downloads/elasticsearch-plugins/analysis-smartcn/analysis-smartcn-8.18.0.zip
-          if [[ "$?" != "0" ]]; then
-            echo 'Plugin download failed, exiting installation';
-            exit 1;
-          fi;
+          echo 'Copying smartcn plugin...';
+          cp /opt/bitnami/elasticsearch/analysis-smartcn.zip /tmp/analysis-smartcn.zip 
 
           elasticsearch-plugin install file:///tmp/analysis-smartcn.zip
           if [[ "$?" != "0" ]]; then
@@ -220,7 +232,7 @@ services:
       elasticsearch:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5601/api/status" ]
+      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
       interval: 5s
       timeout: 10s
       retries: 10
@@ -240,9 +252,10 @@ services:
       - ./data/bitnami/minio:/bitnami/minio/data:rw,Z
       - ./data/bitnami/minio/.mc/:/.mc/:rw,Z
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin123
-      MINIO_DEFAULT_BUCKETS: milvus
+      MINIO_BROWSER: on
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_DEFAULT_BUCKETS: ${MINIO_BUCKET:-opencoze},${MINIO_DEFAULT_BUCKETS:-milvus}
     command: >
       bash -c "
         /opt/bitnami/scripts/minio/setup.sh
@@ -253,7 +266,7 @@ services:
         exec /opt/bitnami/scripts/minio/entrypoint.sh /opt/bitnami/scripts/minio/run.sh
       "
     healthcheck:
-      test: [ "CMD-SHELL", "mc mb --ignore-existing local/healthcheck-test" ]
+      test: ["CMD-SHELL", "mc mb --ignore-existing local/healthcheck-test"]
       interval: 5s
       timeout: 10s
       retries: 10
@@ -276,7 +289,7 @@ services:
       - 2380:2380
     volumes:
       - ./data/bitnami/etcd:/bitnami/etcd:rw,Z
-      - ./config/etcd/etcd.conf.yml:/opt/bitnami/etcd/conf/etcd.conf.yml:ro,Z
+      - ./volumes/etcd/etcd.conf.yml:/opt/bitnami/etcd/conf/etcd.conf.yml:ro,Z
     command: >
       bash -c "
         /opt/bitnami/scripts/etcd/setup.sh
@@ -287,7 +300,7 @@ services:
         exec /opt/bitnami/scripts/etcd/entrypoint.sh /opt/bitnami/scripts/etcd/run.sh
       "
     healthcheck:
-      test: [ "CMD", "etcdctl", "endpoint", "health" ]
+      test: ["CMD", "etcdctl", "endpoint", "health"]
       interval: 5s
       timeout: 10s
       retries: 10
@@ -313,16 +326,16 @@ services:
     environment:
       ETCD_ENDPOINTS: coze-etcd:2379
       MINIO_ADDRESS: coze-minio:9000
-      MINIO_BUCKETNAME: milvus
-      MINIO_ACCESS_KEY_ID: minioadmin
-      MINIO_SECRET_ACCESS_KEY: minioadmin123
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET:-milvus}
+      MINIO_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
       MINIO_USE_SSL: false
       LOG_LEVEL: debug
     volumes:
       - ./data/milvus:/var/lib/milvus:rw,Z
-      - ./config/milvus/milvus.yml:/milvus/configs/milvus.yml:ro,Z
+      - ./volumes/milvus/milvus.yml:/milvus/configs/milvus.yml:ro,Z
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9091/healthz" ]
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
       interval: 5s
       timeout: 10s
       retries: 10
@@ -337,7 +350,56 @@ services:
         condition: service_healthy
     networks:
       - coze-network
-
+  elasticsearch-setup:
+    image: alpine:latest
+    container_name: coze-elasticsearch-setup
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh
+      - ./volumes/elasticsearch/es_index_schema:/es_index_schema
+    command: >
+      sh -c "
+        apk add --no-cache bash curl && \
+        (bash -x /setup_es.sh || exit 1) && \
+        echo 'Elasticsearch setup complete, container will keep running.' && \
+        sleep 60
+      "
+    networks:
+      - coze-network
+    restart: "on-failure"
+    healthcheck:
+      test: ["CMD-SHELL", "exit 0"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 0s
+  minio-setup:
+    image: minio/mc
+    container_name: coze-minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    volumes:
+      - ./volumes/minio/default_icon/:/default_icon
+    entrypoint: >
+      /bin/sh -c "
+        (/usr/bin/mc alias set localminio http://coze-minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin123} && \
+        /usr/bin/mc mb --ignore-existing localminio/opencoze && \
+        /usr/bin/mc cp --recursive /default_icon/ localminio/opencoze/default_icon/ && \
+        echo 'MinIO setup complete: Files uploaded to opencoze bucket. Container will keep running.') || exit 1; \
+        sleep 60
+      "
+    networks:
+      - coze-network
+    restart: "on-failure"
+    healthcheck:
+      test: ["CMD-SHELL", "exit 0"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 0s
 networks:
   coze-network:
     driver: bridge

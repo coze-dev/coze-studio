@@ -34,13 +34,12 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
 
-	entity2 "code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
-
 	pluginModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	crossplugin "code.byted.org/flow/opencoze/backend/crossdomain/workflow/plugin"
+	entity2 "code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
 	pluginentity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	pluginservice "code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
@@ -262,8 +261,8 @@ func loadWorkflowWithWorkflowName(t *testing.T, h *server.Hertz, name, schemaFil
 
 	return idStr
 }
-func loadWorkflowWithCreateReq(t *testing.T, h *server.Hertz, createReq *workflow.CreateWorkflowRequest, schemaFile string) string {
 
+func loadWorkflowWithCreateReq(t *testing.T, h *server.Hertz, createReq *workflow.CreateWorkflowRequest, schemaFile string) string {
 	resp := post[workflow.CreateWorkflowResponse](t, h, createReq, "/api/workflow_api/create")
 
 	idStr := resp.Data.WorkflowID
@@ -1063,7 +1062,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 				t.Logf("node resume. workflow status: %s, success rate: %s, interruptEvents: %v, lastOutput= %s, duration= %s", workflowStatus, getProcessResp.Data.Rate, interruptEvents, output, lastResult.WorkflowExeCost)
 			}
 
-			var outputMap = map[string]any{}
+			outputMap := map[string]any{}
 			err = sonic.UnmarshalString(output, &outputMap)
 			assert.NoError(t, err)
 			assert.Equal(t, map[string]any{
@@ -2938,7 +2937,7 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 
 			_ = lastResp
 
-			var outputMap = map[string]any{}
+			outputMap := map[string]any{}
 			err := sonic.UnmarshalString(output, &outputMap)
 			assert.NoError(t, err)
 			assert.Equal(t, map[string]any{
@@ -3974,7 +3973,6 @@ func TestLLMWithSkills(t *testing.T) {
 		defer ctrl.Finish()
 		utChatModel := &testutil.UTChatModel{
 			InvokeResultProvider: func(index int, in []*schema.Message) (*schema.Message, error) {
-
 				if index == 0 {
 					assert.Equal(t, 1, len(in))
 					assert.Contains(t, in[0].Content, "7512369185624686592", "你是一个知识库意图识别AI Agent", "北京有哪些著名的景点")
@@ -4031,7 +4029,6 @@ func TestLLMWithSkills(t *testing.T) {
 		}, nil).AnyTimes()
 
 		t.Run("llm node with knowledge skill", func(t *testing.T) {
-
 			mockIdGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
 				return time.Now().UnixNano(), nil
 			}).AnyTimes()
@@ -4069,7 +4066,6 @@ func TestLLMWithSkills(t *testing.T) {
 			assert.Equal(t, `{"output":"八达岭长城 ‌：明代长城的精华段，被誉为“不到长城非好汉‌"}`, output)
 		})
 	})
-
 }
 
 func TestStreamRun(t *testing.T) {
@@ -4285,7 +4281,7 @@ func TestStreamRun(t *testing.T) {
 
 			assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
 
-			var outputMap = map[string]any{}
+			outputMap := map[string]any{}
 			err := sonic.UnmarshalString(output, &outputMap)
 			assert.NoError(t, err)
 			assert.Equal(t, map[string]any{
@@ -4781,7 +4777,7 @@ func TestNodeDebugLoop(t *testing.T) {
 
 		assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
 
-		var outputMap = map[string]any{}
+		outputMap := map[string]any{}
 		err := sonic.UnmarshalString(output, &outputMap)
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
@@ -4805,7 +4801,6 @@ func TestNodeDebugLoop(t *testing.T) {
 
 func TestCopyWorkflow(t *testing.T) {
 	mockey.PatchConvey("copy work flow", t, func() {
-
 		h, _, _ := prepareWorkflowIntegration(t, true)
 		idStr := loadWorkflowWithWorkflowName(t, h, "original_workflow", "publish/publish_workflow.json")
 
@@ -4838,7 +4833,6 @@ func TestCopyWorkflow(t *testing.T) {
 		_, err := appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), wid)
 		assert.NotNil(t, err)
 		assert.Equal(t, fmt.Sprintf("workflow meta not found for ID %s: record not found", idStr), err.Error())
-
 	})
 }
 
@@ -4987,10 +4981,8 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 				}
 			}
 		}
-
 	})
 	mockey.PatchConvey("has issues release application workflow", t, func() {
-
 		h, ctrl, mockIDGen := prepareWorkflowIntegration(t, false)
 		vars := make([]*variable.VarMeta, 0)
 		vars = append(vars, &variable.VarMeta{
@@ -5061,9 +5053,7 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 1, len(vIssues))
 		assert.Equal(t, 2, len(vIssues[0].IssueMessages))
-
 	})
-
 }
 
 func TestLLMException(t *testing.T) {
@@ -5127,7 +5117,7 @@ func TestLLMException(t *testing.T) {
 
 			assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
 
-			var outputMap = map[string]any{}
+			outputMap := map[string]any{}
 			err := sonic.UnmarshalString(output, &outputMap)
 			assert.NoError(t, err)
 			assert.Equal(t, map[string]any{
@@ -5174,7 +5164,7 @@ func TestLLMException(t *testing.T) {
 
 			assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
 
-			var outputMap = map[string]any{}
+			outputMap := map[string]any{}
 			err := sonic.UnmarshalString(output, &outputMap)
 			assert.NoError(t, err)
 			assert.Equal(t, map[string]any{
@@ -5288,7 +5278,7 @@ func TestCodeExceptionBranch(t *testing.T) {
 
 			assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
 
-			var outputMap = map[string]any{}
+			outputMap := map[string]any{}
 			err := sonic.UnmarshalString(output, &outputMap)
 			assert.NoError(t, err)
 			assert.Equal(t, map[string]any{
@@ -5335,7 +5325,7 @@ func TestCodeExceptionBranch(t *testing.T) {
 
 			assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
 
-			var outputMap = map[string]any{}
+			outputMap := map[string]any{}
 			err := sonic.UnmarshalString(output, &outputMap)
 			assert.NoError(t, err)
 			assert.Equal(t, map[string]any{
