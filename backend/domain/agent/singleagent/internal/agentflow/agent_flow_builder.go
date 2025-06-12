@@ -12,7 +12,6 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
-	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/checkpoint"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -23,6 +22,7 @@ type Config struct {
 	UserID       int64
 	Identity     *entity.AgentIdentity
 	ModelFactory chatmodel.Factory
+	CPStore      compose.CheckPointStore
 }
 
 const (
@@ -210,7 +210,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	var opts []compose.GraphCompileOption
 	if requireCheckpoint {
-		opts = append(opts, compose.WithCheckPointStore(checkpoint.GetStore()))
+		opts = append(opts, compose.WithCheckPointStore(conf.CPStore))
 	}
 
 	runner, err := g.Compile(ctx, opts...)

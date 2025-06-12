@@ -71,11 +71,13 @@ type basicServices struct {
 
 type primaryServices struct {
 	basicServices *basicServices
-	pluginSVC     *plugin.PluginApplicationService
-	memorySVC     *memory.MemoryApplicationServices
-	knowledgeSVC  *knowledge.KnowledgeApplicationService
-	workflowSVC   *workflow.ApplicationService
-	shortcutSVC   *shortcutcmd.ShortcutCmdApplicationService
+	infra         *appinfra.AppDependencies
+
+	pluginSVC    *plugin.PluginApplicationService
+	memorySVC    *memory.MemoryApplicationServices
+	knowledgeSVC *knowledge.KnowledgeApplicationService
+	workflowSVC  *workflow.ApplicationService
+	shortcutSVC  *shortcutcmd.ShortcutCmdApplicationService
 }
 
 type complexServices struct {
@@ -187,6 +189,7 @@ func initPrimaryServices(ctx context.Context, basicServices *basicServices) (*pr
 		knowledgeSVC:  knowledgeSVC,
 		workflowSVC:   workflowDomainSVC,
 		shortcutSVC:   shortcutSVC,
+		infra:         basicServices.infra,
 	}, nil
 }
 
@@ -287,6 +290,7 @@ func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceC
 		WorkflowDomainSVC:    p.workflowSVC.DomainSVC,
 		VariablesDomainSVC:   p.memorySVC.VariablesDomainSVC,
 		ShortcutCMDDomainSVC: p.shortcutSVC.ShortCutDomainSVC,
+		CPStore:              checkpoint.NewRedisStore(p.infra.CacheCli),
 	}
 }
 

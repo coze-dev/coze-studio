@@ -1,6 +1,7 @@
 package singleagent
 
 import (
+	"github.com/cloudwego/eino/compose"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
@@ -48,6 +49,7 @@ type ServiceComponents struct {
 	ConnectorDomainSVC   connector.Connector
 	DatabaseDomainSVC    database.Database
 	ShortcutCMDDomainSVC shortcutCmd.ShortcutCmd
+	CPStore              compose.CheckPointStore
 }
 
 func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
@@ -56,8 +58,8 @@ func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
 		AgentVersionRepo: repository.NewSingleAgentVersionRepo(c.DB, c.IDGen),
 		PublishInfoRepo:  jsoncache.New[entity.PublishInfo]("agent:publish:last:", c.Cache),
 		CounterRepo:      repository.NewCounterRepo(c.Cache),
-
-		ModelFactory: chatmodel.NewDefaultFactory(),
+		CPStore:          c.CPStore,
+		ModelFactory:     chatmodel.NewDefaultFactory(),
 	}
 
 	singleAgentDomainSVC := singleagent.NewService(domainComponents)

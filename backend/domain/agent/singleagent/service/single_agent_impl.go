@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 
+	"github.com/cloudwego/eino/compose"
 	"github.com/jinzhu/copier"
 
 	"github.com/cloudwego/eino/schema"
@@ -33,6 +34,8 @@ type Components struct {
 	AgentVersionRepo repository.SingleAgentVersionRepo
 	PublishInfoRepo  *jsoncache.JsonCache[entity.PublishInfo]
 	CounterRepo      repository.CounterRepository
+
+	CPStore compose.CheckPointStore
 }
 
 func NewService(c *Components) SingleAgent {
@@ -88,6 +91,7 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 		UserID:       req.UserID,
 		Identity:     req.Identity,
 		ModelFactory: s.ModelFactory,
+		CPStore:      s.CPStore,
 	}
 	rn, err := agentflow.BuildAgent(ctx, conf)
 	if err != nil {
