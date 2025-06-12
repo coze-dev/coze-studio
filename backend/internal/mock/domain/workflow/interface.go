@@ -13,16 +13,15 @@ import (
 	context "context"
 	reflect "reflect"
 
+	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
+	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	tool "github.com/cloudwego/eino/components/tool"
 	compose "github.com/cloudwego/eino/compose"
 	schema "github.com/cloudwego/eino/schema"
 	redis "github.com/redis/go-redis/v9"
 	gomock "go.uber.org/mock/gomock"
-
-	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
-	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 // MockService is a mock of Service interface.
@@ -65,12 +64,13 @@ func (mr *MockServiceMockRecorder) AsyncExecuteNode(ctx, id, nodeID, input, conf
 }
 
 // AsyncExecuteWorkflow mocks base method.
-func (m *MockService) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (int64, error) {
+func (m *MockService) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (int64, *entity.WorkflowBasic, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AsyncExecuteWorkflow", ctx, id, input, config)
 	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(*entity.WorkflowBasic)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // AsyncExecuteWorkflow indicates an expected call of AsyncExecuteWorkflow.
@@ -288,6 +288,21 @@ func (mr *MockServiceMockRecorder) GetWorkflowDraft(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkflowDraft", reflect.TypeOf((*MockService)(nil).GetWorkflowDraft), ctx, id)
 }
 
+// GetWorkflowLatestVersion mocks base method.
+func (m *MockService) GetWorkflowLatestVersion(ctx context.Context, id int64) (*entity.Workflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWorkflowLatestVersion", ctx, id)
+	ret0, _ := ret[0].(*entity.Workflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWorkflowLatestVersion indicates an expected call of GetWorkflowLatestVersion.
+func (mr *MockServiceMockRecorder) GetWorkflowLatestVersion(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkflowLatestVersion", reflect.TypeOf((*MockService)(nil).GetWorkflowLatestVersion), ctx, id)
+}
+
 // GetWorkflowReference mocks base method.
 func (m *MockService) GetWorkflowReference(ctx context.Context, id int64) (map[int64]*entity.Workflow, error) {
 	m.ctrl.T.Helper()
@@ -481,6 +496,22 @@ func (m *MockService) StreamResumeWorkflow(ctx context.Context, req *entity.Resu
 func (mr *MockServiceMockRecorder) StreamResumeWorkflow(ctx, req, config any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamResumeWorkflow", reflect.TypeOf((*MockService)(nil).StreamResumeWorkflow), ctx, req, config)
+}
+
+// SyncExecuteWorkflow mocks base method.
+func (m *MockService) SyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (*entity.WorkflowExecution, vo.TerminatePlan, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SyncExecuteWorkflow", ctx, id, input, config)
+	ret0, _ := ret[0].(*entity.WorkflowExecution)
+	ret1, _ := ret[1].(vo.TerminatePlan)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// SyncExecuteWorkflow indicates an expected call of SyncExecuteWorkflow.
+func (mr *MockServiceMockRecorder) SyncExecuteWorkflow(ctx, id, input, config any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncExecuteWorkflow", reflect.TypeOf((*MockService)(nil).SyncExecuteWorkflow), ctx, id, input, config)
 }
 
 // UpdateWorkflowMeta mocks base method.

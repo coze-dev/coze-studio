@@ -794,7 +794,11 @@ func OpenAPIRunFlow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.OpenAPIRunFlowResponse)
+	resp, err := appworkflow.SVC.OpenAPIRun(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -915,7 +919,7 @@ func OpenAPIStreamRunFlow(ctx context.Context, c *app.RequestContext) {
 	c.Response.Header.Set("Connection", "keep-alive")
 	c.Response.Header.Set("Access-Control-Allow-Origin", "*")
 
-	sr, err := appworkflow.SVC.StreamRun(ctx, &req)
+	sr, err := appworkflow.SVC.OpenAPIStreamRun(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -942,7 +946,7 @@ func OpenAPIStreamResumeFlow(ctx context.Context, c *app.RequestContext) {
 	c.Response.Header.Set("Connection", "keep-alive")
 	c.Response.Header.Set("Access-Control-Allow-Origin", "*")
 
-	sr, err := appworkflow.SVC.StreamResume(ctx, &req)
+	sr, err := appworkflow.SVC.OpenAPIStreamResume(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return

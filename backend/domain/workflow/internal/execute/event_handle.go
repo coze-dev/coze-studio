@@ -637,7 +637,7 @@ func HandleExecuteEvent(ctx context.Context,
 	repo workflow.Repository,
 	sw *schema.StreamWriter[*entity.Message], // stream writer for emitting entity.Message
 	exeCfg vo.ExecuteConfig,
-) {
+) *Event {
 	defer func() {
 		clearFn()
 		if timeoutFn != nil {
@@ -667,14 +667,14 @@ func HandleExecuteEvent(ctx context.Context,
 			case noTerminate:
 				// continue to next event
 			case workflowAbort:
-				return
+				return event
 			case workflowSuccess: // workflow success, wait for exit node to be done
 				wfSuccessEvent = event
 				if lastNodeIsDone || exeCfg.Mode == vo.ExecuteModeNodeDebug {
 					if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
 						logs.Error("failed to set root workflow success: %v", err)
 					}
-					return
+					return wfSuccessEvent
 				}
 			case lastNodeDone: // exit node done, wait for workflow success
 				lastNodeIsDone = true
@@ -682,7 +682,7 @@ func HandleExecuteEvent(ctx context.Context,
 					if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
 						logs.Error("failed to set root workflow success: %v", err)
 					}
-					return
+					return wfSuccessEvent
 				}
 			}
 		}

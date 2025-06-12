@@ -401,6 +401,43 @@ func (i *impl) GetWorkflowVersion(ctx context.Context, wfe *entity.WorkflowIdent
 	return wf, nil
 }
 
+func (i *impl) GetWorkflowLatestVersion(ctx context.Context, id int64) (*entity.Workflow, error) {
+	// 1. Get workflow meta
+	wf, err := i.repo.GetWorkflowMeta(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	vInfo, err := i.repo.GetLatestWorkflowVersion(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	wf.Canvas = &vInfo.Canvas
+	wf.Version = vInfo.Version
+	wf.VersionDesc = vInfo.VersionDescription
+
+	// 3. Unmarshal parameters if they exist
+	if vInfo.InputParams != "" {
+		input := make([]*vo.NamedTypeInfo, 0)
+		err = sonic.UnmarshalString(vInfo.InputParams, &input)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal input params for workflow %d: %w", id, err)
+		}
+		wf.InputParams = input
+	}
+	if vInfo.OutputParams != "" {
+		output := make([]*vo.NamedTypeInfo, 0)
+		err = sonic.UnmarshalString(vInfo.OutputParams, &output)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal output params for workflow %d: %w", id, err)
+		}
+		wf.OutputParams = output
+	}
+
+	return wf, nil
+}
+
 func (i *impl) GetWorkflowReference(ctx context.Context, id int64) (map[int64]*entity.Workflow, error) {
 	parent, err := i.repo.GetParentWorkflowsBySubWorkflowID(ctx, id)
 	if err != nil {
@@ -570,10 +607,8 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 	return wfValidateInfos, err
 }
 
-// AsyncExecuteWorkflow executes the specified workflow asynchronously, returning the execution ID.
-// Intermediate results are not emitted on the fly.
-// The caller is expected to poll the execution status using the GetExecution method and the returned execution ID.
-func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (int64, error) {
+func (i *impl) SyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (
+	*entity.WorkflowExecution, vo.TerminatePlan, error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -581,23 +616,23 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 	if id.Version != "" {
 		wfEntity, err = i.GetWorkflowVersion(ctx, id)
 		if err != nil {
-			return 0, err
+			return nil, "", err
 		}
 	} else {
 		wfEntity, err = i.GetWorkflowDraft(ctx, id.ID)
 		if err != nil {
-			return 0, err
+			return nil, "", err
 		}
 	}
 
 	c := &vo.Canvas{}
 	if err = sonic.UnmarshalString(*wfEntity.Canvas, c); err != nil {
-		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
+		return nil, "", fmt.Errorf("failed to unmarshal canvas: %w", err)
 	}
 
 	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, c)
 	if err != nil {
-		return 0, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
+		return nil, "", fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
 	var wfOpts []compose.WorkflowOption
@@ -608,7 +643,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 
 	wf, err := compose.NewWorkflow(ctx, workflowSC, wfOpts...)
 	if err != nil {
-		return 0, fmt.Errorf("failed to create workflow: %w", err)
+		return nil, "", fmt.Errorf("failed to create workflow: %w", err)
 	}
 
 	if wfEntity.AppID != nil && config.AppID == nil {
@@ -617,17 +652,136 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 
 	convertedInput, err := nodes.ConvertInputs(input, wf.Inputs())
 	if err != nil {
-		return 0, fmt.Errorf("failed to convert inputs: %w", err)
+		return nil, "", fmt.Errorf("failed to convert inputs: %w", err)
 	}
 
 	inStr, err := sonic.MarshalString(input)
 	if err != nil {
-		return 0, err
+		return nil, "", err
 	}
-	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(workflowSC.NodeCount()),
+	cancelCtx, executeID, opts, lastEventChan, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(workflowSC.NodeCount()),
 		nil, i.repo, workflowSC, nil, config)
 	if err != nil {
-		return 0, err
+		return nil, "", err
+	}
+
+	startTime := time.Now()
+
+	out, err := wf.SyncRun(cancelCtx, convertedInput, opts...)
+	if err != nil {
+		if _, ok := einoCompose.ExtractInterruptInfo(err); !ok {
+			return nil, "", err
+		}
+	}
+
+	lastEvent := <-lastEventChan
+
+	updateTime := time.Now()
+
+	outStr, err := sonic.MarshalString(out)
+	if err != nil {
+		return nil, "", err
+	}
+
+	var status entity.WorkflowExecuteStatus
+	switch lastEvent.Type {
+	case execute.WorkflowSuccess:
+		status = entity.WorkflowSuccess
+	case execute.WorkflowInterrupt:
+		status = entity.WorkflowInterrupted
+	case execute.WorkflowFailed:
+		status = entity.WorkflowFailed
+	case execute.WorkflowCancel:
+		status = entity.WorkflowCancel
+	}
+
+	var failReason *string
+	if lastEvent.Err != nil {
+		failReason = ptr.Of(lastEvent.Err.Err.Error())
+	}
+
+	return &entity.WorkflowExecution{
+		ID:               executeID,
+		WorkflowIdentity: wfEntity.WorkflowIdentity,
+		SpaceID:          wfEntity.SpaceID,
+		ExecuteConfig:    config,
+		CreatedAt:        startTime,
+		NodeCount:        workflowSC.NodeCount(),
+		Status:           status,
+		Duration:         lastEvent.Duration,
+		Input:            ptr.Of(inStr),
+		Output:           ptr.Of(outStr),
+		ErrorCode:        ptr.Of("-1"),
+		FailReason:       failReason,
+		TokenInfo: &entity.TokenUsage{
+			InputTokens:  lastEvent.GetInputTokens(),
+			OutputTokens: lastEvent.GetOutputTokens(),
+		},
+		UpdatedAt:       ptr.Of(updateTime),
+		RootExecutionID: executeID,
+		InterruptEvents: lastEvent.InterruptEvents,
+	}, wf.TerminatePlan(), nil
+}
+
+// AsyncExecuteWorkflow executes the specified workflow asynchronously, returning the execution ID.
+// Intermediate results are not emitted on the fly.
+// The caller is expected to poll the execution status using the GetExecution method and the returned execution ID.
+func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (
+	int64, *entity.WorkflowBasic, error) {
+	var (
+		err      error
+		wfEntity *entity.Workflow
+	)
+	if id.Version != "" {
+		wfEntity, err = i.GetWorkflowVersion(ctx, id)
+		if err != nil {
+			return 0, nil, err
+		}
+	} else {
+		wfEntity, err = i.GetWorkflowDraft(ctx, id.ID)
+		if err != nil {
+			return 0, nil, err
+		}
+	}
+
+	c := &vo.Canvas{}
+	if err = sonic.UnmarshalString(*wfEntity.Canvas, c); err != nil {
+		return 0, nil, fmt.Errorf("failed to unmarshal canvas: %w", err)
+	}
+
+	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, c)
+	if err != nil {
+		return 0, nil, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
+	}
+
+	var wfOpts []compose.WorkflowOption
+	wfOpts = append(wfOpts, compose.WithIDAsName(wfEntity.ID))
+	if s := execute.GetStaticConfig(); s != nil && s.MaxNodeCountPerWorkflow > 0 {
+		wfOpts = append(wfOpts, compose.WithMaxNodeCount(s.MaxNodeCountPerWorkflow))
+	}
+
+	wf, err := compose.NewWorkflow(ctx, workflowSC, wfOpts...)
+	if err != nil {
+		return 0, nil, fmt.Errorf("failed to create workflow: %w", err)
+	}
+
+	if wfEntity.AppID != nil && config.AppID == nil {
+		config.AppID = wfEntity.AppID
+	}
+
+	convertedInput, err := nodes.ConvertInputs(input, wf.Inputs())
+	if err != nil {
+		return 0, nil, fmt.Errorf("failed to convert inputs: %w", err)
+	}
+
+	inStr, err := sonic.MarshalString(input)
+	if err != nil {
+		return 0, nil, err
+	}
+	cancelCtx, executeID, opts, _, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(workflowSC.NodeCount()),
+		nil, i.repo, workflowSC, nil, config)
+	if err != nil {
+		return 0, nil, err
 	}
 
 	if config.Mode == vo.ExecuteModeDebug {
@@ -638,7 +792,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 
 	wf.AsyncRun(cancelCtx, convertedInput, opts...)
 
-	return executeID, nil
+	return executeID, wfEntity.GetBasic(workflowSC.NodeCount()), nil
 }
 
 func (i *impl) AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]any, config vo.ExecuteConfig) (int64, error) {
@@ -682,7 +836,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity
 	if err != nil {
 		return 0, err
 	}
-	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(newSC.NodeCount()),
+	cancelCtx, executeID, opts, _, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(newSC.NodeCount()),
 		nil, i.repo, newSC, nil, config)
 	if err != nil {
 		return 0, err
@@ -756,7 +910,7 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 
 	sr, sw := schema.Pipe[*entity.Message](10)
 
-	cancelCtx, executeID, opts, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(workflowSC.NodeCount()),
+	cancelCtx, executeID, opts, _, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(workflowSC.NodeCount()),
 		nil, i.repo, workflowSC, sw, config)
 	if err != nil {
 		return nil, err
@@ -1056,7 +1210,7 @@ func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeReques
 
 		config.Mode = vo.ExecuteModeNodeDebug
 
-		cancelCtx, _, opts, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
+		cancelCtx, _, opts, _, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
 			req, i.repo, newSC, nil, config)
 
 		wf.AsyncRun(cancelCtx, nil, opts...)
@@ -1074,7 +1228,7 @@ func (i *impl) AsyncResumeWorkflow(ctx context.Context, req *entity.ResumeReques
 		return fmt.Errorf("failed to create workflow: %w", err)
 	}
 
-	cancelCtx, _, opts, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
+	cancelCtx, _, opts, _, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
 		req, i.repo, workflowSC, nil, config)
 
 	wf.AsyncRun(cancelCtx, nil, opts...)
@@ -1150,7 +1304,7 @@ func (i *impl) StreamResumeWorkflow(ctx context.Context, req *entity.ResumeReque
 	}
 
 	sr, sw := schema.Pipe[*entity.Message](10)
-	cancelCtx, _, opts, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
+	cancelCtx, _, opts, _, err := compose.Prepare(ctx, "", wfExe.GetBasic(),
 		req, i.repo, workflowSC, sw, config)
 
 	wf.AsyncRun(cancelCtx, nil, opts...)
@@ -1194,7 +1348,7 @@ func (i *impl) CancelWorkflow(ctx context.Context, wfExeID int64, wfID, spaceID 
 		return fmt.Errorf("failed to save workflow execution to canceled while interrupted: %v", err)
 	} else if updatedRows == 0 {
 		if currentStatus != entity.WorkflowRunning {
-			return fmt.Errorf("failed to update workflow execution to canceled while interrupted for execution id %d, current status is %v", wfExe.ID, currentStatus)
+			return nil // already terminal state
 		}
 
 		// current running, let the execution time event handle do the actual updating status to cancel

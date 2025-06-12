@@ -156,7 +156,10 @@ func (w *Workflow) AsyncRun(ctx context.Context, in map[string]any, opts ...comp
 	safego.Go(ctx, func() {
 		_, _ = w.Runner.Invoke(ctx, in, opts...)
 	})
+}
 
+func (w *Workflow) SyncRun(ctx context.Context, in map[string]any, opts ...compose.Option) (map[string]any, error) {
+	return w.Runner.Invoke(ctx, in, opts...)
 }
 
 func (w *Workflow) Inputs() map[string]*vo.TypeInfo {

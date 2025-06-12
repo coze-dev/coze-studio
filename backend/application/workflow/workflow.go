@@ -321,7 +321,7 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 		return nil, errors.New("project_id and bot_id cannot be set at the same time")
 	}
 
-	exeID, err := GetWorkflowDomainSVC().AsyncExecuteWorkflow(ctx, wfID, maps.ToAnyValue(req.Input), exeCfg)
+	exeID, _, err := GetWorkflowDomainSVC().AsyncExecuteWorkflow(ctx, wfID, maps.ToAnyValue(req.Input), exeCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -826,7 +826,7 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 	}
 }
 
-func (w *ApplicationService) StreamRun(ctx context.Context, req *workflow.OpenAPIRunFlowRequest) (
+func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow.OpenAPIRunFlowRequest) (
 	*schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], error) {
 	parameters := make(map[string]any)
 	if req.Parameters != nil {
@@ -842,6 +842,12 @@ func (w *ApplicationService) StreamRun(ctx context.Context, req *workflow.OpenAP
 
 	if req.Version != nil {
 		wfIdentity.Version = *req.Version
+	} else {
+		wf, err := GetWorkflowDomainSVC().GetWorkflowLatestVersion(ctx, wfIdentity.ID)
+		if err != nil {
+			return nil, err
+		}
+		wfIdentity.Version = wf.Version
 	}
 
 	var appID, agentID *int64
@@ -886,7 +892,7 @@ func (w *ApplicationService) StreamRun(ctx context.Context, req *workflow.OpenAP
 	return schema.StreamReaderWithConvert(sr, convert), nil
 }
 
-func (w *ApplicationService) StreamResume(ctx context.Context, req *workflow.OpenAPIStreamResumeFlowRequest) (
+func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workflow.OpenAPIStreamResumeFlowRequest) (
 	*schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], error) {
 	idStr := req.EventID
 	idSegments := strings.Split(idStr, "/")
@@ -928,6 +934,119 @@ func (w *ApplicationService) StreamResume(ctx context.Context, req *workflow.Ope
 	convert := convertStreamRunEvent(workflowID)
 
 	return schema.StreamReaderWithConvert(sr, convert), nil
+}
+
+func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenAPIRunFlowRequest) (
+	*workflow.OpenAPIRunFlowResponse, error) {
+	parameters := make(map[string]any)
+	if req.Parameters != nil {
+		err := sonic.UnmarshalString(*req.Parameters, &parameters)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	wfIdentity := &entity.WorkflowIdentity{
+		ID: mustParseInt64(req.GetWorkflowID()),
+	}
+
+	if req.Version != nil {
+		wfIdentity.Version = *req.Version
+	} else {
+		wf, err := GetWorkflowDomainSVC().GetWorkflowLatestVersion(ctx, wfIdentity.ID)
+		if err != nil {
+			return nil, err
+		}
+		wfIdentity.Version = wf.Version
+	}
+
+	var appID, agentID *int64
+	if req.IsSetProjectID() {
+		appID = ptr.Of(mustParseInt64(req.GetProjectID()))
+	}
+	if req.IsSetBotID() {
+		agentID = ptr.Of(mustParseInt64(req.GetBotID()))
+	}
+
+	var connectorID int64
+	if req.IsSetConnectorID() {
+		connectorID = mustParseInt64(req.GetConnectorID())
+	}
+
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	userID := apiKeyInfo.UserID
+	if connectorID != consts.WebSDKConnectorID {
+		connectorID = apiKeyInfo.ConnectorID
+	}
+
+	exeCfg := vo.ExecuteConfig{
+		Operator:    userID,
+		Mode:        vo.ExecuteModeRelease,
+		AppID:       appID,
+		AgentID:     agentID,
+		ConnectorID: connectorID,
+		TaskType:    vo.TaskTypeForeground,
+	}
+
+	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
+		return nil, errors.New("project_id and bot_id cannot be set at the same time")
+	}
+
+	if req.GetIsAsync() {
+		exeID, wfBasic, err := GetWorkflowDomainSVC().AsyncExecuteWorkflow(ctx, wfIdentity, parameters, exeCfg)
+		if err != nil {
+			return nil, err
+		}
+
+		return &workflow.OpenAPIRunFlowResponse{
+			ExecuteID: ptr.Of(strconv.FormatInt(exeID, 10)),
+			DebugUrl:  ptr.Of(fmt.Sprintf(debugURLTpl, exeID, wfBasic.SpaceID, wfIdentity.ID)),
+		}, nil
+	}
+
+	wfExe, tPlan, err := GetWorkflowDomainSVC().SyncExecuteWorkflow(ctx, wfIdentity, parameters, exeCfg)
+	if err != nil {
+		return nil, err
+	}
+
+	if wfExe.Status == entity.WorkflowInterrupted {
+		return nil, errors.New("sync run workflow does not support interrupt/resume")
+	}
+
+	var data *string
+	if tPlan == vo.ReturnVariables {
+		data = wfExe.Output
+	} else {
+		var m map[string]any
+		if err = sonic.UnmarshalString(*wfExe.Output, &m); err != nil {
+			return nil, err
+		}
+		dataStr, ok := m["output"].(string)
+		if !ok {
+			logs.CtxWarnf(ctx, "openapi sync run workflow with answer mode, output is not str: %T", m["output"])
+		}
+
+		answerOutput := map[string]any{
+			"content_type":   1,
+			"data":           dataStr,
+			"type_for_model": 2,
+		}
+
+		answerOutputStr, err := sonic.MarshalString(answerOutput)
+		if err != nil {
+			return nil, err
+		}
+
+		data = ptr.Of(answerOutputStr)
+	}
+
+	return &workflow.OpenAPIRunFlowResponse{
+		Data:      data,
+		ExecuteID: ptr.Of(strconv.FormatInt(wfExe.ID, 10)),
+		DebugUrl:  ptr.Of(fmt.Sprintf(debugURLTpl, wfExe.ID, wfExe.SpaceID, wfIdentity.ID)),
+		Token:     ptr.Of(wfExe.TokenInfo.InputTokens + wfExe.TokenInfo.OutputTokens),
+		Cost:      ptr.Of("0.00000"),
+	}, nil
 }
 
 func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.ValidateTreeRequest) (*workflow.ValidateTreeResponse, error) {

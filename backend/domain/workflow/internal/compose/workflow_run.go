@@ -34,6 +34,7 @@ func Prepare(ctx context.Context,
 	context.Context,
 	int64,
 	[]einoCompose.Option,
+	<-chan *execute.Event,
 	error,
 ) {
 	var (
@@ -44,7 +45,7 @@ func Prepare(ctx context.Context,
 	if resumeReq == nil {
 		executeID, err = wf.GetRepository().GenID(ctx)
 		if err != nil {
-			return ctx, 0, nil, fmt.Errorf("failed to generate workflow execute ID: %w", err)
+			return ctx, 0, nil, nil, fmt.Errorf("failed to generate workflow execute ID: %w", err)
 		}
 	} else {
 		executeID = resumeReq.ExecuteID
@@ -60,22 +61,22 @@ func Prepare(ctx context.Context,
 	if resumeReq != nil {
 		interruptEvent, found, err = repo.GetFirstInterruptEvent(ctx, executeID)
 		if err != nil {
-			return ctx, 0, nil, err
+			return ctx, 0, nil, nil, err
 		}
 
 		if !found {
-			return ctx, 0, nil, fmt.Errorf("interrupt event does not exist, id: %d", resumeReq.EventID)
+			return ctx, 0, nil, nil, fmt.Errorf("interrupt event does not exist, id: %d", resumeReq.EventID)
 		}
 
 		if interruptEvent.ID != resumeReq.EventID {
-			return ctx, 0, nil, fmt.Errorf("interrupt event id mismatch, expect: %d, actual: %d", resumeReq.EventID, interruptEvent.ID)
+			return ctx, 0, nil, nil, fmt.Errorf("interrupt event id mismatch, expect: %d, actual: %d", resumeReq.EventID, interruptEvent.ID)
 		}
 
 	}
 
 	composeOpts, err := DesignateOptions(ctx, wb, sc, executeID, eventChan, interruptEvent, sw, config)
 	if err != nil {
-		return ctx, 0, nil, err
+		return ctx, 0, nil, nil, err
 	}
 
 	if interruptEvent != nil {
@@ -94,7 +95,7 @@ func Prepare(ctx context.Context,
 				indexStr := path[len(execute.InterruptEventIndexPrefix):]
 				index, err := strconv.Atoi(indexStr)
 				if err != nil {
-					return ctx, 0, nil, fmt.Errorf("failed to parse index: %w", err)
+					return ctx, 0, nil, nil, fmt.Errorf("failed to parse index: %w", err)
 				}
 
 				currentI--
@@ -113,7 +114,7 @@ func Prepare(ctx context.Context,
 					indexStr := path[len(execute.InterruptEventIndexPrefix):]
 					index, err := strconv.Atoi(indexStr)
 					if err != nil {
-						return ctx, 0, nil, fmt.Errorf("failed to parse index: %w", err)
+						return ctx, 0, nil, nil, fmt.Errorf("failed to parse index: %w", err)
 					}
 
 					i--
@@ -130,21 +131,21 @@ func Prepare(ctx context.Context,
 		if interruptEvent.EventType == entity.InterruptEventQuestion {
 			modifiedData, err := qa.AppendInterruptData(interruptEvent.InterruptData, resumeReq.ResumeData)
 			if err != nil {
-				return ctx, 0, nil, fmt.Errorf("failed to append interrupt data: %w", err)
+				return ctx, 0, nil, nil, fmt.Errorf("failed to append interrupt data: %w", err)
 			}
 			interruptEvent.InterruptData = modifiedData
 			if err = repo.UpdateFirstInterruptEvent(ctx, executeID, interruptEvent); err != nil {
-				return ctx, 0, nil, fmt.Errorf("failed to update interrupt event: %w", err)
+				return ctx, 0, nil, nil, fmt.Errorf("failed to update interrupt event: %w", err)
 			}
 		}
 
 		success, currentStatus, err := repo.TryLockWorkflowExecution(ctx, executeID, resumeReq.EventID)
 		if err != nil {
-			return ctx, 0, nil, fmt.Errorf("try lock workflow execution unexpected err: %w", err)
+			return ctx, 0, nil, nil, fmt.Errorf("try lock workflow execution unexpected err: %w", err)
 		}
 
 		if !success {
-			return ctx, 0, nil, fmt.Errorf("workflow execution lock failed, current status is %v, executeID: %d", currentStatus, executeID)
+			return ctx, 0, nil, nil, fmt.Errorf("workflow execution lock failed, current status is %v, executeID: %d", currentStatus, executeID)
 		}
 
 		logs.CtxInfof(ctx, "resuming with eventID: %d, executeID: %d, nodeKey: %s", interruptEvent.ID,
@@ -165,13 +166,13 @@ func Prepare(ctx context.Context,
 		}
 
 		if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
-			return ctx, 0, nil, err
+			return ctx, 0, nil, nil, err
 		}
 	}
 
 	cancelSignalChan, clearFn, err := repo.SubscribeWorkflowCancelSignal(ctx, executeID)
 	if err != nil {
-		return ctx, 0, nil, err
+		return ctx, 0, nil, nil, err
 	}
 
 	cancelCtx, cancelFn := context.WithCancel(ctx)
@@ -185,6 +186,7 @@ func Prepare(ctx context.Context,
 
 	cancelCtx = execute.InitExecutedNodesCounter(cancelCtx)
 
+	lastEventChan := make(chan *execute.Event, 1)
 	go func() {
 		defer func() {
 			if panicErr := recover(); panicErr != nil {
@@ -198,9 +200,10 @@ func Prepare(ctx context.Context,
 		}()
 
 		// this goroutine should not use the cancelCtx because it needs to be alive to receive workflow cancel events
-		execute.HandleExecuteEvent(ctx, eventChan, cancelFn, timeoutFn,
+		lastEventChan <- execute.HandleExecuteEvent(ctx, eventChan, cancelFn, timeoutFn,
 			cancelSignalChan, clearFn, wf.GetRepository(), sw, config)
+		close(lastEventChan)
 	}()
 
-	return cancelCtx, executeID, composeOpts, nil
+	return cancelCtx, executeID, composeOpts, lastEventChan, nil
 }

@@ -30,7 +30,7 @@ type nodeRunConfig[O any] struct {
 	postProcessors          []func(ctx context.Context, input map[string]any) (map[string]any, error)
 	callbackInputConverter  func(context.Context, map[string]any) (map[string]any, error)
 	callbackOutputConverter func(context.Context, map[string]any) (*nodes.StructuredCallbackOutput, error)
-	init                    func(context.Context) (context.Context, error)
+	init                    []func(context.Context) (context.Context, error)
 	i                       compose.Invoke[map[string]any, map[string]any, O]
 	s                       compose.Stream[map[string]any, map[string]any, O]
 	t                       compose.Transform[map[string]any, map[string]any, O]
@@ -66,18 +66,19 @@ func newNodeRunConfig[O any](ns *NodeSchema,
 	if meta.PreFillZero {
 		preProcessors = append(preProcessors, ns.inputValueFiller())
 	}
-	preProcessors = append(preProcessors, func(ctx context.Context, input map[string]any) (map[string]any, error) {
-		current, exceeded := execute.IncreAndCheckExecutedNodes(ctx)
-		if exceeded {
-			return nil, fmt.Errorf("exceeded max executed node count: %d, current: %d", execute.GetStaticConfig().MaxNodeCountPerExecution, current)
-		}
-		return input, nil
-	})
 
 	var postProcessors []func(ctx context.Context, input map[string]any) (map[string]any, error)
 	if meta.PostFillNil {
 		postProcessors = append(postProcessors, ns.outputValueFiller())
 	}
+
+	opts.init = append(opts.init, func(ctx context.Context) (context.Context, error) {
+		current, exceeded := execute.IncreAndCheckExecutedNodes(ctx)
+		if exceeded {
+			return nil, fmt.Errorf("exceeded max executed node count: %d, current: %d", execute.GetStaticConfig().MaxNodeCountPerExecution, current)
+		}
+		return ctx, nil
+	})
 
 	return &nodeRunConfig[O]{
 		nodeKey:                 ns.Key,
@@ -134,7 +135,7 @@ func newNodeRunConfigWOOpt(ns *NodeSchema,
 type newNodeOptions struct {
 	callbackInputConverter  func(context.Context, map[string]any) (map[string]any, error)
 	callbackOutputConverter func(context.Context, map[string]any) (*nodes.StructuredCallbackOutput, error)
-	init                    func(context.Context) (context.Context, error)
+	init                    []func(context.Context) (context.Context, error)
 }
 
 type newNodeOption func(*newNodeOptions)
@@ -151,7 +152,7 @@ func withCallbackOutputConverter(f func(context.Context, map[string]any) (*nodes
 }
 func withInit(f func(context.Context) (context.Context, error)) newNodeOption {
 	return func(opts *newNodeOptions) {
-		opts.init = f
+		opts.init = append(opts.init, f)
 	}
 }
 
@@ -215,8 +216,8 @@ func (nc *nodeRunConfig[O]) invoke() func(ctx context.Context, input map[string]
 			}
 		}()
 
-		if runner.init != nil {
-			if ctx, err = runner.init(ctx); err != nil {
+		for _, i := range runner.init {
+			if ctx, err = i(ctx); err != nil {
 				return nil, err
 			}
 		}
@@ -259,8 +260,8 @@ func (nc *nodeRunConfig[O]) stream() func(ctx context.Context, input map[string]
 			}
 		}()
 
-		if runner.init != nil {
-			if ctx, err = runner.init(ctx); err != nil {
+		for _, i := range runner.init {
+			if ctx, err = i(ctx); err != nil {
 				return nil, err
 			}
 		}
@@ -299,8 +300,8 @@ func (nc *nodeRunConfig[O]) transform() func(ctx context.Context, input *schema.
 			}
 		}()
 
-		if runner.init != nil {
-			if ctx, err = runner.init(ctx); err != nil {
+		for _, i := range runner.init {
+			if ctx, err = i(ctx); err != nil {
 				return nil, err
 			}
 		}

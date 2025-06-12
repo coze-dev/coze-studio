@@ -23,8 +23,11 @@ type Service interface {
 	DeleteWorkflow(ctx context.Context, id int64) error
 	GetWorkflowDraft(ctx context.Context, id int64) (*entity.Workflow, error)
 	GetWorkflowVersion(ctx context.Context, wfe *entity.WorkflowIdentity) (*entity.Workflow, error)
+	GetWorkflowLatestVersion(ctx context.Context, id int64) (*entity.Workflow, error)
 	ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*workflow.ValidateTreeInfo, error)
-	AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (int64, error)
+	SyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (
+		*entity.WorkflowExecution, vo.TerminatePlan, error)
+	AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (int64, *entity.WorkflowBasic, error)
 	AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]any, config vo.ExecuteConfig) (int64, error)
 	GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error)
 	GetNodeExecution(ctx context.Context, exeID int64, nodeID string) (*entity.NodeExecution, *entity.NodeExecution, error)

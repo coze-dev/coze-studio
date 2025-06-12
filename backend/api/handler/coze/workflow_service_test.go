@@ -99,6 +99,7 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	h.POST("/api/workflow_api/workflow_detail_info", GetWorkflowDetailInfo)
 	h.POST("/api/workflow_api/llm_fc_setting_detail", GetLLMNodeFCSettingDetail)
 	h.POST("/api/workflow_api/llm_fc_setting_merged", GetLLMNodeFCSettingsMerged)
+	h.POST("/v1/workflow/run", OpenAPIRunFlow)
 	h.POST("/v1/workflow/stream_run", OpenAPIStreamRunFlow)
 	h.POST("/v1/workflow/stream_resume", OpenAPIStreamResumeFlow)
 	h.POST("/api/workflow_api/nodeDebug", WorkflowNodeDebugV2)
@@ -167,6 +168,18 @@ func post[T any](t *testing.T, h *server.Hertz, req any, url string) *T {
 		t.Errorf("failed to unmarshal response body: %v", err)
 	}
 	return &resp
+}
+
+func postWithError(t *testing.T, h *server.Hertz, req any, url string) string {
+	m, err := sonic.Marshal(req)
+	assert.NoError(t, err)
+	w := ut.PerformRequest(h.Engine, "POST", url, &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
+		ut.Header{Key: "Content-Type", Value: "application/json"})
+	res := w.Result()
+	if res.StatusCode() == http.StatusOK {
+		t.Errorf("unexpected error")
+	}
+	return string(res.Body())
 }
 
 func postSSE(t *testing.T, req any, url string) *sse.Reader {
@@ -324,6 +337,15 @@ func mustUnmarshalToMap(t *testing.T, s string) map[string]any {
 	return r
 }
 
+func mustMarshalToString(t *testing.T, m any) string {
+	b, err := sonic.MarshalString(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return b
+}
+
 func ensureWorkflowVersion(t *testing.T, h *server.Hertz, id int64, version string, schemaFile string, mockIDGen *mock.MockIDGenerator) {
 	// query workflow draft, if not exists, load file to create the workflow
 	// query workflow version, if not exists, publish the version
@@ -343,6 +365,26 @@ func ensureWorkflowVersion(t *testing.T, h *server.Hertz, id int64, version stri
 			t.Fatal(err)
 		}
 	}
+}
+
+func getSuccessStringResult(t *testing.T, h *server.Hertz, idStr string, exeID string) string {
+	workflowStatus := workflow.WorkflowExeStatus_Running
+	var output string
+	for {
+		if workflowStatus != workflow.WorkflowExeStatus_Running {
+			break
+		}
+
+		getProcessResp := getProcess(t, h, idStr, exeID)
+		if len(getProcessResp.Data.NodeResults) > 0 {
+			output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
+		}
+
+		workflowStatus = getProcessResp.Data.ExecuteStatus
+	}
+
+	assert.Equal(t, workflow.WorkflowExeStatus_Success, workflowStatus)
+	return output
 }
 
 func TestNodeTemplateList(t *testing.T) {
@@ -468,28 +510,48 @@ func TestTestRunAndGetProcess(t *testing.T) {
 		}
 
 		testRunResp = post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
-		workflowStatus = workflow.WorkflowExeStatus_Running
-		var output string
-		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running {
-				break
-			}
 
-			getProcessResp := getProcess(t, h, idStr, testRunResp.Data.ExecuteID)
-			if len(getProcessResp.Data.NodeResults) > 0 {
-				output = getProcessResp.Data.NodeResults[len(getProcessResp.Data.NodeResults)-1].Output
-			}
-
-			workflowStatus = getProcessResp.Data.ExecuteStatus
-			t.Logf("second run workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
-		}
-
-		assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowSuccess), workflowStatus)
-
+		output := getSuccessStringResult(t, h, idStr, testRunResp.Data.ExecuteID)
 		t.Log(output)
 
 		// cancel after success, nothing happens
 		_ = post[workflow.CancelWorkFlowResponse](t, h, cancelReq, "/api/workflow_api/cancel")
+
+		_ = post[workflow.PublishWorkflowResponse](t, h, &workflow.PublishWorkflowRequest{
+			WorkflowID:         idStr,
+			SpaceID:            "123",
+			WorkflowVersion:    ptr.Of("v0.0.1"),
+			VersionDescription: ptr.Of("desc"),
+		}, "/api/workflow_api/publish")
+
+		mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
+			UserID:      123,
+			ConnectorID: consts.APIConnectorID,
+		}).Build()
+
+		runReq := &workflow.OpenAPIRunFlowRequest{
+			WorkflowID: idStr,
+			Parameters: ptr.Of(mustMarshalToString(t, testRunReq.Input)),
+			IsAsync:    ptr.Of(true),
+		}
+
+		runResp := post[workflow.OpenAPIRunFlowResponse](t, h, runReq, "/v1/workflow/run")
+		output = getSuccessStringResult(t, h, idStr, runResp.GetExecuteID())
+		assert.Equal(t, "1.0_['1234', '5678']", output)
+
+		syncRunReq := &workflow.OpenAPIRunFlowRequest{
+			WorkflowID: idStr,
+			Parameters: ptr.Of(mustMarshalToString(t, testRunReq.Input)),
+			IsAsync:    ptr.Of(false),
+		}
+
+		runResp = post[workflow.OpenAPIRunFlowResponse](t, h, syncRunReq, "/v1/workflow/run")
+
+		output = runResp.GetData()
+		var m map[string]any
+		err := sonic.UnmarshalString(output, &m)
+		assert.NoError(t, err)
+		assert.Equal(t, "1.0_['1234', '5678']", m["data"])
 	})
 }
 
@@ -1014,6 +1076,28 @@ func TestTestResumeWithInputNode(t *testing.T) {
 
 			result := getNodeExeHistory(t, h, idStr, executeID, "154951", nil)
 			assert.Equal(t, outputMap, mustUnmarshalToMap(t, result.Output))
+		})
+
+		mockey.PatchConvey("sync run", func() {
+			_ = post[workflow.PublishWorkflowResponse](t, h, &workflow.PublishWorkflowRequest{
+				WorkflowID:         idStr,
+				WorkflowVersion:    ptr.Of("v1.0.0"),
+				VersionDescription: ptr.Of("test"),
+			}, "api/workflow_api/publish")
+
+			mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
+				UserID:      123,
+				ConnectorID: consts.APIConnectorID,
+			}).Build()
+
+			syncRunReq := &workflow.OpenAPIRunFlowRequest{
+				WorkflowID: idStr,
+				Parameters: ptr.Of(mustMarshalToString(t, testRunReq.Input)),
+				IsAsync:    ptr.Of(false),
+			}
+
+			errStr := postWithError(t, h, syncRunReq, "/v1/workflow/run")
+			assert.Equal(t, "sync run workflow does not support interrupt/resume", errStr)
 		})
 	})
 }
@@ -2224,6 +2308,12 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 		}
 		inputStr, _ := sonic.MarshalString(input)
 
+		_ = post[workflow.PublishWorkflowResponse](t, h, &workflow.PublishWorkflowRequest{
+			WorkflowID:         idStr,
+			WorkflowVersion:    ptr.Of("v1.0.0"),
+			VersionDescription: ptr.Of("desc"),
+		}, "api/workflow_api/publish")
+
 		streamRunReq := &workflow.OpenAPIRunFlowRequest{
 			WorkflowID: idStr,
 			Parameters: ptr.Of(inputStr),
@@ -2388,6 +2478,12 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 			"input": "hello",
 		}
 		inputStr, _ := sonic.MarshalString(input)
+
+		_ = post[workflow.PublishWorkflowResponse](t, h, &workflow.PublishWorkflowRequest{
+			WorkflowID:         idStr,
+			WorkflowVersion:    ptr.Of("v1.0.0"),
+			VersionDescription: ptr.Of("desc"),
+		}, "api/workflow_api/publish")
 
 		streamRunReq := &workflow.OpenAPIRunFlowRequest{
 			WorkflowID: idStr,
@@ -4120,6 +4216,14 @@ func TestStreamRun(t *testing.T) {
 			UserID:      123,
 			ConnectorID: consts.APIConnectorID,
 		}).Build()
+
+		_ = post[workflow.PublishWorkflowResponse](t, h, &workflow.PublishWorkflowRequest{
+			WorkflowID:         idStr,
+			SpaceID:            "123",
+			WorkflowVersion:    ptr.Of("v0.0.1"),
+			VersionDescription: ptr.Of("desc"),
+		}, "/api/workflow_api/publish")
+
 		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
 		err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
 			t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
@@ -4253,6 +4357,12 @@ func TestStreamResume(t *testing.T) {
 			resumeID string
 			index    int
 		)
+
+		_ = post[workflow.PublishWorkflowResponse](t, h, &workflow.PublishWorkflowRequest{
+			WorkflowID:         idStr,
+			WorkflowVersion:    ptr.Of("v1.0.0"),
+			VersionDescription: ptr.Of("desc"),
+		}, "api/workflow_api/publish")
 
 		mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
 			UserID:      123,
@@ -5196,7 +5306,7 @@ func TestCodeExceptionBranch(t *testing.T) {
 					"key1": []string{"value1", "value2"},
 					"key2": map[string]any{},
 				},
-			}, nil)
+			}, nil).AnyTimes()
 
 			testRunReq := &workflow.WorkFlowTestRunRequest{
 				WorkflowID: idStr,
@@ -5232,6 +5342,34 @@ func TestCodeExceptionBranch(t *testing.T) {
 				"output":  true,
 				"output1": "",
 			}, outputMap)
+
+			mockey.PatchConvey("sync run", func() {
+				_ = post[workflow.PublishWorkflowResponse](t, h, &workflow.PublishWorkflowRequest{
+					WorkflowID:         idStr,
+					WorkflowVersion:    ptr.Of("v1.0.0"),
+					VersionDescription: ptr.Of("test"),
+				}, "api/workflow_api/publish")
+
+				mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
+					UserID:      123,
+					ConnectorID: consts.APIConnectorID,
+				}).Build()
+
+				syncRunReq := &workflow.OpenAPIRunFlowRequest{
+					WorkflowID: idStr,
+					Parameters: ptr.Of(mustMarshalToString(t, testRunReq.Input)),
+					IsAsync:    ptr.Of(false),
+				}
+
+				runResp := post[workflow.OpenAPIRunFlowResponse](t, h, syncRunReq, "/v1/workflow/run")
+				var m map[string]any
+				err = sonic.UnmarshalString(runResp.GetData(), &m)
+				assert.NoError(t, err)
+				assert.Equal(t, map[string]any{
+					"output":  true,
+					"output1": "",
+				}, m)
+			})
 		})
 	})
 }
