@@ -87,7 +87,7 @@ func (p *pluginServiceImpl) buildExecConfig(ctx context.Context, req *ExecuteToo
 	if execOpt.Operation != nil {
 		err = execOpt.Operation.Validate()
 		if err != nil {
-			return nil, fmt.Errorf("tool operation validates failed, err=%v", err)
+			return nil, errorx.Wrapf(err, "tool operation validates failed")
 		}
 		config.Tool.Operation = execOpt.Operation
 	}

@@ -629,13 +629,13 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		if req.DebugExample.ReqExample != "" {
 			err = sonic.UnmarshalString(req.DebugExample.ReqExample, &reqExample)
 			if err != nil {
-				return fmt.Errorf("invalid req example, err=%s", err)
+				return errorx.WrapByCode(err, errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey, "invalid request example"))
 			}
 		}
 		if req.DebugExample.RespExample != "" {
 			err = sonic.UnmarshalString(req.DebugExample.RespExample, &respExample)
 			if err != nil {
-				return fmt.Errorf("invalid resp example, err=%s", err)
+				return errorx.WrapByCode(err, errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey, "invalid response example"))
 			}
 		}
 

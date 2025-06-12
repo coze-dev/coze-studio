@@ -74,7 +74,7 @@ func (p *PluginApplicationService) GetPlaygroundPluginList(ctx context.Context, 
 
 		onlinePlugins, err = p.pluginRepo.MGetOnlinePlugins(ctx, pluginIDs)
 		if err != nil {
-			return nil, fmt.Errorf("MGetOnlinePlugins failed, pluginIDs=%v, err=%v", pluginIDs, err)
+			return nil, errorx.Wrapf(err, "MGetOnlinePlugins failed, pluginIDs=%v", pluginIDs)
 		}
 
 		total = int64(len(onlinePlugins))
@@ -93,7 +93,7 @@ func (p *PluginApplicationService) GetPlaygroundPluginList(ctx context.Context, 
 		}
 		onlinePlugins, total, err = p.pluginRepo.ListCustomOnlinePlugins(ctx, req.GetSpaceID(), pageInfo)
 		if err != nil {
-			return nil, fmt.Errorf("ListCustomOnlinePlugins failed, spaceID=%d, err=%v", req.GetSpaceID(), err)
+			return nil, errorx.Wrapf(err, "ListCustomOnlinePlugins failed, spaceID=%d", req.GetSpaceID())
 		}
 	}
 
@@ -101,7 +101,7 @@ func (p *PluginApplicationService) GetPlaygroundPluginList(ctx context.Context, 
 	for _, pl := range onlinePlugins {
 		tools, err := p.toolRepo.GetPluginAllOnlineTools(ctx, pl.ID)
 		if err != nil {
-			return nil, fmt.Errorf("GetPluginAllOnlineTools failed, pluginID=%d, err=%v", pl.ID, err)
+			return nil, errorx.Wrapf(err, "GetPluginAllOnlineTools failed, pluginID=%d", pl.ID)
 		}
 
 		pluginInfo, err := p.toPluginInfoForPlayground(ctx, pl, tools)
@@ -244,7 +244,7 @@ func (p *PluginApplicationService) RegisterPluginMeta(ctx context.Context, req *
 	}
 	pluginID, err := p.DomainSVC.CreateDraftPlugin(ctx, r)
 	if err != nil {
-		return nil, fmt.Errorf("CreateDraftPlugin failed, err=%v", err)
+		return nil, errorx.Wrapf(err, "CreateDraftPlugin failed")
 	}
 
 	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
@@ -299,7 +299,7 @@ func (p *PluginApplicationService) RegisterPlugin(ctx context.Context, req *plug
 		OpenapiDoc:  ptr.Of(model.Openapi3T(*doc)),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("CreateDraftPluginWithCode failed, err=%v", err)
+		return nil, errorx.Wrapf(err, "CreateDraftPluginWithCode failed")
 	}
 
 	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
@@ -333,7 +333,7 @@ func (p *PluginApplicationService) RegisterPlugin(ctx context.Context, req *plug
 func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *pluginAPI.GetPluginAPIsRequest) (resp *pluginAPI.GetPluginAPIsResponse, err error) {
 	pl, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
-		return nil, fmt.Errorf("GetDraftPlugin failed, pluginID=%d, err=%v", req.PluginID, err)
+		return nil, errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", req.PluginID)
 	}
 	if !exist {
 		return nil, errorx.New(errno.ErrPluginRecordNotFound)
@@ -355,7 +355,7 @@ func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *plugi
 
 		draftTools, err = p.toolRepo.MGetDraftTools(ctx, toolIDs)
 		if err != nil {
-			return nil, fmt.Errorf("MGetDraftTools failed, toolIDs=%v, err=%v", toolIDs, err)
+			return nil, errorx.Wrapf(err, "MGetDraftTools failed, toolIDs=%v", toolIDs)
 		}
 
 		total = int64(len(draftTools))
@@ -369,7 +369,7 @@ func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *plugi
 		}
 		draftTools, total, err = p.toolRepo.ListPluginDraftTools(ctx, req.PluginID, pageInfo)
 		if err != nil {
-			return nil, fmt.Errorf("ListPluginDraftTools failed, pluginID=%d, err=%v", req.PluginID, err)
+			return nil, errorx.Wrapf(err, "ListPluginDraftTools failed, pluginID=%d", req.PluginID)
 		}
 	}
 
@@ -446,7 +446,7 @@ func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *plugi
 func (p *PluginApplicationService) getToolOnlineStatus(ctx context.Context, toolIDs []int64) (map[int64]common.OnlineStatus, error) {
 	onlineTools, err := p.toolRepo.MGetOnlineTools(ctx, toolIDs, repository.WithToolID())
 	if err != nil {
-		return nil, fmt.Errorf("MGetOnlineTools failed, toolIDs=%v, err=%v", toolIDs, err)
+		return nil, errorx.Wrapf(err, "MGetOnlineTools failed, toolIDs=%v", toolIDs)
 	}
 
 	onlineStatus := make(map[int64]common.OnlineStatus, len(onlineTools))
@@ -460,7 +460,7 @@ func (p *PluginApplicationService) getToolOnlineStatus(ctx context.Context, tool
 func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfoRequest) (resp *pluginAPI.GetPluginInfoResponse, err error) {
 	draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
-		return nil, fmt.Errorf("GetDraftPlugin failed, pluginID=%d, err=%v", req.PluginID, err)
+		return nil, errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", req.PluginID)
 	}
 	if !exist {
 		return nil, errorx.New(errno.ErrPluginRecordNotFound)
@@ -468,7 +468,7 @@ func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *plugi
 
 	tools, err := p.toolRepo.GetPluginAllDraftTools(ctx, draftPlugin.ID)
 	if err != nil {
-		return nil, fmt.Errorf("GetPluginAllDraftTools failed, pluginID=%d, err=%v", draftPlugin.ID, err)
+		return nil, errorx.Wrapf(err, "GetPluginAllDraftTools failed, pluginID=%d", req.PluginID)
 	}
 
 	paths := openapi3.Paths{}
@@ -548,7 +548,7 @@ func (p *PluginApplicationService) getPluginMetaInfo(ctx context.Context, draftP
 
 	err = p.fillAuthInfoInMetaInfo(ctx, draftPlugin, metaInfo)
 	if err != nil {
-		return nil, fmt.Errorf("fillAuthInfoInMetaInfo failed, pluginID=%d, err=%v", draftPlugin.ID, err)
+		return nil, errorx.Wrapf(err, "fillAuthInfoInMetaInfo failed, pluginID=%d", draftPlugin.ID)
 	}
 
 	return metaInfo, nil
@@ -602,11 +602,11 @@ func (p *PluginApplicationService) fillAuthInfoInMetaInfo(ctx context.Context, d
 func (p *PluginApplicationService) GetUpdatedAPIs(ctx context.Context, req *pluginAPI.GetUpdatedAPIsRequest) (resp *pluginAPI.GetUpdatedAPIsResponse, err error) {
 	draftTools, err := p.toolRepo.GetPluginAllDraftTools(ctx, req.PluginID)
 	if err != nil {
-		return nil, fmt.Errorf("GetPluginAllDraftTools failed, pluginID=%d, err=%v", req.PluginID, err)
+		return nil, errorx.Wrapf(err, "GetPluginAllDraftTools failed, pluginID=%d", req.PluginID)
 	}
 	onlineTools, err := p.toolRepo.GetPluginAllOnlineTools(ctx, req.PluginID)
 	if err != nil {
-		return nil, fmt.Errorf("GetPluginAllOnlineTools failed, pluginID=%d, err=%v", req.PluginID, err)
+		return nil, errorx.Wrapf(err, "GetPluginAllOnlineTools failed, pluginID=%d", req.PluginID)
 	}
 
 	var updatedToolName, createdToolName, delToolName []string
@@ -685,7 +685,7 @@ func (p *PluginApplicationService) GetUserAuthority(ctx context.Context, req *pl
 func (p *PluginApplicationService) GetOAuthStatus(ctx context.Context, req *pluginAPI.GetOAuthStatusRequest) (resp *pluginAPI.GetOAuthStatusResponse, err error) {
 	res, err := p.DomainSVC.GetOAuthStatus(ctx, req.PluginID)
 	if err != nil {
-		return nil, fmt.Errorf("GetOAuthStatus failed, pluginID=%d, err=%v", req.PluginID, err)
+		return nil, errorx.Wrapf(err, "GetOAuthStatus failed, pluginID=%d", req.PluginID)
 	}
 	resp = &pluginAPI.GetOAuthStatusResponse{
 		IsOauth: res.IsOauth,
@@ -727,7 +727,7 @@ func (p *PluginApplicationService) CreateAPI(ctx context.Context, req *pluginAPI
 
 	toolID, err := p.toolRepo.CreateDraftTool(ctx, tool)
 	if err != nil {
-		return nil, fmt.Errorf("CreateDraftTool failed, pluginID=%d, err=%v", req.PluginID, err)
+		return nil, errorx.Wrapf(err, "CreateDraftTool failed, pluginID=%d", req.PluginID)
 	}
 
 	resp = &pluginAPI.CreateAPIResponse{
@@ -764,8 +764,7 @@ func (p *PluginApplicationService) UpdateAPI(ctx context.Context, req *pluginAPI
 	}
 	err = p.DomainSVC.UpdateDraftTool(ctx, updateReq)
 	if err != nil {
-		return nil, fmt.Errorf("UpdateDraftTool failed, pluginID=%d, toolID=%d, err=%v",
-			updateReq.PluginID, updateReq.ToolID, err)
+		return nil, errorx.Wrapf(err, "UpdateDraftTool failed, pluginID=%d, toolID=%d", updateReq.PluginID, updateReq.ToolID)
 	}
 
 	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
@@ -812,7 +811,7 @@ func (p *PluginApplicationService) UpdatePlugin(ctx context.Context, req *plugin
 		Manifest:   manifest,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("UpdateDraftPluginWithCode failed, pluginID=%d, err=%v", req.PluginID, err)
+		return nil, errorx.Wrapf(err, "UpdateDraftPluginWithCode failed, pluginID=%d", req.PluginID)
 	}
 
 	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
@@ -840,7 +839,7 @@ func (p *PluginApplicationService) UpdatePlugin(ctx context.Context, req *plugin
 func (p *PluginApplicationService) DeleteAPI(ctx context.Context, req *pluginAPI.DeleteAPIRequest) (resp *pluginAPI.DeleteAPIResponse, err error) {
 	err = p.toolRepo.DeleteDraftTool(ctx, req.APIID)
 	if err != nil {
-		return nil, fmt.Errorf("DeleteDraftTool failed, toolID=%d, err=%v", req.APIID, err)
+		return nil, errorx.Wrapf(err, "DeleteDraftTool failed, toolID=%d", req.APIID)
 	}
 
 	resp = &pluginAPI.DeleteAPIResponse{}
@@ -851,7 +850,7 @@ func (p *PluginApplicationService) DeleteAPI(ctx context.Context, req *pluginAPI
 func (p *PluginApplicationService) DelPlugin(ctx context.Context, req *pluginAPI.DelPluginRequest) (resp *pluginAPI.DelPluginResponse, err error) {
 	err = p.DomainSVC.DeleteDraftPlugin(ctx, req.PluginID)
 	if err != nil {
-		return nil, fmt.Errorf("DeleteDraftPlugin failed, pluginID=%d, err=%v", req.PluginID, err)
+		return nil, errorx.Wrapf(err, "DeleteDraftPlugin failed, pluginID=%d", req.PluginID)
 	}
 
 	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
@@ -863,7 +862,7 @@ func (p *PluginApplicationService) DelPlugin(ctx context.Context, req *pluginAPI
 		},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("publish resource '%d' failed, err=%v", req.PluginID, err)
+		return nil, errorx.Wrapf(err, "publish resource '%d' failed", req.PluginID)
 	}
 
 	resp = &pluginAPI.DelPluginResponse{}
@@ -878,7 +877,7 @@ func (p *PluginApplicationService) PublishPlugin(ctx context.Context, req *plugi
 		VersionDesc: req.VersionDesc,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("PublishPlugin failed, pluginID=%d, err=%v", req.PluginID, err)
+		return nil, errorx.Wrapf(err, "PublishPlugin failed, pluginID=%d", req.PluginID)
 	}
 
 	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
@@ -949,7 +948,7 @@ func (p *PluginApplicationService) UpdatePluginMeta(ctx context.Context, req *pl
 	}
 	err = p.DomainSVC.UpdateDraftPlugin(ctx, updateReq)
 	if err != nil {
-		return nil, fmt.Errorf("UpdateDraftPlugin failed, pluginID=%d, err=%v", req.PluginID, err)
+		return nil, errorx.Wrapf(err, "UpdateDraftPlugin failed, pluginID=%d", req.PluginID)
 	}
 
 	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
@@ -973,7 +972,7 @@ func (p *PluginApplicationService) UpdatePluginMeta(ctx context.Context, req *pl
 func (p *PluginApplicationService) GetBotDefaultParams(ctx context.Context, req *pluginAPI.GetBotDefaultParamsRequest) (resp *pluginAPI.GetBotDefaultParamsResponse, err error) {
 	_, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID, repository.WithPluginID())
 	if err != nil {
-		return nil, fmt.Errorf("get plugin '%d' failed, err=%v", req.PluginID, err)
+		return nil, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
 	}
 	if !exist {
 		return nil, errorx.New(errno.ErrPluginRecordNotFound)
@@ -981,7 +980,7 @@ func (p *PluginApplicationService) GetBotDefaultParams(ctx context.Context, req 
 
 	draftAgentTool, err := p.DomainSVC.GetDraftAgentToolByName(ctx, req.BotID, req.APIName)
 	if err != nil {
-		return nil, fmt.Errorf("GetDraftAgentToolByName failed, agentID=%d, toolName=%s, err=%v", req.BotID, req.APIName, err)
+		return nil, errorx.Wrapf(err, "GetDraftAgentToolByName failed, agentID=%d, toolName=%s", req.BotID, req.APIName)
 	}
 
 	reqAPIParams, err := draftAgentTool.ToReqAPIParameter()
@@ -1016,7 +1015,7 @@ func (p *PluginApplicationService) UpdateBotDefaultParams(ctx context.Context, r
 		Responses:   op.Responses,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("UpdateBotDefaultParams failed, agentID=%d, toolName=%s, err=%v", req.BotID, req.APIName, err)
+		return nil, errorx.Wrapf(err, "UpdateBotDefaultParams failed, agentID=%d, toolName=%s", req.BotID, req.APIName)
 	}
 
 	resp = &pluginAPI.UpdateBotDefaultParamsResponse{}
@@ -1090,14 +1089,14 @@ func (p *PluginApplicationService) UnlockPluginEdit(ctx context.Context, req *pl
 func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, _ *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
 	res, err := p.DomainSVC.ListPluginProducts(ctx, &service.ListPluginProductsRequest{})
 	if err != nil {
-		return nil, fmt.Errorf("ListPluginProducts failed, err=%v", err)
+		return nil, errorx.Wrapf(err, "ListPluginProducts failed")
 	}
 
 	products := make([]*productAPI.ProductInfo, 0, len(res.Plugins))
 	for _, pl := range res.Plugins {
 		tls, err := p.toolRepo.GetPluginAllOnlineTools(ctx, pl.ID)
 		if err != nil {
-			return nil, fmt.Errorf("GetPluginAllOnlineTools failed, pluginID=%d, err=%v", pl.ID, err)
+			return nil, errorx.Wrapf(err, "GetPluginAllOnlineTools failed, pluginID=%d", pl.ID)
 		}
 
 		pi, err := p.buildProductInfo(ctx, pl, tls)
@@ -1208,7 +1207,7 @@ func (p *PluginApplicationService) buildPluginProductExtraInfo(ctx context.Conte
 func (p *PluginApplicationService) PublicGetProductDetail(ctx context.Context, req *productAPI.GetProductDetailRequest) (resp *productAPI.GetProductDetailResponse, err error) {
 	plugin, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.GetEntityID())
 	if err != nil {
-		return nil, fmt.Errorf("GetOnlinePlugin failed, pluginID=%d, err=%v", req.GetEntityID(), err)
+		return nil, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.GetEntityID())
 	}
 	if !exist {
 		return nil, errorx.New(errno.ErrPluginRecordNotFound)
@@ -1216,7 +1215,7 @@ func (p *PluginApplicationService) PublicGetProductDetail(ctx context.Context, r
 
 	tools, err := p.toolRepo.GetPluginAllOnlineTools(ctx, plugin.ID)
 	if err != nil {
-		return nil, fmt.Errorf("GetPluginAllOnlineTools failed, pluginID=%d, err=%v", plugin.ID, err)
+		return nil, errorx.Wrapf(err, "GetPluginAllOnlineTools failed, pluginID=%d", plugin.ID)
 	}
 	pi, err := p.buildProductInfo(ctx, plugin, tools)
 	if err != nil {
@@ -1236,7 +1235,7 @@ func (p *PluginApplicationService) PublicGetProductDetail(ctx context.Context, r
 func (p *PluginApplicationService) GetPluginNextVersion(ctx context.Context, req *pluginAPI.GetPluginNextVersionRequest) (resp *pluginAPI.GetPluginNextVersionResponse, err error) {
 	nextVersion, err := p.DomainSVC.GetPluginNextVersion(ctx, req.PluginID)
 	if err != nil {
-		return nil, fmt.Errorf("GetPluginNextVersion failed, pluginID=%d, err=%v", req.PluginID, err)
+		return nil, errorx.Wrapf(err, "GetPluginNextVersion failed, pluginID=%d", req.PluginID)
 	}
 	resp = &pluginAPI.GetPluginNextVersionResponse{
 		NextVersionName: nextVersion,
@@ -1262,14 +1261,14 @@ func (p *PluginApplicationService) GetDevPluginList(ctx context.Context, req *pl
 		PageInfo: pageInfo,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("ListDraftPlugins failed, spaceID=%d, appID=%d, err=%v", err, req.SpaceID, req.ProjectID)
+		return nil, errorx.Wrapf(err, "ListDraftPlugins failed, spaceID=%d, appID=%d", req.SpaceID, req.ProjectID)
 	}
 
 	pluginLists := make([]*common.PluginInfoForPlayground, 0, len(res.Plugins))
 	for _, pl := range res.Plugins {
 		tools, err := p.toolRepo.GetPluginAllDraftTools(ctx, pl.ID)
 		if err != nil {
-			return nil, fmt.Errorf("GetPluginAllDraftTools failed, pluginID=%d, err=%v", pl.ID, err)
+			return nil, errorx.Wrapf(err, "GetPluginAllDraftTools failed, pluginID=%d", pl.ID)
 		}
 
 		pluginInfo, err := p.toPluginInfoForPlayground(ctx, pl, tools)
@@ -1292,7 +1291,7 @@ func (p *PluginApplicationService) GetDevPluginList(ctx context.Context, req *pl
 func (p *PluginApplicationService) DeleteAPPAllPlugins(ctx context.Context, appID int64) (err error) {
 	pluginIDs, err := p.DomainSVC.DeleteAPPAllPlugins(ctx, appID)
 	if err != nil {
-		return fmt.Errorf("DeleteAPPAllPlugins failed, appID=%d, err=%v", appID, err)
+		return errorx.Wrapf(err, "DeleteAPPAllPlugins failed, appID=%d", appID)
 	}
 
 	for _, id := range pluginIDs {
@@ -1304,7 +1303,7 @@ func (p *PluginApplicationService) DeleteAPPAllPlugins(ctx context.Context, appI
 			},
 		})
 		if err != nil {
-			return fmt.Errorf("publish resource '%d' failed, err=%v", id, err)
+			return errorx.Wrapf(err, "publish resource '%d' failed", id)
 		}
 	}
 
@@ -1358,7 +1357,7 @@ func (p *PluginApplicationService) BatchCreateAPI(ctx context.Context, req *plug
 		ConflictAndUpdate: req.ReplaceSamePaths,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("CreateDraftToolsWithCode failed, pluginID=%d, err=%v", req.PluginID, err)
+		return nil, errorx.Wrapf(err, "CreateDraftToolsWithCode failed, pluginID=%d", req.PluginID)
 	}
 
 	duplicated := slices.Transform(res.DuplicatedTools, func(e entity.UniqueToolAPI) *common.PluginAPIInfo {

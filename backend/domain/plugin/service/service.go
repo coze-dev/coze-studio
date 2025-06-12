@@ -11,6 +11,8 @@ import (
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 //go:generate mockgen -destination ../../../internal/mock/domain/plugin/interface.go --package mockPlugin -source service.go
@@ -140,7 +142,7 @@ type PluginAuthInfo struct {
 
 func (p PluginAuthInfo) toAuthV2() (*model.AuthV2, error) {
 	if p.AuthzType == nil {
-		return nil, fmt.Errorf("authz type is empty")
+		return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey, "auth type is required"))
 	}
 
 	switch *p.AuthzType {
@@ -164,23 +166,24 @@ func (p PluginAuthInfo) toAuthV2() (*model.AuthV2, error) {
 		return m, nil
 
 	default:
-		return nil, fmt.Errorf("invalid auth type '%v'", p.AuthzType)
+		return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
+			"the type '%s' of auth is invalid", *p.AuthzType))
 	}
 }
 
 func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 	if p.AuthzSubType == nil {
-		return nil, fmt.Errorf("auth sub type is empty")
+		return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey, "sub-auth type is required"))
 	}
 
 	if p.OAuthInfo == nil || *p.OAuthInfo == "" {
-		return nil, fmt.Errorf("oauth info is empty")
+		return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey, "oauth info is required"))
 	}
 
 	oauthInfo := make(map[string]string)
 	err := sonic.Unmarshal([]byte(*p.OAuthInfo), &oauthInfo)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal oauth info failed, err=%v", err)
+		return nil, errorx.WrapByCode(err, errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey, "invalid oauth info"))
 	}
 
 	if *p.AuthzSubType == model.AuthzSubTypeOfOAuthClientCredentials {
@@ -207,7 +210,8 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 	if *p.AuthzSubType == model.AuthzSubTypeOfOAuthAuthorizationCode {
 		contentType := oauthInfo["authorization_content_type"]
 		if contentType != model.MIMETypeJson && contentType != model.MIMETypeForm { // only support application/json and application/x-www-form-urlencoded
-			return nil, fmt.Errorf("invalid authorization content type '%s'", contentType)
+			return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
+				"the type '%s' of authorization content is invalid", contentType))
 		}
 
 		_oauthInfo := &model.AuthOfOAuthAuthorizationCode{
@@ -232,23 +236,24 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 		}, nil
 	}
 
-	return nil, fmt.Errorf("invalid sub authz type '%s'", *p.AuthzSubType)
+	return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
+		"the type '%s' of sub-auth is invalid", *p.AuthzSubType))
 }
 
 func (p PluginAuthInfo) authOfServiceToAuthV2() (*model.AuthV2, error) {
 	if p.AuthzSubType == nil {
-		return nil, fmt.Errorf("auth sub type is empty")
+		return nil, fmt.Errorf("sub-auth type is required")
 	}
 
 	if *p.AuthzSubType == model.AuthzSubTypeOfServiceAPIToken {
 		if p.Location == nil {
-			return nil, fmt.Errorf("location is empty")
+			return nil, fmt.Errorf("'Location' of sub-auth is required")
 		}
 		if p.ServiceToken == nil {
-			return nil, fmt.Errorf("service token is empty")
+			return nil, fmt.Errorf("'ServiceToken' of sub-auth is required")
 		}
 		if p.Key == nil {
-			return nil, fmt.Errorf("key is empty")
+			return nil, fmt.Errorf("'Key' of sub-auth is required")
 		}
 
 		tokenAuth := &model.AuthOfAPIToken{
@@ -270,7 +275,8 @@ func (p PluginAuthInfo) authOfServiceToAuthV2() (*model.AuthV2, error) {
 		}, nil
 	}
 
-	return nil, fmt.Errorf("invalid sub authz type '%s'", *p.AuthzSubType)
+	return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
+		"the type '%s' of sub-auth is invalid", *p.AuthzSubType))
 }
 
 type PublishPluginRequest = model.PublishPluginRequest

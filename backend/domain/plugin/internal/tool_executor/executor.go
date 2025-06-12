@@ -92,7 +92,9 @@ func (t *executorImpl) Execute(ctx context.Context, argumentsInJson string) (res
 	restyReq.Header = httpReq.Header
 	restyReq.Method = httpReq.Method
 	restyReq.URL = httpReq.URL.String()
-	restyReq.SetBody(reqBodyBytes)
+	if len(reqBodyBytes) > 0 {
+		restyReq.SetBody(reqBodyBytes)
+	}
 	restyReq.SetContext(ctx)
 
 	logs.CtxDebugf(ctx, "[Execute] url=%s, header=%s, method=%s, body=%s",
