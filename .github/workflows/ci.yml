@@ -1,4 +1,4 @@
-name: CI
+name: CI@fe
 on:
   pull_request:
     branches: ['main']
