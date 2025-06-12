@@ -37,6 +37,7 @@ const (
 	ErrKnowledgeParserParseFailCode            = 105000030
 	ErrKnowledgeBuildRetrieveChainFailCode     = 105000031
 	ErrKnowledgeRetrieveExecFailCode           = 105000032
+	ErrKnowledgeNL2SqlExecFailCode             = 105000033
 )
 
 func init() {
@@ -221,6 +222,12 @@ func init() {
 	code.Register(
 		ErrKnowledgeRetrieveExecFailCode,
 		"知识库召回执行失败:{msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrKnowledgeNL2SqlExecFailCode,
+		"NL2SQL执行失败:{msg}",
 		code.WithAffectStability(false),
 	)
 }
