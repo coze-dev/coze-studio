@@ -29,11 +29,7 @@ func newChatModel(ctx context.Context, conf *config) (chatmodel.ToolCallingChatM
 			errorx.KV("protocol", string(modelMeta.Protocol)))
 	}
 
-	cm, err := conf.modelFactory.CreateChatModel(ctx, modelDetail.Meta.Protocol, &chatmodel.Config{
-		// BaseURL: modelMeta.ConnConfig.BaseURL, // TODO: ConnConfig should be exported
-		Model:  modelMeta.ConnConfig.Model,
-		APIKey: modelMeta.ConnConfig.APIKey,
-	})
+	cm, err := conf.modelFactory.CreateChatModel(ctx, modelDetail.Meta.Protocol, conf.modelInfo.Meta.ConnConfig)
 	if err != nil {
 		return nil, err
 	}

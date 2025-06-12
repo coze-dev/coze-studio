@@ -39,7 +39,6 @@ type MGetModelMetaRequest struct {
 
 type ListModelRequest struct {
 	FuzzyModelName *string
-	Scenario       *modelmgr.Scenario
 	Status         []modelmgr.ModelEntityStatus // default is default and in_use status
 	Limit          int
 	Cursor         *string

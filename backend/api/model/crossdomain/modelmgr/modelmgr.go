@@ -12,30 +12,29 @@ type MGetModelRequest struct {
 }
 
 type Model struct {
-	ID                int64
-	Name              string
-	Description       string
-	DefaultParameters []*Parameter
+	ID                int64        `yaml:"id"`
+	Name              string       `yaml:"name"`
+	Description       string       `yaml:"description"`
+	DefaultParameters []*Parameter `yaml:"default_parameters"`
 
 	CreatedAtMs int64
 	UpdatedAtMs int64
 	DeletedAtMs int64
 
-	Meta     ModelMeta
-	Scenario Scenario
+	Meta ModelMeta `yaml:"meta"`
 }
 
 type Parameter struct {
-	Name       ParameterName  `json:"name"`
-	Label      string         `json:"label"`
-	Desc       string         `json:"desc"`
-	Type       ValueType      `json:"type"`
-	Min        string         `json:"min"`
-	Max        string         `json:"max"`
-	DefaultVal DefaultValue   `json:"default_val"`
-	Precision  int            `json:"precision,omitempty"` // float precision, default 2
-	Options    []*ParamOption `json:"options"`             // enum options
-	Style      DisplayStyle   `json:"param_class"`
+	Name       ParameterName  `json:"name" yaml:"name"`
+	Label      string         `json:"label" yaml:"label"`
+	Desc       string         `json:"desc" yaml:"desc"`
+	Type       ValueType      `json:"type" yaml:"type"`
+	Min        string         `json:"min" yaml:"min"`
+	Max        string         `json:"max" yaml:"max"`
+	DefaultVal DefaultValue   `json:"default_val" yaml:"default_val"`
+	Precision  int            `json:"precision,omitempty" yaml:"precision,omitempty"` // float precision, default 2
+	Options    []*ParamOption `json:"options" yaml:"options"`                         // enum options
+	Style      DisplayStyle   `json:"param_class" yaml:"style"`
 }
 
 func (p *Parameter) GetFloat(tp DefaultType) (float64, error) {
@@ -100,27 +99,27 @@ func (p *Parameter) GetString(tp DefaultType) (string, error) {
 }
 
 type ModelMeta struct {
-	ID          int64
-	Name        string
-	IconURI     string
-	IconURL     string
-	Description string
+	ID          int64  `yaml:"id"`
+	Name        string `yaml:"name"`
+	IconURI     string `yaml:"icon_uri"`
+	IconURL     string `yaml:"icon_url"`
+	Description string `yaml:"description"`
 
 	CreatedAtMs int64
 	UpdatedAtMs int64
 	DeletedAtMs int64
 
-	Protocol   chatmodel.Protocol // 模型通信协议
-	Capability *Capability        // 模型能力
-	ConnConfig *chatmodel.Config  // 模型连接配置
-	Status     ModelMetaStatus    // 模型状态
+	Protocol   chatmodel.Protocol `yaml:"protocol"`    // 模型通信协议
+	Capability *Capability        `yaml:"capability"`  // 模型能力
+	ConnConfig *chatmodel.Config  `yaml:"conn_config"` // 模型连接配置
+	Status     ModelMetaStatus    `yaml:"status"`      // 模型状态
 }
 
 type DefaultValue map[DefaultType]string
 
 type DisplayStyle struct {
-	Widget Widget `json:"class_id"`
-	Label  string `json:"label"`
+	Widget Widget `json:"class_id" yaml:"widget"`
+	Label  string `json:"label" yaml:"label"`
 }
 
 type ParamOption struct {

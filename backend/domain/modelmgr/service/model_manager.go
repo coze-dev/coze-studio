@@ -16,7 +16,6 @@ import (
 	modelcontract "code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -38,14 +37,17 @@ type modelManager struct {
 	modelEntityRepo dao.ModelEntityRepo
 }
 
-func (m *modelManager) CreateModelMeta(ctx context.Context, meta *entity.ModelMeta) (*entity.ModelMeta, error) {
-	if err := m.alignProtocol(meta); err != nil {
+func (m *modelManager) CreateModelMeta(ctx context.Context, meta *entity.ModelMeta) (resp *entity.ModelMeta, err error) {
+	if err = m.alignProtocol(meta); err != nil {
 		return nil, err
 	}
 
-	id, err := m.idgen.GenID(ctx)
-	if err != nil {
-		return nil, err
+	id := meta.ID
+	if id == 0 {
+		id, err = m.idgen.GenID(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	now := time.Now().UnixMilli()
@@ -53,12 +55,14 @@ func (m *modelManager) CreateModelMeta(ctx context.Context, meta *entity.ModelMe
 		ID:          id,
 		ModelName:   meta.Name,
 		Protocol:    string(meta.Protocol),
+		IconURI:     meta.IconURI,
 		Capability:  meta.Capability,
 		ConnConfig:  meta.ConnConfig,
 		Status:      meta.Status,
 		Description: meta.Description,
 		CreatedAt:   now,
 		UpdatedAt:   now,
+		DeletedAt:   gorm.DeletedAt{},
 	}); err != nil {
 		return nil, err
 	}
@@ -166,21 +170,25 @@ func (m *modelManager) CreateModel(ctx context.Context, e *entity.Model) (*entit
 	if metaPO == nil {
 		return nil, fmt.Errorf("[CreateModel] mode meta not found, model_meta id=%d", e.Meta.ID)
 	}
-
-	id, err := m.idgen.GenID(ctx)
-	if err != nil {
-		return nil, err
+	id := e.ID
+	if id == 0 {
+		id, err = m.idgen.GenID(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	now := time.Now().UnixMilli()
 	// TODO(@fanlv) : do -> po 放到 dal 里面去
 	if err = m.modelEntityRepo.Create(ctx, &dmodel.ModelEntity{
-		ID:        id,
-		MetaID:    e.Meta.ID,
-		Name:      e.Name,
-		Scenario:  e.Scenario,
-		CreatedAt: now,
-		UpdatedAt: now,
+		ID:            id,
+		MetaID:        e.Meta.ID,
+		Name:          e.Name,
+		Description:   e.Description,
+		DefaultParams: e.DefaultParameters,
+		Status:        modelmgrModel.ModelEntityStatusInUse,
+		CreatedAt:     now,
+		UpdatedAt:     now,
 	}); err != nil {
 		return nil, err
 	}
@@ -192,7 +200,6 @@ func (m *modelManager) CreateModel(ctx context.Context, e *entity.Model) (*entit
 			CreatedAtMs: now,
 			UpdatedAtMs: now,
 			Meta:        e.Meta,
-			Scenario:    e.Scenario,
 		},
 	}
 
@@ -205,9 +212,6 @@ func (m *modelManager) DeleteModel(ctx context.Context, id int64) error {
 
 func (m *modelManager) ListModel(ctx context.Context, req *modelmgr.ListModelRequest) (*modelmgr.ListModelResponse, error) {
 	var sc *int64
-	if req.Scenario != nil {
-		sc = ptr.Of(int64(*req.Scenario))
-	}
 
 	status := req.Status
 	if len(status) == 0 {
@@ -305,7 +309,6 @@ func (m *modelManager) fromModelPOs(ctx context.Context, pos []*dmodel.ModelEnti
 				Meta: entity.ModelMeta{
 					ID: po.MetaID,
 				},
-				Scenario: po.Scenario,
 			},
 		})
 		metaIDSet[po.MetaID] = struct{}{}
@@ -324,6 +327,13 @@ func (m *modelManager) fromModelPOs(ctx context.Context, pos []*dmodel.ModelEnti
 	metaID2Meta := make(map[int64]*entity.ModelMeta)
 	for i := range modelMetaSlice {
 		item := modelMetaSlice[i]
+		if item.IconURL == "" {
+			url, err := m.oss.GetObjectUrl(ctx, item.IconURI)
+			if err != nil {
+				return nil, err
+			}
+			item.IconURL = url
+		}
 		metaID2Meta[item.ID] = item
 	}
 

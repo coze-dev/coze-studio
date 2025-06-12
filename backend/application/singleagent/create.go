@@ -97,10 +97,9 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent(ctx context.Contex
 
 func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*bot_common.ModelInfo, error) {
 	modelResp, err := s.appContext.ModelMgrDomainSVC.ListModel(ctx, &modelmgr.ListModelRequest{
-		Scenario: ptr.Of(modelmgrEntity.ScenarioSingleReactAgent),
-		Status:   []modelmgrEntity.ModelEntityStatus{modelmgrEntity.ModelEntityStatusDefault},
-		Limit:    1,
-		Cursor:   nil,
+		Status: []modelmgrEntity.ModelEntityStatus{modelmgrEntity.ModelEntityStatusDefault, modelmgrEntity.ModelEntityStatusInUse},
+		Limit:  1,
+		Cursor: nil,
 	})
 	if err != nil {
 		return nil, err

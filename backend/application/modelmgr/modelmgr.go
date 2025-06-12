@@ -7,7 +7,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -26,9 +25,8 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, req *deve
 	const modelMaxLimit = 300
 
 	modelResp, err := m.DomainSVC.ListModel(ctx, &modelmgr.ListModelRequest{
-		Scenario: ptr.Of(modelmgrEntity.ScenarioSingleReactAgent),
-		Limit:    modelMaxLimit,
-		Cursor:   nil,
+		Limit:  modelMaxLimit,
+		Cursor: nil,
 	})
 	if err != nil {
 		return nil, err
@@ -62,50 +60,50 @@ func modelDo2To(model *modelEntity.Model) (*developer_api.Model, error) {
 
 	return &developer_api.Model{
 		Name:             model.Name,
-		ModelName:        mm.Name,
-		ModelIcon:        mm.IconURL,
 		ModelType:        model.ID,
 		ModelClass:       mm.Protocol.TOModelClass(),
-		ModelClassName:   mm.Protocol.TOModelClass().String(),
+		ModelIcon:        mm.IconURL,
 		ModelInputPrice:  0,
 		ModelOutputPrice: 0,
-		ModelQuota:       &developer_api.ModelQuota{},
+		ModelQuota: &developer_api.ModelQuota{
+			TokenLimit: int32(mm.Capability.MaxTokens),
+			TokenResp:  int32(mm.Capability.OutputTokens),
+			//TokenSystem:       0,
+			//TokenUserIn:       0,
+			//TokenToolsIn:      0,
+			//TokenToolsOut:     0,
+			//TokenData:         0,
+			//TokenHistory:      0,
+			//TokenCutSwitch:    false,
+			PriceIn:           0,
+			PriceOut:          0,
+			SystemPromptLimit: nil,
+		},
+		ModelName:      mm.Name,
+		ModelClassName: mm.Protocol.TOModelClass().String(),
+		IsOffline:      mm.Status != modelmgrEntity.StatusInUse,
+		ModelParams:    mps,
 		ModelDesc: []*developer_api.ModelDescGroup{
 			{
 				GroupName: "Description",
 				Desc:      []string{model.Description},
 			},
 		},
-		ModelParams: mps,
+		FuncConfig:     nil,
+		EndpointName:   nil,
+		ModelTagList:   nil,
+		IsUpRequired:   nil,
+		ModelBriefDesc: mm.Description,
+		ModelSeries: &developer_api.ModelSeriesInfo{ // TODO: 替换为真实配置
+			SeriesName: "热门模型",
+		},
+		ModelStatusDetails: nil,
 		ModelAbility: &developer_api.ModelAbility{
 			FunctionCall:       ptr.Of(mm.Capability.FunctionCall),
 			ImageUnderstanding: ptr.Of(supportImageModal(mm.Capability.InputModal)),
 			VideoUnderstanding: ptr.Of(supportVideoModal(mm.Capability.InputModal)),
 		},
 	}, nil
-}
-
-func ModelProtocol2ModelClass(protocol chatmodel.Protocol, modelName string) developer_api.ModelClass {
-	switch protocol {
-	case chatmodel.ProtocolArk:
-		return developer_api.ModelClass_SEED
-	case chatmodel.ProtocolOpenAI:
-		return developer_api.ModelClass_GPT
-	case chatmodel.ProtocolDeepseek:
-		return developer_api.ModelClass_DeekSeek
-	case chatmodel.ProtocolClaude:
-		return developer_api.ModelClass_Claude
-	case chatmodel.ProtocolGemini:
-		return developer_api.ModelClass_Gemini
-	case chatmodel.ProtocolOllama:
-		return developer_api.ModelClass_Llama
-	case chatmodel.ProtocolQwen:
-		return developer_api.ModelClass_QWen
-	case chatmodel.ProtocolErnie:
-		return developer_api.ModelClass_Ernie
-	default:
-		return developer_api.ModelClass_Other
-	}
 }
 
 func supportImageModal(ms []modelmgrEntity.Modal) bool {

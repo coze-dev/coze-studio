@@ -55,6 +55,7 @@ cp "$BACKEND_DIR/conf/plugin/pluginproduct/"* "$CONFIG_DIR/plugin/pluginproduct"
 cp "$BACKEND_DIR/conf/plugin/common/"* "$CONFIG_DIR/plugin/common"
 cp "$BACKEND_DIR/conf/prompt/"* "$CONFIG_DIR/prompt"
 cp -r "$BACKEND_DIR/static" "$RESOURCES_DIR"
+cp -r "$BACKEND_DIR/conf/model" "$CONFIG_DIR"
 
 for arg in "$@"; do
     if [[ "$arg" == "-start" ]]; then

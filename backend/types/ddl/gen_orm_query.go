@@ -117,7 +117,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"status":      modelEntity.ModelMetaStatus(0),
 		},
 		"model_entity": {
-			"scenario":       modelEntity.Scenario(0),
+			//"scenario":       modelEntity.Scenario(0),
 			"default_params": []*modelEntity.Parameter{},
 			"status":         modelEntity.ModelEntityStatus(0),
 		},

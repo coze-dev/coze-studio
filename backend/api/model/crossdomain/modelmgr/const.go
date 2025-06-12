@@ -30,12 +30,8 @@ const (
 	DefaultTypePrecise  DefaultType = "precise"
 )
 
+// Deprecated
 type Scenario int64 // 模型实体使用场景
-
-const (
-	ScenarioSingleReactAgent Scenario = 1
-	ScenarioWorkflow         Scenario = 2
-)
 
 type Modal string
 

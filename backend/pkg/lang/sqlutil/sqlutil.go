@@ -13,5 +13,5 @@ type value[T any] struct {
 }
 
 func (i value[T]) Value() (driver.Value, error) {
-	return i.Value, nil
+	return i.val, nil
 }

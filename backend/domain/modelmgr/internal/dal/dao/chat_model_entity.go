@@ -55,17 +55,17 @@ func (m *ModelEntityDAO) List(ctx context.Context, fuzzyModelName *string, scena
 	do := me.WithContext(ctx)
 
 	if fuzzyModelName != nil {
-		do.Where(me.Name.Like(*fuzzyModelName))
+		do = do.Where(me.Name.Like(*fuzzyModelName))
 	}
 	if scenario != nil {
-		do.Where(me.Scenario.Eq(sqlutil.DriverValue(*scenario)))
+		do = do.Where(me.Scenario.Eq(sqlutil.DriverValue(*scenario)))
 	}
 	if len(status) > 0 {
 		vals := slices.Transform(status, func(a modelmgr.ModelEntityStatus) driver.Valuer {
-			return sqlutil.DriverValue(a)
+			return sqlutil.DriverValue(int64(a))
 		})
 
-		do.Where(me.Status.In(vals...))
+		do = do.Where(me.Status.In(vals...))
 	}
 	if cursor != nil {
 		var id int64
@@ -73,7 +73,7 @@ func (m *ModelEntityDAO) List(ctx context.Context, fuzzyModelName *string, scena
 		if err != nil {
 			return nil, nil, false, err
 		}
-		do.Where(me.ID.Lt(id))
+		do = do.Where(me.ID.Lt(id))
 	}
 	if limit == 0 {
 		limit = defaultLimit

@@ -240,7 +240,8 @@ func (e *esSearchStore) travDSL(query *types.Query, dsl *searchstore.DSL) error 
 
 func (e *esSearchStore) parseSearchResult(resp *search.Response) (docs []*schema.Document, err error) {
 	docs = make([]*schema.Document, 0, len(resp.Hits.Hits))
-	for _, hit := range resp.Hits.Hits {
+	firstScore := 0.0
+	for i, hit := range resp.Hits.Hits {
 		var src map[string]any
 		d := json.NewDecoder(bytes.NewReader(hit.Source_))
 		d.UseNumber()
@@ -273,14 +274,17 @@ func (e *esSearchStore) parseSearchResult(resp *search.Response) (docs []*schema
 				return nil, fmt.Errorf("[parseSearchResult] type assertion failed, field=%s, val=%v", field, val)
 			}
 		}
-
 		if hit.Id_ != nil {
 			doc.ID = *hit.Id_
 		}
-
-		if hit.Score_ != nil {
-			doc.WithScore(float64(*hit.Score_))
+		if hit.Score_ == nil { // unexpected
+			return nil, fmt.Errorf("[parseSearchResult] es retrieve score not found")
 		}
+		score := float64(ptr.From(hit.Score_))
+		if i == 0 {
+			firstScore = score
+		}
+		doc.WithScore(score / firstScore)
 
 		docs = append(docs, doc)
 	}
