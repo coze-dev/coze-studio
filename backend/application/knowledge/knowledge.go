@@ -311,17 +311,14 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 		}
 		documents = append(documents, &document)
 	}
+	resp := dataset.NewCreateDocumentResponse()
 	createResp, err := k.DomainSVC.CreateDocument(ctx, &service.CreateDocumentRequest{
 		Documents: documents,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "create document failed, err: %v", err)
-		resp := dataset.NewCreateDocumentResponse()
-		resp.Code = 500
-		resp.Msg = fmt.Sprintf("create document failed, err: %v", err)
-		return resp, nil
+		return resp, err
 	}
-	resp := dataset.NewCreateDocumentResponse()
 	resp.DocumentInfos = make([]*dataset.DocumentInfo, 0)
 	for i := range createResp.Documents {
 		resp.DocumentInfos = append(resp.DocumentInfos, convertDocument2Model(createResp.Documents[i]))
@@ -1127,9 +1124,7 @@ func (k *KnowledgeApplicationService) ExtractPhotoCaption(ctx context.Context, r
 	}
 	extractResp, err := k.DomainSVC.ExtractPhotoCaption(ctx, &service.ExtractPhotoCaptionRequest{DocumentID: req.GetDocumentID()})
 	if err != nil {
-		resp.Code = 500
-		resp.Msg = err.Error()
-		return resp, nil
+		return resp, err
 	}
 	resp.Caption = extractResp.Caption
 	return resp, nil
