@@ -11,6 +11,8 @@ import (
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func (p *pluginServiceImpl) BindAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error) {
@@ -20,23 +22,23 @@ func (p *pluginServiceImpl) BindAgentTools(ctx context.Context, agentID int64, t
 func (p *pluginServiceImpl) GetDraftAgentToolByName(ctx context.Context, agentID int64, toolName string) (tool *entity.ToolInfo, err error) {
 	draftAgentTool, exist, err := p.toolRepo.GetDraftAgentToolWithToolName(ctx, agentID, toolName)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetDraftAgentToolWithToolName failed, agentID=%d, toolName=%s", agentID, toolName)
 	}
 	if !exist {
-		return nil, fmt.Errorf("agent tool '%s' not found", toolName)
+		return nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
 	tool, exist, err = p.toolRepo.GetOnlineTool(ctx, draftAgentTool.ID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetOnlineTool failed, id=%d", draftAgentTool.ID)
 	}
 	if !exist {
-		return nil, fmt.Errorf("online tool '%s' not found", toolName)
+		return nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
 	draftAgentTool, err = mergeAgentToolInfo(ctx, tool, draftAgentTool)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "mergeAgentToolInfo failed")
 	}
 
 	return draftAgentTool, nil
@@ -50,7 +52,7 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentTo
 
 	existTools, err := p.toolRepo.MGetOnlineTools(ctx, toolIDs, repository.WithToolID())
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "MGetOnlineTools failed, toolIDs=%v", toolIDs)
 	}
 
 	if len(existTools) == 0 {
@@ -72,7 +74,7 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentTo
 
 		tools, err = p.toolRepo.MGetDraftAgentTools(ctx, req.AgentID, existToolIDs)
 		if err != nil {
-			return nil, err
+			return nil, errorx.Wrapf(err, "MGetDraftAgentTools failed, agentID=%d, toolIDs=%v", req.AgentID, existToolIDs)
 		}
 
 		return tools, nil
@@ -87,7 +89,7 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentTo
 
 	tools, err = p.toolRepo.MGetVersionAgentTool(ctx, req.AgentID, vTools)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "MGetVersionAgentTool failed, agentID=%d, vTools=%v", req.AgentID, vTools)
 	}
 
 	return tools, nil
@@ -96,35 +98,40 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentTo
 func (p *pluginServiceImpl) PublishAgentTools(ctx context.Context, agentID int64, agentVersion string) (err error) {
 	tools, err := p.toolRepo.GetSpaceAllDraftAgentTools(ctx, agentID)
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "GetSpaceAllDraftAgentTools failed, agentID=%d", agentID)
 	}
 
-	return p.toolRepo.BatchCreateVersionAgentTools(ctx, agentID, agentVersion, tools)
+	err = p.toolRepo.BatchCreateVersionAgentTools(ctx, agentID, agentVersion, tools)
+	if err != nil {
+		return errorx.Wrapf(err, "BatchCreateVersionAgentTools failed, agentID=%d, agentVersion=%s", agentID, agentVersion)
+	}
+
+	return nil
 }
 
 func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *UpdateBotDefaultParamsRequest) (err error) {
 	_, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID, repository.WithPluginID())
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
 	}
 	if !exist {
-		return fmt.Errorf("online plugin '%d' not found", req.PluginID)
+		return errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
 	draftAgentTool, exist, err := p.toolRepo.GetDraftAgentToolWithToolName(ctx, req.AgentID, req.ToolName)
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "GetDraftAgentToolWithToolName failed, agentID=%d, toolName=%s", req.AgentID, req.ToolName)
 	}
 	if !exist {
-		return fmt.Errorf("draft agent tool '%s' not found", req.ToolName)
+		return errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
 	onlineTool, exist, err := p.toolRepo.GetOnlineTool(ctx, draftAgentTool.ID)
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "GetOnlineTool failed, id=%d", draftAgentTool.ID)
 	}
 	if !exist {
-		return fmt.Errorf("draft tool '%d' not found", draftAgentTool.ID)
+		return errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
 	op := onlineTool.Operation
@@ -187,7 +194,7 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 		Tool:     updatedTool,
 	})
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "UpdateDraftAgentTool failed, agentID=%d, toolName=%s", req.AgentID, req.ToolName)
 	}
 
 	return nil
@@ -200,21 +207,21 @@ func mergeAgentToolInfo(ctx context.Context, dest, src *entity.ToolInfo) (*entit
 
 	newParameters, err := mergeParameters(ctx, dest.Operation.Parameters, src.Operation.Parameters)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "mergeParameters failed")
 	}
 
 	dest.Operation.Parameters = newParameters
 
 	newReqBody, err := mergeRequestBody(ctx, dest.Operation.RequestBody.Value, src.Operation.RequestBody.Value)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "mergeRequestBody failed")
 	}
 
 	dest.Operation.RequestBody.Value = newReqBody
 
 	newRespBody, err := mergeResponseBody(ctx, dest.Operation.Responses, src.Operation.Responses)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "mergeResponseBody failed")
 	}
 
 	dest.Operation.Responses = newRespBody
@@ -303,6 +310,7 @@ func mergeMediaSchema(ctx context.Context, dest, src *openapi3.Schema) (*openapi
 		}
 
 		return dest, nil
+
 	case openapi3.TypeArray:
 		nv, err := mergeMediaSchema(ctx, dest.Items.Value, src.Items.Value)
 		if err != nil {
@@ -312,6 +320,7 @@ func mergeMediaSchema(ctx context.Context, dest, src *openapi3.Schema) (*openapi
 		dest.Items.Value = nv
 
 		return dest, nil
+
 	default:
 		return dest, nil
 	}

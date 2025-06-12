@@ -69,7 +69,7 @@ type pluginInvokableTool struct {
 }
 
 func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
-	paramInfos, err := p.toolInfo.Operation.ToEinoSchemaParameterInfo()
+	paramInfos, err := p.toolInfo.Operation.ToEinoSchemaParameterInfo(ctx)
 	if err != nil {
 		return nil, err
 	}

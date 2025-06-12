@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -17,8 +18,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/openapi"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDraftPluginRequest) (pluginID int64, err error) {
@@ -73,7 +77,7 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 
 	pluginID, err = p.pluginRepo.CreateDraftPlugin(ctx, pl)
 	if err != nil {
-		return 0, err
+		return 0, errorx.Wrapf(err, "CreateDraftPlugin failed")
 	}
 
 	return pluginID, nil
@@ -82,10 +86,10 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 func (p *pluginServiceImpl) GetDraftPlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error) {
 	pl, exist, err := p.pluginRepo.GetDraftPlugin(ctx, pluginID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", pluginID)
 	}
 	if !exist {
-		return nil, fmt.Errorf("draft plugin '%d' not found", pluginID)
+		return nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
 	return pl, nil
@@ -107,8 +111,9 @@ func (p *pluginServiceImpl) ListDraftPlugins(ctx context.Context, req *ListDraft
 		PageInfo: req.PageInfo,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "ListDraftPlugins failed, spaceID=%d, appID=%d", req.SpaceID, req.APPID)
 	}
+
 	return &ListDraftPluginsResponse{
 		Plugins: res.Plugins,
 		Total:   res.Total,
@@ -118,11 +123,11 @@ func (p *pluginServiceImpl) ListDraftPlugins(ctx context.Context, req *ListDraft
 func (p *pluginServiceImpl) CreateDraftPluginWithCode(ctx context.Context, req *CreateDraftPluginWithCodeRequest) (resp *CreateDraftPluginWithCodeResponse, err error) {
 	err = req.OpenapiDoc.Validate(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("openapi doc validates failed, err=%v", err)
+		return nil, err
 	}
 	err = req.Manifest.Validate()
 	if err != nil {
-		return nil, fmt.Errorf("plugin manifest validated failed, err=%v", err)
+		return nil, err
 	}
 
 	err = p.validateOAuthInfo(ctx, req.DeveloperID, req.Manifest.Auth)
@@ -138,7 +143,7 @@ func (p *pluginServiceImpl) CreateDraftPluginWithCode(ctx context.Context, req *
 		OpenapiDoc:  req.OpenapiDoc,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "CreateDraftPluginWithCode failed")
 	}
 
 	resp = &CreateDraftPluginWithCodeResponse{
@@ -155,11 +160,11 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 
 	err = doc.Validate(ctx)
 	if err != nil {
-		return fmt.Errorf("openapi doc validates failed, err=%v", err)
+		return err
 	}
 	err = mf.Validate()
 	if err != nil {
-		return fmt.Errorf("plugin manifest validated failed, err=%v", err)
+		return err
 	}
 
 	err = p.validateOAuthInfo(ctx, req.UserID, mf.Auth)
@@ -183,15 +188,15 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 
 	oldDraftTools, err := p.toolRepo.GetPluginAllDraftTools(ctx, req.PluginID)
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "GetPluginAllDraftTools failed, pluginID=%d", req.PluginID)
 	}
 
 	draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", req.PluginID)
 	}
 	if !exist {
-		return fmt.Errorf("draft plugin '%d' not found", req.PluginID)
+		return errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
 	if draftPlugin.GetServerURL() != doc.Servers[0].URL {
@@ -239,8 +244,6 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 		})
 	}
 
-	// TODO(@maronghong): 细化更新判断，减少更新的 tool，提升性能
-
 	err = p.pluginRepo.UpdateDraftPluginWithCode(ctx, &repository.UpdatePluginDraftWithCode{
 		PluginID:      req.PluginID,
 		OpenapiDoc:    doc,
@@ -249,7 +252,7 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 		NewDraftTools: newDraftTools,
 	})
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "UpdateDraftPluginWithCode failed, pluginID=%d", req.PluginID)
 	}
 
 	return nil
@@ -380,19 +383,19 @@ func isJsonSchemaEqual(nsc, osc *openapi3.Schema) bool {
 func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDraftPluginRequest) (err error) {
 	oldPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", req.PluginID)
 	}
 	if !exist {
-		return fmt.Errorf("plugin draft '%d' not found", req.PluginID)
+		return errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
 	doc, err := updatePluginOpenapiDoc(ctx, oldPlugin.OpenapiDoc, req)
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "updatePluginOpenapiDoc failed")
 	}
 	mf, err := updatePluginManifest(ctx, oldPlugin.Manifest, req)
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "updatePluginManifest failed")
 	}
 
 	err = p.validateOAuthInfo(ctx, oldPlugin.DeveloperID, mf.Auth)
@@ -410,10 +413,19 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 
 	if newPlugin.GetServerURL() == "" ||
 		oldPlugin.GetServerURL() == newPlugin.GetServerURL() {
-		return p.pluginRepo.UpdateDraftPluginWithoutURLChanged(ctx, newPlugin)
+		err = p.pluginRepo.UpdateDraftPluginWithoutURLChanged(ctx, newPlugin)
+		if err != nil {
+			return errorx.Wrapf(err, "UpdateDraftPluginWithoutURLChanged failed, pluginID=%d", req.PluginID)
+		}
+		return nil
 	}
 
-	return p.pluginRepo.UpdateDraftPlugin(ctx, newPlugin)
+	err = p.pluginRepo.UpdateDraftPlugin(ctx, newPlugin)
+	if err != nil {
+		return errorx.Wrapf(err, "UpdateDraftPlugin failed, pluginID=%d", req.PluginID)
+	}
+
+	return nil
 }
 
 func updatePluginOpenapiDoc(_ context.Context, doc *model.Openapi3T, req *UpdateDraftPluginRequest) (*model.Openapi3T, error) {
@@ -486,7 +498,7 @@ func (p *pluginServiceImpl) DeleteDraftPlugin(ctx context.Context, pluginID int6
 func (p *pluginServiceImpl) MGetDraftTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
 	tools, err = p.toolRepo.MGetDraftTools(ctx, toolIDs)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "MGetDraftTools failed, toolIDs=%v", toolIDs)
 	}
 
 	return tools, nil
@@ -495,18 +507,18 @@ func (p *pluginServiceImpl) MGetDraftTools(ctx context.Context, toolIDs []int64)
 func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateToolDraftRequest) (err error) {
 	draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", req.PluginID)
 	}
 	if !exist {
-		return fmt.Errorf("draft plugin '%d' not found", req.PluginID)
+		return errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
 	draftTool, exist, err := p.toolRepo.GetDraftTool(ctx, req.ToolID)
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "GetDraftTool failed, toolID=%d", req.ToolID)
 	}
 	if !exist {
-		return fmt.Errorf("draft tool '%d' not found", req.ToolID)
+		return errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
 	if req.Method != nil && req.SubURL != nil {
@@ -516,10 +528,10 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		}
 		existTool, exist, err := p.toolRepo.GetDraftToolWithAPI(ctx, draftTool.PluginID, api)
 		if err != nil {
-			return err
+			return errorx.Wrapf(err, "GetDraftToolWithAPI failed, pluginID=%d, api=%v", draftTool.PluginID, api)
 		}
 		if exist && draftTool.ID != existTool.ID {
-			return fmt.Errorf("api '[%s]:%s' already exists", api.SubURL, api.Method)
+			return errorx.New(errno.ErrPluginDuplicatedTool, errorx.KVf(errno.PluginMsgKey, "[%s]:%s", api.Method, api.SubURL))
 		}
 	}
 
@@ -617,13 +629,13 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		if req.DebugExample.ReqExample != "" {
 			err = sonic.UnmarshalString(req.DebugExample.ReqExample, &reqExample)
 			if err != nil {
-				return err
+				return fmt.Errorf("invalid req example, err=%s", err)
 			}
 		}
 		if req.DebugExample.RespExample != "" {
 			err = sonic.UnmarshalString(req.DebugExample.RespExample, &respExample)
 			if err != nil {
-				return err
+				return fmt.Errorf("invalid resp example, err=%s", err)
 			}
 		}
 
@@ -639,35 +651,45 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 
 	err = p.toolRepo.UpdateDraftToolAndDebugExample(ctx, draftPlugin.ID, draftPlugin.OpenapiDoc, updatedTool)
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "UpdateDraftToolAndDebugExample failed, pluginID=%d, toolID=%d", draftPlugin.ID, req.ToolID)
 	}
 
 	return nil
 }
 
 func (p *pluginServiceImpl) ConvertToOpenapi3Doc(ctx context.Context, req *ConvertToOpenapi3DocRequest) (resp *ConvertToOpenapi3DocResponse) {
-	cvt, format, err := p.getConvertFunc(ctx, req.RawInput)
-	if err != nil {
-		return &ConvertToOpenapi3DocResponse{
-			Format: format,
-			ErrMsg: err.Error(),
+	var err error
+	defer func() {
+		if err != nil {
+			logs.Errorf("ConvertToOpenapi3Doc failed, err=%s", err)
+
+			resp.ErrMsg = "internal server error"
+
+			var e errorx.StatusError
+			if errors.As(err, &e) {
+				resp.ErrMsg = e.Msg()
+			}
 		}
+	}()
+
+	resp = &ConvertToOpenapi3DocResponse{}
+
+	cvt, format, err := getConvertFunc(ctx, req.RawInput)
+	if err != nil {
+		resp.Format = format
+		return resp
 	}
 
 	doc, mf, err := cvt(ctx, req.RawInput)
 	if err != nil {
-		return &ConvertToOpenapi3DocResponse{
-			Format: format,
-			ErrMsg: err.Error(),
-		}
+		resp.Format = format
+		return resp
 	}
 
-	err = p.validateConvertResult(ctx, req, doc, mf)
+	err = validateConvertResult(ctx, req, doc, mf)
 	if err != nil {
-		return &ConvertToOpenapi3DocResponse{
-			Format: format,
-			ErrMsg: err.Error(),
-		}
+		resp.Format = format
+		return resp
 	}
 
 	return &ConvertToOpenapi3DocResponse{
@@ -680,7 +702,7 @@ func (p *pluginServiceImpl) ConvertToOpenapi3Doc(ctx context.Context, req *Conve
 
 type convertFunc func(ctx context.Context, rawInput string) (*model.Openapi3T, *entity.PluginManifest, error)
 
-func (p *pluginServiceImpl) getConvertFunc(ctx context.Context, rawInput string) (convertFunc, common.PluginDataFormat, error) {
+func getConvertFunc(ctx context.Context, rawInput string) (convertFunc, common.PluginDataFormat, error) {
 	if strings.HasPrefix(rawInput, "curl") {
 		return openapi.CurlToOpenapi3Doc, common.PluginDataFormat_Curl, nil
 	}
@@ -713,7 +735,7 @@ func (p *pluginServiceImpl) getConvertFunc(ctx context.Context, rawInput string)
 	return nil, 0, fmt.Errorf("invalid schema")
 }
 
-func (p *pluginServiceImpl) validateConvertResult(ctx context.Context, req *ConvertToOpenapi3DocRequest, doc *model.Openapi3T, mf *entity.PluginManifest) error {
+func validateConvertResult(ctx context.Context, req *ConvertToOpenapi3DocRequest, doc *model.Openapi3T, mf *entity.PluginManifest) error {
 	if req.PluginServerURL != nil {
 		if doc.Servers[0].URL != *req.PluginServerURL {
 			return fmt.Errorf("inconsistent API URL prefix")
@@ -751,7 +773,7 @@ func (p *pluginServiceImpl) CreateDraftToolsWithCode(ctx context.Context, req *C
 
 	existTools, err := p.toolRepo.MGetDraftToolWithAPI(ctx, req.PluginID, toolAPIs, repository.WithToolID())
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "MGetDraftToolWithAPI failed, pluginID=%d, apis=%v", req.PluginID, toolAPIs)
 	}
 
 	duplicatedTools := make([]entity.UniqueToolAPI, 0, len(existTools))
@@ -783,7 +805,7 @@ func (p *pluginServiceImpl) CreateDraftToolsWithCode(ctx context.Context, req *C
 
 	err = p.toolRepo.UpsertDraftTools(ctx, req.PluginID, tools)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "UpsertDraftTools failed, pluginID=%d", req.PluginID)
 	}
 
 	resp = &CreateDraftToolsWithCodeResponse{}

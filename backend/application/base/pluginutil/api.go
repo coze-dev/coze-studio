@@ -1,7 +1,6 @@
 package pluginutil
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -9,6 +8,8 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (*openapi3.Operation, error) {
@@ -115,8 +116,15 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, error) {
 	paramType, ok := plugin.ToOpenapiParamType(apiParam.Type)
 	if !ok {
-		return nil, fmt.Errorf("invalid param type '%s'", apiParam.Type)
+		return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+			errorx.KVf(errno.PluginMsgKey, "the type '%s' of field '%s' is invalid", apiParam.Type, apiParam.Name))
 	}
+
+	if paramType == openapi3.TypeObject || paramType == openapi3.TypeArray { //TODO:(@maronghong): 支持 array
+		return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+			errorx.KVf(errno.PluginMsgKey, "the type of field '%s' cannot be 'array' or 'object'", apiParam.Name))
+	}
+
 	paramSchema := &openapi3.Schema{
 		Description: apiParam.Desc,
 		Type:        paramType,
@@ -138,19 +146,22 @@ func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, err
 	if apiParam.GetAssistType() > 0 {
 		aType, ok := plugin.ToAPIAssistType(apiParam.GetAssistType())
 		if !ok {
-			return nil, fmt.Errorf("invalid assist type '%s'", apiParam.GetAssistType())
+			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+				errorx.KVf(errno.PluginMsgKey, "the assist type '%s' of field '%s' is invalid", apiParam.GetAssistType(), apiParam.Name))
 		}
 		paramSchema.Extensions[plugin.APISchemaExtendAssistType] = aType
 		format, ok := plugin.AssistTypeToFormat(aType)
 		if !ok {
-			return nil, fmt.Errorf("invalid assist type '%s'", aType)
+			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+				errorx.KVf(errno.PluginMsgKey, "the assist type '%s' of field '%s' is invalid", aType, apiParam.Name))
 		}
 		paramSchema.Format = format
 	}
 
 	loc, ok := plugin.ToHTTPParamLocation(apiParam.Location)
 	if !ok {
-		return nil, fmt.Errorf("invalid param location '%s'", apiParam.Location)
+		return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+			errorx.KVf(errno.PluginMsgKey, "the location '%s' of field '%s' is invalid ", apiParam.Location, apiParam.Name))
 	}
 
 	param := &openapi3.Parameter{
@@ -169,7 +180,8 @@ func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, err
 func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 	paramType, ok := plugin.ToOpenapiParamType(apiParam.Type)
 	if !ok {
-		return nil, fmt.Errorf("invalid param type '%s'", apiParam.Type)
+		return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+			errorx.KVf(errno.PluginMsgKey, "the type '%s' of field '%s' is invalid", apiParam.Type, apiParam.Name))
 	}
 
 	sc := &openapi3.Schema{
@@ -193,12 +205,14 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 	if apiParam.GetAssistType() > 0 {
 		aType, ok := plugin.ToAPIAssistType(apiParam.GetAssistType())
 		if !ok {
-			return nil, fmt.Errorf("invalid assist type '%s'", apiParam.GetAssistType())
+			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+				errorx.KVf(errno.PluginMsgKey, "the assist type '%s' of field '%s' is invalid", apiParam.GetAssistType(), apiParam.Name))
 		}
 		sc.Extensions[plugin.APISchemaExtendAssistType] = aType
 		format, ok := plugin.AssistTypeToFormat(aType)
 		if !ok {
-			return nil, fmt.Errorf("invalid assist type '%s'", aType)
+			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+				errorx.KVf(errno.PluginMsgKey, "the assist type '%s' of field '%s' is invalid", aType, apiParam.Name))
 		}
 		sc.Format = format
 	}
@@ -223,13 +237,15 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 
 	case openapi3.TypeArray:
 		if len(apiParam.SubParameters) == 0 {
-			return nil, fmt.Errorf("sub parameters is empty")
+			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+				errorx.KVf(errno.PluginMsgKey, "the sub-parameters of field '%s' are required", apiParam.Name))
 		}
 
 		arrayItem := apiParam.SubParameters[0]
 		itemType, ok := plugin.ToOpenapiParamType(arrayItem.Type)
 		if !ok {
-			return nil, fmt.Errorf("invalid array item type '%s'", itemType)
+			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+				errorx.KVf(errno.PluginMsgKey, "the item type '%s' of field '%s' is invalid", itemType, apiParam.Name))
 		}
 
 		if itemType != openapi3.TypeObject {

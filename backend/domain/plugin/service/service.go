@@ -129,34 +129,34 @@ type CreateDraftToolsWithCodeResponse struct {
 }
 
 type PluginAuthInfo struct {
-	AuthType     *model.AuthType
+	AuthzType    *model.AuthzType
 	Location     *model.HTTPParamLocation
 	Key          *string
 	ServiceToken *string
-	OauthInfo    *string
-	AuthSubType  *model.AuthSubType
-	AuthPayload  *string
+	OAuthInfo    *string
+	AuthzSubType *model.AuthzSubType
+	AuthzPayload *string
 }
 
 func (p PluginAuthInfo) toAuthV2() (*model.AuthV2, error) {
-	if p.AuthType == nil {
-		return nil, fmt.Errorf("auth type is empty")
+	if p.AuthzType == nil {
+		return nil, fmt.Errorf("authz type is empty")
 	}
 
-	switch *p.AuthType {
-	case model.AuthTypeOfNone:
+	switch *p.AuthzType {
+	case model.AuthzTypeOfNone:
 		return &model.AuthV2{
-			Type: model.AuthTypeOfNone,
+			Type: model.AuthzTypeOfNone,
 		}, nil
 
-	case model.AuthTypeOfOAuth:
+	case model.AuthzTypeOfOAuth:
 		m, err := p.authOfOAuthToAuthV2()
 		if err != nil {
 			return nil, err
 		}
 		return m, nil
 
-	case model.AuthTypeOfService:
+	case model.AuthzTypeOfService:
 		m, err := p.authOfServiceToAuthV2()
 		if err != nil {
 			return nil, err
@@ -164,26 +164,26 @@ func (p PluginAuthInfo) toAuthV2() (*model.AuthV2, error) {
 		return m, nil
 
 	default:
-		return nil, fmt.Errorf("invalid auth type '%v'", p.AuthType)
+		return nil, fmt.Errorf("invalid auth type '%v'", p.AuthzType)
 	}
 }
 
 func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
-	if p.AuthSubType == nil {
+	if p.AuthzSubType == nil {
 		return nil, fmt.Errorf("auth sub type is empty")
 	}
 
-	if p.OauthInfo == nil || *p.OauthInfo == "" {
+	if p.OAuthInfo == nil || *p.OAuthInfo == "" {
 		return nil, fmt.Errorf("oauth info is empty")
 	}
 
 	oauthInfo := make(map[string]string)
-	err := sonic.Unmarshal([]byte(*p.OauthInfo), &oauthInfo)
+	err := sonic.Unmarshal([]byte(*p.OAuthInfo), &oauthInfo)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal oauth info failed, err=%v", err)
 	}
 
-	if *p.AuthSubType == model.AuthSubTypeOfOAuthClientCredentials {
+	if *p.AuthzSubType == model.AuthzSubTypeOfOAuthClientCredentials {
 		_oauthInfo := &model.AuthOfOAuthClientCredentials{
 			ClientID:     oauthInfo["client_id"],
 			ClientSecret: oauthInfo["client_secret"],
@@ -197,14 +197,14 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 		}
 
 		return &model.AuthV2{
-			Type:                         model.AuthTypeOfOAuth,
-			SubType:                      model.AuthSubTypeOfOAuthClientCredentials,
+			Type:                         model.AuthzTypeOfOAuth,
+			SubType:                      model.AuthzSubTypeOfOAuthClientCredentials,
 			Payload:                      &str,
 			AuthOfOAuthClientCredentials: _oauthInfo,
 		}, nil
 	}
 
-	if *p.AuthSubType == model.AuthSubTypeOfOAuthAuthorizationCode {
+	if *p.AuthzSubType == model.AuthzSubTypeOfOAuthAuthorizationCode {
 		contentType := oauthInfo["authorization_content_type"]
 		if contentType != model.MIMETypeJson && contentType != model.MIMETypeForm { // only support application/json and application/x-www-form-urlencoded
 			return nil, fmt.Errorf("invalid authorization content type '%s'", contentType)
@@ -225,22 +225,22 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 		}
 
 		return &model.AuthV2{
-			Type:                         model.AuthTypeOfOAuth,
-			SubType:                      model.AuthSubTypeOfOAuthAuthorizationCode,
+			Type:                         model.AuthzTypeOfOAuth,
+			SubType:                      model.AuthzSubTypeOfOAuthAuthorizationCode,
 			Payload:                      &str,
 			AuthOfOAuthAuthorizationCode: _oauthInfo,
 		}, nil
 	}
 
-	return nil, fmt.Errorf("invalid sub auth type '%s'", *p.AuthSubType)
+	return nil, fmt.Errorf("invalid sub authz type '%s'", *p.AuthzSubType)
 }
 
 func (p PluginAuthInfo) authOfServiceToAuthV2() (*model.AuthV2, error) {
-	if p.AuthSubType == nil {
+	if p.AuthzSubType == nil {
 		return nil, fmt.Errorf("auth sub type is empty")
 	}
 
-	if *p.AuthSubType == model.AuthSubTypeOfServiceAPIToken {
+	if *p.AuthzSubType == model.AuthzSubTypeOfServiceAPIToken {
 		if p.Location == nil {
 			return nil, fmt.Errorf("location is empty")
 		}
@@ -263,14 +263,14 @@ func (p PluginAuthInfo) authOfServiceToAuthV2() (*model.AuthV2, error) {
 		}
 
 		return &model.AuthV2{
-			Type:           model.AuthTypeOfService,
-			SubType:        model.AuthSubTypeOfServiceAPIToken,
+			Type:           model.AuthzTypeOfService,
+			SubType:        model.AuthzSubTypeOfServiceAPIToken,
 			Payload:        &str,
 			AuthOfAPIToken: tokenAuth,
 		}, nil
 	}
 
-	return nil, fmt.Errorf("invalid sub auth type '%s'", *p.AuthSubType)
+	return nil, fmt.Errorf("invalid sub authz type '%s'", *p.AuthzSubType)
 }
 
 type PublishPluginRequest = model.PublishPluginRequest

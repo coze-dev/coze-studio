@@ -131,7 +131,7 @@ func NewDefaultPluginManifest() *PluginManifest {
 			Type: model.PluginTypeOfCloud,
 		},
 		Auth: &model.AuthV2{
-			Type: model.AuthTypeOfNone,
+			Type: model.AuthzTypeOfNone,
 		},
 		CommonParams: map[model.HTTPParamLocation][]*plugin_develop_common.CommonParamSchema{
 			model.ParamInBody: {},

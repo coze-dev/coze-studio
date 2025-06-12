@@ -13,7 +13,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type Components struct {
@@ -47,7 +49,7 @@ func (p *pluginServiceImpl) GetOAuthStatus(ctx context.Context, pluginID int64) 
 	}
 
 	authInfo := pl.GetAuthInfo()
-	if authInfo.Type == model.AuthTypeOfNone || authInfo.Type == model.AuthTypeOfService {
+	if authInfo.Type == model.AuthzTypeOfNone || authInfo.Type == model.AuthzTypeOfService {
 		resp = &GetOAuthStatusResponse{
 			IsOauth: false,
 		}
@@ -55,10 +57,10 @@ func (p *pluginServiceImpl) GetOAuthStatus(ctx context.Context, pluginID int64) 
 		return resp, nil
 	}
 
-	if authInfo.Type != model.AuthTypeOfOAuth {
+	if authInfo.Type != model.AuthzTypeOfOAuth {
 		return nil, fmt.Errorf("invalid auth type '%v'", authInfo.Type)
 	}
-	if authInfo.SubType != model.AuthSubTypeOfOAuthClientCredentials {
+	if authInfo.SubType != model.AuthzSubTypeOfOAuthClientCredentials {
 		return nil, fmt.Errorf("invalid auth sub type '%v'", authInfo.SubType)
 	}
 
@@ -72,15 +74,12 @@ func (p *pluginServiceImpl) GetOAuthStatus(ctx context.Context, pluginID int64) 
 }
 
 func (p *pluginServiceImpl) validateOAuthInfo(ctx context.Context, userID int64, authInfo *model.AuthV2) error {
-	if authInfo.Type != model.AuthTypeOfOAuth {
+	if authInfo.Type != model.AuthzTypeOfOAuth {
 		return nil
 	}
 
-	if authInfo.SubType == model.AuthSubTypeOfOAuthClientCredentials {
+	if authInfo.SubType == model.AuthzSubTypeOfOAuthClientCredentials {
 		oauth := authInfo.AuthOfOAuthClientCredentials
-		if oauth == nil {
-			return fmt.Errorf("oauth client credentials is nil")
-		}
 
 		accessToken, err := crossopenauth.DefaultOAuthSVC().GetAccessToken(ctx, &openauthModel.GetAccessTokenRequest{
 			UserID: userID,
@@ -97,11 +96,12 @@ func (p *pluginServiceImpl) validateOAuthInfo(ctx context.Context, userID int64,
 		})
 		if err != nil {
 			logs.CtxErrorf(ctx, "get access token failed, err=%v", err)
-			return fmt.Errorf("invalid oauth client credentials")
+			return errorx.New(errno.ErrPluginInvalidClientCredentialsCode)
 		}
 
 		if accessToken == "" {
-			return fmt.Errorf("invalid oauth client credentials")
+			logs.CtxErrorf(ctx, "access token is empty")
+			return errorx.New(errno.ErrPluginInvalidClientCredentialsCode)
 		}
 	}
 

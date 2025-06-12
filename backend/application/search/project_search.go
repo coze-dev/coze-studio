@@ -34,7 +34,7 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 ) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
-		return nil, errorx.New(errno.ErrSearchPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrSearchPermissionCode, errorx.KV("msg", "session is required"))
 	}
 
 	do := searchRequestTo2Do(*userID, req)

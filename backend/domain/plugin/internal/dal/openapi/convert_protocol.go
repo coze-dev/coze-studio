@@ -26,7 +26,7 @@ import (
 )
 
 func CurlToOpenapi3Doc(ctx context.Context, rawCURL string) (doc *model.Openapi3T, mf *entity.PluginManifest, err error) {
-	curlReq, ok := parseCURL.Parse(rawCURL)
+	curlReq, ok := parseCURL.Parse(rawCURL) // TODO(@maronghong): 重写 curl 解析，这个库有点糟糕
 	if !ok {
 		return nil, nil, fmt.Errorf("parse curl failed")
 	}

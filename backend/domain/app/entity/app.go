@@ -29,7 +29,7 @@ type APP struct {
 }
 
 func (a APP) Published() bool {
-	return a.PublishedAtMS != nil && *a.PublishedAtMS > 0
+	return a.PublishStatus != nil && *a.PublishStatus == consts.PublishStatusOfPublishDone
 }
 
 func (a APP) GetPublishedAtMS() int64 {

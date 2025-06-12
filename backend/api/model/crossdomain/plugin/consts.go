@@ -8,20 +8,20 @@ const (
 	PluginTypeOfCloud PluginType = "openapi"
 )
 
-type AuthType string
+type AuthzType string
 
 const (
-	AuthTypeOfNone    AuthType = "none"
-	AuthTypeOfService AuthType = "service_http"
-	AuthTypeOfOAuth   AuthType = "oauth"
+	AuthzTypeOfNone    AuthzType = "none"
+	AuthzTypeOfService AuthzType = "service_http"
+	AuthzTypeOfOAuth   AuthzType = "oauth"
 )
 
-type AuthSubType string
+type AuthzSubType string
 
 const (
-	AuthSubTypeOfServiceAPIToken        AuthSubType = "token/api_key"
-	AuthSubTypeOfOAuthAuthorizationCode AuthSubType = "authorization_code"
-	AuthSubTypeOfOAuthClientCredentials AuthSubType = "client_credentials"
+	AuthzSubTypeOfServiceAPIToken        AuthzSubType = "token/api_key"
+	AuthzSubTypeOfOAuthAuthorizationCode AuthzSubType = "authorization_code"
+	AuthzSubTypeOfOAuthClientCredentials AuthzSubType = "client_credentials"
 )
 
 type HTTPParamLocation string

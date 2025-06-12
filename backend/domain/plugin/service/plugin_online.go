@@ -2,23 +2,24 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"sort"
 
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func (p *pluginServiceImpl) GetOnlinePlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error) {
 	pl, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, pluginID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", pluginID)
 	}
 	if !exist {
-		return nil, fmt.Errorf("online plugin '%d' not found", pluginID)
+		return nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
 	return pl, nil
@@ -27,7 +28,7 @@ func (p *pluginServiceImpl) GetOnlinePlugin(ctx context.Context, pluginID int64)
 func (p *pluginServiceImpl) MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error) {
 	plugins, err = p.pluginRepo.MGetOnlinePlugins(ctx, pluginIDs)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "MGetOnlinePlugins failed, pluginIDs=%v", pluginIDs)
 	}
 
 	res := make([]*model.PluginInfo, 0, len(plugins))
@@ -41,10 +42,10 @@ func (p *pluginServiceImpl) MGetOnlinePlugins(ctx context.Context, pluginIDs []i
 func (p *pluginServiceImpl) GetOnlineTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, err error) {
 	tool, exist, err := p.toolRepo.GetOnlineTool(ctx, toolID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetOnlineTool failed, toolID=%d", toolID)
 	}
 	if !exist {
-		return nil, fmt.Errorf("online tool '%d' not found", toolID)
+		return nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
 	return tool, nil
@@ -53,7 +54,7 @@ func (p *pluginServiceImpl) GetOnlineTool(ctx context.Context, toolID int64) (to
 func (p *pluginServiceImpl) MGetOnlineTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error) {
 	tools, err = p.toolRepo.MGetOnlineTools(ctx, toolIDs)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "MGetOnlineTools failed, toolIDs=%v", toolIDs)
 	}
 
 	return tools, nil
@@ -62,7 +63,7 @@ func (p *pluginServiceImpl) MGetOnlineTools(ctx context.Context, toolIDs []int64
 func (p *pluginServiceImpl) MGetVersionTools(ctx context.Context, versionTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {
 	tools, err = p.toolRepo.MGetVersionTools(ctx, versionTools)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "MGetVersionTools failed, versionTools=%v", versionTools)
 	}
 
 	return tools, nil
@@ -85,8 +86,9 @@ func (p *pluginServiceImpl) ListPluginProducts(ctx context.Context, req *ListPlu
 func (p *pluginServiceImpl) GetPluginProductAllTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error) {
 	res, err := p.toolRepo.GetPluginAllOnlineTools(ctx, pluginID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetPluginAllOnlineTools failed, pluginID=%d", pluginID)
 	}
+
 	return res, nil
 }
 
@@ -97,7 +99,7 @@ func (p *pluginServiceImpl) DeleteAPPAllPlugins(ctx context.Context, appID int64
 func (p *pluginServiceImpl) MGetVersionPlugins(ctx context.Context, versionPlugins []entity.VersionPlugin) (plugins []*entity.PluginInfo, err error) {
 	plugins, err = p.pluginRepo.MGetVersionPlugins(ctx, versionPlugins)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "MGetVersionPlugins failed, versionPlugins=%v", versionPlugins)
 	}
 
 	return plugins, nil
@@ -108,7 +110,7 @@ func (p *pluginServiceImpl) MGetPluginLatestVersion(ctx context.Context, pluginI
 		repository.WithPluginID(),
 		repository.WithPluginVersion())
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "MGetOnlinePlugins failed, pluginIDs=%v", pluginIDs)
 	}
 
 	versions := make(map[int64]string, len(plugins))

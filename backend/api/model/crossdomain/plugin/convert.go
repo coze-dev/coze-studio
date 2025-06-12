@@ -166,22 +166,22 @@ func AssistTypeToThriftFormat(typ APIFileAssistType) (common.PluginParamTypeForm
 	return format, ok
 }
 
-var authTypes = map[common.AuthorizationType]AuthType{
-	common.AuthorizationType_None:     AuthTypeOfNone,
-	common.AuthorizationType_Service:  AuthTypeOfService,
-	common.AuthorizationType_OAuth:    AuthTypeOfOAuth,
-	common.AuthorizationType_Standard: AuthTypeOfOAuth, // deprecated, the same as OAuth
+var authTypes = map[common.AuthorizationType]AuthzType{
+	common.AuthorizationType_None:     AuthzTypeOfNone,
+	common.AuthorizationType_Service:  AuthzTypeOfService,
+	common.AuthorizationType_OAuth:    AuthzTypeOfOAuth,
+	common.AuthorizationType_Standard: AuthzTypeOfOAuth, // deprecated, the same as OAuth
 }
 
-func ToAuthType(typ common.AuthorizationType) (AuthType, bool) {
+func ToAuthType(typ common.AuthorizationType) (AuthzType, bool) {
 	_type, ok := authTypes[typ]
 	return _type, ok
 }
 
-var thriftAuthTypes = func() map[AuthType]common.AuthorizationType {
-	types := make(map[AuthType]common.AuthorizationType, len(authTypes))
+var thriftAuthTypes = func() map[AuthzType]common.AuthorizationType {
+	types := make(map[AuthzType]common.AuthorizationType, len(authTypes))
 	for k, v := range authTypes {
-		if v == AuthTypeOfOAuth {
+		if v == AuthzTypeOfOAuth {
 			types[v] = common.AuthorizationType_OAuth
 		} else {
 			types[v] = k
@@ -190,30 +190,30 @@ var thriftAuthTypes = func() map[AuthType]common.AuthorizationType {
 	return types
 }()
 
-func ToThriftAuthType(typ AuthType) (common.AuthorizationType, bool) {
+func ToThriftAuthType(typ AuthzType) (common.AuthorizationType, bool) {
 	_type, ok := thriftAuthTypes[typ]
 	return _type, ok
 }
 
-var subAuthTypes = map[int32]AuthSubType{
-	int32(common.ServiceAuthSubType_ApiKey):                 AuthSubTypeOfServiceAPIToken,
-	int32(common.ServiceAuthSubType_OAuthClientCredentials): AuthSubTypeOfOAuthClientCredentials,
+var subAuthTypes = map[int32]AuthzSubType{
+	int32(common.ServiceAuthSubType_ApiKey):                 AuthzSubTypeOfServiceAPIToken,
+	int32(common.ServiceAuthSubType_OAuthClientCredentials): AuthzSubTypeOfOAuthClientCredentials,
 }
 
-func ToAuthSubType(typ int32) (AuthSubType, bool) {
+func ToAuthSubType(typ int32) (AuthzSubType, bool) {
 	_type, ok := subAuthTypes[typ]
 	return _type, ok
 }
 
-var thriftSubAuthTypes = func() map[AuthSubType]int32 {
-	types := make(map[AuthSubType]int32, len(subAuthTypes))
+var thriftSubAuthTypes = func() map[AuthzSubType]int32 {
+	types := make(map[AuthzSubType]int32, len(subAuthTypes))
 	for k, v := range subAuthTypes {
 		types[v] = int32(k)
 	}
 	return types
 }()
 
-func ToThriftAuthSubType(typ AuthSubType) (int32, bool) {
+func ToThriftAuthSubType(typ AuthzSubType) (int32, bool) {
 	_type, ok := thriftSubAuthTypes[typ]
 	return _type, ok
 }

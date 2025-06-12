@@ -68,17 +68,17 @@ func (t ToolInfo) GetDebugStatus() common.APIDebugStatus {
 func (t ToolInfo) GetResponseOpenapiSchema() (*openapi3.Schema, error) {
 	op := t.Operation
 	if op == nil {
-		return nil, fmt.Errorf("operation is nil")
+		return nil, fmt.Errorf("operation is required")
 	}
 
 	resp, ok := op.Responses[strconv.Itoa(http.StatusOK)]
 	if !ok || resp == nil || resp.Value == nil || len(resp.Value.Content) == 0 {
-		return nil, fmt.Errorf("response status '%d' not found", http.StatusOK)
+		return nil, fmt.Errorf("response status '200' not found")
 	}
 
 	mType, ok := resp.Value.Content[MIMETypeJson] // only support application/json
 	if !ok || mType == nil || mType.Schema == nil || mType.Schema.Value == nil {
-		return nil, fmt.Errorf("response MIME type '%s' not found", MIMETypeJson)
+		return nil, fmt.Errorf("media type '%s' not found in response", MIMETypeJson)
 	}
 
 	return mType.Schema.Value, nil
@@ -94,7 +94,7 @@ type paramMetaInfo struct {
 func (t ToolInfo) ToRespAPIParameter() ([]*common.APIParameter, error) {
 	op := t.Operation
 	if op == nil {
-		return nil, fmt.Errorf("operation is nil")
+		return nil, fmt.Errorf("operation is required")
 	}
 
 	respSchema, err := t.GetResponseOpenapiSchema()
@@ -113,7 +113,7 @@ func (t ToolInfo) ToRespAPIParameter() ([]*common.APIParameter, error) {
 
 	for subParamName, prop := range respSchema.Properties {
 		if prop == nil || prop.Value == nil {
-			return nil, fmt.Errorf("property '%s' schema is nil", subParamName)
+			return nil, fmt.Errorf("the schema of property '%s' is required", subParamName)
 		}
 
 		paramMeta := paramMetaInfo{
@@ -136,13 +136,13 @@ func (t ToolInfo) ToRespAPIParameter() ([]*common.APIParameter, error) {
 func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 	op := t.Operation
 	if op == nil {
-		return nil, fmt.Errorf("operation is nil")
+		return nil, fmt.Errorf("operation is required")
 	}
 
 	params := make([]*common.APIParameter, 0, len(op.Parameters))
 	for _, param := range op.Parameters {
 		if param == nil || param.Value == nil || param.Value.Schema == nil || param.Value.Schema.Value == nil {
-			return nil, fmt.Errorf("parameter schema is nil")
+			return nil, fmt.Errorf("parameter schema is required")
 		}
 
 		schemaVal := param.Value.Schema.Value
@@ -166,7 +166,7 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 
 	for _, mType := range op.RequestBody.Value.Content {
 		if mType == nil || mType.Schema == nil || mType.Schema.Value == nil {
-			return nil, fmt.Errorf("request body schema is nil")
+			return nil, fmt.Errorf("request body schema is required")
 		}
 
 		schemaVal := mType.Schema.Value
@@ -180,7 +180,7 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 
 		for subParamName, prop := range schemaVal.Properties {
 			if prop == nil || prop.Value == nil {
-				return nil, fmt.Errorf("property '%s' schema is nil", subParamName)
+				return nil, fmt.Errorf("the schema of property '%s' is required", subParamName)
 			}
 
 			paramMeta := paramMetaInfo{
@@ -205,16 +205,16 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 
 func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIParameter, error) {
 	if sc == nil {
-		return nil, fmt.Errorf("schema is nil")
+		return nil, fmt.Errorf("schema is requred")
 	}
 
 	apiType, ok := ToThriftParamType(strings.ToLower(sc.Type))
 	if !ok {
-		return nil, fmt.Errorf("invalid type '%s'", sc.Type)
+		return nil, fmt.Errorf("the type '%s' of filed '%s' is invalid", sc.Type, paramMeta.name)
 	}
 	location, ok := ToThriftHTTPParamLocation(HTTPParamLocation(paramMeta.location))
 	if !ok {
-		return nil, fmt.Errorf("invalid location '%s'", paramMeta.location)
+		return nil, fmt.Errorf("the location '%s' of field '%s' is invalid", paramMeta.location, paramMeta.name)
 	}
 
 	apiParam := &common.APIParameter{
@@ -234,11 +234,11 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 	if sc.Format != "" {
 		aType, ok := FormatToAssistType(sc.Format)
 		if !ok {
-			return nil, fmt.Errorf("invalid format '%s'", sc.Format)
+			return nil, fmt.Errorf("the format '%s' of field '%s' is invalid", sc.Format, paramMeta.name)
 		}
 		_aType, ok := ToThriftAPIAssistType(aType)
 		if !ok {
-			return nil, fmt.Errorf("invalid assist type '%s'", aType)
+			return nil, fmt.Errorf("assist type '%s' of field '%s' is invalid", aType, paramMeta.name)
 		}
 		apiParam.AssistType = ptr.Of(_aType)
 	}
@@ -271,7 +271,7 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 		})
 		for subParamName, prop := range sc.Properties {
 			if prop == nil || prop.Value == nil {
-				return nil, fmt.Errorf("property '%s' schema is nil", subParamName)
+				return nil, fmt.Errorf("the schema of property '%s' is required", subParamName)
 			}
 
 			subMeta := paramMetaInfo{
@@ -292,7 +292,7 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 
 	case openapi3.TypeArray:
 		if sc.Items == nil || sc.Items.Value == nil {
-			return nil, fmt.Errorf("array item schema is nil")
+			return nil, fmt.Errorf("the item schema of field '%s' is required", paramMeta.name)
 		}
 
 		item := sc.Items.Value
@@ -302,7 +302,7 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 			})
 			for subParamName, prop := range item.Properties {
 				if prop == nil || prop.Value == nil {
-					return nil, fmt.Errorf("property '%s' schema is nil", subParamName)
+					return nil, fmt.Errorf("the schema of property '%s' is required", subParamName)
 				}
 
 				subMeta := paramMetaInfo{
@@ -344,14 +344,14 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 	op := t.Operation
 	if op == nil {
-		return nil, fmt.Errorf("operation is nil")
+		return nil, fmt.Errorf("operation is required")
 	}
 
 	var params []*common.PluginParameter
 
 	for _, prop := range op.Parameters {
 		if prop == nil || prop.Value == nil || prop.Value.Schema == nil || prop.Value.Schema.Value == nil {
-			return nil, fmt.Errorf("parameter schema is nil")
+			return nil, fmt.Errorf("parameter schema is required")
 		}
 
 		paramVal := prop.Value
@@ -372,7 +372,7 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 			}
 			f, ok := AssistTypeToThriftFormat(APIFileAssistType(_v))
 			if ok {
-				return nil, fmt.Errorf("invalid assist type '%s'", _v)
+				return nil, fmt.Errorf("the assist type '%s' of field '%s' is invalid", _v, paramVal.Name)
 			}
 			assistType = ptr.Of(f)
 		}
@@ -393,7 +393,7 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 
 	for _, mType := range op.RequestBody.Value.Content {
 		if mType == nil || mType.Schema == nil || mType.Schema.Value == nil {
-			return nil, fmt.Errorf("request body schema is nil")
+			return nil, fmt.Errorf("request body schema is required")
 		}
 
 		schemaVal := mType.Schema.Value
@@ -407,7 +407,7 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 
 		for subParamName, prop := range schemaVal.Properties {
 			if prop == nil || prop.Value == nil {
-				return nil, fmt.Errorf("property '%s' schema is nil", subParamName)
+				return nil, fmt.Errorf("the schema of property '%s' is required", subParamName)
 			}
 
 			paramMeta := paramMetaInfo{
@@ -432,7 +432,7 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 
 func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.PluginParameter, error) {
 	if sc == nil {
-		return nil, fmt.Errorf("schema is nil")
+		return nil, fmt.Errorf("schema is required")
 	}
 
 	if disabledParam(sc) {
@@ -444,7 +444,7 @@ func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.Pl
 		if _v, ok := v.(string); ok {
 			f, ok := AssistTypeToThriftFormat(APIFileAssistType(_v))
 			if !ok {
-				return nil, fmt.Errorf("invalid assist type '%s'", _v)
+				return nil, fmt.Errorf("the assist type '%s' of field '%s' is invalid", _v, paramMeta.name)
 			}
 			assistType = ptr.Of(f)
 		}
@@ -470,7 +470,7 @@ func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.Pl
 		})
 		for subParamName, prop := range sc.Properties {
 			if prop == nil || prop.Value == nil {
-				return nil, fmt.Errorf("property '%s' schema is nil", subParamName)
+				return nil, fmt.Errorf("the schema of property '%s' is required", subParamName)
 			}
 
 			subMeta := paramMetaInfo{
@@ -490,7 +490,7 @@ func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.Pl
 
 	case openapi3.TypeArray:
 		if sc.Items == nil || sc.Items.Value == nil {
-			return nil, fmt.Errorf("array item schema is nil")
+			return nil, fmt.Errorf("the item schema of field '%s' is required", paramMeta.name)
 		}
 
 		item := sc.Items.Value
@@ -502,7 +502,7 @@ func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.Pl
 			})
 			for subParamName, prop := range item.Properties {
 				if prop == nil || prop.Value == nil {
-					return nil, fmt.Errorf("property '%s' schema is nil", subParamName)
+					return nil, fmt.Errorf("the schema of property '%s' is required", subParamName)
 				}
 
 				subMeta := paramMetaInfo{

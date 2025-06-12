@@ -23,9 +23,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossopenauth"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossvariables"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type Executor interface {
@@ -56,29 +58,21 @@ var (
 	httpClientOnce sync.Once
 )
 
-func NewExecutor(_ context.Context, config *ExecutorConfig) (Executor, error) {
+func NewExecutor(config *ExecutorConfig) Executor {
 	httpClientOnce.Do(func() {
 		httpClient = resty.New()
 	})
 
-	if config == nil {
-		return nil, fmt.Errorf("config is nil")
-	}
-	if config.Plugin == nil {
-		return nil, fmt.Errorf("plugin is nil")
-	}
-	if config.Tool == nil {
-		return nil, fmt.Errorf("tool is nil")
-	}
-
 	return &executorImpl{
 		config: config,
-	}, nil
+	}
 }
 
 func (t *executorImpl) Execute(ctx context.Context, argumentsInJson string) (resp *ExecuteResponse, err error) {
+	const defaultResp = "{}"
+
 	if argumentsInJson == "" {
-		return nil, fmt.Errorf("[Execute] argument is empty")
+		return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KV(errno.PluginMsgKey, "argumentsInJson is required"))
 	}
 
 	httpReq, err := t.buildHTTPRequest(ctx, argumentsInJson)
@@ -106,16 +100,15 @@ func (t *executorImpl) Execute(ctx context.Context, argumentsInJson string) (res
 
 	httpResp, err := restyReq.Send()
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KVf(errno.PluginMsgKey, "http request failed, err=%s", err))
 	}
 
 	logs.CtxDebugf(ctx, "[Execute] status=%s, response=%s", httpResp.Status(), httpResp.String())
 
 	if httpResp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("[Execute] http request failed, status=%s", httpResp.Status())
+		return nil, errorx.New(errno.ErrPluginExecuteToolFailed,
+			errorx.KVf(errno.PluginMsgKey, "http request failed, status=%s", httpResp.Status()))
 	}
-
-	const defaultResp = "{}"
 
 	rawResp := string(httpResp.Body())
 	if rawResp == "" {
@@ -329,15 +322,15 @@ func (t *executorImpl) getVariableValue(ctx context.Context, keyword string) (an
 
 func (t *executorImpl) injectAuthInfo(_ context.Context, httpReq *http.Request) error {
 	authInfo := t.config.Plugin.GetAuthInfo()
-	if authInfo.Type == plugin.AuthTypeOfNone {
+	if authInfo.Type == plugin.AuthzTypeOfNone {
 		return nil
 	}
 
-	if authInfo.Type == plugin.AuthTypeOfService {
+	if authInfo.Type == plugin.AuthzTypeOfService {
 		return t.injectServiceAPIToken(httpReq.Context(), httpReq, authInfo)
 	}
 
-	if authInfo.Type == plugin.AuthTypeOfOAuth {
+	if authInfo.Type == plugin.AuthzTypeOfOAuth {
 		return t.injectOAuthAccessToken(httpReq.Context(), httpReq, authInfo)
 	}
 
@@ -345,7 +338,7 @@ func (t *executorImpl) injectAuthInfo(_ context.Context, httpReq *http.Request) 
 }
 
 func (t *executorImpl) injectServiceAPIToken(ctx context.Context, httpReq *http.Request, authInfo *plugin.AuthV2) (err error) {
-	if authInfo.SubType == plugin.AuthSubTypeOfServiceAPIToken {
+	if authInfo.SubType == plugin.AuthzSubTypeOfServiceAPIToken {
 		authOfAPIToken := authInfo.AuthOfAPIToken
 		if authOfAPIToken == nil {
 			return fmt.Errorf("auth of api token is nil")
@@ -374,7 +367,7 @@ func (t *executorImpl) injectServiceAPIToken(ctx context.Context, httpReq *http.
 func (t *executorImpl) injectOAuthAccessToken(ctx context.Context, httpReq *http.Request, authInfo *plugin.AuthV2) (err error) {
 	var accessToken string
 
-	if authInfo.SubType == plugin.AuthSubTypeOfOAuthClientCredentials {
+	if authInfo.SubType == plugin.AuthzSubTypeOfOAuthClientCredentials {
 		oauth := authInfo.AuthOfOAuthClientCredentials
 		if oauth == nil {
 			return fmt.Errorf("auth of oauth client credentials is nil")
@@ -413,13 +406,14 @@ func (t *executorImpl) injectOAuthAccessToken(ctx context.Context, httpReq *http
 	return nil
 }
 
-func (t *executorImpl) processResponse(ctx context.Context, rawResp string) (newRawResp string, err error) {
+func (t *executorImpl) processResponse(ctx context.Context, rawResp string) (trimmedResp string, err error) {
 	decoder := sonic.ConfigDefault.NewDecoder(bytes.NewBufferString(rawResp))
 	decoder.UseNumber()
 	respMap := map[string]any{}
 	err = decoder.Decode(&respMap)
 	if err != nil {
-		return "", err
+		return "", errorx.New(errno.ErrPluginExecuteToolFailed,
+			errorx.KVf(errno.PluginMsgKey, "response is not object, raw response=%s", rawResp))
 	}
 
 	responses := t.config.Tool.Operation.Responses
@@ -441,28 +435,36 @@ func (t *executorImpl) processResponse(ctx context.Context, rawResp string) (new
 		return "", nil
 	}
 
-	var newRespMap map[string]any
+	// FIXME: trimming is a weak dependency function and does not affect the response
+
+	var trimmedRespMap map[string]any
 	switch t.config.InvalidRespProcessStrategy {
 	case plugin.InvalidResponseProcessStrategyOfReturnRaw:
-		newRespMap, err = processWithInvalidRespProcessStrategyOfReturnRaw(ctx, respMap, schemaVal)
+		trimmedRespMap, err = processWithInvalidRespProcessStrategyOfReturnRaw(ctx, respMap, schemaVal)
 		if err != nil {
-			return "", err
+			logs.CtxErrorf(ctx, "processWithInvalidRespProcessStrategyOfReturnRaw failed, err=%v", err)
+			return rawResp, nil
 		}
+
 	case plugin.InvalidResponseProcessStrategyOfReturnDefault:
-		newRespMap, err = processWithInvalidRespProcessStrategyOfReturnDefault(ctx, respMap, schemaVal)
+		trimmedRespMap, err = processWithInvalidRespProcessStrategyOfReturnDefault(ctx, respMap, schemaVal)
 		if err != nil {
-			return "", err
+			logs.CtxErrorf(ctx, "processWithInvalidRespProcessStrategyOfReturnDefault failed, err=%v", err)
+			return rawResp, nil
 		}
+
 	default:
-		return "", fmt.Errorf("invalid response process strategy '%d'", t.config.InvalidRespProcessStrategy)
+		logs.CtxErrorf(ctx, "invalid response process strategy '%d'", t.config.InvalidRespProcessStrategy)
+		return rawResp, nil
 	}
 
-	newRawResp, err = sonic.MarshalString(newRespMap)
+	trimmedResp, err = sonic.MarshalString(trimmedRespMap)
 	if err != nil {
-		return "", err
+		logs.CtxErrorf(ctx, "marshal trimmed response failed, err=%v", err)
+		return rawResp, nil
 	}
 
-	return newRawResp, nil
+	return trimmedResp, nil
 }
 
 func processWithInvalidRespProcessStrategyOfReturnRaw(ctx context.Context, paramVals map[string]any, paramSchema *openapi3.Schema) (map[string]any, error) {

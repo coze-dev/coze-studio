@@ -158,7 +158,6 @@ func (a *appServiceImpl) packResources(ctx context.Context, appID int64, version
 		slices.Transform(allDraftPlugins, func(a *plugin.PluginInfo) int64 {
 			return a.ID
 		}))
-
 	if err != nil {
 		return nil, err
 	}

@@ -2,19 +2,18 @@ package service
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 
 	"golang.org/x/mod/semver"
-	"gorm.io/gorm"
 
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func (p *pluginServiceImpl) GetPluginNextVersion(ctx context.Context, pluginID int64) (version string, err error) {
@@ -22,7 +21,7 @@ func (p *pluginServiceImpl) GetPluginNextVersion(ctx context.Context, pluginID i
 
 	pl, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, pluginID)
 	if err != nil {
-		return "", err
+		return "", errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", pluginID)
 	}
 	if !exist {
 		return defaultVersion, nil
@@ -30,13 +29,13 @@ func (p *pluginServiceImpl) GetPluginNextVersion(ctx context.Context, pluginID i
 
 	parts := strings.Split(pl.GetVersion(), ".") // Remove the 'v' and split
 	if len(parts) < 3 {
-		logs.CtxErrorf(ctx, "invalid version format '%s'", pl.GetVersion())
+		logs.CtxWarnf(ctx, "invalid version format '%s'", pl.GetVersion())
 		return defaultVersion, nil
 	}
 
 	patch, err := strconv.ParseInt(parts[2], 10, 64)
 	if err != nil {
-		logs.CtxErrorf(ctx, "invalid version format '%s'", pl.GetVersion())
+		logs.CtxWarnf(ctx, "invalid version format '%s'", pl.GetVersion())
 		return defaultVersion, nil
 	}
 
@@ -49,20 +48,21 @@ func (p *pluginServiceImpl) GetPluginNextVersion(ctx context.Context, pluginID i
 func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPluginRequest) (err error) {
 	draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", req.PluginID)
 	}
 	if !exist {
-		return fmt.Errorf("draft plugin draft '%d' not found", req.PluginID)
+		return errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
 	onlinePlugin, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
 	if err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return err
-		}
-	} else if exist && onlinePlugin.Version != nil {
+		return errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
+	}
+	if exist && onlinePlugin.Version != nil {
 		if semver.Compare(req.Version, *onlinePlugin.Version) != 1 {
-			return fmt.Errorf("version '%s' of plugin '%d' is invalid", *onlinePlugin.Version, req.PluginID)
+			return errorx.New(errno.ErrPluginInvalidParamCode,
+				errorx.KVf(errno.PluginMsgKey, "version must be greater than the online version '%s' and format like 'v1.0.0'",
+					*onlinePlugin.Version))
 		}
 	}
 
@@ -71,7 +71,7 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 
 	err = p.pluginRepo.PublishPlugin(ctx, draftPlugin)
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "PublishPlugin failed, pluginID=%d", req.PluginID)
 	}
 
 	return nil
@@ -82,12 +82,12 @@ func (p *pluginServiceImpl) PublishAPPPlugins(ctx context.Context, req *PublishA
 
 	draftPlugins, err := p.pluginRepo.GetAPPAllDraftPlugins(ctx, req.APPID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetAPPAllDraftPlugins failed, appID=%d", req.APPID)
 	}
 
 	failedPluginIDs, err := p.checkCanPublishAPPPlugins(ctx, req.Version, draftPlugins)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "checkCanPublishAPPPlugins failed, appID=%d, appVerion=%s", req.APPID, req.Version)
 	}
 
 	for _, draftPlugin := range draftPlugins {
@@ -113,7 +113,7 @@ func (p *pluginServiceImpl) PublishAPPPlugins(ctx context.Context, req *PublishA
 
 	err = p.pluginRepo.PublishPlugins(ctx, draftPlugins)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "PublishPlugins failed, appID=%d", req.APPID)
 	}
 
 	return resp, nil
@@ -131,7 +131,7 @@ func (p *pluginServiceImpl) checkCanPublishAPPPlugins(ctx context.Context, versi
 		repository.WithPluginID(),
 		repository.WithPluginVersion())
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "MGetOnlinePlugins failed, pluginIDs=%v", draftPluginIDs)
 	}
 
 	if len(onlinePlugins) > 0 {
@@ -157,7 +157,7 @@ func (p *pluginServiceImpl) checkCanPublishAPPPlugins(ctx context.Context, versi
 			repository.WithToolActivatedStatus(),
 		)
 		if err != nil {
-			return nil, err
+			return nil, errorx.Wrapf(err, "GetPluginAllDraftTools failed, pluginID=%d", draftPlugin.ID)
 		}
 
 		if len(res) == 0 {

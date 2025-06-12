@@ -2,7 +2,6 @@ package plugin
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -10,8 +9,11 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 	"github.com/cloudwego/eino/schema"
 )
 
@@ -20,33 +22,40 @@ type Openapi3T openapi3.T
 func (ot Openapi3T) Validate(ctx context.Context) (err error) {
 	err = ptr.Of(openapi3.T(ot)).Validate(ctx)
 	if err != nil {
-		return fmt.Errorf("openapi validates failed, err=%v", err)
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey, err.Error()))
 	}
 
 	if ot.Info == nil {
-		return fmt.Errorf("info is empty")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"info is required"))
 	}
 	if ot.Info.Title == "" {
-		return fmt.Errorf("title of info is empty")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"the title of info is required"))
 	}
 	if ot.Info.Description == "" {
-		return fmt.Errorf("description of info is empty")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"the description of info is required"))
 	}
 
 	if len(ot.Servers) != 1 {
-		return fmt.Errorf("server is required and only one server is allowed, servers=%v", ot.Servers)
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"server is required and only one server is allowed"))
 	}
 
 	serverURL := ot.Servers[0].URL
 	_, err = url.Parse(serverURL)
 	if err != nil {
-		return fmt.Errorf("invalid server url '%s'", serverURL)
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
+			"invalid server url '%s'", serverURL))
 	}
 	if len(serverURL) > 512 {
-		return fmt.Errorf("server url '%s' too long", serverURL)
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
+			"server url '%s' is too long", serverURL))
 	}
 	if !strings.HasPrefix(serverURL, "https://") {
-		return fmt.Errorf("server url must start with 'https://'")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"server url must start with 'https://'"))
 	}
 
 	for _, pathItem := range ot.Paths {
@@ -65,10 +74,10 @@ type Openapi3Operation openapi3.Operation
 
 func (op Openapi3Operation) Validate() (err error) {
 	if op.OperationID == "" {
-		return fmt.Errorf("operation id is empty")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey, "operationID is required"))
 	}
 	if op.Summary == "" {
-		return fmt.Errorf("summary is empty")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey, "summary is required"))
 	}
 
 	err = validateOpenapi3RequestBody(op.RequestBody)
@@ -89,7 +98,7 @@ func (op Openapi3Operation) Validate() (err error) {
 	return nil
 }
 
-func (op Openapi3Operation) ToEinoSchemaParameterInfo() (map[string]*schema.ParameterInfo, error) {
+func (op Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map[string]*schema.ParameterInfo, error) {
 	convertType := func(openapiType string) schema.DataType {
 		switch openapiType {
 		case openapi3.TypeString:
@@ -138,6 +147,7 @@ func (op Openapi3Operation) ToEinoSchemaParameterInfo() (map[string]*schema.Para
 			}
 
 			paramInfo.SubParams = subParams
+
 		case openapi3.TypeArray:
 			ele, err := convertReqBody(sc.Items.Value, isRequired)
 			if err != nil {
@@ -145,10 +155,13 @@ func (op Openapi3Operation) ToEinoSchemaParameterInfo() (map[string]*schema.Para
 			}
 
 			paramInfo.ElemInfo = ele
+
 		case openapi3.TypeString, openapi3.TypeInteger, openapi3.TypeBoolean, openapi3.TypeNumber:
 			return paramInfo, nil
+
 		default:
-			return nil, fmt.Errorf("unsupported json type '%s'", sc.Type)
+			return nil, errorx.New(errno.ErrSearchInvalidParamCode, errorx.KVf(errno.PluginMsgKey,
+				"unsupported json type '%s'", sc.Type))
 		}
 
 		return paramInfo, nil
@@ -174,7 +187,8 @@ func (op Openapi3Operation) ToEinoSchemaParameterInfo() (map[string]*schema.Para
 		}
 
 		if _, ok := result[paramVal.Name]; ok {
-			return nil, fmt.Errorf("duplicate param name '%s'", paramVal.Name)
+			logs.CtxWarnf(ctx, "duplicate parameter name '%s'", paramVal.Name)
+			continue
 		}
 
 		result[paramVal.Name] = paramInfo
@@ -201,7 +215,8 @@ func (op Openapi3Operation) ToEinoSchemaParameterInfo() (map[string]*schema.Para
 			}
 
 			if _, ok := result[paramName]; ok {
-				return nil, fmt.Errorf("duplicate param name '%s'", paramName)
+				logs.CtxWarnf(ctx, "duplicate parameter name '%s'", paramName)
+				continue
 			}
 
 			result[paramName] = paramInfo
@@ -220,7 +235,8 @@ func validateOpenapi3RequestBody(bodyRef *openapi3.RequestBodyRef) (err error) {
 
 	body := bodyRef.Value
 	if len(body.Content) != 1 {
-		return fmt.Errorf("the request body only supports one MIME type")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"request body only supports one media type"))
 	}
 
 	var mType *openapi3.MediaType
@@ -232,20 +248,23 @@ func validateOpenapi3RequestBody(bodyRef *openapi3.RequestBodyRef) (err error) {
 		}
 	}
 	if mType == nil {
-		return fmt.Errorf("invalid request MIME type, the request body only the following types: [%v]",
-			strings.Join(contentTypeArray, ", "))
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
+			"invalid media type, request body only the following types: [%s]", strings.Join(contentTypeArray, ", ")))
 	}
 
 	if mType.Schema == nil || mType.Schema.Value == nil {
-		return fmt.Errorf("request body schema is empty")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"request body schema is required"))
 	}
 
 	sc := mType.Schema.Value
 	if sc.Type == "" {
-		return fmt.Errorf("request body type is empty")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"request body only supports 'object' type"))
 	}
 	if sc.Type != openapi3.TypeObject {
-		return fmt.Errorf("the request body only supports 'object' type")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"request body only supports 'object' type"))
 	}
 
 	return nil
@@ -257,31 +276,32 @@ func validateOpenapi3Parameters(params openapi3.Parameters) (err error) {
 	}
 
 	for _, param := range params {
-		if param == nil || param.Value == nil {
-			return fmt.Errorf("parameter schema is nil")
+		if param == nil || param.Value == nil || param.Value.Schema == nil || param.Value.Schema.Value == nil {
+			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+				"parameter schema is required"))
 		}
 
 		if param.Value.In == "" {
-			return fmt.Errorf("parameter location is empty")
+			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+				"parameter location is required"))
 		}
 		loc := strings.ToLower(param.Value.In)
 		if loc == string(ParamInBody) {
-			return fmt.Errorf("the location of parameter '%s' cannot be 'body'", param.Value.Name)
-		}
-
-		if param.Value.Schema == nil || param.Value.Schema.Value == nil {
-			return fmt.Errorf("parameter schema is empty")
+			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
+				"the location of parameter '%s' cannot be 'body'", param.Value.Name))
 		}
 
 		sc := param.Value.Schema.Value
 		if sc.Type == "" {
-			return fmt.Errorf("parameter type is empty")
+			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
+				"the type of  parameter '%s' is required", param.Value.Name))
 		}
 		if sc.Type != openapi3.TypeString &&
 			sc.Type != openapi3.TypeInteger &&
 			sc.Type != openapi3.TypeNumber &&
-			sc.Type != openapi3.TypeBoolean {
-			return fmt.Errorf("invalid parameter type '%s'", sc.Type)
+			sc.Type != openapi3.TypeBoolean { //TODO:(@maronghong): 支持 array
+			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
+				"the type of parameter '%s' cannot be 'array' or 'object'", param.Value.Name))
 		}
 	}
 
@@ -316,36 +336,46 @@ func validateOpenapi3Responses(responses openapi3.Responses) (err error) {
 	// 只处理 '200' status
 	if len(responses) != 1 {
 		if len(responses) != 2 {
-			return fmt.Errorf("the response only supports '200' status")
+			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+				"response only supports '200' status"))
 		} else if _, ok := responses["default"]; !ok {
-			return fmt.Errorf("the response only supports '200' status")
+			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+				"response only supports '200' status"))
 		}
 	}
 
 	resp, ok := responses[strconv.Itoa(http.StatusOK)]
 	if !ok || resp == nil {
-		return fmt.Errorf("the response only supports '200' status")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"response only supports '200' status"))
 	}
 	if resp.Value == nil {
-		return fmt.Errorf("response value is nil")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"response schema is required"))
 	}
 	if len(resp.Value.Content) != 1 {
-		return fmt.Errorf("the response only supports 'application/json' type")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"response only supports 'application/json' media type"))
 	}
 	mType, ok := resp.Value.Content[MIMETypeJson]
 	if !ok || mType == nil {
-		return fmt.Errorf("the response only supports 'application/json' type")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"response only supports 'application/json' media type"))
+
 	}
 	if mType.Schema == nil || mType.Schema.Value == nil {
-		return fmt.Errorf("response schema is empty")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"the media type schema of response is required"))
 	}
 
 	sc := mType.Schema.Value
 	if sc.Type == "" {
-		return fmt.Errorf("response type is empty")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"response body only supports 'object' type"))
 	}
 	if sc.Type != openapi3.TypeObject {
-		return fmt.Errorf("the response only supports 'object' type")
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"response body only supports 'object' type"))
 	}
 
 	return nil

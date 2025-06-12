@@ -235,9 +235,9 @@ func (p *pluginInvokeTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	)
 
 	if p.toolOperation != nil {
-		parameterInfo, err = plugin.Openapi3Operation(*p.toolOperation).ToEinoSchemaParameterInfo()
+		parameterInfo, err = plugin.Openapi3Operation(*p.toolOperation).ToEinoSchemaParameterInfo(ctx)
 	} else {
-		parameterInfo, err = p.toolInfo.Operation.ToEinoSchemaParameterInfo()
+		parameterInfo, err = p.toolInfo.Operation.ToEinoSchemaParameterInfo(ctx)
 	}
 
 	if err != nil {
