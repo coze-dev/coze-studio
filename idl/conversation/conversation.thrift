@@ -4,9 +4,9 @@ include "common.thrift"
 namespace go conversation.conversation
 
 struct ClearConversationHistoryRequest  {
-    1: required string conversation_id
+    1: required i64 conversation_id  ( api.js_conv="true")
     2: optional common.Scene  scene
-    3: optional string bot_id
+    3: optional i64 bot_id  ( api.js_conv="true")
 }
 
 struct ClearConversationHistoryResponse {
@@ -16,7 +16,7 @@ struct ClearConversationHistoryResponse {
 }
 
 struct ClearConversationCtxRequest  {
-   1: required string conversation_id
+   1: required i64 conversation_id ( api.js_conv="true")
     2: optional common.Scene  scene
     3: optional list<string>  insert_history_message_list, // 存在需要插入聊天的情况
 }
@@ -24,7 +24,7 @@ struct ClearConversationCtxRequest  {
 struct ClearConversationCtxResponse  {
     1:          i64    code
     2:          string msg
-    3: required string new_section_id
+    3: required i64 new_section_id  ( api.js_conv="true")
 }
 
 

@@ -13,7 +13,7 @@ import (
 type SingleAgent interface {
 	StreamExecute(ctx context.Context, historyMsg []*message.Message, query *message.Message,
 		agentRuntime *singleagent.AgentRuntime) (*schema.StreamReader[*singleagent.AgentEvent], error)
-	GetSingleAgent(ctx context.Context, agentID int64, version string) (agent *singleagent.SingleAgent, err error)
+	ObtainAgentByIdentity(ctx context.Context, identity *singleagent.AgentIdentity) (*singleagent.SingleAgent, error)
 }
 
 type ResumeInfo = singleagent.InterruptInfo

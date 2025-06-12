@@ -7,7 +7,16 @@ const (
 	ErrConversationInvalidParamCode = 103000000
 	ErrConversationPermissionCode   = 103000001
 	ErrConversationNotFound         = 103000002
-	ErrConversationJsonMarshal      = 103000002
+	ErrConversationJsonMarshal      = 103000003
+
+	ErrConversationAgentRunError = 103100001
+	ErrAgentNotExists            = 103100002
+
+	ErrReplyUnknowEventType = 103100003
+	ErrUnknowInterruptType  = 103100004
+	ErrInterruptDataEmpty   = 103100005
+
+	ErrConversationMessageNotFound = 103200001
 )
 
 func init() {
@@ -34,4 +43,38 @@ func init() {
 		"invalid parameter : {msg}",
 		code.WithAffectStability(false),
 	)
+
+	code.Register(
+		ErrConversationAgentRunError,
+		"agent run error : {msg}",
+		code.WithAffectStability(true),
+	)
+
+	code.Register(
+		ErrAgentNotExists,
+		"agent not exists",
+		code.WithAffectStability(false),
+	)
+	code.Register(
+		ErrConversationMessageNotFound,
+		"message not found",
+		code.WithAffectStability(false),
+	)
+	code.Register(
+		ErrReplyUnknowEventType,
+		"unknow event type",
+		code.WithAffectStability(true),
+	)
+	code.Register(
+		ErrUnknowInterruptType,
+		"unknow interrupt type",
+		code.WithAffectStability(true),
+	)
+
+	code.Register(
+		ErrInterruptDataEmpty,
+		"interrupt data is empty",
+		code.WithAffectStability(true),
+	)
+
 }

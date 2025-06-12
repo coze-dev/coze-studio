@@ -21,5 +21,5 @@ type RunRecordRepo interface {
 	GetByID(ctx context.Context, id int64) (*entity.RunRecord, error)
 	Delete(ctx context.Context, id []int64) error
 	UpdateByID(ctx context.Context, id int64, update *entity.UpdateMeta) error
-	List(ctx context.Context, conversationID int64, sectionID int64, limit int64) ([]*model.RunRecord, error)
+	List(ctx context.Context, conversationID int64, sectionID int64, limit int32) ([]*model.RunRecord, error)
 }

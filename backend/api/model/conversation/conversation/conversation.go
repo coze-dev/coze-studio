@@ -10,9 +10,9 @@ import (
 )
 
 type ClearConversationHistoryRequest struct {
-	ConversationID string        `thrift:"conversation_id,1,required" form:"conversation_id,required" json:"conversation_id,required" query:"conversation_id,required"`
+	ConversationID int64         `thrift:"conversation_id,1,required" form:"conversation_id,required" json:"conversation_id,string,required" query:"conversation_id,required"`
 	Scene          *common.Scene `thrift:"scene,2,optional" form:"scene" json:"scene,omitempty" query:"scene"`
-	BotID          *string       `thrift:"bot_id,3,optional" form:"bot_id" json:"bot_id,omitempty" query:"bot_id"`
+	BotID          *int64        `thrift:"bot_id,3,optional" form:"bot_id" json:"bot_id,string,omitempty" query:"bot_id"`
 }
 
 func NewClearConversationHistoryRequest() *ClearConversationHistoryRequest {
@@ -22,7 +22,7 @@ func NewClearConversationHistoryRequest() *ClearConversationHistoryRequest {
 func (p *ClearConversationHistoryRequest) InitDefault() {
 }
 
-func (p *ClearConversationHistoryRequest) GetConversationID() (v string) {
+func (p *ClearConversationHistoryRequest) GetConversationID() (v int64) {
 	return p.ConversationID
 }
 
@@ -35,9 +35,9 @@ func (p *ClearConversationHistoryRequest) GetScene() (v common.Scene) {
 	return *p.Scene
 }
 
-var ClearConversationHistoryRequest_BotID_DEFAULT string
+var ClearConversationHistoryRequest_BotID_DEFAULT int64
 
-func (p *ClearConversationHistoryRequest) GetBotID() (v string) {
+func (p *ClearConversationHistoryRequest) GetBotID() (v int64) {
 	if !p.IsSetBotID() {
 		return ClearConversationHistoryRequest_BotID_DEFAULT
 	}
@@ -78,7 +78,7 @@ func (p *ClearConversationHistoryRequest) Read(iprot thrift.TProtocol) (err erro
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -95,7 +95,7 @@ func (p *ClearConversationHistoryRequest) Read(iprot thrift.TProtocol) (err erro
 				goto SkipFieldError
 			}
 		case 3:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -139,8 +139,8 @@ RequiredFieldNotSetError:
 
 func (p *ClearConversationHistoryRequest) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -162,8 +162,8 @@ func (p *ClearConversationHistoryRequest) ReadField2(iprot thrift.TProtocol) err
 }
 func (p *ClearConversationHistoryRequest) ReadField3(iprot thrift.TProtocol) error {
 
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = &v
@@ -209,10 +209,10 @@ WriteStructEndError:
 }
 
 func (p *ClearConversationHistoryRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("conversation_id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("conversation_id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ConversationID); err != nil {
+	if err := oprot.WriteI64(p.ConversationID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -244,10 +244,10 @@ WriteFieldEndError:
 }
 func (p *ClearConversationHistoryRequest) writeField3(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBotID() {
-		if err = oprot.WriteFieldBegin("bot_id", thrift.STRING, 3); err != nil {
+		if err = oprot.WriteFieldBegin("bot_id", thrift.I64, 3); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.BotID); err != nil {
+		if err := oprot.WriteI64(*p.BotID); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -507,7 +507,7 @@ func (p *ClearConversationHistoryResponse) String() string {
 }
 
 type ClearConversationCtxRequest struct {
-	ConversationID string        `thrift:"conversation_id,1,required" form:"conversation_id,required" json:"conversation_id,required" query:"conversation_id,required"`
+	ConversationID int64         `thrift:"conversation_id,1,required" form:"conversation_id,required" json:"conversation_id,string,required" query:"conversation_id,required"`
 	Scene          *common.Scene `thrift:"scene,2,optional" form:"scene" json:"scene,omitempty" query:"scene"`
 	// 存在需要插入聊天的情况
 	InsertHistoryMessageList []string `thrift:"insert_history_message_list,3,optional" form:"insert_history_message_list" json:"insert_history_message_list,omitempty" query:"insert_history_message_list"`
@@ -520,7 +520,7 @@ func NewClearConversationCtxRequest() *ClearConversationCtxRequest {
 func (p *ClearConversationCtxRequest) InitDefault() {
 }
 
-func (p *ClearConversationCtxRequest) GetConversationID() (v string) {
+func (p *ClearConversationCtxRequest) GetConversationID() (v int64) {
 	return p.ConversationID
 }
 
@@ -576,7 +576,7 @@ func (p *ClearConversationCtxRequest) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -637,8 +637,8 @@ RequiredFieldNotSetError:
 
 func (p *ClearConversationCtxRequest) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -719,10 +719,10 @@ WriteStructEndError:
 }
 
 func (p *ClearConversationCtxRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("conversation_id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("conversation_id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ConversationID); err != nil {
+	if err := oprot.WriteI64(p.ConversationID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -790,7 +790,7 @@ func (p *ClearConversationCtxRequest) String() string {
 type ClearConversationCtxResponse struct {
 	Code         int64  `thrift:"code,1" form:"code" json:"code" query:"code"`
 	Msg          string `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
-	NewSectionID string `thrift:"new_section_id,3,required" form:"new_section_id,required" json:"new_section_id,required" query:"new_section_id,required"`
+	NewSectionID int64  `thrift:"new_section_id,3,required" form:"new_section_id,required" json:"new_section_id,string,required" query:"new_section_id,required"`
 }
 
 func NewClearConversationCtxResponse() *ClearConversationCtxResponse {
@@ -808,7 +808,7 @@ func (p *ClearConversationCtxResponse) GetMsg() (v string) {
 	return p.Msg
 }
 
-func (p *ClearConversationCtxResponse) GetNewSectionID() (v string) {
+func (p *ClearConversationCtxResponse) GetNewSectionID() (v int64) {
 	return p.NewSectionID
 }
 
@@ -854,7 +854,7 @@ func (p *ClearConversationCtxResponse) Read(iprot thrift.TProtocol) (err error) 
 				goto SkipFieldError
 			}
 		case 3:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -921,8 +921,8 @@ func (p *ClearConversationCtxResponse) ReadField2(iprot thrift.TProtocol) error 
 }
 func (p *ClearConversationCtxResponse) ReadField3(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1000,10 +1000,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *ClearConversationCtxResponse) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("new_section_id", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("new_section_id", thrift.I64, 3); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.NewSectionID); err != nil {
+	if err := oprot.WriteI64(p.NewSectionID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

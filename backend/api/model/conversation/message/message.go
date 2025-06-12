@@ -5291,10 +5291,10 @@ func (p *GetMessageListResponse) String() string {
 }
 
 type DeleteMessageRequest struct {
-	ConversationID string        `thrift:"conversation_id,1,required" form:"conversation_id,required" json:"conversation_id,required" query:"conversation_id,required"`
-	MessageID      string        `thrift:"message_id,2,required" form:"message_id,required" json:"message_id,required" query:"message_id,required"`
+	ConversationID int64         `thrift:"conversation_id,1,required" form:"conversation_id,required" json:"conversation_id,string,required" query:"conversation_id,required"`
+	MessageID      int64         `thrift:"message_id,2,required" form:"message_id,required" json:"message_id,string,required" query:"message_id,required"`
 	Scene          *common.Scene `thrift:"scene,3,optional" form:"scene" json:"scene,omitempty" query:"scene"`
-	BotID          *string       `thrift:"bot_id,4,optional" form:"bot_id" json:"bot_id,omitempty" query:"bot_id"`
+	BotID          *int64        `thrift:"bot_id,4,optional" form:"bot_id" json:"bot_id,string,omitempty" query:"bot_id"`
 }
 
 func NewDeleteMessageRequest() *DeleteMessageRequest {
@@ -5304,11 +5304,11 @@ func NewDeleteMessageRequest() *DeleteMessageRequest {
 func (p *DeleteMessageRequest) InitDefault() {
 }
 
-func (p *DeleteMessageRequest) GetConversationID() (v string) {
+func (p *DeleteMessageRequest) GetConversationID() (v int64) {
 	return p.ConversationID
 }
 
-func (p *DeleteMessageRequest) GetMessageID() (v string) {
+func (p *DeleteMessageRequest) GetMessageID() (v int64) {
 	return p.MessageID
 }
 
@@ -5321,9 +5321,9 @@ func (p *DeleteMessageRequest) GetScene() (v common.Scene) {
 	return *p.Scene
 }
 
-var DeleteMessageRequest_BotID_DEFAULT string
+var DeleteMessageRequest_BotID_DEFAULT int64
 
-func (p *DeleteMessageRequest) GetBotID() (v string) {
+func (p *DeleteMessageRequest) GetBotID() (v int64) {
 	if !p.IsSetBotID() {
 		return DeleteMessageRequest_BotID_DEFAULT
 	}
@@ -5366,7 +5366,7 @@ func (p *DeleteMessageRequest) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -5375,7 +5375,7 @@ func (p *DeleteMessageRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -5392,7 +5392,7 @@ func (p *DeleteMessageRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 4:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -5441,8 +5441,8 @@ RequiredFieldNotSetError:
 
 func (p *DeleteMessageRequest) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -5452,8 +5452,8 @@ func (p *DeleteMessageRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 func (p *DeleteMessageRequest) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -5475,8 +5475,8 @@ func (p *DeleteMessageRequest) ReadField3(iprot thrift.TProtocol) error {
 }
 func (p *DeleteMessageRequest) ReadField4(iprot thrift.TProtocol) error {
 
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = &v
@@ -5526,10 +5526,10 @@ WriteStructEndError:
 }
 
 func (p *DeleteMessageRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("conversation_id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("conversation_id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ConversationID); err != nil {
+	if err := oprot.WriteI64(p.ConversationID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5542,10 +5542,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *DeleteMessageRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("message_id", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("message_id", thrift.I64, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.MessageID); err != nil {
+	if err := oprot.WriteI64(p.MessageID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5577,10 +5577,10 @@ WriteFieldEndError:
 }
 func (p *DeleteMessageRequest) writeField4(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBotID() {
-		if err = oprot.WriteFieldBegin("bot_id", thrift.STRING, 4); err != nil {
+		if err = oprot.WriteFieldBegin("bot_id", thrift.I64, 4); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.BotID); err != nil {
+		if err := oprot.WriteI64(*p.BotID); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -5787,10 +5787,10 @@ func (p *DeleteMessageResponse) String() string {
 }
 
 type BreakMessageRequest struct {
-	ConversationID string `thrift:"conversation_id,1,required" form:"conversation_id,required" json:"conversation_id,required" query:"conversation_id,required"`
-	QueryMessageID string `thrift:"query_message_id,2,required" form:"query_message_id,required" json:"query_message_id,required" query:"query_message_id,required"`
+	ConversationID int64 `thrift:"conversation_id,1,required" form:"conversation_id,required" json:"conversation_id,string,required" query:"conversation_id,required"`
+	QueryMessageID int64 `thrift:"query_message_id,2,required" form:"query_message_id,required" json:"query_message_id,string,required" query:"query_message_id,required"`
 	// 当前问题下哪一条回复被打断了
-	AnswerMessageID *string `thrift:"answer_message_id,3,optional" form:"answer_message_id" json:"answer_message_id,omitempty" query:"answer_message_id"`
+	AnswerMessageID *int64 `thrift:"answer_message_id,3,optional" form:"answer_message_id" json:"answer_message_id,string,omitempty" query:"answer_message_id"`
 	// 打断位置
 	BrokenPos *int32        `thrift:"broken_pos,4,optional" form:"broken_pos" json:"broken_pos,omitempty" query:"broken_pos"`
 	Scene     *common.Scene `thrift:"scene,5,optional" form:"scene" json:"scene,omitempty" query:"scene"`
@@ -5803,17 +5803,17 @@ func NewBreakMessageRequest() *BreakMessageRequest {
 func (p *BreakMessageRequest) InitDefault() {
 }
 
-func (p *BreakMessageRequest) GetConversationID() (v string) {
+func (p *BreakMessageRequest) GetConversationID() (v int64) {
 	return p.ConversationID
 }
 
-func (p *BreakMessageRequest) GetQueryMessageID() (v string) {
+func (p *BreakMessageRequest) GetQueryMessageID() (v int64) {
 	return p.QueryMessageID
 }
 
-var BreakMessageRequest_AnswerMessageID_DEFAULT string
+var BreakMessageRequest_AnswerMessageID_DEFAULT int64
 
-func (p *BreakMessageRequest) GetAnswerMessageID() (v string) {
+func (p *BreakMessageRequest) GetAnswerMessageID() (v int64) {
 	if !p.IsSetAnswerMessageID() {
 		return BreakMessageRequest_AnswerMessageID_DEFAULT
 	}
@@ -5879,7 +5879,7 @@ func (p *BreakMessageRequest) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -5888,7 +5888,7 @@ func (p *BreakMessageRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -5897,7 +5897,7 @@ func (p *BreakMessageRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 3:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -5962,8 +5962,8 @@ RequiredFieldNotSetError:
 
 func (p *BreakMessageRequest) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -5973,8 +5973,8 @@ func (p *BreakMessageRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 func (p *BreakMessageRequest) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -5984,8 +5984,8 @@ func (p *BreakMessageRequest) ReadField2(iprot thrift.TProtocol) error {
 }
 func (p *BreakMessageRequest) ReadField3(iprot thrift.TProtocol) error {
 
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = &v
@@ -6062,10 +6062,10 @@ WriteStructEndError:
 }
 
 func (p *BreakMessageRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("conversation_id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("conversation_id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ConversationID); err != nil {
+	if err := oprot.WriteI64(p.ConversationID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -6078,10 +6078,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *BreakMessageRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("query_message_id", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("query_message_id", thrift.I64, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.QueryMessageID); err != nil {
+	if err := oprot.WriteI64(p.QueryMessageID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -6095,10 +6095,10 @@ WriteFieldEndError:
 }
 func (p *BreakMessageRequest) writeField3(oprot thrift.TProtocol) (err error) {
 	if p.IsSetAnswerMessageID() {
-		if err = oprot.WriteFieldBegin("answer_message_id", thrift.STRING, 3); err != nil {
+		if err = oprot.WriteFieldBegin("answer_message_id", thrift.I64, 3); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.AnswerMessageID); err != nil {
+		if err := oprot.WriteI64(*p.AnswerMessageID); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {

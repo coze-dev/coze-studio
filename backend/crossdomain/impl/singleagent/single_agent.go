@@ -55,7 +55,7 @@ func (c *impl) buildSingleAgentStreamExecuteReq(ctx context.Context, historyMsg 
 		Input:    inputBuild[0],
 		History:  history,
 		UserID:   input.UserID,
-		//SpaceID:      agentRuntime.SpaceID, // TODO(@lijunwen): 梳理概念
+		// SpaceID:      agentRuntime.SpaceID, // TODO(@lijunwen): 梳理概念
 		PreCallTools: slices.Transform(agentRuntime.PreRetrieveTools, func(tool *agentrun.Tool) *agentrun.ToolsRetriever {
 			return &agentrun.ToolsRetriever{
 				PluginID:  tool.PluginID,
@@ -134,5 +134,13 @@ func (c *impl) GetSingleAgent(ctx context.Context, agentID int64, version string
 		return nil, err
 	}
 
+	return agentInfo.SingleAgent, nil
+}
+
+func (c *impl) ObtainAgentByIdentity(ctx context.Context, identity *model.AgentIdentity) (*model.SingleAgent, error) {
+	agentInfo, err := c.DomainSVC.ObtainAgentByIdentity(ctx, identity)
+	if err != nil {
+		return nil, err
+	}
 	return agentInfo.SingleAgent, nil
 }

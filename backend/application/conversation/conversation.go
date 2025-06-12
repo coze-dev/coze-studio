@@ -2,7 +2,6 @@ package conversation
 
 import (
 	"context"
-	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/conversation"
@@ -38,10 +37,7 @@ type OpenapiAgentRunApplication struct {
 var ConversationOpenAPISVC = new(OpenapiAgentRunApplication)
 
 func (c *ConversationApplicationService) ClearHistory(ctx context.Context, req *conversation.ClearConversationHistoryRequest) (*entity.Conversation, error) {
-	conversationID, err := strconv.ParseInt(req.ConversationID, 10, 64)
-	if err != nil {
-		return nil, err
-	}
+	conversationID := req.ConversationID
 
 	// get conversation
 	currentRes, err := c.ConversationDomainSVC.GetByID(ctx, conversationID)
@@ -67,7 +63,7 @@ func (c *ConversationApplicationService) ClearHistory(ctx context.Context, req *
 		AgentID:     currentRes.AgentID,
 		UserID:      currentRes.CreatorID,
 		Scene:       currentRes.Scene,
-		ConnectorID: currentRes.ConnectorID,
+		ConnectorID: consts.CozeConnectorID,
 	})
 	if err != nil {
 		return nil, err

@@ -157,10 +157,10 @@ struct GetMessageListResponse  {
 }
 
 struct DeleteMessageRequest  {
-    1: required string conversation_id
-    2: required string message_id
+    1: required i64 conversation_id (api.js_conv='true')
+    2: required i64 message_id (api.js_conv='true')
     3: optional common.Scene  scene
-    4: optional string bot_id
+    4: optional i64 bot_id (api.js_conv='true')
 }
 
 
@@ -170,9 +170,9 @@ struct DeleteMessageResponse  {
 }
 
 struct BreakMessageRequest  {
-    1: required string conversation_id
-    2: required string query_message_id
-    3: optional string answer_message_id // 当前问题下哪一条回复被打断了
+    1: required i64 conversation_id (api.js_conv='true')
+    2: required i64 query_message_id (api.js_conv='true')
+    3: optional i64 answer_message_id  (api.js_conv='true') // 当前问题下哪一条回复被打断了
     4: optional i32    broken_pos        // 打断位置
     5: optional common.Scene  scene
 }

@@ -25,10 +25,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/repository"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type runImpl struct {
@@ -125,7 +127,10 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 }
 
 func (c *runImpl) handlerAgent(ctx context.Context, agentID int64) (*singleagent.SingleAgent, error) {
-	agentInfo, err := crossagent.DefaultSVC().GetSingleAgent(ctx, agentID, "")
+	agentInfo, err := crossagent.DefaultSVC().ObtainAgentByIdentity(ctx, &singleagent.AgentIdentity{
+		AgentID: agentID,
+		IsDraft: c.rtDependence.runMeta.IsDraft,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +188,7 @@ func transformEventMap(eventType singleagent.EventType) (message.MessageType, er
 	case singleagent.EventTypeOfInterrupt:
 		return message.MessageTypeInterrupt, nil
 	}
-	return eType, errors.New("unknown event type")
+	return eType, errorx.New(errno.ErrReplyUnknowEventType)
 }
 
 func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.AgentRespEvent, messageType message.MessageType) *message.Message {
@@ -332,7 +337,13 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 }
 
 func (c *runImpl) handlerHistory(ctx context.Context) ([]*msgEntity.Message, error) {
-	conversationTurns := int64(entity.ConversationTurnsDefault) // todo::需要替换成agent上配置的会话论述
+
+	conversationTurns := entity.ConversationTurnsDefault
+
+	if c.rtDependence.agentInfo != nil && c.rtDependence.agentInfo.ModelInfo != nil && c.rtDependence.agentInfo.ModelInfo.ShortMemoryPolicy != nil && ptr.From(c.rtDependence.agentInfo.ModelInfo.ShortMemoryPolicy.HistoryRound) > 0 {
+		conversationTurns = ptr.From(c.rtDependence.agentInfo.ModelInfo.ShortMemoryPolicy.HistoryRound)
+	}
+
 	runRecordList, err := c.RunRecordRepo.List(ctx, c.rtDependence.runMeta.ConversationID, c.rtDependence.runMeta.SectionID, conversationTurns)
 	if err != nil {
 		return nil, err
@@ -623,7 +634,7 @@ func (c *runImpl) parseInterruptData(ctx context.Context, interruptData *singlea
 			return "", defaultContentType, err
 		}
 		if len(iData["messages"]) == 0 {
-			return "", defaultContentType, errors.New("interrupt data is empty")
+			return "", defaultContentType, errorx.New(errno.ErrInterruptDataEmpty)
 		}
 		interruptMsg := iData["messages"][0]
 
@@ -640,10 +651,8 @@ func (c *runImpl) parseInterruptData(ctx context.Context, interruptData *singlea
 		data := interruptData.AllToolInterruptData[interruptData.ToolCallID].InterruptData
 
 		return data, message.ContentTypeCard, nil
-	default:
-		return "", defaultContentType, errors.New("unknown interrupt event")
 	}
-	return "", defaultContentType, errors.New("unknown interrupt event")
+	return "", defaultContentType, errorx.New(errno.ErrUnknowInterruptType)
 }
 
 func (c *runImpl) handlerUsage(meta *schema.ResponseMeta) *msgEntity.UsageExt {

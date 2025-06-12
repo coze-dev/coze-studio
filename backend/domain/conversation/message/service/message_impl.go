@@ -25,11 +25,11 @@ func NewService(c *Components) Message {
 
 func (m *messageImpl) Create(ctx context.Context, msg *entity.Message) (*entity.Message, error) {
 	// create message
-	message, err := m.MessageRepo.Create(ctx, msg)
+	msg, err := m.MessageRepo.Create(ctx, msg)
 	if err != nil {
 		return nil, err
 	}
-	return message, nil
+	return msg, nil
 }
 
 func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.ListResult, error) {

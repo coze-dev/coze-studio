@@ -1,6 +1,6 @@
 package entity
 
-const ConversationTurnsDefault = 100
+const ConversationTurnsDefault int32 = 100
 
 type RunStatus string
 

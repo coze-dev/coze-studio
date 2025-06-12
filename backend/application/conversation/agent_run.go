@@ -3,7 +3,6 @@ package conversation
 import (
 	"context"
 	"encoding/json"
-	"errors"
 
 	"github.com/cloudwego/eino/schema"
 
@@ -16,9 +15,12 @@ import (
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	msgEntity "code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	cmdEntity "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentRunRequest) (*schema.StreamReader[*entity.AgentRunResponse], error) {
@@ -30,6 +32,8 @@ func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentR
 
 	userID := ctxutil.MustGetUIDFromCtx(ctx)
 	conversationData, ccErr := c.checkConversation(ctx, ar, userID)
+
+	logs.CtxInfof(ctx, "conversationData:%v", conv.DebugJsonToStr(conversationData))
 	if ccErr != nil {
 		logs.CtxErrorf(ctx, "checkConversation err:%v", ccErr)
 		return nil, ccErr
@@ -42,7 +46,7 @@ func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentR
 		}
 		if msgMeta != nil {
 			if msgMeta.UserID != userID {
-				return nil, errors.New("message not match")
+				return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "message not match"))
 			}
 			delErr := c.MessageDomainSVC.Delete(ctx, &msgEntity.DeleteMeta{
 				RunIDs: []int64{msgMeta.RunID},
@@ -81,6 +85,7 @@ func (c *ConversationApplicationService) checkConversation(ctx context.Context, 
 			Scene:       ptr.From(ar.Scene),
 			ConnectorID: consts.CozeConnectorID,
 		})
+		logs.CtxInfof(ctx, "conversatioin data:%v", conv.DebugJsonToStr(realCurrCon))
 		if err != nil {
 			return nil, err
 		}
@@ -93,22 +98,22 @@ func (c *ConversationApplicationService) checkConversation(ctx context.Context, 
 	if ar.ConversationID == 0 || conversationData == nil {
 
 		conData, err := c.ConversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
-			AgentID: ar.BotID,
-			UserID:  userID,
+			AgentID:     ar.BotID,
+			UserID:      userID,
+			Scene:       ptr.From(ar.Scene),
+			ConnectorID: consts.CozeConnectorID,
 		})
 		if err != nil {
 			return nil, err
 		}
-		if conData == nil {
-			return nil, errors.New("conversation data is nil")
-		}
+		logs.CtxInfof(ctx, "conversatioin create data:%v", conv.DebugJsonToStr(conData))
 		conversationData = conData
 
 		ar.ConversationID = conversationData.ID
 	}
 
 	if conversationData.CreatorID != userID {
-		return nil, errors.New("conversation data not match")
+		return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "conversation not match"))
 	}
 
 	return conversationData, nil
@@ -121,16 +126,16 @@ func (c *ConversationApplicationService) checkAgent(ctx context.Context, ar *run
 	}
 
 	if agentInfo == nil {
-		return nil, errors.New("agent info is nil")
+		return nil, errorx.New(errno.ErrAgentNotExists)
 	}
 	return agentInfo, nil
 }
 
 func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, spaceID int64, conversationData *convEntity.Conversation, shortcutCMD *cmdEntity.ShortcutCmd) (*entity.AgentRunMeta, error) {
 	var contentType message.ContentType
-	if ptr.From(ar.ContentType) == string(message.ContentTypeText) {
-		contentType = message.ContentTypeText
-	} else {
+	contentType = message.ContentTypeText
+
+	if ptr.From(ar.ContentType) != string(message.ContentTypeText) {
 		contentType = message.ContentTypeMix
 	}
 
@@ -141,7 +146,7 @@ func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Contex
 	}
 
 	arm := &entity.AgentRunMeta{
-		ConversationID:   ar.ConversationID,
+		ConversationID:   conversationData.ID,
 		AgentID:          ar.BotID,
 		Content:          c.buildMultiContent(ctx, ar),
 		DisplayContent:   c.buildDisplayContent(ctx, ar),

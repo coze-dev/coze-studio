@@ -2,6 +2,7 @@ package agentflow
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -113,6 +114,9 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	if len(agentTools) > 0 {
 		isReActAgent = true
 		requireCheckpoint = true
+		if modelInfo.Meta.Capability != nil && modelInfo.Meta.Capability.FunctionCall == false {
+			return nil, fmt.Errorf("model %v does not support function call", modelInfo.Meta.Name)
+		}
 	}
 
 	var agentGraph compose.AnyGraph

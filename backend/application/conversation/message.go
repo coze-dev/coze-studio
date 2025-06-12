@@ -2,7 +2,6 @@ package conversation
 
 import (
 	"context"
-	"errors"
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
@@ -12,9 +11,11 @@ import (
 	singleAgentEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func (c *ConversationApplicationService) GetMessageList(ctx context.Context, mr *message.GetMessageListRequest) (*message.GetMessageListResponse, error) {
@@ -29,10 +30,6 @@ func (c *ConversationApplicationService) GetMessageList(ctx context.Context, mr 
 	currentConversation, isNewCreate, err := c.getCurrentConversation(ctx, *userID, agentID, *mr.Scene, nil)
 	if err != nil {
 		return nil, err
-	}
-
-	if currentConversation == nil {
-		return nil, errors.New("conversation data is nil")
 	}
 
 	if isNewCreate {
@@ -134,7 +131,8 @@ func (c *ConversationApplicationService) getCurrentConversation(ctx context.Cont
 			return nil, isNewCreate, err
 		}
 		if ccNew == nil {
-			return nil, isNewCreate, errors.New("conversation data is nil")
+			return nil, isNewCreate,
+				errorx.New(errno.ErrConversationNotFound)
 		}
 		isNewCreate = true
 		currentConversation = ccNew
@@ -234,21 +232,18 @@ func buildDExt2ApiExt(extra map[string]string) *message.ExtraInfo {
 }
 
 func (c *ConversationApplicationService) DeleteMessage(ctx context.Context, mr *message.DeleteMessageRequest) error {
-	// get message id
-	messageID, err := strconv.ParseInt(mr.MessageID, 10, 64)
-	if err != nil {
-		return err
-	}
-	messageInfo, err := c.MessageDomainSVC.GetByID(ctx, messageID)
+
+	messageInfo, err := c.MessageDomainSVC.GetByID(ctx, mr.MessageID)
 	if err != nil {
 		return err
 	}
 	if messageInfo == nil {
-		return errors.New("message not found")
+		return errorx.New(errno.ErrConversationMessageNotFound)
 	}
+
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if messageInfo.UserID != *userID {
-		return errors.New("permission denied")
+		return errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "permission denied"))
 	}
 
 	err = c.AgentRunDomainSVC.Delete(ctx, []int64{messageInfo.RunID})
@@ -262,13 +257,9 @@ func (c *ConversationApplicationService) DeleteMessage(ctx context.Context, mr *
 }
 
 func (c *ConversationApplicationService) BreakMessage(ctx context.Context, mr *message.BreakMessageRequest) error {
-	aMID, err := strconv.ParseInt(*mr.AnswerMessageID, 10, 64)
-	if err != nil {
-		return err
-	}
 
 	return c.MessageDomainSVC.Broken(ctx, &entity.BrokenMeta{
-		ID:       aMID,
+		ID:       *mr.AnswerMessageID,
 		Position: mr.BrokenPos,
 	})
 }
