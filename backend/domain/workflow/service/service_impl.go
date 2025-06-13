@@ -180,8 +180,8 @@ func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]boo
 	return nodeMetaMap, pluginNodeMetaMap, pluginCategoryMetaMap, nil
 }
 
-func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow, ref *entity.WorkflowReference) (int64, error) {
-	id, err := i.repo.CreateWorkflowMeta(ctx, wf, ref)
+func (i *impl) CreateWorkflow(ctx context.Context, wf *entity.Workflow) (int64, error) {
+	id, err := i.repo.CreateWorkflowMeta(ctx, wf)
 	if err != nil {
 		return 0, err
 	}
@@ -324,7 +324,7 @@ func (i *impl) GetWorkflowDraft(ctx context.Context, id int64) (*entity.Workflow
 	}
 
 	draft, err := i.repo.GetWorkflowDraft(ctx, id)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return nil, err
 	}
 
@@ -341,7 +341,6 @@ func (i *impl) GetWorkflowDraft(ctx context.Context, id int64) (*entity.Workflow
 	wf.Modified = draft.Modified
 	wf.CommitID = draft.CommitID
 
-	// 3. Unmarshal parameters if they exist
 	if inputParamsStr != "" {
 		input := make([]*vo.NamedTypeInfo, 0)
 		err = sonic.UnmarshalString(inputParamsStr, &input)
@@ -467,86 +466,6 @@ func (i *impl) GetWorkflowReference(ctx context.Context, id int64) (map[int64]*e
 	}
 
 	return wfMetas, nil
-}
-
-func (i *impl) GetReleasedWorkflows(ctx context.Context, wfEntities []*entity.WorkflowIdentity) (map[int64]*entity.Workflow, error) {
-	wfIDs := make([]int64, 0, len(wfEntities))
-
-	wfID2CurrentVersion := make(map[int64]string, len(wfEntities))
-	wfID2LatestVersion := make(map[int64]*vo.VersionInfo, len(wfEntities))
-
-	// 1. 获取当前 workflow 的最新发布版本
-	for idx := range wfEntities {
-		wfID := wfEntities[idx].ID
-		wfVersion, err := i.repo.GetLatestWorkflowVersion(ctx, wfID)
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				continue
-			}
-			return nil, err
-		}
-		wfIDs = append(wfIDs, wfID)
-		wfID2LatestVersion[wfID] = wfVersion
-		wfID2CurrentVersion[wfID] = wfEntities[idx].Version
-	}
-
-	// 2. 获取当前workflow 关联的 子workflow 信息
-	wfID2References, err := i.repo.MGetSubWorkflowReferences(ctx, wfIDs...)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, refs := range wfID2References {
-		for _, r := range refs {
-			wfIDs = append(wfIDs, r.ID)
-		}
-	}
-
-	wfIDs = slices.Unique(wfIDs)
-
-	// 3. 查询全部workflow的 meta 信息
-	workflowMetas, err := i.repo.MGetWorkflowMeta(ctx, wfIDs...)
-	if err != nil {
-		return nil, err
-	}
-
-	for wfID, latestVersion := range wfID2LatestVersion {
-		if meta, ok := workflowMetas[wfID]; ok {
-			meta.Version = wfID2CurrentVersion[wfID]
-			meta.LatestVersion = latestVersion.Version
-			meta.LatestVersionDesc = latestVersion.VersionDescription
-
-			inputNamedTypeInfos := make([]*vo.NamedTypeInfo, 0)
-			err = sonic.UnmarshalString(latestVersion.InputParams, &inputNamedTypeInfos)
-			if err != nil {
-				return nil, fmt.Errorf("failed to unmarshal input params for workflow %d: %w", wfID, err)
-			}
-			meta.InputParams = inputNamedTypeInfos
-
-			outputNamedTypeInfos := make([]*vo.NamedTypeInfo, 0)
-			err = sonic.UnmarshalString(latestVersion.OutputParams, &outputNamedTypeInfos)
-			if err != nil {
-				return nil, fmt.Errorf("failed to unmarshal output params for workflow %d: %w", wfID, err)
-			}
-			meta.OutputParams = outputNamedTypeInfos
-			if references, ok := wfID2References[wfID]; ok {
-				subWorkflows := make([]*entity.Workflow, 0, len(references))
-				for _, ref := range references {
-					if refMeta, ok := workflowMetas[ref.ID]; ok {
-						subWorkflows = append(subWorkflows, &entity.Workflow{
-							WorkflowIdentity: entity.WorkflowIdentity{
-								ID: refMeta.ID,
-							},
-							Name: refMeta.Name,
-						})
-					}
-				}
-				meta.SubWorkflows = subWorkflows
-			}
-		}
-	}
-
-	return workflowMetas, nil
 }
 
 func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*cloudworkflow.ValidateTreeInfo, error) {
@@ -1557,90 +1476,62 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 	return nodePropertyMap, nil
 }
 
-func (i *impl) PublishWorkflow(ctx context.Context, wfID int64, version, desc string, force bool) (err error) {
-	// TODO how to use force to publish
-	_, err = i.repo.GetWorkflowVersion(ctx, wfID, version)
-	if err == nil {
-		return fmt.Errorf("workflow version %v already exists", version)
-	}
-
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return err
-	}
-
-	latestVersionInfo, err := i.repo.GetLatestWorkflowVersion(ctx, wfID)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return err
-	}
-
-	versionInfo := &vo.VersionInfo{}
-
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		draftInfo, err := i.repo.GetWorkflowDraft(ctx, wfID)
+func (i *impl) Publish(ctx context.Context, info *vo.CreateVersionInfo) (err error) {
+	latestVersionInfo, err := i.repo.GetLatestWorkflowVersion(ctx, info.ID)
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+	} else {
+		latestVersion, err := parseVersion(latestVersionInfo.Version)
 		if err != nil {
 			return err
 		}
-		uid := ctxutil.GetUIDFromCtx(ctx)
-		if uid != nil {
-			versionInfo.CreatorID = *uid
-		}
-		versionInfo.Version = version
-		versionInfo.Canvas = draftInfo.Canvas
-		versionInfo.InputParams = draftInfo.InputParams
-		versionInfo.OutputParams = draftInfo.OutputParams
-		versionInfo.VersionDescription = desc
-
-		_, err = i.repo.CreateWorkflowVersion(ctx, wfID, versionInfo)
+		currentVersion, err := parseVersion(info.Version)
 		if err != nil {
 			return err
 		}
 
-		now := time.Now().UnixMilli()
-		err = search.GetNotifier().PublishWorkflowResource(ctx, search.Updated, &search.Resource{
-			WorkflowID:    wfID,
-			PublishStatus: ptr.Of(search.Published),
-			UpdatedAt:     ptr.Of(now),
-			PublishedAt:   ptr.Of(now),
-		})
-		if err != nil {
-			return err
+		if !isIncremental(latestVersion, currentVersion) {
+			return fmt.Errorf("the version number is not self-incrementing, old version %v, current version is %v", latestVersionInfo.Version, info.Version)
 		}
-
-		return nil
 	}
 
-	latestVersion, err := parseVersion(latestVersionInfo.Version)
-	if err != nil {
-		return err
-	}
-	currentVersion, err := parseVersion(version)
+	draft, err := i.repo.DraftV2(ctx, info.ID, info.FromCommitID)
 	if err != nil {
 		return err
 	}
 
-	if !isIncremental(latestVersion, currentVersion) {
-		return fmt.Errorf("the version number is not self-incrementing, old version %v, current version is %v", latestVersionInfo.Version, version)
+	if !info.Force && !draft.TestRunSuccess {
+		return fmt.Errorf("workflow %d's current draft needs to pass the test run before publishing", info.ID)
 	}
 
-	draftInfo, err := i.repo.GetWorkflowDraft(ctx, wfID)
-	if err != nil {
+	versionInfo := &vo.VersionInfo{
+		Version:            info.Version,
+		VersionDescription: info.VersionDescription,
+		CanvasInfo: vo.CanvasInfo{
+			Canvas:       draft.Canvas,
+			InputParams:  draft.InputParams,
+			OutputParams: draft.OutputParams,
+		},
+		CreatorID:    info.CreatorID,
+		FromCommitID: draft.CommitID,
+	}
+
+	if err = i.repo.Publish(ctx, info.ID, versionInfo); err != nil {
 		return err
 	}
 
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	if uid != nil {
-		versionInfo.CreatorID = *uid
-	}
-	versionInfo.Version = version
-	versionInfo.Canvas = draftInfo.Canvas
-	versionInfo.InputParams = draftInfo.InputParams
-	versionInfo.OutputParams = draftInfo.OutputParams
-	versionInfo.VersionDescription = desc
-
-	_, err = i.repo.CreateWorkflowVersion(ctx, wfID, versionInfo)
-	if err != nil {
+	now := time.Now().UnixMilli()
+	if err = search.GetNotifier().PublishWorkflowResource(ctx, search.Updated, &search.Resource{
+		WorkflowID:    info.ID,
+		PublishStatus: ptr.Of(search.Published),
+		UpdatedAt:     ptr.Of(now),
+		PublishedAt:   ptr.Of(now),
+	}); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -1955,11 +1846,13 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 	workflowsToPublish := make(map[int64]*vo.VersionInfo)
 	for wid, draftVersion := range draftVersions {
 		workflowsToPublish[wid] = &vo.VersionInfo{
-			Version:      config.Version,
-			Canvas:       draftVersion.Canvas,
-			InputParams:  draftVersion.InputParams,
-			OutputParams: draftVersion.OutputParams,
-			CreatorID:    ctxutil.MustGetUIDFromCtx(ctx),
+			Version: config.Version,
+			CanvasInfo: vo.CanvasInfo{
+				Canvas:       draftVersion.Canvas,
+				InputParams:  draftVersion.InputParams,
+				OutputParams: draftVersion.OutputParams,
+			},
+			CreatorID: ctxutil.MustGetUIDFromCtx(ctx),
 		}
 	}
 
@@ -2017,7 +1910,6 @@ func (i *impl) DeleteWorkflowsByAppID(ctx context.Context, appID int64) error {
 }
 
 func (i *impl) shouldResetTestRun(ctx context.Context, c *vo.Canvas, wid int64) (bool, error) {
-
 	sc, err := adaptor.CanvasToWorkflowSchema(ctx, c)
 	if err != nil {
 		return true, nil

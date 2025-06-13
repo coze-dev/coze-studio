@@ -15,7 +15,7 @@ type Workflow interface {
 	MGetWorkflows(ctx context.Context, ids []*workflowEntity.WorkflowIdentity) ([]*workflowEntity.Workflow, error)
 	WorkflowAsModelTool(ctx context.Context, ids []*workflowEntity.WorkflowIdentity) ([]tool.BaseTool, error)
 	DeleteWorkflow(ctx context.Context, id int64) error
-	PublishWorkflow(ctx context.Context, wfID int64, version, desc string, force bool) (err error)
+	PublishWorkflow(ctx context.Context, info *vo.CreateVersionInfo) (err error)
 	WithResumeToolWorkflow(resumingEvent *workflowEntity.ToolInterruptEvent, resumeData string,
 		allInterruptEvents map[string]*workflowEntity.ToolInterruptEvent) einoCompose.Option
 	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)

@@ -13,19 +13,10 @@ import (
 	"gorm.io/gen"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
-	modelEntity "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
-	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
-	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
-	appEntity "code.byted.org/flow/opencoze/backend/domain/app/entity"
-	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
-	"domain/agent/singleagent/internal/dal/query": {
+	/*"domain/agent/singleagent/internal/dal/query": {
 		"single_agent_draft": {
 			// "variable":        []*bot_common.Variable{},
 			"model_info":                 &bot_common.ModelInfo{},
@@ -121,7 +112,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"default_params": []*modelEntity.Parameter{},
 			"status":         modelEntity.ModelEntityStatus(0),
 		},
-	},
+	},*/
 	"domain/workflow/internal/repo/dal/query": {
 		"workflow_meta":      {},
 		"workflow_draft":     {},
@@ -131,42 +122,42 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"node_execution":     {},
 		"workflow_snapshot":  {},
 	},
+	/*
+		"domain/openauth/openapiauth/internal/dal/query": {
+			"api_key": {},
+		},
+		"domain/shortcutcmd/internal/dal/query": {
+			"shortcut_command": {
+				"tool_info":     &playground.ToolInfo{},
+				"components":    []*playground.Components{},
+				"shortcut_icon": &playground.ShortcutFileInfo{},
+			},
+		},
 
-	"domain/openauth/openapiauth/internal/dal/query": {
-		"api_key": {},
-	},
-	"domain/shortcutcmd/internal/dal/query": {
-		"shortcut_command": {
-			"tool_info":     &playground.ToolInfo{},
-			"components":    []*playground.Components{},
-			"shortcut_icon": &playground.ShortcutFileInfo{},
+		"domain/memory/database/internal/dal/query": {
+			"online_database_info": {
+				"table_field": []*database.FieldItem{},
+			},
+			"draft_database_info": {
+				"table_field": []*database.FieldItem{},
+			},
+			"agent_to_database": {},
 		},
-	},
-
-	"domain/memory/database/internal/dal/query": {
-		"online_database_info": {
-			"table_field": []*database.FieldItem{},
+		"domain/user/internal/dal/query": {
+			"user":       {},
+			"space":      {},
+			"space_user": {},
 		},
-		"draft_database_info": {
-			"table_field": []*database.FieldItem{},
-		},
-		"agent_to_database": {},
-	},
-	"domain/user/internal/dal/query": {
-		"user":       {},
-		"space":      {},
-		"space_user": {},
-	},
-	"domain/app/internal/dal/query": {
-		"app_draft": {},
-		"release_record": {
-			"connector_ids": []int64{},
-			"extra_info":    &appEntity.PublishRecordExtraInfo{},
-		},
-		"connector_release_ref": {
-			"publish_config": appEntity.PublishConfig{},
-		},
-	},
+		"domain/app/internal/dal/query": {
+			"app_draft": {},
+			"release_record": {
+				"connector_ids": []int64{},
+				"extra_info":    &appEntity.PublishRecordExtraInfo{},
+			},
+			"connector_release_ref": {
+				"publish_config": appEntity.PublishConfig{},
+			},
+		},*/
 }
 
 var fieldNullablePath = map[string]bool{

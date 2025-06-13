@@ -22,7 +22,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/adaptor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	model2 "code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -137,12 +137,12 @@ func (r *RepositoryImpl) GenID(ctx context.Context) (int64, error) {
 	return r.idGen.GenID(ctx)
 }
 
-func (r *RepositoryImpl) CreateWorkflowMeta(ctx context.Context, wf *entity.Workflow, ref *entity.WorkflowReference) (int64, error) {
+func (r *RepositoryImpl) CreateWorkflowMeta(ctx context.Context, wf *entity.Workflow) (int64, error) {
 	id, err := r.GenID(ctx)
 	if err != nil {
 		return 0, err
 	}
-	wfMeta := &model2.WorkflowMeta{
+	wfMeta := &model.WorkflowMeta{
 		ID:          id,
 		Name:        wf.Name,
 		Description: wf.Desc,
@@ -167,34 +167,8 @@ func (r *RepositoryImpl) CreateWorkflowMeta(ctx context.Context, wf *entity.Work
 		wfMeta.AppID = *wf.AppID
 	}
 
-	if ref == nil {
-		if err = r.query.WorkflowMeta.Create(wfMeta); err != nil {
-			return 0, fmt.Errorf("create workflow meta: %w", err)
-		}
-
-		return id, nil
-	}
-
-	wfRef := &model2.WorkflowReference{
-		ID:               id,
-		SpaceID:          wfMeta.SpaceID,
-		ReferringID:      ref.ReferringID,
-		ReferType:        int32(ref.ReferType),
-		ReferringBizType: int32(ref.ReferringBizType),
-		CreatorID:        wfMeta.CreatorID,
-		Stage:            int32(entity.StageDraft),
-	}
-
-	if err = r.query.Transaction(func(tx *query.Query) error {
-		if err = tx.WorkflowMeta.Create(wfMeta); err != nil {
-			return fmt.Errorf("create workflow meta: %w", err)
-		}
-		if err = tx.WorkflowReference.WithContext(ctx).Create(wfRef); err != nil {
-			return fmt.Errorf("create workflow reference: %w", err)
-		}
-		return nil
-	}); err != nil {
-		return 0, err
+	if err = r.query.WorkflowMeta.Create(wfMeta); err != nil {
+		return 0, fmt.Errorf("create workflow meta: %w", err)
 	}
 
 	return id, nil
@@ -204,7 +178,7 @@ func (r *RepositoryImpl) CreateWorkflowVersion(ctx context.Context, wfID int64, 
 	var err error
 
 	// 1. save new version
-	err = r.query.WorkflowVersion.WithContext(ctx).Create(&model2.WorkflowVersion{
+	err = r.query.WorkflowVersion.WithContext(ctx).Create(&model.WorkflowVersion{
 		ID:                 wfID,
 		Version:            v.Version,
 		VersionDescription: v.VersionDescription,
@@ -237,8 +211,49 @@ func (r *RepositoryImpl) CreateWorkflowVersion(ctx context.Context, wfID int64, 
 	return wfID, nil
 }
 
+func (r *RepositoryImpl) Publish(ctx context.Context, id int64, info *vo.VersionInfo) (err error) {
+	if err = r.query.WorkflowVersion.WithContext(ctx).Create(&model.WorkflowVersion{
+		ID:                 id,
+		Version:            info.Version,
+		VersionDescription: info.VersionDescription,
+		Canvas:             info.Canvas,
+		InputParams:        info.InputParams,
+		OutputParams:       info.OutputParams,
+		CreatorID:          info.CreatorID,
+	}); err != nil {
+		return fmt.Errorf("publish failed: %w", err)
+	}
+
+	var result gen.ResultInfo
+	result, err = r.query.WorkflowDraft.WithContext(ctx).
+		Where(r.query.WorkflowDraft.ID.Eq(id),
+			r.query.WorkflowDraft.CommitID.Eq(info.FromCommitID)).
+		UpdateColumnSimple(
+			r.query.WorkflowDraft.Modified.Value(false),
+			r.query.WorkflowDraft.TestRunSuccess.Value(true),
+		)
+	if err != nil {
+		return fmt.Errorf("update workflow draft when publish failed: %w", err)
+	}
+
+	if result.RowsAffected == 0 {
+		logs.CtxWarnf(ctx, "update workflow draft when publish failed: no rows affected. WorkflowID: %d", id)
+	}
+
+	_, err = r.query.WorkflowMeta.WithContext(ctx).
+		Where(r.query.WorkflowMeta.ID.Eq(id)).
+		UpdateColumnSimple(
+			r.query.WorkflowMeta.Status.Value(1),
+		)
+	if err != nil {
+		logs.CtxWarnf(ctx, "update workflow meta when publish failed: %v", err)
+	}
+
+	return nil
+}
+
 func (r *RepositoryImpl) CreateOrUpdateDraft(ctx context.Context, id int64, canvas string, inputParams, outputParams string, resetTestRun bool, commitID string) error {
-	d := &model2.WorkflowDraft{
+	d := &model.WorkflowDraft{
 		ID:           id,
 		Canvas:       canvas,
 		InputParams:  inputParams,
@@ -379,6 +394,53 @@ func (r *RepositoryImpl) GetWorkflowMeta(ctx context.Context, id int64) (*entity
 	return wf, nil
 }
 
+func (r *RepositoryImpl) GetWorkflowMetaV2(ctx context.Context, id int64) (*entity.WorkflowMeta, error) {
+	meta, err := r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.ID.Eq(id)).First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("workflow meta not found for ID %d: %w", id, err)
+		}
+		return nil, fmt.Errorf("failed to get workflow meta for ID %d: %w", id, err)
+	}
+
+	url, err := r.tos.GetObjectUrl(ctx, meta.IconURI)
+	if err != nil {
+		logs.Warnf("failed to get url for workflow meta for ID %d: %v", id, err)
+	}
+	// Initialize the result entity
+	wfMeta := &entity.WorkflowMeta{
+		ID:          id,
+		Name:        meta.Name,
+		Desc:        meta.Description,
+		IconURI:     meta.IconURI,
+		IconURL:     url,
+		ContentType: entity.ContentType(meta.ContentType),
+		Mode:        entity.Mode(meta.Mode),
+		CreatorID:   meta.CreatorID,
+		AuthorID:    meta.AuthorID,
+		SpaceID:     meta.SpaceID,
+		CreatedAt:   time.UnixMilli(meta.CreatedAt),
+	}
+	if meta.Tag != 0 {
+		tag := entity.Tag(meta.Tag)
+		wfMeta.Tag = &tag
+	}
+	if meta.SourceID != 0 {
+		wfMeta.SourceID = &meta.SourceID
+	}
+	if meta.AppID != 0 {
+		wfMeta.AppID = &meta.AppID
+	}
+	if meta.UpdatedAt > 0 {
+		wfMeta.UpdatedAt = ptr.Of(time.UnixMilli(meta.UpdatedAt))
+	}
+	if meta.Status > 0 {
+		wfMeta.HasPublished = true
+	}
+
+	return wfMeta, nil
+}
+
 func (r *RepositoryImpl) UpdateWorkflowMeta(ctx context.Context, wf *entity.Workflow) error {
 	_, err := r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.ID.Eq(wf.ID)).UpdateColumnSimple(
 		r.query.WorkflowMeta.Name.Value(wf.Name),
@@ -406,13 +468,13 @@ func (r *RepositoryImpl) GetWorkflowVersion(ctx context.Context, id int64, versi
 	return &vo.VersionInfo{
 		Version:            version,
 		VersionDescription: wfVersion.VersionDescription,
-		Canvas:             wfVersion.Canvas,
-		InputParams:        wfVersion.InputParams,
-		OutputParams:       wfVersion.OutputParams,
-		CreatorID:          wfVersion.CreatorID,
-		CreatedAt:          wfVersion.CreatedAt,
-		UpdaterID:          wfVersion.UpdaterID,
-		UpdatedAt:          wfVersion.UpdatedAt,
+		CanvasInfo: vo.CanvasInfo{
+			Canvas:       wfVersion.Canvas,
+			InputParams:  wfVersion.InputParams,
+			OutputParams: wfVersion.OutputParams,
+		},
+		CreatorID: wfVersion.CreatorID,
+		CreatedAt: wfVersion.CreatedAt,
 	}, nil
 }
 
@@ -424,6 +486,33 @@ func (r *RepositoryImpl) GetWorkflowDraft(ctx context.Context, id int64) (*vo.Dr
 		}
 		return nil, fmt.Errorf("failed to get workflow draft for ID %d: %w", id, err)
 	}
+	return &vo.DraftInfo{
+		Canvas:         draft.Canvas,
+		TestRunSuccess: draft.TestRunSuccess,
+		Modified:       draft.Modified,
+		InputParams:    draft.InputParams,
+		OutputParams:   draft.OutputParams,
+		CreatedAt:      draft.CreatedAt,
+		UpdatedAt:      draft.UpdatedAt,
+		CommitID:       draft.CommitID,
+	}, nil
+}
+
+func (r *RepositoryImpl) DraftV2(ctx context.Context, id int64, commitID string) (*vo.DraftInfo, error) {
+	var conds []gen.Condition
+	conds = append(conds, r.query.WorkflowDraft.ID.Eq(id))
+	if commitID != "" {
+		conds = append(conds, r.query.WorkflowDraft.CommitID.Eq(commitID))
+	}
+
+	draft, err := r.query.WorkflowDraft.WithContext(ctx).Where(conds...).First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("workflow draft not found for ID %d, commitID %s: %w", id, commitID, err)
+		}
+		return nil, fmt.Errorf("failed to get workflow draft for ID %d, commitID %s: %w", id, commitID, err)
+	}
+
 	return &vo.DraftInfo{
 		Canvas:         draft.Canvas,
 		TestRunSuccess: draft.TestRunSuccess,
@@ -511,7 +600,7 @@ func (r *RepositoryImpl) CreateWorkflowExecution(ctx context.Context, execution 
 	default:
 	}
 
-	wfExec := &model2.WorkflowExecution{
+	wfExec := &model.WorkflowExecution{
 		ID:              execution.ID,
 		WorkflowID:      execution.WorkflowIdentity.ID,
 		Version:         execution.WorkflowIdentity.Version,
@@ -698,7 +787,7 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 }
 
 func (r *RepositoryImpl) CreateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error {
-	nodeExec := &model2.NodeExecution{
+	nodeExec := &model.NodeExecution{
 		ID:                 execution.ID,
 		ExecuteID:          execution.ExecuteID,
 		NodeID:             execution.NodeID,
@@ -723,7 +812,7 @@ func (r *RepositoryImpl) CreateNodeExecution(ctx context.Context, execution *ent
 }
 
 func (r *RepositoryImpl) UpdateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error {
-	nodeExec := &model2.NodeExecution{
+	nodeExec := &model.NodeExecution{
 		Status:     int32(execution.Status),
 		Input:      ptr.FromOrDefault(execution.Input, ""),
 		Output:     ptr.FromOrDefault(execution.Output, ""),
@@ -773,7 +862,7 @@ func (r *RepositoryImpl) CancelAllRunningNodes(ctx context.Context, wfExeID int6
 	return nil
 }
 
-func convertNodeExecution(nodeExec *model2.NodeExecution) *entity.NodeExecution {
+func convertNodeExecution(nodeExec *model.NodeExecution) *entity.NodeExecution {
 	nodeExeEntity := &entity.NodeExecution{
 		ID:                   nodeExec.ID,
 		ExecuteID:            nodeExec.ExecuteID,
@@ -1137,12 +1226,13 @@ func (r *RepositoryImpl) GetLatestWorkflowVersion(ctx context.Context, id int64)
 	return &vo.VersionInfo{
 		Version:            version.Version,
 		VersionDescription: version.VersionDescription,
-		Canvas:             version.Canvas,
-		InputParams:        version.InputParams,
-		OutputParams:       version.OutputParams,
-		CreatorID:          version.CreatorID,
-		CreatedAt:          version.CreatedAt,
-		UpdatedAt:          version.UpdatedAt,
+		CanvasInfo: vo.CanvasInfo{
+			Canvas:       version.Canvas,
+			InputParams:  version.InputParams,
+			OutputParams: version.OutputParams,
+		},
+		CreatorID: version.CreatorID,
+		CreatedAt: version.CreatedAt,
 	}, nil
 }
 
@@ -1200,7 +1290,7 @@ func (r *RepositoryImpl) ListWorkflowMeta(ctx context.Context, spaceID int64, pa
 	}
 
 	var (
-		result = make([]*model2.WorkflowMeta, 0)
+		result = make([]*model.WorkflowMeta, 0)
 		err    error
 	)
 
@@ -1261,10 +1351,10 @@ func (r *RepositoryImpl) ListWorkflowMeta(ctx context.Context, spaceID int64, pa
 
 func (r *RepositoryImpl) BatchPublishWorkflows(ctx context.Context, workflows map[int64]*vo.VersionInfo) error {
 	const batchSize = 10
-	wfVersions := make([]*model2.WorkflowVersion, 0)
+	wfVersions := make([]*model.WorkflowVersion, 0)
 	wfIDs := make([]int64, 0)
 	for id, v := range workflows {
-		wfVersions = append(wfVersions, &model2.WorkflowVersion{
+		wfVersions = append(wfVersions, &model.WorkflowVersion{
 			ID:                 id,
 			Canvas:             v.Canvas,
 			InputParams:        v.InputParams,
@@ -1683,7 +1773,7 @@ func (r *RepositoryImpl) GetDraftWorkflowsByAppID(ctx context.Context, AppID int
 	if err != nil {
 		return nil, nil, err
 	}
-	draftIDs := slices.Transform(wfMetas, func(a *model2.WorkflowMeta) int64 {
+	draftIDs := slices.Transform(wfMetas, func(a *model.WorkflowMeta) int64 {
 		return a.ID
 	})
 
@@ -1704,7 +1794,7 @@ func (r *RepositoryImpl) GetDraftWorkflowsByAppID(ctx context.Context, AppID int
 		}
 	}
 
-	wid2Named := slices.ToMap(wfMetas, func(e *model2.WorkflowMeta) (int64, string) {
+	wid2Named := slices.ToMap(wfMetas, func(e *model.WorkflowMeta) (int64, string) {
 		return e.ID, e.Name
 	})
 	return result, wid2Named, nil
@@ -1728,7 +1818,7 @@ func (r *RepositoryImpl) GetWorkflowIDsByAppId(ctx context.Context, appID int64)
 		return nil, err
 	}
 
-	return slices.Transform(workflowMetas, func(a *model2.WorkflowMeta) int64 {
+	return slices.Transform(workflowMetas, func(a *model.WorkflowMeta) int64 {
 		return a.ID
 	}), nil
 }

@@ -3,13 +3,22 @@ package vo
 type VersionInfo struct {
 	Version            string
 	VersionDescription string
-	Canvas             string
-	InputParams        string
-	OutputParams       string
+
+	CanvasInfo
+
+	CreatorID int64
+	CreatedAt int64
+
+	FromCommitID string
+}
+
+type CreateVersionInfo struct {
+	ID                 int64
+	Version            string
+	VersionDescription string
 	CreatorID          int64
-	CreatedAt          int64
-	UpdaterID          int64
-	UpdatedAt          int64
+	FromCommitID       string
+	Force              bool
 }
 
 type DraftInfo struct {
@@ -21,4 +30,10 @@ type DraftInfo struct {
 	CreatedAt      int64
 	UpdatedAt      int64
 	CommitID       string
+}
+
+type CanvasInfo struct {
+	Canvas       string
+	InputParams  string
+	OutputParams string
 }

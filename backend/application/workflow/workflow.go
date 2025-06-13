@@ -138,25 +138,7 @@ func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.C
 		return nil, err
 	}
 
-	var ref *entity.WorkflowReference
-	if req.IsSetBindBizID() {
-		if !req.IsSetBindBizType() {
-			return nil, fmt.Errorf("bind_biz_id cannot be set when bind_biz_type is set")
-		}
-
-		if *req.BindBizType == int32(workflow.BindBizType_Agent) {
-			return nil, fmt.Errorf("bind_biz_type cannot be set when bind_biz_type is set")
-		}
-
-		ref = &entity.WorkflowReference{
-			ReferringID:      mustParseInt64(*req.BindBizID),
-			SpaceID:          spaceID,
-			ReferType:        entity.ReferTypeTool,
-			ReferringBizType: entity.ReferringBizTypeAgent,
-		}
-	}
-
-	id, err := GetWorkflowDomainSVC().CreateWorkflow(ctx, wf, ref)
+	id, err := GetWorkflowDomainSVC().CreateWorkflow(ctx, wf)
 	if err != nil {
 		return nil, err
 	}
@@ -258,7 +240,7 @@ func (w *ApplicationService) BatchDeleteWorkflow(ctx context.Context, req *workf
 	}, nil
 }
 
-func (w *ApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetCanvasInfoRequest) (*workflow.GetCanvasInfoResponse, error) {
+func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.GetCanvasInfoRequest) (*workflow.GetCanvasInfoResponse, error) {
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
@@ -309,7 +291,7 @@ func (w *ApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetC
 			DraftCommitID:  wf.CommitID,
 			Type:           vcsType,
 		},
-		WorkflowVersion: &wf.LatestVersion, // TODO: now if you have published it, return to the
+		WorkflowVersion: &wf.LatestVersion,
 	}
 
 	return &workflow.GetCanvasInfoResponse{
@@ -1250,72 +1232,6 @@ func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *wor
 	return response, nil
 }
 
-// GetReleasedWorkflows TODO currently, the online version of this API is no longer used, and you need to confirm with the front-end
-func (w *ApplicationService) GetReleasedWorkflows(ctx context.Context, req *workflow.GetReleasedWorkflowsRequest) (*vo.ReleasedWorkflowData, error) {
-	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
-		return nil, err
-	}
-
-	wfEntities := make([]*entity.WorkflowIdentity, 0)
-	for _, wf := range req.WorkflowFilterList {
-		wfID, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		wfEntities = append(wfEntities, &entity.WorkflowIdentity{
-			ID:      wfID,
-			Version: *wf.WorkflowVersion,
-		})
-	}
-
-	workflowMetas, err := GetWorkflowDomainSVC().GetReleasedWorkflows(ctx, wfEntities)
-	if err != nil {
-		return nil, err
-	}
-
-	releasedWorkflows := make([]*workflow.ReleasedWorkflow, 0, len(workflowMetas))
-	inputs := make(map[string]any)
-	outputs := make(map[string]any)
-	for _, wfMeta := range workflowMetas {
-		wfIDStr := strconv.FormatInt(wfMeta.ID, 10)
-		subWk := make([]*workflow.SubWorkflow, 0, len(wfMeta.SubWorkflows))
-		for _, w := range wfMeta.SubWorkflows {
-			subWk = append(subWk, &workflow.SubWorkflow{
-				ID:   strconv.FormatInt(w.ID, 10),
-				Name: w.Name,
-			})
-		}
-		releaseWorkflow := &workflow.ReleasedWorkflow{
-			WorkflowID:            wfIDStr,
-			Name:                  wfMeta.Name,
-			Icon:                  wfMeta.IconURL,
-			Desc:                  wfMeta.Desc,
-			Type:                  int32(wfMeta.ContentType),
-			FlowVersion:           wfMeta.Version,
-			LatestFlowVersionDesc: wfMeta.LatestVersion,
-			LatestFlowVersion:     wfMeta.LatestVersionDesc,
-			SubWorkflowList:       subWk,
-		}
-		inputs[wfIDStr], err = toVariables(wfMeta.InputParams)
-		if err != nil {
-			return nil, err
-		}
-		outputs[wfIDStr], err = toVariables(wfMeta.OutputParams)
-		if err != nil {
-			return nil, err
-		}
-		releasedWorkflows = append(releasedWorkflows, releaseWorkflow)
-
-	}
-	response := &vo.ReleasedWorkflowData{
-		WorkflowList: releasedWorkflows,
-		Inputs:       inputs,
-		Outputs:      outputs,
-	}
-
-	return response, nil
-}
-
 func (w *ApplicationService) TestResume(ctx context.Context, req *workflow.WorkflowTestResumeRequest) (*workflow.WorkflowTestResumeResponse, error) {
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
@@ -1417,11 +1333,21 @@ func (w *ApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *wo
 }
 
 func (w *ApplicationService) PublishWorkflow(ctx context.Context, req *workflow.PublishWorkflowRequest) (*workflow.PublishWorkflowResponse, error) {
-	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+	userID := ctxutil.MustGetUIDFromCtx(ctx)
+	if err := checkUserSpace(ctx, userID, mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
 
-	err := GetWorkflowDomainSVC().PublishWorkflow(ctx, mustParseInt64(req.GetWorkflowID()), req.GetWorkflowVersion(), req.GetVersionDescription(), req.GetForce())
+	info := &vo.CreateVersionInfo{
+		ID:                 mustParseInt64(req.GetWorkflowID()),
+		Version:            req.GetWorkflowVersion(),
+		VersionDescription: req.GetVersionDescription(),
+		CreatorID:          userID,
+		FromCommitID:       req.GetCommitID(),
+		Force:              req.GetForce(),
+	}
+
+	err := GetWorkflowDomainSVC().Publish(ctx, info)
 	if err != nil {
 		return nil, err
 	}

@@ -161,9 +161,14 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	}, nil).AnyTimes()
 
 	m := mockey.Mock(crossuser.DefaultSVC).Return(mockCU).Build()
+	m1 := mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
+		UserID:      123,
+		ConnectorID: consts.APIConnectorID,
+	}).Build()
 
 	f := func() {
 		m.UnPatch()
+		m1.UnPatch()
 		ctrl.Finish()
 		_ = h.Close()
 	}
@@ -391,7 +396,14 @@ func ensureWorkflowVersion(t *testing.T, h *server.Hertz, id int64, version stri
 		Version: version,
 	})
 	if err != nil {
-		err = appworkflow.GetWorkflowDomainSVC().PublishWorkflow(context.Background(), id, version, "", true)
+		err = appworkflow.GetWorkflowDomainSVC().Publish(context.Background(), &vo.CreateVersionInfo{
+			ID:                 id,
+			Version:            version,
+			VersionDescription: "",
+			CreatorID:          0,
+			FromCommitID:       "",
+			Force:              true,
+		})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -416,6 +428,17 @@ func getSuccessStringResult(t *testing.T, h *server.Hertz, idStr string, exeID s
 
 	assert.Equal(t, workflow.WorkflowExeStatus_Success, workflowStatus)
 	return output
+}
+
+func testRun(t *testing.T, h *server.Hertz, idStr string, input map[string]string) string {
+	testRunReq := &workflow.WorkFlowTestRunRequest{
+		WorkflowID: idStr,
+		SpaceID:    ptr.Of("123"),
+		Input:      input,
+	}
+
+	testRunResponse := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
+	return testRunResponse.Data.ExecuteID
 }
 
 func TestNodeTemplateList(t *testing.T) {
@@ -554,11 +577,6 @@ func TestTestRunAndGetProcess(t *testing.T) {
 			WorkflowVersion:    ptr.Of("v0.0.1"),
 			VersionDescription: ptr.Of("desc"),
 		}, "/api/workflow_api/publish")
-
-		mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
-			UserID:      123,
-			ConnectorID: consts.APIConnectorID,
-		}).Build()
 
 		runReq := &workflow.OpenAPIRunFlowRequest{
 			WorkflowID: idStr,
@@ -1124,11 +1142,6 @@ func TestTestResumeWithInputNode(t *testing.T) {
 				WorkflowVersion:    ptr.Of("v1.0.0"),
 				VersionDescription: ptr.Of("test"),
 			}, "api/workflow_api/publish")
-
-			mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
-				UserID:      123,
-				ConnectorID: consts.APIConnectorID,
-			}).Build()
 
 			syncRunReq := &workflow.OpenAPIRunFlowRequest{
 				WorkflowID: idStr,
@@ -1910,14 +1923,14 @@ func TestPublishWorkflow(t *testing.T) {
 		h, _, _, f := prepareWorkflowIntegration(t, true)
 		defer f()
 
-		idStr := loadWorkflowWithWorkflowName(t, h, "pb_wa", "publish/publish_workflow.json")
+		idStr := loadWorkflowWithWorkflowName(t, h, "pb_wc", "publish/publish_workflow.json")
 
 		listResponse := post[workflow.GetWorkFlowListResponse](t, h, &workflow.GetWorkFlowListRequest{
 			Page:    ptr.Of(int32(1)),
 			Size:    ptr.Of(int32(10)),
 			Type:    ptr.Of(workflow.WorkFlowType_User),
 			Status:  ptr.Of(workflow.WorkFlowListStatus_UnPublished),
-			Name:    ptr.Of("pb_wa"),
+			Name:    ptr.Of("pb_wc"),
 			SpaceID: ptr.Of("123"),
 		}, "/api/workflow_api/workflow_list")
 
@@ -1928,6 +1941,7 @@ func TestPublishWorkflow(t *testing.T) {
 			SpaceID:            "123",
 			WorkflowVersion:    ptr.Of("v0.0.1"),
 			VersionDescription: ptr.Of("version v0.1.1"),
+			Force:              ptr.Of(true),
 		}
 		response := post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
 		assert.Equal(t, response.Data.WorkflowID, idStr)
@@ -1938,7 +1952,7 @@ func TestPublishWorkflow(t *testing.T) {
 			SpaceID: ptr.Of("123"),
 			Type:    ptr.Of(workflow.WorkFlowType_User),
 			Status:  ptr.Of(workflow.WorkFlowListStatus_HadPublished),
-			Name:    ptr.Of("pb_w"),
+			Name:    ptr.Of("pb_wc"),
 		}, "/api/workflow_api/workflow_list")
 
 		assert.Equal(t, 1, len(listResponse.Data.WorkflowList))
@@ -1948,6 +1962,7 @@ func TestPublishWorkflow(t *testing.T) {
 			SpaceID:            "123",
 			WorkflowVersion:    ptr.Of("v0.0.2"),
 			VersionDescription: ptr.Of("version v0.1.1"),
+			Force:              ptr.Of(true),
 		}
 		response = post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
 		assert.Equal(t, response.Data.WorkflowID, idStr)
@@ -1977,33 +1992,16 @@ func TestGetCanvasInfo(t *testing.T) {
 		assert.Equal(t, response.Data.Workflow.Status, workflow.WorkFlowDevStatus_CanNotSubmit)
 		assert.Equal(t, response.Data.VcsData.Type, workflow.VCSCanvasType_Draft)
 
-		testRunReq := &workflow.WorkFlowTestRunRequest{
-			WorkflowID: idStr,
-			SpaceID:    ptr.Of("123"),
-			Input: map[string]string{
-				"input": "input_v1",
-				"e":     "e",
-			},
-		}
-
-		testRunResponse := post[workflow.WorkFlowTestRunResponse](t, h, testRunReq, "/api/workflow_api/test_run")
-		workflowStatus := workflow.WorkflowExeStatus_Running
-		for {
-			if workflowStatus != workflow.WorkflowExeStatus_Running {
-				break
-			}
-			getProcessResp := getProcess(t, h, idStr, testRunResponse.Data.ExecuteID)
-
-			workflowStatus = getProcessResp.Data.ExecuteStatus
-			t.Logf("workflow status: %s, success rate: %s", workflowStatus, getProcessResp.Data.Rate)
-		}
+		exeID := testRun(t, h, idStr, map[string]string{
+			"input": "input_v1",
+			"e":     "e",
+		})
+		_ = getSuccessStringResult(t, h, idStr, exeID)
 
 		getCanvas = &workflow.GetCanvasInfoRequest{
 			SpaceID:    "123",
 			WorkflowID: ptr.Of(idStr),
 		}
-
-		time.Sleep(time.Second)
 
 		response = post[workflow.GetCanvasInfoResponse](t, h, getCanvas, "/api/workflow_api/canvas")
 
@@ -2211,10 +2209,6 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 			Parameters: ptr.Of(inputStr),
 		}
 
-		mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
-			UserID:      123,
-			ConnectorID: consts.APIConnectorID,
-		}).Build()
 		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
 		err = sseReader.ForEach(t.Context(), func(e *sse.Event) error {
 			t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
@@ -2383,10 +2377,6 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 			Parameters: ptr.Of(inputStr),
 		}
 
-		mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
-			UserID:      123,
-			ConnectorID: consts.APIConnectorID,
-		}).Build()
 		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
 		err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
 			t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
@@ -3039,12 +3029,13 @@ func TestListWorkflowAsToolData(t *testing.T) {
 		}, "/api/workflow_api/workflow_list")
 
 		assert.Equal(t, 1, len(listResponse.Data.WorkflowList))
-		//
+
 		publishReq := &workflow.PublishWorkflowRequest{
 			WorkflowID:         idStr,
 			WorkflowVersion:    ptr.Of("v0.0.1"),
 			VersionDescription: ptr.Of("version v0.1.1"),
 			SpaceID:            "123",
+			Force:              ptr.Of(true),
 		}
 
 		_ = post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
@@ -3095,6 +3086,7 @@ func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 			WorkflowVersion:    ptr.Of("v0.0.1"),
 			VersionDescription: ptr.Of("version v0.1.1"),
 			SpaceID:            "123",
+			Force:              ptr.Of(true),
 		}
 
 		_ = post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
@@ -3104,6 +3096,7 @@ func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 			WorkflowVersion:    ptr.Of("v0.0.2"),
 			VersionDescription: ptr.Of("version v0.0.2"),
 			SpaceID:            "123",
+			Force:              ptr.Of(true),
 		}
 
 		_ = post[workflow.PublishWorkflowResponse](t, h, publishReq, "/api/workflow_api/publish")
@@ -4103,16 +4096,12 @@ func TestStreamRun(t *testing.T) {
 			Parameters: ptr.Of(inputStr),
 		}
 
-		mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
-			UserID:      123,
-			ConnectorID: consts.APIConnectorID,
-		}).Build()
-
 		_ = post[workflow.PublishWorkflowResponse](t, h, &workflow.PublishWorkflowRequest{
 			WorkflowID:         idStr,
 			SpaceID:            "123",
 			WorkflowVersion:    ptr.Of("v0.0.1"),
 			VersionDescription: ptr.Of("desc"),
+			Force:              ptr.Of(true),
 		}, "/api/workflow_api/publish")
 
 		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
@@ -4251,12 +4240,9 @@ func TestStreamResume(t *testing.T) {
 			WorkflowVersion:    ptr.Of("v1.0.0"),
 			VersionDescription: ptr.Of("desc"),
 			SpaceID:            "123",
+			Force:              ptr.Of(true),
 		}, "api/workflow_api/publish")
 
-		mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
-			UserID:      123,
-			ConnectorID: consts.APIConnectorID,
-		}).Build()
 		sseReader := postSSE(t, streamRunReq, "/v1/workflow/stream_run")
 		err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
 			t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
@@ -5243,11 +5229,6 @@ func TestCodeExceptionBranch(t *testing.T) {
 					VersionDescription: ptr.Of("test"),
 					SpaceID:            "123",
 				}, "api/workflow_api/publish")
-
-				mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
-					UserID:      123,
-					ConnectorID: consts.APIConnectorID,
-				}).Build()
 
 				syncRunReq := &workflow.OpenAPIRunFlowRequest{
 					WorkflowID: idStr,
