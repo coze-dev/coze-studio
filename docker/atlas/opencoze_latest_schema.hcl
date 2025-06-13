@@ -56,13 +56,6 @@ table "agent_tool_draft" {
     unsigned = true
     comment  = "Agent ID"
   }
-  column "plugin_id" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Plugin ID"
-  }
   column "tool_id" {
     null     = false
     type     = bigint
@@ -76,6 +69,24 @@ table "agent_tool_draft" {
     default  = 0
     unsigned = true
     comment  = "Create Time in Milliseconds"
+  }
+  column "tool_version" {
+    null    = false
+    type    = varchar(255)
+    default = ""
+    comment = "Tool Version, e.g. v1.0.0"
+  }
+  column "operation" {
+    null    = true
+    type    = json
+    comment = "Tool Openapi Operation Schema"
+  }
+  column "plugin_id" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Plugin ID"
   }
   column "sub_url" {
     null    = false
@@ -94,17 +105,6 @@ table "agent_tool_draft" {
     type    = varchar(255)
     default = ""
     comment = "Tool Name"
-  }
-  column "tool_version" {
-    null    = false
-    type    = varchar(255)
-    default = ""
-    comment = "Tool Version, e.g. v1.0.0"
-  }
-  column "operation" {
-    null    = true
-    type    = json
-    comment = "Tool Openapi Operation Schema"
   }
   primary_key {
     columns = [column.id]
@@ -138,19 +138,30 @@ table "agent_tool_version" {
     unsigned = true
     comment  = "Agent ID"
   }
-  column "plugin_id" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Plugin ID"
-  }
   column "tool_id" {
     null     = false
     type     = bigint
     default  = 0
     unsigned = true
     comment  = "Tool ID"
+  }
+  column "tool_version" {
+    null    = false
+    type    = varchar(255)
+    default = ""
+    comment = "Tool Version, e.g. v1.0.0"
+  }
+  column "operation" {
+    null    = true
+    type    = json
+    comment = "Tool Openapi Operation Schema"
+  }
+  column "plugin_id" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Plugin ID"
   }
   column "agent_version" {
     null    = false
@@ -164,12 +175,6 @@ table "agent_tool_version" {
     default = ""
     comment = "Tool Name"
   }
-  column "tool_version" {
-    null    = false
-    type    = varchar(255)
-    default = ""
-    comment = "Tool Version, e.g. v1.0.0"
-  }
   column "sub_url" {
     null    = false
     type    = varchar(512)
@@ -181,11 +186,6 @@ table "agent_tool_version" {
     type    = varchar(64)
     default = ""
     comment = "HTTP Request Method"
-  }
-  column "operation" {
-    null    = true
-    type    = json
-    comment = "Tool Openapi Operation Schema"
   }
   column "created_at" {
     null     = false
@@ -579,12 +579,6 @@ table "draft_database_info" {
     unsigned = true
     comment  = "ID"
   }
-  column "app_id" {
-    null     = true
-    type     = bigint
-    unsigned = true
-    comment  = "App ID"
-  }
   column "space_id" {
     null     = false
     type     = bigint
@@ -665,6 +659,12 @@ table "draft_database_info" {
     type    = datetime
     comment = "Delete Time"
   }
+  column "app_id" {
+    null     = true
+    type     = bigint
+    unsigned = true
+    comment  = "App ID"
+  }
   primary_key {
     columns = [column.id]
   }
@@ -686,12 +686,6 @@ table "knowledge" {
     type    = varchar(150)
     default = ""
     comment = "名称"
-  }
-  column "app_id" {
-    null    = false
-    type    = bigint
-    default = 0
-    comment = "项目ID，标识该资源是否是项目独有"
   }
   column "creator_id" {
     null     = false
@@ -747,6 +741,12 @@ table "knowledge" {
     type    = tinyint
     default = 0
     comment = "0:文本 1:表格 2:图片"
+  }
+  column "app_id" {
+    null    = false
+    type    = bigint
+    default = 0
+    comment = "项目ID，标识该资源是否是项目独有"
   }
   primary_key {
     columns = [column.id]
@@ -1228,27 +1228,11 @@ table "model_entity" {
     type    = varchar(128)
     comment = "名称"
   }
-  column "description" {
-    null    = true
-    type    = text
-    comment = "描述"
-  }
-  column "default_params" {
-    null    = false
-    type    = json
-    comment = "默认参数"
-  }
   column "scenario" {
     null     = false
     type     = bigint
     unsigned = true
     comment  = "模型应用场景"
-  }
-  column "status" {
-    null    = false
-    type    = int
-    default = 1
-    comment = "模型状态"
   }
   column "created_at" {
     null     = false
@@ -1269,6 +1253,22 @@ table "model_entity" {
     type     = bigint
     unsigned = true
     comment  = "Delete Time in Milliseconds"
+  }
+  column "description" {
+    null    = true
+    type    = text
+    comment = "描述"
+  }
+  column "default_params" {
+    null    = false
+    type    = json
+    comment = "默认参数"
+  }
+  column "status" {
+    null    = false
+    type    = int
+    default = 1
+    comment = "模型状态"
   }
   primary_key {
     columns = [column.id]
@@ -1298,12 +1298,6 @@ table "model_meta" {
     null    = false
     type    = varchar(128)
     comment = "模型协议"
-  }
-  column "icon_uri" {
-    null    = false
-    type    = varchar(255)
-    default = ""
-    comment = "Icon URI"
   }
   column "capability" {
     null    = true
@@ -1346,6 +1340,18 @@ table "model_meta" {
     type     = bigint
     unsigned = true
     comment  = "Delete Time in Milliseconds"
+  }
+  column "icon_uri" {
+    null    = false
+    type    = varchar(255)
+    default = ""
+    comment = "Icon URI"
+  }
+  column "icon_url" {
+    null    = false
+    type    = varchar(255)
+    default = ""
+    comment = "Icon URL"
   }
   primary_key {
     columns = [column.id]
@@ -1491,12 +1497,6 @@ table "online_database_info" {
     unsigned = true
     comment  = "ID"
   }
-  column "app_id" {
-    null     = true
-    type     = bigint
-    unsigned = true
-    comment  = "App ID"
-  }
   column "space_id" {
     null     = false
     type     = bigint
@@ -1577,6 +1577,12 @@ table "online_database_info" {
     type    = datetime
     comment = "Delete Time"
   }
+  column "app_id" {
+    null     = true
+    type     = bigint
+    unsigned = true
+    comment  = "App ID"
+  }
   primary_key {
     columns = [column.id]
   }
@@ -1608,13 +1614,6 @@ table "plugin" {
     unsigned = true
     comment  = "Developer ID"
   }
-  column "app_id" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Application ID"
-  }
   column "icon_uri" {
     null    = false
     type    = varchar(512)
@@ -1626,12 +1625,6 @@ table "plugin" {
     type    = varchar(512)
     default = ""
     comment = "Server URL"
-  }
-  column "plugin_type" {
-    null    = false
-    type    = tinyint
-    default = 0
-    comment = "Plugin Type, 1:http, 6:local"
   }
   column "created_at" {
     null     = false
@@ -1668,6 +1661,19 @@ table "plugin" {
     type    = json
     comment = "OpenAPI Document, only stores the root"
   }
+  column "app_id" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Application ID"
+  }
+  column "plugin_type" {
+    null    = false
+    type    = tinyint
+    default = 0
+    comment = "Plugin Type, 1:http, 6:local"
+  }
   primary_key {
     columns = [column.id]
   }
@@ -1702,13 +1708,6 @@ table "plugin_draft" {
     unsigned = true
     comment  = "Developer ID"
   }
-  column "app_id" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Application ID"
-  }
   column "icon_uri" {
     null    = false
     type    = varchar(512)
@@ -1720,12 +1719,6 @@ table "plugin_draft" {
     type    = varchar(512)
     default = ""
     comment = "Server URL"
-  }
-  column "plugin_type" {
-    null    = false
-    type    = tinyint
-    default = 0
-    comment = "Plugin Type, 1:http, 6:local"
   }
   column "created_at" {
     null     = false
@@ -1755,6 +1748,19 @@ table "plugin_draft" {
     null    = true
     type    = json
     comment = "OpenAPI Document, only stores the root"
+  }
+  column "app_id" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Application ID"
+  }
+  column "plugin_type" {
+    null    = false
+    type    = tinyint
+    default = 0
+    comment = "Plugin Type, 1:http, 6:local"
   }
   primary_key {
     columns = [column.id]
@@ -1800,13 +1806,6 @@ table "plugin_version" {
     unsigned = true
     comment  = "Plugin ID"
   }
-  column "app_id" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Application ID"
-  }
   column "icon_uri" {
     null    = false
     type    = varchar(512)
@@ -1819,11 +1818,12 @@ table "plugin_version" {
     default = ""
     comment = "Server URL"
   }
-  column "plugin_type" {
-    null    = false
-    type    = tinyint
-    default = 0
-    comment = "Plugin Type, 1:http, 6:local"
+  column "created_at" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Create Time in Milliseconds"
   }
   column "version" {
     null    = false
@@ -1846,12 +1846,18 @@ table "plugin_version" {
     type    = json
     comment = "OpenAPI Document, only stores the root"
   }
-  column "created_at" {
+  column "app_id" {
     null     = false
     type     = bigint
     default  = 0
     unsigned = true
-    comment  = "Create Time in Milliseconds"
+    comment  = "Application ID"
+  }
+  column "plugin_type" {
+    null    = false
+    type    = tinyint
+    default = 0
+    comment = "Plugin Type, 1:http, 6:local"
   }
   column "deleted_at" {
     null    = true
@@ -3058,6 +3064,13 @@ table "tool_version" {
     unsigned = true
     comment  = "Plugin ID"
   }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Create Time in Milliseconds"
+  }
   column "version" {
     null    = false
     type    = varchar(255)
@@ -3080,13 +3093,6 @@ table "tool_version" {
     null    = true
     type    = json
     comment = "Tool Openapi Operation Schema"
-  }
-  column "created_at" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Create Time in Milliseconds"
   }
   column "deleted_at" {
     null    = true
@@ -3152,12 +3158,6 @@ table "user" {
     default = 0
     comment = "User Verification Status"
   }
-  column "locale" {
-    null    = false
-    type    = varchar(128)
-    default = ""
-    comment = "Locale"
-  }
   column "session_key" {
     null    = false
     type    = varchar(256)
@@ -3183,6 +3183,12 @@ table "user" {
     type     = bigint
     unsigned = true
     comment  = "Deletion Time (Milliseconds)"
+  }
+  column "locale" {
+    null    = false
+    type    = varchar(128)
+    default = ""
+    comment = "Locale"
   }
   primary_key {
     columns = [column.id]
@@ -3510,12 +3516,6 @@ table "workflow_execution" {
     type    = varchar(128)
     comment = "the node key for the sub_workflow node that executes this workflow"
   }
-  column "app_id" {
-    null     = true
-    type     = bigint
-    unsigned = true
-    comment  = "app id this workflow execution belongs to"
-  }
   column "node_count" {
     null     = true
     type     = mediumint
@@ -3528,11 +3528,23 @@ table "workflow_execution" {
     unsigned = true
     comment  = "the current event ID which is resuming"
   }
+  column "app_id" {
+    null     = true
+    type     = bigint
+    unsigned = true
+    comment  = "app id this workflow execution belongs to"
+  }
   column "agent_id" {
     null     = true
     type     = bigint
     unsigned = true
     comment  = "the agent that this execution binds to"
+  }
+  column "sync_pattern" {
+    null     = true
+    type     = tinyint
+    unsigned = true
+    comment  = "the sync pattern 1. sync 2. async 3. stream"
   }
   primary_key {
     columns = [column.id]

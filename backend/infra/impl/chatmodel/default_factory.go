@@ -7,7 +7,10 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/claude"
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
+	"github.com/cloudwego/eino-ext/components/model/ollama"
 	"github.com/cloudwego/eino-ext/components/model/openai"
+	"github.com/cloudwego/eino-ext/components/model/qwen"
+	"github.com/ollama/ollama/api"
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -25,6 +28,10 @@ func NewFactory(customFactory map[chatmodel.Protocol]Builder) chatmodel.Factory 
 		chatmodel.ProtocolClaude:   claudeBuilder,
 		chatmodel.ProtocolDeepseek: deepseekBuilder,
 		chatmodel.ProtocolArk:      arkBuilder,
+		chatmodel.ProtocolGemini:   nil, // TODO: upgrade gemini api
+		chatmodel.ProtocolOllama:   ollamaBuilder,
+		chatmodel.ProtocolQwen:     qwenBuilder,
+		chatmodel.ProtocolErnie:    nil,
 	}
 
 	for p := range customFactory {
@@ -156,4 +163,44 @@ func arkBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.ToolCa
 		cfg.CustomHeader = config.Ark.CustomHeader
 	}
 	return ark.NewChatModel(ctx, cfg)
+}
+
+func ollamaBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.ToolCallingChatModel, error) {
+	cfg := &ollama.ChatModelConfig{
+		BaseURL:    config.BaseURL,
+		Timeout:    config.Timeout,
+		HTTPClient: nil,
+		Model:      config.Model,
+		Format:     nil,
+		KeepAlive:  nil,
+		Options: &api.Options{
+			TopK:             ptr.From(config.TopK),
+			TopP:             ptr.From(config.TopP),
+			Temperature:      ptr.From(config.Temperature),
+			PresencePenalty:  ptr.From(config.PresencePenalty),
+			FrequencyPenalty: ptr.From(config.FrequencyPenalty),
+			Stop:             config.Stop,
+		},
+	}
+	return ollama.NewChatModel(ctx, cfg)
+}
+
+func qwenBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.ToolCallingChatModel, error) {
+	cfg := &qwen.ChatModelConfig{
+		APIKey:           config.APIKey,
+		Timeout:          config.Timeout,
+		BaseURL:          config.BaseURL,
+		Model:            config.Model,
+		MaxTokens:        config.MaxTokens,
+		Temperature:      config.Temperature,
+		TopP:             config.TopP,
+		Stop:             config.Stop,
+		PresencePenalty:  config.PresencePenalty,
+		FrequencyPenalty: config.FrequencyPenalty,
+		EnableThinking:   config.EnableThinking,
+	}
+	if config.Qwen != nil {
+		cfg.ResponseFormat = config.Qwen.ResponseFormat
+	}
+	return qwen.NewChatModel(ctx, cfg)
 }

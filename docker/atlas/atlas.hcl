@@ -6,7 +6,7 @@ env "local" {
 
   migration {
     dir = "file://migrations"
-    exclude = ["atlas_schema_revisions"]
+    exclude = ["atlas_schema_revisions", "table_*"]
     baseline = "20250609083036"
   }
 }

@@ -30,7 +30,6 @@ func newModelMeta(db *gorm.DB, opts ...gen.DOOption) modelMeta {
 	_modelMeta.ID = field.NewInt64(tableName, "id")
 	_modelMeta.ModelName = field.NewString(tableName, "model_name")
 	_modelMeta.Protocol = field.NewString(tableName, "protocol")
-	_modelMeta.IconURI = field.NewString(tableName, "icon_uri")
 	_modelMeta.Capability = field.NewField(tableName, "capability")
 	_modelMeta.ConnConfig = field.NewField(tableName, "conn_config")
 	_modelMeta.Status = field.NewField(tableName, "status")
@@ -38,6 +37,8 @@ func newModelMeta(db *gorm.DB, opts ...gen.DOOption) modelMeta {
 	_modelMeta.CreatedAt = field.NewInt64(tableName, "created_at")
 	_modelMeta.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_modelMeta.DeletedAt = field.NewField(tableName, "deleted_at")
+	_modelMeta.IconURI = field.NewString(tableName, "icon_uri")
+	_modelMeta.IconURL = field.NewString(tableName, "icon_url")
 
 	_modelMeta.fillFieldMap()
 
@@ -52,7 +53,6 @@ type modelMeta struct {
 	ID          field.Int64  // 主键ID
 	ModelName   field.String // 模型名称
 	Protocol    field.String // 模型协议
-	IconURI     field.String // Icon URI
 	Capability  field.Field  // 模型能力
 	ConnConfig  field.Field  // 模型连接配置
 	Status      field.Field  // 模型状态
@@ -60,6 +60,8 @@ type modelMeta struct {
 	CreatedAt   field.Int64  // Create Time in Milliseconds
 	UpdatedAt   field.Int64  // Update Time in Milliseconds
 	DeletedAt   field.Field  // Delete Time in Milliseconds
+	IconURI     field.String // Icon URI
+	IconURL     field.String // Icon URL
 
 	fieldMap map[string]field.Expr
 }
@@ -79,7 +81,6 @@ func (m *modelMeta) updateTableName(table string) *modelMeta {
 	m.ID = field.NewInt64(table, "id")
 	m.ModelName = field.NewString(table, "model_name")
 	m.Protocol = field.NewString(table, "protocol")
-	m.IconURI = field.NewString(table, "icon_uri")
 	m.Capability = field.NewField(table, "capability")
 	m.ConnConfig = field.NewField(table, "conn_config")
 	m.Status = field.NewField(table, "status")
@@ -87,6 +88,8 @@ func (m *modelMeta) updateTableName(table string) *modelMeta {
 	m.CreatedAt = field.NewInt64(table, "created_at")
 	m.UpdatedAt = field.NewInt64(table, "updated_at")
 	m.DeletedAt = field.NewField(table, "deleted_at")
+	m.IconURI = field.NewString(table, "icon_uri")
+	m.IconURL = field.NewString(table, "icon_url")
 
 	m.fillFieldMap()
 
@@ -103,11 +106,10 @@ func (m *modelMeta) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (m *modelMeta) fillFieldMap() {
-	m.fieldMap = make(map[string]field.Expr, 11)
+	m.fieldMap = make(map[string]field.Expr, 12)
 	m.fieldMap["id"] = m.ID
 	m.fieldMap["model_name"] = m.ModelName
 	m.fieldMap["protocol"] = m.Protocol
-	m.fieldMap["icon_uri"] = m.IconURI
 	m.fieldMap["capability"] = m.Capability
 	m.fieldMap["conn_config"] = m.ConnConfig
 	m.fieldMap["status"] = m.Status
@@ -115,6 +117,8 @@ func (m *modelMeta) fillFieldMap() {
 	m.fieldMap["created_at"] = m.CreatedAt
 	m.fieldMap["updated_at"] = m.UpdatedAt
 	m.fieldMap["deleted_at"] = m.DeletedAt
+	m.fieldMap["icon_uri"] = m.IconURI
+	m.fieldMap["icon_url"] = m.IconURL
 }
 
 func (m modelMeta) clone(db *gorm.DB) modelMeta {

@@ -20,11 +20,13 @@ type Config struct {
 	TopP             *float32 `json:"top_p,omitempty" yaml:"top_p"`
 	TopK             *int     `json:"top_k,omitempty" yaml:"top_k"`
 	Stop             []string `json:"stop,omitempty" yaml:"stop"`
+	EnableThinking   *bool    `json:"enable_thinking,omitempty" yaml:"enable_thinking,omitempty"`
 
 	OpenAI   *OpenAIConfig   `json:"open_ai,omitempty" yaml:"openai"`
 	Claude   *ClaudeConfig   `json:"claude,omitempty" yaml:"claude"`
 	Ark      *ArkConfig      `json:"ark,omitempty" yaml:"ark"`
 	Deepseek *DeepseekConfig `json:"deepseek,omitempty" yaml:"deepseek"`
+	Qwen     *QwenConfig     `json:"qwen,omitempty" yaml:"qwen"`
 
 	Custom map[string]string `json:"custom,omitempty" yaml:"custom"`
 }
@@ -55,4 +57,8 @@ type ArkConfig struct {
 
 type DeepseekConfig struct {
 	ResponseFormatType deepseek.ResponseFormatType `json:"response_format_type" yaml:"response_format_type"`
+}
+
+type QwenConfig struct {
+	ResponseFormat *openai.ChatCompletionResponseFormat `json:"response_format,omitempty" yaml:"response_format"`
 }

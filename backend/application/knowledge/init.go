@@ -140,6 +140,8 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		if err != nil {
 			return nil, fmt.Errorf("init ark embedding client failed, err=%w", err)
 		}
+	default:
+		return nil, fmt.Errorf("init knowledge embedding failed, type not configured")
 	}
 
 	mgr, err := ssmilvus.NewManager(&ssmilvus.ManagerConfig{

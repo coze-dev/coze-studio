@@ -39,7 +39,7 @@ fi
 cd "$DOCKER_DIR/atlas"
 
 if [ "$OS" = "Darwin" ]; then
-    atlas schema apply -u $ATLAS_URL --to file://opencoze_latest_schema.hcl --auto-approve
+    atlas schema apply -u $ATLAS_URL --to file://opencoze_latest_schema.hcl --auto-approve --exclude "table_*"
     echo -e "${GREEN}✅ apply mysql schema successfully${NC}"
 elif [ "$OS" = "Linux" ]; then
     atlas migrate apply \

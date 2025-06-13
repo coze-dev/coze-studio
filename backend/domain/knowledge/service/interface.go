@@ -8,6 +8,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
 )
@@ -193,6 +194,8 @@ type RetrieveContext struct {
 	Strategy *entity.RetrievalStrategy
 	// 检索涉及的 document 信息
 	Documents []*model.KnowledgeDocument
+	// 用于 nl2sql 和 message to query 的 chat model config
+	ChatModelConfig chatmodel.Config // TODO: 补充实现
 }
 
 type KnowledgeInfo struct {

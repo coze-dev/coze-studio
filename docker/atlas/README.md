@@ -50,7 +50,7 @@ On developer machine（I want add/update table for my business）
 	atlas migrate status --url $ATLAS_URL --dir "file://migrations" # check status 
 	
 	# Last, dump the lastest database schema for other developer
-	atlas schema inspect -u $ATLAS_URL --exclude "atlas_schema_revisions"  > opencoze_latest_schema.hcl # step 3 
+	atlas schema inspect -u $ATLAS_URL --exclude "atlas_schema_revisions,table_*"  > opencoze_latest_schema.hcl # step 3 
 	
 
 

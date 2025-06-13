@@ -17,7 +17,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 func NewModelManager(db *gorm.DB, idgen idgen.IDGenerator, oss storage.Storage) modelmgr.Manager {
@@ -56,6 +55,7 @@ func (m *modelManager) CreateModelMeta(ctx context.Context, meta *entity.ModelMe
 		ModelName:   meta.Name,
 		Protocol:    string(meta.Protocol),
 		IconURI:     meta.IconURI,
+		IconURL:     meta.IconURL,
 		Capability:  meta.Capability,
 		ConnConfig:  meta.ConnConfig,
 		Status:      meta.Status,
@@ -100,25 +100,10 @@ func (m *modelManager) ListModelMeta(ctx context.Context, req *modelmgr.ListMode
 		return nil, err
 	}
 
-	uris := slices.ToMap(pos, func(meta *dmodel.ModelMeta) (string, string) {
-		if meta.IconURI == "" {
-			meta.IconURI = uploadEntity.ModelIconURI
-		}
-		return meta.IconURI, ""
-	})
-
-	for uri := range uris {
-		url, err := m.oss.GetObjectUrl(ctx, uri)
-		if err != nil {
-			return nil, err
-		}
-
-		uris[uri] = url
+	dos, err := m.fromModelMetaPOs(ctx, pos)
+	if err != nil {
+		return nil, err
 	}
-
-	dos := slices.Transform(pos, func(a *dmodel.ModelMeta) *entity.ModelMeta {
-		return fromModelMetaPO(a, uris)
-	})
 
 	return &modelmgr.ListModelMetaResponse{
 		ModelMetaList: dos,
@@ -137,26 +122,10 @@ func (m *modelManager) MGetModelMetaByID(ctx context.Context, req *modelmgr.MGet
 		return nil, err
 	}
 
-	uris := slices.ToMap(pos, func(meta *dmodel.ModelMeta) (string, string) {
-		if meta.IconURI == "" {
-			meta.IconURI = uploadEntity.ModelIconURI
-		}
-		return meta.IconURI, ""
-	})
-
-	for uri := range uris {
-		url, err := m.oss.GetObjectUrl(ctx, uri)
-		if err != nil {
-			return nil, err
-		}
-		uris[uri] = url
+	dos, err := m.fromModelMetaPOs(ctx, pos)
+	if err != nil {
+		return nil, err
 	}
-
-	logs.CtxInfof(ctx, "model uris: %v", uris)
-
-	dos := slices.Transform(pos, func(a *dmodel.ModelMeta) *entity.ModelMeta {
-		return fromModelMetaPO(a, uris)
-	})
 
 	return dos, nil
 }
@@ -267,27 +236,55 @@ func (m *modelManager) alignProtocol(meta *entity.ModelMeta) error {
 	return nil
 }
 
-func fromModelMetaPO(po *dmodel.ModelMeta, uris map[string]string) *entity.ModelMeta {
-	if po == nil {
-		return nil
+func (m *modelManager) fromModelMetaPOs(ctx context.Context, pos []*dmodel.ModelMeta) ([]*entity.ModelMeta, error) {
+	uris := make(map[string]string)
+
+	for _, po := range pos {
+		if po == nil || po.IconURL != "" {
+			continue
+		}
+		if po.IconURI == "" {
+			po.IconURI = uploadEntity.ModelIconURI
+		}
+		uris[po.IconURI] = ""
 	}
 
-	return &entity.ModelMeta{
-		ID:      po.ID,
-		Name:    po.ModelName,
-		IconURI: po.IconURI,
-		IconURL: uris[po.IconURI],
-
-		Description: po.Description,
-		CreatedAtMs: po.CreatedAt,
-		UpdatedAtMs: po.UpdatedAt,
-		DeletedAtMs: po.DeletedAt.Time.UnixMilli(),
-
-		Protocol:   modelcontract.Protocol(po.Protocol),
-		Capability: po.Capability,
-		ConnConfig: po.ConnConfig,
-		Status:     po.Status,
+	for uri := range uris {
+		url, err := m.oss.GetObjectUrl(ctx, uri)
+		if err != nil {
+			return nil, err
+		}
+		uris[uri] = url
 	}
+
+	dos := slices.Transform(pos, func(po *dmodel.ModelMeta) *entity.ModelMeta {
+		if po == nil {
+			return nil
+		}
+		url := po.IconURL
+		if url == "" {
+			url = uris[po.IconURI]
+		}
+
+		return &entity.ModelMeta{
+			ID:      po.ID,
+			Name:    po.ModelName,
+			IconURI: po.IconURI,
+			IconURL: url,
+
+			Description: po.Description,
+			CreatedAtMs: po.CreatedAt,
+			UpdatedAtMs: po.UpdatedAt,
+			DeletedAtMs: po.DeletedAt.Time.UnixMilli(),
+
+			Protocol:   modelcontract.Protocol(po.Protocol),
+			Capability: po.Capability,
+			ConnConfig: po.ConnConfig,
+			Status:     po.Status,
+		}
+	})
+
+	return dos, nil
 }
 
 func (m *modelManager) fromModelPOs(ctx context.Context, pos []*dmodel.ModelEntity) ([]*entity.Model, error) {
