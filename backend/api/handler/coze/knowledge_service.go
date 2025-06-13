@@ -10,6 +10,7 @@ import (
 
 	dataset "code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	application "code.byted.org/flow/opencoze/backend/application/knowledge"
+	"code.byted.org/flow/opencoze/backend/application/upload"
 )
 
 // CreateDataset .
@@ -482,7 +483,7 @@ func GetIconForDataset(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.GetIconResponse)
-	resp, err = application.KnowledgeSVC.GetIconForDataset(ctx, &req)
+	resp, err = upload.SVC.GetIconForDataset(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

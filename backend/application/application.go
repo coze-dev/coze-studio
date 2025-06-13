@@ -11,7 +11,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/appinfra"
 	"code.byted.org/flow/opencoze/backend/application/connector"
 	"code.byted.org/flow/opencoze/backend/application/conversation"
-	"code.byted.org/flow/opencoze/backend/application/icon"
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
 	"code.byted.org/flow/opencoze/backend/application/modelmgr"
@@ -20,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/search"
 	"code.byted.org/flow/opencoze/backend/application/shortcutcmd"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
+	"code.byted.org/flow/opencoze/backend/application/upload"
 	"code.byted.org/flow/opencoze/backend/application/user"
 	"code.byted.org/flow/opencoze/backend/application/workflow"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagent"
@@ -136,7 +136,7 @@ func initEventBus(infra *appinfra.AppDependencies) *eventbusImpl {
 
 // initBasicServices init basic services that only depends on infra.
 func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *eventbusImpl) (*basicServices, error) {
-	icon.InitService(infra.TOSClient)
+	upload.InitService(infra.TOSClient)
 	openAuthSVC := openauth.InitService(infra.DB, infra.CacheCli, infra.IDGenSVC)
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
 	modelMgrSVC, err := modelmgr.InitService(infra.DB, infra.IDGenSVC, infra.TOSClient)

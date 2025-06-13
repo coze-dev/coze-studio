@@ -1394,3 +1394,18 @@ func _gethistoryschemaMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _filesMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _retrievefileopenMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _uploadfileopenMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

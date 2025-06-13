@@ -8,11 +8,11 @@ import (
 	"gorm.io/gorm"
 
 	modelmgrModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
-	iconEntity "code.byted.org/flow/opencoze/backend/domain/icon/entity"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/dao"
 	dmodel "code.byted.org/flow/opencoze/backend/domain/modelmgr/internal/dal/model"
+	uploadEntity "code.byted.org/flow/opencoze/backend/domain/upload/entity"
 	modelcontract "code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
@@ -102,7 +102,7 @@ func (m *modelManager) ListModelMeta(ctx context.Context, req *modelmgr.ListMode
 
 	uris := slices.ToMap(pos, func(meta *dmodel.ModelMeta) (string, string) {
 		if meta.IconURI == "" {
-			meta.IconURI = iconEntity.ModelIconURI
+			meta.IconURI = uploadEntity.ModelIconURI
 		}
 		return meta.IconURI, ""
 	})
@@ -139,7 +139,7 @@ func (m *modelManager) MGetModelMetaByID(ctx context.Context, req *modelmgr.MGet
 
 	uris := slices.ToMap(pos, func(meta *dmodel.ModelMeta) (string, string) {
 		if meta.IconURI == "" {
-			meta.IconURI = iconEntity.ModelIconURI
+			meta.IconURI = uploadEntity.ModelIconURI
 		}
 		return meta.IconURI, ""
 	})

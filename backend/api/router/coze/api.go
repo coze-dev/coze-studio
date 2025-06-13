@@ -408,6 +408,10 @@ func Register(r *server.Hertz) {
 			}
 		}
 		{
+			_files := _v1.Group("/files", _filesMw()...)
+			_files.POST("/upload", append(_uploadfileopenMw(), coze.UploadFileOpen)...)
+		}
+		{
 			_workflow := _v1.Group("/workflow", _workflowMw()...)
 			_workflow.GET("/get_run_history", append(_openapigetworkflowrunhistoryMw(), coze.OpenAPIGetWorkflowRunHistory)...)
 			_workflow.POST("/run", append(_openapirunflowMw(), coze.OpenAPIRunFlow)...)

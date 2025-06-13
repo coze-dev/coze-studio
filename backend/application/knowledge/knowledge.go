@@ -869,33 +869,6 @@ func (k *KnowledgeApplicationService) SaveDocumentReview(ctx context.Context, re
 	return &dataset.SaveDocumentReviewResponse{}, nil
 }
 
-func (k *KnowledgeApplicationService) GetIconForDataset(ctx context.Context, req *dataset.GetIconRequest) (*dataset.GetIconResponse, error) {
-	resp := dataset.NewGetIconResponse()
-	var uri string
-	switch req.FormatType {
-	case dataset.FormatType_Text:
-		uri = TextKnowledgeDefaultIcon
-	case dataset.FormatType_Table:
-		uri = TableKnowledgeDefaultIcon
-	case dataset.FormatType_Image:
-		uri = ImageKnowledgeDefaultIcon
-	case dataset.FormatType_Database:
-		uri = DatabaseDefaultIcon
-	default:
-		uri = TextKnowledgeDefaultIcon
-	}
-
-	iconUrl, err := k.storage.GetObjectUrl(ctx, uri)
-	if err != nil {
-		return resp, err
-	}
-	resp.Icon = &dataset.Icon{
-		URL: iconUrl,
-		URI: uri,
-	}
-	return resp, nil
-}
-
 func (k *KnowledgeApplicationService) DeleteAppKnowledge(ctx context.Context, req *DeleteAppKnowledgeRequest) error {
 	listResp, err := k.DomainSVC.ListKnowledge(ctx, &model.ListKnowledgeRequest{
 		AppID: &req.AppID,

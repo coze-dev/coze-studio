@@ -16,7 +16,7 @@ import (
 
 	"golang.org/x/crypto/argon2"
 
-	iconEntity "code.byted.org/flow/opencoze/backend/domain/icon/entity"
+	uploadEntity "code.byted.org/flow/opencoze/backend/domain/upload/entity"
 	userEntity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/domain/user/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/user/repository"
@@ -283,7 +283,7 @@ func (u *userImpl) Create(ctx context.Context, req *CreateUserRequest) (user *us
 			ID:          sid,
 			Name:        "Personal Space",
 			Description: "This is your personal space",
-			IconURI:     iconEntity.EnterpriseIconURI,
+			IconURI:     uploadEntity.EnterpriseIconURI,
 			OwnerID:     userID,
 			CreatorID:   userID,
 			CreatedAt:   now,
@@ -298,7 +298,7 @@ func (u *userImpl) Create(ctx context.Context, req *CreateUserRequest) (user *us
 
 	newUser := &model.User{
 		ID:           userID,
-		IconURI:      iconEntity.UserIconURI,
+		IconURI:      uploadEntity.UserIconURI,
 		Name:         name,
 		UniqueName:   u.getUniqueNameFormEmail(ctx, req.Email),
 		Email:        req.Email,

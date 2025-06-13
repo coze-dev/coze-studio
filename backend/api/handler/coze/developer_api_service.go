@@ -16,10 +16,10 @@ import (
 
 	developer_api "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	"code.byted.org/flow/opencoze/backend/application/icon"
 	"code.byted.org/flow/opencoze/backend/application/modelmgr"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
 	application "code.byted.org/flow/opencoze/backend/application/singleagent"
+	"code.byted.org/flow/opencoze/backend/application/upload"
 	"code.byted.org/flow/opencoze/backend/application/user"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -220,7 +220,7 @@ func GetIcon(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := icon.SVC.GetIcon(ctx, &req)
+	resp, err := upload.SVC.GetIcon(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -284,13 +284,13 @@ func UploadFile(ctx context.Context, c *app.RequestContext) {
 	}
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
-		internalServerErrorResponse(ctx, c, errorx.New(errno.ErrIconPermissionCode, errorx.KV("msg", "session required")))
+		internalServerErrorResponse(ctx, c, errorx.New(errno.ErrUploadPermissionCode, errorx.KV("msg", "session required")))
 		return
 	}
 	secret := createSecret(ptr.From(userID), req.FileHead.FileType)
 	fileName := fmt.Sprintf("%d_%d_%s.%s", ptr.From(userID), time.Now().UnixNano(), secret, req.FileHead.FileType)
 	objectName := fmt.Sprintf("%s/%s", req.FileHead.BizType.String(), fileName)
-	resp, err = icon.SVC.UploadFile(ctx, fileContent, objectName)
+	resp, err = upload.SVC.UploadFile(ctx, fileContent, objectName)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

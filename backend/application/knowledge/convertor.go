@@ -13,6 +13,7 @@ import (
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
+	"code.byted.org/flow/opencoze/backend/application/upload"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
@@ -725,13 +726,13 @@ func convertReviewStatus2Model(status *entity.ReviewStatus) *dataset.ReviewStatu
 func getIconURI(tp dataset.FormatType) string {
 	switch tp {
 	case dataset.FormatType_Text:
-		return TextKnowledgeDefaultIcon
+		return upload.TextKnowledgeDefaultIcon
 	case dataset.FormatType_Table:
-		return TableKnowledgeDefaultIcon
+		return upload.TableKnowledgeDefaultIcon
 	case dataset.FormatType_Image:
-		return ImageKnowledgeDefaultIcon
+		return upload.ImageKnowledgeDefaultIcon
 	default:
-		return TextKnowledgeDefaultIcon
+		return upload.TextKnowledgeDefaultIcon
 	}
 }
 

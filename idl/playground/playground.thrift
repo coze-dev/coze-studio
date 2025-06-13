@@ -447,6 +447,28 @@ struct GetFileUrlsResponse {
     255: base.BaseResp BaseResp
 }
 
+struct UploadFileOpenRequest {
+    1: required string ContentType (api.header = "Content-Type", agw.source = "header", agw.key = "Content-Type"), // 文件类型
+    2: required binary Data (api.raw_body = ""),          // 二进制数据
+    255: base.Base Base
+}
+
+
+struct UploadFileOpenResponse {
+    1: optional File File (agw.key = "data")
+    253: required i64 code
+    254: required string msg
+    255: base.BaseResp BaseResp
+}
+
+struct File{
+    1: string URI (api.body = "uri"),                  // 文件URI
+    2: i64 Bytes (api.body = "bytes"),               // 文件字节数
+    3: i64 CreatedAt (agw.key = "created_at"),        // 上传时间戳，单位s
+    4: string FileName (api.body = "file_name"),     // 文件名
+    5: string URL (api.body = "url")
+}
+
 service PlaygroundService {
     UpdateDraftBotInfoAgwResponse UpdateDraftBotInfoAgw(1:UpdateDraftBotInfoAgwRequest request)(api.post='/api/playground_api/draftbot/update_draft_bot_info', api.category="draftbot",agw.preserve_base="true")
     GetDraftBotInfoAgwResponse GetDraftBotInfoAgw(1:GetDraftBotInfoAgwRequest request)(api.post='/api/playground_api/draftbot/get_draft_bot_info', api.category="draftbot",agw.preserve_base="true")
@@ -470,4 +492,7 @@ service PlaygroundService {
 
     GetSpaceListV2Response GetSpaceListV2(1:GetSpaceListV2Request request)(api.post='/api/playground_api/space/list', api.category="space",agw.preserve_base="true")
     MGetUserBasicInfoResponse MGetUserBasicInfo(1: MGetUserBasicInfoRequest request) (api.post='/api/playground_api/mget_user_info', api.category="playground_api",agw.preserve_base="true")
+
+    // File 相关 OpenAPI
+    UploadFileOpenResponse UploadFileOpen(1: UploadFileOpenRequest request)(api.post = "/v1/files/upload", api.category="file", api.tag="openapi", agw.preserve_base="true")
 }

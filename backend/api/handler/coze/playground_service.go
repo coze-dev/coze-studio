@@ -10,10 +10,10 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	appApplication "code.byted.org/flow/opencoze/backend/application/app"
-	"code.byted.org/flow/opencoze/backend/application/icon"
 	"code.byted.org/flow/opencoze/backend/application/prompt"
 	"code.byted.org/flow/opencoze/backend/application/shortcutcmd"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
+	"code.byted.org/flow/opencoze/backend/application/upload"
 	"code.byted.org/flow/opencoze/backend/application/user"
 )
 
@@ -344,7 +344,7 @@ func GetFileUrls(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	iconList, err := icon.SVC.GetShortcutIcons(ctx)
+	iconList, err := upload.SVC.GetShortcutIcons(ctx)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -353,5 +353,25 @@ func GetFileUrls(ctx context.Context, c *app.RequestContext) {
 	resp.FileList = iconList
 	resp.Code = 0
 
+	c.JSON(consts.StatusOK, resp)
+}
+
+// UploadFileOpen .
+// @router /v1/files/upload [POST]
+func UploadFileOpen(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req playground.UploadFileOpenRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(playground.UploadFileOpenResponse)
+	resp, err = upload.SVC.UploadFileOpen(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
