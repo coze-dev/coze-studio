@@ -18,10 +18,11 @@ func NewIndexDocumentEvent(knowledgeID int64, document *entity.Document) *entity
 	}
 }
 
-func NewIndexSliceEvent(slice *entity.Slice) *entity.Event {
+func NewIndexSliceEvent(slice *entity.Slice, document *entity.Document) *entity.Event {
 	return &entity.Event{
-		Type:  entity.EventTypeIndexSlice,
-		Slice: slice,
+		Type:     entity.EventTypeIndexSlice,
+		Slice:    slice,
+		Document: document,
 	}
 }
 

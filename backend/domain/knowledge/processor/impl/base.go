@@ -2,7 +2,6 @@ package impl
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -21,7 +20,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type baseDocProcessor struct {
@@ -46,8 +47,7 @@ type baseDocProcessor struct {
 }
 
 func (p *baseDocProcessor) BeforeCreate() error {
-	// 这个方法主要是从各个数据源拉取数据，我们只有本地上传
-
+	// 从数据源拉取数据
 	return nil
 }
 
@@ -55,7 +55,8 @@ func (p *baseDocProcessor) BuildDBModel() error {
 	p.docModels = make([]*model.KnowledgeDocument, 0, len(p.Documents))
 	ids, err := p.idgen.GenMultiIDs(p.ctx, len(p.Documents))
 	if err != nil {
-		return err
+		logs.CtxErrorf(p.ctx, "gen ids failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeIDGenCode)
 	}
 	for i := range p.Documents {
 		docModel := &model.KnowledgeDocument{
@@ -90,19 +91,19 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 		err = p.createTable()
 		if err != nil {
 			logs.CtxErrorf(ctx, "create table failed, err: %v", err)
-			return err
+			return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 		}
 	}
 
 	tx, err := p.knowledgeRepo.InitTx()
 	if err != nil {
 		logs.CtxErrorf(ctx, "init tx failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	defer func() {
 		if e := recover(); e != nil {
 			logs.CtxErrorf(ctx, "panic: %v", e)
-			err = fmt.Errorf("panic: %v", e)
+			err = errorx.New(errno.ErrKnowledgeSystemCode, errorx.KVf("msg", "panic: %v", e))
 			tx.Rollback()
 			return
 		}
@@ -110,9 +111,9 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 			logs.CtxErrorf(ctx, "InsertDBModel err: %v", err)
 			tx.Rollback()
 			if p.TableName != "" {
-				err = p.deleteTable()
-				if err != nil {
-					logs.CtxErrorf(ctx, "delete table failed, err: %v", err)
+				deleteErr := p.deleteTable()
+				if deleteErr != nil {
+					logs.CtxErrorf(ctx, "delete table failed, err: %v", deleteErr)
 					return
 				}
 			}
@@ -123,14 +124,14 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 	err = p.documentRepo.CreateWithTx(ctx, tx, p.docModels)
 	if err != nil {
 		logs.CtxErrorf(ctx, "create document failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	err = p.knowledgeRepo.UpdateWithTx(ctx, tx, p.Documents[0].KnowledgeID, map[string]interface{}{
 		"updated_at": time.Now().UnixMilli(),
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "update knowledge failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	return nil
 }
@@ -142,7 +143,8 @@ func (p *baseDocProcessor) createTable() error {
 		tableColumns := p.Documents[0].TableInfo.Columns
 		columnIDs, err := p.idgen.GenMultiIDs(p.ctx, len(tableColumns)+1)
 		if err != nil {
-			return err
+			logs.CtxErrorf(p.ctx, "gen ids failed, err: %v", err)
+			return errorx.New(errno.ErrKnowledgeIDGenCode)
 		}
 		for i := range tableColumns {
 			tableColumns[i].ID = columnIDs[i]
@@ -181,7 +183,7 @@ func (p *baseDocProcessor) createTable() error {
 		})
 		if err != nil {
 			logs.CtxErrorf(p.ctx, "create table failed, err: %v", err)
-			return err
+			return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 		}
 		p.TableName = resp.Table.Name
 		p.Documents[0].TableInfo.PhysicalTableName = p.TableName
@@ -203,7 +205,7 @@ func (p *baseDocProcessor) deleteTable() error {
 		})
 		if err != nil {
 			logs.CtxErrorf(p.ctx, "[deleteTable] drop table failed, err: %v", err)
-			return err
+			return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 		}
 	}
 	return nil
@@ -213,11 +215,12 @@ func (p *baseDocProcessor) Indexing() error {
 	event := events.NewIndexDocumentsEvent(p.Documents[0].KnowledgeID, p.Documents)
 	body, err := sonic.Marshal(event)
 	if err != nil {
-		return err
+		return errorx.New(errno.ErrKnowledgeParseJSONCode, errorx.KV("msg", err.Error()))
 	}
 
 	if err = p.producer.Send(p.ctx, body); err != nil {
-		return err
+		logs.CtxErrorf(p.ctx, "send message failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeMQSendFailCode, errorx.KV("msg", err.Error()))
 	}
 	return nil
 }

@@ -18,13 +18,15 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	rentity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func (k *knowledgeSVC) GetAlterTableSchema(ctx context.Context, req *AlterTableSchemaRequest) (*TableSchemaResponse, error) {
 	if (req.OriginTableMeta == nil && req.PreviewTableMeta != nil) ||
 		(req.OriginTableMeta != nil && req.PreviewTableMeta == nil) {
-		return nil, fmt.Errorf("[AlterTableSchema] invalid table meta param")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "invalid table meta param"))
 	}
 
 	tableInfo, err := k.GetDocumentTableInfoByID(ctx, req.DocumentID, true)
@@ -43,7 +45,7 @@ func (k *knowledgeSVC) GetAlterTableSchema(ctx context.Context, req *AlterTableS
 func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *ImportDataTableSchemaRequest) (resp *TableSchemaResponse, err error) {
 	if (req.OriginTableMeta == nil && req.PreviewTableMeta != nil) ||
 		(req.OriginTableMeta != nil && req.PreviewTableMeta == nil) {
-		return nil, fmt.Errorf("[GetImportDataTableSchema] invalid table meta param")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "invalid table meta param"))
 	}
 
 	reqSheet := req.TableSheet
@@ -213,21 +215,21 @@ func (k *knowledgeSVC) FormatTableSchemaResponse(originalResp *TableSchemaRespon
 		}, nil
 
 	default:
-		return nil, fmt.Errorf("[AlterTableSchema] invalid table data type")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "invalid table data type"))
 	}
 }
 
 func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *ValidateTableSchemaRequest) (*ValidateTableSchemaResponse, error) {
 	if request.DocumentID == 0 {
-		return nil, fmt.Errorf("[ValidateTableSchema] document id not provided")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "invalid document id"))
 	}
 
 	docs, err := k.documentRepo.MGetByID(ctx, []int64{request.DocumentID})
 	if err != nil {
-		return nil, fmt.Errorf("[ValidateTableSchema] get document failed: %v", err)
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if len(docs) == 0 {
-		return nil, fmt.Errorf("[ValidateTableSchema] document not found, id=%d", request.DocumentID)
+		return nil, errorx.New(errno.ErrKnowledgeDocumentNotExistCode, errorx.KV("msg", "document not found"))
 	}
 
 	doc := docs[0]
@@ -238,7 +240,7 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *Validat
 		RowsCount:     5, // parse few rows for type assertion
 	}, doc.TableInfo.Columns)
 	if err != nil {
-		return nil, fmt.Errorf("[GetDocumentTableInfo] load sheets failed, %w", err)
+		return nil, err
 	}
 
 	src := sheet
@@ -276,7 +278,7 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *Validat
 			for _, vals := range src.vals {
 				val := vals[i]
 				if val.GetStringValue() == "" {
-					result[name] = fmt.Sprintf("column indexing requires value, but got none")
+					result[name] = "column indexing requires value, but got none"
 					continue
 
 				}
@@ -286,7 +288,7 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *Validat
 
 	if len(dstMapping) != 0 {
 		for _, col := range dstMapping {
-			result[col.Name] = fmt.Sprintf("column not found in provided data")
+			result[col.Name] = "column not found in provided data"
 		}
 	}
 
@@ -297,13 +299,13 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *Validat
 
 func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *GetDocumentTableInfoRequest) (*GetDocumentTableInfoResponse, error) {
 	if request.DocumentID == nil && request.SourceInfo == nil {
-		return nil, fmt.Errorf("[GetDocumentTableInfo] invalid param")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "invalid param"))
 	}
 
 	if request.DocumentID != nil {
 		info, err := k.GetDocumentTableInfoByID(ctx, *request.DocumentID, true)
 		if err != nil {
-			return nil, fmt.Errorf("[GetDocumentTableInfo] get document by id failed: %v", err)
+			return nil, err
 		}
 
 		if info.Code != 0 {
@@ -336,7 +338,7 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *GetDoc
 	}, nil)
 	if err != nil {
 		// TODO: resp code msg 具体填写
-		return nil, fmt.Errorf("[GetDocumentTableInfo] load sheets failed, %w", err)
+		return nil, err
 	}
 
 	var (
@@ -374,16 +376,16 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *GetDoc
 func (k *knowledgeSVC) GetDocumentTableInfoByID(ctx context.Context, documentID int64, needData bool) (*TableSchemaResponse, error) {
 	docs, err := k.documentRepo.MGetByID(ctx, []int64{documentID})
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KVf("msg", "get document failed: %v", err))
 	}
 
 	if len(docs) == 0 {
-		return nil, fmt.Errorf("[GetDocumentTableInfoByID] document not found, id=%d", documentID)
+		return nil, errorx.New(errno.ErrKnowledgeDocumentNotExistCode, errorx.KVf("msg", "document not found, id=%d", documentID))
 	}
 
 	doc := docs[0]
 	if doc.DocumentType != int32(knowledgeModel.DocumentTypeTable) {
-		return nil, fmt.Errorf("[GetDocumentTableInfoByID] document type invalid, got=%d", doc.DocumentType)
+		return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "document type invalid"))
 	}
 
 	tblInfo := doc.TableInfo
@@ -419,12 +421,12 @@ func (k *knowledgeSVC) GetDocumentTableInfoByID(ctx context.Context, documentID 
 		Limit:     ptr.Of(20),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("[GetDocumentTableInfoByID] select data failed, %w", err)
+		return nil, errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KVf("msg", "select data failed: %v", err))
 	}
 
 	data, err := k.ParseRDBData(cols, rows.ResultSet)
 	if err != nil {
-		return nil, fmt.Errorf("[GetDocumentTableInfoByID] parse data failed, %w", err)
+		return nil, err
 	}
 
 	return &TableSchemaResponse{
@@ -443,17 +445,19 @@ func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo T
 		var b []byte
 		if sourceInfo.Uri != nil {
 			b, err = k.storage.GetObject(ctx, *sourceInfo.Uri)
+			if err != nil {
+				return nil, errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KVf("msg", "get object failed: %v", err))
+			}
 		} else {
 			b, err = base64.StdEncoding.DecodeString(*sourceInfo.FileBase64)
+			if err != nil {
+				return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KVf("msg", "decode base64 failed: %v", err))
+			}
 		}
-		if err != nil {
-			return nil, fmt.Errorf("[loadTableSourceInfo] get sheet content failed, %w", err)
-		}
-
 		if *sourceInfo.FileType == string(parser.FileExtensionXLSX) {
 			f, err := excelize.OpenReader(bytes.NewReader(b))
 			if err != nil {
-				return nil, fmt.Errorf("[loadTableSourceInfo] open xlsx file failed, %w", err)
+				return nil, errorx.New(errno.ErrKnowledgeParserParseFailCode, errorx.KVf("msg", "open xlsx file failed: %v", err))
 			}
 			for i, sheet := range f.GetSheetList() {
 				newPS := &entity.ParsingStrategy{
@@ -465,7 +469,7 @@ func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo T
 
 				rs, err := k.LoadSheet(ctx, b, newPS, *sourceInfo.FileType, &sheet, columns)
 				if err != nil {
-					return nil, fmt.Errorf("[loadTableSourceInfo] load xlsx sheet failed, %w", err)
+					return nil, errorx.New(errno.ErrKnowledgeParserParseFailCode, errorx.KVf("msg", "load xlsx sheet failed: %v", err))
 				}
 
 				sheets = append(sheets, rs)
@@ -473,7 +477,7 @@ func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo T
 		} else {
 			rs, err := k.LoadSheet(ctx, b, ps, *sourceInfo.FileType, nil, columns)
 			if err != nil {
-				return nil, fmt.Errorf("[loadTableSourceInfo] load sheet failed, %w", err)
+				return nil, errorx.New(errno.ErrKnowledgeParserParseFailCode, errorx.KVf("msg", "load xlsx sheet failed: %v", err))
 			}
 
 			sheets = append(sheets, rs)
@@ -488,7 +492,7 @@ func (k *knowledgeSVC) LoadSourceInfoAllSheets(ctx context.Context, sourceInfo T
 		sheets = append(sheets, rs)
 
 	default:
-		return nil, fmt.Errorf("[loadTableSourceInfo] invalid table source info")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "invalid table source info"))
 	}
 
 	return sheets, nil
@@ -502,22 +506,27 @@ func (k *knowledgeSVC) LoadSourceInfoSpecificSheet(ctx context.Context, sourceIn
 	case sourceInfo.FileType != nil && (sourceInfo.Uri != nil || sourceInfo.FileBase64 != nil):
 		if sourceInfo.Uri != nil {
 			b, err = k.storage.GetObject(ctx, *sourceInfo.Uri)
+			if err != nil {
+				return nil, errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KVf("msg", "get object failed: %v", err))
+			}
 		} else {
 			b, err = base64.StdEncoding.DecodeString(*sourceInfo.FileBase64)
+			if err != nil {
+				return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KVf("msg", "decode base64 failed: %v", err))
+			}
 		}
 	case sourceInfo.CustomContent != nil:
 		b, err = json.Marshal(sourceInfo.CustomContent)
+		if err != nil {
+			return nil, errorx.New(errno.ErrKnowledgeParseJSONCode, errorx.KVf("msg", "marshal custom content failed: %v", err))
+		}
 	default:
-		return nil, fmt.Errorf("[LoadSourceInfoSpecificSheet] invalid table source info")
-	}
-
-	if err != nil {
-		return nil, fmt.Errorf("[LoadSourceInfoSpecificSheet] get content failed, %w", err)
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "invalid table source info"))
 	}
 
 	sheet, err = k.LoadSheet(ctx, b, ps, *sourceInfo.FileType, nil, columns)
 	if err != nil {
-		return nil, fmt.Errorf("[LoadSourceInfoSpecificSheet] load sheet failed, %w", err)
+		return nil, errorx.New(errno.ErrKnowledgeParserParseFailCode, errorx.KVf("msg", "load sheet failed: %v", err))
 	}
 
 	return sheet, nil
@@ -527,16 +536,16 @@ func (k *knowledgeSVC) LoadSheet(ctx context.Context, b []byte, ps *entity.Parsi
 	pConfig := convert.ToParseConfig(parser.FileExtension(fileExtension), ps, nil, false, columns)
 	p, err := k.parseManager.GetParser(pConfig)
 	if err != nil {
-		return nil, fmt.Errorf("[LoadSheet] get parser failed, %w", err)
+		return nil, errorx.New(errno.ErrKnowledgeParserParseFailCode, errorx.KVf("msg", "get parser failed: %v", err))
 	}
 
 	docs, err := p.Parse(ctx, bytes.NewReader(b))
 	if err != nil {
-		return nil, fmt.Errorf("[LoadSheet] parse sheet failed, %w", err)
+		return nil, errorx.New(errno.ErrKnowledgeParserParseFailCode, errorx.KVf("msg", "parse failed: %v", err))
 	}
 
 	if len(docs) == 0 {
-		return nil, fmt.Errorf("[LoadSheet] result is empty")
+		return nil, errorx.New(errno.ErrKnowledgeParseResultEmptyCode, errorx.KVf("msg", "parse result is empty"))
 	}
 
 	sheet := &entity.TableSheet{
@@ -579,7 +588,7 @@ func (k *knowledgeSVC) LoadSheet(ctx context.Context, b []byte, ps *entity.Parsi
 	for _, doc := range docs {
 		v, ok := doc.MetaData[document.MetaDataKeyColumnData].([]*document.ColumnData)
 		if !ok {
-			return nil, fmt.Errorf("[LoadSheet] get columns data failed")
+			return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KVf("msg", "[LoadSheet] get columns data failed"))
 		}
 		vals = append(vals, v)
 	}
@@ -611,11 +620,11 @@ func (k *knowledgeSVC) ParseRDBData(columns []*entity.TableColumn, resultSet *re
 				if names[i] == consts.RDBFieldID {
 					continue
 				}
-				return nil, fmt.Errorf("[ParseRDBData] altering table, retry later, col=%s", col.Name)
+				return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KVf("msg", "[ParseRDBData] altering table, retry later, col=%s", col.Name))
 			}
 			colData, err := convert.ParseAnyData(col, val)
 			if err != nil {
-				return nil, fmt.Errorf("[ParseRDBData] invalid column type, col=%s, type=%d", col.Name, col.Type)
+				return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KVf("msg", "[ParseRDBData] invalid column type, col=%s, type=%d", col.Name, col.Type))
 			}
 			parsedData[i] = colData
 		}
@@ -629,10 +638,10 @@ func (k *knowledgeSVC) ParseRDBData(columns []*entity.TableColumn, resultSet *re
 func (k *knowledgeSVC) getDocumentTableInfo(ctx context.Context, documentID int64) (*entity.TableInfo, error) {
 	docs, err := k.documentRepo.MGetByID(ctx, []int64{documentID})
 	if err != nil {
-		return nil, fmt.Errorf("[getDocumentTableInfo] get document failed, %w", err)
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KVf("msg", "get document failed: %v", err))
 	}
 	if len(docs) != 1 {
-		return nil, fmt.Errorf("[getDocumentTableInfo] document not found, id=%d", documentID)
+		return nil, errorx.New(errno.ErrKnowledgeDocumentNotExistCode, errorx.KVf("msg", "document not found, id=%d", documentID))
 	}
 	return docs[0].TableInfo, nil
 }

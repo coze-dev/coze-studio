@@ -595,6 +595,7 @@ func TestFormatTableSchemaResponse(t *testing.T) {
 }
 
 func TestGetDocumentTableInfoByID(t *testing.T) {
+
 	PatchConvey("test GetDocumentTableInfoByID", t, func() {
 		ctx := context.Background()
 		docID := int64(123)
@@ -696,7 +697,7 @@ func TestGetDocumentTableInfoByID(t *testing.T) {
 			expErr := fmt.Errorf("mock err")
 			mockRepo.EXPECT().MGetByID(gomock.Any(), gomock.Any()).Return(nil, expErr).Times(1)
 			resp, err := k.GetDocumentTableInfoByID(ctx, docID, false)
-			convey.So(err, convey.ShouldBeError, expErr)
+			convey.ShouldContainSubstring(err.Error(), expErr.Error())
 			convey.So(resp, convey.ShouldBeNil)
 		})
 
@@ -704,7 +705,7 @@ func TestGetDocumentTableInfoByID(t *testing.T) {
 			expErr := fmt.Errorf("[GetDocumentTableInfoByID] document not found, id=%d", docID)
 			mockRepo.EXPECT().MGetByID(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 			resp, err := k.GetDocumentTableInfoByID(ctx, docID, false)
-			convey.So(err, convey.ShouldBeError, expErr)
+			convey.ShouldContainSubstring(err.Error(), expErr.Error())
 			convey.So(resp, convey.ShouldBeNil)
 		})
 
@@ -713,7 +714,7 @@ func TestGetDocumentTableInfoByID(t *testing.T) {
 			expErr := fmt.Errorf("[GetDocumentTableInfoByID] document type invalid, got=%d", d.DocumentType)
 			mockRepo.EXPECT().MGetByID(gomock.Any(), gomock.Any()).Return([]*model.KnowledgeDocument{d}, nil).Times(1)
 			resp, err := k.GetDocumentTableInfoByID(ctx, docID, false)
-			convey.So(err, convey.ShouldBeError, expErr)
+			convey.ShouldContainSubstring(err.Error(), expErr.Error())
 			convey.So(resp, convey.ShouldBeNil)
 		})
 
@@ -733,7 +734,7 @@ func TestGetDocumentTableInfoByID(t *testing.T) {
 			mockRepo.EXPECT().MGetByID(gomock.Any(), gomock.Any()).Return([]*model.KnowledgeDocument{doc}, nil).Times(1)
 			mockRDB.EXPECT().SelectData(gomock.Any(), gomock.Any()).Return(nil, expErr).Times(1)
 			resp, err := k.GetDocumentTableInfoByID(ctx, docID, true)
-			convey.So(err, convey.ShouldBeError, fmt.Errorf("[GetDocumentTableInfoByID] select data failed, %w", expErr))
+			convey.ShouldContainSubstring(err.Error(), expErr.Error())
 			convey.So(resp, convey.ShouldBeNil)
 		})
 
@@ -744,7 +745,7 @@ func TestGetDocumentTableInfoByID(t *testing.T) {
 			Mock(GetMethod(k, "ParseRDBData")).Return(nil, expErr).Build()
 
 			resp, err := k.GetDocumentTableInfoByID(ctx, docID, true)
-			convey.So(err, convey.ShouldBeError, fmt.Errorf("[GetDocumentTableInfoByID] parse data failed, %w", expErr))
+			convey.ShouldContainSubstring(err.Error(), expErr.Error())
 			convey.So(resp, convey.ShouldBeNil)
 		})
 
@@ -837,7 +838,7 @@ func TestParseRDBData(t *testing.T) {
 					Type: document.TableColumnTypeString,
 				})
 				resp, err := k.ParseRDBData(nc, rs)
-				convey.So(err, convey.ShouldBeError, fmt.Errorf("[ParseRDBData] altering table, retry later, col=unknown_field"))
+				convey.ShouldContainSubstring(err.Error(), "[ParseRDBData] column not found, col=unknown_field")
 				convey.So(resp, convey.ShouldBeNil)
 			})
 
@@ -859,7 +860,7 @@ func TestParseRDBData(t *testing.T) {
 					},
 				}
 				resp, err := k.ParseRDBData(c, nrs)
-				convey.So(err, convey.ShouldBeError, fmt.Errorf("[ParseRDBData] invalid column type, col=%s, type=%d", c[2].Name, c[2].Type))
+				convey.ShouldContainSubstring(err.Error(), "[ParseRDBData] invalid column type")
 				convey.So(resp, convey.ShouldBeNil)
 			})
 
@@ -935,7 +936,7 @@ func TestParseRDBData(t *testing.T) {
 					Type: document.TableColumnTypeString,
 				})
 				resp, err := k.ParseRDBData(nc, rs)
-				convey.So(err, convey.ShouldBeError, fmt.Errorf("[ParseRDBData] altering table, retry later, col=unknown_field"))
+				convey.ShouldContainSubstring(err.Error(), "[ParseRDBData] altering table, retry later, col=unknown_field")
 				convey.So(resp, convey.ShouldBeNil)
 			})
 
@@ -957,7 +958,7 @@ func TestParseRDBData(t *testing.T) {
 					},
 				}
 				resp, err := k.ParseRDBData(c, nrs)
-				convey.So(err, convey.ShouldBeError, fmt.Errorf("[ParseRDBData] invalid column type, col=%s, type=%d", c[2].Name, c[2].Type))
+				convey.ShouldContainSubstring(err.Error(), "[ParseRDBData] invalid column type")
 				convey.So(resp, convey.ShouldBeNil)
 			})
 

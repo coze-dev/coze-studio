@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strconv"
 	"sync"
 	"time"
@@ -24,31 +23,33 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *CopyKnowledgeRequest) (*CopyKnowledgeResponse, error) {
 	if request == nil {
-		return nil, errors.New("request is nil")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	if len(request.TaskUniqKey) == 0 {
-		return nil, errors.New("task uniq key is empty")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "task uniq key is empty"))
 	}
 	if request.KnowledgeID == 0 {
-		return nil, errors.New("knowledge id is empty")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "knowledge id is empty"))
 	}
 	kn, err := k.knowledgeRepo.GetByID(ctx, request.KnowledgeID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if kn == nil || kn.ID == 0 {
-		return nil, errors.New("knowledge not found")
+		return nil, errorx.New(errno.ErrKnowledgeNotExistCode, errorx.KV("msg", "knowledge not exist"))
 	}
 	newID, err := k.idgen.GenID(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeIDGenCode)
 	}
 	copyTaskEntity := copyEntity.CopyDataTask{
 		TaskUniqKey:   request.TaskUniqKey,
@@ -69,7 +70,7 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *CopyKnowledge
 	}
 	checkResult, err := crossdatacopy.DefaultSVC().CheckAndGenCopyTask(ctx, &datacopy.CheckAndGenCopyTaskReq{Task: &copyTaskEntity})
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 	}
 	switch checkResult.CopyTaskStatus {
 	case copyEntity.DataCopyTaskStatusSuccess:
@@ -106,17 +107,12 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *CopyKnowledge
 
 func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*CopyKnowledgeResponse, error) {
 	var err error
-	tx, err := k.knowledgeRepo.InitTx()
-	if err != nil {
-		return nil, err
-	}
 	defer func() {
 		if e := recover(); e != nil {
 			logs.CtxErrorf(ctx, "copy knowledge failed, err: %v", e)
-			err = fmt.Errorf("copy knowledge failed, err: %v", e)
+			err = errorx.New(errno.ErrKnowledgeSystemCode, errorx.KVf("msg", "panic: %v", e))
 		}
 		if err != nil {
-			tx.Rollback()
 			deleteErr := k.DeleteKnowledge(ctx, &DeleteKnowledgeRequest{KnowledgeID: copyCtx.CopyTask.TargetDataID})
 			if deleteErr != nil {
 				logs.CtxErrorf(ctx, "delete knowledge failed, err: %v", deleteErr)
@@ -138,15 +134,15 @@ func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*
 				logs.CtxErrorf(ctx, "update copy task failed, err: %v", err)
 			}
 		}
-		tx.Commit()
 	}()
 	copyCtx.CopyTask.Status = copyEntity.DataCopyTaskStatusInProgress
-	err = crossdatacopy.DefaultSVC().UpdateCopyTaskWithTX(ctx, &datacopy.UpdateCopyTaskReq{Task: copyCtx.CopyTask}, tx)
+	err = crossdatacopy.DefaultSVC().UpdateCopyTask(ctx, &datacopy.UpdateCopyTaskReq{Task: copyCtx.CopyTask})
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 	}
 	err = k.copyKnowledge(ctx, copyCtx)
 	if err != nil {
+		logs.CtxErrorf(ctx, "copy knowledge failed, err: %v", err)
 		return nil, err
 	}
 	err = k.copyKnowledgeDocuments(ctx, copyCtx)
@@ -155,9 +151,7 @@ func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*
 	}
 	copyCtx.CopyTask.FinishTime = time.Now().UnixMilli()
 	copyCtx.CopyTask.Status = copyEntity.DataCopyTaskStatusSuccess
-	err = crossdatacopy.DefaultSVC().UpdateCopyTaskWithTX(ctx, &datacopy.UpdateCopyTaskReq{
-		Task: copyCtx.CopyTask,
-	}, tx)
+	err = crossdatacopy.DefaultSVC().UpdateCopyTask(ctx, &datacopy.UpdateCopyTaskReq{Task: copyCtx.CopyTask})
 	if err != nil {
 		logs.CtxWarnf(ctx, "update copy task failed, err: %v", err)
 	}
@@ -183,7 +177,11 @@ func (k *knowledgeSVC) copyKnowledge(ctx context.Context, copyCtx *knowledgeCopy
 		IconURI:     copyCtx.OriginData.IconURI,
 		FormatType:  copyCtx.OriginData.FormatType,
 	}
-	return k.knowledgeRepo.Upsert(ctx, &copyKnowledgeInfo)
+	err := k.knowledgeRepo.Upsert(ctx, &copyKnowledgeInfo)
+	if err != nil {
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+	}
+	return nil
 }
 
 func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *knowledgeCopyCtx) (err error) {
@@ -194,7 +192,7 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 		SelectAll:    true,
 	})
 	if err != nil {
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if len(documents) == 0 {
 		logs.CtxInfof(ctx, "knowledge %d has no document", copyCtx.OriginData.ID)
@@ -202,7 +200,11 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 	}
 
 	// create search store collections
-	fields, err := k.mapSearchFields(k.fromModelDocument(ctx, documents[0]))
+	docItem, err := k.fromModelDocument(ctx, documents[0])
+	if err != nil {
+		return err
+	}
+	fields, err := k.mapSearchFields(docItem)
 	if err != nil {
 		return err
 	}
@@ -213,7 +215,7 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 			Fields:         fields,
 			CollectionMeta: nil,
 		}); err != nil {
-			return err
+			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", err.Error()))
 		}
 	}
 
@@ -223,12 +225,12 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "find target document failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	for i := range targetDocuments {
 		err = k.DeleteDocument(ctx, &DeleteDocumentRequest{DocumentID: targetDocuments[i].ID})
 		if err != nil {
-			return err
+			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 		}
 	}
 	// 表格类复制
@@ -240,7 +242,7 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 	newIDs, err := k.idgen.GenMultiIDs(ctx, len(documents))
 	if err != nil {
 		logs.CtxErrorf(ctx, "gen document id failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeIDGenCode)
 	}
 
 	for i := range documents {
@@ -262,15 +264,14 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 
 	if err := eg.Wait(); err != nil {
 		logs.CtxErrorf(ctx, "copy document failed, document ids: %v, first-err: %v", failList, err)
-		return errors.New("copy document failed")
+		return errorx.New(errno.ErrKnowledgeCopyFailCode, errorx.KV("msg", err.Error()))
 	}
 
 	return nil
 }
 
-func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyCtx, doc *model.KnowledgeDocument, newDocID int64) error {
+func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyCtx, doc *model.KnowledgeDocument, newDocID int64) (err error) {
 	// 表格类文档复制
-	var err error
 	newDoc := model.KnowledgeDocument{
 		ID:            newDocID,
 		KnowledgeID:   copyCtx.CopyTask.TargetDataID,
@@ -324,22 +325,38 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 		copyCtx.NewRDBTableNames = append(copyCtx.NewRDBTableNames, newDoc.TableInfo.PhysicalTableName)
 	}
 
-	docEntity := k.fromModelDocument(ctx, &newDoc)
-	fields, err := k.mapSearchFields(docEntity)
+	docEntity, err := k.fromModelDocument(ctx, &newDoc)
 	if err != nil {
 		return err
+	}
+	fields, err := k.mapSearchFields(docEntity)
+	if err != nil {
+		logs.CtxErrorf(ctx, "map search fields failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", err.Error()))
 	}
 	indexingFields := getIndexingFields(fields)
 	collectionName := getCollectionName(newDoc.KnowledgeID)
 
 	sliceIDs, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{doc.ID})
 	if err != nil {
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	err = k.documentRepo.Create(ctx, &newDoc)
 	if err != nil {
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
+	defer func() {
+		status := int32(entity.DocumentStatusEnable)
+		msg := ""
+		if err != nil {
+			status = int32(entity.DocumentStatusFailed)
+			msg = err.Error()
+		}
+		updateErr := k.documentRepo.SetStatus(ctx, newDoc.ID, status, msg)
+		if updateErr != nil {
+			logs.CtxErrorf(ctx, "update document status failed, err: %v", updateErr)
+		}
+	}()
 	batchSize := 100
 	for i := 0; i < len(sliceIDs); i += batchSize {
 		end := i + batchSize
@@ -349,12 +366,12 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 		sliceIDs := sliceIDs[i:end]
 		sliceInfo, err := k.sliceRepo.MGetSlices(ctx, sliceIDs)
 		if err != nil {
-			return err
+			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 		}
 		newSliceModels := make([]*model.KnowledgeDocumentSlice, 0)
 		newSliceIDs, err := k.idgen.GenMultiIDs(ctx, len(sliceInfo))
 		if err != nil {
-			return err
+			return errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", err.Error()))
 		}
 		old2NewIDMap := map[int64]int64{}
 		newMap := map[int64]*model.KnowledgeDocumentSlice{}
@@ -420,20 +437,20 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 		for _, mgr := range k.searchStoreManagers {
 			ss, err := mgr.GetSearchStore(ctx, collectionName)
 			if err != nil {
-				return fmt.Errorf("[copyDocument] search store get failed, %w", err)
+				return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", err.Error()))
 			}
 
 			if _, err = ss.Store(ctx, ssDocs,
 				searchstore.WithPartition(strconv.FormatInt(doc.ID, 10)),
 				searchstore.WithIndexingFields(indexingFields),
 			); err != nil {
-				return fmt.Errorf("[copyDocument] search store save failed, %w", err)
+				return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", err.Error()))
 			}
 		}
 
 		err = k.sliceRepo.BatchCreate(ctx, newSliceModels)
 		if err != nil {
-			return err
+			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 		}
 	}
 

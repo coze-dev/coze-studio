@@ -15,13 +15,13 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/bytedance/sonic"
-	"gorm.io/gorm"
-
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/repository"
+	"github.com/bytedance/sonic"
+	redisV9 "github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
@@ -69,7 +69,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHa
 		rewriter:                  config.Rewriter,
 		nl2Sql:                    config.NL2Sql,
 		enableCompactTable:        ptr.FromOrDefault(config.EnableCompactTable, true),
-		CacheCli:                  config.CacheCli,
+		cacheCli:                  config.CacheCli,
 		isAutoAnnotationSupported: config.IsAutoAnnotationSupported,
 	}
 	if svc.reranker == nil {
@@ -116,7 +116,7 @@ type knowledgeSVC struct {
 	storage                   storage.Storage
 	nl2Sql                    nl2sql.NL2SQL
 	imageX                    imagex.ImageX
-	CacheCli                  cache.Cmdable
+	cacheCli                  cache.Cmdable
 	enableCompactTable        bool // 表格数据压缩
 	isAutoAnnotationSupported bool // 是否支持了图片自动标注
 }
@@ -124,17 +124,17 @@ type knowledgeSVC struct {
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *CreateKnowledgeRequest) (response *CreateKnowledgeResponse, err error) {
 	now := time.Now().UnixMilli()
 	if len(request.Name) == 0 {
-		return nil, errors.New("knowledge name is empty")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "knowledge name is empty"))
 	}
 	if request.CreatorID == 0 {
-		return nil, errors.New("knowledge creator id is empty")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "knowledge creator id is empty"))
 	}
 	if request.SpaceID == 0 {
-		return nil, errors.New("knowledge space id is empty")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "knowledge space id is empty"))
 	}
 	id, err := k.idgen.GenID(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeIDGenCode)
 	}
 
 	if err = k.knowledgeRepo.Create(ctx, &model.Knowledge{
@@ -150,28 +150,28 @@ func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *CreateKnowl
 		IconURI:     request.IconUri,
 		FormatType:  int32(request.FormatType),
 	}); err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 
 	return &CreateKnowledgeResponse{
 		KnowledgeID: id,
 		CreatedAtMs: now,
-	}, err
+	}, nil
 }
 
 func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, request *UpdateKnowledgeRequest) error {
 	if request.KnowledgeID == 0 {
-		return errors.New("knowledge id is empty")
+		return errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "knowledge id is empty"))
 	}
 	if request.Name != nil && len(*request.Name) == 0 {
-		return errors.New("knowledge name is empty")
+		return errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "knowledge name is empty"))
 	}
 	knModel, err := k.knowledgeRepo.GetByID(ctx, request.KnowledgeID)
 	if err != nil {
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if knModel == nil {
-		return errors.New("knowledge not found")
+		return errorx.New(errno.ErrKnowledgeNotExistCode, errorx.KV("msg", "knowledge not found"))
 	}
 	now := time.Now().UnixMilli()
 	if request.Status != nil {
@@ -188,9 +188,12 @@ func (k *knowledgeSVC) UpdateKnowledge(ctx context.Context, request *UpdateKnowl
 	}
 	knModel.UpdatedAt = now
 	if err := k.knowledgeRepo.Update(ctx, knModel); err != nil {
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+	}
+	knowledge, err := k.fromModelKnowledge(ctx, knModel)
+	if err != nil {
 		return err
 	}
-	knowledge := k.fromModelKnowledge(ctx, knModel)
 	knowledge.UpdatedAtMs = now
 	return err
 }
@@ -199,19 +202,22 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *DeleteKnowl
 	// 先获取一下knowledge的信息
 	knModel, err := k.knowledgeRepo.GetByID(ctx, request.KnowledgeID)
 	if err != nil {
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if knModel == nil || knModel.ID == 0 {
-		return errors.New("knowledge not found")
+		return errorx.New(errno.ErrKnowledgeNotExistCode, errorx.KV("msg", "knowledge not found"))
+	}
+	docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &entity.WhereDocumentOpt{
+		KnowledgeIDs: []int64{request.KnowledgeID},
+	})
+	if err != nil {
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if knModel.FormatType == int32(knowledgeModel.DocumentTypeTable) {
-		docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &entity.WhereDocumentOpt{
-			KnowledgeIDs: []int64{knModel.ID},
-		})
-		if err != nil {
-			return err
-		}
 		for _, doc := range docs {
+			if doc == nil {
+				continue
+			}
 			if doc.TableInfo != nil {
 				resp, err := k.rdb.DropTable(ctx, &rdb.DropTableRequest{
 					TableName: doc.TableInfo.PhysicalTableName,
@@ -221,7 +227,7 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *DeleteKnowl
 					logs.CtxWarnf(ctx, "[DeleteKnowledge] drop table failed, err %v", err)
 				}
 				if !resp.Success {
-					logs.CtxWarnf(ctx, "[DeleteKnowledge] drop table failed without err?")
+					logs.CtxWarnf(ctx, "[DeleteKnowledge] drop table failed")
 				}
 			}
 		}
@@ -229,7 +235,7 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *DeleteKnowl
 	collectionName := getCollectionName(request.KnowledgeID)
 	for _, mgr := range k.searchStoreManagers {
 		if err = mgr.Drop(ctx, &searchstore.DropRequest{CollectionName: collectionName}); err != nil {
-			return err
+			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", err.Error()))
 		}
 	}
 
@@ -238,25 +244,19 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *DeleteKnowl
 		return err
 	}
 
-	docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &entity.WhereDocumentOpt{
-		KnowledgeIDs: []int64{request.KnowledgeID},
-	})
-	if err != nil {
-		return fmt.Errorf("[DeleteKnowledge] FindDocumentByCondition failed, %w", err)
-	}
-
 	if err = k.documentRepo.DeleteDocuments(ctx, slices.Transform(docs, func(a *model.KnowledgeDocument) int64 {
 		return a.ID
 	})); err != nil {
-		return fmt.Errorf("[DeleteDocument] soft delete documents failed, err: %v", err)
+		logs.CtxErrorf(ctx, "[DeleteKnowledge] delete documents failed, err %v", err)
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 
-	return err
+	return nil
 }
 
 func (k *knowledgeSVC) ListKnowledge(ctx context.Context, request *ListKnowledgeRequest) (response *ListKnowledgeResponse, err error) {
 	if len(request.IDs) == 0 && request.AppID == nil && request.SpaceID == nil {
-		return nil, errors.New("knowledge ids, project id, space id and query can not be all empty")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "knowledge ids, project id, space id and query can not be all empty"))
 	}
 	opts := &entity.WhereKnowledgeOption{
 		KnowledgeIDs: request.IDs,
@@ -276,14 +276,17 @@ func (k *knowledgeSVC) ListKnowledge(ctx context.Context, request *ListKnowledge
 	}
 	pos, total, err := k.knowledgeRepo.FindKnowledgeByCondition(ctx, opts)
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	knList := make([]*knowledgeModel.Knowledge, len(pos))
 	for i := range pos {
 		if pos[i] == nil {
 			continue
 		}
-		knList[i] = k.fromModelKnowledge(ctx, pos[i])
+		knList[i], err = k.fromModelKnowledge(ctx, pos[i])
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &ListKnowledgeResponse{
@@ -307,10 +310,10 @@ func (k *knowledgeSVC) checkRequest(request *CreateDocumentRequest) error {
 
 func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *CreateDocumentRequest) (response *CreateDocumentResponse, err error) {
 	if err = k.checkRequest(request); err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", err.Error()))
 	}
 	if err = k.documentsURL2URI(ctx, request.Documents); err != nil {
-		return nil, errors.New("documents url to uri fail")
+		return nil, errorx.New(errno.ErrKnowledgeDownloadFailedCode, errorx.KV("msg", err.Error()))
 	}
 	userID := request.Documents[0].CreatorID
 	spaceID := request.Documents[0].SpaceID
@@ -358,11 +361,11 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *CreateDocume
 
 func (k *knowledgeSVC) UpdateDocument(ctx context.Context, request *UpdateDocumentRequest) error {
 	if request == nil {
-		return errors.New("request is null")
+		return errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	doc, err := k.documentRepo.GetByID(ctx, request.DocumentID)
 	if err != nil {
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if request.DocumentName != nil {
 		doc.Name = *request.DocumentName
@@ -385,21 +388,23 @@ func (k *knowledgeSVC) UpdateDocument(ctx context.Context, request *UpdateDocume
 	doc.UpdatedAt = time.Now().UnixMilli()
 	err = k.documentRepo.Update(ctx, doc)
 	if err != nil {
-		return err
+		logs.CtxErrorf(ctx, "[UpdateDocument] update document failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	return nil
 }
 
 func (k *knowledgeSVC) DeleteDocument(ctx context.Context, request *DeleteDocumentRequest) error {
 	if request == nil {
-		return errors.New("request is null")
+		return errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	doc, err := k.documentRepo.GetByID(ctx, request.DocumentID)
 	if err != nil {
-		return errors.New("document not found")
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if doc == nil || doc.ID == 0 {
-		return errors.New("document not found")
+		logs.CtxWarnf(ctx, "[DeleteDocument] document not found, doc_id: %d", request.DocumentID)
+		return nil
 	}
 
 	if doc.DocumentType == int32(knowledgeModel.DocumentTypeTable) && doc.TableInfo != nil {
@@ -409,24 +414,27 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, request *DeleteDocume
 		})
 		if err != nil {
 			logs.CtxWarnf(ctx, "[DeleteDocument] drop table failed, err: %v", err)
+			return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 		}
 		if !resp.Success {
-			logs.CtxWarnf(ctx, "[DeleteDocument] drop table failed, err")
+			logs.CtxWarnf(ctx, "[DeleteDocument] drop table failed")
+			return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", "drop table failed"))
 		}
 	}
 
 	err = k.documentRepo.DeleteDocuments(ctx, []int64{request.DocumentID})
 	if err != nil {
-		return fmt.Errorf("[DeleteDocument] soft delete documents failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 
 	sliceIDs, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{request.DocumentID})
 	if err != nil {
-		return fmt.Errorf("[DeleteDocument] get document slices failed, %w", err)
+		logs.CtxErrorf(ctx, "[DeleteDocument] get document slice ids failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 
 	if err = k.emitDeleteKnowledgeDataEvent(ctx, doc.KnowledgeID, sliceIDs, strconv.FormatInt(request.DocumentID, 10)); err != nil {
-		return fmt.Errorf("[DeleteDocument] emitDeleteKnowledgeDataEvent failed, err: %v", err)
+		return err
 	}
 
 	return nil
@@ -434,7 +442,7 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, request *DeleteDocume
 
 func (k *knowledgeSVC) ListDocument(ctx context.Context, request *ListDocumentRequest) (response *ListDocumentResponse, err error) {
 	if request == nil {
-		return nil, errors.New("request is null")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	opts := entity.WhereDocumentOpt{
 		StatusNotIn: []int32{int32(entity.DocumentStatusDeleted)},
@@ -459,7 +467,7 @@ func (k *knowledgeSVC) ListDocument(ctx context.Context, request *ListDocumentRe
 	documents, total, err := k.documentRepo.FindDocumentByCondition(ctx, &opts)
 	if err != nil {
 		logs.CtxErrorf(ctx, "list document failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 
 	resp := &ListDocumentResponse{
@@ -472,19 +480,23 @@ func (k *knowledgeSVC) ListDocument(ctx context.Context, request *ListDocumentRe
 	}
 	resp.Documents = []*entity.Document{}
 	for i := range documents {
-		resp.Documents = append(resp.Documents, k.fromModelDocument(ctx, documents[i]))
+		docItem, err := k.fromModelDocument(ctx, documents[i])
+		if err != nil {
+			return nil, err
+		}
+		resp.Documents = append(resp.Documents, docItem)
 	}
 	return resp, nil
 }
 
 func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, request *MGetDocumentProgressRequest) (response *MGetDocumentProgressResponse, err error) {
 	if request == nil {
-		return nil, errors.New("request is null")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	documents, err := k.documentRepo.MGetByID(ctx, request.DocumentIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget document failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	progresslist := []*DocumentProgress{}
 	for i := range documents {
@@ -502,7 +514,7 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, request *MGetDo
 			err = k.getProgressFromCache(ctx, &item)
 			if err != nil {
 				logs.CtxErrorf(ctx, "get progress from cache failed, err: %v", err)
-				return nil, err
+				return nil, errorx.New(errno.ErrKnowledgeGetDocProgressFailCode, errorx.KV("msg", err.Error()))
 			}
 		}
 		progresslist = append(progresslist, &item)
@@ -513,7 +525,7 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, request *MGetDo
 }
 
 func (k *knowledgeSVC) getProgressFromCache(ctx context.Context, documentProgress *DocumentProgress) (err error) {
-	progressBar := progressbar.NewProgressBar(ctx, documentProgress.ID, 0, k.CacheCli, false)
+	progressBar := progressbar.NewProgressBar(ctx, documentProgress.ID, 0, k.cacheCli, false)
 	percent, remainSec, errMsg := progressBar.GetProgress(ctx)
 	documentProgress.Progress = int(percent)
 	documentProgress.RemainingSec = int64(remainSec)
@@ -525,32 +537,35 @@ func (k *knowledgeSVC) getProgressFromCache(ctx context.Context, documentProgres
 
 func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request *ResegmentDocumentRequest) (response *ResegmentDocumentResponse, err error) {
 	if request == nil {
-		return nil, errors.New("request is null")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	doc, err := k.documentRepo.GetByID(ctx, request.DocumentID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if doc == nil || doc.ID == 0 {
-		return nil, errors.New("document not found")
+		return nil, errorx.New(errno.ErrKnowledgeDocumentNotExistCode, errorx.KV("msg", "document not found"))
 	}
-	docEntity := k.fromModelDocument(ctx, doc)
+	docEntity, err := k.fromModelDocument(ctx, doc)
+	if err != nil {
+		return nil, err
+	}
 	docEntity.ChunkingStrategy = request.ChunkingStrategy
 	docEntity.ParsingStrategy = request.ParsingStrategy
 	event := events.NewIndexDocumentEvent(docEntity.KnowledgeID, docEntity)
 	body, err := sonic.Marshal(event)
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeParseJSONCode, errorx.KV("msg", err.Error()))
 	}
 	doc.ParseRule.ChunkingStrategy = request.ChunkingStrategy
 	doc.ParseRule.ParsingStrategy = request.ParsingStrategy
 	doc.Status = int32(entity.DocumentStatusChunking)
 	err = k.documentRepo.Update(ctx, doc)
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(strconv.FormatInt(docEntity.KnowledgeID, 10))); err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeMQSendFailCode, errorx.KV("msg", err.Error()))
 	}
 	docEntity.Status = entity.DocumentStatusChunking
 	return &ResegmentDocumentResponse{
@@ -560,15 +575,15 @@ func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request *Resegment
 
 func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *CreateSliceRequest) (response *CreateSliceResponse, err error) {
 	if request == nil {
-		return nil, errors.New("request is null")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	docInfo, err := k.documentRepo.GetByID(ctx, request.DocumentID)
 	if err != nil {
 		logs.CtxErrorf(ctx, "find document failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if docInfo == nil || docInfo.ID == 0 {
-		return nil, errors.New("document not found")
+		return nil, errorx.New(errno.ErrKnowledgeDocumentNotExistCode, errorx.KV("msg", "document not found"))
 	}
 	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		_, total, err := k.sliceRepo.FindSliceByCondition(ctx, &entity.WhereSliceOpt{
@@ -576,20 +591,20 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *CreateSliceRequ
 		})
 		if err != nil {
 			logs.CtxErrorf(ctx, "FindSliceByCondition err:%v", err)
-			return nil, err
+			return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 		}
 		request.Position = total + 1
 	}
 	slices, err := k.sliceRepo.GetSliceBySequence(ctx, request.DocumentID, request.Position)
 	if err != nil {
 		logs.CtxErrorf(ctx, "get slice by sequence failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	now := time.Now().UnixMilli()
 	id, err := k.idgen.GenID(ctx)
 	if err != nil {
 		logs.CtxErrorf(ctx, "gen id failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeIDGenCode)
 	}
 	sliceInfo := model.KnowledgeDocumentSlice{
 		ID:          id,
@@ -606,8 +621,7 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *CreateSliceRequ
 			request.Position = 1
 			sliceInfo.Sequence = 1
 		} else {
-			err = fmt.Errorf("the inserted slice position is illegal")
-			return nil, err
+			return nil, errorx.New(errno.ErrKnowledgeSliceInsertPositionIllegalCode)
 		}
 	}
 	if len(slices) == 1 {
@@ -637,7 +651,12 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *CreateSliceRequ
 		DocumentID: request.DocumentID,
 		RawContent: request.RawContent,
 	}
-	indexSliceEvent := events.NewIndexSliceEvent(&sliceEntity)
+	docEntity, err := k.fromModelDocument(ctx, docInfo)
+	if err != nil {
+		logs.CtxErrorf(ctx, "fromModelDocument failed, err: %v", err)
+		return nil, err
+	}
+	indexSliceEvent := events.NewIndexSliceEvent(&sliceEntity, docEntity)
 	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeText) ||
 		docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		sliceInfo.Content = sliceEntity.GetSliceContent()
@@ -653,20 +672,20 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *CreateSliceRequ
 	err = k.sliceRepo.Create(ctx, &sliceInfo)
 	if err != nil {
 		logs.CtxErrorf(ctx, "create slice failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	body, err := sonic.Marshal(&indexSliceEvent)
 	if err != nil {
 		logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeParseJSONCode, errorx.KV("msg", err.Error()))
 	}
 	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(strconv.FormatInt(sliceInfo.DocumentID, 10))); err != nil {
 		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeMQSendFailCode, errorx.KV("msg", err.Error()))
 	}
 	if err = k.documentRepo.UpdateDocumentSliceInfo(ctx, docInfo.ID); err != nil {
 		logs.CtxErrorf(ctx, "update document slice info failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	return &CreateSliceResponse{
 		SliceID: id,
@@ -675,23 +694,23 @@ func (k *knowledgeSVC) CreateSlice(ctx context.Context, request *CreateSliceRequ
 
 func (k *knowledgeSVC) UpdateSlice(ctx context.Context, request *UpdateSliceRequest) error {
 	if request == nil {
-		return errors.New("request is null")
+		return errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	sliceInfo, err := k.sliceRepo.MGetSlices(ctx, []int64{request.SliceID})
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget slice failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if len(sliceInfo) != 1 {
-		return errors.New("slice not found")
+		return errorx.New(errno.ErrKnowledgeSliceNotExistCode)
 	}
 	docInfo, err := k.documentRepo.GetByID(ctx, request.DocumentID)
 	if err != nil {
 		logs.CtxErrorf(ctx, "find document failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if docInfo == nil || docInfo.ID == 0 {
-		return errors.New("document not found")
+		return errorx.New(errno.ErrKnowledgeDocumentNotExistCode)
 	}
 	// 更新数据库中的存储
 	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeText) ||
@@ -702,6 +721,11 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, request *UpdateSliceRequ
 	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeImage) {
 		sliceInfo[0].Content = ptr.From(request.RawContent[0].Text)
 	}
+	docEntity, err := k.fromModelDocument(ctx, docInfo)
+	if err != nil {
+		logs.CtxErrorf(ctx, "fromModelDocument failed, err: %v", err)
+		return err
+	}
 	sliceInfo[0].UpdatedAt = time.Now().UnixMilli()
 	sliceInfo[0].Status = int32(knowledgeModel.SliceStatusInit)
 	indexSliceEvent := events.NewIndexSliceEvent(&entity.Slice{
@@ -711,9 +735,8 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, request *UpdateSliceRequ
 		KnowledgeID: sliceInfo[0].KnowledgeID,
 		DocumentID:  sliceInfo[0].DocumentID,
 		RawContent:  request.RawContent,
-	})
+	}, docEntity)
 	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
-		// todo更新表里的内容
 		indexSliceEvent.Slice.ID = sliceInfo[0].ID
 		err = k.upsertDataToTable(ctx, docInfo.TableInfo, []*entity.Slice{indexSliceEvent.Slice})
 		if err != nil {
@@ -724,43 +747,44 @@ func (k *knowledgeSVC) UpdateSlice(ctx context.Context, request *UpdateSliceRequ
 	err = k.sliceRepo.Update(ctx, sliceInfo[0])
 	if err != nil {
 		logs.CtxErrorf(ctx, "update slice failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	body, err := sonic.Marshal(&indexSliceEvent)
 	if err != nil {
 		logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeParseJSONCode, errorx.KV("msg", err.Error()))
 	}
 	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(strconv.FormatInt(sliceInfo[0].DocumentID, 10))); err != nil {
 		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeMQSendFailCode, errorx.KV("msg", err.Error()))
 	}
 	if err = k.documentRepo.UpdateDocumentSliceInfo(ctx, docInfo.ID); err != nil {
 		logs.CtxErrorf(ctx, "update document slice info failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	return nil
 }
 
 func (k *knowledgeSVC) DeleteSlice(ctx context.Context, request *DeleteSliceRequest) error {
 	if request == nil {
-		return errors.New("request is null")
+		return errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	sliceInfo, err := k.sliceRepo.MGetSlices(ctx, []int64{request.SliceID})
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget slice failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if len(sliceInfo) != 1 {
-		return errors.New("slice not found")
+		logs.CtxWarnf(ctx, "slice not found, slice_id: %d", request.SliceID)
+		return nil
 	}
 	docInfo, err := k.documentRepo.GetByID(ctx, sliceInfo[0].DocumentID)
 	if err != nil {
 		logs.CtxErrorf(ctx, "find document failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if docInfo == nil || docInfo.ID == 0 {
-		return errors.New("document not found")
+		return errorx.New(errno.ErrKnowledgeDocumentNotExistCode)
 	}
 	if docInfo.DocumentType == int32(knowledgeModel.DocumentTypeTable) {
 		_, err := k.rdb.DeleteData(ctx, &rdb.DeleteDataRequest{
@@ -777,38 +801,37 @@ func (k *knowledgeSVC) DeleteSlice(ctx context.Context, request *DeleteSliceRequ
 		})
 		if err != nil {
 			logs.CtxErrorf(ctx, "delete data failed, err: %v", err)
-			return err
+			return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 		}
 	}
 	// 删除数据库中的存储
 	err = k.sliceRepo.Delete(ctx, &model.KnowledgeDocumentSlice{ID: request.SliceID})
 	if err != nil {
 		logs.CtxErrorf(ctx, "delete slice failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 
 	if err = k.emitDeleteKnowledgeDataEvent(ctx, sliceInfo[0].KnowledgeID, []int64{request.SliceID}, strconv.FormatInt(sliceInfo[0].DocumentID, 10)); err != nil {
-		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
-		return fmt.Errorf("[DeleteSlice] send message failed, %w", err)
+		return err
 	}
 	if err = k.documentRepo.UpdateDocumentSliceInfo(ctx, docInfo.ID); err != nil {
 		logs.CtxErrorf(ctx, "update document slice info failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	return nil
 }
 
 func (k *knowledgeSVC) ListSlice(ctx context.Context, request *ListSliceRequest) (response *ListSliceResponse, err error) {
 	if request == nil {
-		return nil, fmt.Errorf("[ListSlice] request is null")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	if request.DocumentID == nil {
-		return nil, fmt.Errorf("[ListSlice] document id not provided")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "document_id is empty"))
 	}
 	doc, err := k.documentRepo.GetByID(ctx, ptr.From(request.DocumentID))
 	if err != nil {
 		logs.CtxErrorf(ctx, "get document failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	resp := ListSliceResponse{}
 	if doc.Status == int32(entity.DocumentStatusDeleted) {
@@ -825,7 +848,7 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *ListSliceRequest)
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "list slice failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 
 	if total > (request.Sequence + request.Limit) {
@@ -858,11 +881,11 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *ListSliceRequest)
 func (k *knowledgeSVC) GetSlice(ctx context.Context, request *GetSliceRequest) (response *GetSliceResponse, err error) {
 	slices, err := k.sliceRepo.MGetSlices(ctx, []int64{request.SliceID})
 	if err != nil {
-		return nil, fmt.Errorf("[GetSlice] repo query failed, %w", err)
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 
 	if len(slices) == 0 {
-		return nil, fmt.Errorf("[GetSlice] slice not found, id=%d", request.SliceID)
+		return nil, errorx.New(errno.ErrKnowledgeSliceNotExistCode)
 	}
 
 	return &GetSliceResponse{
@@ -872,7 +895,7 @@ func (k *knowledgeSVC) GetSlice(ctx context.Context, request *GetSliceRequest) (
 
 func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *CreateDocumentReviewRequest) (response *CreateDocumentReviewResponse, err error) {
 	if request == nil {
-		return nil, errors.New("request is null")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
@@ -881,10 +904,10 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *Create
 	kn, err := k.knowledgeRepo.GetByID(ctx, request.KnowledgeID)
 	if err != nil {
 		logs.CtxErrorf(ctx, "get knowledge failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if kn == nil {
-		return nil, errors.New("knowledge not found")
+		return nil, errorx.New(errno.ErrKnowledgeNotExistCode)
 	}
 	documentIDs := make([]int64, 0, len(request.Reviews))
 	documentMap := make(map[int64]*model.KnowledgeDocument)
@@ -896,7 +919,7 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *Create
 	if len(documentIDs) > 0 {
 		documents, err := k.documentRepo.MGetByID(ctx, documentIDs)
 		if err != nil {
-			return nil, err
+			return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 		}
 		for _, document := range documents {
 			documentMap[document.ID] = document
@@ -921,14 +944,14 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *Create
 		review.Url, err = k.storage.GetObjectUrl(ctx, review.Uri)
 		if err != nil {
 			logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
-			return nil, err
+			return nil, errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KV("msg", err.Error()))
 		}
 		reviews = append(reviews, review)
 	}
 	// STEP 1. 生成ID
 	reviewIDs, err := k.idgen.GenMultiIDs(ctx, len(request.Reviews))
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeIDGenCode)
 	}
 	for i := range request.Reviews {
 		reviews[i].ReviewID = ptr.Of(reviewIDs[i])
@@ -948,7 +971,7 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *Create
 	err = k.reviewRepo.CreateInBatches(ctx, modelReviews)
 	if err != nil {
 		logs.CtxErrorf(ctx, "create review failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	for i := range reviews {
 		review := reviews[i]
@@ -969,12 +992,12 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *Create
 		body, err := sonic.Marshal(&reviewEvent)
 		if err != nil {
 			logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
-			return nil, err
+			return nil, errorx.New(errno.ErrKnowledgeParseJSONCode, errorx.KV("msg", err.Error()))
 		}
 		err = k.producer.Send(ctx, body)
 		if err != nil {
 			logs.CtxErrorf(ctx, "send message failed, err: %v", err)
-			return nil, err
+			return nil, errorx.New(errno.ErrKnowledgeMQSendFailCode, errorx.KV("msg", err.Error()))
 		}
 	}
 	return &CreateDocumentReviewResponse{
@@ -986,11 +1009,11 @@ func (k *knowledgeSVC) MGetDocumentReview(ctx context.Context, request *MGetDocu
 	reviews, err := k.reviewRepo.MGetByIDs(ctx, request.ReviewIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "mget review failed, err: %v", err)
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	for _, review := range reviews {
 		if review.KnowledgeID != request.KnowledgeID {
-			return nil, errors.New("knowledge ID not match")
+			return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "knowledge_id and doc not match"))
 		}
 	}
 	reviewEntity := make([]*entity.Review, 0, len(reviews))
@@ -998,17 +1021,17 @@ func (k *knowledgeSVC) MGetDocumentReview(ctx context.Context, request *MGetDocu
 		status := entity.ReviewStatus(review.Status)
 		var reviewTosURL, reviewChunkRespTosURL string
 		if review.URI != "" {
-			reviewTosURL, err = k.storage.GetObjectUrl(ctx, review.URI)
+			reviewTosURL, err = k.getObjectURL(ctx, review.URI)
 			if err != nil {
 				logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
-				return nil, err
+				return nil, errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KV("msg", err.Error()))
 			}
 		}
 		if review.ChunkRespURI != "" {
-			reviewChunkRespTosURL, err = k.storage.GetObjectUrl(ctx, review.ChunkRespURI)
+			reviewChunkRespTosURL, err = k.getObjectURL(ctx, review.ChunkRespURI)
 			if err != nil {
 				logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
-				return nil, err
+				return nil, errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KV("msg", err.Error()))
 			}
 		}
 		reviewEntity = append(reviewEntity, &entity.Review{
@@ -1028,12 +1051,12 @@ func (k *knowledgeSVC) MGetDocumentReview(ctx context.Context, request *MGetDocu
 
 func (k *knowledgeSVC) SaveDocumentReview(ctx context.Context, request *SaveDocumentReviewRequest) error {
 	if request == nil {
-		return errors.New("request is null")
+		return errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	review, err := k.reviewRepo.GetByID(ctx, request.ReviewID)
 	if err != nil {
 		logs.CtxErrorf(ctx, "get review failed, err: %v", err)
-		return err
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	uri := review.ChunkRespURI
 	if review.Status == int32(entity.ReviewStatus_Enable) && len(uri) > 0 {
@@ -1041,14 +1064,14 @@ func (k *knowledgeSVC) SaveDocumentReview(ctx context.Context, request *SaveDocu
 		err = k.storage.PutObject(ctx, newTosUri, []byte(request.DocTreeJson))
 		if err != nil {
 			logs.CtxErrorf(ctx, "put object failed, err: %v", err)
-			return err
+			return errorx.New(errno.ErrKnowledgePutObjectFailCode, errorx.KV("msg", err.Error()))
 		}
 		err = k.reviewRepo.UpdateReview(ctx, review.ID, map[string]interface{}{
 			"chunk_resp_uri": newTosUri,
 		})
 		if err != nil {
 			logs.CtxErrorf(ctx, "update review chunk uri failed, err: %v", err)
-			return err
+			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 		}
 	}
 	return nil
@@ -1113,21 +1136,24 @@ func (k *knowledgeSVC) emitDeleteKnowledgeDataEvent(ctx context.Context, knowled
 	deleteSliceEvent := events.NewDeleteKnowledgeDataEvent(knowledgeID, sliceIDs)
 	body, err := sonic.Marshal(&deleteSliceEvent)
 	if err != nil {
-		return fmt.Errorf("[emitDeleteKnowledgeDataEvent] marshal event failed, %w", err)
+		logs.CtxErrorf(ctx, "marshal event failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeParseJSONCode, errorx.KV("msg", err.Error()))
 	}
 	if err = k.producer.Send(ctx, body, eventbus.WithShardingKey(shardingKey)); err != nil {
-		return fmt.Errorf("[emitDeleteKnowledgeDataEvent] send message failed, %w", err)
+		logs.CtxErrorf(ctx, "send message failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeMQSendFailCode, errorx.KV("msg", err.Error()))
 	}
 	return nil
 }
 
-func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.Knowledge) *knowledgeModel.Knowledge {
+func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.Knowledge) (*knowledgeModel.Knowledge, error) {
 	if knowledge == nil {
-		return nil
+		return nil, nil
 	}
 	sliceHit, err := k.sliceRepo.GetSliceHitByKnowledgeID(ctx, knowledge.ID)
 	if err != nil {
 		logs.CtxErrorf(ctx, "get slice hit count failed, err: %v", err)
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	knEntity := &knowledgeModel.Knowledge{
 		Info: knowledgeModel.Info{
@@ -1150,16 +1176,16 @@ func (k *knowledgeSVC) fromModelKnowledge(ctx context.Context, knowledge *model.
 		objUrl, err := k.storage.GetObjectUrl(ctx, knowledge.IconURI)
 		if err != nil {
 			logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
-			return nil
+			return nil, errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KV("msg", err.Error()))
 		}
 		knEntity.IconURL = objUrl
 	}
-	return knEntity
+	return knEntity, nil
 }
 
-func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.KnowledgeDocument) *entity.Document {
+func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.KnowledgeDocument) (*entity.Document, error) {
 	if document == nil {
-		return nil
+		return nil, nil
 	}
 	documentEntity := &entity.Document{
 		Info: knowledgeModel.Info{
@@ -1199,11 +1225,11 @@ func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.Kn
 		objUrl, err := k.storage.GetObjectUrl(ctx, document.URI)
 		if err != nil {
 			logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
-			return nil
+			return nil, errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KV("msg", err.Error()))
 		}
 		documentEntity.URL = objUrl
 	}
-	return documentEntity
+	return documentEntity, nil
 }
 
 func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.KnowledgeDocumentSlice) *entity.Slice {
@@ -1268,17 +1294,19 @@ func convertOrder(order *knowledgeModel.Order) *entity.Order {
 
 func (k *knowledgeSVC) GetKnowledgeByID(ctx context.Context, request *GetKnowledgeByIDRequest) (response *GetKnowledgeByIDResponse, err error) {
 	if request == nil || request.KnowledgeID == 0 {
-		return nil, errors.New("request is null")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	kn, err := k.knowledgeRepo.GetByID(ctx, request.KnowledgeID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if kn == nil || kn.ID == 0 {
-		return nil, errors.New("knowledge not found")
+		return nil, errorx.New(errno.ErrKnowledgeNotExistCode, errorx.KV("msg", "knowledge not found"))
 	}
-	knEntity := k.fromModelKnowledge(ctx, kn)
-
+	knEntity, err := k.fromModelKnowledge(ctx, kn)
+	if err != nil {
+		return nil, err
+	}
 	return &GetKnowledgeByIDResponse{
 		Knowledge: knEntity,
 	}, nil
@@ -1286,7 +1314,7 @@ func (k *knowledgeSVC) GetKnowledgeByID(ctx context.Context, request *GetKnowled
 
 func (k *knowledgeSVC) ListPhotoSlice(ctx context.Context, request *ListPhotoSliceRequest) (response *ListPhotoSliceResponse, err error) {
 	if request == nil {
-		return nil, errors.New("request is null")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	sliceArr, total, err := k.sliceRepo.FindSliceByCondition(ctx, &entity.WhereSliceOpt{
 		KnowledgeID: request.KnowledgeID,
@@ -1296,7 +1324,7 @@ func (k *knowledgeSVC) ListPhotoSlice(ctx context.Context, request *ListPhotoSli
 		NotEmpty:    request.HasCaption,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	response = &ListPhotoSliceResponse{
 		Total: int(total),
@@ -1311,51 +1339,84 @@ func (k *knowledgeSVC) ListPhotoSlice(ctx context.Context, request *ListPhotoSli
 func (k *knowledgeSVC) ExtractPhotoCaption(ctx context.Context, request *ExtractPhotoCaptionRequest) (response *ExtractPhotoCaptionResponse, err error) {
 	response = &ExtractPhotoCaptionResponse{}
 	if request == nil {
-		return nil, errors.New("request is null")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 	if !k.isAutoAnnotationSupported {
-		return nil, errors.New("auto annotation is not supported")
+		return nil, errorx.New(errno.ErrKnowledgeAutoAnnotationNotSupportedCode, errorx.KV("msg", "auto annotation is not supported"))
 	}
 	docInfo, err := k.documentRepo.GetByID(ctx, request.DocumentID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	if docInfo == nil || docInfo.ID == 0 {
-		return nil, errors.New("document not found")
+		return nil, errorx.New(errno.ErrKnowledgeDocumentNotExistCode, errorx.KV("msg", "document not found"))
 	}
-	docEntity := k.fromModelDocument(ctx, docInfo)
-	parser, err := k.parseManager.GetParser(convert.DocumentToParseConfig(docEntity))
+	docEntity, err := k.fromModelDocument(ctx, docInfo)
 	if err != nil {
 		return nil, err
+	}
+	parser, err := k.parseManager.GetParser(convert.DocumentToParseConfig(docEntity))
+	if err != nil {
+		return nil, errorx.New(errno.ErrKnowledgeGetParserFailCode, errorx.KV("msg", err.Error()))
 	}
 	imageByte, err := k.storage.GetObject(ctx, docEntity.URI)
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeGetObjectFailCode, errorx.KV("msg", err.Error()))
 	}
 	reader := bytes.NewReader(imageByte)
 	schemaDoc, err := parser.Parse(ctx, reader)
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeParserParseFailCode, errorx.KV("msg", err.Error()))
 	}
 	if len(schemaDoc) == 0 {
-		return nil, errors.New("schema doc is empty")
+		return nil, errorx.New(errno.ErrKnowledgeParserParseFailCode, errorx.KV("msg", "parse fail, schema doc is empty"))
 	}
 	response.Caption = schemaDoc[0].Content
 	return response, nil
 }
 func (k *knowledgeSVC) MGetKnowledgeByID(ctx context.Context, request *MGetKnowledgeByIDRequest) (response *MGetKnowledgeByIDResponse, err error) {
 	if request == nil || len(request.KnowledgeIDs) == 0 {
-		return nil, errors.New("request is null")
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
 
 	models, err := k.knowledgeRepo.MGetByID(ctx, request.KnowledgeIDs)
 	if err != nil {
-		return nil, err
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+	}
+	response = &MGetKnowledgeByIDResponse{}
+	response.Knowledge = make([]*knowledgeModel.Knowledge, 0, len(models))
+	for _, model := range models {
+		if model == nil {
+			continue
+		}
+		kn, err := k.fromModelKnowledge(ctx, model)
+		if err != nil {
+			return nil, err
+		}
+		response.Knowledge = append(response.Knowledge, kn)
+	}
+	return response, nil
+}
+
+const expireTime = 21600
+const cacheTime = 7200
+
+func (k *knowledgeSVC) getObjectURL(ctx context.Context, uri string) (string, error) {
+	cmd := k.cacheCli.Get(ctx, uri)
+	if cmd.Err() != nil {
+		url, err := k.storage.GetObjectUrl(ctx, uri, storage.WithExpire(expireTime))
+		if err != nil {
+			return "", errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KV("msg", fmt.Sprintf("get object url failed, %v", err)))
+		}
+		if errors.Is(cmd.Err(), redisV9.Nil) {
+			err = k.cacheCli.Set(ctx, uri, url, cacheTime*time.Second).Err()
+			if err != nil {
+				logs.CtxErrorf(ctx, "[getObjectURL] set cache failed, %v", err)
+			}
+		}
+		return url, nil
 	}
 
-	return &MGetKnowledgeByIDResponse{
-		Knowledge: slices.Transform(models, func(a *model.Knowledge) *knowledgeModel.Knowledge {
-			return k.fromModelKnowledge(ctx, a)
-		}),
-	}, nil
+	url := cmd.Val()
+	return url, nil
 }
