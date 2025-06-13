@@ -1389,3 +1389,8 @@ func _revokeauthtokenMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _gethistoryschemaMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

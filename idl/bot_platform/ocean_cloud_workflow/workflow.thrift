@@ -520,6 +520,55 @@ struct GetCanvasInfoResponse {
     255: required base.BaseResp BaseResp,
 }
 
+enum OperateType {
+    DraftOperate   = 0,
+    SubmitOperate  = 1,
+    PublishOperate = 2,
+    PubPPEOperate  = 3,
+    SubmitPublishPPEOperate = 4,
+}
+
+struct GetHistorySchemaRequest {
+    1  : required string      space_id   ,
+    2  : required string      workflow_id,
+    3  : required string      commit_id  , // 多次分页的时候需要传入
+    4  : required OperateType type       ,
+    5  : optional string      env        ,
+    6  : optional string      workflow_version,
+    7  : optional string      project_version,
+    8  : optional string      project_id,
+
+    51 : optional string      execute_id ,
+    52 : optional string      sub_execute_id,
+    53 : optional string      log_id,
+
+    255: optional base.Base   Base       ,
+}
+
+struct GetHistorySchemaData {
+    1: string name    ,
+    2: string describe,
+    3: string url     ,
+    4: string schema  ,
+    5: WorkflowMode flow_mode,
+    6: optional string       bind_biz_id  ,
+    7: optional BindBizType          bind_biz_type,
+    8: string workflow_id,
+    9: string commit_id,
+
+    51: optional string execute_id,
+    52: optional string sub_execute_id,
+    53: optional string log_id,
+}
+
+struct GetHistorySchemaResponse{
+    1  : required GetHistorySchemaData data    ,
+
+    253: required i64                  code    ,
+    254: required string               msg     ,
+    255: required base.BaseResp        BaseResp,
+}
+
 enum DeleteAction{
     BlockwiseUnbind = 1, // Blockwise的解绑
     BlockwiseDelete = 2, // Blockwise的删除

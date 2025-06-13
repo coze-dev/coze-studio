@@ -349,6 +349,7 @@ func Register(r *server.Hertz) {
 			_workflow_api.GET("/get_node_execute_history", append(_getnodeexecutehistoryMw(), coze.GetNodeExecuteHistory)...)
 			_workflow_api.GET("/get_process", append(_getworkflowprocessMw(), coze.GetWorkFlowProcess)...)
 			_workflow_api.POST("/get_trace", append(_gettracesdkMw(), coze.GetTraceSDK)...)
+			_workflow_api.POST("/history_schema", append(_gethistoryschemaMw(), coze.GetHistorySchema)...)
 			_workflow_api.POST("/list_publish_workflow", append(_listpublishworkflowMw(), coze.ListPublishWorkflow)...)
 			_workflow_api.POST("/list_spans", append(_listrootspansMw(), coze.ListRootSpans)...)
 			_workflow_api.POST("/llm_fc_setting_detail", append(_getllmnodefcsettingdetailMw(), coze.GetLLMNodeFCSettingDetail)...)

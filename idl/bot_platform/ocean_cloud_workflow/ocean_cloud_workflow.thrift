@@ -7,11 +7,11 @@ include "../../resource/resource_common.thrift"
 namespace go ocean.cloud.workflow
 
 service WorkflowService {
-    /***** workflow begin *****/
     // 创建流程
     workflow.CreateWorkflowResponse CreateWorkflow(1:workflow.CreateWorkflowRequest request) (api.post='/api/workflow_api/create', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
-    // 获取流程编辑态详情
+    // 查询流程
     workflow.GetCanvasInfoResponse GetCanvasInfo(1:workflow.GetCanvasInfoRequest request) (api.post='/api/workflow_api/canvas', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+    workflow.GetHistorySchemaResponse GetHistorySchema(1:workflow.GetHistorySchemaRequest request) (api.post='/api/workflow_api/history_schema', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     // 保存流程
     workflow.SaveWorkflowResponse SaveWorkflow(1:workflow.SaveWorkflowRequest request) (api.post='/api/workflow_api/save', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.UpdateWorkflowMetaResponse UpdateWorkflowMeta(1:workflow.UpdateWorkflowMetaRequest request) (api.post='/api/workflow_api/update_meta', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
@@ -54,7 +54,7 @@ service WorkflowService {
     // 列出历史执行的trace
     trace.ListRootSpansResponse ListRootSpans (1: trace.ListRootSpansRequest req)(api.post='/api/workflow_api/list_spans', api.category="workflow_trace", api.gen_path="workflow_trace", agw.preserve_base = "true")
     trace.GetTraceSDKResponse GetTraceSDK (1: trace.GetTraceSDKRequest req)(api.post='/api/workflow_api/get_trace', api.category="workflow_trace", api.gen_path="workflow_trace", agw.preserve_base = "true")
-    // Project
+    // App
     workflow.GetWorkflowDetailResponse GetWorkflowDetail(1: workflow.GetWorkflowDetailRequest request) (api.post='/api/workflow_api/workflow_detail', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.GetWorkflowDetailInfoResponse GetWorkflowDetailInfo(1: workflow.GetWorkflowDetailInfoRequest request) (api.post='/api/workflow_api/workflow_detail_info', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.ValidateTreeResponse ValidateTree(1: workflow.ValidateTreeRequest request) (api.post='/api/workflow_api/validate_tree', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
@@ -62,7 +62,7 @@ service WorkflowService {
     workflow.GetChatFlowRoleResponse GetChatFlowRole(1: workflow.GetChatFlowRoleRequest request) (api.get='/api/workflow_api/chat_flow_role/get', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.CreateChatFlowRoleResponse CreateChatFlowRole(1: workflow.CreateChatFlowRoleRequest request) (api.post='/api/workflow_api/chat_flow_role/create', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.DeleteChatFlowRoleResponse DeleteChatFlowRole(1: workflow.DeleteChatFlowRoleRequest request) (api.post='/api/workflow_api/chat_flow_role/delete', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
-    // project 发布管理
+    // App 发布管理
     workflow.ListPublishWorkflowResponse ListPublishWorkflow(1: workflow.ListPublishWorkflowRequest request) (api.post='/api/workflow_api/list_publish_workflow', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
 
     // Open API

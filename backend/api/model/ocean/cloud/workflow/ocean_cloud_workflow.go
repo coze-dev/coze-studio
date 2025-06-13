@@ -9,11 +9,12 @@ import (
 )
 
 type WorkflowService interface {
-	/***** workflow begin *****/
 	// 创建流程
 	CreateWorkflow(ctx context.Context, request *CreateWorkflowRequest) (r *CreateWorkflowResponse, err error)
-	// 获取流程编辑态详情
+	// 查询流程
 	GetCanvasInfo(ctx context.Context, request *GetCanvasInfoRequest) (r *GetCanvasInfoResponse, err error)
+
+	GetHistorySchema(ctx context.Context, request *GetHistorySchemaRequest) (r *GetHistorySchemaResponse, err error)
 	// 保存流程
 	SaveWorkflow(ctx context.Context, request *SaveWorkflowRequest) (r *SaveWorkflowResponse, err error)
 
@@ -77,7 +78,7 @@ type WorkflowService interface {
 	ListRootSpans(ctx context.Context, req *ListRootSpansRequest) (r *ListRootSpansResponse, err error)
 
 	GetTraceSDK(ctx context.Context, req *GetTraceSDKRequest) (r *GetTraceSDKResponse, err error)
-	// Project
+	// App
 	GetWorkflowDetail(ctx context.Context, request *GetWorkflowDetailRequest) (r *GetWorkflowDetailResponse, err error)
 
 	GetWorkflowDetailInfo(ctx context.Context, request *GetWorkflowDetailInfoRequest) (r *GetWorkflowDetailInfoResponse, err error)
@@ -89,7 +90,7 @@ type WorkflowService interface {
 	CreateChatFlowRole(ctx context.Context, request *CreateChatFlowRoleRequest) (r *CreateChatFlowRoleResponse, err error)
 
 	DeleteChatFlowRole(ctx context.Context, request *DeleteChatFlowRoleRequest) (r *DeleteChatFlowRoleResponse, err error)
-	// project 发布管理
+	// App 发布管理
 	ListPublishWorkflow(ctx context.Context, request *ListPublishWorkflowRequest) (r *ListPublishWorkflowResponse, err error)
 	// Open API
 	OpenAPIRunFlow(ctx context.Context, request *OpenAPIRunFlowRequest) (r *OpenAPIRunFlowResponse, err error)
@@ -145,6 +146,15 @@ func (p *WorkflowServiceClient) GetCanvasInfo(ctx context.Context, request *GetC
 	_args.Request = request
 	var _result WorkflowServiceGetCanvasInfoResult
 	if err = p.Client_().Call(ctx, "GetCanvasInfo", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *WorkflowServiceClient) GetHistorySchema(ctx context.Context, request *GetHistorySchemaRequest) (r *GetHistorySchemaResponse, err error) {
+	var _args WorkflowServiceGetHistorySchemaArgs
+	_args.Request = request
+	var _result WorkflowServiceGetHistorySchemaResult
+	if err = p.Client_().Call(ctx, "GetHistorySchema", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
@@ -568,6 +578,7 @@ func NewWorkflowServiceProcessor(handler WorkflowService) *WorkflowServiceProces
 	self := &WorkflowServiceProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
 	self.AddToProcessorMap("CreateWorkflow", &workflowServiceProcessorCreateWorkflow{handler: handler})
 	self.AddToProcessorMap("GetCanvasInfo", &workflowServiceProcessorGetCanvasInfo{handler: handler})
+	self.AddToProcessorMap("GetHistorySchema", &workflowServiceProcessorGetHistorySchema{handler: handler})
 	self.AddToProcessorMap("SaveWorkflow", &workflowServiceProcessorSaveWorkflow{handler: handler})
 	self.AddToProcessorMap("UpdateWorkflowMeta", &workflowServiceProcessorUpdateWorkflowMeta{handler: handler})
 	self.AddToProcessorMap("DeleteWorkflow", &workflowServiceProcessorDeleteWorkflow{handler: handler})
@@ -711,6 +722,54 @@ func (p *workflowServiceProcessorGetCanvasInfo) Process(ctx context.Context, seq
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("GetCanvasInfo", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type workflowServiceProcessorGetHistorySchema struct {
+	handler WorkflowService
+}
+
+func (p *workflowServiceProcessorGetHistorySchema) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := WorkflowServiceGetHistorySchemaArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetHistorySchema", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := WorkflowServiceGetHistorySchemaResult{}
+	var retval *GetHistorySchemaResponse
+	if retval, err2 = p.handler.GetHistorySchema(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetHistorySchema: "+err2.Error())
+		oprot.WriteMessageBegin("GetHistorySchema", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetHistorySchema", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -3421,6 +3480,298 @@ func (p *WorkflowServiceGetCanvasInfoResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("WorkflowServiceGetCanvasInfoResult(%+v)", *p)
+
+}
+
+type WorkflowServiceGetHistorySchemaArgs struct {
+	Request *GetHistorySchemaRequest `thrift:"request,1"`
+}
+
+func NewWorkflowServiceGetHistorySchemaArgs() *WorkflowServiceGetHistorySchemaArgs {
+	return &WorkflowServiceGetHistorySchemaArgs{}
+}
+
+func (p *WorkflowServiceGetHistorySchemaArgs) InitDefault() {
+}
+
+var WorkflowServiceGetHistorySchemaArgs_Request_DEFAULT *GetHistorySchemaRequest
+
+func (p *WorkflowServiceGetHistorySchemaArgs) GetRequest() (v *GetHistorySchemaRequest) {
+	if !p.IsSetRequest() {
+		return WorkflowServiceGetHistorySchemaArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_WorkflowServiceGetHistorySchemaArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *WorkflowServiceGetHistorySchemaArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *WorkflowServiceGetHistorySchemaArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceGetHistorySchemaArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetHistorySchemaArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewGetHistorySchemaRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *WorkflowServiceGetHistorySchemaArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetHistorySchema_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetHistorySchemaArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetHistorySchemaArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceGetHistorySchemaArgs(%+v)", *p)
+
+}
+
+type WorkflowServiceGetHistorySchemaResult struct {
+	Success *GetHistorySchemaResponse `thrift:"success,0,optional"`
+}
+
+func NewWorkflowServiceGetHistorySchemaResult() *WorkflowServiceGetHistorySchemaResult {
+	return &WorkflowServiceGetHistorySchemaResult{}
+}
+
+func (p *WorkflowServiceGetHistorySchemaResult) InitDefault() {
+}
+
+var WorkflowServiceGetHistorySchemaResult_Success_DEFAULT *GetHistorySchemaResponse
+
+func (p *WorkflowServiceGetHistorySchemaResult) GetSuccess() (v *GetHistorySchemaResponse) {
+	if !p.IsSetSuccess() {
+		return WorkflowServiceGetHistorySchemaResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_WorkflowServiceGetHistorySchemaResult = map[int16]string{
+	0: "success",
+}
+
+func (p *WorkflowServiceGetHistorySchemaResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *WorkflowServiceGetHistorySchemaResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WorkflowServiceGetHistorySchemaResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetHistorySchemaResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewGetHistorySchemaResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *WorkflowServiceGetHistorySchemaResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetHistorySchema_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetHistorySchemaResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *WorkflowServiceGetHistorySchemaResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WorkflowServiceGetHistorySchemaResult(%+v)", *p)
 
 }
 

@@ -1006,3 +1006,19 @@ func OpenAPIGetWorkflowInfo(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// GetHistorySchema .
+// @router /api/workflow_api/history_schema [POST]
+func GetHistorySchema(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.GetHistorySchemaRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(workflow.GetHistorySchemaResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
