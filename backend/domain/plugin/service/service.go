@@ -209,7 +209,7 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 
 	if *p.AuthzSubType == model.AuthzSubTypeOfOAuthAuthorizationCode {
 		contentType := oauthInfo["authorization_content_type"]
-		if contentType != model.MIMETypeJson && contentType != model.MIMETypeForm { // only support application/json and application/x-www-form-urlencoded
+		if contentType != model.MediaTypeJson { // only support application/json
 			return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
 				"the type '%s' of authorization content is invalid", contentType))
 		}

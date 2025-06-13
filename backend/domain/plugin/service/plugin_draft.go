@@ -16,7 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
-	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/dal/openapi"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/openapi"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -560,14 +560,14 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 	}
 
 	if req.RequestBody != nil {
-		mType, ok := req.RequestBody.Value.Content[model.MIMETypeJson]
+		mType, ok := req.RequestBody.Value.Content[model.MediaTypeJson]
 		if !ok {
-			return fmt.Errorf("the '%s' media type is not defined in request body", model.MIMETypeJson)
+			return fmt.Errorf("the '%s' media type is not defined in request body", model.MediaTypeJson)
 		}
 		if op.RequestBody.Value.Content == nil {
 			op.RequestBody.Value.Content = map[string]*openapi3.MediaType{}
 		}
-		op.RequestBody.Value.Content[model.MIMETypeJson] = mType
+		op.RequestBody.Value.Content[model.MediaTypeJson] = mType
 	}
 
 	if req.Responses != nil {
@@ -575,9 +575,9 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		if !ok {
 			return fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
 		}
-		newMIMEType, ok := newRespRef.Value.Content[model.MIMETypeJson]
+		newMIMEType, ok := newRespRef.Value.Content[model.MediaTypeJson]
 		if !ok {
-			return fmt.Errorf("the '%s' media type is not defined in responses", model.MIMETypeJson)
+			return fmt.Errorf("the '%s' media type is not defined in responses", model.MediaTypeJson)
 		}
 
 		if op.Responses == nil {
@@ -598,7 +598,7 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 			oldRespRef.Value.Content = map[string]*openapi3.MediaType{}
 		}
 
-		oldRespRef.Value.Content[model.MIMETypeJson] = newMIMEType
+		oldRespRef.Value.Content[model.MediaTypeJson] = newMIMEType
 	}
 
 	updatedTool := &entity.ToolInfo{
@@ -771,7 +771,10 @@ func (p *pluginServiceImpl) CreateDraftToolsWithCode(ctx context.Context, req *C
 		}
 	}
 
-	existTools, err := p.toolRepo.MGetDraftToolWithAPI(ctx, req.PluginID, toolAPIs, repository.WithToolID())
+	existTools, err := p.toolRepo.MGetDraftToolWithAPI(ctx, req.PluginID, toolAPIs,
+		repository.WithToolID(),
+		repository.WithToolMethod(),
+		repository.WithToolSubURL())
 	if err != nil {
 		return nil, errorx.Wrapf(err, "MGetDraftToolWithAPI failed, pluginID=%d, apis=%v", req.PluginID, toolAPIs)
 	}

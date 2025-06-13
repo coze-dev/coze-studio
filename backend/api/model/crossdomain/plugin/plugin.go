@@ -88,7 +88,7 @@ type ExecuteToolRequest struct {
 	UserID        int64
 	PluginID      int64
 	ToolID        int64
-	ExecDraftTool bool
+	ExecDraftTool bool // if true, execute draft tool
 	ExecScene     ExecuteScene
 
 	ArgumentsInJson string

@@ -16,11 +16,11 @@ import (
 
 func encodeBodyWithContentType(contentType string, body map[string]any) ([]byte, error) {
 	switch contentType {
-	case plugin.MIMETypeJson, plugin.MIMETypeJsonPatch, plugin.MIMETypeProblemJson:
+	case plugin.MediaTypeJson, plugin.MediaTypeProblemJson:
 		return jsonBodyEncoder(body)
-	case plugin.MIMETypeForm:
+	case plugin.MediaTypeFormURLEncoded:
 		return urlencodedBodyEncoder(body)
-	case plugin.MIMETypeYaml, plugin.MIMETypeXYaml:
+	case plugin.MediaTypeYaml, plugin.MediaTypeXYaml:
 		return yamlBodyEncoder(body)
 	default:
 		return nil, fmt.Errorf("[encodeBodyWithContentType] unsupported contentType=%s", contentType)
@@ -321,7 +321,7 @@ func tryString(value any) (string, error) {
 	case json.Number:
 		return val.String(), nil
 	default:
-		return "", fmt.Errorf("can not convert type from '%T' to string", val)
+		return "", fmt.Errorf("cannot convert type from '%T' to string", val)
 	}
 }
 
@@ -338,7 +338,7 @@ func tryInt64(value any) (int64, error) {
 		vi64, _ := strconv.ParseInt(val.String(), 10, 64)
 		return vi64, nil
 	default:
-		return 0, fmt.Errorf("can not convert type from '%T' to int64", val)
+		return 0, fmt.Errorf("cannot convert type from '%T' to int64", val)
 	}
 }
 
@@ -349,7 +349,7 @@ func tryBool(value any) (bool, error) {
 	case bool:
 		return val, nil
 	default:
-		return false, fmt.Errorf("can not convert type from '%T' to bool", val)
+		return false, fmt.Errorf("cannot convert type from '%T' to bool", val)
 	}
 }
 
@@ -364,6 +364,6 @@ func tryFloat64(value any) (float64, error) {
 	case json.Number:
 		return strconv.ParseFloat(val.String(), 64)
 	default:
-		return 0, fmt.Errorf("can not convert type from '%T' to float64", val)
+		return 0, fmt.Errorf("cannot convert type from '%T' to float64", val)
 	}
 }

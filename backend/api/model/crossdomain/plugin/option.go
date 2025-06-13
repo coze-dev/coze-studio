@@ -11,9 +11,9 @@ type ExecuteToolOption struct {
 type ExecuteToolOpt func(o *ExecuteToolOption)
 
 type ProjectInfo struct {
-	ProjectID      int64
-	ProjectVersion *string
-	ProjectType    ProjectType
+	ProjectID      int64       // agentID or appID
+	ProjectVersion *string     // if version si nil, use latest version
+	ProjectType    ProjectType // agent or app
 
 	ConnectorID int64
 }

@@ -58,6 +58,12 @@ func (t *ToolDAO) getSelected(opt *ToolSelectedOption) (selected []field.Expr) {
 	if opt.ActivatedStatus {
 		selected = append(selected, table.ActivatedStatus)
 	}
+	if opt.ToolMethod {
+		selected = append(selected, table.Method)
+	}
+	if opt.ToolSubURL {
+		selected = append(selected, table.SubURL)
+	}
 
 	return selected
 }

@@ -235,16 +235,9 @@ func (a *APPApplicationService) ProjectPublishConnectorList(ctx context.Context,
 		return nil, err
 	}
 
-	latestPublishRecord, published, err := a.getLatestPublishRecord(ctx, req.ProjectID)
+	latestPublishRecord, err := a.getLatestPublishRecord(ctx, req.ProjectID)
 	if err != nil {
 		return nil, err
-	}
-	if !published {
-		latestPublishRecord = &publishAPI.LastPublishInfo{
-			VersionNumber:          "",
-			ConnectorIds:           []int64{},
-			ConnectorPublishConfig: map[int64]*publishAPI.ConnectorPublishConfig{},
-		}
 	}
 
 	resp = &publishAPI.PublishConnectorListResponse{
@@ -314,29 +307,33 @@ func (a *APPApplicationService) packAPIConnectorInfo(ctx context.Context, c *con
 	return info, nil
 }
 
-func (a *APPApplicationService) getLatestPublishRecord(ctx context.Context, appID int64) (info *publishAPI.LastPublishInfo, published bool, err error) {
-	record, published, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
-		APPID: appID,
+func (a *APPApplicationService) getLatestPublishRecord(ctx context.Context, appID int64) (info *publishAPI.LastPublishInfo, err error) {
+	record, exist, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
+		APPID:  appID,
+		Oldest: false,
 	})
 	if err != nil {
-		return nil, false, err
+		return nil, err
+	}
+	if !exist {
+		return &publishAPI.LastPublishInfo{
+			VersionNumber:          "",
+			ConnectorIds:           []int64{},
+			ConnectorPublishConfig: map[int64]*publishAPI.ConnectorPublishConfig{},
+		}, nil
 	}
 
-	if !published {
-		return nil, false, nil
-	}
-
-	latestPublishRecord := &publishAPI.LastPublishInfo{
+	latestRecord := &publishAPI.LastPublishInfo{
 		VersionNumber:          record.APP.GetVersion(),
 		ConnectorIds:           []int64{},
 		ConnectorPublishConfig: map[int64]*publishAPI.ConnectorPublishConfig{},
 	}
 
 	for _, r := range record.ConnectorPublishRecords {
-		latestPublishRecord.ConnectorIds = append(latestPublishRecord.ConnectorIds, r.ConnectorID)
+		latestRecord.ConnectorIds = append(latestRecord.ConnectorIds, r.ConnectorID)
 	}
 
-	return latestPublishRecord, true, nil
+	return latestRecord, nil
 }
 
 func (a *APPApplicationService) ReportUserBehavior(ctx context.Context, req *playground.ReportUserBehaviorRequest) (resp *playground.ReportUserBehaviorResponse, err error) {
@@ -373,7 +370,11 @@ func (a *APPApplicationService) CheckProjectVersionNumber(ctx context.Context, r
 }
 
 func (a *APPApplicationService) PublishAPP(ctx context.Context, req *publishAPI.PublishProjectRequest) (resp *publishAPI.PublishProjectResponse, err error) {
-	connectorPublishConfigs, err := a.getConnectorPublishConfigs(ctx, req.ConnectorPublishConfig)
+	connectorIDs := make([]int64, 0, len(req.Connectors))
+	for connectorID := range req.Connectors {
+		connectorIDs = append(connectorIDs, connectorID)
+	}
+	connectorPublishConfigs, err := a.getConnectorPublishConfigs(ctx, connectorIDs, req.ConnectorPublishConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -414,9 +415,12 @@ func (a *APPApplicationService) PublishAPP(ctx context.Context, req *publishAPI.
 	return resp, nil
 }
 
-func (a *APPApplicationService) getConnectorPublishConfigs(ctx context.Context, configs map[int64]*publishAPI.ConnectorPublishConfig) (map[int64]entity.PublishConfig, error) {
+func (a *APPApplicationService) getConnectorPublishConfigs(ctx context.Context, connectorIDs []int64, configs map[int64]*publishAPI.ConnectorPublishConfig) (map[int64]entity.PublishConfig, error) {
 	publishConfigs := make(map[int64]entity.PublishConfig, len(configs))
-	for connectorID, config := range configs {
+	for _, connectorID := range connectorIDs {
+		publishConfigs[connectorID] = entity.PublishConfig{}
+
+		config := configs[connectorID]
 		if config == nil {
 			continue
 		}
@@ -498,15 +502,14 @@ func (a *APPApplicationService) GetPublishRecordDetail(ctx context.Context, req 
 		return nil, err
 	}
 
-	record, published, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
+	record, exist, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
 		APPID:    req.ProjectID,
 		RecordID: req.PublishRecordID,
 	})
 	if err != nil {
 		return nil, err
 	}
-
-	if !published {
+	if !exist {
 		return &publishAPI.GetPublishRecordDetailResponse{
 			Data: nil,
 		}, nil

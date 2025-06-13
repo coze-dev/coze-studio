@@ -135,15 +135,15 @@ func (a *appPacker) GetProjectInfo(ctx context.Context) (*projectInfo, error) {
 }
 
 func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.IntelligencePublishInfo {
-	record, published, err := a.SVC.APPDomainSVC.GetAPPPublishRecord(ctx, &appService.GetAPPPublishRecordRequest{
-		APPID: a.projectID,
+	record, exist, err := a.SVC.APPDomainSVC.GetAPPPublishRecord(ctx, &appService.GetAPPPublishRecordRequest{
+		APPID:  a.projectID,
+		Oldest: true,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "[app-GetPublishedInfo] failed to get published info, app_id=%d, err=%v", a.projectID, err)
 		return nil
 	}
-
-	if !published {
+	if !exist {
 		return &intelligence.IntelligencePublishInfo{
 			PublishTime:  "",
 			HasPublished: false,
@@ -172,7 +172,7 @@ func (a *appPacker) GetPublishedInfo(ctx context.Context) *intelligence.Intellig
 
 	return &intelligence.IntelligencePublishInfo{
 		PublishTime:  strconv.FormatInt(record.APP.GetPublishedAtMS()/1000, 10),
-		HasPublished: published,
+		HasPublished: record.APP.Published(),
 		Connectors:   connectorInfo,
 	}
 }

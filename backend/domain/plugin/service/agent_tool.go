@@ -141,14 +141,14 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 	}
 
 	if req.RequestBody != nil {
-		mType, ok := req.RequestBody.Value.Content[model.MIMETypeJson]
+		mType, ok := req.RequestBody.Value.Content[model.MediaTypeJson]
 		if !ok {
-			return fmt.Errorf("the '%s' media type is not defined in request body", model.MIMETypeJson)
+			return fmt.Errorf("the '%s' media type is not defined in request body", model.MediaTypeJson)
 		}
 		if op.RequestBody.Value.Content == nil {
 			op.RequestBody.Value.Content = map[string]*openapi3.MediaType{}
 		}
-		op.RequestBody.Value.Content[model.MIMETypeJson] = mType
+		op.RequestBody.Value.Content[model.MediaTypeJson] = mType
 	}
 
 	if req.Responses != nil {
@@ -156,9 +156,9 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 		if !ok {
 			return fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
 		}
-		newMIMEType, ok := newRespRef.Value.Content[model.MIMETypeJson]
+		newMIMEType, ok := newRespRef.Value.Content[model.MediaTypeJson]
 		if !ok {
-			return fmt.Errorf("the '%s' media type is not defined in responses", model.MIMETypeJson)
+			return fmt.Errorf("the '%s' media type is not defined in responses", model.MediaTypeJson)
 		}
 
 		if op.Responses == nil {
@@ -179,7 +179,7 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 			oldRespRef.Value.Content = map[string]*openapi3.MediaType{}
 		}
 
-		oldRespRef.Value.Content[model.MIMETypeJson] = newMIMEType
+		oldRespRef.Value.Content[model.MediaTypeJson] = newMIMEType
 	}
 
 	updatedTool := &entity.ToolInfo{

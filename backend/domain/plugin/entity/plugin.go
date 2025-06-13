@@ -169,7 +169,7 @@ func DefaultOpenapi3Responses() openapi3.Responses {
 			Value: &openapi3.Response{
 				Description: ptr.Of("description is required"),
 				Content: openapi3.Content{
-					model.MIMETypeJson: &openapi3.MediaType{
+					model.MediaTypeJson: &openapi3.MediaType{
 						Schema: &openapi3.SchemaRef{
 							Value: &openapi3.Schema{
 								Type:       openapi3.TypeObject,
@@ -187,7 +187,7 @@ func DefaultOpenapi3RequestBody() *openapi3.RequestBodyRef {
 	return &openapi3.RequestBodyRef{
 		Value: &openapi3.RequestBody{
 			Content: map[string]*openapi3.MediaType{
-				model.MIMETypeJson: {
+				model.MediaTypeJson: {
 					Schema: &openapi3.SchemaRef{
 						Value: &openapi3.Schema{
 							Type:       openapi3.TypeObject,

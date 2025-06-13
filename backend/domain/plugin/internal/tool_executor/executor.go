@@ -180,6 +180,9 @@ func (t *executorImpl) buildHTTPRequest(ctx context.Context, argumentsInJson str
 	}
 
 	bodyBytes, contentType, err := t.buildHTTPRequestBody(ctx, tool.Operation, bodyArgs)
+	if err != nil {
+		return nil, err
+	}
 	if len(bodyBytes) > 0 {
 		httpReq.Header.Set("Content-Type", contentType)
 		httpReq.Body = io.NopCloser(bytes.NewReader(bodyBytes))
@@ -409,15 +412,6 @@ func (t *executorImpl) injectOAuthAccessToken(ctx context.Context, httpReq *http
 }
 
 func (t *executorImpl) processResponse(ctx context.Context, rawResp string) (trimmedResp string, err error) {
-	decoder := sonic.ConfigDefault.NewDecoder(bytes.NewBufferString(rawResp))
-	decoder.UseNumber()
-	respMap := map[string]any{}
-	err = decoder.Decode(&respMap)
-	if err != nil {
-		return "", errorx.New(errno.ErrPluginExecuteToolFailed,
-			errorx.KVf(errno.PluginMsgKey, "response is not object, raw response=%s", rawResp))
-	}
-
 	responses := t.config.Tool.Operation.Responses
 	if len(responses) == 0 {
 		return "", nil
@@ -427,9 +421,18 @@ func (t *executorImpl) processResponse(ctx context.Context, rawResp string) (tri
 	if !ok {
 		return "", fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
 	}
-	mType, ok := resp.Value.Content[plugin.MIMETypeJson] // only support application/json
+	mType, ok := resp.Value.Content[plugin.MediaTypeJson] // only support application/json
 	if !ok {
-		return "", fmt.Errorf("the '%s' mime type is not defined in response", plugin.MIMETypeJson)
+		return "", fmt.Errorf("the '%s' media type is not defined in response", plugin.MediaTypeJson)
+	}
+
+	decoder := sonic.ConfigDefault.NewDecoder(bytes.NewBufferString(rawResp))
+	decoder.UseNumber()
+	respMap := map[string]any{}
+	err = decoder.Decode(&respMap)
+	if err != nil {
+		return "", errorx.New(errno.ErrPluginExecuteToolFailed,
+			errorx.KVf(errno.PluginMsgKey, "response is not object, raw response=%s", rawResp))
 	}
 
 	schemaVal := mType.Schema.Value
@@ -779,12 +782,11 @@ func (t *executorImpl) buildHTTPRequestBody(ctx context.Context, op *plugin.Open
 }
 
 var contentTypeArray = []string{
-	plugin.MIMETypeJson,
-	plugin.MIMETypeJsonPatch,
-	plugin.MIMETypeProblemJson,
-	plugin.MIMETypeForm,
-	plugin.MIMETypeXYaml,
-	plugin.MIMETypeYaml,
+	plugin.MediaTypeJson,
+	plugin.MediaTypeProblemJson,
+	plugin.MediaTypeFormURLEncoded,
+	plugin.MediaTypeXYaml,
+	plugin.MediaTypeYaml,
 }
 
 func getReqBodySchema(op *plugin.Openapi3Operation) (string, *openapi3.SchemaRef) {

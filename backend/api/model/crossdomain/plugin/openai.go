@@ -44,18 +44,22 @@ func (ot Openapi3T) Validate(ctx context.Context) (err error) {
 	}
 
 	serverURL := ot.Servers[0].URL
-	_, err = url.Parse(serverURL)
+	urlSchema, err := url.Parse(serverURL)
 	if err != nil {
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
+			"invalid server url '%s'", serverURL))
+	}
+	if urlSchema.Scheme != "https" {
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"server url must start with 'https://'"))
+	}
+	if urlSchema.Host == "" {
 		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
 			"invalid server url '%s'", serverURL))
 	}
 	if len(serverURL) > 512 {
 		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
 			"server url '%s' is too long", serverURL))
-	}
-	if !strings.HasPrefix(serverURL, "https://") {
-		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
-			"server url must start with 'https://'"))
 	}
 
 	for _, pathItem := range ot.Paths {
@@ -240,7 +244,7 @@ func validateOpenapi3RequestBody(bodyRef *openapi3.RequestBodyRef) (err error) {
 	}
 
 	var mType *openapi3.MediaType
-	for _, ct := range contentTypeArray {
+	for _, ct := range mediaTypeArray {
 		var ok bool
 		mType, ok = body.Content[ct]
 		if ok {
@@ -249,7 +253,7 @@ func validateOpenapi3RequestBody(bodyRef *openapi3.RequestBodyRef) (err error) {
 	}
 	if mType == nil {
 		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
-			"invalid media type, request body only the following types: [%s]", strings.Join(contentTypeArray, ", ")))
+			"invalid media type, request body only the following types: [%s]", strings.Join(mediaTypeArray, ", ")))
 	}
 
 	if mType.Schema == nil || mType.Schema.Value == nil {
@@ -310,21 +314,19 @@ func validateOpenapi3Parameters(params openapi3.Parameters) (err error) {
 
 // MIME Type
 const (
-	MIMETypeJson        = "application/json"
-	MIMETypeProblemJson = "application/problem+json"
-	MIMETypeJsonPatch   = "application/json-patch+json"
-	MIMETypeForm        = "application/x-www-form-urlencoded"
-	MIMETypeXYaml       = "application/x-yaml"
-	MIMETypeYaml        = "application/yaml"
+	MediaTypeJson           = "application/json"
+	MediaTypeProblemJson    = "application/problem+json"
+	MediaTypeFormURLEncoded = "application/x-www-form-urlencoded"
+	MediaTypeXYaml          = "application/x-yaml"
+	MediaTypeYaml           = "application/yaml"
 )
 
-var contentTypeArray = []string{
-	MIMETypeJson,
-	MIMETypeJsonPatch,
-	MIMETypeProblemJson,
-	MIMETypeForm,
-	MIMETypeXYaml,
-	MIMETypeYaml,
+var mediaTypeArray = []string{
+	MediaTypeJson,
+	MediaTypeProblemJson,
+	MediaTypeFormURLEncoded,
+	MediaTypeXYaml,
+	MediaTypeYaml,
 }
 
 func validateOpenapi3Responses(responses openapi3.Responses) (err error) {
@@ -357,7 +359,7 @@ func validateOpenapi3Responses(responses openapi3.Responses) (err error) {
 		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
 			"response only supports 'application/json' media type"))
 	}
-	mType, ok := resp.Value.Content[MIMETypeJson]
+	mType, ok := resp.Value.Content[MediaTypeJson]
 	if !ok || mType == nil {
 		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
 			"response only supports 'application/json' media type"))
@@ -385,12 +387,15 @@ func disabledParam(schemaVal *openapi3.Schema) bool {
 	if len(schemaVal.Extensions) == 0 {
 		return false
 	}
+
 	globalDisable, localDisable := false, false
 	if v, ok := schemaVal.Extensions[APISchemaExtendLocalDisable]; ok {
 		localDisable = v.(bool)
 	}
+
 	if v, ok := schemaVal.Extensions[APISchemaExtendGlobalDisable]; ok {
 		globalDisable = v.(bool)
 	}
+
 	return globalDisable || localDisable
 }

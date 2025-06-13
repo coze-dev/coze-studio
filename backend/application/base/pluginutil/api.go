@@ -38,7 +38,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 
 		var mType *openapi3.MediaType
 		if hasSetReqBody {
-			mType = op.RequestBody.Value.Content[plugin.MIMETypeJson]
+			mType = op.RequestBody.Value.Content[plugin.MediaTypeJson]
 		} else {
 			hasSetReqBody = true
 			mType = &openapi3.MediaType{
@@ -52,7 +52,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 			op.RequestBody = &openapi3.RequestBodyRef{
 				Value: &openapi3.RequestBody{
 					Content: map[string]*openapi3.MediaType{
-						plugin.MIMETypeJson: mType,
+						plugin.MediaTypeJson: mType,
 					},
 				},
 			}
@@ -80,7 +80,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 				strconv.Itoa(http.StatusOK): {
 					Value: &openapi3.Response{
 						Content: map[string]*openapi3.MediaType{
-							plugin.MIMETypeJson: {
+							plugin.MediaTypeJson: {
 								Schema: &openapi3.SchemaRef{
 									Value: &openapi3.Schema{
 										Type:       openapi3.TypeObject,
@@ -100,7 +100,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 		}
 
 		resp, _ := op.Responses[strconv.Itoa(http.StatusOK)]
-		mType, _ := resp.Value.Content[plugin.MIMETypeJson] // only support application/json
+		mType, _ := resp.Value.Content[plugin.MediaTypeJson] // only support application/json
 		mType.Schema.Value.Properties[apiParam.Name] = &openapi3.SchemaRef{
 			Value: _apiParam,
 		}
@@ -248,36 +248,12 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 				errorx.KVf(errno.PluginMsgKey, "the item type '%s' of field '%s' is invalid", itemType, apiParam.Name))
 		}
 
-		if itemType != openapi3.TypeObject {
-			subParam, err := toOpenapi3Schema(arrayItem)
-			if err != nil {
-				return nil, err
-			}
-			sc.Items = &openapi3.SchemaRef{
-				Value: subParam,
-			}
-			return sc, nil
+		subParam, err := toOpenapi3Schema(arrayItem)
+		if err != nil {
+			return nil, err
 		}
-
-		itemValue := &openapi3.Schema{
-			Type: openapi3.TypeObject,
-		}
-		itemValue.Properties = make(map[string]*openapi3.SchemaRef, len(apiParam.SubParameters))
-		for _, subParam := range apiParam.SubParameters {
-			_subParam, err := toOpenapi3Schema(subParam)
-			if err != nil {
-				return nil, err
-			}
-			itemValue.Properties[subParam.Name] = &openapi3.SchemaRef{
-				Value: _subParam,
-			}
-			if subParam.IsRequired {
-				itemValue.Required = append(itemValue.Required, subParam.Name)
-			}
-		}
-
 		sc.Items = &openapi3.SchemaRef{
-			Value: itemValue,
+			Value: subParam,
 		}
 
 		return sc, nil

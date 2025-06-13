@@ -76,9 +76,9 @@ func (t ToolInfo) GetResponseOpenapiSchema() (*openapi3.Schema, error) {
 		return nil, fmt.Errorf("response status '200' not found")
 	}
 
-	mType, ok := resp.Value.Content[MIMETypeJson] // only support application/json
+	mType, ok := resp.Value.Content[MediaTypeJson] // only support application/json
 	if !ok || mType == nil || mType.Schema == nil || mType.Schema.Value == nil {
-		return nil, fmt.Errorf("media type '%s' not found in response", MIMETypeJson)
+		return nil, fmt.Errorf("media type '%s' not found in response", MediaTypeJson)
 	}
 
 	return mType.Schema.Value, nil
@@ -296,31 +296,6 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 		}
 
 		item := sc.Items.Value
-		if item.Type == openapi3.TypeObject {
-			required := slices.ToMap(item.Required, func(e string) (string, bool) {
-				return e, true
-			})
-			for subParamName, prop := range item.Properties {
-				if prop == nil || prop.Value == nil {
-					return nil, fmt.Errorf("the schema of property '%s' is required", subParamName)
-				}
-
-				subMeta := paramMetaInfo{
-					name:     subParamName,
-					desc:     prop.Value.Description,
-					location: paramMeta.location,
-					required: required[subParamName],
-				}
-				subParam, err := toAPIParameter(subMeta, prop.Value)
-				if err != nil {
-					return nil, err
-				}
-
-				apiParam.SubParameters = append(apiParam.SubParameters, subParam)
-			}
-
-			return apiParam, nil
-		}
 
 		subMeta := paramMetaInfo{
 			name:     "[Array Item]",
@@ -496,28 +471,7 @@ func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.Pl
 		item := sc.Items.Value
 		pluginParam.SubType = item.Type
 
-		if item.Type == openapi3.TypeObject {
-			required := slices.ToMap(item.Required, func(e string) (string, bool) {
-				return e, true
-			})
-			for subParamName, prop := range item.Properties {
-				if prop == nil || prop.Value == nil {
-					return nil, fmt.Errorf("the schema of property '%s' is required", subParamName)
-				}
-
-				subMeta := paramMetaInfo{
-					name:     subParamName,
-					desc:     prop.Value.Description,
-					required: required[subParamName],
-				}
-				subParam, err := toPluginParameter(subMeta, prop.Value)
-				if err != nil {
-					return nil, err
-				}
-
-				pluginParam.SubParameters = append(pluginParam.SubParameters, subParam)
-			}
-
+		if item.Type != openapi3.TypeObject {
 			return pluginParam, nil
 		}
 
@@ -529,7 +483,8 @@ func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.Pl
 		if err != nil {
 			return nil, err
 		}
-		pluginParam.SubParameters = append(pluginParam.SubParameters, subParam)
+
+		pluginParam.SubParameters = append(pluginParam.SubParameters, subParam.SubParameters...)
 
 		return pluginParam, nil
 	}

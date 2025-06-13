@@ -70,10 +70,11 @@ func (a *appServiceImpl) UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPP
 	return a.APPRepo.UpdateDraftAPP(ctx, app)
 }
 
-func (a *appServiceImpl) GetAPPPublishRecord(ctx context.Context, req *GetAPPPublishRecordRequest) (record *entity.PublishRecord, published bool, err error) {
+func (a *appServiceImpl) GetAPPPublishRecord(ctx context.Context, req *GetAPPPublishRecordRequest) (record *entity.PublishRecord, exist bool, err error) {
 	return a.APPRepo.GetPublishRecord(ctx, &repository.GetPublishRecordRequest{
 		APPID:    req.APPID,
 		RecordID: req.RecordID,
+		Oldest:   req.Oldest,
 	})
 }
 

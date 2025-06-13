@@ -61,10 +61,10 @@ require (
 	github.com/dimchansky/utfbom v1.1.1
 	github.com/extrame/xls v0.0.1
 	github.com/jinzhu/copier v0.4.0
+	github.com/mattn/go-shellwords v1.0.12
 	github.com/rbretecher/go-postman-collection v0.9.0
 	github.com/yuin/goldmark v1.4.13
 	golang.org/x/oauth2 v0.23.0
-	parse-curl v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -73,7 +73,6 @@ require (
 	github.com/extrame/ole2 v0.0.0-20160812065207-d69429661ad7 // indirect
 	github.com/frankban/quicktest v1.14.6 // indirect
 	github.com/google/btree v1.1.2 // indirect
-	github.com/mattn/go-shellwords v1.0.12 // indirect
 	github.com/meguminnnnnnnnn/go-openai v0.0.0-20250408071642-761325becfd6 // indirect
 	github.com/peterbourgon/diskv/v3 v3.0.1 // indirect
 	github.com/rogpeppe/fastuuid v1.2.0 // indirect

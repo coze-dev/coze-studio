@@ -32,6 +32,18 @@ func WithToolID() ToolSelectedOptions {
 	}
 }
 
+func WithToolMethod() ToolSelectedOptions {
+	return func(opts *dal.ToolSelectedOption) {
+		opts.ToolMethod = true
+	}
+}
+
+func WithToolSubURL() ToolSelectedOptions {
+	return func(opts *dal.ToolSelectedOption) {
+		opts.ToolSubURL = true
+	}
+}
+
 func WithToolActivatedStatus() ToolSelectedOptions {
 	return func(opts *dal.ToolSelectedOption) {
 		opts.ActivatedStatus = true

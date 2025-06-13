@@ -63,6 +63,12 @@ func (t *ToolDraftDAO) getSelected(opt *ToolSelectedOption) (selected []field.Ex
 	if opt.DebugStatus {
 		selected = append(selected, table.DebugStatus)
 	}
+	if opt.ToolMethod {
+		selected = append(selected, table.Method)
+	}
+	if opt.ToolSubURL {
+		selected = append(selected, table.SubURL)
+	}
 
 	return selected
 }

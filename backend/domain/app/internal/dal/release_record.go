@@ -94,6 +94,24 @@ func (r *ReleaseRecordDAO) GetLatestReleaseRecord(ctx context.Context, appID int
 	return app, true, nil
 }
 
+func (r *ReleaseRecordDAO) GetOldestReleaseRecord(ctx context.Context, appID int64) (app *entity.APP, exist bool, err error) {
+	table := r.query.ReleaseRecord
+	res, err := table.WithContext(ctx).
+		Where(table.AppID.Eq(appID)).
+		Order(table.PublishAt.Asc()).
+		First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, err
+	}
+
+	app = releaseRecordPO(*res).ToDO()
+
+	return app, true, nil
+}
+
 func (r *ReleaseRecordDAO) GetReleaseRecordWithID(ctx context.Context, recordID int64) (app *entity.APP, exist bool, err error) {
 	table := r.query.ReleaseRecord
 	res, err := table.WithContext(ctx).
