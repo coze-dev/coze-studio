@@ -102,7 +102,8 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				RootExecutionID:     event.RootExecuteID,
 				ParentNodeID:        parentNodeID,
 				ParentNodeExecuteID: parentNodeExecuteID,
-				NodeCount:           wb.NodeCount,
+				NodeCount:           event.nodeCount,
+				CommitID:            wb.CommitID,
 			}
 
 			if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {

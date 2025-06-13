@@ -18,6 +18,7 @@ type WorkflowExecution struct {
 	CreatedAt time.Time
 	LogID     string
 	NodeCount int32
+	CommitID  string
 
 	Status     WorkflowExecuteStatus
 	Duration   time.Duration
@@ -89,7 +90,7 @@ func (we *WorkflowExecution) GetBasic() *WorkflowBasic {
 		WorkflowIdentity: we.WorkflowIdentity,
 		SpaceID:          we.SpaceID,
 		AppID:            we.AppID,
-		NodeCount:        we.NodeCount,
+		CommitID:         we.CommitID,
 	}
 }
 

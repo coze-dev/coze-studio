@@ -131,7 +131,6 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        workflowSC.NodeCount(),
 		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
@@ -274,7 +273,6 @@ func TestDatabaseCURD(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        workflowSC.NodeCount(),
 		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
@@ -514,7 +512,6 @@ func TestHttpRequester(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        workflowSC.NodeCount(),
 		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
@@ -624,7 +621,6 @@ func TestHttpRequester(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        workflowSC.NodeCount(),
 		}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
@@ -824,7 +820,6 @@ func TestKnowledgeNodes(t *testing.T) {
 
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        workflowSC.NodeCount(),
 		}, 1, false, nil, vo.ExecuteConfig{})
 
 		assert.NoError(t, err)

@@ -894,7 +894,7 @@ func toBatchNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, 
 func toSubWorkflowNodeSchema(ctx context.Context, n *vo.Node) (*compose.NodeSchema, error) {
 	subCanvas, err := workflow.GetRepository().GetSubWorkflowCanvas(ctx, n)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse subworkflow id: %w", err)
 	}
 	subWorkflowSC, err := CanvasToWorkflowSchema(ctx, subCanvas)
 	if err != nil {

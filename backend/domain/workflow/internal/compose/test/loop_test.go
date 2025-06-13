@@ -472,7 +472,6 @@ func TestLoop(t *testing.T) {
 
 		ctx, err := execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
 			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        ws.NodeCount(),
 		}, 1, false, nil, vo.ExecuteConfig{})
 		assert.NoError(t, err)
 		ctrl := gomock.NewController(t)

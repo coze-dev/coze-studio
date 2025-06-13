@@ -51,7 +51,8 @@ type NodeSchema struct {
 
 	MetaConfigs *MetaConfig `json:"meta_configs,omitempty"` // generic configurations applicable to most nodes
 
-	SubWorkflowSchema *WorkflowSchema `json:"sub_workflow_schema,omitempty"`
+	SubWorkflowBasic  *entity.WorkflowBasic `json:"sub_workflow_basic,omitempty"`
+	SubWorkflowSchema *WorkflowSchema       `json:"sub_workflow_schema,omitempty"`
 
 	Lambda *compose.Lambda // not serializable, used for internal test.
 }

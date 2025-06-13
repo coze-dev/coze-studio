@@ -37,7 +37,8 @@ func DesignateOptions(ctx context.Context,
 		workflowSC.RequireCheckpoint(),
 		eventChan,
 		resumedEvent,
-		exeCfg)
+		exeCfg,
+		workflowSC.NodeCount())
 
 	opts := []einoCompose.Option{einoCompose.WithCallbacks(rootHandler)}
 
@@ -139,9 +140,9 @@ func designateOptionsForSubWorkflow(ctx context.Context,
 			WorkflowIdentity: *subWorkflowIdentity,
 			SpaceID:          0,   // TODO: fill this
 			AppID:            nil, // TODO: fill this
-			NodeCount:        ns.SubWorkflowSchema.NodeCount(),
 		},
 		resumeEvent,
+		ns.SubWorkflowSchema.NodeCount(),
 	)
 
 	opts = append(opts, WrapOpt(einoCompose.WithCallbacks(subHandler), ns.Key))

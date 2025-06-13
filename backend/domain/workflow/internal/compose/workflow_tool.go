@@ -80,7 +80,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 		err       error
 	)
 	if rInfo != nil {
-		cancelCtx, executeID, callOpts, _, err = Prepare(ctx, "", i.wfEntity.GetBasic(i.sc.NodeCount()),
+		cancelCtx, executeID, callOpts, _, err = Prepare(ctx, "", i.wfEntity.GetBasic(),
 			rInfo, i.repo, i.sc,
 			execute.GetIntermediateStreamWriter(opts...), cfg)
 		if err != nil {
@@ -92,7 +92,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 			return "", err
 		}
 
-		cancelCtx, executeID, callOpts, _, err = Prepare(ctx, argumentsInJSON, i.wfEntity.GetBasic(i.sc.NodeCount()),
+		cancelCtx, executeID, callOpts, _, err = Prepare(ctx, argumentsInJSON, i.wfEntity.GetBasic(),
 			nil, i.repo, i.sc,
 			execute.GetIntermediateStreamWriter(opts...), cfg)
 		if err != nil {
@@ -210,7 +210,7 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 		err       error
 	)
 	if rInfo != nil {
-		cancelCtx, executeID, callOpts, _, err = Prepare(ctx, "", s.wfEntity.GetBasic(s.sc.NodeCount()),
+		cancelCtx, executeID, callOpts, _, err = Prepare(ctx, "", s.wfEntity.GetBasic(),
 			rInfo, s.repo, s.sc,
 			execute.GetIntermediateStreamWriter(opts...), cfg)
 		if err != nil {
@@ -222,7 +222,7 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 			return nil, err
 		}
 
-		cancelCtx, executeID, callOpts, _, err = Prepare(ctx, argumentsInJSON, s.wfEntity.GetBasic(s.sc.NodeCount()),
+		cancelCtx, executeID, callOpts, _, err = Prepare(ctx, argumentsInJSON, s.wfEntity.GetBasic(),
 			nil, s.repo, s.sc,
 			execute.GetIntermediateStreamWriter(opts...), cfg)
 		if err != nil {

@@ -44,6 +44,7 @@ type WorkflowHandler struct {
 	rootWorkflowBasic *entity.WorkflowBasic
 	rootExecuteID     int64
 	subWorkflowBasic  *entity.WorkflowBasic
+	nodeCount         int32
 	requireCheckpoint bool
 	resumeEvent       *entity.InterruptEvent
 	exeCfg            vo.ExecuteConfig
@@ -66,7 +67,7 @@ func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler { 
 }
 
 func NewRootWorkflowHandler(wb *entity.WorkflowBasic, executeID int64, requireCheckpoint bool,
-	ch chan<- *Event, resumedEvent *entity.InterruptEvent, exeCfg vo.ExecuteConfig,
+	ch chan<- *Event, resumedEvent *entity.InterruptEvent, exeCfg vo.ExecuteConfig, nodeCount int32,
 ) callbacks.Handler {
 	return &WorkflowHandler{
 		ch:                ch,
@@ -75,11 +76,12 @@ func NewRootWorkflowHandler(wb *entity.WorkflowBasic, executeID int64, requireCh
 		requireCheckpoint: requireCheckpoint,
 		resumeEvent:       resumedEvent,
 		exeCfg:            exeCfg,
+		nodeCount:         nodeCount,
 	}
 }
 
 func NewSubWorkflowHandler(parent *WorkflowHandler, subWB *entity.WorkflowBasic,
-	resumedEvent *entity.InterruptEvent,
+	resumedEvent *entity.InterruptEvent, nodeCount int32,
 ) callbacks.Handler {
 	return &WorkflowHandler{
 		ch:                parent.ch,
@@ -88,6 +90,7 @@ func NewSubWorkflowHandler(parent *WorkflowHandler, subWB *entity.WorkflowBasic,
 		requireCheckpoint: parent.requireCheckpoint,
 		subWorkflowBasic:  subWB,
 		resumeEvent:       resumedEvent,
+		nodeCount:         nodeCount,
 	}
 }
 
@@ -237,9 +240,10 @@ func (w *WorkflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, 
 
 	c := GetExeCtx(newCtx)
 	w.ch <- &Event{
-		Type:    WorkflowStart,
-		Context: c,
-		Input:   input.(map[string]any),
+		Type:      WorkflowStart,
+		Context:   c,
+		Input:     input.(map[string]any),
+		nodeCount: w.nodeCount,
 	}
 
 	return newCtx
@@ -476,9 +480,10 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 	}
 	c := GetExeCtx(newCtx)
 	w.ch <- &Event{
-		Type:    WorkflowStart,
-		Context: c,
-		Input:   fullInput,
+		Type:      WorkflowStart,
+		Context:   c,
+		Input:     fullInput,
+		nodeCount: w.nodeCount,
 	}
 	return newCtx
 }

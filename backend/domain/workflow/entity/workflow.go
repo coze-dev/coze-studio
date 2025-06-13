@@ -68,19 +68,19 @@ const (
 
 type WorkflowBasic struct {
 	WorkflowIdentity
-	SpaceID   int64
-	AppID     *int64
-	NodeCount int32
+	SpaceID  int64
+	AppID    *int64
+	CommitID string
 }
 
-func (w *Workflow) GetBasic(nodeCount int32) *WorkflowBasic {
+func (w *Workflow) GetBasic() *WorkflowBasic {
 	return &WorkflowBasic{
 		WorkflowIdentity: WorkflowIdentity{
 			ID:      w.ID,
 			Version: w.Version,
 		},
-		SpaceID:   w.SpaceID,
-		AppID:     w.AppID,
-		NodeCount: nodeCount,
+		SpaceID:  w.SpaceID,
+		AppID:    w.AppID,
+		CommitID: w.CommitID,
 	}
 }

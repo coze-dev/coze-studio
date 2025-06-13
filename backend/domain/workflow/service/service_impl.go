@@ -666,7 +666,7 @@ func (i *impl) SyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdent
 	if err != nil {
 		return nil, "", err
 	}
-	cancelCtx, executeID, opts, lastEventChan, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(workflowSC.NodeCount()),
+	cancelCtx, executeID, opts, lastEventChan, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(),
 		nil, i.repo, workflowSC, nil, config)
 	if err != nil {
 		return nil, "", err
@@ -790,7 +790,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 	if err != nil {
 		return 0, nil, err
 	}
-	cancelCtx, executeID, opts, _, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(workflowSC.NodeCount()),
+	cancelCtx, executeID, opts, _, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(),
 		nil, i.repo, workflowSC, nil, config)
 	if err != nil {
 		return 0, nil, err
@@ -804,7 +804,7 @@ func (i *impl) AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIden
 
 	wf.AsyncRun(cancelCtx, convertedInput, opts...)
 
-	return executeID, wfEntity.GetBasic(workflowSC.NodeCount()), nil
+	return executeID, wfEntity.GetBasic(), nil
 }
 
 func (i *impl) AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]any, config vo.ExecuteConfig) (int64, error) {
@@ -848,7 +848,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity
 	if err != nil {
 		return 0, err
 	}
-	cancelCtx, executeID, opts, _, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(newSC.NodeCount()),
+	cancelCtx, executeID, opts, _, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(),
 		nil, i.repo, newSC, nil, config)
 	if err != nil {
 		return 0, err
@@ -922,7 +922,7 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 
 	sr, sw := schema.Pipe[*entity.Message](10)
 
-	cancelCtx, executeID, opts, _, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(workflowSC.NodeCount()),
+	cancelCtx, executeID, opts, _, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(),
 		nil, i.repo, workflowSC, sw, config)
 	if err != nil {
 		return nil, err
