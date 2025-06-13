@@ -20,4 +20,5 @@ type DraftInfo struct {
 	OutputParams   string
 	CreatedAt      int64
 	UpdatedAt      int64
+	CommitID       string
 }

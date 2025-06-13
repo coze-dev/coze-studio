@@ -21,6 +21,7 @@ type WorkflowDraft struct {
 	CreatedAt      int64          `gorm:"column:created_at;not null;autoCreateTime:milli" json:"created_at"`
 	UpdatedAt      int64          `gorm:"column:updated_at;autoUpdateTime:milli" json:"updated_at"`
 	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
+	CommitID       string         `gorm:"column:commit_id;not null;comment:used to uniquely identify a draft snapshot" json:"commit_id"` // used to uniquely identify a draft snapshot
 }
 
 // TableName WorkflowDraft's table name

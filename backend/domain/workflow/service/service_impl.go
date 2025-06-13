@@ -240,7 +240,13 @@ func (i *impl) SaveWorkflow(ctx context.Context, draft *entity.Workflow) error {
 		return err
 	}
 
-	return i.repo.CreateOrUpdateDraft(ctx, draft.ID, *draft.Canvas, inputParams, outputParams, resetTestRun)
+	cID, err := i.repo.GenID(ctx)
+	if err != nil {
+		return err
+	}
+
+	return i.repo.CreateOrUpdateDraft(ctx, draft.ID, *draft.Canvas, inputParams, outputParams, resetTestRun,
+		strconv.FormatInt(cID, 10))
 }
 
 func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeInfo, outputs []*vo.NamedTypeInfo) {
@@ -333,6 +339,7 @@ func (i *impl) GetWorkflowDraft(ctx context.Context, id int64) (*entity.Workflow
 	outputParamsStr = draft.OutputParams
 	wf.TestRunSuccess = draft.TestRunSuccess
 	wf.Modified = draft.Modified
+	wf.CommitID = draft.CommitID
 
 	// 3. Unmarshal parameters if they exist
 	if inputParamsStr != "" {

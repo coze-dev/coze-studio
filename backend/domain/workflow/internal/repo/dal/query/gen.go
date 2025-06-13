@@ -22,6 +22,7 @@ var (
 	WorkflowExecution *workflowExecution
 	WorkflowMeta      *workflowMeta
 	WorkflowReference *workflowReference
+	WorkflowSnapshot  *workflowSnapshot
 	WorkflowVersion   *workflowVersion
 )
 
@@ -32,6 +33,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	WorkflowExecution = &Q.WorkflowExecution
 	WorkflowMeta = &Q.WorkflowMeta
 	WorkflowReference = &Q.WorkflowReference
+	WorkflowSnapshot = &Q.WorkflowSnapshot
 	WorkflowVersion = &Q.WorkflowVersion
 }
 
@@ -43,6 +45,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		WorkflowExecution: newWorkflowExecution(db, opts...),
 		WorkflowMeta:      newWorkflowMeta(db, opts...),
 		WorkflowReference: newWorkflowReference(db, opts...),
+		WorkflowSnapshot:  newWorkflowSnapshot(db, opts...),
 		WorkflowVersion:   newWorkflowVersion(db, opts...),
 	}
 }
@@ -55,6 +58,7 @@ type Query struct {
 	WorkflowExecution workflowExecution
 	WorkflowMeta      workflowMeta
 	WorkflowReference workflowReference
+	WorkflowSnapshot  workflowSnapshot
 	WorkflowVersion   workflowVersion
 }
 
@@ -68,6 +72,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		WorkflowExecution: q.WorkflowExecution.clone(db),
 		WorkflowMeta:      q.WorkflowMeta.clone(db),
 		WorkflowReference: q.WorkflowReference.clone(db),
+		WorkflowSnapshot:  q.WorkflowSnapshot.clone(db),
 		WorkflowVersion:   q.WorkflowVersion.clone(db),
 	}
 }
@@ -88,6 +93,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		WorkflowExecution: q.WorkflowExecution.replaceDB(db),
 		WorkflowMeta:      q.WorkflowMeta.replaceDB(db),
 		WorkflowReference: q.WorkflowReference.replaceDB(db),
+		WorkflowSnapshot:  q.WorkflowSnapshot.replaceDB(db),
 		WorkflowVersion:   q.WorkflowVersion.replaceDB(db),
 	}
 }
@@ -98,6 +104,7 @@ type queryCtx struct {
 	WorkflowExecution IWorkflowExecutionDo
 	WorkflowMeta      IWorkflowMetaDo
 	WorkflowReference IWorkflowReferenceDo
+	WorkflowSnapshot  IWorkflowSnapshotDo
 	WorkflowVersion   IWorkflowVersionDo
 }
 
@@ -108,6 +115,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		WorkflowExecution: q.WorkflowExecution.WithContext(ctx),
 		WorkflowMeta:      q.WorkflowMeta.WithContext(ctx),
 		WorkflowReference: q.WorkflowReference.WithContext(ctx),
+		WorkflowSnapshot:  q.WorkflowSnapshot.WithContext(ctx),
 		WorkflowVersion:   q.WorkflowVersion.WithContext(ctx),
 	}
 }

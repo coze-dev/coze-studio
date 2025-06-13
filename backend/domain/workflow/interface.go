@@ -65,7 +65,8 @@ type Repository interface {
 	GenID(ctx context.Context) (int64, error)
 	CreateWorkflowMeta(ctx context.Context, wf *entity.Workflow, ref *entity.WorkflowReference) (int64, error)
 	CreateWorkflowVersion(ctx context.Context, wid int64, v *vo.VersionInfo) (int64, error)
-	CreateOrUpdateDraft(ctx context.Context, id int64, canvas, inputParams, outputParams string, resetTestRun bool) error
+	CreateOrUpdateDraft(ctx context.Context, id int64, canvas, inputParams, outputParams string, resetTestRun bool,
+		commitID string) error
 	DeleteWorkflow(ctx context.Context, id int64) error
 	BatchDeleteWorkflow(ctx context.Context, ids []int64) error
 	GetWorkflowMeta(ctx context.Context, id int64) (*entity.Workflow, error)

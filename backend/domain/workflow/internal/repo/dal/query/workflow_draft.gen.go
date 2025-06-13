@@ -36,6 +36,7 @@ func newWorkflowDraft(db *gorm.DB, opts ...gen.DOOption) workflowDraft {
 	_workflowDraft.CreatedAt = field.NewInt64(tableName, "created_at")
 	_workflowDraft.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_workflowDraft.DeletedAt = field.NewField(tableName, "deleted_at")
+	_workflowDraft.CommitID = field.NewString(tableName, "commit_id")
 
 	_workflowDraft.fillFieldMap()
 
@@ -55,6 +56,7 @@ type workflowDraft struct {
 	CreatedAt      field.Int64
 	UpdatedAt      field.Int64
 	DeletedAt      field.Field
+	CommitID       field.String // used to uniquely identify a draft snapshot
 
 	fieldMap map[string]field.Expr
 }
@@ -80,6 +82,7 @@ func (w *workflowDraft) updateTableName(table string) *workflowDraft {
 	w.CreatedAt = field.NewInt64(table, "created_at")
 	w.UpdatedAt = field.NewInt64(table, "updated_at")
 	w.DeletedAt = field.NewField(table, "deleted_at")
+	w.CommitID = field.NewString(table, "commit_id")
 
 	w.fillFieldMap()
 
@@ -96,7 +99,7 @@ func (w *workflowDraft) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (w *workflowDraft) fillFieldMap() {
-	w.fieldMap = make(map[string]field.Expr, 9)
+	w.fieldMap = make(map[string]field.Expr, 10)
 	w.fieldMap["id"] = w.ID
 	w.fieldMap["canvas"] = w.Canvas
 	w.fieldMap["input_params"] = w.InputParams
@@ -106,6 +109,7 @@ func (w *workflowDraft) fillFieldMap() {
 	w.fieldMap["created_at"] = w.CreatedAt
 	w.fieldMap["updated_at"] = w.UpdatedAt
 	w.fieldMap["deleted_at"] = w.DeletedAt
+	w.fieldMap["commit_id"] = w.CommitID
 }
 
 func (w workflowDraft) clone(db *gorm.DB) workflowDraft {

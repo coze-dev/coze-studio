@@ -26,7 +26,6 @@ type Workflow struct {
 	SourceID    *int64
 	AuthorID    int64
 	VersionDesc string
-	// BaseVersion *string TODO: may need to provide relationships between versions, such as to know which version is the latest
 
 	Stage
 	Name      string
@@ -51,6 +50,8 @@ type Workflow struct {
 	HasPublished      bool
 	LatestVersion     string
 	LatestVersionDesc string
+
+	CommitID string
 }
 
 type WorkflowIdentity struct {

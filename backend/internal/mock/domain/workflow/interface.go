@@ -13,16 +13,15 @@ import (
 	context "context"
 	reflect "reflect"
 
+	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
+	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	tool "github.com/cloudwego/eino/components/tool"
 	compose "github.com/cloudwego/eino/compose"
 	schema "github.com/cloudwego/eino/schema"
 	redis "github.com/redis/go-redis/v9"
 	gomock "go.uber.org/mock/gomock"
-
-	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
-	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 // MockService is a mock of Service interface.
@@ -698,17 +697,17 @@ func (mr *MockRepositoryMockRecorder) CreateNodeExecution(ctx, execution any) *g
 }
 
 // CreateOrUpdateDraft mocks base method.
-func (m *MockRepository) CreateOrUpdateDraft(ctx context.Context, id int64, canvas, inputParams, outputParams string, resetTestRun bool) error {
+func (m *MockRepository) CreateOrUpdateDraft(ctx context.Context, id int64, canvas, inputParams, outputParams string, resetTestRun bool, commitID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateOrUpdateDraft", ctx, id, canvas, inputParams, outputParams, resetTestRun)
+	ret := m.ctrl.Call(m, "CreateOrUpdateDraft", ctx, id, canvas, inputParams, outputParams, resetTestRun, commitID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateOrUpdateDraft indicates an expected call of CreateOrUpdateDraft.
-func (mr *MockRepositoryMockRecorder) CreateOrUpdateDraft(ctx, id, canvas, inputParams, outputParams, resetTestRun any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) CreateOrUpdateDraft(ctx, id, canvas, inputParams, outputParams, resetTestRun, commitID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateDraft", reflect.TypeOf((*MockRepository)(nil).CreateOrUpdateDraft), ctx, id, canvas, inputParams, outputParams, resetTestRun)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateDraft", reflect.TypeOf((*MockRepository)(nil).CreateOrUpdateDraft), ctx, id, canvas, inputParams, outputParams, resetTestRun, commitID)
 }
 
 // CreateWorkflowExecution mocks base method.

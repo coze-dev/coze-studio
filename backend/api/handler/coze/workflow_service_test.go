@@ -1150,7 +1150,7 @@ func TestQueryTypes(t *testing.T) {
 		t.Run("not sub workflow", func(t *testing.T) {
 			mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
 				return time.Now().UnixNano(), nil
-			}).Times(1)
+			}).AnyTimes()
 
 			idStr := loadWorkflow(t, h, "query_types/llm_intent_http_nodes.json")
 
@@ -1184,7 +1184,7 @@ func TestQueryTypes(t *testing.T) {
 		t.Run("loop conditions", func(t *testing.T) {
 			mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
 				return time.Now().UnixNano(), nil
-			}).Times(1)
+			}).AnyTimes()
 
 			idStr := loadWorkflow(t, h, "query_types/loop_condition.json")
 
@@ -1507,27 +1507,27 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 			}
 		}).AnyTimes()
 
-		mockIDGen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).Times(1)
+		mockIDGen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).Times(3)
 		topIDStr := loadWorkflow(t, h, "subworkflow/top_workflow.json")
 
 		midIDStr := "7494849202016272435"
 		_, err := appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 7494849202016272435)
 		if err != nil {
-			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7494849202016272435), nil).Times(1)
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7494849202016272435), nil).Times(3)
 			_ = loadWorkflow(t, h, "subworkflow/middle_workflow.json")
 		}
 
 		bottomIDStr := "7468899413567684634"
 		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 7468899413567684634)
 		if err != nil {
-			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7468899413567684634), nil).Times(1)
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7468899413567684634), nil).Times(3)
 			_ = loadWorkflow(t, h, "subworkflow/bottom_workflow.json")
 		}
 
 		inputIDStr := "7469607842648457243"
 		_, err = appworkflow.GetWorkflowDomainSVC().GetWorkflowDraft(context.Background(), 7469607842648457243)
 		if err != nil {
-			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7469607842648457243), nil).Times(1)
+			mockIDGen.EXPECT().GenID(gomock.Any()).Return(int64(7469607842648457243), nil).Times(3)
 			_ = loadWorkflow(t, h, "input_receiver.json")
 		}
 
@@ -3025,7 +3025,7 @@ func TestListWorkflowAsToolData(t *testing.T) {
 		id := time.Now().UnixMilli()
 		idStr := strconv.FormatInt(id, 10)
 
-		mockIDGen.EXPECT().GenID(gomock.Any()).Return(id, nil).Times(1)
+		mockIDGen.EXPECT().GenID(gomock.Any()).Return(id, nil).Times(3)
 
 		loadWorkflowWithWorkflowName(t, h, "pb_wf"+idStr, "publish/publish_workflow.json")
 
@@ -3078,7 +3078,7 @@ func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 		id := time.Now().UnixMilli()
 		idStr := strconv.FormatInt(id, 10)
 
-		mockIDGen.EXPECT().GenID(gomock.Any()).Return(id, nil).Times(1)
+		mockIDGen.EXPECT().GenID(gomock.Any()).Return(id, nil).Times(3)
 
 		loadWorkflowWithWorkflowName(t, h, "pb_wf"+idStr, "publish/publish_workflow.json")
 

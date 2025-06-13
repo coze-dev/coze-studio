@@ -3,6 +3,8 @@ package compose
 import (
 	"context"
 	"fmt"
+	"maps"
+	"slices"
 
 	"github.com/bytedance/sonic"
 
@@ -77,7 +79,6 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 			}
 
 			if v != nil && tInfo.Type == vo.DataTypeArray {
-
 				val, ok := v.([]any)
 				if !ok {
 					valStr, ok := v.(string)
@@ -92,25 +93,31 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 					}
 				}
 				elemTInfo := tInfo.ElemTypeInfo
-				for i := range val {
-					if val[i] == nil {
+				copiedVal := slices.Clone(val)
+				container[k] = copiedVal
+				for i := range copiedVal {
+					if copiedVal[i] == nil {
 						if strategy == fillZero {
-							val[i] = elemTInfo.Zero()
+							copiedVal[i] = elemTInfo.Zero()
 							continue
 						}
 					}
 
 					if len(elemTInfo.Properties) > 0 {
-						subContainer, ok := val[i].(map[string]any)
+						subContainer, ok := copiedVal[i].(map[string]any)
 						if !ok {
 							return fmt.Errorf("map item under array %s is not map[string]any", k)
 						}
 
+						newSubContainer := maps.Clone(subContainer)
+
 						for subK, subL := range elemTInfo.Properties {
-							if err := fillIfNotRequired(subL, subContainer, subK, strategy); err != nil {
+							if err := fillIfNotRequired(subL, newSubContainer, subK, strategy); err != nil {
 								return err
 							}
 						}
+
+						copiedVal[i] = newSubContainer
 					}
 				}
 			}
@@ -130,11 +137,15 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 					return fmt.Errorf("layer field %s is not a map[string]any or string", k)
 				}
 			}
+
+			newSubContainer := maps.Clone(subContainer)
 			for subK, subT := range tInfo.Properties {
-				if err := fillIfNotRequired(subT, subContainer, subK, strategy); err != nil {
+				if err := fillIfNotRequired(subT, newSubContainer, subK, strategy); err != nil {
 					return err
 				}
 			}
+
+			container[k] = newSubContainer
 		}
 	} else {
 		if tInfo.Required {

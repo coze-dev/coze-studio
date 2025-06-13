@@ -305,7 +305,9 @@ func (w *ApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetC
 			PersistenceModel: workflow.PersistenceModel_DB,
 		},
 		VcsData: &workflow.VCSCanvasData{
-			Type: vcsType,
+			SubmitCommitID: wf.CommitID,
+			DraftCommitID:  wf.CommitID,
+			Type:           vcsType,
 		},
 		WorkflowVersion: &wf.LatestVersion, // TODO: now if you have published it, return to the
 	}

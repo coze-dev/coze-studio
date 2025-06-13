@@ -237,13 +237,14 @@ func (r *RepositoryImpl) CreateWorkflowVersion(ctx context.Context, wfID int64, 
 	return wfID, nil
 }
 
-func (r *RepositoryImpl) CreateOrUpdateDraft(ctx context.Context, id int64, canvas string, inputParams, outputParams string, resetTestRun bool) error {
+func (r *RepositoryImpl) CreateOrUpdateDraft(ctx context.Context, id int64, canvas string, inputParams, outputParams string, resetTestRun bool, commitID string) error {
 	d := &model2.WorkflowDraft{
 		ID:           id,
 		Canvas:       canvas,
 		InputParams:  inputParams,
 		OutputParams: outputParams,
 		Modified:     true,
+		CommitID:     commitID,
 	}
 
 	workflowDraftDao := r.query.WorkflowDraft.WithContext(ctx)
@@ -431,6 +432,7 @@ func (r *RepositoryImpl) GetWorkflowDraft(ctx context.Context, id int64) (*vo.Dr
 		OutputParams:   draft.OutputParams,
 		CreatedAt:      draft.CreatedAt,
 		UpdatedAt:      draft.UpdatedAt,
+		CommitID:       draft.CommitID,
 	}, nil
 }
 

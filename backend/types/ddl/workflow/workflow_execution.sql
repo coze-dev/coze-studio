@@ -25,5 +25,6 @@ CREATE TABLE IF NOT EXISTS `workflow_execution` (
     resume_event_id   bigint unsigned    null comment 'the current event ID which is resuming',
     agent_id          bigint unsigned    null comment 'the agent that this execution binds to',
     sync_pattern      tinyint unsigned    null comment 'the sync pattern 1. sync 2. async 3. stream',
+    commit_id varchar(255) DEFAULT NULL COMMENT 'draft commit id this execution belongs to',
     KEY `idx_workflow_id_version_mode_created_at` (workflow_id, version, mode, created_at)
 );
