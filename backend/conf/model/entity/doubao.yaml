@@ -21,7 +21,7 @@ default_parameters:
       widget: slider
       label: 生成随机性
   -
-    name: max_token
+    name: max_tokens
     label: 最大回复长度
     desc: '控制模型输出的Tokens 长度上限。通常 100 Tokens 约等于 150 个中文汉字。'
     type: int
