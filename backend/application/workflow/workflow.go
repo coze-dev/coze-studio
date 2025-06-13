@@ -342,6 +342,7 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 		ConnectorID:  consts.CozeConnectorID,
 		ConnectorUID: strconv.FormatInt(uID, 10),
 		TaskType:     vo.TaskTypeForeground,
+		SyncPattern:  vo.SyncPatternAsync,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -400,6 +401,7 @@ func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.Workfl
 		ConnectorID:  consts.CozeConnectorID,
 		ConnectorUID: strconv.FormatInt(uID, 10),
 		TaskType:     vo.TaskTypeForeground,
+		SyncPattern:  vo.SyncPatternAsync,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -443,7 +445,7 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 		}
 	}
 
-	wfExeEntity, err := GetWorkflowDomainSVC().GetExecution(ctx, wfExeEntity)
+	wfExeEntity, err := GetWorkflowDomainSVC().GetExecution(ctx, wfExeEntity, true)
 	if err != nil {
 		return nil, err
 	}
@@ -868,6 +870,9 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 
 func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow.OpenAPIRunFlowRequest) (
 	*schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], error) {
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	userID := apiKeyInfo.UserID
+
 	parameters := make(map[string]any)
 	if req.Parameters != nil {
 		err := sonic.UnmarshalString(*req.Parameters, &parameters)
@@ -880,14 +885,26 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 		ID: mustParseInt64(req.GetWorkflowID()),
 	}
 
+	var (
+		wf  *entity.Workflow
+		err error
+	)
 	if req.Version != nil {
 		wfIdentity.Version = *req.Version
+		wf, err = GetWorkflowDomainSVC().GetWorkflowVersion(ctx, wfIdentity)
+		if err != nil {
+			return nil, err
+		}
 	} else {
-		wf, err := GetWorkflowDomainSVC().GetWorkflowLatestVersion(ctx, wfIdentity.ID)
+		wf, err = GetWorkflowDomainSVC().GetWorkflowLatestVersion(ctx, wfIdentity.ID)
 		if err != nil {
 			return nil, err
 		}
 		wfIdentity.Version = wf.Version
+	}
+
+	if err = checkUserSpace(ctx, userID, wf.SpaceID); err != nil {
+		return nil, err
 	}
 
 	var appID, agentID *int64
@@ -903,8 +920,6 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 		connectorID = mustParseInt64(req.GetConnectorID())
 	}
 
-	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
-	userID := apiKeyInfo.UserID
 	if connectorID != consts.WebSDKConnectorID {
 		connectorID = apiKeyInfo.ConnectorID
 	}
@@ -917,6 +932,7 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 		ConnectorID:  connectorID,
 		ConnectorUID: strconv.FormatInt(userID, 10),
 		TaskType:     vo.TaskTypeForeground,
+		SyncPattern:  vo.SyncPatternStream,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -992,10 +1008,18 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 		ID: mustParseInt64(req.GetWorkflowID()),
 	}
 
+	var (
+		wf  *entity.Workflow
+		err error
+	)
 	if req.Version != nil {
 		wfIdentity.Version = *req.Version
+		wf, err = GetWorkflowDomainSVC().GetWorkflowVersion(ctx, wfIdentity)
+		if err != nil {
+			return nil, err
+		}
 	} else {
-		wf, err := GetWorkflowDomainSVC().GetWorkflowLatestVersion(ctx, wfIdentity.ID)
+		wf, err = GetWorkflowDomainSVC().GetWorkflowLatestVersion(ctx, wfIdentity.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -1017,6 +1041,11 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
+
+	if err = checkUserSpace(ctx, userID, wf.SpaceID); err != nil {
+		return nil, err
+	}
+
 	if connectorID != consts.WebSDKConnectorID {
 		connectorID = apiKeyInfo.ConnectorID
 	}
@@ -1036,6 +1065,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	}
 
 	if req.GetIsAsync() {
+		exeCfg.SyncPattern = vo.SyncPatternAsync
 		exeID, wfBasic, err := GetWorkflowDomainSVC().AsyncExecuteWorkflow(ctx, wfIdentity, parameters, exeCfg)
 		if err != nil {
 			return nil, err
@@ -1047,6 +1077,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 		}, nil
 	}
 
+	exeCfg.SyncPattern = vo.SyncPatternSync
 	wfExe, tPlan, err := GetWorkflowDomainSVC().SyncExecuteWorkflow(ctx, wfIdentity, parameters, exeCfg)
 	if err != nil {
 		return nil, err
@@ -1081,6 +1112,64 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 		Token:     ptr.Of(wfExe.TokenInfo.InputTokens + wfExe.TokenInfo.OutputTokens),
 		Cost:      ptr.Of("0.00000"),
 	}, nil
+}
+
+func (w *ApplicationService) OpenAPIGetWorkflowRunHistory(ctx context.Context, req *workflow.GetWorkflowRunHistoryRequest) (
+	*workflow.GetWorkflowRunHistoryResponse, error) {
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	userID := apiKeyInfo.UserID
+
+	exe, err := GetWorkflowDomainSVC().GetExecution(ctx, &entity.WorkflowExecution{
+		ID: mustParseInt64(req.GetExecuteID()),
+	}, false)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = checkUserSpace(ctx, userID, exe.SpaceID); err != nil {
+		return nil, err
+	}
+
+	var updateTime *int64
+	if exe.UpdatedAt != nil {
+		updateTime = ptr.Of(exe.UpdatedAt.Unix())
+	}
+
+	var runMode *workflow.WorkflowRunMode
+	switch exe.SyncPattern {
+	case vo.SyncPatternSync:
+		runMode = ptr.Of(workflow.WorkflowRunMode_Sync)
+	case vo.SyncPatternAsync:
+		runMode = ptr.Of(workflow.WorkflowRunMode_Async)
+	case vo.SyncPatternStream:
+		runMode = ptr.Of(workflow.WorkflowRunMode_Stream)
+	default:
+	}
+
+	res := &workflow.GetWorkflowRunHistoryResponse{
+		Data: []*workflow.WorkflowExecuteHistory{
+			{
+				ExecuteID:     ptr.Of(exe.ID),
+				ExecuteStatus: ptr.Of(workflow.WorkflowExeStatus(exe.Status).String()),
+				BotID:         exe.AgentID,
+				ConnectorID:   ptr.Of(exe.ConnectorID),
+				ConnectorUID:  ptr.Of(exe.ConnectorUID),
+				RunMode:       runMode,
+				LogID:         ptr.Of(exe.LogID),
+				CreateTime:    ptr.Of(exe.CreatedAt.Unix()),
+				UpdateTime:    updateTime,
+				DebugUrl:      ptr.Of(fmt.Sprintf(debugURLTpl, exe.ID, exe.SpaceID, exe.WorkflowIdentity.ID)),
+				Input:         exe.Input,
+				Output:        exe.Output,
+				Token:         ptr.Of(exe.TokenInfo.InputTokens + exe.TokenInfo.OutputTokens),
+				Cost:          ptr.Of("0.00000"),
+				ErrorCode:     exe.ErrorCode,
+				ErrorMsg:      exe.FailReason,
+			},
+		},
+	}
+
+	return res, nil
 }
 
 func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.ValidateTreeRequest) (*workflow.ValidateTreeResponse, error) {

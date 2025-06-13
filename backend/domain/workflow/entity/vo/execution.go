@@ -8,6 +8,7 @@ type ExecuteConfig struct {
 	ConnectorID  int64
 	ConnectorUID string
 	TaskType     TaskType
+	SyncPattern  SyncPattern
 }
 
 type ExecuteMode string
@@ -23,4 +24,12 @@ type TaskType string
 const (
 	TaskTypeForeground TaskType = "foreground"
 	TaskTypeBackground TaskType = "background"
+)
+
+type SyncPattern string
+
+const (
+	SyncPatternSync   SyncPattern = "sync"
+	SyncPatternAsync  SyncPattern = "async"
+	SyncPatternStream SyncPattern = "stream"
 )

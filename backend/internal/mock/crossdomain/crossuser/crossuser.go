@@ -13,8 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	crossuser "code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
 	gomock "go.uber.org/mock/gomock"
+
+	crossuser "code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
 )
 
 // MockUser is a mock of User interface.

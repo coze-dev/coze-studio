@@ -498,6 +498,17 @@ func (r *RepositoryImpl) CreateWorkflowExecution(ctx context.Context, execution 
 		mode = 3
 	}
 
+	var syncPattern int32
+	switch execution.SyncPattern {
+	case vo.SyncPatternSync:
+		syncPattern = 1
+	case vo.SyncPatternAsync:
+		syncPattern = 2
+	case vo.SyncPatternStream:
+		syncPattern = 3
+	default:
+	}
+
 	wfExec := &model2.WorkflowExecution{
 		ID:              execution.ID,
 		WorkflowID:      execution.WorkflowIdentity.ID,
@@ -514,6 +525,7 @@ func (r *RepositoryImpl) CreateWorkflowExecution(ctx context.Context, execution 
 		ConnectorID:     execution.ConnectorID,
 		ConnectorUID:    execution.ConnectorUID,
 		NodeCount:       execution.NodeCount,
+		SyncPattern:     syncPattern,
 	}
 
 	if execution.ParentNodeID == nil {
@@ -632,6 +644,17 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 		exeMode = vo.ExecuteModeNodeDebug
 	}
 
+	var syncPattern vo.SyncPattern
+	switch rootExe.SyncPattern {
+	case 1:
+		syncPattern = vo.SyncPatternSync
+	case 2:
+		syncPattern = vo.SyncPatternAsync
+	case 3:
+		syncPattern = vo.SyncPatternStream
+	default:
+	}
+
 	exe := &entity.WorkflowExecution{
 		ID: rootExe.ID,
 		WorkflowIdentity: entity.WorkflowIdentity{
@@ -646,6 +669,7 @@ func (r *RepositoryImpl) GetWorkflowExecution(ctx context.Context, id int64) (*e
 			AgentID:      ternary.IFElse(rootExe.AgentID > 0, ptr.Of(rootExe.AgentID), nil),
 			ConnectorID:  rootExe.ConnectorID,
 			ConnectorUID: rootExe.ConnectorUID,
+			SyncPattern:  syncPattern,
 		},
 		CreatedAt:  time.UnixMilli(rootExe.CreatedAt),
 		LogID:      rootExe.LogID,

@@ -66,6 +66,7 @@ func init() {
 	_ = compose.RegisterSerializableType[vo.ExecuteConfig]("execute_config")
 	_ = compose.RegisterSerializableType[vo.ExecuteMode]("execute_mode")
 	_ = compose.RegisterSerializableType[vo.TaskType]("task_type")
+	_ = compose.RegisterSerializableType[vo.SyncPattern]("sync_pattern")
 }
 
 func (s *State) SetAppVariableValue(key string, value any) {

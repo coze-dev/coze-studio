@@ -33,6 +33,7 @@ type WorkflowExecution struct {
 	NodeCount       int32  `gorm:"column:node_count;comment:the total node count of the workflow" json:"node_count"`                                       // the total node count of the workflow
 	ResumeEventID   int64  `gorm:"column:resume_event_id;comment:the current event ID which is resuming" json:"resume_event_id"`                           // the current event ID which is resuming
 	AgentID         int64  `gorm:"column:agent_id;comment:the agent that this execution binds to" json:"agent_id"`                                         // the agent that this execution binds to
+	SyncPattern     int32  `gorm:"column:sync_pattern;comment:the sync pattern 1. sync 2. async 3. stream" json:"sync_pattern"`                            // the sync pattern 1. sync 2. async 3. stream
 }
 
 // TableName WorkflowExecution's table name

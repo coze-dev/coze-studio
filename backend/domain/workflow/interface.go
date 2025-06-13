@@ -29,7 +29,7 @@ type Service interface {
 		*entity.WorkflowExecution, vo.TerminatePlan, error)
 	AsyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (int64, *entity.WorkflowBasic, error)
 	AsyncExecuteNode(ctx context.Context, id *entity.WorkflowIdentity, nodeID string, input map[string]any, config vo.ExecuteConfig) (int64, error)
-	GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error)
+	GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution, includeNodes bool) (*entity.WorkflowExecution, error)
 	GetNodeExecution(ctx context.Context, exeID int64, nodeID string) (*entity.NodeExecution, *entity.NodeExecution, error)
 	GetLatestTestRunInput(ctx context.Context, wfID int64, userID int64) (*entity.NodeExecution, bool, error)
 	GetLatestNodeDebugInput(ctx context.Context, wfID int64, nodeID string, userID int64) (

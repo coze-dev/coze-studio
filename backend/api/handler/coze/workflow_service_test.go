@@ -109,6 +109,7 @@ func prepareWorkflowIntegration(t *testing.T, needMockIDGen bool) (*server.Hertz
 	h.POST("/api/workflow_api/copy", CopyWorkflow)
 	h.POST("/api/workflow_api/batch_delete", BatchDeleteWorkflow)
 	h.POST("/api/workflow_api/node_type", QueryWorkflowNodeTypes)
+	h.GET("/v1/workflow/get_run_history", OpenAPIGetWorkflowRunHistory)
 
 	ctrl := gomock.NewController(t)
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -345,6 +346,18 @@ func getNodeExeHistory(t *testing.T, h *server.Hertz, idStr string, exeID string
 	return getNodeResultResp.Data
 }
 
+func getOpenAPIProcess(t *testing.T, h *server.Hertz, idStr string, exeID string) *workflow.GetWorkflowRunHistoryResponse {
+	w := ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/v1/workflow/get_run_history?workflow_id=%s&execute_id=%s", idStr, exeID), nil,
+		ut.Header{Key: "Content-Type", Value: "application/json"})
+	res := w.Result()
+	assert.Equal(t, http.StatusOK, res.StatusCode())
+	getProcessResp := &workflow.GetWorkflowRunHistoryResponse{}
+	err := sonic.Unmarshal(res.Body(), getProcessResp)
+	assert.NoError(t, err)
+
+	return getProcessResp
+}
+
 func mustUnmarshalToMap(t *testing.T, s string) map[string]any {
 	r := make(map[string]any)
 	err := sonic.UnmarshalString(s, &r)
@@ -570,6 +583,14 @@ func TestTestRunAndGetProcess(t *testing.T) {
 		err := sonic.UnmarshalString(output, &m)
 		assert.NoError(t, err)
 		assert.Equal(t, "1.0_['1234', '5678']", m["data"])
+
+		his := getOpenAPIProcess(t, h, idStr, runResp.GetExecuteID())
+		assert.Equal(t, runResp.GetExecuteID(), fmt.Sprintf("%d", *his.Data[0].ExecuteID))
+		assert.Equal(t, workflow.WorkflowRunMode_Sync, *his.Data[0].RunMode)
+
+		his = getOpenAPIProcess(t, h, idStr, testRunResp.Data.ExecuteID)
+		assert.Equal(t, testRunResp.Data.ExecuteID, fmt.Sprintf("%d", *his.Data[0].ExecuteID))
+		assert.Equal(t, workflow.WorkflowRunMode_Async, *his.Data[0].RunMode)
 	})
 }
 

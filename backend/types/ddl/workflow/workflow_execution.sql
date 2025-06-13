@@ -24,5 +24,6 @@ CREATE TABLE IF NOT EXISTS `workflow_execution` (
     node_count mediumint unsigned null comment 'the total node count of the workflow',
     resume_event_id   bigint unsigned    null comment 'the current event ID which is resuming',
     agent_id          bigint unsigned    null comment 'the agent that this execution binds to',
+    sync_pattern      tinyint unsigned    null comment 'the sync pattern 1. sync 2. async 3. stream',
     KEY `idx_workflow_id_version_mode_created_at` (workflow_id, version, mode, created_at)
 );

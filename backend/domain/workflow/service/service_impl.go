@@ -619,7 +619,7 @@ func (i *impl) SyncExecuteWorkflow(ctx context.Context, id *entity.WorkflowIdent
 			return nil, "", err
 		}
 	} else {
-		wfEntity, err = i.GetWorkflowDraft(ctx, id.ID)
+		wfEntity, err = i.GetWorkflowLatestVersion(ctx, id.ID)
 		if err != nil {
 			return nil, "", err
 		}
@@ -928,7 +928,7 @@ func (i *impl) StreamExecuteWorkflow(ctx context.Context, id *entity.WorkflowIde
 	return sr, nil
 }
 
-func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error) {
+func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution, includeNodes bool) (*entity.WorkflowExecution, error) {
 	wfExeID := wfExe.ID
 	wfID := wfExe.WorkflowIdentity.ID
 	version := wfExe.WorkflowIdentity.Version
@@ -949,6 +949,24 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 			RootExecutionID: rootExeID,
 			Status:          entity.WorkflowRunning,
 		}, nil
+	}
+
+	interruptEvent, found, err := i.repo.GetFirstInterruptEvent(ctx, wfExeID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find interrupt events: %v", err)
+	}
+
+	if found {
+		// if we are currently interrupted, return this interrupt event,
+		// otherwise only return this event if it's the current resuming event
+		if wfExeEntity.Status == entity.WorkflowInterrupted ||
+			(wfExeEntity.CurrentResumingEventID != nil && *wfExeEntity.CurrentResumingEventID == interruptEvent.ID) {
+			wfExeEntity.InterruptEvents = []*entity.InterruptEvent{interruptEvent}
+		}
+	}
+
+	if !includeNodes {
+		return wfExeEntity, nil
 	}
 
 	// query the node executions for the root execution
@@ -977,20 +995,6 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 	for nodeID, nodeExes := range nodeGroups {
 		groupNodeExe := mergeCompositeInnerNodes(nodeExes, nodeGroupMaxIndex[nodeID])
 		wfExeEntity.NodeExecutions = append(wfExeEntity.NodeExecutions, groupNodeExe)
-	}
-
-	interruptEvent, found, err := i.repo.GetFirstInterruptEvent(ctx, wfExeID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find interrupt events: %v", err)
-	}
-
-	if found {
-		// if we are currently interrupted, return this interrupt event,
-		// otherwise only return this event if it's the current resuming event
-		if wfExeEntity.Status == entity.WorkflowInterrupted ||
-			(wfExeEntity.CurrentResumingEventID != nil && *wfExeEntity.CurrentResumingEventID == interruptEvent.ID) {
-			wfExeEntity.InterruptEvents = []*entity.InterruptEvent{interruptEvent}
-		}
 	}
 
 	return wfExeEntity, nil

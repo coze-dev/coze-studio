@@ -13,15 +13,16 @@ import (
 	context "context"
 	reflect "reflect"
 
-	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
-	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	tool "github.com/cloudwego/eino/components/tool"
 	compose "github.com/cloudwego/eino/compose"
 	schema "github.com/cloudwego/eino/schema"
 	redis "github.com/redis/go-redis/v9"
 	gomock "go.uber.org/mock/gomock"
+
+	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
+	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 // MockService is a mock of Service interface.
@@ -195,18 +196,18 @@ func (mr *MockServiceMockRecorder) DeleteWorkflowsByAppID(ctx, appID any) *gomoc
 }
 
 // GetExecution mocks base method.
-func (m *MockService) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution) (*entity.WorkflowExecution, error) {
+func (m *MockService) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution, includeNodes bool) (*entity.WorkflowExecution, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetExecution", ctx, wfExe)
+	ret := m.ctrl.Call(m, "GetExecution", ctx, wfExe, includeNodes)
 	ret0, _ := ret[0].(*entity.WorkflowExecution)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetExecution indicates an expected call of GetExecution.
-func (mr *MockServiceMockRecorder) GetExecution(ctx, wfExe any) *gomock.Call {
+func (mr *MockServiceMockRecorder) GetExecution(ctx, wfExe, includeNodes any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExecution", reflect.TypeOf((*MockService)(nil).GetExecution), ctx, wfExe)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExecution", reflect.TypeOf((*MockService)(nil).GetExecution), ctx, wfExe, includeNodes)
 }
 
 // GetLatestNodeDebugInput mocks base method.
