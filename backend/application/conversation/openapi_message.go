@@ -2,7 +2,6 @@ package conversation
 
 import (
 	"context"
-	"errors"
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
@@ -10,8 +9,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type OpenapiMessageApplication struct{}
@@ -28,11 +29,14 @@ func (m *OpenapiMessageApplication) GetApiMessageList(ctx context.Context, mr *m
 	}
 
 	if currentConversation == nil {
-		return nil, errors.New("conversation data is nil")
+		return nil, errorx.New(errno.ErrConversationNotFound)
+	}
+
+	if currentConversation.CreatorID != userID {
+		return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "permission denied"))
 	}
 
 	msgListMeta := &entity.ListMeta{
-		UserID:         userID,
 		ConversationID: currentConversation.ID,
 		AgentID:        currentConversation.AgentID,
 		Limit:          int(ptr.From(mr.Limit)),

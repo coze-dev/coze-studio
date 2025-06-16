@@ -25,7 +25,7 @@ type AgentState struct {
 }
 
 type AgentRequest struct {
-	UserID  int64
+	UserID  string
 	Input   *schema.Message
 	History []*schema.Message
 

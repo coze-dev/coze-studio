@@ -17,6 +17,7 @@ import (
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -351,7 +352,7 @@ func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *tab
 		DatabaseID:  databaseID,
 		TableType:   req.GetTableType(),
 		OperateType: model.OperateType_Delete,
-		UserID:      *uid,
+		UserID:      conv.Int64ToStr(*uid),
 		Condition: &model.ComplexCondition{
 			Conditions: []*model.Condition{
 				{

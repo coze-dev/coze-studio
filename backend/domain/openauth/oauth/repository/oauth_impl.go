@@ -43,7 +43,7 @@ func (o *oauthRepoImpl) SetAccessToken(ctx context.Context, req *SetAccessTokenR
 	return o.cache.Set(ctx, key, req.AccessToken, req.ExpiresIn)
 }
 
-func (o *oauthRepoImpl) makeAccessTokenKey(userID int64, clientID string, tokenURL string, scopes []string) (string, error) {
+func (o *oauthRepoImpl) makeAccessTokenKey(userID string, clientID string, tokenURL string, scopes []string) (string, error) {
 	urlParse, err := url.Parse(tokenURL)
 	if err != nil {
 		return "", fmt.Errorf("parse token url failed, err=%v", err)

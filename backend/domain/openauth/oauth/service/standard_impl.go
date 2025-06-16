@@ -36,7 +36,7 @@ func (l *standardOAuth) GetAccessToken(ctx context.Context, req *GetAccessTokenR
 	return accessToken, nil
 }
 
-func (l *standardOAuth) getAccessTokenByClientCredentials(ctx context.Context, userID int64, cc *entity.ClientCredentials) (accessToken string, err error) {
+func (l *standardOAuth) getAccessTokenByClientCredentials(ctx context.Context, userID string, cc *entity.ClientCredentials) (accessToken string, err error) {
 	accessToken, err = l.oauthRepo.GetAccessToken(ctx, &repository.GetAccessTokenRequest{
 		UserID:   userID,
 		ClientID: cc.ClientID,

@@ -11,14 +11,14 @@ type OAuthRepository interface {
 }
 
 type GetAccessTokenRequest struct {
-	UserID   int64
+	UserID   string
 	TokenURL string
 	ClientID string
 	Scopes   []string
 }
 
 type SetAccessTokenRequest struct {
-	UserID      int64
+	UserID      string
 	ClientID    string
 	TokenURL    string
 	AccessToken string

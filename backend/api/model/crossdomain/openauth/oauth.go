@@ -1,7 +1,7 @@
 package openauth
 
 type GetAccessTokenRequest struct {
-	UserID    int64
+	UserID    string
 	OAuthInfo *OAuthInfo
 }
 

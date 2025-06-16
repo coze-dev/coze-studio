@@ -120,7 +120,7 @@ func (dao *RunRecordDAO) buildCreatePO(ctx context.Context, runMeta *entity.Agen
 		AgentID:        runMeta.AgentID,
 		Status:         string(entity.RunStatusCreated),
 		ChatRequest:    string(reqOrigin),
-		CreatorID:      runMeta.UserID,
+		UserID:         runMeta.UserID,
 		CreatedAt:      timeNow,
 	}, nil
 }

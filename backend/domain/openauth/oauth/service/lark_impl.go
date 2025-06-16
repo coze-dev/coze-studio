@@ -34,7 +34,7 @@ func (l *larkOAuth) GetAccessToken(ctx context.Context, req *GetAccessTokenReque
 	return accessToken, nil
 }
 
-func (l *larkOAuth) getAccessTokenByClientCredentials(ctx context.Context, userID int64, cc *entity.ClientCredentials) (accessToken string, err error) {
+func (l *larkOAuth) getAccessTokenByClientCredentials(ctx context.Context, userID string, cc *entity.ClientCredentials) (accessToken string, err error) {
 	accessToken, err = l.oauthRepo.GetAccessToken(ctx, &repository.GetAccessTokenRequest{
 		UserID:   userID,
 		ClientID: cc.ClientID,

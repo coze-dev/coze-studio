@@ -27,12 +27,12 @@ func TestListMessage(t *testing.T) {
 			&model.Message{
 				ID:             1,
 				ConversationID: 1,
-				UserID:         1,
+				UserID:         "1",
 			},
 			&model.Message{
 				ID:             2,
 				ConversationID: 1,
-				UserID:         1,
+				UserID:         "1",
 			},
 		)
 
@@ -46,7 +46,7 @@ func TestListMessage(t *testing.T) {
 	resp, err := NewService(components).List(ctx, &entity.ListMeta{
 		ConversationID: 1,
 		Limit:          1,
-		UserID:         1,
+		UserID:         "1",
 	})
 	assert.NoError(t, err)
 	assert.Len(t, resp.Messages, 0)
@@ -104,7 +104,7 @@ func TestCreateMessage(t *testing.T) {
 		ID:             7498710126354759680,
 		ConversationID: 7496795464885338112,
 		AgentID:        7366055842027922437,
-		UserID:         6666666,
+		UserID:         "6666666",
 		RunID:          7498710102375923712,
 		Content:        "你是谁？",
 		MultiContent:   content,
@@ -130,13 +130,13 @@ func TestEditMessage(t *testing.T) {
 			&model.Message{
 				ID:             1,
 				ConversationID: 1,
-				UserID:         1,
+				UserID:         "1",
 				RunID:          123,
 			},
 			&model.Message{
 				ID:             2,
 				ConversationID: 1,
-				UserID:         1,
+				UserID:         "1",
 				RunID:          124,
 			},
 		)
@@ -198,21 +198,21 @@ func TestGetByRunIDs(t *testing.T) {
 			&model.Message{
 				ID:             1,
 				ConversationID: 1,
-				UserID:         1,
+				UserID:         "1",
 				RunID:          123,
 				Content:        "test content123",
 			},
 			&model.Message{
 				ID:             2,
 				ConversationID: 1,
-				UserID:         1,
+				UserID:         "1",
 				Content:        "test content124",
 				RunID:          124,
 			},
 			&model.Message{
 				ID:             3,
 				ConversationID: 1,
-				UserID:         1,
+				UserID:         "1",
 				Content:        "test content124",
 				RunID:          124,
 			},

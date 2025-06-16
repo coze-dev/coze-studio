@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS `message` (
     `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `run_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '对应的run_id',
     `conversation_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'conversation id',
-    `user_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'user id',
+    `user_id` varchar(60) NOT NULL DEFAULT '' COMMENT 'user id',
     `agent_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'agent_id',
     `role` varchar(100) NOT NULL DEFAULT '' COMMENT '角色: user、assistant、system',
     `content_type` varchar(100) NOT NULL DEFAULT '' COMMENT '内容类型 1 text',

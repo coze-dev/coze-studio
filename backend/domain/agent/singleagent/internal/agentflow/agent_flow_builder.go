@@ -19,7 +19,7 @@ import (
 
 type Config struct {
 	Agent        *entity.SingleAgent
-	UserID       int64
+	UserID       string
 	Identity     *entity.AgentIdentity
 	ModelFactory chatmodel.Factory
 	CPStore      compose.CheckPointStore

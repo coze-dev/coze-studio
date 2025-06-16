@@ -12,6 +12,7 @@ import (
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/message/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/types/consts"
@@ -49,7 +50,6 @@ func (c *ConversationApplicationService) GetMessageList(ctx context.Context, mr 
 	}
 
 	mListMessages, err := c.MessageDomainSVC.List(ctx, &entity.ListMeta{
-		UserID:         *userID,
 		ConversationID: currentConversation.ID,
 		AgentID:        agentID,
 		Limit:          int(mr.Count),
@@ -242,7 +242,7 @@ func (c *ConversationApplicationService) DeleteMessage(ctx context.Context, mr *
 	}
 
 	userID := ctxutil.GetUIDFromCtx(ctx)
-	if messageInfo.UserID != *userID {
+	if messageInfo.UserID != conv.Int64ToStr(*userID) {
 		return errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "permission denied"))
 	}
 

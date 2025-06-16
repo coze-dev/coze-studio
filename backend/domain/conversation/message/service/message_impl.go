@@ -36,7 +36,7 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.L
 	resp := &entity.ListResult{}
 
 	// get message with query
-	messageList, hasMore, err := m.MessageRepo.List(ctx, req.ConversationID, req.UserID, req.Limit, req.Cursor, req.Direction, ptr.Of(message.MessageTypeQuestion))
+	messageList, hasMore, err := m.MessageRepo.List(ctx, req.ConversationID, req.Limit, req.Cursor, req.Direction, ptr.Of(message.MessageTypeQuestion))
 	if err != nil {
 		return resp, err
 	}

@@ -85,7 +85,7 @@ type MGetAgentToolsRequest struct {
 }
 
 type ExecuteToolRequest struct {
-	UserID        int64
+	UserID        string
 	PluginID      int64
 	ToolID        int64
 	ExecDraftTool bool // if true, execute draft tool

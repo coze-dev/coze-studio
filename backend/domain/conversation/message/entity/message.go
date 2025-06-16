@@ -7,7 +7,7 @@ type Message = message.Message
 type ListMeta struct {
 	ConversationID int64               `json:"conversation_id"`
 	RunID          []*int64            `json:"run_id"`
-	UserID         int64               `json:"user_id"`
+	UserID         string              `json:"user_id"`
 	AgentID        int64               `json:"agent_id"`
 	OrderBy        *string             `json:"order_by"`
 	Limit          int                 `json:"limit"`

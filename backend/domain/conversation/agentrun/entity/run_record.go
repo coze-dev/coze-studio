@@ -102,7 +102,7 @@ type AgentRunMeta struct {
 	Scene            common.Scene             `json:"scene"`
 	SectionID        int64                    `json:"section_id"`
 	Name             string                   `json:"name"`
-	UserID           int64                    `json:"user_id"`
+	UserID           string                   `json:"user_id"`
 	AgentID          int64                    `json:"agent_id"`
 	ContentType      message.ContentType      `json:"content_type"`
 	Content          []*message.InputMetaData `json:"content"`

@@ -19,7 +19,7 @@ import (
 
 type toolConfig struct {
 	spaceID       int64
-	userID        int64
+	userID        string
 	agentIdentity *entity.AgentIdentity
 	toolConf      []*bot_common.PluginInfo
 }
@@ -62,7 +62,7 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 }
 
 type pluginInvokableTool struct {
-	userID      int64
+	userID      string
 	isDraft     bool
 	toolInfo    *pluginEntity.ToolInfo
 	projectInfo *plugin.ProjectInfo

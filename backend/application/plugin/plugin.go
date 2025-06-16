@@ -32,6 +32,7 @@ import (
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -1039,7 +1040,7 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 	}
 
 	res, err := p.DomainSVC.ExecuteTool(ctx, &service.ExecuteToolRequest{
-		UserID:          *userID,
+		UserID:          conv.Int64ToStr(*userID),
 		PluginID:        req.PluginID,
 		ToolID:          req.APIID,
 		ExecScene:       model.ExecSceneOfToolDebug,

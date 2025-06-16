@@ -45,7 +45,7 @@ func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentR
 			return nil, err
 		}
 		if msgMeta != nil {
-			if msgMeta.UserID != userID {
+			if msgMeta.UserID != conv.Int64ToStr(userID) {
 				return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "message not match"))
 			}
 			delErr := c.MessageDomainSVC.Delete(ctx, &msgEntity.DeleteMeta{
@@ -151,7 +151,7 @@ func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Contex
 		Content:          c.buildMultiContent(ctx, ar),
 		DisplayContent:   c.buildDisplayContent(ctx, ar),
 		SpaceID:          spaceID,
-		UserID:           userID,
+		UserID:           conv.Int64ToStr(userID),
 		SectionID:        conversationData.SectionID,
 		PreRetrieveTools: shortcutCMDData,
 		IsDraft:          ptr.From(ar.DraftMode),

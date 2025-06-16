@@ -14,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -82,7 +83,7 @@ func (p *pluginServiceImpl) validateOAuthInfo(ctx context.Context, userID int64,
 		oauth := authInfo.AuthOfOAuthClientCredentials
 
 		accessToken, err := crossopenauth.DefaultOAuthSVC().GetAccessToken(ctx, &openauthModel.GetAccessTokenRequest{
-			UserID: userID,
+			UserID: conv.Int64ToStr(userID),
 			OAuthInfo: &openauthModel.OAuthInfo{
 				OAuthProvider: entity.GetOAuthProvider(oauth.TokenURL),
 				OAuthMode:     openauthModel.OAuthModeClientCredentials,

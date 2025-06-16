@@ -1107,7 +1107,7 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *ExecuteSQLRe
 	}
 
 	// add rw mode
-	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
+	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != "" {
 		cond := &rdb.Condition{
 			Field:    database.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
@@ -1179,7 +1179,7 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 			cid = *req.ConnectorID
 		}
 
-		if req.UserID != 0 {
+		if req.UserID != "" {
 			rowData[database.DefaultUidColName] = req.UserID
 		}
 		rowData[database.DefaultCidColName] = cid
@@ -1268,7 +1268,7 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 	}
 
 	// add rw mode
-	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
+	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != "" {
 		cond := &rdb.Condition{
 			Field:    database.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
@@ -1308,7 +1308,7 @@ func (d databaseService) executeDeleteSQL(ctx context.Context, req *ExecuteSQLRe
 	}
 
 	// add rw mode
-	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != 0 {
+	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != "" {
 		cond := &rdb.Condition{
 			Field:    database.DefaultUidColName,
 			Operator: entity3.OperatorEqual,
@@ -1423,13 +1423,13 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 		}
 		result.Conditions = conditions
 	}
-	//if cond.NestedConditions != nil {
+	// if cond.NestedConditions != nil {
 	//	nested, err := convertCondition(cond.NestedConditions, fieldMap, params)
 	//	if err != nil {
 	//		return nil, err
 	//	}
 	//	result.NestedConditions = []*rdb.ComplexCondition{nested}
-	//}
+	// }
 
 	return result, nil
 }

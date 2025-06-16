@@ -52,7 +52,7 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 func (p *pluginServiceImpl) buildExecConfig(ctx context.Context, req *ExecuteToolRequest,
 	execOpt *model.ExecuteToolOption) (config *tool_executor.ExecutorConfig, err error) {
 
-	if req.UserID <= 0 {
+	if req.UserID == "" {
 		return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KV(errno.PluginMsgKey, "userID is required"))
 	}
 

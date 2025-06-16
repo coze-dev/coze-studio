@@ -22,7 +22,7 @@ type Message struct {
 	MessageType      MessageType             `json:"message_type"`
 	ModelContent     string                  `json:"model_content"`
 	Position         int32                   `json:"position"`
-	UserID           int64                   `json:"user_id"`
+	UserID           string                  `json:"user_id"`
 	Ext              map[string]string       `json:"ext"`
 	ReasoningContent string                  `json:"reasoning_content"`
 	RequiredAction   *message.RequiredAction `json:"required_action"`

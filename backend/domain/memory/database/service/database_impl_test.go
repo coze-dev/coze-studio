@@ -475,7 +475,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 				Value: ptr.Of("90.5"),
 			},
 		},
-		UserID:  1001,
+		UserID:  "1001",
 		SpaceID: 1,
 	}
 
@@ -496,9 +496,9 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		DatabaseID:  resp.Database.ID,
 		TableType:   table.TableType_OnlineTable,
 		OperateType: database.OperateType_Select,
-		//SelectFieldList: selectFields,
+		// SelectFieldList: selectFields,
 		Limit:   &limit,
-		UserID:  1001,
+		UserID:  "1001",
 		SpaceID: 1,
 		OrderByList: []database.OrderBy{
 			{
@@ -524,7 +524,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		OperateType:     database.OperateType_Select,
 		SelectFieldList: selectFields,
 		Limit:           &limit,
-		UserID:          1001,
+		UserID:          "1001",
 		SpaceID:         1,
 		OrderByList: []database.OrderBy{
 			{
@@ -556,7 +556,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		OperateType:     database.OperateType_Select,
 		SelectFieldList: selectFields,
 		Limit:           &limit,
-		UserID:          1001,
+		UserID:          "1001",
 		SpaceID:         1,
 		OrderByList: []database.OrderBy{
 			{
@@ -586,7 +586,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		OperateType:     database.OperateType_Select,
 		SelectFieldList: selectFields,
 		Limit:           &limit,
-		UserID:          1001,
+		UserID:          "1001",
 		SpaceID:         1,
 		OrderByList: []database.OrderBy{
 			{
@@ -657,7 +657,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 				Value: ptr.Of("111"),
 			},
 		},
-		UserID:  1001,
+		UserID:  "1001",
 		SpaceID: 1,
 		Condition: &database.ComplexCondition{
 			Conditions: []*database.Condition{
@@ -681,7 +681,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		TableType:   table.TableType_OnlineTable,
 		OperateType: database.OperateType_Delete,
 		Limit:       &limit,
-		UserID:      1001,
+		UserID:      "1001",
 		SpaceID:     1,
 		SQLParams: []*database.SQLParamVal{
 			{
@@ -710,7 +710,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		TableType:   table.TableType_OnlineTable,
 		OperateType: database.OperateType_Custom,
 		Limit:       &limit,
-		UserID:      1001,
+		UserID:      "1001",
 		SpaceID:     1,
 		SQL:         ptr.Of(fmt.Sprintf("SELECT * FROM %s WHERE score > ?", "test_db_table_01")),
 		SQLParams: []*database.SQLParamVal{
@@ -731,7 +731,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		DatabaseID:  resp.Database.ID,
 		TableType:   table.TableType_OnlineTable,
 		OperateType: database.OperateType_Custom,
-		UserID:      1001,
+		UserID:      "1001",
 		SpaceID:     1,
 		SQL:         ptr.Of(fmt.Sprintf("UPDATE %s SET name = 'Bob Updated' WHERE id = ?", "test_db_table_01")),
 		SQLParams: []*database.SQLParamVal{
@@ -752,7 +752,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		DatabaseID:  resp.Database.ID,
 		TableType:   table.TableType_OnlineTable,
 		OperateType: database.OperateType_Custom,
-		UserID:      1001,
+		UserID:      "1001",
 		SpaceID:     1,
 		SQL:         ptr.Of(fmt.Sprintf("DELETE FROM %s WHERE id = ?", "test_db_table_01")),
 		SQLParams: []*database.SQLParamVal{

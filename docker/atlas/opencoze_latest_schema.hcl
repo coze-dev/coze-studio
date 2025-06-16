@@ -1108,11 +1108,10 @@ table "message" {
     comment  = "conversation id"
   }
   column "user_id" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "user id"
+    null    = false
+    type    = varchar(60)
+    default = ""
+    comment = "user id"
   }
   column "agent_id" {
     null     = false

@@ -30,7 +30,7 @@ func newMessage(db *gorm.DB, opts ...gen.DOOption) message {
 	_message.ID = field.NewInt64(tableName, "id")
 	_message.RunID = field.NewInt64(tableName, "run_id")
 	_message.ConversationID = field.NewInt64(tableName, "conversation_id")
-	_message.UserID = field.NewInt64(tableName, "user_id")
+	_message.UserID = field.NewString(tableName, "user_id")
 	_message.AgentID = field.NewInt64(tableName, "agent_id")
 	_message.Role = field.NewString(tableName, "role")
 	_message.ContentType = field.NewString(tableName, "content_type")
@@ -60,14 +60,14 @@ type message struct {
 	ID               field.Int64  // 主键ID
 	RunID            field.Int64  // 对应的run_id
 	ConversationID   field.Int64  // conversation id
-	UserID           field.Int64  // user id
+	UserID           field.String // user id
 	AgentID          field.Int64  // agent_id
 	Role             field.String // 角色: user、assistant、system
 	ContentType      field.String // 内容类型 1 text
 	Content          field.String // 内容
 	MessageType      field.String // 消息类型：
 	DisplayContent   field.String // 展示内容
-	Ext              field.String // message 扩展字段
+	Ext              field.String // 'message 扩展字段'
 	SectionID        field.Int64  // 段落id
 	BrokenPosition   field.Int32  // 打断位置
 	Status           field.Int32  // 消息状态 1 Available 2 Deleted 3 Replaced 4 Broken 5 Failed 6 Streaming 7 Pending
@@ -95,7 +95,7 @@ func (m *message) updateTableName(table string) *message {
 	m.ID = field.NewInt64(table, "id")
 	m.RunID = field.NewInt64(table, "run_id")
 	m.ConversationID = field.NewInt64(table, "conversation_id")
-	m.UserID = field.NewInt64(table, "user_id")
+	m.UserID = field.NewString(table, "user_id")
 	m.AgentID = field.NewInt64(table, "agent_id")
 	m.Role = field.NewString(table, "role")
 	m.ContentType = field.NewString(table, "content_type")

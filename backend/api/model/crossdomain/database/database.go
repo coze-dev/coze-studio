@@ -10,7 +10,7 @@ type ExecuteSQLRequest struct {
 	SQLType SQLType // SQLType indicates the type of SQL: parameterized or raw SQL. It takes effect if OperateType is 0.
 
 	DatabaseID  int64
-	UserID      int64
+	UserID      string
 	SpaceID     int64
 	ConnectorID *int64
 	SQLParams   []*SQLParamVal

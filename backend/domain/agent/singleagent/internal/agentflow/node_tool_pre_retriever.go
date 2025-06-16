@@ -16,7 +16,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -78,7 +77,7 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 				ID: item.PluginID,
 			}, input, vo.ExecuteConfig{
 				ConnectorID:  ar.Identity.ConnectorID,
-				ConnectorUID: conv.Int64ToStr(ar.UserID),
+				ConnectorUID: ar.UserID,
 				TaskType:     vo.TaskTypeForeground,
 				AgentID:      ptr.Of(ar.Identity.AgentID),
 				Mode: func() vo.ExecuteMode {

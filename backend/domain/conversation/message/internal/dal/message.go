@@ -46,9 +46,9 @@ func (dao *MessageDAO) Create(ctx context.Context, msg *entity.Message) (*entity
 	return dao.messagePO2DO(poData), nil
 }
 
-func (dao *MessageDAO) List(ctx context.Context, conversationID int64, userID int64, limit int, cursor int64, direction entity.ScrollPageDirection, messageType *message.MessageType) ([]*entity.Message, bool, error) {
+func (dao *MessageDAO) List(ctx context.Context, conversationID int64, limit int, cursor int64, direction entity.ScrollPageDirection, messageType *message.MessageType) ([]*entity.Message, bool, error) {
 	m := dao.query.Message
-	do := m.WithContext(ctx).Debug().Where(m.ConversationID.Eq(conversationID)).Where(m.UserID.Eq(userID)).Where(m.Status.Eq(int32(entity.MessageStatusAvailable)))
+	do := m.WithContext(ctx).Debug().Where(m.ConversationID.Eq(conversationID)).Where(m.Status.Eq(int32(entity.MessageStatusAvailable)))
 
 	if messageType != nil {
 		do = do.Where(m.MessageType.Eq(string(*messageType)))

@@ -307,7 +307,7 @@ func buildARSM2ApiChatMessage(chunk *entity.AgentRunResponse, req *run.ChatV3Req
 	return mCM
 }
 
-func checkParamsV3(ctx context.Context, ar *run.ChatV3Request) error {
+func checkParamsV3(_ context.Context, ar *run.ChatV3Request) error {
 	if ar.BotID == 0 {
 		return errorx.New(errno.ErrConversationInvalidParamCode, errorx.KV("msg", "bot id is required"))
 	}

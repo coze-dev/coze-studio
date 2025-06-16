@@ -12,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
 
@@ -48,7 +49,7 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.UserID = *uid
+		req.UserID = conv.Int64ToStr(*uid)
 	}
 
 	req.SQLParams = make([]*database.SQLParamVal, 0, len(request.Params))
@@ -88,7 +89,7 @@ func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.D
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.UserID = *uid
+		req.UserID = conv.Int64ToStr(*uid)
 	}
 	if request.ConditionGroup != nil {
 		req.Condition, req.SQLParams, err = buildComplexCondition(request.ConditionGroup)
@@ -126,7 +127,7 @@ func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.Qu
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.UserID = *uid
+		req.UserID = conv.Int64ToStr(*uid)
 	}
 
 	req.SelectFieldList = &database.SelectFieldList{FieldID: make([]string, 0, len(request.SelectFields))}
@@ -186,7 +187,7 @@ func (d *DatabaseRepository) Update(ctx context.Context, request *nodedatabase.U
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.UserID = *uid
+		req.UserID = conv.Int64ToStr(*uid)
 	}
 	req.UpsertRows, req.SQLParams, err = resolveUpsertRow(request.Fields)
 	if err != nil {
@@ -232,7 +233,7 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid != nil {
-		req.UserID = *uid
+		req.UserID = conv.Int64ToStr(*uid)
 	}
 	req.UpsertRows, req.SQLParams, err = resolveUpsertRow(request.Fields)
 	if err != nil {

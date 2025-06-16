@@ -30,20 +30,20 @@ func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, ar *ru
 	}
 
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
-	userID := apiKeyInfo.UserID
+	creatorID := apiKeyInfo.UserID
 	connectorID := apiKeyInfo.ConnectorID
 
 	if ptr.From(ar.ConnectorID) == consts.WebSDKConnectorID {
 		connectorID = ptr.From(ar.ConnectorID)
 	}
-	conversationData, ccErr := a.checkConversation(ctx, ar, userID, connectorID)
+	conversationData, ccErr := a.checkConversation(ctx, ar, creatorID, connectorID)
 	if ccErr != nil {
 		logs.CtxErrorf(ctx, "checkConversation err:%v", ccErr)
 		return nil, ccErr
 	}
 
 	spaceID := agentInfo.SpaceID
-	arr, err := a.buildAgentRunRequest(ctx, ar, userID, connectorID, spaceID, conversationData)
+	arr, err := a.buildAgentRunRequest(ctx, ar, connectorID, spaceID, conversationData)
 	if err != nil {
 		logs.CtxErrorf(ctx, "buildAgentRunRequest err:%v", err)
 		return nil, err
@@ -99,7 +99,7 @@ func (a *OpenapiAgentRunApplication) checkAgent(ctx context.Context, ar *run.Cha
 	return agentInfo, nil
 }
 
-func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.ChatV3Request, userID int64, connectorID int64, spaceID int64, conversationData *convEntity.Conversation) (*entity.AgentRunMeta, error) {
+func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.ChatV3Request, connectorID int64, spaceID int64, conversationData *convEntity.Conversation) (*entity.AgentRunMeta, error) {
 
 	shortcutCMDData, err := a.buildTools(ctx, ar.ShortcutCommand)
 	if err != nil {
@@ -114,7 +114,7 @@ func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, a
 		AgentID:          ar.BotID,
 		Content:          multiContent,
 		SpaceID:          spaceID,
-		UserID:           userID,
+		UserID:           ar.User,
 		SectionID:        conversationData.SectionID,
 		PreRetrieveTools: shortcutCMDData,
 		IsDraft:          true,

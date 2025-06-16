@@ -17,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
@@ -251,7 +252,7 @@ func (p *pluginInvokeTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
 
 func (p *pluginInvokeTool) PluginInvoke(ctx context.Context, argumentsInJSON string, cfg crossplugin.ExecConfig) (string, error) {
 	req := &service.ExecuteToolRequest{
-		UserID:          cfg.Operator,
+		UserID:          conv.Int64ToStr(cfg.Operator),
 		PluginID:        p.pluginEntity.PluginID,
 		ToolID:          p.toolInfo.ID,
 		ExecScene:       plugin.ExecSceneOfWorkflow,

@@ -35,7 +35,7 @@ type Executor interface {
 }
 
 type ExecutorConfig struct {
-	UserID int64
+	UserID string
 	Plugin *entity.PluginInfo
 	Tool   *entity.ToolInfo
 
@@ -310,7 +310,7 @@ func (t *executorImpl) getVariableValue(ctx context.Context, keyword string) (an
 		BizType:      project_memory.VariableConnector_Bot,
 		BizID:        strconv.FormatInt(info.ProjectID, 10),
 		Version:      ptr.FromOrDefault(info.ProjectVersion, ""),
-		ConnectorUID: strconv.FormatInt(t.config.UserID, 10),
+		ConnectorUID: t.config.UserID,
 		ConnectorID:  info.ConnectorID,
 	}
 	vals, err := crossvariables.DefaultSVC().GetVariableInstance(ctx, meta, []string{keyword})

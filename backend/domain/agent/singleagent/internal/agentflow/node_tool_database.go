@@ -23,7 +23,7 @@ import (
 
 type databaseConfig struct {
 	agentIdentity *entity.AgentIdentity
-	userID        int64
+	userID        string
 	spaceID       int64
 
 	databaseConf []*bot_common.Database
@@ -31,7 +31,7 @@ type databaseConfig struct {
 
 type databaseTool struct {
 	agentIdentity *entity.AgentIdentity
-	connectorUID  int64
+	connectorUID  string
 	spaceID       int64
 
 	databaseID int64
