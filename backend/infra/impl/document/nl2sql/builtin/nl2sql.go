@@ -22,7 +22,28 @@ const (
 	defaultColumnFmt = "| %s | %s | %s | %t |\n\n"
 )
 
-func NewNL2SQL(ctx context.Context, cm chatmodel.BaseChatModel, tpl prompt.ChatTemplate) (nl2sql.NL2SQL, error) {
+func NewNL2SQL(_ context.Context, cm chatmodel.BaseChatModel, tpl prompt.ChatTemplate) (nl2sql.NL2SQL, error) {
+	return &n2s{cm: cm, tpl: tpl}, nil
+}
+
+type n2s struct {
+	ch       *compose.Chain[*nl2sqlInput, string]
+	runnable compose.Runnable[*nl2sqlInput, string]
+
+	cm  chatmodel.BaseChatModel
+	tpl prompt.ChatTemplate
+}
+
+func (n *n2s) NL2SQL(ctx context.Context, messages []*schema.Message, tables []*document.TableSchema, opts ...nl2sql.Option) (sql string, err error) {
+	o := &nl2sql.Options{ChatModel: n.cm}
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	if o.ChatModel == nil {
+		return "", fmt.Errorf("[NL2SQL] chat model not configured")
+	}
+
 	c := compose.NewChain[*nl2sqlInput, string]().
 		AppendLambda(compose.InvokableLambda(func(ctx context.Context, input *nl2sqlInput) (output map[string]any, err error) {
 			if len(input.tables) == 0 {
@@ -41,8 +62,8 @@ func NewNL2SQL(ctx context.Context, cm chatmodel.BaseChatModel, tpl prompt.ChatT
 				"table_schema": tableDesc.String(),
 			}, nil
 		})).
-		AppendChatTemplate(tpl).
-		AppendChatModel(cm).
+		AppendChatTemplate(n.tpl).
+		AppendChatModel(o.ChatModel).
 		AppendLambda(compose.InvokableLambda(func(ctx context.Context, msg *schema.Message) (sql string, err error) {
 			var promptResp *promptResponse
 			if err := json.Unmarshal([]byte(msg.Content), &promptResp); err != nil {
@@ -58,27 +79,15 @@ func NewNL2SQL(ctx context.Context, cm chatmodel.BaseChatModel, tpl prompt.ChatT
 
 	r, err := c.Compile(ctx)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return &n2s{
-		ch:       c,
-		runnable: r,
-	}, nil
-}
-
-type n2s struct {
-	ch       *compose.Chain[*nl2sqlInput, string]
-	runnable compose.Runnable[*nl2sqlInput, string]
-}
-
-func (n *n2s) NL2SQL(ctx context.Context, messages []*schema.Message, tables []*document.TableSchema) (sql string, err error) {
 	input := &nl2sqlInput{
 		messages: messages,
 		tables:   tables,
 	}
 
-	return n.runnable.Invoke(ctx, input)
+	return r.Invoke(ctx, input)
 }
 
 type nl2sqlInput struct {

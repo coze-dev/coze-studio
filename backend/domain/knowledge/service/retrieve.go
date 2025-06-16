@@ -20,9 +20,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
+	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/rerank"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
+	"code.byted.org/flow/opencoze/backend/infra/contract/messages2query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	sqlparsercontract "code.byted.org/flow/opencoze/backend/infra/contract/sqlparser"
 	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
@@ -119,6 +122,16 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *RetrieveRequ
 			info.TableColumns = doc.TableInfo.Columns
 		}
 	}
+
+	var cm chatmodel.BaseChatModel
+	if req.ChatModelProtocol != nil && req.ChatModelConfig != nil {
+		cm, err = k.modelFactory.CreateChatModel(ctx, ptr.From(req.ChatModelProtocol), req.ChatModelConfig)
+		if err != nil {
+			return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode,
+				errorx.KV("msg", "invalid retriever chat model protocol or config"))
+		}
+	}
+
 	resp := RetrieveContext{
 		Ctx:              ctx,
 		OriginQuery:      req.Query,
@@ -127,6 +140,7 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *RetrieveRequ
 		KnowledgeInfoMap: knowledgeInfoMap,
 		Strategy:         req.Strategy,
 		Documents:        enableDocs,
+		ChatModel:        cm,
 	}
 	return &resp, nil
 }
@@ -166,7 +180,11 @@ func (k *knowledgeSVC) queryRewriteNode(ctx context.Context, req *RetrieveContex
 		// 未开启rewrite功能，不需要上下文改写
 		return req, nil
 	}
-	rewrittenQuery, err := k.rewriter.MessagesToQuery(ctx, req.ChatHistory)
+	var opts []messages2query.Option
+	if req.ChatModel != nil {
+		opts = append(opts, messages2query.WithChatModel(req.ChatModel))
+	}
+	rewrittenQuery, err := k.rewriter.MessagesToQuery(ctx, req.ChatHistory, opts...)
 	if err != nil {
 		logs.CtxErrorf(ctx, "rewrite query failed: %v", err)
 		return req, nil
@@ -295,6 +313,10 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *RetrieveCont
 			tableDocs = append(tableDocs, doc)
 		}
 	}
+	var opts []nl2sql.Option
+	if req.ChatModel != nil {
+		opts = append(opts, nl2sql.WithChatModel(req.ChatModel))
+	}
 	if hasTable && req.Strategy.EnableNL2SQL {
 		mu := sync.Mutex{}
 		eg, ctx := errgroup.WithContext(ctx)
@@ -304,7 +326,7 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *RetrieveCont
 			t := i
 			eg.Go(func() error {
 				doc := tableDocs[t]
-				docs, execErr := k.nl2SqlExec(ctx, doc, req)
+				docs, execErr := k.nl2SqlExec(ctx, doc, req, opts)
 				if execErr != nil {
 					logs.CtxErrorf(ctx, "nl2sql exec failed: %v", execErr)
 					return errorx.New(errno.ErrKnowledgeNL2SqlExecFailCode, errorx.KV("msg", execErr.Error()))
@@ -326,8 +348,9 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *RetrieveCont
 	}
 }
 
-func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocument, retrieveCtx *RetrieveContext) (retrieveResult []*schema.Document, err error) {
-	sql, err := k.nl2Sql.NL2SQL(ctx, retrieveCtx.ChatHistory, []*document.TableSchema{packNL2SqlRequest(doc)})
+func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocument, retrieveCtx *RetrieveContext, opts []nl2sql.Option) (
+	retrieveResult []*schema.Document, err error) {
+	sql, err := k.nl2Sql.NL2SQL(ctx, retrieveCtx.ChatHistory, []*document.TableSchema{packNL2SqlRequest(doc)}, opts...)
 	if err != nil {
 		logs.CtxErrorf(ctx, "nl2sql failed: %v", err)
 		return nil, err

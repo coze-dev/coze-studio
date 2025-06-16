@@ -13,7 +13,25 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/messages2query"
 )
 
-func NewMessagesToQuery(ctx context.Context, model chatmodel.BaseChatModel, template prompt.ChatTemplate) (messages2query.MessagesToQuery, error) {
+func NewMessagesToQuery(_ context.Context, model chatmodel.BaseChatModel, template prompt.ChatTemplate) (messages2query.MessagesToQuery, error) {
+	return &m2q{model, template}, nil
+}
+
+type m2q struct {
+	cm  chatmodel.BaseChatModel
+	tpl prompt.ChatTemplate
+}
+
+func (m *m2q) MessagesToQuery(ctx context.Context, messages []*schema.Message, opts ...messages2query.Option) (newQuery string, err error) {
+	o := &messages2query.Options{ChatModel: m.cm}
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	if o.ChatModel == nil {
+		return "", fmt.Errorf("[MessagesToQuery] chat model not configured")
+	}
+
 	ch := compose.NewChain[[]*schema.Message, string]().
 		AppendLambda(compose.InvokableLambda(func(ctx context.Context, input []*schema.Message) (output map[string]any, err error) {
 			if len(input) == 0 {
@@ -26,25 +44,16 @@ func NewMessagesToQuery(ctx context.Context, model chatmodel.BaseChatModel, temp
 			}
 			return map[string]interface{}{"messages": string(b)}, nil
 		})).
-		AppendChatTemplate(template).
-		AppendChatModel(model).
+		AppendChatTemplate(m.tpl).
+		AppendChatModel(o.ChatModel).
 		AppendLambda(compose.InvokableLambda(func(ctx context.Context, input *schema.Message) (output string, err error) {
 			return input.Content, nil
 		}))
 
 	r, err := ch.Compile(ctx)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return &m2q{ch, r}, nil
-}
-
-type m2q struct {
-	ch       *compose.Chain[[]*schema.Message, string]
-	runnable compose.Runnable[[]*schema.Message, string]
-}
-
-func (m *m2q) MessagesToQuery(ctx context.Context, messages []*schema.Message) (newQuery string, err error) {
-	return m.runnable.Invoke(ctx, messages)
+	return r.Invoke(ctx, messages)
 }

@@ -9,15 +9,18 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cloudwego/eino-ext/components/embedding/ark"
+	"github.com/cloudwego/eino-ext/components/embedding/openai"
+	ao "github.com/cloudwego/eino-ext/components/model/ark"
+	"github.com/cloudwego/eino-ext/components/model/deepseek"
+	"github.com/cloudwego/eino-ext/components/model/ollama"
+	mo "github.com/cloudwego/eino-ext/components/model/openai"
+	"github.com/cloudwego/eino-ext/components/model/qwen"
+	"github.com/cloudwego/eino/components/prompt"
+	"github.com/cloudwego/eino/schema"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/volcengine/volc-sdk-golang/service/visual"
 	"gorm.io/gorm"
-
-	"github.com/cloudwego/eino-ext/components/embedding/ark"
-	"github.com/cloudwego/eino-ext/components/embedding/openai"
-	mo "github.com/cloudwego/eino-ext/components/model/openai"
-	"github.com/cloudwego/eino/components/prompt"
-	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/application/search"
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
@@ -33,6 +36,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/messages2query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	chatmodelImpl "code.byted.org/flow/opencoze/backend/infra/impl/chatmodel"
 	builtinNL2SQL "code.byted.org/flow/opencoze/backend/infra/impl/document/nl2sql/builtin"
 	"code.byted.org/flow/opencoze/backend/infra/impl/document/ocr/veocr"
 	builtinParser "code.byted.org/flow/opencoze/backend/infra/impl/document/parser/builtin"
@@ -171,9 +175,9 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	root := os.Getenv("PWD")
 
 	var rewriter messages2query.MessagesToQuery
-	if rewriterChatModel, ok, err := getBuiltinChatModel(ctx, "M2Q_"); err != nil {
+	if rewriterChatModel, _, err := getBuiltinChatModel(ctx, "M2Q_"); err != nil {
 		return nil, err
-	} else if ok {
+	} else {
 		filePath := filepath.Join(root, "resources/conf/prompt/messages_to_query_template_jinja2.json")
 		rewriterTemplate, err := readJinja2PromptTemplate(filePath)
 		if err != nil {
@@ -186,9 +190,9 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	}
 
 	var n2s nl2sql.NL2SQL
-	if n2sChatModel, ok, err := getBuiltinChatModel(ctx, "NL2SQL_"); err != nil {
+	if n2sChatModel, _, err := getBuiltinChatModel(ctx, "NL2SQL_"); err != nil {
 		return nil, err
-	} else if ok {
+	} else {
 		filePath := filepath.Join(root, "resources/conf/prompt/nl2sql_template_jinja2.json")
 		n2sTemplate, err := readJinja2PromptTemplate(filePath)
 		if err != nil {
@@ -220,6 +224,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		OCR:                       ocrImpl,
 		CacheCli:                  c.CacheCli,
 		IsAutoAnnotationSupported: configured,
+		ModelFactory:              chatmodelImpl.NewDefaultFactory(),
 	})
 
 	if err = rmq.RegisterConsumer(nameServer, "opencoze_knowledge", "cg_knowledge", knowledgeEventHandler); err != nil {
@@ -249,12 +254,37 @@ func getBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.B
 			BaseURL: getEnv("BUILTIN_CM_OPENAI_BASE_URL"),
 			Model:   getEnv("BUILTIN_CM_OPENAI_MODEL"),
 		})
-		if err != nil {
-			return nil, false, fmt.Errorf("knowledge init openai chat mode failed, %w", err)
-		}
-		configured = true
+	case "ark":
+		bcm, err = ao.NewChatModel(ctx, &ao.ChatModelConfig{
+			APIKey: getEnv("BUILTIN_CM_ARK_API_KEY"),
+			Model:  getEnv("BUILTIN_CM_ARK_MODEL"),
+		})
+	case "deepseek":
+		bcm, err = deepseek.NewChatModel(ctx, &deepseek.ChatModelConfig{
+			APIKey:  getEnv("BUILTIN_CM_DEEPSEEK_API_KEY"),
+			BaseURL: getEnv("BUILTIN_CM_DEEPSEEK_BASE_URL"),
+			Model:   getEnv("BUILTIN_CM_DEEPSEEK_MODEL"),
+		})
+	case "ollama":
+		bcm, err = ollama.NewChatModel(ctx, &ollama.ChatModelConfig{
+			BaseURL: getEnv("BUILTIN_CM_OLLAMA_BASE_URL"),
+			Model:   getEnv("BUILTIN_CM_OLLAMA_MODEL"),
+		})
+	case "qwen":
+		bcm, err = qwen.NewChatModel(ctx, &qwen.ChatModelConfig{
+			APIKey:  getEnv("BUILTIN_CM_QWEN_API_KEY"),
+			BaseURL: getEnv("BUILTIN_CM_QWEN_BASE_URL"),
+			Model:   getEnv("BUILTIN_CM_QWEN_MODEL"),
+		})
 	default:
 		// accept builtin chat model not configured
+	}
+
+	if err != nil {
+		return nil, false, fmt.Errorf("knowledge init openai chat mode failed, %w", err)
+	}
+	if bcm != nil {
+		configured = true
 	}
 
 	return

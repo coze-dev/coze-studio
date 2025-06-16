@@ -22,6 +22,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
@@ -568,6 +569,6 @@ type mockNL2SQL struct {
 	tableName string
 }
 
-func (m *mockNL2SQL) NL2SQL(ctx context.Context, messages []*schema.Message, tables []*document.TableSchema) (sql string, err error) {
+func (m *mockNL2SQL) NL2SQL(ctx context.Context, messages []*schema.Message, tables []*document.TableSchema, opts ...nl2sql.Option) (sql string, err error) {
 	return fmt.Sprintf("select * from %s", m.tableName), nil
 }

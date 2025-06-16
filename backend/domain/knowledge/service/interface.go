@@ -195,8 +195,8 @@ type RetrieveContext struct {
 	Strategy *entity.RetrievalStrategy
 	// 检索涉及的 document 信息
 	Documents []*model.KnowledgeDocument
-	// 用于 nl2sql 和 message to query 的 chat model config
-	ChatModelConfig chatmodel.Config // TODO: 补充实现
+	// 用于 nl2sql 和 message to query 的 chat model
+	ChatModel chatmodel.BaseChatModel
 }
 
 type KnowledgeInfo struct {

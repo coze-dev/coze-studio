@@ -19,6 +19,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/repository"
+	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+
 	"github.com/bytedance/sonic"
 	redisV9 "github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -71,6 +73,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHa
 		enableCompactTable:        ptr.FromOrDefault(config.EnableCompactTable, true),
 		cacheCli:                  config.CacheCli,
 		isAutoAnnotationSupported: config.IsAutoAnnotationSupported,
+		modelFactory:              config.ModelFactory,
 	}
 	if svc.reranker == nil {
 		svc.reranker = rrf.NewRRFReranker(0)
@@ -90,6 +93,7 @@ type KnowledgeSVCConfig struct {
 	SearchStoreManagers       []searchstore.Manager          // required: 向量 / 全文
 	ParseManager              parser.Manager                 // optional: 文档切分与处理能力, default builtin parser
 	Storage                   storage.Storage                // required: oss
+	ModelFactory              chatmodel.Factory              // required: 模型 factory
 	ImageX                    imagex.ImageX                  // TODO: 确认下 oss 是否返回 uri / url
 	Rewriter                  messages2query.MessagesToQuery // optional: 未配置时不改写
 	Reranker                  rerank.Reranker                // optional: 未配置时默认 rrf
@@ -105,6 +109,7 @@ type knowledgeSVC struct {
 	documentRepo  repository.KnowledgeDocumentRepo
 	sliceRepo     repository.KnowledgeDocumentSliceRepo
 	reviewRepo    repository.KnowledgeDocumentReviewRepo
+	modelFactory  chatmodel.Factory
 
 	idgen                     idgen.IDGenerator
 	rdb                       rdb.RDB

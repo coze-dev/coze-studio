@@ -4,6 +4,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
@@ -90,6 +91,10 @@ type RetrieveRequest struct {
 
 	// 召回策略
 	Strategy *RetrievalStrategy
+
+	// 用于 nl2sql 和 message to query 的 chat model config
+	ChatModelProtocol *chatmodel.Protocol
+	ChatModelConfig   *chatmodel.Config
 }
 
 type RetrievalStrategy struct {
