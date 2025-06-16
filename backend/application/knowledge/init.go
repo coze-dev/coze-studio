@@ -47,6 +47,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	builtinM2Q "code.byted.org/flow/opencoze/backend/infra/impl/messages2query/builtin"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
@@ -172,7 +173,11 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		// accept ocr not configured
 	}
 
-	root := os.Getenv("PWD")
+	root, err := os.Getwd()
+	if err != nil {
+		logs.Warnf("[InitConfig] Failed to get current working directory: %v", err)
+		root = os.Getenv("PWD")
+	}
 
 	var rewriter messages2query.MessagesToQuery
 	if rewriterChatModel, _, err := getBuiltinChatModel(ctx, "M2Q_"); err != nil {

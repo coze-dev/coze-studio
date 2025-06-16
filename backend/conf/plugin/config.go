@@ -8,10 +8,18 @@ import (
 	"path"
 
 	"github.com/bytedance/sonic"
+
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 func InitConfig(ctx context.Context) (err error) {
-	basePath := path.Join(os.Getenv("PWD"), "resources", "conf", "plugin")
+	cwd, err := os.Getwd()
+	if err != nil {
+		logs.Warnf("[InitConfig] Failed to get current working directory: %v", err)
+		cwd = os.Getenv("PWD")
+	}
+
+	basePath := path.Join(cwd, "resources", "conf", "plugin")
 
 	err = loadPluginProductMeta(ctx, basePath)
 	if err != nil {

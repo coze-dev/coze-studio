@@ -38,17 +38,20 @@ fi
 
 cd "$DOCKER_DIR/atlas"
 
-if [ "$OS" = "Darwin" ]; then
-    atlas schema apply -u $ATLAS_URL --to file://opencoze_latest_schema.hcl --auto-approve --exclude "table_*"
-    echo -e "${GREEN}✅ apply mysql schema successfully${NC}"
-elif [ "$OS" = "Linux" ]; then
-    atlas migrate apply \
-        --url "$ATLAS_URL" \
-        --dir "file://migrations" \
-        --revisions-schema opencoze \
-        --baseline "20250618025620"
-    echo -e "${GREEN}✅ migrate mysql successfully${NC}"
-elif [ "$OS" = "Windows" ]; then
-    echo -e "${RED}Windows is not supported. Please install Atlas manually.${NC}"
-    exit 1
-fi
+atlas schema apply -u $ATLAS_URL --to file://opencoze_latest_schema.hcl --exclude "atlas_schema_revisions,table_*" --auto-approve
+echo -e "${GREEN}✅ apply mysql schema successfully${NC}"
+
+# if [ "$OS" = "Darwin" ]; then
+#     atlas schema apply -u $ATLAS_URL --to file://opencoze_latest_schema.hcl --auto-approve --exclude "table_*"
+#     echo -e "${GREEN}✅ apply mysql schema successfully${NC}"
+# elif [ "$OS" = "Linux" ]; then
+#     atlas migrate apply \
+#         --url "$ATLAS_URL" \
+#         --dir "file://migrations" \
+#         --revisions-schema opencoze \
+#         --baseline "20250618025620"
+#     echo -e "${GREEN}✅ migrate mysql successfully${NC}"
+# elif [ "$OS" = "Windows" ]; then
+#     echo -e "${RED}Windows is not supported. Please install Atlas manually.${NC}"
+#     exit 1
+# fi

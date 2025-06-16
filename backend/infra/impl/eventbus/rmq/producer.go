@@ -35,7 +35,7 @@ func NewProducer(nameServer, topic, group string, retries int) (eventbus.Produce
 		producer.WithGroupName(group),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("NewProducer failed: %w", err)
+		return nil, fmt.Errorf("NewProducer failed, nameServer: %s, topic: %s, err: %w", nameServer, topic, err)
 	}
 
 	err = p.Start()

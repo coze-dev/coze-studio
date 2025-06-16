@@ -44,6 +44,13 @@ func AccessLogMW() app.HandlerFunc {
 			urlQuery := ctx.Request.URI().QueryString()
 			reqBody := bytesToString(ctx.Request.Body())
 			respBody := bytesToString(ctx.Response.Body())
+			maxPrintLen := 3 * 1024
+			if len(respBody) > maxPrintLen {
+				respBody = respBody[:maxPrintLen]
+			}
+			if len(reqBody) > maxPrintLen {
+				reqBody = reqBody[:maxPrintLen]
+			}
 
 			requestAuthType := ctx.GetInt32(RequestAuthTypeStr)
 			if requestAuthType != int32(RequestAuthTypeStaticFile) && filepath.Ext(path) == "" {

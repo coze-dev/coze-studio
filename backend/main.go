@@ -6,6 +6,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"runtime/debug"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -92,4 +93,7 @@ func setLogLevel() {
 	default:
 		logs.SetLevel(logs.LevelInfo)
 	}
+
+	crashFile, _ := os.Create("crash.log")
+	debug.SetCrashOutput(crashFile, debug.CrashOptions{})
 }

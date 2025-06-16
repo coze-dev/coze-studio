@@ -16,7 +16,9 @@ if [ ! -d "$DOCKER_DIR" ]; then
 fi
 
 echo -e "${GREEN}🐳 Starting Docker services...${NC}"
-docker compose -f "$DOCKER_DIR/docker-compose.yml" --env-file "$BACKEND_DIR/.env" up -d --wait || {
-    echo -e "${RED}❌ Failed to start Docker services - aborting startup${NC}"
+docker compose -f "$DOCKER_DIR/docker-compose.yml" --env-file "$BACKEND_DIR/.env" up -d mysql redis rocketmq-namesrv rocketmq-broker elasticsearch kibana minio etcd milvus elasticsearch-setup minio-setup
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}❌ Failed to start initial Docker services - aborting startup${NC}"
     exit 1
-}
+fi

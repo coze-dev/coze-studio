@@ -8,10 +8,10 @@ import (
 	"os/exec"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
+	"code.byted.org/flow/opencoze/backend/pkg/goutil"
 )
 
-type Runner struct {
-}
+type Runner struct{}
 
 func NewRunner() *Runner {
 	return &Runner{}
@@ -36,7 +36,7 @@ func (r *Runner) Run(ctx context.Context, request *code.RunRequest) (*code.RunRe
 
 func (r *Runner) pythonCmdRun(_ context.Context, code string, params map[string]any) (map[string]any, error) {
 	bs, _ := json.Marshal(params)
-	cmd := exec.Command(".venv/bin/python3", "python_script.py", code, string(bs))
+	cmd := exec.Command(goutil.GetPython3Path(), goutil.GetPythonFilePath("python_script.py"), code, string(bs))
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
 	cmd.Stdout = stdout
@@ -56,5 +56,4 @@ func (r *Runner) pythonCmdRun(_ context.Context, code string, params map[string]
 		return nil, err
 	}
 	return ret, nil
-
 }

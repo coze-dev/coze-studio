@@ -108,7 +108,6 @@ func (u *UploadService) GetShortcutIcons(ctx context.Context) ([]*playground.Fil
 		}
 	}
 	return fileList, nil
-
 }
 
 func parseMultipartFormData(ctx context.Context, req *playground.UploadFileOpenRequest) (*multipart.Form, error) {
@@ -127,6 +126,7 @@ func parseMultipartFormData(ctx context.Context, req *playground.UploadFileOpenR
 	}
 	return form, nil
 }
+
 func genObjName(contentType, name string, uid string, id string) string {
 	if len(uid) == 0 {
 		uid = "default"
@@ -139,6 +139,7 @@ func genObjName(contentType, name string, uid string, id string) string {
 		name,
 	)
 }
+
 func (u *UploadService) UploadFileOpen(ctx context.Context, req *playground.UploadFileOpenRequest) (*playground.UploadFileOpenResponse, error) {
 	resp := playground.UploadFileOpenResponse{}
 	resp.File = new(playground.File)
@@ -180,7 +181,6 @@ func (u *UploadService) UploadFileOpen(ctx context.Context, req *playground.Uplo
 	url, err := u.oss.GetObjectUrl(ctx, objName)
 	if err != nil {
 		return nil, errorx.New(errno.ErrUploadSystemErrorCode, errorx.KV("msg", "get object url failed"))
-
 	}
 	resp.File.CreatedAt = time.Now().Unix()
 	resp.File.URL = url

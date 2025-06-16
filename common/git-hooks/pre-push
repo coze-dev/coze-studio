@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ "$SKIP_COMMIT_MSG_HOOK" = "true" ]; then
+    exit 0
+fi
+
 source scripts/block-unresolved-conflict.sh
 
 source scripts/pre-push-hook.sh

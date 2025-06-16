@@ -37,7 +37,7 @@ func (c *connectorImpl) AllConnectorInfo() []*entity.Connector {
 				ID:   consts.APIConnectorID,
 				Name: "API",
 				URI:  "default_icon/connector-api.jpg",
-				Desc: "调用前需[创建访问凭证](https://localhost/open/oauth/apps)，支持 OAuth 2.0 和个人访问令牌", // TODO(fanlv): 链接
+				Desc: "支持 OAuth 2.0 和个人访问令牌",
 			},
 		},
 		{
