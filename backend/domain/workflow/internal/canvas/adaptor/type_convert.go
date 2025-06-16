@@ -26,6 +26,7 @@ import (
 func CanvasVariableToTypeInfo(v *vo.Variable) (*vo.TypeInfo, error) {
 	tInfo := &vo.TypeInfo{
 		Required: v.Required,
+		Desc:     v.Description,
 	}
 
 	switch v.Type {
@@ -1104,6 +1105,7 @@ func VariableToNamedTypeInfo(v *vo.Variable) (*vo.NamedTypeInfo, error) {
 	nInfo := &vo.NamedTypeInfo{
 		Required: v.Required,
 		Name:     v.Name,
+		Desc:     v.Description,
 	}
 
 	switch v.Type {
