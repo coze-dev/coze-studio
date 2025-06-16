@@ -13,7 +13,7 @@ type ApplicationService struct {
 
 var ApplicationSVC = &ApplicationService{}
 
-func (t *ApplicationService) PublicGetProductList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
+func (t *ApplicationService) PublicGetProductList(ctx context.Context, _ *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
 	listResp, allNum, err := t.templateRepo.List(ctx, nil, nil, "")
 	if err != nil {
 		return nil, err

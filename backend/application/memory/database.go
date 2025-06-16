@@ -916,7 +916,7 @@ type DuplicateDatabaseRequest struct {
 
 	IsCopyData    bool    // is need to copy data
 	TargetSpaceID *int64  // if is nil, it will be set to the same space as the original database
-	TargetAppID   *int64  // if is nil, it will be set to the same app as the original database
+	TargetAppID   *int64  // if is nil, it will be set to the same app as the original database; if copy to resource, set to 0
 	Suffix        *string // table name suffix for the copied table, default is "_copy"
 }
 
