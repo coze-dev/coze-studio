@@ -188,7 +188,7 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 	// 查询document信息（仅处理完成的文档）
 	documents, _, err := k.documentRepo.FindDocumentByCondition(ctx, &entity.WhereDocumentOpt{
 		KnowledgeIDs: []int64{copyCtx.OriginData.ID},
-		StatusIn:     []int32{int32(entity.DocumentStatusEnable)},
+		StatusIn:     []int32{int32(entity.DocumentStatusEnable), int32(entity.DocumentStatusInit)},
 		SelectAll:    true,
 	})
 	if err != nil {

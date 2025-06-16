@@ -379,9 +379,8 @@ func addSliceIdColumn(originalSql string) string {
 	if selectIndex == -1 {
 		return originalSql
 	}
-
-	result := originalSql[:selectIndex+6] // 保留 select 部分
-	remainder := originalSql[selectIndex+6:]
+	result := originalSql[:selectIndex+len("select ")] // 保留 select 部分
+	remainder := originalSql[selectIndex+len("select "):]
 
 	lowerRemainder := strings.ToLower(remainder)
 	fromIndex := strings.Index(lowerRemainder, " from")
@@ -458,6 +457,10 @@ func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any)
 
 	// 根据召回策略从不同渠道获取召回结果
 	var retrieveResultArr [][]*rerank.Data
+	if retrieveCtx.Strategy.EnableNL2SQL {
+		// nl2sql结果
+		retrieveResultArr = append(retrieveResultArr, docs2RerankData(nl2SqlRetrieveResult))
+	}
 	switch retrieveCtx.Strategy.SearchType {
 	case knowledgeModel.SearchTypeSemantic:
 		retrieveResultArr = append(retrieveResultArr, docs2RerankData(vectorRetrieveResult))
@@ -468,10 +471,6 @@ func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any)
 		retrieveResultArr = append(retrieveResultArr, docs2RerankData(esRetrieveResult))
 	default:
 		retrieveResultArr = append(retrieveResultArr, docs2RerankData(vectorRetrieveResult))
-	}
-	if retrieveCtx.Strategy.EnableNL2SQL {
-		// nl2sql结果
-		retrieveResultArr = append(retrieveResultArr, docs2RerankData(nl2SqlRetrieveResult))
 	}
 
 	query := retrieveCtx.OriginQuery

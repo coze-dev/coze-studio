@@ -297,7 +297,7 @@ func convertDocumentStatus2Model(status entity.DocumentStatus) dataset.DocumentS
 	switch status {
 	case entity.DocumentStatusDeleted:
 		return dataset.DocumentStatus_Deleted
-	case entity.DocumentStatusEnable:
+	case entity.DocumentStatusEnable, entity.DocumentStatusInit:
 		return dataset.DocumentStatus_Enable
 	case entity.DocumentStatusFailed:
 		return dataset.DocumentStatus_Failed

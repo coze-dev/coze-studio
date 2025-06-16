@@ -59,7 +59,7 @@ func (c *customTableProcessor) BuildDBModel() error {
 			// 因为这种创建方式不带数据，所以直接设置状态为可用
 			for i := range c.docModels {
 				c.docModels[i].DocumentType = 1
-				c.docModels[i].Status = int32(entity.DocumentStatusEnable)
+				c.docModels[i].Status = int32(entity.DocumentStatusInit)
 			}
 		}
 	}

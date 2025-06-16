@@ -56,7 +56,7 @@ func (k *knowledgeSVC) isWritableDocument(ctx context.Context, documentID int64)
 		return false, errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", "[isWritableDocument] document not found"))
 	}
 	switch entity.DocumentStatus(documentModel.Status) {
-	case entity.DocumentStatusUploading, entity.DocumentStatusEnable, entity.DocumentStatusChunking, entity.DocumentStatusFailed:
+	case entity.DocumentStatusInit, entity.DocumentStatusUploading, entity.DocumentStatusEnable, entity.DocumentStatusChunking, entity.DocumentStatusFailed:
 		return true, nil
 	case entity.DocumentStatusDisable, entity.DocumentStatusDeleted:
 		return false, nil

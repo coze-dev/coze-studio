@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/rerank"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
 func NewRRFReranker(k int64) rerank.Reranker {
@@ -45,8 +46,8 @@ func (r *rrfReranker) Rerank(ctx context.Context, req *rerank.Request) (*rerank.
 		return id2Score[sorted[i].Document.ID] > id2Score[sorted[j].Document.ID]
 	})
 	topN := int64(len(sorted))
-	if req.TopN != nil && *req.TopN != 0 && *req.TopN < topN {
-		topN = *req.TopN
+	if req.TopN != nil && ptr.From(req.TopN) != 0 && ptr.From(req.TopN) < topN {
+		topN = ptr.From(req.TopN)
 	}
 
 	return &rerank.Response{SortedData: sorted[:topN]}, nil
