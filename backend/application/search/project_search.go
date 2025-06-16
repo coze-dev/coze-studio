@@ -57,13 +57,13 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 
 	tasks := taskgroup.NewUninterruptibleTaskGroup(ctx, len(searchResp.Data))
 	lock := sync.Mutex{}
-	intelligenceDataList := make([]*intelligence.IntelligenceData, 0, len(searchResp.Data))
+	intelligenceDataList := make([]*intelligence.IntelligenceData, len(searchResp.Data))
 
 	logs.CtxDebugf(ctx, "[GetDraftIntelligenceList] searchResp.Data: %v", conv.DebugJsonToStr(searchResp.Data))
 
 	for idx := range searchResp.Data {
 		data := searchResp.Data[idx]
-
+		index := idx
 		tasks.Go(func() error {
 			info, err := s.packIntelligenceData(ctx, data)
 			if err != nil {
@@ -74,8 +74,7 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 
 			lock.Lock()
 			defer lock.Unlock()
-			intelligenceDataList = append(intelligenceDataList, info)
-
+			intelligenceDataList[index] = info
 			return nil
 		})
 
@@ -83,12 +82,18 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 	}
 
 	_ = tasks.Wait()
+	filterDataList := make([]*intelligence.IntelligenceData, 0)
+	for _, data := range intelligenceDataList {
+		if data != nil {
+			filterDataList = append(filterDataList, data)
+		}
+	}
 
 	return &intelligence.GetDraftIntelligenceListResponse{
 		Code: 0,
 		Data: &intelligence.DraftIntelligenceListData{
-			Intelligences: intelligenceDataList,
-			Total:         int32(len(searchResp.Data)),
+			Intelligences: filterDataList,
+			Total:         int32(len(filterDataList)),
 			HasMore:       searchResp.HasMore,
 			NextCursorID:  searchResp.NextCursor,
 		},

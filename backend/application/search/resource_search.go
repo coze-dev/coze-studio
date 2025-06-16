@@ -68,10 +68,10 @@ func (s *SearchApplicationService) LibraryResourceList(ctx context.Context, req 
 
 	lock := sync.Mutex{}
 	tasks := taskgroup.NewUninterruptibleTaskGroup(ctx, 10)
-	resources := make([]*common.ResourceInfo, 0, len(searchResp.Data))
+	resources := make([]*common.ResourceInfo, len(searchResp.Data))
 	for idx := range searchResp.Data {
 		v := searchResp.Data[idx]
-
+		index := idx
 		tasks.Go(func() error {
 			ri, err := s.packResource(ctx, v)
 			if err != nil {
@@ -82,17 +82,23 @@ func (s *SearchApplicationService) LibraryResourceList(ctx context.Context, req 
 
 			lock.Lock()
 			defer lock.Unlock()
-			resources = append(resources, ri)
-
+			resources[index] = ri
 			return nil
 		})
 	}
 
 	_ = tasks.Wait()
+	filterResource := make([]*common.ResourceInfo, 0)
+	for _, res := range resources {
+		if res == nil {
+			continue
+		}
+		filterResource = append(filterResource, res)
+	}
 
 	return &resource.LibraryResourceListResponse{
 		Code:         0,
-		ResourceList: resources,
+		ResourceList: filterResource,
 		Cursor:       ptr.Of(searchResp.NextCursor),
 		HasMore:      searchResp.HasMore,
 	}, nil
