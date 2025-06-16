@@ -23,7 +23,7 @@ class PkgRootWebpackPlugin {
   rootFolders: string[]; // 需要进行转化的项目根目录，如packages/card-builder，默认值为全量rush.json里的路径
 
   constructor(options?: Partial<PkgRootWebpackPluginOptions>) {
-    const rootDir = path.resolve(__dirname, '../../../../');
+    const rootDir = path.resolve(__dirname, '../../../../../');
 
     const rushJsonPath = path.resolve(rootDir, 'rush.json');
     const rushJsonStr = fs.readFileSync(rushJsonPath, 'utf-8');
@@ -37,8 +37,8 @@ class PkgRootWebpackPlugin {
       root: '@',
       // 排除apps/*，减少处理时间
       excludeFolders: fs
-        .readdirSync(path.resolve(rootDir, 'apps'))
-        .map(folder => `apps/${folder}`),
+        .readdirSync(path.resolve(rootDir, 'frontend/apps'))
+        .map(folder => `frontend/apps/${folder}`),
       ...(options || {}),
     };
   }

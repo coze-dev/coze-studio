@@ -15,7 +15,7 @@ const toAbsolute = (root, file) => {
 };
 class PkgRootWebpackPlugin {
     constructor(options) {
-        const rootDir = path_1.default.resolve(__dirname, '../../../../');
+        const rootDir = path_1.default.resolve(__dirname, '../../../../../');
         const rushJsonPath = path_1.default.resolve(rootDir, 'rush.json');
         const rushJsonStr = fs_1.default.readFileSync(rushJsonPath, 'utf-8');
         const rushJson = json5_1.default.parse(rushJsonStr);
@@ -25,8 +25,8 @@ class PkgRootWebpackPlugin {
             root: '@',
             // 排除apps/*，减少处理时间
             excludeFolders: fs_1.default
-                .readdirSync(path_1.default.resolve(rootDir, 'apps'))
-                .map(folder => `apps/${folder}`),
+                .readdirSync(path_1.default.resolve(rootDir, 'frontend/apps'))
+                .map(folder => `frontend/apps/${folder}`),
             ...(options || {}),
         };
     }
