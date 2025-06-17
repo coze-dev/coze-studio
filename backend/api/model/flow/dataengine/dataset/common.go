@@ -504,10 +504,14 @@ func (p *ReviewStatus) Value() (driver.Value, error) {
 }
 
 type ChunkStrategy struct {
-	Separator         string `thrift:"separator,1" form:"separator" json:"separator" query:"separator"`
-	MaxTokens         int64  `thrift:"max_tokens,2" form:"max_tokens" json:"max_tokens" query:"max_tokens"`
-	RemoveExtraSpaces bool   `thrift:"remove_extra_spaces,3" form:"remove_extra_spaces" json:"remove_extra_spaces" query:"remove_extra_spaces"`
-	RemoveUrlsEmails  bool   `thrift:"remove_urls_emails,4" form:"remove_urls_emails" json:"remove_urls_emails" query:"remove_urls_emails"`
+	// 分隔符，如句号
+	Separator string `thrift:"separator,1" form:"separator" json:"separator" query:"separator"`
+	// 分片的最大token数
+	MaxTokens int64 `thrift:"max_tokens,2" form:"max_tokens" json:"max_tokens" query:"max_tokens"`
+	// 替换掉连续的空格、换行符和制表符
+	RemoveExtraSpaces bool `thrift:"remove_extra_spaces,3" form:"remove_extra_spaces" json:"remove_extra_spaces" query:"remove_extra_spaces"`
+	// 是否去除url和email
+	RemoveUrlsEmails bool `thrift:"remove_urls_emails,4" form:"remove_urls_emails" json:"remove_urls_emails" query:"remove_urls_emails"`
 	// 如果为0, 则不使用以上字段的配置
 	ChunkType ChunkType `thrift:"chunk_type,5" form:"chunk_type" json:"chunk_type" query:"chunk_type"`
 	// 图片类型，图片描述文字的标注方式

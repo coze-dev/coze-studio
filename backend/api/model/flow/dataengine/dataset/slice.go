@@ -61,6 +61,7 @@ func (p *SliceStatus) Value() (driver.Value, error) {
 }
 
 type DeleteSliceRequest struct {
+	// 要删除的分片ID列表
 	SliceIds []string   `thrift:"slice_ids,4,optional" form:"slice_ids" json:"slice_ids,omitempty"`
 	Base     *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -536,14 +537,13 @@ func (p *DeleteSliceResponse) String() string {
 }
 
 type CreateSliceRequest struct {
-	DocumentID       int64      `thrift:"document_id,2,required" form:"document_id,required" json:"document_id,string,required" query:"document_id,required"`
-	RawText          *string    `thrift:"raw_text,5,optional" form:"raw_text" json:"raw_text,omitempty" query:"raw_text"`
-	Sequence         *int64     `thrift:"sequence,6,optional" form:"sequence" json:"sequence,string,omitempty" query:"sequence"`
-	Extra            *string    `thrift:"extra,7,optional" form:"extra" json:"extra,omitempty" query:"extra"`
-	TreeNodeID       *int64     `thrift:"tree_node_id,8,optional" form:"tree_node_id" json:"tree_node_id,omitempty" query:"tree_node_id"`
-	FrontTreeNodeID  *int64     `thrift:"front_tree_node_id,9,optional" form:"front_tree_node_id" json:"front_tree_node_id,omitempty" query:"front_tree_node_id"`
-	ParentTreeNodeID *int64     `thrift:"parent_tree_node_id,10,optional" form:"parent_tree_node_id" json:"parent_tree_node_id,omitempty" query:"parent_tree_node_id"`
-	Base             *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	// 新增分片插入的文档ID
+	DocumentID int64 `thrift:"document_id,2,required" form:"document_id,required" json:"document_id,string,required" query:"document_id,required"`
+	// 新增分片的内容
+	RawText *string `thrift:"raw_text,5,optional" form:"raw_text" json:"raw_text,omitempty" query:"raw_text"`
+	// 分片插入位置，1表示文档开头，最大值为最后一个分片位置+1
+	Sequence *int64     `thrift:"sequence,6,optional" form:"sequence" json:"sequence,string,omitempty" query:"sequence"`
+	Base     *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewCreateSliceRequest() *CreateSliceRequest {
@@ -575,42 +575,6 @@ func (p *CreateSliceRequest) GetSequence() (v int64) {
 	return *p.Sequence
 }
 
-var CreateSliceRequest_Extra_DEFAULT string
-
-func (p *CreateSliceRequest) GetExtra() (v string) {
-	if !p.IsSetExtra() {
-		return CreateSliceRequest_Extra_DEFAULT
-	}
-	return *p.Extra
-}
-
-var CreateSliceRequest_TreeNodeID_DEFAULT int64
-
-func (p *CreateSliceRequest) GetTreeNodeID() (v int64) {
-	if !p.IsSetTreeNodeID() {
-		return CreateSliceRequest_TreeNodeID_DEFAULT
-	}
-	return *p.TreeNodeID
-}
-
-var CreateSliceRequest_FrontTreeNodeID_DEFAULT int64
-
-func (p *CreateSliceRequest) GetFrontTreeNodeID() (v int64) {
-	if !p.IsSetFrontTreeNodeID() {
-		return CreateSliceRequest_FrontTreeNodeID_DEFAULT
-	}
-	return *p.FrontTreeNodeID
-}
-
-var CreateSliceRequest_ParentTreeNodeID_DEFAULT int64
-
-func (p *CreateSliceRequest) GetParentTreeNodeID() (v int64) {
-	if !p.IsSetParentTreeNodeID() {
-		return CreateSliceRequest_ParentTreeNodeID_DEFAULT
-	}
-	return *p.ParentTreeNodeID
-}
-
 var CreateSliceRequest_Base_DEFAULT *base.Base
 
 func (p *CreateSliceRequest) GetBase() (v *base.Base) {
@@ -624,10 +588,6 @@ var fieldIDToName_CreateSliceRequest = map[int16]string{
 	2:   "document_id",
 	5:   "raw_text",
 	6:   "sequence",
-	7:   "extra",
-	8:   "tree_node_id",
-	9:   "front_tree_node_id",
-	10:  "parent_tree_node_id",
 	255: "Base",
 }
 
@@ -637,22 +597,6 @@ func (p *CreateSliceRequest) IsSetRawText() bool {
 
 func (p *CreateSliceRequest) IsSetSequence() bool {
 	return p.Sequence != nil
-}
-
-func (p *CreateSliceRequest) IsSetExtra() bool {
-	return p.Extra != nil
-}
-
-func (p *CreateSliceRequest) IsSetTreeNodeID() bool {
-	return p.TreeNodeID != nil
-}
-
-func (p *CreateSliceRequest) IsSetFrontTreeNodeID() bool {
-	return p.FrontTreeNodeID != nil
-}
-
-func (p *CreateSliceRequest) IsSetParentTreeNodeID() bool {
-	return p.ParentTreeNodeID != nil
 }
 
 func (p *CreateSliceRequest) IsSetBase() bool {
@@ -698,38 +642,6 @@ func (p *CreateSliceRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 6:
 			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField6(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 7:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField7(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 8:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField8(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 9:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField9(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 10:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField10(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -811,50 +723,6 @@ func (p *CreateSliceRequest) ReadField6(iprot thrift.TProtocol) error {
 	p.Sequence = _field
 	return nil
 }
-func (p *CreateSliceRequest) ReadField7(iprot thrift.TProtocol) error {
-
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.Extra = _field
-	return nil
-}
-func (p *CreateSliceRequest) ReadField8(iprot thrift.TProtocol) error {
-
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.TreeNodeID = _field
-	return nil
-}
-func (p *CreateSliceRequest) ReadField9(iprot thrift.TProtocol) error {
-
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.FrontTreeNodeID = _field
-	return nil
-}
-func (p *CreateSliceRequest) ReadField10(iprot thrift.TProtocol) error {
-
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.ParentTreeNodeID = _field
-	return nil
-}
 func (p *CreateSliceRequest) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBase()
 	if err := _field.Read(iprot); err != nil {
@@ -880,22 +748,6 @@ func (p *CreateSliceRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField6(oprot); err != nil {
 			fieldId = 6
-			goto WriteFieldError
-		}
-		if err = p.writeField7(oprot); err != nil {
-			fieldId = 7
-			goto WriteFieldError
-		}
-		if err = p.writeField8(oprot); err != nil {
-			fieldId = 8
-			goto WriteFieldError
-		}
-		if err = p.writeField9(oprot); err != nil {
-			fieldId = 9
-			goto WriteFieldError
-		}
-		if err = p.writeField10(oprot); err != nil {
-			fieldId = 10
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -972,78 +824,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
-func (p *CreateSliceRequest) writeField7(oprot thrift.TProtocol) (err error) {
-	if p.IsSetExtra() {
-		if err = oprot.WriteFieldBegin("extra", thrift.STRING, 7); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteString(*p.Extra); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
-}
-func (p *CreateSliceRequest) writeField8(oprot thrift.TProtocol) (err error) {
-	if p.IsSetTreeNodeID() {
-		if err = oprot.WriteFieldBegin("tree_node_id", thrift.I64, 8); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI64(*p.TreeNodeID); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
-}
-func (p *CreateSliceRequest) writeField9(oprot thrift.TProtocol) (err error) {
-	if p.IsSetFrontTreeNodeID() {
-		if err = oprot.WriteFieldBegin("front_tree_node_id", thrift.I64, 9); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI64(*p.FrontTreeNodeID); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
-}
-func (p *CreateSliceRequest) writeField10(oprot thrift.TProtocol) (err error) {
-	if p.IsSetParentTreeNodeID() {
-		if err = oprot.WriteFieldBegin("parent_tree_node_id", thrift.I64, 10); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI64(*p.ParentTreeNodeID); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
-}
 func (p *CreateSliceRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {
 		if err = oprot.WriteFieldBegin("Base", thrift.STRUCT, 255); err != nil {
@@ -1072,6 +852,7 @@ func (p *CreateSliceRequest) String() string {
 }
 
 type CreateSliceResponse struct {
+	// 新增分片ID
 	SliceID  int64          `thrift:"slice_id,1" form:"slice_id" json:"slice_id,string" query:"slice_id"`
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -1369,9 +1150,8 @@ func (p *CreateSliceResponse) String() string {
 }
 
 type UpdateSliceRequest struct {
+	// 要更新的分片ID
 	SliceID int64 `thrift:"slice_id,2,required" form:"slice_id,required" json:"slice_id,string,required" query:"slice_id,required"`
-	// deprecated
-	DocumentID *int64 `thrift:"document_id,5,optional" form:"document_id" json:"document_id,omitempty" query:"document_id"`
 	// 要更新的内容
 	RawText *string    `thrift:"raw_text,7,optional" form:"raw_text" json:"raw_text,omitempty" query:"raw_text"`
 	Base    *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -1386,15 +1166,6 @@ func (p *UpdateSliceRequest) InitDefault() {
 
 func (p *UpdateSliceRequest) GetSliceID() (v int64) {
 	return p.SliceID
-}
-
-var UpdateSliceRequest_DocumentID_DEFAULT int64
-
-func (p *UpdateSliceRequest) GetDocumentID() (v int64) {
-	if !p.IsSetDocumentID() {
-		return UpdateSliceRequest_DocumentID_DEFAULT
-	}
-	return *p.DocumentID
 }
 
 var UpdateSliceRequest_RawText_DEFAULT string
@@ -1417,13 +1188,8 @@ func (p *UpdateSliceRequest) GetBase() (v *base.Base) {
 
 var fieldIDToName_UpdateSliceRequest = map[int16]string{
 	2:   "slice_id",
-	5:   "document_id",
 	7:   "raw_text",
 	255: "Base",
-}
-
-func (p *UpdateSliceRequest) IsSetDocumentID() bool {
-	return p.DocumentID != nil
 }
 
 func (p *UpdateSliceRequest) IsSetRawText() bool {
@@ -1459,14 +1225,6 @@ func (p *UpdateSliceRequest) Read(iprot thrift.TProtocol) (err error) {
 					goto ReadFieldError
 				}
 				issetSliceID = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 5:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -1532,17 +1290,6 @@ func (p *UpdateSliceRequest) ReadField2(iprot thrift.TProtocol) error {
 	p.SliceID = _field
 	return nil
 }
-func (p *UpdateSliceRequest) ReadField5(iprot thrift.TProtocol) error {
-
-	var _field *int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.DocumentID = _field
-	return nil
-}
 func (p *UpdateSliceRequest) ReadField7(iprot thrift.TProtocol) error {
 
 	var _field *string
@@ -1571,10 +1318,6 @@ func (p *UpdateSliceRequest) Write(oprot thrift.TProtocol) (err error) {
 	if p != nil {
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
 			goto WriteFieldError
 		}
 		if err = p.writeField7(oprot); err != nil {
@@ -1618,24 +1361,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *UpdateSliceRequest) writeField5(oprot thrift.TProtocol) (err error) {
-	if p.IsSetDocumentID() {
-		if err = oprot.WriteFieldBegin("document_id", thrift.I64, 5); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI64(*p.DocumentID); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 func (p *UpdateSliceRequest) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetRawText() {
@@ -1935,19 +1660,17 @@ func (p *UpdateSliceResponse) String() string {
 }
 
 type ListSliceRequest struct {
+	// 要list的分片所属的文档ID
 	DocumentID *int64 `thrift:"document_id,2,optional" form:"document_id" json:"document_id,string,omitempty" query:"document_id"`
-	// 序号
+	// 分片序号，表示从该序号的分片开始list
 	Sequence *int64 `thrift:"sequence,3,optional" form:"sequence" json:"sequence,string,omitempty" query:"sequence"`
 	// 查询关键字
 	Keyword *string `thrift:"keyword,4,optional" form:"keyword" json:"keyword,omitempty" query:"keyword"`
 	// 如果只传 dataset_id，则返回该知识库下的分片
 	DatasetID *int64 `thrift:"dataset_id,5,optional" form:"dataset_id" json:"dataset_id,string,omitempty" query:"dataset_id"`
-	// 从1开始
-	PageNo    int64      `thrift:"page_no,20" form:"page_no" json:"page_no,string" query:"page_no"`
-	PageSize  int64      `thrift:"page_size,21" form:"page_size" json:"page_size,string" query:"page_size"`
-	SortField string     `thrift:"sort_field,22" form:"sort_field" json:"sort_field" query:"sort_field"`
-	IsAsc     bool       `thrift:"is_asc,23" form:"is_asc" json:"is_asc" query:"is_asc"`
-	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	// 每页大小
+	PageSize int64      `thrift:"page_size,21" form:"page_size" json:"page_size,string" query:"page_size"`
+	Base     *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewListSliceRequest() *ListSliceRequest {
@@ -1993,20 +1716,8 @@ func (p *ListSliceRequest) GetDatasetID() (v int64) {
 	return *p.DatasetID
 }
 
-func (p *ListSliceRequest) GetPageNo() (v int64) {
-	return p.PageNo
-}
-
 func (p *ListSliceRequest) GetPageSize() (v int64) {
 	return p.PageSize
-}
-
-func (p *ListSliceRequest) GetSortField() (v string) {
-	return p.SortField
-}
-
-func (p *ListSliceRequest) GetIsAsc() (v bool) {
-	return p.IsAsc
 }
 
 var ListSliceRequest_Base_DEFAULT *base.Base
@@ -2023,10 +1734,7 @@ var fieldIDToName_ListSliceRequest = map[int16]string{
 	3:   "sequence",
 	4:   "keyword",
 	5:   "dataset_id",
-	20:  "page_no",
 	21:  "page_size",
-	22:  "sort_field",
-	23:  "is_asc",
 	255: "Base",
 }
 
@@ -2100,33 +1808,9 @@ func (p *ListSliceRequest) Read(iprot thrift.TProtocol) (err error) {
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 20:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField20(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 21:
 			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField21(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 22:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField22(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 23:
-			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField23(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -2213,17 +1897,6 @@ func (p *ListSliceRequest) ReadField5(iprot thrift.TProtocol) error {
 	p.DatasetID = _field
 	return nil
 }
-func (p *ListSliceRequest) ReadField20(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.PageNo = _field
-	return nil
-}
 func (p *ListSliceRequest) ReadField21(iprot thrift.TProtocol) error {
 
 	var _field int64
@@ -2233,28 +1906,6 @@ func (p *ListSliceRequest) ReadField21(iprot thrift.TProtocol) error {
 		_field = v
 	}
 	p.PageSize = _field
-	return nil
-}
-func (p *ListSliceRequest) ReadField22(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.SortField = _field
-	return nil
-}
-func (p *ListSliceRequest) ReadField23(iprot thrift.TProtocol) error {
-
-	var _field bool
-	if v, err := iprot.ReadBool(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.IsAsc = _field
 	return nil
 }
 func (p *ListSliceRequest) ReadField255(iprot thrift.TProtocol) error {
@@ -2288,20 +1939,8 @@ func (p *ListSliceRequest) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 5
 			goto WriteFieldError
 		}
-		if err = p.writeField20(oprot); err != nil {
-			fieldId = 20
-			goto WriteFieldError
-		}
 		if err = p.writeField21(oprot); err != nil {
 			fieldId = 21
-			goto WriteFieldError
-		}
-		if err = p.writeField22(oprot); err != nil {
-			fieldId = 22
-			goto WriteFieldError
-		}
-		if err = p.writeField23(oprot); err != nil {
-			fieldId = 23
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -2398,22 +2037,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
-func (p *ListSliceRequest) writeField20(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("page_no", thrift.I64, 20); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.PageNo); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 20 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 20 end error: ", p), err)
-}
 func (p *ListSliceRequest) writeField21(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("page_size", thrift.I64, 21); err != nil {
 		goto WriteFieldBeginError
@@ -2429,38 +2052,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 21 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 21 end error: ", p), err)
-}
-func (p *ListSliceRequest) writeField22(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("sort_field", thrift.STRING, 22); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.SortField); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 22 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 22 end error: ", p), err)
-}
-func (p *ListSliceRequest) writeField23(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("is_asc", thrift.BOOL, 23); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteBool(p.IsAsc); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 23 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 23 end error: ", p), err)
 }
 func (p *ListSliceRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {
@@ -2490,8 +2081,11 @@ func (p *ListSliceRequest) String() string {
 }
 
 type ListSliceResponse struct {
-	Slices   []*SliceInfo   `thrift:"slices,1" form:"slices" json:"slices" query:"slices"`
-	Total    int64          `thrift:"total,2" form:"total" json:"total,string" query:"total"`
+	// 返回的分片列表
+	Slices []*SliceInfo `thrift:"slices,1" form:"slices" json:"slices" query:"slices"`
+	// 总分片数
+	Total int64 `thrift:"total,2" form:"total" json:"total,string" query:"total"`
+	// 是否还有更多分片
 	Hasmore  bool           `thrift:"hasmore,3" form:"hasmore" json:"hasmore" query:"hasmore"`
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -2897,15 +2491,19 @@ func (p *ListSliceResponse) String() string {
 }
 
 type SliceInfo struct {
-	SliceID int64       `thrift:"slice_id,1" form:"slice_id" json:"slice_id,string" query:"slice_id"`
-	Content string      `thrift:"content,2" form:"content" json:"content" query:"content"`
-	Status  SliceStatus `thrift:"status,3" form:"status" json:"status" query:"status"`
+	// 分片ID
+	SliceID int64 `thrift:"slice_id,1" form:"slice_id" json:"slice_id,string" query:"slice_id"`
+	// 分片内容
+	Content string `thrift:"content,2" form:"content" json:"content" query:"content"`
+	// 分片状态
+	Status SliceStatus `thrift:"status,3" form:"status" json:"status" query:"status"`
 	// 命中次数
 	HitCount int64 `thrift:"hit_count,4" form:"hit_count" json:"hit_count,string" query:"hit_count"`
 	// 字符数
 	CharCount int64 `thrift:"char_count,5" form:"char_count" json:"char_count,string" query:"char_count"`
 	// 序号
-	Sequence   int64 `thrift:"sequence,7" form:"sequence" json:"sequence,string" query:"sequence"`
+	Sequence int64 `thrift:"sequence,7" form:"sequence" json:"sequence,string" query:"sequence"`
+	// 分片所属的文档ID
 	DocumentID int64 `thrift:"document_id,8" form:"document_id" json:"document_id,string" query:"document_id"`
 	// 分片相关的元信息, 透传 slice 表里的 extra->chunk_info 字段 (json)
 	ChunkInfo string `thrift:"chunk_info,9" form:"chunk_info" json:"chunk_info" query:"chunk_info"`

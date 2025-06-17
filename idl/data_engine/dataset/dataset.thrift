@@ -6,9 +6,9 @@ namespace go flow.dataengine.dataset
 
 struct CreateDatasetRequest  {
     1: string name                   // 知识库名称，长度不超过100个字符
-    2: string description
-    3: i64 space_id (agw.js_conv="str", api.js_conv="true")
-    4: string icon_uri
+    2: string description            // 知识库描述
+    3: i64 space_id (agw.js_conv="str", api.js_conv="true")  // 空间ID
+    4: string icon_uri                // 知识库头像URI
     5: common.FormatType format_type
     6: i64 biz_id (agw.js_conv="str", api.js_conv="true") // 开放给第三方的业务标识, coze 传 0 或者不传
     7: i64 project_id (agw.js_conv="str", api.js_conv="true") //新增project ID
@@ -101,7 +101,7 @@ struct ListDatasetResponse {
 struct DatasetFilter {
     // 如果都设置了，And 关系
     1: optional string name              // 关键字搜索, 按照名称模糊匹配
-    2: optional list<string>  dataset_ids (agw.js_conv="str")
+    2: optional list<string>  dataset_ids (agw.js_conv="str") // 知识库id列表
     3: optional DatasetSource source_type   // 来源
     4: optional DatasetScopeType  scope_type   // 搜索类型
     5: optional common.FormatType format_type // 类型
@@ -131,10 +131,10 @@ struct DeleteDatasetResponse {
 }
 
 struct UpdateDatasetRequest {
-    1: i64                 dataset_id (agw.js_conv="str", api.js_conv="true")
-    2: string              name
-    3: string              icon_uri
-    4: string              description
+    1: i64                 dataset_id (agw.js_conv="str", api.js_conv="true") // 知识库id
+    2: string              name    // 知识库名称，不能为空
+    3: string              icon_uri  // 知识库icon
+    4: string              description // 知识库描述
     5: optional            DatasetStatus status
 
     255: optional base.Base  Base;

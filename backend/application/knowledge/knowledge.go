@@ -537,16 +537,14 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 	if uid == nil {
 		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
-	docID := req.GetDocumentID()
-	if docID == 0 {
-		getSliceResp, err := k.DomainSVC.GetSlice(ctx, &service.GetSliceRequest{
-			SliceID: req.GetSliceID(),
-		})
-		if err != nil {
-			return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "slice not found"))
-		}
-		docID = getSliceResp.Slice.DocumentID
+	getSliceResp, err := k.DomainSVC.GetSlice(ctx, &service.GetSliceRequest{
+		SliceID: req.GetSliceID(),
+	})
+	if err != nil {
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "slice not found"))
 	}
+	docID := getSliceResp.Slice.DocumentID
+
 	listResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{
 		DocumentIDs: []int64{docID},
 	})

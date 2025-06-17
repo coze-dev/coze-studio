@@ -265,8 +265,6 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 		PreviewTosURL:         &documentEntity.URL,
 		ChunkStrategy:         chunkStrategy,
 		ParsingStrategy:       parseStrategy,
-		IndexStrategy:         nil, // todo，好像没啥用
-		FilterStrategy:        nil, // todo，好像没啥用
 	}
 	return docInfo
 }

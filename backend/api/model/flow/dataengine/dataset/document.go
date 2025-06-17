@@ -950,8 +950,6 @@ type DocumentInfo struct {
 	DocumentID int64  `thrift:"document_id,2" form:"document_id" json:"document_id,string" query:"document_id"`
 	// 文件链接
 	TosURI *string `thrift:"tos_uri,3,optional" form:"tos_uri" json:"tos_uri,omitempty" query:"tos_uri"`
-	// 使用的bot数量 deprecated
-	BotUsedCount *int32 `thrift:"bot_used_count,4,optional" form:"bot_used_count" json:"bot_used_count,omitempty" query:"bot_used_count"`
 	// 创建时间
 	CreateTime int32 `thrift:"create_time,5" form:"create_time" json:"create_time" query:"create_time"`
 	// 更新时间
@@ -980,8 +978,8 @@ type DocumentInfo struct {
 	WebURL *string `thrift:"web_url,20,optional" form:"web_url" json:"web_url,omitempty" query:"web_url"`
 	// 状态的详细信息；如果切片失败，返回失败信息
 	StatusDescript *string `thrift:"status_descript,21,optional" form:"status_descript" json:"status_descript,omitempty" query:"status_descript"`
-	IsDisconnect   *bool   `thrift:"is_disconnect,23,optional" form:"is_disconnect" json:"is_disconnect,omitempty" query:"is_disconnect"`
-	SpaceID        *int64  `thrift:"space_id,24,optional" form:"space_id" json:"space_id,string,omitempty" query:"space_id"`
+	// 空间id
+	SpaceID *int64 `thrift:"space_id,24,optional" form:"space_id" json:"space_id,string,omitempty" query:"space_id"`
 	// 以下字段仅针对重构后的表格类型有用，用于前端判断
 	EditableAppendContent *bool `thrift:"editable_append_content,26,optional" form:"editable_append_content" json:"editable_append_content,omitempty" query:"editable_append_content"`
 	// 切片规则
@@ -992,8 +990,6 @@ type DocumentInfo struct {
 	DocOutline *string `thrift:"doc_outline,29,optional" form:"doc_outline" json:"doc_outline,omitempty" query:"doc_outline"`
 	// 解析策略
 	ParsingStrategy *ParsingStrategy `thrift:"parsing_strategy,30,optional" form:"parsing_strategy" json:"parsing_strategy,omitempty" query:"parsing_strategy"`
-	IndexStrategy   *IndexStrategy   `thrift:"index_strategy,31,optional" form:"index_strategy" json:"index_strategy,omitempty" query:"index_strategy"`
-	FilterStrategy  *FilterStrategy  `thrift:"filter_strategy,32,optional" form:"filter_strategy" json:"filter_strategy,omitempty" query:"filter_strategy"`
 	// 层级分段文档树 tos_url
 	DocTreeTosURL *string `thrift:"doc_tree_tos_url,33,optional" form:"doc_tree_tos_url" json:"doc_tree_tos_url,omitempty" query:"doc_tree_tos_url"`
 	// 预览用的原文档 tos_url
@@ -1024,15 +1020,6 @@ func (p *DocumentInfo) GetTosURI() (v string) {
 		return DocumentInfo_TosURI_DEFAULT
 	}
 	return *p.TosURI
-}
-
-var DocumentInfo_BotUsedCount_DEFAULT int32
-
-func (p *DocumentInfo) GetBotUsedCount() (v int32) {
-	if !p.IsSetBotUsedCount() {
-		return DocumentInfo_BotUsedCount_DEFAULT
-	}
-	return *p.BotUsedCount
 }
 
 func (p *DocumentInfo) GetCreateTime() (v int32) {
@@ -1111,15 +1098,6 @@ func (p *DocumentInfo) GetStatusDescript() (v string) {
 	return *p.StatusDescript
 }
 
-var DocumentInfo_IsDisconnect_DEFAULT bool
-
-func (p *DocumentInfo) GetIsDisconnect() (v bool) {
-	if !p.IsSetIsDisconnect() {
-		return DocumentInfo_IsDisconnect_DEFAULT
-	}
-	return *p.IsDisconnect
-}
-
 var DocumentInfo_SpaceID_DEFAULT int64
 
 func (p *DocumentInfo) GetSpaceID() (v int64) {
@@ -1174,24 +1152,6 @@ func (p *DocumentInfo) GetParsingStrategy() (v *ParsingStrategy) {
 	return p.ParsingStrategy
 }
 
-var DocumentInfo_IndexStrategy_DEFAULT *IndexStrategy
-
-func (p *DocumentInfo) GetIndexStrategy() (v *IndexStrategy) {
-	if !p.IsSetIndexStrategy() {
-		return DocumentInfo_IndexStrategy_DEFAULT
-	}
-	return p.IndexStrategy
-}
-
-var DocumentInfo_FilterStrategy_DEFAULT *FilterStrategy
-
-func (p *DocumentInfo) GetFilterStrategy() (v *FilterStrategy) {
-	if !p.IsSetFilterStrategy() {
-		return DocumentInfo_FilterStrategy_DEFAULT
-	}
-	return p.FilterStrategy
-}
-
 var DocumentInfo_DocTreeTosURL_DEFAULT string
 
 func (p *DocumentInfo) GetDocTreeTosURL() (v string) {
@@ -1223,7 +1183,6 @@ var fieldIDToName_DocumentInfo = map[int16]string{
 	1:  "name",
 	2:  "document_id",
 	3:  "tos_uri",
-	4:  "bot_used_count",
 	5:  "create_time",
 	6:  "update_time",
 	7:  "creator_id",
@@ -1238,15 +1197,12 @@ var fieldIDToName_DocumentInfo = map[int16]string{
 	19: "table_meta",
 	20: "web_url",
 	21: "status_descript",
-	23: "is_disconnect",
 	24: "space_id",
 	26: "editable_append_content",
 	27: "chunk_strategy",
 	28: "imagex_uri",
 	29: "doc_outline",
 	30: "parsing_strategy",
-	31: "index_strategy",
-	32: "filter_strategy",
 	33: "doc_tree_tos_url",
 	34: "preview_tos_url",
 	35: "review_id",
@@ -1254,10 +1210,6 @@ var fieldIDToName_DocumentInfo = map[int16]string{
 
 func (p *DocumentInfo) IsSetTosURI() bool {
 	return p.TosURI != nil
-}
-
-func (p *DocumentInfo) IsSetBotUsedCount() bool {
-	return p.BotUsedCount != nil
 }
 
 func (p *DocumentInfo) IsSetCreatorID() bool {
@@ -1274,10 +1226,6 @@ func (p *DocumentInfo) IsSetWebURL() bool {
 
 func (p *DocumentInfo) IsSetStatusDescript() bool {
 	return p.StatusDescript != nil
-}
-
-func (p *DocumentInfo) IsSetIsDisconnect() bool {
-	return p.IsDisconnect != nil
 }
 
 func (p *DocumentInfo) IsSetSpaceID() bool {
@@ -1302,14 +1250,6 @@ func (p *DocumentInfo) IsSetDocOutline() bool {
 
 func (p *DocumentInfo) IsSetParsingStrategy() bool {
 	return p.ParsingStrategy != nil
-}
-
-func (p *DocumentInfo) IsSetIndexStrategy() bool {
-	return p.IndexStrategy != nil
-}
-
-func (p *DocumentInfo) IsSetFilterStrategy() bool {
-	return p.FilterStrategy != nil
 }
 
 func (p *DocumentInfo) IsSetDocTreeTosURL() bool {
@@ -1361,14 +1301,6 @@ func (p *DocumentInfo) Read(iprot thrift.TProtocol) (err error) {
 		case 3:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1486,14 +1418,6 @@ func (p *DocumentInfo) Read(iprot thrift.TProtocol) (err error) {
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 23:
-			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField23(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 24:
 			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField24(iprot); err != nil {
@@ -1537,22 +1461,6 @@ func (p *DocumentInfo) Read(iprot thrift.TProtocol) (err error) {
 		case 30:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField30(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 31:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField31(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 32:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField32(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1642,17 +1550,6 @@ func (p *DocumentInfo) ReadField3(iprot thrift.TProtocol) error {
 		_field = &v
 	}
 	p.TosURI = _field
-	return nil
-}
-func (p *DocumentInfo) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field *int32
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.BotUsedCount = _field
 	return nil
 }
 func (p *DocumentInfo) ReadField5(iprot thrift.TProtocol) error {
@@ -1821,17 +1718,6 @@ func (p *DocumentInfo) ReadField21(iprot thrift.TProtocol) error {
 	p.StatusDescript = _field
 	return nil
 }
-func (p *DocumentInfo) ReadField23(iprot thrift.TProtocol) error {
-
-	var _field *bool
-	if v, err := iprot.ReadBool(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.IsDisconnect = _field
-	return nil
-}
 func (p *DocumentInfo) ReadField24(iprot thrift.TProtocol) error {
 
 	var _field *int64
@@ -1892,22 +1778,6 @@ func (p *DocumentInfo) ReadField30(iprot thrift.TProtocol) error {
 	p.ParsingStrategy = _field
 	return nil
 }
-func (p *DocumentInfo) ReadField31(iprot thrift.TProtocol) error {
-	_field := NewIndexStrategy()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.IndexStrategy = _field
-	return nil
-}
-func (p *DocumentInfo) ReadField32(iprot thrift.TProtocol) error {
-	_field := NewFilterStrategy()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.FilterStrategy = _field
-	return nil
-}
 func (p *DocumentInfo) ReadField33(iprot thrift.TProtocol) error {
 
 	var _field *string
@@ -1958,10 +1828,6 @@ func (p *DocumentInfo) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField3(oprot); err != nil {
 			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
 			goto WriteFieldError
 		}
 		if err = p.writeField5(oprot); err != nil {
@@ -2020,10 +1886,6 @@ func (p *DocumentInfo) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 21
 			goto WriteFieldError
 		}
-		if err = p.writeField23(oprot); err != nil {
-			fieldId = 23
-			goto WriteFieldError
-		}
 		if err = p.writeField24(oprot); err != nil {
 			fieldId = 24
 			goto WriteFieldError
@@ -2046,14 +1908,6 @@ func (p *DocumentInfo) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField30(oprot); err != nil {
 			fieldId = 30
-			goto WriteFieldError
-		}
-		if err = p.writeField31(oprot); err != nil {
-			fieldId = 31
-			goto WriteFieldError
-		}
-		if err = p.writeField32(oprot); err != nil {
-			fieldId = 32
 			goto WriteFieldError
 		}
 		if err = p.writeField33(oprot); err != nil {
@@ -2135,24 +1989,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *DocumentInfo) writeField4(oprot thrift.TProtocol) (err error) {
-	if p.IsSetBotUsedCount() {
-		if err = oprot.WriteFieldBegin("bot_used_count", thrift.I32, 4); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI32(*p.BotUsedCount); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *DocumentInfo) writeField5(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("create_time", thrift.I32, 5); err != nil {
@@ -2394,24 +2230,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 21 end error: ", p), err)
 }
-func (p *DocumentInfo) writeField23(oprot thrift.TProtocol) (err error) {
-	if p.IsSetIsDisconnect() {
-		if err = oprot.WriteFieldBegin("is_disconnect", thrift.BOOL, 23); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteBool(*p.IsDisconnect); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 23 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 23 end error: ", p), err)
-}
 func (p *DocumentInfo) writeField24(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSpaceID() {
 		if err = oprot.WriteFieldBegin("space_id", thrift.I64, 24); err != nil {
@@ -2517,42 +2335,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 30 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 30 end error: ", p), err)
-}
-func (p *DocumentInfo) writeField31(oprot thrift.TProtocol) (err error) {
-	if p.IsSetIndexStrategy() {
-		if err = oprot.WriteFieldBegin("index_strategy", thrift.STRUCT, 31); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.IndexStrategy.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 31 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 31 end error: ", p), err)
-}
-func (p *DocumentInfo) writeField32(oprot thrift.TProtocol) (err error) {
-	if p.IsSetFilterStrategy() {
-		if err = oprot.WriteFieldBegin("filter_strategy", thrift.STRUCT, 32); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.FilterStrategy.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 32 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 32 end error: ", p), err)
 }
 func (p *DocumentInfo) writeField33(oprot thrift.TProtocol) (err error) {
 	if p.IsSetDocTreeTosURL() {
@@ -3067,6 +2849,7 @@ func (p *TableColumn) String() string {
 }
 
 type DeleteDocumentRequest struct {
+	// 要删除的文档ID列表
 	DocumentIds []string   `thrift:"document_ids,2" form:"document_ids" json:"document_ids" query:"document_ids"`
 	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -4114,8 +3897,9 @@ func (p *UpdateDocumentResponse) String() string {
 }
 
 type UpdatePhotoCaptionRequest struct {
+	// 文档ID
 	DocumentID int64 `thrift:"document_id,1,required" form:"document_id,required" json:"document_id,string,required" query:"document_id,required"`
-	// 描述信息
+	// 要更新的图片描述信息
 	Caption string     `thrift:"caption,2,required" form:"caption,required" json:"caption,required" query:"caption,required"`
 	Base    *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -4624,9 +4408,11 @@ func (p *UpdatePhotoCaptionResponse) String() string {
 }
 
 type ListPhotoRequest struct {
+	// 知识库ID
 	DatasetID int64 `thrift:"dataset_id,1,required" form:"dataset_id,required" json:"dataset_id,string,required" query:"dataset_id,required"`
 	// 页数，从 1 开始
-	Page   *int32       `thrift:"page,2,optional" form:"page" json:"page,omitempty" query:"page"`
+	Page *int32 `thrift:"page,2,optional" form:"page" json:"page,omitempty" query:"page"`
+	// 每页大小
 	Size   *int32       `thrift:"size,3,optional" form:"size" json:"size,omitempty" query:"size"`
 	Filter *PhotoFilter `thrift:"filter,4,optional" form:"filter" json:"filter,omitempty" query:"filter"`
 	Base   *base.Base   `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -5623,8 +5409,10 @@ func (p *ListPhotoResponse) String() string {
 }
 
 type PhotoInfo struct {
-	Name       string `thrift:"name,1" form:"name" json:"name" query:"name"`
-	DocumentID int64  `thrift:"document_id,2" form:"document_id" json:"document_id,string" query:"document_id"`
+	// 图片型知识库一个图片对应一个文档
+	Name string `thrift:"name,1" form:"name" json:"name" query:"name"`
+	// 文档ID
+	DocumentID int64 `thrift:"document_id,2" form:"document_id" json:"document_id,string" query:"document_id"`
 	// 图片链接
 	URL string `thrift:"url,3" form:"url" json:"url" query:"url"`
 	// 图片描述信息
@@ -6221,9 +6009,11 @@ func (p *PhotoInfo) String() string {
 }
 
 type PhotoDetailRequest struct {
-	DocumentIds []string   `thrift:"document_ids,1,required" form:"document_ids,required" json:"document_ids,required" query:"document_ids,required"`
-	DatasetID   int64      `thrift:"dataset_id,2,required" form:"dataset_id,required" json:"dataset_id,string,required" query:"dataset_id,required"`
-	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	// 文档ID列表
+	DocumentIds []string `thrift:"document_ids,1,required" form:"document_ids,required" json:"document_ids,required" query:"document_ids,required"`
+	// 知识库ID
+	DatasetID int64      `thrift:"dataset_id,2,required" form:"dataset_id,required" json:"dataset_id,string,required" query:"dataset_id,required"`
+	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewPhotoDetailRequest() *PhotoDetailRequest {
@@ -6493,6 +6283,7 @@ func (p *PhotoDetailRequest) String() string {
 }
 
 type PhotoDetailResponse struct {
+	// 文档ID到图片信息的映射
 	PhotoInfos map[string]*PhotoInfo `thrift:"photo_infos,1" form:"photo_infos" json:"photo_infos" query:"photo_infos"`
 	Code       int64                 `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg        string                `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
@@ -6824,17 +6615,14 @@ func (p *PhotoDetailResponse) String() string {
 }
 
 type ResegmentRequest struct {
+	// 知识库ID
 	DatasetID int64 `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
-	// 要重新分段的接口
+	// 要重新分段的文档
 	DocumentIds []string `thrift:"document_ids,2" form:"document_ids" json:"document_ids" query:"document_ids"`
 	// 分段策略
 	ChunkStrategy *ChunkStrategy `thrift:"chunk_strategy,3" form:"chunk_strategy" json:"chunk_strategy" query:"chunk_strategy"`
-	// 预切片的审阅ID列表
-	ReviewIds []string `thrift:"review_ids,4,optional" form:"review_ids" json:"review_ids,omitempty" query:"review_ids"`
 	// 解析策略
 	ParsingStrategy *ParsingStrategy `thrift:"parsing_strategy,5,optional" form:"parsing_strategy" json:"parsing_strategy,omitempty" query:"parsing_strategy"`
-	IndexStrategy   *IndexStrategy   `thrift:"index_strategy,6,optional" form:"index_strategy" json:"index_strategy,omitempty" query:"index_strategy"`
-	FilterStrategy  *FilterStrategy  `thrift:"filter_strategy,7,optional" form:"filter_strategy" json:"filter_strategy,omitempty" query:"filter_strategy"`
 	Base            *base.Base       `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -6862,15 +6650,6 @@ func (p *ResegmentRequest) GetChunkStrategy() (v *ChunkStrategy) {
 	return p.ChunkStrategy
 }
 
-var ResegmentRequest_ReviewIds_DEFAULT []string
-
-func (p *ResegmentRequest) GetReviewIds() (v []string) {
-	if !p.IsSetReviewIds() {
-		return ResegmentRequest_ReviewIds_DEFAULT
-	}
-	return p.ReviewIds
-}
-
 var ResegmentRequest_ParsingStrategy_DEFAULT *ParsingStrategy
 
 func (p *ResegmentRequest) GetParsingStrategy() (v *ParsingStrategy) {
@@ -6878,24 +6657,6 @@ func (p *ResegmentRequest) GetParsingStrategy() (v *ParsingStrategy) {
 		return ResegmentRequest_ParsingStrategy_DEFAULT
 	}
 	return p.ParsingStrategy
-}
-
-var ResegmentRequest_IndexStrategy_DEFAULT *IndexStrategy
-
-func (p *ResegmentRequest) GetIndexStrategy() (v *IndexStrategy) {
-	if !p.IsSetIndexStrategy() {
-		return ResegmentRequest_IndexStrategy_DEFAULT
-	}
-	return p.IndexStrategy
-}
-
-var ResegmentRequest_FilterStrategy_DEFAULT *FilterStrategy
-
-func (p *ResegmentRequest) GetFilterStrategy() (v *FilterStrategy) {
-	if !p.IsSetFilterStrategy() {
-		return ResegmentRequest_FilterStrategy_DEFAULT
-	}
-	return p.FilterStrategy
 }
 
 var ResegmentRequest_Base_DEFAULT *base.Base
@@ -6911,10 +6672,7 @@ var fieldIDToName_ResegmentRequest = map[int16]string{
 	1:   "dataset_id",
 	2:   "document_ids",
 	3:   "chunk_strategy",
-	4:   "review_ids",
 	5:   "parsing_strategy",
-	6:   "index_strategy",
-	7:   "filter_strategy",
 	255: "Base",
 }
 
@@ -6922,20 +6680,8 @@ func (p *ResegmentRequest) IsSetChunkStrategy() bool {
 	return p.ChunkStrategy != nil
 }
 
-func (p *ResegmentRequest) IsSetReviewIds() bool {
-	return p.ReviewIds != nil
-}
-
 func (p *ResegmentRequest) IsSetParsingStrategy() bool {
 	return p.ParsingStrategy != nil
-}
-
-func (p *ResegmentRequest) IsSetIndexStrategy() bool {
-	return p.IndexStrategy != nil
-}
-
-func (p *ResegmentRequest) IsSetFilterStrategy() bool {
-	return p.FilterStrategy != nil
 }
 
 func (p *ResegmentRequest) IsSetBase() bool {
@@ -6984,33 +6730,9 @@ func (p *ResegmentRequest) Read(iprot thrift.TProtocol) (err error) {
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 4:
-			if fieldTypeId == thrift.LIST {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 5:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 6:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField6(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 7:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField7(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -7095,51 +6817,12 @@ func (p *ResegmentRequest) ReadField3(iprot thrift.TProtocol) error {
 	p.ChunkStrategy = _field
 	return nil
 }
-func (p *ResegmentRequest) ReadField4(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return err
-	}
-	_field := make([]string, 0, size)
-	for i := 0; i < size; i++ {
-
-		var _elem string
-		if v, err := iprot.ReadString(); err != nil {
-			return err
-		} else {
-			_elem = v
-		}
-
-		_field = append(_field, _elem)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
-		return err
-	}
-	p.ReviewIds = _field
-	return nil
-}
 func (p *ResegmentRequest) ReadField5(iprot thrift.TProtocol) error {
 	_field := NewParsingStrategy()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
 	p.ParsingStrategy = _field
-	return nil
-}
-func (p *ResegmentRequest) ReadField6(iprot thrift.TProtocol) error {
-	_field := NewIndexStrategy()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.IndexStrategy = _field
-	return nil
-}
-func (p *ResegmentRequest) ReadField7(iprot thrift.TProtocol) error {
-	_field := NewFilterStrategy()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.FilterStrategy = _field
 	return nil
 }
 func (p *ResegmentRequest) ReadField255(iprot thrift.TProtocol) error {
@@ -7169,20 +6852,8 @@ func (p *ResegmentRequest) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 3
 			goto WriteFieldError
 		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
-			goto WriteFieldError
-		}
 		if err = p.writeField5(oprot); err != nil {
 			fieldId = 5
-			goto WriteFieldError
-		}
-		if err = p.writeField6(oprot); err != nil {
-			fieldId = 6
-			goto WriteFieldError
-		}
-		if err = p.writeField7(oprot); err != nil {
-			fieldId = 7
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -7263,32 +6934,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
-func (p *ResegmentRequest) writeField4(oprot thrift.TProtocol) (err error) {
-	if p.IsSetReviewIds() {
-		if err = oprot.WriteFieldBegin("review_ids", thrift.LIST, 4); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteListBegin(thrift.STRING, len(p.ReviewIds)); err != nil {
-			return err
-		}
-		for _, v := range p.ReviewIds {
-			if err := oprot.WriteString(v); err != nil {
-				return err
-			}
-		}
-		if err := oprot.WriteListEnd(); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
 func (p *ResegmentRequest) writeField5(oprot thrift.TProtocol) (err error) {
 	if p.IsSetParsingStrategy() {
 		if err = oprot.WriteFieldBegin("parsing_strategy", thrift.STRUCT, 5); err != nil {
@@ -7306,42 +6951,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
-func (p *ResegmentRequest) writeField6(oprot thrift.TProtocol) (err error) {
-	if p.IsSetIndexStrategy() {
-		if err = oprot.WriteFieldBegin("index_strategy", thrift.STRUCT, 6); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.IndexStrategy.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
-}
-func (p *ResegmentRequest) writeField7(oprot thrift.TProtocol) (err error) {
-	if p.IsSetFilterStrategy() {
-		if err = oprot.WriteFieldBegin("filter_strategy", thrift.STRUCT, 7); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.FilterStrategy.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 func (p *ResegmentRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {
@@ -7689,19 +7298,18 @@ func (p *ResegmentResponse) String() string {
 }
 
 type CreateDocumentRequest struct {
-	DatasetID  int64      `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
+	// 要插入文档的知识库id
+	DatasetID int64 `thrift:"dataset_id,1" form:"dataset_id" json:"dataset_id,string" query:"dataset_id"`
+	// 知识库的类型，目前支持文本、表格、图片三种知识库
 	FormatType FormatType `thrift:"format_type,4" form:"format_type" json:"format_type" query:"format_type"`
 	// 表格类型一次只能创建一个
 	DocumentBases []*DocumentBase `thrift:"document_bases,6" form:"document_bases" json:"document_bases" query:"document_bases"`
 	// 只在知识库中没有文档时需要传递，已有则从知识库获取.切片规则，为空则自动按段落切片
 	ChunkStrategy *ChunkStrategy `thrift:"chunk_strategy,17,optional" form:"chunk_strategy" json:"chunk_strategy,omitempty" query:"chunk_strategy"`
-	// 数据导入的时候落库规则
-	SinkStrategy *SinkStrategy `thrift:"sink_strategy,18,optional" form:"sink_strategy" json:"sink_strategy,omitempty" query:"sink_strategy"`
-	// 是否为追加内容，用于表格添加内容
+	// 为 true 时向已有的 document 追加内容。text 类型不能使用
 	IsAppend *bool `thrift:"is_append,31,optional" form:"is_append" json:"is_append,omitempty" query:"is_append"`
 	// 解析策略
 	ParsingStrategy *ParsingStrategy `thrift:"parsing_strategy,32,optional" form:"parsing_strategy" json:"parsing_strategy,omitempty" query:"parsing_strategy"`
-	IndexStrategy   *IndexStrategy   `thrift:"index_strategy,33,optional" form:"index_strategy" json:"index_strategy,omitempty" query:"index_strategy"`
 	Base            *base.Base       `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -7733,15 +7341,6 @@ func (p *CreateDocumentRequest) GetChunkStrategy() (v *ChunkStrategy) {
 	return p.ChunkStrategy
 }
 
-var CreateDocumentRequest_SinkStrategy_DEFAULT *SinkStrategy
-
-func (p *CreateDocumentRequest) GetSinkStrategy() (v *SinkStrategy) {
-	if !p.IsSetSinkStrategy() {
-		return CreateDocumentRequest_SinkStrategy_DEFAULT
-	}
-	return p.SinkStrategy
-}
-
 var CreateDocumentRequest_IsAppend_DEFAULT bool
 
 func (p *CreateDocumentRequest) GetIsAppend() (v bool) {
@@ -7760,15 +7359,6 @@ func (p *CreateDocumentRequest) GetParsingStrategy() (v *ParsingStrategy) {
 	return p.ParsingStrategy
 }
 
-var CreateDocumentRequest_IndexStrategy_DEFAULT *IndexStrategy
-
-func (p *CreateDocumentRequest) GetIndexStrategy() (v *IndexStrategy) {
-	if !p.IsSetIndexStrategy() {
-		return CreateDocumentRequest_IndexStrategy_DEFAULT
-	}
-	return p.IndexStrategy
-}
-
 var CreateDocumentRequest_Base_DEFAULT *base.Base
 
 func (p *CreateDocumentRequest) GetBase() (v *base.Base) {
@@ -7783,19 +7373,13 @@ var fieldIDToName_CreateDocumentRequest = map[int16]string{
 	4:   "format_type",
 	6:   "document_bases",
 	17:  "chunk_strategy",
-	18:  "sink_strategy",
 	31:  "is_append",
 	32:  "parsing_strategy",
-	33:  "index_strategy",
 	255: "Base",
 }
 
 func (p *CreateDocumentRequest) IsSetChunkStrategy() bool {
 	return p.ChunkStrategy != nil
-}
-
-func (p *CreateDocumentRequest) IsSetSinkStrategy() bool {
-	return p.SinkStrategy != nil
 }
 
 func (p *CreateDocumentRequest) IsSetIsAppend() bool {
@@ -7804,10 +7388,6 @@ func (p *CreateDocumentRequest) IsSetIsAppend() bool {
 
 func (p *CreateDocumentRequest) IsSetParsingStrategy() bool {
 	return p.ParsingStrategy != nil
-}
-
-func (p *CreateDocumentRequest) IsSetIndexStrategy() bool {
-	return p.IndexStrategy != nil
 }
 
 func (p *CreateDocumentRequest) IsSetBase() bool {
@@ -7864,14 +7444,6 @@ func (p *CreateDocumentRequest) Read(iprot thrift.TProtocol) (err error) {
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 18:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField18(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 31:
 			if fieldTypeId == thrift.BOOL {
 				if err = p.ReadField31(iprot); err != nil {
@@ -7883,14 +7455,6 @@ func (p *CreateDocumentRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 32:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField32(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 33:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField33(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -7986,14 +7550,6 @@ func (p *CreateDocumentRequest) ReadField17(iprot thrift.TProtocol) error {
 	p.ChunkStrategy = _field
 	return nil
 }
-func (p *CreateDocumentRequest) ReadField18(iprot thrift.TProtocol) error {
-	_field := NewSinkStrategy()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.SinkStrategy = _field
-	return nil
-}
 func (p *CreateDocumentRequest) ReadField31(iprot thrift.TProtocol) error {
 
 	var _field *bool
@@ -8011,14 +7567,6 @@ func (p *CreateDocumentRequest) ReadField32(iprot thrift.TProtocol) error {
 		return err
 	}
 	p.ParsingStrategy = _field
-	return nil
-}
-func (p *CreateDocumentRequest) ReadField33(iprot thrift.TProtocol) error {
-	_field := NewIndexStrategy()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.IndexStrategy = _field
 	return nil
 }
 func (p *CreateDocumentRequest) ReadField255(iprot thrift.TProtocol) error {
@@ -8052,20 +7600,12 @@ func (p *CreateDocumentRequest) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 17
 			goto WriteFieldError
 		}
-		if err = p.writeField18(oprot); err != nil {
-			fieldId = 18
-			goto WriteFieldError
-		}
 		if err = p.writeField31(oprot); err != nil {
 			fieldId = 31
 			goto WriteFieldError
 		}
 		if err = p.writeField32(oprot); err != nil {
 			fieldId = 32
-			goto WriteFieldError
-		}
-		if err = p.writeField33(oprot); err != nil {
-			fieldId = 33
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -8164,24 +7704,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 17 end error: ", p), err)
 }
-func (p *CreateDocumentRequest) writeField18(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSinkStrategy() {
-		if err = oprot.WriteFieldBegin("sink_strategy", thrift.STRUCT, 18); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.SinkStrategy.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 18 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 18 end error: ", p), err)
-}
 func (p *CreateDocumentRequest) writeField31(oprot thrift.TProtocol) (err error) {
 	if p.IsSetIsAppend() {
 		if err = oprot.WriteFieldBegin("is_append", thrift.BOOL, 31); err != nil {
@@ -8217,24 +7739,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 32 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 32 end error: ", p), err)
-}
-func (p *CreateDocumentRequest) writeField33(oprot thrift.TProtocol) (err error) {
-	if p.IsSetIndexStrategy() {
-		if err = oprot.WriteFieldBegin("index_strategy", thrift.STRUCT, 33); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.IndexStrategy.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 33 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 33 end error: ", p), err)
 }
 func (p *CreateDocumentRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {
@@ -8587,15 +8091,14 @@ func (p *CreateDocumentResponse) String() string {
 
 // 用于创建文档的基本信息
 type DocumentBase struct {
+	// 文档名称
 	Name       string      `thrift:"name,1" form:"name" json:"name" query:"name"`
 	SourceInfo *SourceInfo `thrift:"source_info,2" form:"source_info" json:"source_info" query:"source_info"`
 	// 以下参数表格类型需要传递
 	TableMeta []*TableColumn `thrift:"table_meta,4,optional" form:"table_meta" json:"table_meta,omitempty" query:"table_meta"`
 	// 表格解析信息
 	TableSheet *TableSheet `thrift:"table_sheet,5,optional" form:"table_sheet" json:"table_sheet,omitempty" query:"table_sheet"`
-	// 过滤策略
-	FilterStrategy *FilterStrategy `thrift:"filter_strategy,6,optional" form:"filter_strategy" json:"filter_strategy,omitempty" query:"filter_strategy"`
-	// 图片类型，人工标注时的图片描述，目前只支持openapi调用
+	// 图片类型知识库，人工标注时的图片描述
 	Caption *string `thrift:"caption,7,optional" form:"caption" json:"caption,omitempty" query:"caption"`
 }
 
@@ -8637,15 +8140,6 @@ func (p *DocumentBase) GetTableSheet() (v *TableSheet) {
 	return p.TableSheet
 }
 
-var DocumentBase_FilterStrategy_DEFAULT *FilterStrategy
-
-func (p *DocumentBase) GetFilterStrategy() (v *FilterStrategy) {
-	if !p.IsSetFilterStrategy() {
-		return DocumentBase_FilterStrategy_DEFAULT
-	}
-	return p.FilterStrategy
-}
-
 var DocumentBase_Caption_DEFAULT string
 
 func (p *DocumentBase) GetCaption() (v string) {
@@ -8660,7 +8154,6 @@ var fieldIDToName_DocumentBase = map[int16]string{
 	2: "source_info",
 	4: "table_meta",
 	5: "table_sheet",
-	6: "filter_strategy",
 	7: "caption",
 }
 
@@ -8674,10 +8167,6 @@ func (p *DocumentBase) IsSetTableMeta() bool {
 
 func (p *DocumentBase) IsSetTableSheet() bool {
 	return p.TableSheet != nil
-}
-
-func (p *DocumentBase) IsSetFilterStrategy() bool {
-	return p.FilterStrategy != nil
 }
 
 func (p *DocumentBase) IsSetCaption() bool {
@@ -8729,14 +8218,6 @@ func (p *DocumentBase) Read(iprot thrift.TProtocol) (err error) {
 		case 5:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 6:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField6(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -8829,14 +8310,6 @@ func (p *DocumentBase) ReadField5(iprot thrift.TProtocol) error {
 	p.TableSheet = _field
 	return nil
 }
-func (p *DocumentBase) ReadField6(iprot thrift.TProtocol) error {
-	_field := NewFilterStrategy()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.FilterStrategy = _field
-	return nil
-}
 func (p *DocumentBase) ReadField7(iprot thrift.TProtocol) error {
 
 	var _field *string
@@ -8869,10 +8342,6 @@ func (p *DocumentBase) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField5(oprot); err != nil {
 			fieldId = 5
-			goto WriteFieldError
-		}
-		if err = p.writeField6(oprot); err != nil {
-			fieldId = 6
 			goto WriteFieldError
 		}
 		if err = p.writeField7(oprot); err != nil {
@@ -8973,24 +8442,6 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
-func (p *DocumentBase) writeField6(oprot thrift.TProtocol) (err error) {
-	if p.IsSetFilterStrategy() {
-		if err = oprot.WriteFieldBegin("filter_strategy", thrift.STRUCT, 6); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.FilterStrategy.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
-}
 func (p *DocumentBase) writeField7(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCaption() {
 		if err = oprot.WriteFieldBegin("caption", thrift.STRING, 7); err != nil {
@@ -9023,7 +8474,7 @@ type SourceInfo struct {
 	// 本地上传返回的 uri
 	TosURI         *string         `thrift:"tos_uri,1,optional" form:"tos_uri" json:"tos_uri,omitempty"`
 	DocumentSource *DocumentSource `thrift:"document_source,4,optional" form:"document_source" json:"document_source,omitempty"`
-	// document_source 自定义原始内容: json list<map<string, string>>
+	// document_source 自定义原始内容: 表格型知识库需要符合的格式：json list<map<string, string>>
 	CustomContent *string `thrift:"custom_content,5,optional" form:"custom_content" json:"custom_content,omitempty"`
 	// document_source 本地: 如果不传 tos 地址, 则需要传文件 base64, 类型
 	FileBase64 *string `thrift:"file_base64,7,optional" form:"file_base64" json:"file_base64,omitempty" query:"file_base64"`
@@ -10217,16 +9668,18 @@ func (p *GetDocumentProgressResponse) String() string {
 }
 
 type DocumentProgress struct {
-	DocumentID int64          `thrift:"document_id,1" form:"document_id" json:"document_id,string" query:"document_id"`
-	Progress   int32          `thrift:"progress,2" form:"progress" json:"progress" query:"progress"`
-	Status     DocumentStatus `thrift:"status,3" form:"status" json:"status" query:"status"`
+	DocumentID int64 `thrift:"document_id,1" form:"document_id" json:"document_id,string" query:"document_id"`
+	// 知识库进度百分比
+	Progress int32          `thrift:"progress,2" form:"progress" json:"progress" query:"progress"`
+	Status   DocumentStatus `thrift:"status,3" form:"status" json:"status" query:"status"`
 	// 状态的详细描述；如果切片失败，返回失败信息
 	StatusDescript *string `thrift:"status_descript,4,optional" form:"status_descript" json:"status_descript,omitempty" query:"status_descript"`
 	DocumentName   string  `thrift:"document_name,5" form:"document_name" json:"document_name" query:"document_name"`
-	RemainingTime  *int64  `thrift:"remaining_time,6,optional" form:"remaining_time" json:"remaining_time,omitempty" query:"remaining_time"`
-	Size           *int64  `thrift:"size,7,optional" form:"size" json:"size,omitempty" query:"size"`
-	Type           *string `thrift:"type,8,optional" form:"type" json:"type,omitempty" query:"type"`
-	URL            *string `thrift:"url,9,optional" form:"url" json:"url,omitempty" query:"url"`
+	// 剩余时间单位秒
+	RemainingTime *int64  `thrift:"remaining_time,6,optional" form:"remaining_time" json:"remaining_time,omitempty" query:"remaining_time"`
+	Size          *int64  `thrift:"size,7,optional" form:"size" json:"size,omitempty" query:"size"`
+	Type          *string `thrift:"type,8,optional" form:"type" json:"type,omitempty" query:"type"`
+	URL           *string `thrift:"url,9,optional" form:"url" json:"url,omitempty" query:"url"`
 }
 
 func NewDocumentProgress() *DocumentProgress {
@@ -10773,7 +10226,7 @@ func (p *DocumentProgress) String() string {
 
 // 获取 database 上传的表格文件元信息
 type GetTableSchemaRequest struct {
-	// 表格解析信息, 默认初始值0,0,1
+	// 表格解析信息, 默认初始值0,0,1，表示第1个表格，表头行为第1行，数据行从第2行开始
 	TableSheet *TableSheet `thrift:"table_sheet,1,optional" form:"table_sheet" json:"table_sheet,omitempty" query:"table_sheet"`
 	// 不传默认返回所有数据
 	TableDataType *TableDataType `thrift:"table_data_type,2,optional" form:"table_data_type" json:"table_data_type,omitempty" query:"table_data_type"`
@@ -12008,10 +11461,13 @@ func (p *GetTableSchemaResponse) String() string {
 
 // 判断用户配置的 schema 是否和对应 document id 的一致
 type ValidateTableSchemaRequest struct {
-	SpaceID    int64 `thrift:"space_id,1" form:"space_id" json:"space_id,string"`
+	// 空间ID
+	SpaceID int64 `thrift:"space_id,1" form:"space_id" json:"space_id,string"`
+	// 要校验的文档ID
 	DocumentID int64 `thrift:"document_id,2" form:"document_id" json:"document_id,string"`
 	// source file 的信息
 	SourceInfo *SourceInfo `thrift:"source_info,3" form:"source_file" json:"source_file"`
+	// 表格解析信息, 默认初始值0,0,1，表示第1个表格，表头行为第1行，数据行从第2行开始
 	TableSheet *TableSheet `thrift:"table_sheet,4" form:"table_sheet" json:"table_sheet"`
 	Base       *base.Base  `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -12886,6 +12342,7 @@ func (p *ExtractPhotoCaptionRequest) String() string {
 }
 
 type ExtractPhotoCaptionResponse struct {
+	// 图片描述
 	Caption  string         `thrift:"caption,1" form:"caption" json:"caption" query:"caption"`
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`

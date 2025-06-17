@@ -9,10 +9,10 @@ enum FormatType {
 }
 
 struct ChunkStrategy {
-    1: string separator
-    2: i64    max_tokens
-    3: bool   remove_extra_spaces
-    4: bool   remove_urls_emails
+    1: string separator   // 分隔符，如句号
+    2: i64    max_tokens  // 分片的最大token数
+    3: bool   remove_extra_spaces  // 替换掉连续的空格、换行符和制表符
+    4: bool   remove_urls_emails   // 是否去除url和email
     5: ChunkType chunk_type        // 如果为0, 则不使用以上字段的配置
     7: optional CaptionType caption_type    // 图片类型，图片描述文字的标注方式
     8: optional i64    overlap;      //分段重叠度
