@@ -203,6 +203,10 @@ func (s *SingleAgentApplicationService) fetchPluginDetails(ctx context.Context, 
 }
 
 func (s *SingleAgentApplicationService) fetchWorkflowDetails(ctx context.Context, agentInfo *entity.SingleAgent) ([]*workflowEntity.Workflow, error) {
+	if len(agentInfo.Workflow) == 0 {
+		return nil, nil
+	}
+
 	policy := &vo.MGetPolicy{
 		MetaQuery: vo.MetaQuery{
 			IDs: slices.Transform(agentInfo.Workflow, func(a *bot_common.WorkflowInfo) int64 {
