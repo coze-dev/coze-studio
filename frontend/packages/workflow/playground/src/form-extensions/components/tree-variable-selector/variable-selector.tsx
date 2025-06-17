@@ -19,7 +19,7 @@ import { I18n } from '@coze-arch/i18n';
 import { usePersistCallback, useUpdateEffect } from '@coze-arch/hooks';
 import { type TreeSelectProps } from '@coze-arch/bot-semi/TreeSelect';
 import { type TreeNodeData } from '@coze-arch/bot-semi/Tree';
-import { IconCozVariables } from '@coze/coze-design/icons';
+import { IconCozVariables } from '@coze-arch/coze-design/icons';
 
 import useGlobalVariableCache from '@/form-extensions/components/tree-variable-selector/use-global-variable-cache';
 import GlobalVarIcon from '@/form-extensions/components/tree-variable-selector/global-var-icon';

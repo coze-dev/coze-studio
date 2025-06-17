@@ -1,4 +1,4 @@
-import { CozAvatar } from '@coze/coze-design';
+import { CozAvatar } from '@coze-arch/coze-design';
 
 import { EmptyRoleAvatar } from '../empty-role-avatar';
 

@@ -1,7 +1,7 @@
 import { type ComponentProps, type FC } from 'react';
 
 import classNames from 'classnames';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
 
 import { ToolItemAction } from '..';
 

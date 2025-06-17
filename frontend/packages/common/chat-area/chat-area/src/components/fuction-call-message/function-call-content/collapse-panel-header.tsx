@@ -8,8 +8,8 @@ import {
   IconCozArrowDown,
   IconCozCheckMarkCircle,
   IconCozListDisorder,
-} from '@coze/coze-design/icons';
-import { Typography, Tag } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Typography, Tag } from '@coze-arch/coze-design';
 import { MockHitStatus } from '@coze-arch/bot-api/debugger_api';
 import { Layout } from '@coze-common/chat-uikit-shared';
 

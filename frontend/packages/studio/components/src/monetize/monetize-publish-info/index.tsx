@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Avatar, Tooltip } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Avatar, Tooltip } from '@coze-arch/coze-design';
 import { type PublishConnectorInfo } from '@coze-arch/bot-api/developer_api';
 import { type BotMonetizationConfigData } from '@coze-arch/bot-api/benefit';
 

@@ -15,7 +15,7 @@ import {
 import { I18n } from '@coze-arch/i18n';
 import { typeSafeJSONParse } from '@coze-arch/bot-utils';
 import { type TextProps } from '@coze-arch/bot-semi/Typography';
-import { Checkbox, Tooltip, Typography } from '@coze/coze-design';
+import { Checkbox, Tooltip, Typography } from '@coze-arch/coze-design';
 
 import { TEMPLATE_CONNECTOR_ID } from '@/utils/constants';
 import { useProjectPublishStore } from '@/store';

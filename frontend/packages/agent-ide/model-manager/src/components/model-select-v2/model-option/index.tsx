@@ -19,8 +19,8 @@ import {
   IconCozSetting,
   IconCozLongArrowUpCircle,
   IconCozDiamondFill,
-} from '@coze/coze-design/icons';
-import { IconButton, Tag, Tooltip, Typography } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { IconButton, Tag, Tooltip, Typography } from '@coze-arch/coze-design';
 import { OverflowList } from '@blueprintjs/core';
 
 import { ModelOptionAvatar } from '../model-option-avatar';

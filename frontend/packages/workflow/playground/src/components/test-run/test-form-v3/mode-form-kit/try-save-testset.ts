@@ -10,7 +10,7 @@ import { ViewVariableType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { ComponentType } from '@coze-arch/bot-api/debugger_api';
 import { debuggerApi } from '@coze-arch/bot-api';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { type WorkflowNodeEntity } from '@/test-run-kit';
 

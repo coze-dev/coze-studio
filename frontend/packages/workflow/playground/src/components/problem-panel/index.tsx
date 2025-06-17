@@ -6,7 +6,7 @@ import { usePlayground } from '@flowgram-adapter/free-layout-editor';
 import { ProblemPanel as ProblemPanelCore } from '@coze-workflow/test-run';
 import { type ValidateError } from '@coze-workflow/base/services';
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { useWatchValidateWorkflow } from '@/hooks/use-validate-workflow';
 import { useTemplateService } from '@/hooks/use-template-service';

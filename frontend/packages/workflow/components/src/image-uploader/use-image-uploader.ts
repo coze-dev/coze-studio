@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useUnmount } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import ImageUploader, { ImgUploadErrNo } from './image-uploader';
 

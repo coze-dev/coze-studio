@@ -2,7 +2,7 @@ import React from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozUpload } from '@coze/coze-design/icons';
+import { IconCozUpload } from '@coze-arch/coze-design/icons';
 import { Button, Tooltip } from '@coze-arch/bot-semi';
 
 import { MAX_FILE_SIZE, MAX_IMAGE_SIZE } from '@/hooks/use-upload/constant';

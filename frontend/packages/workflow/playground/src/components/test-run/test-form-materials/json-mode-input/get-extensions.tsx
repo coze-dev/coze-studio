@@ -1,17 +1,17 @@
 /* eslint-disable max-params */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { isNumber } from 'lodash-es';
-import regexpDecorator from '@flow-lang-sdk/extension-regexp-decorator';
-import jsonUnnecessaryProperties from '@flow-lang-sdk/extension-json-unnecessary-properties';
-import jsonHover from '@flow-lang-sdk/extension-json-hover';
-import jsonEmptyStringValueCompletion from '@flow-lang-sdk/extension-json-empty-string-value-completion';
 import {
   type IFormSchema,
   TestFormFieldName,
 } from '@coze-workflow/test-run-next';
 import { ViewVariableType } from '@coze-workflow/base';
+import regexpDecorator from '@coze-editor/extension-regexp-decorator';
+import jsonUnnecessaryProperties from '@coze-editor/extension-json-unnecessary-properties';
+import jsonHover from '@coze-editor/extension-json-hover';
+import jsonEmptyStringValueCompletion from '@coze-editor/extension-json-empty-string-value-completion';
 import { I18n } from '@coze-arch/i18n';
-import { Typography, Tag } from '@coze/coze-design';
+import { Typography, Tag } from '@coze-arch/coze-design';
 import { Decoration } from '@codemirror/view';
 
 import { VoiceWidget } from './voice-widget';

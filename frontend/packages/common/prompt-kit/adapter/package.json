@@ -2,7 +2,7 @@
   "name": "@coze-common/prompt-kit-adapter",
   "version": "0.0.1",
   "description": "@coze-common/prompt-kit-adapter",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "haozhenfei@bytedance.com",
   "maintainers": [],
   "exports": {

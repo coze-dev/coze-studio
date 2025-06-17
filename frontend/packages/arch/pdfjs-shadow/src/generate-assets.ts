@@ -3,7 +3,7 @@ import pkg from '../package.json';
 type AssetsType = 'cmaps' | 'pdf.worker';
 
 // 这里需要写 bnpm 已经发布的版本
-// 
+//
 const DEFAULT_VERSION = '0.1.0-alpha.x6e892414ec';
 
 /**
@@ -33,5 +33,7 @@ export const generatePdfAssetsUrl = (assets: AssetsType) => {
     REGION === 'cn'
       ? 'lf-cdn.coze.cn/obj/unpkg'
       : 'sf-cdn.coze.com/obj/unpkg-va';
+
+  // cp-disable-next-line
   return `//${domain}/${onlinePkgName}/${DEFAULT_VERSION}/${assetsUrl}`;
 };

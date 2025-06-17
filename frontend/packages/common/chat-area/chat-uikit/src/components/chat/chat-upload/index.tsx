@@ -4,7 +4,7 @@ import {
   FILE_TYPE_CONFIG,
   FileTypeEnum,
 } from '@coze-common/chat-core/shared/const';
-import { Toast, Upload } from '@coze/coze-design';
+import { Toast, Upload } from '@coze-arch/coze-design';
 import {
   type IChatUploadCopywritingConfig,
   DEFAULT_MAX_FILE_SIZE,

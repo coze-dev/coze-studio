@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 
 import classNames from 'classnames';
-import { IconCozCard } from '@coze/coze-design/icons';
+import { IconCozCard } from '@coze-arch/coze-design/icons';
 
 import { ToolItemIcon } from '..';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Avatar, Typography } from '@coze/coze-design';
+import { Avatar, Typography } from '@coze-arch/coze-design';
 import { type NodeEvent } from '@coze-arch/bot-api/workflow_api';
 
 import styles from './node-event-info.module.less';

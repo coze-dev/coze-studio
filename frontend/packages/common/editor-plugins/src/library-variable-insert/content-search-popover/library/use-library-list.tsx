@@ -1,7 +1,7 @@
 import React, { forwardRef, useMemo, useRef } from 'react';
 
 import { nanoid } from 'nanoid';
-import type { EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import type { EditorAPI } from '@coze-editor/editor/preset-prompt';
 import { I18n } from '@coze-arch/i18n';
 
 import styles from '../style.module.less';

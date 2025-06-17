@@ -18,8 +18,8 @@ import {
   IconCozStrikethrough,
   IconCozTextStyle,
   IconCozUnderscore,
-} from '@coze/coze-design/icons';
-import { Dropdown, Input } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Dropdown, Input } from '@coze-arch/coze-design';
 
 import { type CommentEditorModel } from '../model';
 import {

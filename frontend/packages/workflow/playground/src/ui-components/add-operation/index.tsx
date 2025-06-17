@@ -1,8 +1,8 @@
 import React from 'react';
 
 import classNames from 'classnames';
-import { IconCozAddNode } from '@coze/coze-design/icons';
-import { IconButton, type ButtonProps } from '@coze/coze-design';
+import { IconCozAddNode } from '@coze-arch/coze-design/icons';
+import { IconButton, type ButtonProps } from '@coze-arch/coze-design';
 import { IconAdd } from '@coze-arch/bot-icons';
 
 import styles from './index.module.less';

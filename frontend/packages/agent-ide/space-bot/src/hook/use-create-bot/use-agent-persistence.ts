@@ -13,7 +13,7 @@ import {
 } from '@coze-arch/report-events';
 import { logger } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { CustomError } from '@coze-arch/bot-error';

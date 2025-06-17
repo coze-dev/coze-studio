@@ -3,7 +3,7 @@
   "version": "0.1.6",
   "description": "@coze-arch/idl2ts-generator",
   "homepage": "",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "main": "./src/index.ts",
   "scripts": {

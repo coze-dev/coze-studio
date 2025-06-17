@@ -5,8 +5,8 @@ import {
   useMessageBoxContext,
 } from '@coze-common/chat-area';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozMore, IconCozTrashCan } from '@coze/coze-design/icons';
-import { IconButton, Dropdown } from '@coze/coze-design';
+import { IconCozMore, IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { IconButton, Dropdown } from '@coze-arch/coze-design';
 
 interface MoreOperationsProps {
   className?: string;

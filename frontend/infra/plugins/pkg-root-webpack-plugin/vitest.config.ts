@@ -6,6 +6,7 @@ export default defineConfig({
   preset: 'node',
   dirname: __dirname,
   test: {
+    testTimeout: 30 * 1000,
     globals: true,
     mockReset: false,
     coverage: {

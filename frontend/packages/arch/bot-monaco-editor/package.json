@@ -2,7 +2,7 @@
   "name": "@coze-arch/bot-monaco-editor",
   "version": "0.0.1",
   "description": "coze's monaco-editor",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "tanjizhen@bytedance.com",
   "maintainers": [
     "lvxinsheng@bytedance.com",

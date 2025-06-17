@@ -10,7 +10,7 @@ import { StandardNodeType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { Typography, UIButton } from '@coze-arch/bot-semi';
 import { IconAlertFilled } from '@coze-arch/bot-icons';
-import { IconCozTrashCan } from '@coze/coze-design/icons';
+import { IconCozTrashCan } from '@coze-arch/coze-design/icons';
 
 import { NodeIcon } from '../node-icon';
 import { WorkflowEditService } from '../../services';

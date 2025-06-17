@@ -14,16 +14,16 @@
     "test:cov": "vitest run --passWithNoTests --coverage"
   },
   "dependencies": {
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-workflow/base": "workspace:*",
     "@coze-workflow/components": "workspace:*",
     "@coze-workflow/test-run-shared": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "@flowgram-adapter/common": "workspace:*",
     "@flowgram-adapter/free-layout-editor": "workspace:*",
     "ahooks": "^3.7.8",
     "ajv": "~8.12.0",
-    "bignumber.js": "^9.0.0",
+    "bignumber.js": "~9.0.0",
     "clsx": "^1.2.1",
     "lodash-es": "^4.17.21",
     "zustand": "^4.4.7"

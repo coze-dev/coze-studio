@@ -33,13 +33,19 @@
       "path": "../../../../arch/i18n/tsconfig.build.json"
     },
     {
+      "path": "../../../../arch/report-events/tsconfig.build.json"
+    },
+    {
       "path": "../../../common/e2e/tsconfig.build.json"
     },
     {
-      "path": "../../../../components/bot-semi/tsconfig.build.json"
+      "path": "../../../common/feature-register/tsconfig.build.json"
     },
     {
-      "path": "../../../../components/coze-design/tsconfig.build.json"
+      "path": "../../../common/reporter/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../components/bot-semi/tsconfig.build.json"
     },
     {
       "path": "../../../../components/virtual-list/tsconfig.build.json"

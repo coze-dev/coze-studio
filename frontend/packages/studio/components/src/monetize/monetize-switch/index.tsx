@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { Switch } from '@coze/coze-design';
+import { Switch } from '@coze-arch/coze-design';
 
 export function MonetizeSwitch({
   disabled,

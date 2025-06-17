@@ -1,7 +1,7 @@
 import { type FC, useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Form, Input } from '@coze/coze-design';
+import { Form, Input } from '@coze-arch/coze-design';
 import { type GetPersonalAccessTokenAndPermissionResponseData } from '@coze-arch/bot-api/pat_permission_api';
 
 import {

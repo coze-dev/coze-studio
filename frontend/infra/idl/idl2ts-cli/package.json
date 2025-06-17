@@ -3,7 +3,7 @@
   "version": "0.1.7",
   "description": "@coze-arch/idl2ts-cli",
   "homepage": "",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "bin": {
     "idl2ts": "./src/cli.js"

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { Input } from '@coze/coze-design';
+import { Input } from '@coze-arch/coze-design';
 
 import { type CommonComponentProps } from '../../type';
 import { MOUSEUP_IGNORE_CLASS_NAME } from '../../constant';

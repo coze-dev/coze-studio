@@ -12,7 +12,7 @@ import {
   type ButtonProps,
   IconButton,
   Tooltip,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { CollapsibleIconButtonContext, useWrapper, useItem } from './context';
 

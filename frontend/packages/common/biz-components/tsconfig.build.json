@@ -39,16 +39,10 @@
       "path": "../../arch/report-events/tsconfig.build.json"
     },
     {
-      "path": "../../arch/semi-theme-hand01/tsconfig.build.json"
-    },
-    {
       "path": "../../components/bot-icons/tsconfig.build.json"
     },
     {
       "path": "../../components/bot-semi/tsconfig.build.json"
-    },
-    {
-      "path": "../../components/coze-design/tsconfig.build.json"
     },
     {
       "path": "../../../config/eslint-config/tsconfig.build.json"

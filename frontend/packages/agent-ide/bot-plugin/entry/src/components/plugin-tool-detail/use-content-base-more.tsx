@@ -1,15 +1,15 @@
 import { useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
+import { IconEdit } from '@coze-arch/bot-icons';
 import {
   type UpdateAPIResponse,
   type GetPluginInfoResponse,
   type PluginAPIInfo,
 } from '@coze-arch/bot-api/plugin_develop';
-import { IconEdit } from '@coze-arch/bot-icons';
 import { useBaseMore } from '@coze-agent-ide/bot-plugin-tools/useBaseMore';
 import { REQUESTNODE } from '@coze-agent-ide/bot-plugin-tools/pluginModal/config';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 
 import { SecurityCheckFailed } from '@/components/check_failed';
 
@@ -23,7 +23,7 @@ interface UseContentBaseInfoProps {
   handleInit: (loading?: boolean) => Promise<void>;
   wrapWithCheckLock: (fn: () => void) => () => Promise<void>;
   editVersion?: number;
-  callback?: (params: UpdateAPIResponse) => void;
+  onSuccess?: (params: UpdateAPIResponse) => void;
 }
 
 export const useContentBaseMore = ({
@@ -36,7 +36,7 @@ export const useContentBaseMore = ({
   handleInit,
   wrapWithCheckLock,
   editVersion,
-  callback,
+  onSuccess,
 }: UseContentBaseInfoProps) => {
   // 是否显示安全检查失败信息
   const [showSecurityCheckFailedMsg, setShowSecurityCheckFailedMsg] =
@@ -56,7 +56,7 @@ export const useContentBaseMore = ({
     editVersion,
     pluginType: pluginInfo?.plugin_type,
     spaceId: space_id,
-    callback,
+    onSuccess,
   });
 
   return {

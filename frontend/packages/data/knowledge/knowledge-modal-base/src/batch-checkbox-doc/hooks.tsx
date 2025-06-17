@@ -6,7 +6,7 @@ import {
   CheckboxGroup,
   Tag,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import {
   DocumentSource,
   type DocumentInfo,

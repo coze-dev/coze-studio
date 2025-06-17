@@ -1,4 +1,4 @@
-import { Tooltip, Typography } from '@coze/coze-design';
+import { Tooltip, Typography } from '@coze-arch/coze-design';
 import { IconInfo } from '@coze-arch/bot-icons';
 
 export const LabelWithTooltip = ({

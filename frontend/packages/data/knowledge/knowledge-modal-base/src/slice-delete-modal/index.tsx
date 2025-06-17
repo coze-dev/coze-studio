@@ -1,6 +1,6 @@
 import { useDataModalWithCoze } from '@coze-data/utils';
 import { I18n } from '@coze-arch/i18n';
-import { type ButtonColor } from '@coze/coze-design/src/components/button';
+import { type ButtonColor } from '@coze-arch/coze-design/types';
 
 export interface IDeleteModalProps {
   onDel: () => void | Promise<void>;

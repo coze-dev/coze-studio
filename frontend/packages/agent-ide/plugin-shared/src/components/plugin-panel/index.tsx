@@ -66,9 +66,9 @@ import { AvatarName } from '@coze-studio/components';
 
 import { PluginPerfStatics } from './plugin-perf-statics';
 import { withSlardarIdButton } from '@coze-studio/bot-utils';
-import { Tag, Tooltip } from '@coze/coze-design';
+import { Tag, Tooltip } from '@coze-arch/coze-design';
 
-import { IconCozDesktop, IconCozInfoCircle } from '@coze/coze-design/icons';
+import { IconCozDesktop, IconCozInfoCircle } from '@coze-arch/coze-design/icons';
 
 import { isBoolean } from 'lodash-es';
 import {

@@ -3,15 +3,15 @@ import { ConfigModeWidgetPopover } from './config-mode-popover';
 import './index.css';
 import { useEffect, useLayoutEffect } from 'react';
 
-import { useEditor, useInjector } from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import { useEditor, useInjector } from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
 import {
   astDecorator,
   SpanWidget,
   autoSelectRanges,
   selectionEnlarger,
   deletionEnlarger,
-} from '@flow-lang-sdk/editor';
+} from '@coze-editor/editor';
 import { type ViewUpdate } from '@codemirror/view';
 
 import {

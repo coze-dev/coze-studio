@@ -5,7 +5,7 @@
 import { type FC } from 'react';
 
 import classnames from 'classnames';
-import { Banner, type BannerProps } from '@coze/coze-design';
+import { Banner, type BannerProps } from '@coze-arch/coze-design';
 import { IconClose } from '@douyinfe/semi-icons';
 
 import styles from './index.module.less';

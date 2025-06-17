@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { type FC } from 'react';
 
-import { Select } from '@coze/coze-design';
+import { Select } from '@coze-arch/coze-design';
 
 import { Uploader } from './uploader';
 import { TextType } from './text-type';

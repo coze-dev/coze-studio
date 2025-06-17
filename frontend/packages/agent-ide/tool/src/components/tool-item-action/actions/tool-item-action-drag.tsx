@@ -1,7 +1,7 @@
 import { type ComponentProps, type FC } from 'react';
 
 import classNames from 'classnames';
-import { IconCozHamburger } from '@coze/coze-design/icons';
+import { IconCozHamburger } from '@coze-arch/coze-design/icons';
 
 import { ToolItemAction } from '..';
 

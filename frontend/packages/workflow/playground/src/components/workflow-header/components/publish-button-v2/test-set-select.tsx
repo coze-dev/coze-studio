@@ -9,8 +9,8 @@ import {
   type SetDefaultTestCaseReq,
 } from '@coze-arch/idl/debugger_api';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 
 import { useGlobalState } from '@/hooks';
 import { useGetStartNode } from '@/components/test-run/hooks/use-get-start-node';

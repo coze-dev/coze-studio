@@ -2,7 +2,7 @@ import { type MouseEventHandler, type CSSProperties, type FC } from 'react';
 
 import classnames from 'classnames';
 import { useNodeTestId } from '@coze-workflow/base';
-import { Tag } from '@coze/coze-design';
+import { Tag } from '@coze-arch/coze-design';
 
 import { type FileItem } from '@/hooks/use-upload';
 import { FileIcon } from '@/components/file-icon';

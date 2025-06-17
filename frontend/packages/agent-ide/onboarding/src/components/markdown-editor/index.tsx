@@ -1,7 +1,7 @@
 import { type CSSProperties } from 'react';
 
 import classNames from 'classnames';
-import { TextArea } from '@coze/coze-design';
+import { TextArea } from '@coze-arch/coze-design';
 
 import { useMarkdownEditor } from './hooks/use-markdown-editor';
 import { UploadProgressMask } from './components/upload-progress-mask';

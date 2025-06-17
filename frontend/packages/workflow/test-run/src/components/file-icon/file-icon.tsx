@@ -1,4 +1,4 @@
-import { Spin, Image } from '@coze/coze-design';
+import { Spin, Image } from '@coze-arch/coze-design';
 
 import { getIconByExtension, getFileExtension } from './utils';
 import { FileItemStatus, PREVIEW_IMAGE_TYPE } from './constants';

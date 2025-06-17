@@ -4,7 +4,7 @@ import { useMemo, useRef } from 'react';
 import {
   IconCozCheckMarkCircleFillPalette,
   IconCozInfoCircleFillPalette,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import { useService } from '@flowgram-adapter/free-layout-editor';
 
 import { WorkflowCustomDragService } from '../../services';

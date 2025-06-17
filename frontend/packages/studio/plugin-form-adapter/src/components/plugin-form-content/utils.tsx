@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react';
 
+import { type PluginInfoProps } from '@coze-studio/plugin-shared';
 import { type UploadValue } from '@coze-common/biz-components';
 import { I18n } from '@coze-arch/i18n';
 import { safeJSONParse } from '@coze-arch/bot-utils';
-import { type PluginMetaInfo } from '@coze-arch/bot-api/plugin_develop';
+import {
+  type commonParamSchema,
+  type CreationMethod,
+  ParameterLocation,
+  type PluginType,
+  type PluginMetaInfo,
+} from '@coze-arch/bot-api/plugin_develop';
 import { PluginDevelopApi } from '@coze-arch/bot-api';
+
+import { type FormState } from './hooks';
 
 export const formRuleList = {
   name: [
@@ -114,11 +123,15 @@ export const findAuthTypeItemV2 = (
     return optsItem?.children.find(
       (item: AuthOption) => item.value === subAuthType,
     );
-  } else if (authType?.[0] === 3 && subAuthType === 4) {
+  } else if (authType?.[0] === 3) {
     // 这里是一个很古老的 hack 逻辑
     // authType 的取值为：[0],[1],[3,4]
+    // 古老 hack 逻辑可能不存在了
     const optsItem = opts.find(item => item.value === 3);
-    return optsItem?.children.find((item: AuthOption) => item.value === 4);
+
+    return optsItem?.children.find(
+      (item: AuthOption) => item.value === subAuthType,
+    );
   }
 };
 
@@ -196,4 +209,94 @@ export const usePluginSchame = (): UsePluginSchameReturnValue => {
   }, []);
 
   return { authOption, runtimeOptions, defaultRuntime };
+};
+
+export const convertPluginMetaParams = ({
+  val,
+  spaceId,
+  headerList,
+  projectId,
+  creationMethod,
+  defaultRuntime,
+  pluginType,
+  extItemsJSON,
+}: {
+  val: FormState;
+  spaceId: string;
+  headerList: commonParamSchema[];
+  projectId: string | undefined;
+  creationMethod: CreationMethod;
+  defaultRuntime: string;
+  pluginType: PluginType;
+  extItemsJSON: Record<string, string>;
+}) => {
+  const mainAuthType = val.auth_type?.at(0);
+  const serviceSubAuthType = val.auth_type?.at(-1);
+  const initParams = {
+    ...val,
+    icon: { uri: val?.plugin_uri?.[0]?.uid },
+    auth_type: mainAuthType,
+    common_params: {
+      [ParameterLocation.Header]: headerList,
+      [ParameterLocation.Body]: [],
+      [ParameterLocation.Path]: [],
+      [ParameterLocation.Query]: [],
+    },
+    space_id: spaceId,
+    project_id: projectId,
+    creation_method: creationMethod,
+    ide_code_runtime: val.ide_code_runtime ?? defaultRuntime,
+    plugin_type: Number(pluginType) as unknown as PluginType,
+    private_link_id:
+      val.private_link_id === '0' ? undefined : val.private_link_id,
+  };
+  const params =
+    mainAuthType === 1
+      ? {
+          ...initParams,
+          sub_auth_type: serviceSubAuthType,
+          auth_payload: JSON.stringify(extItemsJSON),
+        }
+      : {
+          ...initParams,
+          sub_auth_type: mainAuthType === 3 ? serviceSubAuthType : undefined,
+          oauth_info: JSON.stringify(extItemsJSON),
+        };
+  return params;
+};
+
+export const registerPluginMeta = async ({
+  params,
+}: {
+  params: ReturnType<typeof convertPluginMetaParams>;
+}) => {
+  const res = await PluginDevelopApi.RegisterPluginMeta(
+    {
+      ...params,
+    },
+    {
+      __disableErrorToast: true,
+    },
+  );
+  return res.plugin_id;
+};
+
+export const updatePluginMeta = async ({
+  params,
+  editInfo,
+}: {
+  params: ReturnType<typeof convertPluginMetaParams>;
+  editInfo: PluginInfoProps | undefined;
+}) => {
+  await PluginDevelopApi.UpdatePluginMeta(
+    {
+      ...params,
+      plugin_id: editInfo?.plugin_id || '',
+      edit_version: editInfo?.edit_version,
+    },
+    {
+      __disableErrorToast: true,
+    },
+  );
+  return '';
 };

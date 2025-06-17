@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { CozAvatar } from '@coze/coze-design';
+import { CozAvatar } from '@coze-arch/coze-design';
 
 import { OverflowTagList } from '../../fields/overflow-tag-list';
 

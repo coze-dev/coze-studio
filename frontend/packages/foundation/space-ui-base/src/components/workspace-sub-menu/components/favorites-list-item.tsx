@@ -1,6 +1,7 @@
 import { type FC } from 'react';
 
 import classNames from 'classnames';
+import { cozeMitt } from '@coze-common/coze-mitt';
 import { reporter } from '@coze-arch/logger';
 import {
   type IntelligenceData,
@@ -8,15 +9,14 @@ import {
 } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
+import { CustomError } from '@coze-arch/bot-error';
 import {
   ProductEntityType,
   type FavoriteProductResponse,
 } from '@coze-arch/bot-api/product_api';
 import { ProductApi } from '@coze-arch/bot-api';
-import { cozeMitt } from '@coze-common/coze-mitt';
-import { CustomError } from '@coze-arch/bot-error';
-import { IconCozMore } from '@coze/coze-design/icons';
-import { Space, Avatar, Typography, Popover, Button } from '@coze/coze-design';
+import { IconCozMore } from '@coze-arch/coze-design/icons';
+import { Space, Avatar, Typography, Popover, Button } from '@coze-arch/coze-design';
 
 const getSubPath = (type: IntelligenceType | undefined) => {
   if (type === IntelligenceType.Project) {
@@ -91,6 +91,7 @@ export const FavoritesListItem: FC<IntelligenceData> = ({
         //跳转至 Bot编辑页，后续会改成新的URL/space/:spaceId/agent/:agentId
         window.open(getIntelligenceNavigateUrl({ basic_info, type }), '_blank');
       }}
+      data-testid="workspace.favorites.list.item"
     >
       <Space className="h-[32px] px-[8px] w-full" spacing={8}>
         <Avatar
@@ -129,6 +130,7 @@ export const FavoritesListItem: FC<IntelligenceData> = ({
             }
           >
             <Button
+              data-testid="workspace.favorites.list.item.popover.button"
               className={classNames('h-full w-full !flex')}
               size="mini"
               color="secondary"

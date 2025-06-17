@@ -7,7 +7,7 @@ import { RewriteTips, RerankTips } from '@coze-common/biz-tooltip-ui';
 import { type Dataset, FormatType } from '@coze-arch/idl/knowledge';
 import { I18n } from '@coze-arch/i18n';
 import { IconWarningInfo } from '@coze-arch/bot-icons';
-import { Popover } from '@coze/coze-design';
+import { Popover } from '@coze-arch/coze-design';
 
 import { CheckboxWithLabel } from '../checkbox-with-label';
 import { Strategy, type DataSetInfo } from './type';

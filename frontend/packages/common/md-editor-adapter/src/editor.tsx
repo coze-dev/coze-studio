@@ -7,7 +7,7 @@ import {
   useEffect,
 } from 'react';
 
-import { TextArea, withField } from '@coze/coze-design';
+import { TextArea, withField } from '@coze-arch/coze-design';
 
 import {
   type EditorInputProps,

@@ -1,7 +1,7 @@
 import { VCSCanvasType } from '@coze-workflow/base/api';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCheckMarkCircleFillPalette } from '@coze/coze-design/icons';
-import { Tag } from '@coze/coze-design';
+import { IconCozCheckMarkCircleFillPalette } from '@coze-arch/coze-design/icons';
+import { Tag } from '@coze-arch/coze-design';
 
 import { useGlobalState } from '../../../hooks';
 

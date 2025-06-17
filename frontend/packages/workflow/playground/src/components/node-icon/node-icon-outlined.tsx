@@ -1,7 +1,7 @@
 import { type FC, type CSSProperties } from 'react';
 
 import classnames from 'classnames';
-import { Image } from '@coze/coze-design';
+import { Image } from '@coze-arch/coze-design';
 
 import styles from './node-icon-outlined.module.less';
 export interface NodeIconOutlinedProps {

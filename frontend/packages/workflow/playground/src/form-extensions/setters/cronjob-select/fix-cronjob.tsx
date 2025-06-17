@@ -8,7 +8,7 @@ import {
 } from '@coze-workflow/base/types';
 import { REPORT_EVENTS as ReportEventNames } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
-import { Cascader, type CascaderData } from '@coze/coze-design';
+import { Cascader, type CascaderData } from '@coze-arch/coze-design';
 import { CustomError } from '@coze-arch/bot-error';
 
 const hoursSize = 24;

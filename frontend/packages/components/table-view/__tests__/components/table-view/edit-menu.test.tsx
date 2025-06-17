@@ -22,7 +22,7 @@ vi.mock('@coze-arch/i18n', () => ({
   },
 }));
 
-vi.mock('@coze/coze-design', () => ({
+vi.mock('@coze-arch/coze-design', () => ({
   Menu: {
     SubMenu: ({ children, mode }: any) => (
       <div data-testid="menu-submenu" data-mode={mode}>
@@ -61,7 +61,7 @@ vi.mock('@douyinfe/semi-icons', () => ({
   IconClose: () => <div data-testid="icon-close"></div>,
 }));
 
-vi.mock('@coze/coze-design/icons', () => ({
+vi.mock('@coze-arch/coze-design/icons', () => ({
   IconCozEdit: () => <div data-testid="icon-edit"></div>,
   IconCozTrashCan: () => <div data-testid="icon-trash"></div>,
 }));

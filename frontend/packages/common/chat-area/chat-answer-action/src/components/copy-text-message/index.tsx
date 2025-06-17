@@ -9,8 +9,8 @@ import {
   useMessageBoxContext,
 } from '@coze-common/chat-area';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCheckMark, IconCozCopy } from '@coze/coze-design/icons';
-import { IconButton, Toast, Tooltip } from '@coze/coze-design';
+import { IconCozCheckMark, IconCozCopy } from '@coze-arch/coze-design/icons';
+import { IconButton, Toast, Tooltip } from '@coze-arch/coze-design';
 
 import { ReportEventNames } from '../../report-events';
 import { useTooltipTrigger } from '../../hooks/use-tooltip-trigger';

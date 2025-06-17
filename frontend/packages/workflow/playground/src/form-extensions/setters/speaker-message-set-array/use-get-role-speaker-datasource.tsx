@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { Space, Tooltip } from '@coze/coze-design';
+import { Space, Tooltip } from '@coze-arch/coze-design';
 
 import { VariableTypeTag } from '../../components/variable-type-tag';
 import { useGetSceneFlowRoleList } from '../../../hooks/use-get-scene-flow-params';

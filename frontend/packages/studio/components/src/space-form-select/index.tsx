@@ -2,7 +2,7 @@ import { forwardRef, useEffect } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozTeamFill } from '@coze/coze-design/icons';
+import { IconCozTeamFill } from '@coze-arch/coze-design/icons';
 import {
   Avatar,
   type CommonFieldProps,
@@ -12,7 +12,7 @@ import {
   Tag,
   Typography,
   withField,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { type BotSpace, SpaceType } from '@coze-arch/bot-api/developer_api';
 import { useSpaceStore, useRefreshSpaces } from '@coze-foundation/space-store';
 

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 
-import { IconCozFocus } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozFocus } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 import { type Span } from '@coze-arch/bot-api/workflow_api';
 
 import { getStrFromSpan } from '../../utils';

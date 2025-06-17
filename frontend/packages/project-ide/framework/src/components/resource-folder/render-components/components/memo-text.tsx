@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 
-import { Typography, Highlight } from '@coze/coze-design';
+import { Typography, Highlight } from '@coze-arch/coze-design';
 
 import {
   type CommonRenderProps,

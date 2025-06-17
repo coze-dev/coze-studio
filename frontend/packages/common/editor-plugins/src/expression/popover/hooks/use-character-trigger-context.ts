@@ -1,7 +1,7 @@
 /* eslint @coze-arch/max-line-per-function: "warn" */
 import { useLayoutEffect, useState } from 'react';
 
-import { useInjector, useLatest } from '@flow-lang-sdk/editor/react';
+import { useInjector, useLatest } from '@coze-editor/editor/react';
 import { ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { EditorSelection, type EditorState } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';

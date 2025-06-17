@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { Select, Tooltip } from '@coze/coze-design';
+import { Select, Tooltip } from '@coze-arch/coze-design';
 
 import { InfoIcon } from '../info-icon';
 

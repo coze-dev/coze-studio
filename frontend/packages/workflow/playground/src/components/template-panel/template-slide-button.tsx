@@ -4,8 +4,8 @@ import classNames from 'classnames';
 import {
   IconCozArrowLeft,
   IconCozArrowRight,
-} from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 import { TemplateCompZIndex } from './constants';
 

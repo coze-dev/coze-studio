@@ -3,7 +3,7 @@ import { lazy, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { usePersonaStore } from '@coze-studio/bot-detail-store/persona';
 import { useBotDetailIsReadonly } from '@coze-studio/bot-detail-store';
-import { Spin } from '@coze/coze-design';
+import { Spin } from '@coze-arch/coze-design';
 const AgentIdePrompt = lazy(() => import('./agent-ide-prompt'));
 
 export interface PromptEditorEntryProps {

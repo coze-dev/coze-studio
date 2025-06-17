@@ -47,7 +47,7 @@ import {
   Tooltip,
   Banner,
   Popconfirm,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import PluginHeader from '@/components/plugin-header';
 

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { SideSheet } from '@coze/coze-design';
+import { SideSheet } from '@coze-arch/coze-design';
 
 import { useTestFormState } from '@/hooks';
 import { WORKFLOW_PLAYGROUND_CONTENT_ID } from '@/constants';

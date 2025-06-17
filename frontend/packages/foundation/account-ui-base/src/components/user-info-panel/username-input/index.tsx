@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Form, Input, type InputProps } from '@coze/coze-design';
+import { Form, Input, type InputProps } from '@coze-arch/coze-design';
 
 import s from './index.module.less';
 

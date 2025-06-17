@@ -5,7 +5,7 @@ import {
   type Message,
 } from '@coze-common/chat-area';
 import { I18n } from '@coze-arch/i18n';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 import { Space } from '@coze-arch/bot-semi';
 
 import { useGetPosition } from '../../../hooks/use-get-position';

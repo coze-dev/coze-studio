@@ -35,8 +35,8 @@ import {
   AddButton,
 } from '@coze-agent-ide/tool';
 import { useBotEditor } from '@coze-agent-ide/bot-editor-context-store';
-import { IconCozCopy, IconCozMinusCircle } from '@coze/coze-design/icons';
-import { Tooltip, Popover } from '@coze/coze-design';
+import { IconCozCopy, IconCozMinusCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip, Popover } from '@coze-arch/coze-design';
 
 import { usePopoverLock } from '../../hook/use-popover-lock';
 import { useDatasetAutoChangeConfirm } from '../../hook/use-dataset-auto-change-confirm';

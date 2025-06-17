@@ -3,8 +3,8 @@ import { useRef, useState } from 'react';
 import { I18n } from '@coze-arch/i18n';
 import { type FileItem, type UploadProps } from '@coze-arch/bot-semi/Upload';
 import { FileBizType } from '@coze-arch/bot-api/developer_api';
-import { IconCozEdit } from '@coze/coze-design/icons';
-import { CozAvatar, Toast, Upload } from '@coze/coze-design';
+import { IconCozEdit } from '@coze-arch/coze-design/icons';
+import { CozAvatar, Toast, Upload } from '@coze-arch/coze-design';
 
 import { EmptyRoleAvatar } from '../../empty-role-avatar';
 import customUploadRequest from './utils/custom-upload-request';

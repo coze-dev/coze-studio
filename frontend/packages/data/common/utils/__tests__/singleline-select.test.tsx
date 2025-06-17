@@ -1,6 +1,6 @@
 import { expect, vi, describe, test } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { type SelectProps } from '@coze/coze-design';
+import { type SelectProps } from '@coze-arch/coze-design';
 
 import { SinglelineSelect } from '../src/components/singleline-select';
 
@@ -11,7 +11,7 @@ vi.mock('@coze-arch/i18n', () => ({
   },
 }));
 
-vi.mock('@coze/coze-design', () => ({
+vi.mock('@coze-arch/coze-design', () => ({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Select: (props: SelectProps) => {
     const { optionList, onChange } = props;

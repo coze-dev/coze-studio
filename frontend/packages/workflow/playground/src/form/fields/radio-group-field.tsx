@@ -5,7 +5,7 @@ import {
   Radio,
   RadioGroup,
   type RadioGroupProps as BaseRadioGroupProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useField } from '../hooks';
 import { withField } from '../hocs';

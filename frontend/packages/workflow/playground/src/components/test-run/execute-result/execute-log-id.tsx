@@ -1,7 +1,7 @@
 import copy from 'copy-to-clipboard';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCopy } from '@coze/coze-design/icons';
-import { Typography, Toast } from '@coze/coze-design';
+import { IconCozCopy } from '@coze-arch/coze-design/icons';
+import { Typography, Toast } from '@coze-arch/coze-design';
 import { UIIconButton } from '@coze-arch/bot-semi';
 
 import { useExecStateEntity } from '../../../hooks';

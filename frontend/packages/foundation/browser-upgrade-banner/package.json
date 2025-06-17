@@ -2,7 +2,7 @@
   "name": "@coze-foundation/browser-upgrade-banner",
   "version": "0.0.1",
   "description": "低版本浏览器升级条幅",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "liushuoyan@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",
@@ -14,9 +14,9 @@
     "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/logger": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "@types/detect-browser": "~4.0.0",
     "classnames": "^2.3.2",
     "detect-browser": "~5.3.0"
@@ -53,3 +53,4 @@
     "react-dom": ">=18.2.0"
   }
 }
+

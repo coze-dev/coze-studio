@@ -2,8 +2,8 @@ import { forwardRef } from 'react';
 
 import classNames from 'classnames';
 import { useNodeTestId } from '@coze-workflow/base';
-import { IconCozMinus } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozMinus } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 import { type SetterOrDecoratorContext } from '@flowgram-adapter/free-layout-editor';
 import { IconHandle } from '@douyinfe/semi-icons';
 

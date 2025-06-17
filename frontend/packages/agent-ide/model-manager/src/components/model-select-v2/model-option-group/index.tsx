@@ -4,8 +4,8 @@ import cls from 'classnames';
 import {
   IconCozStarFill,
   IconCozQuestionMarkCircle,
-} from '@coze/coze-design/icons';
-import { Avatar, Divider, Tooltip } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Avatar, Divider, Tooltip } from '@coze-arch/coze-design';
 
 export type ModelOptionGroupProps =
   | {

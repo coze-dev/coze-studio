@@ -1,6 +1,6 @@
 import { useEffect, useState, type ComponentProps } from 'react';
 
-import { withField, FormInput, FormTextArea } from '@coze/coze-design';
+import { withField, FormInput, FormTextArea } from '@coze-arch/coze-design';
 
 interface PromptInfoInputProps {
   readonly?: boolean;

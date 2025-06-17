@@ -9,7 +9,7 @@ import {
   type ModelParamClass,
   type Model,
 } from '@coze-arch/bot-api/developer_api';
-import { Select, Radio, RadioGroup } from '@coze/coze-design';
+import { Select, Radio, RadioGroup } from '@coze-arch/coze-design';
 
 import { cacheData, getCamelNameName, getValueByType } from '../utils';
 import styles from '../index.module.less';

@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid';
 import classNames from 'classnames';
 import { useUpdateEffect, useSize } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 import { typeSafeJSONParse } from '@coze-arch/bot-utils';
 import {
   type FileItem as SemiFileItem,

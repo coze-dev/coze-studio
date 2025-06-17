@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { Menu } from '@coze/coze-design';
+import { Menu } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

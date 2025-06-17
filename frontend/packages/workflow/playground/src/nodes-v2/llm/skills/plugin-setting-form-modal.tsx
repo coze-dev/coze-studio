@@ -8,7 +8,7 @@ import {
   Nav,
   NavItem,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { type PluginFCSetting } from './types';
 import { OutputParamsForm, type ResponseSettings } from './output-params-form';

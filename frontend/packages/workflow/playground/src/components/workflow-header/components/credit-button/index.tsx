@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import { usePluginLimitModal } from '@coze-studio/components';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCoin } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozCoin } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 import { UIButton } from '@coze-arch/bot-semi';
 
 import { usePluginCredits } from '@/components/workflow-header/hooks';

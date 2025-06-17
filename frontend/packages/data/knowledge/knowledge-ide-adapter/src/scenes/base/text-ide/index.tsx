@@ -1,19 +1,19 @@
 import { KnowledgeIDEBaseLayout } from '@coze-data/knowledge-ide-base/layout/base';
+import {
+  type TextKnowledgeWorkspaceProps,
+  TextKnowledgeWorkspace,
+} from '@coze-data/knowledge-ide-base/features/text-knowledge-workspace';
 import { BaseKnowledgeIDENavBar } from '@coze-data/knowledge-ide-base/features/nav-bar/base';
 import {
   KnowledgeIDERegistryContext,
   type KnowledgeIDERegistry,
 } from '@coze-data/knowledge-ide-base/context/knowledge-ide-registry-context';
-import {
-  type PreviewTextContentProps,
-  TextPreview,
-} from '@coze-data/knowledge-ide-base/components/preview-text';
 
 import { type BaseKnowledgeIDEProps } from '../types';
 import { importKnowledgeSourceMenuContributes } from './import-knowledge-source-menu-contributes';
 
 export interface BaseKnowledgeTextIDEProps extends BaseKnowledgeIDEProps {
-  contentProps?: Partial<PreviewTextContentProps>;
+  contentProps?: Partial<TextKnowledgeWorkspaceProps>;
 }
 
 const registryContextValue: KnowledgeIDERegistry = {
@@ -31,7 +31,7 @@ export const BaseKnowledgeTextIDE = (props: BaseKnowledgeTextIDEProps) => (
         />
       )}
       renderContent={({ dataActions, statusInfo }) => (
-        <TextPreview
+        <TextKnowledgeWorkspace
           progressMap={statusInfo.progressMap}
           reload={dataActions.refreshData}
           onChangeDocList={dataActions.updateDocumentList}

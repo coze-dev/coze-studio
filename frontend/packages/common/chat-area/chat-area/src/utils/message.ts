@@ -5,7 +5,7 @@ import {
 } from '@coze-common/chat-core';
 import { safeAsyncThrow } from '@coze-common/chat-area-utils';
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import {
   type CardMessage,

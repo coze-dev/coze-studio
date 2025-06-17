@@ -2,7 +2,7 @@
   "name": "@coze-foundation/enterprise-store-adapter",
   "version": "0.0.1",
   "description": "store for enterprise",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "sunzhiyuan.evan@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

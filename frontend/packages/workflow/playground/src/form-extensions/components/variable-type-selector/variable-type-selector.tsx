@@ -14,14 +14,14 @@ import {
   IconCozArrowDown,
   IconCozArrowRight,
   IconCozCheckMarkFill,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   Dropdown,
   Tooltip,
   type DropdownProps,
   type SelectProps,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import {
   allVariableTypeList,

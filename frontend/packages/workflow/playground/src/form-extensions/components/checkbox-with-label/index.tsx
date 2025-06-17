@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 
 import classNames from 'classnames';
-import { Tooltip } from '@coze/coze-design';
+import { Tooltip } from '@coze-arch/coze-design';
 import { Checkbox } from '@coze-arch/bot-semi';
 import { IconInfo } from '@coze-arch/bot-icons';
 

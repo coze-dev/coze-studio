@@ -1,6 +1,6 @@
 import { type FC } from 'react';
 
-import { Tooltip } from '@coze/coze-design';
+import { Tooltip } from '@coze-arch/coze-design';
 
 interface Props {
   label?: string;

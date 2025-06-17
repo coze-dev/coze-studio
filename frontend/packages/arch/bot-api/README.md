@@ -10,7 +10,7 @@ This package provides a comprehensive API client library for the Coze Bot Studio
 
 - **Comprehensive API Coverage**: Complete wrapper for all bot studio services including:
   - Developer APIs for bot management and development
-  - Playground APIs for testing and experimentation  
+  - Playground APIs for testing and experimentation
   - Knowledge management and memory systems
   - Workflow and connector APIs
   - Plugin development and marketplace interactions
@@ -48,11 +48,11 @@ rush update
 #### Import Main API Services
 
 ```typescript
-import { 
-  DeveloperApi, 
-  PlaygroundApi, 
+import {
+  DeveloperApi,
+  PlaygroundApi,
   KnowledgeApi,
-  workflowApi 
+  workflowApi
 } from '@coze-arch/bot-api';
 
 // Use developer API
@@ -61,7 +61,7 @@ const bots = await DeveloperApi.getBotList({
   page_size: 20
 });
 
-// Use playground API  
+// Use playground API
 const result = await PlaygroundApi.chat({
   bot_id: 'bot_123',
   message: 'Hello world'
@@ -84,10 +84,10 @@ import PlaygroundApiService from '@coze-arch/bot-api/playground_api';
 #### Error Handling
 
 ```typescript
-import { 
-  APIErrorEvent, 
+import {
+  APIErrorEvent,
   handleAPIErrorEvent,
-  addGlobalRequestInterceptor 
+  addGlobalRequestInterceptor
 } from '@coze-arch/bot-api';
 
 // Add global error handler
@@ -123,7 +123,7 @@ const result = await DeveloperApi.getBotInfo(
 - Agent development and deployment
 - Plugin management and publishing
 
-#### Playground API (`PlaygroundApi`) 
+#### Playground API (`PlaygroundApi`)
 - Bot testing and conversation simulation
 - Chat message handling
 - Debug and monitoring capabilities
@@ -174,9 +174,9 @@ The package provides both high-level service instances and low-level IDL access:
 
 ### Service Instances
 ```typescript
-DeveloperApi, PlaygroundApi, ProductApi, NotifyApi, 
+DeveloperApi, PlaygroundApi, ProductApi, NotifyApi,
 MemoryApi, KnowledgeApi, cardApi, appBuilderApi,
-workflowApi, debuggerApi, tradeApi, benefitApi, 
+workflowApi, debuggerApi, tradeApi, benefitApi,
 incentiveApi, fulfillApi, hubApi, SocialApi
 ```
 
@@ -184,7 +184,7 @@ incentiveApi, fulfillApi, hubApi, SocialApi
 ```typescript
 // Access via subpath imports
 '@coze-arch/bot-api/developer_api'
-'@coze-arch/bot-api/playground_api'  
+'@coze-arch/bot-api/playground_api'
 '@coze-arch/bot-api/knowledge'
 '@coze-arch/bot-api/workflow_api'
 // ... and many more
@@ -224,4 +224,4 @@ This package depends on:
 
 ## License
 
-ISC
+Apache-2.0

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { inject, injectable, postConstruct } from 'inversify';
-import { Tooltip } from '@coze/coze-design';
+import { Tooltip } from '@coze-arch/coze-design';
 import {
   type URI,
   type LabelHandler,

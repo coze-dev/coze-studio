@@ -167,4 +167,4 @@ This package is part of the Coze Studio monorepo. Please follow the monorepo con
 
 ## License
 
-MIT
+Apache-2.0

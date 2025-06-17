@@ -4,8 +4,8 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozInfoCircle,
   IconCozCheckMarkCircleFillPalette,
-} from '@coze/coze-design/icons';
-import { Typography, Tag, Tooltip, IconButton } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Typography, Tag, Tooltip, IconButton } from '@coze-arch/coze-design';
 
 import { WorkflowReferencesTip } from '../workflow-references/references-tip';
 import { ExecuteState } from '../test-run/execute-result/execute-result-side-sheet/components/execute-state';

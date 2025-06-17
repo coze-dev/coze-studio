@@ -12,7 +12,7 @@ import { useBizWorkflowKnowledgeIDEFullScreenModal } from '@coze-data/knowledge-
 import { I18n } from '@coze-arch/i18n';
 import { ConfigProvider } from '@coze-arch/bot-semi';
 import { DatasetStatus } from '@coze-arch/bot-api/knowledge';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 
 import { useGlobalState, useDataSetInfos, useSpaceId } from '@/hooks';
 

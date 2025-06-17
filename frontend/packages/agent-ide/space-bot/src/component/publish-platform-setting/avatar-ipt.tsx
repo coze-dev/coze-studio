@@ -1,7 +1,7 @@
 import { type CSSProperties, type ForwardedRef, forwardRef } from 'react';
 
 import classNames from 'classnames';
-import { Avatar, Upload, type UploadProps } from '@coze/coze-design';
+import { Avatar, Upload, type UploadProps } from '@coze-arch/coze-design';
 
 import CozeLogoPng from '../../assets/image/coze-logo.png';
 import CozeHoverPng from '../../assets/image/coze-avatar-hover.png';

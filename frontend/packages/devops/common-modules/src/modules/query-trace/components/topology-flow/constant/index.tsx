@@ -1,7 +1,7 @@
 import {
   IconCozDatabaseFill,
   IconCozLongTermMemory,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   IconSpanAgent,
   IconSpanBMBatch,

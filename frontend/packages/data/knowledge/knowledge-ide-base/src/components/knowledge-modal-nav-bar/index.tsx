@@ -12,13 +12,13 @@ import {
   type Dataset,
   type DocumentInfo,
 } from '@coze-arch/bot-api/knowledge';
-import { IconCozCross } from '@coze/coze-design/icons';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
 import {
   IconButton,
   Avatar,
   Space,
   // Search,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { getFormatTypeFromUnitType } from '@/utils';
 import { RenderDocumentIcon } from '@/components/render-document-icon';

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import classNames from 'classnames';
-import { Tag } from '@coze/coze-design';
+import { Tag } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

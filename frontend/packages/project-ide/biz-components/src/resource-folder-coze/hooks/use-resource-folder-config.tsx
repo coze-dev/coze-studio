@@ -3,8 +3,8 @@ import React, { useCallback, useMemo } from 'react';
 
 import classNames from 'classnames';
 import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
-import { IconCozWarningCircleFill } from '@coze/coze-design/icons';
-import { Loading, Tooltip } from '@coze/coze-design';
+import { IconCozWarningCircleFill } from '@coze-arch/coze-design/icons';
+import { Loading, Tooltip } from '@coze-arch/coze-design';
 import { useFlags } from '@coze-arch/bot-flags';
 import {
   type ProjectResourceAction,

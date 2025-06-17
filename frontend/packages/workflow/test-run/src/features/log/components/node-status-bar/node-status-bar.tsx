@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozArrowDown } from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+import { IconCozArrowDown } from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 import { useNodeRender } from '@flowgram-adapter/free-layout-editor';
 
 import styles from './node-status-bar.module.less';

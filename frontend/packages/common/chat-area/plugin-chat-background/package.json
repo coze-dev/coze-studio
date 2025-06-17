@@ -2,7 +2,7 @@
   "name": "@coze-common/chat-area-plugin-chat-background",
   "version": "0.0.1",
   "description": "chat area plugin chat-background",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "zhangnan.615@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

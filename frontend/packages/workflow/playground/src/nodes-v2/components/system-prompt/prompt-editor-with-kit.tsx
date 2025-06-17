@@ -1,9 +1,14 @@
 import { type FC, useState, useRef } from 'react';
 
 import classNames from 'classnames';
+import { useGlobalVariableServiceState } from '@coze-workflow/variable';
+import { NLPromptModal } from '@coze-workflow/resources-adapter';
 import { type ExpressionEditorTreeNode } from '@coze-workflow/components';
-import { useEditor } from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import { useNodeTestId } from '@coze-workflow/base';
+import { useEditor } from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
+import { usePromptConfiguratorModal } from '@coze-common/prompt-kit-adapter/create-prompt';
+import { usePromptLibraryModal } from '@coze-common/prompt-kit';
 import {
   ContentSearchPopover,
   type ContentSearchPopoverProps,
@@ -18,11 +23,6 @@ import {
   Validation,
   HighlightExpressionOnActive,
 } from '@coze-common/editor-plugins/expression';
-import { useGlobalVariableServiceState } from '@coze-workflow/variable';
-import { NLPromptModal } from '@coze-workflow/resources-adapter';
-import { useNodeTestId } from '@coze-workflow/base';
-import { usePromptConfiguratorModal } from '@coze-common/prompt-kit-adapter/create-prompt';
-import { usePromptLibraryModal } from '@coze-common/prompt-kit';
 import { I18n } from '@coze-arch/i18n';
 import { useFlags } from '@coze-arch/bot-flags';
 
@@ -141,16 +141,18 @@ export const EditorWithPromptKit: FC<EditorWithPromptKitProps> = props => {
         />
         <InputSlotWidget mode="input" />
         <LibraryBlockWidget
-          {...(// 社区版暂不支持该功能
-          isHitLLMPromptSkills
-            ? {
-                librarys: libraries,
-                disabledTooltips: readonly,
-              }
-            : {
-                librarys: [],
-                readonly: true,
-              })}
+          {
+            // 社区版暂不支持该功能
+            ...(isHitLLMPromptSkills
+              ? {
+                  librarys: libraries,
+                  disabledTooltips: readonly,
+                }
+              : {
+                  librarys: [],
+                  readonly: true,
+                })
+          }
           spaceId={spaceId}
           projectId={type === 'project' ? id : undefined}
           onAddLibrary={(library, pos) => {

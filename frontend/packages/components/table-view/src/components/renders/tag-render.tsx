@@ -1,9 +1,8 @@
 import { type ReactNode } from 'react';
 
 import classNames from 'classnames';
-// eslint-disable-next-line @coze-arch/no-pkg-dir-import
-import { type TagColor } from '@coze/coze-design/src/components/tag/tag-types';
-import { Tag } from '@coze/coze-design';
+import { type TagColor } from '@coze-arch/coze-design/types';
+import { Tag } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

@@ -32,7 +32,7 @@ import {
   IconCozMore,
   IconCozTrigger,
   IconCozWarningCircleFill,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   IconButton,
   Typography,
@@ -40,7 +40,7 @@ import {
   Input,
   Tag,
   Divider,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useNodeSideSheetStore } from '@/hooks/use-node-side-sheet-store';
 

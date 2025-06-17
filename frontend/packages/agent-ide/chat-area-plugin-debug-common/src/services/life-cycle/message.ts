@@ -8,7 +8,7 @@ import {
   getBotState,
 } from '@coze-common/chat-area';
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 import { messageReportEvent } from '@coze-arch/bot-utils';
 import { CustomError } from '@coze-arch/bot-error';
 

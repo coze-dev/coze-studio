@@ -7,7 +7,7 @@ import { usePrimarySidebarStore } from '@coze-project-ide/biz-components';
 import { I18n } from '@coze-arch/i18n';
 import { WorkflowMode } from '@coze-arch/bot-api/workflow_api';
 import { workflowApi } from '@coze-arch/bot-api';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 export const useChangeFlowMode = () => {
   const refetch = usePrimarySidebarStore(state => state.refetch);
   const navigate = useIDENavigate();

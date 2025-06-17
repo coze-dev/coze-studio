@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { DiffEditor } from '@monaco-editor/react';
 import { I18n } from '@coze-arch/i18n';
-import { Modal } from '@coze/coze-design';
+import { Modal } from '@coze-arch/coze-design';
 import { Divider, Spin, Typography } from '@coze-arch/bot-semi';
 import {
   DiffStyle,

@@ -36,7 +36,7 @@ export class FlowLinesLayer extends Layer {
    */
   onViewportChange = throttle(() => {
     this.render();
-  }, 100);
+  }, 100) as ReturnType<typeof throttle>;
 
   onZoom() {
     const svgContainer = this.node!.querySelector('svg.flow-lines-container')!;

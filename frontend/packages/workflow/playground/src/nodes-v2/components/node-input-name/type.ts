@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 
 import type { InputValueVO, RefExpression } from '@coze-workflow/base';
-import { type InputProps } from '@coze/coze-design';
+import { type InputProps } from '@coze-arch/coze-design';
 
 import { type ComponentProps } from '@/nodes-v2/components/types';
 

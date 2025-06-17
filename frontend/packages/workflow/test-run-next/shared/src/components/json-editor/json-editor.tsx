@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { uniqueId } from 'lodash-es';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-code';
-import { json } from '@flow-lang-sdk/editor/language-json';
+import { type EditorAPI } from '@coze-editor/editor/preset-code';
+import { json } from '@coze-editor/editor/language-json';
 
 import { JSONEditor, EditorProvider } from './base';
 

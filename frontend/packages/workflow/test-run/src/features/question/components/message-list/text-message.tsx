@@ -1,7 +1,7 @@
 import React from 'react';
 
 import cls from 'classnames';
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 
 import { type ReceivedMessage } from '../../types';
 import { MessageType } from '../../constants';

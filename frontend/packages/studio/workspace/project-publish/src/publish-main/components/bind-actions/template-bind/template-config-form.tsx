@@ -20,7 +20,7 @@ import {
   EditorEventType,
   normalizeSchema,
 } from '@coze-common/md-editor-adapter';
-import { IconCozPlus } from '@coze/coze-design/icons';
+import { IconCozPlus } from '@coze-arch/coze-design/icons';
 import {
   type FileItem,
   Form,
@@ -28,7 +28,7 @@ import {
   FormSelect,
   Typography,
   type optionRenderProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import {
   uploadCustomRequest,

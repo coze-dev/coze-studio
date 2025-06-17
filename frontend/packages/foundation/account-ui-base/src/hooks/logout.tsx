@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Modal } from '@coze/coze-design';
+import { Modal } from '@coze-arch/coze-design';
 import { logout } from '@coze-foundation/account-adapter';
 
 export interface UseLogoutReturnType {

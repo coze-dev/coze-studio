@@ -9,8 +9,8 @@ import {
 } from '@flowgram-adapter/free-layout-editor';
 import { ViewVariableType, type InputValueVO } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 
 import { NodeInputName } from '@/nodes-v2/components/node-input-name';
 import { FormItemFeedback } from '@/nodes-v2/components/form-item-feedback';

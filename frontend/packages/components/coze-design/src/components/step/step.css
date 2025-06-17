@@ -1,7 +1,0 @@
-.coz-step-item {
-  &.semi-steps-item.coz-step-item-without-desc {
-    .semi-steps-item-title {
-      @apply pb-0;
-    }
-  }
-}

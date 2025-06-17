@@ -11,7 +11,7 @@ import {
   IconCozMatchSlash,
   IconCozElementOf,
   IconCozElementOfSlash,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 export const ConditionOperatorMap: Record<
   ConditionOperator,

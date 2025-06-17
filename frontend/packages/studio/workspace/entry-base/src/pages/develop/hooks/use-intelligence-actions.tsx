@@ -9,7 +9,7 @@ import {
   type CreateProjectHookProps,
 } from '@coze-studio/project-entity-adapter';
 import { cozeMitt } from '@coze-common/coze-mitt';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { type DraftIntelligenceList } from '../type';
 

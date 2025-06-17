@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { useCountDown } from 'ahooks';
 import { AudioStaticToast, StopRespondButton } from '@coze-common/chat-uikit';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozArrowDownward } from '@coze/coze-design/icons';
+import { IconCozArrowDownward } from '@coze-arch/coze-design/icons';
 
 import { useShowBackGround } from '../../hooks/public/use-show-bgackground';
 import { useStopResponding } from '../../hooks/messages/use-stop-responding';

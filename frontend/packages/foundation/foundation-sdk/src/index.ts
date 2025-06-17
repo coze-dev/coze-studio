@@ -1,5 +1,5 @@
 import { type useCurrentTheme as useCurrentThemeOfSDK } from '@coze-arch/foundation-sdk';
-import { useTheme } from '@coze/coze-design';
+import { useTheme } from '@coze-arch/coze-design';
 
 export const useCurrentTheme: typeof useCurrentThemeOfSDK = () =>
   useTheme().theme;

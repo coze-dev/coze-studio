@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { IconCozExpand, IconCozMinimize } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozExpand, IconCozMinimize } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 export const ExpandBtn = ({
   onClick,
   expand,

@@ -289,4 +289,4 @@ This package has minimal dependencies:
 
 ## License
 
-ISC
+Apache-2.0

@@ -2,7 +2,7 @@ import { TriggerForm } from '@coze-workflow/nodes';
 import { FILE_TYPES, ViewVariableType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { useFlags } from '@coze-arch/bot-flags';
-import { Switch } from '@coze/coze-design';
+import { Switch } from '@coze-arch/coze-design';
 
 import { withNodeConfigForm } from '@/node-registries/common/hocs';
 import { useGlobalState } from '@/hooks';

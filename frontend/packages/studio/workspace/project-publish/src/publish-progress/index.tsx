@@ -7,13 +7,13 @@ import {
   ResourceType,
 } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlugin, IconCozWorkflow } from '@coze/coze-design/icons';
+import { IconCozPlugin, IconCozWorkflow } from '@coze-arch/coze-design/icons';
 import {
   type StepProps,
   Steps,
   TagGroup,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { type DynamicParams } from '@coze-arch/bot-typings/teamspace';
 import { type UITagProps } from '@coze-arch/bot-semi';
 import { useParams } from 'react-router-dom';

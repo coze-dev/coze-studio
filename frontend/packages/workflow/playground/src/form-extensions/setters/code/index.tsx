@@ -1,6 +1,6 @@
 import { type FC } from 'react';
 
-import { ConfigProvider } from '@coze/coze-design';
+import { ConfigProvider } from '@coze-arch/coze-design';
 import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 
 import { CodeSetterContext } from './context';

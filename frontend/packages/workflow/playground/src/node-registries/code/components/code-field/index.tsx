@@ -1,6 +1,6 @@
 import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 import { type InputValueVO, type OutputValueVO } from '@coze-workflow/base';
-import { ConfigProvider } from '@coze/coze-design';
+import { ConfigProvider } from '@coze-arch/coze-design';
 
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
 import { type CodeEditorValue } from '@/form-extensions/setters/code/types';

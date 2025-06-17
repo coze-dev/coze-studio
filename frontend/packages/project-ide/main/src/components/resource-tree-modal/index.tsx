@@ -21,8 +21,8 @@ import {
   type DependencyTree,
 } from '@coze-arch/bot-api/workflow_api';
 import { workflowApi } from '@coze-arch/bot-api';
-import { IconCozCross, IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Modal, Button, Tooltip, Loading, Typography } from '@coze/coze-design';
+import { IconCozCross, IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Modal, Button, Tooltip, Loading, Typography } from '@coze-arch/coze-design';
 
 import { ResourceContent } from './resource-content';
 

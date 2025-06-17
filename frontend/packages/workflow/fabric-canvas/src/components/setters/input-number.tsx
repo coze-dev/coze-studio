@@ -3,7 +3,7 @@ import { forwardRef } from 'react';
 import {
   InputNumber as CozeInputNumber,
   type InputNumberProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 export const InputNumber = forwardRef<InputNumberProps, InputNumberProps>(
   props => {

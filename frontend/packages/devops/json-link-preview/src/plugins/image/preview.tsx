@@ -1,4 +1,4 @@
-import { Spin, ImagePreview } from '@coze/coze-design';
+import { Spin, ImagePreview } from '@coze-arch/coze-design';
 
 import { LoadError } from '../../common/load-error';
 import useImage from './hooks';

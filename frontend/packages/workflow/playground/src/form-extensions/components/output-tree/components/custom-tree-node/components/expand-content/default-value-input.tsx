@@ -6,7 +6,7 @@ import {
   Input as InputCore,
   CozInputNumber,
   Select,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { getAccept } from '@/hooks/use-upload';
 import { useGlobalState } from '@/hooks/use-global-state';

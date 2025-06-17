@@ -8,7 +8,7 @@ import React, {
 
 import { isNil, cloneDeep } from 'lodash-es';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozArrowLeft } from '@coze/coze-design/icons';
+import { IconCozArrowLeft } from '@coze-arch/coze-design/icons';
 import {
   Form,
   FormTextArea,
@@ -17,7 +17,7 @@ import {
   type FormApi,
   Tooltip,
   Toast,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import {
   type CaseDataDetail,
   type CaseDataBase,

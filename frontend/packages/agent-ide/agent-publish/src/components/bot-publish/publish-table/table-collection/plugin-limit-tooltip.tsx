@@ -5,7 +5,7 @@ import {
   usePluginLimitModal,
 } from '@coze-studio/components';
 import { I18n } from '@coze-arch/i18n';
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 import { type PluginPricingRule } from '@coze-arch/bot-api/plugin_develop';
 
 // 发布页提示

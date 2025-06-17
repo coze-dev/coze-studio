@@ -2,7 +2,7 @@
   "name": "@coze-studio/user-store",
   "version": "0.0.1",
   "description": "登录 &amp; 用户相关全局 store",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "duwenhan@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

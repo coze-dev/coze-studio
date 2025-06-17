@@ -2,7 +2,7 @@
   "name": "@coze-foundation/global-adapter",
   "version": "0.0.1",
   "description": "应用的全局初始化逻辑",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "sunzhiyuan.evan@bytedance.com",
   "maintainers": [],
   "exports": {
@@ -34,6 +34,7 @@
     "@coze-arch/bot-semi": "workspace:*",
     "@coze-arch/bot-studio-store": "workspace:*",
     "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/foundation-sdk": "workspace:*",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/idl": "workspace:*",
@@ -48,7 +49,6 @@
     "@coze-studio/default-slardar": "workspace:*",
     "@coze-studio/open-auth": "workspace:*",
     "@coze-studio/user-store": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "ahooks": "^3.7.8"
   },
   "devDependencies": {

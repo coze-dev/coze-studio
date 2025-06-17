@@ -7,7 +7,7 @@ import {
 } from '@coze-workflow/base/api';
 import { reporter } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import { Toast, Modal } from '@coze/coze-design';
+import { Toast, Modal } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { useService } from '@flowgram-adapter/free-layout-editor';
 import { useNavigate } from 'react-router-dom';

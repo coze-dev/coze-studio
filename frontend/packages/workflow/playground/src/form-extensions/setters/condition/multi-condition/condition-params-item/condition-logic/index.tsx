@@ -2,7 +2,7 @@ import React from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Select } from '@coze/coze-design';
+import { Select } from '@coze-arch/coze-design';
 
 import { Logic } from '../../constants';
 

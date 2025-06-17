@@ -7,8 +7,8 @@ import {
 } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
 import { useSpace } from '@coze-arch/foundation-sdk';
-import { IconCozCheckMarkCircleFillPalette } from '@coze/coze-design/icons';
-import { CozAvatar, Tag } from '@coze/coze-design';
+import { IconCozCheckMarkCircleFillPalette } from '@coze-arch/coze-design/icons';
+import { CozAvatar, Tag } from '@coze-arch/coze-design';
 import { type User } from '@coze-arch/bot-api/intelligence_api';
 
 import styles from './styles.module.less';

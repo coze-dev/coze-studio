@@ -20,8 +20,8 @@ import { useControllableValue, useUpdateEffect } from 'ahooks';
 import {
   IconCozKeyboard,
   IconCozMicrophone,
-} from '@coze/coze-design/icons';
-import { Divider, IconButton } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Divider, IconButton } from '@coze-arch/coze-design';
 import {
   type IChatInputProps,
   type InputMode,

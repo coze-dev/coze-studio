@@ -1,8 +1,8 @@
 import { type Ref, forwardRef, type FC } from 'react';
 
 import { useBotDetailIsReadonly } from '@coze-studio/bot-detail-store';
-import { type IconButtonProps } from '@coze/coze-design/src/components/button/button-types';
-import { Button, IconButton } from '@coze/coze-design';
+import { type IconButtonProps } from '@coze-arch/coze-design/types';
+import { Button, IconButton } from '@coze-arch/coze-design';
 import { type UIButton } from '@coze-arch/bot-semi';
 
 import s from './index.module.less';

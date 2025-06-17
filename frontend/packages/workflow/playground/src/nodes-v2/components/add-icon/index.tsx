@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 
-import { IconCozPlus } from '@coze/coze-design/icons';
-import { IconButton, Tooltip } from '@coze/coze-design';
+import { IconCozPlus } from '@coze-arch/coze-design/icons';
+import { IconButton, Tooltip } from '@coze-arch/coze-design';
 
 interface AddIconProps {
   disabledTooltip?: string;

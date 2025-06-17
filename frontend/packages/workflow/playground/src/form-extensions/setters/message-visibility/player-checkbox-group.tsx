@@ -4,7 +4,7 @@ import { intersectionWith } from 'lodash-es';
 import { concatTestId } from '@coze-workflow/base';
 import { RoleType } from '@coze-arch/idl/social_api';
 import { I18n } from '@coze-arch/i18n';
-import { CheckboxGroup, Checkbox } from '@coze/coze-design';
+import { CheckboxGroup, Checkbox } from '@coze-arch/coze-design';
 
 import { VariableTypeTag } from '../../components/variable-type-tag';
 import { useGetSceneFlowRoleList } from '../../../hooks/use-get-scene-flow-params';

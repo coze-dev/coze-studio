@@ -10,7 +10,7 @@ import { I18n } from '@coze-arch/i18n';
 import { UIEmpty } from '@coze-arch/bot-semi';
 import { IconAdd } from '@coze-arch/bot-icons';
 import { TableDataType } from '@coze-arch/bot-api/memory';
-import { Button, Tooltip } from '@coze/coze-design';
+import { Button, Tooltip } from '@coze-arch/coze-design';
 
 import { useOptFromQuery } from '@/utils';
 import { type TableItem } from '@/types/table';

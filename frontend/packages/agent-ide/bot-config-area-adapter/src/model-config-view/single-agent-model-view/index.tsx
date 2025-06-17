@@ -6,8 +6,8 @@ import {
   SingleAgentModelView as SingleAgentModelViewBase,
   type SingleAgentModelViewProps,
 } from '@coze-agent-ide/bot-config-area';
-import { IconCozArrowDown } from '@coze/coze-design/icons';
-import { Button, Tag } from '@coze/coze-design';
+import { IconCozArrowDown } from '@coze-arch/coze-design/icons';
+import { Button, Tag } from '@coze-arch/coze-design';
 
 const itemKey = Symbol.for('SingleAgentModelView');
 

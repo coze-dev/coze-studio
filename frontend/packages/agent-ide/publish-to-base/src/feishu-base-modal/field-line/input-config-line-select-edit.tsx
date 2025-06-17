@@ -4,8 +4,8 @@ import { nanoid } from 'nanoid';
 import { produce } from 'immer';
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlus, IconCozTrashCan } from '@coze/coze-design/icons';
-import { Button, Input } from '@coze/coze-design';
+import { IconCozPlus, IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { Button, Input } from '@coze-arch/coze-design';
 
 import { SortableFieldTable } from '../sortable-field-table';
 import type { InputComponentSelectOption, InputConfigFe } from '../../types';

@@ -2,8 +2,8 @@ import { useState } from 'react';
 
 import { logger } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCross } from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 
 import styles from '../index.module.less';
 import { fetchResource, downloadFile } from '../../utils/download';

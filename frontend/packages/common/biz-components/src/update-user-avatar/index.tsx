@@ -8,7 +8,7 @@ import { type UploadProps } from '@coze-arch/bot-semi/Upload';
 import { Upload } from '@coze-arch/bot-semi';
 import { IconEditOutlined } from '@coze-arch/bot-icons';
 import { CustomError } from '@coze-arch/bot-error';
-import { CozAvatar } from '@coze/coze-design';
+import { CozAvatar } from '@coze-arch/coze-design';
 
 import s from './index.module.less';
 

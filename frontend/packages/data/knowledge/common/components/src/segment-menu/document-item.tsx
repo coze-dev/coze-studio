@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 
 import cls from 'classnames';
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 
 export interface IDocumentItemProps {
   id: string;

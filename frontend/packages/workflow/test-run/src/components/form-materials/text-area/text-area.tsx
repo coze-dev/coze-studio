@@ -1,6 +1,6 @@
 import cls from 'classnames';
 import { connect, mapProps } from '@formily/react';
-import { TextArea as TextAreaCore } from '@coze/coze-design';
+import { TextArea as TextAreaCore } from '@coze-arch/coze-design';
 
 import css from './text-area.module.less';
 

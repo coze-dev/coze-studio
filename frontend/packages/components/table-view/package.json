@@ -2,7 +2,7 @@
   "name": "@coze-common/table-view",
   "version": "0.0.1",
   "description": "支持原位编辑统一的table组件，统一data侧的各个table场景",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "zhangyangning@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",
@@ -18,12 +18,12 @@
     "@coze-arch/bot-error": "workspace:*",
     "@coze-arch/bot-icons": "workspace:*",
     "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/report-events": "workspace:*",
     "@coze-common/virtual-list": "workspace:*",
     "@coze-data/e2e": "workspace:*",
     "@coze-data/utils": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "@douyinfe/semi-icons": "^2.36.0",
     "@douyinfe/semi-illustrations": "^2.36.0",
     "ahooks": "^3.7.8",
@@ -63,3 +63,4 @@
     "react-dom": ">=18.2.0"
   }
 }
+

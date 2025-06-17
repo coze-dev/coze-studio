@@ -1,7 +1,7 @@
 import { type FC, type ReactNode } from 'react';
 
 import classNames from 'classnames';
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 
 export interface SubMenuItemProps {
   icon?: ReactNode;

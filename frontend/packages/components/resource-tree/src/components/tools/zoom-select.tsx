@@ -2,8 +2,8 @@
 import { useMemo, useState, type CSSProperties } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozArrowDown } from '@coze/coze-design/icons';
-import { Dropdown, Divider } from '@coze/coze-design';
+import { IconCozArrowDown } from '@coze-arch/coze-design/icons';
+import { Dropdown, Divider } from '@coze-arch/coze-design';
 import {
   usePlaygroundTools,
   usePlayground,

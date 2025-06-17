@@ -4,7 +4,7 @@ vi.mock('@coze-arch/i18n', () => ({
     t: vi.fn(),
   },
 }));
-vi.mock('@coze/coze-design', () => ({
+vi.mock('@coze-arch/coze-design', () => ({
   Typography: {
     Text: vi.fn(props => <span>{props.children}</span>),
   },

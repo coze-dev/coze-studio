@@ -19,7 +19,7 @@ import { useGetKnowledgeListInfo } from '@coze-data/knowledge-common-hooks/use-c
 import { useReportTti } from '@coze-arch/report-tti';
 import { I18n } from '@coze-arch/i18n';
 import { renderHtmlTitle } from '@coze-arch/bot-utils';
-import { Layout } from '@coze/coze-design';
+import { Layout } from '@coze-arch/coze-design';
 
 import { UploadActionNavbar } from '@/components/upload-navbar';
 

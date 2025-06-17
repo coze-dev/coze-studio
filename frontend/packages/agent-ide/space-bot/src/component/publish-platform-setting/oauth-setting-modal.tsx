@@ -10,7 +10,7 @@ import {
   Form,
   Spin,
   Modal,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { CheckboxGroup, withField } from '@coze-arch/bot-semi';
 import { type FormSchemaItem } from '@coze-arch/bot-api/connector_api';
 import {

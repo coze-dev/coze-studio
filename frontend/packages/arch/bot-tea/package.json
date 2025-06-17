@@ -2,7 +2,7 @@
   "name": "@coze-arch/bot-tea",
   "version": "0.0.1",
   "description": "bot tea wrapper",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "maintainers": [],
   "exports": {

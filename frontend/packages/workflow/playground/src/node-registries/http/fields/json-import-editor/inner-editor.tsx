@@ -8,7 +8,7 @@ import {
   isGlobalVariableKey,
 } from '@coze-workflow/variable';
 import { I18n } from '@coze-arch/i18n';
-import { Tooltip } from '@coze/coze-design';
+import { Tooltip } from '@coze-arch/coze-design';
 
 import { VariableExtension } from '@/node-registries/http/components/variable-support';
 import { useNodeServiceAndRefreshForTitleChange } from '@/form-extensions/hooks/use-node-available-variables';

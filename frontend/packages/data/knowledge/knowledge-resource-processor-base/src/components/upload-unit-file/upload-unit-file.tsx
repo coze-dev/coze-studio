@@ -11,8 +11,8 @@ import {
   type UploadProps,
   type OnChangeProps,
 } from '@coze-arch/bot-semi/Upload';
-import { IconCozUpload } from '@coze/coze-design/icons';
-import { Toast, Upload } from '@coze/coze-design';
+import { IconCozUpload } from '@coze-arch/coze-design/icons';
+import { Toast, Upload } from '@coze-arch/coze-design';
 
 import { UNIT_MAX_MB } from '../../constants';
 import {

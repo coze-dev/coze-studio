@@ -59,9 +59,6 @@
       "path": "../../common/md-editor-adapter/tsconfig.build.json"
     },
     {
-      "path": "../../components/coze-design/tsconfig.build.json"
-    },
-    {
       "path": "../../components/json-viewer/tsconfig.build.json"
     },
     {

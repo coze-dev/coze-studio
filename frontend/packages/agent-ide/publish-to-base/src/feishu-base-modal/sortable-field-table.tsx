@@ -15,8 +15,8 @@ import {
 import classNames from 'classnames';
 import { SortableList } from '@coze-studio/components/sortable-list';
 import { type ITemRenderProps, type ConnectDnd } from '@coze-studio/components';
-import { IconCozHandle, IconCozTrashCan } from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+import { IconCozHandle, IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 
 import { MdTooltip } from '../md-tooltip';
 

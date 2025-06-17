@@ -6,8 +6,8 @@ import React, {
 } from 'react';
 
 import classnames from 'classnames';
-import { IconCozMore } from '@coze/coze-design/icons';
-import { Tooltip, IconButton } from '@coze/coze-design';
+import { IconCozMore } from '@coze-arch/coze-design/icons';
+import { Tooltip, IconButton } from '@coze-arch/coze-design';
 import { Dropdown } from '@coze-arch/bot-semi';
 
 import s from './overflow-tag-list.module.less';

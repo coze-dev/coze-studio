@@ -10,7 +10,7 @@ import { I18n } from '@coze-arch/i18n';
 import { FormatType } from '@coze-arch/bot-api/memory';
 import { FileBizType, IconType } from '@coze-arch/bot-api/developer_api';
 import { KnowledgeApi } from '@coze-arch/bot-api';
-import { Form, type FormApi, Modal } from '@coze/coze-design';
+import { Form, type FormApi, Modal } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

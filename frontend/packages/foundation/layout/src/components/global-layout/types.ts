@@ -21,6 +21,7 @@ export interface LayoutMenuItem {
   icon: ReactNode;
   activeIcon: ReactNode;
   path: string | string[];
+  dataTestId?: string;
 }
 
 export type LayoutAccountMenuItem =

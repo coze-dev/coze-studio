@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-universal';
+import { type EditorAPI } from '@coze-editor/editor/preset-universal';
 import { type EditorView } from '@codemirror/view';
 import { syntaxTree } from '@codemirror/language';
 

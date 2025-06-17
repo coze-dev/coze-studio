@@ -2,7 +2,7 @@ import { type FC, type PropsWithChildren } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Checkbox } from '@coze/coze-design';
+import { Checkbox } from '@coze-arch/coze-design';
 
 const wrapperStyle = classNames(
   'fixed left-[50%] translate-x-[-50%] bottom-[30px]',

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 
-import { Skeleton } from '@coze/coze-design';
+import { Skeleton } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

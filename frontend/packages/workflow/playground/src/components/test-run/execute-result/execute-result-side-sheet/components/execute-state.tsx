@@ -8,8 +8,8 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozLoading,
   IconCozWarningCircleFill,
-} from '@coze/coze-design/icons';
-import { Divider } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Divider } from '@coze-arch/coze-design';
 import {
   IconWorkflowRunSuccess,
   IconWorkflowRunFail,

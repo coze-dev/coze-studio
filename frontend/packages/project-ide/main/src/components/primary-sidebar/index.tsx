@@ -6,8 +6,8 @@ import { useProjectIDEServices } from '@coze-project-ide/framework';
 import { useResourceList } from '@coze-project-ide/biz-components';
 import { I18n } from '@coze-arch/i18n';
 import { useFlags } from '@coze-arch/bot-flags';
-import { IconCozSideExpand, IconCozBinding } from '@coze/coze-design/icons';
-import { IconButton, Button } from '@coze/coze-design';
+import { IconCozSideExpand, IconCozBinding } from '@coze-arch/coze-design/icons';
+import { IconButton, Button } from '@coze-arch/coze-design';
 
 import { ResourceList } from '../resource-list';
 import { HEADER_HEIGHT } from '../../constants/styles';

@@ -1,5 +1,5 @@
 import { reporter, logger } from '@coze-arch/logger';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 export const safeFn =
   (fn: Function) =>

@@ -2,7 +2,7 @@ import { Draggable } from 'react-beautiful-dnd';
 
 import classNames from 'classnames';
 import { useNodeTestId } from '@coze-workflow/base';
-import { IconCozHandle } from '@coze/coze-design/icons';
+import { IconCozHandle } from '@coze-arch/coze-design/icons';
 
 import { getCanvasOffset } from '@/utils';
 import { useGlobalState } from '@/hooks';

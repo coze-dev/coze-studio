@@ -1,13 +1,7 @@
-import { type Compiler } from 'webpack';
-interface PkgRootWebpackPluginOptions {
-    root?: string;
-    excludeFolders?: string[];
-}
-declare class PkgRootWebpackPlugin {
-    private options;
-    rootFolders: string[];
+import OriginPkgRootWebpackPlugin from '@coze-arch/pkg-root-webpack-plugin-origin';
+type PkgRootWebpackPluginOptions = Record<string, unknown>;
+declare class PkgRootWebpackPlugin extends OriginPkgRootWebpackPlugin {
     constructor(options?: Partial<PkgRootWebpackPluginOptions>);
-    apply(compiler: Compiler): void;
 }
 export default PkgRootWebpackPlugin;
 export { PkgRootWebpackPlugin };

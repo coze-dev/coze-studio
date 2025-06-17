@@ -3,20 +3,20 @@ import { useState, type CSSProperties } from 'react';
 
 import useResizeObserver from 'use-resize-observer';
 import cls from 'classnames';
-import { I18n } from '@coze-arch/i18n';
-import { IconCozArrowRight } from '@coze/coze-design/icons';
-import { IconButton, Toast } from '@coze/coze-design';
 import { type ILevelSegment } from '@coze-data/knowledge-stores';
+import { I18n } from '@coze-arch/i18n';
+import { IconCozArrowRight } from '@coze-arch/coze-design/icons';
+import { IconButton, Toast } from '@coze-arch/coze-design';
 
 import {
-  type TreeNode,
   findDescendantIDs,
   getTreeNodes,
   handleDeleteNode,
   handleMergeNodes,
   handleTreeNodeMove,
-} from '../utils/tree';
+} from './utils/level-tree-op';
 import { useSegmentContextMenu } from './use-context-menu';
+import { type LevelDocumentTree } from './types';
 
 interface ISegmentTreeProps {
   segments: ILevelSegment[];
@@ -41,7 +41,7 @@ export const SegmentTree: React.FC<ISegmentTreeProps> = ({
   );
   const { ref, width, height } = useResizeObserver<HTMLDivElement>();
 
-  const onSelect = (node: TreeNode) => {
+  const onSelect = (node: LevelDocumentTree) => {
     setSelected(new Set([node.id]));
     setSelectedThroughParent(findDescendantIDs(node));
     setSelectionIDs?.([node.id, ...findDescendantIDs(node)]);
@@ -50,7 +50,11 @@ export const SegmentTree: React.FC<ISegmentTreeProps> = ({
   /**
    * render
    */
-  const Node = ({ node, style, dragHandle }: NodeRendererProps<TreeNode>) => {
+  const Node = ({
+    node,
+    style,
+    dragHandle,
+  }: NodeRendererProps<LevelDocumentTree>) => {
     const { isOpen, data } = node;
     const isLeaf = !data.children?.length;
     const expandIcon = (

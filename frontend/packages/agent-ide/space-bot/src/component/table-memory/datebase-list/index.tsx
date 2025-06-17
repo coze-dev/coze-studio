@@ -9,7 +9,7 @@ import {
 } from '@coze-studio/bot-detail-store';
 import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozMinusCircle, IconCozEdit } from '@coze/coze-design/icons';
+import { IconCozMinusCircle, IconCozEdit } from '@coze-arch/coze-design/icons';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { Popconfirm, Toast } from '@coze-arch/bot-semi';
 import { IconWarningSize24 } from '@coze-arch/bot-icons';

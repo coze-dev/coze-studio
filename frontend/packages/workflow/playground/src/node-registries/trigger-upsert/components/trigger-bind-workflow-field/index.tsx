@@ -7,8 +7,8 @@ import {
 } from '@coze-workflow/components';
 import { WorkflowMode } from '@coze-arch/idl/developer_api';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlus } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozPlus } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 import { useGlobalState } from '@/hooks';
 import { IconNameDescCard } from '@/form-extensions/components/icon-name-desc-card';

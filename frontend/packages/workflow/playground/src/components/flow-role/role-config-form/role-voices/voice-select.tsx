@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozTrashCan } from '@coze/coze-design/icons';
-import { Select, IconButton, type SelectProps } from '@coze/coze-design';
+import { IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { Select, IconButton, type SelectProps } from '@coze-arch/coze-design';
 
 import { type LanguageOption } from './voice-data-select/use-language-options';
 import { VoiceDataSelect } from './voice-data-select';

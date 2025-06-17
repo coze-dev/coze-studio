@@ -6,7 +6,7 @@ import {
   IconCozArrowDown,
   IconCozMouse,
   IconCozTablet,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import { Popover, Typography } from '@coze-arch/bot-semi';
 
 import { PadIcon } from './icons/pad';

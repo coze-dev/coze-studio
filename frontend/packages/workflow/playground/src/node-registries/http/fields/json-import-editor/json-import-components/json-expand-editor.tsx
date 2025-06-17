@@ -1,11 +1,11 @@
 import { type FC, useRef, useEffect } from 'react';
 
 import classNames from 'classnames';
-import { EditorProvider } from '@flow-lang-sdk/editor/react';
 import { PublicScopeProvider } from '@coze-workflow/variable';
+import { EditorProvider } from '@coze-editor/editor/react';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozBroom, IconCozMoon, IconCozSun } from '@coze/coze-design/icons';
-import { IconButton, Tooltip } from '@coze/coze-design';
+import { IconCozBroom, IconCozMoon, IconCozSun } from '@coze-arch/coze-design/icons';
+import { IconButton, Tooltip } from '@coze-arch/coze-design';
 
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
 import {

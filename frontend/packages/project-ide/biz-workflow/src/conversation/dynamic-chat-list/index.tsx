@@ -10,7 +10,7 @@ import {
   IconCozTrashCan,
   IconCozListDisorder,
   IconCozCross,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   EmptyState,
   IconButton,
@@ -19,7 +19,7 @@ import {
   Tooltip,
   Checkbox,
   Popconfirm,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { useFlags } from '@coze-arch/bot-flags';
 import { type ProjectConversation } from '@coze-arch/bot-api/workflow_api';
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { CozAvatar } from '@coze/coze-design';
+import { CozAvatar } from '@coze-arch/coze-design';
 
 import { NodeType } from '../../typings';
 import { ReactComponent as IconWorkflow } from '../../assets/icon-workflow.svg';

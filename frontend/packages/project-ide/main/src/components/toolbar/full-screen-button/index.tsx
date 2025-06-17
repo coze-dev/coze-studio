@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozExpand, IconCozMinimize } from '@coze/coze-design/icons';
-import { IconButton, Tooltip } from '@coze/coze-design';
+import { IconCozExpand, IconCozMinimize } from '@coze-arch/coze-design/icons';
+import { IconButton, Tooltip } from '@coze-arch/coze-design';
 import {
   type TabBarToolbar,
   useCurrentWidget,

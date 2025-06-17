@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Spin } from '@coze/coze-design';
+import { Spin } from '@coze-arch/coze-design';
 import { useCurrentWidget } from '@coze-project-ide/client';
 
 import { type ProjectIDEWidget } from '@/widgets/project-ide-widget';

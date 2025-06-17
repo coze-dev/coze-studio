@@ -2,7 +2,7 @@
   "name": "@coze-arch/eslint-plugin",
   "version": "1.0.0",
   "description": "eslint plugin for flow app",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "exports": {
     ".": "./src/index.js",

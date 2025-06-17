@@ -2,8 +2,8 @@ import { type FC } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozMinusCircle, IconCozEdit } from '@coze/coze-design/icons';
-import { type ColumnProps, Tooltip, Space } from '@coze/coze-design';
+import { IconCozMinusCircle, IconCozEdit } from '@coze-arch/coze-design/icons';
+import { type ColumnProps, Tooltip, Space } from '@coze-arch/coze-design';
 import { UIButton, Popconfirm } from '@coze-arch/bot-semi';
 import { type PersonalAccessToken } from '@coze-arch/bot-api/pat_permission_api';
 

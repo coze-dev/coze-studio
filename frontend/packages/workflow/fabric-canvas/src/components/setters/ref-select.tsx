@@ -3,13 +3,13 @@ import { type FC } from 'react';
 import cls from 'classnames';
 import { ViewVariableType } from '@coze-workflow/base/types';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozImage, IconCozString } from '@coze/coze-design/icons';
+import { IconCozImage, IconCozString } from '@coze-arch/coze-design/icons';
 import {
   type RenderSelectedItemFn,
   Select,
   type SelectProps,
   Tag,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useGlobalContext } from '../../context';
 

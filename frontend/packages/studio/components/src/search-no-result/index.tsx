@@ -1,7 +1,7 @@
 import React from 'react';
 
 import classnames from 'classnames';
-import { useTheme } from '@coze/coze-design';
+import { useTheme } from '@coze-arch/coze-design';
 
 import { SearchNoMask } from './mask';
 import { SearchNoCard, type CardProps } from './card';

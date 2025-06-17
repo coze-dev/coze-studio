@@ -2,14 +2,14 @@ import React from 'react';
 
 import { useNodeTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozSetting, IconCozInfoCircle } from '@coze/coze-design/icons';
+import { IconCozSetting, IconCozInfoCircle } from '@coze-arch/coze-design/icons';
 import {
   IconButton,
   Tooltip,
   Typography,
   Popover,
   Divider,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
 import { ExpressionEditorField } from '@/node-registries/common/fields';

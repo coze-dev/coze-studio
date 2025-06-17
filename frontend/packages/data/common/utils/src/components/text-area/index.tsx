@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 import cs from 'classnames';
-import { TextArea, withField } from '@coze/coze-design';
+import { TextArea, withField } from '@coze-arch/coze-design';
 
 import s from './index.module.less';
 

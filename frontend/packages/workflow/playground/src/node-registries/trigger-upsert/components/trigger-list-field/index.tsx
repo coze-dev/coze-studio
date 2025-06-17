@@ -9,14 +9,14 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozIllusEmpty,
   IconCozIllusEmptyDark,
-} from '@coze/coze-design/illustrations';
+} from '@coze-arch/coze-design/illustrations';
 import {
   IconCozEye,
   IconCozPlayCircle,
   IconCozRefresh,
   IconCozTrashCan,
   IconCozTrigger,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   Button,
   EmptyState,
@@ -24,7 +24,7 @@ import {
   Modal,
   Table,
   Toast,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { Notify } from '@/node-registries/common/components';
 import { useGlobalState } from '@/hooks';

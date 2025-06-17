@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react-hooks';
 
 import { useSaveMockData } from '../../../src/hook/use-save-mock-data';
 
-vi.mock('@coze/coze-design', () => import('@coze-arch/bot-semi'));
+vi.mock('@coze-arch/coze-design', () => import('@coze-arch/bot-semi'));
 
 const mockBizCtx = {};
 

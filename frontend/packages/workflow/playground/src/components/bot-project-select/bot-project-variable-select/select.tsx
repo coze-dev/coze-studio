@@ -3,8 +3,8 @@ import React, { useCallback, useRef, useState } from 'react';
 import cls from 'classnames';
 import { IntelligenceType } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozMagnifier } from '@coze/coze-design/icons';
-import { Avatar, Select } from '@coze/coze-design';
+import { IconCozMagnifier } from '@coze-arch/coze-design/icons';
+import { Avatar, Select } from '@coze-arch/coze-design';
 import { type Select as SemiSelect } from '@coze-arch/bot-semi';
 
 import { useRelatedBotService } from '@/hooks';

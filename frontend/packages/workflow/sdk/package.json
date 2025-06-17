@@ -2,7 +2,7 @@
   "name": "@coze-workflow/sdk",
   "version": "0.0.1",
   "description": "workflow对外sdk",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "lvxinsheng@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

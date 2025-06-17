@@ -6,8 +6,8 @@ import {
   useLatestSectionId,
 } from '@coze-common/chat-area';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozRefresh } from '@coze/coze-design/icons';
-import { IconButton, Tooltip } from '@coze/coze-design';
+import { IconCozRefresh } from '@coze-arch/coze-design/icons';
+import { IconButton, Tooltip } from '@coze-arch/coze-design';
 
 import { getShowRegenerate } from '../../utils/get-show-regenerate';
 import { useTooltipTrigger } from '../../hooks/use-tooltip-trigger';

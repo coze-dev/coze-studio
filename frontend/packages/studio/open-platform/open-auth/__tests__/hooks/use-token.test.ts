@@ -200,7 +200,7 @@ vi.mock('@coze-arch/bot-flags', () => ({
 vi.mock('../../src/utils/time.ts', () => ({
   getExpireAt: vi.fn(() => '-'),
 }));
-vi.mock('@coze/coze-design', () => ({}));
+vi.mock('@coze-arch/coze-design', () => ({}));
 vi.mock('@coze-studio/bot-detail-store', () => ({
   initBotDetailStore: vi.fn(),
   useBotDetailStoreSet: {

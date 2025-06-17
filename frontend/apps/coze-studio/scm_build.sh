@@ -16,7 +16,8 @@ rm -rf "${ROOT_DIR}"/output
 prepare_environment
 
 # Install the dependencies
-CUSTOM_SKIP_POST_INSTALL=true rushx --debug install -t . -t tag:phase-prebuild -t @coze-arch/rush-x
+CUSTOM_SKIP_POST_INSTALL=true rushx --debug install -t . -t tag:phase-prebuild -t @coze-arch/rush-x -t tag:rush-tools
+
 NO_STARLING=true bash $ROOT_DIR/scripts/post-rush-install.sh
 
 NODE_OPTIONS='--max-old-space-size=8192' NODE_ENV=production  npm run build

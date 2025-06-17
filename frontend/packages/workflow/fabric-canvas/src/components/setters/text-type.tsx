@@ -4,8 +4,8 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozFixedSize,
   IconCozAutoWidth,
-} from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 
 import { MyIconButton } from '../icon-button';
 import { Mode } from '../../typings';

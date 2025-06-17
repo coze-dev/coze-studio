@@ -1,6 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import { type PublishConnectorInfo } from '@coze-arch/idl/intelligence_api';
-import { FormSelect } from '@coze/coze-design';
+import { FormSelect } from '@coze-arch/coze-design';
 import { IconCozArrowDown } from '@coze-arch/bot-icons';
 
 import { useProjectPublishStore } from '@/store';

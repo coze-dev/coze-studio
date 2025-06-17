@@ -1,6 +1,6 @@
 import { I18n } from '@coze-arch/i18n';
-import { IconCozDebug } from '@coze/coze-design/icons';
-import { IconButton, Tooltip, type ButtonProps } from '@coze/coze-design';
+import { IconCozDebug } from '@coze-arch/coze-design/icons';
+import { IconButton, Tooltip, type ButtonProps } from '@coze-arch/coze-design';
 
 type TraceIconButtonProps = ButtonProps;
 

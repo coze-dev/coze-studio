@@ -16,7 +16,7 @@ import {
   IconCozRefresh,
   IconCozUpload,
   IconCozImageBroken,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import { type SelectProps } from '@coze-arch/bot-semi/Select';
 import {
   Image,

@@ -7,8 +7,8 @@ import {
   IconCozPlus,
   IconCozTrashCan,
   IconCozVolume,
-} from '@coze/coze-design/icons';
-import { Avatar, Button, IconButton } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Avatar, Button, IconButton } from '@coze-arch/coze-design';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { type VoiceDetail } from '@coze-arch/bot-api/multimedia_api';
 import { MultimediaApi } from '@coze-arch/bot-api';

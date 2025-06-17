@@ -13,8 +13,8 @@ import {
   IconCozKnowledge,
   IconCozPlugin,
   IconCozCompass,
-} from '@coze/coze-design/icons';
-import { Typography } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Typography } from '@coze-arch/coze-design';
 import { Layout } from '@coze-common/chat-uikit-shared';
 
 import { isVerboseContent, isVerboseContentData } from '../../../utils/verbose';

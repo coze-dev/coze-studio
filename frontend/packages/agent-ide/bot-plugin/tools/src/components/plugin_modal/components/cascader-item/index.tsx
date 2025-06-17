@@ -2,7 +2,7 @@ import { type FC, useEffect, useState } from 'react';
 
 import cl from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { type CascaderProps } from '@coze/coze-design';
+import { type CascaderProps } from '@coze-arch/coze-design';
 import { Typography, UICascader } from '@coze-arch/bot-semi';
 import { IconAlertCircle } from '@douyinfe/semi-icons';
 

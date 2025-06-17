@@ -4,13 +4,13 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozCrossCircle,
   IconCozLoading,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   Toast,
   Tooltip,
   Upload,
   type customRequestArgs,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import styles from './image-upload.module.less';
 

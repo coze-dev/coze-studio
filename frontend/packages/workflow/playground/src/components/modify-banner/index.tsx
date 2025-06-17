@@ -1,8 +1,8 @@
 import { isEmpty } from 'lodash-es';
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCross } from '@coze/coze-design/icons';
-import { Banner } from '@coze/coze-design';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
+import { Banner } from '@coze-arch/coze-design';
 
 import { useWorkflowReferences } from '../../hooks/use-workflow-references';
 import { useGlobalState } from '../../hooks';

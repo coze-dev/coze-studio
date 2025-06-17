@@ -6,7 +6,7 @@ import {
   IconCozNotionFill,
   IconCozPencilPaper,
   IconCozWechatFill,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import { DocumentSource } from '@coze-arch/bot-api/knowledge';
 
 type TDocumentSource = {

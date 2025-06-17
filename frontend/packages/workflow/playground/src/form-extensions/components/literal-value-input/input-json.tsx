@@ -1,8 +1,8 @@
 import { type FC } from 'react';
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-code';
-import { json } from '@flow-lang-sdk/editor/language-json';
+import { type EditorAPI } from '@coze-editor/editor/preset-code';
+import { json } from '@coze-editor/editor/language-json';
 import { EditorView, tooltips } from '@codemirror/view';
 
 import { CodeEditor, EditorProvider } from '@/components/code-editor';

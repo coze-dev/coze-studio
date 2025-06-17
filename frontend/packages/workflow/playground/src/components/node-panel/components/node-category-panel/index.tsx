@@ -1,7 +1,7 @@
 import { type PropsWithChildren } from 'react';
 
 import { concatTestId } from '@coze-workflow/base';
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 export interface NodeCategoryPanelProps {

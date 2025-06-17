@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Button, Space } from '@coze/coze-design';
+import { Button, Space } from '@coze-arch/coze-design';
 
 import { PATInstructionWrap } from '@/components/instructions-wrap';
 

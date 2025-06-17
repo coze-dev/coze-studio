@@ -11,8 +11,8 @@ import {
   type AlterBotTableResponse,
   type InsertBotTableResponse,
 } from '@coze-arch/bot-api/memory';
-import { IconCozCross } from '@coze/coze-design/icons';
-import { IconButton, Modal, Button } from '@coze/coze-design';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
+import { IconButton, Modal, Button } from '@coze-arch/coze-design';
 
 import { DismissibleBanner } from '../dismissible-banner';
 import {

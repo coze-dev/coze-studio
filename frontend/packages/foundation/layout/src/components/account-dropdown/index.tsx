@@ -6,7 +6,7 @@ import {
 } from 'react';
 
 import classNames from 'classnames';
-import { Avatar, Badge, Dropdown } from '@coze/coze-design';
+import { Avatar, Badge, Dropdown } from '@coze-arch/coze-design';
 import { useUserInfo } from '@coze-foundation/account-adapter';
 
 import { reportNavClick } from '../global-layout/utils';

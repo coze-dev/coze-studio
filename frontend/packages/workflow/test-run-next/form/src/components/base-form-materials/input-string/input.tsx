@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { TextArea } from '@coze/coze-design';
+import { TextArea } from '@coze-arch/coze-design';
 
 import css from './input.module.less';
 

@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { Tag, Typography } from '@coze/coze-design';
+import { Tag, Typography } from '@coze-arch/coze-design';
 
 import { NodeItem, LineItem, TextItem } from '../problem-item';
 import { type WorkflowProblem, type ProblemItem } from '../../types';

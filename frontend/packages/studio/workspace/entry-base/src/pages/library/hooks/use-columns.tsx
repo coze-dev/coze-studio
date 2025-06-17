@@ -7,7 +7,7 @@ import {
   Space,
   Avatar,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { responsiveTableColumn, formatDate } from '@coze-arch/bot-utils';
 import {
   type ResourceInfo,

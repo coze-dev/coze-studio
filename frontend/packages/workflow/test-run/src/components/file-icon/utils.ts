@@ -11,7 +11,7 @@ import {
   IconCozFileOther,
   IconCozFilePdf,
   IconCozFileCsv,
-} from '@coze/coze-design/illustrations';
+} from '@coze-arch/coze-design/illustrations';
 
 import { PREVIEW_IMAGE_TYPE } from './constants';
 

@@ -1,14 +1,14 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useDiffTaskStore } from '@coze-studio/bot-detail-store/diff-task';
 import { useBotInfoStore } from '@coze-studio/bot-detail-store/bot-info';
-import { SpaceType } from '@coze-arch/idl/developer_api';
-import { I18n } from '@coze-arch/i18n';
-import { IconCozLightbulb } from '@coze/coze-design/icons';
-import { IconButton, Tooltip } from '@coze/coze-design';
-import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { useEditor } from '@coze-common/prompt-kit-base/editor';
 import { type EditorAPI } from '@coze-common/prompt-kit-base/editor';
 import { usePromptLibraryModal } from '@coze-common/prompt-kit';
+import { SpaceType } from '@coze-arch/idl/developer_api';
+import { I18n } from '@coze-arch/i18n';
+import { IconCozLightbulb } from '@coze-arch/coze-design/icons';
+import { IconButton, Tooltip } from '@coze-arch/coze-design';
+import { useSpaceStore } from '@coze-arch/bot-studio-store';
 export const PromptLibrary = (props: {
   readonly: boolean;
   enableDiff: boolean;
@@ -51,6 +51,7 @@ export const PromptLibrary = (props: {
     <div>
       <Tooltip content={I18n.t('prompt_library_prompt_library')}>
         <IconButton
+          data-testid="bot.ide.prompt_resource"
           icon={<IconCozLightbulb className="text-xxl !coz-fg-primary" />}
           color="secondary"
           onClick={() => {

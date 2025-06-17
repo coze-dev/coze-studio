@@ -34,9 +34,6 @@
       "path": "../../components/bot-semi/tsconfig.build.json"
     },
     {
-      "path": "../../components/coze-design/tsconfig.build.json"
-    },
-    {
       "path": "../../../config/eslint-config/tsconfig.build.json"
     },
     {

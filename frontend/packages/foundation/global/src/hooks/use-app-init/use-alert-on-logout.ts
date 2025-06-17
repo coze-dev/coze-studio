@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Modal } from '@coze/coze-design';
+import { Modal } from '@coze-arch/coze-design';
 import { useAlterOnLogout as useAlertOnLogoutImpl } from '@coze-foundation/account-adapter';
 
 export const useAlertOnLogout = () => {

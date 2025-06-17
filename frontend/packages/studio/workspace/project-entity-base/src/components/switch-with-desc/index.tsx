@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import { Switch, type SwitchProps } from '@coze/coze-design';
+import { Switch, type SwitchProps } from '@coze-arch/coze-design';
 
 export function SwitchWithDesc({
   value,

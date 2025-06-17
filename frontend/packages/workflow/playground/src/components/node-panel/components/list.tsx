@@ -18,8 +18,8 @@ import {
   ScrollAreaViewport,
 } from '@radix-ui/react-scroll-area';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozEmpty, IconCozMagnifier } from '@coze/coze-design/icons';
-import { EmptyState, Input } from '@coze/coze-design';
+import { IconCozEmpty, IconCozMagnifier } from '@coze-arch/coze-design/icons';
+import { EmptyState, Input } from '@coze-arch/coze-design';
 import { type WorkflowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { type UnionNodeTemplate } from '@/typing';

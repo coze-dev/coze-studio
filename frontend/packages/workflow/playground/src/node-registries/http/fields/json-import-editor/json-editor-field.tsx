@@ -1,4 +1,4 @@
-import { EditorProvider } from '@flow-lang-sdk/editor/react';
+import { EditorProvider } from '@coze-editor/editor/react';
 import { I18n } from '@coze-arch/i18n';
 
 import { useEditorThemeState } from '@/hooks/use-editor-theme-state';

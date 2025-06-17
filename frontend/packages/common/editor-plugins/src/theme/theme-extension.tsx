@@ -1,6 +1,6 @@
 import { useLayoutEffect } from 'react';
 
-import { useInjector } from '@flow-lang-sdk/editor/react';
+import { useInjector } from '@coze-editor/editor/react';
 
 import { type Extension } from '../types';
 

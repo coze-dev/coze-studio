@@ -15,7 +15,7 @@ import type {
   RadioChangeEvent,
   RadioType,
 } from '@coze-arch/bot-semi/Radio';
-import { Select, Input } from '@coze/coze-design';
+import { Select, Input } from '@coze-arch/coze-design';
 
 import { Radio } from '../radio';
 import { SliderArea, TitleArea } from '../dataset-setting/components';

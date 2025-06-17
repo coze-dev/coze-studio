@@ -11,8 +11,8 @@ import { DatasetStatus } from '@coze-arch/idl/knowledge';
 import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
 import { KnowledgeApi } from '@coze-arch/bot-api';
 import { safeJSONParse } from '@coze-agent-ide/space-bot/util';
-import { IconCozClock, IconCozKnowledge } from '@coze/coze-design/icons';
-import { Menu, Switch, Tag, Toast, Table } from '@coze/coze-design';
+import { IconCozClock, IconCozKnowledge } from '@coze-arch/coze-design/icons';
+import { Menu, Switch, Tag, Toast, Table } from '@coze-arch/coze-design';
 
 import { BaseLibraryItem } from '../../components/base-library-item';
 import DocDefaultIcon from '../../assets/doc_default_icon.png';

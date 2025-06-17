@@ -5,7 +5,7 @@ import {
   Button,
   type ButtonProps,
   type FormApi,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import {
   VersionDescForm,

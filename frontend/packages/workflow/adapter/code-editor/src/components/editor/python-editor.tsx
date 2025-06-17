@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { Renderer, EditorProvider } from '@flow-lang-sdk/editor/react';
-import preset, { languages } from '@flow-lang-sdk/editor/preset-code';
-import { python } from '@flow-lang-sdk/editor/language-python';
+import { Renderer, EditorProvider } from '@coze-editor/editor/react';
+import preset, { languages } from '@coze-editor/editor/preset-code';
+import { python } from '@coze-editor/editor/language-python';
 import { EditorView } from '@codemirror/view';
 
 import { type EditorOtherProps, type EditorProps } from '../../interface';

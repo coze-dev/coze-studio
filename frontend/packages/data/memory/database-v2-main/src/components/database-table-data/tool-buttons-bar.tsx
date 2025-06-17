@@ -9,8 +9,8 @@ import {
   IconCozPlus,
   IconCozRefresh,
   IconCozTrashCan,
-} from '@coze/coze-design/icons';
-import { Button, Dropdown, Modal } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Button, Dropdown, Modal } from '@coze-arch/coze-design';
 
 import { BatchImportModal } from '../batch-import-modal';
 import { useConnectorOptions } from '../../hooks/use-connector-options';

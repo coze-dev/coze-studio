@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { IconCozIllusError } from '@coze/coze-design/illustrations';
-import { EmptyState } from '@coze/coze-design';
+import { IconCozIllusError } from '@coze-arch/coze-design/illustrations';
+import { EmptyState } from '@coze-arch/coze-design';
 
 export const ErrorFallback = () => (
   <EmptyState

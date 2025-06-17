@@ -2,7 +2,7 @@
   "name": "@coze-studio/bot-audit-base",
   "version": "0.0.1",
   "description": "audit base package",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "sunzhiyuan.evan@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

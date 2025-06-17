@@ -2,7 +2,7 @@ import { type FC } from 'react';
 
 import { SettingOnErrorProcessType } from '@coze-workflow/nodes';
 import { I18n } from '@coze-arch/i18n';
-import { Select } from '@coze/coze-design';
+import { Select } from '@coze-arch/coze-design';
 
 import { type SettingOnErrorItemProps } from '../../types';
 import { type Option } from './types';

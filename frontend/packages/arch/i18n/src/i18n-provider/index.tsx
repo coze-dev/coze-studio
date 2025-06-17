@@ -1,6 +1,6 @@
 import { Component, type ReactNode } from 'react';
 
-import { CDLocaleProvider } from '@coze/coze-design/locales';
+import { CDLocaleProvider } from '@coze-arch/coze-design/locales';
 
 import { type Intl } from '../intl';
 import { i18nContext, type I18nContext } from './context';

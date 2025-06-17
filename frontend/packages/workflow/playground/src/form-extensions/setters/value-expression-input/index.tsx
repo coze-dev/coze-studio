@@ -5,7 +5,7 @@ import {
   type SetterExtension,
 } from '@flowgram-adapter/free-layout-editor';
 import { type ViewVariableType, useNodeTestId } from '@coze-workflow/base';
-import { type SelectProps } from '@coze/coze-design';
+import { type SelectProps } from '@coze-arch/coze-design';
 
 import { useRefInputProps } from '@/hooks/use-ref-input';
 

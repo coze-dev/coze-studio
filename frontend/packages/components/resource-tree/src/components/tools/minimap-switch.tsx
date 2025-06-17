@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozRectangleMap } from '@coze/coze-design/icons';
-import { Tooltip, IconButton } from '@coze/coze-design';
+import { IconCozRectangleMap } from '@coze-arch/coze-design/icons';
+import { Tooltip, IconButton } from '@coze-arch/coze-design';
 
 export const MinimapSwitch = (props: {
   minimapVisible: boolean;

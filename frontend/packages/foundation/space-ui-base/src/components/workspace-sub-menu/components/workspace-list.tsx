@@ -1,6 +1,6 @@
 import { type FC } from 'react';
 
-import { Space } from '@coze/coze-design';
+import { Space } from '@coze-arch/coze-design';
 
 import {
   WorkspaceListItem,

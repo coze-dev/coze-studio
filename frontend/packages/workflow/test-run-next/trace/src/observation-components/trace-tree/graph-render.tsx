@@ -4,8 +4,8 @@ import { clsx } from 'clsx';
 import {
   IconCozClockFill,
   IconCozArrowLeftFill,
-} from '@coze/coze-design/icons';
-import { Tag, Tooltip, IconButton } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Tag, Tooltip, IconButton } from '@coze-arch/coze-design';
 
 import { formatDuration } from '../utils/time';
 import { isSuccessStatus } from '../utils/basic';

@@ -2,7 +2,7 @@
   "name": "@coze-data/knowledge-common-services",
   "version": "0.0.1",
   "description": "knowledge公用service",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "haozhenfei@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",

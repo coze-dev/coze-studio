@@ -1,5 +1,5 @@
 import { type StandardNodeType } from '@coze-workflow/base';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 import { WorkflowNodePanelService } from '@flowgram-adapter/free-layout-editor';
 import { type LineRenderProps } from '@flowgram-adapter/free-layout-editor';
 import {

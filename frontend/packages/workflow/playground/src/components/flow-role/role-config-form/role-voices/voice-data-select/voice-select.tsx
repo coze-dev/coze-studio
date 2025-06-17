@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useInViewport } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozEmpty } from '@coze/coze-design/icons';
+import { IconCozEmpty } from '@coze-arch/coze-design/icons';
 import {
   CozAvatar,
   SegmentTab,
@@ -10,7 +10,7 @@ import {
   Tag,
   Typography,
   type SelectProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { type VoiceConfig } from '@coze-arch/bot-api/workflow_api';
 import { VoiceScene } from '@coze-arch/bot-api/playground_api';
 

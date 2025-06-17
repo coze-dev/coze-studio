@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozUpload } from '@coze/coze-design/icons';
+import { IconCozUpload } from '@coze-arch/coze-design/icons';
 import {
   Upload,
   Input,
@@ -10,7 +10,7 @@ import {
   Typography,
   Spin,
   Toast,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { type UploadProps } from '@coze-arch/bot-semi/Upload';
 import { IconImageFailOutlined } from '@coze-arch/bot-icons';
 import { CustomError } from '@coze-arch/bot-error';

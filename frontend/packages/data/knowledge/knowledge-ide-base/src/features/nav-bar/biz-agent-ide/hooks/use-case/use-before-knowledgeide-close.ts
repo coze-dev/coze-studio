@@ -5,7 +5,7 @@ import { useKnowledgeParams, useKnowledgeStore } from '@coze-data/knowledge-stor
 import { I18n } from '@coze-arch/i18n';
 import { SceneType, usePageJumpService } from '@coze-arch/bot-hooks';
 import { StorageLocation } from '@coze-arch/bot-api/knowledge';
-import { Modal, Toast } from '@coze/coze-design';
+import { Modal, Toast } from '@coze-arch/coze-design';
 
 import { ActionType } from '@/types';
 import {

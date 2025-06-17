@@ -11,7 +11,7 @@ import React, {
 import classNames from 'classnames';
 import { useDebounceFn } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
-import { useTheme } from '@coze/coze-design';
+import { useTheme } from '@coze-arch/coze-design';
 import {
   type RowSelectionProps,
   type TableProps,

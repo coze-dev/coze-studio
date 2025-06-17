@@ -5,8 +5,8 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozHandle,
   IconCozMinusCircle,
-} from '@coze/coze-design/icons';
-import { TextArea, IconButton, Typography } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { TextArea, IconButton, Typography } from '@coze-arch/coze-design';
 
 import { SortableList } from '@/components/sortable-list';
 

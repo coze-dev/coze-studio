@@ -17,7 +17,7 @@ import {
   IconCozDocument,
   IconCozLongArrowTopRight,
   IconCozTrigger,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   Button,
   Divider,
@@ -25,7 +25,7 @@ import {
   Menu,
   Popover,
   Tooltip,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { usePublishStatus } from '../hooks/use-publish-status';
 import { useBizConnectorAnchor } from '../hooks/use-biz-connector-anchor';

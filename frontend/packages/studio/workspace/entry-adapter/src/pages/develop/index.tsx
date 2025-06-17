@@ -5,14 +5,6 @@ import { type FC, useEffect } from 'react';
 
 import classNames from 'classnames';
 import {
-  IntelligenceType,
-  search,
-  SearchScope,
-} from '@coze-arch/idl/intelligence_api';
-import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
-import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
-import { SpaceType } from '@coze-arch/bot-api/developer_api';
-import {
   highlightFilterStyle,
   WorkspaceEmpty,
   DevelopCustomPublishStatus,
@@ -44,8 +36,22 @@ import {
   useCardActions,
 } from '@coze-studio/workspace-base/develop';
 import { useSpaceStore } from '@coze-foundation/space-store-adapter';
-import { IconCozLoading, IconCozPlus } from '@coze/coze-design/icons';
-import { Button, IconButton, Search, Select, Spin } from '@coze/coze-design';
+import {
+  IntelligenceType,
+  search,
+  SearchScope,
+} from '@coze-arch/idl/intelligence_api';
+import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
+import { IconCozLoading, IconCozPlus } from '@coze-arch/coze-design/icons';
+import {
+  Button,
+  IconButton,
+  Search,
+  Select,
+  Spin,
+} from '@coze-arch/coze-design';
+import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
+import { SpaceType } from '@coze-arch/bot-api/developer_api';
 
 export const Develop: FC<DevelopProps> = ({ spaceId }) => {
   const isPersonal = useSpaceStore(
@@ -320,7 +326,6 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
                         return;
                       }
                     }}
-                    onDeleteMutate={cardActions.onDeleteMutate}
                     onCopyAgent={cardActions.onCopyAgent}
                     onCopyProject={params => {
                       cardActions.onCopyProject({

@@ -1,6 +1,6 @@
 import { useTestsetManageStore } from '@coze-workflow/test-run';
 import { I18n } from '@coze-arch/i18n';
-import { Checkbox, Typography } from '@coze/coze-design';
+import { Checkbox, Typography } from '@coze-arch/coze-design';
 
 import css from './testset-save.module.less';
 

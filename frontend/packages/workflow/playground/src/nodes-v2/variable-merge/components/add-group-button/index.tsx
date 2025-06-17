@@ -2,7 +2,7 @@ import React, { type FC } from 'react';
 
 import classnames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlus } from '@coze/coze-design/icons';
+import { IconCozPlus } from '@coze-arch/coze-design/icons';
 import { type FieldArrayRenderProps } from '@flowgram-adapter/free-layout-editor';
 
 import { TooltipWithDisabled } from '../tooltip-with-disabled';

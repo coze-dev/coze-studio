@@ -16,7 +16,7 @@ import {
   ConnectorConfigStatus,
 } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle, IconCozEmpty } from '@coze/coze-design/icons';
+import { IconCozInfoCircle, IconCozEmpty } from '@coze-arch/coze-design/icons';
 import {
   Modal,
   Search,
@@ -26,7 +26,7 @@ import {
   Tooltip,
   Space,
   EmptyState,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { type DynamicParams } from '@coze-arch/bot-typings/teamspace';
 import { workflowApi } from '@coze-arch/bot-api';
 

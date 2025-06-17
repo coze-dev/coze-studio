@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 
 import classNames from 'classnames';
-import { useEditor } from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import { useEditor } from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlus } from '@coze/coze-design/icons';
+import { IconCozPlus } from '@coze-arch/coze-design/icons';
 import {
   Modal,
   type ModalProps,
   Search,
   Button,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { PlaygroundApi } from '@coze-arch/bot-api';
 import { LibraryBlockWidget } from '@coze-common/editor-plugins/library-insert';

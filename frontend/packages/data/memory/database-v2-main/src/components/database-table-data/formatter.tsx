@@ -7,14 +7,14 @@ import {
 import { DatabaseFieldTitle } from '@coze-data/database-v2-base/components/database-field-title';
 import { I18n } from '@coze-arch/i18n';
 import { FieldItemType } from '@coze-arch/bot-api/memory';
-import { IconCozEdit, IconCozTrashCan } from '@coze/coze-design/icons';
+import { IconCozEdit, IconCozTrashCan } from '@coze-arch/coze-design/icons';
 import {
   type ColumnProps,
   IconButton,
   Popconfirm,
   Space,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { type TableRow, type TableField, type TableFieldData } from './type';
 

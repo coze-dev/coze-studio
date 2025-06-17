@@ -49,7 +49,7 @@ class MySlardarImplementation implements Slardar {
 function useSlardar(slardar: SlardarInstance) {
   // Configure the instance
   slardar.config({ sessionId: 'user-session-123' });
-  
+
   // Send events
   slardar('sendEvent', {
     name: 'user_action',
@@ -82,7 +82,7 @@ Main Slardar interface with overloaded methods for different event types:
 interface Slardar {
   // Generic event method
   (event: string, params?: Record<string, unknown>): void;
-  
+
   // Error capturing
   (
     event: 'captureException',
@@ -90,7 +90,7 @@ interface Slardar {
     meta?: Record<string, string>,
     reactInfo?: { version: string; componentStack: string }
   ): void;
-  
+
   // Event reporting
   (
     event: 'sendEvent',
@@ -100,7 +100,7 @@ interface Slardar {
       categories: Record<string, string>;
     }
   ): void;
-  
+
   // Log reporting
   (
     event: 'sendLog',
@@ -110,13 +110,13 @@ interface Slardar {
       extra: Record<string, string | number>;
     }
   ): void;
-  
+
   // Context management
   (event: 'context.set', key: string, value: string): void;
-  
+
   // Configuration
   config: (() => SlardarConfig) & ((options: Partial<SlardarConfig>) => void);
-  
+
   // Event listeners
   on: (event: string, callback: (...args: unknown[]) => void) => void;
   off: (event: string, callback: (...args: unknown[]) => void) => void;
@@ -238,7 +238,7 @@ None - this package only provides TypeScript interface definitions.
 ### Development Dependencies
 
 - `@coze-arch/eslint-config` - Shared ESLint configuration
-- `@coze-arch/ts-config` - Shared TypeScript configuration  
+- `@coze-arch/ts-config` - Shared TypeScript configuration
 - `@coze-arch/vitest-config` - Shared Vitest configuration
 - `@types/node` - Node.js type definitions
 - `@vitest/coverage-v8` - Coverage reporting
@@ -251,7 +251,7 @@ None - this package only provides TypeScript interface definitions.
 
 ## License
 
-ISC
+Apache-2.0
 
 ---
 

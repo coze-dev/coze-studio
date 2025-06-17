@@ -15,7 +15,7 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozCross,
   IconCozLongArrowUp,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   Button,
   IconButton,
@@ -23,7 +23,7 @@ import {
   Spin,
   Tag,
   Toast,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { type PublishConnectorInfo } from '@coze-arch/bot-api/developer_api';
 import {

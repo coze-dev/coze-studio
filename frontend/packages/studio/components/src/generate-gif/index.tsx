@@ -9,7 +9,7 @@ import { type DynamicParams } from '@coze-arch/bot-typings/teamspace';
 import { PicType } from '@coze-arch/bot-api/playground_api';
 import { PlaygroundApi } from '@coze-arch/bot-api';
 import webSocketManager from '@coze-common/websocket-manager-adapter';
-import { TextArea } from '@coze/coze-design';
+import { TextArea } from '@coze-arch/coze-design';
 
 import { type ImageItem } from '../image-list';
 import { GenerateButton } from '../generate-button';

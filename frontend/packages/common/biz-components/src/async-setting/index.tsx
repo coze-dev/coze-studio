@@ -6,7 +6,7 @@ import {
   TextArea,
   Button,
   type ButtonProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 interface IValue {
   isOpen?: boolean;

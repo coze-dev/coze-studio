@@ -1,8 +1,8 @@
 import { type RefObject } from 'react';
 
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
 import { I18n } from '@coze-arch/i18n';
-import { type Tooltip } from '@coze/coze-design';
+import { type Tooltip } from '@coze-arch/coze-design';
 
 import { type ILibraryItem, type LibraryBlockInfo } from '../types';
 import { LibraryItem } from '../library-search-popover/library-item';

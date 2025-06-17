@@ -4,7 +4,7 @@ import { groupBy, uniq } from 'lodash-es';
 import classNames from 'classnames';
 import { ModelOptionItem } from '@coze-studio/components';
 import { I18n } from '@coze-arch/i18n';
-import { Select } from '@coze/coze-design';
+import { Select } from '@coze-arch/coze-design';
 import { type OptionProps } from '@coze-arch/bot-semi/Select';
 import { type Model } from '@coze-arch/bot-api/developer_api';
 

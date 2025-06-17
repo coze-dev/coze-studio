@@ -17,8 +17,8 @@ import {
   IconCozArrowUp,
   IconCozChatSetting,
   IconCozVariables,
-} from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 import { HEADER_HEIGHT } from '../../constants/styles';
 

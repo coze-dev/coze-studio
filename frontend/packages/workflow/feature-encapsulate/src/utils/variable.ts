@@ -20,7 +20,7 @@ export function traverseRefsInNodeJSON(
       has(data, 'content.blockID') &&
       has(data, 'content.name')
     ) {
-      cb(data as DTODefine.RefExpression);
+      cb(data as unknown as DTODefine.RefExpression);
     }
 
     Object.entries(data).forEach(([_key, _val]) => {

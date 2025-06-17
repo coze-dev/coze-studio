@@ -2,7 +2,7 @@
   "name": "@coze-arch/bot-space-api",
   "version": "0.0.1",
   "description": "bot space api instance that extracts from apps/bot/src/services/api/space-api.ts",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

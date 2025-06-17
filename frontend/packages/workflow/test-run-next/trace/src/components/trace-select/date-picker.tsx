@@ -1,12 +1,12 @@
 import { useCallback } from 'react';
 
 import dayjs from 'dayjs';
-import { IconCozCalendar } from '@coze/coze-design/icons';
+import { IconCozCalendar } from '@coze-arch/coze-design/icons';
 import {
   DatePicker as DatePickerCore,
   type DatePickerProps as DatePickerCoreProps,
   IconButton,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 type DatePickerProps = Pick<DatePickerCoreProps, 'value'> & {
   onChange: (v: [Date, Date]) => void;

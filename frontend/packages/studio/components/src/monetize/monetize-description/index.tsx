@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { Popover } from '@coze/coze-design';
+import { Popover } from '@coze-arch/coze-design';
 
 import previewCard from './preview-card.png';
 

@@ -20,8 +20,8 @@ import { refreshUserInfo } from '@coze-arch/foundation-sdk';
 import { Form, type Upload } from '@coze-arch/bot-semi';
 import { isApiError } from '@coze-arch/bot-http';
 import { DeveloperApi } from '@coze-arch/bot-api';
-import { IconCozWarningCircleFillPalette } from '@coze/coze-design/icons';
-import { Input, Toast, Select } from '@coze/coze-design';
+import { IconCozWarningCircleFillPalette } from '@coze-arch/coze-design/icons';
+import { Input, Toast, Select } from '@coze-arch/coze-design';
 
 import { UsernameInput } from './username-input';
 import { UserInfoField, type UserInfoFieldProps } from './user-info-field';

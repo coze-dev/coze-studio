@@ -1,6 +1,6 @@
 import { I18n } from '@coze-arch/i18n';
-import { IconCozArrowBottom } from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+import { IconCozArrowBottom } from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 
 import { LogWrap } from '../log-parser/log-wrap';
 import { ImagesPreview } from './images-preview';

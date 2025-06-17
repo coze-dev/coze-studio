@@ -2,7 +2,7 @@
   "name": "@coze-workflow/code-editor-adapter",
   "version": "0.0.1",
   "description": "code editor",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "liji.leej@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",
@@ -16,10 +16,10 @@
   "dependencies": {
     "@codemirror/state": "^6.4.1",
     "@codemirror/view": "^6.34.1",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
+    "@coze-editor/editor": "0.1.0-alpha.d92d50",
     "@coze-workflow/base": "workspace:*",
-    "@coze/coze-design": "workspace:*",
-    "@flow-lang-sdk/editor": "^1.0.0-alpha.41",
     "classnames": "^2.3.2"
   },
   "devDependencies": {

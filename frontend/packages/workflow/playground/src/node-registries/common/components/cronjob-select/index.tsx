@@ -6,7 +6,7 @@ import { cronJobTranslator } from '@coze-workflow/components';
 import { CronJobType, type CronJobValue } from '@coze-workflow/nodes';
 import { ValueExpressionType, ValueExpression } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { Select } from '@coze/coze-design';
+import { Select } from '@coze-arch/coze-design';
 
 import { Text } from '@/form-extensions/components/text';
 

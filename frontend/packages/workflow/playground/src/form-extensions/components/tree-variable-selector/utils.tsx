@@ -15,7 +15,7 @@ import {
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { type TreeNodeData } from '@coze-arch/bot-semi/Tree';
-import { Tooltip, Space } from '@coze/coze-design';
+import { Tooltip, Space } from '@coze-arch/coze-design';
 
 import { VariableTypeTag } from '../variable-type-tag';
 import { type VariableMetaWithNode } from '../../typings';

@@ -1,7 +1,7 @@
 import {
   IconCozArrowLeftFill,
   IconCozArrowRightFill,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 export const LeftScrollButton = ({
   handleScroll,

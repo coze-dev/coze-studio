@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { TabPane, Tabs, Typography, Divider } from '@coze/coze-design';
+import { TabPane, Tabs, Typography, Divider } from '@coze-arch/coze-design';
 
 const { Text } = Typography;
 

@@ -6,8 +6,8 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozCheckMarkCircleFill,
   IconCozInfoCircleFill,
-} from '@coze/coze-design/icons';
-import { Tag, Popover, Divider } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Tag, Popover, Divider } from '@coze-arch/coze-design';
 import { ConnectorDynamicStatus } from '@coze-arch/bot-api/developer_api';
 
 import s from '../bot-status/style.module.less';

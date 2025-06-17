@@ -7,7 +7,7 @@ import { IntelligenceType } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
 import { useFlags } from '@coze-arch/bot-flags';
 import { useIsPublishRecordReady } from '@coze-studio/publish-manage-hooks';
-import { IconCozCheckMarkCircle } from '@coze/coze-design/icons';
+import { IconCozCheckMarkCircle } from '@coze-arch/coze-design/icons';
 
 import { useProjectPublishStore } from '../store';
 import { ProjectPublishProgress } from '../publish-progress';

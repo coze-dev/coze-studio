@@ -8,8 +8,8 @@ import { type WorkflowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import { useValidationService } from '@coze-workflow/base/services';
 import { StandardNodeType, useNodeTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlayFill, IconCozStopCircle } from '@coze/coze-design/icons';
-import { IconButton, Tooltip, Toast } from '@coze/coze-design';
+import { IconCozPlayFill, IconCozStopCircle } from '@coze-arch/coze-design/icons';
+import { IconButton, Tooltip, Toast } from '@coze-arch/coze-design';
 
 import { WorkflowRunService } from '@/services';
 import { LayoutPanelKey } from '@/constants';

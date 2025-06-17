@@ -7,9 +7,10 @@
     "fanwenjie.fe@bytedance.com"
   ],
   "dependencies": {
-    "@coze-arch/rush-dep-level-plugin": "link:../../../frontend/infra/plugins/rush-dep-level-plugin",
+    "@coze-arch/rush-clear-build-cache-plugin": "0.0.1-alpha.a8d5b5",
+    "@coze-arch/rush-dep-level-check-plugin": "0.0.1-alpha.f89072",
     "@coze-arch/rush-fix-ts-refers-plugin": "alpha",
-    "@coze-arch/rush-increment-run-plugin": "alpha",
+    "@coze-arch/rush-increment-run-plugin": "0.0.2-alpha.88b122",
     "@coze-arch/rush-publish-plugin": "alpha",
     "@coze-arch/rush-run-tsc-plugin": "latest",
     "json5": "^2.2.1",

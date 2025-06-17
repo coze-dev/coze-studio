@@ -12,8 +12,8 @@ import {
   mergeModelFuncConfigStatus,
   useModelCapabilityConfig,
 } from '@coze-agent-ide/bot-editor-context-store';
-import { IconCozWarningCircleFillPalette } from '@coze/coze-design/icons';
-import { Tag, Tooltip } from '@coze/coze-design';
+import { IconCozWarningCircleFillPalette } from '@coze-arch/coze-design/icons';
+import { Tag, Tooltip } from '@coze-arch/coze-design';
 
 import { abilityKey2ModelFunctionConfigType } from '../../utils/model-function-config-type-mapping';
 import { useGetToolConfig } from '../../hooks/builtin/use-get-tool-config';

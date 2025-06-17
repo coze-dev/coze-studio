@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Divider } from '@coze/coze-design';
+import { Divider } from '@coze-arch/coze-design';
 
 import { ZoomSelect } from './zoom-select';
 import { MinimapSwitch } from './minimap-switch';

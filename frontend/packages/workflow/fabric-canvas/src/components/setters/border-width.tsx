@@ -2,7 +2,7 @@ import { type FC } from 'react';
 
 import classnames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Slider } from '@coze/coze-design';
+import { Slider } from '@coze-arch/coze-design';
 
 import styles from './border-width.module.less';
 

@@ -20,8 +20,8 @@ import {
 } from '@coze-studio/premium-components-adapter';
 import { IntelligenceType } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCross } from '@coze/coze-design/icons';
-import { IconButton, Toast, Typography } from '@coze/coze-design';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
+import { IconButton, Toast, Typography } from '@coze-arch/coze-design';
 
 import {
   useExecStateEntity,

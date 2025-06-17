@@ -17,7 +17,7 @@ import { VerboseMsgType } from '@coze-common/chat-core';
 import { typeSafeJsonParse } from '@coze-common/chat-area-utils';
 import { reporter } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import { Collapsible, Tag, Button } from '@coze/coze-design';
+import { Collapsible, Tag, Button } from '@coze-arch/coze-design';
 import { MdBoxLazy } from '@coze-arch/bot-md-box-adapter/lazy';
 import { MockHitStatus } from '@coze-arch/bot-api/debugger_api';
 import { JsonViewer } from '@coze-common/json-viewer';

@@ -9,7 +9,7 @@ import {
   createReportEvent,
 } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 import { openNewWindow, getParamsFromQuery } from '@coze-arch/bot-utils';
 import { BotPageFromEnum } from '@coze-arch/bot-typings/common';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
@@ -232,7 +232,7 @@ export const DuplicateBot: FC<DuplicateBotProps> = ({
       setShowSpaceModal(true);
     } else if (pageFromFromStore === BotPageFromEnum.Explore) {
       // 这里需要添加新的埋点，数据稳定后把老的埋点下掉
-      // 
+      //
       sendTeaEvent(EVENT_NAMES.bot_duplicate_click_front, {
         bot_type: 'store_bot',
         bot_id: botNameFromStore,

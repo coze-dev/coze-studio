@@ -1,6 +1,6 @@
 import { workflowApi } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 import { WorkflowMode } from '@coze-arch/bot-api/workflow_api';
 import { type ResourceInfo } from '@coze-arch/bot-api/plugin_develop';
 export const useChatflowSwitch = ({

@@ -6,7 +6,7 @@ import {
   type IDataSetInfo,
 } from '@coze-data/knowledge-modal-base';
 import { I18n } from '@coze-arch/i18n';
-import { Button, Modal } from '@coze/coze-design';
+import { Button, Modal } from '@coze-arch/coze-design';
 
 import { type KnowledgeGlobalSetting } from './types';
 import { defaultKnowledgeGlobalSetting } from './constants';

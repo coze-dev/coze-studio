@@ -2,7 +2,7 @@
   "name": "@coze-common/scroll-view",
   "version": "0.0.1",
   "description": "scroll-view",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "liushuoyan@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",

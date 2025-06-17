@@ -1,13 +1,13 @@
 import { type MutableRefObject, useRef } from 'react';
 
 import { last } from 'lodash-es';
-import type { SelectionEnlargerSpec } from '@flow-lang-sdk/editor';
 import type { WorkflowVariableFacade } from '@coze-workflow/variable/src/core/workflow-variable-facade';
 import {
   allGlobalVariableKeys,
   TRANS_WORKFLOW_VARIABLE_SOURCE,
   GlobalVariableKey,
 } from '@coze-workflow/variable';
+import type { SelectionEnlargerSpec } from '@coze-editor/editor';
 import type { EditorState, Transaction } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
 

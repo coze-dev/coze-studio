@@ -2,7 +2,7 @@
   "name": "@coze-agent-ide/navigate",
   "version": "0.0.1",
   "description": "bot 编辑页跳转相关逻辑",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "meixuliang.3@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",

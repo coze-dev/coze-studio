@@ -4,7 +4,7 @@ import {
   Switch,
   RadioGroup,
   type RadioGroupProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { UIInput } from '@coze-arch/bot-semi';
 
 import {

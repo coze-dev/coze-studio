@@ -2,8 +2,8 @@ import React, { Suspense, lazy, useMemo } from 'react';
 
 import { userStoreService } from '@coze-studio/user-store';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozIllusAdd } from '@coze/coze-design/illustrations';
-import { EmptyState } from '@coze/coze-design';
+import { IconCozIllusAdd } from '@coze-arch/coze-design/illustrations';
+import { EmptyState } from '@coze-arch/coze-design';
 import { CreateEnv } from '@coze-arch/bot-api/workflow_api';
 import type { IProject } from '@coze-studio/open-chat';
 import { useIDEGlobalStore } from '@coze-project-ide/framework';

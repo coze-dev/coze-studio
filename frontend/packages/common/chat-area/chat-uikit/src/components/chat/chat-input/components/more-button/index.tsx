@@ -1,8 +1,8 @@
 import { type ReactNode, type FC } from 'react';
 
 import classNames from 'classnames';
-import { IconCozPlusCircle } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozPlusCircle } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 import { Layout } from '@coze-common/chat-uikit-shared';
 
 import { UIKitTooltip } from '../../../../common/tooltips';

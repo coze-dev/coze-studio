@@ -13,7 +13,7 @@ import {
   Typography,
   CozPagination,
   Empty,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { RowEditModal } from '../row-edit-modal';
 import { resizeFn } from '../../utils/table';

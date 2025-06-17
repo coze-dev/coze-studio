@@ -42,9 +42,6 @@
       "path": "../../../config/vitest-config/tsconfig.build.json"
     },
     {
-      "path": "../coze-design/tsconfig.build.json"
-    },
-    {
       "path": "../../data/common/e2e/tsconfig.build.json"
     },
     {

@@ -1,8 +1,8 @@
 {
   "name": "@coze-common/prompt-kit",
   "version": "0.0.1",
-  "description": "prompt编辑器，基于@flow-lang-sdk/editor",
-  "license": "ISC",
+  "description": "prompt编辑器，基于@coze-editor/editor",
+  "license": "Apache-2.0",
   "author": "haozhenfei@bytedance.com",
   "maintainers": [],
   "exports": {
@@ -47,6 +47,7 @@
     "@coze-arch/bot-icons": "workspace:*",
     "@coze-arch/bot-semi": "workspace:*",
     "@coze-arch/bot-tea": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/idl": "workspace:*",
     "@coze-common/chat-answer-action": "workspace:*",
@@ -57,9 +58,8 @@
     "@coze-common/prompt-kit-adapter": "workspace:*",
     "@coze-common/prompt-kit-base": "workspace:*",
     "@coze-common/scroll-view": "workspace:*",
+    "@coze-editor/editor": "0.1.0-alpha.d92d50",
     "@coze-foundation/local-storage": "workspace:*",
-    "@coze/coze-design": "workspace:*",
-    "@flow-lang-sdk/editor": "^1.0.0-alpha.41",
     "@lezer/common": "^1.2.2",
     "ahooks": "^3.7.8",
     "classnames": "^2.3.2",
@@ -108,3 +108,4 @@
     "react-dom": ">=18.2.0"
   }
 }
+

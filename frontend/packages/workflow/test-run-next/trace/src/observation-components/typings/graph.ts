@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 
-import { type TooltipProps } from '@coze/coze-design';
+import { type TooltipProps } from '@coze-arch/coze-design';
 
 import { type TraceFrontendSpan } from '../typings/idl';
 import { type TreeProps } from '../common/tree';

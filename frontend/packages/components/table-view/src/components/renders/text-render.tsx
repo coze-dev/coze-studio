@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 
-import { TextArea } from '@coze/coze-design';
+import { TextArea } from '@coze-arch/coze-design';
 import { Tooltip } from '@coze-arch/bot-semi';
 import { IconToastError } from '@coze-arch/bot-icons';
 import { CommonE2e } from '@coze-data/e2e';

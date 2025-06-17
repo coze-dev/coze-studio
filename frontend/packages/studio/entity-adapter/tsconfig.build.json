@@ -36,9 +36,6 @@
       "path": "../../common/biz-components/tsconfig.build.json"
     },
     {
-      "path": "../../components/coze-design/tsconfig.build.json"
-    },
-    {
       "path": "../components/tsconfig.build.json"
     },
     {

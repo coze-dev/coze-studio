@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 
 import cls from 'classnames';
 import { KnowledgeE2e } from '@coze-data/e2e';
-import { Typography, Space } from '@coze/coze-design';
+import { Typography, Space } from '@coze-arch/coze-design';
 
 import { ProcessStatus, type ProcessProgressItemProps } from '../../types';
 

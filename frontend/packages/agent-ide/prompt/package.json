@@ -2,7 +2,7 @@
   "name": "@coze-agent-ide/prompt",
   "version": "0.0.1",
   "description": "agent ide prompt",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "gaoyuanhan.duty@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",
@@ -17,6 +17,7 @@
     "@coze-agent-ide/tool": "workspace:*",
     "@coze-arch/bot-api": "workspace:*",
     "@coze-arch/bot-studio-store": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/idl": "workspace:*",
     "@coze-common/chat-area": "workspace:*",
@@ -26,7 +27,6 @@
     "@coze-common/prompt-kit-base": "workspace:*",
     "@coze-data/knowledge-data-set-for-agent": "workspace:*",
     "@coze-studio/bot-detail-store": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "classnames": "^2.3.2",
     "zustand": "^4.4.7"
   },
@@ -62,3 +62,4 @@
     "react-dom": ">=18.2.0"
   }
 }
+

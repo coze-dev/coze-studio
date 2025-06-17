@@ -4,8 +4,8 @@ import cls from 'classnames';
 import {
   IconCozCrossFill,
   IconCozWarningCircleFill,
-} from '@coze/coze-design/icons';
-import { Typography, Loading, Skeleton } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Typography, Loading, Skeleton } from '@coze-arch/coze-design';
 import {
   type TitlePropsType,
   DISABLE_HANDLE_EVENT,

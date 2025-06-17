@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Tag, Tooltip } from '@coze/coze-design';
+import { Tag, Tooltip } from '@coze-arch/coze-design';
 
 interface FailedTagProps {
   statusDescription: string | undefined;

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Button, Space, Toast, Typography } from '@coze/coze-design';
+import { Button, Space, Toast, Typography } from '@coze-arch/coze-design';
 import {
   type ResourceCopyDispatchRequest,
   ResourceCopyScene,

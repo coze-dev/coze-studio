@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react-hooks';
 
 import { useGetPosition } from '../../src/hooks/use-get-position';
 
-vi.mock('@coze/coze-design', () => ({
+vi.mock('@coze-arch/coze-design', () => ({
   Toast: {
     error: vi.fn(),
   },

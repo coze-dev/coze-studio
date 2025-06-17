@@ -1,4 +1,4 @@
-import { type SelectProps } from '@coze/coze-design';
+import { type SelectProps } from '@coze-arch/coze-design';
 
 export type Value = string | number | undefined;
 

@@ -4,7 +4,7 @@ import { isObject, toString } from 'lodash-es';
 import copy from 'copy-to-clipboard';
 import { logger } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 const SPACE = 2;
 

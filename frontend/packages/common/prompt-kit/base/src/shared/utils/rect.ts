@@ -1,4 +1,4 @@
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
 
 export const getSelectionBoundary = (editor: EditorAPI) => {
   const rects = editor.getMainSelectionRects();

@@ -2,7 +2,7 @@ import React, { useMemo, type FC } from 'react';
 
 import { type WorkflowDetailInfoData } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozExit } from '@coze/coze-design/icons';
+import { IconCozExit } from '@coze-arch/coze-design/icons';
 
 import { useGlobalState } from '@/hooks';
 

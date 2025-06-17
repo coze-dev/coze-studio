@@ -1,5 +1,5 @@
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 
 interface IconInfoProps {
   tooltip: string | React.ReactNode;

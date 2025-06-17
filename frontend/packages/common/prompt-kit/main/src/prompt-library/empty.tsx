@@ -1,6 +1,6 @@
 import { I18n } from '@coze-arch/i18n';
-import { IconCozEmpty } from '@coze/coze-design/icons';
-import { EmptyState } from '@coze/coze-design';
+import { IconCozEmpty } from '@coze-arch/coze-design/icons';
+import { EmptyState } from '@coze-arch/coze-design';
 
 import EmptyPromptIcon from '../assets/empty-prompt-icon.svg';
 

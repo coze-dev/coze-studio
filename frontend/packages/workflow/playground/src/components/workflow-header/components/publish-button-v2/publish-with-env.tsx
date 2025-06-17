@@ -5,8 +5,8 @@
 import { useMemo } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozArrowDown } from '@coze/coze-design/icons';
-import { SplitButtonGroup, Menu, IconButton } from '@coze/coze-design';
+import { IconCozArrowDown } from '@coze-arch/coze-design/icons';
+import { SplitButtonGroup, Menu, IconButton } from '@coze-arch/coze-design';
 import {
   OperateType,
   type PublishWorkflowRequest,

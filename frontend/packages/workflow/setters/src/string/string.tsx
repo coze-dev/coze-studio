@@ -1,7 +1,7 @@
 import React from 'react';
 
 import cx from 'classnames';
-import { Input } from '@coze/coze-design';
+import { Input } from '@coze-arch/coze-design';
 
 import { type Setter } from '../types';
 

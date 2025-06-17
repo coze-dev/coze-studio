@@ -1,4 +1,4 @@
-import { Space, Image, Typography, Tooltip } from '@coze/coze-design';
+import { Space, Image, Typography, Tooltip } from '@coze-arch/coze-design';
 
 const doRenderTooltip = (content, children) => (
   <Tooltip content={content}>{children}</Tooltip>

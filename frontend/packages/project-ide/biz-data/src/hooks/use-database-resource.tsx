@@ -19,7 +19,7 @@ import { useLibraryCreateDatabaseModal } from '@coze-data/database-v2';
 import { I18n } from '@coze-arch/i18n';
 import { ResourceCopyScene } from '@coze-arch/bot-api/plugin_develop';
 import { MemoryApi } from '@coze-arch/bot-api';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { useResourceOperation } from './use-resource-operation';
 

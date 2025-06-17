@@ -48,7 +48,7 @@ Defines the source of bot detail pages:
 ```typescript
 enum BotPageFromEnum {
   Bot = 'bot',        // Bot list
-  Explore = 'explore', // Explore list  
+  Explore = 'explore', // Explore list
   Store = 'store',
   Template = 'template',
 }
@@ -139,7 +139,7 @@ import myImage from './image.png'; // string
 
 **Stylesheets:**
 ```typescript
-// .less, .css files  
+// .less, .css files
 import styles from './styles.less'; // { [key: string]: string }
 ```
 
@@ -203,7 +203,7 @@ npm run lint
 ### Adding New Types
 
 1. **Module Declarations**: Add to `index.d.ts`
-2. **Common Utilities**: Add to `common.ts` 
+2. **Common Utilities**: Add to `common.ts`
 3. **Domain-Specific Types**: Create new files and export from appropriate entry points
 4. **Global Extensions**: Add to `window.d.ts` or `navigator.d.ts`
 
@@ -223,7 +223,7 @@ None - this package contains only TypeScript type definitions.
 
 ## License
 
-ISC
+Apache-2.0
 
 ---
 

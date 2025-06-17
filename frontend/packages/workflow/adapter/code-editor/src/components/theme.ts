@@ -1,4 +1,4 @@
-import { createTheme } from '@flow-lang-sdk/editor/preset-code';
+import { createTheme } from '@coze-editor/editor/preset-code';
 import { type Extension } from '@codemirror/state';
 
 const colors = {

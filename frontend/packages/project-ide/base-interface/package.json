@@ -2,7 +2,7 @@
   "name": "@coze-project-ide/base-interface",
   "version": "0.0.1",
   "description": "Adapter of coze ProjectIDE",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "chenjiawei.inizio@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

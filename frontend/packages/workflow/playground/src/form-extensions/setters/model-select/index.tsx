@@ -11,8 +11,8 @@ import {
 } from '@coze-workflow/base';
 import { type OptionItem } from '@coze-arch/bot-semi/Radio';
 import { type Model } from '@coze-arch/bot-api/developer_api';
-import { IconCozSetting } from '@coze/coze-design/icons';
-import { IconButton, Popover } from '@coze/coze-design';
+import { IconCozSetting } from '@coze-arch/coze-design/icons';
+import { IconButton, Popover } from '@coze-arch/coze-design';
 
 import { useWorkflowModels } from '@/hooks';
 import PopupContainer from '@/components/popup-container';

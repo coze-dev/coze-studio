@@ -11,7 +11,7 @@ import {
 import {
   IconCozEdit,
   IconCozCheckMarkCircleFillPalette,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   CozAvatar,
   Typography,
@@ -19,7 +19,7 @@ import {
   IconButton,
   Toast,
   Popover,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useProjectInfo } from '../../../hooks';
 import { InfoContent } from './info-content';

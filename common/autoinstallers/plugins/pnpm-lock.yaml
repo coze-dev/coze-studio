@@ -5,18 +5,21 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
-  '@coze-arch/rush-dep-level-plugin':
-    specifier: link:../../../frontend/infra/plugins/rush-dep-level-plugin
-    version: link:../../../frontend/infra/plugins/rush-dep-level-plugin
+  '@coze-arch/rush-clear-build-cache-plugin':
+    specifier: 0.0.1-alpha.a8d5b5
+    version: 0.0.1-alpha.a8d5b5
+  '@coze-arch/rush-dep-level-check-plugin':
+    specifier: 0.0.1-alpha.f89072
+    version: 0.0.1-alpha.f89072(@types/node@18.19.112)
   '@coze-arch/rush-fix-ts-refers-plugin':
     specifier: alpha
     version: 0.0.1-alpha.bf1426(commander@13.1.0)
   '@coze-arch/rush-increment-run-plugin':
-    specifier: alpha
-    version: 0.0.2-alpha.1afed3(commander@13.1.0)(stylelint@15.11.0)
+    specifier: 0.0.2-alpha.88b122
+    version: 0.0.2-alpha.88b122(commander@13.1.0)(stylelint@15.11.0)
   '@coze-arch/rush-publish-plugin':
     specifier: alpha
-    version: 0.0.3-alpha.f72758(@types/node@18.19.111)(commander@13.1.0)
+    version: 0.0.3-alpha.f72758(@types/node@18.19.112)(commander@13.1.0)
   '@coze-arch/rush-run-tsc-plugin':
     specifier: latest
     version: 0.0.1-alpha.0c17f8
@@ -25,7 +28,7 @@ dependencies:
     version: 2.2.3
   rush-init-project-plugin:
     specifier: ^0.11.0
-    version: 0.11.1(@types/node@18.19.111)(typescript@5.8.3)
+    version: 0.11.1(@types/node@18.19.112)(typescript@5.8.3)
   typescript:
     specifier: ~5.8.2
     version: 5.8.3
@@ -33,7 +36,7 @@ dependencies:
 devDependencies:
   '@types/node':
     specifier: ^18.6.3
-    version: 18.19.111
+    version: 18.19.112
 
 packages:
 
@@ -89,6 +92,21 @@ packages:
     dev: false
     optional: true
 
+  /@coze-arch/rush-clear-build-cache-plugin@0.0.1-alpha.a8d5b5:
+    resolution: {integrity: sha512-Tg4R5TdY1HxMaT6X/N8vwQDJBp7Z2ikZVEDr9ydBLS/JISaHM0wHRi0daMWhB+7MTJ9IXllYutp2u+sUSCFAzA==}
+    hasBin: true
+    dependencies:
+      json5: 2.2.3
+    dev: false
+
+  /@coze-arch/rush-dep-level-check-plugin@0.0.1-alpha.f89072(@types/node@18.19.112):
+    resolution: {integrity: sha512-Qswnf+V32cGXspdHVn11krJ8NF85yh+ImL9VcQV3KZd/mbdrFwBRzO7Ea1ZncHZeprVjdA+5yYi1XBGnLteeYw==}
+    dependencies:
+      '@rushstack/rush-sdk': 5.155.0(@types/node@18.19.112)
+    transitivePeerDependencies:
+      - '@types/node'
+    dev: false
+
   /@coze-arch/rush-fix-ts-refers-plugin@0.0.1-alpha.bf1426(commander@13.1.0):
     resolution: {integrity: sha512-5X1nE2/qSkiqdzQ9oBxwd0bAL5Z0a6JGs9huwoGJVStbYZ5RfIEKPHCr23O98hxteSZF2cvRzQE7TIFLwUOZFA==}
     hasBin: true
@@ -100,8 +118,8 @@ packages:
       shelljs: 0.9.2
     dev: false
 
-  /@coze-arch/rush-increment-run-plugin@0.0.2-alpha.1afed3(commander@13.1.0)(stylelint@15.11.0):
-    resolution: {integrity: sha512-y/f6itQFmMBkoGboutrJ18CRgJNFHiOr8n1TKr+JlepY+O68VuwAd2Vc6hTaoolpCbcSMWxJOIVPX6/wEfwd1A==}
+  /@coze-arch/rush-increment-run-plugin@0.0.2-alpha.88b122(commander@13.1.0)(stylelint@15.11.0):
+    resolution: {integrity: sha512-2gMfzc1bXHpQBaUMQaQ8T4uElTu2KWHoxlnanX4EDF4iBx+AL7xjdRGoYfUWAaxWClbNeTsvewE3igCRhFAzMA==}
     hasBin: true
     peerDependencies:
       commander: ^13.1.0
@@ -114,14 +132,14 @@ packages:
       stylelint: 15.11.0(typescript@5.8.3)
     dev: false
 
-  /@coze-arch/rush-publish-plugin@0.0.3-alpha.f72758(@types/node@18.19.111)(commander@13.1.0):
+  /@coze-arch/rush-publish-plugin@0.0.3-alpha.f72758(@types/node@18.19.112)(commander@13.1.0):
     resolution: {integrity: sha512-Uzy2k+TSyS4ggH1wRxaNtNpwjc8AeqJMKNSWaJIJ3pyz3IBZjltjEftESMiTQ3nZlGF5Q+XJmcz3Zs5pOiHy3w==}
     hasBin: true
     peerDependencies:
       commander: ^13.1.0
     dependencies:
       '@inquirer/prompts': 3.3.2
-      '@rushstack/rush-sdk': 5.154.0(@types/node@18.19.111)
+      '@rushstack/rush-sdk': 5.155.0(@types/node@18.19.112)
       chalk: 4.1.2
       commander: 13.1.0
       conventional-changelog-angular: 5.0.13
@@ -210,7 +228,7 @@ packages:
     dependencies:
       '@inquirer/type': 1.5.5
       '@types/mute-stream': 0.0.4
-      '@types/node': 20.19.0
+      '@types/node': 20.19.1
       '@types/wrap-ansi': 3.0.0
       ansi-escapes: 4.3.2
       chalk: 4.1.2
@@ -360,7 +378,7 @@ packages:
     engines: {node: '>=18.12'}
     dev: false
 
-  /@rushstack/lookup-by-path@0.7.0(@types/node@18.19.111):
+  /@rushstack/lookup-by-path@0.7.0(@types/node@18.19.112):
     resolution: {integrity: sha512-nAFnkW8ortx7RI9CCPfArCBmj0/YkAqTS9E9poxstIlzdlznIMgUysRd3NV+aSCfAAI5+XThWA+9gWGtYqhQPg==}
     peerDependencies:
       '@types/node': '*'
@@ -368,7 +386,7 @@ packages:
       '@types/node':
         optional: true
     dependencies:
-      '@types/node': 18.19.111
+      '@types/node': 18.19.112
     dev: false
 
   /@rushstack/node-core-library@3.45.0:
@@ -385,7 +403,7 @@ packages:
       z-schema: 5.0.5
     dev: false
 
-  /@rushstack/node-core-library@3.62.0(@types/node@18.19.111):
+  /@rushstack/node-core-library@3.62.0(@types/node@18.19.112):
     resolution: {integrity: sha512-88aJn2h8UpSvdwuDXBv1/v1heM6GnBf3RjEy6ZPP7UnzHNCqOHA2Ut+ScYUbXcqIdfew9JlTAe3g+cnX9xQ/Aw==}
     peerDependencies:
       '@types/node': '*'
@@ -393,7 +411,7 @@ packages:
       '@types/node':
         optional: true
     dependencies:
-      '@types/node': 18.19.111
+      '@types/node': 18.19.112
       colors: 1.2.5
       fs-extra: 7.0.1
       import-lazy: 4.0.0
@@ -403,7 +421,7 @@ packages:
       z-schema: 5.0.5
     dev: false
 
-  /@rushstack/node-core-library@5.13.1(@types/node@18.19.111):
+  /@rushstack/node-core-library@5.13.1(@types/node@18.19.112):
     resolution: {integrity: sha512-5yXhzPFGEkVc9Fu92wsNJ9jlvdwz4RNb2bMso+/+TH0nMm1jDDDsOIf4l8GAkPxGuwPw5DH24RliWVfSPhlW/Q==}
     peerDependencies:
       '@types/node': '*'
@@ -411,7 +429,7 @@ packages:
       '@types/node':
         optional: true
     dependencies:
-      '@types/node': 18.19.111
+      '@types/node': 18.19.112
       ajv: 8.13.0
       ajv-draft-04: 1.0.0(ajv@8.13.0)
       ajv-formats: 3.0.1(ajv@8.13.0)
@@ -422,22 +440,22 @@ packages:
       semver: 7.5.4
     dev: false
 
-  /@rushstack/package-deps-hash@4.4.1(@types/node@18.19.111):
+  /@rushstack/package-deps-hash@4.4.1(@types/node@18.19.112):
     resolution: {integrity: sha512-gu1YvwqripXR/27tWq7ekX2jet7BGFUA5TrLBa2/MikChYhY7AkL/dzP56ZECRgwffMMM+ArfQR3HMtzowyOQw==}
     dependencies:
-      '@rushstack/node-core-library': 5.13.1(@types/node@18.19.111)
+      '@rushstack/node-core-library': 5.13.1(@types/node@18.19.112)
     transitivePeerDependencies:
       - '@types/node'
     dev: false
 
-  /@rushstack/rush-sdk@5.154.0(@types/node@18.19.111):
-    resolution: {integrity: sha512-fQSlFzgfxWUOhd6c0R2UVFkZUa3nKyhFSvK3d3aVgSp1Tx0TJ0mCbds2dDunrgXYYYJE/sKY0Q04+0RJIAcIAQ==}
+  /@rushstack/rush-sdk@5.155.0(@types/node@18.19.112):
+    resolution: {integrity: sha512-6a8nKDG2x3PaakjTv+2Pzg6BwYNMnkaCBB0H66mwYRVnoarAdYjmKSvWUyOb2CNfR8t7lpm4m1ii0h8ZIWe4RQ==}
     dependencies:
       '@pnpm/lockfile.types': 1.0.3
-      '@rushstack/lookup-by-path': 0.7.0(@types/node@18.19.111)
-      '@rushstack/node-core-library': 5.13.1(@types/node@18.19.111)
-      '@rushstack/package-deps-hash': 4.4.1(@types/node@18.19.111)
-      '@rushstack/terminal': 0.15.3(@types/node@18.19.111)
+      '@rushstack/lookup-by-path': 0.7.0(@types/node@18.19.112)
+      '@rushstack/node-core-library': 5.13.1(@types/node@18.19.112)
+      '@rushstack/package-deps-hash': 4.4.1(@types/node@18.19.112)
+      '@rushstack/terminal': 0.15.3(@types/node@18.19.112)
       tapable: 2.2.1
     transitivePeerDependencies:
       - '@types/node'
@@ -451,7 +469,7 @@ packages:
       tapable: 2.2.1
     dev: false
 
-  /@rushstack/terminal@0.15.3(@types/node@18.19.111):
+  /@rushstack/terminal@0.15.3(@types/node@18.19.112):
     resolution: {integrity: sha512-DGJ0B2Vm69468kZCJkPj3AH5nN+nR9SPmC0rFHtzsS4lBQ7/dgOwtwVxYP7W9JPDMuRBkJ4KHmWKr036eJsj9g==}
     peerDependencies:
       '@types/node': '*'
@@ -459,8 +477,8 @@ packages:
       '@types/node':
         optional: true
     dependencies:
-      '@rushstack/node-core-library': 5.13.1(@types/node@18.19.111)
-      '@types/node': 18.19.111
+      '@rushstack/node-core-library': 5.13.1(@types/node@18.19.112)
+      '@types/node': 18.19.112
       supports-color: 8.1.1
     dev: false
 
@@ -484,7 +502,7 @@ packages:
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 18.19.111
+      '@types/node': 18.19.112
     dev: false
 
   /@types/inquirer-autocomplete-prompt@3.0.3:
@@ -518,26 +536,26 @@ packages:
   /@types/mute-stream@0.0.4:
     resolution: {integrity: sha512-CPM9nzrCPPJHQNA9keH9CVkVI+WR5kMa+7XEs5jcGQ0VoAGnLv242w8lIVgwAEfmE4oufJRaTc9PNLQl0ioAow==}
     dependencies:
-      '@types/node': 18.19.111
+      '@types/node': 18.19.112
     dev: false
 
   /@types/node-fetch@1.6.9:
     resolution: {integrity: sha512-n2r6WLoY7+uuPT7pnEtKJCmPUGyJ+cbyBR8Avnu4+m1nzz7DwBVuyIvvlBzCZ/nrpC7rIgb3D6pNavL7rFEa9g==}
     dependencies:
-      '@types/node': 18.19.111
+      '@types/node': 18.19.112
     dev: false
 
   /@types/node@12.20.24:
     resolution: {integrity: sha512-yxDeaQIAJlMav7fH5AQqPH1u8YIuhYJXYBzxaQ4PifsU0GDO38MSdmEDeRlIxrKbC6NbEaaEHDanWb+y30U8SQ==}
     dev: false
 
-  /@types/node@18.19.111:
-    resolution: {integrity: sha512-90sGdgA+QLJr1F9X79tQuEut0gEYIfkX9pydI4XGRgvFo9g2JWswefI+WUSUHPYVBHYSEfTEqBxA5hQvAZB3Mw==}
+  /@types/node@18.19.112:
+    resolution: {integrity: sha512-i+Vukt9POdS/MBI7YrrkkI5fMfwFtOjphSmt4WXYLfwqsfr6z/HdCx7LqT9M7JktGob8WNgj8nFB4TbGNE4Cog==}
     dependencies:
       undici-types: 5.26.5
 
-  /@types/node@20.19.0:
-    resolution: {integrity: sha512-hfrc+1tud1xcdVTABC2JiomZJEklMcXYNTVtZLAeqTVWD+qL5jkHKT+1lOtqDdGxt+mB53DTtiz673vfjU8D1Q==}
+  /@types/node@20.19.1:
+    resolution: {integrity: sha512-jJD50LtlD2dodAEO653i3YF04NWak6jN3ky+Ri3Em3mGR39/glWiboM/IePaRbgwSfqM1TpGXfAg8ohn/4dTgA==}
     dependencies:
       undici-types: 6.21.0
     dev: false
@@ -549,7 +567,7 @@ packages:
   /@types/through@0.0.33:
     resolution: {integrity: sha512-HsJ+z3QuETzP3cswwtzt2vEIiHBk/dCcHGhbmG5X3ecnwFD/lPrMpliGXxSCg03L9AhrdwA4Oz/qfspkDW+xGQ==}
     dependencies:
-      '@types/node': 18.19.111
+      '@types/node': 18.19.112
     dev: false
 
   /@types/wrap-ansi@3.0.0:
@@ -1030,8 +1048,8 @@ packages:
     hasBin: true
     dev: false
 
-  /brace-expansion@1.1.11:
-    resolution: {integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==}
+  /brace-expansion@1.1.12:
+    resolution: {integrity: sha512-9T9UjW3r0UW5c1Q7GTwllptXwhvYmEzFhzMfZ9H7FQWt+uZePjZPjBP/W1ZEyZ1twGWom5/56TF4lPcqjnDHcg==}
     dependencies:
       balanced-match: 1.0.2
       concat-map: 0.0.1
@@ -3008,7 +3026,7 @@ packages:
   /minimatch@3.1.2:
     resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}
     dependencies:
-      brace-expansion: 1.1.11
+      brace-expansion: 1.1.12
     dev: false
 
   /minimist-options@4.1.0:
@@ -3383,13 +3401,13 @@ packages:
     resolution: {integrity: sha512-0sglIs9Wmkzbr8lQwEyIzlDOOC9bGmfVKcJTaxv3vMmd3uo4o4DerC3En0bnmgceeql9BfC8hRkp7cg0fjdVqw==}
     dev: false
 
-  /postcss-safe-parser@6.0.0(postcss@8.5.4):
+  /postcss-safe-parser@6.0.0(postcss@8.5.6):
     resolution: {integrity: sha512-FARHN8pwH+WiS2OPCxJI8FuRJpTVnn6ZNFiqAM2aeW2LwTHWWmWgIyKC6cUo0L8aeKiF/14MNvnpls6R2PBeMQ==}
     engines: {node: '>=12.0'}
     peerDependencies:
       postcss: ^8.3.3
     dependencies:
-      postcss: 8.5.4
+      postcss: 8.5.6
     dev: false
 
   /postcss-selector-parser@6.1.2:
@@ -3404,8 +3422,8 @@ packages:
     resolution: {integrity: sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==}
     dev: false
 
-  /postcss@8.5.4:
-    resolution: {integrity: sha512-QSa9EBe+uwlGTFmHsPKokv3B/oEMQZxfqW0QqNCyhpa6mB1afzulwn8hihglqAb2pOw+BJgNlmXQ8la2VeHB7w==}
+  /postcss@8.5.6:
+    resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
     engines: {node: ^10 || ^12 || >=14}
     dependencies:
       nanoid: 3.3.11
@@ -3676,11 +3694,11 @@ packages:
       queue-microtask: 1.2.3
     dev: false
 
-  /rush-init-project-plugin@0.11.1(@types/node@18.19.111)(typescript@5.8.3):
+  /rush-init-project-plugin@0.11.1(@types/node@18.19.112)(typescript@5.8.3):
     resolution: {integrity: sha512-mhgYIxj3HDZJD9PTwzBC4k+TStjjawEME7mlHFwMHj8jQsd7vWioQ9iA4uudi3pwrfIM8Ru3cm+pDAy6b3+eIA==}
     hasBin: true
     dependencies:
-      '@rushstack/node-core-library': 3.62.0(@types/node@18.19.111)
+      '@rushstack/node-core-library': 3.62.0(@types/node@18.19.112)
       '@rushstack/rush-sdk': 5.62.4
       '@types/inquirer-autocomplete-prompt': 3.0.3
       blessed: 0.1.81
@@ -3696,7 +3714,7 @@ packages:
       ora: 5.4.1
       sort-package-json: 1.54.0
       tapable: 2.2.2
-      ts-node: 11.0.0-beta.1(@types/node@18.19.111)(typescript@5.8.3)
+      ts-node: 11.0.0-beta.1(@types/node@18.19.112)(typescript@5.8.3)
       validate-npm-package-name: 3.0.0
     transitivePeerDependencies:
       - '@swc/core'
@@ -4091,9 +4109,9 @@ packages:
       micromatch: 4.0.8
       normalize-path: 3.0.0
       picocolors: 1.1.1
-      postcss: 8.5.4
+      postcss: 8.5.6
       postcss-resolve-nested-selector: 0.1.6
-      postcss-safe-parser: 6.0.0(postcss@8.5.4)
+      postcss-safe-parser: 6.0.0(postcss@8.5.6)
       postcss-selector-parser: 6.1.2
       postcss-value-parser: 4.2.0
       resolve-from: 5.0.0
@@ -4282,7 +4300,7 @@ packages:
     engines: {node: '>=12'}
     dev: false
 
-  /ts-node@11.0.0-beta.1(@types/node@18.19.111)(typescript@5.8.3):
+  /ts-node@11.0.0-beta.1(@types/node@18.19.112)(typescript@5.8.3):
     resolution: {integrity: sha512-WMSROP+1pU22Q/Tm40mjfRg130yD8i0g6ROST04ZpocfH8sl1zD75ON4XQMcBEVViXMVemJBH0alflE7xePdRA==}
     hasBin: true
     peerDependencies:
@@ -4301,7 +4319,7 @@ packages:
       '@tsconfig/node16': 16.1.4
       '@tsconfig/node18': 18.2.4
       '@tsconfig/node20': 20.1.5
-      '@types/node': 18.19.111
+      '@types/node': 18.19.112
       acorn: 8.15.0
       acorn-walk: 8.3.4
       arg: 4.1.3

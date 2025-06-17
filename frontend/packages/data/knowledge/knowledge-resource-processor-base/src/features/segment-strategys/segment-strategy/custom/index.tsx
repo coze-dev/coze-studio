@@ -10,7 +10,7 @@ import {
   CheckboxGroup,
   Radio,
   type SelectProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import {
   PreProcessRule,

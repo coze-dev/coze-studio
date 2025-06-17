@@ -19,7 +19,7 @@ import {
   useSpaceId,
   useCommitVersion,
 } from '@coze-project-ide/framework';
-import { IconCozEye, IconCozMore } from '@coze/coze-design/icons';
+import { IconCozEye, IconCozMore } from '@coze-arch/coze-design/icons';
 import {
   Button,
   IconButton,
@@ -29,7 +29,7 @@ import {
   Toast,
   Tooltip,
   Tag,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useProjectInfo } from '../../../hooks';
 import { MonetizeConfig } from './monetize';

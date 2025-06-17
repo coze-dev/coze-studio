@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Button, Tooltip } from '@coze/coze-design';
+import { Button, Tooltip } from '@coze-arch/coze-design';
 
 import { type WorkFlowModalModeProps, type WorkflowInfo } from '../../type';
 export type LibButtonProps = Pick<WorkFlowModalModeProps, 'onImport'> & {

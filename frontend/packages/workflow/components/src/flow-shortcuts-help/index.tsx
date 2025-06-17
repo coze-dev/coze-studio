@@ -1,8 +1,8 @@
 import React, { type ReactNode } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCross } from '@coze/coze-design/icons';
-import { Divider, Typography, Tag } from '@coze/coze-design';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
+import { Divider, Typography, Tag } from '@coze-arch/coze-design';
 import { InteractiveType } from '@coze-common/mouse-pad-selector';
 
 import { getIsIPad } from '../utils';

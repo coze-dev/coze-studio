@@ -2,7 +2,7 @@
   "name": "@coze-foundation/account-ui-adapter",
   "version": "0.0.1",
   "description": "账号登录 UI 组件",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "duwenhan@bytedance.com",
   "maintainers": [],
   "exports": {
@@ -29,12 +29,12 @@
   },
   "dependencies": {
     "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-foundation/account-adapter": "workspace:*",
     "@coze-foundation/account-ui-base": "workspace:*",
     "@coze-studio/api-schema": "workspace:*",
     "@coze-studio/components": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "ahooks": "^3.7.8",
     "classnames": "^2.3.2",
     "react-router-dom": "^6.22.0"
@@ -71,3 +71,4 @@
     "react-dom": ">=18.2.0"
   }
 }
+

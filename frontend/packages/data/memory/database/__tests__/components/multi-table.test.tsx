@@ -40,7 +40,7 @@ const mockDatabaseList: DatabaseList = [
   },
 ];
 
-vi.mock('@coze/coze-design', () => ({
+vi.mock('@coze-arch/coze-design', () => ({
   TabPane: vi.fn(({ children }) => <div>{children}</div>),
   Tabs: vi.fn(({ children, renderTabBar }) => (
     <div>

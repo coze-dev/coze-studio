@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPencilPaper } from '@coze/coze-design/icons';
+import { IconCozPencilPaper } from '@coze-arch/coze-design/icons';
 import { UnitType } from '@coze-data/knowledge-resource-processor-core';
 import { KnowledgeE2e } from '@coze-data/e2e';
 

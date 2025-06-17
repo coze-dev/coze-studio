@@ -18,7 +18,7 @@ import {
   FormSelect,
   Avatar,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { FormSwitch } from './form-switch';
 

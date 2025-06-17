@@ -1,6 +1,6 @@
 import { type FC } from 'react';
 
-import { Cascader } from '@coze/coze-design';
+import { Cascader } from '@coze-arch/coze-design';
 
 import s from './text-family.module.less';
 

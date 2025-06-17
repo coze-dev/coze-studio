@@ -2,8 +2,8 @@ import { type FC, type ReactNode } from 'react';
 
 import classnames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozTrashCan } from '@coze/coze-design/icons';
-import { Avatar } from '@coze/coze-design';
+import { IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { Avatar } from '@coze-arch/coze-design';
 import { type Position } from '@coze-arch/bot-semi/Tooltip';
 
 import { Text } from '../text';

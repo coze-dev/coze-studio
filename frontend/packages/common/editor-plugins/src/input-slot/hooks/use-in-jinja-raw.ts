@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { useEditor } from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import { useEditor } from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
 import { syntaxTree } from '@codemirror/language';
 
 export const useSelectionInJinjaRaw = () => {

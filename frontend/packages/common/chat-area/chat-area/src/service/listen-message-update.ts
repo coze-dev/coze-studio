@@ -4,6 +4,7 @@ import ChatCore, {
 } from '@coze-common/chat-core';
 import { type Reporter } from '@coze-arch/logger';
 import { APIErrorEvent, emitAPIErrorEvent } from '@coze-arch/bot-http';
+import { Toast } from '@coze-arch/coze-design';
 
 import { getIsSuggestion } from '../utils/suggestions';
 import {
@@ -25,6 +26,7 @@ import { getShouldDropMessage } from './ignore-message';
 import {
   ChatBusinessErrorCode,
   CozeTokenInsufficient,
+  isToastErrorMessage,
   parseErrorInfoFromErrorMessage,
 } from './helper/parse-error-info';
 import { fixImageMessage } from './fix-message/fix-image-message';
@@ -144,6 +146,7 @@ export const listenMessageUpdate = (param: {
         useSuggestionsStore
           .getState()
           .setGenerateSuggestionError(data.reply_id);
+        return;
       }
 
       if (
@@ -154,6 +157,11 @@ export const listenMessageUpdate = (param: {
         ].includes(errorInfo.code)
       ) {
         emitAPIErrorEvent(APIErrorEvent.COZE_TOKEN_INSUFFICIENT);
+        return;
+      }
+
+      if (errorInfo && isToastErrorMessage(errorInfo.code)) {
+        Toast.error({ content: errorInfo?.msg, showClose: false });
       }
     }
 

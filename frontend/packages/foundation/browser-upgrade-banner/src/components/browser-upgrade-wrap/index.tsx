@@ -9,7 +9,7 @@ import {
 import classNames from 'classnames';
 import { reporter } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCross } from '@coze/coze-design/icons';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
 
 import { testLowVersionBrowse } from '../../utils';
 import { EventNames } from '../../constants';

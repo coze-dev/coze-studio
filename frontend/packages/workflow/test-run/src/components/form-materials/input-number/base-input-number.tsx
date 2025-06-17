@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { CozInputNumber, type InputNumberProps } from '@coze/coze-design';
+import { CozInputNumber, type InputNumberProps } from '@coze-arch/coze-design';
 
 export type BaseInputNumberAdapterProps = {
   value?: number | string;

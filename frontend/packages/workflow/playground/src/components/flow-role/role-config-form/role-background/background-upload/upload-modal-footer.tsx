@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Button, Typography } from '@coze/coze-design';
+import { Button, Typography } from '@coze-arch/coze-design';
 
 import css from './upload-modal-footer.module.less';
 

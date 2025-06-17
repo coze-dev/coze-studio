@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 
-import { useInjector, useEditor } from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
-import { astDecorator } from '@flow-lang-sdk/editor';
+import { useInjector, useEditor } from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
+import { astDecorator } from '@coze-editor/editor';
 
 import { getLibraryStatus } from '../utils/get-library-status';
 import {

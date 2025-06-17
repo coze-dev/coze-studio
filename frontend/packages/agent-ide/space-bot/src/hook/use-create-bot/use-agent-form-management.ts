@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 
-import { type Form } from '@coze/coze-design';
+import { type Form } from '@coze-arch/coze-design';
 import { type DraftBot } from '@coze-arch/bot-api/developer_api';
 
 import { type AgentInfoFormValue } from './agent-info-form';

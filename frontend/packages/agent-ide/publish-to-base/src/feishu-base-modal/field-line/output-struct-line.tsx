@@ -1,7 +1,7 @@
 import { type FC, createContext, useContext, useEffect } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Input, Select } from '@coze/coze-design';
+import { Input, Select } from '@coze-arch/coze-design';
 import { type OutputTypeInfo } from '@coze-arch/bot-api/connector_api';
 
 import { getIsNumberOutput, getIsTextOutput } from '../../validate/utils';

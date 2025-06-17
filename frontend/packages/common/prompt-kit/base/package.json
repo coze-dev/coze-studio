@@ -2,7 +2,7 @@
   "name": "@coze-common/prompt-kit-base",
   "version": "0.0.1",
   "description": "@coze-common/prompt-kit-base",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "haozhenfei@bytedance.com",
   "maintainers": [],
   "exports": {
@@ -43,11 +43,11 @@
     "@codemirror/view": "^6.34.1",
     "@coze-arch/bot-api": "workspace:*",
     "@coze-arch/bot-tea": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-common/editor-plugins": "workspace:*",
+    "@coze-editor/editor": "0.1.0-alpha.d92d50",
     "@coze-foundation/local-storage": "workspace:*",
-    "@coze/coze-design": "workspace:*",
-    "@flow-lang-sdk/editor": "^1.0.0-alpha.41",
     "ahooks": "^3.7.8",
     "classnames": "^2.3.2",
     "immer": "^10.0.3",
@@ -88,3 +88,4 @@
     "react-dom": ">=18.2.0"
   }
 }
+

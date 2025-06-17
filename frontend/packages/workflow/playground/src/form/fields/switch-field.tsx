@@ -1,7 +1,7 @@
 import {
   Switch,
   type SwitchProps as BaseSwitchProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useField } from '../hooks';
 import { withField } from '../hocs';

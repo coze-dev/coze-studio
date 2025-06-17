@@ -3,7 +3,7 @@ import React, { useState, type FC, useRef } from 'react';
 import { isUndefined, cloneDeep } from 'lodash-es';
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { TextArea } from '@coze/coze-design';
+import { TextArea } from '@coze-arch/coze-design';
 
 import {
   type ChangeDataParams,

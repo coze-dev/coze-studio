@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 
 import cls from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Spin } from '@coze/coze-design';
+import { Spin } from '@coze-arch/coze-design';
 
 import styles from './auto-load-more.module.less';
 

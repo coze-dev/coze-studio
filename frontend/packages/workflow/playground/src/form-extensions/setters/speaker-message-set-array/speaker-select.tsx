@@ -2,7 +2,7 @@ import { type FC, useState, useEffect } from 'react';
 
 import { concatTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { Select, RadioGroup, Radio, withField } from '@coze/coze-design';
+import { Select, RadioGroup, Radio, withField } from '@coze-arch/coze-design';
 
 import { isRoleSpeakerValue } from './utils';
 import { useGetRoleSpeakerDataSource } from './use-get-role-speaker-datasource';

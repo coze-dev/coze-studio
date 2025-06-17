@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import { IconCozCheckMarkFill } from '@coze/coze-design/icons';
+import { IconCozCheckMarkFill } from '@coze-arch/coze-design/icons';
 import { type BotSpace } from '@coze-arch/bot-api/developer_api';
 
 interface ISelectorItemProps {

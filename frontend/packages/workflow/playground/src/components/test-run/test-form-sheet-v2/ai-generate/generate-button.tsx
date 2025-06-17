@@ -3,8 +3,8 @@ import { useState } from 'react';
 
 import { get, omit } from 'lodash-es';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozStopCircle } from '@coze/coze-design/icons';
-import { AIButton } from '@coze/coze-design';
+import { IconCozStopCircle } from '@coze-arch/coze-design/icons';
+import { AIButton } from '@coze-arch/coze-design';
 
 import { type TestFormSchema } from '../../types';
 import { FieldName } from '../../constants';

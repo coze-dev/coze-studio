@@ -7,14 +7,14 @@ import {
   IconCozPeopleFill,
   IconCozTeamFill,
   IconCozCheckMarkCircleFillPalette,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   Avatar,
   Typography,
   Tag,
   Popover,
   IconButton,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { formatDate } from '@coze-arch/bot-utils';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { IconEditNew } from '@coze-arch/bot-icons';

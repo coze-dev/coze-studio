@@ -5,7 +5,7 @@ import { useDataCallbacks } from '@coze-data/knowledge-stores';
 import { type DatabaseTabs } from '@coze-data/database-v2-base/types';
 import { I18n } from '@coze-arch/i18n';
 import { MemoryApi } from '@coze-arch/bot-api';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { DatabaseDetail } from '../../components/database-detail';
 

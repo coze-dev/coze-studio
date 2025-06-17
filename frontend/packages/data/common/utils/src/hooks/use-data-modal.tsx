@@ -1,13 +1,13 @@
 import { useState } from 'react';
 
 import cls from 'classnames';
-// import { type ModalHeight } from '@coze/coze-design/src/components/modal/modal-types';
-// import { type ButtonColor } from '@coze/coze-design/src/components/button';
+// import { type ModalHeight } from '@coze-arch/coze-design/types';
+// import { type ButtonColor } from '@coze-arch/coze-design/types';
 import {
   // type ButtonProps,
   Modal,
   type ModalProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { type UseModalReturnValue } from '@coze-arch/bot-semi/src/components/ui-modal';
 import { type UseModalParams, useModal } from '@coze-arch/bot-semi';
 

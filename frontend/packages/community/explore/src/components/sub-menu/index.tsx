@@ -6,8 +6,8 @@ import {
   IconCozTemplateFill,
   IconCozPlugin,
   IconCozPluginFill,
-} from '@coze/coze-design/icons';
-import { Space } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Space } from '@coze-arch/coze-design';
 import { SubMenuItem } from '@coze-community/components';
 
 import { useExploreRoute } from '../../hooks/use-explore-route';

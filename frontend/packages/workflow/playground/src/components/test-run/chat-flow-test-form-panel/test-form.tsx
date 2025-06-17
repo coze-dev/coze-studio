@@ -14,8 +14,8 @@ import {
   PremiumPaywallBannerScene,
 } from '@coze-studio/premium-components-adapter';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlayFill } from '@coze/coze-design/icons';
-import { Button, Toast, Typography } from '@coze/coze-design';
+import { IconCozPlayFill } from '@coze-arch/coze-design/icons';
+import { Button, Toast, Typography } from '@coze-arch/coze-design';
 
 import { type WorkflowNodeEntity } from '@/test-run-kit';
 import { useValidateWorkflow } from '@/hooks/use-validate-workflow';

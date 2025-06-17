@@ -1,7 +1,7 @@
 import { useLayoutEffect } from 'react';
 
-import { useInjector } from '@flow-lang-sdk/editor/react';
-import { astDecorator } from '@flow-lang-sdk/editor';
+import { useInjector } from '@coze-editor/editor/react';
+import { astDecorator } from '@coze-editor/editor';
 import { EditorView } from '@codemirror/view';
 
 const prec = 'lowest';

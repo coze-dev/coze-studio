@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { type BackButtonProps } from '@coze-arch/foundation-sdk';
-import { IconButton } from '@coze/coze-design';
+import { IconButton } from '@coze-arch/coze-design';
 import { IconArrowLeft } from '@coze-arch/bot-icons';
 
 import s from './index.module.less';

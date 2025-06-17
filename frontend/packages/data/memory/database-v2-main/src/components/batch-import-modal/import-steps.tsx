@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Steps } from '@coze/coze-design';
+import { Steps } from '@coze-arch/coze-design';
 
 export enum BatchImportStep {
   Upload,

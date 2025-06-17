@@ -5,7 +5,7 @@ import { useRequest } from 'ahooks';
 import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { reporter } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 import { connectorApi } from '@coze-arch/bot-api';
 import { useCurrentEnterpriseInfo } from '@coze-foundation/enterprise-store-adapter';
 

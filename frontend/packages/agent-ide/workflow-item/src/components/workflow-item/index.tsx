@@ -12,7 +12,7 @@ import { SceneType } from '@coze-arch/bot-hooks';
 import { CustomError } from '@coze-arch/bot-error';
 import { getApiUniqueId } from '@coze-agent-ide/plugin-shared';
 import { useNavigateWorkflowEditPage } from '@coze-agent-ide/navigate';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { useNavigateWorkflowOrBlockwise } from '../../hooks/use-navigate-workflow';
 import { Actions } from './workflow-item-actions';

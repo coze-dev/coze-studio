@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useForm, observer } from '@coze-workflow/test-run/formily';
 import { workflowApi } from '@coze-workflow/base';
 import { CopilotType } from '@coze-arch/bot-api/workflow_api';
-import { AIButton } from '@coze/coze-design';
+import { AIButton } from '@coze-arch/coze-design';
 
 import { useGlobalState } from '@/hooks';
 

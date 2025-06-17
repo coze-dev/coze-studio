@@ -16,8 +16,8 @@ import {
 import { isGeneralWorkflow, workflowApi } from '@coze-workflow/base';
 import { SearchNoResult } from '@coze-studio/components/search-no-result';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozLoading } from '@coze/coze-design/icons';
-import { Spin } from '@coze/coze-design';
+import { IconCozLoading } from '@coze-arch/coze-design/icons';
+import { Spin } from '@coze-arch/coze-design';
 import { UICompositionModalMain, UIEmpty } from '@coze-arch/bot-semi';
 import {
   ProductEntityType,

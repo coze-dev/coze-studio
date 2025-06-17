@@ -1,7 +1,7 @@
 import { type ComponentProps, type FC } from 'react';
 
 import classNames from 'classnames';
-import { IconCozEdit } from '@coze/coze-design/icons';
+import { IconCozEdit } from '@coze-arch/coze-design/icons';
 
 import { ToolItemAction } from '..';
 

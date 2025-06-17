@@ -7,8 +7,8 @@ import React, {
 } from 'react';
 
 import classnames from 'classnames';
-import { IconCozArrowDown } from '@coze/coze-design/icons';
-import { Popover, Input } from '@coze/coze-design';
+import { IconCozArrowDown } from '@coze-arch/coze-design/icons';
+import { Popover, Input } from '@coze-arch/coze-design';
 import type { TreeNodeData } from '@coze-arch/bot-semi/Tree';
 import { type ValidateStatus } from '@coze-arch/bot-semi/Input';
 import { IconClear } from '@douyinfe/semi-icons';

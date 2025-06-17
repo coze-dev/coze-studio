@@ -7,7 +7,7 @@ import { I18nProvider } from '@coze-arch/i18n/i18n-provider';
 import { I18n } from '@coze-arch/i18n';
 import { useUserInfo } from '@coze-arch/foundation-sdk';
 import { LocaleProvider } from '@coze-arch/bot-semi';
-import { ThemeProvider, enUS, zhCN } from '@coze/coze-design';
+import { ThemeProvider, enUS, zhCN } from '@coze-arch/coze-design';
 
 import { GlobalLayoutComposed } from '@/components/global-layout-composed';
 

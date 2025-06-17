@@ -1,4 +1,4 @@
-import { Radio, Typography } from '@coze/coze-design';
+import { Radio, Typography } from '@coze-arch/coze-design';
 
 interface SourceRadioProps {
   title: string;

@@ -3,7 +3,7 @@ import { UploadStatus } from '@coze-data/knowledge-resource-processor-core';
 import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
 import { type UploadProps } from '@coze-arch/bot-semi/Upload';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { getFileExtension, getUint8Array } from '../../utils';
 import { UNIT_MAX_MB, PDF_MAX_PAGES } from '../../constants';

@@ -2,7 +2,7 @@
   "name": "@coze-data/database-v2-base",
   "version": "0.0.1",
   "description": "@coze-data/database-v2-base",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "haozhenfei@bytedance.com",
   "maintainers": [],
   "exports": {
@@ -38,6 +38,7 @@
     "@coze-arch/bot-icons": "workspace:*",
     "@coze-arch/bot-semi": "workspace:*",
     "@coze-arch/bot-tea": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/report-events": "workspace:*",
     "@coze-common/biz-components": "workspace:*",
@@ -46,7 +47,6 @@
     "@coze-data/utils": "workspace:*",
     "@coze-studio/bot-detail-store": "workspace:*",
     "@coze-studio/components": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "ahooks": "^3.7.8",
     "classnames": "^2.3.2",
     "lodash-es": "^4.17.21",
@@ -85,3 +85,4 @@
     "react-dom": ">=18.2.0"
   }
 }
+

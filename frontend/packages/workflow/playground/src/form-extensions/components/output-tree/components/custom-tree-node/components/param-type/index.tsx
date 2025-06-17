@@ -8,8 +8,8 @@ import {
   type ViewVariableType,
   useNodeTestId,
 } from '@coze-workflow/base';
-import { IconCozArrowDown } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozArrowDown } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 import { type SelectProps } from '@coze-arch/bot-semi/Select';
 
 import { VariableTypeSelector } from '@/form-extensions/components/variable-type-selector';

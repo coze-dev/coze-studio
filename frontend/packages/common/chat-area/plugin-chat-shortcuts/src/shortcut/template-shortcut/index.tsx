@@ -1,7 +1,7 @@
 import { type FC, useRef } from 'react';
 
 import { type ShortCutCommand } from '@coze-agent-ide/tool-config';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 import { IconShortcutComponentTag } from '@coze-arch/bot-icons';
 import { SendType } from '@coze-arch/bot-api/playground_api';
 

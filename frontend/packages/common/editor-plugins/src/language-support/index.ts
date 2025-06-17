@@ -1,7 +1,7 @@
 import { useLayoutEffect } from 'react';
 
-import { useInjector } from '@flow-lang-sdk/editor/react';
-import { languageSupport } from '@flow-lang-sdk/editor/preset-prompt';
+import { useInjector } from '@coze-editor/editor/react';
+import { languageSupport } from '@coze-editor/editor/preset-prompt';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function LanguageSupport() {

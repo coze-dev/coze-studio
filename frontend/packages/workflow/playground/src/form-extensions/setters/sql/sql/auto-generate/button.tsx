@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { IconCozAiFill } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozAiFill } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 interface AutoGenerateButtonProps {
   className?: string;

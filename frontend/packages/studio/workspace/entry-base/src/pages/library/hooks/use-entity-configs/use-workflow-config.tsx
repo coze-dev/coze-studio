@@ -2,8 +2,8 @@ import { useWorkflowResourceAction } from '@coze-workflow/components';
 import { useUserInfo } from '@coze-foundation/account-adapter';
 import { ResType, WorkflowMode } from '@coze-arch/idl/plugin_develop';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozChat, IconCozWorkflow } from '@coze/coze-design/icons';
-import { Menu, Tag } from '@coze/coze-design';
+import { IconCozChat, IconCozWorkflow } from '@coze-arch/coze-design/icons';
+import { Menu, Tag } from '@coze-arch/coze-design';
 
 import { BaseLibraryItem } from '../../components/base-library-item';
 import WorkflowDefaultIcon from '../../assets/workflow_default_icon.png';

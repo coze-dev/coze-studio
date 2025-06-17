@@ -40,7 +40,7 @@ export interface UseBaseInfoRequest {
   editVersion?: number;
   showFunctionName?: boolean;
   pluginType?: PluginType;
-  callback?: (params: UpdateAPIResponse | CreateAPIResponse) => void;
+  onSuccess?: (params: UpdateAPIResponse | CreateAPIResponse) => void;
   renderEnhancedComponent?: RenderEnhancedComponentProps['renderDescComponent'];
 }
 
@@ -64,7 +64,7 @@ export const useBaseInfo = ({
   editVersion,
   showFunctionName = false,
   pluginType,
-  callback,
+  onSuccess,
   renderEnhancedComponent,
 }: UseBaseInfoRequest): UseBaseInfoReturnValue => {
   const formRef = useRef<Form>(null);
@@ -123,8 +123,8 @@ export const useBaseInfo = ({
         );
         setApiId?.((baseResData as CreateAPIResponse).api_id || '');
       }
-      callback?.(baseResData);
-      return baseResData.code === 0 && baseResData.msg === 'success';
+      onSuccess?.(baseResData);
+      return true;
     } catch (error) {
       // @ts-expect-error -- linter-disable-autofix
       const { code, msg } = error;
@@ -178,6 +178,7 @@ export const useBaseInfo = ({
             ) : (
               <>
                 <UIFormTextArea
+                  data-testid="plugin-create-tool-base-info-name"
                   className={s['textarea-single-line']}
                   field="name"
                   label={I18n.t('Create_newtool_s1_name')}
@@ -220,6 +221,7 @@ export const useBaseInfo = ({
                     onSetDescription: doSetDesc,
                   })}
                   <UIFormTextArea
+                    data-testid="plugin-create-tool-base-info-desc"
                     field="desc"
                     label={I18n.t('Create_newtool_s1_dercribe')}
                     placeholder={I18n.t('Create_newtool_s1_dercribe_error')}

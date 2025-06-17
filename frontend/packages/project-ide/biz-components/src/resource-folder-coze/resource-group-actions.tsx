@@ -5,8 +5,8 @@ import {
   IconCozPlus,
   IconCozFolder,
   IconCozTray,
-} from '@coze/coze-design/icons';
-import { IconButton, Menu, Tooltip } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { IconButton, Menu, Tooltip } from '@coze-arch/coze-design';
 import { type ProjectResourceGroupType } from '@coze-arch/bot-api/plugin_develop';
 import {
   ResourceTypeEnum,

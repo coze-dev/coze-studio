@@ -7,8 +7,8 @@ import {
   type FabricSchema,
 } from '@coze-workflow/fabric-canvas';
 import { type InputVariable } from '@coze-workflow/base/types';
-import { IconCozScaling } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozScaling } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';
 import { useNodeRenderScene, useRedoUndo } from '@/hooks';

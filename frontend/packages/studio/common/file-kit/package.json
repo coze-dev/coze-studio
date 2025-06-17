@@ -2,7 +2,7 @@
   "name": "@coze-studio/file-kit",
   "version": "0.0.1",
   "description": "file kit ",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "liuyuhang.0@bytedance.com",
   "maintainers": [],
   "exports": {

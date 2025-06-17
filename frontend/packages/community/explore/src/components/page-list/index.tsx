@@ -2,8 +2,8 @@ import { type FC } from 'react';
 
 import { useRequest } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozIllusError } from '@coze/coze-design/illustrations';
-import { EmptyState } from '@coze/coze-design';
+import { IconCozIllusError } from '@coze-arch/coze-design/illustrations';
+import { EmptyState } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

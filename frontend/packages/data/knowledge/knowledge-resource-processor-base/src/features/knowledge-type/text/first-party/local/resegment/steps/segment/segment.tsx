@@ -6,7 +6,7 @@ import { useKnowledgeParams } from '@coze-data/knowledge-stores';
 import { type ContentProps } from '@coze-data/knowledge-resource-processor-core';
 import { KnowledgeE2e } from '@coze-data/e2e';
 import { I18n } from '@coze-arch/i18n';
-import { type FormApi } from '@coze/coze-design';
+import { type FormApi } from '@coze-arch/coze-design';
 
 import { validateCommonDocResegmentStep } from '@/utils/validate-common-doc-next-step';
 import { getSegmentCleanerParams } from '@/utils/text';

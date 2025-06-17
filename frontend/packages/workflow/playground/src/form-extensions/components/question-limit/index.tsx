@@ -5,13 +5,13 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozSetting,
   IconCozInfoCircle,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   IconButton,
   Tooltip,
   Typography,
   Popover,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { SliderWithInput } from '../slider-with-input';
 

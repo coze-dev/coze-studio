@@ -6,7 +6,7 @@ import {
   type FooterBtnProps,
   type FooterPrefixType,
 } from '@coze-data/knowledge-resource-processor-core';
-import { Button, Tooltip } from '@coze/coze-design';
+import { Button, Tooltip } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

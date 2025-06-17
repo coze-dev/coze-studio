@@ -10,14 +10,14 @@ import {
   ViewVariableType,
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozStopCircle, IconCozApply } from '@coze/coze-design/icons';
+import { IconCozStopCircle, IconCozApply } from '@coze-arch/coze-design/icons';
 import {
   AIButton,
   Button,
   IconButton,
   Input,
   Popconfirm,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useRefInput } from '@/hooks/use-ref-input';
 import { useGlobalState } from '@/hooks';

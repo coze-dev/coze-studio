@@ -4,7 +4,7 @@ import {
   type ObjectField,
 } from '@coze-workflow/test-run/formily';
 import { SuggestReplyInfoMode } from '@coze-arch/bot-api/workflow_api';
-import { Switch } from '@coze/coze-design';
+import { Switch } from '@coze-arch/coze-design';
 
 export const RoleSuggestionSwitch: React.FC = observer(() => {
   const field = useField<ObjectField>();

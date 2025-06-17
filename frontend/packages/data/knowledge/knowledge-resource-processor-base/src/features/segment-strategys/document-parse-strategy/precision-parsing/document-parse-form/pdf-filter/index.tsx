@@ -6,7 +6,7 @@ import {
   TextArea,
   Typography,
   withField,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { renderDocumentFilterValue } from '@/utils/render-document-filter-value';
 import { type PDFDocumentFilterValue } from '@/features/knowledge-type/text/interface';

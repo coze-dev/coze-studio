@@ -1,12 +1,13 @@
 /* eslint-disable max-len */
 import { type FC } from 'react';
 
+import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
 import {
   IconCozArrowRight,
   IconCozCheckMarkFill,
-} from '@coze/coze-design/icons';
-import { Space, Typography } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Space, Typography } from '@coze-arch/coze-design';
 import { Modal } from '@coze-arch/bot-semi';
 
 import { useAuthForApiTool } from '@/hooks/auth/use-auth-for-api-tool';
@@ -49,6 +50,9 @@ const OauthHeaderAction = () => {
     return <></>;
   }
 
+  const isEnableCancelAuthorization = needAuth && isHasAuth && !IS_OPEN_SOURCE;
+  const isEnableAuthorization = needAuth && !isHasAuth;
+
   return (
     <Space spacing={8}>
       {needAuth ? (
@@ -59,13 +63,21 @@ const OauthHeaderAction = () => {
       {needAuth ? (
         <Typography.Text
           disabled={isUpdateLoading}
-          onClick={
-            isHasAuth
-              ? () => doConfirmCancelOauth(doCancelOauth)
-              : () => doConfirmOAuth(doOauth)
-          }
+          onClick={() => {
+            if (isEnableAuthorization) {
+              doConfirmOAuth(doOauth);
+              return;
+            }
+            if (isEnableCancelAuthorization) {
+              doConfirmCancelOauth(doCancelOauth);
+            }
+          }}
           icon={isHasAuth ? <IconCozCheckMarkFill /> : undefined}
-          className="overflow-hidden text-[#4C54F0] overflow-ellipsis text-[14px] font-normal leading-[20px] cursor-pointer"
+          className={classNames(
+            'overflow-hidden text-[#4C54F0] overflow-ellipsis text-[14px] font-normal leading-[20px]',
+            (isEnableAuthorization || isEnableCancelAuthorization) &&
+              'cursor-pointer',
+          )}
         >
           {isHasAuth
             ? I18n.t('plugin_tool_config_status_authorized')

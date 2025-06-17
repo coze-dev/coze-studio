@@ -10,7 +10,7 @@ import {
   LazyEditorFullInputInner,
   ToolbarItemEnum,
 } from '@coze-common/md-editor-adapter';
-import { Modal } from '@coze/coze-design';
+import { Modal } from '@coze-arch/coze-design';
 
 import css from './full-input.module.less';
 

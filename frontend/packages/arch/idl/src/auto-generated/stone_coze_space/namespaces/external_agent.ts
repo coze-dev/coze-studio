@@ -11,12 +11,15 @@ export enum CallbackType {
 }
 
 export enum OperateType {
-  /** 运行 */
+  /** 运行中，Chat和任务执行都算在运行中 */
   Running = 1,
   /** 暂停 */
   Pause = 2,
   /** 一轮任务完成 */
   TaskFinish = 3,
+  /** 初始化 */
+  Init = 4,
+  /** 终止 */
   Stop = 5,
   /** 中断 */
   Interrupt = 6,
@@ -24,6 +27,8 @@ export enum OperateType {
   IllegalContent = 7,
   /** 异常中断 */
   AbnormalInterrupt = 8,
+  /** 休眠 */
+  Sleep = 9,
 }
 
 export interface UpdateTaskNameRequest {

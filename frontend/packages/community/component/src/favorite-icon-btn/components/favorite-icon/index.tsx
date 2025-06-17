@@ -1,7 +1,7 @@
 import React from 'react';
 
 import cls from 'classnames';
-import { IconButton } from '@coze/coze-design';
+import { IconButton } from '@coze-arch/coze-design';
 import { IconCollectFilled, IconCollectStroked } from '@coze-arch/bot-icons';
 
 import styles from './index.module.less';

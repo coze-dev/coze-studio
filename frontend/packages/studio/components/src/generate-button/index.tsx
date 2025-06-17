@@ -2,7 +2,7 @@ import { type CSSProperties, useState, useEffect } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { AIButton, Tooltip } from '@coze/coze-design';
+import { AIButton, Tooltip } from '@coze-arch/coze-design';
 import { PicType } from '@coze-arch/bot-api/playground_api';
 import { PlaygroundApi } from '@coze-arch/bot-api';
 

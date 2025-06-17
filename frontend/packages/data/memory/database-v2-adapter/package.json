@@ -2,7 +2,7 @@
   "name": "@coze-data/database-v2-adapter",
   "version": "0.0.1",
   "description": "@coze-data/database-v2-adapter",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "haozhenfei@bytedance.com",
   "maintainers": [],
   "exports": {
@@ -26,10 +26,10 @@
   "dependencies": {
     "@coze-arch/bot-api": "workspace:*",
     "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-data/database-v2-base": "workspace:*",
     "@coze-studio/bot-detail-store": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "classnames": "^2.3.2"
   },
   "devDependencies": {

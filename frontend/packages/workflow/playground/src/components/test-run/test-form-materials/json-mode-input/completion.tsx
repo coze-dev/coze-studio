@@ -3,13 +3,13 @@ import { useEffect, useRef } from 'react';
 
 import { nanoid } from 'nanoid';
 import { toString } from 'lodash-es';
+import { useSelectVoiceModal } from '@coze-workflow/resources-adapter';
 import { workflowApi } from '@coze-workflow/base';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-code';
+import { type EditorAPI } from '@coze-editor/editor/preset-code';
 import { I18n } from '@coze-arch/i18n';
 import { upLoadFile } from '@coze-arch/bot-utils';
-import { useSelectVoiceModal } from '@coze-workflow/resources-adapter';
-import { IconCozUpload, IconCozPlus } from '@coze/coze-design/icons';
-import { Toast, Upload } from '@coze/coze-design';
+import { IconCozUpload, IconCozPlus } from '@coze-arch/coze-design/icons';
+import { Toast, Upload } from '@coze-arch/coze-design';
 import { EditorSelection } from '@codemirror/state';
 
 import { validate } from '@/hooks/use-upload/validate';

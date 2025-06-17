@@ -5,8 +5,8 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozUpload,
   IconCozInfoCircle,
-} from '@coze/coze-design/icons';
-import { Typography, Tooltip, Button } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Typography, Tooltip, Button } from '@coze-arch/coze-design';
 
 import img from './image.png';
 

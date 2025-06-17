@@ -6,7 +6,7 @@ import {
   Button,
   Typography,
   type PopoverProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { localStorageService } from '@coze-foundation/local-storage';
 
 import img from './onboarding.png';

@@ -5,8 +5,8 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozCheckMarkCircleFillPalette,
   IconCozCrossCircleFillPalette,
-} from '@coze/coze-design/icons';
-import { Tag } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Tag } from '@coze-arch/coze-design';
 
 interface StatusTagProps {
   status?: number;

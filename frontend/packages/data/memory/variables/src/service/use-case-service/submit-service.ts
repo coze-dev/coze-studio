@@ -1,6 +1,6 @@
 import { I18n } from '@coze-arch/i18n';
 import { MemoryApi } from '@coze-arch/bot-api';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { useVariableGroupsStore } from '../../store';
 /**

@@ -7,11 +7,6 @@
       "autoinstallerName": "plugins"
     },
     {
-      "packageName": "@coze-arch/rush-dep-level-plugin",
-      "pluginName": "rush-dep-level-plugin",
-      "autoinstallerName": "plugins"
-    },
-    {
       "packageName": "@coze-arch/rush-run-tsc-plugin",
       "pluginName": "@coze-arch/rush-run-tsc-plugin",
       "autoinstallerName": "plugins"
@@ -28,7 +23,17 @@
     },
     {
       "packageName": "@coze-arch/rush-increment-run-plugin",
-      "pluginName": "@coze-arch/rush-increment-run",
+      "pluginName": "@coze-arch/rush-increment-run-plugin",
+      "autoinstallerName": "plugins"
+    },
+    {
+      "packageName": "@coze-arch/rush-dep-level-check-plugin",
+      "pluginName": "@coze-arch/rush-dep-level-check-plugin",
+      "autoinstallerName": "plugins"
+    },
+    {
+      "packageName": "@coze-arch/rush-clear-build-cache-plugin",
+      "pluginName": "@coze-arch/rush-clear-build-cache-plugin",
       "autoinstallerName": "plugins"
     }
   ]

@@ -5,7 +5,7 @@ import cls from 'classnames';
 import { IllustrationNoContent } from '@douyinfe/semi-illustrations';
 import { I18n } from '@coze-arch/i18n';
 import { VariableChannel } from '@coze-arch/bot-api/memory';
-import { IconCozCross } from '@coze/coze-design/icons';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
 import {
   Button,
   Empty,
@@ -13,7 +13,7 @@ import {
   type FormApi,
   IconButton,
   Spin,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useVariableGroupsStore, type Variable } from '@/store';
 import { useLeaveWarning } from '@/hooks/use-case/use-leave-waring';

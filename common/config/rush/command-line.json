@@ -16,7 +16,6 @@
       "enableParallelism": true,
       "incremental": true,
       "shellCommand": "eslint ./ --cache",
-      "ignoreDependencyOrder": true,
       "allowWarningsInSuccessfulBuild": true,
       "summary": "⭐️️ Run lint command for each package",
       "safeForSimultaneousRushProcesses": true
@@ -83,27 +82,21 @@
       "argumentName": "MESSAGE",
       "longName": "--edit",
       "description": "",
-      "associatedCommands": [
-        "commitlint"
-      ]
+      "associatedCommands": ["commitlint"]
     },
     {
       "parameterKind": "string",
       "argumentName": "MESSAGE",
       "longName": "--config",
       "description": "",
-      "associatedCommands": [
-        "commitlint"
-      ]
+      "associatedCommands": ["commitlint"]
     },
     {
       "parameterKind": "flag",
       "longName": "--no-verify",
       "shortName": "-n",
       "description": "use no verify",
-      "associatedCommands": [
-        "commit"
-      ]
+      "associatedCommands": ["commit"]
     }
   ]
 }

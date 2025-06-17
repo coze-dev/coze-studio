@@ -11,7 +11,7 @@ import {
 } from '@coze-arch/bot-api/plugin_develop';
 import { IconChevronLeft } from '@douyinfe/semi-icons';
 import { usePluginNavigate } from '@coze-studio/bot-plugin-store';
-import { Button, IconButton, Tooltip } from '@coze/coze-design';
+import { Button, IconButton, Tooltip } from '@coze-arch/coze-design';
 
 import { OauthButtonAction } from '@/components/oauth-action';
 

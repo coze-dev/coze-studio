@@ -14,7 +14,7 @@ import {
   type GetDocumentTableInfoResponse,
   ColumnType,
 } from '@coze-arch/bot-api/memory';
-import { Tag } from '@coze/coze-design';
+import { Tag } from '@coze-arch/coze-design';
 
 import { getSrcFromImg } from '@/utils/table';
 

@@ -11,7 +11,7 @@ import {
   DocumentStatus,
   StorageLocation,
 } from '@coze-arch/bot-api/knowledge';
-import { Space, Tag } from '@coze/coze-design';
+import { Space, Tag } from '@coze-arch/coze-design';
 
 import { type ProgressMap } from '@/types';
 import { DOCUMENT_UPDATE_TYPE_MAP } from '@/constant';

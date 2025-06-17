@@ -1,6 +1,6 @@
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { InputNumber, Tooltip } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { InputNumber, Tooltip } from '@coze-arch/coze-design';
 
 export function MonetizeFreeChatCount({
   isOn,

@@ -9,7 +9,7 @@ import {
 
 import classNames from 'classnames';
 import { useLatest } from 'ahooks';
-import { ConfigProvider, Tooltip } from '@coze/coze-design';
+import { ConfigProvider, Tooltip } from '@coze-arch/coze-design';
 
 import { setters } from '../setters';
 import { PopInScreen } from '../pop-in-screen';

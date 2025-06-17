@@ -2,8 +2,8 @@ import { type ReactNode } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozFocus } from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+import { IconCozFocus } from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 import { Tooltip } from '@coze-arch/bot-semi';
 import { IconpanNodeDamaged } from '@coze-arch/bot-icons';
 import {

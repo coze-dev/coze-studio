@@ -1,7 +1,7 @@
 // TODO 为了联调先封装一个业务组件，后面再抽象成通用的request select
 import React, { Suspense, lazy } from 'react';
 
-import { InputNumber, Tooltip } from '@coze/coze-design';
+import { InputNumber, Tooltip } from '@coze-arch/coze-design';
 import { Slider } from '@coze-arch/bot-semi';
 import { IconInfo } from '@coze-arch/bot-icons';
 

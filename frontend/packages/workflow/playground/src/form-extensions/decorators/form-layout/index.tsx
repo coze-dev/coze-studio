@@ -9,8 +9,8 @@ import classNames from 'classnames';
 import {
   IconCozArrowDownFill,
   IconCozInfoCircle,
-} from '@coze/coze-design/icons';
-import { Col, Row, Collapsible } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Col, Row, Collapsible } from '@coze-arch/coze-design';
 import { type DecoratorComponentProps } from '@flowgram-adapter/free-layout-editor';
 
 import { FormCard } from '../../components/form-card';

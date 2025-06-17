@@ -2,7 +2,7 @@
   "name": "@coze-common/md-editor-adapter",
   "version": "0.0.1",
   "description": "markdown editor adapter",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "haozhenfei@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@coze-arch/bot-api": "workspace:*",
-    "@coze/coze-design": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "classnames": "^2.3.2"
   },
   "devDependencies": {

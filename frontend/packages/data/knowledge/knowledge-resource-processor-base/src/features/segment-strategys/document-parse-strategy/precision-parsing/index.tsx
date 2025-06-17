@@ -2,7 +2,7 @@ import { merge, omit } from 'lodash-es';
 import classNames from 'classnames';
 import { type ParsingStrategy, ParsingType } from '@coze-arch/idl/knowledge';
 import { I18n } from '@coze-arch/i18n';
-import { Radio, Divider, type FormApi } from '@coze/coze-design';
+import { Radio, Divider, type FormApi } from '@coze-arch/coze-design';
 
 import { type PDFDocumentFilterValue } from '@/features/knowledge-type/text/interface';
 

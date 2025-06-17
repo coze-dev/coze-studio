@@ -6,7 +6,7 @@ import React, {
 } from 'react';
 
 import cs from 'classnames';
-import { TextArea } from '@coze/coze-design';
+import { TextArea } from '@coze-arch/coze-design';
 import { sleep } from '@coze-arch/bot-utils';
 import { type TooltipProps } from '@coze-arch/bot-semi/Tooltip';
 import { type TextAreaProps } from '@coze-arch/bot-semi/Input';

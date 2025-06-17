@@ -1,6 +1,6 @@
 import React, { type FC } from 'react';
 
-import { Tooltip, type TooltipProps } from '@coze/coze-design';
+import { Tooltip, type TooltipProps } from '@coze-arch/coze-design';
 
 interface Props extends TooltipProps {
   disabled?: boolean;

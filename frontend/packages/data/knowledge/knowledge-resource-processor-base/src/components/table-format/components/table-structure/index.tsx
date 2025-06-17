@@ -37,14 +37,14 @@ import { IconDragOutlined } from '@coze-arch/bot-icons';
 import { type DocTableColumn } from '@coze-arch/bot-api/memory';
 import { ColumnType } from '@coze-arch/bot-api/knowledge';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle, IconCozTrashCan } from '@coze/coze-design/icons';
+import { IconCozInfoCircle, IconCozTrashCan } from '@coze-arch/coze-design/icons';
 import {
   Input,
   Table,
   Tooltip,
   Checkbox,
   type CheckboxProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { type IValidateRes, validateField, useOptFromQuery } from '@/utils';
 import { type TableItem } from '@/types/table';

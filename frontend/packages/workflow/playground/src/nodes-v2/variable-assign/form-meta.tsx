@@ -22,8 +22,8 @@ import {
 } from '@coze-workflow/variable';
 import { concatTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlus, IconCozMinus } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozPlus, IconCozMinus } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 import { provideNodeOutputVariablesEffect } from '@/nodes-v2/materials/provide-node-output-variables';
 import { fireNodeTitleChange } from '@/nodes-v2/materials/fire-node-title-change';

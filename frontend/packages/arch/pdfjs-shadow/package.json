@@ -2,7 +2,7 @@
   "name": "@coze-arch/pdfjs-shadow",
   "version": "0.0.1",
   "description": "shadow copy of pdfjs-dist",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

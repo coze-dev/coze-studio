@@ -2,7 +2,7 @@
   "name": "@coze-workflow/resources-adapter",
   "version": "0.0.1",
   "description": "coze workflow resources adapter",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "zengxiaohui@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",

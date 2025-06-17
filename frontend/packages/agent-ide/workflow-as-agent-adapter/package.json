@@ -2,7 +2,7 @@
   "name": "@coze-agent-ide/workflow-as-agent-adapter",
   "version": "0.0.1",
   "description": "agent ide workflow as agent adapter",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "gaoyuanhan.duty@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

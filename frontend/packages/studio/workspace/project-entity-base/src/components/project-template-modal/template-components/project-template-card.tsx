@@ -17,7 +17,7 @@ import {
   type ParamsTypeDefine,
   sendTeaEvent,
 } from '@coze-arch/bot-tea';
-import { Button, Image } from '@coze/coze-design';
+import { Button, Image } from '@coze-arch/coze-design';
 
 import styles from './card.module.less';
 

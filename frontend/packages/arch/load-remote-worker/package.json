@@ -2,7 +2,7 @@
   "name": "@coze-arch/load-remote-worker",
   "version": "0.0.1",
   "description": "load remote worker inspire by https://github.com/jantimon/remote-web-worker/",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

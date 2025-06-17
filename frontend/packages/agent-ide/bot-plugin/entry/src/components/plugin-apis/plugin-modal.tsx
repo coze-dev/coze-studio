@@ -2,9 +2,9 @@ import { type ComponentProps } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
 import classNames from 'classnames';
+import { useBotSkillStore } from '@coze-studio/bot-detail-store/bot-skill';
 import { I18n } from '@coze-arch/i18n';
 import { UICompositionModal, type Modal } from '@coze-arch/bot-semi';
-import { useBotSkillStore } from '@coze-studio/bot-detail-store/bot-skill';
 import { OpenModeType } from '@coze-arch/bot-hooks';
 import { type PluginModalModeProps } from '@coze-agent-ide/plugin-shared';
 import { PluginFeatButton } from '@coze-agent-ide/bot-plugin-export/pluginFeatModal/featButton';
@@ -69,7 +69,7 @@ export const PluginModal: React.FC<PluginModalProps> = ({
       header={I18n.t('bot_edit_plugin_select_title')}
       className={classNames(s['plugin-modal'], props.className)}
       sider={sider}
-      extra={<PluginFeatButton />}
+      extra={!IS_OPEN_SOURCE ? <PluginFeatButton /> : null}
       filter={filter}
       content={content}
     />

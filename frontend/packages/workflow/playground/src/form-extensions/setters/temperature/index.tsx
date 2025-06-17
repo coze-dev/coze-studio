@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { InputNumber } from '@coze/coze-design';
+import { InputNumber } from '@coze-arch/coze-design';
 import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 
 type TemperatureProps = SetterComponentProps;

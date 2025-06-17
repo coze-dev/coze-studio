@@ -2,8 +2,8 @@ import { type FC, useState } from 'react';
 
 import { CozeBrand } from '@coze-studio/components/coze-brand';
 import { I18n } from '@coze-arch/i18n';
+import { Button, Form } from '@coze-arch/coze-design';
 import { SignFrame, SignPanel } from '@coze-arch/bot-semi';
-import { Button, Form } from '@coze/coze-design';
 
 import { useLoginService } from './service';
 import { Favicon } from './favicon';
@@ -17,6 +17,8 @@ export const LoginPage: FC = () => {
     email,
     password,
   });
+
+  const submitDisabled = !email || !password || hasError;
 
   return (
     <SignFrame brandNode={<CozeBrand isOversea={IS_OVERSEA} />}>
@@ -33,6 +35,7 @@ export const LoginPage: FC = () => {
               }}
             >
               <Form.Input
+                data-testid="login.input.email"
                 noLabel
                 type="email"
                 field="email"
@@ -52,6 +55,7 @@ export const LoginPage: FC = () => {
                 placeholder={I18n.t('open_source_login_placeholder_email')}
               />
               <Form.Input
+                data-testid="login.input.password"
                 noLabel
                 rules={[
                   {
@@ -66,8 +70,9 @@ export const LoginPage: FC = () => {
               />
             </Form>
             <Button
+              data-testid="login.button.login"
               className="mt-[12px]"
-              disabled={hasError || registerLoading}
+              disabled={submitDisabled || registerLoading}
               onClick={login}
               loading={loginLoading}
               color="hgltplus"
@@ -75,8 +80,9 @@ export const LoginPage: FC = () => {
               {I18n.t('login_button_text')}
             </Button>
             <Button
+              data-testid="login.button.signup"
               className="mt-[20px]"
-              disabled={hasError || loginLoading}
+              disabled={submitDisabled || loginLoading}
               onClick={register}
               loading={registerLoading}
               color="primary"
@@ -84,7 +90,12 @@ export const LoginPage: FC = () => {
               {I18n.t('register')}
             </Button>
             <div className="mt-[12px] flex justify-center">
-              <a href="" target="_blank" className="no-underline coz-fg-hglt">
+              <a
+                data-testid="login.link.terms"
+                href=""
+                target="_blank"
+                className="no-underline coz-fg-hglt"
+              >
                 {I18n.t('open_source_terms_linkname')}
               </a>
             </div>

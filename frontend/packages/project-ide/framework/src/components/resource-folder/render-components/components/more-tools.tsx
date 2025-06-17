@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { IconCozMore } from '@coze/coze-design/icons';
-import { Button, Tooltip } from '@coze/coze-design';
+import { IconCozMore } from '@coze-arch/coze-design/icons';
+import { Button, Tooltip } from '@coze-arch/coze-design';
 
 import { type RenderMoreSuffixType, type ResourceType } from '../../type';
 import { MORE_TOOLS_CLASS_NAME } from '../../constant';

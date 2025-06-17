@@ -115,7 +115,7 @@ The package exports 66+ service modules. Key services include:
 - `workflow_api` - Workflow definition and execution
 - `automation` - Automated task execution
 
-#### Plugin Ecosystem  
+#### Plugin Ecosystem
 - `plugin_develop` - Plugin development tools
 - `plugin_operation` - Plugin marketplace operations
 - `plugin_impl_api` - Plugin implementation APIs
@@ -151,7 +151,7 @@ class ServiceName<T> {
       headers?: any;
     }, options?: T): Promise<R>;
   });
-  
+
   // Service methods with typed parameters and responses
   MethodName(req: RequestType, options?: T): Promise<ResponseType>;
 }
@@ -197,7 +197,7 @@ This package contains auto-generated code from Thrift IDL definitions. The sourc
 
 ```typescript
 /* eslint-disable */
-/* tslint:disable */  
+/* tslint:disable */
 // @ts-nocheck
 ```
 
@@ -207,7 +207,7 @@ This package contains auto-generated code from Thrift IDL definitions. The sourc
 
 ### Development Dependencies
 - `@coze-arch/eslint-config@workspace:*` - Shared ESLint configuration
-- `@coze-arch/ts-config@workspace:*` - Shared TypeScript configuration  
+- `@coze-arch/ts-config@workspace:*` - Shared TypeScript configuration
 - `@types/node` - Node.js type definitions
 
 ### Runtime Dependencies
@@ -215,7 +215,7 @@ This package has no runtime dependencies and is designed to be lightweight with 
 
 ## License
 
-ISC
+Apache-2.0
 
 ---
 

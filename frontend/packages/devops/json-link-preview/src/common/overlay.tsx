@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
 
-import { IconCozCrossFill } from '@coze/coze-design/icons';
+import { IconCozCrossFill } from '@coze-arch/coze-design/icons';
 
 let overlayContainer: HTMLDivElement | null = null;
 

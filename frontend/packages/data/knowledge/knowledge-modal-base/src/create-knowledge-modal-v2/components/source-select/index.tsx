@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
-import { RadioGroup } from '@coze/coze-design';
-import type { RadioGroupProps } from '@coze/coze-design';
+import { RadioGroup } from '@coze-arch/coze-design';
+import type { RadioGroupProps } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

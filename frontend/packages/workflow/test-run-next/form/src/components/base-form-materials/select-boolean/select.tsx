@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 
 import { clsx } from 'clsx';
-import { Select, type SelectProps } from '@coze/coze-design';
+import { Select, type SelectProps } from '@coze-arch/coze-design';
 
 import css from './select.module.less';
 

@@ -2,8 +2,8 @@ import React from 'react';
 
 import { type IntelligenceData } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozLoading, IconCozEmpty } from '@coze/coze-design/icons';
-import { Spin, IconButton } from '@coze/coze-design';
+import { IconCozLoading, IconCozEmpty } from '@coze-arch/coze-design/icons';
+import { Spin, IconButton } from '@coze-arch/coze-design';
 
 import { IntelligenceItem } from './intelligence-item';
 

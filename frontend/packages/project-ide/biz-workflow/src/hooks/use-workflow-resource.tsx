@@ -28,7 +28,7 @@ import { I18n } from '@coze-arch/i18n';
 import { WorkflowMode } from '@coze-arch/bot-api/workflow_api';
 import { ResourceCopyScene } from '@coze-arch/bot-api/plugin_develop';
 import { workflowApi } from '@coze-arch/bot-api';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { WORKFLOW_SUB_TYPE_ICON_MAP } from '@/constants';
 import { WorkflowTooltip } from '@/components';

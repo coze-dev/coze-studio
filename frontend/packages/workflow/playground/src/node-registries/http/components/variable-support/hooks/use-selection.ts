@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-universal';
+import { type EditorAPI } from '@coze-editor/editor/preset-universal';
 import { type ViewUpdate } from '@codemirror/view';
 
 import { useLatest, isSkipSelectionChangeUserEvent } from '../utils';

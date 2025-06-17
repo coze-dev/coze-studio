@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozLongArrowTopRight } from '@coze/coze-design/icons';
-import { Tooltip, IconButton } from '@coze/coze-design';
+import { IconCozLongArrowTopRight } from '@coze-arch/coze-design/icons';
+import { Tooltip, IconButton } from '@coze-arch/coze-design';
 import { NodeType, DependencyOrigin } from '@coze-common/resource-tree';
 
 import { usePluginDetail } from '@coze-workflow/playground';

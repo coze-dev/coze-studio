@@ -6,8 +6,8 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozInfoCircle,
   IconCozDiamondFill,
-} from '@coze/coze-design/icons';
-import { Tooltip, Space } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Tooltip, Space } from '@coze-arch/coze-design';
 import {
   useBenefitAvailable,
   PremiumPaywallScene,

@@ -5,8 +5,8 @@ import {
   type InputVariable,
 } from '@coze-workflow/base/types';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozImage, IconCozString } from '@coze/coze-design/icons';
-import { Tag } from '@coze/coze-design';
+import { IconCozImage, IconCozString } from '@coze-arch/coze-design/icons';
+import { Tag } from '@coze-arch/coze-design';
 
 import {
   type FabricObjectWithCustomProps,

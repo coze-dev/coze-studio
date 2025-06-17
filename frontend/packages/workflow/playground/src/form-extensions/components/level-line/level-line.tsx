@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import {
   IconCozArrowDown,
   IconCozArrowRight,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 import { getLineShowResult } from './utils';
 import { type LineData, LineShowResult } from './types';

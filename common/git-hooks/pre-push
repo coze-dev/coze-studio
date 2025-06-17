@@ -3,5 +3,3 @@
 source scripts/block-unresolved-conflict.sh
 
 source scripts/pre-push-hook.sh
-
-node common/scripts/install-run-rush.js install --check-only --ignore-hooks || exit $?

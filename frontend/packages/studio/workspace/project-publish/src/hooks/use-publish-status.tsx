@@ -11,8 +11,8 @@ import {
   IconCozCheckMarkCircle,
   IconCozClock,
   IconCozCrossCircle,
-} from '@coze/coze-design/icons';
-import { Modal, Select, Tag, type TagProps } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Modal, Select, Tag, type TagProps } from '@coze-arch/coze-design';
 import { type OptionProps } from '@coze-arch/bot-semi/Select';
 import { intelligenceApi } from '@coze-arch/bot-api';
 import { EProjectPermission, useProjectAuth } from '@coze-common/auth';

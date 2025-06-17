@@ -2,7 +2,7 @@
   "name": "@coze-workflow/playground-adapter",
   "version": "0.0.1",
   "description": "workflow playground adapter",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "zengxiaohui@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",
@@ -16,11 +16,11 @@
   "dependencies": {
     "@coze-arch/bot-error": "workspace:*",
     "@coze-arch/bot-hooks": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/logger": "workspace:*",
     "@coze-workflow/base": "workspace:*",
     "@coze-workflow/playground": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "ahooks": "^3.7.8",
     "reflect-metadata": "^0.1.13"
   },

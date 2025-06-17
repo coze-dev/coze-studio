@@ -85,6 +85,8 @@ export interface QualityScoreJob {
   category?: string;
   /** passKTask 任务内容 */
   passKTask?: PassKTask;
+  /** 是否自动计算新增数据 */
+  autoCalculateNewData?: boolean;
   /** 通用信息 */
   createdAt?: string;
   createdBy?: string;

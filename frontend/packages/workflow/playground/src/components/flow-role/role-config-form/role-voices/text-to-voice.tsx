@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { Typography, Switch } from '@coze/coze-design';
+import { Typography, Switch } from '@coze-arch/coze-design';
 
 interface TextToVoiceProps {
   value?: boolean;

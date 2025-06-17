@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useEntity } from '@flowgram-adapter/free-layout-editor';
 import { BaseTestButton } from '@coze-workflow/test-run';
 import { I18n } from '@coze-arch/i18n';
-import { type ButtonProps } from '@coze/coze-design';
+import { type ButtonProps } from '@coze-arch/coze-design';
 
 import { useTestRunReporterService, useGlobalState } from '@/hooks';
 

@@ -3,8 +3,8 @@ import React, { useState, type ComponentProps } from 'react';
 import { ImageRender } from '@coze-common/table-view';
 import { I18n } from '@coze-arch/i18n';
 import { ColumnType } from '@coze-arch/bot-api/memory';
-import { IconCozImage } from '@coze/coze-design/icons';
-import { TextArea, Button, Modal } from '@coze/coze-design';
+import { IconCozImage } from '@coze-arch/coze-design/icons';
+import { TextArea, Button, Modal } from '@coze-arch/coze-design';
 
 import { type TableDataItem } from './hooks';
 

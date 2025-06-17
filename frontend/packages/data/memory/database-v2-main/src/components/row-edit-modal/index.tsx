@@ -20,7 +20,7 @@ import {
   Select,
   withField,
   type CommonFieldProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import {
   type TableRow,

@@ -256,4 +256,4 @@ This package has no runtime dependencies, making it lightweight and suitable for
 
 ## License
 
-ISC
+Apache-2.0

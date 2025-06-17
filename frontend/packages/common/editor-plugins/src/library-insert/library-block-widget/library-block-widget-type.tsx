@@ -2,8 +2,8 @@ import { type RefObject, useLayoutEffect, useState } from 'react';
 
 import { type Root, createRoot } from 'react-dom/client';
 import cls from 'classnames';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
-import { Tooltip } from '@coze/coze-design';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
+import { Tooltip } from '@coze-arch/coze-design';
 import { WidgetType } from '@codemirror/view';
 
 import { getLibraryTooltip } from '../utils/get-library-tooltip';

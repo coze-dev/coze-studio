@@ -3,7 +3,7 @@ import {
   type DatabaseConditionOperator,
   type ViewVariableType,
 } from '@coze-workflow/base';
-import { Input } from '@coze/coze-design';
+import { Input } from '@coze-arch/coze-design';
 
 import { ValueExpressionInput } from '@/nodes-v2/components/value-expression-input';
 import { withField, useField } from '@/form';

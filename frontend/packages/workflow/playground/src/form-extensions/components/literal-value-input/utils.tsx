@@ -2,7 +2,7 @@ import { type FC } from 'react';
 
 import { customAlphabet } from 'nanoid';
 import { VARIABLE_TYPE_ALIAS_MAP, ViewVariableType } from '@coze-workflow/base';
-import { json } from '@flow-lang-sdk/editor/language-json';
+import { json } from '@coze-editor/editor/language-json';
 
 import {
   type InputComponentRegistry,

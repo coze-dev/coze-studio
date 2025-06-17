@@ -1,6 +1,6 @@
 import { type PublishPluginRequest } from '@coze-arch/idl/plugin_develop';
 import { I18n } from '@coze-arch/i18n';
-import { type BaseFormProps, Form } from '@coze/coze-design';
+import { type BaseFormProps, Form } from '@coze-arch/coze-design';
 
 export type VersionDescFormValue = Pick<
   PublishPluginRequest,

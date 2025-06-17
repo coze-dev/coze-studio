@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
 import { useErrorHandler } from '@coze-arch/logger';
-import { Form, Spin } from '@coze/coze-design';
+import { Form, Spin } from '@coze-arch/coze-design';
 import { type DynamicParams } from '@coze-arch/bot-typings/teamspace';
 import { useParams } from 'react-router-dom';
 

@@ -1,6 +1,6 @@
 import { debounce } from 'lodash-es';
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 import { type Dataset } from '@coze-arch/bot-api/knowledge';
 import { KnowledgeApi as knowledgeApi } from '@coze-arch/bot-api';
 

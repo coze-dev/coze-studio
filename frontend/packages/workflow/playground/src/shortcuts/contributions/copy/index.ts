@@ -17,7 +17,7 @@ import type {
 import { WorkflowNodeData } from '@coze-workflow/nodes';
 import type { StandardNodeType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { WorkflowGlobalStateEntity } from '@/typing';
 

@@ -13,7 +13,7 @@ import {
   IconCozCompass,
   IconCozCompassFill,
   IconCozDocument,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 import { AccountDropdown } from '../account-dropdown';
 import { useHasSider } from './hooks/use-has-sider';
@@ -49,12 +49,14 @@ export const GlobalLayoutComposed: FC<PropsWithChildren> = ({ children }) => {
             icon: <IconCozWorkspace />,
             activeIcon: <IconCozWorkspaceFill />,
             path: '/space',
+            dataTestId: 'layout_workspace-button',
           },
           {
             title: I18n.t('menu_title_store'),
             icon: <IconCozCompass />,
             activeIcon: <IconCozCompassFill />,
             path: '/explore',
+            dataTestId: 'layout_explore-button',
           },
         ]}
         extras={[

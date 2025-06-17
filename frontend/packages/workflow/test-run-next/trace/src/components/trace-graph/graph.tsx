@@ -7,8 +7,8 @@ import {
   type Span,
   type TraceFrontendSpan,
 } from '@coze-arch/bot-api/workflow_api';
-import { IconCozExit } from '@coze/coze-design/icons';
-import { Typography, Select, IconButton } from '@coze/coze-design';
+import { IconCozExit } from '@coze-arch/coze-design/icons';
+import { Typography, Select, IconButton } from '@coze-arch/coze-design';
 
 import { FocusButton } from '../focus-button';
 import { getGotoNodeParams } from '../../utils';

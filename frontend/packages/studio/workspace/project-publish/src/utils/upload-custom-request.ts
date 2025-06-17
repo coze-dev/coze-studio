@@ -1,5 +1,5 @@
 import { AxiosError } from 'axios';
-import { type UploadProps } from '@coze/coze-design';
+import { type UploadProps } from '@coze-arch/coze-design';
 import { upLoadFile } from '@coze-arch/bot-utils';
 import { ProductApi } from '@coze-arch/bot-api';
 

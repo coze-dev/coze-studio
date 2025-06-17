@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid';
 import { isInteger, isUndefined } from 'lodash-es';
 import classNames from 'classnames';
 import { useHover } from 'ahooks';
-import { InputNumber } from '@coze/coze-design';
+import { InputNumber } from '@coze-arch/coze-design';
 import { type SliderProps } from '@coze-arch/bot-semi/Slider';
 import { Slider } from '@coze-arch/bot-semi';
 

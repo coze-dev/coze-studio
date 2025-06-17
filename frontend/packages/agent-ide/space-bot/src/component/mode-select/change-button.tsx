@@ -1,8 +1,8 @@
 import React from 'react';
 
 import classNames from 'classnames';
-import { IconCozArrowDown } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozArrowDown } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 import { UIButton } from '@coze-arch/bot-semi';
 import { useFlags } from '@coze-arch/bot-flags';
 

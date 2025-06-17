@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Switch } from '@coze/coze-design';
+import { Switch } from '@coze-arch/coze-design';
 
 import type { Setter } from '../types';
 

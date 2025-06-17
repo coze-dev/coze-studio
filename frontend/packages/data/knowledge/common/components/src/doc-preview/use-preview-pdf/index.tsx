@@ -2,8 +2,8 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import { useMemo, useRef, useState } from 'react';
 
 import cls from 'classnames';
-import { Spin } from '@coze/coze-design';
 import { FixedSizeList as List, AutoSizer } from '@coze-common/virtual-list';
+import { Spin } from '@coze-arch/coze-design';
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 
@@ -13,14 +13,18 @@ interface IUsePreviewPdfProps {
 
 pdfjs.GlobalWorkerOptions.workerSrc =
   REGION === 'cn'
-    ? `//lf-cdn.coze.cn/obj/unpkg/pdfjs-dist/${pdfjs.version}/build/pdf.worker.min.mjs`
-    : `//sf-cdn.coze.com/obj/unpkg-va/pdfjs-dist/${pdfjs.version}/build/pdf.worker.min.mjs`;
+    ? // cp-disable-next-line
+      `//lf-cdn.coze.cn/obj/unpkg/pdfjs-dist/${pdfjs.version}/build/pdf.worker.min.mjs`
+    : // cp-disable-next-line
+      `//sf-cdn.coze.com/obj/unpkg-va/pdfjs-dist/${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const options = {
   cMapUrl:
     REGION === 'cn'
-      ? `//lf-cdn.coze.cn/obj/unpkg/pdfjs-dist/${pdfjs.version}/cmaps/`
-      : `//sf-cdn.coze.com/obj/unpkg-va/pdfjs-dist/${pdfjs.version}/cmaps/`,
+      ? // cp-disable-next-line
+        `//lf-cdn.coze.cn/obj/unpkg/pdfjs-dist/${pdfjs.version}/cmaps/`
+      : // cp-disable-next-line
+        `//sf-cdn.coze.com/obj/unpkg-va/pdfjs-dist/${pdfjs.version}/cmaps/`,
 };
 
 export const usePreviewPdf = (props: IUsePreviewPdfProps) => {

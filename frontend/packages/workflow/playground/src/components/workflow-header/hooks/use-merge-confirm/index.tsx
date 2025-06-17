@@ -1,7 +1,7 @@
 /* eslint-disable @coze-arch/no-deep-relative-import */
 
 import { I18n } from '@coze-arch/i18n';
-import { Toast, Typography } from '@coze/coze-design';
+import { Toast, Typography } from '@coze-arch/coze-design';
 import { sendTeaEvent, EVENT_NAMES } from '@coze-arch/bot-tea';
 import { RadioGroup, Radio, UIModal } from '@coze-arch/bot-semi';
 import { useService } from '@flowgram-adapter/free-layout-editor';

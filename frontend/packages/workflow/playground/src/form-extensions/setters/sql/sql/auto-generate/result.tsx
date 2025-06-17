@@ -1,4 +1,4 @@
-import { Spin } from '@coze/coze-design';
+import { Spin } from '@coze-arch/coze-design';
 
 import styles from './result.module.less';
 

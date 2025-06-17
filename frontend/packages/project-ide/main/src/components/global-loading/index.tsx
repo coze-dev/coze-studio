@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { Spin } from '@coze/coze-design';
+import { Spin } from '@coze-arch/coze-design';
 import { useIDEService } from '@coze-project-ide/framework';
 
 import { AppContribution } from '../../plugins/create-app-plugin/app-contribution';

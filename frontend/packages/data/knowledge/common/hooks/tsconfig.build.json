@@ -33,9 +33,6 @@
       "path": "../../../../arch/logger/tsconfig.build.json"
     },
     {
-      "path": "../../../../components/coze-design/tsconfig.build.json"
-    },
-    {
       "path": "../../../../../config/eslint-config/tsconfig.build.json"
     },
     {

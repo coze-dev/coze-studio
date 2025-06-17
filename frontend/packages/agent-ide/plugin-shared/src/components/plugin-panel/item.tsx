@@ -22,7 +22,7 @@ import {
 } from '@coze-arch/bot-api/product_api';
 import { type PluginApi } from '@coze-arch/bot-api/plugin_develop';
 import { useViewExample } from '@coze-agent-ide/bot-plugin-tools/useViewExample';
-import { Popconfirm } from '@coze/coze-design';
+import { Popconfirm } from '@coze-arch/coze-design';
 import { OverflowList } from '@blueprintjs/core';
 
 import { From } from '../../types/plugin-modal-types';

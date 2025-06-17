@@ -41,7 +41,7 @@ import { Button, Input, Table } from '@coze-arch/bot-semi';
 
 function MyComponent() {
   const modal = useUIModal();
-  
+
   return (
     <div>
       <UIButton onClick={() => modal.show()}>
@@ -78,8 +78,8 @@ import { UIModal, useUIModal } from '@coze-arch/bot-semi/Modal';
 
 const modal = useUIModal();
 
-<UIModal 
-  type="info" 
+<UIModal
+  type="info"
   showScrollBar={false}
   {...modal.props}
 >
@@ -222,7 +222,7 @@ const modal = useUIModal();
 // Show modal
 modal.show();
 
-// Hide modal  
+// Hide modal
 modal.hide();
 
 // Use props in component
@@ -234,10 +234,10 @@ modal.hide();
 All Semi UI components are available as direct imports:
 
 ```tsx
-import { 
-  Button, 
-  Input, 
-  Table, 
+import {
+  Button,
+  Input,
+  Table,
   Form,
   DatePicker,
   Select,
@@ -304,14 +304,14 @@ rush test:cov
 
 ### Development Dependencies
 - **@coze-arch/eslint-config** - ESLint configuration
-- **@coze-arch/ts-config** - TypeScript configuration  
+- **@coze-arch/ts-config** - TypeScript configuration
 - **@coze-arch/vitest-config** - Testing configuration
 - **typescript** - TypeScript compiler
 - **vitest** - Testing framework
 
 ## License
 
-ISC License
+Apache-2.0 License
 
 ---
 

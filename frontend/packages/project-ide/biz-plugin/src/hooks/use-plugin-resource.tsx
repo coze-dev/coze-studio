@@ -24,7 +24,7 @@ import {
   CreateFormPluginModal,
   usePluginApisModal,
 } from '@coze-agent-ide/bot-plugin/component';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { useResourceOperation } from './use-resource-operation';
 // import { useImportLibraryPlugin } from './use-import-library-plugin';

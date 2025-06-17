@@ -8,7 +8,7 @@ import {
   Typography,
   Space,
   Avatar,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { IconCardSearchOutlined, IconEdit } from '@coze-arch/bot-icons';
 import {
   CreationMethod,

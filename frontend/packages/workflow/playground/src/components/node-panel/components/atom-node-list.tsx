@@ -2,7 +2,7 @@ import { type FC, type MouseEvent } from 'react';
 
 import { get } from 'lodash-es';
 import { type StandardNodeType, concatTestId } from '@coze-workflow/base';
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 
 import { isPluginCategoryNodeTemplate } from '@/utils';
 import { type NodeCategory, type UnionNodeTemplate } from '@/typing';

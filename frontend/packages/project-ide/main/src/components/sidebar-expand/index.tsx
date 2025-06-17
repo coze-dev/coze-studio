@@ -14,8 +14,8 @@ import {
   useSplitScreenArea,
 } from '@coze-project-ide/framework';
 import { usePrimarySidebarStore } from '@coze-project-ide/biz-components';
-import { IconCozSideExpand } from '@coze/coze-design/icons';
-import { IconButton, Popover } from '@coze/coze-design';
+import { IconCozSideExpand } from '@coze-arch/coze-design/icons';
+import { IconButton, Popover } from '@coze-arch/coze-design';
 
 import { PrimarySidebar } from '../primary-sidebar';
 

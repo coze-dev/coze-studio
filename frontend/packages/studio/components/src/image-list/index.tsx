@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import {
   IconCozCheckMarkFill,
   IconCozMinusCircleFillPalette,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import { type PicTask } from '@coze-arch/bot-api/playground_api';
 
 import s from './index.module.less';

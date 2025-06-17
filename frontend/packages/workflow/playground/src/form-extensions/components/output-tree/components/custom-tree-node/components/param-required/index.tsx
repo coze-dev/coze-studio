@@ -2,7 +2,7 @@
 import React from 'react';
 
 import { useNodeTestId } from '@coze-workflow/base';
-import { Checkbox as UICheckbox } from '@coze/coze-design';
+import { Checkbox as UICheckbox } from '@coze-arch/coze-design';
 
 import { type TreeNodeCustomData } from '../../type';
 import { useOutputTreeContext } from '../../../../context';

@@ -17,7 +17,7 @@ import { useBotInfoStore } from '@coze-studio/bot-detail-store/bot-info';
 import { type WorkFlowItemType } from '@coze-studio/bot-detail-store';
 import { usePageJumpResponse, PageType, SceneType } from '@coze-arch/bot-hooks';
 import { useNavigateWorkflowEditPage } from '@coze-agent-ide/navigate';
-import { Toast, Space, Typography, Button } from '@coze/coze-design';
+import { Toast, Space, Typography, Button } from '@coze-arch/coze-design';
 const { Text } = Typography;
 
 export interface UseWorkFlowListReturnValue {

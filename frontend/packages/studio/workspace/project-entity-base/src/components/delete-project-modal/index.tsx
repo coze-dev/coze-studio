@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { Modal, Form, Input, type ModalProps } from '@coze/coze-design';
+import { Modal, Form, Input, type ModalProps } from '@coze-arch/coze-design';
 
 export interface DeleteProjectBaseProps {
   value?: string;

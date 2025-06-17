@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect } from 'react';
 
-import { useEditor, useInjector } from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-expression';
-import { astDecorator } from '@flow-lang-sdk/editor';
+import { useEditor, useInjector } from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-expression';
+import { astDecorator } from '@coze-editor/editor';
 import { EditorView } from '@codemirror/view';
 
 import { useDeepEqualMemo, useLatest } from '../shared';

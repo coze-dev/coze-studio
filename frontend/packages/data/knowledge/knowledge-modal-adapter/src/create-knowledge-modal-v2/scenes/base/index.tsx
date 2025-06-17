@@ -12,7 +12,7 @@ import { I18n } from '@coze-arch/i18n';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { FormatType } from '@coze-arch/bot-api/memory';
 import { KnowledgeApi } from '@coze-arch/bot-api';
-import { Button, Form, LoadingButton } from '@coze/coze-design';
+import { Button, Form, LoadingButton } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

@@ -1,6 +1,6 @@
 import { type ConnectorConfigStatus } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { Button, type ButtonProps } from '@coze/coze-design';
+import { Button, type ButtonProps } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { useUIModal, UIButton, Typography } from '@coze-arch/bot-semi';
 import {

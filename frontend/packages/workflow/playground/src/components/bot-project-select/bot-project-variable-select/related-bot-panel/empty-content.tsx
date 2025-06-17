@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozEmpty } from '@coze/coze-design/icons';
+import { IconCozEmpty } from '@coze-arch/coze-design/icons';
 
 import s from '../index.module.less';
 

@@ -5,8 +5,8 @@ import { type APIParameter } from '@coze-workflow/base/api';
 import { REPORT_EVENTS as ReportEventNames } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
 import { CustomError } from '@coze-arch/bot-error';
-import { IconCozCopy, IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tag, Toast } from '@coze/coze-design';
+import { IconCozCopy, IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tag, Toast } from '@coze-arch/coze-design';
 
 import { VariableTypeTag } from '@/form-extensions/components/variable-type-tag';
 import { IconNameDescCard } from '@/form-extensions/components/icon-name-desc-card';

@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { type DatabaseField } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { useToggle } from '@coze-arch/hooks';
-import { Dropdown, Tooltip } from '@coze/coze-design';
+import { Dropdown, Tooltip } from '@coze-arch/coze-design';
 
 import { DataTypeTag } from '@/node-registries/common/components';
 import { AddButton } from '@/form';

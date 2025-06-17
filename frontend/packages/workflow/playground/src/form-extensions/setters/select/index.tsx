@@ -6,7 +6,7 @@ import {
 } from '@flowgram-adapter/free-layout-editor';
 import { useNodeTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { Select as UISelect } from '@coze/coze-design';
+import { Select as UISelect } from '@coze-arch/coze-design';
 
 import { type AnyValue } from '../../setters/typings';
 

@@ -8,8 +8,8 @@ import {
   type SettingOnErrorExt,
 } from '@coze-workflow/nodes';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 
 import { type IModelValue } from '@/typing';
 import { ModelSelect } from '@/components/model-select';

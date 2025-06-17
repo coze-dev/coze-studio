@@ -2,8 +2,8 @@ import React, { useRef } from 'react';
 
 import cls from 'classnames';
 import { useHover } from 'ahooks';
-import { IconCozTrashCan } from '@coze/coze-design/icons';
-import { IconButton, Typography, Spin } from '@coze/coze-design';
+import { IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { IconButton, Typography, Spin } from '@coze-arch/coze-design';
 import type { RenderFileItemProps } from '@coze-arch/bot-semi/Upload';
 
 import styles from './custom-file-item.module.less';

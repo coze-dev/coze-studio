@@ -14,7 +14,7 @@ import {
   Input as UIInput,
   type InputProps,
   type TooltipProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import AutoSizeTooltip from '../auto-size-tooltip';
 

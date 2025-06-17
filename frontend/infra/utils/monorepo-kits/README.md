@@ -199,7 +199,7 @@ const getProjectInfo = (packageName: string) => {
 
 ## 📝 许可证
 
-ISC License
+Apache-2.0 License
 
 ---
 

@@ -1,8 +1,8 @@
 import { type PropsWithChildren, type ReactNode, useState } from 'react';
 
 import cls from 'classnames';
-import { IconCozArrowRight } from '@coze/coze-design/icons';
-import { Collapsible } from '@coze/coze-design';
+import { IconCozArrowRight } from '@coze-arch/coze-design/icons';
+import { Collapsible } from '@coze-arch/coze-design';
 
 export const VariableGroupWrapper = (
   props: PropsWithChildren<{

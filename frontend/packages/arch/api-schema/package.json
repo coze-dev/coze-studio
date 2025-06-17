@@ -2,7 +2,7 @@
   "name": "@coze-studio/api-schema",
   "version": "0.0.1",
   "description": "api scheme for open source",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "maintainers": [],
   "exports": {

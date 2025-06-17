@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { Banner } from '@coze/coze-design';
+import { Banner } from '@coze-arch/coze-design';
 
 export const ConfigurationBanner = () => (
   <Banner

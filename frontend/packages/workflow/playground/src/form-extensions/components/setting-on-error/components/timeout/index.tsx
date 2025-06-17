@@ -3,7 +3,7 @@ import { useEffect, useState, type FC } from 'react';
 
 import { useTimeoutConfig } from '@coze-workflow/nodes';
 import { logger } from '@coze-arch/logger';
-import { Input } from '@coze/coze-design';
+import { Input } from '@coze-arch/coze-design';
 
 import { type SettingOnErrorItemProps } from '../../types';
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { Tag } from '@coze/coze-design';
+import { Tag } from '@coze-arch/coze-design';
 import { type VoiceConfig } from '@coze-arch/bot-api/workflow_api';
 import { type VoiceDetail } from '@coze-arch/bot-api/multimedia_api';
 import { MultimediaApi } from '@coze-arch/bot-api';

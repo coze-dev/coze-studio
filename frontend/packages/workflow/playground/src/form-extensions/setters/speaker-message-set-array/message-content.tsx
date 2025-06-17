@@ -1,4 +1,4 @@
-import { withField } from '@coze/coze-design';
+import { withField } from '@coze-arch/coze-design';
 
 import { ExpressionEditorContainer } from '../expression-editor/container';
 

@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Menu } from '@coze/coze-design';
+import { Menu } from '@coze-arch/coze-design';
 
 import { PopInScreen } from '../pop-in-screen';
 import { CopyMode } from '../../typings';

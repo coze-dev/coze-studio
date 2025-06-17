@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
-import { Renderer, EditorProvider } from '@flow-lang-sdk/editor/react';
-import preset from '@flow-lang-sdk/editor/preset-code';
+import { Renderer, EditorProvider } from '@coze-editor/editor/react';
+import preset from '@coze-editor/editor/preset-code';
 import { EditorView } from '@codemirror/view';
 
 import { type EditorOtherProps, type EditorProps } from '../../interface';

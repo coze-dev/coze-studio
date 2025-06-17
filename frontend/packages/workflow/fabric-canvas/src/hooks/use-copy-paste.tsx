@@ -7,7 +7,7 @@ import { nanoid } from 'nanoid';
 import { ActiveSelection, type Canvas, type FabricObject } from 'fabric';
 import { useLatest } from 'ahooks';
 import { type InputVariable } from '@coze-workflow/base/types';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { snap } from '../utils/snap/snap';
 import { createElement, getNumberBetween } from '../utils';

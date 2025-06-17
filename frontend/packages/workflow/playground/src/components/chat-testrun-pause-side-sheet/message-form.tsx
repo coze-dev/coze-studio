@@ -1,7 +1,7 @@
 import { type FC, useRef } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Tag } from '@coze/coze-design';
+import { Tag } from '@coze-arch/coze-design';
 import { Form, ArrayField, UIButton, Typography } from '@coze-arch/bot-semi';
 import { IconPlay } from '@douyinfe/semi-icons';
 

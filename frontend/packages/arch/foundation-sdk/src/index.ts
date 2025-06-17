@@ -5,7 +5,7 @@ import {
   type UserLabel,
   type BotSpace,
 } from '@coze-arch/idl/developer_api';
-import { type DropDownMenuItemItem } from '@coze/coze-design';
+import { type DropDownMenuItemItem } from '@coze-arch/coze-design';
 
 export {
   type OAuth2RedirectConfig,

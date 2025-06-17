@@ -2,7 +2,7 @@ import { useState, type FC } from 'react';
 
 import { type ReactElement } from 'react-markdown/lib/react-markdown';
 import { I18n } from '@coze-arch/i18n';
-import { type ButtonProps } from '@coze/coze-design';
+import { type ButtonProps } from '@coze-arch/coze-design';
 import { IconMemoryDownMenu } from '@coze-arch/bot-icons';
 import { DataErrorBoundary, DataNamespace } from '@coze-data/reporter';
 import { BotE2e } from '@coze-data/e2e';

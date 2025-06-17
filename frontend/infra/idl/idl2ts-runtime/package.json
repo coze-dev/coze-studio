@@ -2,7 +2,7 @@
   "name": "@coze-arch/idl2ts-runtime",
   "version": "0.1.0",
   "homepage": "",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "zhaorujun@bytedance.com",
   "main": "src/index.ts",
   "scripts": {

@@ -1,14 +1,14 @@
 import { useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozArrowDown } from '@coze/coze-design/icons';
+import { IconCozArrowDown } from '@coze-arch/coze-design/icons';
 import {
   RadioGroup,
   Typography,
   Radio,
   AIButton,
   Popover,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import css from './generate-mode-select.module.less';
 

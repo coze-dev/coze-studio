@@ -2,7 +2,7 @@ import { type FC } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Select as CozSelect } from '@coze/coze-design';
+import { Select as CozSelect } from '@coze-arch/coze-design';
 
 import { type LiteralValueInputProps } from './type';
 

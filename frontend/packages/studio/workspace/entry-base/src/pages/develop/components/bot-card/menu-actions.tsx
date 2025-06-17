@@ -9,8 +9,8 @@ import { useUIModal } from '@coze-arch/bot-semi';
 import { DeveloperApi } from '@coze-arch/bot-api';
 import { cozeMitt } from '@coze-common/coze-mitt';
 import { CustomError } from '@coze-arch/bot-error';
-import { IconCozWarningCircleFill } from '@coze/coze-design/icons';
-import { Menu, Toast, Tooltip } from '@coze/coze-design';
+import { IconCozWarningCircleFill } from '@coze-arch/coze-design/icons';
+import { Menu, Toast, Tooltip } from '@coze-arch/coze-design';
 
 export interface MenuCommonProps {
   id: string;

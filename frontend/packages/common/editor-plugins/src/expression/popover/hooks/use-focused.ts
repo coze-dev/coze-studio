@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-expression';
+import { type EditorAPI } from '@coze-editor/editor/preset-expression';
 
 function useFocused(editor: EditorAPI | undefined) {
   const [focused, setFocused] = useState(false);

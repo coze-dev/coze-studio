@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { IconCozIllusDone } from '@coze/coze-design/illustrations';
+import { IconCozIllusDone } from '@coze-arch/coze-design/illustrations';
 
 import styles from './empty.module.less';
 

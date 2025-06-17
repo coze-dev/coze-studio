@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Input } from '@coze/coze-design';
+import { Input } from '@coze-arch/coze-design';
 import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 
 import { feedbackStatus2ValidateStatus } from '../../components/utils';

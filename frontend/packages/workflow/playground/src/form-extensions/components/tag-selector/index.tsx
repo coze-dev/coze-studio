@@ -6,13 +6,13 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozTrashCan,
   IconCozCheckMarkFill,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   Select,
   Checkbox,
   Tooltip,
   type SelectProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { type RenderSelectedItemFn } from '@coze-arch/bot-semi/Select';
 import { type Select as SemiSelect } from '@coze-arch/bot-semi';
 

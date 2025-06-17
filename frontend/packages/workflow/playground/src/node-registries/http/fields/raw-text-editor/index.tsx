@@ -1,4 +1,4 @@
-import { EditorProvider } from '@flow-lang-sdk/editor/react';
+import { EditorProvider } from '@coze-editor/editor/react';
 
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
 import { useField, withField } from '@/form';

@@ -199,7 +199,7 @@ rush lint --to @coze-arch/fs-enhance
 ### Development Dependencies
 
 - **@coze-arch/eslint-config** - Shared ESLint configuration
-- **@coze-arch/ts-config** - Shared TypeScript configuration  
+- **@coze-arch/ts-config** - Shared TypeScript configuration
 - **@coze-arch/vitest-config** - Shared Vitest testing configuration
 - **vitest** - Fast unit testing framework
 - **@types/node** - TypeScript definitions for Node.js
@@ -232,7 +232,7 @@ const config = await readJsonFile<AppConfig>('./app.config.json');
 
 ## License
 
-ISC
+Apache-2.0
 
 ---
 

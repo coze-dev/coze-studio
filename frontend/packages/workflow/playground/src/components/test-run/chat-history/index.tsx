@@ -4,8 +4,8 @@ import { isEmpty } from 'lodash-es';
 import { userStoreService } from '@coze-studio/user-store';
 import { IntelligenceType } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozIllusAdd } from '@coze/coze-design/illustrations';
-import { EmptyState } from '@coze/coze-design';
+import { IconCozIllusAdd } from '@coze-arch/coze-design/illustrations';
+import { EmptyState } from '@coze-arch/coze-design';
 import {
   type ProjectConversation,
   CreateEnv,

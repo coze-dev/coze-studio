@@ -16,8 +16,8 @@ import { useNodeTestId } from '@coze-workflow/base';
 import {
   IconCozArrowDownFill,
   IconCozInfoCircle,
-} from '@coze/coze-design/icons';
-import { Collapsible, Image } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Collapsible, Image } from '@coze-arch/coze-design';
 
 import {
   FormItemFeedback,

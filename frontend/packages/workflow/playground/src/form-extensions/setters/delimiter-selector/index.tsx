@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { type SelectProps, Toast, withField } from '@coze/coze-design';
+import { type SelectProps, Toast, withField } from '@coze-arch/coze-design';
 import { type SetterAbilityOptions } from '@flowgram-adapter/free-layout-editor';
 
 import TagSelector from '../../components/tag-selector';

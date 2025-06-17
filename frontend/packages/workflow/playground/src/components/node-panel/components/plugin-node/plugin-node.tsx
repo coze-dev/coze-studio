@@ -2,7 +2,7 @@ import { type FC, type MouseEvent } from 'react';
 
 import classNames from 'classnames';
 import { type StandardNodeType } from '@coze-workflow/base';
-import { Tooltip } from '@coze/coze-design';
+import { Tooltip } from '@coze-arch/coze-design';
 
 import { type PluginNodeTemplate, type PluginApiNodeTemplate } from '@/typing';
 

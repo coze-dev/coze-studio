@@ -2,7 +2,7 @@
   "name": "@coze-data/reporter",
   "version": "0.0.1",
   "description": "coze knowledge reporter",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "rosefang.123@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

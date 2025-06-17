@@ -4,7 +4,7 @@ import {
   IconCozDatabase,
   IconCozKnowledge,
   IconCozVariables,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   LayoutPanelType,
   withLazyLoad,

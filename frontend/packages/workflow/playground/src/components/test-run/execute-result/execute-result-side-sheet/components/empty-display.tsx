@@ -1,4 +1,4 @@
-import { IconCozPlayCircle } from '@coze/coze-design/icons';
+import { IconCozPlayCircle } from '@coze-arch/coze-design/icons';
 import { Typography } from '@coze-arch/bot-semi';
 import { I18n } from '@coze-arch/i18n';
 

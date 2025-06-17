@@ -10,7 +10,7 @@ import { FormatType } from '@coze-arch/bot-api/memory';
 import { type Icon } from '@coze-arch/bot-api/knowledge';
 import { FileBizType, IconType } from '@coze-arch/bot-api/developer_api';
 import { KnowledgeApi } from '@coze-arch/bot-api';
-import { useFormApi } from '@coze/coze-design';
+import { useFormApi } from '@coze-arch/coze-design';
 
 import { SelectFormatType } from '../../select-format-type/base';
 import { ImportKnowledgeSourceSelect } from '../../import-knowledge-source-select/base';

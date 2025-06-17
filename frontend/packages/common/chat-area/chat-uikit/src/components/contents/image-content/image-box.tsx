@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 
 import classNames from 'classnames';
-import { Row, Col } from '@coze/coze-design';
+import { Row, Col } from '@coze-arch/coze-design';
 import { Image } from '@coze-arch/bot-md-box-adapter/slots';
 import {
   type OnImageClickCallback,

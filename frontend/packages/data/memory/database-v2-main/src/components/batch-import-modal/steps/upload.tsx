@@ -12,7 +12,7 @@ import {
 import { I18n } from '@coze-arch/i18n';
 import { type TableType } from '@coze-arch/bot-api/memory';
 import { MemoryApi } from '@coze-arch/bot-api';
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 
 export interface StepUploadProps {
   databaseId: string;

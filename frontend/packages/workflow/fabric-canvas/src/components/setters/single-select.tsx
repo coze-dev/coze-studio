@@ -3,7 +3,7 @@ import { forwardRef } from 'react';
 import {
   SingleSelect as CozeSingleSelect,
   type SingleSelectProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 export const SingleSelect = forwardRef<SingleSelectProps, SingleSelectProps>(
   props => {

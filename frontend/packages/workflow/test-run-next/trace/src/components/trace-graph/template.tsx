@@ -1,5 +1,5 @@
-import { IconCozIllusEmpty } from '@coze/coze-design/illustrations';
-import { Spin } from '@coze/coze-design';
+import { IconCozIllusEmpty } from '@coze-arch/coze-design/illustrations';
+import { Spin } from '@coze-arch/coze-design';
 
 import css from './template.module.less';
 

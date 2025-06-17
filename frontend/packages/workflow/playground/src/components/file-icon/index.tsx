@@ -1,6 +1,6 @@
 import { type CSSProperties } from 'react';
 
-import { IconCozFileImage } from '@coze/coze-design/illustrations';
+import { IconCozFileImage } from '@coze-arch/coze-design/illustrations';
 import { Spin, Image } from '@coze-arch/bot-semi';
 
 import {

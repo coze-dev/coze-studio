@@ -16,7 +16,7 @@ import {
 import { type ProductInfo } from '@coze-arch/bot-api/product_api';
 import { ProductApi } from '@coze-arch/bot-api';
 import { botInputLengthService } from '@coze-agent-ide/bot-input-length-limit';
-import { type FormApi } from '@coze/coze-design';
+import { type FormApi } from '@coze-arch/coze-design';
 
 import { commonProjectFormValid } from '../utils/common-project-form-valid';
 import { useFormSubmitState } from './use-project-form-submit-state';

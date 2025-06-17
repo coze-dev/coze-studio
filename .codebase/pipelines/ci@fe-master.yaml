@@ -22,7 +22,7 @@ jobs:
     image: hub.byted.org/base/bot_monorepo_ci_env:ae543e9bbc6d8155cffbd8f5ed27fb73
     # 从最近的 CI 执行记录看，install 步骤有概率会等待超时
     # 目前已 oncall，这里先设置一个超时时间，避免阻塞
-    timeout: 15
+    timeout: 30
     envs:
       RUSH_BUILD_CACHE_WRITE_ALLOWED: ${{RUSH_BUILD_CACHE_WRITE_ALLOWED}}
       RUSH_BUILD_CACHE_ENABLED: ${{RUSH_BUILD_CACHE_ENABLED}}

@@ -5,7 +5,7 @@ import {
   type ProductDraftStatus,
   type SchemaType,
 } from '@coze-workflow/base';
-import { type TableActionProps } from '@coze/coze-design';
+import { type TableActionProps } from '@coze-arch/coze-design';
 import { type ResourceInfo } from '@coze-arch/bot-api/plugin_develop';
 export { type ResourceInfo };
 

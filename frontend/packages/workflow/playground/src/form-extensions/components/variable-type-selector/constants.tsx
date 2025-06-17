@@ -19,7 +19,7 @@ import {
   IconCozNumberIntBracket,
   IconCozClock,
   IconCozClockBracket,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 export const VARIABLE_TYPE_ICONS_MAP: Record<ViewVariableType, ReactNode> = {
   [ViewVariableType.String]: <IconCozString />,

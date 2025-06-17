@@ -11,7 +11,7 @@ import {
   Highlight,
   type CascaderData,
   type FilterRenderProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { type DynamicComponentProps } from '../dynamic-form';
 import { generatedTimezones } from './utils/timezone';

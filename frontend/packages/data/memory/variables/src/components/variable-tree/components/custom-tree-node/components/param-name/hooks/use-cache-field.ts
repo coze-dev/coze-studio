@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-import { useFormApi } from '@coze/coze-design';
+import { useFormApi } from '@coze-arch/coze-design';
 
 import { type Variable } from '@/store';
 

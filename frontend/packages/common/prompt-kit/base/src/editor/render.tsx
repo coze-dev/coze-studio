@@ -1,11 +1,11 @@
 import { useCallback, useRef, useEffect, type ReactNode, useMemo } from 'react';
 
 import { merge } from 'lodash-es';
-import { Renderer, Placeholder, useEditor } from '@flow-lang-sdk/editor/react';
+import { Renderer, Placeholder, useEditor } from '@coze-editor/editor/react';
 // promptPreset是针对Prompt提供了一系列内置扩展的集合
 import promptPreset, {
   type EditorAPI,
-} from '@flow-lang-sdk/editor/preset-prompt';
+} from '@coze-editor/editor/preset-prompt';
 import { ThemeExtension } from '@coze-common/editor-plugins/theme';
 import { SyntaxHighlight } from '@coze-common/editor-plugins/syntax-highlight';
 import { LanguageSupport } from '@coze-common/editor-plugins/language-support';

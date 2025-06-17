@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { Divider, Typography } from '@coze/coze-design';
+import { Divider, Typography } from '@coze-arch/coze-design';
 
 interface ContextDividerProps {
   className?: string;

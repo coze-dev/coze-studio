@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import {
   IconCozCheckMarkCircleFill,
   IconCozInfoCircleFill,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import { Typography } from '@coze-arch/bot-semi';
 import { type TransferResourceInfo } from '@coze-arch/bot-api/playground_api';
 

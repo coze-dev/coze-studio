@@ -2,7 +2,7 @@
   "name": "@coze-arch/idl",
   "version": "0.0.1",
   "description": "idl descriptions ",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "maintainers": [],
   "exports": {

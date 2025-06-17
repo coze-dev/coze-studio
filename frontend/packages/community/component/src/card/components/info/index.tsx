@@ -4,7 +4,7 @@ import cls from 'classnames';
 import { AvatarName } from '@coze-studio/components';
 import { type explore } from '@coze-studio/api-schema';
 import { type UserInfo as ProductUserInfo } from '@coze-arch/bot-api/product_api';
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 
 type UserInfo = explore.product_common.UserInfo | ProductUserInfo;
 interface TemplateCardBodyProps {

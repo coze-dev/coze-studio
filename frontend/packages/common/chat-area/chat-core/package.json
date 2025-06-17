@@ -2,7 +2,7 @@
   "name": "@coze-common/chat-core",
   "version": "1.0.0",
   "description": "bot chat core js",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "haozhenfei@bytedance.com",
   "maintainers": [],
   "exports": {

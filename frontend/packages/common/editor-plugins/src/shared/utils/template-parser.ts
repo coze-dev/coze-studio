@@ -1,6 +1,6 @@
 import { type SyntaxNode } from '@lezer/common';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
-import { type SelectionEnlargerSpec } from '@flow-lang-sdk/editor';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
+import { type SelectionEnlargerSpec } from '@coze-editor/editor';
 import { StateField, type EditorState } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
 export interface MarkRange {

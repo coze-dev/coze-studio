@@ -5,8 +5,8 @@ import { useService } from '@flowgram-adapter/free-layout-editor';
 import { WorkflowVariableFacadeService } from '@coze-workflow/variable';
 import { useNodeTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tooltip, Typography, Input } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip, Typography, Input } from '@coze-arch/coze-design';
 
 import { useNodeRenderScene } from '@/hooks/use-node-render-scene';
 

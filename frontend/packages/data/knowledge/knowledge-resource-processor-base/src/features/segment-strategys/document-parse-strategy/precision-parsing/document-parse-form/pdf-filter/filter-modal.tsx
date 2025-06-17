@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { produce } from 'immer';
 import cls from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Modal, type ModalProps } from '@coze/coze-design';
+import { Modal, type ModalProps } from '@coze-arch/coze-design';
 
 import { type PDFDocumentFilterValue } from '@/features/knowledge-type/text';
 import { DocumentList } from '@/components/document-list';

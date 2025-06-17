@@ -1,5 +1,5 @@
-import { IconCozPauseFill, IconCozVolume } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozPauseFill, IconCozVolume } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 import { useAudioPlayer } from '@coze-workflow/resources-adapter';
 
 interface VoicePlayerProps {

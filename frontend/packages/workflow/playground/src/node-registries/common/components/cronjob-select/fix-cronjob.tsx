@@ -9,7 +9,7 @@ import {
 import { REPORT_EVENTS as ReportEventNames } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
 import { CustomError } from '@coze-arch/bot-error';
-import { Cascader, type CascaderData } from '@coze/coze-design';
+import { Cascader, type CascaderData } from '@coze-arch/coze-design';
 
 const hoursSize = 24;
 const padStart = 2;

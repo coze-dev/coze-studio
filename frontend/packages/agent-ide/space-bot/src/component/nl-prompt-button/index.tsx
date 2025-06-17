@@ -1,7 +1,7 @@
 import { type PropsWithChildren, useRef } from 'react';
 
 import { useBotDetailIsReadonly } from '@coze-studio/bot-detail-store';
-import { AIButton, type ButtonProps } from '@coze/coze-design';
+import { AIButton, type ButtonProps } from '@coze-arch/coze-design';
 
 import { usePromptEditor } from '../../context/editor-kit';
 import { useBotEditorService } from '../../context/bot-editor-service';

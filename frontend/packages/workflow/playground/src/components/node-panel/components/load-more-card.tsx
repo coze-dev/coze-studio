@@ -5,8 +5,8 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozArrowDown,
   IconCozLoading,
-} from '@coze/coze-design/icons';
-import { Typography } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Typography } from '@coze-arch/coze-design';
 
 import styles from './styles.module.less';
 export const LoadMoreCard: FC<{

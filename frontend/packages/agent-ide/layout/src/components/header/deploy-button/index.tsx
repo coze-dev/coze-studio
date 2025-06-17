@@ -3,8 +3,8 @@ import { Fragment } from 'react';
 import { BotDebugButton } from '@coze-agent-ide/space-bot/component';
 import { usePageRuntimeStore } from '@coze-studio/bot-detail-store/page-runtime';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCheckMarkCircleFillPalette } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozCheckMarkCircleFillPalette } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 import { type Type } from '@coze-arch/bot-semi/Button';
 
 import { useDeployService } from './hooks/service';

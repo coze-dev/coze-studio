@@ -1,3 +1,0 @@
-.coz-{{name}} {
-  @apply coz-fg-primary;
-}

@@ -9,7 +9,7 @@ import {
   IconCozLessEqual,
   IconCozProperSuperset,
   IconCozProperSupersetSlash,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 export enum Logic {
   OR = 1,

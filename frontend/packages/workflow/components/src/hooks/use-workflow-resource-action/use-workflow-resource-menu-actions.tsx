@@ -5,7 +5,7 @@ import {
   type FrontWorkflowInfo,
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { Table, type TableActionProps } from '@coze/coze-design';
+import { Table, type TableActionProps } from '@coze-arch/coze-design';
 import { useFlags } from '@coze-arch/bot-flags';
 import {
   resource_resource_common,

@@ -8,7 +8,7 @@ import {
 
 import classNames from 'classnames';
 import { useUpdateEffect } from 'ahooks';
-import { Avatar, Typography } from '@coze/coze-design';
+import { Avatar, Typography } from '@coze-arch/coze-design';
 import {
   MdBoxLazy,
   type MdBoxLazyProps,

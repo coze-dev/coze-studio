@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 
 import classnames from 'classnames';
-import { Checkbox } from '@coze/coze-design';
+import { Checkbox } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozWarningCircleFill } from '@coze/coze-design/icons';
-import { Input, Tooltip } from '@coze/coze-design';
+import { IconCozWarningCircleFill } from '@coze-arch/coze-design/icons';
+import { Input, Tooltip } from '@coze-arch/coze-design';
 
 import { ErrorCode } from '../constants';
 

@@ -10,7 +10,7 @@ import {
   type NodeData,
 } from '@coze-workflow/nodes';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
 import {
   Tag,
   Typography,
@@ -18,7 +18,7 @@ import {
   Popover,
   Checkbox,
   Avatar,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useScrollToError } from '../hooks/use-scroll-to-error';
 import { COLOR_STYLE_MAP } from '../../../../workflow-header/constants';

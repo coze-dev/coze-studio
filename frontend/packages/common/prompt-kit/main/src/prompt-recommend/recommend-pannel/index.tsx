@@ -8,11 +8,11 @@ import {
 } from 'react';
 
 import cls from 'classnames';
-import { useEditor } from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import { useEditor } from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozArrowRightFill } from '@coze/coze-design/icons';
-import { Tabs, TabPane, Button } from '@coze/coze-design';
+import { IconCozArrowRightFill } from '@coze-arch/coze-design/icons';
+import { Tabs, TabPane, Button } from '@coze-arch/coze-design';
 import {
   insertToNewline,
   type PromptContextInfo,

@@ -1,6 +1,6 @@
 import { I18n } from '@coze-arch/i18n';
 import { CustomError } from '@coze-arch/bot-error';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 export const getEllipsisCount = (num: number, max: number): string =>
   num > max ? `${max}+` : `${num}`;

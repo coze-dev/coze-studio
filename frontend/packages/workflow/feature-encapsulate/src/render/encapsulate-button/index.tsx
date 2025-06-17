@@ -1,7 +1,7 @@
 import { type MouseEvent, useRef, type MouseEventHandler } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 import { useService } from '@flowgram-adapter/free-layout-editor';
 
 import { useValidate } from '../hooks/use-validate';

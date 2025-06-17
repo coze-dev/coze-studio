@@ -10,7 +10,7 @@ import React, {
 import { debounce } from 'lodash-es';
 import cs from 'classnames';
 import { type ExpressionEditorTreeNode } from '@coze-workflow/sdk';
-import { type TextAreaProps } from '@coze/coze-design';
+import { type TextAreaProps } from '@coze-arch/coze-design';
 import { type PopoverProps } from '@coze-arch/bot-semi/Popover';
 
 import { getCssVarStyle } from './util';

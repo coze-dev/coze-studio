@@ -1,7 +1,7 @@
 import { RouterProvider } from 'react-router-dom';
 import { Suspense } from 'react';
 
-import { Spin } from '@coze/coze-design';
+import { Spin } from '@coze-arch/coze-design';
 
 import { router } from './routes';
 

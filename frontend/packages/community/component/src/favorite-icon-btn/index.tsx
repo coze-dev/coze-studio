@@ -59,6 +59,7 @@ export const FavoriteIconBtn = forwardRef(
       <div
         onClick={isForbiddenClick ? undefined : onClick}
         className={styles['favorite-icon-btn']}
+        data-testid="bot-card-favorite-icon"
       >
         {isMobile ? (
           <FavoriteIconMobile isFavorite={isFavorite} />

@@ -1,6 +1,6 @@
 import { type MouseEventHandler, type FC, type ReactNode } from 'react';
 
-import { Tooltip, IconButton } from '@coze/coze-design';
+import { Tooltip, IconButton } from '@coze-arch/coze-design';
 
 export const TooltipAction: FC<{
   icon: ReactNode;

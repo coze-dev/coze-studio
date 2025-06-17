@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 import queryString from 'query-string';
 import { I18n } from '@coze-arch/i18n';
-import { Toast, Space, Typography, Button } from '@coze/coze-design';
+import { Toast, Space, Typography, Button } from '@coze-arch/coze-design';
 import { appendUrlParam } from '@coze-arch/bot-utils';
 import { ProductEntityType } from '@coze-arch/bot-api/product_api';
 import { useNavigate } from 'react-router-dom';

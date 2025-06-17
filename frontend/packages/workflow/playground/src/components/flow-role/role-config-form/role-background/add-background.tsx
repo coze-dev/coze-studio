@@ -6,8 +6,8 @@ import {
   type ObjectField,
 } from '@coze-workflow/test-run/formily';
 import { type BackgroundImageInfo } from '@coze-arch/bot-api/workflow_api';
-import { IconCozPlus } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozPlus } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 import { BackgroundModal } from './background-upload';
 

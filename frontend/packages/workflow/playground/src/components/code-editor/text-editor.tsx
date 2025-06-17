@@ -1,6 +1,6 @@
-import { createRenderer, option } from '@flow-lang-sdk/editor/react';
-import universal from '@flow-lang-sdk/editor/preset-universal';
-import { mixLanguages } from '@flow-lang-sdk/editor';
+import { createRenderer, option } from '@coze-editor/editor/react';
+import universal from '@coze-editor/editor/preset-universal';
+import { mixLanguages } from '@coze-editor/editor';
 import { keymap, EditorView } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 

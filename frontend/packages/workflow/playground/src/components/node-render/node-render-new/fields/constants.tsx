@@ -19,7 +19,7 @@ import {
   IconCozSound,
   IconCozClock,
   IconCozClockBracket,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 const iconFile = <IconCozFolder />;
 const iconFileArray = <IconCozFolderBracket />;

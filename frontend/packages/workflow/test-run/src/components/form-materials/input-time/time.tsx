@@ -1,7 +1,7 @@
 import React from 'react';
 
 import cls from 'classnames';
-import { DatePicker } from '@coze/coze-design';
+import { DatePicker } from '@coze-arch/coze-design';
 
 import css from './time.module.less';
 

@@ -1,7 +1,7 @@
 import { type ReactElement, useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Typography, Space } from '@coze/coze-design';
+import { Typography, Space } from '@coze-arch/coze-design';
 import { UITabBar, Divider } from '@coze-arch/bot-semi';
 
 import { useModal } from './use-modal';

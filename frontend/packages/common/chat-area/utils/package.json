@@ -2,7 +2,7 @@
   "name": "@coze-common/chat-area-utils",
   "version": "0.0.1",
   "description": "utils in vanilla ts, no react, no logger, no I18n",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "wanglitong@bytedance.com",
   "maintainers": [],
   "main": "index.ts",

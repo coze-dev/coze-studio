@@ -1,8 +1,8 @@
 import { CollapsibleIconButton } from '@coze-studio/components/collapsible-icon-button';
 import { useMonetizeConfigStore } from '@coze-studio/bot-detail-store';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozWallet } from '@coze/coze-design/icons';
-import { Popover } from '@coze/coze-design';
+import { IconCozWallet } from '@coze-arch/coze-design/icons';
+import { Popover } from '@coze-arch/coze-design';
 
 import { MonetizeConfigPanel } from '../panel';
 

@@ -10,7 +10,7 @@ import {
   Typography,
   SideSheet,
   Select,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { IconCloseNoCycle } from '@coze-arch/bot-icons';
 import { useNavigate } from 'react-router-dom';

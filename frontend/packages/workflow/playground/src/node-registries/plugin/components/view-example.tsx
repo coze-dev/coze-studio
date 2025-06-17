@@ -4,7 +4,7 @@ import { type ApiNodeDetailDTO } from '@coze-workflow/nodes';
 import { type DebugExample } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { useViewExample } from '@coze-agent-ide/bot-plugin-tools/useViewExample';
-import { Typography, ConfigProvider } from '@coze/coze-design';
+import { Typography, ConfigProvider } from '@coze-arch/coze-design';
 
 interface Props {
   debugExample: DebugExample;

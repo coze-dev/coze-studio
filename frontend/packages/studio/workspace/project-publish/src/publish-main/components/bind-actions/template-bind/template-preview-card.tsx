@@ -1,8 +1,8 @@
 import { AvatarName } from '@coze-studio/components';
 import { type UserInfo } from '@coze-arch/idl/product_api';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozImage } from '@coze/coze-design/icons';
-import { Image, Typography } from '@coze/coze-design';
+import { IconCozImage } from '@coze-arch/coze-design/icons';
+import { Image, Typography } from '@coze-arch/coze-design';
 
 export interface TemplatePreviewCardProps {
   userInfo?: UserInfo;

@@ -1,4 +1,4 @@
-import { Tag, type TagProps, Typography } from '@coze/coze-design';
+import { Tag, type TagProps, Typography } from '@coze-arch/coze-design';
 
 export interface PublishStepTitleProps {
   title: string;

@@ -20,7 +20,7 @@ vi.mock('@coze-arch/bot-semi', async () => {
   }
 })
 
-vi.mock('@flow-lang-sdk/editor', () => {
+vi.mock('@coze-editor/editor', () => {
   return {
     mixLanguages() {},
     astDecorator: {
@@ -34,7 +34,7 @@ vi.mock('@flow-lang-sdk/editor', () => {
   };
 });
 
-vi.mock('@flow-lang-sdk/editor/react', () => {
+vi.mock('@coze-editor/editor/react', () => {
   return {
     Renderer() {},
     CursorMirror() {
@@ -67,7 +67,7 @@ vi.mock('@flow-lang-sdk/editor/react', () => {
   };
 });
 
-vi.mock('@flow-lang-sdk/editor/preset-expression', () => {
+vi.mock('@coze-editor/editor/preset-expression', () => {
   return {
     default: []
   };

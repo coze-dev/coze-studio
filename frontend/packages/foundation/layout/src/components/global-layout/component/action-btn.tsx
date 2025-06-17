@@ -1,7 +1,7 @@
 import { useState, type FC } from 'react';
 
 import classNames from 'classnames';
-import { IconButton, Tooltip } from '@coze/coze-design';
+import { IconButton, Tooltip } from '@coze-arch/coze-design';
 
 import { reportNavClick } from '../utils';
 import { type LayoutButtonItem } from '../types';

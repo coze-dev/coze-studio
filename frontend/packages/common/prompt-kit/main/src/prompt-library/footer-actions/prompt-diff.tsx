@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 export const PromptDiff = (props: { onDiff: () => void }) => {
   const { onDiff } = props;
   return (

@@ -13,8 +13,8 @@ import {
   IconCozFolder,
   IconCozPeople,
   IconCozSetting,
-} from '@coze/coze-design/icons';
-import { Tag } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Tag } from '@coze-arch/coze-design';
 
 import { useVariableWithNodeInfo } from '@/node-registries/http/fields/hooks/use-variable-with-node';
 import { useNodeServiceAndRefreshForTitleChange } from '@/form-extensions/hooks/use-node-available-variables';

@@ -2,7 +2,7 @@
   "name": "@coze-workflow/base",
   "version": "0.0.1",
   "description": "workflow 基础包",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "lvxinsheng@bytedance.com",
   "maintainers": [],
   "exports": {

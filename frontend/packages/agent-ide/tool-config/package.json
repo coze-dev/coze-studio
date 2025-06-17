@@ -2,7 +2,7 @@
   "name": "@coze-agent-ide/tool-config",
   "version": "0.0.1",
   "description": "tool core ",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "jinhui.0617@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",

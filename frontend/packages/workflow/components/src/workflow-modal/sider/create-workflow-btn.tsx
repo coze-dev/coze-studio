@@ -7,8 +7,8 @@ import {
   IconCozWorkflow,
   IconCozChat,
   IconCozArrowDown,
-} from '@coze/coze-design/icons';
-import { Menu, Button } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Menu, Button } from '@coze-arch/coze-design';
 
 import WorkflowModalContext from '../workflow-modal-context';
 import { WorkflowModalFrom, type WorkFlowModalModeProps } from '../type';

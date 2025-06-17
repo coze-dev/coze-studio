@@ -53,7 +53,7 @@ export interface UseRequestParamsProps {
   functionName?: string;
   apiInfo?: PluginAPIInfo;
   spaceID: string;
-  callback?: (params: UpdateAPIResponse) => void;
+  onSuccess?: (params: UpdateAPIResponse) => void;
   renderEnhancedComponent?: RenderEnhancedComponentProps['renderParamsComponent'];
 }
 
@@ -74,7 +74,7 @@ export const useRequestParams = ({
   editVersion,
   functionName,
   spaceID,
-  callback,
+  onSuccess,
   renderEnhancedComponent,
 }: UseRequestParamsProps): UseRequestParamsReturnValue => {
   const [data, setFormData] = useState<Array<APIParameter>>(
@@ -141,7 +141,7 @@ export const useRequestParams = ({
       const resData = await PluginDevelopApi.UpdateAPI(params, {
         __disableErrorToast: true,
       });
-      callback?.(resData);
+      onSuccess?.(resData);
       return true;
     } catch (error) {
       // @ts-expect-error -- linter-disable-autofix

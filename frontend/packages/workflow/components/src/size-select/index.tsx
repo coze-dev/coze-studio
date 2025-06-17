@@ -1,7 +1,7 @@
 import { useEffect, useState, type FC } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { CozInputNumber, Select } from '@coze/coze-design';
+import { CozInputNumber, Select } from '@coze-arch/coze-design';
 
 export interface SizeSelectProps {
   minWidth?: number;

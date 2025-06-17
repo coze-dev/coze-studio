@@ -1,7 +1,7 @@
 import { type CSSProperties, forwardRef, type PropsWithChildren } from 'react';
 
 import classNames from 'classnames';
-import { Badge, Button } from '@coze/coze-design';
+import { Badge, Button } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

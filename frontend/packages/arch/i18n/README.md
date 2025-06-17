@@ -65,7 +65,7 @@ import { I18n } from '@coze-arch/i18n';
 function MyComponent() {
   const title = I18n.t('common.title');
   const greeting = I18n.t('common.greeting', { name: 'User' });
-  
+
   return <h1>{title}</h1>;
 }
 ```
@@ -268,7 +268,7 @@ src/
 - **i18next-browser-languagedetector**: Automatic language detection in browsers
 - **i18next-icu**: ICU message formatting support
 - **@coze-studio/studio-i18n-resource-adapter**: Internal resource adapter for locale data
-- **@coze/coze-design**: Design system integration
+- **@coze-arch/coze-design**: Design system integration
 
 ### Peer Dependencies
 

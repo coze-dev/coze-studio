@@ -2,7 +2,7 @@
   "name": "@coze-studio/workspace-adapter",
   "version": "0.0.1",
   "description": "工作空间菜单栏入口页面",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "duwenhan@bytedance.com",
   "maintainers": [],
   "exports": {
@@ -28,13 +28,13 @@
     "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
-    "@coze-foundation/space-store-adapter": "workspace:*",
-    "@coze-studio/workspace-base": "workspace:*",
     "@coze-arch/bot-api": "workspace:*",
     "@coze-arch/bot-tea": "workspace:*",
-    "@coze/coze-design": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/idl": "workspace:*",
+    "@coze-foundation/space-store-adapter": "workspace:*",
+    "@coze-studio/workspace-base": "workspace:*",
     "classnames": "^2.3.2"
   },
   "devDependencies": {
@@ -70,3 +70,4 @@
     "react-dom": ">=18.2.0"
   }
 }
+

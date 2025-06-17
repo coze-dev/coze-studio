@@ -58,6 +58,19 @@ export const PublicGetUserFavoriteListV2 = /*#__PURE__*/createAPI<GetUserFavorit
   "schemaRoot": "api://schemas/idl_flow_marketplace_flow_marketplace_product_public_api",
   "service": "explore"
 });
+export const PublicDuplicateProduct = /*#__PURE__*/createAPI<DuplicateProductRequest, DuplicateProductResponse>({
+  "url": "/api/marketplace/product/duplicate",
+  "method": "POST",
+  "name": "PublicDuplicateProduct",
+  "reqType": "DuplicateProductRequest",
+  "reqMapping": {
+    "body": ["product_id", "entity_type", "space_id", "name"],
+    "header": ["Cookie"]
+  },
+  "resType": "DuplicateProductResponse",
+  "schemaRoot": "api://schemas/idl_flow_marketplace_flow_marketplace_product_public_api",
+  "service": "explore"
+});
 export interface FavoriteProductResponse {
   code: number,
   message: string,
@@ -667,4 +680,22 @@ export enum TriggerEnable {
   Init = 0,
   Open = 1,
   Close = 2,
+}
+export interface DuplicateProductRequest {
+  product_id: string,
+  entity_type: product_common.ProductEntityType,
+  space_id?: string,
+  name?: string,
+  Cookie?: string,
+}
+export interface DuplicateProductResponse {
+  code: number,
+  message: string,
+  data: DuplicateProductData,
+}
+export interface DuplicateProductData {
+  /** 复制后的新id */
+  new_entity_id: string,
+  /** workflow对应的插件id */
+  new_plugin_id?: string,
 }

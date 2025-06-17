@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 
-import { Switch as UISwitch } from '@coze/coze-design';
+import { Switch as UISwitch } from '@coze-arch/coze-design';
 import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 
 type SwitchProps = SetterComponentProps;

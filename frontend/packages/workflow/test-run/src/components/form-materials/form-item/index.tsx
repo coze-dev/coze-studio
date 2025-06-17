@@ -5,8 +5,8 @@ import React, { type FC, type ReactNode, type PropsWithChildren } from 'react';
 
 import { connect, mapProps } from '@formily/react';
 import { isDataField } from '@formily/core';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tooltip, Typography, Tag } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip, Typography, Tag } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import { PositionMirror } from '@flow-lang-sdk/editor/react';
+import { PositionMirror } from '@coze-editor/editor/react';
 import { I18n } from '@coze-arch/i18n';
-import { Popover, Input, type PopoverProps } from '@coze/coze-design';
+import { Popover, Input, type PopoverProps } from '@coze-arch/coze-design';
 
 interface InputConfigPopoverProps {
   visible: boolean;

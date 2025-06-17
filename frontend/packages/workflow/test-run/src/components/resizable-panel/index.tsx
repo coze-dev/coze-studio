@@ -11,8 +11,8 @@ import React, {
 
 import { isNumber } from 'lodash-es';
 import cls from 'classnames';
-import { IconCozCross } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 import styles from './resizable-panel.module.less';
 

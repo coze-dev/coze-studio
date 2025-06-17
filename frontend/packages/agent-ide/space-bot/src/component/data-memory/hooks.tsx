@@ -14,7 +14,7 @@ import {
   Switch,
   Tooltip,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { IconInfo } from '@coze-arch/bot-icons';
 import { type GetSysVariableConfResponse } from '@coze-arch/bot-api/memory';
 import { MemoryApi } from '@coze-arch/bot-api';

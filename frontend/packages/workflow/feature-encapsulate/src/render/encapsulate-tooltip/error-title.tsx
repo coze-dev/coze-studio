@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 
 import classNames from 'classnames';
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import {
   usePlayground,

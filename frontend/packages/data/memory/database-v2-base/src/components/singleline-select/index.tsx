@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import { Select, type SelectProps, type InputProps } from '@coze/coze-design';
+import { Select, type SelectProps, type InputProps } from '@coze-arch/coze-design';
 
 import s from './index.module.less';
 

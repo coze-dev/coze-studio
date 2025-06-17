@@ -4,7 +4,7 @@ import {
   type PublishConnectorInfo,
 } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { type TagProps } from '@coze/coze-design';
+import { type TagProps } from '@coze-arch/coze-design';
 
 interface ConfigStatusUI {
   text: string;

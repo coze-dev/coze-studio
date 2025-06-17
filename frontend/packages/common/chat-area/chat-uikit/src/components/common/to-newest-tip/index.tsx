@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { IconCozLongArrowUp } from '@coze/coze-design/icons';
+import { IconCozLongArrowUp } from '@coze-arch/coze-design/icons';
 
 import { OutlinedIconButton } from '../button';
 import { type ToNewestTipProps } from './type';

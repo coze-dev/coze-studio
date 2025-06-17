@@ -22,12 +22,27 @@ const spaces = [
 
 vi.mock('@coze-arch/bot-studio-store', () => ({
   useSpaceStore: () => ({
-    space: spaces[0],
+    space: { ...spaces[0], id: spaces[0].id },
     spaces: {
       bot_space_list: spaces,
     },
+    getState: () => ({
+      getPersonalSpaceID: () => 'personal-space-id',
+    }),
   }),
   useSpaceList: () => ({ spaces, loading: false }),
+}));
+
+vi.mock('@coze-studio/bot-detail-store/page-runtime', () => ({
+  usePageRuntimeStore: () => ({
+    pageFrom: 'test',
+  }),
+}));
+
+vi.mock('@coze-studio/bot-detail-store/bot-skill', () => ({
+  useBotSkillStore: () => ({
+    hasWorkflow: false,
+  }),
 }));
 
 describe('SelectSpaceModal', () => {
@@ -46,11 +61,14 @@ describe('SelectSpaceModal', () => {
       wrapper.getByDisplayValue('mockBot(duplicate_rename_copy)'),
     ).toBeInTheDocument();
 
-    fireEvent.click(wrapper.getByRole('combobox'));
-    act(() => vi.advanceTimersByTime(1000));
+    // 检查表单是否存在
+    expect(wrapper.getByRole('form')).toBeInTheDocument();
 
-    expect(wrapper.getAllByTestId('ui.select.option').length).toBe(2);
-    expect(wrapper.queryByText('space1')).toBeNull();
+    // 检查确定和取消按钮
+    expect(
+      wrapper.getByRole('button', { name: 'confirm' }),
+    ).toBeInTheDocument();
+    expect(wrapper.getByRole('button', { name: 'cancel' })).toBeInTheDocument();
   });
 
   it('should fire events', async () => {

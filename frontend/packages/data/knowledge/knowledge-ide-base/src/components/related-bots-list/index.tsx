@@ -5,7 +5,7 @@ import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
 import { KnowledgeApi } from '@coze-arch/bot-api';
 import { DataNamespace, dataReporter } from '@coze-data/reporter';
-import { Loading } from '@coze/coze-design';
+import { Loading } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 interface RelatedBotsListProps {

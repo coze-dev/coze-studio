@@ -15,8 +15,8 @@ import {
 import {
   IconCozWarningCircleFill,
   IconCozInfoCircle,
-} from '@coze/coze-design/icons';
-import { Tag } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Tag } from '@coze-arch/coze-design';
 
 import { TestRunCostPopover } from '../../test-run/execute-result/test-run-cost-popover';
 import { ExecuteResultPanel } from '../../test-run/execute-result/execute-result-panel';

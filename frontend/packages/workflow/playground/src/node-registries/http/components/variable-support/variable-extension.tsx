@@ -1,23 +1,23 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
-import { type ExpressionEditorTreeNode } from '@coze-workflow/components';
-import {
-  getCurrentMentionReplaceRange,
-  Mention,
-  PositionMirror,
-  useEditor,
-} from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-universal';
 import type { WorkflowVariableFacade } from '@coze-workflow/variable/src/core/workflow-variable-facade';
 import {
   WORKFLOW_VARIABLE_SOURCE,
   TRANS_WORKFLOW_VARIABLE_SOURCE,
   allGlobalVariableKeys,
 } from '@coze-workflow/variable';
+import { type ExpressionEditorTreeNode } from '@coze-workflow/components';
+import {
+  getCurrentMentionReplaceRange,
+  Mention,
+  PositionMirror,
+  useEditor,
+} from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-universal';
+import { Completion } from '@coze-common/editor-plugins/expression';
 import { I18n } from '@coze-arch/i18n';
 import type { TreeNodeData } from '@coze-arch/bot-semi/Tree';
-import { Completion } from '@coze-common/editor-plugins/expression';
-import { Dropdown, Toast, type Tree } from '@coze/coze-design';
+import { Dropdown, Toast, type Tree } from '@coze-arch/coze-design';
 import type { EditorState } from '@codemirror/state';
 
 import { SelectType } from '@/form-extensions/components/tree-variable-selector/types';

@@ -8,14 +8,14 @@ import {
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozEdit } from '@coze/coze-design/icons';
+import { IconCozEdit } from '@coze-arch/coze-design/icons';
 import {
   IconButton,
   Input,
   Button,
   Tooltip,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import s from './index.module.less';
 

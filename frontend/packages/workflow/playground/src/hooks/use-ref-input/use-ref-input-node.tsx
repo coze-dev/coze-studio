@@ -13,8 +13,8 @@ import {
   type ViewVariableType,
 } from '@coze-workflow/base';
 import { type TreeNodeData } from '@coze-arch/bot-semi/Tree';
-import { IconCozApply } from '@coze/coze-design/icons';
-import { IconButton, type TreeSelectProps } from '@coze/coze-design';
+import { IconCozApply } from '@coze-arch/coze-design/icons';
+import { IconButton, type TreeSelectProps } from '@coze-arch/coze-design';
 
 import {
   RefValueDisplay,

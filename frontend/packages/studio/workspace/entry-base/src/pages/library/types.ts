@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 
-import { type CascaderData } from '@coze/coze-design';
+import { type CascaderData } from '@coze-arch/coze-design';
 import {
   type LibraryResourceListRequest,
   type ResType,

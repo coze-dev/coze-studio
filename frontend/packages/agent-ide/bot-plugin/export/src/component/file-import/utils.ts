@@ -1,4 +1,5 @@
 import { parse as yamlParse, stringify as yamlStringify } from 'yaml';
+import { isObject } from 'lodash-es';
 import axios from 'axios';
 import { safeJSONParse } from '@coze-arch/bot-utils';
 import { CustomError } from '@coze-arch/bot-error';
@@ -260,3 +261,6 @@ export function getImportFormatType(
       return ImportFormatType.Unknown;
   }
 }
+
+export const isDuplicatePathErrorResponseData = (value: unknown): boolean =>
+  isObject(value) && 'paths_duplicated' in value;

@@ -7,7 +7,7 @@ import {
   Button,
   Popover,
   type useFormApi,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { type PublishWorkflowRequest } from '@coze-arch/bot-api/workflow_api';
 
 import { useGlobalState } from '@/hooks';

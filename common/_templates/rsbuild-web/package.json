@@ -4,7 +4,7 @@
   "private": true,
   "description": "{{ description }}",
   "keywords": [],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "{{ authorName }}",
   "maintainers": [],
   "sideEffects": false,

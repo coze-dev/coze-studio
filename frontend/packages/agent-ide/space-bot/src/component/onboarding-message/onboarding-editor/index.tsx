@@ -14,7 +14,7 @@ import { Spin, Form, Typography } from '@coze-arch/bot-semi';
 import { LazyEditorFullInput } from '@coze-common/md-editor-adapter';
 import type { Editor } from '@coze-common/md-editor-adapter';
 import { botInputLengthService } from '@coze-agent-ide/bot-input-length-limit';
-import { IconCozPeople } from '@coze/coze-design/icons';
+import { IconCozPeople } from '@coze-arch/coze-design/icons';
 
 import { getSchema } from '@/component/onboarding-message/onboarding-editor/method/get-schema';
 import { useOnEditor } from '@/component/onboarding-message/onboarding-editor/hooks/use-on-editor';

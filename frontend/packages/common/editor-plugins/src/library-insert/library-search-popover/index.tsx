@@ -5,10 +5,10 @@ import {
   PositionMirror,
   useChangeListener,
   useEditor,
-} from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+} from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
 import { I18n } from '@coze-arch/i18n';
-import { Popover } from '@coze/coze-design';
+import { Popover } from '@coze-arch/coze-design';
 import { type ViewUpdate } from '@codemirror/view';
 import { syntaxTree } from '@codemirror/language';
 

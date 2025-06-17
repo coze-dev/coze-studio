@@ -1,4 +1,4 @@
-import { Button, Space, Typography } from '@coze/coze-design';
+import { Button, Space, Typography } from '@coze-arch/coze-design';
 
 import { type QuestionRenderNodeProps } from './type';
 import { NodeWrapperUI } from './node-wrapper-ui';

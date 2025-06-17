@@ -15,7 +15,7 @@ import {
   Highlight,
   type CascaderData,
   type FilterRenderProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { generatedTimezones } from './utils/timezone';
 import { UNKNOWN_TIME_ZONE_OFFSET } from './const';

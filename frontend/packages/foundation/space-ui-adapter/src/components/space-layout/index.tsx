@@ -1,8 +1,8 @@
 import { Outlet, useParams } from 'react-router-dom';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozIllusAdd } from '@coze/coze-design/illustrations';
-import { Empty } from '@coze/coze-design';
+import { IconCozIllusAdd } from '@coze-arch/coze-design/illustrations';
+import { Empty } from '@coze-arch/coze-design';
 
 import { useInitSpace } from '../../hooks/use-init-space';
 

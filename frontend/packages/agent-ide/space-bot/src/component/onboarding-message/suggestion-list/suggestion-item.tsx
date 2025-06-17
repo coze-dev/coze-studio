@@ -17,8 +17,8 @@ import {
 } from '@coze-studio/bot-detail-store';
 import { IconShortcutTrash } from '@coze-arch/bot-icons';
 import { botInputLengthService } from '@coze-agent-ide/bot-input-length-limit';
-import { IconCozHandle } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozHandle } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 
 import s from '../index.module.less';
 import { settingAreaScrollId } from '../const';

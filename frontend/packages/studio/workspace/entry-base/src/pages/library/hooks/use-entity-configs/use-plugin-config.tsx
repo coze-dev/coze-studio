@@ -11,8 +11,8 @@ import { I18n } from '@coze-arch/i18n';
 import { PluginDevelopApi } from '@coze-arch/bot-api';
 import { useBotCodeEditOutPlugin } from '@coze-agent-ide/bot-plugin/hook';
 import { CreateFormPluginModal } from '@coze-agent-ide/bot-plugin/component';
-import { IconCozPlugin } from '@coze/coze-design/icons';
-import { Menu, Tag, Toast, Table } from '@coze/coze-design';
+import { IconCozPlugin } from '@coze-arch/coze-design/icons';
+import { Menu, Tag, Toast, Table } from '@coze-arch/coze-design';
 
 import { BaseLibraryItem } from '../../components/base-library-item';
 import PluginDefaultIcon from '../../assets/plugin_default_icon.png';

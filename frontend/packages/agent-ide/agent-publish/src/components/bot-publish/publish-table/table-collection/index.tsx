@@ -10,8 +10,8 @@ import {
 } from '@coze-agent-ide/space-bot';
 import { MonetizePublishInfo } from '@coze-studio/components/monetize';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozArrowRight, IconCozDiamondFill } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozArrowRight, IconCozDiamondFill } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 import { type ColumnProps } from '@coze-arch/bot-semi/Table';
 import { Avatar, Space, Typography, UITable } from '@coze-arch/bot-semi';
 import {

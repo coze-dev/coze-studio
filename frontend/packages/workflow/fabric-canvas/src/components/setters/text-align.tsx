@@ -5,8 +5,8 @@ import {
   IconCozTextAlignCenter,
   IconCozTextAlignLeft,
   IconCozTextAlignRight,
-} from '@coze/coze-design/icons';
-import { Select, type RenderSelectedItemFn } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Select, type RenderSelectedItemFn } from '@coze-arch/coze-design';
 
 import { TextAlign as TextAlignEnum } from '../../typings';
 

@@ -11,7 +11,7 @@ import {
   IconCozLessEqual,
   IconCozProperSuperset,
   IconCozProperSupersetSlash,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 import { type ConditionItem } from '@/form-extensions/setters/condition/multi-condition/types';
 

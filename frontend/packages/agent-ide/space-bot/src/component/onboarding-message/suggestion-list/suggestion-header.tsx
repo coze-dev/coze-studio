@@ -2,7 +2,7 @@ import React, { type FC } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Switch } from '@coze/coze-design';
+import { Switch } from '@coze-arch/coze-design';
 import { SuggestedQuestionsShowMode } from '@coze-arch/bot-api/developer_api';
 
 import s from '../index.module.less';

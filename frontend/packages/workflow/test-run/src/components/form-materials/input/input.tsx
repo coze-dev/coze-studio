@@ -1,5 +1,5 @@
 import { connect, mapProps } from '@formily/react';
-import { Input as InputCore } from '@coze/coze-design';
+import { Input as InputCore } from '@coze-arch/coze-design';
 
 const InputAdapter = props => <InputCore size="small" {...props} />;
 

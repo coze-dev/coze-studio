@@ -9,7 +9,7 @@ vi.mock('@coze-common/chat-core', () => ({
   messageSource: vi.fn(),
 }));
 
-vi.mock('@coze/coze-design', () => ({
+vi.mock('@coze-arch/coze-design', () => ({
   UIToast: {
     error: vi.fn(),
   },

@@ -2,8 +2,8 @@ import { type PropsWithChildren, useState, useEffect } from 'react';
 
 import { useToolItemContext, ToolItemAction } from '@coze-agent-ide/tool';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozSetting } from '@coze/coze-design/icons';
-import { Popover, Typography, Switch } from '@coze/coze-design';
+import { IconCozSetting } from '@coze-arch/coze-design/icons';
+import { Popover, Typography, Switch } from '@coze-arch/coze-design';
 import { MemoryApi } from '@coze-arch/bot-api';
 
 export type PromptSettingsButtonProps = PropsWithChildren<{

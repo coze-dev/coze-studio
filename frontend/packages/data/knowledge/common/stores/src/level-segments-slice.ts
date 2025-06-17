@@ -23,6 +23,7 @@ export interface ILevelSegment {
   block_id: number | null;
   slide_index: number | null;
   slice_id?: string;
+  slice_sequence?: number;
   type:
     | 'title'
     | 'section-title'
@@ -72,5 +73,7 @@ export const createLevelSegmentsSlice: StateCreator<
 > = set => ({
   ...getDefaultLevelSegmentsState(),
   setLevelSegments: (content: ILevelSegment[]) =>
-    set(() => ({ levelSegments: content })),
+    set(() => ({
+      levelSegments: content,
+    })),
 });

@@ -1,6 +1,6 @@
 import React, { type MouseEvent } from 'react';
 
-import { IconCozArrowDown } from '@coze/coze-design/icons';
+import { IconCozArrowDown } from '@coze-arch/coze-design/icons';
 
 export const ExpandIcon = ({
   onClick,

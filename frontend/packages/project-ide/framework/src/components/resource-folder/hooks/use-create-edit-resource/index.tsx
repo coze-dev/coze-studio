@@ -5,7 +5,7 @@
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { baseValidateNames, getCreateResourceIndex } from '../../utils';
 import {

@@ -1,15 +1,15 @@
 import { type FC, useCallback, useState } from 'react';
 
 import classNames from 'classnames';
-import { EditorProvider } from '@flow-lang-sdk/editor/react';
+import { EditorProvider } from '@coze-editor/editor/react';
 import { I18n } from '@coze-arch/i18n';
+import { IconWarningInfo } from '@coze-arch/bot-icons';
 import {
   IconCozImport,
   IconCozMoon,
   IconCozSun,
-} from '@coze/coze-design/icons';
-import { IconButton, Modal, Toast } from '@coze/coze-design';
-import { IconWarningInfo } from '@coze-arch/bot-icons';
+} from '@coze-arch/coze-design/icons';
+import { IconButton, Modal, Toast } from '@coze-arch/coze-design';
 
 import { CURLParser, type ParsedResult } from '@/utils';
 import {

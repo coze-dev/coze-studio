@@ -9,7 +9,7 @@ import {
 } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlus } from '@coze/coze-design/icons';
+import { IconCozPlus } from '@coze-arch/coze-design/icons';
 
 import EmptyLibraryIcon from '../assets/empty-library-icon.svg';
 import {

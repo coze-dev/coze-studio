@@ -6,8 +6,8 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozArrowRight,
   IconCozCheckMarkFill,
-} from '@coze/coze-design/icons';
-import { Avatar, Tag, Typography } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Avatar, Tag, Typography } from '@coze-arch/coze-design';
 import { useHover } from '@coze-arch/hooks';
 
 import type { IBotSelectOption } from '@/components/bot-project-select/types';

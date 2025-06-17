@@ -14,7 +14,7 @@ import {
 import { ColumnType } from '@coze-arch/bot-api/knowledge';
 import { FieldItemType } from '@coze-arch/bot-api/developer_api';
 import { MemoryApi } from '@coze-arch/bot-api';
-import { Spin } from '@coze/coze-design';
+import { Spin } from '@coze-arch/coze-design';
 
 import { type TableFieldData } from '../../database-table-data/type';
 

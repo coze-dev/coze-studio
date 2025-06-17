@@ -9,8 +9,8 @@ import {
 } from '@coze-arch/idl/plugin_develop';
 import { type IntelligenceData } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozLightbulb } from '@coze/coze-design/icons';
-import { Table, Menu, Toast } from '@coze/coze-design';
+import { IconCozLightbulb } from '@coze-arch/coze-design/icons';
+import { Table, Menu, Toast } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { useFlags } from '@coze-arch/bot-flags';
 import { PlaygroundApi } from '@coze-arch/bot-api';

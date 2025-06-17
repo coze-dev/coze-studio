@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCross, IconCozTrashCan } from '@coze/coze-design/icons';
-import { Button, Divider, IconButton, Typography } from '@coze/coze-design';
+import { IconCozCross, IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { Button, Divider, IconButton, Typography } from '@coze-arch/coze-design';
 
 export interface BatchDeleteToolbarProps {
   selectedCount?: number;

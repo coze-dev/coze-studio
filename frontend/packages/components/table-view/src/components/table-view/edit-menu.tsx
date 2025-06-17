@@ -8,7 +8,7 @@ import {
   Button,
   ButtonGroup,
   Space,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { IconClose } from '@douyinfe/semi-icons';
 
 import { type EditMenuItem, type TableViewRecord } from '../types';

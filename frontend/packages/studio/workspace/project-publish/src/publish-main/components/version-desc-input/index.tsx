@@ -7,7 +7,7 @@ import {
   TextArea,
   type TextAreaProps,
   withField,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

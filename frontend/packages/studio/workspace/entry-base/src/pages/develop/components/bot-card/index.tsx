@@ -5,6 +5,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 
 import { cloneDeep } from 'lodash-es';
 import classNames from 'classnames';
+import { FavoriteIconBtn } from '@coze-community/components';
 import { ProductEntityType } from '@coze-arch/idl/product_api';
 import {
   type IntelligenceBasicInfo,
@@ -18,12 +19,11 @@ import {
   IconCozMore,
   IconCozStarFill,
   IconCozWarningCircleFill,
-} from '@coze/coze-design/icons';
-import { Avatar, IconButton, Menu, Tooltip } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Avatar, IconButton, Menu, Tooltip } from '@coze-arch/coze-design';
 import { formatDate, getFormatDateType } from '@coze-arch/bot-utils';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { ConnectorDynamicStatus } from '@coze-arch/bot-api/developer_api';
-import { FavoriteIconBtn } from '@coze-community/components';
 
 import { Creator } from '@/components/creator';
 
@@ -45,7 +45,6 @@ export interface BotCardProps {
     id: string;
     type: IntelligenceType;
   }) => void;
-  onDeleteMutate?: (param: { id: string }) => void;
   onCopyProject?: (basicInfo: IntelligenceBasicInfo) => void;
   onCopyAgent?: AgentCopySuccessCallback;
   onUpdateIntelligenceInfo: (info: IntelligenceData) => void;
@@ -63,7 +62,6 @@ export const BotCard: React.FC<BotCardProps> = ({
   timePrefixType,
   onClick,
   onDelete,
-  onDeleteMutate,
   onCopyProject,
   onCopyAgent,
   onUpdateIntelligenceInfo,

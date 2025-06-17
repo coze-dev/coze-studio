@@ -18,8 +18,8 @@ import classNames from 'classnames';
 import { useDebounce, useLatest, useSize } from 'ahooks';
 import { createUseGesture, pinchAction, wheelAction } from '@use-gesture/react';
 import { type InputVariable } from '@coze-workflow/base/types';
-import { IconCozCross } from '@coze/coze-design/icons';
-import { ConfigProvider } from '@coze/coze-design';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
+import { ConfigProvider } from '@coze-arch/coze-design';
 
 import { TopBar } from '../topbar';
 import { RefTitle } from '../ref-title';

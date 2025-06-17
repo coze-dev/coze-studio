@@ -11,7 +11,7 @@ import { I18n } from '@coze-arch/i18n';
 import { renderHtmlTitle } from '@coze-arch/bot-utils';
 import { type DocumentInfo, type Dataset } from '@coze-arch/bot-api/knowledge';
 import { FormatType } from '@coze-arch/bot-api/knowledge';
-import { Layout } from '@coze/coze-design';
+import { Layout } from '@coze-arch/coze-design';
 
 import { type ProgressMap } from '@/types';
 import { usePollingTaskProgress } from '@/service';

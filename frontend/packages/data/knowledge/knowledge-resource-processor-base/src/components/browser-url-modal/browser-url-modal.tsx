@@ -1,16 +1,18 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
+import { nanoid } from 'nanoid';
+import { transSliceContentOutput } from '@coze-data/knowledge-modal-base';
 import {
-  SegmentationMode,
-  transSliceContentOutput,
-} from '@coze-data/knowledge-modal-base';
-import {
-  SegmentEditor,
-  type SegmentEditorMethods,
-} from '@coze-data/knowledge-modal-base';
+  DocumentEditor,
+  useInitEditor,
+  EditorToolbar,
+} from '@coze-data/knowledge-common-components/text-knowledge-editor';
 import { I18n } from '@coze-arch/i18n';
+import { Form, Input, Modal, Toast } from '@coze-arch/coze-design';
 import { MemoryApi, KnowledgeApi } from '@coze-arch/bot-api';
-import { Form, Input, Modal, Toast } from '@coze/coze-design';
+
+import { editorToolbarActionRegistry } from './editor-toolbar-actions-contributes';
+import { editorContextActionRegistry } from './editor-context-actions-contributes';
 
 import styles from './index.module.less';
 
@@ -29,7 +31,6 @@ export interface ViewOnlinePageDetailProps {
 
 const getWebInfo = async (
   webID: string,
-  editorRef: React.RefObject<SegmentEditorMethods>,
   setPageList: React.Dispatch<
     React.SetStateAction<ViewOnlinePageDetailProps[]>
   >,
@@ -69,11 +70,6 @@ const getWebInfo = async (
         },
       ]);
     }
-    if (editorRef.current) {
-      editorRef.current?.updateContent(
-        responseData?.[webID]?.web_info?.content as string,
-      );
-    }
   }
 };
 
@@ -88,11 +84,29 @@ export const useBrowseUrlModal = ({
   updateInterval?: number;
   onSubmit: (name: string, content?: string) => void;
 }): UseBrowseDetailModalReturnValue => {
-  const editorRef = useRef<SegmentEditorMethods>(null);
-  const [uploading, setUploading] = useState(false);
   const [docName, setDocName] = useState<string>(name);
   const [visible, setVisible] = useState(false);
   const [pageList, setPageList] = useState<ViewOnlinePageDetailProps[]>([]);
+
+  const { editor } = useInitEditor({
+    chunk: {
+      text_knowledge_editor_chunk_uuid: nanoid(),
+      content: pageList?.[0]?.content || '',
+    },
+    editorProps: {
+      attributes: {
+        class: 'h-[360px] overflow-y-auto',
+      },
+    },
+    onChange: v => {
+      setPageList(
+        ([] as ViewOnlinePageDetailProps[]).concat({
+          ...pageList?.[0],
+          content: v.content ?? '',
+        }),
+      );
+    },
+  });
 
   useEffect(() => {
     setDocName(name);
@@ -100,7 +114,7 @@ export const useBrowseUrlModal = ({
 
   useEffect(() => {
     if (visible && webID) {
-      getWebInfo(webID, editorRef, setPageList);
+      getWebInfo(webID, setPageList);
     }
   }, [visible, webID]);
 
@@ -112,9 +126,6 @@ export const useBrowseUrlModal = ({
         width={792}
         cancelText={I18n.t('Cancel')}
         okText={I18n.t('datasets_segment_detailModel_save')}
-        okButtonProps={{
-          disabled: uploading,
-        }}
         maskClosable={false}
         onOk={async () => {
           const pageInfo = pageList?.[0];
@@ -151,19 +162,18 @@ export const useBrowseUrlModal = ({
             className={styles['form-segment-content']}
             label={{ text: I18n.t('knowledge_upload_text_custom_doc_content') }}
           >
-            <SegmentEditor
-              ref={editorRef}
-              value={pageList?.[0]?.content || ''}
-              mode={SegmentationMode.Inline}
-              onChange={function (content: string): void | Promise<void> {
-                setPageList(
-                  ([] as ViewOnlinePageDetailProps[]).concat({
-                    ...pageList?.[0],
-                    content,
-                  }),
-                );
-              }}
-              setUploading={setUploading}
+            <DocumentEditor
+              editor={editor}
+              placeholder={I18n.t(
+                'knowledge_upload_text_custom_doc_content_tips',
+              )}
+              editorContextMenuItemsRegistry={editorContextActionRegistry}
+              editorBottomSlot={
+                <EditorToolbar
+                  editor={editor}
+                  actionRegistry={editorToolbarActionRegistry}
+                />
+              }
             />
             {pageList?.[0]?.url ? (
               <div className={styles['browse-source-url']}>

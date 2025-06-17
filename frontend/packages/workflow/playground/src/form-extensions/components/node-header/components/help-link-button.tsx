@@ -4,8 +4,8 @@ import { get } from 'lodash-es';
 import { type FlowNodeType } from '@flowgram-adapter/free-layout-editor';
 import { type NodeData } from '@coze-workflow/nodes';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
-import { IconCozQuestionMarkCircle } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozQuestionMarkCircle } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 export const HelpLinkButton = ({
   helpLink,

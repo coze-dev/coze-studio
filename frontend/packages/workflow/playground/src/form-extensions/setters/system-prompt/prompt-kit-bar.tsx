@@ -7,7 +7,7 @@ import {
   IconCozExpand,
   IconCozKnowledge,
   IconCozMinimize,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';
 

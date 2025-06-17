@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { IconCozKnowledgeFill } from '@coze/coze-design/icons';
+import { IconCozKnowledgeFill } from '@coze-arch/coze-design/icons';
 
 interface SiderCategoryProps {
   label: string;

@@ -1,7 +1,7 @@
 import { type FC, type MouseEvent } from 'react';
 
 import classNames from 'classnames';
-import { Typography, Highlight } from '@coze/coze-design';
+import { Typography, Highlight } from '@coze-arch/coze-design';
 
 import { NodeIconOutlined } from '@/components/node-icon';
 
@@ -42,7 +42,7 @@ export const NodeCard: FC<NodesContainerProps> = props => {
       <Typography.Text
         className={classNames(
           styles['node-title'],
-          `font-['PICO_Sans_VFE_SC']`,
+          "font-['PICO_Sans_VFE_SC']",
         )}
         ellipsis
       >

@@ -12,14 +12,14 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozCheckMark,
   IconCozCrossCircle,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   Tooltip,
   Toast,
   Image,
   AIButton,
   Space,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { loadImage } from '@coze-arch/bot-utils';
 import { DeveloperApi } from '@coze-arch/bot-api';
 

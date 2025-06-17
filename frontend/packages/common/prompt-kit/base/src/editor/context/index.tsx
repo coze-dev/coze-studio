@@ -1,6 +1,6 @@
 import { type PropsWithChildren } from 'react';
 
-import { EditorProvider } from '@flow-lang-sdk/editor/react';
+import { EditorProvider } from '@coze-editor/editor/react';
 
 export const PromptEditorProvider: React.FC<PropsWithChildren> = ({
   children,

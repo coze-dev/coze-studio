@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useMemoizedFn } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
-import { Button, Typography } from '@coze/coze-design';
+import { Button, Typography } from '@coze-arch/coze-design';
 
 import { type PanelInfo } from '@/services/workflow-float-layout-service';
 import {

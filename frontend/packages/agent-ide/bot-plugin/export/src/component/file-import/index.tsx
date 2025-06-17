@@ -30,6 +30,7 @@ import { PluginDevelopApi } from '@coze-arch/bot-api';
 import {
   getImportFormatType,
   getInitialPluginMetaInfo,
+  isDuplicatePathErrorResponseData,
   parsePluginInfo,
 } from './utils';
 import { showMergeTool } from './show-merge-tool';
@@ -143,7 +144,10 @@ export const ImportPluginModalContent: React.FC<
         status: 1,
         error_message: msg,
       });
-      if (Number(code) === ERROR_CODE.DUP_PATH) {
+      if (
+        Number(code) === ERROR_CODE.DUP_PATH ||
+        isDuplicatePathErrorResponseData(response?.data)
+      ) {
         const handleMerge = async () => {
           const { errMsg, success } = await convert2OpenAPI({
             ...req,
@@ -267,7 +271,10 @@ export const ImportToolModalContent: React.FC<ImportToolModalProps> = props => {
     } catch (e) {
       const { code, response } = e as ApiError;
 
-      if (Number(code) !== ERROR_CODE.DUP_PATH) {
+      if (
+        Number(code) !== ERROR_CODE.DUP_PATH &&
+        !isDuplicatePathErrorResponseData(response?.data)
+      ) {
         return Promise.reject(e);
       }
 
@@ -389,7 +396,10 @@ export const ImportToolModalContent: React.FC<ImportToolModalProps> = props => {
         error_message: msg || '',
       });
 
-      if (Number(code) === ERROR_CODE.DUP_PATH) {
+      if (
+        Number(code) === ERROR_CODE.DUP_PATH ||
+        isDuplicatePathErrorResponseData(response?.data)
+      ) {
         const handleMerge = async () => {
           const { success, errMsg } = await batchImport({
             ...req,

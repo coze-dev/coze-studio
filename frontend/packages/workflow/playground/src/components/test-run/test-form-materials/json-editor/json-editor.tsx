@@ -1,6 +1,6 @@
-import { EditorProvider, createRenderer } from '@flow-lang-sdk/editor/react';
-import preset, { languages, themes } from '@flow-lang-sdk/editor/preset-code';
-import { json } from '@flow-lang-sdk/editor/language-json';
+import { EditorProvider, createRenderer } from '@coze-editor/editor/react';
+import preset, { languages, themes } from '@coze-editor/editor/preset-code';
+import { json } from '@coze-editor/editor/language-json';
 import { EditorView, tooltips } from '@codemirror/view';
 
 import { cozeLight } from '../../../code-editor/themes/coze-light';

@@ -1,5 +1,5 @@
-import { IconCozMinus } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozMinus } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 interface IconRemoveProps {
   className?: string;

@@ -2,7 +2,7 @@ import { useState, type PropsWithChildren } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Popover, Image } from '@coze/coze-design';
+import { Popover, Image } from '@coze-arch/coze-design';
 import { IconImageOverlay } from '@coze-arch/bot-icons';
 
 import {

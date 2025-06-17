@@ -1,10 +1,10 @@
-import { EditorProvider, createRenderer } from '@flow-lang-sdk/editor/react';
+import { EditorProvider, createRenderer } from '@coze-editor/editor/react';
 import preset, {
   languages,
   createTheme,
   tags,
-} from '@flow-lang-sdk/editor/preset-code';
-import { json } from '@flow-lang-sdk/editor/language-json';
+} from '@coze-editor/editor/preset-code';
+import { json } from '@coze-editor/editor/language-json';
 import { EditorView, tooltips } from '@codemirror/view';
 
 const colors = {

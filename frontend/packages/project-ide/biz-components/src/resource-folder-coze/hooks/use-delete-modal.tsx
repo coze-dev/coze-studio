@@ -2,7 +2,7 @@ import React, { type ReactNode, useMemo, useState } from 'react';
 
 import classnames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Modal } from '@coze/coze-design';
+import { Modal } from '@coze-arch/coze-design';
 import {
   getURIByResource,
   type ResourceFolderProps,

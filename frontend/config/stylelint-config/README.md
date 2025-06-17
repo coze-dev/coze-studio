@@ -180,16 +180,16 @@ The use of `!important` is prohibited:
   padding: 16px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  
+
   &-header {
     margin-bottom: 12px;
     font-weight: bold;
-    
+
     &_featured {
       background-color: #f0f0f0;
     }
   }
-  
+
   &-content {
     line-height: 1.5;
   }
@@ -201,10 +201,10 @@ The use of `!important` is prohibited:
 ```less
 .custom-component {
   @apply flex items-center justify-between;
-  
+
   &-item {
     @apply px-4 py-2 rounded;
-    
+
     &_active {
       @apply bg-blue-500 text-white;
     }
@@ -243,7 +243,7 @@ This package has no runtime dependencies.
 
 ## License
 
-ISC License
+Apache-2.0 License
 
 ---
 

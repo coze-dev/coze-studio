@@ -1,4 +1,4 @@
-import { CozAvatar, type AvatarProps } from '@coze/coze-design';
+import { CozAvatar, type AvatarProps } from '@coze-arch/coze-design';
 
 import img from './avatar.png';
 

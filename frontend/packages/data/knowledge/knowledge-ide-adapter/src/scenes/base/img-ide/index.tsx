@@ -1,16 +1,16 @@
 import { KnowledgeIDEBaseLayout } from '@coze-data/knowledge-ide-base/layout/base';
 import { BaseKnowledgeIDENavBar } from '@coze-data/knowledge-ide-base/features/nav-bar/base';
-import { KnowledgeIDERegistryContext } from '@coze-data/knowledge-ide-base/context/knowledge-ide-registry-context';
 import {
-  ImagePreview,
-  type ImagePreviewProps,
-} from '@coze-data/knowledge-ide-base/components/preview-image';
+  ImageKnowledgeWorkspace,
+  type ImageKnowledgeWorkspaceProps,
+} from '@coze-data/knowledge-ide-base/features/image-knowledge-workspace';
+import { KnowledgeIDERegistryContext } from '@coze-data/knowledge-ide-base/context/knowledge-ide-registry-context';
 
 import { type BaseKnowledgeIDEProps } from '../types';
 import { importKnowledgeSourceMenuContributes } from './import-knowledge-source-menu-contributes';
 
 export interface BaseKnowledgeImgIDEProps extends BaseKnowledgeIDEProps {
-  contentProps?: Partial<ImagePreviewProps>;
+  contentProps?: Partial<ImageKnowledgeWorkspaceProps>;
 }
 
 const registryContextValue = {
@@ -28,7 +28,7 @@ export const BaseKnowledgeImgIDE = (props: BaseKnowledgeImgIDEProps) => (
         />
       )}
       renderContent={({ statusInfo }) => (
-        <ImagePreview
+        <ImageKnowledgeWorkspace
           progressMap={statusInfo.progressMap}
           {...props.contentProps}
         />

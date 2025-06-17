@@ -1,4 +1,4 @@
-import { type ButtonProps } from '@coze/coze-design';
+import { type ButtonProps } from '@coze-arch/coze-design';
 
 export interface ActionController {
   hideActionBar: () => void;

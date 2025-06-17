@@ -2,7 +2,7 @@ import React, { type FC, useContext, useMemo, useState } from 'react';
 
 import classNames from 'classnames';
 import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
-import { LoadingButton } from '@coze/coze-design';
+import { LoadingButton } from '@coze-arch/coze-design';
 import { Popconfirm, Tooltip } from '@coze-arch/bot-semi';
 import { CheckType, type CheckResult } from '@coze-arch/bot-api/workflow_api';
 import { type WorkflowNodeJSON } from '@flowgram-adapter/free-layout-editor';

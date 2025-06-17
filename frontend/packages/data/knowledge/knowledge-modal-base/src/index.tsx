@@ -25,10 +25,6 @@ export {
   getSrcFromImg,
 } from './table-segment-modal';
 export {
-  useTextSegmentModal,
-  type UseTextSegmentModalParams,
-} from './text-segment-modal';
-export {
   useKnowledgeListModal,
   type UseKnowledgeListModalParams,
   type UseKnowledgeListReturnValue,
@@ -42,12 +38,6 @@ export {
   useUpdateFrequencyModal,
   type UseUpdateFrequencyModalProps,
 } from './update-frequency-modal';
-
-export {
-  SegmentEditor,
-  type SegmentEditorMethods,
-  SegmentationMode,
-} from './segment-editor';
 
 export {
   transSliceContentOutput,

@@ -4,14 +4,14 @@ import {
   IconCozCodeFill,
   IconCozPlayCircle,
   IconCozSideCollapse,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   Select,
   Tooltip,
   Button,
   IconButton,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 const { Text } = Typography;
 

@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { IconAdd } from '@coze-arch/bot-icons';
-import { IconCozAddNode } from '@coze/coze-design/icons';
-import { IconButton, type ButtonProps } from '@coze/coze-design';
+import { IconCozAddNode } from '@coze-arch/coze-design/icons';
+import { IconButton, type ButtonProps } from '@coze-arch/coze-design';
 
 type AddOperationProps = React.PropsWithChildren<{
   readonly?: boolean;

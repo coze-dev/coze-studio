@@ -4,8 +4,8 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozPlayFill,
   IconCozStopCircle,
-} from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { useExecStateEntity } from '@/hooks';

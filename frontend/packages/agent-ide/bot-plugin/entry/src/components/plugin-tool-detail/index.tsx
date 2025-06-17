@@ -5,11 +5,13 @@ import { type FC, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { cloneDeep } from 'lodash-es';
 import { useUpdateEffect } from 'ahooks';
+import { usePluginStore } from '@coze-studio/bot-plugin-store';
 import {
   REPORT_EVENTS,
   REPORT_EVENTS as ReportEventNames,
 } from '@coze-arch/report-events';
 import { useErrorHandler } from '@coze-arch/logger';
+import { CustomError } from '@coze-arch/bot-error';
 import {
   type APIParameter,
   type PluginAPIInfo,
@@ -17,12 +19,10 @@ import {
   type UpdateAPIResponse,
 } from '@coze-arch/bot-api/plugin_develop';
 import { PluginDevelopApi } from '@coze-arch/bot-api';
-import { usePluginStore } from '@coze-studio/bot-plugin-store';
-import { CustomError } from '@coze-arch/bot-error';
 import { addDepthAndValue } from '@coze-agent-ide/bot-plugin-tools/pluginModal/utils';
 import { type RenderEnhancedComponentProps } from '@coze-agent-ide/bot-plugin-tools/pluginModal/types';
 import { setEditToolExampleValue } from '@coze-agent-ide/bot-plugin-tools/example/utils';
-import { Spin, Collapse } from '@coze/coze-design';
+import { Spin, Collapse } from '@coze-arch/coze-design';
 
 import { useContentResponse } from './use-content-response';
 import { useContentRequest } from './use-content-request';
@@ -79,13 +79,11 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
     })),
   );
 
-  const handleCallback = (baseResData: UpdateAPIResponse) => {
-    if (baseResData.code === 0 && baseResData.msg === 'success') {
-      setPluginInfo({
-        ...pluginInfo,
-        edit_version: baseResData?.edit_version,
-      });
-    }
+  const handleSuccess = (baseResData: UpdateAPIResponse) => {
+    setPluginInfo({
+      ...pluginInfo,
+      edit_version: baseResData?.edit_version,
+    });
   };
 
   // 重置 request 参数
@@ -192,7 +190,7 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
     wrapWithCheckLock,
     editVersion,
     space_id: spaceID,
-    callback: handleCallback,
+    onSuccess: handleSuccess,
   });
 
   // 3.设置 request
@@ -213,7 +211,7 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
     wrapWithCheckLock,
     editVersion,
     spaceID,
-    callback: handleCallback,
+    onSuccess: handleSuccess,
     renderParamsComponent,
   });
 
@@ -237,7 +235,7 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
     debugApiInfo,
     setDebugApiInfo,
     spaceID,
-    callback: handleCallback,
+    onSuccess: handleSuccess,
     renderParamsComponent,
   });
 

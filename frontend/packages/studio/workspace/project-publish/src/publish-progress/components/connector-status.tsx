@@ -8,7 +8,7 @@ import {
   Tag,
   type TagProps,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import {
   MINI_PROGRAM_DOUYIN_DOWNLOAD_CONNECTOR_ID,

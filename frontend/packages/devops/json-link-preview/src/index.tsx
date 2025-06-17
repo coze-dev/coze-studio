@@ -3,7 +3,7 @@ import { Component, type ReactNode } from 'react';
 import { isEmpty, last } from 'lodash-es';
 import JsonView, { ValueQuote } from '@uiw/react-json-view';
 import { I18n } from '@coze-arch/i18n';
-import { Tooltip, Typography } from '@coze/coze-design';
+import { Tooltip, Typography } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 
 import { isValidHttpUrl } from './utils/url';

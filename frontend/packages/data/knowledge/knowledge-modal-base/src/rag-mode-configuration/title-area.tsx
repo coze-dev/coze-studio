@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { IconInfo } from '@coze-arch/bot-icons';
-import { Popover } from '@coze/coze-design';
+import { Popover } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

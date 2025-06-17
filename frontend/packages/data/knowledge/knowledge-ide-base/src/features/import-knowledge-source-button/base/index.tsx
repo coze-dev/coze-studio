@@ -1,14 +1,17 @@
 import { useState } from 'react';
 
-import { useDataNavigate, useKnowledgeStore } from '@coze-data/knowledge-stores';
+import {
+  useDataNavigate,
+  useKnowledgeStore,
+} from '@coze-data/knowledge-stores';
 import { OptType } from '@coze-data/knowledge-resource-processor-core';
 import { getKnowledgeIDEQuery } from '@coze-data/knowledge-common-services/use-case';
 import { KnowledgeE2e } from '@coze-data/e2e';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozArrowDown } from '@coze-arch/bot-icons';
 import { FormatType } from '@coze-arch/bot-api/knowledge';
-import { IconCozArrowUp } from '@coze/coze-design/icons';
-import { Button, Tooltip } from '@coze/coze-design';
+import { IconCozArrowUp } from '@coze-arch/coze-design/icons';
+import { Button, Tooltip } from '@coze-arch/coze-design';
 
 import { ImportKnowledgeSourceMenu } from '@/features/import-knowledge-source-menu';
 
@@ -28,7 +31,7 @@ export const ImportKnowledgeSourceButton = ({
   const [visible, setVisible] = useState<boolean>(false);
   const resourceNavigate = useDataNavigate();
   const disabledTooltip =
-    disabledTooltipProp || createBtnDisableToolTip(dataSetDetail, documentList);
+    disabledTooltipProp ?? createBtnDisableToolTip(dataSetDetail, documentList);
   const query = getKnowledgeIDEQuery() as Record<string, string>;
   if (disabledTooltip) {
     return (

@@ -9,7 +9,7 @@ import React, {
 
 import { set as ObjectSet, get as ObjectGet, cloneDeep } from 'lodash-es';
 import { I18n } from '@coze-arch/i18n';
-import { Tag } from '@coze/coze-design';
+import { Tag } from '@coze-arch/coze-design';
 import {
   UIButton,
   Table,

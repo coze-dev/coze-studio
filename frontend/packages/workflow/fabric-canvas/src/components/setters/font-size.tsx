@@ -2,8 +2,8 @@ import { type FC, useCallback, useMemo } from 'react';
 
 import { clamp } from 'lodash-es';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozFontSize } from '@coze/coze-design/icons';
-import { Select, type SelectProps, Tooltip } from '@coze/coze-design';
+import { IconCozFontSize } from '@coze-arch/coze-design/icons';
+import { Select, type SelectProps, Tooltip } from '@coze-arch/coze-design';
 
 interface IProps extends Omit<SelectProps, 'onChange'> {
   value: number;

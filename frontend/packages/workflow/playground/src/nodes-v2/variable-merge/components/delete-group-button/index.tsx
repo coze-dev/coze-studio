@@ -1,8 +1,8 @@
 import React, { type FC } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozMinus } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozMinus } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 import { type FieldArrayRenderProps } from '@flowgram-adapter/free-layout-editor';
 
 import { TooltipWithDisabled } from '../tooltip-with-disabled';

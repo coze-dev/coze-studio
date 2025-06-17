@@ -2,7 +2,7 @@ import React from 'react';
 
 import { type IntelligenceData } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 import { formatDate, getFormatDateType } from '@coze-arch/bot-utils';
 
 import { highlightService } from '../services/use-case-services/highlight-text.service';

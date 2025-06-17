@@ -2,7 +2,7 @@
   "name": "@coze-agent-ide/bot-editor-context-store",
   "version": "0.0.1",
   "description": "Bot Editor store with context",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "gaoyuanhan.duty@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

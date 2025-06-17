@@ -6,7 +6,7 @@ import {
   IconCozPlugin,
   IconCozDocument,
   IconCozVariables,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   ProjectResourceActionKey,
   ProjectResourceGroupType,

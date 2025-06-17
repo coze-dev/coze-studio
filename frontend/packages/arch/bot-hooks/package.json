@@ -2,7 +2,7 @@
   "name": "@coze-arch/bot-hooks",
   "version": "0.0.1",
   "description": "hooks for bot studio",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "zhanghaochen.z@bytedance.com",
   "maintainers": [],
   "exports": {

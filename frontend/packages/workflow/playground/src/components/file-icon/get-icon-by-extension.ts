@@ -10,7 +10,7 @@ import {
   IconCozFileVideo,
   IconCozFileOther,
   IconCozFilePdf,
-} from '@coze/coze-design/illustrations';
+} from '@coze-arch/coze-design/illustrations';
 
 const codeExtensions = [
   'js',

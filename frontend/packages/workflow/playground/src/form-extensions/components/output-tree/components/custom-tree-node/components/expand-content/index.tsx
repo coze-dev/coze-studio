@@ -2,7 +2,7 @@ import { type FC } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Typography, Tooltip, TextArea } from '@coze/coze-design';
+import { Typography, Tooltip, TextArea } from '@coze-arch/coze-design';
 
 import { ValidationErrorWrapper } from '@/form-extensions/components/validation/validation-error-wrapper';
 

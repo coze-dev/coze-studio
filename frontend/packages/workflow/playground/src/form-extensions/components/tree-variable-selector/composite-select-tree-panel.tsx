@@ -1,7 +1,7 @@
 import React, { type ReactNode, useCallback, useMemo, useState } from 'react';
 
 import classnames from 'classnames';
-import { Divider, List } from '@coze/coze-design';
+import { Divider, List } from '@coze-arch/coze-design';
 import type { TreeNodeData } from '@coze-arch/bot-semi/Tree';
 
 import { sortTreeDataByGroup } from './utils';

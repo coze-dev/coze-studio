@@ -7,7 +7,7 @@ import '@testing-library/jest-dom';
 import { ActionsRender } from '../../../src/components/renders/actions-render';
 
 // 使用vi.mock的回调函数形式来避免linter错误
-vi.mock('@coze/coze-design/icons', () => ({
+vi.mock('@coze-arch/coze-design/icons', () => ({
   IconCozEdit: () => <div data-testid="edit-icon" />,
   IconCozTrashCan: () => <div data-testid="delete-icon" />,
 }));
@@ -18,7 +18,7 @@ vi.mock('@coze-arch/i18n', () => ({
   },
 }));
 
-vi.mock('@coze/coze-design', () => ({
+vi.mock('@coze-arch/coze-design', () => ({
   Button: ({ children, onClick, icon, ...props }: any) => (
     <button data-testid="button" onClick={onClick} icon={icon} {...props}>
       {children}

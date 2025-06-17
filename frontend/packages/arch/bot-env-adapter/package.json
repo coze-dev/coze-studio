@@ -2,7 +2,7 @@
   "name": "@coze-studio/bot-env-adapter",
   "version": "0.0.1",
   "description": "data info adapter for bot-env",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "chenjiawei.inizio@bytedance.com",
   "maintainers": [],
   "exports": {

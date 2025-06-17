@@ -19,7 +19,7 @@ vi.mock('@coze-arch/i18n', () => ({
   },
 }));
 
-vi.mock('@coze/coze-design', () => ({
+vi.mock('@coze-arch/coze-design', () => ({
   useTheme: () => ({ theme: 'light' }),
 }));
 

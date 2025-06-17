@@ -4,8 +4,8 @@ import React from 'react';
 import classNames from 'classnames';
 import { useNodeTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozMinus } from '@coze/coze-design/icons';
-import { Tooltip, IconButton } from '@coze/coze-design';
+import { IconCozMinus } from '@coze-arch/coze-design/icons';
+import { Tooltip, IconButton } from '@coze-arch/coze-design';
 
 import { isObjectTreeNode } from '../../utils';
 import { type TreeNodeCustomData } from '../../types';

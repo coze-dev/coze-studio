@@ -1,6 +1,6 @@
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tooltip, Select } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip, Select } from '@coze-arch/coze-design';
 import { BotMonetizationRefreshPeriod } from '@coze-arch/bot-api/benefit';
 
 const refreshCycleTextMap: Record<BotMonetizationRefreshPeriod, string> = {

@@ -6,7 +6,7 @@ import {
   OAuthStatus,
 } from '@coze-arch/idl/plugin_develop';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
 import {
   Button,
   type ColumnProps,
@@ -16,7 +16,7 @@ import {
   Space,
   Tooltip,
   Modal,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { IllustrationConstruction } from '@douyinfe/semi-illustrations';
 
 import { usePluginPermissionManage } from '@/hook/use-plugin-permission-manage';

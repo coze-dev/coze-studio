@@ -7,7 +7,7 @@ import {
 } from 'react';
 
 import cls from 'classnames';
-import { List } from '@coze/coze-design';
+import { List } from '@coze-arch/coze-design';
 
 import useScroll from './use-scroll';
 import { type InfiniteListProps, type InfiniteListRef } from './type';

@@ -4,7 +4,11 @@ import {
   type EnhancedContentConfig,
   ContentType,
 } from '@coze-common/chat-uikit';
-import { type ComponentTypesMap } from '@coze-common/chat-area';
+import {
+  PluginScopeContextProvider,
+  usePluginCustomComponents,
+  type ComponentTypesMap,
+} from '@coze-common/chat-area';
 
 import { WorkflowRenderEntry } from './components';
 
@@ -16,6 +20,9 @@ const defaultEnable = (value?: boolean) => {
 };
 
 export const WorkflowRender: ComponentTypesMap['contentBox'] = props => {
+  const customTextMessageInnerTopSlotList = usePluginCustomComponents(
+    'TextMessageInnerTopSlot',
+  );
   const enhancedContentConfigList: EnhancedContentConfig[] = [
     {
       rule: ({ contentType, contentConfigs }) => {
@@ -43,6 +50,21 @@ export const WorkflowRender: ComponentTypesMap['contentBox'] = props => {
   return (
     <ContentBox
       enhancedContentConfigList={enhancedContentConfigList}
+      multimodalTextContentAddonTop={
+        <>
+          {customTextMessageInnerTopSlotList.map(
+            // eslint-disable-next-line @typescript-eslint/naming-convention -- 符合预期的命名
+            ({ pluginName, Component }, index) => (
+              <PluginScopeContextProvider
+                pluginName={pluginName}
+                key={pluginName}
+              >
+                <Component key={index} message={props.message} />
+              </PluginScopeContextProvider>
+            ),
+          )}
+        </>
+      }
       {...props}
     />
   );

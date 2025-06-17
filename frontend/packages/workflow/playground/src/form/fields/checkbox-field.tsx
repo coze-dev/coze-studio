@@ -1,7 +1,7 @@
 import {
   Checkbox,
   type CheckboxProps as BaseCheckboxProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { withField, useField } from '@/form';
 

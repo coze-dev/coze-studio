@@ -2,7 +2,7 @@
   "name": "@coze-devops/testset-manage",
   "version": "1.0.0",
   "description": "Testset manage for coze",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "qihai@bytedance.com",
   "sideEffects": [
     "**/*.less",

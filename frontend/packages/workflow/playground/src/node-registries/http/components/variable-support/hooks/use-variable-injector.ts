@@ -1,14 +1,14 @@
 import { useLayoutEffect, useRef } from 'react';
 
 import classNames from 'classnames';
-import { useInjector } from '@flow-lang-sdk/editor/react';
+import { useGetWorkflowVariableByKeyPath } from '@coze-workflow/variable';
+import { useInjector } from '@coze-editor/editor/react';
 import {
   type SelectionEnlargerSpec,
   astDecorator,
   deletionEnlarger,
   selectionEnlarger,
-} from '@flow-lang-sdk/editor';
-import { useGetWorkflowVariableByKeyPath } from '@coze-workflow/variable';
+} from '@coze-editor/editor';
 import { StateField } from '@codemirror/state';
 
 import { VariableSubfixWidget } from '../variable-subfix-widget';

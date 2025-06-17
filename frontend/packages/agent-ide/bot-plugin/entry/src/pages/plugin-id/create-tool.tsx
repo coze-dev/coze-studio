@@ -2,14 +2,14 @@ import { useState, type FC } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
 import { isBoolean } from 'lodash-es';
-import { Modal } from '@coze-arch/bot-semi';
 import {
   usePluginNavigate,
   usePluginStore,
 } from '@coze-studio/bot-plugin-store';
+import { Modal } from '@coze-arch/bot-semi';
 import { useBaseInfo } from '@coze-agent-ide/bot-plugin-tools/useBaseInfo';
 import { STARTNODE } from '@coze-agent-ide/bot-plugin-tools/pluginModal/config';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 
 import { SecurityCheckFailed } from '@/components/check_failed';
 
@@ -67,13 +67,11 @@ export const useCreateTool = ({
     space_id: space_id || '',
     pluginType: pluginInfo?.plugin_type,
     showFunctionName: true,
-    callback: baseResData => {
-      if (baseResData.code === 0 && baseResData.msg === 'success') {
-        setPluginInfo({
-          ...pluginInfo,
-          edit_version: baseResData?.edit_version,
-        });
-      }
+    onSuccess: baseResData => {
+      setPluginInfo({
+        ...pluginInfo,
+        edit_version: baseResData?.edit_version,
+      });
     },
   });
   const handleShow = () => {

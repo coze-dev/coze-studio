@@ -29,7 +29,7 @@ import {
   PublishResultStatus,
 } from '@coze-arch/bot-api/developer_api';
 import { useIsPublishRecordReady } from '@coze-studio/publish-manage-hooks';
-import { IconCozInfoCircleFill } from '@coze/coze-design/icons';
+import { IconCozInfoCircleFill } from '@coze-arch/coze-design/icons';
 
 import styles from '../index.module.less';
 import { PublishResultArea } from './component/publish-result-area';

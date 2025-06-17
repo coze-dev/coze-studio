@@ -1,7 +1,7 @@
 import React, { type PropsWithChildren, useRef } from 'react';
 
 import classNames from 'classnames';
-import { Tooltip, type TooltipProps } from '@coze/coze-design';
+import { Tooltip, type TooltipProps } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

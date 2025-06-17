@@ -15,10 +15,10 @@
   },
   "dependencies": {
     "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-workflow/base": "workspace:*",
     "@coze-workflow/test-run-shared": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "@textea/json-viewer": "^3.0.0",
     "@visactor/vgrammar": "0.12.5-alpha.4",
     "ahooks": "^3.7.8",

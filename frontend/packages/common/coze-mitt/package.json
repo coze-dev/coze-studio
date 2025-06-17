@@ -2,7 +2,7 @@
   "name": "@coze-common/coze-mitt",
   "version": "0.0.1",
   "description": "coze 平台级事件总线，目的是有一个统一的地方定义事件，以供各 pkg 引入",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "zhanghaochen.z@bytedance.com",
   "maintainers": [],
   "exports": {

@@ -1,5 +1,5 @@
-import type { EditorAPI } from '@flow-lang-sdk/editor/preset-universal';
-import type { Tree } from '@coze/coze-design';
+import type { EditorAPI } from '@coze-editor/editor/preset-universal';
+import type { Tree } from '@coze-arch/coze-design';
 import type { TreeNodeData } from '@coze-arch/bot-semi/Tree';
 
 export interface VariableWithNodeInfo {

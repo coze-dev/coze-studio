@@ -8,9 +8,9 @@ import { type DependencyTree } from '@coze-arch/bot-api/workflow_api';
 import {
   IconCozIllusNone,
   IconCozIllusError,
-} from '@coze/coze-design/illustrations';
-import { IconCozRefresh } from '@coze/coze-design/icons';
-import { EmptyState } from '@coze/coze-design';
+} from '@coze-arch/coze-design/illustrations';
+import { IconCozRefresh } from '@coze-arch/coze-design/icons';
+import { EmptyState } from '@coze-arch/coze-design';
 
 import s from './styles.module.less';
 

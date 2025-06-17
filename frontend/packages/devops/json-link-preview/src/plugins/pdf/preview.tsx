@@ -13,8 +13,8 @@ import {
   IconCozDownload,
   IconCozArrowLeft,
   IconCozArrowRight,
-} from '@coze/coze-design/icons';
-import { Spin, Button, Typography } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Spin, Button, Typography } from '@coze-arch/coze-design';
 
 import { downloadFile, fetchResource } from '../../utils/download';
 import { LoadError } from '../../common/load-error';

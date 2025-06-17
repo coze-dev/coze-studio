@@ -1,11 +1,11 @@
 import { get, isString } from 'lodash-es';
-import { json, type Text } from '@flow-lang-sdk/editor/language-json';
-import { I18n } from '@coze-arch/i18n';
 import {
   ValidateTrigger,
   type FormMetaV2,
   type Validate,
 } from '@flowgram-adapter/free-layout-editor';
+import { json, type Text } from '@coze-editor/editor/language-json';
+import { I18n } from '@coze-arch/i18n';
 
 import { provideNodeOutputVariablesEffect } from '@/nodes-v2/materials/provide-node-output-variables';
 import { nodeMetaValidate } from '@/nodes-v2/materials/node-meta-validate';
@@ -121,7 +121,7 @@ export const HTTP_FORM_META: FormMetaV2<FormData> = {
         return text;
       };
 
-      const jsonErrors = await json.languageService.validate(value, {
+      const jsonErrors = await json.languageService.validate(value ?? '', {
         transform,
       });
 

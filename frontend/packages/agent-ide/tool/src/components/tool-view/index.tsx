@@ -2,7 +2,7 @@ import { Children, useMemo, type FC, type PropsWithChildren } from 'react';
 
 import classNames from 'classnames';
 import { AbilityScope } from '@coze-agent-ide/tool-config';
-import { Spin } from '@coze/coze-design';
+import { Spin } from '@coze-arch/coze-design';
 import { PlacementEnum, useLayoutContext } from '@coze-arch/bot-hooks';
 
 import { ToolContainer } from '../tool-container';

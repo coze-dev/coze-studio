@@ -5,7 +5,7 @@
 import React, { type FC, useEffect, useState } from 'react';
 
 import { ConditionType } from '@coze-arch/idl/workflow_api';
-import { Input } from '@coze/coze-design';
+import { Input } from '@coze-arch/coze-design';
 
 import {
   ValueExpressionInput,

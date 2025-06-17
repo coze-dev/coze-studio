@@ -11,8 +11,8 @@ import {
   type ViewVariableType,
   type ValueExpression,
 } from '@coze-workflow/variable';
-import { IconCozMinus } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozMinus } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 import { RefTagColor } from '@/form-extensions/components/value-expression-input/ref-value-display';
 import { type CustomFilterVar } from '@/form-extensions/components/tree-variable-selector/types';

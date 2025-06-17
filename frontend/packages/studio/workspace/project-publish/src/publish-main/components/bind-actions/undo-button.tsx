@@ -3,7 +3,7 @@ import { type MouseEventHandler } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Button, Modal } from '@coze/coze-design';
+import { Button, Modal } from '@coze-arch/coze-design';
 import { type DynamicParams } from '@coze-arch/bot-typings/teamspace';
 import { DeveloperApi } from '@coze-arch/bot-api';
 import { useParams } from 'react-router-dom';

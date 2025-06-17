@@ -2,7 +2,7 @@
   "name": "@coze-workflow/setters",
   "version": "0.0.1",
   "description": "workflow setters",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "zhuxiaowei.711@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",
@@ -15,8 +15,8 @@
     "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "@douyinfe/semi-ui": "~2.72.3",
     "@flowgram-adapter/free-layout-editor": "workspace:*",
     "@tanstack/react-query": "~5.13.4",
@@ -26,7 +26,7 @@
   "devDependencies": {
     "@coze-arch/bot-typings": "workspace:*",
     "@coze-arch/eslint-config": "workspace:*",
-    "@coze-arch/semi-theme-hand01": "workspace:*",
+    "@coze-arch/semi-theme-hand01": "0.0.6-alpha.346d77",
     "@coze-arch/stylelint-config": "workspace:*",
     "@coze-arch/ts-config": "workspace:*",
     "@coze-arch/vitest-config": "workspace:*",

@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import classNames from 'classnames';
-import { Tooltip } from '@coze/coze-design';
+import { Tooltip } from '@coze-arch/coze-design';
 import { useService } from '@flowgram-adapter/free-layout-editor';
 import {
   usePlaygroundReadonlyState,

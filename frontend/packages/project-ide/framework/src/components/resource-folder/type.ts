@@ -6,7 +6,7 @@ import {
   type TooltipProps,
   type ButtonProps,
   type SemiButton,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { type URI } from '@coze-project-ide/client';
 
 import { type BaseResourceContextMenuBtnType } from './hooks/use-right-click-panel/constant';

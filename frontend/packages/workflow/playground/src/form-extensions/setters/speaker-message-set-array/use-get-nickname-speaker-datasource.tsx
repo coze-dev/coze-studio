@@ -2,7 +2,7 @@ import {
   VARIABLE_TYPE_ALIAS_MAP,
   ViewVariableType,
 } from '@coze-workflow/base/types';
-import { Space, Tooltip } from '@coze/coze-design';
+import { Space, Tooltip } from '@coze-arch/coze-design';
 
 import { useGetCurrentInputsParameters } from '../../hooks/use-get-current-input-parameters';
 import { VariableTypeTag } from '../../components/variable-type-tag';

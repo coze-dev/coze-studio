@@ -8,7 +8,7 @@ import { concatTestId } from '@coze-workflow/base';
 import { RoleType } from '@coze-arch/idl/social_api';
 import { I18n } from '@coze-arch/i18n';
 import { type SelectProps } from '@coze-arch/bot-semi/Select';
-import { Select, Space, Dropdown, Tag } from '@coze/coze-design';
+import { Select, Space, Dropdown, Tag } from '@coze-arch/coze-design';
 
 import PopupContainer from '@/components/popup-container';
 

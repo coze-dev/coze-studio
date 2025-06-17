@@ -2,7 +2,7 @@
   "name": "@coze-common/chat-workflow-render",
   "version": "0.0.1",
   "description": "chat contentbox for workflow",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "gaoyuanhan.duty@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",
@@ -14,12 +14,12 @@
     "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-common/chat-area": "workspace:*",
     "@coze-common/chat-area-utils": "workspace:*",
     "@coze-common/chat-uikit": "workspace:*",
     "@coze-common/chat-uikit-shared": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "classnames": "^2.3.2",
     "immer": "^10.0.3",
     "lodash-es": "^4.17.21"

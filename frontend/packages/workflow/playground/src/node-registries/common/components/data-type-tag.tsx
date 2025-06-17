@@ -1,5 +1,5 @@
 import { ViewVariableType } from '@coze-workflow/base';
-import { Tag } from '@coze/coze-design';
+import { Tag } from '@coze-arch/coze-design';
 
 const ViewDataTypeMap = {
   [ViewVariableType.String]: 'String',

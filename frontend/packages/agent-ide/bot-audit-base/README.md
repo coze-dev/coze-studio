@@ -41,8 +41,8 @@ import { AuditErrorMessage } from '@coze-studio/bot-audit-base';
 
 function MyComponent() {
   return (
-    <AuditErrorMessage 
-      link="/docs/custom-guidelines" 
+    <AuditErrorMessage
+      link="/docs/custom-guidelines"
     />
   );
 }
@@ -56,16 +56,16 @@ import type { UseBotInfoAuditorHook, BotInfoAuditFunc } from '@coze-studio/bot-a
 // Example hook implementation
 const useBotAuditor: UseBotInfoAuditorHook = () => {
   const [pass, setPass] = useState(false);
-  
+
   const check: BotInfoAuditFunc = async (params) => {
     // Your audit logic here
     const result = await performAudit(params);
     setPass(result.success);
     return result;
   };
-  
+
   const reset = () => setPass(false);
-  
+
   return { check, pass, setPass, reset };
 };
 ```
@@ -129,4 +129,4 @@ This package depends on:
 
 ## License
 
-ISC
+Apache-2.0

@@ -7,7 +7,7 @@ import {
   ApiError,
 } from '@coze-common/chat-core';
 import { APIErrorEvent, emitAPIErrorEvent } from '@coze-arch/bot-http';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { getStopRespondingImplement } from '../use-stop-responding';
 import { useMethodCommonDeps } from '../../context/use-method-common-deps';

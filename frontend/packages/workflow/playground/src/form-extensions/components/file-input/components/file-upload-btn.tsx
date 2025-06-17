@@ -1,8 +1,8 @@
 import { type FC } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozUpload } from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+import { IconCozUpload } from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 export interface FileUploadBtnProps {
   isImage?: boolean;
 }

@@ -5,7 +5,7 @@ import { isString } from 'lodash-es';
 import classNames from 'classnames';
 import { SpaceAppEnum } from '@coze-arch/web-context';
 import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
-import { Space, Badge } from '@coze/coze-design';
+import { Space, Badge } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { getFlags } from '@coze-arch/bot-flags';

@@ -21,8 +21,8 @@ import {
   IconCozThumbdown,
   IconCozThumbdownFill,
   IconCozCross,
-} from '@coze/coze-design/icons';
-import { TextArea, Tooltip, Button, IconButton } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { TextArea, Tooltip, Button, IconButton } from '@coze-arch/coze-design';
 import { Layout } from '@coze-common/chat-uikit-shared';
 
 import { getShowFeedback } from '../../utils/get-show-feedback';

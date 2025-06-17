@@ -2,8 +2,8 @@ import { useState, type PropsWithChildren } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCross } from '@coze/coze-design/icons';
-import { type BannerProps, IconButton, Typography } from '@coze/coze-design';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
+import { type BannerProps, IconButton, Typography } from '@coze-arch/coze-design';
 
 export type BannerType = NonNullable<BannerProps['type']>;
 

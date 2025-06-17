@@ -7,7 +7,7 @@ import {
 } from '@coze-workflow/base/types';
 import { InputType, PluginParamTypeFormat } from '@coze-workflow/base/api';
 import { I18n } from '@coze-arch/i18n';
-import { Tag, Typography } from '@coze/coze-design';
+import { Tag, Typography } from '@coze-arch/coze-design';
 import { type OverflowListProps } from '@coze-arch/bot-semi/OverflowList';
 import { Popover, OverflowList } from '@coze-arch/bot-semi';
 

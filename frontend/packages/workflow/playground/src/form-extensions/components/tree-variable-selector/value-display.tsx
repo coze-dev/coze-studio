@@ -2,7 +2,7 @@ import { type FC } from 'react';
 
 import classnames from 'classnames';
 import { type WithCustomStyle } from '@coze-workflow/base/types';
-import { Popover, Space } from '@coze/coze-design';
+import { Popover, Space } from '@coze-arch/coze-design';
 import { type TreeNodeData } from '@coze-arch/bot-semi/Tree';
 
 import { NodeIcon } from '../../../components/node-icon';

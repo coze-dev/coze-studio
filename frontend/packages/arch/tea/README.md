@@ -77,4 +77,4 @@ This package is part of the Coze Studio monorepo. Please follow the monorepo con
 
 ## License
 
-ISC
+Apache-2.0

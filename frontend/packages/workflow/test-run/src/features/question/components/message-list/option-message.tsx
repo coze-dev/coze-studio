@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import classNames from 'classnames';
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 
 import { type ReceivedMessage, type OptionMessageContent } from '../../types';
 import { useSendMessage } from '../../hooks';

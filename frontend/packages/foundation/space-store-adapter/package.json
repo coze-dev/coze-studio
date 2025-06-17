@@ -2,7 +2,7 @@
   "name": "@coze-foundation/space-store-adapter",
   "version": "0.0.1",
   "description": "基座中的空间store",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "yuwenbinjie@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

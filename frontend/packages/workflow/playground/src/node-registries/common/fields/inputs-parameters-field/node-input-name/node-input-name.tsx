@@ -8,8 +8,8 @@ import {
 import { WorkflowVariableFacadeService } from '@coze-workflow/variable';
 import { type RefExpression, useNodeTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Input, Tooltip, Typography } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Input, Tooltip, Typography } from '@coze-arch/coze-design';
 
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
 import {

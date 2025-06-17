@@ -12,8 +12,8 @@ import { type NodeResult } from '@coze-workflow/base/api';
 import {
   IconCozWarningCircleFill,
   IconCozArrowDownFill,
-} from '@coze/coze-design/icons';
-import { Popover, Typography } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Popover, Typography } from '@coze-arch/coze-design';
 
 import { PageItem, checkHasError, checkHasWarning } from './page-item';
 

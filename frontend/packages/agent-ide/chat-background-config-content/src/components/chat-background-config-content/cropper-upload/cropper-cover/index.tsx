@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Tag } from '@coze/coze-design';
+import { Tag } from '@coze-arch/coze-design';
 import { IconSpin } from '@douyinfe/semi-icons';
 
 import s from './index.module.less';

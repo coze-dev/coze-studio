@@ -5,7 +5,7 @@ import { type SetterOrDecoratorContext } from '@flowgram-adapter/free-layout-edi
 import { concatTestId } from '@coze-workflow/base';
 import { RoleType } from '@coze-arch/idl/social_api';
 import { I18n } from '@coze-arch/i18n';
-import { Button, Space, Form } from '@coze/coze-design';
+import { Button, Space, Form } from '@coze-arch/coze-design';
 
 import {
   MessageGenerateMode,

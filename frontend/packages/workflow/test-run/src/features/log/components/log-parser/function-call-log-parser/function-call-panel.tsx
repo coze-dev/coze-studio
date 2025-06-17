@@ -5,7 +5,7 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozArrowDown,
   IconCozArrowUp,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 import { DataViewer } from '../../data-viewer';
 import { type FunctionCallLogItem } from '../../../types';

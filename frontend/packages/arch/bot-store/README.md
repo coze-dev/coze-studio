@@ -1,6 +1,6 @@
 # @coze-arch/bot-studio-store
 
-bot studio global store 
+bot studio global store
 
 ## Overview
 
@@ -72,4 +72,4 @@ This package is part of the Coze Studio monorepo. Please follow the monorepo con
 
 ## License
 
-ISC
+Apache-2.0

@@ -7,7 +7,7 @@ import {
   safeAsyncThrow,
   typeSafeJsonParseEnhanced,
 } from '@coze-common/chat-area-utils';
-import { Skeleton } from '@coze/coze-design';
+import { Skeleton } from '@coze-arch/coze-design';
 import { type IImageContent } from '@coze-common/chat-uikit-shared';
 
 import { type IImageMessageContentProps } from '../image-content';

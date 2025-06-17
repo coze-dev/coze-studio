@@ -1,5 +1,5 @@
-import { IconCozPlus } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozPlus } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 import { FieldEmpty } from '@/form';
 

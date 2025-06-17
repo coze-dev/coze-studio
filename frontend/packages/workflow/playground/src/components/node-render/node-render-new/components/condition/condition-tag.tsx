@@ -1,7 +1,7 @@
 import { type PropsWithChildren, type FC, type ReactNode } from 'react';
 
 import classnames from 'classnames';
-import { Tag, Tooltip } from '@coze/coze-design';
+import { Tag, Tooltip } from '@coze-arch/coze-design';
 
 import styles from './condition-tag.module.less';
 

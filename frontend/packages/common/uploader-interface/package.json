@@ -2,7 +2,7 @@
   "name": "@coze-arch/uploader-interface",
   "version": "0.0.1",
   "description": "uploader interface",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "chenjiawei.inizio@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

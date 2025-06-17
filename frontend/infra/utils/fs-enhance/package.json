@@ -2,7 +2,7 @@
   "name": "@coze-arch/fs-enhance",
   "version": "0.0.1",
   "description": "Utils to enhance fs dx",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

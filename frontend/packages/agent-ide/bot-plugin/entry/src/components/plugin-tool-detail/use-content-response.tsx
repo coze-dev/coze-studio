@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
+import { IconEdit } from '@coze-arch/bot-icons';
 import {
   PluginType,
   type GetPluginInfoResponse,
@@ -10,11 +11,10 @@ import {
   DebugExampleStatus,
   type UpdateAPIResponse,
 } from '@coze-arch/bot-api/plugin_develop';
-import { IconEdit } from '@coze-arch/bot-icons';
 import { useResponseParams } from '@coze-agent-ide/bot-plugin-tools/useResponseParams';
 import { type RenderEnhancedComponentProps } from '@coze-agent-ide/bot-plugin-tools/pluginModal/types';
 import { RESPONSENODE } from '@coze-agent-ide/bot-plugin-tools/pluginModal/config';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 
 import { OauthButtonAction } from '@/components/oauth-action';
 import { SecurityCheckFailed } from '@/components/check_failed';
@@ -32,7 +32,7 @@ interface UseContentResponseProps
   debugApiInfo?: PluginAPIInfo;
   setDebugApiInfo: (apiInfo: PluginAPIInfo) => void;
   spaceID: string;
-  callback?: (params: UpdateAPIResponse) => void;
+  onSuccess?: (params: UpdateAPIResponse) => void;
 }
 
 export const useContentResponse = ({
@@ -47,7 +47,7 @@ export const useContentResponse = ({
   debugApiInfo,
   setDebugApiInfo,
   spaceID,
-  callback,
+  onSuccess,
   renderParamsComponent,
 }: UseContentResponseProps) => {
   // 是否显示安全检查失败信息
@@ -73,7 +73,7 @@ export const useContentResponse = ({
           ? apiInfo?.function_name
           : undefined,
       spaceID,
-      callback,
+      onSuccess,
       renderEnhancedComponent: renderParamsComponent,
     },
   );

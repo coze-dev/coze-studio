@@ -2,14 +2,14 @@ import React, { type JSX } from 'react';
 
 import classnames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozSetting } from '@coze/coze-design/icons';
+import { IconCozSetting } from '@coze-arch/coze-design/icons';
 import {
   Typography,
   Space,
   IconButton,
   Divider,
   Avatar,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { useNavigate } from 'react-router-dom';

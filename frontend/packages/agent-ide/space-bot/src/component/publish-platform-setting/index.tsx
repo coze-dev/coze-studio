@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { EnterpriseRoleType } from '@coze-arch/idl/pat_permission_api';
 import { I18n } from '@coze-arch/i18n';
-import { Space } from '@coze/coze-design';
+import { Space } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import {
   useCurrentEnterpriseRoles,

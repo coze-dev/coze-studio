@@ -1,6 +1,6 @@
 import { type ModeOption } from '@coze-agent-ide/space-bot/component';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozWorkflow } from '@coze/coze-design/icons';
+import { IconCozWorkflow } from '@coze-arch/coze-design/icons';
 import { IconSingleMode } from '@coze-arch/bot-icons';
 import { BotMode } from '@coze-arch/bot-api/developer_api';
 

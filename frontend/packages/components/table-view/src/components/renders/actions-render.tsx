@@ -1,6 +1,6 @@
 import classNames from 'classnames';
-import { IconCozEdit, IconCozTrashCan } from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+import { IconCozEdit, IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 
 import { type TableViewRecord } from '../types';
 

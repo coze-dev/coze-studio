@@ -2,7 +2,7 @@
   "name": "@coze-arch/bot-env",
   "version": "0.0.1",
   "description": "compiler env vars for bot-studio",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "maintainers": [],
   "exports": {

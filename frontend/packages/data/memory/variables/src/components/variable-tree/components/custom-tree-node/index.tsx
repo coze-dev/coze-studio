@@ -5,7 +5,7 @@ import isNumber from 'lodash-es/isNumber';
 import { cloneDeep } from 'lodash-es';
 import classNames from 'classnames';
 import { type RenderFullLabelProps } from '@coze-arch/bot-semi/Tree';
-import { IconCozArrowRight } from '@coze/coze-design/icons';
+import { IconCozArrowRight } from '@coze-arch/coze-design/icons';
 
 import { type Variable, type ViewVariableType } from '@/store';
 

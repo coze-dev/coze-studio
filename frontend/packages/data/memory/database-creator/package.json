@@ -2,7 +2,7 @@
   "name": "@coze-data/database-creator",
   "version": "0.0.1",
   "description": "create or edit database info",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "zhangyuanzhou.zyz@bytedance.com",
   "maintainers": [
     "liaoxing.lx@bytedance.com"

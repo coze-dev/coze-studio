@@ -3,7 +3,7 @@ import { type FC, useRef, useLayoutEffect, useState, useMemo } from 'react';
 import { throttle } from 'lodash-es';
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Loading, Typography } from '@coze/coze-design';
+import { Loading, Typography } from '@coze-arch/coze-design';
 
 import {
   NodeSearchSectionType,

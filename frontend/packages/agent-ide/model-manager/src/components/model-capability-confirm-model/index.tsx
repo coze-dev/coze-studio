@@ -3,7 +3,7 @@ import { type ReactNode, useState } from 'react';
 import { useRegisteredToolKeyConfigList } from '@coze-agent-ide/tool';
 import { type Agent } from '@coze-studio/bot-detail-store';
 import { useBotEditor } from '@coze-agent-ide/bot-editor-context-store';
-import { Modal } from '@coze/coze-design';
+import { Modal } from '@coze-arch/coze-design';
 
 import { agentModelFuncConfigCheck } from '../../utils/model-func-config-check/agent-check';
 import {

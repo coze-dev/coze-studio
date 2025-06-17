@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useDataNavigate } from '@coze-data/knowledge-stores';
 import { I18n } from '@coze-arch/i18n';
-import { Button, Toast } from '@coze/coze-design';
+import { Button, Toast } from '@coze-arch/coze-design';
 
 export const useLeaveWarning = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);

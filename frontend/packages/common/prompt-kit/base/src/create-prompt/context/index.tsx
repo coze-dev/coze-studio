@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import { type FormApi } from '@coze/coze-design';
+import { type FormApi } from '@coze-arch/coze-design';
 
 import { type PromptConfiguratorModalProps } from '../types';
 

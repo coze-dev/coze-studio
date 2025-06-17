@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 
 import { type ResourceInfo } from '@coze-arch/idl/plugin_develop';
-import { type TableActionProps } from '@coze/coze-design';
+import { type TableActionProps } from '@coze-arch/coze-design';
 
 import { type LibraryEntityConfig } from '../../types';
 

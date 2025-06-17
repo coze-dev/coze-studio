@@ -1,6 +1,6 @@
 import { I18n } from '@coze-arch/i18n';
-import { IconCozAdjust } from '@coze/coze-design/icons';
-import { Typography } from '@coze/coze-design';
+import { IconCozAdjust } from '@coze-arch/coze-design/icons';
+import { Typography } from '@coze-arch/coze-design';
 
 import { useChatFlowTestFormStore } from './test-form-provider';
 

@@ -1,8 +1,8 @@
 import { type FC } from 'react';
 
 import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
-import { IconCozWorkflow } from '@coze/coze-design/icons';
-import { Typography } from '@coze/coze-design';
+import { IconCozWorkflow } from '@coze-arch/coze-design/icons';
+import { Typography } from '@coze-arch/coze-design';
 
 export interface ModelInfoProps {
   showWorkflowMode?: boolean;

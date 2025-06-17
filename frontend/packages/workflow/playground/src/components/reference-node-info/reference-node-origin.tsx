@@ -3,8 +3,8 @@
  */
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozStore, IconCozTray } from '@coze/coze-design/icons';
-import { IconButton, Tooltip } from '@coze/coze-design';
+import { IconCozStore, IconCozTray } from '@coze-arch/coze-design/icons';
+import { IconButton, Tooltip } from '@coze-arch/coze-design';
 import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { useNodeOrigin } from './use-node-origin';

@@ -1,6 +1,6 @@
 import { useNodeTestId } from '@coze-workflow/base';
 import { IconInfo } from '@coze-arch/bot-icons';
-import { Switch } from '@coze/coze-design';
+import { Switch } from '@coze-arch/coze-design';
 
 import AutoSizeTooltip from '@/ui-components/auto-size-tooltip';
 import { withField, useField } from '@/form';

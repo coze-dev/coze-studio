@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { useKnowledgeParams } from '@coze-data/knowledge-stores';
 import { I18n } from '@coze-arch/i18n';
-import { TabBar, TabPane } from '@coze/coze-design';
+import { TabBar, TabPane } from '@coze-arch/coze-design';
 
 import { VariablesValue } from './variables-value';
 import { VariablesConfig } from './variables-config';

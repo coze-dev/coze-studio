@@ -11,8 +11,8 @@ import {
 import { I18n } from '@coze-arch/i18n';
 import { type DynamicParams } from '@coze-arch/bot-typings/teamspace';
 import { PublishTermService } from '@coze-agent-ide/agent-ide-commons';
-import { IconCozEmpty } from '@coze/coze-design/icons';
-import { Form } from '@coze/coze-design';
+import { IconCozEmpty } from '@coze-arch/coze-design/icons';
+import { Form } from '@coze-arch/coze-design';
 
 import { useWebSdkGuideModal } from '@/web-sdk-guide';
 import { WEB_SDK_CONNECTOR_ID } from '@/utils/constants';

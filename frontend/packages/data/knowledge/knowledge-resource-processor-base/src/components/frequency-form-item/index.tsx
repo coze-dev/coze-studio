@@ -2,7 +2,7 @@ import { type FC } from 'react';
 
 import { KnowledgeE2e } from '@coze-data/e2e';
 import { I18n } from '@coze-arch/i18n';
-import { Select, Typography } from '@coze/coze-design';
+import { Select, Typography } from '@coze-arch/coze-design';
 
 import { getFrequencyMap } from '../../utils';
 import { FrequencyDay } from '../../constants';

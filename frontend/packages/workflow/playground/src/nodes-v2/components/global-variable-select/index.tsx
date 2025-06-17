@@ -25,8 +25,8 @@ import {
   IconCozCross,
   IconCozEmpty,
   IconCozWarningCircle,
-} from '@coze/coze-design/icons';
-import { Select, Tag, Typography } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Select, Tag, Typography } from '@coze-arch/coze-design';
 
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
 import { useGlobalState } from '@/hooks';

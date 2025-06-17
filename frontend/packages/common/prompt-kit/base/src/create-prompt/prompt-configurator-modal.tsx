@@ -7,10 +7,9 @@ import {
   useEditor,
   ActiveLinePlaceholder,
   Placeholder,
-} from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
-import { I18n } from '@coze-arch/i18n';
-import { Modal, Form, Toast, type FormApi } from '@coze/coze-design';
+} from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
+import { Modal, Form, Toast, type FormApi } from '@coze-arch/coze-design';
 import { sendTeaEvent, EVENT_NAMES } from '@coze-arch/bot-tea';
 import { PlaygroundApi } from '@coze-arch/bot-api';
 import {
@@ -19,6 +18,7 @@ import {
 } from '@coze-common/editor-plugins/library-insert';
 import { InputSlotWidget } from '@coze-common/editor-plugins/input-slot';
 import { ActionBar } from '@coze-common/editor-plugins/action-bar';
+import { I18n } from '@coze-arch/i18n';
 
 import { PromptEditorRender } from '@/editor';
 

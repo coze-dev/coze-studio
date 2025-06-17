@@ -1,4 +1,4 @@
-import { Avatar } from '@coze/coze-design';
+import { Avatar } from '@coze-arch/coze-design';
 
 interface Props {
   src?: string;

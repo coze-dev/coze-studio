@@ -8,7 +8,7 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozVariables,
   IconCozDatabase,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import { BotPageFromEnum } from '@coze-arch/bot-typings/common';
 import {
   DatabaseDebug,

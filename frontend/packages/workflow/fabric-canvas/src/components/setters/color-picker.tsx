@@ -2,8 +2,8 @@ import { useCallback, type FC, useMemo } from 'react';
 
 import classnames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCheckMarkFill } from '@coze/coze-design/icons';
-import { Input, Slider } from '@coze/coze-design';
+import { IconCozCheckMarkFill } from '@coze-arch/coze-design/icons';
+import { Input, Slider } from '@coze-arch/coze-design';
 
 import styles from './color-picker.module.less';
 interface IProps {

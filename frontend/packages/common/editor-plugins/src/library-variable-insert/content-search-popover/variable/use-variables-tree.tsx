@@ -1,8 +1,8 @@
 /* eslint-disable  @typescript-eslint/naming-convention */
 import React, { useCallback, useRef } from 'react';
 
-import { useEditor } from '@flow-lang-sdk/editor/react';
-import type { EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import { useEditor } from '@coze-editor/editor/react';
+import type { EditorAPI } from '@coze-editor/editor/preset-prompt';
 import type { TreeNodeData } from '@coze-arch/bot-semi/Tree';
 import { Tree } from '@coze-arch/bot-semi';
 

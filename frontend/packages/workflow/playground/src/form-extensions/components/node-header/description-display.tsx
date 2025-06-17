@@ -2,7 +2,7 @@ import { type FC } from 'react';
 
 import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 import { WorkflowNodeData } from '@coze-workflow/nodes';
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 
 export const DescriptionDisplay: FC<{
   description?: string;

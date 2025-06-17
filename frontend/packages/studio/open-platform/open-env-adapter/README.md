@@ -1,6 +1,6 @@
 # @coze-studio/open-env-adapter
 
-Coze Web ChatApp SDK 
+Coze Web ChatApp SDK
 
 ## Overview
 
@@ -72,4 +72,4 @@ This package is part of the Coze Studio monorepo. Please follow the monorepo con
 
 ## License
 
-ISC
+Apache-2.0

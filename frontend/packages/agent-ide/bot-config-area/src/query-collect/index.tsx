@@ -10,8 +10,8 @@ import {
   useGenerateLink,
   useGetUserQueryCollectOption,
 } from '@coze-agent-ide/space-bot/hook';
-import { IconCozEye } from '@coze/coze-design/icons';
-import { Modal, Switch, Form, type FormApi } from '@coze/coze-design';
+import { IconCozEye } from '@coze-arch/coze-design/icons';
+import { Modal, Switch, Form, type FormApi } from '@coze-arch/coze-design';
 
 import { getUrlValue, isValidUrl } from './utils';
 import { Tips } from './tips';

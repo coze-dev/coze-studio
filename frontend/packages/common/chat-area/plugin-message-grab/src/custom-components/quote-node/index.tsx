@@ -8,7 +8,7 @@ import {
 } from '@coze-common/text-grab';
 import { type GrabNode } from '@coze-common/text-grab';
 import { useShowBackGround } from '@coze-common/chat-area';
-import { Image, ImagePreview } from '@coze/coze-design';
+import { Image, ImagePreview } from '@coze-arch/coze-design';
 
 import { typeSafeQuoteNodeColorVariants } from '../variants';
 import DefaultImage from '../../assets/image-default.png';

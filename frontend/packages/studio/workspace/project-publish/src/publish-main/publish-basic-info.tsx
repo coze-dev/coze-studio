@@ -1,7 +1,7 @@
 import { useShallow } from 'zustand/react/shallow';
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Form } from '@coze/coze-design';
+import { Form } from '@coze-arch/coze-design';
 import { type DynamicParams } from '@coze-arch/bot-typings/teamspace';
 import { useParams } from 'react-router-dom';
 

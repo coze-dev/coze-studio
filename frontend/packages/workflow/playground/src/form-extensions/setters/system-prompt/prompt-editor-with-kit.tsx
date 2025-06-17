@@ -1,9 +1,12 @@
 import { type FC, useState, useRef } from 'react';
 
 import classNames from 'classnames';
+import { NLPromptModal } from '@coze-workflow/resources-adapter';
 import { type ExpressionEditorTreeNode } from '@coze-workflow/components';
-import { useEditor } from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import { useNodeTestId } from '@coze-workflow/base';
+import { useEditor } from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
+import { usePromptLibraryModal } from '@coze-common/prompt-kit';
 import { LibraryBlockWidget } from '@coze-common/editor-plugins/library-insert';
 import { InputSlotWidget } from '@coze-common/editor-plugins/input-slot';
 import {
@@ -11,9 +14,6 @@ import {
   Validation,
   HighlightExpressionOnActive,
 } from '@coze-common/editor-plugins/expression';
-import { NLPromptModal } from '@coze-workflow/resources-adapter';
-import { useNodeTestId } from '@coze-workflow/base';
-import { usePromptLibraryModal } from '@coze-common/prompt-kit';
 import { I18n } from '@coze-arch/i18n';
 
 import { useGlobalState } from '@/hooks';

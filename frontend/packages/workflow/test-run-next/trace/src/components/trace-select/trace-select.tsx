@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 
 import { useMemoizedFn } from 'ahooks';
-import { Select } from '@coze/coze-design';
+import { Select } from '@coze-arch/coze-design';
 
 import { getTimeFromSpan } from '../../utils';
 import { useTraceListStore } from '../../contexts';

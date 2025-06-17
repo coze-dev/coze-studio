@@ -1,6 +1,6 @@
 import { I18n } from '@coze-arch/i18n';
-import { IconCozEmpty } from '@coze/coze-design/icons';
-import { EmptyState } from '@coze/coze-design';
+import { IconCozEmpty } from '@coze-arch/coze-design/icons';
+import { EmptyState } from '@coze-arch/coze-design';
 
 export const EmptyRecommend = () => (
   <div className="flex h-full items-center justify-center">

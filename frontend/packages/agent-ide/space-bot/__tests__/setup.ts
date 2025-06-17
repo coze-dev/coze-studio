@@ -89,7 +89,7 @@ vi.mock('react-router-dom', () => ({
   }),
 }));
 
-vi.mock('@coze/coze-design', () => ({
+vi.mock('@coze-arch/coze-design', () => ({
   Toast: {
     success: vi.fn(),
     warning: vi.fn(),

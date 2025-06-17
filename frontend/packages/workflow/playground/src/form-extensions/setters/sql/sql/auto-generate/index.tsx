@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { useNodeTestId } from '@coze-workflow/base';
-import { Popover } from '@coze/coze-design';
+import { Popover } from '@coze-arch/coze-design';
 
 import { useCurrentDatabaseID } from '@/hooks';
 

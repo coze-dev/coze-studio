@@ -1,5 +1,5 @@
 import { ViewVariableType, useNodeTestId } from '@coze-workflow/base';
-import { SingleSelect } from '@coze/coze-design';
+import { SingleSelect } from '@coze-arch/coze-design';
 
 import { withField, useField } from '@/form';
 

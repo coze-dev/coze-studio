@@ -2,7 +2,7 @@ import { type FC, useRef } from 'react';
 
 import { type ShortCutCommand } from '@coze-agent-ide/tool-config';
 import { useIsSendMessageLock } from '@coze-common/chat-area';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 import { SendType } from '@coze-arch/bot-api/playground_api';
 
 import {

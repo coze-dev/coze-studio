@@ -2,7 +2,7 @@ import React from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozKnowledgeFill } from '@coze/coze-design/icons';
+import { IconCozKnowledgeFill } from '@coze-arch/coze-design/icons';
 
 export enum SkillKnowledgeSiderCategory {
   Library = 'library',

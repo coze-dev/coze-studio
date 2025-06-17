@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { Table, type ColumnProps } from '@coze/coze-design';
+import { Table, type ColumnProps } from '@coze-arch/coze-design';
 import {
   type AuthStatus,
   type UserAuthInfo,

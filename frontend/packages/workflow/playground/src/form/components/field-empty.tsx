@@ -1,6 +1,6 @@
 import { type PropsWithChildren } from 'react';
 
-import { IconCozEmpty } from '@coze/coze-design/icons';
+import { IconCozEmpty } from '@coze-arch/coze-design/icons';
 
 export interface FieldEmptyProps {
   text?: string;

@@ -19,8 +19,8 @@ import {
   useMessageBoxContext,
   type WriteableChatAreaPlugin,
 } from '@coze-common/chat-area';
-import { IconCozQuotation } from '@coze/coze-design/icons';
-import { IconButton, Tooltip } from '@coze/coze-design';
+import { IconCozQuotation } from '@coze-arch/coze-design/icons';
+import { IconButton, Tooltip } from '@coze-arch/coze-design';
 
 import { useTooltipTrigger } from '../../hooks/use-tooltip-trigger';
 import { useQuotePlugin } from '../../hooks/use-quote-plugin';

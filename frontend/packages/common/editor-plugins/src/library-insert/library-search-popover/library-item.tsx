@@ -1,7 +1,7 @@
 import { type FC, type ReactNode } from 'react';
 
 import classNames from 'classnames';
-import { Typography, Highlight } from '@coze/coze-design';
+import { Typography, Highlight } from '@coze-arch/coze-design';
 
 interface LibraryItemProps {
   title: string;

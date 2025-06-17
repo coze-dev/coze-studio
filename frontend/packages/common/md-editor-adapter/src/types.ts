@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { type CSSProperties } from 'react';
 
-import { type CommonFieldProps } from '@coze/coze-design';
+import { type CommonFieldProps } from '@coze-arch/coze-design';
 
 export interface Delta {
   insert: string;

@@ -1,7 +1,7 @@
 import {
   Input,
   type InputProps as BaseInputProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useField } from '../hooks';
 import { withField } from '../hocs';

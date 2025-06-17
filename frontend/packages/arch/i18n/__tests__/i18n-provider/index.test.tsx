@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { I18nProvider } from '../../src/i18n-provider';
 
-vi.mock('@coze/coze-design/locales', () => ({
+vi.mock('@coze-arch/coze-design/locales', () => ({
   CDLocaleProvider: vi.fn(() => ({
     render: vi.fn().mockImplementation(r => r),
   })),

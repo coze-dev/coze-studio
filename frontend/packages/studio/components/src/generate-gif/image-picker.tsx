@@ -3,8 +3,8 @@ import { useState } from 'react';
 import classNames from 'classnames';
 import { withSlardarIdButton } from '@coze-studio/bot-utils';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozImage, IconCozUpload } from '@coze/coze-design/icons';
-import { Button, Image, Popover, Toast, Upload } from '@coze/coze-design';
+import { IconCozImage, IconCozUpload } from '@coze-arch/coze-design/icons';
+import { Button, Image, Popover, Toast, Upload } from '@coze-arch/coze-design';
 import { FileBizType } from '@coze-arch/bot-api/developer_api';
 import { customUploadRequest } from '@coze-common/biz-components/picture-upload';
 

@@ -1,6 +1,6 @@
 import { type FC } from 'react';
 
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 
 export interface DescriptionProps {
   description?: string;

@@ -41,7 +41,7 @@ import {
   Spin,
   Select,
   Empty,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useLibraryCreateDatabaseModal } from '../../hooks/use-library-create-database-modal';
 import tipsTemplateEN from '../../assets/tips-template-en.png';

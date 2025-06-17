@@ -10,8 +10,8 @@ import {
   IconCozArrowRight,
   IconCozMinus,
   IconCozPlus,
-} from '@coze/coze-design/icons';
-import { Checkbox, Divider, IconButton, Loading } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Checkbox, Divider, IconButton, Loading } from '@coze-arch/coze-design';
 import 'cropperjs/dist/cropper.css';
 
 import {
@@ -36,8 +36,10 @@ export interface PDFDocumentProps {
 
 pdfjs.GlobalWorkerOptions.workerSrc =
   REGION === 'cn'
-    ? `//lf-cdn.coze.cn/obj/unpkg/pdfjs-dist/${pdfjs.version}/build/pdf.worker.min.mjs`
-    : `//sf-cdn.coze.com/obj/unpkg-va/pdfjs-dist/${pdfjs.version}/build/pdf.worker.min.mjs`;
+    ? // cp-disable-next-line
+      `//lf-cdn.coze.cn/obj/unpkg/pdfjs-dist/${pdfjs.version}/build/pdf.worker.min.mjs`
+    : // cp-disable-next-line
+      `//sf-cdn.coze.com/obj/unpkg-va/pdfjs-dist/${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const getDefaultState = () => ({
   totalPages: 0,

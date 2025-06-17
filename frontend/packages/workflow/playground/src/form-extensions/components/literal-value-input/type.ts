@@ -5,7 +5,7 @@ import {
   type LiteralExpression,
   type ViewVariableType,
 } from '@coze-workflow/base';
-import { type SelectProps } from '@coze/coze-design';
+import { type SelectProps } from '@coze-arch/coze-design';
 
 export type LiteralValueType = LiteralExpression['content'] | null;
 export type InputType = ViewVariableType;

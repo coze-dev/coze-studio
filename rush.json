@@ -6,7 +6,8 @@
   "projectFolderMinDepth": 3,
   "projectFolderMaxDepth": 6,
   "gitPolicy": {
-    "sampleEmail": "",
+    "allowedEmailRegExps": [],
+    "sampleEmail": "<user>@bytedance.com",
     "versionBumpCommitMessage": "chore: bump versions [skip ci]",
     "changeLogUpdateCommitMessage": "chore: update changelogs [skip ci]",
     "tagSeparator": "@"
@@ -44,12 +45,12 @@
     {
       "packageName": "@coze-arch/eslint-config",
       "projectFolder": "frontend/config/eslint-config",
-      "tags": ["team-arch", "level-1", "core"]
+      "tags": ["team-arch", "level-1"]
     },
     {
       "packageName": "@coze-arch/ts-config",
       "projectFolder": "frontend/config/ts-config",
-      "tags": ["team-arch", "level-1"]
+      "tags": ["team-arch", "level-1", "core"]
     },
     {
       "packageName": "@coze-arch/stylelint-config",
@@ -64,7 +65,7 @@
     {
       "packageName": "@coze-arch/i18n",
       "projectFolder": "frontend/packages/arch/i18n",
-      "tags": ["team-arch", "level-1", "rush-tools", "core"]
+      "tags": ["team-arch", "level-1", "rush-tools"]
     },
     {
       "packageName": "@coze-studio/studio-i18n-resource-adapter",
@@ -270,11 +271,6 @@
       "packageName": "@coze-common/scroll-view",
       "projectFolder": "frontend/packages/components/scroll-view",
       "tags": ["team-studio", "level-3"]
-    },
-    {
-      "packageName": "@coze/coze-design",
-      "projectFolder": "frontend/packages/components/coze-design",
-      "tags": ["team-arch", "level-1"]
     },
     {
       "packageName": "@coze-arch/tailwind-config",
@@ -899,21 +895,6 @@
       "tags": ["level-3", "team-studio"]
     },
     {
-      "packageName": "@coze-arch/semi-theme-hand01",
-      "projectFolder": "frontend/packages/arch/semi-theme-hand01",
-      "tags": ["level-1"]
-    },
-    {
-      "packageName": "@coze-arch/arco-icon",
-      "projectFolder": "frontend/packages/arch/arco-icon",
-      "tags": ["level-1"]
-    },
-    {
-      "packageName": "@coze-arch/arco-illustration",
-      "projectFolder": "frontend/packages/arch/arco-illustration",
-      "tags": ["level-1"]
-    },
-    {
       "packageName": "@coze-studio/app",
       "projectFolder": "frontend/apps/coze-studio",
       "tags": ["level-4"]
@@ -1001,7 +982,7 @@
     {
       "packageName": "@coze-arch/idl2ts-helper",
       "projectFolder": "frontend/infra/idl/idl2ts-helper",
-      "tags": ["level-2"]
+      "tags": ["level-2", "rush-tools"]
     },
     {
       "packageName": "@coze-arch/idl2ts-plugin",

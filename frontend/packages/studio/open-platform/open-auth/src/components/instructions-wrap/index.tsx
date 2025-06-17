@@ -2,8 +2,8 @@ import { type ReactNode, type FC } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tooltip, Typography, Space } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip, Typography, Space } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 export const LinkDocs: FC<{ text?: string; onClick?: () => void }> = ({

@@ -2,7 +2,7 @@ import { type TooltipRenderProps, type StepMerged } from 'react-joyride';
 import { type FC, type MouseEvent, useCallback } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 
 import { Container } from '../container';
 

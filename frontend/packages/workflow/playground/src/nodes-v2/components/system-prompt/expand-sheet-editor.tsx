@@ -34,8 +34,8 @@ import {
   IconCozCrossFill,
   IconCozLightbulb,
   IconCozTrayArrowUp,
-} from '@coze/coze-design/icons';
-import { Tooltip, IconButton, Button } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Tooltip, IconButton, Button } from '@coze-arch/coze-design';
 
 import { focusToAnchor } from '@/nodes-v2/components/system-prompt/utils';
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';

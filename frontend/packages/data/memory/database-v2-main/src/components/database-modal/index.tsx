@@ -46,7 +46,7 @@ import { MemoryApi } from '@coze-arch/bot-api';
 import {
   IconCozWarning as IconAlertTriangle,
   IconCozCross as IconClose,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 import { BotDebugButton } from '../bot-debug-button';
 import tableTempEN from '../../assets/table-template-en.png';

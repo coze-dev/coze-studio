@@ -12,7 +12,7 @@ import { formatBytes } from '@coze-arch/bot-utils';
 import { IconUploadXLS } from '@coze-arch/bot-icons';
 import { type TableType, type TableSheet } from '@coze-arch/bot-api/memory';
 import { MemoryApi } from '@coze-arch/bot-api';
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 
 type ProcessProps = Pick<
   ProcessProgressItemProps,

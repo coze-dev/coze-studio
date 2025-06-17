@@ -1,5 +1,3 @@
-import path from 'path';
-
 import type { Config } from 'tailwindcss';
 
 export default {
@@ -8,10 +6,7 @@ export default {
   presets: [require('@coze-arch/tailwind-config')],
   content: [
     './src/**/*.{html,tsx}',
-    `${path.relative(
-      __dirname,
-      path.dirname(require.resolve('@coze/coze-design/package.json')),
-    )}/src/**/*.{js,ts,jsx,tsx}`,
+    './node_modules/@coze-arch/coze-design/dist/**/*.{js,jsx,css}',
   ],
   corePlugins: {
     preflight: false, // 关闭@tailwind base默认样式，避免对现有样式影响

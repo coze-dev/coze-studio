@@ -46,9 +46,6 @@
       "path": "../../../common/chat-area/utils/tsconfig.build.json"
     },
     {
-      "path": "../../../components/coze-design/tsconfig.build.json"
-    },
-    {
       "path": "../../components/tsconfig.build.json"
     },
     {

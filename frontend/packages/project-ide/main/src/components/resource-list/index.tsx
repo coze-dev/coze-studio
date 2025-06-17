@@ -28,7 +28,7 @@ import {
   IconCozPlugin,
   IconCozTable,
   IconCozVariables,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 const datasetIconMap = {
   [FormatType.Text]: <IconCozDocument />,

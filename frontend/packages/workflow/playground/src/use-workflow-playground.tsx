@@ -11,7 +11,7 @@ import {
 import { reporter } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
 import { typeSafeJSONParse } from '@coze-arch/bot-utils';
-import { Button, Space } from '@coze/coze-design';
+import { Button, Space } from '@coze-arch/coze-design';
 
 import { WorkflowPlayground } from './workflow-playground';
 import {

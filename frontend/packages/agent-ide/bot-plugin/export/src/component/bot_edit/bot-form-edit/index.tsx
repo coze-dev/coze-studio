@@ -1,22 +1,23 @@
 /* eslint-disable @coze-arch/max-line-per-function */
 import { type FC, useMemo, useState, useEffect } from 'react';
 
-import { withSlardarIdButton } from '@coze-studio/bot-utils';
-import { I18n } from '@coze-arch/i18n';
-import { useSpaceStore } from '@coze-arch/bot-studio-store';
-import {
-  ParameterLocation,
-  type CreationMethod,
-  type PluginType,
-} from '@coze-arch/bot-api/plugin_develop';
-import { PluginDevelopApi } from '@coze-arch/bot-api';
 import { type PluginInfoProps } from '@coze-studio/plugin-shared';
 import {
   PluginForm,
   usePluginFormState,
+  convertPluginMetaParams,
+  registerPluginMeta,
+  updatePluginMeta,
 } from '@coze-studio/plugin-form-adapter';
+import { withSlardarIdButton } from '@coze-studio/bot-utils';
+import { I18n } from '@coze-arch/i18n';
+import { useSpaceStore } from '@coze-arch/bot-studio-store';
+import {
+  type CreationMethod,
+  type PluginType,
+} from '@coze-arch/bot-api/plugin_develop';
 import { ERROR_CODE } from '@coze-agent-ide/bot-plugin-tools/pluginModal/types';
-import { IconCozInfoCircleFill } from '@coze/coze-design/icons';
+import { IconCozInfoCircleFill } from '@coze-arch/coze-design/icons';
 import {
   Button,
   Divider,
@@ -24,7 +25,7 @@ import {
   Space,
   Toast,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import s from '../index.module.less';
 import { PluginDocs } from '../../plugin-docs';
@@ -110,7 +111,6 @@ export const CreateFormPluginModal: FC<CreatePluginFormProps> = props => {
     }
   }, [visible]);
 
-  // eslint-disable-next-line complexity
   const confirmBtn = async () => {
     await formApi.current?.validate();
     const type = isCreate ? 'create' : 'edit';
@@ -128,63 +128,19 @@ export const CreateFormPluginModal: FC<CreatePluginFormProps> = props => {
 
     const [pluginType, creationMethod] = pluginTypeCreationMethod.split('-');
 
-    const mainAuthType = val.auth_type?.at(0);
-    const serviceSubAuthType = val.auth_type?.at(-1);
-    const initParams = {
-      ...val,
-      icon: { uri: val?.plugin_uri?.[0]?.uid },
-      // 如果是 service 鉴权，使用subType去传递下一层authType
-      auth_type: mainAuthType === 1 ? 1 : val.auth_type?.at(-1) || 0,
-      common_params: {
-        [ParameterLocation.Header]: headerList,
-        [ParameterLocation.Body]: [],
-        [ParameterLocation.Path]: [],
-        [ParameterLocation.Query]: [],
-      },
-      space_id: String(id),
-      project_id: projectId,
-      creation_method: Number(creationMethod) as unknown as CreationMethod,
-      ide_code_runtime: val.ide_code_runtime ?? defaultRuntime,
-      plugin_type: Number(pluginType) as unknown as PluginType,
-      private_link_id:
-        val.private_link_id === '0' ? undefined : val.private_link_id,
-    };
-    const params =
-      mainAuthType === 1
-        ? {
-            ...initParams,
-            sub_auth_type: serviceSubAuthType,
-            auth_payload: JSON.stringify(json),
-          }
-        : {
-            ...initParams,
-            oauth_info: JSON.stringify(json),
-          };
+    const params = convertPluginMetaParams({
+      val,
+      spaceId: String(id),
+      headerList,
+      projectId,
+      creationMethod: Number(creationMethod) as unknown as CreationMethod,
+      defaultRuntime,
+      pluginType: Number(pluginType) as unknown as PluginType,
+      extItemsJSON: json,
+    });
     const action = {
-      create: async () => {
-        const res = await PluginDevelopApi.RegisterPluginMeta(
-          {
-            ...params,
-          },
-          {
-            __disableErrorToast: true,
-          },
-        );
-        return res.plugin_id;
-      },
-      edit: async () => {
-        await PluginDevelopApi.UpdatePluginMeta(
-          {
-            ...params,
-            plugin_id: editInfo?.plugin_id || '',
-            edit_version: editInfo?.edit_version,
-          },
-          {
-            __disableErrorToast: true,
-          },
-        );
-        return '';
-      },
+      create: () => registerPluginMeta({ params }),
+      edit: () => updatePluginMeta({ params, editInfo }),
     };
 
     try {

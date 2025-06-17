@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 
-import { type CommonFieldProps } from '@coze/coze-design';
+import { type CommonFieldProps } from '@coze-arch/coze-design';
 
 export type ValidateSchemaResult = 'pending' | 'empty' | 'invalid' | 'ok';
 export type TestsetEditMode = 'create' | 'edit';

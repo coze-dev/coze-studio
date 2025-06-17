@@ -3,7 +3,7 @@ import { type FC } from 'react';
 import classNames from 'classnames';
 import { type Model } from '@coze-arch/bot-api/developer_api';
 import { ModelOptionThumb } from '@coze-agent-ide/model-manager/model-select-v2';
-import { IconCozArrowDown, IconCozCross } from '@coze/coze-design/icons';
+import { IconCozArrowDown, IconCozCross } from '@coze-arch/coze-design/icons';
 
 import styles from './index.module.less';
 

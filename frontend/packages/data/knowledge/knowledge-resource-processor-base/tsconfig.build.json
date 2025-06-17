@@ -90,9 +90,6 @@
       "path": "../../../components/bot-semi/tsconfig.build.json"
     },
     {
-      "path": "../../../components/coze-design/tsconfig.build.json"
-    },
-    {
       "path": "../../../components/table-view/tsconfig.build.json"
     },
     {

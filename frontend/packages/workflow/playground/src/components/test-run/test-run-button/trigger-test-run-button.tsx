@@ -5,8 +5,8 @@ import { useMemo, useState } from 'react';
 
 import { getTriggerId } from '@coze-workflow/nodes';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlayCircle, IconCozStopCircle } from '@coze/coze-design/icons';
-import { IconButton, Tooltip, type ButtonProps } from '@coze/coze-design';
+import { IconCozPlayCircle, IconCozStopCircle } from '@coze-arch/coze-design/icons';
+import { IconButton, Tooltip, type ButtonProps } from '@coze-arch/coze-design';
 
 import { useValidateWorkflow } from '@/hooks/use-validate-workflow';
 import {

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.bytedance.net/rush-plugins/rush-build-cache-plugin-options.schema.json",
+  "key": "Wek6C-xcBtNNroagxV305NFAcmXOriQRps64",
+  "envList": [
+    // BUILD_TYPE 在 SCM 里面应该是 offline、test、online [Witty]
+    "BUILD_TYPE",
+    // bot studio 构建时需要根据 region 环境区分打包
+    "REGION",
+    // 用于区分 inhouse/release 环境
+    "CUSTOM_VERSION",
+    "CI",
+    "CI_LIGHTING",
+    // coze cli 构建时需要区分 inhouse/release 环境
+    "PUBLIC_INHOUSE"
+  ]
+}

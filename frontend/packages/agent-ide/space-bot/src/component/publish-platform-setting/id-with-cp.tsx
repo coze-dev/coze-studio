@@ -1,11 +1,11 @@
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCopy } from '@coze/coze-design/icons';
+import { IconCozCopy } from '@coze-arch/coze-design/icons';
 import {
   IconButton,
   Space,
   Tooltip,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 const doRenderTooltip = (content, children) => (
   <Tooltip content={content}>{children}</Tooltip>

@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { Avatar } from '@coze/coze-design';
+import { Avatar } from '@coze-arch/coze-design';
 
 import { type ReceivedMessage } from '../../types';
 import { ContentType, MessageType } from '../../constants';

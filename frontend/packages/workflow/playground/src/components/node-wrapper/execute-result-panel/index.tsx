@@ -12,7 +12,7 @@ import { safeJSONParse } from '@coze-arch/bot-utils';
 import { UIIconButton } from '@coze-arch/bot-semi';
 import { IconCopy, IconWorkflowRunResultClose } from '@coze-arch/bot-icons';
 import { CustomError } from '@coze-arch/bot-error';
-import { Toast, Tooltip } from '@coze/coze-design';
+import { Toast, Tooltip } from '@coze-arch/coze-design';
 
 import { useExecStateEntity } from '../../../hooks';
 

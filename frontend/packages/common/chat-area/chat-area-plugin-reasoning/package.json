@@ -2,7 +2,7 @@
   "name": "@coze-common/chat-area-plugin-reasoning",
   "version": "0.0.1",
   "description": "chat area plugin reasoning",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanchen@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

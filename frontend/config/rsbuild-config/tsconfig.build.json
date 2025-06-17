@@ -22,9 +22,6 @@
       "path": "../../packages/arch/bot-env/tsconfig.build.json"
     },
     {
-      "path": "../../packages/arch/semi-theme-hand01/tsconfig.build.json"
-    },
-    {
       "path": "../../packages/common/assets/tsconfig.build.json"
     },
     {

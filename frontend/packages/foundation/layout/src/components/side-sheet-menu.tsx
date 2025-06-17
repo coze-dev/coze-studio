@@ -1,4 +1,4 @@
-import { IconButton } from '@coze/coze-design';
+import { IconButton } from '@coze-arch/coze-design';
 import { IconSideFoldOutlined } from '@coze-arch/bot-icons';
 
 import { useOpenGlobalLayoutSideSheet } from './global-layout/hooks';

@@ -1,8 +1,8 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useGenerateImageStore } from '@coze-studio/bot-detail-store';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozUpload } from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+import { IconCozUpload } from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 
 import { GenerateButton } from '../generate-button';
 

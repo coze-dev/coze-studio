@@ -1,8 +1,8 @@
 import { type FC } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozEmpty, IconCozBroom } from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+import { IconCozEmpty, IconCozBroom } from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 
 interface WorkspaceEmptyProps {
   onClear?: () => void; // 清空按钮点击事件

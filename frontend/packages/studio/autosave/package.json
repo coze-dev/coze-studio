@@ -2,7 +2,7 @@
   "name": "@coze-studio/autosave",
   "version": "0.0.1",
   "description": "autosave",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "zhangxiang.01@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

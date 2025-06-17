@@ -4,7 +4,7 @@ import { useErrorHandler } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
 import { CustomError } from '@coze-arch/bot-error';
 import { KnowledgeApi } from '@coze-arch/bot-api';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 export const useGetKnowledgeListInfo = (params: { datasetID: string }) => {
   const spaceId = useSpaceStore(s => s.space.id);

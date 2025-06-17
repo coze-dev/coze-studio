@@ -4,7 +4,7 @@ import { isEmpty, cloneDeep } from 'lodash-es';
 import { format } from 'date-fns';
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { type BaseDatePicker, DatePicker } from '@coze/coze-design';
+import { type BaseDatePicker, DatePicker } from '@coze-arch/coze-design';
 
 import {
   type ChangeDataParams,

@@ -4,7 +4,7 @@ import {
   type ListProps,
   type EmptyStateProps,
   type ButtonProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 export interface EmptyProps {
   className?: string;

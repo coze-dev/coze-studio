@@ -2,7 +2,7 @@ import { type FC, type PropsWithChildren } from 'react';
 
 import classNames from 'classnames';
 import { useShowBackGround } from '@coze-common/chat-area';
-import { IconCozQuotation } from '@coze/coze-design/icons';
+import { IconCozQuotation } from '@coze-arch/coze-design/icons';
 
 import { typeSafeQuoteNodeColorVariants } from '../variants';
 

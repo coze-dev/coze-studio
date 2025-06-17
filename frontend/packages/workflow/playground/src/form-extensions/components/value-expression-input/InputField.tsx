@@ -7,7 +7,7 @@ import {
   Switch,
   Input,
   DatePicker,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { type SelectProps } from '@coze-arch/bot-semi/Select';
 
 export type InputType =

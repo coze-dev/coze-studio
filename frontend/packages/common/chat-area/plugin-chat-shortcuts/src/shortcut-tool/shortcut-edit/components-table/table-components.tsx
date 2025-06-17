@@ -10,7 +10,7 @@ import cs from 'classnames';
 import { useDnDSortableItem } from '@coze-studio/components/sortable-list-hooks';
 import { type OnMove } from '@coze-studio/components';
 import { I18n } from '@coze-arch/i18n';
-import { Switch } from '@coze/coze-design';
+import { Switch } from '@coze-arch/coze-design';
 import { type TooltipProps } from '@coze-arch/bot-semi/Tooltip';
 import {
   type ColumnProps,

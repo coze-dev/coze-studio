@@ -2,7 +2,7 @@
   "name": "@coze-arch/bot-flags",
   "version": "0.0.1",
   "description": "feature gating for bot studio ",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "maintainers": [],
   "sideEffects": false,

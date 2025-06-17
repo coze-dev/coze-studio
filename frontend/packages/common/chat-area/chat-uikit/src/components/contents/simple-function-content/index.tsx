@@ -1,8 +1,8 @@
 import { type FC } from 'react';
 
 import { typeSafeJsonParse } from '@coze-common/chat-area-utils';
-import { IconCozLoading } from '@coze/coze-design/icons';
-import { Typography } from '@coze/coze-design';
+import { IconCozLoading } from '@coze-arch/coze-design/icons';
+import { Typography } from '@coze-arch/coze-design';
 
 import { isFunctionCall } from '../../../utils/is-function-call';
 import { type ISimpleFunctionMessageContentProps } from './type';

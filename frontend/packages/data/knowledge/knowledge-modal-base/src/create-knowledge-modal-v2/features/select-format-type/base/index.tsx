@@ -2,8 +2,8 @@ import { KnowledgeE2e } from '@coze-data/e2e';
 import { I18n } from '@coze-arch/i18n';
 import { withField } from '@coze-arch/bot-semi';
 import { FormatType } from '@coze-arch/bot-api/memory';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Radio, RadioGroup, Tooltip } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Radio, RadioGroup, Tooltip } from '@coze-arch/coze-design';
 
 import type {
   SelectFormatTypeModule,

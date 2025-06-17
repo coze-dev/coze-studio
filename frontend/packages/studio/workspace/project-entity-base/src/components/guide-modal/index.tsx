@@ -2,14 +2,14 @@ import { type ReactNode } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCross } from '@coze/coze-design/icons';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
 import {
   Badge,
   Button,
   Avatar,
   Modal,
   type ModalProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useHiddenSession } from '../../hooks/use-hidden-session';
 import ProjectImg from '../../assets/project-img.png';
@@ -132,7 +132,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({
         assetSrc={AgentAsset}
         title={I18n.t('creat_project_creat_agent')}
         description={I18n.t('creat_project_agent_describe')}
-        tip={I18n.t('agent_creat_tips')}
+        tip={!IS_OPEN_SOURCE ? I18n.t('agent_creat_tips') : null}
       />
       <GuideButton
         onClick={() => onChange('project')}

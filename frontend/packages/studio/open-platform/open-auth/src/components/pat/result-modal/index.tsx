@@ -1,7 +1,7 @@
 import copy from 'copy-to-clipboard';
 import { useMemoizedFn } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCopy } from '@coze/coze-design/icons';
+import { IconCozCopy } from '@coze-arch/coze-design/icons';
 import {
   UIModal,
   Typography,

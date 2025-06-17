@@ -2,7 +2,7 @@
   "name": "@coze-arch/bot-md-box-adapter",
   "version": "0.0.1",
   "description": "md-box for coze",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "gaoyuanhan.duty@bytedance.com",
   "maintainers": [
     "houtao.zzj@bytedance.com",

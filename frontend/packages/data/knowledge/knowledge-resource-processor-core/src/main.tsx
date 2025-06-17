@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { Steps } from '@coze-arch/bot-semi';
 import { CustomError } from '@coze-arch/bot-error';
-import { IconCozCheckMarkFill } from '@coze/coze-design/icons';
+import { IconCozCheckMarkFill } from '@coze-arch/coze-design/icons';
 
 import type {
   UploadBaseState,

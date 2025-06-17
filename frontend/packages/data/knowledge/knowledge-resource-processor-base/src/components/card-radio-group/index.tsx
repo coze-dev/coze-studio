@@ -1,7 +1,7 @@
 import { type PropsWithChildren } from 'react';
 
 import classNames from 'classnames';
-import { RadioGroup, type RadioGroupProps } from '@coze/coze-design';
+import { RadioGroup, type RadioGroupProps } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

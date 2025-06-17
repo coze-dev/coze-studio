@@ -25,8 +25,8 @@ import {
   DocumentSource,
   type DocumentInfo,
 } from '@coze-arch/bot-api/knowledge';
-import { IconCozPlus } from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+import { IconCozPlus } from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 
 import { getAddSegmentParams } from '@/features/knowledge-type/table/utils';
 import type {

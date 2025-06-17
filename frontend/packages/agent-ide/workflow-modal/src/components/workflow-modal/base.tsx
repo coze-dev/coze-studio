@@ -15,7 +15,7 @@ import { ProductEntityType } from '@coze-arch/bot-api/product_api';
 import { useBotSkillStore } from '@coze-studio/bot-detail-store/bot-skill';
 import { type WorkFlowItemType } from '@coze-studio/bot-detail-store';
 import { useNavigateWorkflowEditPage } from '@coze-agent-ide/navigate';
-import { Toast, Space, Typography, Button } from '@coze/coze-design';
+import { Toast, Space, Typography, Button } from '@coze-arch/coze-design';
 
 const { Text } = Typography;
 

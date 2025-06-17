@@ -3,8 +3,8 @@ import { type ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { usePageRuntimeStore } from '@coze-studio/bot-detail-store/page-runtime';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozLoading } from '@coze/coze-design/icons';
-import { Tag } from '@coze/coze-design';
+import { IconCozLoading } from '@coze-arch/coze-design/icons';
+import { Tag } from '@coze-arch/coze-design';
 import { UIButton } from '@coze-arch/bot-semi';
 import {
   ConnectorDynamicStatus,

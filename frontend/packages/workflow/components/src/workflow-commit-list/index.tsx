@@ -10,13 +10,13 @@ import {
   withQueryClient,
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozFocus } from '@coze/coze-design/icons';
+import { IconCozFocus } from '@coze-arch/coze-design/icons';
 import {
   EmptyState,
   Spin,
   Timeline,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useVersionHistory } from './use-version-history';
 import { type WorkflowCommitListProps } from './type';

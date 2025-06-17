@@ -1,7 +1,7 @@
 /** Text 组件，超出自动 ... 并且展示 tooltip */
 import { type FC } from 'react';
 
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 import { type Position } from '@coze-arch/bot-semi/Tooltip';
 
 interface IText {

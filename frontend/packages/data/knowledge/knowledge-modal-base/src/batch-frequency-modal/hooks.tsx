@@ -12,7 +12,7 @@ import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
 import { DocumentSource, UpdateType } from '@coze-arch/bot-api/knowledge';
 import { KnowledgeApi } from '@coze-arch/bot-api';
-import { Select, Toast } from '@coze/coze-design';
+import { Select, Toast } from '@coze-arch/coze-design';
 
 import {
   useBatchCheckboxDoc,

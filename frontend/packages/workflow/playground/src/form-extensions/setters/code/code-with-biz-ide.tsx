@@ -4,8 +4,8 @@ import { type FeedbackStatus } from '@flowgram-adapter/free-layout-editor';
 import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 import { Previewer } from '@coze-workflow/code-editor-adapter';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozExpand } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozExpand } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';
 import { useGlobalState } from '@/hooks';

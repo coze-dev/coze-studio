@@ -1,4 +1,4 @@
-import { Tag } from '@coze/coze-design';
+import { Tag } from '@coze-arch/coze-design';
 
 export interface APITagProps {
   type: 'Request' | 'Response';

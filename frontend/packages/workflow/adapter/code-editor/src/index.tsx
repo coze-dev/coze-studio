@@ -1,4 +1,4 @@
-import { themes } from '@flow-lang-sdk/editor/preset-code';
+import { themes } from '@coze-editor/editor/preset-code';
 
 import { convertSchema } from './utils';
 import { type PreviewerProps, type EditorProps } from './interface';

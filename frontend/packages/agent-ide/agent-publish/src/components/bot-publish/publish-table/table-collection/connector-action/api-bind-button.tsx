@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { PatBody } from '@coze-studio/open-auth';
 import { I18n } from '@coze-arch/i18n';
 import { UIButton } from '@coze-arch/bot-semi';
-import { Modal } from '@coze/coze-design';
+import { Modal } from '@coze-arch/coze-design';
 
 export const ApiBindButton: React.FC = () => {
   const [visible, setVisible] = useState(false);

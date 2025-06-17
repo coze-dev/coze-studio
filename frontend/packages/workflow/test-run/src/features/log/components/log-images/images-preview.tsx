@@ -2,7 +2,7 @@ import { useRef } from 'react';
 
 import cls from 'classnames';
 import { useSize } from 'ahooks';
-import { ImagePreview, Image } from '@coze/coze-design';
+import { ImagePreview, Image } from '@coze-arch/coze-design';
 
 import css from './images-preview.module.less';
 

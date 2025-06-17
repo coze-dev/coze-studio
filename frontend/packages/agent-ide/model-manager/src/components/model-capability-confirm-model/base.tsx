@@ -14,8 +14,8 @@ import {
 } from '@coze-arch/bot-api/developer_api';
 import { useBotSkillStore } from '@coze-studio/bot-detail-store/bot-skill';
 import { mergeModelFuncConfigStatus } from '@coze-agent-ide/bot-editor-context-store';
-import { IconCozCross } from '@coze/coze-design/icons';
-import { Button, Checkbox, Modal, IconButton, Space } from '@coze/coze-design';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
+import { Button, Checkbox, Modal, IconButton, Space } from '@coze-arch/coze-design';
 
 type IRegisteredToolKeyConfig = ReturnType<
   typeof useRegisteredToolKeyConfigList

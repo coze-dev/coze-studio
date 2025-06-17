@@ -6,7 +6,7 @@ import {
   type ValueExpression,
   type ViewVariableType,
 } from '@coze-workflow/base/types';
-import { type TreeSelectProps } from '@coze/coze-design';
+import { type TreeSelectProps } from '@coze-arch/coze-design';
 
 import {
   type CustomFilterVar,

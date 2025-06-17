@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { useDataModalWithCoze } from '@coze-data/utils';
 import { I18n } from '@coze-arch/i18n';
-import { TextArea } from '@coze/coze-design';
+import { TextArea } from '@coze-arch/coze-design';
 
 export interface IEditUnitNameProps {
   name: string;

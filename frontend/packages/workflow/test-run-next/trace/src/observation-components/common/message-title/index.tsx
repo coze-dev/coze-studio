@@ -1,5 +1,5 @@
-import { IconCozCopy, IconCozCopyCheck } from '@coze/coze-design/icons';
-import { Typography } from '@coze/coze-design';
+import { IconCozCopy, IconCozCopyCheck } from '@coze-arch/coze-design/icons';
+import { Typography } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

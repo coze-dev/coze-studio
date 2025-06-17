@@ -1,8 +1,8 @@
 import { useState, type PropsWithChildren } from 'react';
 
 import classNames from 'classnames';
-import { IconCozArrowRight } from '@coze/coze-design/icons';
-import { Collapsible, Typography } from '@coze/coze-design';
+import { IconCozArrowRight } from '@coze-arch/coze-design/icons';
+import { Collapsible, Typography } from '@coze-arch/coze-design';
 
 export interface CollapsePanelProps extends PropsWithChildren {
   header: React.ReactNode;

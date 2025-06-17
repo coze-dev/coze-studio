@@ -11,7 +11,7 @@ import {
 } from '@flowgram-adapter/free-layout-editor';
 import { SettingOnErrorProcessType } from '@coze-workflow/nodes';
 import { I18n } from '@coze-arch/i18n';
-import { Tooltip } from '@coze/coze-design';
+import { Tooltip } from '@coze-arch/coze-design';
 
 import { type ComponentProps } from '@/nodes-v2/components/types';
 import { Radio } from '@/nodes-v2/components/radio';

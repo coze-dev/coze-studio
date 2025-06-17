@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Popover } from '@coze/coze-design';
+import { Popover } from '@coze-arch/coze-design';
 import { FIRST_GUIDE_KEY_PREFIX } from '@coze-agent-ide/chat-background-shared';
 
 interface CropperGuideProps {

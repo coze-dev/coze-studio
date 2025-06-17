@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import { TextArea, type TextAreaProps } from '@coze/coze-design';
+import { TextArea, type TextAreaProps } from '@coze-arch/coze-design';
 
 import { useField } from '../hooks';
 import { withField } from '../hocs';

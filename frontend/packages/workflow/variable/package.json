@@ -2,7 +2,7 @@
   "name": "@coze-workflow/variable",
   "version": "0.0.1",
   "description": "workflow 变量包",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "wencheng.lwc@bytedance.com",
   "sideEffects": [
     "**/*.css",

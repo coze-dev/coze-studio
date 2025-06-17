@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Tooltip } from '@coze/coze-design';
+import { Tooltip } from '@coze-arch/coze-design';
 import { IconInfo } from '@coze-arch/bot-icons';
 
 import s from './index.module.less';

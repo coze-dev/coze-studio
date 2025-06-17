@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { CozAvatar, Tag, Tooltip, Typography } from '@coze/coze-design';
+import { CozAvatar, Tag, Tooltip, Typography } from '@coze-arch/coze-design';
 import { type PluginConnectorInfo } from '@coze-arch/bot-api/product_api';
 
 import styles from './index.module.less';

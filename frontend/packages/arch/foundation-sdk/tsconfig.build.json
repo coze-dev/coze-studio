@@ -10,9 +10,6 @@
   "include": ["src"],
   "references": [
     {
-      "path": "../../components/coze-design/tsconfig.build.json"
-    },
-    {
       "path": "../../../config/eslint-config/tsconfig.build.json"
     },
     {

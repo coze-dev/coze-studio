@@ -7,7 +7,7 @@ import { WorkflowNodeData } from '@coze-workflow/nodes';
 import { workflowApi, StandardNodeType, BlockInput } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { type GetApiDetailRequest } from '@coze-arch/bot-api/workflow_api';
-import { Modal } from '@coze/coze-design';
+import { Modal } from '@coze-arch/coze-design';
 
 import { WorkflowPlaygroundContext } from '@/workflow-playground-context';
 import { isNodeV2 } from '@/nodes-v2';

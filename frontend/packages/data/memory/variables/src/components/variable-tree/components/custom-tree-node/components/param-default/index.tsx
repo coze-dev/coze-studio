@@ -2,8 +2,8 @@ import { useState } from 'react';
 
 import cls from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozEdit } from '@coze/coze-design/icons';
-import { CozInputNumber, Switch, Input } from '@coze/coze-design';
+import { IconCozEdit } from '@coze-arch/coze-design/icons';
+import { CozInputNumber, Switch, Input } from '@coze-arch/coze-design';
 
 import { ViewVariableType } from '@/store';
 import { type TreeNodeCustomData } from '@/components/variable-tree/type';

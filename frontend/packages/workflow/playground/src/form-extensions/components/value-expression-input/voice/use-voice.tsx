@@ -7,8 +7,8 @@ import {
   ViewVariableType,
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozTrashCan } from '@coze/coze-design/icons';
-import { IconButton, Select } from '@coze/coze-design';
+import { IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { IconButton, Select } from '@coze-arch/coze-design';
 import type { TreeNodeData } from '@coze-arch/bot-semi/Tree';
 import type { SelectProps } from '@coze-arch/bot-semi/Select';
 import { useSelectVoiceModal } from '@coze-workflow/resources-adapter';

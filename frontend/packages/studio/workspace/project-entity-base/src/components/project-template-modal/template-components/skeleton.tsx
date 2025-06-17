@@ -1,4 +1,4 @@
-import { Skeleton } from '@coze/coze-design';
+import { Skeleton } from '@coze-arch/coze-design';
 
 import { ProjectTemplateGroup } from './project-template-group';
 

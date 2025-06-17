@@ -1,7 +1,7 @@
 import { type ReactNode, type FC } from 'react';
 
 import classNames from 'classnames';
-import { IconCozChatPlus } from '@coze/coze-design/icons';
+import { IconCozChatPlus } from '@coze-arch/coze-design/icons';
 import { Layout } from '@coze-common/chat-uikit-shared';
 
 import { UIKitTooltip } from '../../../../common/tooltips';

@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozChat } from '@coze/coze-design/icons';
-import { Modal, Select, Typography, Toast } from '@coze/coze-design';
+import { IconCozChat } from '@coze-arch/coze-design/icons';
+import { Modal, Select, Typography, Toast } from '@coze-arch/coze-design';
 import {
   type Workflow,
   type ProjectConversation,

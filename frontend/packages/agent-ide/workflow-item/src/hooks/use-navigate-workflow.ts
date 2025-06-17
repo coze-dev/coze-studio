@@ -2,7 +2,7 @@
 import { useCallback } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 export function useNavigateWorkflowOrBlockwise({
   spaceID,

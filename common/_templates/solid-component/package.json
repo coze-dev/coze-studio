@@ -2,7 +2,7 @@
   "name": "{{ packageName }}",
   "version": "0.0.1",
   "description": "{{ description }}",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "{{ authorName }}",
   "maintainers": [
   ],

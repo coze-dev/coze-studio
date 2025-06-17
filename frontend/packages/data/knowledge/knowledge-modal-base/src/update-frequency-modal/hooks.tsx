@@ -18,7 +18,7 @@ import {
   UpdateType,
 } from '@coze-arch/bot-api/knowledge';
 import { KnowledgeApi } from '@coze-arch/bot-api';
-import { Form, FormSelect } from '@coze/coze-design';
+import { Form, FormSelect } from '@coze-arch/coze-design';
 
 import { DATA_REFACTOR_CLASS_NAME } from '../constant';
 

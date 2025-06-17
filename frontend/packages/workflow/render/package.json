@@ -20,8 +20,8 @@
   },
   "dependencies": {
     "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/report-tti": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "@flowgram-adapter/common": "workspace:*",
     "@flowgram-adapter/free-layout-editor": "workspace:*",
     "@use-gesture/vanilla": "^10.0.0",

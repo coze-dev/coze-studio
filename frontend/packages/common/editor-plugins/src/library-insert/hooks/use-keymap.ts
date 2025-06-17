@@ -1,6 +1,6 @@
 import { useLayoutEffect } from 'react';
 
-import { useInjector } from '@flow-lang-sdk/editor/react';
+import { useInjector } from '@coze-editor/editor/react';
 import { keymap, type EditorView } from '@codemirror/view';
 export const useKeymap = (
   keyMap: string[],

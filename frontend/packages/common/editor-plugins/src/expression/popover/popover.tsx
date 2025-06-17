@@ -13,8 +13,8 @@ import {
   CursorMirror,
   useEditor,
   SelectionSide,
-} from '@flow-lang-sdk/editor/react';
-import { type EditorAPI as ExpressionEditorAPI } from '@flow-lang-sdk/editor/preset-expression';
+} from '@coze-editor/editor/react';
+import { type EditorAPI as ExpressionEditorAPI } from '@coze-editor/editor/preset-expression';
 import { type TreeNodeData } from '@coze-arch/bot-semi/Tree';
 import { type PopoverProps } from '@coze-arch/bot-semi/Popover';
 import { Popover as SemiPopover, Tree } from '@coze-arch/bot-semi';

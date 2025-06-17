@@ -1,7 +1,7 @@
 import { type FC, type MouseEvent } from 'react';
 
-import { IconCozPluginFill } from '@coze/coze-design/icons';
-import { Typography, Highlight } from '@coze/coze-design';
+import { IconCozPluginFill } from '@coze-arch/coze-design/icons';
+import { Typography, Highlight } from '@coze-arch/coze-design';
 
 import styles from './styles.module.less';
 

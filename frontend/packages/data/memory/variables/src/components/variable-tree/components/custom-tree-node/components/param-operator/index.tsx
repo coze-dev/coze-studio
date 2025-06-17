@@ -1,7 +1,7 @@
 /* eslint-disable @coze-arch/no-deep-relative-import */
 import { I18n } from '@coze-arch/i18n';
-import { IconCozTrashCan } from '@coze/coze-design/icons';
-import { Tooltip, IconButton, Switch } from '@coze/coze-design';
+import { IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { Tooltip, IconButton, Switch } from '@coze-arch/coze-design';
 
 import { ObjectLikeTypes } from '@/store/variable-groups/types';
 import { useVariableContext } from '@/context';

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
 import { type AuthFrequencyInfo } from '@coze-arch/bot-api/knowledge';
-import { Toast, Modal } from '@coze/coze-design';
+import { Toast, Modal } from '@coze-arch/coze-design';
 
 import { saveSettingChange } from '../service/use-case/save-setting-change';
 import { useInit } from '../hooks/life-cycle/use-init';

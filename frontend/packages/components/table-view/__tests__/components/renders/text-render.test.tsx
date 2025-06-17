@@ -7,7 +7,7 @@ import '@testing-library/jest-dom';
 import { TextRender } from '../../../src/components/renders/text-render';
 
 // 模拟依赖
-vi.mock('@coze/coze-design', () => ({
+vi.mock('@coze-arch/coze-design', () => ({
   TextArea: ({
     value,
     onChange,

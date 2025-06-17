@@ -1,12 +1,13 @@
 import { type MouseEvent, type FC, useRef } from 'react';
 
-import { type ImageOptions } from '@coze-arch/bot-md-box-adapter';
 import {
   type IOnImageClickParams,
   type IOnLinkClickParams,
   type IBaseContentProps,
   type MdBoxProps,
 } from '@coze-common/chat-uikit-shared';
+import { Image } from '@coze-arch/bot-md-box-adapter/slots';
+import { type ImageOptions } from '@coze-arch/bot-md-box-adapter';
 
 import { CozeLink } from '../../md-box-slots/link';
 import { CozeImage } from '../../md-box-slots/coze-image';
@@ -86,7 +87,7 @@ export const TextContent: FC<IMessageContentProps> = props => {
         }}
         {...mdBoxProps}
         slots={{
-          Image: enableAutoSizeImage ? CozeImage : undefined,
+          Image: enableAutoSizeImage ? CozeImage : Image,
           Link: CozeLink,
           ...mdBoxProps?.slots,
         }}

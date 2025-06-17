@@ -1,6 +1,6 @@
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
 import { I18n } from '@coze-arch/i18n';
-import { Button, Toast } from '@coze/coze-design';
+import { Button, Toast } from '@coze-arch/coze-design';
 
 export const CopyPrompt = (props: {
   editor: EditorAPI;

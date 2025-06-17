@@ -31,12 +31,9 @@ BRANCH_NAME=$(git branch | grep '*' | sed 's/* //')
 if [[ "X${BRANCH_NAME}" == "X(no branch"* ]]; then
   exit
 else
-  COMMIT_MSG=$(cat "$1")
   node common/scripts/install-run-rush.js -q commitlint \
     --config common/autoinstallers/rush-commitlint/commitlint.config.js \
     --edit "$1" || exit 1
 
-  # 读取 commit message 并传给 change-x 命令
-  node common/scripts/install-run-rush.js change-x --commit-msg "$COMMIT_MSG" || exit 1
+  node common/scripts/install-run-rush.js change-x || exit 1
 fi
-

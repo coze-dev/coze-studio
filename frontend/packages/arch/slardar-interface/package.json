@@ -2,7 +2,7 @@
   "name": "@coze-studio/slardar-interface",
   "version": "0.0.1",
   "description": "interface that descripts how to use slardar ",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

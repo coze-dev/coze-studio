@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tooltip, Typography } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip, Typography } from '@coze-arch/coze-design';
 import { type ExtInfoText } from '@coze-studio/plugin-shared';
 
 interface InfoPopoverProps {

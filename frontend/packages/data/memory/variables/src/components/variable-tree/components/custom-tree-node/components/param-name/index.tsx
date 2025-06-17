@@ -1,6 +1,6 @@
 import cls from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { FormInput, useFormApi } from '@coze/coze-design';
+import { FormInput, useFormApi } from '@coze-arch/coze-design';
 
 import { type Variable } from '@/store';
 import { useVariableContext } from '@/context';

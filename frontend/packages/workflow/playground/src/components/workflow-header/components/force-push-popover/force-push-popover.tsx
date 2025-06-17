@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Button, Popover, Typography } from '@coze/coze-design';
+import { Button, Popover, Typography } from '@coze-arch/coze-design';
 
 import styles from './force-push-popover.module.less';
 

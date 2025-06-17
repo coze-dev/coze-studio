@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozWarningCircleFillPalette } from '@coze/coze-design/icons';
-import { Modal } from '@coze/coze-design';
+import { IconCozWarningCircleFillPalette } from '@coze-arch/coze-design/icons';
+import { Modal } from '@coze-arch/coze-design';
 import { ResourceCopyScene } from '@coze-arch/bot-api/plugin_develop';
 import {
   ModalService,

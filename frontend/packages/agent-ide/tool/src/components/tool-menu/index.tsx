@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 
 import classNames from 'classnames';
-import { Menu, Popover, IconButton } from '@coze/coze-design';
+import { Menu, Popover, IconButton } from '@coze-arch/coze-design';
 import { IconMenu } from '@coze-arch/bot-icons';
 
 import { ToolMenuDropdownMenu } from '../tool-menu-dropdown-menu';

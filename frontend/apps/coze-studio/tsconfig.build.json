@@ -64,6 +64,9 @@
       "path": "../../packages/arch/bot-md-box-adapter/tsconfig.build.json"
     },
     {
+      "path": "../../packages/arch/bot-typings/tsconfig.build.json"
+    },
+    {
       "path": "../../packages/arch/default-slardar/tsconfig.build.json"
     },
     {
@@ -79,16 +82,10 @@
       "path": "../../packages/arch/responsive-kit/tsconfig.build.json"
     },
     {
-      "path": "../../packages/arch/semi-theme-hand01/tsconfig.build.json"
-    },
-    {
       "path": "../../packages/arch/web-context/tsconfig.build.json"
     },
     {
       "path": "../../packages/community/explore/tsconfig.build.json"
-    },
-    {
-      "path": "../../packages/components/coze-design/tsconfig.build.json"
     },
     {
       "path": "../../packages/foundation/account-adapter/tsconfig.build.json"

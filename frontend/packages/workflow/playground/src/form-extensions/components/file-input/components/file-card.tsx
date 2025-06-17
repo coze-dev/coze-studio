@@ -1,6 +1,6 @@
 import classNames from 'classnames';
-import { IconCozTrashCan } from '@coze/coze-design/icons';
-import { Typography } from '@coze/coze-design';
+import { IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { Typography } from '@coze-arch/coze-design';
 
 import { type FileItem } from '@/hooks/use-upload';
 import { FileIcon } from '@/components/file-icon';

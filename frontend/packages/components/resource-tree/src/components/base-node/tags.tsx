@@ -1,6 +1,6 @@
 import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
-import { IconCozInfinity } from '@coze/coze-design/icons';
-import { Tag, Tooltip } from '@coze/coze-design';
+import { IconCozInfinity } from '@coze-arch/coze-design/icons';
+import { Tag, Tooltip } from '@coze-arch/coze-design';
 
 import { type DependencyOrigin, type NodeType } from '../../typings';
 import { contentMap, getFromText } from './constants';

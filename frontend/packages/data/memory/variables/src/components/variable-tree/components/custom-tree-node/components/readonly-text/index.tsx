@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { Typography } from '@coze/coze-design';
+import { Typography } from '@coze-arch/coze-design';
 
 const { Text } = Typography;
 

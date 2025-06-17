@@ -2,7 +2,7 @@ import React, { type FC, useMemo } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
 import { WorkflowMode } from '@coze-arch/bot-api/workflow_api';
-import { Image, useTheme } from '@coze/coze-design';
+import { Image, useTheme } from '@coze-arch/coze-design';
 
 import workflowLightImg from './assets/workflow-light.jpg';
 import workflowDarkImg from './assets/workflow-dark.jpg';

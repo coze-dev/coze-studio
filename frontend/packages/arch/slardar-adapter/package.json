@@ -2,7 +2,7 @@
   "name": "@coze-studio/slardar-adapter",
   "version": "0.0.1",
   "description": "provide report adapter",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

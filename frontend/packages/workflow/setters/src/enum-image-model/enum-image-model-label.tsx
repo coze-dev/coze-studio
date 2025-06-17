@@ -1,7 +1,7 @@
 import React from 'react';
 
 import classNames from 'classnames';
-import { Tooltip, Avatar } from '@coze/coze-design';
+import { Tooltip, Avatar } from '@coze-arch/coze-design';
 
 import { type EnumImageModelLabelProps } from './types';
 

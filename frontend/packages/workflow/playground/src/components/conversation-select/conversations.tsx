@@ -3,7 +3,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { debounce } from 'lodash-es';
 import { CONVERSATION_NAME, workflowApi } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { Typography, Select } from '@coze/coze-design';
+import { Typography, Select } from '@coze-arch/coze-design';
 import { CreateMethod, CreateEnv } from '@coze-arch/bot-api/workflow_api';
 import { useService } from '@flowgram-adapter/free-layout-editor';
 

@@ -7,8 +7,8 @@ import React, {
 
 import classNames from 'classnames';
 import { type WithCustomStyle } from '@coze-workflow/base/types';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Row, Col } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Row, Col } from '@coze-arch/coze-design';
 import { type ColProps } from '@coze-arch/bot-semi/Grid';
 
 import {

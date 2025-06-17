@@ -2,7 +2,7 @@
   "name": "@coze-data/llmPlugins",
   "version": "0.0.1",
   "description": "llm output plugins of dataengine team",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "gaoshuda@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",

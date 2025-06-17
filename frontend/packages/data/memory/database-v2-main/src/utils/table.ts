@@ -1,4 +1,4 @@
-import { type ColumnProps } from '@coze/coze-design';
+import { type ColumnProps } from '@coze-arch/coze-design';
 
 import { type TableRow } from '../components/database-table-data/type';
 

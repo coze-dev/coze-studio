@@ -2,7 +2,7 @@
   "name": "@coze-studio/bot-audit-adapter",
   "version": "0.0.1",
   "description": "bot audit pkg",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "lengfangbing@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

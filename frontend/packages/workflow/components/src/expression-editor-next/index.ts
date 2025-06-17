@@ -1,4 +1,4 @@
-import { EditorProvider } from '@flow-lang-sdk/editor/react';
+import { EditorProvider } from '@coze-editor/editor/react';
 
 import { Renderer } from './renderer';
 import { Popover } from './popover';

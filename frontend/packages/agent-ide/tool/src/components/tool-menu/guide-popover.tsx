@@ -2,7 +2,7 @@ import { useState, type FC } from 'react';
 
 import classnames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 import { useCommonConfigStore } from '@coze-foundation/global-store';
 
 import guideFallbackImage from './images/guide-fallback.png';

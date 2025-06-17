@@ -2,7 +2,7 @@ import { type ReactNode, useRef, useState } from 'react';
 
 import { isBoolean } from 'lodash-es';
 import cls from 'classnames';
-import { Popover, type PopoverProps } from '@coze/coze-design';
+import { Popover, type PopoverProps } from '@coze-arch/coze-design';
 import { IconCozArrowDown } from '@coze-arch/bot-icons';
 import { type Model } from '@coze-arch/bot-api/developer_api';
 

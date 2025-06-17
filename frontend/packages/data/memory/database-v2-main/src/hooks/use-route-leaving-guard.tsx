@@ -1,7 +1,7 @@
 import { useBlocker } from 'react-router-dom';
 
 import { I18n } from '@coze-arch/i18n';
-import { Modal } from '@coze/coze-design';
+import { Modal } from '@coze-arch/coze-design';
 
 export const useRouteLeavingGuard = (when: boolean) => {
   const blocker = useBlocker(

@@ -195,7 +195,7 @@ rush build:types -t @coze-arch/bot-env
 
 ## License
 
-ISC License - see package.json for details.
+Apache-2.0 License - see package.json for details.
 
 ---
 

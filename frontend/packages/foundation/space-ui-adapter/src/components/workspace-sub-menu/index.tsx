@@ -7,8 +7,8 @@ import {
   IconCozBotFill,
   IconCozKnowledge,
   IconCozKnowledgeFill,
-} from '@coze/coze-design/icons';
-import { Space, Avatar, Typography } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Space, Avatar, Typography } from '@coze-arch/coze-design';
 
 import { SpaceSubModuleEnum } from '@/const';
 
@@ -23,12 +23,14 @@ export const WorkspaceSubMenu = () => {
       activeIcon: <IconCozBotFill />,
       title: () => I18n.t('navigation_workspace_develop', {}, 'Develop'),
       path: SpaceSubModuleEnum.DEVELOP,
+      dataTestId: 'navigation_workspace_develop',
     },
     {
       icon: <IconCozKnowledge />,
       activeIcon: <IconCozKnowledgeFill />,
       title: () => I18n.t('navigation_workspace_library', {}, 'Library'),
       path: SpaceSubModuleEnum.LIBRARY,
+      dataTestId: 'navigation_workspace_library',
     },
   ];
 

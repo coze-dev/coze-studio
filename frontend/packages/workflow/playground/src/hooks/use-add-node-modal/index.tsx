@@ -18,7 +18,7 @@ import {
 import { I18n } from '@coze-arch/i18n';
 import { From } from '@coze-agent-ide/plugin-shared';
 import { usePluginApisModal } from '@coze-agent-ide/bot-plugin/components/plugin-apis/use-plugin-apis-modal';
-import { Button, Space, Toast, Typography } from '@coze/coze-design';
+import { Button, Space, Toast, Typography } from '@coze-arch/coze-design';
 
 import { WorkflowPlaygroundContext } from '@/workflow-playground-context';
 import { WorkflowEditService } from '@/services';

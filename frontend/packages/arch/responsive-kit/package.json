@@ -2,7 +2,7 @@
   "name": "@coze-arch/responsive-kit",
   "version": "0.0.1",
   "description": "The kit provides resoponsive functions for mobile adaptation",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "liukaizhan.038@bytedance.com",
   "maintainers": [],
   "exports": {

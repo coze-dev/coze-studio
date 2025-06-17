@@ -1,8 +1,8 @@
 import { type FC } from 'react';
 
 import { useBotDetailIsReadonly } from '@coze-studio/bot-detail-store';
-import { IconCozEdit, IconCozPlus } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozEdit, IconCozPlus } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 import { ToolTooltip } from '../tool-tooltip';
 import { type ToolButtonCommonProps } from '../../typings/button';

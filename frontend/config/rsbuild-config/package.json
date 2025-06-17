@@ -2,7 +2,7 @@
   "name": "@coze-arch/rsbuild-config",
   "version": "0.0.1",
   "description": "rsbuild config ",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",
@@ -15,7 +15,7 @@
   "dependencies": {
     "@coze-arch/bot-env": "workspace:*",
     "@coze-arch/pkg-root-webpack-plugin": "workspace:*",
-    "@coze-arch/semi-theme-hand01": "workspace:*",
+    "@coze-arch/semi-theme-hand01": "0.0.6-alpha.346d77",
     "@coze-common/assets": "workspace:*",
     "@douyinfe/semi-rspack-plugin": "2.61.0",
     "@rsbuild/core": "~1.1.0",

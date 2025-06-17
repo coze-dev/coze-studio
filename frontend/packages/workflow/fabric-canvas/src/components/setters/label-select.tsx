@@ -1,6 +1,6 @@
 import { type FC } from 'react';
 
-import { Select, type SelectProps } from '@coze/coze-design';
+import { Select, type SelectProps } from '@coze-arch/coze-design';
 
 type IProps = SelectProps & { label: string };
 export const LabelSelect: FC<IProps> = props => {

@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { isBoolean } from 'lodash-es';
 import { useMount } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
-import { Modal } from '@coze/coze-design';
+import { Modal } from '@coze-arch/coze-design';
 import {
   usePremiumStore,
   usePremiumType,

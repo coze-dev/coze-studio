@@ -16,7 +16,7 @@ jobs:
     image: hub.byted.org/base/bot_monorepo_ci_env:ae543e9bbc6d8155cffbd8f5ed27fb73
     # 从最近的 CI 执行记录看，install 步骤有概率会等待超时
     # 目前已 oncall，这里先设置一个超时时间，避免阻塞
-    timeout: 15
+    timeout: 30
     if: ${{ !Event.Change.IsPreSubmit }}
     envs:
       targetBranch: ${{Event.Change.Target.Branch}}
@@ -75,7 +75,7 @@ jobs:
           - printenv
           - git config user.name ci_flow
           - git config user.email ci_flow@bytedance.com
-          - npm config set registry=http://bnpm.byted.org
+          - npm config set registry=https://registry.npmjs.org
           - pnpm config set network-concurrency 32
           - echo "$(<${{Steps.RemoteInfo.Outputs.changed_files_path}})"
           - echo "::set-output name=ShouldRunBuild::${{ Event.Change.IsPreSubmit || int(Steps.RemoteInfo.Outputs.behind_commits) <= 6 }}"

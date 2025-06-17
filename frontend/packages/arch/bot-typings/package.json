@@ -2,7 +2,7 @@
   "name": "@coze-arch/bot-typings",
   "version": "0.0.1",
   "description": "bot typings that extract from bot/src/typings",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "maintainers": [],
   "exports": {

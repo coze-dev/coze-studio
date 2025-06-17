@@ -12,7 +12,7 @@ import {
 } from '@coze-common/biz-components/picture-upload';
 import { I18n } from '@coze-arch/i18n';
 import { FileBizType, IconType } from '@coze-arch/bot-api/developer_api';
-import { Form } from '@coze/coze-design';
+import { Form } from '@coze-arch/coze-design';
 
 import { DATA_REFACTOR_CLASS_NAME } from '../constant';
 

@@ -5,8 +5,8 @@ import {
   type PublishConnectorInfo,
 } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tag, type TagProps, Tooltip } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tag, type TagProps, Tooltip } from '@coze-arch/coze-design';
 
 import { getConfigStatus } from '../utils/get-config-status';
 

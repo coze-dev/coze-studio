@@ -9,6 +9,7 @@
     }
   },
   "globalOverrides": {
+    "@coze-arch/coze-design": "0.0.6-alpha.fe013d",
     "sass@1.74.1>immutable": "3.8.2",
     "web-streams-polyfill": "3.3.2",
     "vitest@1.4.0>vite": "5.1.6",

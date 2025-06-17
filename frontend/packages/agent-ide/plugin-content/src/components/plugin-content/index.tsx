@@ -18,8 +18,8 @@ import {
   REPORT_EVENTS as ReportEventNames,
 } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozTrashCan } from '@coze/coze-design/icons';
-import { IconButton, Tag, Toast } from '@coze/coze-design';
+import { IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { IconButton, Tag, Toast } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { CustomError } from '@coze-arch/bot-error';
 import {

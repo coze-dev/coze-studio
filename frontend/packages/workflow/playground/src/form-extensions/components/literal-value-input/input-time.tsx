@@ -1,7 +1,7 @@
 import { type FC, useRef } from 'react';
 
 import classNames from 'classnames';
-import { DatePicker } from '@coze/coze-design';
+import { DatePicker } from '@coze-arch/coze-design';
 
 import { type LiteralValueInputProps } from './type';
 

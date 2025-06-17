@@ -10,7 +10,7 @@ import {
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { IconInfo } from '@coze-arch/bot-icons';
-import { Select, Tooltip } from '@coze/coze-design';
+import { Select, Tooltip } from '@coze-arch/coze-design';
 
 import { type TreeNodeCustomData } from '../custom-tree-node/type';
 

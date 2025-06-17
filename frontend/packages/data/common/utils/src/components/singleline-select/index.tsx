@@ -1,6 +1,6 @@
 import cs from 'classnames';
 import { useReactive } from 'ahooks';
-import { Select, type SelectProps } from '@coze/coze-design';
+import { Select, type SelectProps } from '@coze-arch/coze-design';
 import type { InputProps } from '@coze-arch/bot-semi/Input';
 import { CommonE2e } from '@coze-data/e2e';
 

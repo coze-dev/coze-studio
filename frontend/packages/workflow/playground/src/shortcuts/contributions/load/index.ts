@@ -7,7 +7,7 @@ import type {
   WorkflowShortcutsContribution,
   WorkflowShortcutsRegistry,
 } from '@coze-workflow/render';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { WorkflowGlobalStateEntity } from '@/typing';
 import { type WorkflowExportData } from '@/shortcuts/type';

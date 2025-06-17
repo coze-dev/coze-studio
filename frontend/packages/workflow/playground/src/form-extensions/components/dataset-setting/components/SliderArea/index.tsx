@@ -1,7 +1,7 @@
 import React, { type ReactNode } from 'react';
 
 import classNames from 'classnames';
-import { Slider } from '@coze/coze-design';
+import { Slider } from '@coze-arch/coze-design';
 
 import s from './index.module.less';
 

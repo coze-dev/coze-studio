@@ -5,8 +5,8 @@ import { I18n } from '@coze-arch/i18n';
 import { UIIconButton, Typography, Toast, Avatar } from '@coze-arch/bot-semi';
 import { CustomError } from '@coze-arch/bot-error';
 import { type Dataset } from '@coze-arch/bot-api/knowledge';
-import { IconCozCopy, IconCozMinusCircle } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozCopy, IconCozMinusCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

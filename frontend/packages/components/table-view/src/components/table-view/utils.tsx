@@ -1,4 +1,4 @@
-import { IconCozEdit, IconCozTrashCan } from '@coze/coze-design/icons';
+import { IconCozEdit, IconCozTrashCan } from '@coze-arch/coze-design/icons';
 import { type RowKey } from '@coze-arch/bot-semi/Table';
 
 import {

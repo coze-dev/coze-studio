@@ -7,8 +7,8 @@ import {
 } from '@coze-workflow/test-run/formily';
 import { I18n } from '@coze-arch/i18n';
 import { type VoiceConfig } from '@coze-arch/bot-api/workflow_api';
-import { IconCozEdit, IconCozPlus } from '@coze/coze-design/icons';
-import { IconButton, Button, Modal, Typography } from '@coze/coze-design';
+import { IconCozEdit, IconCozPlus } from '@coze-arch/coze-design/icons';
+import { IconButton, Button, Modal, Typography } from '@coze-arch/coze-design';
 
 import { VoiceSelect } from './voice-select';
 import {

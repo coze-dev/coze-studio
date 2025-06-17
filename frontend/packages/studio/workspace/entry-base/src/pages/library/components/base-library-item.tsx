@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 
-import { IconCozCheckMarkCircleFill } from '@coze/coze-design/icons';
-import { Space, Typography, CozAvatar } from '@coze/coze-design';
+import { IconCozCheckMarkCircleFill } from '@coze-arch/coze-design/icons';
+import { Space, Typography, CozAvatar } from '@coze-arch/coze-design';
 import {
   PublishStatus,
   type ResourceInfo,

@@ -14,8 +14,8 @@ import {
   IconCozStarFill,
   IconCozVideoFill,
   IconCozWrenchFill,
-} from '@coze/coze-design/icons';
-import { Avatar, Tooltip } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Avatar, Tooltip } from '@coze-arch/coze-design';
 import { type Model, ModelTagValue } from '@coze-arch/bot-api/developer_api';
 
 export function ModelOptionAvatar({ model }: { model: Model }) {

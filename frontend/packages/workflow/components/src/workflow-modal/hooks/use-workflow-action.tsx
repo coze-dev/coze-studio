@@ -20,7 +20,7 @@ import { CustomError } from '@coze-arch/bot-error';
 import { ProductEntityType } from '@coze-arch/bot-api/product_api';
 import { PluginType } from '@coze-arch/bot-api/developer_api';
 import { PluginDevelopApi } from '@coze-arch/bot-api';
-import { Button, Space, Toast, Typography } from '@coze/coze-design';
+import { Button, Space, Toast, Typography } from '@coze-arch/coze-design';
 
 import WorkflowModalContext from '../workflow-modal-context';
 import { isSelectProjectCategory } from '../utils';

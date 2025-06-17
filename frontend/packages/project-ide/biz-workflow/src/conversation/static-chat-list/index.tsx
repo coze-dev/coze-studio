@@ -7,8 +7,8 @@ import {
   IconCozEdit,
   IconCozPlus,
   IconCozTrashCan,
-} from '@coze/coze-design/icons';
-import { IconButton, Typography } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { IconButton, Typography } from '@coze-arch/coze-design';
 import { type ProjectConversation } from '@coze-arch/bot-api/workflow_api';
 
 import { TitleWithTooltip } from '../title-with-tooltip';

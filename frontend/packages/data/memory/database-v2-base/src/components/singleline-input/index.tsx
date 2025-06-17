@@ -20,7 +20,7 @@ import {
   Popover,
   type TooltipProps,
   Tooltip,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import s from './index.module.less';
 

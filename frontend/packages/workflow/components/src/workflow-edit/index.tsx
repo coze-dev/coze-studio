@@ -18,14 +18,14 @@ import {
 import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { reporter } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
 import {
   Button,
   LoadingButton,
   Space,
   Toast,
   Tooltip,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import {
   Form,

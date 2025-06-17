@@ -2,7 +2,7 @@ import { useNodeTestId } from '@coze-workflow/base';
 import {
   CozInputNumber,
   type InputNumberProps as BaseInputNumberProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useField } from '../hooks';
 import { withField } from '../hocs';

@@ -16,8 +16,8 @@ import {
   WorkflowNode,
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Popover, Tag } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Popover, Tag } from '@coze-arch/coze-design';
 
 import GlobalVarIcon from '@/form-extensions/components/tree-variable-selector/global-var-icon';
 import { NodeIconOutlined } from '@/components/node-icon';

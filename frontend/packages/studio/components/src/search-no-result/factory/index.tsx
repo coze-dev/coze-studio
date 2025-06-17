@@ -1,6 +1,6 @@
 import React, { type JSX } from 'react';
 
-import { type Theme } from '@coze/coze-design';
+import { type Theme } from '@coze-arch/coze-design';
 export interface COZTheme {
   theme: Theme;
 }

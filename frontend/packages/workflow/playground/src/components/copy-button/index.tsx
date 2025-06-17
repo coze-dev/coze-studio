@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCopy, IconCozCheckMark } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozCopy, IconCozCheckMark } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 import { UIIconButton } from '@coze-arch/bot-semi';
 
 const DELAY = 4000;

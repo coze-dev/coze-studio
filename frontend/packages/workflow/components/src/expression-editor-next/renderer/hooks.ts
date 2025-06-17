@@ -1,7 +1,7 @@
 import { type MutableRefObject, useMemo } from 'react';
 
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-expression';
-import { mixLanguages, astDecorator } from '@flow-lang-sdk/editor';
+import { type EditorAPI } from '@coze-editor/editor/preset-expression';
+import { mixLanguages, astDecorator } from '@coze-editor/editor';
 import { EditorView } from '@codemirror/view';
 
 import { type ExpressionEditorTreeNode } from '@/expression-editor/type';

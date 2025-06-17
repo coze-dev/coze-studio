@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Row, Col } from '@coze/coze-design';
+import { Row, Col } from '@coze-arch/coze-design';
 import { ModeTab } from '@coze-project-ide/ui-adapter';
 
 import { ProjectInfo } from './project-info';

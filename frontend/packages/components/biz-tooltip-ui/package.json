@@ -2,7 +2,7 @@
   "name": "@coze-common/biz-tooltip-ui",
   "version": "0.0.1",
   "description": "special business tooltip ui",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "gaoyuanhan.duty@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",

@@ -1,8 +1,8 @@
 import classNames from 'classnames';
 import { getKnowledgeIDEQuery } from '@coze-data/knowledge-common-services';
 import { useDataNavigate, useKnowledgeParams } from '@coze-data/knowledge-stores';
-import { IconCozArrowLeft } from '@coze/coze-design/icons';
-import { IconButton, Typography } from '@coze/coze-design';
+import { IconCozArrowLeft } from '@coze-arch/coze-design/icons';
+import { IconButton, Typography } from '@coze-arch/coze-design';
 
 interface UploadActionNavbarProps {
   title: string;

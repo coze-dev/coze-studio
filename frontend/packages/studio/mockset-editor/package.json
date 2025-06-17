@@ -2,7 +2,7 @@
   "name": "@coze-studio/mockset-editor",
   "version": "0.0.1",
   "description": "mockset editor",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "gaoyuanhan.duty@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

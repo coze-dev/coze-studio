@@ -6,7 +6,7 @@ import {
   TextArea,
   Typography,
   type CheckboxProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { SuggestReplyInfoMode } from '@coze-arch/bot-api/workflow_api';
 
 import css from './role-suggestion.module.less';

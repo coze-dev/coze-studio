@@ -2,7 +2,7 @@ import { useLocation } from 'react-router-dom';
 import { type FC, type PropsWithChildren, useState, useEffect } from 'react';
 
 import cls from 'classnames';
-import { Layout, SideSheet } from '@coze/coze-design';
+import { Layout, SideSheet } from '@coze-arch/coze-design';
 
 import { type LayoutProps } from './types';
 import { useLayoutResponsive } from './hooks';

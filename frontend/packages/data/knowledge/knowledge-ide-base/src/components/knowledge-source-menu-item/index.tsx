@@ -1,4 +1,4 @@
-import { Menu } from '@coze/coze-design';
+import { Menu } from '@coze-arch/coze-design';
 
 interface KnowledgeSourceMenuItemProps {
   value?: string;

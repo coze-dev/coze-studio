@@ -1,6 +1,6 @@
 import { type ComponentProps } from 'react';
 
-import { type Popover } from '@coze/coze-design';
+import { type Popover } from '@coze-arch/coze-design';
 
 import type { ILibraryList } from '../library-insert';
 import type { ExpressionEditorTreeNode } from '../expression/core';

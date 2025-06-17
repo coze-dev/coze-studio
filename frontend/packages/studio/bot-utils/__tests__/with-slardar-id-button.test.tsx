@@ -5,7 +5,7 @@ import '@testing-library/jest-dom';
 import copy from 'copy-to-clipboard';
 import { getSlardarInstance } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { withSlardarIdButton } from '../src/with-slardar-id-button';
 
@@ -22,7 +22,7 @@ vi.mock('copy-to-clipboard', () => ({
   default: vi.fn(),
 }));
 
-vi.mock('@coze/coze-design', () => ({
+vi.mock('@coze-arch/coze-design', () => ({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Button: ({ children, onClick, className, size, color }: any) => (
     <button

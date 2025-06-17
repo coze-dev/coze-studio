@@ -2,7 +2,7 @@ import React from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Spin, Button } from '@coze/coze-design';
+import { Spin, Button } from '@coze-arch/coze-design';
 
 import { type FooterProps } from './type';
 

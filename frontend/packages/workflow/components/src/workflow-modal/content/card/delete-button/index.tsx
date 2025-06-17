@@ -2,8 +2,8 @@ import { useState, type MouseEvent } from 'react';
 
 import { logger } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozTrashCan } from '@coze/coze-design/icons';
-import { IconButton, Popconfirm } from '@coze/coze-design';
+import { IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { IconButton, Popconfirm } from '@coze-arch/coze-design';
 
 export const DeleteButton = ({
   className,

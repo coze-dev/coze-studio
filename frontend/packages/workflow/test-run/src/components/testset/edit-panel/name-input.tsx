@@ -5,7 +5,7 @@ import {
   withField,
   type InputProps,
   type CommonFieldProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import styles from './name-input.module.less';
 

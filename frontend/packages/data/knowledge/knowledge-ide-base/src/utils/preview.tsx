@@ -30,8 +30,8 @@ import {
   IconCozPencilPaper,
   IconCozPlug,
   IconCozWechatFill,
-} from '@coze/coze-design/icons';
-import { Tag, Tooltip, Typography } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Tag, Tooltip, Typography } from '@coze-arch/coze-design';
 
 import { type TranSliceListParams } from '@/types/slice';
 

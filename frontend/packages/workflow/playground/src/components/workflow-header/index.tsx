@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { IconCozArrowLeft } from '@coze/coze-design/icons';
-import { IconButton, CozAvatar } from '@coze/coze-design';
+import { IconCozArrowLeft } from '@coze-arch/coze-design/icons';
+import { IconButton, CozAvatar } from '@coze-arch/coze-design';
 
 import { WorkflowInfo } from '../workflow-header-info';
 import { useGlobalState } from '../../hooks';

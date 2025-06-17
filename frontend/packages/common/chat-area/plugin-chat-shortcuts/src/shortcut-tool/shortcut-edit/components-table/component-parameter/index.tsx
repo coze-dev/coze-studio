@@ -1,7 +1,7 @@
 import React, { type FC } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Tooltip } from '@coze/coze-design';
+import { Tooltip } from '@coze-arch/coze-design';
 import { Typography } from '@coze-arch/bot-semi';
 import { IconInfo } from '@coze-arch/bot-icons';
 import { type ToolInfo } from '@coze-arch/bot-api/playground_api';

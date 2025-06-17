@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { Input, type InputProps, withField } from '@coze/coze-design';
+import { Input, type InputProps, withField } from '@coze-arch/coze-design';
 import 'utility-types';
 
 import s from './index.module.less';

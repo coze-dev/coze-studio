@@ -5,7 +5,7 @@ import { type WithCustomStyle } from '@coze-workflow/base/types';
 import { I18n } from '@coze-arch/i18n';
 import { Tree, Tooltip } from '@coze-arch/bot-semi';
 import { IconInfo } from '@coze-arch/bot-icons';
-import { Form, Select, Switch } from '@coze/coze-design';
+import { Form, Select, Switch } from '@coze-arch/coze-design';
 
 import { VariableTypeTag } from '@/form-extensions/components/variable-type-tag';
 

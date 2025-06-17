@@ -1,13 +1,13 @@
 import { useLayoutEffect, type PropsWithChildren } from 'react';
 
 import { useLocalStorageState } from 'ahooks';
-import { useEditor, useInjector } from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
-import { I18n } from '@coze-arch/i18n';
-import { IconCozInputSlot } from '@coze/coze-design/icons';
-import { Button, Tooltip } from '@coze/coze-design';
-import { type ButtonProps } from '@coze/coze-design';
+import { useEditor, useInjector } from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
 import { insertInputSlot } from '@coze-common/editor-plugins/actions';
+import { I18n } from '@coze-arch/i18n';
+import { IconCozInputSlot } from '@coze-arch/coze-design/icons';
+import { Button, Tooltip } from '@coze-arch/coze-design';
+import { type ButtonProps } from '@coze-arch/coze-design';
 import { keymap } from '@codemirror/view';
 
 import { useReadonly } from '../../shared/hooks/use-editor-readonly';

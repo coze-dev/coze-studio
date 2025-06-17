@@ -1,6 +1,6 @@
 import { IntelligenceType } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { Tag } from '@coze/coze-design';
+import { Tag } from '@coze-arch/coze-design';
 export interface IntelligenceTagProps {
   intelligenceType: IntelligenceType | undefined;
 }

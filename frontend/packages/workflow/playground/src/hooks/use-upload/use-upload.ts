@@ -7,7 +7,7 @@ import { type ViewVariableType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { upLoadFile } from '@coze-arch/bot-utils';
 import { CustomError } from '@coze-arch/bot-error';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { validate } from './validate';
 import { FileItemStatus, type FileItem } from './types';

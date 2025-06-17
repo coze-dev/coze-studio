@@ -1,7 +1,7 @@
 import React, { type FC, type PropsWithChildren, type ReactNode } from 'react';
 
 import cs from 'classnames';
-import { Tooltip, type TooltipProps } from '@coze/coze-design';
+import { Tooltip, type TooltipProps } from '@coze-arch/coze-design';
 import { Form } from '@coze-arch/bot-semi';
 import { IconInfo } from '@coze-arch/bot-icons';
 

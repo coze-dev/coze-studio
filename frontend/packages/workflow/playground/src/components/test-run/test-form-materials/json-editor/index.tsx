@@ -9,8 +9,8 @@ import {
   type OnMount,
 } from '@coze-arch/bot-monaco-editor/types';
 import { Editor as MonacoEditor } from '@coze-arch/bot-monaco-editor';
-import { IconCozBroom, IconCozRefresh } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozBroom, IconCozRefresh } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 
 import type { ComponentAdapterCommonProps } from '../../types';
 import { clearJsonSchema, setJsonSchema } from './utils';

@@ -1,8 +1,8 @@
 import ReactMarkdown from 'react-markdown';
 import { type FC, type ReactNode } from 'react';
 
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 
 import {
   MARKDOWN_TOOLTIP_CONTENT_MAX_WIDTH,

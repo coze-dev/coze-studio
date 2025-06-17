@@ -2,14 +2,14 @@ import { type FC, type ReactNode, useState } from 'react';
 
 import { omit } from 'lodash-es';
 import classNames from 'classnames';
-import { IconCozArrowDownFill } from '@coze/coze-design/icons';
+import { IconCozArrowDownFill } from '@coze-arch/coze-design/icons';
 import {
   Menu,
   Button,
   Tooltip,
   type ButtonProps,
   type MenuProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { getButtonPaddingStyle } from './button-padding-table';
 

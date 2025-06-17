@@ -2,7 +2,7 @@
   "name": "@coze-studio/uploader-adapter",
   "version": "0.0.1",
   "description": "uploader adapter",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "chenjiawei.inizio@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

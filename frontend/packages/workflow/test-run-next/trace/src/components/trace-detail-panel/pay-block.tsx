@@ -1,4 +1,4 @@
-import { Divider, Typography } from '@coze/coze-design';
+import { Divider, Typography } from '@coze-arch/coze-design';
 
 import styles from './pay-block.module.less';
 

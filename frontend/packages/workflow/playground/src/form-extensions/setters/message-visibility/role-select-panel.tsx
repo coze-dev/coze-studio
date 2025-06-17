@@ -2,7 +2,7 @@ import { type FC, useState } from 'react';
 
 import { concatTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { Radio } from '@coze/coze-design';
+import { Radio } from '@coze-arch/coze-design';
 
 import {
   type UserSettings,

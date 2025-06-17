@@ -17,7 +17,7 @@ import {
   type SemiSelect,
   type SelectProps,
   Tag,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { type CaseDataDetail } from '@coze-arch/bot-api/debugger_api';
 import { debuggerApi } from '@coze-arch/bot-api';
 

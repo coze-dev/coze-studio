@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlusFill } from '@coze/coze-design/icons';
+import { IconCozPlusFill } from '@coze-arch/coze-design/icons';
 
 import { ProjectTemplateCardUI } from './project-template-card';
 

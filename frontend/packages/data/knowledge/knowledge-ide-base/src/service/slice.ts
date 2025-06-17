@@ -12,7 +12,7 @@ import {
   type ListSliceRequest,
 } from '@coze-arch/bot-api/knowledge';
 import { KnowledgeApi } from '@coze-arch/bot-api';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { type ISliceInfo } from '@/types/slice';
 

@@ -1,6 +1,6 @@
 import { type FC } from 'react';
 
-import { Tooltip, type TooltipProps } from '@coze/coze-design';
+import { Tooltip, type TooltipProps } from '@coze-arch/coze-design';
 // import { type TooltipProps } from '@douyinfe/semi-ui/lib/es/tooltip';
 
 type IProps = {

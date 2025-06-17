@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozEmpty } from '@coze/coze-design/icons';
-import { EmptyState } from '@coze/coze-design';
+import { IconCozEmpty } from '@coze-arch/coze-design/icons';
+import { EmptyState } from '@coze-arch/coze-design';
 
 export function EmptySkill() {
   return (

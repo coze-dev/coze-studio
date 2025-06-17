@@ -10,8 +10,8 @@ import {
   type NodeData,
 } from '@coze-workflow/nodes';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tag, Avatar, Popover, Typography, Toast } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tag, Avatar, Popover, Typography, Toast } from '@coze-arch/coze-design';
 
 import { type NodeError } from '@/entities/workflow-exec-state-entity';
 

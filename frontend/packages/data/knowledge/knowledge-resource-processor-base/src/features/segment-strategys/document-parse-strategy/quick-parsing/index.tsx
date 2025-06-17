@@ -1,6 +1,6 @@
 import { ParsingType } from '@coze-arch/idl/knowledge';
 import { I18n } from '@coze-arch/i18n';
-import { Radio } from '@coze/coze-design';
+import { Radio } from '@coze-arch/coze-design';
 
 export const QuickParsing = () => (
   <Radio value={ParsingType.FastParsing} extra={I18n.t('kl_write_005')}>

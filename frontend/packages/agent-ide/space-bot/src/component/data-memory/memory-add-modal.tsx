@@ -18,7 +18,7 @@ import { I18n } from '@coze-arch/i18n';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { BotE2e } from '@coze-data/e2e';
 import { useBotInfoAuditor } from '@coze-studio/bot-audit-adapter';
-import { IconCozTrashCan, IconCozPlus } from '@coze/coze-design/icons';
+import { IconCozTrashCan, IconCozPlus } from '@coze-arch/coze-design/icons';
 import {
   IconButton,
   Modal,
@@ -30,7 +30,7 @@ import {
   Checkbox,
   Switch,
   Button,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { AddButton } from '../add-button';
 import { MemoryTemplateModal } from './memory-template-modal';

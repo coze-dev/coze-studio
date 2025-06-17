@@ -5,8 +5,8 @@ import {
   IconCozBot,
   IconCozWorkflow,
   IconCozWorkspace,
-} from '@coze/coze-design/icons';
-import { Tag, type TagProps } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Tag, type TagProps } from '@coze-arch/coze-design';
 import { ProductEntityType } from '@coze-arch/bot-api/product_api';
 
 interface IProps {

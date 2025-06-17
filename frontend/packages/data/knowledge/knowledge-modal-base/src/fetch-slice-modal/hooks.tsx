@@ -7,8 +7,8 @@ import { type DocumentInfo } from '@coze-arch/bot-api/knowledge';
 import { KnowledgeApi } from '@coze-arch/bot-api';
 
 export interface IDeleteUnitModalProps {
-  onfinish: () => void;
   documentInfo: DocumentInfo;
+  onfinish: () => void;
 }
 
 export const useFetchSliceModal = ({

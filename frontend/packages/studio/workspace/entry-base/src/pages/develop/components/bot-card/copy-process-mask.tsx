@@ -8,8 +8,8 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozLoading,
   IconCozWarningCircleFillPalette,
-} from '@coze/coze-design/icons';
-import { Button, Space } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Button, Space } from '@coze-arch/coze-design';
 import { intelligenceApi } from '@coze-arch/bot-api';
 
 export interface CopyProcessMaskProps {

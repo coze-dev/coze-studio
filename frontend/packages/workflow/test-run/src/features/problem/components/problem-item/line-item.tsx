@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozAddNode } from '@coze/coze-design/icons';
-import { Typography } from '@coze/coze-design';
+import { IconCozAddNode } from '@coze-arch/coze-design/icons';
+import { Typography } from '@coze-arch/coze-design';
 
 import { type ProblemItem } from '../../types';
 import i18n from './line-case-i18n.png';

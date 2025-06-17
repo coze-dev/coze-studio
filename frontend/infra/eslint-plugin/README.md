@@ -229,9 +229,9 @@ Encourages using shallow equality for object selections.
 
 ```js
 // ❌ Bad
-const { user, settings } = useStore(state => ({ 
-  user: state.user, 
-  settings: state.settings 
+const { user, settings } = useStore(state => ({
+  user: state.user,
+  settings: state.settings
 }));
 
 // ✅ Good
@@ -343,7 +343,7 @@ ruleTester.run('my-rule', myRule, {
 
 ## License
 
-ISC License
+Apache-2.0 License
 
 ## Author
 

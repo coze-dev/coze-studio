@@ -7,8 +7,8 @@ import {
   ResType,
 } from '@coze-arch/idl/plugin_develop';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozDatabase } from '@coze/coze-design/icons';
-import { Menu, Table, Toast } from '@coze/coze-design';
+import { IconCozDatabase } from '@coze-arch/coze-design/icons';
+import { Menu, Table, Toast } from '@coze-arch/coze-design';
 import { MemoryApi } from '@coze-arch/bot-api';
 import { useLibraryCreateDatabaseModal } from '@coze-data/database-v2';
 

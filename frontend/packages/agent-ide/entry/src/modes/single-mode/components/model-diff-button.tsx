@@ -2,8 +2,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDiffTaskStore } from '@coze-studio/bot-detail-store/diff-task';
 import { useBotInfoStore } from '@coze-studio/bot-detail-store/bot-info';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCompare } from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+import { IconCozCompare } from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 export const ModelDiffButton = (props: { readonly?: boolean }) => {
   const { readonly } = props;

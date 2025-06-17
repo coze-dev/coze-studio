@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { Space, Typography, Tooltip } from '@coze/coze-design';
+import { Space, Typography, Tooltip } from '@coze-arch/coze-design';
 import { Image } from '@coze-arch/bot-semi';
 
 import AvatarDefault from '../../assets/avatar_default.png';

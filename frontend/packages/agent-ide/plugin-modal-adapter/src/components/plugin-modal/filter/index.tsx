@@ -1,15 +1,15 @@
 import { type FC } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Radio } from '@coze/coze-design';
+import { Radio } from '@coze-arch/coze-design';
 import { UISelect, Select } from '@coze-arch/bot-semi';
-import { SortType, PluginType } from '@coze-arch/bot-api/product_api';
+import { SortType } from '@coze-arch/bot-api/product_api';
 import { OrderBy } from '@coze-arch/bot-api/developer_api';
 import {
   MineActiveEnum,
   PluginFilterType,
 } from '@coze-agent-ide/plugin-shared';
-import { From, type PluginQuery } from '@coze-agent-ide/plugin-shared';
+import { type From, type PluginQuery } from '@coze-agent-ide/plugin-shared';
 
 import s from './index.module.less';
 
@@ -54,7 +54,6 @@ const hotOptions = [
 export const PluginModalFilter: FC<PluginModalFilterProp> = ({
   query,
   setQuery,
-  from,
 }) => {
   /**
    * 空间插件：创建、编辑时间排序
@@ -126,24 +125,6 @@ export const PluginModalFilter: FC<PluginModalFilterProp> = ({
             {I18n.t('store_search_official_plugin_only')}
           </div>
         </Radio>
-        {!IS_OVERSEA && from !== From.ProjectWorkflow ? (
-          <Radio
-            mode="advanced"
-            className="flex items-center mt-[-2px]"
-            checked={query.pluginType === PluginType.LocalPlugin}
-            onChange={e => {
-              setQuery({
-                pluginType: e.target.checked
-                  ? PluginType.LocalPlugin
-                  : undefined,
-              });
-            }}
-          >
-            <div className="coz-fg-primary font-[600] mt-[2px]">
-              {I18n.t('store_show_service_plugin')}
-            </div>
-          </Radio>
-        ) : null}
       </div>
     );
   };

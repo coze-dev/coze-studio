@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 import type { WorkflowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { hasSystemNodes, isAllSystemNodes } from '../copy/is-system-nodes';

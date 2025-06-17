@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { IconCozArrowRightFill } from '@coze/coze-design/icons';
+import { IconCozArrowRightFill } from '@coze-arch/coze-design/icons';
 
 export const ExpandableArrow = ({ expand }: { expand?: boolean }) => (
   <IconCozArrowRightFill

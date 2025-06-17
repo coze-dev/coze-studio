@@ -7,8 +7,8 @@ import {
   VARIABLE_TYPE_ALIAS_MAP,
   type ViewVariableType,
 } from '@coze-workflow/base';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 import { type RenderFullLabelProps } from '@coze-arch/bot-semi/Tree';
 
 import { LevelLine } from '@/form-extensions/components/level-line';

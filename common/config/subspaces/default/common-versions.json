@@ -1,8 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/common-versions.schema.json",
   "ensureConsistentVersions": true,
-  "preferredVersions": {},
+  "preferredVersions": {
+    "@coze-arch/coze-design": "0.0.6-alpha.fe013d"
+  },
   "allowedAlternativeVersions": {
+    "@coze-arch/coze-design": [
+      "0.0.6-alpha.fe013d"
+    ],
     "@rspack/cli": [
       "0.6.0"
     ],

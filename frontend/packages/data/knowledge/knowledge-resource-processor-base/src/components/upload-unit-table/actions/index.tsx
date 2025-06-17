@@ -6,8 +6,8 @@ import {
   IconCozEdit,
   IconCozRefresh,
   IconCozTrashCan,
-} from '@coze/coze-design/icons';
-import { IconButton, Tooltip } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { IconButton, Tooltip } from '@coze-arch/coze-design';
 
 import { type RenderColumnsProps } from '../types';
 import { getFrequencyMap } from '../../../utils';

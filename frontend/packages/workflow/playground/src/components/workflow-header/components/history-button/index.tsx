@@ -2,7 +2,7 @@
 import React from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconButton, Tooltip } from '@coze/coze-design';
+import { IconButton, Tooltip } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { IconHistory } from '@coze-arch/bot-icons';
 

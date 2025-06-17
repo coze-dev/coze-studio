@@ -7,8 +7,8 @@ import {
   TestFormFieldName,
 } from '@coze-workflow/test-run-next';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozStopCircle } from '@coze/coze-design/icons';
-import { AIButton } from '@coze/coze-design';
+import { IconCozStopCircle } from '@coze-arch/coze-design/icons';
+import { AIButton } from '@coze-arch/coze-design';
 
 import { useAIGenerate } from './use-ai-generate';
 import { GenerateModeSelect, GenerateMode } from './generate-mode-select';

@@ -11,7 +11,7 @@ import webSocketManager, {
   type Connection,
   type FrontierEventMap,
 } from '@coze-common/websocket-manager-adapter';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { getBotDetailIsReadonly } from '../get-read-only';
 import { DotStatus } from '../../types/generate-image';

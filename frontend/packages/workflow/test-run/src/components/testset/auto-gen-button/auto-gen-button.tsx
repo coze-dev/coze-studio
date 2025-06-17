@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozStopCircle } from '@coze/coze-design/icons';
-import { Tooltip, AIButton } from '@coze/coze-design';
+import { IconCozStopCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip, AIButton } from '@coze-arch/coze-design';
 
 import { useAutoGen } from './use-auto-gen';
 

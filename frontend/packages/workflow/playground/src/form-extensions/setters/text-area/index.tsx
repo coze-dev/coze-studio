@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { TextArea as UITextArea } from '@coze/coze-design';
+import { TextArea as UITextArea } from '@coze-arch/coze-design';
 import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

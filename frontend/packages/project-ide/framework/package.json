@@ -9,14 +9,14 @@
     "lint": "eslint ./ --cache --quiet"
   },
   "dependencies": {
-    "@coze-project-ide/base-adapter": "workspace:*",
-    "@coze-project-ide/base-interface": "workspace:*",
-    "@coze-project-ide/client": "workspace:*",
     "@coze-arch/bot-api": "workspace:*",
     "@coze-arch/bot-flags": "workspace:*",
     "@coze-arch/bot-utils": "workspace:*",
-    "@coze/coze-design": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
+    "@coze-project-ide/base-adapter": "workspace:*",
+    "@coze-project-ide/base-interface": "workspace:*",
+    "@coze-project-ide/client": "workspace:*",
     "ahooks": "^3.7.8",
     "inversify": "^6.0.1",
     "lodash-es": "^4.17.21",

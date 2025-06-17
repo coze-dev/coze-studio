@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-code';
+import { type EditorAPI } from '@coze-editor/editor/preset-code';
 
 import { CodeEditor } from '@/components/code-editor';
 

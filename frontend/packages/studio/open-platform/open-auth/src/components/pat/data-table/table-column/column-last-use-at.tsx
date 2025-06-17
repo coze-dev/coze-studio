@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { type ColumnProps } from '@coze/coze-design';
+import { type ColumnProps } from '@coze-arch/coze-design';
 import { type PersonalAccessToken } from '@coze-arch/bot-api/pat_permission_api';
 
 import { getDetailTime } from '@/utils/time';

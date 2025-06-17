@@ -1,7 +1,7 @@
 import { ErrorBoundary } from 'react-error-boundary';
 import { type FC } from 'react';
 
-import { Image } from '@coze/coze-design';
+import { Image } from '@coze-arch/coze-design';
 import {
   type IOnImageClickParams,
   type IBaseContentProps,

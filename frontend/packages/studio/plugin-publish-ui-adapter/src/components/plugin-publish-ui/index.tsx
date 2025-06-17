@@ -6,7 +6,7 @@ import { I18n } from '@coze-arch/i18n';
 import { PluginDevelopApi } from '@coze-arch/bot-api';
 import { type PluginInfoProps } from '@coze-studio/plugin-shared';
 import { usePluginNavigate } from '@coze-studio/bot-plugin-store';
-import { Popover, Toast } from '@coze/coze-design';
+import { Popover, Toast } from '@coze-arch/coze-design';
 
 import { PluginPublishUI, type PublishCallbackParams } from './base';
 

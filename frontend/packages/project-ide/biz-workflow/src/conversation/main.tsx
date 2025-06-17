@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import { TabBar } from '@coze/coze-design';
+import { TabBar } from '@coze-arch/coze-design';
 import { useProjectRole } from '@coze-common/auth';
 import {
   useProjectId,

@@ -1,4 +1,4 @@
-import { Tooltip, type TooltipProps } from '@coze/coze-design';
+import { Tooltip, type TooltipProps } from '@coze-arch/coze-design';
 
 type TooltipWithDisabledProps = TooltipProps & {
   disabled?: boolean;

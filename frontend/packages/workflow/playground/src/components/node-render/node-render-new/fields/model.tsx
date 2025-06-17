@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 import { useWorkflowNode } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { CozAvatar } from '@coze/coze-design';
+import { CozAvatar } from '@coze-arch/coze-design';
 import { useWorkflowModels } from '@/hooks';
 import { Field } from './field';
 
@@ -12,7 +12,7 @@ export function Model() {
   const { models } = useWorkflowModels();
 
   useEffect(() => {
-    // fix: 
+    // fix:
     // 右侧下拉框展示的模型名称取得是 name 字段，而不是 modelName
     // 因此这里需要根据 modeType 找到原来模型，展示 name 字段，保持两侧显示一致
     if (data?.model?.modelType) {

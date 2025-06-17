@@ -10,8 +10,8 @@ import { MemoryApi } from '@coze-arch/bot-api';
 import {
   IconCozRefresh,
   IconCozCrossCircleFill,
-} from '@coze/coze-design/icons';
-import { Table, Select, IconButton, Tooltip, Empty } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Table, Select, IconButton, Tooltip, Empty } from '@coze-arch/coze-design';
 
 export interface VariablesValueProps {
   projectID: string;

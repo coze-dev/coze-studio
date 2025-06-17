@@ -2,7 +2,7 @@
 import { useRef } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlus } from '@coze/coze-design/icons';
+import { IconCozPlus } from '@coze-arch/coze-design/icons';
 import {
   Button,
   Form,
@@ -12,7 +12,7 @@ import {
   Input,
   Modal,
   Space,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { FileBizType, IconType } from '@coze-arch/bot-api/developer_api';
 import { useIsCurrentPersonalEnterprise } from '@coze-foundation/enterprise-store-adapter';
 import { PictureUpload } from '@coze-common/biz-components/picture-upload';

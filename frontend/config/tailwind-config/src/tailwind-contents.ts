@@ -32,5 +32,8 @@ export const getTailwindContents = (projectRoot: string) => {
       .filter(pattern => glob.sync(pattern).length > 0),
   );
 
+  // 兼容 coze-design 内部 tailwind 样式
+  contents.push('./node_modules/@coze-arch/coze-design/**/*.{js,jsx}');
+
   return contents;
 };

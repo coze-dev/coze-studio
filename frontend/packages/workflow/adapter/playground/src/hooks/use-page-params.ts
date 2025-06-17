@@ -4,7 +4,7 @@ import { useMount } from 'ahooks';
 import { type WorkflowPlaygroundProps } from '@coze-workflow/playground';
 import { OperateType } from '@coze-workflow/base/api';
 import { I18n } from '@coze-arch/i18n';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 /** 流程详情页参数 */
 interface SearchParams {

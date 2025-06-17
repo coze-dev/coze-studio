@@ -12,8 +12,8 @@ import {
   IllustrationFailure,
   IllustrationFailureDark,
 } from '@douyinfe/semi-illustrations';
-import { IconCozRefresh } from '@coze/coze-design/icons';
-import { Button, Empty, Modal, type ModalProps } from '@coze/coze-design';
+import { IconCozRefresh } from '@coze-arch/coze-design/icons';
+import { Button, Empty, Modal, type ModalProps } from '@coze-arch/coze-design';
 
 import {
   type BeforeProjectTemplateCopyCallback,

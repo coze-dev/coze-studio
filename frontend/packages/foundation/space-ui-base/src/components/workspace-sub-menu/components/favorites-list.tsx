@@ -16,7 +16,7 @@ import { intelligenceApi } from '@coze-arch/bot-api';
 import { useSpaceStore } from '@coze-foundation/space-store';
 import { cozeMitt, type RefreshFavListParams } from '@coze-common/coze-mitt';
 import { CustomError } from '@coze-arch/bot-error';
-import { Space, Loading } from '@coze/coze-design';
+import { Space, Loading } from '@coze-arch/coze-design';
 
 import { FavoritesListItem } from './favorites-list-item';
 

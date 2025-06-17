@@ -1,7 +1,7 @@
 import { type FC, useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozSetting } from '@coze/coze-design/icons';
+import { IconCozSetting } from '@coze-arch/coze-design/icons';
 import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { useQueryLatestFCSettings } from './use-query-latest-fc-settings';

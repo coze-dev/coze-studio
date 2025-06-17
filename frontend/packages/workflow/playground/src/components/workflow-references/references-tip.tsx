@@ -7,7 +7,7 @@ import React, { type FC, useState } from 'react';
 import { isEmpty } from 'lodash-es';
 import { type Workflow } from '@coze-workflow/base/api';
 import { I18n } from '@coze-arch/i18n';
-import { Tag } from '@coze/coze-design';
+import { Tag } from '@coze-arch/coze-design';
 import { UIButton, List, Popover } from '@coze-arch/bot-semi';
 import { IconSmallTriangleDown, IconClose } from '@douyinfe/semi-icons';
 

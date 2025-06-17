@@ -8,8 +8,8 @@ import React, {
 import {
   type EditorAPI,
   transformerCreator,
-} from '@flow-lang-sdk/editor/preset-code';
-import { json } from '@flow-lang-sdk/editor/language-json';
+} from '@coze-editor/editor/preset-code';
+import { json } from '@coze-editor/editor/language-json';
 
 import { CodeEditor } from '@/components/code-editor';
 

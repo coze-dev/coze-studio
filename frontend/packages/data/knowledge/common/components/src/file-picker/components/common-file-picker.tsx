@@ -1,6 +1,6 @@
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 
-import { Tree } from '@coze/coze-design';
+import { Tree } from '@coze-arch/coze-design';
 import type {
   TreeProps,
   RenderFullLabelProps,

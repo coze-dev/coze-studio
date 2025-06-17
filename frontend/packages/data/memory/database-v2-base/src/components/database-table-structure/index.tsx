@@ -35,7 +35,7 @@ import {
   type FieldItemType,
 } from '@coze-arch/bot-api/memory';
 import { MemoryApi } from '@coze-arch/bot-api';
-import { Button, Switch, Form } from '@coze/coze-design';
+import { Button, Switch, Form } from '@coze-arch/coze-design';
 
 import { SLSelect } from '../singleline-select';
 import { FormSLInput, SLInput } from '../singleline-input';

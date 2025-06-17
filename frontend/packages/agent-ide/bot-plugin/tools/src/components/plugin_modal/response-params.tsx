@@ -13,7 +13,7 @@ import { useMemoizedFn } from 'ahooks';
 import { withSlardarIdButton } from '@coze-studio/bot-utils';
 import { logger } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 import { UIButton, Toast, UIModal, Table } from '@coze-arch/bot-semi';
 import { IconAdd } from '@coze-arch/bot-icons';
 import {
@@ -61,7 +61,7 @@ export interface UseRequestParamsProps {
   functionName?: string;
   apiInfo?: PluginAPIInfo;
   spaceID: string;
-  callback?: (params: UpdateAPIResponse) => void;
+  onSuccess?: (params: UpdateAPIResponse) => void;
   renderEnhancedComponent?: RenderEnhancedComponentProps['renderParamsComponent'];
 }
 
@@ -87,7 +87,7 @@ export const useResponseParams = ({
   pluginType,
   functionName,
   spaceID,
-  callback,
+  onSuccess,
   renderEnhancedComponent,
 }: UseRequestParamsProps): UseRequestParamsReturnValue => {
   const [data, setFormData] = useState<Array<APIParameter>>(
@@ -161,7 +161,7 @@ export const useResponseParams = ({
       const resData = await PluginDevelopApi.UpdateAPI(params, {
         __disableErrorToast: true,
       });
-      callback?.(resData);
+      onSuccess?.(resData);
       return true;
     } catch (error) {
       // @ts-expect-error -- linter-disable-autofix

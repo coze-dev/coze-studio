@@ -6,8 +6,8 @@ import {
   IconCozEdit,
   IconCozTrashCan,
   IconCozWarningCircle,
-} from '@coze/coze-design/icons';
-import { Typography, IconButton, Tooltip } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Typography, IconButton, Tooltip } from '@coze-arch/coze-design';
 import { type CaseDataDetail } from '@coze-arch/bot-api/debugger_api';
 
 import styles from './select-item.module.less';

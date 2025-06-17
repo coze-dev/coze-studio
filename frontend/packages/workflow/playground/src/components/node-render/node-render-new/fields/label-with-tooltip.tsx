@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { Tooltip } from '@coze/coze-design';
+import { Tooltip } from '@coze-arch/coze-design';
 
 export const LabelWithTooltip = ({ customClassName, maxWidth, content }) => {
   const textRef = useRef<HTMLDivElement>(null);

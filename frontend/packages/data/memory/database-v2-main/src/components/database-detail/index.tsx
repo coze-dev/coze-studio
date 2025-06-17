@@ -27,7 +27,7 @@ import {
   IconCozCross,
   IconCozArrowLeft,
   IconCozWarningCircle,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   Button,
   IconButton,
@@ -36,7 +36,7 @@ import {
   CozAvatar,
   Typography,
   Space,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { DatabaseTableStructureReadonly } from '../database-table-structure-readonly';
 import { DatabaseTableData } from '../database-table-data';

@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { IconButton } from '@coze/coze-design';
+import { IconButton } from '@coze-arch/coze-design';
 import { IconAdd } from '@coze-arch/bot-icons';
 
 import { type ISysConfigItemGroup } from '../../hooks';

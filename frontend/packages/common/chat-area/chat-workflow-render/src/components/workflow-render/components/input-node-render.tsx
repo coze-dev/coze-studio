@@ -1,9 +1,15 @@
 import { useState } from 'react';
 
+import { noop } from 'lodash-es';
 import { produce } from 'immer';
+import { typeSafeJsonParse } from '@coze-common/chat-area-utils';
 import { I18n } from '@coze-arch/i18n';
-import { Button, Input, Space, Typography } from '@coze/coze-design';
+import { Button, Input, Space, Typography } from '@coze-arch/coze-design';
 
+import {
+  isInputWorkflowNodeContent,
+  isInputWorkflowNodeContentLikelyArray,
+} from './utils';
 import { type InputRenderNodeProps } from './type';
 import { NodeWrapperUI } from './node-wrapper-ui';
 
@@ -17,11 +23,18 @@ export const InputNodeRender: React.FC<InputRenderNodeProps> = ({
   const [inputData, setInputData] = useState<Record<string, string>>({});
   const [hasSend, setHasSend] = useState(false);
   const disabled = readonly || isDisable || hasSend;
+  const parsedContent = typeSafeJsonParse(data.content, noop);
+
+  if (!isInputWorkflowNodeContentLikelyArray(parsedContent)) {
+    return 'input node content is not supported';
+  }
+
+  const validContent = parsedContent.filter(isInputWorkflowNodeContent);
 
   return (
     <NodeWrapperUI>
       <Space spacing={12} vertical className="w-full">
-        {data?.content?.map((item, index) => (
+        {validContent.map((item, index) => (
           <Space
             align="start"
             className="w-full"
@@ -58,8 +71,8 @@ export const InputNodeRender: React.FC<InputRenderNodeProps> = ({
               message,
               extra: {
                 msg:
-                  data?.content
-                    ?.map(item => `${item.name}:${inputData[item.name] || ''}`)
+                  validContent
+                    .map(item => `${item.name}:${inputData[item.name] || ''}`)
                     .join('\n') || '',
                 mentionList: [],
               },

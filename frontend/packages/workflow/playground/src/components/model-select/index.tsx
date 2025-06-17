@@ -2,8 +2,8 @@ import { type FC, useCallback, useMemo } from 'react';
 
 import classNames from 'classnames';
 import { GenerationDiversity, useNodeTestId } from '@coze-workflow/base';
-import { IconCozSetting } from '@coze/coze-design/icons';
-import { IconButton, type PopoverProps } from '@coze/coze-design';
+import { IconCozSetting } from '@coze-arch/coze-design/icons';
+import { IconButton, type PopoverProps } from '@coze-arch/coze-design';
 import { type OptionItem } from '@coze-arch/bot-semi/Radio';
 import { Popover } from '@coze-arch/bot-semi';
 import { useService, useEntityFromContext } from '@flowgram-adapter/free-layout-editor';

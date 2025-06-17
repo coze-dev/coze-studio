@@ -2,7 +2,7 @@
   "name": "@coze-foundation/global",
   "version": "0.0.1",
   "description": "应用的全局初始化逻辑",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "sunzhiyuan.evan@bytedance.com",
   "maintainers": [],
   "exports": {
@@ -26,15 +26,15 @@
   },
   "dependencies": {
     "@coze-agent-ide/space-bot": "workspace:*",
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-tea": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/i18n": "workspace:*",
     "@coze-common/coze-mitt": "workspace:*",
     "@coze-foundation/account-adapter": "workspace:*",
     "@coze-foundation/account-ui-adapter": "workspace:*",
     "@coze-studio/project-entity-adapter": "workspace:*",
     "@coze-studio/user-store": "workspace:*",
-    "@coze/coze-design": "workspace:*",
-    "@coze-arch/bot-api": "workspace:*",
-    "@coze-arch/bot-tea": "workspace:*",
-    "@coze-arch/i18n": "workspace:*",
     "classnames": "^2.3.2"
   },
   "devDependencies": {

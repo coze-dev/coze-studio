@@ -16,14 +16,14 @@ import {
   IconCozArrowLeft,
   IconCozEdit,
   IconCozInfoCircle,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   Space,
   IconButton,
   Avatar,
   Tooltip,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { getUnitType } from '@/utils';
 import { type ProgressMap } from '@/types';

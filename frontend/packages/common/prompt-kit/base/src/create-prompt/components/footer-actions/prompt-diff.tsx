@@ -1,6 +1,6 @@
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
 import { I18n } from '@coze-arch/i18n';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 import { sendTeaEvent, EVENT_NAMES } from '@coze-arch/bot-tea';
 interface PromptDiffProps {
   mode: 'info' | 'edit' | 'create';

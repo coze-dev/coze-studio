@@ -1,6 +1,6 @@
 import { isUndefined } from 'lodash-es';
 import { I18n } from '@coze-arch/i18n';
-import { Table } from '@coze/coze-design';
+import { Table } from '@coze-arch/coze-design';
 import { type TraceFrontendSpan } from '@coze-arch/bot-api/workflow_api';
 
 import { formatDuration, getTokensFromSpan } from '../../utils';

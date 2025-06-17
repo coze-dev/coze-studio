@@ -2,7 +2,7 @@
   "name": "@coze-agent-ide/tool",
   "version": "0.0.1",
   "description": "tool hooks & components & context",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "liushuoyan@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",
@@ -32,13 +32,13 @@
     "@coze-arch/bot-studio-store": "workspace:*",
     "@coze-arch/bot-typings": "workspace:*",
     "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/logger": "workspace:*",
-    "@coze-foundation/global-store": "workspace:*",
     "@coze-data/knowledge-modal-base": "workspace:*",
+    "@coze-foundation/global-store": "workspace:*",
     "@coze-studio/bot-detail-store": "workspace:*",
     "@coze-studio/components": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "@douyinfe/semi-foundation": "2.36.1-alpha.2",
     "@douyinfe/semi-icons": "^2.36.0",
     "ahooks": "^3.7.8",
@@ -104,3 +104,4 @@
     "react-dom": ">=18.2.0"
   }
 }
+

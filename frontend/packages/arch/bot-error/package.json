@@ -2,7 +2,7 @@
   "name": "@coze-arch/bot-error",
   "version": "0.0.1",
   "description": "bot error",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "haozhenfei@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

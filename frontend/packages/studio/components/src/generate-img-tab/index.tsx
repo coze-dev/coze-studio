@@ -2,13 +2,13 @@ import { useState } from 'react';
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozArrowLeft } from '@coze/coze-design/icons';
+import { IconCozArrowLeft } from '@coze-arch/coze-design/icons';
 import {
   Collapsible,
   IconButton,
   SegmentTab,
   Space,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { type TabItem } from './type';
 

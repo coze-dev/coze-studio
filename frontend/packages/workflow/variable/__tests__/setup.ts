@@ -9,7 +9,7 @@ vi.mock('@coze-arch/bot-flags', () => ({
     'bot.automation.encapsulate': true,
   }),
 }));
-vi.mock('@coze/coze-design', () => ({
+vi.mock('@coze-arch/coze-design', () => ({
   Typography: {
     Text: vi.fn(),
   },

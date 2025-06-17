@@ -3,8 +3,8 @@ import React, { useEffect, useMemo } from 'react';
 import { isString, last } from 'lodash-es';
 import cls from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozArrowRight, IconCozEye } from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+import { IconCozArrowRight, IconCozEye } from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 
 import { type Field } from '../types';
 import { useExpand, useValue } from '../hooks';

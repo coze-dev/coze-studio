@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 
 import classNames from 'classnames';
-import { Divider, Space } from '@coze/coze-design';
+import { Divider, Space } from '@coze-arch/coze-design';
 import { IconMenuLogo } from '@coze-arch/bot-icons';
 import { useRouteConfig } from '@coze-arch/bot-hooks';
 

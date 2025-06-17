@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { Image } from '@coze/coze-design';
+import { Image } from '@coze-arch/coze-design';
 
 import EmptyImage from '../../../assets/image-empty.png';
 

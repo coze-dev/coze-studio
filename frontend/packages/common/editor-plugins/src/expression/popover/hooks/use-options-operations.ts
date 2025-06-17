@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { type EditorAPI as ExpressionEditorAPI } from '@flow-lang-sdk/editor/preset-expression';
+import { type EditorAPI as ExpressionEditorAPI } from '@coze-editor/editor/preset-expression';
 import { type Tree } from '@coze-arch/bot-semi';
 
 import { applyNode, getOptionInfoFromDOM, selectNodeByIndex } from '../shared';

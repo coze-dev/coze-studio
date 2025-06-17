@@ -1,15 +1,15 @@
 import { type NodeApi } from 'react-arborist';
 import { useState } from 'react';
 
-import { I18n } from '@coze-arch/i18n';
-import { Menu, MenuSubMenu } from '@coze/coze-design';
 import { useKnowledgeParams } from '@coze-data/knowledge-stores';
+import { I18n } from '@coze-arch/i18n';
+import { Menu, MenuSubMenu } from '@coze-arch/coze-design';
 
-import { type TreeNode } from '../utils/tree';
+import { type LevelDocumentTree } from './types';
 
 interface IUseSegmentContextMenuProps {
-  onDelete: (node: TreeNode) => void;
-  onMerge: (node: TreeNode) => void;
+  onDelete: (node: LevelDocumentTree) => void;
+  onMerge: (node: LevelDocumentTree) => void;
 }
 
 export function useSegmentContextMenu({
@@ -20,10 +20,10 @@ export function useSegmentContextMenu({
   onContainerScroll: () => void;
   onContextMenu: (
     e: React.MouseEvent<HTMLDivElement>,
-    treeNode: NodeApi<TreeNode>,
+    treeNode: NodeApi<LevelDocumentTree>,
   ) => void;
 } {
-  const [treeNode, setTreeNode] = useState<NodeApi<TreeNode> | null>();
+  const [treeNode, setTreeNode] = useState<NodeApi<LevelDocumentTree> | null>();
   const [visible, setVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const params = useKnowledgeParams();
@@ -95,7 +95,7 @@ export function useSegmentContextMenu({
         setVisible(false);
       }
     },
-    onContextMenu: (e, node: NodeApi<TreeNode>) => {
+    onContextMenu: (e, node: NodeApi<LevelDocumentTree>) => {
       e.preventDefault();
       setTreeNode(node);
       /** 在 project ide 里面，ide 容器设置了 contain: strict, 会导致 fixed position

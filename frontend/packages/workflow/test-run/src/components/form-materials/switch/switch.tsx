@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { connect } from '@formily/react';
-import { Switch as CozSwitch } from '@coze/coze-design';
+import { Switch as CozSwitch } from '@coze-arch/coze-design';
 
 export interface SwitchProps {
   value?: boolean;

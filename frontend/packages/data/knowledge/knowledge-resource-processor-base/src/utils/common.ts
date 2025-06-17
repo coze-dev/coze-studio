@@ -17,7 +17,7 @@ import {
   type DocumentProgress,
 } from '@coze-arch/bot-api/knowledge';
 import { type UploadFileData } from '@coze-arch/bot-api/developer_api';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { SUCCESSFUL_UPLOAD_PROGRESS } from '../constants';
 

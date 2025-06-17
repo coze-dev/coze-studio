@@ -8,7 +8,7 @@ import {
   FormTextArea,
   Avatar,
   useFieldState,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { IntelligenceType } from '@coze-arch/bot-api/intelligence_api';
 import { ComponentType } from '@coze-arch/bot-api/debugger_api';
 

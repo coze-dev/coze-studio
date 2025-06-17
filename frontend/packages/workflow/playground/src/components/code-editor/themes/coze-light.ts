@@ -1,4 +1,4 @@
-import { createTheme, tags as t } from '@flow-lang-sdk/editor/preset-code';
+import { createTheme, tags as t } from '@coze-editor/editor/preset-code';
 import { EditorView } from '@codemirror/view';
 
 const colors = {
@@ -111,7 +111,7 @@ export const cozeLight = [
         tag: [t.attributeName],
         color: '#C74200',
       },
-      // url in string (includes quotes), e.g. 
+      // url in string (includes quotes), e.g.
       {
         tag: [t.special(t.string)],
         color: '#2B57D9',

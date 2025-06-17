@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 
-import { IconCozPencilPaper } from '@coze/coze-design/icons';
-import { Popover, IconButton, TextArea } from '@coze/coze-design';
+import { IconCozPencilPaper } from '@coze-arch/coze-design/icons';
+import { Popover, IconButton, TextArea } from '@coze-arch/coze-design';
 
 import { type ParamNameProps } from '../param-description';
 

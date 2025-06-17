@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Select, type SelectProps } from '@coze/coze-design';
+import { Select, type SelectProps } from '@coze-arch/coze-design';
 
 import { FileInputType } from '../types';
 

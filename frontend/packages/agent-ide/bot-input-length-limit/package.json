@@ -2,7 +2,7 @@
   "name": "@coze-agent-ide/bot-input-length-limit",
   "version": "0.0.1",
   "description": "bot input length limit",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "gaoyuanhan.duty@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

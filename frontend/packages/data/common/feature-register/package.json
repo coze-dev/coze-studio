@@ -2,7 +2,7 @@
   "name": "@coze-data/feature-register",
   "version": "0.0.1",
   "description": "feature 注册器",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "haozhenfei@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

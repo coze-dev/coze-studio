@@ -2,7 +2,7 @@
   "name": "@coze-agent-ide/bot-creator-context",
   "version": "0.0.1",
   "description": "Context for bot creator",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "sunzhiyuan.evan@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",

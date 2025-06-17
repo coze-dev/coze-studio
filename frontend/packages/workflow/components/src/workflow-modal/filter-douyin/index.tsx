@@ -1,7 +1,7 @@
 import { type FC, useContext } from 'react';
 
 import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
-import { Banner, Select } from '@coze/coze-design';
+import { Banner, Select } from '@coze-arch/coze-design';
 
 import WorkflowModalContext from '../workflow-modal-context';
 import {

@@ -6,7 +6,7 @@ import classNames from 'classnames';
 import { type PublishConnectorInfo } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
 import { ProductEntityType } from '@coze-arch/bot-api/product_api';
-import { FormSelect, type optionRenderProps } from '@coze/coze-design';
+import { FormSelect, type optionRenderProps } from '@coze-arch/coze-design';
 
 import { type StoreBindKey, useProjectPublishStore } from '@/store';
 import { toDisplayScreenOption } from '@/publish-main/utils/display-screen-option';

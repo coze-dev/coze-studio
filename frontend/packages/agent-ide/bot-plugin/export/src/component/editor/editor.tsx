@@ -10,6 +10,7 @@ interface EditorPros {
   useValidate?: boolean;
   theme?: string;
   disabled?: boolean;
+  dataTestID?: string;
 }
 
 export const Editor: React.FC<EditorPros> = ({
@@ -19,13 +20,14 @@ export const Editor: React.FC<EditorPros> = ({
   height = 500,
   theme = 'monokai',
   disabled = false,
+  dataTestID,
 }) => {
   const [heightVal, setHeightVal] = useState(height);
   useEffect(() => {
     setHeightVal(height);
   }, [height]);
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative' }} data-testid={dataTestID}>
       <MonacoEditor
         options={{ readOnly: disabled }}
         language={mode}

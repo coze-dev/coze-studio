@@ -2,7 +2,7 @@
   "name": "@coze-common/chat-area",
   "version": "0.0.1",
   "description": "The abstraction of the Chat",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "gaoyuanhan.duty@bytedance.com",
   "maintainers": [],
   "exports": {
@@ -44,6 +44,7 @@
     "@coze-arch/bot-flags": "workspace:*",
     "@coze-arch/bot-http": "workspace:*",
     "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-common/chat-area-utils": "workspace:*",
     "@coze-common/chat-hooks": "workspace:*",
     "@coze-common/chat-uikit": "workspace:*",
@@ -51,7 +52,6 @@
     "@coze-common/websocket-manager-adapter": "workspace:*",
     "@coze-data/llmPlugins": "workspace:*",
     "@coze-studio/uploader-adapter": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "mitt": "^3.0.1",
     "zod": "3.22.4"
   },

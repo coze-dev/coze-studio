@@ -1,6 +1,6 @@
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCross } from '@coze/coze-design/icons';
-import { Typography, IconButton } from '@coze/coze-design';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
+import { Typography, IconButton } from '@coze-arch/coze-design';
 
 import { useFloatLayoutService, useGlobalState } from '@/hooks';
 

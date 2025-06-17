@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import classNames from 'classnames';
 import { type PublishConnectorInfo } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { FormSelect, type optionRenderProps } from '@coze/coze-design';
+import { FormSelect, type optionRenderProps } from '@coze-arch/coze-design';
 
 import { useProjectPublishStore } from '@/store';
 import {

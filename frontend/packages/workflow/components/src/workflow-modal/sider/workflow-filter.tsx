@@ -19,7 +19,7 @@ import {
   IconCozAllFill,
   IconCozFireFill,
   IconCozKnowledgeFill,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 import WorkflowModalContext from '../workflow-modal-context';
 import {

@@ -18,7 +18,7 @@ import {
   Layout,
   Cascader,
   Space,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { highlightFilterStyle } from '@/constants/filter-style';
 import { WorkspaceEmpty } from '@/components/workspace-empty';

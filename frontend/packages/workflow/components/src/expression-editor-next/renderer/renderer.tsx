@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
-import { Renderer as SDKRenderer } from '@flow-lang-sdk/editor/react';
+import { Renderer as SDKRenderer } from '@coze-editor/editor/react';
 import expression, {
   type EditorAPI as ExpressionEditorAPI,
-} from '@flow-lang-sdk/editor/preset-expression';
+} from '@coze-editor/editor/preset-expression';
 
 import { type ExpressionEditorTreeNode } from '@/expression-editor';
 

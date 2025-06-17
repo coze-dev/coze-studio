@@ -1,14 +1,14 @@
 import React, { useCallback } from 'react';
 
-import { I18n } from '@coze-arch/i18n';
-import { IconCozDocument } from '@coze/coze-design/icons';
-import { Image, Button } from '@coze/coze-design';
 import {
   useIDEService,
   ShortcutsService,
   CommandRegistry,
   Command,
 } from '@coze-project-ide/framework';
+import { I18n } from '@coze-arch/i18n';
+import { IconCozDocument } from '@coze-arch/coze-design/icons';
+import { Image, Button } from '@coze-arch/coze-design';
 
 import EnWorkflowFrame from '@/assets/en-workflow-frame.png';
 import EnUIBuilderFrame from '@/assets/en-ui-builder-frame.png';
@@ -89,7 +89,7 @@ export const WidgetDefaultRenderer = () => {
             {I18n.t('project_ide_view_document')}
           </Button>
         </div>
-        {IS_OVERSEA ? null : (
+        {IS_OVERSEA || IS_OPEN_SOURCE ? null : (
           <div className={styles['gallery-block']}>
             <Image
               preview={false}

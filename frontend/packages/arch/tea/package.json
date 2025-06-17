@@ -2,7 +2,7 @@
   "name": "@coze-arch/tea",
   "version": "0.0.1",
   "description": "Tea package for monorepo",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "tanjizhen@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

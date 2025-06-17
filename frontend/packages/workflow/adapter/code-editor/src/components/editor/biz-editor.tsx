@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozWarningCircleFill } from '@coze/coze-design/icons';
-import { Modal } from '@coze/coze-design';
+import { IconCozWarningCircleFill } from '@coze-arch/coze-design/icons';
+import { Modal } from '@coze-arch/coze-design';
 
 import { Layout } from '../layout';
 import { type EditorProps, type LanguageType } from '../../interface';

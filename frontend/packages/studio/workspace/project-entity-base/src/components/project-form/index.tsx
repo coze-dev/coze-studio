@@ -12,7 +12,7 @@ import {
   type RenderAutoGenerateParams,
 } from '@coze-common/biz-components/picture-upload';
 import { botInputLengthService } from '@coze-agent-ide/bot-input-length-limit';
-import { IconCozUpload } from '@coze/coze-design/icons';
+import { IconCozUpload } from '@coze-arch/coze-design/icons';
 import {
   type BaseFormProps,
   Form,
@@ -20,7 +20,7 @@ import {
   FormTextArea,
   useFormApi,
   withField,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { SwitchWithDesc } from '../switch-with-desc';
 import { type ModifyUploadValueType } from '../../type';

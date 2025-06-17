@@ -2,7 +2,7 @@
   "name": "@coze-foundation/foundation-sdk",
   "version": "0.0.1",
   "description": "基座提供sdk的具体实现package",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "sunzhiyuan.evan@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",
@@ -14,10 +14,10 @@
   },
   "dependencies": {
     "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-foundation/account-adapter": "workspace:*",
     "@coze-foundation/layout": "workspace:*",
-    "@coze-foundation/space-store": "workspace:*",
-    "@coze/coze-design": "workspace:*"
+    "@coze-foundation/space-store": "workspace:*"
   },
   "devDependencies": {
     "@coze-arch/eslint-config": "workspace:*",
@@ -30,3 +30,4 @@
     "vitest": "~3.0.5"
   }
 }
+

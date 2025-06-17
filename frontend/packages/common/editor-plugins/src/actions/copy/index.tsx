@@ -1,8 +1,8 @@
-import { useEditor } from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import { useEditor } from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozCopy } from '@coze/coze-design/icons';
-import { Button, Toast } from '@coze/coze-design';
+import { IconCozCopy } from '@coze-arch/coze-design/icons';
+import { Button, Toast } from '@coze-arch/coze-design';
 export const CopyAction = () => {
   const editor = useEditor<EditorAPI>();
   return (

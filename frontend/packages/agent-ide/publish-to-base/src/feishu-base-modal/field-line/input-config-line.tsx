@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid';
 import { produce } from 'immer';
 import classnames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
 import {
   Button,
   Input,
@@ -15,7 +15,7 @@ import {
   Select,
   Tag,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import {
   InputComponentType,
   type InputTypeInfo,

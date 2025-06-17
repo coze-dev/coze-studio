@@ -2,8 +2,8 @@ import React, { useRef, useState, forwardRef } from 'react';
 
 import cls from 'classnames';
 import { useHover } from 'ahooks';
-import { IconCozArrowDownFill } from '@coze/coze-design/icons';
-import { Collapsible } from '@coze/coze-design';
+import { IconCozArrowDownFill } from '@coze-arch/coze-design/icons';
+import { Collapsible } from '@coze-arch/coze-design';
 
 import styles from './collapse.module.less';
 

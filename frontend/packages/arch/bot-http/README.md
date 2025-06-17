@@ -52,11 +52,11 @@ const userData = await axiosInstance.post('/api/users', { name: 'John' });
 #### Error Handling
 
 ```typescript
-import { 
+import {
   APIErrorEvent,
   handleAPIErrorEvent,
   isApiError,
-  ApiError 
+  ApiError
 } from '@coze-arch/bot-http';
 
 // Register global error handler
@@ -79,10 +79,10 @@ try {
 #### Global Interceptors
 
 ```typescript
-import { 
+import {
   addGlobalRequestInterceptor,
   addGlobalResponseInterceptor,
-  removeGlobalRequestInterceptor 
+  removeGlobalRequestInterceptor
 } from '@coze-arch/bot-http';
 
 // Add request interceptor for authentication
@@ -104,11 +104,11 @@ removeGlobalRequestInterceptor(requestInterceptor);
 #### Error Event Management
 
 ```typescript
-import { 
+import {
   emitAPIErrorEvent,
   startAPIErrorEvent,
   stopAPIErrorEvent,
-  clearAPIErrorEvent 
+  clearAPIErrorEvent
 } from '@coze-arch/bot-http';
 
 // Manually emit API error event
@@ -156,7 +156,7 @@ class ApiError extends AxiosError {
 // Register error handler
 handleAPIErrorEvent(handler: (error: APIErrorEvent) => void): void
 
-// Remove error handler  
+// Remove error handler
 removeAPIErrorEvent(handler: (error: APIErrorEvent) => void): void
 
 // Control error events
@@ -267,4 +267,4 @@ This package depends on:
 
 ## License
 
-ISC
+Apache-2.0

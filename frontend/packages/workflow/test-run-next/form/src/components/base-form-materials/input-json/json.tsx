@@ -4,8 +4,8 @@ import {
   safeFormatJsonString,
 } from '@coze-workflow/test-run-shared';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozBroom } from '@coze/coze-design/icons';
-import { Tooltip, IconButton } from '@coze/coze-design';
+import { IconCozBroom } from '@coze-arch/coze-design/icons';
+import { Tooltip, IconButton } from '@coze-arch/coze-design';
 
 import css from './json.module.less';
 

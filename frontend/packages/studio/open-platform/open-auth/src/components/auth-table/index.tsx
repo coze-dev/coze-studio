@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 
 import cls from 'classnames';
-import { type TableProps, Table } from '@coze/coze-design';
+import { type TableProps, Table } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

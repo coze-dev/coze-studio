@@ -9,7 +9,7 @@ import {
   Upload,
   Toast,
   type FileItem as SemiFileItem,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { typeSafeJSONParse } from '@coze-arch/bot-utils';
 import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 

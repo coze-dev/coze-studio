@@ -6,7 +6,7 @@ import {
   type SetterExtension,
 } from '@flowgram-adapter/free-layout-editor';
 import { useNodeTestId } from '@coze-workflow/base';
-import { Slider as UISlider } from '@coze/coze-design';
+import { Slider as UISlider } from '@coze-arch/coze-design';
 
 type SelectProps = SetterComponentProps;
 

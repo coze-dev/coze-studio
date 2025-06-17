@@ -2,7 +2,7 @@
   "name": "@coze-agent-ide/plugin-risk-warning",
   "version": "0.0.1",
   "description": "Coze plugin risk warning",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "lvxinsheng@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",

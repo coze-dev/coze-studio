@@ -33,7 +33,7 @@ import {
   childrenRecordName,
 } from '@coze-agent-ide/bot-plugin-tools/pluginModal/config';
 import { DefaultValueInput } from '@coze-agent-ide/bot-plugin-tools/defaultValueInput';
-import { Button, Toast } from '@coze/coze-design';
+import { Button, Toast } from '@coze-arch/coze-design';
 
 import s from './index.module.less';
 

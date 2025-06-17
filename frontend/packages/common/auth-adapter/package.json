@@ -2,7 +2,7 @@
   "name": "@coze-common/auth-adapter",
   "version": "0.0.1",
   "description": "统一的权限控制逻辑",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "sunzhiyuan.evan@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

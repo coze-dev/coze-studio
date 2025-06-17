@@ -1,7 +1,7 @@
 import React from 'react';
 
 import cx from 'classnames';
-import { TextArea } from '@coze/coze-design';
+import { TextArea } from '@coze-arch/coze-design';
 
 import { type Setter } from '../types';
 

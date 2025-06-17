@@ -2,7 +2,7 @@
   "name": "@coze-data/knowledge-modal-adapter",
   "version": "0.0.1",
   "description": "coze knowledge modal components adapter",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "haozhenfei@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",
@@ -16,13 +16,13 @@
   "dependencies": {
     "@coze-arch/bot-api": "workspace:*",
     "@coze-arch/bot-studio-store": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-data/e2e": "workspace:*",
     "@coze-data/knowledge-modal-base": "workspace:*",
     "@coze-data/knowledge-resource-processor-core": "workspace:*",
     "@coze-data/knowledge-stores": "workspace:*",
     "@coze-data/utils": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "classnames": "^2.3.2"
   },
   "devDependencies": {

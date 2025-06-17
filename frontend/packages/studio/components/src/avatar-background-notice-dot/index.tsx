@@ -5,8 +5,8 @@ import {
   IconCozCheckMarkCircleFillPalette,
   IconCozLoading,
   IconCozWarningCircleFillPalette,
-} from '@coze/coze-design/icons';
-import { Tooltip } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Tooltip } from '@coze-arch/coze-design';
 
 import s from './index.module.less';
 

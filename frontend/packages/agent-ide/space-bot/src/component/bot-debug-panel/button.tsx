@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { IconCozDebug } from '@coze/coze-design/icons';
+import { IconCozDebug } from '@coze-arch/coze-design/icons';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { OperateTypeEnum, ToolPane } from '@coze-agent-ide/debug-tool-list';
 

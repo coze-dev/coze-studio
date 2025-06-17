@@ -2,7 +2,7 @@
   "name": "@coze-common/loading-button",
   "version": "0.0.1",
   "description": "通用的 Loading Button 组件",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "lvxinsheng@bytedance.com",
   "maintainers": [],
   "main": "src/index.tsx",

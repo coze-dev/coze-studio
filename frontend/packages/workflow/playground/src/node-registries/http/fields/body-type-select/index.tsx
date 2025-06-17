@@ -2,7 +2,7 @@ import { type FieldProps, useField, withField } from '@/form';
 import {
   Select,
   type SelectProps as BaseSelectProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { BodyType } from '../../setters/constants';
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';
 

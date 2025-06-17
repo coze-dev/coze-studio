@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozChatSetting } from '@coze/coze-design/icons';
+import { IconCozChatSetting } from '@coze-arch/coze-design/icons';
 import {
   LayoutPanelType,
   withLazyLoad,

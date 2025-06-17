@@ -1,6 +1,6 @@
 import { type ReactNode, type FC, type ChangeEvent } from 'react';
 
-import { Switch } from '@coze/coze-design';
+import { Switch } from '@coze-arch/coze-design';
 
 import { ToolTooltip } from '../tool-tooltip';
 import { ToolItemIconInfo } from '../tool-item-icon/icons/tool-item-icon-info';

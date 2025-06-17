@@ -1,10 +1,10 @@
 import cls from 'classnames';
-import { useEditor } from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
+import { useEditor } from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInputSlot } from '@coze/coze-design/icons';
-import { IconButton, Tooltip } from '@coze/coze-design';
-import { type ButtonProps } from '@coze/coze-design';
+import { IconCozInputSlot } from '@coze-arch/coze-design/icons';
+import { IconButton, Tooltip } from '@coze-arch/coze-design';
+import { type ButtonProps } from '@coze-arch/coze-design';
 
 import { insertInputSlot } from '../../input-slot/action/insert-input-slot-action';
 import {

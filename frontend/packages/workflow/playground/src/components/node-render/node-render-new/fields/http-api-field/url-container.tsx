@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Tooltip } from '@coze/coze-design';
+import { Tooltip } from '@coze-arch/coze-design';
 
 import { UrlField } from './url-field';
 

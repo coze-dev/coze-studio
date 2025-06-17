@@ -1,7 +1,7 @@
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
-import { I18n } from '@coze-arch/i18n';
-import { Button } from '@coze/coze-design';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
 import { insertToNewline } from '@coze-common/prompt-kit-base/shared';
+import { I18n } from '@coze-arch/i18n';
+import { Button } from '@coze-arch/coze-design';
 
 export const InsertToEditor = (props: {
   outerEditor: EditorAPI;

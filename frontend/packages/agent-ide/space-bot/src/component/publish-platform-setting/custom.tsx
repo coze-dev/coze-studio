@@ -8,7 +8,7 @@ import {
   IconCozEdit,
   IconCozMore,
   IconCozPlus,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   Dropdown,
   IconButton,
@@ -18,7 +18,7 @@ import {
   type ColumnProps,
   Table,
   Tooltip,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { type ConnectorMetaInfo } from '@coze-arch/bot-api/connector_api';
 import { NavLink } from 'react-router-dom';
 import {

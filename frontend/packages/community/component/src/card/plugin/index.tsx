@@ -2,7 +2,8 @@ import { type FC } from 'react';
 
 import cls from 'classnames';
 import { type explore } from '@coze-studio/api-schema';
-import { Avatar, Space, Tag, Toast } from '@coze/coze-design';
+import { I18n } from '@coze-arch/i18n';
+import { Avatar, Space, Tag, Toast } from '@coze-arch/coze-design';
 
 import { cozeBaseUrl } from '@/const/url';
 
@@ -38,10 +39,10 @@ export const PluginCard: FC<PluginCardProps> = props => (
         {!props.isInstalled && props.isShowInstallButton ? (
           <CardButton
             onClick={() => {
-              Toast.success('安装成功');
+              Toast.success(I18n.t('plugin_install_success'));
             }}
           >
-            安装
+            {I18n.t('plugin_store_install')}
           </CardButton>
         ) : null}
         <CardButton
@@ -51,7 +52,7 @@ export const PluginCard: FC<PluginCardProps> = props => (
             );
           }}
         >
-          查看详情
+          {I18n.t('plugin_store_view_details')}
         </CardButton>
       </Space>
     </div>
@@ -80,7 +81,9 @@ const PluginCardBody: FC<PluginCardProps> = props => (
               color={'brand'}
               className="h-[20px] !px-[4px] !py-[2px] coz-fg-primary font-medium shrink-0"
             >
-              <span className="ml-[2px]">已安装</span>
+              <span className="ml-[2px]">
+                {I18n.t('plugin_store_installed')}
+              </span>
             </Tag>
           ) : null,
         descClassName: styles.description,
@@ -88,11 +91,3 @@ const PluginCardBody: FC<PluginCardProps> = props => (
     />
   </div>
 );
-/**
- *  {...{
-          title: props.meta_info?.name,
-          imgSrc: props.meta_info?.icon_url,
-          description: props.meta_info?.description,
-          userInfo: props.meta_info?.user_info,
-        }}
-          */

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Modal, type ModalProps } from '@coze/coze-design';
+import { Modal, type ModalProps } from '@coze-arch/coze-design';
 
 export type UseModalParams = Omit<ModalProps, 'visible'>;
 

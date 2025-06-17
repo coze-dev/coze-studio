@@ -8,7 +8,7 @@ import {
   type CommonNodeData,
   type NodeData,
 } from '@coze-workflow/nodes';
-import { Avatar } from '@coze/coze-design';
+import { Avatar } from '@coze-arch/coze-design';
 
 import { type ProblemItem } from '../../types';
 import { BaseItem } from './base-item';

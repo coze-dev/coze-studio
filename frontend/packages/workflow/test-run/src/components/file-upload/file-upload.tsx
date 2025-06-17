@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid';
 import classNames from 'classnames';
 import { useUpdateEffect, useMemoizedFn } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
-import { Upload, Toast } from '@coze/coze-design';
+import { Upload, Toast } from '@coze-arch/coze-design';
 
 import { FileIcon, FileItemStatus } from '../file-icon';
 import { typeSafeJSONParse } from '../../utils';

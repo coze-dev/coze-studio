@@ -3,7 +3,7 @@ import React, { type FC } from 'react';
 import classNames from 'classnames';
 import { useBoolean } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
-import { Button, type ButtonProps } from '@coze/coze-design';
+import { Button, type ButtonProps } from '@coze-arch/coze-design';
 
 import { useI18nText } from '@/workflow-modal/hooks/use-i18n-text';
 

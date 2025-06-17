@@ -4,8 +4,8 @@ import cls from 'classnames';
 import { useGlobalVariableServiceState } from '@coze-workflow/variable';
 import { VARIABLE_TYPE_ALIAS_MAP } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozEmpty } from '@coze/coze-design/icons';
-import { Select, Tag, Typography } from '@coze/coze-design';
+import { IconCozEmpty } from '@coze-arch/coze-design/icons';
+import { Select, Tag, Typography } from '@coze-arch/coze-design';
 
 import { type Variable, type VariablesPanelProps } from '../types';
 import styles from '../index.module.less';

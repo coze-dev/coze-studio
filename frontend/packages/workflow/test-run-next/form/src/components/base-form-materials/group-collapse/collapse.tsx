@@ -5,8 +5,8 @@ import { useInViewport } from 'ahooks';
 import {
   IconCozArrowDownFill,
   IconCozInfoCircle,
-} from '@coze/coze-design/icons';
-import { Collapsible, Tooltip } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Collapsible, Tooltip } from '@coze-arch/coze-design';
 
 import css from './collapse.module.less';
 

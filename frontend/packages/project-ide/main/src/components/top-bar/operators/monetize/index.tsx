@@ -7,8 +7,8 @@ import {
 } from '@coze-studio/components/monetize';
 import { CollapsibleIconButton } from '@coze-studio/components/collapsible-icon-button';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozWallet } from '@coze/coze-design/icons';
-import { Popover } from '@coze/coze-design';
+import { IconCozWallet } from '@coze-arch/coze-design/icons';
+import { Popover } from '@coze-arch/coze-design';
 import {
   BotMonetizationRefreshPeriod,
   MonetizationEntityType,

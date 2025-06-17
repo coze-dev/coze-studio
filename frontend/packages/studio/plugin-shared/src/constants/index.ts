@@ -212,28 +212,6 @@ export const extInfoText: Record<string, ExtInfoText[]> = {
         'plugin_creation_method_hover_tip_using_existing_services_desc',
       ),
     },
-    {
-      type: 'br',
-    },
-    {
-      type: 'title',
-      text: I18n.t('plugin_creation_method_hover_tip_using_ide_title'),
-    },
-    {
-      type: 'text',
-      text: I18n.t('plugin_creation_method_hover_tip_using_ide_desc'),
-    },
-    {
-      type: 'br',
-    },
-    {
-      type: 'title',
-      text: `${I18n.t('plugin_creation_method_hover_tip_local_plugin')}：`,
-    },
-    {
-      type: 'text',
-      text: I18n.t('plugin_creation_method_hover_tip_local_plugin_desc'),
-    },
   ],
   // TODO @wangzian 补充表单的Popover info信息
   private_link_id: [

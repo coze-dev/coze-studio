@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
 import { type SelectProps } from '@coze-arch/bot-semi/Select';
-import { Cascader } from '@coze/coze-design';
+import { Cascader } from '@coze-arch/coze-design';
 
 import { VARIABLE_TYPE_ALIAS_MAP } from '@/types/view-variable-tree';
 

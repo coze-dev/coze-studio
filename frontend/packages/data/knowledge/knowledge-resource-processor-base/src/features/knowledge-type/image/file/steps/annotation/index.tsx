@@ -6,7 +6,7 @@ import {
 } from '@coze-data/knowledge-resource-processor-core';
 import { KnowledgeE2e } from '@coze-data/e2e';
 import { I18n } from '@coze-arch/i18n';
-import { Radio, RadioGroup } from '@coze/coze-design';
+import { Radio, RadioGroup } from '@coze-arch/coze-design';
 
 import { ImageAnnotationType, ImageFileAddStep } from '../../types';
 import { type ImageFileAddStore } from '../../store';

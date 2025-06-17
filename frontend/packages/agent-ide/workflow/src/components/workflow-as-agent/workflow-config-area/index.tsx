@@ -13,7 +13,7 @@ import {
 import { useReportTti } from '@coze-arch/report-tti';
 import { PluginType, WorkflowMode } from '@coze-arch/idl/developer_api';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozPlus } from '@coze/coze-design/icons';
+import { IconCozPlus } from '@coze-arch/coze-design/icons';
 import { CustomError } from '@coze-arch/bot-error';
 import { PluginDevelopApi } from '@coze-arch/bot-api';
 import { WorkflowCard } from '@coze-agent-ide/workflow-as-agent-adapter';

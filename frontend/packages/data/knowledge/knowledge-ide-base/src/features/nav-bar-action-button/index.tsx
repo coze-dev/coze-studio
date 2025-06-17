@@ -17,7 +17,7 @@ import {
   StorageLocation,
 } from '@coze-arch/bot-api/knowledge';
 import { PlaygroundApi } from '@coze-arch/bot-api';
-import { Toast, Button } from '@coze/coze-design';
+import { Toast, Button } from '@coze-arch/coze-design';
 
 import { ActionType } from '@/types';
 

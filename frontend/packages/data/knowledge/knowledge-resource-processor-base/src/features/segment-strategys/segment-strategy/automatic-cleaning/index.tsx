@@ -1,6 +1,6 @@
 import { KnowledgeE2e } from '@coze-data/e2e';
 import { I18n } from '@coze-arch/i18n';
-import { Radio } from '@coze/coze-design';
+import { Radio } from '@coze-arch/coze-design';
 
 import { SegmentMode } from '@/types';
 

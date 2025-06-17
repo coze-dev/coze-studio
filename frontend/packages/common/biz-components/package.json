@@ -2,7 +2,7 @@
   "name": "@coze-common/biz-components",
   "version": "0.0.1",
   "description": "通用业务组件",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "zhuxiaowei.711@bytedance.com",
   "maintainers": [],
   "exports": {
@@ -46,14 +46,14 @@
     "@coze-arch/bot-icons": "workspace:*",
     "@coze-arch/bot-semi": "workspace:*",
     "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/foundation-sdk": "workspace:*",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/idl": "workspace:*",
     "@coze-arch/report-events": "workspace:*",
-    "@coze-arch/semi-theme-hand01": "workspace:*",
+    "@coze-arch/semi-theme-hand01": "0.0.6-alpha.346d77",
     "@coze-data/e2e": "workspace:*",
     "@coze-foundation/local-storage": "workspace:*",
-    "@coze/coze-design": "workspace:*",
     "@douyinfe/semi-webpack-plugin": "2.61.0",
     "ahooks": "^3.7.8",
     "axios": "^1.4.0",
@@ -101,3 +101,4 @@
   },
   "// deps": "debug@^4.3.4 为脚本自动补齐，请勿改动"
 }
+

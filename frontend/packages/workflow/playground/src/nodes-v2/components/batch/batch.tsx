@@ -25,8 +25,8 @@ import {
 import { I18n } from '@coze-arch/i18n';
 import { Popover } from '@coze-arch/bot-semi';
 import { IconSetting } from '@coze-arch/bot-icons';
-import { IconCozMinus, IconCozPlus } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozMinus, IconCozPlus } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
 import { ValueExpressionInput } from '@/nodes-v2/components/value-expression-input';

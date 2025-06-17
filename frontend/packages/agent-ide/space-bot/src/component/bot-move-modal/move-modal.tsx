@@ -15,7 +15,7 @@ import { PlaygroundApi } from '@coze-arch/bot-api';
 import { withSlardarIdButton } from '@coze-studio/bot-utils';
 import { cozeMitt } from '@coze-common/coze-mitt';
 import { IconInfo } from '@coze-arch/bot-icons';
-import { IconCozCross } from '@coze/coze-design/icons';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
 import {
   Button,
   IconButton,
@@ -23,7 +23,7 @@ import {
   Toast,
   Tooltip,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { useSelectSpacePane } from './components/select-space-pane';
 import { MoveDetailPane } from './components/move-detail-pane';

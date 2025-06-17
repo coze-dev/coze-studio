@@ -2,7 +2,7 @@
 import { type FC } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Tag, Tooltip } from '@coze/coze-design';
+import { Tag, Tooltip } from '@coze-arch/coze-design';
 import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { useReadonly } from '@/nodes-v2/hooks/use-readonly';

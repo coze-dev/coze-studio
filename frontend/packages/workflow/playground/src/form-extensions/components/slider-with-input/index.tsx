@@ -1,7 +1,7 @@
 import { type CSSProperties } from 'react';
 
 import { useNodeTestId } from '@coze-workflow/base';
-import { Slider } from '@coze/coze-design';
+import { Slider } from '@coze-arch/coze-design';
 
 export const SliderWithInput = (props: {
   value: number;

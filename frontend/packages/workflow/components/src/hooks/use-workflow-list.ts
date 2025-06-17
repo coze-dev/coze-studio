@@ -31,7 +31,7 @@ import {
 } from '@coze-workflow/base/api';
 import { I18n } from '@coze-arch/i18n';
 import { CustomError } from '@coze-arch/bot-error';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { reporter, wait } from '../utils';
 import { type WorkflowInfo, WorkflowModalFrom } from '../types';

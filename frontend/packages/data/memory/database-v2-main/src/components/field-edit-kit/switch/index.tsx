@@ -1,7 +1,7 @@
 import { type FC, useState } from 'react';
 
 import { cloneDeep } from 'lodash-es';
-import { Switch } from '@coze/coze-design';
+import { Switch } from '@coze-arch/coze-design';
 
 import {
   type ChangeDataParams,

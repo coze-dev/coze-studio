@@ -1,8 +1,8 @@
 import { type FC } from 'react';
 
 import classNames from 'classnames';
-import { IconCozSendFill } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozSendFill } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 import { Layout, type SendButtonProps } from '@coze-common/chat-uikit-shared';
 
 import { UIKitTooltip } from '../../../../common/tooltips';

@@ -2,8 +2,8 @@ import { useCallback, useState } from 'react';
 
 import { StandardNodeType } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozComment } from '@coze/coze-design/icons';
-import { Tooltip, IconButton } from '@coze/coze-design';
+import { IconCozComment } from '@coze-arch/coze-design/icons';
+import { Tooltip, IconButton } from '@coze-arch/coze-design';
 import { FlowNodeTransformData } from '@flowgram-adapter/free-layout-editor';
 import {
   WorkflowDocument,

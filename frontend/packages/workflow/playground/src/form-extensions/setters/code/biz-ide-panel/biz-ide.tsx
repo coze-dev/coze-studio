@@ -1,10 +1,11 @@
 /* eslint-disable @coze-arch/no-deep-relative-import */
 import React, { type FC } from 'react';
 
-import { IconCozPlayCircle } from '@coze/coze-design/icons';
 import { FlowNodeFormData } from '@flowgram-adapter/free-layout-editor';
 import { useEntity } from '@flowgram-adapter/free-layout-editor';
 import { type EditorProps, Editor } from '@coze-workflow/code-editor-adapter';
+import { useNodeTestId } from '@coze-workflow/base';
+import { IconCozPlayCircle } from '@coze-arch/coze-design/icons';
 
 import { useTestFormState } from '@/hooks';
 
@@ -58,6 +59,8 @@ export const BizIDE: FC<{
   const { flowNodeEntity } = useCodeSetterContext();
 
   const { setIsBizIDETesting } = useBizIDEState();
+  const { getNodeSetterId } = useNodeTestId();
+  const setterTestId = getNodeSetterId('biz-editor');
 
   const globalState = useEntity<WorkflowGlobalStateEntity>(
     WorkflowGlobalStateEntity,
@@ -83,7 +86,7 @@ export const BizIDE: FC<{
   const nodeMeta = formModel?.getFormItemValueByPath('/nodeMeta');
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-testid={setterTestId}>
       <Editor
         title={nodeMeta?.title}
         // code 通过 panel 渲染之后，readonly 字段就非响应式了，所以从全局取比较合理

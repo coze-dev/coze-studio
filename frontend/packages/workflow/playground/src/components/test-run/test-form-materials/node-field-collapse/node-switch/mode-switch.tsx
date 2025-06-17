@@ -1,6 +1,6 @@
 import { useTestRunFormStore } from '@coze-workflow/test-run-next';
 import { I18n } from '@coze-arch/i18n';
-import { Switch } from '@coze/coze-design';
+import { Switch } from '@coze-arch/coze-design';
 
 import css from './mode-switch.module.less';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import cx from 'classnames';
-import { Select } from '@coze/coze-design';
+import { Select } from '@coze-arch/coze-design';
 
 import type { Setter } from '../types';
 import type { Options, EnumValue } from './types';

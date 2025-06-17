@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { Banner } from '@coze/coze-design';
+import { Banner } from '@coze-arch/coze-design';
 import { Typography } from '@coze-arch/bot-semi';
 
 import { useRetrieve } from './use-retrieve';

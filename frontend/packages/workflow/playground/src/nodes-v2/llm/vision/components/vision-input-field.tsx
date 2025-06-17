@@ -5,8 +5,8 @@ import {
   type FieldArrayRenderProps,
 } from '@flowgram-adapter/free-layout-editor';
 import { type InputValueVO, type ViewVariableType } from '@coze-workflow/base';
-import { IconCozMinus } from '@coze/coze-design/icons';
-import { IconButton } from '@coze/coze-design';
+import { IconCozMinus } from '@coze-arch/coze-design/icons';
+import { IconButton } from '@coze-arch/coze-design';
 
 import { isVisionInput } from '../utils/index';
 import { VisionValueField } from './vision-value-field';

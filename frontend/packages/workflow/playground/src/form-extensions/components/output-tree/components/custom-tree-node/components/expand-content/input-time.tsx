@@ -1,4 +1,4 @@
-import { DatePicker } from '@coze/coze-design';
+import { DatePicker } from '@coze-arch/coze-design';
 
 import { type DefaultValueInputProps } from './types';
 

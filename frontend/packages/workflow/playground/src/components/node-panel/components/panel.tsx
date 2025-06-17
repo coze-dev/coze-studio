@@ -18,7 +18,7 @@ import { WorkflowNodesService } from '@coze-workflow/nodes';
 import { StandardNodeType } from '@coze-workflow/base';
 import { reporter } from '@coze-arch/logger';
 import { handlePluginRiskWarning } from '@coze-agent-ide/plugin-risk-warning';
-import { Popover } from '@coze/coze-design';
+import { Popover } from '@coze-arch/coze-design';
 
 import { WorkflowPlaygroundContext } from '@/workflow-playground-context';
 import {

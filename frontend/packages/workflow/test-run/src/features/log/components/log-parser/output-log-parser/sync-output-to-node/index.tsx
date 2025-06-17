@@ -1,8 +1,8 @@
 import { type FC } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozUpdate } from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+import { IconCozUpdate } from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { useSyncOutput } from './use-sync-output';

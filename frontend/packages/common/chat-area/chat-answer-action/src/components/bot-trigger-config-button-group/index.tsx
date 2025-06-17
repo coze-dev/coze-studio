@@ -6,7 +6,7 @@ import {
   useMessageBoxContext,
 } from '@coze-common/chat-area';
 import { I18n } from '@coze-arch/i18n';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 import { TriggerEnabled } from '@coze-arch/bot-api/developer_api';
 
 import { getShowBotTriggerButton } from '../../utils/get-show-bot-trigger-button';

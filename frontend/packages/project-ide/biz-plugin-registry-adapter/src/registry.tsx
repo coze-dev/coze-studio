@@ -5,7 +5,7 @@ import {
   withLazyLoad,
   type WidgetRegistry,
 } from '@coze-project-ide/framework';
-import { IconCozPlugin } from '@coze/coze-design/icons';
+import { IconCozPlugin } from '@coze-arch/coze-design/icons';
 
 export const PluginWidgetRegistry: WidgetRegistry = {
   match: /\/plugin\/.*/,

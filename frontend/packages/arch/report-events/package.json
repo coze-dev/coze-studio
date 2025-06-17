@@ -2,7 +2,7 @@
   "name": "@coze-arch/report-events",
   "version": "0.0.1",
   "description": "report events name",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "wenming.2020@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

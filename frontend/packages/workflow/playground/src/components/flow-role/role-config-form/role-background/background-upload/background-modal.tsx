@@ -8,7 +8,7 @@ import {
   Toast,
   type UploadProps,
   type FileItem,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { type BackgroundImageInfo } from '@coze-arch/bot-api/workflow_api';
 
 import { checkImageWidthAndHeight, getPictureValue } from './utils';

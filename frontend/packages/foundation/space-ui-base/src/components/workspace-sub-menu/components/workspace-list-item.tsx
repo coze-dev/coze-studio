@@ -3,15 +3,16 @@ import { type ReactNode, type FC } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
 import classNames from 'classnames';
-import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
-import { localStorageService } from '@coze-foundation/local-storage';
 import { useSpaceStore } from '@coze-foundation/space-store';
+import { localStorageService } from '@coze-foundation/local-storage';
+import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 
 export interface IWorkspaceListItem {
   icon?: ReactNode;
   activeIcon?: ReactNode;
   title?: () => string;
   path?: string;
+  dataTestId?: string;
 }
 
 interface IWorkspaceListItemProps extends IWorkspaceListItem {
@@ -24,6 +25,7 @@ export const WorkspaceListItem: FC<IWorkspaceListItemProps> = ({
   title,
   path,
   currentSubMenu,
+  dataTestId,
 }) => {
   const navigate = useNavigate();
   const { spaceId } = useSpaceStore(
@@ -59,6 +61,7 @@ export const WorkspaceListItem: FC<IWorkspaceListItemProps> = ({
         },
       )}
       id={`workspace-submenu-${path}`}
+      data-testid={dataTestId}
     >
       <div className="text-[14px]">
         <div className="w-[16px] h-[16px]">

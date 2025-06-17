@@ -1,12 +1,12 @@
 import { type PropsWithChildren } from 'react';
 
 import classNames from 'classnames';
-import { IconCozCheckMarkFill } from '@coze/coze-design/icons';
+import { IconCozCheckMarkFill } from '@coze-arch/coze-design/icons';
 import {
   type optionRenderProps,
   Tooltip,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 export type OptionWithTooltipProps = PropsWithChildren<{
   option: optionRenderProps;

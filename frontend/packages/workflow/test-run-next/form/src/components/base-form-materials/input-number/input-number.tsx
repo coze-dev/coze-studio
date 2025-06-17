@@ -5,8 +5,8 @@ import BigNumber, { type BigNumber as IBigNumber } from 'bignumber.js';
 import {
   IconCozArrowDownFill,
   IconCozArrowUpFill,
-} from '@coze/coze-design/icons';
-import { Input, type InputProps } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Input, type InputProps } from '@coze-arch/coze-design';
 
 import css from './input-number.module.less';
 

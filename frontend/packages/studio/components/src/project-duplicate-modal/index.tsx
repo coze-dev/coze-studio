@@ -21,7 +21,7 @@ import {
   Modal,
   type ModalProps,
   type FormApi,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { SpaceFormSelect } from '../space-form-select';
 import { appendCopySuffix } from './utils';

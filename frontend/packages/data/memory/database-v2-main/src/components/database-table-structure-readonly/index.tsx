@@ -7,7 +7,7 @@ import {
 } from '@coze-data/database-v2-base/constants';
 import { DatabaseFieldTitle } from '@coze-data/database-v2-base/components/database-field-title';
 import { I18n } from '@coze-arch/i18n';
-import { Image, Table, type ColumnProps } from '@coze/coze-design';
+import { Image, Table, type ColumnProps } from '@coze-arch/coze-design';
 
 import keyExample from '../../assets/key-example.png';
 

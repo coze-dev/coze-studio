@@ -2,7 +2,7 @@
   "name": "@coze-studio/tea-interface",
   "version": "0.0.1",
   "description": "interface that descripts how to use tea ",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "chenjiawei.inizio@bytedance.com",
   "maintainers": [],
   "exports": {

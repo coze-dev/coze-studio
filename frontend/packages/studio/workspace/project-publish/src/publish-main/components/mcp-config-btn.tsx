@@ -3,7 +3,7 @@ import {
   ConnectorConfigStatus,
 } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 
 import { UseMcpConfigModal } from '@/hooks/use-mcp-config-modal';
 

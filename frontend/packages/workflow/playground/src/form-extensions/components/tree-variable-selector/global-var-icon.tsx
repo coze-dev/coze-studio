@@ -5,7 +5,7 @@ import {
   IconCozFolder,
   IconCozPeople,
   IconCozSetting,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 const GLOBAL_VAR_ICON_MAP: Record<string, ReactNode> = {
   [GlobalVariableKey.App]: <IconCozFolder />,

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "> 用于支持 `@` 根目录引用的插件",
   "keywords": [],
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "fanwenjie.fe@bytedance.com",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -11,13 +11,12 @@
     "build": "tsc -b ./tsconfig.build.json --force",
     "dev": "tsc -w",
     "lint": "eslint ./ --cache",
-    "test": "vitest --run",
-    "test:cov": "vitest run --coverage",
-    "test:force": "vitest run --updateSnapshot"
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
   },
   "dependencies": {
-    "json5": "^2.2.1",
-    "micromatch": "^4.0.2"
+    "@coze-arch/pkg-root-webpack-plugin-origin": "npm:@coze-arch/pkg-root-webpack-plugin@1.0.0-alpha.74b402",
+    "@rushstack/rush-sdk": "5.100.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.2",

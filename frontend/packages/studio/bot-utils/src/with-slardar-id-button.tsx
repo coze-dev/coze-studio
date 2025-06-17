@@ -3,7 +3,7 @@ import { type ReactNode } from 'react';
 import copy from 'copy-to-clipboard';
 import { getSlardarInstance } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
-import { Button, Toast } from '@coze/coze-design';
+import { Button, Toast } from '@coze-arch/coze-design';
 
 export const withSlardarIdButton = (node: ReactNode) => {
   const copySlardarId = () => {

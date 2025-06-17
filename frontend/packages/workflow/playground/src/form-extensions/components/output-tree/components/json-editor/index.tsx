@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState, type FC } from 'react';
 
-import { json as languageJSON } from '@flow-lang-sdk/editor/language-json';
+import { IconCrossStroked } from '@douyinfe/semi-icons';
+import { json as languageJSON } from '@coze-editor/editor/language-json';
 import { I18n } from '@coze-arch/i18n';
-import { Button, IconButton, Tooltip, Modal } from '@coze/coze-design';
+import { Button, IconButton, Tooltip, Modal } from '@coze-arch/coze-design';
 import {
   IconInfo,
   IconUpdateOutlined,
   IconWarningInfo,
 } from '@coze-arch/bot-icons';
-import { IconCrossStroked } from '@douyinfe/semi-icons';
 
 import { CodeEditor, EditorProvider } from '@/components/code-editor';
 

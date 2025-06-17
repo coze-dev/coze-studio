@@ -8,7 +8,7 @@ import React, {
 
 import classNames from 'classnames';
 import { useNodeTestId } from '@coze-workflow/base';
-import { Tree } from '@coze/coze-design';
+import { Tree } from '@coze-arch/coze-design';
 import { type TreeNodeData, type TreeProps } from '@coze-arch/bot-semi/Tree';
 
 import { renderLabelWithItem } from './utils';

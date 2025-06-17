@@ -17,7 +17,7 @@ import {
   CopilotType,
   TestCaseGeneratedBy,
 } from '@coze-arch/bot-api/workflow_api';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { useGlobalState, useTestRunReporterService } from '@/hooks';
 

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 import { useNodeTestId } from '@coze-workflow/base';
-import { Input as UIInput } from '@coze/coze-design';
+import { Input as UIInput } from '@coze-arch/coze-design';
 
 function Input({
   value,

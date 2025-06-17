@@ -5,7 +5,7 @@ import cls from 'classnames';
 import {
   IconCozArrowRight,
   IconCozArrowLeft,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 
 import { CarouselItem } from './carousel-item';
 

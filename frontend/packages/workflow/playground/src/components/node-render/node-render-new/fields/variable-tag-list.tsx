@@ -6,7 +6,7 @@ import {
   VARIABLE_TYPE_ALIAS_MAP,
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozWarningCircle } from '@coze/coze-design/icons';
+import { IconCozWarningCircle } from '@coze-arch/coze-design/icons';
 
 import { OverflowTagList, type TagProps } from './overflow-tag-list';
 import { VARIABLE_TYPE_ICON_MAP } from './constants';

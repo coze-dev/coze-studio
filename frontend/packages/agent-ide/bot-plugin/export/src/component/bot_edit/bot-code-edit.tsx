@@ -1,12 +1,12 @@
 import { useState, useEffect, type ReactNode } from 'react';
 
 import classNames from 'classnames';
+import { type PluginInfoProps } from '@coze-studio/plugin-shared';
 import { I18n } from '@coze-arch/i18n';
 import { safeJSONParse } from '@coze-arch/bot-utils';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { UIButton, UIModal, Toast, Space } from '@coze-arch/bot-semi';
 import { PluginDevelopApi } from '@coze-arch/bot-api';
-import { type PluginInfoProps } from '@coze-studio/plugin-shared';
 
 import { Editor } from '../editor';
 
@@ -130,6 +130,7 @@ export const CreateCodePluginModal: React.FC<CreatePluginProps> = props => {
                 {I18n.t('ai_plugin_(fill_in_json)_*')}
               </div>
               <Editor
+                dataTestID="create-plugin-code-editor-json"
                 disabled={disabled}
                 theme="tomorrow"
                 mode="json"
@@ -144,6 +145,7 @@ export const CreateCodePluginModal: React.FC<CreatePluginProps> = props => {
                 {I18n.t('openapi_(fill_in_yaml)_*')}
               </div>
               <Editor
+                dataTestID="create-plugin-code-editor-yaml"
                 disabled={disabled}
                 theme="tomorrow"
                 mode="yaml"

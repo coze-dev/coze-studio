@@ -1,4 +1,4 @@
-import { Tag, Tooltip } from '@coze/coze-design';
+import { Tag, Tooltip } from '@coze-arch/coze-design';
 import { Boundary, OverflowList } from '@blueprintjs/core';
 
 import s from './index.module.less';

@@ -6,7 +6,7 @@ import { useMemo, useRef, useState, type FC } from 'react';
 import classNames from 'classnames';
 import { useMount } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozEdit } from '@coze/coze-design/icons';
+import { IconCozEdit } from '@coze-arch/coze-design/icons';
 import { type FileItem, type UploadProps } from '@coze-arch/bot-semi/Upload';
 import { type CommonFieldProps } from '@coze-arch/bot-semi/Form';
 import {

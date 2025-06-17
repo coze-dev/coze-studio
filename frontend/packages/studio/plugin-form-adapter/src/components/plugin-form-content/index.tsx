@@ -30,7 +30,7 @@ import {
 import { FileBizType, IconType } from '@coze-arch/bot-api/developer_api';
 import { DeveloperApi, PluginDevelopApi } from '@coze-arch/bot-api';
 import { InfoPopover } from '@coze-agent-ide/bot-plugin-tools/infoPopover';
-import { IconCozPlus, IconCozTrashCan } from '@coze/coze-design/icons';
+import { IconCozPlus, IconCozTrashCan } from '@coze-arch/coze-design/icons';
 import {
   Cascader,
   Col,
@@ -43,7 +43,7 @@ import {
   Row,
   Typography,
   withField,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import {
   findAuthTypeItemV2,

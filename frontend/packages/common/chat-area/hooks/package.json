@@ -2,7 +2,7 @@
   "name": "@coze-common/chat-hooks",
   "version": "0.0.1",
   "description": "Simple pure helpful hooks.",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "wanglitong@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

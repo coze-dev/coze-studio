@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozEdit, IconCozTrashCan } from '@coze/coze-design/icons';
-import { Typography, CozAvatar, IconButton } from '@coze/coze-design';
+import { IconCozEdit, IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { Typography, CozAvatar, IconButton } from '@coze-arch/coze-design';
 import { type BackgroundImageInfo } from '@coze-arch/bot-api/workflow_api';
 
 import { BackgroundModal } from './background-upload';

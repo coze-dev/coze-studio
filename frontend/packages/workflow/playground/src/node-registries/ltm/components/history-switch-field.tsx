@@ -1,6 +1,6 @@
 import { useNodeTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { Switch, Tooltip } from '@coze/coze-design';
+import { Switch, Tooltip } from '@coze-arch/coze-design';
 
 import { useField, withField } from '@/form';
 

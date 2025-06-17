@@ -5,8 +5,8 @@ import {
   IconCozCrossCircle,
   IconCozWarningCircle,
   type OriginIconProps,
-} from '@coze/coze-design/icons';
-import { type StepProps } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { type StepProps } from '@coze-arch/coze-design';
 
 export interface PublishStepIconProps {
   status: StepProps['status'] | 'warn';

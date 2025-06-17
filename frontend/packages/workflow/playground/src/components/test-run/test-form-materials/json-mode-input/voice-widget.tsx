@@ -5,8 +5,8 @@ import { useRequest } from 'ahooks';
 import { type VoiceDetail } from '@coze-arch/bot-api/multimedia_api';
 import { MultimediaApi } from '@coze-arch/bot-api';
 import { useAudioPlayer } from '@coze-workflow/resources-adapter';
-import { IconCozVolume, IconCozPauseFill } from '@coze/coze-design/icons';
-import { Avatar, Spin } from '@coze/coze-design';
+import { IconCozVolume, IconCozPauseFill } from '@coze-arch/coze-design/icons';
+import { Avatar, Spin } from '@coze-arch/coze-design';
 import { type EditorView, WidgetType } from '@codemirror/view';
 import { EditorSelection } from '@codemirror/state';
 

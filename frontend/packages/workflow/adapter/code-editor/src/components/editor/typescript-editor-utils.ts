@@ -1,6 +1,6 @@
 import { ViewVariableType } from '@coze-workflow/base';
-import { languages } from '@flow-lang-sdk/editor/preset-code';
-import { typescript } from '@flow-lang-sdk/editor/language-typescript';
+import { languages } from '@coze-editor/editor/preset-code';
+import { typescript } from '@coze-editor/editor/language-typescript';
 
 import { type Input, ModuleDetectionKind, type Output } from '../../interface';
 
@@ -8,15 +8,11 @@ export const initTypescriptServer = () => {
   languages.register('typescript', typescript);
 
   const tsWorker = new Worker(
-    new URL(
-      '@flow-lang-sdk/editor/language-typescript/worker',
-      import.meta.url,
-    ),
+    new URL('@coze-editor/editor/language-typescript/worker', import.meta.url),
     { type: 'module' },
   );
 
   typescript.languageService.initialize(tsWorker, {
-    version: '5.6.2',
     compilerOptions: {
       // eliminate Promise error
       lib: ['es2015'],

@@ -1,4 +1,4 @@
-import { Button, Tag } from '@coze/coze-design';
+import { Button, Tag } from '@coze-arch/coze-design';
 import { Avatar, Popover } from '@coze-arch/bot-semi';
 import { IconInfo } from '@coze-arch/bot-icons';
 import { type ModelDescGroup } from '@coze-arch/bot-api/developer_api';

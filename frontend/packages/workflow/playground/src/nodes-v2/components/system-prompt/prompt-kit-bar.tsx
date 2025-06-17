@@ -10,8 +10,8 @@ import {
   IconCozLightbulb,
   IconCozMinimize,
   IconCozTrayArrowUp,
-} from '@coze/coze-design/icons';
-import { Tooltip, IconButton, Button } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Tooltip, IconButton, Button } from '@coze-arch/coze-design';
 
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';
 import { CopyButton } from '@/components/copy-button';

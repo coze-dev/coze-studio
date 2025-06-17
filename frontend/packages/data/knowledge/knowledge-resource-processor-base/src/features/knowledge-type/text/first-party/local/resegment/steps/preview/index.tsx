@@ -12,12 +12,12 @@ import { KnowledgeE2e } from '@coze-data/e2e';
 import { ReviewStatus } from '@coze-arch/idl/knowledge';
 import { I18n } from '@coze-arch/i18n';
 import { KnowledgeApi } from '@coze-arch/bot-api';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 import { PreProcessRule, SegmentMode, SeperatorType } from '@/types';
+import { SegmentPreview } from '@/features/segment-preview';
 import { getCustomValues } from '@/features/knowledge-type/text/utils';
 import { getSeperatorOptionList } from '@/constants';
-import { SegmentPreview } from '@/components/segment-preview';
 
 import type { UploadTextLocalResegmentStore } from '../../store';
 import { TextLocalResegmentStep } from '../../constants';

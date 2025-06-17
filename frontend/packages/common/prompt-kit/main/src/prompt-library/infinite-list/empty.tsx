@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozWarningCircle } from '@coze/coze-design/icons';
-import { EmptyState, Spin } from '@coze/coze-design';
+import { IconCozWarningCircle } from '@coze-arch/coze-design/icons';
+import { EmptyState, Spin } from '@coze-arch/coze-design';
 
 import { type EmptyProps } from './type';
 

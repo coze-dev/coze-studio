@@ -2,8 +2,8 @@ import React from 'react';
 
 import classNames from 'classnames';
 import { useNodeTestId } from '@coze-workflow/base';
-import { IconCozEdit } from '@coze/coze-design/icons';
-import { IconButton, Tooltip } from '@coze/coze-design';
+import { IconCozEdit } from '@coze-arch/coze-design/icons';
+import { IconButton, Tooltip } from '@coze-arch/coze-design';
 
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';
 

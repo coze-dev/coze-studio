@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
 import { type PersonalAccessToken } from '@coze-arch/bot-api/pat_permission_api';
-import { Modal, type FormApi } from '@coze/coze-design';
+import { Modal, type FormApi } from '@coze-arch/coze-design';
 
 import { ExpirationDate, getExpireAt } from '@/utils/time';
 import {

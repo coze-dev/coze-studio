@@ -7,7 +7,7 @@ import { CustomError } from '@coze-arch/bot-error';
 import { type AuthLoginInfo } from '@coze-arch/bot-api/developer_api';
 import { DeveloperApi } from '@coze-arch/bot-api';
 import { connector2Redirect } from '@coze-foundation/account-adapter';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 
 export const useRevokeAuth = ({
   id,

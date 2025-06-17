@@ -1,12 +1,12 @@
 import { type ParsingStrategy } from '@coze-arch/idl/knowledge';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
 import {
   type BaseFormProps,
   Form,
   Tooltip,
   Typography,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { type PDFDocumentFilterValue } from '@/features/knowledge-type/text/interface';
 

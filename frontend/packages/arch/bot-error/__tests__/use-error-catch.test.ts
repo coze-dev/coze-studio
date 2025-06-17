@@ -1,5 +1,5 @@
 import { type Mock } from 'vitest';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { type SlardarInstance } from '@coze-arch/logger';
 
 import { useErrorCatch } from '../src/use-error-catch';
@@ -17,16 +17,29 @@ vi.mock('@coze-arch/logger', () => ({
     })),
   },
 }));
-vi.stubGlobal('window', {
-  addEventListener: vi.fn((e: string, cb: (event: unknown) => void) => {
+
+// Mock window event listeners without overriding the entire window object
+const mockAddEventListener = vi.fn(
+  (e: string, cb: (event: unknown) => void) => {
     if (e === 'unhandledrejection') {
       cb({
         promise: Promise.reject(new Error()),
       });
     }
-  }),
-  removeEventListener: vi.fn(),
+  },
+);
+const mockRemoveEventListener = vi.fn();
+
+// Spy on and mock the window methods instead of replacing the entire window
+Object.defineProperty(window, 'addEventListener', {
+  value: mockAddEventListener,
+  writable: true,
 });
+Object.defineProperty(window, 'removeEventListener', {
+  value: mockRemoveEventListener,
+  writable: true,
+});
+
 vi.mock('../src/certain-error');
 
 describe('use-error-catch', () => {
@@ -47,8 +60,8 @@ describe('use-error-catch', () => {
       useErrorCatch(slardarInstance as unknown as SlardarInstance),
     );
     unmount();
-    expect(window.addEventListener).toHaveBeenCalled();
-    expect(window.removeEventListener).toHaveBeenCalled();
+    expect(mockAddEventListener).toHaveBeenCalled();
+    expect(mockRemoveEventListener).toHaveBeenCalled();
     expect(slardarInstance.on).toHaveBeenCalled();
     expect(slardarInstance.off).toHaveBeenCalled();
     expect(sendCertainError).not.toHaveBeenCalled();

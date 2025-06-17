@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 
-import { Input } from '@coze/coze-design';
+import { Input } from '@coze-arch/coze-design';
 
 import { type BaseFileProps } from '../types';
 import { JsonEditorAdapter } from '../../json-editor';

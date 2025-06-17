@@ -1,4 +1,4 @@
-import { type ModalProps } from '@coze/coze-design';
+import { type ModalProps } from '@coze-arch/coze-design';
 
 export interface PromptContextInfo {
   botId?: string;

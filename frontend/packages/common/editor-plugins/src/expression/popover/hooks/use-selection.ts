@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { type EditorAPI as ExpressionEditorAPI } from '@flow-lang-sdk/editor/preset-expression';
+import { type EditorAPI as ExpressionEditorAPI } from '@coze-editor/editor/preset-expression';
 import { type ViewUpdate } from '@codemirror/view';
 
 import { isSkipSelectionChangeUserEvent } from '../shared';

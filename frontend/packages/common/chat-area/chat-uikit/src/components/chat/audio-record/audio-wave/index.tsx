@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { Space } from '@coze/coze-design';
+import { Space } from '@coze-arch/coze-design';
 
 import { getBarBgColor, getBarHeights } from './utils';
 import { type AudioWaveProps } from './type';

@@ -1,8 +1,8 @@
 import { type FC, type ReactNode, type HtmlHTMLAttributes } from 'react';
 
 import { merge } from 'lodash-es';
-import { IconCozCross } from '@coze/coze-design/icons';
-import { Button, Modal, type ModalProps } from '@coze/coze-design';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
+import { Button, Modal, type ModalProps } from '@coze-arch/coze-design';
 
 import './index.less';
 

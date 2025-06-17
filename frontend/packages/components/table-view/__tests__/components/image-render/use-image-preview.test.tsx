@@ -7,7 +7,7 @@ import '@testing-library/jest-dom';
 import { useImagePreview } from '../../../src/components/renders/image-render/use-image-preview';
 
 // 模拟依赖
-vi.mock('@coze/coze-design', () => ({
+vi.mock('@coze-arch/coze-design', () => ({
   Upload: function Upload({
     children,
     onChange,
@@ -91,7 +91,7 @@ vi.mock('@coze/coze-design', () => ({
   },
 }));
 
-vi.mock('@coze/coze-design/icons', () => ({
+vi.mock('@coze-arch/coze-design/icons', () => ({
   IconCozUpload: function IconCozUpload({ className }: any) {
     return <div data-testid="upload-icon" className={className} />;
   },

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
-import { useEditor } from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-universal';
+import { useEditor } from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-universal';
 
 import { getOptionInfoFromDOM } from '../utils';
 import { useOptionsOperations } from './use-options-operations';

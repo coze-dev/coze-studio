@@ -9,8 +9,8 @@ import {
 } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozBroom } from '@coze/coze-design/icons';
-import { IconButton, Tooltip, Modal } from '@coze/coze-design';
+import { IconCozBroom } from '@coze-arch/coze-design/icons';
+import { IconButton, Tooltip, Modal } from '@coze-arch/coze-design';
 
 import { MAX_JSON_LENGTH } from '../../constants';
 import { formatJson } from './utils/format-json';

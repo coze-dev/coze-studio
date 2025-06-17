@@ -10,7 +10,7 @@ import {
 
 import { isEqual } from 'lodash-es';
 import classNames from 'classnames';
-import { ImagePreview, Skeleton } from '@coze/coze-design';
+import { ImagePreview, Skeleton } from '@coze-arch/coze-design';
 import { ImageStatus } from '@coze-arch/bot-md-box-adapter/lazy';
 import { type MdBoxImageProps } from '@coze-arch/bot-md-box-adapter';
 

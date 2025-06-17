@@ -8,7 +8,7 @@ import React, {
 
 import cls from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 import { UIButton } from '@coze-arch/bot-semi';
 
 import { type FavoriteIconBtnRef, FavoriteIconBtn } from '../favorite-icon-btn';

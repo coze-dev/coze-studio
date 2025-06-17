@@ -2,7 +2,7 @@
   "name": "@coze-studio/publish-manage-hooks",
   "version": "0.0.1",
   "description": "publish manage biz hooks",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "duwenhan@bytedance.com",
   "maintainers": [],
   "main": "src/index.ts",

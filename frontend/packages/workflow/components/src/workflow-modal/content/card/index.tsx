@@ -9,8 +9,8 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozClockFill,
   IconCozCheckMarkCircleFill,
-} from '@coze/coze-design/icons';
-import { Typography, LoadingButton } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Typography, LoadingButton } from '@coze-arch/coze-design';
 import { Avatar, Image, Tooltip } from '@coze-arch/bot-semi';
 import { CheckType } from '@coze-arch/bot-api/workflow_api';
 import { type Int64, SpaceType } from '@coze-arch/bot-api/developer_api';

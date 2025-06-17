@@ -3,7 +3,7 @@ import { type FC, useRef, useState } from 'react';
 import { type ShortCutCommand } from '@coze-agent-ide/tool-config';
 import { Deferred } from '@coze-common/chat-area-utils';
 import { I18n } from '@coze-arch/i18n';
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 import { UIModal } from '@coze-arch/bot-semi';
 
 export interface HasUnusedComponentsConfirmModalProps {

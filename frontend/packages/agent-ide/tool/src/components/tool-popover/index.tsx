@@ -1,6 +1,6 @@
 import { type FC } from 'react';
 
-import { Popover, type PopoverProps } from '@coze/coze-design';
+import { Popover, type PopoverProps } from '@coze-arch/coze-design';
 
 import s from './index.module.less';
 

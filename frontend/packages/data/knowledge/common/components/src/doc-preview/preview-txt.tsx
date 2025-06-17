@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { Spin } from '@coze/coze-design';
+import { Spin } from '@coze-arch/coze-design';
 interface IPreviewTxtProps {
   fileUrl: string;
 }

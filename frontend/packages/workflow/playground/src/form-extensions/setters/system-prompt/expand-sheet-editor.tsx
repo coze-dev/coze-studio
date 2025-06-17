@@ -21,7 +21,7 @@ import { type EditorAPI, useEditor } from '@coze-common/prompt-kit-base/editor';
 import { RecommendPannel } from '@coze-common/prompt-kit/prompt-recommend';
 import { I18n } from '@coze-arch/i18n';
 import { UIIconButton } from '@coze-arch/bot-semi';
-import { IconCozCrossFill } from '@coze/coze-design/icons';
+import { IconCozCrossFill } from '@coze-arch/coze-design/icons';
 
 import { useNodeFormPanelState } from '@/hooks/use-node-side-sheet-store';
 import { useGlobalState } from '@/hooks';

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 
 import classNames from 'classnames';
 import { useNodeTestId } from '@coze-workflow/base';
-import { Tooltip, RadioGroup, Radio as RadioUI } from '@coze/coze-design';
+import { Tooltip, RadioGroup, Radio as RadioUI } from '@coze-arch/coze-design';
 import type {
   OptionItem,
   RadioChangeEvent,

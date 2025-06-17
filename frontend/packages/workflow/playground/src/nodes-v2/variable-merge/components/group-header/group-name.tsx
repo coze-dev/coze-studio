@@ -1,6 +1,6 @@
 import { type FC, useState, useRef } from 'react';
 
-import { Input, type InputProps } from '@coze/coze-design';
+import { Input, type InputProps } from '@coze-arch/coze-design';
 
 import { MAX_GROUP_NAME_COUNT } from '../../constants';
 

@@ -1,6 +1,6 @@
 import React, { type FC } from 'react';
 
-import { Tag } from '@coze/coze-design';
+import { Tag } from '@coze-arch/coze-design';
 
 import { type MergeGroup } from '../../types';
 import { useGroupTypeAlias } from './use-group-type-alias';

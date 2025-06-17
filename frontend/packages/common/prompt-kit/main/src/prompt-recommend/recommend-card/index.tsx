@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 
 import cls from 'classnames';
-import { useEditor } from '@flow-lang-sdk/editor/react';
-import { type EditorAPI } from '@flow-lang-sdk/editor/preset-prompt';
-import { I18n } from '@coze-arch/i18n';
-import { Popover, Button, Typography } from '@coze/coze-design';
+import { useEditor } from '@coze-editor/editor/react';
+import { type EditorAPI } from '@coze-editor/editor/preset-prompt';
+import { Popover, Button, Typography } from '@coze-arch/coze-design';
 import { PlaygroundApi } from '@coze-arch/bot-api';
 import { ThemeExtension } from '@coze-common/editor-plugins/theme';
 import { LibraryBlockWidget } from '@coze-common/editor-plugins/library-insert';
@@ -13,6 +12,7 @@ import {
   PromptEditorRender,
   PromptEditorProvider,
 } from '@coze-common/prompt-kit-base/editor';
+import { I18n } from '@coze-arch/i18n';
 import { EditorView } from '@codemirror/view';
 
 import '@coze-common/prompt-kit-base/shared/css';

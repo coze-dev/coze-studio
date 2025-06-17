@@ -2,7 +2,7 @@
   "name": "@coze-studio/open-auth",
   "version": "0.0.1",
   "description": "bot open platform",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "gaoding.devingao@bytedance.com",
   "maintainers": [],
   "exports": {
@@ -18,7 +18,7 @@
   "dependencies": {
     "@coze-arch/bot-api": "workspace:*",
     "@coze-arch/bot-semi": "workspace:*",
-    "@coze/coze-design": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/logger": "workspace:*",
     "@coze-arch/report-events": "workspace:*",

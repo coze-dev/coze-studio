@@ -7,7 +7,7 @@ import { CollapsibleIconButton } from '@coze-studio/components/collapsible-icon-
 import { InputSlider } from '@coze-studio/components';
 import { useModelStore } from '@coze-studio/bot-detail-store/model';
 import { ModelFormItem } from '@coze-agent-ide/model-manager';
-import { IconCozChatSetting } from '@coze/coze-design/icons';
+import { IconCozChatSetting } from '@coze-arch/coze-design/icons';
 
 const DialogueConfig: FC<{ tips: ReactNode }> = ({ tips }) => {
   const { model, setModelByImmer } = useModelStore(

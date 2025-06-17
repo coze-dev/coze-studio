@@ -3,7 +3,7 @@ import { type ReactNode, useRef, type FC } from 'react';
 
 import classNames from 'classnames';
 import { useHover } from 'ahooks';
-import { Divider } from '@coze/coze-design';
+import { Divider } from '@coze-arch/coze-design';
 
 import { ToolTooltip } from '../tool-tooltip';
 import {

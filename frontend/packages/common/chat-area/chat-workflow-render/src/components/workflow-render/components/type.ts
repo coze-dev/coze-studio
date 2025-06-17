@@ -12,9 +12,17 @@ export interface QuestionWorkflowNode {
   };
 }
 
+type StringifyInputWorkflowNodeContent = string;
+
 export interface InputWorkflowNode {
   content_type: 'form_schema';
-  content: { type: string; name: string }[];
+  /** 嵌套的 stringify 数据, 需要二次 parse */
+  content: StringifyInputWorkflowNodeContent;
+}
+
+export interface InputWorkflowNodeContent {
+  type: string;
+  name: string;
 }
 
 export type WorkflowNode = QuestionWorkflowNode | InputWorkflowNode;

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { I18n } from '@coze-arch/i18n';
 import { FrequencyType } from '@coze-arch/bot-api/memory';
 import { type AuthFrequencyInfo } from '@coze-arch/bot-api/knowledge';
-import { Select } from '@coze/coze-design';
+import { Select } from '@coze-arch/coze-design';
 
 interface AccountFrequencyItemProps {
   accountInfo: AuthFrequencyInfo;

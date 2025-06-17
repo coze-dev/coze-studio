@@ -3,8 +3,8 @@ import { useCallback } from 'react';
 
 import cls from 'classnames';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Popover, Typography, Tag } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Popover, Typography, Tag } from '@coze-arch/coze-design';
 
 import { type ProblemItem } from '../../types';
 

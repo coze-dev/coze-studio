@@ -1,5 +1,5 @@
 import { I18n } from '@coze-arch/i18n';
-import { Modal } from '@coze/coze-design';
+import { Modal } from '@coze-arch/coze-design';
 import { JsonViewer } from '@coze-common/json-viewer';
 import { SelectDatabaseModal } from '@coze-data/database-v2';
 

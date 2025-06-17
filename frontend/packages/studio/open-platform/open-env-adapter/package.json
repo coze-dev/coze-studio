@@ -2,7 +2,7 @@
   "name": "@coze-studio/open-env-adapter",
   "version": "0.0.1",
   "description": "Coze Web ChatApp SDK ",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "author": "gaoding.devingao@bytedance.com",
   "maintainers": [
     "gaoding.devingao@bytedance.com"

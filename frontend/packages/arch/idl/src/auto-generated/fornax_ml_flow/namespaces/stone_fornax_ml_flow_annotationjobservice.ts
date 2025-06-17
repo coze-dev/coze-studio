@@ -45,6 +45,7 @@ export interface DryRunQualityScoreJobRequest {
 
 export interface DryRunQualityScoreJobResponse {
   items?: Array<datasetv2.DatasetItem>;
+  qualityScoreFieldKey?: string;
   baseResp?: base.BaseResp;
 }
 

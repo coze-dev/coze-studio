@@ -5,8 +5,8 @@ import {
   IconCozCopy,
   IconCozCross,
   IconCozRefresh,
-} from '@coze/coze-design/icons';
-import { IconButton, Typography } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { IconButton, Typography } from '@coze-arch/coze-design';
 import { Layout } from '@coze-common/chat-uikit-shared';
 
 import { UIKitTooltip } from '../../../../common/tooltips';

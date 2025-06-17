@@ -7,8 +7,8 @@ import { I18n } from '@coze-arch/i18n';
 import {
   IconCozArrowLeft,
   IconCozWarningCircleFill,
-} from '@coze/coze-design/icons';
-import { IconButton, Loading } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { IconButton, Loading } from '@coze-arch/coze-design';
 import { CustomError } from '@coze-arch/bot-error';
 import { type Model, type ModelInfo } from '@coze-arch/bot-api/developer_api';
 

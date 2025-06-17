@@ -2,11 +2,11 @@ import React, { type CSSProperties, forwardRef } from 'react';
 
 import DOMPurify from 'dompurify';
 import classNames from 'classnames';
-import { IconCozCrossFill } from '@coze/coze-design/icons';
+import { IconCozCrossFill } from '@coze-arch/coze-design/icons';
 import {
   Banner as CozeDesignBanner,
   type BannerProps as CozeDesignBannerProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 

@@ -4,8 +4,8 @@ import cls from 'classnames';
 import {
   IconCozArrowDownFill,
   IconCozInfoCircle,
-} from '@coze/coze-design/icons';
-import { Collapsible, Tooltip, Typography } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Collapsible, Tooltip, Typography } from '@coze-arch/coze-design';
 
 import css from './index.module.less';
 

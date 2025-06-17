@@ -1,17 +1,20 @@
 import { KnowledgeIDEBaseLayout } from '@coze-data/knowledge-ide-base/layout/base';
+import {
+  TableKnowledgeWorkspace,
+  type TableKnowledgeWorkspaceProps,
+} from '@coze-data/knowledge-ide-base/features/table-knowledge-workspace';
 import { BaseKnowledgeIDENavBar } from '@coze-data/knowledge-ide-base/features/nav-bar/base';
+import { KnowledgeIDETableConfig } from '@coze-data/knowledge-ide-base/features/knowledge-ide-table-config';
 import {
   KnowledgeIDERegistryContext,
   type KnowledgeIDERegistry,
 } from '@coze-data/knowledge-ide-base/context/knowledge-ide-registry-context';
-import { type PreviewTextContentProps } from '@coze-data/knowledge-ide-base/components/preview-text';
-import { TablePreview } from '@coze-data/knowledge-ide-base/components/preview-table';
 
 import { type BaseKnowledgeIDEProps } from '../types';
 import { importKnowledgeSourceMenuContributes } from './import-knowledge-source-menu-contributes';
 
 export interface BaseKnowledgeTableIDEProps extends BaseKnowledgeIDEProps {
-  contentProps?: Partial<PreviewTextContentProps>;
+  contentProps?: Partial<TableKnowledgeWorkspaceProps>;
 }
 
 const registryContextValue: KnowledgeIDERegistry = {
@@ -22,14 +25,19 @@ const registryContextValue: KnowledgeIDERegistry = {
 export const BaseKnowledgeTableIDE = (props: BaseKnowledgeTableIDEProps) => (
   <KnowledgeIDERegistryContext.Provider value={registryContextValue}>
     <KnowledgeIDEBaseLayout
-      renderNavBar={({ statusInfo }) => (
+      renderNavBar={({ statusInfo, dataActions }) => (
         <BaseKnowledgeIDENavBar
           progressMap={statusInfo.progressMap}
+          tableConfigButton={
+            <KnowledgeIDETableConfig
+              onChangeDocList={dataActions.updateDocumentList}
+            />
+          }
           {...props.navBarProps}
         />
       )}
       renderContent={({ dataActions, statusInfo }) => (
-        <TablePreview
+        <TableKnowledgeWorkspace
           progressMap={statusInfo.progressMap}
           reload={dataActions.refreshData}
           onChangeDocList={dataActions.updateDocumentList}

@@ -1,7 +1,7 @@
 import { useEffect, type FC } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { Select } from '@coze/coze-design';
+import { Select } from '@coze-arch/coze-design';
 import { type SetterComponentProps } from '@flowgram-adapter/free-layout-editor';
 
 import { useVectorModelList } from '@/form-extensions/hooks';

@@ -4,7 +4,7 @@ import {
   type GetMetaRoleListResponse,
   RoleType,
 } from '@coze-arch/idl/social_api';
-import { Toast } from '@coze/coze-design';
+import { Toast } from '@coze-arch/coze-design';
 import { SocialApi } from '@coze-arch/bot-api';
 
 import { useGlobalState } from './use-global-state';

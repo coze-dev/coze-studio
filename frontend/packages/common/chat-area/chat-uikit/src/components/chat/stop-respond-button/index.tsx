@@ -1,8 +1,8 @@
 import { type FC } from 'react';
 
 import classNames from 'classnames';
-import { IconCozStopCircle } from '@coze/coze-design/icons';
-import { Button } from '@coze/coze-design';
+import { IconCozStopCircle } from '@coze-arch/coze-design/icons';
+import { Button } from '@coze-arch/coze-design';
 
 interface IProps {
   className?: string;

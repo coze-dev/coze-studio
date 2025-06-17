@@ -1,8 +1,8 @@
-import { createRenderer, option } from '@flow-lang-sdk/editor/react';
-import preset, { languages, themes } from '@flow-lang-sdk/editor/preset-code';
-import { shell } from '@flow-lang-sdk/editor/language-shell';
-import { json } from '@flow-lang-sdk/editor/language-json';
-import { mixLanguages } from '@flow-lang-sdk/editor';
+import { createRenderer, option } from '@coze-editor/editor/react';
+import preset, { languages, themes } from '@coze-editor/editor/preset-code';
+import { shell } from '@coze-editor/editor/language-shell';
+import { json } from '@coze-editor/editor/language-json';
+import { mixLanguages } from '@coze-editor/editor';
 import { EditorView } from '@codemirror/view';
 
 import { cozeLight } from './themes/coze-light';

@@ -10,8 +10,8 @@ import {
   IconCozAlignTop,
   IconCozDistributeHorizontal,
   IconCozDistributeVertical,
-} from '@coze/coze-design/icons';
-import { Select } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Select } from '@coze-arch/coze-design';
 
 import { AlignMode } from '../../typings';
 import styles from '../../index.module.less';

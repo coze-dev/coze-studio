@@ -7,7 +7,7 @@ import { KnowledgeIDENavBar as KnowledgeIDENavBarComponent } from '@/components/
 import { type KnowledgeIDENavBarProps } from '../module';
 
 export const BaseKnowledgeIDENavBar = (props: KnowledgeIDENavBarProps) => {
-  const { progressMap, hideBackButton } = props;
+  const { progressMap, hideBackButton, importKnowledgeSourceButton } = props;
   const { setDataSetDetail } = useKnowledgeStore(
     useShallow(state => ({
       setDataSetDetail: state.setDataSetDetail,
@@ -16,7 +16,9 @@ export const BaseKnowledgeIDENavBar = (props: KnowledgeIDENavBarProps) => {
   return (
     <KnowledgeIDENavBarComponent
       {...props}
-      importKnowledgeSourceButton={<ImportKnowledgeSourceButton />}
+      importKnowledgeSourceButton={
+        importKnowledgeSourceButton ?? <ImportKnowledgeSourceButton />
+      }
       onChangeDataset={setDataSetDetail}
       progressMap={progressMap}
       hideBackButton={hideBackButton}

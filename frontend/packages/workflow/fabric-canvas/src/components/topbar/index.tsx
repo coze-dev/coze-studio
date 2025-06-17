@@ -39,7 +39,7 @@ import {
   IconCozTriangle,
   IconCozVariables,
   type OriginIconProps,
-} from '@coze/coze-design/icons';
+} from '@coze-arch/coze-design/icons';
 import {
   ConfigProvider,
   EmptyState,
@@ -48,7 +48,7 @@ import {
   Select,
   Tag,
   Tooltip,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 
 import { ColorPicker } from '../setters/color-picker';
 import { MyIconButton } from '../icon-button';

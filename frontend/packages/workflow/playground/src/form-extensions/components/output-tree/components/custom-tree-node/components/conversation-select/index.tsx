@@ -3,7 +3,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { debounce } from 'lodash-es';
 import { workflowApi } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { Typography, Select, type SelectProps } from '@coze/coze-design';
+import { Typography, Select, type SelectProps } from '@coze-arch/coze-design';
 import { CreateMethod, CreateEnv } from '@coze-arch/bot-api/workflow_api';
 import { IconSearch } from '@douyinfe/semi-icons';
 

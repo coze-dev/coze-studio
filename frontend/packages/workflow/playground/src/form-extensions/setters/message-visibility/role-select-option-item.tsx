@@ -3,7 +3,7 @@ import { useRef, type FC, useState, useEffect } from 'react';
 import classnames from 'classnames';
 import { IconChevronRight, IconTick } from '@douyinfe/semi-icons';
 import { concatTestId } from '@coze-workflow/base';
-import { Popover, Space, Dropdown } from '@coze/coze-design';
+import { Popover, Space, Dropdown } from '@coze-arch/coze-design';
 
 import { type RenderSelectOptionParams } from './types';
 import { RoleSelectPanel } from './role-select-panel';

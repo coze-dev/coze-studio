@@ -54,7 +54,7 @@ export interface UseBaseInfoRequest {
   editVersion?: number;
   pluginType?: PluginType;
   spaceId?: string;
-  callback?: (params: UpdateAPIResponse) => void;
+  onSuccess?: (params: UpdateAPIResponse) => void;
 }
 
 export interface UseBaseInfoReturnValue {
@@ -73,7 +73,7 @@ export const useBaseMore = ({
   setShowSecurityCheckFailedMsg,
   editVersion,
   pluginType,
-  callback,
+  onSuccess,
 }: UseBaseInfoRequest): UseBaseInfoReturnValue => {
   const { url: pluginUrl } = pluginMeta;
   const formRef = useRef<Form>(null);
@@ -113,8 +113,8 @@ export const useBaseMore = ({
       baseResData = await PluginDevelopApi.UpdateAPI(params, {
         __disableErrorToast: true,
       });
-      callback?.(baseResData);
-      return baseResData?.code === 0 && baseResData?.msg === 'success';
+      onSuccess?.(baseResData);
+      return true;
     } catch (error) {
       // @ts-expect-error -- linter-disable-autofix
       const { code, msg } = error;

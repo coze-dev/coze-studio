@@ -17,8 +17,8 @@ import {
   ConnectorDynamicStatus,
   type ConnectorInfo,
 } from '@coze-arch/bot-api/developer_api';
-import { IconCozArrowRightFill, IconCozMore } from '@coze/coze-design/icons';
-import { Dropdown, IconButton, Tooltip } from '@coze/coze-design';
+import { IconCozArrowRightFill, IconCozMore } from '@coze-arch/coze-design/icons';
+import { Dropdown, IconButton, Tooltip } from '@coze-arch/coze-design';
 
 import { LinkDropItem } from './link-drop-item';
 

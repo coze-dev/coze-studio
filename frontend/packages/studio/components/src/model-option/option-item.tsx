@@ -7,7 +7,7 @@ import {
   Typography,
   Avatar,
   type TagProps,
-} from '@coze/coze-design';
+} from '@coze-arch/coze-design';
 import { Popover } from '@coze-arch/bot-semi';
 import { IconInfo } from '@coze-arch/bot-icons';
 import { useFlags } from '@coze-arch/bot-flags';

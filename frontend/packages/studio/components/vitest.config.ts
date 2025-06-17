@@ -12,5 +12,14 @@ export default defineConfig({
   ],
   test: {
     setupFiles: ['./vitest.setup.ts'],
+    environment: 'happy-dom',
+    server: {
+      deps: {
+        inline: ['@coze-arch/coze-design', 'lottie-web'],
+      },
+    },
+  },
+  define: {
+    'import.meta.vitest': undefined,
   },
 });

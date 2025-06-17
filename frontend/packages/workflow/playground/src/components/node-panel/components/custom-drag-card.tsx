@@ -3,7 +3,7 @@ import React, { type PropsWithChildren } from 'react';
 
 import classNames from 'classnames';
 import { concatTestId, type StandardNodeType } from '@coze-workflow/base';
-import { Tooltip, type TooltipProps } from '@coze/coze-design';
+import { Tooltip, type TooltipProps } from '@coze-arch/coze-design';
 import { useEntity, useService } from '@flowgram-adapter/free-layout-editor';
 import { type WorkflowNodeJSON } from '@flowgram-adapter/free-layout-editor';
 

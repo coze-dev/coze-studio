@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tag, Tooltip, Typography } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tag, Tooltip, Typography } from '@coze-arch/coze-design';
 
 import css from './item.module.less';
 

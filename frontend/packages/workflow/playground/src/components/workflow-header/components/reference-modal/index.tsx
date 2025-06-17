@@ -2,13 +2,13 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { useCallback } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
-import { IconCozIllusError } from '@coze/coze-design/illustrations';
+import { IconCozIllusError } from '@coze-arch/coze-design/illustrations';
 import {
   IconCozInfoCircle,
   IconCozCross,
   IconCozRefresh,
-} from '@coze/coze-design/icons';
-import { Modal, Tooltip, Button, EmptyState } from '@coze/coze-design';
+} from '@coze-arch/coze-design/icons';
+import { Modal, Tooltip, Button, EmptyState } from '@coze-arch/coze-design';
 import { type DependencyTree } from '@coze-arch/bot-api/workflow_api';
 import { ResourceTree } from '@coze-common/resource-tree';
 

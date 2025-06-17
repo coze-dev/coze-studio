@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { useNodeTestId } from '@coze-workflow/base';
-import { IconCozInfoCircle } from '@coze/coze-design/icons';
-import { Tooltip, Checkbox as SemiCheckbox } from '@coze/coze-design';
+import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip, Checkbox as SemiCheckbox } from '@coze-arch/coze-design';
 
 export const Checkbox = props => {
   const { value, onChange, context, options, readonly } = props;

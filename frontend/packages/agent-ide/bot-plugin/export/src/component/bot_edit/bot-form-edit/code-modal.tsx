@@ -1,6 +1,6 @@
 import { type FC, useState } from 'react';
 
-import { Button } from '@coze/coze-design';
+import { Button } from '@coze-arch/coze-design';
 import { IconCodeOutlined } from '@coze-arch/bot-icons';
 
 import { CreateCodePluginModal } from '../bot-code-edit';
@@ -25,6 +25,7 @@ export const CodeModal: FC<{
         projectId={projectId}
       />
       <Button
+        data-testid="create-plugin-code-modal-button"
         color="primary"
         icon={<IconCodeOutlined />}
         onClick={() => {

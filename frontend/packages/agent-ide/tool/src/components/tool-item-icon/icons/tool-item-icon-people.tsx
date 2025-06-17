@@ -1,4 +1,4 @@
-import { IconCozPeople } from '@coze/coze-design/icons';
+import { IconCozPeople } from '@coze-arch/coze-design/icons';
 
 import { ToolItemIcon } from '..';
 
