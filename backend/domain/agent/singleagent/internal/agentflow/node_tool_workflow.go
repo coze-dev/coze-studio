@@ -7,8 +7,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
-	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 type workflowConfig struct {
@@ -16,11 +15,15 @@ type workflowConfig struct {
 }
 
 func newWorkflowTools(ctx context.Context, conf *workflowConfig) ([]tool.BaseTool, error) {
-	wfIDs := slices.Transform(conf.wfInfos, func(a *bot_common.WorkflowInfo) *workflowEntity.WorkflowIdentity {
-		return &workflowEntity.WorkflowIdentity{
-			ID:      a.GetWorkflowId(),
-			Version: "",
-		}
-	})
-	return crossworkflow.DefaultSVC().WorkflowAsModelTool(ctx, wfIDs)
+	var policies []*vo.GetPolicy
+
+	for _, info := range conf.wfInfos {
+		id := info.GetWorkflowId()
+		policies = append(policies, &vo.GetPolicy{
+			ID:    id,
+			QType: vo.FromLatestVersion,
+		})
+	}
+
+	return crossworkflow.DefaultSVC().WorkflowAsModelTool(ctx, policies)
 }

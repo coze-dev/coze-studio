@@ -112,77 +112,41 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 }
 
 func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.CreateWorkflowRequest) (*workflow.CreateWorkflowResponse, error) {
-	wf := &entity.Workflow{
+	uID := ctxutil.MustGetUIDFromCtx(ctx)
+	spaceID := mustParseInt64(req.GetSpaceID())
+	if err := checkUserSpace(ctx, uID, spaceID); err != nil {
+		return nil, err
+	}
+
+	wf := &vo.Meta{
+		CreatorID:   uID,
+		SpaceID:     spaceID,
 		ContentType: workflow.WorkFlowType_User,
 		Name:        req.Name,
 		Desc:        req.Desc,
 		IconURI:     req.IconURI,
-		Mode:        workflow.WorkflowMode_Workflow,
 		AppID:       parseInt64(req.ProjectID),
+		Mode:        ternary.IFElse(req.IsSetFlowMode(), req.GetFlowMode(), workflow.WorkflowMode_Workflow),
 	}
 
-	uID := ctxutil.MustGetUIDFromCtx(ctx)
-	wf.CreatorID = uID
-
-	if req.IsSetFlowMode() {
-		wf.Mode = *req.FlowMode
-	}
-
-	spaceID, err := strconv.ParseInt(req.SpaceID, 10, 64)
-	if err != nil {
-		return nil, err
-	}
-	wf.SpaceID = spaceID
-
-	if err = checkUserSpace(ctx, uID, spaceID); err != nil {
-		return nil, err
-	}
-
-	var ref *entity.WorkflowReference
-	if req.IsSetBindBizID() {
-		if !req.IsSetBindBizType() {
-			return nil, fmt.Errorf("bind_biz_id cannot be set when bind_biz_type is set")
-		}
-
-		if *req.BindBizType == int32(workflow.BindBizType_Agent) {
-			return nil, fmt.Errorf("bind_biz_type cannot be set when bind_biz_type is set")
-		}
-
-		ref = &entity.WorkflowReference{
-			ReferringID:      mustParseInt64(*req.BindBizID),
-			SpaceID:          spaceID,
-			ReferType:        entity.ReferTypeTool,
-			ReferringBizType: entity.ReferringBizTypeAgent,
-		}
-	}
-
-	id, err := GetWorkflowDomainSVC().CreateWorkflow(ctx, wf, ref)
+	id, err := GetWorkflowDomainSVC().Create(ctx, wf)
 	if err != nil {
 		return nil, err
 	}
 
 	return &workflow.CreateWorkflowResponse{
 		Data: &workflow.CreateWorkflowData{
-			WorkflowID: fmt.Sprintf("%d", id),
+			WorkflowID: strconv.FormatInt(id, 10),
 		},
 	}, nil
 }
 
 func (w *ApplicationService) SaveWorkflow(ctx context.Context, req *workflow.SaveWorkflowRequest) (*workflow.SaveWorkflowResponse, error) {
-	draft := &entity.Workflow{
-		WorkflowIdentity: entity.WorkflowIdentity{
-			ID: mustParseInt64(req.GetWorkflowID()),
-		},
-		SpaceID: mustParseInt64(req.GetSpaceID()),
-		Canvas:  req.Schema,
-	}
-
-	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), draft.SpaceID); err != nil {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
 
-	err := GetWorkflowDomainSVC().SaveWorkflow(ctx, draft)
-	if err != nil {
+	if err := GetWorkflowDomainSVC().Save(ctx, mustParseInt64(req.WorkflowID), req.GetSchema()); err != nil {
 		return nil, err
 	}
 
@@ -192,21 +156,15 @@ func (w *ApplicationService) SaveWorkflow(ctx context.Context, req *workflow.Sav
 }
 
 func (w *ApplicationService) UpdateWorkflowMeta(ctx context.Context, req *workflow.UpdateWorkflowMetaRequest) (*workflow.UpdateWorkflowMetaResponse, error) {
-	wf := &entity.Workflow{
-		WorkflowIdentity: entity.WorkflowIdentity{
-			ID: mustParseInt64(req.GetWorkflowID()),
-		},
-		SpaceID: mustParseInt64(req.GetSpaceID()),
-		Name:    req.GetName(),
-		Desc:    req.GetDesc(),
-		IconURI: req.GetIconURI(),
-	}
-
-	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), wf.SpaceID); err != nil {
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
 
-	err := GetWorkflowDomainSVC().UpdateWorkflowMeta(ctx, wf)
+	err := GetWorkflowDomainSVC().UpdateMeta(ctx, mustParseInt64(req.GetWorkflowID()), &vo.MetaUpdate{
+		Name:    req.Name,
+		Desc:    req.Desc,
+		IconURI: req.IconURI,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +176,7 @@ func (w *ApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.D
 		return nil, err
 	}
 
-	err := GetWorkflowDomainSVC().DeleteWorkflow(ctx, mustParseInt64(req.GetWorkflowID()))
+	err := GetWorkflowDomainSVC().Delete(ctx, &vo.DeletePolicy{ID: ptr.Of(mustParseInt64(req.GetWorkflowID()))})
 	if err != nil {
 		return &workflow.DeleteWorkflowResponse{
 			Data: &workflow.DeleteWorkflowData{
@@ -246,7 +204,9 @@ func (w *ApplicationService) BatchDeleteWorkflow(ctx context.Context, req *workf
 		return nil, err
 	}
 
-	err = GetWorkflowDomainSVC().BatchDeleteWorkflow(ctx, ids)
+	err = GetWorkflowDomainSVC().Delete(ctx, &vo.DeletePolicy{
+		IDs: ids,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -258,12 +218,15 @@ func (w *ApplicationService) BatchDeleteWorkflow(ctx context.Context, req *workf
 	}, nil
 }
 
-func (w *ApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetCanvasInfoRequest) (*workflow.GetCanvasInfoResponse, error) {
+func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.GetCanvasInfoRequest) (*workflow.GetCanvasInfoResponse, error) {
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
 
-	wf, err := GetWorkflowDomainSVC().GetWorkflowDraft(ctx, mustParseInt64(req.GetWorkflowID()))
+	wf, err := GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
+		ID:    mustParseInt64(req.GetWorkflowID()),
+		QType: vo.FromDraft,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -294,7 +257,7 @@ func (w *ApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetC
 			Tag:              wf.Tag,
 			TemplateAuthorID: ternary.IFElse(wf.AuthorID > 0, ptr.Of(strconv.FormatInt(wf.AuthorID, 10)), nil),
 			SpaceID:          ptr.Of(strconv.FormatInt(wf.SpaceID, 10)),
-			SchemaJSON:       wf.Canvas,
+			SchemaJSON:       ptr.Of(wf.Canvas),
 			Creator: &workflow.Creator{
 				ID:   strconv.FormatInt(wf.CreatorID, 10),
 				Self: ternary.IFElse[bool](wf.CreatorID == ptr.From(ctxutil.GetUIDFromCtx(ctx)), true, false),
@@ -305,9 +268,11 @@ func (w *ApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetC
 			PersistenceModel: workflow.PersistenceModel_DB,
 		},
 		VcsData: &workflow.VCSCanvasData{
-			Type: vcsType,
+			SubmitCommitID: wf.CommitID,
+			DraftCommitID:  wf.CommitID,
+			Type:           vcsType,
 		},
-		WorkflowVersion: &wf.LatestVersion,
+		WorkflowVersion: wf.LatestPublishedVersion,
 	}
 
 	return &workflow.GetCanvasInfoResponse{
@@ -316,10 +281,6 @@ func (w *ApplicationService) GetWorkflow(ctx context.Context, req *workflow.GetC
 }
 
 func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlowTestRunRequest) (*workflow.WorkFlowTestRunResponse, error) {
-	wfID := &entity.WorkflowIdentity{
-		ID: mustParseInt64(req.GetWorkflowID()),
-	}
-
 	uID := ctxutil.MustGetUIDFromCtx(ctx)
 
 	if err := checkUserSpace(ctx, uID, mustParseInt64(req.GetSpaceID())); err != nil {
@@ -335,6 +296,8 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 	}
 
 	exeCfg := vo.ExecuteConfig{
+		ID:           mustParseInt64(req.GetWorkflowID()),
+		From:         vo.FromDraft,
 		Operator:     uID,
 		Mode:         vo.ExecuteModeDebug,
 		AppID:        appID,
@@ -349,7 +312,7 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 		return nil, errors.New("project_id and bot_id cannot be set at the same time")
 	}
 
-	exeID, _, err := GetWorkflowDomainSVC().AsyncExecuteWorkflow(ctx, wfID, maps.ToAnyValue(req.Input), exeCfg)
+	exeID, _, err := GetWorkflowDomainSVC().AsyncExecute(ctx, exeCfg, maps.ToAnyValue(req.Input))
 	if err != nil {
 		return nil, err
 	}
@@ -363,10 +326,6 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 }
 
 func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.WorkflowNodeDebugV2Request) (*workflow.WorkflowNodeDebugV2Response, error) {
-	wfID := &entity.WorkflowIdentity{
-		ID: mustParseInt64(req.GetWorkflowID()),
-	}
-
 	uID := ctxutil.MustGetUIDFromCtx(ctx)
 
 	if err := checkUserSpace(ctx, uID, mustParseInt64(req.GetSpaceID())); err != nil {
@@ -394,6 +353,8 @@ func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.Workfl
 	}
 
 	exeCfg := vo.ExecuteConfig{
+		ID:           mustParseInt64(req.GetWorkflowID()),
+		From:         vo.FromDraft,
 		Operator:     uID,
 		Mode:         vo.ExecuteModeNodeDebug,
 		AppID:        appID,
@@ -408,7 +369,7 @@ func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.Workfl
 		return nil, errors.New("project_id and bot_id cannot be set at the same time")
 	}
 
-	exeID, err := GetWorkflowDomainSVC().AsyncExecuteNode(ctx, wfID, req.NodeID, maps.ToAnyValue(mergedInput), exeCfg)
+	exeID, err := GetWorkflowDomainSVC().AsyncExecuteNode(ctx, req.NodeID, exeCfg, maps.ToAnyValue(mergedInput))
 	if err != nil {
 		return nil, err
 	}
@@ -430,17 +391,13 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 	var wfExeEntity *entity.WorkflowExecution
 	if req.SubExecuteID == nil {
 		wfExeEntity = &entity.WorkflowExecution{
-			ID: mustParseInt64(req.GetExecuteID()),
-			WorkflowIdentity: entity.WorkflowIdentity{
-				ID: mustParseInt64(req.GetWorkflowID()),
-			},
+			ID:         mustParseInt64(req.GetExecuteID()),
+			WorkflowID: mustParseInt64(req.GetWorkflowID()),
 		}
 	} else {
 		wfExeEntity = &entity.WorkflowExecution{
-			ID: mustParseInt64(req.GetSubExecuteID()),
-			WorkflowIdentity: entity.WorkflowIdentity{
-				ID: mustParseInt64(req.GetWorkflowID()),
-			},
+			ID:              mustParseInt64(req.GetSubExecuteID()),
+			WorkflowID:      mustParseInt64(req.GetWorkflowID()),
 			RootExecutionID: mustParseInt64(req.GetExecuteID()),
 		}
 	}
@@ -457,7 +414,7 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 
 	resp := &workflow.GetWorkflowProcessResponse{
 		Data: &workflow.GetWorkFlowProcessData{
-			WorkFlowId:       fmt.Sprintf("%d", wfExeEntity.WorkflowIdentity.ID),
+			WorkFlowId:       fmt.Sprintf("%d", wfExeEntity.WorkflowID),
 			ExecuteId:        fmt.Sprintf("%d", wfExeEntity.ID),
 			ExecuteStatus:    workflow.WorkflowExeStatus(status),
 			ExeHistoryStatus: workflow.WorkflowExeHistoryStatus_HasHistory,
@@ -657,11 +614,25 @@ func (w *ApplicationService) GetNodeExecuteHistory(ctx context.Context, req *wor
 }
 
 func (w *ApplicationService) DeleteWorkflowsByAppID(ctx context.Context, appID int64) error {
-	return GetWorkflowDomainSVC().DeleteWorkflowsByAppID(ctx, appID)
+	return GetWorkflowDomainSVC().Delete(ctx, &vo.DeletePolicy{
+		AppID: ptr.Of(appID),
+	})
 }
 
 func (w *ApplicationService) CheckWorkflowsExistByAppID(ctx context.Context, appID int64) (bool, error) {
-	return GetWorkflowDomainSVC().CheckWorkflowsExistByAppID(ctx, appID)
+	wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+		MetaQuery: vo.MetaQuery{
+			AppID: &appID,
+			Page: &vo.Page{
+				Size: 1,
+				Page: 0,
+			},
+		},
+		QType:    vo.FromDraft,
+		MetaOnly: true,
+	})
+
+	return len(wfs) > 0, err
 }
 
 func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, appID int64, relatedPlugins map[int64]entity.PluginEntity) ([]*vo.ValidateIssue, error) {
@@ -903,29 +874,19 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 		}
 	}
 
-	wfIdentity := &entity.WorkflowIdentity{
-		ID: mustParseInt64(req.GetWorkflowID()),
+	meta, err := GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
+		ID:       mustParseInt64(req.GetWorkflowID()),
+		MetaOnly: true,
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	var (
-		wf  *entity.Workflow
-		err error
-	)
-	if req.Version != nil {
-		wfIdentity.Version = *req.Version
-		wf, err = GetWorkflowDomainSVC().GetWorkflowVersion(ctx, wfIdentity)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		wf, err = GetWorkflowDomainSVC().GetWorkflowLatestVersion(ctx, wfIdentity.ID)
-		if err != nil {
-			return nil, err
-		}
-		wfIdentity.Version = wf.Version
+	if meta.LatestPublishedVersion == nil {
+		return nil, errors.New("workflow has not been published")
 	}
 
-	if err = checkUserSpace(ctx, userID, wf.SpaceID); err != nil {
+	if err = checkUserSpace(ctx, userID, meta.SpaceID); err != nil {
 		return nil, err
 	}
 
@@ -947,6 +908,9 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 	}
 
 	exeCfg := vo.ExecuteConfig{
+		ID:           meta.ID,
+		From:         vo.FromSpecificVersion,
+		Version:      *meta.LatestPublishedVersion,
 		Operator:     userID,
 		Mode:         vo.ExecuteModeRelease,
 		AppID:        appID,
@@ -961,12 +925,12 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 		return nil, errors.New("project_id and bot_id cannot be set at the same time")
 	}
 
-	sr, err := GetWorkflowDomainSVC().StreamExecuteWorkflow(ctx, wfIdentity, parameters, exeCfg)
+	sr, err := GetWorkflowDomainSVC().StreamExecute(ctx, exeCfg, parameters)
 	if err != nil {
 		return nil, err
 	}
 
-	convert := convertStreamRunEvent(wfIdentity.ID)
+	convert := convertStreamRunEvent(meta.ID)
 
 	return schema.StreamReaderWithConvert(sr, convert), nil
 }
@@ -1001,7 +965,7 @@ func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workf
 
 	connectorID := mustParseInt64(req.GetConnectorID())
 
-	sr, err := GetWorkflowDomainSVC().StreamResumeWorkflow(ctx, resumeReq, vo.ExecuteConfig{
+	sr, err := GetWorkflowDomainSVC().StreamResume(ctx, resumeReq, vo.ExecuteConfig{
 		Operator:     userID,
 		Mode:         vo.ExecuteModeRelease,
 		ConnectorID:  connectorID,
@@ -1018,6 +982,9 @@ func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workf
 
 func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenAPIRunFlowRequest) (
 	*workflow.OpenAPIRunFlowResponse, error) {
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	userID := apiKeyInfo.UserID
+
 	parameters := make(map[string]any)
 	if req.Parameters != nil {
 		err := sonic.UnmarshalString(*req.Parameters, &parameters)
@@ -1026,26 +993,20 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 		}
 	}
 
-	wfIdentity := &entity.WorkflowIdentity{
-		ID: mustParseInt64(req.GetWorkflowID()),
+	meta, err := GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
+		ID:       mustParseInt64(req.GetWorkflowID()),
+		MetaOnly: true,
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	var (
-		wf  *entity.Workflow
-		err error
-	)
-	if req.Version != nil {
-		wfIdentity.Version = *req.Version
-		wf, err = GetWorkflowDomainSVC().GetWorkflowVersion(ctx, wfIdentity)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		wf, err = GetWorkflowDomainSVC().GetWorkflowLatestVersion(ctx, wfIdentity.ID)
-		if err != nil {
-			return nil, err
-		}
-		wfIdentity.Version = wf.Version
+	if meta.LatestPublishedVersion == nil {
+		return nil, errors.New("workflow has not been published")
+	}
+
+	if err = checkUserSpace(ctx, userID, meta.SpaceID); err != nil {
+		return nil, err
 	}
 
 	var appID, agentID *int64
@@ -1061,18 +1022,14 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 		connectorID = mustParseInt64(req.GetConnectorID())
 	}
 
-	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
-	userID := apiKeyInfo.UserID
-
-	if err = checkUserSpace(ctx, userID, wf.SpaceID); err != nil {
-		return nil, err
-	}
-
 	if connectorID != consts.WebSDKConnectorID {
 		connectorID = apiKeyInfo.ConnectorID
 	}
 
 	exeCfg := vo.ExecuteConfig{
+		ID:           meta.ID,
+		From:         vo.FromSpecificVersion,
+		Version:      *meta.LatestPublishedVersion,
 		Operator:     userID,
 		Mode:         vo.ExecuteModeRelease,
 		AppID:        appID,
@@ -1088,19 +1045,19 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 
 	if req.GetIsAsync() {
 		exeCfg.SyncPattern = vo.SyncPatternAsync
-		exeID, wfBasic, err := GetWorkflowDomainSVC().AsyncExecuteWorkflow(ctx, wfIdentity, parameters, exeCfg)
+		exeID, wfBasic, err := GetWorkflowDomainSVC().AsyncExecute(ctx, exeCfg, parameters)
 		if err != nil {
 			return nil, err
 		}
 
 		return &workflow.OpenAPIRunFlowResponse{
 			ExecuteID: ptr.Of(strconv.FormatInt(exeID, 10)),
-			DebugUrl:  ptr.Of(fmt.Sprintf(debugURLTpl, exeID, wfBasic.SpaceID, wfIdentity.ID)),
+			DebugUrl:  ptr.Of(fmt.Sprintf(debugURLTpl, exeID, wfBasic.SpaceID, meta.ID)),
 		}, nil
 	}
 
 	exeCfg.SyncPattern = vo.SyncPatternSync
-	wfExe, tPlan, err := GetWorkflowDomainSVC().SyncExecuteWorkflow(ctx, wfIdentity, parameters, exeCfg)
+	wfExe, tPlan, err := GetWorkflowDomainSVC().SyncExecute(ctx, exeCfg, parameters)
 	if err != nil {
 		return nil, err
 	}
@@ -1130,7 +1087,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	return &workflow.OpenAPIRunFlowResponse{
 		Data:      data,
 		ExecuteID: ptr.Of(strconv.FormatInt(wfExe.ID, 10)),
-		DebugUrl:  ptr.Of(fmt.Sprintf(debugURLTpl, wfExe.ID, wfExe.SpaceID, wfIdentity.ID)),
+		DebugUrl:  ptr.Of(fmt.Sprintf(debugURLTpl, wfExe.ID, wfExe.SpaceID, meta.ID)),
 		Token:     ptr.Of(wfExe.TokenInfo.InputTokens + wfExe.TokenInfo.OutputTokens),
 		Cost:      ptr.Of("0.00000"),
 	}, nil
@@ -1180,7 +1137,7 @@ func (w *ApplicationService) OpenAPIGetWorkflowRunHistory(ctx context.Context, r
 				LogID:         ptr.Of(exe.LogID),
 				CreateTime:    ptr.Of(exe.CreatedAt.Unix()),
 				UpdateTime:    updateTime,
-				DebugUrl:      ptr.Of(fmt.Sprintf(debugURLTpl, exe.ID, exe.SpaceID, exe.WorkflowIdentity.ID)),
+				DebugUrl:      ptr.Of(fmt.Sprintf(debugURLTpl, exe.ID, exe.SpaceID, exe.WorkflowID)),
 				Input:         exe.Input,
 				Output:        exe.Output,
 				Token:         ptr.Of(exe.TokenInfo.InputTokens + exe.TokenInfo.OutputTokens),
@@ -1235,9 +1192,9 @@ func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *wor
 	response.Data = &workflow.WorkflowReferencesData{
 		WorkflowList: make([]*workflow.Workflow, 0, len(workflows)),
 	}
-	for _, wk := range workflows {
+	for id, wk := range workflows {
 		wfw := &workflow.Workflow{
-			WorkflowID: strconv.FormatInt(wk.ID, 10),
+			WorkflowID: strconv.FormatInt(id, 10),
 			Name:       wk.Name,
 			Desc:       wk.Desc,
 			URL:        wk.IconURL,
@@ -1249,8 +1206,10 @@ func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *wor
 			Tag:              wk.Tag,
 			TemplateAuthorID: ptr.Of(strconv.FormatInt(wk.AuthorID, 10)),
 
-			SpaceID:            ptr.Of(strconv.FormatInt(wk.SpaceID, 10)),
-			Creator:            &workflow.Creator{}, // 创作者信息
+			SpaceID: ptr.Of(strconv.FormatInt(wk.SpaceID, 10)),
+			Creator: &workflow.Creator{
+				ID: strconv.FormatInt(wk.CreatorID, 10),
+			}, // 创作者信息
 			PersistenceModel:   workflow.PersistenceModel_DB,
 			FlowMode:           wk.Mode,
 			ProductDraftStatus: workflow.ProductDraftStatus_Default,
@@ -1270,72 +1229,6 @@ func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *wor
 	return response, nil
 }
 
-// GetReleasedWorkflows TODO currently, the online version of this API is no longer used, and you need to confirm with the front-end
-func (w *ApplicationService) GetReleasedWorkflows(ctx context.Context, req *workflow.GetReleasedWorkflowsRequest) (*vo.ReleasedWorkflowData, error) {
-	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
-		return nil, err
-	}
-
-	wfEntities := make([]*entity.WorkflowIdentity, 0)
-	for _, wf := range req.WorkflowFilterList {
-		wfID, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		wfEntities = append(wfEntities, &entity.WorkflowIdentity{
-			ID:      wfID,
-			Version: *wf.WorkflowVersion,
-		})
-	}
-
-	workflowMetas, err := GetWorkflowDomainSVC().GetReleasedWorkflows(ctx, wfEntities)
-	if err != nil {
-		return nil, err
-	}
-
-	releasedWorkflows := make([]*workflow.ReleasedWorkflow, 0, len(workflowMetas))
-	inputs := make(map[string]any)
-	outputs := make(map[string]any)
-	for _, wfMeta := range workflowMetas {
-		wfIDStr := strconv.FormatInt(wfMeta.ID, 10)
-		subWk := make([]*workflow.SubWorkflow, 0, len(wfMeta.SubWorkflows))
-		for _, w := range wfMeta.SubWorkflows {
-			subWk = append(subWk, &workflow.SubWorkflow{
-				ID:   strconv.FormatInt(w.ID, 10),
-				Name: w.Name,
-			})
-		}
-		releaseWorkflow := &workflow.ReleasedWorkflow{
-			WorkflowID:            wfIDStr,
-			Name:                  wfMeta.Name,
-			Icon:                  wfMeta.IconURL,
-			Desc:                  wfMeta.Desc,
-			Type:                  int32(wfMeta.ContentType),
-			FlowVersion:           wfMeta.Version,
-			LatestFlowVersionDesc: wfMeta.LatestVersion,
-			LatestFlowVersion:     wfMeta.LatestVersionDesc,
-			SubWorkflowList:       subWk,
-		}
-		inputs[wfIDStr], err = toVariables(wfMeta.InputParams)
-		if err != nil {
-			return nil, err
-		}
-		outputs[wfIDStr], err = toVariables(wfMeta.OutputParams)
-		if err != nil {
-			return nil, err
-		}
-		releasedWorkflows = append(releasedWorkflows, releaseWorkflow)
-
-	}
-	response := &vo.ReleasedWorkflowData{
-		WorkflowList: releasedWorkflows,
-		Inputs:       inputs,
-		Outputs:      outputs,
-	}
-
-	return response, nil
-}
-
 func (w *ApplicationService) TestResume(ctx context.Context, req *workflow.WorkflowTestResumeRequest) (*workflow.WorkflowTestResumeResponse, error) {
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
@@ -1346,9 +1239,9 @@ func (w *ApplicationService) TestResume(ctx context.Context, req *workflow.Workf
 		EventID:    mustParseInt64(req.GetEventID()),
 		ResumeData: req.GetData(),
 	}
-	err := GetWorkflowDomainSVC().AsyncResumeWorkflow(ctx, resumeReq, vo.ExecuteConfig{
+	err := GetWorkflowDomainSVC().AsyncResume(ctx, resumeReq, vo.ExecuteConfig{
 		Operator: ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0),
-		Mode:     vo.ExecuteModeDebug, // at this stage it could be debug or node debug, we will decide it within AsyncResumeWorkflow
+		Mode:     vo.ExecuteModeDebug, // at this stage it could be debug or node debug, we will decide it within AsyncResume
 	})
 	if err != nil {
 		return nil, err
@@ -1362,7 +1255,7 @@ func (w *ApplicationService) Cancel(ctx context.Context, req *workflow.CancelWor
 		return nil, err
 	}
 
-	err := GetWorkflowDomainSVC().CancelWorkflow(ctx, mustParseInt64(req.GetExecuteID()),
+	err := GetWorkflowDomainSVC().Cancel(ctx, mustParseInt64(req.GetExecuteID()),
 		mustParseInt64(req.GetWorkflowID()), mustParseInt64(req.GetSpaceID()))
 	if err != nil {
 		return nil, err
@@ -1376,7 +1269,7 @@ func (w *ApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *wo
 		return nil, err
 	}
 
-	nodeProperties, err := GetWorkflowDomainSVC().QueryWorkflowNodeTypes(ctx, mustParseInt64(req.GetWorkflowID()))
+	nodeProperties, err := GetWorkflowDomainSVC().QueryNodeProperties(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
 		return nil, err
 	}
@@ -1437,11 +1330,21 @@ func (w *ApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *wo
 }
 
 func (w *ApplicationService) PublishWorkflow(ctx context.Context, req *workflow.PublishWorkflowRequest) (*workflow.PublishWorkflowResponse, error) {
-	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+	userID := ctxutil.MustGetUIDFromCtx(ctx)
+	if err := checkUserSpace(ctx, userID, mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
 
-	err := GetWorkflowDomainSVC().PublishWorkflow(ctx, mustParseInt64(req.GetWorkflowID()), req.GetWorkflowVersion(), req.GetVersionDescription(), req.GetForce())
+	info := &vo.PublishPolicy{
+		ID:                 mustParseInt64(req.GetWorkflowID()),
+		Version:            req.GetWorkflowVersion(),
+		VersionDescription: req.GetVersionDescription(),
+		CreatorID:          userID,
+		CommitID:           req.GetCommitID(),
+		Force:              req.GetForce(),
+	}
+
+	err := GetWorkflowDomainSVC().Publish(ctx, info)
 	if err != nil {
 		return nil, err
 	}
@@ -1470,19 +1373,19 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 	if req.GetSize() > 0 {
 		page.Size = req.GetSize()
 	}
-	option := &vo.QueryOption{}
-	wfType := req.GetType()
-	if wfType == workflow.WorkFlowType_User {
-		option.WorkflowType = vo.User
-	} else if wfType == workflow.WorkFlowType_GuanFang {
-		option.WorkflowType = vo.Official
+	option := vo.MetaQuery{
+		Page: page,
+	}
+
+	if req.ProjectID != nil {
+		option.AppID = ptr.Of(mustParseInt64(*req.ProjectID))
 	}
 
 	status := req.GetStatus()
 	if status == workflow.WorkFlowListStatus_UnPublished {
-		option.PublishStatus = vo.UnPublished
+		option.PublishStatus = ptr.Of(vo.UnPublished)
 	} else if status == workflow.WorkFlowListStatus_HadPublished {
-		option.PublishStatus = vo.HasPublished
+		option.PublishStatus = ptr.Of(vo.HasPublished)
 	}
 
 	if len(req.GetName()) > 0 {
@@ -1504,7 +1407,13 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 		return nil, fmt.Errorf("space id is invalid, parse to int64 failed, err: %w", err)
 	}
 
-	wfs, err := GetWorkflowDomainSVC().ListWorkflow(ctx, spaceID, page, option)
+	option.SpaceID = ptr.Of(spaceID)
+
+	wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+		MetaQuery: option,
+		QType:     vo.FromDraft,
+		MetaOnly:  false,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -1518,7 +1427,7 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 	}
 	for _, w := range wfs {
 		ww := &workflow.Workflow{
-			WorkflowID:       strconv.FormatInt(w.WorkflowIdentity.ID, 10),
+			WorkflowID:       strconv.FormatInt(w.ID, 10),
 			Name:             w.Name,
 			Desc:             w.Desc,
 			IconURI:          w.IconURI,
@@ -1532,7 +1441,7 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 				if status == workflow.WorkFlowListStatus_UnPublished {
 					return ""
 				}
-				return strconv.FormatInt(w.WorkflowIdentity.ID, 10)
+				return strconv.FormatInt(w.ID, 10)
 			}(),
 		}
 		if w.UpdatedAt != nil {
@@ -1565,21 +1474,25 @@ func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflo
 		return nil, err
 	}
 
-	entities, err := slices.TransformWithErrorCheck(req.GetWorkflowIds(), func(s string) (*entity.WorkflowIdentity, error) {
+	ids, err := slices.TransformWithErrorCheck(req.GetWorkflowIds(), func(s string) (int64, error) {
 		wid, err := strconv.ParseInt(s, 10, 64)
 		if err != nil {
-			return nil, err
+			return 0, err
 		}
-		return &entity.WorkflowIdentity{
-			ID: wid,
-		}, nil
+		return wid, nil
 
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	wfs, err := GetWorkflowDomainSVC().MGetWorkflows(ctx, entities)
+	wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+		MetaQuery: vo.MetaQuery{
+			IDs: ids,
+		},
+		QType:    vo.FromDraft,
+		MetaOnly: false,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -1590,7 +1503,7 @@ func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflo
 	inputs := make(map[string]any)
 	outputs := make(map[string]any)
 	for _, wf := range wfs {
-		wfIDStr := strconv.FormatInt(wf.WorkflowIdentity.ID, 10)
+		wfIDStr := strconv.FormatInt(wf.ID, 10)
 		wd := &workflow.WorkflowDetailData{
 			WorkflowID: wfIDStr,
 			Name:       wf.Name,
@@ -1600,11 +1513,10 @@ func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflo
 			IconURI:    wf.IconURI,
 			Icon:       wf.IconURL,
 			FlowMode:   wf.Mode,
-			Version:    wf.Version,
 		}
 
 		cv := &vo.Canvas{}
-		err = sonic.UnmarshalString(*wf.Canvas, cv)
+		err = sonic.UnmarshalString(wf.Canvas, cv)
 		if err != nil {
 			return nil, err
 		}
@@ -1643,25 +1555,32 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 		return nil, err
 	}
 
-	entities, err := slices.TransformWithErrorCheck(req.GetWorkflowFilterList(), func(wf *workflow.WorkflowFilter) (*entity.WorkflowIdentity, error) {
-		wid, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
+	var (
+		ids        []int64
+		id2Version = make(map[int64]string)
+		locator    = vo.FromDraft
+	)
+
+	for _, wf := range req.GetWorkflowFilterList() {
+		id, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		e := &entity.WorkflowIdentity{
-			ID: wid,
-		}
+		ids = append(ids, id)
 		if wf.WorkflowVersion != nil {
-			e.Version = *wf.WorkflowVersion
+			locator = vo.FromSpecificVersion
+			id2Version[id] = *wf.WorkflowVersion
 		}
-		return e, nil
-
-	})
-	if err != nil {
-		return nil, err
 	}
 
-	wfs, err := GetWorkflowDomainSVC().MGetWorkflowDetailInfo(ctx, entities)
+	wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+		MetaQuery: vo.MetaQuery{
+			IDs: ids,
+		},
+		QType:    locator,
+		MetaOnly: false,
+		Versions: id2Version,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -1672,7 +1591,7 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 	inputs := make(map[string]any)
 	outputs := make(map[string]any)
 	for _, wf := range wfs {
-		wfIDStr := strconv.FormatInt(wf.WorkflowIdentity.ID, 10)
+		wfIDStr := strconv.FormatInt(wf.ID, 10)
 		wd := &workflow.WorkflowDetailInfoData{
 			WorkflowID: wfIDStr,
 			Name:       wf.Name,
@@ -1687,14 +1606,17 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 				Self: ternary.IFElse[bool](wf.CreatorID == ptr.From(ctxutil.GetUIDFromCtx(ctx)), true, false),
 			},
 
-			FlowVersion:           wf.Version,
-			FlowVersionDesc:       wf.VersionDesc,
-			LatestFlowVersion:     wf.LatestVersion,
-			LatestFlowVersionDesc: wf.LatestVersionDesc,
+			LatestFlowVersion:     wf.GetLatestVersion(),
+			LatestFlowVersionDesc: "", // TODO: is this really needed?
+		}
+
+		if wf.VersionMeta != nil {
+			wd.FlowVersion = wf.Version
+			wd.FlowVersionDesc = wf.VersionDescription
 		}
 
 		cv := &vo.Canvas{}
-		err = sonic.UnmarshalString(*wf.Canvas, cv)
+		err = sonic.UnmarshalString(wf.Canvas, cv)
 		if err != nil {
 			return nil, err
 		}
@@ -1921,27 +1843,32 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 	}
 
 	if len(req.GetWorkflowList()) > 0 {
-		entities, err := slices.TransformWithErrorCheck(req.GetWorkflowList(), func(w *workflow.WorkflowFCItem) (*entity.WorkflowIdentity, error) {
-			wid, err := strconv.ParseInt(w.GetWorkflowID(), 10, 64)
+		var (
+			ids        []int64
+			id2Version = make(map[int64]string)
+			locator    = vo.FromDraft
+		)
+
+		for _, wf := range req.GetWorkflowList() {
+			id, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
 			if err != nil {
 				return nil, err
 			}
-
-			if w.IsDraft {
-				return &entity.WorkflowIdentity{
-					ID: wid,
-				}, nil
+			ids = append(ids, id)
+			if wf.WorkflowVersion != nil {
+				locator = vo.FromSpecificVersion
+				id2Version[id] = *wf.WorkflowVersion
 			}
-			return &entity.WorkflowIdentity{
-				ID:      wid,
-				Version: w.GetWorkflowVersion(),
-			}, nil
-
-		})
-		if err != nil {
-			return nil, err
 		}
-		wfs, err := GetWorkflowDomainSVC().MGetWorkflowDetailInfo(ctx, entities)
+
+		wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+			MetaQuery: vo.MetaQuery{
+				IDs: ids,
+			},
+			QType:    locator,
+			MetaOnly: false,
+			Versions: id2Version,
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -1959,7 +1886,7 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 				Name:              wf.Name,
 				IconURL:           wf.IconURL,
 				Type:              int64(common.PluginType_WORKFLOW),
-				LatestVersionName: wf.LatestVersion,
+				LatestVersionName: wf.GetLatestVersion(),
 				APIDetail: &workflow.APIDetail{
 					ID:         wfIDStr,
 					PluginID:   wfIDStr,
@@ -1968,7 +1895,6 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 				},
 			}
 		}
-
 	}
 
 	if len(req.GetDatasetList()) > 0 {
@@ -2063,40 +1989,21 @@ func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req
 		}
 	}
 	var fCWorkflowSetting *workflow.FCWorkflowSetting
-	if req.GetWorkflowFcSetting() != nil {
-		var (
-			workflowFcSetting = req.GetWorkflowFcSetting()
-		)
-		wid, err := strconv.ParseInt(workflowFcSetting.GetWorkflowID(), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		var e *entity.WorkflowIdentity
-		if workflowFcSetting.GetIsDraft() {
-			e = &entity.WorkflowIdentity{
-				ID: wid,
-			}
-		} else {
-			e = &entity.WorkflowIdentity{
-				ID:      wid,
-				Version: workflowFcSetting.GetWorkflowVersion(),
-			}
-		}
-
-		wfs, err := GetWorkflowDomainSVC().MGetWorkflowDetailInfo(ctx, []*entity.WorkflowIdentity{e})
+	if setting := req.GetWorkflowFcSetting(); setting != nil {
+		wID, err := strconv.ParseInt(setting.GetWorkflowID(), 10, 64)
 		if err != nil {
 			return nil, err
 		}
 
-		var wf *entity.Workflow
-		for _, f := range wfs {
-			if f.ID == wid {
-				wf = f
-			}
+		policy := &vo.GetPolicy{
+			ID:      wID,
+			QType:   ternary.IFElse(len(setting.WorkflowVersion) == 0, vo.FromDraft, vo.FromSpecificVersion),
+			Version: setting.WorkflowVersion,
 		}
 
-		if wf == nil {
-			return nil, fmt.Errorf("workflow not found, workflow id=%v", wid)
+		wf, err := GetWorkflowDomainSVC().Get(ctx, policy)
+		if err != nil {
+			return nil, err
 		}
 
 		latestRequestParams, err := slices.TransformWithErrorCheck(wf.InputParams, toWorkflowAPIParameter)
@@ -2109,19 +2016,18 @@ func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req
 			return nil, err
 		}
 
-		mergeWorkflowAPIParameters(latestRequestParams, workflowFcSetting.GetRequestParams())
+		mergeWorkflowAPIParameters(latestRequestParams, setting.GetRequestParams())
 
-		mergeWorkflowAPIParameters(latestResponseParams, workflowFcSetting.GetResponseParams())
+		mergeWorkflowAPIParameters(latestResponseParams, setting.GetResponseParams())
 
 		fCWorkflowSetting = &workflow.FCWorkflowSetting{
-			WorkflowID:     strconv.FormatInt(wid, 10),
-			PluginID:       strconv.FormatInt(wid, 10),
-			IsDraft:        workflowFcSetting.GetIsDraft(),
+			WorkflowID:     strconv.FormatInt(wID, 10),
+			PluginID:       strconv.FormatInt(wID, 10),
+			IsDraft:        setting.GetIsDraft(),
 			RequestParams:  latestRequestParams,
 			ResponseParams: latestResponseParams,
 			ResponseStyle:  &workflow.ResponseStyle{},
 		}
-
 	}
 
 	return &workflow.GetLLMNodeFCSettingsMergedResponse{
@@ -2130,31 +2036,44 @@ func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req
 	}, nil
 }
 
-func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
-	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), req.GetSpaceID()); err != nil {
+func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (
+	resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
+	currentUser := ctxutil.MustGetUIDFromCtx(ctx)
+	if err = checkUserSpace(ctx, currentUser, req.GetSpaceID()); err != nil {
 		return nil, err
 	}
 
 	var (
-		toolsInfo []*vo.WorkFlowAsToolInfo
+		toolIDs []int64
+		wfs     []*entity.Workflow
 	)
 	if len(req.GetPluginIds()) > 0 {
-		toolIDs, err := slices.TransformWithErrorCheck(req.GetPluginIds(), func(a string) (int64, error) {
+		toolIDs, err = slices.TransformWithErrorCheck(req.GetPluginIds(), func(a string) (int64, error) {
 			return strconv.ParseInt(a, 10, 64)
 		})
 		if err != nil {
 			return nil, err
 		}
-		toolsInfo, err = GetWorkflowDomainSVC().ListWorkflowAsToolData(ctx, req.GetSpaceID(), &vo.QueryToolInfoOption{
-			IDs: toolIDs,
-		})
 
-	} else if req.GetPage() > 0 && req.GetSize() > 0 {
-		toolsInfo, err = GetWorkflowDomainSVC().ListWorkflowAsToolData(ctx, req.GetSpaceID(), &vo.QueryToolInfoOption{
-			Page: &vo.Page{
-				Page: req.GetPage(),
-				Size: req.GetSize(),
+		wfs, err = GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+			MetaQuery: vo.MetaQuery{
+				IDs:           toolIDs,
+				SpaceID:       ptr.Of(req.GetSpaceID()),
+				PublishStatus: ptr.Of(vo.HasPublished),
 			},
+			QType: vo.FromLatestVersion,
+		})
+	} else if req.GetPage() > 0 && req.GetSize() > 0 {
+		wfs, err = GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+			MetaQuery: vo.MetaQuery{
+				Page: &vo.Page{
+					Size: req.GetSize(),
+					Page: req.GetPage(),
+				},
+				SpaceID:       ptr.Of(req.GetSpaceID()),
+				PublishStatus: ptr.Of(vo.HasPublished),
+			},
+			QType: vo.FromLatestVersion,
 		})
 	}
 
@@ -2163,30 +2082,28 @@ func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *p
 	}
 
 	pluginInfoList := make([]*common.PluginInfoForPlayground, 0)
-	for _, toolInfo := range toolsInfo {
+	for _, wf := range wfs {
 		pInfo := &common.PluginInfoForPlayground{
-			ID:           strconv.FormatInt(toolInfo.ID, 10),
-			Name:         toolInfo.Name,
-			PluginIcon:   toolInfo.IconURL,
-			DescForHuman: toolInfo.Desc,
+			ID:           strconv.FormatInt(wf.ID, 10),
+			Name:         wf.Name,
+			PluginIcon:   wf.IconURL,
+			DescForHuman: wf.Desc,
 			Creator: &common.Creator{
-				Self: ternary.IFElse[bool](toolInfo.CreatorID == ptr.From(ctxutil.GetUIDFromCtx(ctx)), true, false),
+				Self: ternary.IFElse(wf.CreatorID == currentUser, true, false),
 			},
 			PluginType:  common.PluginType_WORKFLOW,
-			VersionName: toolInfo.VersionName,
-			CreateTime:  strconv.FormatInt(toolInfo.CreatedAt, 10),
-		}
-		if toolInfo.UpdatedAt != nil {
-			pInfo.UpdateTime = strconv.FormatInt(*toolInfo.UpdatedAt, 10)
+			VersionName: wf.VersionMeta.Version,
+			CreateTime:  strconv.FormatInt(wf.CreatedAt.Unix(), 10),
+			UpdateTime:  strconv.FormatInt(wf.VersionCreatedAt.Unix(), 10),
 		}
 
 		var pluginApi = &common.PluginApi{
-			APIID:    strconv.FormatInt(toolInfo.ID, 10),
-			Name:     toolInfo.Name,
-			Desc:     toolInfo.Desc,
-			PluginID: strconv.FormatInt(toolInfo.ID, 10),
+			APIID:    strconv.FormatInt(wf.ID, 10),
+			Name:     wf.Name,
+			Desc:     wf.Desc,
+			PluginID: strconv.FormatInt(wf.ID, 10),
 		}
-		pluginApi.Parameters, err = slices.TransformWithErrorCheck(toolInfo.InputParams, toPluginParameter)
+		pluginApi.Parameters, err = slices.TransformWithErrorCheck(wf.InputParams, toPluginParameter)
 
 		if err != nil {
 			return nil, err
@@ -2194,7 +2111,6 @@ func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *p
 
 		pInfo.PluginApis = []*common.PluginApi{pluginApi}
 		pluginInfoList = append(pluginInfoList, pInfo)
-
 	}
 
 	return &pluginAPI.GetPlaygroundPluginListResponse{
@@ -2203,7 +2119,6 @@ func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *p
 			Total:      int32(len(pluginInfoList)),
 		},
 	}, nil
-
 }
 
 func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.CopyWorkflowRequest) (resp *workflow.CopyWorkflowResponse, err error) {
@@ -2513,6 +2428,8 @@ func toPluginParameter(info *vo.NamedTypeInfo) (*common.PluginParameter, error) 
 		p.Type = "string"
 	case vo.DataTypeInteger:
 		p.Type = "integer"
+	case vo.DataTypeNumber:
+		p.Type = "number"
 	case vo.DataTypeBoolean:
 		p.Type = "boolean"
 	case vo.DataTypeObject:

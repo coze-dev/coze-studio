@@ -8,8 +8,6 @@ import (
 	"github.com/bytedance/sonic"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
@@ -318,20 +316,25 @@ func (cv *CanvasValidator) CheckGlobalVariables(ctx context.Context) (issues []*
 func (cv *CanvasValidator) CheckSubWorkFlowTerminatePlanType(ctx context.Context) (issues []*Issue, err error) {
 	issues = make([]*Issue, 0)
 	subWfMap := make([]*vo.Node, 0)
-	entities := make([]*entity.WorkflowIdentity, 0)
+	var (
+		draftIDs         []int64
+		subID2SubVersion = map[int64]string{}
+	)
 	var collectSubWorkFlowNodes func(nodes []*vo.Node)
 	collectSubWorkFlowNodes = func(nodes []*vo.Node) {
 		for _, n := range nodes {
 			if n.Type == vo.BlockTypeBotSubWorkflow {
 				subWfMap = append(subWfMap, n)
-				wid, err := strconv.ParseInt(n.Data.Inputs.WorkflowID, 10, 64)
+				wID, err := strconv.ParseInt(n.Data.Inputs.WorkflowID, 10, 64)
 				if err != nil {
 					return
 				}
-				entities = append(entities, &entity.WorkflowIdentity{
-					ID:      wid,
-					Version: n.Data.Inputs.WorkflowVersion,
-				})
+
+				if len(n.Data.Inputs.WorkflowVersion) > 0 {
+					subID2SubVersion[wID] = n.Data.Inputs.WorkflowVersion
+				} else {
+					draftIDs = append(draftIDs, wID)
+				}
 			}
 			if len(n.Blocks) > 0 {
 				collectSubWorkFlowNodes(n.Blocks)
@@ -345,17 +348,46 @@ func (cv *CanvasValidator) CheckSubWorkFlowTerminatePlanType(ctx context.Context
 		return issues, nil
 	}
 
-	nodeID2Canvas, err := workflow.GetRepository().MGetWorkflowCanvas(ctx, entities)
-	if err != nil {
-		return nil, err
-	}
+	wfID2Canvas := make(map[int64]*vo.Canvas)
 
-	for _, node := range subWfMap {
-		nodeID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+	if len(draftIDs) > 0 {
+		draftWFs, err := workflow.GetRepository().MGetDraft(ctx, draftIDs)
 		if err != nil {
 			return nil, err
 		}
-		if c, ok := nodeID2Canvas[nodeID]; !ok {
+
+		for id, draft := range draftWFs {
+			var canvas vo.Canvas
+			if err = sonic.UnmarshalString(draft.Canvas, &canvas); err != nil {
+				return nil, err
+			}
+
+			wfID2Canvas[id] = &canvas
+		}
+	}
+
+	if len(subID2SubVersion) > 0 {
+		for id, version := range subID2SubVersion {
+			v, err := workflow.GetRepository().GetVersion(ctx, id, version)
+			if err != nil {
+				return nil, err
+			}
+
+			var canvas vo.Canvas
+			if err = sonic.UnmarshalString(v.Canvas, &canvas); err != nil {
+				return nil, err
+			}
+
+			wfID2Canvas[id] = &canvas
+		}
+	}
+
+	for _, node := range subWfMap {
+		wfID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		if c, ok := wfID2Canvas[wfID]; !ok {
 			issues = append(issues, &Issue{
 				NodeErr: &NodeErr{
 					NodeID:   node.ID,
@@ -384,7 +416,6 @@ func (cv *CanvasValidator) CheckSubWorkFlowTerminatePlanType(ctx context.Context
 		}
 	}
 	return issues, nil
-
 }
 
 func validateConnections(ctx context.Context, c *vo.Canvas) (issues []*Issue, err error) {

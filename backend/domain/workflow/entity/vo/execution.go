@@ -1,6 +1,9 @@
 package vo
 
 type ExecuteConfig struct {
+	ID           int64
+	From         Locator
+	Version      string
 	Operator     int64
 	Mode         ExecuteMode
 	AppID        *int64

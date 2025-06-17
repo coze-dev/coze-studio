@@ -7,8 +7,7 @@ CREATE TABLE IF NOT EXISTS `workflow_draft`
     output_params mediumtext      null comment ' 出参 schema',
     test_run_success  boolean   default 0  not null comment '0 未运行, 1 运行成功',
     modified         boolean      default 0  not null comment '0 未被修改, 1 已被修改',
-    created_at    bigint unsigned not null,
     updated_at    bigint unsigned null,
-    deleted_at    datetime(3)     null
+    deleted_at    datetime(3)     null,
+    commit_id     varchar(255)    not null comment 'used to uniquely identify a draft snapshot'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci CHARACTER SET=utf8mb4;
-

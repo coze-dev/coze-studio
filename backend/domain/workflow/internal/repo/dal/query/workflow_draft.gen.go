@@ -33,9 +33,9 @@ func newWorkflowDraft(db *gorm.DB, opts ...gen.DOOption) workflowDraft {
 	_workflowDraft.OutputParams = field.NewString(tableName, "output_params")
 	_workflowDraft.TestRunSuccess = field.NewBool(tableName, "test_run_success")
 	_workflowDraft.Modified = field.NewBool(tableName, "modified")
-	_workflowDraft.CreatedAt = field.NewInt64(tableName, "created_at")
 	_workflowDraft.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_workflowDraft.DeletedAt = field.NewField(tableName, "deleted_at")
+	_workflowDraft.CommitID = field.NewString(tableName, "commit_id")
 
 	_workflowDraft.fillFieldMap()
 
@@ -52,9 +52,9 @@ type workflowDraft struct {
 	OutputParams   field.String //  出参 schema
 	TestRunSuccess field.Bool   // 0 未运行, 1 运行成功
 	Modified       field.Bool   // 0 未被修改, 1 已被修改
-	CreatedAt      field.Int64
 	UpdatedAt      field.Int64
 	DeletedAt      field.Field
+	CommitID       field.String // used to uniquely identify a draft snapshot
 
 	fieldMap map[string]field.Expr
 }
@@ -77,9 +77,9 @@ func (w *workflowDraft) updateTableName(table string) *workflowDraft {
 	w.OutputParams = field.NewString(table, "output_params")
 	w.TestRunSuccess = field.NewBool(table, "test_run_success")
 	w.Modified = field.NewBool(table, "modified")
-	w.CreatedAt = field.NewInt64(table, "created_at")
 	w.UpdatedAt = field.NewInt64(table, "updated_at")
 	w.DeletedAt = field.NewField(table, "deleted_at")
+	w.CommitID = field.NewString(table, "commit_id")
 
 	w.fillFieldMap()
 
@@ -103,9 +103,9 @@ func (w *workflowDraft) fillFieldMap() {
 	w.fieldMap["output_params"] = w.OutputParams
 	w.fieldMap["test_run_success"] = w.TestRunSuccess
 	w.fieldMap["modified"] = w.Modified
-	w.fieldMap["created_at"] = w.CreatedAt
 	w.fieldMap["updated_at"] = w.UpdatedAt
 	w.fieldMap["deleted_at"] = w.DeletedAt
+	w.fieldMap["commit_id"] = w.CommitID
 }
 
 func (w workflowDraft) clone(db *gorm.DB) workflowDraft {

@@ -19,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
 	shortcutCMDEntity "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/entity"
 	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -202,12 +203,16 @@ func (s *SingleAgentApplicationService) fetchPluginDetails(ctx context.Context, 
 }
 
 func (s *SingleAgentApplicationService) fetchWorkflowDetails(ctx context.Context, agentInfo *entity.SingleAgent) ([]*workflowEntity.Workflow, error) {
-	return s.appContext.WorkflowDomainSVC.MGetWorkflows(ctx, slices.Transform(agentInfo.Workflow, func(a *bot_common.WorkflowInfo) *workflowEntity.WorkflowIdentity {
-		return &workflowEntity.WorkflowIdentity{
-			ID:      a.GetWorkflowId(),
-			Version: "",
-		}
-	}))
+	policy := &vo.MGetPolicy{
+		MetaQuery: vo.MetaQuery{
+			IDs: slices.Transform(agentInfo.Workflow, func(a *bot_common.WorkflowInfo) int64 {
+				return a.GetWorkflowId()
+			}),
+		},
+		QType: vo.FromLatestVersion,
+	}
+
+	return s.appContext.WorkflowDomainSVC.MGet(ctx, policy)
 }
 
 func modelInfoDo2Vo(modelInfos []*modelEntity.Model) map[int64]*playground.ModelDetail {

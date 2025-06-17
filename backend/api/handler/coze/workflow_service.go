@@ -49,7 +49,7 @@ func GetCanvasInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := appworkflow.SVC.GetWorkflow(ctx, &req)
+	resp, err := appworkflow.SVC.GetCanvasInfo(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -218,18 +218,10 @@ func GetReleasedWorkflows(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	releasedWorkflowData, err := appworkflow.SVC.GetReleasedWorkflows(ctx, &req)
-	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
-		return
-	}
-	var response = map[string]any{
-		"data": releasedWorkflowData,
-		"code": 0,
-		"msg":  "",
-	}
 
-	c.JSON(consts.StatusOK, response)
+	resp := new(workflow.GetReleasedWorkflowsResponse)
+
+	c.JSON(consts.StatusOK, resp)
 }
 
 // GetWorkflowReferences

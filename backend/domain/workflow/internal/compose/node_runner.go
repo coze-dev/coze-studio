@@ -198,9 +198,6 @@ func (nc *nodeRunConfig[O]) invoke() func(ctx context.Context, input map[string]
 
 	return func(ctx context.Context, input map[string]any, opts ...O) (output map[string]any, err error) {
 		ctx, runner := newNodeRunner(ctx, nc)
-		if runner.cancelFn != nil {
-			defer runner.cancelFn()
-		}
 
 		defer func() {
 			if err == nil {

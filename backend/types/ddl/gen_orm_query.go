@@ -129,6 +129,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"workflow_reference": {},
 		"workflow_execution": {},
 		"node_execution":     {},
+		"workflow_snapshot":  {},
 	},
 
 	"domain/openauth/openapiauth/internal/dal/query": {

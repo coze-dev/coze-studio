@@ -12,23 +12,19 @@ import (
 
 // TODO(@fanlv): 参数引用需要修改。
 type Workflow interface {
-	MGetWorkflows(ctx context.Context, ids []*workflowEntity.WorkflowIdentity) ([]*workflowEntity.Workflow, error)
-	WorkflowAsModelTool(ctx context.Context, ids []*workflowEntity.WorkflowIdentity) ([]tool.BaseTool, error)
+	WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) ([]tool.BaseTool, error)
 	DeleteWorkflow(ctx context.Context, id int64) error
-	PublishWorkflow(ctx context.Context, wfID int64, version, desc string, force bool) (err error)
+	PublishWorkflow(ctx context.Context, info *vo.PublishPolicy) (err error)
 	WithResumeToolWorkflow(resumingEvent *workflowEntity.ToolInterruptEvent, resumeData string,
 		allInterruptEvents map[string]*workflowEntity.ToolInterruptEvent) einoCompose.Option
 	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
 
-	SyncExecuteWorkflow(ctx context.Context, id *workflowEntity.WorkflowIdentity, input map[string]any, config vo.ExecuteConfig) (
-		*workflowEntity.WorkflowExecution, vo.TerminatePlan, error)
+	SyncExecuteWorkflow(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error)
 }
 
 type ReleaseWorkflowConfig = vo.ReleaseWorkflowConfig
 
 type ToolInterruptEvent = workflowEntity.ToolInterruptEvent
-
-type WorkflowIdentity = workflowEntity.WorkflowIdentity
 
 var defaultSVC Workflow
 

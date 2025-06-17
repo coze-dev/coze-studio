@@ -18,9 +18,9 @@ type WorkflowDraft struct {
 	OutputParams   string         `gorm:"column:output_params;comment: 出参 schema" json:"output_params"`                   //  出参 schema
 	TestRunSuccess bool           `gorm:"column:test_run_success;not null;comment:0 未运行, 1 运行成功" json:"test_run_success"` // 0 未运行, 1 运行成功
 	Modified       bool           `gorm:"column:modified;not null;comment:0 未被修改, 1 已被修改" json:"modified"`                // 0 未被修改, 1 已被修改
-	CreatedAt      int64          `gorm:"column:created_at;not null;autoCreateTime:milli" json:"created_at"`
 	UpdatedAt      int64          `gorm:"column:updated_at;autoUpdateTime:milli" json:"updated_at"`
 	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
+	CommitID       string         `gorm:"column:commit_id;not null;comment:used to uniquely identify a draft snapshot" json:"commit_id"` // used to uniquely identify a draft snapshot
 }
 
 // TableName WorkflowDraft's table name

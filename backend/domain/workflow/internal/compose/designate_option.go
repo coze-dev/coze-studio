@@ -37,7 +37,8 @@ func DesignateOptions(ctx context.Context,
 		workflowSC.RequireCheckpoint(),
 		eventChan,
 		resumedEvent,
-		exeCfg)
+		exeCfg,
+		workflowSC.NodeCount())
 
 	opts := []einoCompose.Option{einoCompose.WithCallbacks(rootHandler)}
 
@@ -132,16 +133,21 @@ func designateOptionsForSubWorkflow(ctx context.Context,
 	resumeEvent *entity.InterruptEvent,
 	sw *schema.StreamWriter[*entity.Message],
 	pathPrefix ...string) (opts []einoCompose.Option, err error) {
-	subWorkflowIdentity, _ := ns.GetSubWorkflowIdentity()
+	subWorkflowID, subWorkflowVersion, isSubWorkflow := ns.GetSubWorkflowIdentity()
+	if !isSubWorkflow {
+		return nil, fmt.Errorf("node %s is not a sub workflow", ns.Key)
+	}
+
 	subHandler := execute.NewSubWorkflowHandler(
 		parentHandler,
 		&entity.WorkflowBasic{
-			WorkflowIdentity: *subWorkflowIdentity,
-			SpaceID:          0,   // TODO: fill this
-			AppID:            nil, // TODO: fill this
-			NodeCount:        ns.SubWorkflowSchema.NodeCount(),
+			ID:      subWorkflowID,
+			Version: subWorkflowVersion,
+			SpaceID: 0,   // TODO: fill this
+			AppID:   nil, // TODO: fill this
 		},
 		resumeEvent,
+		ns.SubWorkflowSchema.NodeCount(),
 	)
 
 	opts = append(opts, WrapOpt(einoCompose.WithCallbacks(subHandler), ns.Key))
@@ -236,10 +242,17 @@ func llmToolCallbackOptions(ctx context.Context, ns *NodeSchema, eventChan chan 
 				if err != nil {
 					return nil, fmt.Errorf("invalid workflow id: %s", wfIDStr)
 				}
-				wfTool, err := workflow2.GetRepository().WorkflowAsTool(ctx, entity.WorkflowIdentity{
+				locator := vo.FromDraft
+				if wf.WorkflowVersion != "" {
+					locator = vo.FromSpecificVersion
+				}
+
+				wfTool, err := workflow2.GetRepository().WorkflowAsTool(ctx, vo.GetPolicy{
 					ID:      wfID,
+					QType:   locator,
 					Version: wf.WorkflowVersion,
 				}, vo.WorkflowToolConfig{})
+
 				if err != nil {
 					return nil, err
 				}

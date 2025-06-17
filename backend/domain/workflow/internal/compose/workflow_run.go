@@ -155,14 +155,16 @@ func Prepare(ctx context.Context,
 	if interruptEvent == nil {
 		wfExec := &entity.WorkflowExecution{
 			ID:                     executeID,
-			WorkflowIdentity:       wb.WorkflowIdentity,
+			WorkflowID:             wb.ID,
+			Version:                wb.Version,
 			SpaceID:                wb.SpaceID,
 			ExecuteConfig:          config,
 			Status:                 entity.WorkflowRunning,
 			Input:                  ptr.Of(in),
 			RootExecutionID:        executeID,
-			NodeCount:              wb.NodeCount,
+			NodeCount:              sc.NodeCount(),
 			CurrentResumingEventID: ptr.Of(int64(0)),
+			CommitID:               wb.CommitID,
 		}
 
 		if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {

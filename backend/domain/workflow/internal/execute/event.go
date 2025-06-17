@@ -55,6 +55,8 @@ type Event struct {
 	extra           *entity.NodeExtra
 
 	done chan struct{}
+
+	nodeCount int32
 }
 
 type ErrorLevel string

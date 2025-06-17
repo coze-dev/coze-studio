@@ -11,13 +11,15 @@ type WorkflowExecuteStatus workflow.WorkflowExeStatus
 type NodeExecuteStatus workflow.NodeExeStatus
 
 type WorkflowExecution struct {
-	ID int64
-	WorkflowIdentity
-	SpaceID int64
+	ID         int64
+	WorkflowID int64
+	Version    string
+	SpaceID    int64
 	vo.ExecuteConfig
 	CreatedAt time.Time
 	LogID     string
 	NodeCount int32
+	CommitID  string
 
 	Status     WorkflowExecuteStatus
 	Duration   time.Duration
@@ -86,10 +88,11 @@ type NodeExecution struct {
 
 func (we *WorkflowExecution) GetBasic() *WorkflowBasic {
 	return &WorkflowBasic{
-		WorkflowIdentity: we.WorkflowIdentity,
-		SpaceID:          we.SpaceID,
-		AppID:            we.AppID,
-		NodeCount:        we.NodeCount,
+		ID:       we.WorkflowID,
+		Version:  we.Version,
+		SpaceID:  we.SpaceID,
+		AppID:    we.AppID,
+		CommitID: we.CommitID,
 	}
 }
 

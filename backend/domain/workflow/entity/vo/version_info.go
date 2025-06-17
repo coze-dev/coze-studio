@@ -1,23 +1,27 @@
 package vo
 
+import "time"
+
 type VersionInfo struct {
-	Version            string
-	VersionDescription string
-	Canvas             string
-	InputParams        string
-	OutputParams       string
-	CreatorID          int64
-	CreatedAt          int64
-	UpdaterID          int64
-	UpdatedAt          int64
+	*VersionMeta
+
+	CanvasInfo
+
+	CommitID string
 }
 
-type DraftInfo struct {
-	Canvas         string
-	TestRunSuccess bool
-	Modified       bool
-	InputParams    string
-	OutputParams   string
-	CreatedAt      int64
-	UpdatedAt      int64
+type PublishPolicy struct {
+	ID                 int64
+	Version            string
+	VersionDescription string
+	CreatorID          int64
+	CommitID           string
+	Force              bool
+}
+
+type VersionMeta struct {
+	Version            string
+	VersionDescription string
+	VersionCreatedAt   time.Time
+	VersionCreatorID   int64
 }

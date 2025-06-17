@@ -151,13 +151,10 @@ func (s *NodeSchema) AddOutputSource(info ...*vo.FieldInfo) {
 	s.OutputSources = append(s.OutputSources, info...)
 }
 
-func (s *NodeSchema) GetSubWorkflowIdentity() (*entity.WorkflowIdentity, bool) {
+func (s *NodeSchema) GetSubWorkflowIdentity() (int64, string, bool) {
 	if s.Type != entity.NodeTypeSubWorkflow {
-		return nil, false
+		return 0, "", false
 	}
 
-	return &entity.WorkflowIdentity{
-		ID:      mustGetKey[int64]("WorkflowID", s.Configs),
-		Version: mustGetKey[string]("WorkflowVersion", s.Configs),
-	}, true
+	return mustGetKey[int64]("WorkflowID", s.Configs), mustGetKey[string]("WorkflowVersion", s.Configs), true
 }

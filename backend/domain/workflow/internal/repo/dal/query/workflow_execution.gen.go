@@ -53,6 +53,7 @@ func newWorkflowExecution(db *gorm.DB, opts ...gen.DOOption) workflowExecution {
 	_workflowExecution.ResumeEventID = field.NewInt64(tableName, "resume_event_id")
 	_workflowExecution.AgentID = field.NewInt64(tableName, "agent_id")
 	_workflowExecution.SyncPattern = field.NewInt32(tableName, "sync_pattern")
+	_workflowExecution.CommitID = field.NewString(tableName, "commit_id")
 
 	_workflowExecution.fillFieldMap()
 
@@ -89,6 +90,7 @@ type workflowExecution struct {
 	ResumeEventID   field.Int64  // the current event ID which is resuming
 	AgentID         field.Int64  // the agent that this execution binds to
 	SyncPattern     field.Int32  // the sync pattern 1. sync 2. async 3. stream
+	CommitID        field.String // draft commit id this execution belongs to
 
 	fieldMap map[string]field.Expr
 }
@@ -131,6 +133,7 @@ func (w *workflowExecution) updateTableName(table string) *workflowExecution {
 	w.ResumeEventID = field.NewInt64(table, "resume_event_id")
 	w.AgentID = field.NewInt64(table, "agent_id")
 	w.SyncPattern = field.NewInt32(table, "sync_pattern")
+	w.CommitID = field.NewString(table, "commit_id")
 
 	w.fillFieldMap()
 
@@ -147,7 +150,7 @@ func (w *workflowExecution) GetFieldByName(fieldName string) (field.OrderExpr, b
 }
 
 func (w *workflowExecution) fillFieldMap() {
-	w.fieldMap = make(map[string]field.Expr, 26)
+	w.fieldMap = make(map[string]field.Expr, 27)
 	w.fieldMap["id"] = w.ID
 	w.fieldMap["workflow_id"] = w.WorkflowID
 	w.fieldMap["version"] = w.Version
@@ -174,6 +177,7 @@ func (w *workflowExecution) fillFieldMap() {
 	w.fieldMap["resume_event_id"] = w.ResumeEventID
 	w.fieldMap["agent_id"] = w.AgentID
 	w.fieldMap["sync_pattern"] = w.SyncPattern
+	w.fieldMap["commit_id"] = w.CommitID
 }
 
 func (w workflowExecution) clone(db *gorm.DB) workflowExecution {

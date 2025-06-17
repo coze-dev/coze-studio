@@ -128,10 +128,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
-			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        workflowSC.NodeCount(),
-		}, 1, false, nil, vo.ExecuteConfig{})
+		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{ID: 2}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
 			"input": "what's your name?",
@@ -271,10 +268,7 @@ func TestDatabaseCURD(t *testing.T) {
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
-			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        workflowSC.NodeCount(),
-		}, 1, false, nil, vo.ExecuteConfig{})
+		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{ID: 2}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
 			"input": "input for database curd",
@@ -511,10 +505,7 @@ func TestHttpRequester(t *testing.T) {
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
-			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        workflowSC.NodeCount(),
-		}, 1, false, nil, vo.ExecuteConfig{})
+		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{ID: 2}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
 			"v1":    "v1",
@@ -621,10 +612,7 @@ func TestHttpRequester(t *testing.T) {
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
-			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        workflowSC.NodeCount(),
-		}, 1, false, nil, vo.ExecuteConfig{})
+		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{ID: 2}, 1, false, nil, vo.ExecuteConfig{})
 
 		wf.AsyncRun(ctx, map[string]any{
 			"v1":         "v1",
@@ -821,10 +809,7 @@ func TestKnowledgeNodes(t *testing.T) {
 
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{
-			WorkflowIdentity: entity.WorkflowIdentity{ID: 2},
-			NodeCount:        workflowSC.NodeCount(),
-		}, 1, false, nil, vo.ExecuteConfig{})
+		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{ID: 2}, 1, false, nil, vo.ExecuteConfig{})
 
 		assert.NoError(t, err)
 		wf, err := compose.NewWorkflow(ctx, workflowSC)

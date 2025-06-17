@@ -60,13 +60,13 @@ func init() {
 	_ = compose.RegisterSerializableType[nodes.FieldStreamType]("field_stream_type")
 	_ = compose.RegisterSerializableType[compose.FieldPath]("field_path")
 	_ = compose.RegisterSerializableType[*entity.WorkflowBasic]("workflow_basic")
-	_ = compose.RegisterSerializableType[entity.WorkflowIdentity]("workflow_identity")
 	_ = compose.RegisterSerializableType[vo.TerminatePlan]("terminate_plan")
 	_ = compose.RegisterSerializableType[*entity.ToolInterruptEvent]("tool_interrupt_event")
 	_ = compose.RegisterSerializableType[vo.ExecuteConfig]("execute_config")
 	_ = compose.RegisterSerializableType[vo.ExecuteMode]("execute_mode")
 	_ = compose.RegisterSerializableType[vo.TaskType]("task_type")
 	_ = compose.RegisterSerializableType[vo.SyncPattern]("sync_pattern")
+	_ = compose.RegisterSerializableType[vo.Locator]("wf_locator")
 }
 
 func (s *State) SetAppVariableValue(key string, value any) {

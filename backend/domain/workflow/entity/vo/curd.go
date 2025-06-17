@@ -30,14 +30,37 @@ const (
 	Official WorkFlowType = "official"
 )
 
-type QueryOption struct {
-	Name          *string
-	WorkflowType  WorkFlowType
-	PublishStatus PublishStatus
-	IDs           []int64
-}
-
 type QueryToolInfoOption struct {
 	Page *Page
 	IDs  []int64
+}
+
+type Locator uint8
+
+const (
+	FromDraft Locator = iota
+	FromSpecificVersion
+	FromLatestVersion
+)
+
+type GetPolicy struct {
+	ID       int64
+	QType    Locator
+	MetaOnly bool
+	Version  string
+	CommitID string
+}
+
+type DeletePolicy struct {
+	ID    *int64
+	IDs   []int64
+	AppID *int64
+}
+
+type MGetPolicy struct {
+	MetaQuery
+
+	QType    Locator
+	MetaOnly bool
+	Versions map[int64]string
 }

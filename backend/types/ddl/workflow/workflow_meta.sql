@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS `workflow_meta`
     updater_id   bigint unsigned  null comment ' 更新元信息的用户 ID',
     source_id    bigint unsigned  null comment ' 复制来源的 workflow ID',
     app_id   bigint unsigned  null comment '应用 ID',
+    latest_version varchar(50) null comment 'the version of the most recent publish',
 
     KEY `idx_creator_id` (creator_id),
     KEY `idx_app_id` (app_id),

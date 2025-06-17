@@ -163,7 +163,7 @@ func (p *WorkflowServiceClient) SaveWorkflow(ctx context.Context, request *SaveW
 	var _args WorkflowServiceSaveWorkflowArgs
 	_args.Request = request
 	var _result WorkflowServiceSaveWorkflowResult
-	if err = p.Client_().Call(ctx, "SaveWorkflow", &_args, &_result); err != nil {
+	if err = p.Client_().Call(ctx, "Save", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
@@ -172,7 +172,7 @@ func (p *WorkflowServiceClient) UpdateWorkflowMeta(ctx context.Context, request 
 	var _args WorkflowServiceUpdateWorkflowMetaArgs
 	_args.Request = request
 	var _result WorkflowServiceUpdateWorkflowMetaResult
-	if err = p.Client_().Call(ctx, "UpdateWorkflowMeta", &_args, &_result); err != nil {
+	if err = p.Client_().Call(ctx, "UpdateMeta", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
@@ -181,7 +181,7 @@ func (p *WorkflowServiceClient) DeleteWorkflow(ctx context.Context, request *Del
 	var _args WorkflowServiceDeleteWorkflowArgs
 	_args.Request = request
 	var _result WorkflowServiceDeleteWorkflowResult
-	if err = p.Client_().Call(ctx, "DeleteWorkflow", &_args, &_result); err != nil {
+	if err = p.Client_().Call(ctx, "Delete", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
@@ -190,7 +190,7 @@ func (p *WorkflowServiceClient) BatchDeleteWorkflow(ctx context.Context, request
 	var _args WorkflowServiceBatchDeleteWorkflowArgs
 	_args.Request = request
 	var _result WorkflowServiceBatchDeleteWorkflowResult
-	if err = p.Client_().Call(ctx, "BatchDeleteWorkflow", &_args, &_result); err != nil {
+	if err = p.Client_().Call(ctx, "MDelete", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
@@ -579,10 +579,10 @@ func NewWorkflowServiceProcessor(handler WorkflowService) *WorkflowServiceProces
 	self.AddToProcessorMap("CreateWorkflow", &workflowServiceProcessorCreateWorkflow{handler: handler})
 	self.AddToProcessorMap("GetCanvasInfo", &workflowServiceProcessorGetCanvasInfo{handler: handler})
 	self.AddToProcessorMap("GetHistorySchema", &workflowServiceProcessorGetHistorySchema{handler: handler})
-	self.AddToProcessorMap("SaveWorkflow", &workflowServiceProcessorSaveWorkflow{handler: handler})
-	self.AddToProcessorMap("UpdateWorkflowMeta", &workflowServiceProcessorUpdateWorkflowMeta{handler: handler})
-	self.AddToProcessorMap("DeleteWorkflow", &workflowServiceProcessorDeleteWorkflow{handler: handler})
-	self.AddToProcessorMap("BatchDeleteWorkflow", &workflowServiceProcessorBatchDeleteWorkflow{handler: handler})
+	self.AddToProcessorMap("Save", &workflowServiceProcessorSaveWorkflow{handler: handler})
+	self.AddToProcessorMap("UpdateMeta", &workflowServiceProcessorUpdateWorkflowMeta{handler: handler})
+	self.AddToProcessorMap("Delete", &workflowServiceProcessorDeleteWorkflow{handler: handler})
+	self.AddToProcessorMap("MDelete", &workflowServiceProcessorBatchDeleteWorkflow{handler: handler})
 	self.AddToProcessorMap("GetDeleteStrategy", &workflowServiceProcessorGetDeleteStrategy{handler: handler})
 	self.AddToProcessorMap("PublishWorkflow", &workflowServiceProcessorPublishWorkflow{handler: handler})
 	self.AddToProcessorMap("CopyWorkflow", &workflowServiceProcessorCopyWorkflow{handler: handler})
@@ -796,7 +796,7 @@ func (p *workflowServiceProcessorSaveWorkflow) Process(ctx context.Context, seqI
 	if err = args.Read(iprot); err != nil {
 		iprot.ReadMessageEnd()
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("SaveWorkflow", thrift.EXCEPTION, seqId)
+		oprot.WriteMessageBegin("Save", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -808,8 +808,8 @@ func (p *workflowServiceProcessorSaveWorkflow) Process(ctx context.Context, seqI
 	result := WorkflowServiceSaveWorkflowResult{}
 	var retval *SaveWorkflowResponse
 	if retval, err2 = p.handler.SaveWorkflow(ctx, args.Request); err2 != nil {
-		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing SaveWorkflow: "+err2.Error())
-		oprot.WriteMessageBegin("SaveWorkflow", thrift.EXCEPTION, seqId)
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing Save: "+err2.Error())
+		oprot.WriteMessageBegin("Save", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -817,7 +817,7 @@ func (p *workflowServiceProcessorSaveWorkflow) Process(ctx context.Context, seqI
 	} else {
 		result.Success = retval
 	}
-	if err2 = oprot.WriteMessageBegin("SaveWorkflow", thrift.REPLY, seqId); err2 != nil {
+	if err2 = oprot.WriteMessageBegin("Save", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -844,7 +844,7 @@ func (p *workflowServiceProcessorUpdateWorkflowMeta) Process(ctx context.Context
 	if err = args.Read(iprot); err != nil {
 		iprot.ReadMessageEnd()
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("UpdateWorkflowMeta", thrift.EXCEPTION, seqId)
+		oprot.WriteMessageBegin("UpdateMeta", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -856,8 +856,8 @@ func (p *workflowServiceProcessorUpdateWorkflowMeta) Process(ctx context.Context
 	result := WorkflowServiceUpdateWorkflowMetaResult{}
 	var retval *UpdateWorkflowMetaResponse
 	if retval, err2 = p.handler.UpdateWorkflowMeta(ctx, args.Request); err2 != nil {
-		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing UpdateWorkflowMeta: "+err2.Error())
-		oprot.WriteMessageBegin("UpdateWorkflowMeta", thrift.EXCEPTION, seqId)
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing UpdateMeta: "+err2.Error())
+		oprot.WriteMessageBegin("UpdateMeta", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -865,7 +865,7 @@ func (p *workflowServiceProcessorUpdateWorkflowMeta) Process(ctx context.Context
 	} else {
 		result.Success = retval
 	}
-	if err2 = oprot.WriteMessageBegin("UpdateWorkflowMeta", thrift.REPLY, seqId); err2 != nil {
+	if err2 = oprot.WriteMessageBegin("UpdateMeta", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -892,7 +892,7 @@ func (p *workflowServiceProcessorDeleteWorkflow) Process(ctx context.Context, se
 	if err = args.Read(iprot); err != nil {
 		iprot.ReadMessageEnd()
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("DeleteWorkflow", thrift.EXCEPTION, seqId)
+		oprot.WriteMessageBegin("Delete", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -904,8 +904,8 @@ func (p *workflowServiceProcessorDeleteWorkflow) Process(ctx context.Context, se
 	result := WorkflowServiceDeleteWorkflowResult{}
 	var retval *DeleteWorkflowResponse
 	if retval, err2 = p.handler.DeleteWorkflow(ctx, args.Request); err2 != nil {
-		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing DeleteWorkflow: "+err2.Error())
-		oprot.WriteMessageBegin("DeleteWorkflow", thrift.EXCEPTION, seqId)
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing Delete: "+err2.Error())
+		oprot.WriteMessageBegin("Delete", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -913,7 +913,7 @@ func (p *workflowServiceProcessorDeleteWorkflow) Process(ctx context.Context, se
 	} else {
 		result.Success = retval
 	}
-	if err2 = oprot.WriteMessageBegin("DeleteWorkflow", thrift.REPLY, seqId); err2 != nil {
+	if err2 = oprot.WriteMessageBegin("Delete", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -940,7 +940,7 @@ func (p *workflowServiceProcessorBatchDeleteWorkflow) Process(ctx context.Contex
 	if err = args.Read(iprot); err != nil {
 		iprot.ReadMessageEnd()
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("BatchDeleteWorkflow", thrift.EXCEPTION, seqId)
+		oprot.WriteMessageBegin("MDelete", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -952,8 +952,8 @@ func (p *workflowServiceProcessorBatchDeleteWorkflow) Process(ctx context.Contex
 	result := WorkflowServiceBatchDeleteWorkflowResult{}
 	var retval *BatchDeleteWorkflowResponse
 	if retval, err2 = p.handler.BatchDeleteWorkflow(ctx, args.Request); err2 != nil {
-		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing BatchDeleteWorkflow: "+err2.Error())
-		oprot.WriteMessageBegin("BatchDeleteWorkflow", thrift.EXCEPTION, seqId)
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing MDelete: "+err2.Error())
+		oprot.WriteMessageBegin("MDelete", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -961,7 +961,7 @@ func (p *workflowServiceProcessorBatchDeleteWorkflow) Process(ctx context.Contex
 	} else {
 		result.Success = retval
 	}
-	if err2 = oprot.WriteMessageBegin("BatchDeleteWorkflow", thrift.REPLY, seqId); err2 != nil {
+	if err2 = oprot.WriteMessageBegin("MDelete", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {

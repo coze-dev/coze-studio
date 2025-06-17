@@ -14,7 +14,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	pluginEntity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
-	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -73,9 +72,8 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 				logs.CtxErrorf(ctx, "Failed to unmarshal json arguments: %s", item.Arguments)
 				return nil, err
 			}
-			execResp, _, err := crossworkflow.DefaultSVC().SyncExecuteWorkflow(ctx, &workflowEntity.WorkflowIdentity{
-				ID: item.PluginID,
-			}, input, vo.ExecuteConfig{
+			execResp, _, err := crossworkflow.DefaultSVC().SyncExecuteWorkflow(ctx, vo.ExecuteConfig{
+				ID:           item.PluginID,
 				ConnectorID:  ar.Identity.ConnectorID,
 				ConnectorUID: ar.UserID,
 				TaskType:     vo.TaskTypeForeground,
@@ -87,7 +85,7 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 						return vo.ExecuteModeRelease
 					}
 				}(),
-			})
+			}, input)
 
 			if err != nil {
 				return nil, err

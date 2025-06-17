@@ -44,6 +44,7 @@ func newWorkflowMeta(db *gorm.DB, opts ...gen.DOOption) workflowMeta {
 	_workflowMeta.UpdaterID = field.NewInt64(tableName, "updater_id")
 	_workflowMeta.SourceID = field.NewInt64(tableName, "source_id")
 	_workflowMeta.AppID = field.NewInt64(tableName, "app_id")
+	_workflowMeta.LatestVersion = field.NewString(tableName, "latest_version")
 
 	_workflowMeta.fillFieldMap()
 
@@ -53,24 +54,25 @@ func newWorkflowMeta(db *gorm.DB, opts ...gen.DOOption) workflowMeta {
 type workflowMeta struct {
 	workflowMetaDo
 
-	ALL         field.Asterisk
-	ID          field.Int64  // workflow id
-	Name        field.String // workflow name
-	Description field.String // workflow description
-	IconURI     field.String // icon uri
-	Status      field.Int32  // 0:未发布过, 1:已发布过
-	ContentType field.Int32  // 0用户 1官方
-	Mode        field.Int32  // 0:workflow, 3:chat_flow
-	CreatedAt   field.Int64  // create time in millisecond
-	UpdatedAt   field.Int64  // update time in millisecond
-	DeletedAt   field.Field  // delete time in millisecond
-	CreatorID   field.Int64  // user id for creator
-	Tag         field.Int32  // template tag: Tag: 1=All, 2=Hot, 3=Information, 4=Music, 5=Picture, 6=UtilityTool, 7=Life, 8=Traval, 9=Network, 10=System, 11=Movie, 12=Office, 13=Shopping, 14=Education, 15=Health, 16=Social, 17=Entertainment, 18=Finance, 100=Hidden
-	AuthorID    field.Int64  // 原作者用户 ID
-	SpaceID     field.Int64  //  空间 ID
-	UpdaterID   field.Int64  //  更新元信息的用户 ID
-	SourceID    field.Int64  //  复制来源的 workflow ID
-	AppID       field.Int64  // 应用 ID
+	ALL           field.Asterisk
+	ID            field.Int64  // workflow id
+	Name          field.String // workflow name
+	Description   field.String // workflow description
+	IconURI       field.String // icon uri
+	Status        field.Int32  // 0:未发布过, 1:已发布过
+	ContentType   field.Int32  // 0用户 1官方
+	Mode          field.Int32  // 0:workflow, 3:chat_flow
+	CreatedAt     field.Int64  // create time in millisecond
+	UpdatedAt     field.Int64  // update time in millisecond
+	DeletedAt     field.Field  // delete time in millisecond
+	CreatorID     field.Int64  // user id for creator
+	Tag           field.Int32  // template tag: Tag: 1=All, 2=Hot, 3=Information, 4=Music, 5=Picture, 6=UtilityTool, 7=Life, 8=Traval, 9=Network, 10=System, 11=Movie, 12=Office, 13=Shopping, 14=Education, 15=Health, 16=Social, 17=Entertainment, 18=Finance, 100=Hidden
+	AuthorID      field.Int64  // 原作者用户 ID
+	SpaceID       field.Int64  //  空间 ID
+	UpdaterID     field.Int64  //  更新元信息的用户 ID
+	SourceID      field.Int64  //  复制来源的 workflow ID
+	AppID         field.Int64  // 应用 ID
+	LatestVersion field.String // the version of the most recent publish
 
 	fieldMap map[string]field.Expr
 }
@@ -104,6 +106,7 @@ func (w *workflowMeta) updateTableName(table string) *workflowMeta {
 	w.UpdaterID = field.NewInt64(table, "updater_id")
 	w.SourceID = field.NewInt64(table, "source_id")
 	w.AppID = field.NewInt64(table, "app_id")
+	w.LatestVersion = field.NewString(table, "latest_version")
 
 	w.fillFieldMap()
 
@@ -120,7 +123,7 @@ func (w *workflowMeta) GetFieldByName(fieldName string) (field.OrderExpr, bool) 
 }
 
 func (w *workflowMeta) fillFieldMap() {
-	w.fieldMap = make(map[string]field.Expr, 17)
+	w.fieldMap = make(map[string]field.Expr, 18)
 	w.fieldMap["id"] = w.ID
 	w.fieldMap["name"] = w.Name
 	w.fieldMap["description"] = w.Description
@@ -138,6 +141,7 @@ func (w *workflowMeta) fillFieldMap() {
 	w.fieldMap["updater_id"] = w.UpdaterID
 	w.fieldMap["source_id"] = w.SourceID
 	w.fieldMap["app_id"] = w.AppID
+	w.fieldMap["latest_version"] = w.LatestVersion
 }
 
 func (w workflowMeta) clone(db *gorm.DB) workflowMeta {

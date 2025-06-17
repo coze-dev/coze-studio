@@ -34,6 +34,7 @@ type WorkflowExecution struct {
 	ResumeEventID   int64  `gorm:"column:resume_event_id;comment:the current event ID which is resuming" json:"resume_event_id"`                           // the current event ID which is resuming
 	AgentID         int64  `gorm:"column:agent_id;comment:the agent that this execution binds to" json:"agent_id"`                                         // the agent that this execution binds to
 	SyncPattern     int32  `gorm:"column:sync_pattern;comment:the sync pattern 1. sync 2. async 3. stream" json:"sync_pattern"`                            // the sync pattern 1. sync 2. async 3. stream
+	CommitID        string `gorm:"column:commit_id;comment:draft commit id this execution belongs to" json:"commit_id"`                                    // draft commit id this execution belongs to
 }
 
 // TableName WorkflowExecution's table name

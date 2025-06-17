@@ -7,15 +7,56 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
-type TypeInfo = vo.TypeInfo
-type NamedTypeInfo = vo.NamedTypeInfo
 type ContentType = workflow.WorkFlowType
 type Tag = workflow.Tag
 type Mode = workflow.WorkflowMode
-type DevStatus = workflow.WorkFlowDevStatus
 
 type Workflow struct {
-	WorkflowIdentity
+	ID       int64
+	CommitID string
+
+	*vo.Meta
+	*vo.CanvasInfoV2
+	*vo.DraftMeta
+	*vo.VersionMeta
+}
+
+func (w *Workflow) GetBasic() *WorkflowBasic {
+	var version string
+	if w.VersionMeta != nil {
+		version = w.VersionMeta.Version
+	}
+	return &WorkflowBasic{
+		ID:       w.ID,
+		Version:  version,
+		SpaceID:  w.SpaceID,
+		AppID:    w.AppID,
+		CommitID: w.CommitID,
+	}
+}
+
+func (w *Workflow) GetLatestVersion() string {
+	if w.LatestPublishedVersion == nil {
+		return ""
+	}
+
+	return *w.LatestPublishedVersion
+}
+
+func (w *Workflow) GetVersion() string {
+	if w.VersionMeta == nil {
+		return ""
+	}
+	return w.VersionMeta.Version
+}
+
+type IDVersionPair struct {
+	ID      int64
+	Version string
+}
+
+type WorkflowMeta struct {
+	ID int64
 
 	SpaceID     int64
 	CreatorID   int64
@@ -25,10 +66,7 @@ type Workflow struct {
 	AppID       *int64
 	SourceID    *int64
 	AuthorID    int64
-	VersionDesc string
-	// BaseVersion *string TODO: may need to provide relationships between versions, such as to know which version is the latest
 
-	Stage     Stage
 	Name      string
 	Desc      string
 	IconURI   string
@@ -38,24 +76,7 @@ type Workflow struct {
 	UpdaterID *int64
 	DeletedAt *time.Time
 
-	Canvas *string
-
-	InputParams  []*vo.NamedTypeInfo
-	OutputParams []*vo.NamedTypeInfo
-
-	SubWorkflows []*Workflow
-
-	TestRunSuccess bool
-	Modified       bool
-
-	HasPublished      bool
-	LatestVersion     string
-	LatestVersionDesc string
-}
-
-type WorkflowIdentity struct {
-	ID      int64
-	Version string
+	HasPublished bool
 }
 
 type Stage uint8
@@ -66,20 +87,9 @@ const (
 )
 
 type WorkflowBasic struct {
-	WorkflowIdentity
-	SpaceID   int64
-	AppID     *int64
-	NodeCount int32
-}
-
-func (w *Workflow) GetBasic(nodeCount int32) *WorkflowBasic {
-	return &WorkflowBasic{
-		WorkflowIdentity: WorkflowIdentity{
-			ID:      w.ID,
-			Version: w.Version,
-		},
-		SpaceID:   w.SpaceID,
-		AppID:     w.AppID,
-		NodeCount: nodeCount,
-	}
+	ID       int64
+	Version  string
+	SpaceID  int64
+	AppID    *int64
+	CommitID string
 }

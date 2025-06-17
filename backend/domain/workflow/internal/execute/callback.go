@@ -44,6 +44,7 @@ type WorkflowHandler struct {
 	rootWorkflowBasic *entity.WorkflowBasic
 	rootExecuteID     int64
 	subWorkflowBasic  *entity.WorkflowBasic
+	nodeCount         int32
 	requireCheckpoint bool
 	resumeEvent       *entity.InterruptEvent
 	exeCfg            vo.ExecuteConfig
@@ -56,17 +57,13 @@ type ToolHandler struct {
 
 func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler { // TODO: to be removed
 	return &WorkflowHandler{
-		ch: ch,
-		rootWorkflowBasic: &entity.WorkflowBasic{
-			WorkflowIdentity: entity.WorkflowIdentity{
-				ID: workflowID,
-			},
-		},
+		ch:                ch,
+		rootWorkflowBasic: &entity.WorkflowBasic{ID: workflowID},
 	}
 }
 
 func NewRootWorkflowHandler(wb *entity.WorkflowBasic, executeID int64, requireCheckpoint bool,
-	ch chan<- *Event, resumedEvent *entity.InterruptEvent, exeCfg vo.ExecuteConfig,
+	ch chan<- *Event, resumedEvent *entity.InterruptEvent, exeCfg vo.ExecuteConfig, nodeCount int32,
 ) callbacks.Handler {
 	return &WorkflowHandler{
 		ch:                ch,
@@ -75,11 +72,12 @@ func NewRootWorkflowHandler(wb *entity.WorkflowBasic, executeID int64, requireCh
 		requireCheckpoint: requireCheckpoint,
 		resumeEvent:       resumedEvent,
 		exeCfg:            exeCfg,
+		nodeCount:         nodeCount,
 	}
 }
 
 func NewSubWorkflowHandler(parent *WorkflowHandler, subWB *entity.WorkflowBasic,
-	resumedEvent *entity.InterruptEvent,
+	resumedEvent *entity.InterruptEvent, nodeCount int32,
 ) callbacks.Handler {
 	return &WorkflowHandler{
 		ch:                parent.ch,
@@ -88,6 +86,7 @@ func NewSubWorkflowHandler(parent *WorkflowHandler, subWB *entity.WorkflowBasic,
 		requireCheckpoint: parent.requireCheckpoint,
 		subWorkflowBasic:  subWB,
 		resumeEvent:       resumedEvent,
+		nodeCount:         nodeCount,
 	}
 }
 
@@ -237,9 +236,10 @@ func (w *WorkflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, 
 
 	c := GetExeCtx(newCtx)
 	w.ch <- &Event{
-		Type:    WorkflowStart,
-		Context: c,
-		Input:   input.(map[string]any),
+		Type:      WorkflowStart,
+		Context:   c,
+		Input:     input.(map[string]any),
+		nodeCount: w.nodeCount,
 	}
 
 	return newCtx
@@ -476,9 +476,10 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 	}
 	c := GetExeCtx(newCtx)
 	w.ch <- &Event{
-		Type:    WorkflowStart,
-		Context: c,
-		Input:   fullInput,
+		Type:      WorkflowStart,
+		Context:   c,
+		Input:     fullInput,
+		nodeCount: w.nodeCount,
 	}
 	return newCtx
 }
@@ -998,9 +999,12 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				VariableSelect: varSelect,
 			}
 
-			fullOutput := make(map[string]any)
+			fullOutput := &nodes.StructuredCallbackOutput{
+				Output:    make(map[string]any),
+				RawOutput: make(map[string]any),
+			}
 			var (
-				previous map[string]any
+				previous *nodes.StructuredCallbackOutput
 				first    = true
 			)
 			for {
@@ -1015,18 +1019,32 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					return
 				}
 				previous = fullOutput
-				fullOutput, e = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
+
+				fullOutputMap, e := nodes.ConcatTwoMaps(fullOutput.Output, chunk.(*nodes.StructuredCallbackOutput).Output)
 				if e != nil {
 					logs.Errorf("failed to concat two maps: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
 				}
 
+				fullRawOutput, e := nodes.ConcatTwoMaps(fullOutput.RawOutput, chunk.(*nodes.StructuredCallbackOutput).RawOutput)
+				if e != nil {
+					logs.Errorf("failed to concat two maps: %v", e)
+					_ = n.OnError(ctx, info, e)
+					return
+				}
+
+				fullOutput = &nodes.StructuredCallbackOutput{
+					Output:    fullOutputMap,
+					RawOutput: fullRawOutput,
+				}
+
 				if !reflect.DeepEqual(fullOutput, previous) {
 					deltaEvent := &Event{
-						Type:    NodeStreamingOutput,
-						Context: c,
-						Output:  fullOutput,
+						Type:      NodeStreamingOutput,
+						Context:   c,
+						Output:    fullOutput.Output,
+						RawOutput: fullOutput.RawOutput,
 					}
 					if first {
 						deltaEvent.extra = extra
@@ -1039,8 +1057,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			e := &Event{
 				Type:      NodeEndStreaming,
 				Context:   c,
-				Output:    fullOutput,
-				RawOutput: fullOutput,
+				Output:    fullOutput.Output,
+				RawOutput: fullOutput.RawOutput,
 				Duration:  time.Since(time.UnixMilli(c.StartTime)),
 			}
 
@@ -1279,6 +1297,7 @@ func (t *ToolHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			fullResponse              string
 			callID                    = compose.GetToolCallID(ctx)
 		)
+
 		for {
 			chunk, e := output.Recv()
 			if e != nil {

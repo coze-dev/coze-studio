@@ -94,7 +94,8 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		if parentNodeID != nil { // root workflow execution has already been created
 			wfExec := &entity.WorkflowExecution{
 				ID:                  exeID,
-				WorkflowIdentity:    wb.WorkflowIdentity,
+				WorkflowID:          wb.ID,
+				Version:             wb.Version,
 				SpaceID:             wb.SpaceID,
 				ExecuteConfig:       event.ExeCfg,
 				Status:              entity.WorkflowRunning,
@@ -102,7 +103,8 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				RootExecutionID:     event.RootExecuteID,
 				ParentNodeID:        parentNodeID,
 				ParentNodeExecuteID: parentNodeExecuteID,
-				NodeCount:           wb.NodeCount,
+				NodeCount:           event.nodeCount,
+				CommitID:            wb.CommitID,
 			}
 
 			if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
@@ -614,6 +616,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			},
 		}, nil)
 	case ToolError:
+		// TODO: optimize this log
 		logs.CtxErrorf(ctx, "received tool error event: %v", event)
 	default:
 		panic("unimplemented event type: " + event.Type)
@@ -637,8 +640,10 @@ func HandleExecuteEvent(ctx context.Context,
 	repo workflow.Repository,
 	sw *schema.StreamWriter[*entity.Message], // stream writer for emitting entity.Message
 	exeCfg vo.ExecuteConfig,
-) *Event {
+) (event *Event) {
 	defer func() {
+		logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
+			event.Type, event.Context.RootWorkflowBasic.ID)
 		clearFn()
 		if timeoutFn != nil {
 			timeoutFn()
@@ -657,7 +662,13 @@ func HandleExecuteEvent(ctx context.Context,
 		select {
 		case <-cancelSignalChan:
 			cancelFn()
-		case event := <-eventChan:
+		case event = <-eventChan:
+			var nodeType entity.NodeType
+			if event.Context.NodeCtx != nil {
+				nodeType = event.Context.NodeCtx.NodeType
+			}
+			fmt.Println(fmt.Sprintf("receiving event type= %v, workflowID= %v, nodeType= %v", event.Type, event.RootWorkflowBasic.ID, nodeType))
+
 			signal, err := handleEvent(ctx, event, repo, sw)
 			if err != nil {
 				logs.Error("failed to handle event: %v", err)
@@ -672,7 +683,8 @@ func HandleExecuteEvent(ctx context.Context,
 				wfSuccessEvent = event
 				if lastNodeIsDone || exeCfg.Mode == vo.ExecuteModeNodeDebug {
 					if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
-						logs.Error("failed to set root workflow success: %v", err)
+						logs.Errorf("failed to set root workflow success for workflow %d: %v",
+							wfSuccessEvent.RootWorkflowBasic.ID, err)
 					}
 					return wfSuccessEvent
 				}
@@ -680,7 +692,7 @@ func HandleExecuteEvent(ctx context.Context,
 				lastNodeIsDone = true
 				if wfSuccessEvent != nil {
 					if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
-						logs.Error("failed to set root workflow success: %v", err)
+						logs.Errorf("failed to set root workflow success: %v", err)
 					}
 					return wfSuccessEvent
 				}

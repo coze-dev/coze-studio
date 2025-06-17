@@ -9,6 +9,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	dbservice "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -125,7 +126,10 @@ type workflowPacker struct {
 }
 
 func (w *workflowPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
-	info, err := w.appContext.WorkflowDomainSVC.GetWorkflowDraft(ctx, w.resID)
+	info, err := w.appContext.WorkflowDomainSVC.Get(ctx, &vo.GetPolicy{
+		ID:       w.resID,
+		MetaOnly: true,
+	})
 	if err != nil {
 		return nil, err
 	}

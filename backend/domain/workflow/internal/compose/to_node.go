@@ -112,10 +112,16 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 					workflowToolConfig.OutputParametersConfig = wf.FCSetting.ResponseParameters
 				}
 
-				wfTool, err := workflow2.GetRepository().WorkflowAsTool(ctx, entity.WorkflowIdentity{
+				locator := vo.FromDraft
+				if wf.WorkflowVersion != "" {
+					locator = vo.FromSpecificVersion
+				}
+
+				wfTool, err := workflow2.GetRepository().WorkflowAsTool(ctx, vo.GetPolicy{
 					ID:      wfID,
-					Version: wf.WorkflowVersion},
-					workflowToolConfig)
+					QType:   locator,
+					Version: wf.WorkflowVersion,
+				}, workflowToolConfig)
 				if err != nil {
 					return nil, err
 				}
