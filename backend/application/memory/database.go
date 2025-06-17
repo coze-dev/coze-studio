@@ -822,7 +822,7 @@ func (d *DatabaseApplicationService) DuplicateDatabase(ctx context.Context, req 
 		}
 
 		draftDatabase := draftResp.Database
-		duplicateDatabases = append(duplicateDatabases, draftDatabase)
+		duplicateDatabases = append(duplicateDatabases, onlineDatabase)
 		draftMaps[srcDB.GetDraftID()] = draftDatabase.ID
 		onlineMaps[srcDB.GetOnlineID()] = onlineDatabase.ID
 
@@ -922,5 +922,63 @@ type DuplicateDatabaseRequest struct {
 }
 
 type DuplicateDatabaseResponse struct {
-	Databases []*entity.Database // the new draft databases
+	Databases []*entity.Database // the new online databases
+}
+
+func (d *DatabaseApplicationService) MoveDatabaseToLibrary(ctx context.Context, req MoveDatabaseToLibraryRequest) (*MoveDatabaseToLibraryResponse, error) {
+	basics := make([]*model.DatabaseBasic, 0, len(req.DatabaseIDs))
+	for _, id := range req.DatabaseIDs {
+		basics = append(basics, &model.DatabaseBasic{
+			ID:        id,
+			TableType: req.TableType,
+		})
+	}
+
+	res, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{Basics: basics})
+	if err != nil {
+		return nil, err
+	}
+
+	moveDatabases := make([]*entity.Database, 0, len(req.DatabaseIDs))
+	for _, srcDB := range res.Databases {
+
+		srcDB.AppID = 0
+		moveDatabaseResp, err := d.DomainSVC.UpdateDatabase(ctx, &database.UpdateDatabaseRequest{
+			Database: srcDB,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		onlineDatabase := moveDatabaseResp.Database
+		moveDatabases = append(moveDatabases, onlineDatabase)
+		// publish resource event
+		err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+			OpType: searchEntity.Updated,
+			Resource: &searchEntity.ResourceDocument{
+				ResType:      resCommon.ResType_Database,
+				ResID:        onlineDatabase.ID,
+				Name:         &onlineDatabase.TableName,
+				APPID:        ptr.Of(onlineDatabase.AppID),
+				SpaceID:      &onlineDatabase.SpaceID,
+				UpdateTimeMS: ptr.Of(onlineDatabase.UpdatedAtMs),
+			},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("publish resource failed, err=%w", err)
+		}
+	}
+
+	return &MoveDatabaseToLibraryResponse{
+		Databases: moveDatabases,
+	}, nil
+}
+
+type MoveDatabaseToLibraryRequest struct {
+	DatabaseIDs []int64
+	TableType   table.TableType // table type of the source databases
+}
+
+type MoveDatabaseToLibraryResponse struct {
+	Databases []*entity.Database // the online databases after move
 }
