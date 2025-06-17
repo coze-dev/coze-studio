@@ -769,7 +769,7 @@ func (d *DatabaseApplicationService) DeleteDatabaseByAppID(ctx context.Context, 
 	return nil
 }
 
-func (d *DatabaseApplicationService) DuplicateDatabase(ctx context.Context, req DuplicateDatabaseRequest) (*DuplicateDatabaseResponse, error) {
+func (d *DatabaseApplicationService) DuplicateDatabase(ctx context.Context, req *DuplicateDatabaseRequest) (*DuplicateDatabaseResponse, error) {
 	var err error
 
 	basics := make([]*model.DatabaseBasic, 0, len(req.DatabaseIDs))
@@ -795,12 +795,11 @@ func (d *DatabaseApplicationService) DuplicateDatabase(ctx context.Context, req 
 		} else {
 			srcDB.TableName += "_copy"
 		}
-		if req.TargetAppID != nil {
-			srcDB.AppID = *req.TargetAppID
-		}
 		if req.TargetSpaceID != nil {
 			srcDB.SpaceID = *req.TargetSpaceID
 		}
+
+		srcDB.AppID = req.TargetAppID
 
 		srcDB.CreatorID = req.CreatorID
 		if req.TargetSpaceID != nil {
@@ -826,18 +825,13 @@ func (d *DatabaseApplicationService) DuplicateDatabase(ctx context.Context, req 
 		draftMaps[srcDB.GetDraftID()] = draftDatabase.ID
 		onlineMaps[srcDB.GetOnlineID()] = onlineDatabase.ID
 
-		// publish resource event
-		var ptrAppID *int64
-		if onlineDatabase.AppID != 0 {
-			ptrAppID = ptr.Of(onlineDatabase.AppID)
-		}
 		err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 			OpType: searchEntity.Created,
 			Resource: &searchEntity.ResourceDocument{
 				ResType:      resCommon.ResType_Database,
 				ResID:        onlineDatabase.ID,
 				Name:         &onlineDatabase.TableName,
-				APPID:        ptrAppID,
+				APPID:        &onlineDatabase.AppID,
 				SpaceID:      &onlineDatabase.SpaceID,
 				OwnerID:      &onlineDatabase.CreatorID,
 				CreateTimeMS: ptr.Of(onlineDatabase.CreatedAtMs),
@@ -917,7 +911,7 @@ type DuplicateDatabaseRequest struct {
 
 	IsCopyData    bool    // is need to copy data
 	TargetSpaceID *int64  // if is nil, it will be set to the same space as the original database
-	TargetAppID   *int64  // if is nil, it will be set to the same app as the original database; if copy to resource, set to 0
+	TargetAppID   int64   // if is nil, it will be set to the same app as the original database; if copy to resource, set to 0
 	Suffix        *string // table name suffix for the copied table, default is "_copy"
 }
 
@@ -925,7 +919,7 @@ type DuplicateDatabaseResponse struct {
 	Databases []*entity.Database // the new online databases
 }
 
-func (d *DatabaseApplicationService) MoveDatabaseToLibrary(ctx context.Context, req MoveDatabaseToLibraryRequest) (*MoveDatabaseToLibraryResponse, error) {
+func (d *DatabaseApplicationService) MoveDatabaseToLibrary(ctx context.Context, req *MoveDatabaseToLibraryRequest) (*MoveDatabaseToLibraryResponse, error) {
 	basics := make([]*model.DatabaseBasic, 0, len(req.DatabaseIDs))
 	for _, id := range req.DatabaseIDs {
 		basics = append(basics, &model.DatabaseBasic{
@@ -959,9 +953,9 @@ func (d *DatabaseApplicationService) MoveDatabaseToLibrary(ctx context.Context, 
 				ResType:      resCommon.ResType_Database,
 				ResID:        onlineDatabase.ID,
 				Name:         &onlineDatabase.TableName,
-				APPID:        ptr.Of(onlineDatabase.AppID),
+				APPID:        &onlineDatabase.AppID,
 				SpaceID:      &onlineDatabase.SpaceID,
-				UpdateTimeMS: ptr.Of(onlineDatabase.UpdatedAtMs),
+				UpdateTimeMS: &onlineDatabase.UpdatedAtMs,
 			},
 		})
 		if err != nil {

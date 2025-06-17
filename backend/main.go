@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/joho/godotenv"
 
 	"code.byted.org/flow/opencoze/backend/api/middleware"
@@ -16,6 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
 func main() {

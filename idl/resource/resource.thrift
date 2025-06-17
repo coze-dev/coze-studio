@@ -43,12 +43,12 @@ struct ResourceCopyDispatchRequest {
     // 场景，只支持单资源的操作
     1 : resource_common.ResourceCopyScene scene,
     // 被用户选择复制/移动的资源ID
-    2 : string res_id
+    2 : i64 res_id (api.js_conv="true", api.body="res_id")
     3 : resource_common.ResType res_type
     // 所在项目ID
-    4 : optional string project_id
+    4 : optional i64 project_id (api.js_conv="true", api.body="project_id")
     5 : optional string res_name
-    6 : optional string target_space_id, // 跨空间复制的目标space id
+    6 : optional i64 target_space_id (api.js_conv="true", api.body="target_space_id") // 跨空间复制的目标space id
     255: base.Base Base,
 }
 

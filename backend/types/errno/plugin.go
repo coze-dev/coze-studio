@@ -19,6 +19,7 @@ const (
 	ErrPluginInvalidThirdPartyCode        = 109000008
 	ErrPluginExecuteToolFailed            = 109000009
 	ErrPluginConvertProtocolFailed        = 109000010
+	ErrPluginToolsCheckFailed             = 109000011
 )
 
 const (
@@ -83,6 +84,12 @@ func init() {
 	code.Register(
 		ErrPluginConvertProtocolFailed,
 		fmt.Sprintf("convert protocol failed : {%s}", PluginMsgKey),
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrPluginToolsCheckFailed,
+		fmt.Sprintf("tools check failed : {%s}", PluginMsgKey),
 		code.WithAffectStability(false),
 	)
 }

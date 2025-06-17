@@ -2,40 +2,49 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"runtime/debug"
+	"strconv"
 	"sync"
+	"time"
 
+	redisV9 "github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/app/consts"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal"
 	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
 )
 
 type appRepoImpl struct {
+	idGen idgen.IDGenerator
 	query *query.Query
 
 	appDraftDAO      *dal.APPDraftDAO
 	releaseRecordDAO *dal.ReleaseRecordDAO
 	connectorRefDAO  *dal.ConnectorReleaseRefDAO
+	cacheCli         *dal.AppCache
 }
 
 type APPRepoComponents struct {
-	IDGen idgen.IDGenerator
-	DB    *gorm.DB
+	IDGen    idgen.IDGenerator
+	DB       *gorm.DB
+	CacheCli *redisV9.Client
 }
 
 func NewAPPRepo(components *APPRepoComponents) AppRepository {
 	return &appRepoImpl{
+		idGen:            components.IDGen,
 		query:            query.Use(components.DB),
 		appDraftDAO:      dal.NewAPPDraftDAO(components.DB, components.IDGen),
 		releaseRecordDAO: dal.NewReleaseRecordDAO(components.DB, components.IDGen),
 		connectorRefDAO:  dal.NewConnectorReleaseRefDAO(components.DB, components.IDGen),
+		cacheCli:         dal.NewAppCache(components.CacheCli),
 	}
 }
 
@@ -150,14 +159,17 @@ func (a *appRepoImpl) UpdateAPPPublishStatus(ctx context.Context, req *UpdateAPP
 	return a.releaseRecordDAO.UpdatePublishStatus(ctx, req.RecordID, req.PublishStatus, req.PublishRecordExtraInfo)
 }
 
-func (a *appRepoImpl) UpdateConnectorPublishStatus(ctx context.Context, recordID int64, status consts.ConnectorPublishStatus) (err error) {
+func (a *appRepoImpl) UpdateConnectorPublishStatus(ctx context.Context, recordID int64, status entity.ConnectorPublishStatus) (err error) {
 	return a.connectorRefDAO.UpdatePublishStatus(ctx, recordID, status)
 }
 
 func (a *appRepoImpl) GetAPPAllPublishRecords(ctx context.Context, appID int64, opts ...APPSelectedOptions) (records []*entity.PublishRecord, err error) {
 	var opt *dal.APPSelectedOption
-	for _, o := range opts {
-		o(opt)
+	if len(opts) > 0 {
+		opt = &dal.APPSelectedOption{}
+		for _, o := range opts {
+			o(opt)
+		}
 	}
 
 	apps, err := a.releaseRecordDAO.GetAPPAllPublishRecords(ctx, appID, opt)
@@ -191,4 +203,65 @@ func (a *appRepoImpl) GetAPPAllPublishRecords(ctx context.Context, appID int64, 
 	}
 
 	return records, nil
+}
+
+func (a *appRepoImpl) InitResourceCopyTask(ctx context.Context, result *entity.ResourceCopyResult) (taskID string, err error) {
+	id, err := a.idGen.GenID(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	taskID = strconv.FormatInt(id, 10)
+
+	b, err := json.Marshal(result)
+	if err != nil {
+		return "", err
+	}
+
+	key := a.makeResourceCopyTaskResultKey(taskID)
+	err = a.cacheCli.Set(ctx, key, string(b), ptr.Of(time.Hour))
+	if err != nil {
+		return "", err
+	}
+
+	return taskID, nil
+}
+
+func (a *appRepoImpl) SaveResourceCopyTaskResult(ctx context.Context, taskID string, result *entity.ResourceCopyResult) (err error) {
+	b, err := json.Marshal(result)
+	if err != nil {
+		return err
+	}
+
+	key := a.makeResourceCopyTaskResultKey(taskID)
+	err = a.cacheCli.Set(ctx, key, string(b), ptr.Of(time.Hour))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *appRepoImpl) GetResourceCopyTaskResult(ctx context.Context, taskID string) (result *entity.ResourceCopyResult, exist bool, err error) {
+	key := a.makeResourceCopyTaskResultKey(taskID)
+
+	b, exist, err := a.cacheCli.Get(ctx, key)
+	if err != nil {
+		return nil, false, err
+	}
+	if !exist {
+		return nil, false, nil
+	}
+
+	result = &entity.ResourceCopyResult{}
+	err = json.Unmarshal([]byte(b), result)
+	if err != nil {
+		return nil, false, err
+	}
+
+	return result, true, nil
+}
+
+func (a *appRepoImpl) makeResourceCopyTaskResultKey(taskID string) string {
+	return fmt.Sprintf("resource_copy_task_result_%s", taskID)
 }

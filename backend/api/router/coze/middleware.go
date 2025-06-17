@@ -1409,3 +1409,8 @@ func _uploadfileopenMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _draftprojectinnertasklistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

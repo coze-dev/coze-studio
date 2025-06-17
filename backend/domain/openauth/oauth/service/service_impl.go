@@ -55,7 +55,7 @@ func (o *oauthServiceImpl) GetAccessToken(ctx context.Context, req *GetAccessTok
 
 func (o *oauthServiceImpl) getOAuthProvider(ctx context.Context, req *GetAccessTokenRequest) (pr OAuthService, err error) {
 	switch req.OAuthInfo.OAuthProvider {
-	case model.OAuthProviderOfLark:
+	case model.OAuthProviderOfLarkPlugin, model.OAuthProviderOfLark:
 		return newLarkOAuth(o.repo), nil
 	case model.OAuthProviderOfStandard:
 		return newStandardOAuth(o.repo), nil

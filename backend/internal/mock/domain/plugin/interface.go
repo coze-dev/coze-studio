@@ -13,10 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	entity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	service "code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPluginService is a mock of PluginService interface.
@@ -68,6 +67,21 @@ func (m *MockPluginService) ConvertToOpenapi3Doc(ctx context.Context, req *servi
 func (mr *MockPluginServiceMockRecorder) ConvertToOpenapi3Doc(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConvertToOpenapi3Doc", reflect.TypeOf((*MockPluginService)(nil).ConvertToOpenapi3Doc), ctx, req)
+}
+
+// CopyPlugin mocks base method.
+func (m *MockPluginService) CopyPlugin(ctx context.Context, req *service.CopyPluginRequest) (*entity.PluginInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CopyPlugin", ctx, req)
+	ret0, _ := ret[0].(*entity.PluginInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CopyPlugin indicates an expected call of CopyPlugin.
+func (mr *MockPluginServiceMockRecorder) CopyPlugin(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyPlugin", reflect.TypeOf((*MockPluginService)(nil).CopyPlugin), ctx, req)
 }
 
 // CreateDraftPlugin mocks base method.
@@ -417,6 +431,21 @@ func (m *MockPluginService) MGetVersionTools(ctx context.Context, versionTools [
 func (mr *MockPluginServiceMockRecorder) MGetVersionTools(ctx, versionTools any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetVersionTools", reflect.TypeOf((*MockPluginService)(nil).MGetVersionTools), ctx, versionTools)
+}
+
+// MoveAPPPluginToLibrary mocks base method.
+func (m *MockPluginService) MoveAPPPluginToLibrary(ctx context.Context, pluginID int64) (*entity.PluginInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MoveAPPPluginToLibrary", ctx, pluginID)
+	ret0, _ := ret[0].(*entity.PluginInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MoveAPPPluginToLibrary indicates an expected call of MoveAPPPluginToLibrary.
+func (mr *MockPluginServiceMockRecorder) MoveAPPPluginToLibrary(ctx, pluginID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MoveAPPPluginToLibrary", reflect.TypeOf((*MockPluginService)(nil).MoveAPPPluginToLibrary), ctx, pluginID)
 }
 
 // PublishAPPPlugins mocks base method.

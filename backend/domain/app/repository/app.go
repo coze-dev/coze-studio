@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/domain/app/consts"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 )
 
@@ -19,8 +18,12 @@ type AppRepository interface {
 	CheckAPPVersionExist(ctx context.Context, appID int64, version string) (exist bool, err error)
 	CreateAPPPublishRecord(ctx context.Context, record *entity.PublishRecord) (recordID int64, err error)
 	UpdateAPPPublishStatus(ctx context.Context, req *UpdateAPPPublishStatusRequest) (err error)
-	UpdateConnectorPublishStatus(ctx context.Context, recordID int64, status consts.ConnectorPublishStatus) (err error)
+	UpdateConnectorPublishStatus(ctx context.Context, recordID int64, status entity.ConnectorPublishStatus) (err error)
 	GetAPPAllPublishRecords(ctx context.Context, appID int64, opts ...APPSelectedOptions) (records []*entity.PublishRecord, err error)
+
+	InitResourceCopyTask(ctx context.Context, result *entity.ResourceCopyResult) (taskID string, err error)
+	SaveResourceCopyTaskResult(ctx context.Context, taskID string, result *entity.ResourceCopyResult) (err error)
+	GetResourceCopyTaskResult(ctx context.Context, taskID string) (result *entity.ResourceCopyResult, exist bool, err error)
 }
 
 type GetPublishRecordRequest struct {
@@ -31,6 +34,6 @@ type GetPublishRecordRequest struct {
 
 type UpdateAPPPublishStatusRequest struct {
 	RecordID               int64
-	PublishStatus          consts.PublishStatus
+	PublishStatus          entity.PublishStatus
 	PublishRecordExtraInfo *entity.PublishRecordExtraInfo
 }

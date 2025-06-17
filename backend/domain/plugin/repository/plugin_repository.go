@@ -10,7 +10,7 @@ import (
 type PluginRepository interface {
 	CreateDraftPlugin(ctx context.Context, plugin *entity.PluginInfo) (pluginID int64, err error)
 	CreateDraftPluginWithCode(ctx context.Context, req *CreateDraftPluginWithCodeRequest) (resp *CreateDraftPluginWithCodeResponse, err error)
-	GetDraftPlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error)
+	GetDraftPlugin(ctx context.Context, pluginID int64, opts ...PluginSelectedOptions) (plugin *entity.PluginInfo, exist bool, err error)
 	MGetDraftPlugins(ctx context.Context, pluginIDs []int64, opts ...PluginSelectedOptions) (plugins []*entity.PluginInfo, err error)
 	GetAPPAllDraftPlugins(ctx context.Context, appID int64) (plugins []*entity.PluginInfo, err error)
 	ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error)
@@ -29,6 +29,9 @@ type PluginRepository interface {
 
 	PublishPlugin(ctx context.Context, draftPlugin *entity.PluginInfo) (err error)
 	PublishPlugins(ctx context.Context, draftPlugins []*entity.PluginInfo) (err error)
+
+	CopyPlugin(ctx context.Context, req *CopyPluginRequest) (pluginID int64, err error)
+	MoveAPPPluginToLibrary(ctx context.Context, draftPlugin *entity.PluginInfo, draftTools []*entity.ToolInfo) (err error)
 }
 
 type UpdatePluginDraftWithCode struct {
@@ -62,4 +65,9 @@ type ListDraftPluginsRequest struct {
 type ListDraftPluginsResponse struct {
 	Plugins []*entity.PluginInfo
 	Total   int64
+}
+
+type CopyPluginRequest struct {
+	Plugin *entity.PluginInfo
+	Tools  []*entity.ToolInfo
 }

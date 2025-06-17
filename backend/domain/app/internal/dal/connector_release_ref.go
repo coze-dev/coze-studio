@@ -5,7 +5,6 @@ import (
 
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/app/consts"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/query"
@@ -29,7 +28,7 @@ type connectorReleaseRefPO model.ConnectorReleaseRef
 func (a connectorReleaseRefPO) ToDO() *entity.ConnectorPublishRecord {
 	return &entity.ConnectorPublishRecord{
 		ConnectorID:   a.ConnectorID,
-		PublishStatus: consts.ConnectorPublishStatus(a.PublishStatus),
+		PublishStatus: entity.ConnectorPublishStatus(a.PublishStatus),
 		PublishConfig: a.PublishConfig,
 	}
 }
@@ -88,7 +87,7 @@ func (c *ConnectorReleaseRefDAO) GetAllConnectorRecords(ctx context.Context, rec
 	return publishInfo, nil
 }
 
-func (c *ConnectorReleaseRefDAO) UpdatePublishStatus(ctx context.Context, recordID int64, status consts.ConnectorPublishStatus) error {
+func (c *ConnectorReleaseRefDAO) UpdatePublishStatus(ctx context.Context, recordID int64, status entity.ConnectorPublishStatus) error {
 	table := c.query.ConnectorReleaseRef
 
 	_, err := table.WithContext(ctx).

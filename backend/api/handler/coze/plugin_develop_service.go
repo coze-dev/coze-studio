@@ -392,11 +392,11 @@ func UpdatePluginMeta(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "pluginID is invalid")
 		return
 	}
-	if req.GetName() == "" {
+	if req.Name != nil && *req.Name == "" {
 		invalidParamRequestResponse(c, "plugin name is invalid")
 		return
 	}
-	if req.GetDesc() == "" {
+	if req.Desc != nil && *req.Desc == "" {
 		invalidParamRequestResponse(c, "plugin desc is invalid")
 		return
 	}
@@ -511,7 +511,7 @@ func CreateAPI(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "api desc is invalid")
 		return
 	}
-	if req.GetPath() == "" || len(req.GetPath()) > 512 {
+	if req.Path != nil && (*req.Path == "" || len(*req.Path) > 512) {
 		invalidParamRequestResponse(c, "api path is invalid")
 		return
 	}

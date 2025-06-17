@@ -60,7 +60,9 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 		cursor = listMetaResp.NextCursor
 	}
 
-	staticModelMeta, err := readDirYaml[crossmodelmgr.ModelMeta]("resources/conf/model/meta")
+	root := os.Getenv("PWD")
+	filePath := filepath.Join(root, "resources/conf/model/meta")
+	staticModelMeta, err := readDirYaml[crossmodelmgr.ModelMeta](filePath)
 	if err != nil {
 		return err
 	}
@@ -106,7 +108,8 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 		}
 	}
 
-	staticModel, err := readDirYaml[crossmodelmgr.Model]("resources/conf/model/entity")
+	filePath = filepath.Join(root, "resources/conf/model/entity")
+	staticModel, err := readDirYaml[crossmodelmgr.Model](filePath)
 	if err != nil {
 		return err
 	}

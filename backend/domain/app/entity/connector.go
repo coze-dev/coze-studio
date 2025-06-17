@@ -2,7 +2,6 @@ package entity
 
 import (
 	publishAPI "code.byted.org/flow/opencoze/backend/api/model/publish"
-	appConsts "code.byted.org/flow/opencoze/backend/domain/app/consts"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
@@ -11,9 +10,9 @@ var ConnectorIDWhiteList = []int64{
 }
 
 type ConnectorPublishRecord struct {
-	ConnectorID   int64                            `json:"connector_id"`
-	PublishStatus appConsts.ConnectorPublishStatus `json:"publish_status"`
-	PublishConfig PublishConfig                    `json:"publish_config"`
+	ConnectorID   int64                  `json:"connector_id"`
+	PublishStatus ConnectorPublishStatus `json:"publish_status"`
+	PublishConfig PublishConfig          `json:"publish_config"`
 }
 
 type PublishConfig struct {

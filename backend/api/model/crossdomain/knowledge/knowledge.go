@@ -2,6 +2,7 @@ package knowledge
 
 import (
 	"github.com/bytedance/sonic"
+
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"

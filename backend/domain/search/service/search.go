@@ -335,14 +335,12 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 	sr := s.esClient.Search()
 
 	mustQueries := make([]types.Query, 0, 10)
-	mustNotQueries := make([]types.Query, 0, 10)
+	shouldQueries := make([]types.Query, 0, 10)
 
 	if req.APPID > 0 {
 		mustQueries = append(mustQueries,
 			types.Query{
-				Term: map[string]types.TermQuery{
-					fieldOfAPPID: {Value: conv.Int64ToStr(req.APPID)},
-				},
+				Term: map[string]types.TermQuery{fieldOfAPPID: {Value: conv.Int64ToStr(req.APPID)}},
 			})
 	} else {
 		mustQueries = append(mustQueries,
@@ -350,11 +348,14 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 				fieldOfSpaceID: {Value: conv.Int64ToStr(req.SpaceID)},
 			}},
 		)
-		mustNotQueries = append(mustNotQueries,
+		shouldQueries = append(shouldQueries,
 			types.Query{
-				Exists: &types.ExistsQuery{
-					Field: fieldOfAPPID,
+				Bool: &types.BoolQuery{
+					MustNot: []types.Query{{Exists: &types.ExistsQuery{Field: fieldOfAPPID}}},
 				},
+			},
+			types.Query{
+				Term: map[string]types.TermQuery{fieldOfAPPID: {Value: "0"}},
 			})
 	}
 
@@ -416,14 +417,25 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 			})
 	}
 
-	searchReq := &search.Request{
-		Query: &types.Query{
-			Bool: &types.BoolQuery{
-				Must:    mustQueries,
-				MustNot: mustNotQueries,
-				Filter:  make([]types.Query, 0),
+	var searchReq *search.Request
+	if len(shouldQueries) > 0 {
+		searchReq = &search.Request{
+			Query: &types.Query{
+				Bool: &types.BoolQuery{
+					Should:             shouldQueries,
+					MinimumShouldMatch: 1,
+					Must:               mustQueries,
+				},
 			},
-		},
+		}
+	} else {
+		searchReq = &search.Request{
+			Query: &types.Query{
+				Bool: &types.BoolQuery{
+					Must: mustQueries,
+				},
+			},
+		}
 	}
 
 	sr = sr.Request(searchReq)

@@ -84,3 +84,11 @@ const (
 	AssistTypeAudio APIFileAssistType = "audio"
 	AssistTypeTXT   APIFileAssistType = "txt"
 )
+
+type CopyScene string
+
+const (
+	CopySceneOfToAPP      CopyScene = "to_app"
+	CopySceneOfToLibrary  CopyScene = "to_library"
+	CopySceneOfDuplicated CopyScene = "duplicated"
+)

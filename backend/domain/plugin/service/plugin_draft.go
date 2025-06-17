@@ -28,7 +28,9 @@ import (
 func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDraftPluginRequest) (pluginID int64, err error) {
 	mf := entity.NewDefaultPluginManifest()
 	mf.NameForHuman = req.Name
+	mf.NameForModel = req.Name
 	mf.DescriptionForHuman = req.Desc
+	mf.DescriptionForModel = req.Desc
 	mf.API.Type, _ = model.ToPluginType(req.PluginType)
 	mf.LogoURL = req.IconURI
 
@@ -405,7 +407,7 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 
 	newPlugin := entity.NewPluginInfo(&model.PluginInfo{
 		ID:         req.PluginID,
-		IconURI:    ptr.Of(req.Icon.URI),
+		IconURI:    ptr.Of(mf.LogoURL),
 		ServerURL:  req.URL,
 		Manifest:   mf,
 		OpenapiDoc: doc,
@@ -455,10 +457,16 @@ func updatePluginOpenapiDoc(_ context.Context, doc *model.Openapi3T, req *Update
 func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *UpdateDraftPluginRequest) (*entity.PluginManifest, error) {
 	if req.Name != nil {
 		mf.NameForHuman = *req.Name
+		mf.NameForModel = *req.Name
 	}
 
 	if req.Desc != nil {
 		mf.DescriptionForHuman = *req.Desc
+		mf.DescriptionForModel = *req.Desc
+	}
+
+	if req.Icon != nil {
+		mf.LogoURL = req.Icon.URI
 	}
 
 	if len(req.CommonParams) > 0 {
@@ -481,12 +489,14 @@ func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *Upd
 		}
 	}
 
-	authV2, err := req.AuthInfo.toAuthV2()
-	if err != nil {
-		return nil, err
-	}
+	if req.AuthInfo != nil {
+		authV2, err := req.AuthInfo.toAuthV2()
+		if err != nil {
+			return nil, err
+		}
 
-	mf.Auth = authV2
+		mf.Auth = authV2
+	}
 
 	return mf, nil
 }

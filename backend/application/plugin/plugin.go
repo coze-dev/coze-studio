@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -467,9 +468,38 @@ func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *plugi
 		return nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
+	metaInfo, err := p.getPluginMetaInfo(ctx, draftPlugin)
+	if err != nil {
+		return nil, err
+	}
+
+	codeInfo, err := p.getPluginCodeInfo(ctx, draftPlugin)
+	if err != nil {
+		return nil, err
+	}
+
+	_, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID, repository.WithPluginID())
+	if err != nil {
+		return nil, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
+	}
+
+	resp = &pluginAPI.GetPluginInfoResponse{
+		MetaInfo:       metaInfo,
+		CodeInfo:       codeInfo,
+		Creator:        common.NewCreator(),
+		StatisticData:  common.NewPluginStatisticData(),
+		PluginType:     draftPlugin.PluginType,
+		CreationMethod: common.CreationMethod_COZE,
+		Published:      exist,
+	}
+
+	return resp, nil
+}
+
+func (p *PluginApplicationService) getPluginCodeInfo(ctx context.Context, draftPlugin *entity.PluginInfo) (*common.CodeInfo, error) {
 	tools, err := p.toolRepo.GetPluginAllDraftTools(ctx, draftPlugin.ID)
 	if err != nil {
-		return nil, errorx.Wrapf(err, "GetPluginAllDraftTools failed, pluginID=%d", req.PluginID)
+		return nil, errorx.Wrapf(err, "GetPluginAllDraftTools failed, pluginID=%d", draftPlugin.ID)
 	}
 
 	paths := openapi3.Paths{}
@@ -498,21 +528,7 @@ func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *plugi
 		PluginDesc:  manifestStr,
 	}
 
-	metaInfo, err := p.getPluginMetaInfo(ctx, draftPlugin)
-	if err != nil {
-		return nil, err
-	}
-
-	resp = &pluginAPI.GetPluginInfoResponse{
-		MetaInfo:       metaInfo,
-		CodeInfo:       codeInfo,
-		Creator:        common.NewCreator(),
-		StatisticData:  common.NewPluginStatisticData(),
-		PluginType:     draftPlugin.PluginType,
-		CreationMethod: common.CreationMethod_COZE,
-	}
-
-	return resp, nil
+	return codeInfo, nil
 }
 
 func (p *PluginApplicationService) getPluginMetaInfo(ctx context.Context, draftPlugin *entity.PluginInfo) (*common.PluginMetaInfo, error) {
@@ -580,9 +596,10 @@ func (p *PluginApplicationService) fillAuthInfoInMetaInfo(ctx context.Context, d
 
 	if authType == common.AuthorizationType_Service {
 		var loc common.AuthorizationServiceLocation
-		if authInfo.AuthOfAPIToken.Location == model.ParamInHeader {
+		_loc := model.HTTPParamLocation(strings.ToLower(string(authInfo.AuthOfAPIToken.Location)))
+		if _loc == model.ParamInHeader {
 			loc = common.AuthorizationServiceLocation_Header
-		} else if authInfo.AuthOfAPIToken.Location == model.ParamInQuery {
+		} else if _loc == model.ParamInQuery {
 			loc = common.AuthorizationServiceLocation_Query
 		} else {
 			return fmt.Errorf("invalid location '%s'", authInfo.AuthOfAPIToken.Location)
@@ -900,8 +917,46 @@ func (p *PluginApplicationService) PublishPlugin(ctx context.Context, req *plugi
 }
 
 func (p *PluginApplicationService) UpdatePluginMeta(ctx context.Context, req *pluginAPI.UpdatePluginMetaRequest) (resp *pluginAPI.UpdatePluginMetaResponse, err error) {
+	authInfo, err := getUpdateAuthInfo(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	updateReq := &service.UpdateDraftPluginRequest{
+		PluginID:     req.PluginID,
+		Name:         req.Name,
+		Desc:         req.Desc,
+		URL:          req.URL,
+		Icon:         req.Icon,
+		CommonParams: req.CommonParams,
+		AuthInfo:     authInfo,
+	}
+	err = p.DomainSVC.UpdateDraftPlugin(ctx, updateReq)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "UpdateDraftPlugin failed, pluginID=%d", req.PluginID)
+	}
+
+	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Updated,
+		Resource: &searchEntity.ResourceDocument{
+			ResType:      resCommon.ResType_Plugin,
+			ResID:        req.PluginID,
+			Name:         req.Name,
+			UpdateTimeMS: ptr.Of(time.Now().UnixMilli()),
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
+	}
+
+	resp = &pluginAPI.UpdatePluginMetaResponse{}
+
+	return resp, nil
+}
+
+func getUpdateAuthInfo(ctx context.Context, req *pluginAPI.UpdatePluginMetaRequest) (authInfo *service.PluginAuthInfo, err error) {
 	if req.AuthType == nil {
-		return nil, fmt.Errorf("auth type is empty")
+		return nil, nil
 	}
 
 	_authType, ok := model.ToAuthType(req.GetAuthType())
@@ -930,44 +985,17 @@ func (p *PluginApplicationService) UpdatePluginMeta(ctx context.Context, req *pl
 		}
 	}
 
-	updateReq := &service.UpdateDraftPluginRequest{
-		PluginID:     req.PluginID,
-		Name:         req.Name,
-		Desc:         req.Desc,
-		URL:          req.URL,
-		Icon:         req.Icon,
-		CommonParams: req.CommonParams,
-		AuthInfo: &service.PluginAuthInfo{
-			AuthzType:    authType,
-			Location:     location,
-			Key:          req.Key,
-			ServiceToken: req.ServiceToken,
-			OAuthInfo:    req.OauthInfo,
-			AuthzSubType: authSubType,
-			AuthzPayload: req.AuthPayload,
-		},
-	}
-	err = p.DomainSVC.UpdateDraftPlugin(ctx, updateReq)
-	if err != nil {
-		return nil, errorx.Wrapf(err, "UpdateDraftPlugin failed, pluginID=%d", req.PluginID)
+	authInfo = &service.PluginAuthInfo{
+		AuthzType:    authType,
+		Location:     location,
+		Key:          req.Key,
+		ServiceToken: req.ServiceToken,
+		OAuthInfo:    req.OauthInfo,
+		AuthzSubType: authSubType,
+		AuthzPayload: req.AuthPayload,
 	}
 
-	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
-		OpType: searchEntity.Updated,
-		Resource: &searchEntity.ResourceDocument{
-			ResType:      resCommon.ResType_Plugin,
-			ResID:        req.PluginID,
-			Name:         req.Name,
-			UpdateTimeMS: ptr.Of(time.Now().UnixMilli()),
-		},
-	})
-	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
-	}
-
-	resp = &pluginAPI.UpdatePluginMetaResponse{}
-
-	return resp, nil
+	return authInfo, nil
 }
 
 func (p *PluginApplicationService) GetBotDefaultParams(ctx context.Context, req *pluginAPI.GetBotDefaultParamsRequest) (resp *pluginAPI.GetBotDefaultParamsResponse, err error) {
@@ -1379,4 +1407,73 @@ func (p *PluginApplicationService) BatchCreateAPI(ctx context.Context, req *plug
 func (p *PluginApplicationService) RevokeAuthToken(ctx context.Context, req *pluginAPI.RevokeAuthTokenRequest) (resp *pluginAPI.RevokeAuthTokenResponse, err error) {
 	resp = &pluginAPI.RevokeAuthTokenResponse{}
 	return resp, nil
+}
+
+func (p *PluginApplicationService) CopyPlugin(ctx context.Context, req *CopyPluginRequest) (resp *CopyPluginResponse, err error) {
+	plugin, err := p.DomainSVC.CopyPlugin(ctx, &service.CopyPluginRequest{
+		UserID:      req.UserID,
+		PluginID:    req.PluginID,
+		CopyScene:   req.CopyScene,
+		TargetAPPID: req.TargetAPPID,
+	})
+	if err != nil {
+		return nil, errorx.Wrapf(err, "CopyPlugin failed, pluginID=%d", req.PluginID)
+	}
+
+	now := time.Now().UnixMilli()
+	resDoc := &searchEntity.ResourceDocument{
+		ResType:       resCommon.ResType_Plugin,
+		ResSubType:    ptr.Of(int32(plugin.PluginType)),
+		ResID:         plugin.ID,
+		Name:          ptr.Of(plugin.GetName()),
+		SpaceID:       &plugin.SpaceID,
+		APPID:         plugin.APPID,
+		OwnerID:       &req.UserID,
+		PublishStatus: ptr.Of(resCommon.PublishStatus_UnPublished),
+		CreateTimeMS:  ptr.Of(now),
+	}
+	if plugin.Published() {
+		resDoc.PublishStatus = ptr.Of(resCommon.PublishStatus_Published)
+		resDoc.PublishTimeMS = ptr.Of(now)
+	}
+
+	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType:   searchEntity.Created,
+		Resource: resDoc,
+	})
+	if err != nil {
+		return nil, errorx.Wrapf(err, "publish resource '%d' failed", plugin.ID)
+	}
+
+	resp = &CopyPluginResponse{
+		Plugin: plugin,
+	}
+
+	return resp, nil
+}
+
+func (p *PluginApplicationService) MoveAPPPluginToLibrary(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error) {
+	plugin, err = p.DomainSVC.MoveAPPPluginToLibrary(ctx, pluginID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "MoveAPPPluginToLibrary failed, pluginID=%d", pluginID)
+	}
+
+	now := time.Now().UnixMilli()
+
+	err = p.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
+		OpType: searchEntity.Updated,
+		Resource: &searchEntity.ResourceDocument{
+			ResType:       resCommon.ResType_Plugin,
+			ResID:         pluginID,
+			APPID:         ptr.Of(int64(0)),
+			PublishStatus: ptr.Of(resCommon.PublishStatus_Published),
+			PublishTimeMS: ptr.Of(now),
+			UpdateTimeMS:  ptr.Of(now),
+		},
+	})
+	if err != nil {
+		return nil, errorx.Wrapf(err, "publish resource '%d' failed", pluginID)
+	}
+
+	return plugin, nil
 }

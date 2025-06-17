@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/go-playground/validator"
 	"golang.org/x/mod/semver"
 	"gopkg.in/yaml.v3"
 
@@ -150,12 +149,6 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 			continue
 		}
 
-		err = validator.New().Struct(m)
-		if err != nil {
-			logs.Errorf("plugin meta info validates failed, err=%v", err)
-			continue
-		}
-
 		err = m.Manifest.Validate()
 		if err != nil {
 			logs.Errorf("plugin manifest validates failed, err=%v", err)
@@ -227,11 +220,11 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 			}
 			op, ok := apis[api]
 			if !ok {
-				logs.Errorf("api '%s:%s' not found in doc '%s'", api.Method, api.SubURL, docPath)
+				logs.Errorf("api '[%s]:%s' not found in doc '%s'", api.Method, api.SubURL, docPath)
 				continue
 			}
 			if err = op.Validate(); err != nil {
-				logs.Errorf("the openapi3 operation of tool '%s:%s' in '%s' validates failed, err=%v",
+				logs.Errorf("the openapi3 operation of tool '[%s]:%s' in '%s' validates failed, err=%v",
 					t.Method, t.SubURL, m.OpenapiDocFile, err)
 				continue
 			}

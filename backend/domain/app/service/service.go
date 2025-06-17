@@ -15,8 +15,6 @@ type AppService interface {
 
 	PublishAPP(ctx context.Context, req *PublishAPPRequest) (resp *PublishAPPResponse, err error)
 
-	CopyResource(ctx context.Context, req *CopyResourceRequest) (resp *CopyResourceResponse, err error)
-
 	GetAPPPublishRecord(ctx context.Context, req *GetAPPPublishRecordRequest) (record *entity.PublishRecord, published bool, err error)
 	GetAPPAllPublishRecords(ctx context.Context, appID int64) (records []*entity.PublishRecord, err error)
 	GetPublishConnectorList(ctx context.Context, req *GetPublishConnectorListRequest) (resp *GetPublishConnectorListResponse, err error)
@@ -47,12 +45,6 @@ type PublishAPPRequest struct {
 type PublishAPPResponse struct {
 	PublishRecordID int64
 	Success         bool
-}
-
-type CopyResourceRequest struct {
-}
-
-type CopyResourceResponse struct {
 }
 
 type GetAPPPublishRecordRequest struct {

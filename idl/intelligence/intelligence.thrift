@@ -4,6 +4,7 @@ include  "common_struct/intelligence_common_struct.thrift"
 include  "common_struct/common_struct.thrift"
 include  "./project.thrift"
 include  "publish.thrift"
+include "task.thrift"
 
 namespace go intelligence
 
@@ -11,6 +12,8 @@ service IntelligenceService {
     project.DraftProjectCreateResponse DraftProjectCreate(1: project.DraftProjectCreateRequest request)(api.post='/api/intelligence_api/draft_project/create', api.category="draft_project",agw.preserve_base="true")
     project.DraftProjectUpdateResponse DraftProjectUpdate(1: project.DraftProjectUpdateRequest request)(api.post='/api/intelligence_api/draft_project/update', api.category="draft_project",agw.preserve_base="true")
     project.DraftProjectDeleteResponse DraftProjectDelete(1: project.DraftProjectDeleteRequest request)(api.post='/api/intelligence_api/draft_project/delete', api.category="draft_project",agw.preserve_base="true")
+
+    task.DraftProjectInnerTaskListResponse DraftProjectInnerTaskList(1: task.DraftProjectInnerTaskListRequest request)(api.post='/api/intelligence_api/draft_project/inner_task_list', api.category="draft_project",agw.preserve_base="true")
 
     search.GetDraftIntelligenceListResponse GetDraftIntelligenceList(1: search.GetDraftIntelligenceListRequest req) (api.post='/api/intelligence_api/search/get_draft_intelligence_list', api.category="search",agw.preserve_base="true")
     search.GetDraftIntelligenceInfoResponse GetDraftIntelligenceInfo(1: search.GetDraftIntelligenceInfoRequest req) (api.post='/api/intelligence_api/search/get_draft_intelligence_info', api.category="search",agw.preserve_base="true")

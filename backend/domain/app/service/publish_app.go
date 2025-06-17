@@ -9,7 +9,6 @@ import (
 	resourceCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
-	"code.byted.org/flow/opencoze/backend/domain/app/consts"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -47,7 +46,7 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 		if err != nil {
 			updateErr := a.APPRepo.UpdateAPPPublishStatus(ctx, &repository.UpdateAPPPublishStatusRequest{
 				RecordID:      recordID,
-				PublishStatus: consts.PublishStatusOfPackFailed,
+				PublishStatus: entity.PublishStatusOfPackFailed,
 			})
 			if updateErr != nil {
 				logs.CtxErrorf(ctx, "update publish status failed, err=%v", updateErr)
@@ -72,13 +71,13 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 	for cid := range req.ConnectorPublishConfigs {
 		switch cid {
 		case commonConsts.APIConnectorID:
-			updateSuccessErr := a.APPRepo.UpdateConnectorPublishStatus(ctx, recordID, consts.ConnectorPublishStatusOfSuccess)
+			updateSuccessErr := a.APPRepo.UpdateConnectorPublishStatus(ctx, recordID, entity.ConnectorPublishStatusOfSuccess)
 			if updateSuccessErr == nil {
 				continue
 			}
 			updateFailedErr := a.APPRepo.UpdateAPPPublishStatus(ctx, &repository.UpdateAPPPublishStatusRequest{
 				RecordID:      recordID,
-				PublishStatus: consts.PublishStatusOfPackFailed,
+				PublishStatus: entity.PublishStatusOfPackFailed,
 			})
 			if updateFailedErr != nil {
 				logs.CtxWarnf(ctx, "failed to update connector '%d' publish status to failed, err=%v", cid, updateFailedErr)
@@ -92,7 +91,7 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 
 	err = a.APPRepo.UpdateAPPPublishStatus(ctx, &repository.UpdateAPPPublishStatusRequest{
 		RecordID:      recordID,
-		PublishStatus: consts.PublishStatusOfPublishDone,
+		PublishStatus: entity.PublishStatusOfPublishDone,
 	})
 	if err != nil {
 		return false, err
@@ -131,7 +130,7 @@ func (a *appServiceImpl) createPublishVersion(ctx context.Context, req *PublishA
 	for cid, conf := range req.ConnectorPublishConfigs {
 		publishRecords = append(publishRecords, &entity.ConnectorPublishRecord{
 			ConnectorID:   cid,
-			PublishStatus: consts.ConnectorPublishStatusOfDefault,
+			PublishStatus: entity.ConnectorPublishStatusOfDefault,
 			PublishConfig: conf,
 		})
 		draftAPP.ConnectorIDs = append(draftAPP.ConnectorIDs, cid)
@@ -226,7 +225,7 @@ func (a *appServiceImpl) packResourcesFailedPostProcess(ctx context.Context, rec
 	}
 	updateErr := a.APPRepo.UpdateAPPPublishStatus(ctx, &repository.UpdateAPPPublishStatusRequest{
 		RecordID:               recordID,
-		PublishStatus:          consts.PublishStatusOfPackFailed,
+		PublishStatus:          entity.PublishStatusOfPackFailed,
 		PublishRecordExtraInfo: publishFailedInfo,
 	})
 	if updateErr != nil {

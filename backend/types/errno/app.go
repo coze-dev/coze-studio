@@ -6,6 +6,7 @@ import "code.byted.org/flow/opencoze/backend/pkg/errorx/code"
 const (
 	ErrAppInvalidParamCode = 101000000
 	ErrAppPermissionCode   = 101000001
+	ErrAppRecordNotFound   = 109000002
 )
 
 func init() {
@@ -18,6 +19,12 @@ func init() {
 	code.Register(
 		ErrAppInvalidParamCode,
 		"invalid parameter : {msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrAppRecordNotFound,
+		"record not found",
 		code.WithAffectStability(false),
 	)
 }

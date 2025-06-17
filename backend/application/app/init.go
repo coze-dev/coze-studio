@@ -1,6 +1,7 @@
 package app
 
 import (
+	redisV9 "github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
@@ -17,6 +18,7 @@ type ServiceComponents struct {
 	IDGen           idgen.IDGenerator
 	DB              *gorm.DB
 	OSS             storage.Storage
+	CacheCli        *redisV9.Client
 	ProjectEventBus search.ProjectEventBus
 
 	UserSVC      user.User
@@ -26,8 +28,9 @@ type ServiceComponents struct {
 
 func InitService(components *ServiceComponents) (*APPApplicationService, error) {
 	appRepo := repository.NewAPPRepo(&repository.APPRepoComponents{
-		IDGen: components.IDGen,
-		DB:    components.DB,
+		IDGen:    components.IDGen,
+		DB:       components.DB,
+		CacheCli: components.CacheCli,
 	})
 
 	domainComponents := &service.Components{

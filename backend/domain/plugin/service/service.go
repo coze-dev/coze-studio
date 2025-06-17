@@ -47,6 +47,8 @@ type PluginService interface {
 	GetOnlineTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, err error)
 	MGetOnlineTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error)
 	MGetVersionTools(ctx context.Context, versionTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)
+	CopyPlugin(ctx context.Context, req *CopyPluginRequest) (plugin *entity.PluginInfo, err error)
+	MoveAPPPluginToLibrary(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error)
 
 	// Agent Tool
 	BindAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error)
@@ -258,7 +260,7 @@ func (p PluginAuthInfo) authOfServiceToAuthV2() (*model.AuthV2, error) {
 
 		tokenAuth := &model.AuthOfAPIToken{
 			ServiceToken: *p.ServiceToken,
-			Location:     *p.Location,
+			Location:     model.HTTPParamLocation(strings.ToLower(string(*p.Location))),
 			Key:          *p.Key,
 		}
 
@@ -340,4 +342,16 @@ type GetOAuthStatusResponse struct {
 	IsOauth  bool
 	Status   common.OAuthStatus
 	OAuthURL string
+}
+
+type CopyPluginRequest struct {
+	UserID    int64
+	PluginID  int64
+	CopyScene model.CopyScene
+
+	TargetAPPID *int64
+}
+
+type MoveAPPPluginToLibRequest struct {
+	PluginID int64
 }

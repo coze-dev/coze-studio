@@ -16,7 +16,7 @@
       type: service_http
       key: Authorization
       sub_type: token/api_key
-      payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
+      payload: '{"key": "Authorization", "service_token": "***", "location": "Header"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
@@ -80,7 +80,7 @@
       type: service_http
       key: Authorization
       sub_type: token/api_key
-      payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
+      payload: '{"key": "Authorization", "service_token": "***", "location": "Header"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
@@ -112,7 +112,7 @@
       type: service_http
       key: appid
       sub_type: token/api_key
-      payload: '{"key": "appid", "service_token": "", "location": "Query"}'
+      payload: '{"key": "appid", "service_token": "***", "location": "Query"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
@@ -204,7 +204,7 @@
       type: service_http
       key: Authorization
       sub_type: token/api_key
-      payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
+      payload: '{"key": "Authorization", "service_token": "***", "location": "Header"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
@@ -295,7 +295,7 @@
       type: service_http
       key: Authorization
       sub_type: token/api_key
-      payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
+      payload: '{"key": "Authorization", "service_token": "***", "location": "Header"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
@@ -321,7 +321,7 @@
       type: service_http
       key: token
       sub_type: token/api_key
-      payload: '{"key": "token", "service_token": "", "location": "Query"}'
+      payload: '{"key": "token", "service_token": "***", "location": "Query"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
@@ -382,7 +382,7 @@
       type: service_http
       key: Authorization
       sub_type: token/api_key
-      payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
+      payload: '{"key": "Authorization", "service_token": "***", "location": "Header"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
@@ -430,7 +430,7 @@
       type: service_http
       key: Authorization
       sub_type: token/api_key
-      payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
+      payload: '{"key": "Authorization", "service_token": "***", "location": "Header"}'
     logo_url: default_icon/plugin_default_icon.png
     api:
       type: openapi
@@ -507,7 +507,6 @@
       4. 获取指定话题的消息历史；'
     auth:
       type: oauth
-      service_token: ''
       sub_type: client_credentials
       payload: '{"client_id": "********", "client_secret": "********",
        "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
@@ -590,7 +589,6 @@
       9. 搜索多维表格类型的文档；'
     auth:
       type: oauth
-      service_token: ''
       sub_type: client_credentials
       payload: '{"client_id": "********", "client_secret": "********",
        "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
@@ -707,7 +705,6 @@
       7.读取工作表行列内容；'
     auth:
       type: oauth
-      service_token: ''
       sub_type: client_credentials
       payload: '{"client_id": "********", "client_secret": "********",
        "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
@@ -796,7 +793,6 @@
       4.列出所有任务：查询用户下单所有飞书任务；'
     auth:
       type: oauth
-      service_token: ''
       sub_type: client_credentials
       payload: '{"client_id": "********", "client_secret": "********",
        "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
@@ -871,7 +867,6 @@
       7. 搜索 PPT 类型的文档；'
     auth:
       type: oauth
-      service_token: ''
       sub_type: client_credentials
       payload: '{"client_id": "********", "client_secret": "********",
        "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
@@ -936,7 +931,6 @@
     description_for_human: 飞书知识库搜索Wiki、获取Wiki全部子节点列表
     auth:
       type: oauth
-      service_token: ''
       sub_type: client_credentials
       payload: '{"client_id": "********", "client_secret": "********",
        "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
@@ -969,7 +963,6 @@
     description_for_human: 在飞书上日历上创建日程、更新日程、删除日程、查询日程信息
     auth:
       type: oauth
-      service_token: ''
       sub_type: client_credentials
       payload: '{"client_id": "********", "client_secret": "********",
        "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'

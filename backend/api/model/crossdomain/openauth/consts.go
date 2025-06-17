@@ -3,8 +3,9 @@ package openauth
 type OAuthProvider string
 
 const (
-	OAuthProviderOfLark     OAuthProvider = "lark"
-	OAuthProviderOfStandard OAuthProvider = "standard"
+	OAuthProviderOfLarkPlugin OAuthProvider = "lark_plugin"
+	OAuthProviderOfLark       OAuthProvider = "lark"
+	OAuthProviderOfStandard   OAuthProvider = "standard"
 )
 
 type OAuthMode string

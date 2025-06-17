@@ -2,17 +2,26 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
 
 	connectorModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/connector"
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
+	pluginModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	intelligenceAPI "code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
+	workflowAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	projectAPI "code.byted.org/flow/opencoze/backend/api/model/project"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	publishAPI "code.byted.org/flow/opencoze/backend/api/model/publish"
+	resourceAPI "code.byted.org/flow/opencoze/backend/api/model/resource"
+	resourceCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
+	taskAPI "code.byted.org/flow/opencoze/backend/api/model/task"
+	taskStruct "code.byted.org/flow/opencoze/backend/api/model/task_struct"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/memory"
@@ -93,36 +102,54 @@ func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *pro
 }
 
 func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, req *intelligenceAPI.GetDraftIntelligenceInfoRequest) (resp *intelligenceAPI.GetDraftIntelligenceInfoResponse, err error) {
-	app, err := a.DomainSVC.GetDraftAPP(ctx, req.IntelligenceID)
+	draftAPP, err := a.DomainSVC.GetDraftAPP(ctx, req.IntelligenceID)
 	if err != nil {
 		return nil, err
 	}
 
-	iconURL, err := a.oss.GetObjectUrl(ctx, app.GetIconURI())
+	record, exist, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
+		APPID:  req.IntelligenceID,
+		Oldest: false,
+	})
 	if err != nil {
-		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", app.GetIconURI(), err)
+		return nil, err
+	}
+
+	var (
+		published bool
+		publishAt int64
+	)
+
+	if exist {
+		published = true
+		publishAt = record.APP.GetPublishedAtMS() / 1000
+	}
+
+	iconURL, err := a.oss.GetObjectUrl(ctx, draftAPP.GetIconURI())
+	if err != nil {
+		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", draftAPP.GetIconURI(), err)
 	}
 
 	basicInfo := &common.IntelligenceBasicInfo{
-		ID:          app.ID,
-		SpaceID:     app.SpaceID,
-		OwnerID:     app.OwnerID,
-		Name:        app.GetName(),
-		Description: app.GetDesc(),
-		IconURI:     app.GetIconURI(),
+		ID:          draftAPP.ID,
+		SpaceID:     draftAPP.SpaceID,
+		OwnerID:     draftAPP.OwnerID,
+		Name:        draftAPP.GetName(),
+		Description: draftAPP.GetDesc(),
+		IconURI:     draftAPP.GetIconURI(),
 		IconURL:     iconURL,
-		CreateTime:  app.CreatedAtMS / 1000,
-		UpdateTime:  app.UpdatedAtMS / 1000,
-		PublishTime: app.GetPublishedAtMS() / 1000,
-		Status:      common.IntelligenceStatus_Using, // TODO(@maronghong): 完善状态
+		CreateTime:  draftAPP.CreatedAtMS / 1000,
+		UpdateTime:  draftAPP.UpdatedAtMS / 1000,
+		PublishTime: publishAt,
+		Status:      common.IntelligenceStatus_Using,
 	}
 
 	publishRecord := &intelligenceAPI.IntelligencePublishInfo{
-		HasPublished: app.Published(),
-		PublishTime:  strconv.FormatInt(app.GetPublishedAtMS()/1000, 10),
+		HasPublished: published,
+		PublishTime:  strconv.FormatInt(publishAt, 10),
 	}
 
-	ui, err := a.userSVC.GetUserInfo(ctx, app.OwnerID)
+	ui, err := a.userSVC.GetUserInfo(ctx, draftAPP.OwnerID)
 	if err != nil {
 		return nil, err
 	}
@@ -403,9 +430,9 @@ func (a *APPApplicationService) PublishAPP(ctx context.Context, req *publishAPI.
 		OpType: searchEntity.Updated,
 		Project: &searchEntity.ProjectDocument{
 			ID:            req.ProjectID,
+			Type:          common.IntelligenceType_Project,
 			HasPublished:  ptr.Of(1),
 			PublishTimeMS: ptr.Of(time.Now().UnixMilli()),
-			Type:          common.IntelligenceType_Project,
 		},
 	})
 	if err != nil {
@@ -542,6 +569,407 @@ func (a *APPApplicationService) GetPublishRecordDetail(ctx context.Context, req 
 
 	resp = &publishAPI.GetPublishRecordDetailResponse{
 		Data: detail,
+	}
+
+	return resp, nil
+}
+
+type copyMetaInfo struct {
+	userID  int64
+	appID   int64
+	spaceID int64
+	taskID  string
+	scene   resourceCommon.ResourceCopyScene
+}
+
+func (a *APPApplicationService) ResourceCopyDispatch(ctx context.Context, req *resourceAPI.ResourceCopyDispatchRequest) (resp *resourceAPI.ResourceCopyDispatchResponse, err error) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV("msg", "session is required"))
+	}
+
+	app, err := a.DomainSVC.GetDraftAPP(ctx, req.GetProjectID())
+	if err != nil {
+		return nil, err
+	}
+
+	taskID, err := a.initTask(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	metaInfo := &copyMetaInfo{
+		userID:  *userID,
+		appID:   req.GetProjectID(),
+		taskID:  taskID,
+		spaceID: app.SpaceID,
+	}
+
+	var (
+		handleErr error
+		newResID  int64
+	)
+	switch req.ResType {
+	case resourceCommon.ResType_Plugin:
+		newResID, handleErr = pluginCopyDispatchHandler(ctx, metaInfo, req)
+	case resourceCommon.ResType_Database:
+		newResID, handleErr = databaseCopyDispatchHandler(ctx, metaInfo, req)
+	case resourceCommon.ResType_Knowledge:
+		newResID, handleErr = knowledgeCopyDispatchHandler(ctx, metaInfo, req)
+	case resourceCommon.ResType_Workflow:
+		newResID, handleErr = workflowCopyDispatchHandler(ctx, metaInfo, req)
+	default:
+		return nil, errorx.New(errno.ErrAppInvalidParamCode, errorx.KVf("msg", "unsupported resource type '%s'", req.ResType))
+	}
+
+	if handleErr != nil {
+		logs.CtxErrorf(ctx, "copy resource failed, taskID=%s, err=%v", taskID, handleErr)
+	}
+
+	failedReason, err := a.handleCopyResult(ctx, taskID, newResID, req, handleErr)
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &resourceAPI.ResourceCopyDispatchResponse{
+		TaskID:        ptr.Of(taskID),
+		FailedReasons: []*resourceCommon.ResourceCopyFailedReason{},
+	}
+
+	if failedReason != "" {
+		resp.FailedReasons = append(resp.FailedReasons, &resourceCommon.ResourceCopyFailedReason{
+			ResID:   req.ResID,
+			ResType: req.ResType,
+			ResName: req.GetResName(),
+			Reason:  "\n" + failedReason,
+		})
+	}
+
+	return resp, nil
+}
+
+func (a *APPApplicationService) initTask(ctx context.Context, req *resourceAPI.ResourceCopyDispatchRequest) (taskID string, err error) {
+	resType, err := toResourceType(req.ResType)
+	if err != nil {
+		return "", err
+	}
+
+	taskID, err = a.appRepo.InitResourceCopyTask(ctx, &entity.ResourceCopyResult{
+		ResID:      req.ResID,
+		ResType:    resType,
+		ResName:    req.GetResName(),
+		CopyScene:  req.Scene,
+		CopyStatus: entity.ResourceCopyStatusOfProcessing,
+	})
+	if err != nil {
+		return "", errorx.Wrapf(err, "InitResourceCopyTask failed, resID=%d, resType=%s", req.ResID, req.ResType)
+	}
+
+	return taskID, nil
+}
+
+func (a *APPApplicationService) handleCopyResult(ctx context.Context, taskID string, newResID int64,
+	req *resourceAPI.ResourceCopyDispatchRequest, copyErr error) (failedReason string, err error) {
+
+	resType, err := toResourceType(req.ResType)
+	if err != nil {
+		return "", err
+	}
+
+	result := &entity.ResourceCopyResult{
+		ResID:     req.ResID,
+		ResType:   resType,
+		ResName:   req.GetResName(),
+		CopyScene: req.Scene,
+	}
+
+	if copyErr == nil {
+		result.ResID = newResID
+		result.CopyStatus = entity.ResourceCopyStatusOfSuccess
+
+		err = a.appRepo.SaveResourceCopyTaskResult(ctx, taskID, result)
+		if err != nil {
+			return "", errorx.Wrapf(err, "SaveResourceCopyTaskResult failed, taskID=%s", taskID)
+		}
+
+		return "", nil
+	}
+
+	var customErr errorx.StatusError
+	if errors.As(copyErr, &customErr) {
+		result.FailedReason = customErr.Msg()
+	} else {
+		result.FailedReason = "internal server error"
+	}
+
+	result.CopyStatus = entity.ResourceCopyStatusOfFailed
+	err = a.appRepo.SaveResourceCopyTaskResult(ctx, taskID, result)
+	if err != nil {
+		return "", errorx.Wrapf(err, "SaveResourceCopyTaskResult failed, taskID=%s", taskID)
+	}
+
+	return result.FailedReason, nil
+}
+
+func pluginCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newPluginID int64, err error) {
+	switch req.Scene {
+	case resourceCommon.ResourceCopyScene_CopyProjectResource,
+		resourceCommon.ResourceCopyScene_CopyResourceToLibrary,
+		resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
+		return copyPlugin(ctx, metaInfo, req)
+
+	case resourceCommon.ResourceCopyScene_MoveResourceToLibrary:
+		err = moveAPPPlugin(ctx, metaInfo, req)
+		if err != nil {
+			return 0, err
+		}
+		return req.ResID, nil
+
+	default:
+		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
+	}
+}
+
+func copyPlugin(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newPluginID int64, err error) {
+	var copyScene pluginModel.CopyScene
+	switch req.Scene {
+	case resourceCommon.ResourceCopyScene_CopyProjectResource:
+		copyScene = pluginModel.CopySceneOfDuplicated
+	case resourceCommon.ResourceCopyScene_CopyResourceToLibrary:
+		copyScene = pluginModel.CopySceneOfToLibrary
+	case resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
+		copyScene = pluginModel.CopySceneOfToAPP
+	default:
+		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
+	}
+
+	newPlugin, err := plugin.PluginApplicationSVC.CopyPlugin(ctx, &plugin.CopyPluginRequest{
+		CopyScene:   copyScene,
+		PluginID:    req.ResID,
+		UserID:      metaInfo.userID,
+		TargetAPPID: req.ProjectID,
+	})
+	if err != nil {
+		return 0, errorx.Wrapf(err, "CopyPlugin failed, pluginID=%d, scene=%s", req.ResID, req.Scene)
+	}
+
+	return newPlugin.Plugin.ID, nil
+}
+
+func moveAPPPlugin(ctx context.Context, _ *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (err error) {
+	_, err = plugin.PluginApplicationSVC.MoveAPPPluginToLibrary(ctx, req.ResID)
+	if err != nil {
+		return errorx.Wrapf(err, "MoveAPPPluginToLibrary failed, pluginID=%d", req.ResID)
+	}
+
+	return nil
+}
+
+func databaseCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newDatabaseID int64, err error) {
+	switch req.Scene {
+	case resourceCommon.ResourceCopyScene_CopyProjectResource,
+		resourceCommon.ResourceCopyScene_CopyResourceToLibrary,
+		resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
+		return copyDatabase(ctx, metaInfo, req)
+
+	case resourceCommon.ResourceCopyScene_MoveResourceToLibrary:
+		err = moveAPPDatabase(ctx, metaInfo, req)
+		if err != nil {
+			return 0, err
+		}
+		return req.ResID, nil
+
+	default:
+		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
+	}
+}
+
+func copyDatabase(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newDatabaseID int64, err error) {
+	targetAPPID := int64(0)
+	if req.Scene != resourceCommon.ResourceCopyScene_CopyResourceToLibrary {
+		targetAPPID = req.GetProjectID()
+	}
+
+	res, err := memory.DatabaseApplicationSVC.DuplicateDatabase(ctx, &memory.DuplicateDatabaseRequest{
+		DatabaseIDs: []int64{req.ResID},
+		TableType:   table.TableType_OnlineTable,
+		CreatorID:   metaInfo.userID,
+		IsCopyData:  true,
+		TargetAppID: targetAPPID,
+	})
+	if err != nil {
+		return 0, errorx.Wrapf(err, "DuplicateDatabase failed, databaseID=%d, scene=%s", req.ResID, req.Scene)
+	}
+
+	if len(res.Databases) == 0 {
+		return 0, fmt.Errorf("duplicate database failed, databaseID=%d", req.ResID)
+	}
+
+	return res.Databases[0].ID, nil
+}
+
+func moveAPPDatabase(ctx context.Context, _ *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (err error) {
+	_, err = memory.DatabaseApplicationSVC.MoveDatabaseToLibrary(ctx, &memory.MoveDatabaseToLibraryRequest{
+		DatabaseIDs: []int64{req.ResID},
+		TableType:   table.TableType_OnlineTable,
+	})
+	if err != nil {
+		return errorx.Wrapf(err, "MoveDatabaseToLibrary failed, databaseID=%d", req.ResID)
+	}
+
+	return nil
+}
+
+func knowledgeCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newKnowledgeID int64, err error) {
+	switch req.Scene {
+	case resourceCommon.ResourceCopyScene_CopyProjectResource,
+		resourceCommon.ResourceCopyScene_CopyResourceToLibrary,
+		resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
+		return copyKnowledge(ctx, metaInfo, req)
+
+	case resourceCommon.ResourceCopyScene_MoveResourceToLibrary:
+		err = moveAPPKnowledge(ctx, metaInfo, req)
+		if err != nil {
+			return 0, err
+		}
+		return req.ResID, nil
+
+	default:
+		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
+	}
+}
+
+func copyKnowledge(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newKnowledgeID int64, err error) {
+	copyReq := &knowledgeModel.CopyKnowledgeRequest{
+		KnowledgeID:  req.ResID,
+		TargetUserID: metaInfo.userID,
+		TaskUniqKey:  metaInfo.taskID,
+	}
+	switch req.Scene {
+	case resourceCommon.ResourceCopyScene_CopyProjectResource:
+		copyReq.TargetAppID = metaInfo.appID
+		copyReq.TargetSpaceID = metaInfo.spaceID
+	case resourceCommon.ResourceCopyScene_CopyResourceToLibrary:
+		copyReq.TargetAppID = 0
+		copyReq.TargetSpaceID = metaInfo.spaceID
+	case resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
+		copyReq.TargetAppID = metaInfo.appID
+		copyReq.TargetSpaceID = metaInfo.spaceID
+	}
+
+	res, err := knowledge.KnowledgeSVC.CopyKnowledge(ctx, copyReq)
+	if err != nil {
+		return 0, errorx.Wrapf(err, "CopyKnowledge failed, knowledgeID=%d, scene=%s", req.ResID, req.Scene)
+	}
+
+	if res.CopyStatus != knowledgeModel.CopyStatus_Successful {
+		return 0, fmt.Errorf("copy knowledge failed, knowledgeID=%d, scene=%s", req.ResID, req.Scene)
+	}
+
+	return res.TargetKnowledgeID, nil
+}
+
+func moveAPPKnowledge(ctx context.Context, _ *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (err error) {
+	err = knowledge.KnowledgeSVC.MoveKnowledgeToLibrary(ctx, &knowledgeModel.MoveKnowledgeToLibraryRequest{
+		KnowledgeID: req.ResID,
+	})
+	if err != nil {
+		return errorx.Wrapf(err, "MoveKnowledgeToLibrary failed, knowledgeID=%d", req.ResID)
+	}
+
+	return nil
+}
+
+func workflowCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newWorkflowID int64, err error) {
+	switch req.Scene {
+	case resourceCommon.ResourceCopyScene_CopyProjectResource,
+		resourceCommon.ResourceCopyScene_CopyResourceToLibrary,
+		resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
+		return copyWorkflow(ctx, metaInfo, req)
+	case resourceCommon.ResourceCopyScene_MoveResourceToLibrary:
+		err = moveAPPWorkflow(ctx, metaInfo, req)
+		if err != nil {
+			return 0, err
+		}
+		return req.ResID, nil
+	default:
+		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
+	}
+}
+
+func copyWorkflow(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newWorkflowID int64, err error) {
+	switch req.Scene {
+	case resourceCommon.ResourceCopyScene_CopyProjectResource:
+		res, err := workflow.SVC.CopyWorkflow(ctx, &workflowAPI.CopyWorkflowRequest{
+			WorkflowID: strconv.FormatInt(req.ResID, 10),
+			SpaceID:    strconv.FormatInt(metaInfo.spaceID, 10),
+		})
+		if err != nil {
+			return 0, errorx.Wrapf(err, "CopyWorkflow failed, workflowID=%d", req.ResID)
+		}
+
+		newWorkflowID, _ = strconv.ParseInt(res.Data.WorkflowID, 10, 64)
+
+		return newWorkflowID, nil
+
+	case resourceCommon.ResourceCopyScene_CopyResourceToLibrary:
+		// TODO(@zhuangjie): workflow 内完成依赖资源 copy 的逻辑
+		//workflow.SVC.CopyWorkflowFromAppToLibrary(ctx, req.ResID, metaInfo.appID, map[int64]workflowEntity.PluginEntity{})
+		panic("implement me")
+
+	case resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
+		// TODO(@zhuangjie): 返回 new workflow id
+		//err = workflow.SVC.CopyWorkflowFromLibraryToApp(ctx, req.ResID, metaInfo.appID)
+		//if err != nil {
+		//	return 0, errorx.Wrapf(err, "CopyWorkflowFromLibraryToApp failed, workflowID=%d", req.ResID)
+		//}
+		panic("implement me")
+
+	default:
+		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
+	}
+}
+
+func moveAPPWorkflow(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (err error) {
+	// TODO(@zhuangjie): 提供 move 接口
+	panic("implement me")
+}
+
+func (a *APPApplicationService) ResourceCopyDetail(ctx context.Context, req *resourceAPI.ResourceCopyDetailRequest) (resp *resourceAPI.ResourceCopyDetailResponse, err error) {
+	result, exist, err := a.appRepo.GetResourceCopyTaskResult(ctx, req.TaskID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "GetResourceCopyTaskResult failed, taskID=%s", req.TaskID)
+	}
+
+	detail := &resourceCommon.ResourceCopyTaskDetail{
+		TaskID: req.TaskID,
+		Status: resourceCommon.TaskStatus_Processing,
+		Scene:  result.CopyScene,
+	}
+
+	resp = &resourceAPI.ResourceCopyDetailResponse{
+		TaskDetail: detail,
+	}
+
+	if !exist {
+		return resp, nil // 默认返回处理中
+	}
+
+	detail.Status = resourceCommon.TaskStatus(result.CopyStatus)
+	detail.ResID = result.ResID
+	detail.ResType, err = toThriftResourceType(result.ResType)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (a *APPApplicationService) DraftProjectInnerTaskList(ctx context.Context, req *taskAPI.DraftProjectInnerTaskListRequest) (resp *taskAPI.DraftProjectInnerTaskListResponse, err error) {
+	resp = &taskAPI.DraftProjectInnerTaskListResponse{
+		Data: &taskAPI.DraftProjectInnerTaskListData{
+			TaskList: []*taskStruct.ProjectInnerTaskInfo{},
+		},
 	}
 
 	return resp, nil

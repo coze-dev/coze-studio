@@ -7,11 +7,15 @@ import (
 )
 
 const (
-	LarkOauthHostName = "open.larkoffice.com"
+	larkPluginOAuthHostName = "open.larkoffice.com"
+	larkOAuthHostName       = "open.feishu.cn"
 )
 
 func GetOAuthProvider(tokenURL string) openauthModel.OAuthProvider {
-	if strings.Contains(tokenURL, LarkOauthHostName) {
+	if strings.Contains(tokenURL, larkPluginOAuthHostName) {
+		return openauthModel.OAuthProviderOfLarkPlugin
+	}
+	if strings.Contains(tokenURL, larkOAuthHostName) {
 		return openauthModel.OAuthProviderOfLark
 	}
 	return openauthModel.OAuthProviderOfStandard

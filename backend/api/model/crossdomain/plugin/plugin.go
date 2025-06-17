@@ -37,6 +37,15 @@ type PluginInfo struct {
 	OpenapiDoc *Openapi3T
 }
 
+func (p PluginInfo) SetName(name string) {
+	if p.Manifest == nil || p.OpenapiDoc == nil {
+		return
+	}
+	p.Manifest.NameForModel = name
+	p.Manifest.NameForHuman = name
+	p.OpenapiDoc.Info.Title = name
+}
+
 func (p PluginInfo) GetName() string {
 	if p.Manifest == nil {
 		return ""
@@ -67,6 +76,10 @@ func (p PluginInfo) GetIconURI() string {
 		return ""
 	}
 	return *p.IconURI
+}
+
+func (p PluginInfo) Published() bool {
+	return p.Version != nil
 }
 
 type VersionAgentTool struct {

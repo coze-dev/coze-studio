@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	project "code.byted.org/flow/opencoze/backend/api/model/project"
 	publish "code.byted.org/flow/opencoze/backend/api/model/publish"
+	task "code.byted.org/flow/opencoze/backend/api/model/task"
 	appApplication "code.byted.org/flow/opencoze/backend/application/app"
 	"code.byted.org/flow/opencoze/backend/application/search"
 )
@@ -318,6 +319,31 @@ func GetPublishRecordDetail(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := appApplication.APPApplicationSVC.GetPublishRecordDetail(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DraftProjectInnerTaskList .
+// @router /api/intelligence_api/draft_project/inner_task_list [POST]
+func DraftProjectInnerTaskList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req task.DraftProjectInnerTaskListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "invalid project id")
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.DraftProjectInnerTaskList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

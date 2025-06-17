@@ -123,8 +123,3 @@ func (a *appServiceImpl) GetPublishConnectorList(ctx context.Context, _ *GetPubl
 
 	return resp, nil
 }
-
-func (a *appServiceImpl) CopyResource(ctx context.Context, req *CopyResourceRequest) (resp *CopyResourceResponse, err error) {
-	//TODO implement me
-	panic("implement me")
-}

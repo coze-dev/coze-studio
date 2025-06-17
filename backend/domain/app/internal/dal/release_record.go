@@ -8,7 +8,6 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	"code.byted.org/flow/opencoze/backend/domain/app/consts"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/app/internal/dal/query"
@@ -45,7 +44,7 @@ func (a releaseRecordPO) ToDO() *entity.APP {
 		PublishRecordID:  &a.ID,
 		Version:          &a.Version,
 		VersionDesc:      &a.VersionDesc,
-		PublishStatus:    ptr.Of(consts.PublishStatus(a.PublishStatus)),
+		PublishStatus:    ptr.Of(entity.PublishStatus(a.PublishStatus)),
 		PublishExtraInfo: a.ExtraInfo,
 	}
 }
@@ -183,7 +182,7 @@ func (r *ReleaseRecordDAO) GetAPPAllPublishRecords(ctx context.Context, appID in
 	return apps, nil
 }
 
-func (r *ReleaseRecordDAO) UpdatePublishStatus(ctx context.Context, recordID int64, status consts.PublishStatus, extraInfo *entity.PublishRecordExtraInfo) (err error) {
+func (r *ReleaseRecordDAO) UpdatePublishStatus(ctx context.Context, recordID int64, status entity.PublishStatus, extraInfo *entity.PublishRecordExtraInfo) (err error) {
 	table := r.query.ReleaseRecord
 
 	updateMap := map[string]any{

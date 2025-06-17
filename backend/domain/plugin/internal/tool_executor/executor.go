@@ -109,7 +109,7 @@ func (t *executorImpl) Execute(ctx context.Context, argumentsInJson string) (res
 
 	if httpResp.StatusCode() != http.StatusOK {
 		return nil, errorx.New(errno.ErrPluginExecuteToolFailed,
-			errorx.KVf(errno.PluginMsgKey, "http request failed, status=%s", httpResp.Status()))
+			errorx.KVf(errno.PluginMsgKey, "http request failed, status=%s\nresp=%s", httpResp.Status(), httpResp.String()))
 	}
 
 	rawResp := string(httpResp.Body())
@@ -350,7 +350,6 @@ func (t *executorImpl) injectServiceAPIToken(ctx context.Context, httpReq *http.
 		}
 
 		loc := strings.ToLower(string(authOfAPIToken.Location))
-
 		if loc == openapi3.ParameterInQuery {
 			query := httpReq.URL.Query()
 			if query.Get(authOfAPIToken.Key) == "" {
@@ -400,9 +399,9 @@ func (t *executorImpl) injectOAuthAccessToken(ctx context.Context, httpReq *http
 		return fmt.Errorf("access token is empty")
 	}
 
-	provider := entity.GetOAuthProvider(authInfo.AuthOfOAuthClientCredentials.TokenURL)
+	provider := entity.GetOAuthProvider(httpReq.URL.String())
 	switch provider {
-	case openauthModel.OAuthProviderOfLark:
+	case openauthModel.OAuthProviderOfLarkPlugin:
 		httpReq.Header.Set("tenant-access-token", accessToken)
 	default:
 		httpReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
@@ -744,7 +743,10 @@ func (t *executorImpl) buildHTTPRequestBody(ctx context.Context, op *plugin.Open
 			if err != nil {
 				return nil, err
 			}
-			if defaultVal == nil && required[paramName] {
+			if defaultVal == nil {
+				if !required[paramName] {
+					continue
+				}
 				return nil, fmt.Errorf("[buildHTTPRequestBody] parameter '%s' is required", paramName)
 			}
 

@@ -2,15 +2,18 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 
 	"golang.org/x/mod/semver"
 
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -54,6 +57,11 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 		return errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
+	err = p.checkToolsDebugStatus(ctx, req.PluginID)
+	if err != nil {
+		return err
+	}
+
 	onlinePlugin, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
 	if err != nil {
 		return errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
@@ -92,6 +100,7 @@ func (p *pluginServiceImpl) PublishAPPPlugins(ctx context.Context, req *PublishA
 
 	for _, draftPlugin := range draftPlugins {
 		draftPlugin.Version = &req.Version
+		draftPlugin.VersionDesc = ptr.Of(fmt.Sprintf("publish %s", req.Version))
 		resp.AllDraftPlugins = append(resp.AllDraftPlugins, draftPlugin.PluginInfo)
 	}
 
@@ -151,28 +160,10 @@ func (p *pluginServiceImpl) checkCanPublishAPPPlugins(ctx context.Context, versi
 
 	// 2. check debug status
 	for _, draftPlugin := range draftPlugins {
-		res, err := p.toolRepo.GetPluginAllDraftTools(ctx, draftPlugin.ID,
-			repository.WithToolID(),
-			repository.WithToolDebugStatus(),
-			repository.WithToolActivatedStatus(),
-		)
+		err = p.checkToolsDebugStatus(ctx, draftPlugin.ID)
 		if err != nil {
-			return nil, errorx.Wrapf(err, "GetPluginAllDraftTools failed, pluginID=%d", draftPlugin.ID)
-		}
-
-		if len(res) == 0 {
-			logs.CtxErrorf(ctx, "no tools in plugin '%d'", draftPlugin.ID)
 			failedPluginIDs = append(failedPluginIDs, draftPlugin.ID)
-			continue
-		}
-
-		for _, tool := range res {
-			if tool.GetDebugStatus() != common.APIDebugStatus_DebugWaiting {
-				continue
-			}
-			logs.CtxErrorf(ctx, "tool '%d' in plugin '%d' has not been debugged yet", tool.ID, draftPlugin.ID)
-			failedPluginIDs = append(failedPluginIDs, draftPlugin.ID)
-			break
+			logs.CtxErrorf(ctx, "checkToolsDebugStatus failed, pluginID=%d, err=%s", draftPlugin.ID, err)
 		}
 	}
 
@@ -181,4 +172,43 @@ func (p *pluginServiceImpl) checkCanPublishAPPPlugins(ctx context.Context, versi
 	}
 
 	return failedPluginIDs, nil
+}
+
+func (p *pluginServiceImpl) checkToolsDebugStatus(ctx context.Context, pluginID int64) (err error) {
+	res, err := p.toolRepo.GetPluginAllDraftTools(ctx, pluginID,
+		repository.WithToolID(),
+		repository.WithToolDebugStatus(),
+		repository.WithToolActivatedStatus(),
+	)
+	if err != nil {
+		return errorx.Wrapf(err, "GetPluginAllDraftTools failed, pluginID=%d", pluginID)
+	}
+
+	if len(res) == 0 {
+		return errorx.New(errno.ErrPluginToolsCheckFailed, errorx.KVf(errno.PluginMsgKey,
+			"at least one activated tool is required in plugin"))
+	}
+
+	activatedTools := make([]*entity.ToolInfo, 0, len(res))
+	for _, tool := range res {
+		if tool.GetActivatedStatus() == model.DeactivateTool {
+			continue
+		}
+		activatedTools = append(activatedTools, tool)
+	}
+
+	if len(activatedTools) == 0 {
+		return errorx.New(errno.ErrPluginToolsCheckFailed, errorx.KVf(errno.PluginMsgKey,
+			"at least one activated tool is required in plugin"))
+	}
+
+	for _, tool := range activatedTools {
+		if tool.GetDebugStatus() != common.APIDebugStatus_DebugWaiting {
+			continue
+		}
+		return errorx.New(errno.ErrPluginToolsCheckFailed, errorx.KVf(errno.PluginMsgKey,
+			"tools in plugin have not debugged yet"))
+	}
+
+	return nil
 }

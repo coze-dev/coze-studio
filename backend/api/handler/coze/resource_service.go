@@ -8,6 +8,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
+	appApplication "code.byted.org/flow/opencoze/backend/application/app"
+
 	resource "code.byted.org/flow/opencoze/backend/api/model/resource"
 	"code.byted.org/flow/opencoze/backend/application/search"
 )
@@ -20,6 +22,15 @@ func LibraryResourceList(ctx context.Context, c *app.RequestContext) {
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.SpaceID <= 0 {
+		invalidParamRequestResponse(c, "space_id is invalid")
+		return
+	}
+	if req.GetSize() > 100 {
+		invalidParamRequestResponse(c, "size is too large")
 		return
 	}
 
@@ -68,11 +79,28 @@ func ResourceCopyDispatch(ctx context.Context, c *app.RequestContext) {
 	var req resource.ResourceCopyDispatchRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp := new(resource.ResourceCopyDispatchResponse)
+	if req.ResID <= 0 {
+		invalidParamRequestResponse(c, "res_id is invalid")
+		return
+	}
+	if req.ResType <= 0 {
+		invalidParamRequestResponse(c, "res_type is invalid")
+		return
+	}
+	if req.GetProjectID() <= 0 {
+		invalidParamRequestResponse(c, "project_id is invalid")
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.ResourceCopyDispatch(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -84,11 +112,20 @@ func ResourceCopyDetail(ctx context.Context, c *app.RequestContext) {
 	var req resource.ResourceCopyDetailRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp := new(resource.ResourceCopyDetailResponse)
+	if req.TaskID == "" {
+		invalidParamRequestResponse(c, "task_id is invalid")
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.ResourceCopyDetail(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -100,7 +137,7 @@ func ResourceCopyRetry(ctx context.Context, c *app.RequestContext) {
 	var req resource.ResourceCopyRetryRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 

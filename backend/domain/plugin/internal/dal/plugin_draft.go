@@ -89,9 +89,10 @@ func (p *PluginDraftDAO) Create(ctx context.Context, plugin *entity.PluginInfo) 
 	return id, nil
 }
 
-func (p *PluginDraftDAO) Get(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, exist bool, err error) {
+func (p *PluginDraftDAO) Get(ctx context.Context, pluginID int64, opt *PluginSelectedOption) (plugin *entity.PluginInfo, exist bool, err error) {
 	table := p.query.PluginDraft
 	pl, err := table.WithContext(ctx).
+		Select(p.getSelected(opt)...).
 		Where(table.ID.Eq(pluginID)).
 		First()
 	if err != nil {
@@ -262,6 +263,9 @@ func (p *PluginDraftDAO) UpdateWithTX(ctx context.Context, tx *query.QueryTx, pl
 	}
 	if plugin.ServerURL != nil {
 		m.ServerURL = *plugin.ServerURL
+	}
+	if plugin.APPID != nil {
+		m.AppID = *plugin.APPID
 	}
 
 	table := tx.PluginDraft

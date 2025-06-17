@@ -1731,13 +1731,13 @@ type ResourceCopyDispatchRequest struct {
 	// 场景，只支持单资源的操作
 	Scene common.ResourceCopyScene `thrift:"scene,1" form:"scene" json:"scene" query:"scene"`
 	// 被用户选择复制/移动的资源ID
-	ResID   string         `thrift:"res_id,2" form:"res_id" json:"res_id" query:"res_id"`
+	ResID   int64          `thrift:"res_id,2" form:"res_id" json:"res_id,string"`
 	ResType common.ResType `thrift:"res_type,3" form:"res_type" json:"res_type" query:"res_type"`
 	// 所在项目ID
-	ProjectID *string `thrift:"project_id,4,optional" form:"project_id" json:"project_id,omitempty" query:"project_id"`
+	ProjectID *int64  `thrift:"project_id,4,optional" form:"project_id" json:"project_id,string,omitempty"`
 	ResName   *string `thrift:"res_name,5,optional" form:"res_name" json:"res_name,omitempty" query:"res_name"`
 	// 跨空间复制的目标space id
-	TargetSpaceID *string    `thrift:"target_space_id,6,optional" form:"target_space_id" json:"target_space_id,omitempty" query:"target_space_id"`
+	TargetSpaceID *int64     `thrift:"target_space_id,6,optional" form:"target_space_id" json:"target_space_id,string,omitempty"`
 	Base          *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
 }
 
@@ -1752,7 +1752,7 @@ func (p *ResourceCopyDispatchRequest) GetScene() (v common.ResourceCopyScene) {
 	return p.Scene
 }
 
-func (p *ResourceCopyDispatchRequest) GetResID() (v string) {
+func (p *ResourceCopyDispatchRequest) GetResID() (v int64) {
 	return p.ResID
 }
 
@@ -1760,9 +1760,9 @@ func (p *ResourceCopyDispatchRequest) GetResType() (v common.ResType) {
 	return p.ResType
 }
 
-var ResourceCopyDispatchRequest_ProjectID_DEFAULT string
+var ResourceCopyDispatchRequest_ProjectID_DEFAULT int64
 
-func (p *ResourceCopyDispatchRequest) GetProjectID() (v string) {
+func (p *ResourceCopyDispatchRequest) GetProjectID() (v int64) {
 	if !p.IsSetProjectID() {
 		return ResourceCopyDispatchRequest_ProjectID_DEFAULT
 	}
@@ -1778,9 +1778,9 @@ func (p *ResourceCopyDispatchRequest) GetResName() (v string) {
 	return *p.ResName
 }
 
-var ResourceCopyDispatchRequest_TargetSpaceID_DEFAULT string
+var ResourceCopyDispatchRequest_TargetSpaceID_DEFAULT int64
 
-func (p *ResourceCopyDispatchRequest) GetTargetSpaceID() (v string) {
+func (p *ResourceCopyDispatchRequest) GetTargetSpaceID() (v int64) {
 	if !p.IsSetTargetSpaceID() {
 		return ResourceCopyDispatchRequest_TargetSpaceID_DEFAULT
 	}
@@ -1849,7 +1849,7 @@ func (p *ResourceCopyDispatchRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1865,7 +1865,7 @@ func (p *ResourceCopyDispatchRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 4:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1881,7 +1881,7 @@ func (p *ResourceCopyDispatchRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 6:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField6(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1938,8 +1938,8 @@ func (p *ResourceCopyDispatchRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 func (p *ResourceCopyDispatchRequest) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1960,8 +1960,8 @@ func (p *ResourceCopyDispatchRequest) ReadField3(iprot thrift.TProtocol) error {
 }
 func (p *ResourceCopyDispatchRequest) ReadField4(iprot thrift.TProtocol) error {
 
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = &v
@@ -1982,8 +1982,8 @@ func (p *ResourceCopyDispatchRequest) ReadField5(iprot thrift.TProtocol) error {
 }
 func (p *ResourceCopyDispatchRequest) ReadField6(iprot thrift.TProtocol) error {
 
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = &v
@@ -2069,10 +2069,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *ResourceCopyDispatchRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("res_id", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("res_id", thrift.I64, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ResID); err != nil {
+	if err := oprot.WriteI64(p.ResID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2102,10 +2102,10 @@ WriteFieldEndError:
 }
 func (p *ResourceCopyDispatchRequest) writeField4(oprot thrift.TProtocol) (err error) {
 	if p.IsSetProjectID() {
-		if err = oprot.WriteFieldBegin("project_id", thrift.STRING, 4); err != nil {
+		if err = oprot.WriteFieldBegin("project_id", thrift.I64, 4); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.ProjectID); err != nil {
+		if err := oprot.WriteI64(*p.ProjectID); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -2138,10 +2138,10 @@ WriteFieldEndError:
 }
 func (p *ResourceCopyDispatchRequest) writeField6(oprot thrift.TProtocol) (err error) {
 	if p.IsSetTargetSpaceID() {
-		if err = oprot.WriteFieldBegin("target_space_id", thrift.STRING, 6); err != nil {
+		if err = oprot.WriteFieldBegin("target_space_id", thrift.I64, 6); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.TargetSpaceID); err != nil {
+		if err := oprot.WriteI64(*p.TargetSpaceID); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {

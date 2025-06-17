@@ -1,4 +1,4 @@
-package consts
+package entity
 
 type PublishStatus int
 
@@ -19,4 +19,21 @@ const (
 	ConnectorPublishStatusOfSuccess  ConnectorPublishStatus = 2
 	ConnectorPublishStatusOfFailed   ConnectorPublishStatus = 3
 	ConnectorPublishStatusOfDisable  ConnectorPublishStatus = 4
+)
+
+type ResourceType string
+
+const (
+	ResourceTypeOfPlugin    ResourceType = "plugin"
+	ResourceTypeOfWorkflow  ResourceType = "workflow"
+	ResourceTypeOfKnowledge ResourceType = "knowledge"
+	ResourceTypeOfDatabase  ResourceType = "database"
+)
+
+type ResourceCopyStatus int
+
+const (
+	ResourceCopyStatusOfSuccess    ResourceCopyStatus = 1
+	ResourceCopyStatusOfProcessing ResourceCopyStatus = 2
+	ResourceCopyStatusOfFailed     ResourceCopyStatus = 3
 )

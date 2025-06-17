@@ -961,7 +961,7 @@ func (k *KnowledgeApplicationService) UpdatePhotoCaption(ctx context.Context, re
 	return resp, nil
 }
 
-func (k *KnowledgeApplicationService) MigrateKnowledge(ctx context.Context, req *model.MoveKnowledgeToLibraryRequest) error {
+func (k *KnowledgeApplicationService) MoveKnowledgeToLibrary(ctx context.Context, req *model.MoveKnowledgeToLibraryRequest) error {
 	err := k.DomainSVC.MoveKnowledgeToLibrary(ctx, req)
 	if err != nil {
 		return err
@@ -970,6 +970,7 @@ func (k *KnowledgeApplicationService) MigrateKnowledge(ctx context.Context, req 
 		OpType: resourceEntity.Updated,
 		Resource: &resourceEntity.ResourceDocument{
 			ResID:        req.KnowledgeID,
+			ResType:      resource.ResType_Knowledge,
 			APPID:        ptr.Of(int64(0)),
 			UpdateTimeMS: ptr.Of(time.Now().UnixMilli()),
 		},

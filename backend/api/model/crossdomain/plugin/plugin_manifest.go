@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"encoding/json"
+	"strings"
 
 	api "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
@@ -48,37 +49,10 @@ func (mf PluginManifest) Validate() (err error) {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
 			"invalid api type '%s'", mf.API.Type))
 	}
-	if mf.Auth == nil {
-		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
-			"auth is required"))
 
-	}
-	if mf.Auth.Payload != nil {
-		if !isValidJSON([]byte(*mf.Auth.Payload)) {
-			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
-				"invalid auth payload"))
-		}
-	}
-	if mf.Auth.Type == "" {
-		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
-			"auth type is required"))
-	}
-	if mf.Auth.Type != AuthzTypeOfNone &&
-		mf.Auth.Type != AuthzTypeOfOAuth &&
-		mf.Auth.Type != AuthzTypeOfService {
-		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
-			"invalid auth type '%s'", mf.Auth.Type))
-	}
-	if mf.Auth.Type != AuthzTypeOfNone {
-		if mf.Auth.SubType == "" {
-			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
-				"sub-auth type is required"))
-		}
-		if mf.Auth.SubType != AuthzSubTypeOfServiceAPIToken &&
-			mf.Auth.SubType != AuthzSubTypeOfOAuthClientCredentials {
-			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
-				"invalid sub-auth type '%s'", mf.Auth.SubType))
-		}
+	err = mf.validateAuthInfo()
+	if err != nil {
+		return err
 	}
 
 	for loc := range mf.CommonParams {
@@ -88,6 +62,101 @@ func (mf PluginManifest) Validate() (err error) {
 			loc != ParamInPath {
 			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
 				"invalid location '%s' in common params", loc))
+		}
+	}
+
+	return nil
+}
+
+func (mf PluginManifest) validateAuthInfo() (err error) {
+	if mf.Auth == nil {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"auth is required"))
+	}
+
+	if mf.Auth.Payload != nil {
+		if !isValidJSON([]byte(*mf.Auth.Payload)) {
+			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+				"invalid auth payload"))
+		}
+	}
+
+	if mf.Auth.Type == "" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"auth type is required"))
+	}
+
+	if mf.Auth.Type != AuthzTypeOfNone &&
+		mf.Auth.Type != AuthzTypeOfOAuth &&
+		mf.Auth.Type != AuthzTypeOfService {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
+			"invalid auth type '%s'", mf.Auth.Type))
+	}
+
+	if mf.Auth.Type == AuthzTypeOfNone {
+		return nil
+	}
+
+	if mf.Auth.SubType == "" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"sub-auth type is required"))
+	}
+
+	if mf.Auth.SubType != AuthzSubTypeOfServiceAPIToken &&
+		mf.Auth.SubType != AuthzSubTypeOfOAuthClientCredentials {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
+			"invalid sub-auth type '%s'", mf.Auth.SubType))
+	}
+
+	if mf.Auth.SubType == AuthzSubTypeOfServiceAPIToken {
+		if mf.Auth.AuthOfAPIToken == nil {
+			err = json.Unmarshal([]byte(*mf.Auth.Payload), &mf.Auth.AuthOfAPIToken)
+			if err != nil {
+				return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+					"invalid auth payload"))
+			}
+		}
+
+		apiToken := mf.Auth.AuthOfAPIToken
+
+		if apiToken.ServiceToken == "" {
+			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+				"service token is required"))
+		}
+		if apiToken.Key == "" {
+			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+				"key is required"))
+		}
+
+		loc := HTTPParamLocation(strings.ToLower(string(apiToken.Location)))
+		if loc != ParamInHeader && loc != ParamInQuery {
+			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
+				"invalid location '%s'", apiToken.Location))
+		}
+	}
+
+	if mf.Auth.SubType == AuthzSubTypeOfOAuthClientCredentials {
+		if mf.Auth.AuthOfOAuthClientCredentials == nil {
+			err = sonic.UnmarshalString(*mf.Auth.Payload, &mf.Auth.AuthOfOAuthClientCredentials)
+			if err != nil {
+				return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+					"invalid auth payload"))
+			}
+		}
+
+		clientCredentials := mf.Auth.AuthOfOAuthClientCredentials
+
+		if clientCredentials.ClientID == "" {
+			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+				"client id is required"))
+		}
+		if clientCredentials.ClientSecret == "" {
+			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+				"client secret is required"))
+		}
+		if clientCredentials.TokenURL == "" {
+			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+				"token url is required"))
 		}
 	}
 
@@ -111,7 +180,7 @@ type Auth struct {
 	ClientSecret             string `json:"client_secret,omitempty"`
 	Location                 string `json:"location,omitempty"`
 	Key                      string `json:"key,omitempty"`
-	ServiceToken             string `json:"service_token"`
+	ServiceToken             string `json:"service_token,omitempty"`
 	SubType                  string `json:"sub_type"`
 	Payload                  string `json:"payload"`
 }
@@ -178,7 +247,7 @@ func (au *AuthV2) unmarshalService(auth *Auth) (err error) {
 	if au.SubType == AuthzSubTypeOfServiceAPIToken {
 		if len(auth.ServiceToken) > 0 {
 			au.AuthOfAPIToken = &AuthOfAPIToken{
-				Location:     HTTPParamLocation(auth.Location),
+				Location:     HTTPParamLocation(strings.ToLower(auth.Location)),
 				Key:          auth.Key,
 				ServiceToken: auth.ServiceToken,
 			}

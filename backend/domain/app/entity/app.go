@@ -3,8 +3,7 @@ package entity
 import (
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	publishAPI "code.byted.org/flow/opencoze/backend/api/model/publish"
-	resource "code.byted.org/flow/opencoze/backend/api/model/resource/common"
-	"code.byted.org/flow/opencoze/backend/domain/app/consts"
+	resourceCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
@@ -20,7 +19,7 @@ type APP struct {
 	Version          *string
 	VersionDesc      *string
 	PublishRecordID  *int64
-	PublishStatus    *consts.PublishStatus
+	PublishStatus    *PublishStatus
 	PublishExtraInfo *PublishRecordExtraInfo
 
 	CreatedAtMS   int64
@@ -29,7 +28,7 @@ type APP struct {
 }
 
 func (a APP) Published() bool {
-	return a.PublishStatus != nil && *a.PublishStatus == consts.PublishStatusOfPublishDone
+	return a.PublishStatus != nil && *a.PublishStatus == PublishStatusOfPublishDone
 }
 
 func (a APP) GetPublishedAtMS() int64 {
@@ -56,7 +55,7 @@ func (a APP) GetIconURI() string {
 	return ptr.FromOrDefault(a.IconURI, "")
 }
 
-func (a APP) GetPublishStatus() consts.PublishStatus {
+func (a APP) GetPublishStatus() PublishStatus {
 	return ptr.FromOrDefault(a.PublishStatus, 0)
 }
 
@@ -93,7 +92,16 @@ func (p *PublishRecordExtraInfo) ToVO() *publishAPI.PublishRecordStatusDetail {
 }
 
 type PackResourceFailedInfo struct {
-	ResID   int64            `json:"res_id"`
-	ResType resource.ResType `json:"res_type"`
-	ResName string           `json:"res_name"`
+	ResID   int64                  `json:"res_id"`
+	ResType resourceCommon.ResType `json:"res_type"`
+	ResName string                 `json:"res_name"`
+}
+
+type ResourceCopyResult struct {
+	ResID        int64                            `json:"res_id"`
+	ResType      ResourceType                     `json:"res_type"`
+	ResName      string                           `json:"res_name"`
+	CopyStatus   ResourceCopyStatus               `json:"copy_status"`
+	CopyScene    resourceCommon.ResourceCopyScene `json:"copy_scene"`
+	FailedReason string                           `json:"reason"`
 }

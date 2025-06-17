@@ -8,8 +8,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/hertz-contrib/sse"
+
+	"github.com/cloudwego/hertz/pkg/app"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"

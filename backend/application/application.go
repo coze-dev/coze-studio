@@ -6,6 +6,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/application/openauth"
 	"code.byted.org/flow/opencoze/backend/application/template"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossopenauth"
 
 	"code.byted.org/flow/opencoze/backend/application/app"
 	"code.byted.org/flow/opencoze/backend/application/base/appinfra"
@@ -44,6 +45,7 @@ import (
 	knowledgeImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/knowledge"
 	messageImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/message"
 	modelmgrImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/modelmgr"
+	openauthImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/openauth"
 	pluginImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/plugin"
 	singleagentImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/singleagent"
 	variablesImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/variables"
@@ -122,6 +124,7 @@ func Init(ctx context.Context) (err error) {
 	crossagent.SetDefaultSVC(singleagentImpl.InitDomainService(complexServices.singleAgentSVC.DomainSVC))
 	crossuser.SetDefaultSVC(crossuserImpl.InitDomainService(basicServices.userSVC.DomainSVC))
 	crossdatacopy.SetDefaultSVC(dataCopyImpl.InitDomainService(basicServices.infra))
+	crossopenauth.SetDefaultOAuthSVC(openauthImpl.InitDomainService(basicServices.openAuthSVC.OAuthDomainSVC))
 
 	return nil
 }
@@ -321,6 +324,7 @@ func (p *primaryServices) toAPPServiceComponents() *app.ServiceComponents {
 		IDGen:           infra.IDGenSVC,
 		DB:              infra.DB,
 		OSS:             infra.TOSClient,
+		CacheCli:        infra.CacheCli,
 		ProjectEventBus: basic.eventbus.projectEventBus,
 		UserSVC:         basic.userSVC.DomainSVC,
 		ConnectorSVC:    basic.connectorSVC.DomainSVC,
