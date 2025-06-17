@@ -2777,7 +2777,7 @@ func TestStreamResume(t *testing.T) {
 				Data: &streamRunData{
 					NodeID:       ptr.Of("191011"),
 					NodeType:     ptr.Of("Input"),
-					NodeTitle:    ptr.Of("Input"),
+					NodeTitle:    ptr.Of("输入"),
 					NodeSeqID:    ptr.Of("0"),
 					NodeIsFinish: ptr.Of(true),
 					Content:      ptr.Of("{\"content\":\"[{\\\"type\\\":\\\"object\\\",\\\"name\\\":\\\"input\\\",\\\"schema\\\":[{\\\"type\\\":\\\"string\\\",\\\"name\\\":\\\"name\\\",\\\"required\\\":false},{\\\"type\\\":\\\"integer\\\",\\\"name\\\":\\\"age\\\",\\\"required\\\":false}],\\\"required\\\":false},{\\\"type\\\":\\\"list\\\",\\\"name\\\":\\\"input_list\\\",\\\"schema\\\":{\\\"type\\\":\\\"object\\\",\\\"schema\\\":[{\\\"type\\\":\\\"string\\\",\\\"name\\\":\\\"name\\\",\\\"required\\\":false},{\\\"type\\\":\\\"integer\\\",\\\"name\\\":\\\"age\\\",\\\"required\\\":false}]},\\\"required\\\":false}]\",\"content_type\":\"form_schema\"}"),

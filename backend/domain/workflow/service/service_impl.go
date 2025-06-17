@@ -65,10 +65,6 @@ func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]boo
 			return false
 		}
 		nodeType := meta.Type
-		if nodeType == entity.NodeTypeEntry || nodeType == entity.NodeTypeExit {
-			return false
-		}
-
 		if nodeTypes == nil || len(nodeTypes) == 0 {
 			return true // No filter, include all
 		}

@@ -18,10 +18,10 @@ const defaultInitCanvasJsonSchema = `{
    },
    "data": {
     "nodeMeta": {
-     "description": "The starting node of the workflow, used to set the information needed to initiate the workflow.",
+     "description": "工作流的起始节点，用于设定启动工作流需要的信息",
      "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start.png",
      "subTitle": "",
-     "title": "Start"
+     "title": "开始"
     },
     "outputs": [
      {
@@ -50,10 +50,10 @@ const defaultInitCanvasJsonSchema = `{
    },
    "data": {
     "nodeMeta": {
-     "description": "The final node of the workflow, used to return the result information after the workflow runs.",
+     "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
      "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End.png",
      "subTitle": "",
-     "title": "End"
+     "title": "结束"
     },
     "inputs": {
      "terminatePlan": "returnVariables",
