@@ -137,6 +137,7 @@ type ListDocumentRequest struct {
 	Limit       *int
 	Offset      *int
 	Cursor      *string
+	SelectAll   bool
 }
 
 type ListDocumentResponse struct {

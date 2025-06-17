@@ -120,18 +120,18 @@ func (dao *KnowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 	if len(opts.StatusNotIn) > 0 {
 		do = do.Where(k.Status.NotIn(opts.StatusNotIn...))
 	}
-	if opts.Limit != 0 {
-		do = do.Limit(opts.Limit)
+	if opts.SelectAll {
+		do = do.Limit(-1)
 	} else {
-		if !opts.SelectAll {
-			do = do.Limit(50)
+		if opts.Limit != 0 {
+			do = do.Limit(opts.Limit)
 		}
 	}
 	if opts.Offset != nil {
-		do = do.Offset(*opts.Offset)
+		do = do.Offset(ptr.From(opts.Offset))
 	}
 	if opts.Cursor != nil {
-		id, err := dao.fromCursor(*opts.Cursor)
+		id, err := dao.fromCursor(ptr.From(opts.Cursor))
 		if err != nil {
 			return nil, 0, err
 		}

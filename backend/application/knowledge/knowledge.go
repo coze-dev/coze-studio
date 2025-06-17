@@ -1010,7 +1010,7 @@ func (k *KnowledgeApplicationService) ListPhoto(ctx context.Context, req *datase
 	docIDs := slices.Transform(listResp.Slices, func(item *entity.Slice) int64 {
 		return item.DocumentID
 	})
-	listDocResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{DocumentIDs: docIDs})
+	listDocResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{DocumentIDs: docIDs, SelectAll: true})
 	if err != nil {
 		logs.CtxErrorf(ctx, "get documents by slice ids failed, err: %v", err)
 		return resp, err
@@ -1069,7 +1069,7 @@ func (k *KnowledgeApplicationService) PhotoDetail(ctx context.Context, req *data
 		logs.CtxErrorf(ctx, "list photo slice failed, err: %v", err)
 		return resp, err
 	}
-	listDocResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{DocumentIDs: docIDs})
+	listDocResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{DocumentIDs: docIDs, SelectAll: true})
 	if err != nil {
 		logs.CtxErrorf(ctx, "get documents by slice ids failed, err: %v", err)
 		return resp, err

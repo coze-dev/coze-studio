@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"regexp"
@@ -30,6 +29,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -148,6 +148,7 @@ func (k *knowledgeSVC) prepareRAGDocuments(ctx context.Context, documentIDs []in
 		IDs:          documentIDs,
 		KnowledgeIDs: enableKnowledgeIDs,
 		StatusIn:     []int32{int32(entity.DocumentStatusEnable)},
+		SelectAll:    true,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "find document by condition failed: %v", err)
@@ -188,11 +189,15 @@ func (k *knowledgeSVC) vectorRetrieveNode(ctx context.Context, req *RetrieveCont
 		}
 	}
 	if manager == nil {
-		logs.CtxErrorf(ctx, "vector store is not found")
-		return nil, errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", "未实现vectorStore"))
+		logs.CtxErrorf(ctx, "err:%s", errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", "未实现vectorStore")).Error())
+		return nil, nil
 	}
 
-	return k.retrieveChannels(ctx, req, manager)
+	retrieveResult, err = k.retrieveChannels(ctx, req, manager)
+	if err != nil {
+		logs.CtxErrorf(ctx, "retrieveChannels err:%s", err.Error())
+	}
+	return retrieveResult, nil
 }
 
 func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *RetrieveContext) (retrieveResult []*schema.Document, err error) {
@@ -208,11 +213,15 @@ func (k *knowledgeSVC) esRetrieveNode(ctx context.Context, req *RetrieveContext)
 		}
 	}
 	if manager == nil {
-		logs.CtxErrorf(ctx, "es store is not found")
-		return nil, errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", "未实现esStore"))
+		logs.CtxErrorf(ctx, "err:%s", errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", "未实现esStore")).Error())
+		return nil, nil
 	}
 
-	return k.retrieveChannels(ctx, req, manager)
+	retrieveResult, err = k.retrieveChannels(ctx, req, manager)
+	if err != nil {
+		logs.CtxErrorf(ctx, "retrieveChannels err:%s", err.Error())
+	}
+	return retrieveResult, nil
 }
 
 func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *RetrieveContext, manager searchstore.Manager) (result []*schema.Document, err error) {
@@ -308,7 +317,8 @@ func (k *knowledgeSVC) nl2SqlRetrieveNode(ctx context.Context, req *RetrieveCont
 		}
 		err = eg.Wait()
 		if err != nil {
-			return nil, err
+			logs.CtxErrorf(ctx, "nl2sql exec failed: %v", err)
+			return nil, nil
 		}
 		return res, nil
 	} else {
@@ -428,22 +438,26 @@ func (k *knowledgeSVC) reRankNode(ctx context.Context, resultMap map[string]any)
 	// 首先获取下retrieve上下文
 	retrieveCtx, ok := resultMap["passRequestContext"].(*RetrieveContext)
 	if !ok {
+		logs.CtxErrorf(ctx, "retrieve context is not found")
 		return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "retrieve context is not found"))
 	}
 	// 获取下向量化召回的接口
 	vectorRetrieveResult, ok := resultMap["vectorRetrieveNode"].([]*schema.Document)
 	if !ok {
-		return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "vector retrieve result is not found"))
+		logs.CtxErrorf(ctx, "vector retrieve result is not found")
+		vectorRetrieveResult = []*schema.Document{}
 	}
 	// 获取下es召回的接口
 	esRetrieveResult, ok := resultMap["esRetrieveNode"].([]*schema.Document)
 	if !ok {
-		return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "es retrieve result is not found"))
+		logs.CtxErrorf(ctx, "es retrieve result is not found")
+		esRetrieveResult = []*schema.Document{}
 	}
 	// 获取下nl2sql召回的接口
 	nl2SqlRetrieveResult, ok := resultMap["nl2SqlRetrieveNode"].([]*schema.Document)
 	if !ok {
-		return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "nl2sql retrieve result is not found"))
+		logs.CtxErrorf(ctx, "nl2sql retrieve result is not found")
+		nl2SqlRetrieveResult = []*schema.Document{}
 	}
 
 	docs2RerankData := func(docs []*schema.Document) []*rerank.Data {
@@ -515,6 +529,7 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 	for _, doc := range retrieveResult {
 		id, err := strconv.ParseInt(doc.ID, 10, 64)
 		if err != nil {
+			logs.CtxErrorf(ctx, "convert id failed: %v", err)
 			return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "convert id failed"))
 		}
 		sliceIDs[id] = struct{}{}
@@ -634,78 +649,99 @@ func (k *knowledgeSVC) packResults(ctx context.Context, retrieveResult []*schema
 	return results, nil
 }
 
-// todo，这个函数要精简一下
 func (k *knowledgeSVC) formatSliceContent(ctx context.Context, sliceContent string) string {
-	patterns := []string{".*http://www.w3.org/2000/svg.*", "^https://.*https://.*"}
-	sliceContent = replaceInvalidImg(sliceContent, patterns)
-	// 编译正则表达式，包含提取所需的字符串的捕获组
-	re := regexp.MustCompile(`(?:<|\\u003c)img src=(\\)*['"]?(.*?)(\\)*['"]? data-tos-key=(\\)*['"]?(.*?)(\\)*['"]?\s*/?(?:>|\\u003e)`)
-	replacedContent := re.ReplaceAllStringFunc(sliceContent, func(m string) string {
-		matches := re.FindStringSubmatch(m)
-		if len(matches) < 3 {
-			return m // 如果没有足够的捕获组，返回原字符串
+	res := sliceContent
+	imageData := k.ParseFrontEndImageContent(ctx, sliceContent)
+	for _, v := range imageData {
+		if v.TagsKV[DATATOSKEY] != "" {
+			tosURL, err := k.storage.GetObjectUrl(ctx, v.TagsKV[DATATOSKEY])
+			if err != nil {
+				logs.CtxErrorf(ctx, "get object url failed: %v", err)
+			} else {
+				v.SetKV(SRC, tosURL)
+			}
 		}
-		if len(matches) < 6 || len(matches[5]) == 0 {
-			return fmt.Sprintf(`<img src="%s">`, matches[2])
-		}
-		// todo，获取图片或其他内容的链接
-		srcReplacement, err := k.storage.GetObjectUrl(ctx, matches[5])
-		if err != nil {
-			logs.CtxErrorf(ctx, "get object url failed: %v", err)
-			return m
-		}
-
-		// 返回替换后的字符串
-		return fmt.Sprintf(`<img src="%s">`, srcReplacement)
-	})
-	return replacedContent
+		sliceContent = sliceContent[0:v.StartOffset] + v.Format() + sliceContent[v.EndOffset:]
+		res = sliceContent
+	}
+	return res
 }
 
-func replaceInvalidImg(sliceContent string, invalidUrlPatterns []string) string {
-	if len(invalidUrlPatterns) == 0 {
-		return sliceContent // 原样返回
-	}
-	rUrl := regexp.MustCompile(`(<img src="(http.*?)"\s*/?>)`)
-	rBase64 := regexp.MustCompile(`(<img src="data:image/svg\+xml;base64,(.*?)"\s*/?>)`)
-	replacedContent := rUrl.ReplaceAllStringFunc(sliceContent, func(m string) string {
-		matches := rUrl.FindStringSubmatch(m)
-		if len(matches) < 3 {
-			return m
-		}
-		url := matches[2]
-		if isInvalid(url, invalidUrlPatterns) {
-			return ""
-		}
-		return m
-	})
-
-	replacedContent = rBase64.ReplaceAllStringFunc(replacedContent, func(m string) string {
-		matches := rBase64.FindStringSubmatch(m)
-		if len(matches) < 3 {
-			return m
-		}
-		b64 := matches[2]
-		urlByte, err := base64.StdEncoding.DecodeString(b64)
-		if err != nil {
-			return m
-		}
-		if isInvalid(string(urlByte), invalidUrlPatterns) {
-			return ""
-		}
-		return m
-	})
-	return replacedContent
+type ImageContent struct {
+	TagsKV      map[string]string
+	TagsKList   []string
+	StartOffset int64
+	EndOffset   int64
 }
 
-func isInvalid(url string, invalidUrlPatterns []string) bool {
-	ret := false
-	for _, pattern := range invalidUrlPatterns {
-		r := regexp.MustCompile(pattern)
-		if r.MatchString(url) {
-			ret = true
-			break
-		}
-	}
+const (
+	SRC        = "src"
+	DATATOSKEY = "data-tos-key"
+)
 
-	return ret
+func (i *ImageContent) Format() string {
+	res := "<img "
+	for _, v := range i.TagsKList {
+		res = res + v + "=\"" + i.TagsKV[v] + "\" "
+	}
+	return res + ">"
+}
+
+func (i *ImageContent) SetKV(k string, v string) {
+	if _, ok := i.TagsKV[k]; !ok {
+		i.TagsKList = append(i.TagsKList, k)
+	}
+	if i.TagsKV == nil {
+		i.TagsKV = make(map[string]string)
+	}
+	i.TagsKV[k] = v
+}
+
+func (k *knowledgeSVC) ParseFrontEndImageContent(ctx context.Context, s string) []*ImageContent {
+	res := make([]*ImageContent, 0)
+	imgRe := regexp.MustCompile(`<img\s+[^>]*>`)
+	// 查找所有匹配项
+	matches := imgRe.FindAllSubmatchIndex([]byte(s), -1)
+	// 遍历匹配项并输出src和data-tos-key字段
+	// 遍历每个匹配项的索引
+	for _, match := range matches {
+		// 输出每个匹配项整个正则在文本中的开始和结束位置
+		matchStart := match[0]
+		matchEnd := match[1]
+		all := s[match[0]:match[1]]
+
+		re := regexp.MustCompile(`<img\s+([^>]+)>`)
+		// 初始化map存储kv信息，把多余信息去掉
+		m := make(map[string]string)
+		l := make([]string, 0)
+		match := re.FindStringSubmatch(all)
+		if len(match) < 2 {
+			continue
+		}
+		attributes := match[1]
+		// 定义正则表达式模式，用于提取属性键值对
+		attrRe := regexp.MustCompile(`(\S+)=(?:"([^"]*)"|'([^']*)')`)
+
+		// 查找所有属性键值对
+		attrMatches := attrRe.FindAllStringSubmatch(attributes, -1)
+
+		// 提取并存储kv信息
+		for _, attrMatch := range attrMatches {
+			key := attrMatch[1]
+			value := attrMatch[2]
+			if value == "" {
+				value = attrMatch[3]
+			}
+			m[key] = value
+			l = append(l, key)
+		}
+		res = append(res, &ImageContent{
+			TagsKV:      m,
+			TagsKList:   l,
+			StartOffset: int64(matchStart),
+			EndOffset:   int64(matchEnd),
+		})
+	}
+	slices.Reverse(res)
+	return res
 }

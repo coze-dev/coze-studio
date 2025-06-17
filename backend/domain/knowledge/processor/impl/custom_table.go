@@ -15,7 +15,7 @@ type customTableProcessor struct {
 
 func (c *customTableProcessor) BeforeCreate() error {
 	if isTableAppend(c.Documents) {
-		tableDoc, _, err := c.documentRepo.FindDocumentByCondition(c.ctx, &entity.WhereDocumentOpt{KnowledgeIDs: []int64{c.Documents[0].KnowledgeID}})
+		tableDoc, _, err := c.documentRepo.FindDocumentByCondition(c.ctx, &entity.WhereDocumentOpt{KnowledgeIDs: []int64{c.Documents[0].KnowledgeID}, SelectAll: true})
 		if err != nil {
 			logs.CtxErrorf(c.ctx, "find document failed, err: %v", err)
 			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))

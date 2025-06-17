@@ -16,7 +16,7 @@ func (l *localTableProcessor) BeforeCreate() error {
 	if isTableAppend(l.Documents) {
 		tableDoc, _, err := l.documentRepo.FindDocumentByCondition(l.ctx, &entity.WhereDocumentOpt{
 			KnowledgeIDs: []int64{l.Documents[0].KnowledgeID},
-			Limit:        1,
+			SelectAll:    true,
 		})
 		if err != nil {
 			logs.CtxErrorf(l.ctx, "find document failed, err: %v", err)

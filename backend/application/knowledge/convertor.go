@@ -597,6 +597,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*m
 	for _, k := range knowledgeEntity {
 		documentEntity, err := KnowledgeSVC.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{
 			KnowledgeID: k.ID,
+			SelectAll:   true,
 		})
 		if err != nil {
 			logs.CtxErrorf(ctx, "list document failed, err: %v", err)
@@ -613,6 +614,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*m
 			sliceCount           int32
 			processingFileList   []string
 			processingFileIDList []string
+			fileList             []string
 		)
 		for i := range documentEntity.Documents {
 			doc := documentEntity.Documents[i]
@@ -625,13 +627,14 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*m
 			if i == 0 {
 				rule = doc.ChunkingStrategy
 			}
+			fileList = append(fileList, doc.Name)
 		}
 		knowledgeMap[k.ID] = &dataset.Dataset{
 			DatasetID:            k.ID,
 			Name:                 k.Name,
-			FileList:             nil, // 现在和前端服务端的交互也是空
+			FileList:             fileList,
 			AllFileSize:          totalSize,
-			BotUsedCount:         0, // todo，这个看看咋获取
+			BotUsedCount:         0,
 			Status:               datasetStatus,
 			ProcessingFileList:   processingFileList,
 			UpdateTime:           int32(k.UpdatedAtMs / 1000),
@@ -642,7 +645,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*m
 			CreateTime:           int32(k.CreatedAtMs / 1000),
 			CreatorID:            k.CreatorID,
 			SpaceID:              k.SpaceID,
-			FailedFileList:       nil, // 原本的dataset服务里也没有
+			FailedFileList:       nil,
 			FormatType:           convertDocumentTypeEntity2Dataset(k.Type),
 			SliceCount:           sliceCount,
 			DocCount:             int32(len(documentEntity.Documents)),

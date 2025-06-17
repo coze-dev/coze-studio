@@ -209,6 +209,7 @@ func (k *knowledgeSVC) DeleteKnowledge(ctx context.Context, request *DeleteKnowl
 	}
 	docs, _, err := k.documentRepo.FindDocumentByCondition(ctx, &entity.WhereDocumentOpt{
 		KnowledgeIDs: []int64{request.KnowledgeID},
+		SelectAll:    true,
 	})
 	if err != nil {
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
@@ -448,9 +449,7 @@ func (k *knowledgeSVC) ListDocument(ctx context.Context, request *ListDocumentRe
 		StatusNotIn: []int32{int32(entity.DocumentStatusDeleted)},
 	}
 	if request.Limit != nil {
-		opts.Limit = *request.Limit
-	} else {
-		opts.Limit = 50 // todo，放到默认值里
+		opts.Limit = ptr.From(request.Limit)
 	}
 	if request.Offset != nil {
 		opts.Offset = request.Offset
@@ -463,6 +462,9 @@ func (k *knowledgeSVC) ListDocument(ctx context.Context, request *ListDocumentRe
 	}
 	if request.KnowledgeID != 0 {
 		opts.KnowledgeIDs = []int64{request.KnowledgeID}
+	}
+	if request.SelectAll {
+		opts.SelectAll = true
 	}
 	documents, total, err := k.documentRepo.FindDocumentByCondition(ctx, &opts)
 	if err != nil {
