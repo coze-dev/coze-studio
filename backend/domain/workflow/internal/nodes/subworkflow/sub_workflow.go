@@ -15,9 +15,7 @@ import (
 )
 
 type Config struct {
-	Runner          compose.Runnable[map[string]any, map[string]any]
-	IgnoreException bool
-	DefaultOutput   map[string]any
+	Runner compose.Runnable[map[string]any, map[string]any]
 }
 
 type SubWorkflow struct {
@@ -46,9 +44,6 @@ func (s *SubWorkflow) Invoke(ctx context.Context, in map[string]any, opts ...nod
 	if err != nil {
 		interruptInfo, ok := compose.ExtractInterruptInfo(err)
 		if !ok {
-			if s.cfg.IgnoreException {
-				return s.cfg.DefaultOutput, nil
-			}
 			return nil, err
 		}
 
@@ -80,9 +75,6 @@ func (s *SubWorkflow) Stream(ctx context.Context, in map[string]any, opts ...nod
 	if err != nil {
 		interruptInfo, ok := compose.ExtractInterruptInfo(err)
 		if !ok {
-			if s.cfg.IgnoreException {
-				return schema.StreamReaderFromArray([]map[string]any{s.cfg.DefaultOutput}), nil
-			}
 			return nil, err
 		}
 

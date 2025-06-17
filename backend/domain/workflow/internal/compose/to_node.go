@@ -604,9 +604,7 @@ func (s *NodeSchema) ToSubWorkflowConfig(ctx context.Context, requireCheckpoint 
 	}
 
 	return &subworkflow.Config{
-		Runner:          wf.Runner,
-		IgnoreException: getKeyOrZero[bool]("IgnoreException", s.Configs),
-		DefaultOutput:   getKeyOrZero[map[string]any]("DefaultOutput", s.Configs),
+		Runner: wf.Runner,
 	}, nil
 }
 

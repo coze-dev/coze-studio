@@ -130,6 +130,12 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				},
 			}, nil)
 		}
+
+		if len(wb.Version) == 0 {
+			if err = repo.CreateSnapshotIfNeeded(ctx, wb.ID, wb.CommitID); err != nil {
+				return noTerminate, fmt.Errorf("failed to create snapshot: %v", err)
+			}
+		}
 	case WorkflowSuccess:
 		// sub workflow, no need to wait for exit node to be done
 		if event.SubWorkflowCtx != nil {

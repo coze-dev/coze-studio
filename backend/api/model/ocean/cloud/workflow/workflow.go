@@ -16689,7 +16689,7 @@ type GetHistorySchemaRequest struct {
 	SpaceID    string `thrift:"space_id,1,required" form:"space_id,required" json:"space_id,required" query:"space_id,required"`
 	WorkflowID string `thrift:"workflow_id,2,required" form:"workflow_id,required" json:"workflow_id,required" query:"workflow_id,required"`
 	// 多次分页的时候需要传入
-	CommitID        string      `thrift:"commit_id,3,required" form:"commit_id,required" json:"commit_id,required" query:"commit_id,required"`
+	CommitID        *string     `thrift:"commit_id,3,optional" form:"commit_id" json:"commit_id,omitempty" query:"commit_id"`
 	Type            OperateType `thrift:"type,4,required" form:"type,required" json:"type,required" query:"type,required"`
 	Env             *string     `thrift:"env,5,optional" form:"env" json:"env,omitempty" query:"env"`
 	WorkflowVersion *string     `thrift:"workflow_version,6,optional" form:"workflow_version" json:"workflow_version,omitempty" query:"workflow_version"`
@@ -16716,8 +16716,13 @@ func (p *GetHistorySchemaRequest) GetWorkflowID() (v string) {
 	return p.WorkflowID
 }
 
+var GetHistorySchemaRequest_CommitID_DEFAULT string
+
 func (p *GetHistorySchemaRequest) GetCommitID() (v string) {
-	return p.CommitID
+	if !p.IsSetCommitID() {
+		return GetHistorySchemaRequest_CommitID_DEFAULT
+	}
+	return *p.CommitID
 }
 
 func (p *GetHistorySchemaRequest) GetType() (v OperateType) {
@@ -16811,6 +16816,10 @@ var fieldIDToName_GetHistorySchemaRequest = map[int16]string{
 	255: "Base",
 }
 
+func (p *GetHistorySchemaRequest) IsSetCommitID() bool {
+	return p.CommitID != nil
+}
+
 func (p *GetHistorySchemaRequest) IsSetEnv() bool {
 	return p.Env != nil
 }
@@ -16848,7 +16857,6 @@ func (p *GetHistorySchemaRequest) Read(iprot thrift.TProtocol) (err error) {
 	var fieldId int16
 	var issetSpaceID bool = false
 	var issetWorkflowID bool = false
-	var issetCommitID bool = false
 	var issetType bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
@@ -16888,7 +16896,6 @@ func (p *GetHistorySchemaRequest) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetCommitID = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -16988,11 +16995,6 @@ func (p *GetHistorySchemaRequest) Read(iprot thrift.TProtocol) (err error) {
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetCommitID {
-		fieldId = 3
-		goto RequiredFieldNotSetError
-	}
-
 	if !issetType {
 		fieldId = 4
 		goto RequiredFieldNotSetError
@@ -17039,11 +17041,11 @@ func (p *GetHistorySchemaRequest) ReadField2(iprot thrift.TProtocol) error {
 }
 func (p *GetHistorySchemaRequest) ReadField3(iprot thrift.TProtocol) error {
 
-	var _field string
+	var _field *string
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
-		_field = v
+		_field = &v
 	}
 	p.CommitID = _field
 	return nil
@@ -17250,14 +17252,16 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *GetHistorySchemaRequest) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("commit_id", thrift.STRING, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.CommitID); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
+	if p.IsSetCommitID() {
+		if err = oprot.WriteFieldBegin("commit_id", thrift.STRING, 3); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.CommitID); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
 	}
 	return nil
 WriteFieldBeginError:

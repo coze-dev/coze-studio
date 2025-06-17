@@ -133,19 +133,9 @@ func designateOptionsForSubWorkflow(ctx context.Context,
 	resumeEvent *entity.InterruptEvent,
 	sw *schema.StreamWriter[*entity.Message],
 	pathPrefix ...string) (opts []einoCompose.Option, err error) {
-	subWorkflowID, subWorkflowVersion, isSubWorkflow := ns.GetSubWorkflowIdentity()
-	if !isSubWorkflow {
-		return nil, fmt.Errorf("node %s is not a sub workflow", ns.Key)
-	}
-
 	subHandler := execute.NewSubWorkflowHandler(
 		parentHandler,
-		&entity.WorkflowBasic{
-			ID:      subWorkflowID,
-			Version: subWorkflowVersion,
-			SpaceID: 0,   // TODO: fill this
-			AppID:   nil, // TODO: fill this
-		},
+		ns.SubWorkflowBasic,
 		resumeEvent,
 		ns.SubWorkflowSchema.NodeCount(),
 	)

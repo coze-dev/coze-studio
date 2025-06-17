@@ -12,9 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bytedance/sonic"
-
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 const defaultGetFileTimeout = 20       // second

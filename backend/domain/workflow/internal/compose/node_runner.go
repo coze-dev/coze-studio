@@ -3,9 +3,9 @@ package compose
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 	"time"
 
-	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
@@ -15,6 +15,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 type nodeRunConfig[O any] struct {
@@ -200,6 +202,10 @@ func (nc *nodeRunConfig[O]) invoke() func(ctx context.Context, input map[string]
 		ctx, runner := newNodeRunner(ctx, nc)
 
 		defer func() {
+			if panicErr := recover(); panicErr != nil {
+				err = safego.NewPanicErr(panicErr, debug.Stack())
+			}
+
 			if err == nil {
 				err = runner.onEnd(ctx, output)
 			}
@@ -244,6 +250,10 @@ func (nc *nodeRunConfig[O]) stream() func(ctx context.Context, input map[string]
 		ctx, runner := newNodeRunner(ctx, nc)
 
 		defer func() {
+			if panicErr := recover(); panicErr != nil {
+				err = safego.NewPanicErr(panicErr, debug.Stack())
+			}
+
 			if err == nil {
 				output, err = runner.onEndStream(ctx, output)
 			}
@@ -284,6 +294,10 @@ func (nc *nodeRunConfig[O]) transform() func(ctx context.Context, input *schema.
 		ctx, runner := newNodeRunner(ctx, nc)
 
 		defer func() {
+			if panicErr := recover(); panicErr != nil {
+				err = safego.NewPanicErr(panicErr, debug.Stack())
+			}
+
 			if err == nil {
 				output, err = runner.onEndStream(ctx, output)
 			}

@@ -6,9 +6,8 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/bytedance/sonic"
-
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 // outputValueFiller will fill the output value with nil if the key is not present in the output map.

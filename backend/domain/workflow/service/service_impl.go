@@ -7,14 +7,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bytedance/sonic"
+	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/cast"
 	"golang.org/x/exp/maps"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
-
-	einoCompose "github.com/cloudwego/eino/compose"
 
 	cloudworkflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
@@ -30,6 +28,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 type impl struct {
@@ -144,9 +143,9 @@ func (i *impl) Save(ctx context.Context, id int64, schema string) (err error) {
 			TestRunSuccess: testRunSuccess,
 			Modified:       true,
 		},
-		InputParams:  inputParams,
-		OutputParams: outputParams,
-		CommitID:     strconv.FormatInt(commitID, 10),
+		InputParamsStr:  inputParams,
+		OutputParamsStr: outputParams,
+		CommitID:        strconv.FormatInt(commitID, 10),
 	})
 }
 
@@ -251,86 +250,7 @@ func (i *impl) Delete(ctx context.Context, policy *vo.DeletePolicy) (err error) 
 }
 
 func (i *impl) Get(ctx context.Context, policy *vo.GetPolicy) (*entity.Workflow, error) {
-	meta, err := i.repo.GetMeta(ctx, policy.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	if policy.MetaOnly {
-		return &entity.Workflow{
-			ID:   policy.ID,
-			Meta: meta,
-		}, nil
-	}
-
-	var (
-		canvas, inputParams, outputParams string
-		draftMeta                         *vo.DraftMeta
-		versionMeta                       *vo.VersionMeta
-		commitID                          string
-	)
-	switch policy.QType {
-	case vo.FromDraft:
-		draft, err := i.repo.DraftV2(ctx, policy.ID, policy.CommitID)
-		if err != nil {
-			return nil, err
-		}
-
-		canvas = draft.Canvas
-		inputParams = draft.InputParams
-		outputParams = draft.OutputParams
-		draftMeta = draft.DraftMeta
-		commitID = draft.CommitID
-	case vo.FromSpecificVersion:
-		v, err := i.repo.GetVersion(ctx, policy.ID, policy.Version)
-		if err != nil {
-			return nil, err
-		}
-		canvas = v.Canvas
-		inputParams = v.InputParams
-		outputParams = v.OutputParams
-		versionMeta = v.VersionMeta
-		commitID = v.CommitID
-	case vo.FromLatestVersion:
-		v, err := i.repo.GetLatestVersion(ctx, policy.ID)
-		if err != nil {
-			return nil, err
-		}
-		canvas = v.Canvas
-		inputParams = v.InputParams
-		outputParams = v.OutputParams
-		versionMeta = v.VersionMeta
-		commitID = v.CommitID
-	default:
-		return nil, errors.New("invalid query type")
-	}
-
-	var inputs, outputs []*vo.NamedTypeInfo
-	if inputParams != "" {
-		err = sonic.UnmarshalString(inputParams, &inputs)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if outputParams != "" {
-		err = sonic.UnmarshalString(outputParams, &outputs)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return &entity.Workflow{
-		ID:       policy.ID,
-		CommitID: commitID,
-		Meta:     meta,
-		CanvasInfoV2: &vo.CanvasInfoV2{
-			Canvas:       canvas,
-			InputParams:  inputs,
-			OutputParams: outputs,
-		},
-		DraftMeta:   draftMeta,
-		VersionMeta: versionMeta,
-	}, nil
+	return i.repo.GetEntity(ctx, policy)
 }
 
 func (i *impl) GetWorkflowReference(ctx context.Context, id int64) (map[int64]*vo.Meta, error) {
@@ -390,6 +310,9 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 			}
 			// only project-level workflows need to validate sub-workflows
 			ids = append(ids, cast.ToInt64(e.ID)) // TODO: this should be int64 from the start
+		}
+		if len(ids) == 0 {
+			return wfValidateInfos, nil
 		}
 		workflows, err := i.MGet(ctx, &vo.MGetPolicy{
 			MetaQuery: vo.MetaQuery{
@@ -577,9 +500,9 @@ func (i *impl) Publish(ctx context.Context, policy *vo.PublishPolicy) (err error
 			VersionCreatorID:   policy.CreatorID,
 		},
 		CanvasInfo: vo.CanvasInfo{
-			Canvas:       draft.Canvas,
-			InputParams:  draft.InputParams,
-			OutputParams: draft.OutputParams,
+			Canvas:          draft.Canvas,
+			InputParamsStr:  draft.InputParamsStr,
+			OutputParamsStr: draft.OutputParamsStr,
 		},
 		CommitID: draft.CommitID,
 	}
@@ -732,9 +655,9 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 				VersionCreatorID: userID,
 			},
 			CanvasInfo: vo.CanvasInfo{
-				Canvas:       wf.Canvas,
-				InputParams:  inputStr,
-				OutputParams: outputStr,
+				Canvas:          wf.Canvas,
+				InputParamsStr:  inputStr,
+				OutputParamsStr: outputStr,
 			},
 		}
 	}
@@ -947,8 +870,8 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 
 			var (
 				draftCanvasString = wf.draftInfo.Canvas
-				inputParams       = wf.draftInfo.InputParams
-				outputParams      = wf.draftInfo.OutputParams
+				inputParams       = wf.draftInfo.InputParamsStr
+				outputParams      = wf.draftInfo.OutputParamsStr
 			)
 
 			canvas := &vo.Canvas{}
@@ -977,9 +900,9 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 					VersionCreatorID: ctxutil.MustGetUIDFromCtx(ctx),
 				},
 				CanvasInfo: vo.CanvasInfo{
-					Canvas:       modifiedCanvasString,
-					InputParams:  inputParams,
-					OutputParams: outputParams,
+					Canvas:          modifiedCanvasString,
+					InputParamsStr:  inputParams,
+					OutputParamsStr: outputParams,
 				},
 			})
 			if err != nil {
@@ -1065,7 +988,7 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 		}
 
 		for id := range metas {
-			inputs, outputs, err := ioF(draftInfos[id].InputParams, draftInfos[id].OutputParams)
+			inputs, outputs, err := ioF(draftInfos[id].InputParamsStr, draftInfos[id].OutputParamsStr)
 			if err != nil {
 				return nil, err
 			}
@@ -1075,9 +998,11 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 				Meta:     metas[id],
 				CommitID: draftInfos[id].CommitID,
 				CanvasInfoV2: &vo.CanvasInfoV2{
-					Canvas:       draftInfos[id].Canvas,
-					InputParams:  inputs,
-					OutputParams: outputs,
+					Canvas:          draftInfos[id].Canvas,
+					InputParams:     inputs,
+					OutputParams:    outputs,
+					InputParamsStr:  draftInfos[id].InputParamsStr,
+					OutputParamsStr: draftInfos[id].OutputParamsStr,
 				},
 				DraftMeta: draftInfos[id].DraftMeta,
 			}
@@ -1097,7 +1022,7 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 				return nil, err
 			}
 
-			inputs, outputs, err := ioF(v.InputParams, v.OutputParams)
+			inputs, outputs, err := ioF(v.InputParamsStr, v.OutputParamsStr)
 			if err != nil {
 				return nil, err
 			}
@@ -1107,9 +1032,11 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 				Meta:     metas[id],
 				CommitID: v.CommitID,
 				CanvasInfoV2: &vo.CanvasInfoV2{
-					Canvas:       v.Canvas,
-					InputParams:  inputs,
-					OutputParams: outputs,
+					Canvas:          v.Canvas,
+					InputParams:     inputs,
+					OutputParams:    outputs,
+					InputParamsStr:  v.InputParamsStr,
+					OutputParamsStr: v.OutputParamsStr,
 				},
 				VersionMeta: v.VersionMeta,
 			}
@@ -1123,7 +1050,7 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 				return nil, err
 			}
 
-			inputs, outputs, err := ioF(v.InputParams, v.OutputParams)
+			inputs, outputs, err := ioF(v.InputParamsStr, v.OutputParamsStr)
 			if err != nil {
 				return nil, err
 			}
@@ -1133,9 +1060,11 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 				Meta:     metas[id],
 				CommitID: v.CommitID,
 				CanvasInfoV2: &vo.CanvasInfoV2{
-					Canvas:       v.Canvas,
-					InputParams:  inputs,
-					OutputParams: outputs,
+					Canvas:          v.Canvas,
+					InputParams:     inputs,
+					OutputParams:    outputs,
+					InputParamsStr:  v.InputParamsStr,
+					OutputParamsStr: v.OutputParamsStr,
 				},
 				VersionMeta: v.VersionMeta,
 			}

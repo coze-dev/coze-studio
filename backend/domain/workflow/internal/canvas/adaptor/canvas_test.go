@@ -17,7 +17,6 @@ import (
 	"time"
 
 	"github.com/bytedance/mockey"
-	"github.com/bytedance/sonic"
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
@@ -43,6 +42,7 @@ import (
 	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 func TestIntentDetectorAndDatabase(t *testing.T) {
@@ -111,8 +111,8 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		err = sonic.Unmarshal(bs, &ret)
 		assert.NoError(t, err)
 
-		assert.Equal(t, ret[0]["v2"], float64(123))
-		assert.Equal(t, ret[1]["v2"], float64(345))
+		assert.Equal(t, ret[0]["v2"], int64(123))
+		assert.Equal(t, ret[1]["v2"], int64(345))
 
 		number := response["number"].(*int64)
 		assert.Equal(t, int64(2), *number)

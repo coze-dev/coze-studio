@@ -8,7 +8,6 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
@@ -18,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 type QuestionAnswer struct {
@@ -567,6 +567,9 @@ func (q *QuestionAnswer) ToCallbackOutput(_ context.Context, out map[string]any)
 		}
 		msg.ID = ""
 	}
+
+	delete(out, QuestionsKey)
+	delete(out, AnswersKey)
 
 	sOut := &nodes.StructuredCallbackOutput{
 		Output: out,

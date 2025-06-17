@@ -7,8 +7,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
-	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/schema"
 
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
@@ -28,6 +28,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
@@ -243,6 +244,17 @@ func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.Ge
 		devStatus = workflow.WorkFlowDevStatus_HadSubmit
 	}
 
+	var updateTime = time.Time{}
+	if wf.UpdatedAt != nil {
+		updateTime = *wf.UpdatedAt
+	}
+	if wf.DraftMeta != nil && wf.DraftMeta.Timestamp.After(updateTime) {
+		updateTime = wf.DraftMeta.Timestamp
+	}
+	if wf.VersionMeta != nil && wf.VersionMeta.VersionCreatedAt.After(updateTime) {
+		updateTime = wf.VersionMeta.VersionCreatedAt
+	}
+
 	canvasData := &workflow.CanvasData{
 		Workflow: &workflow.Workflow{
 			WorkflowID:       strconv.FormatInt(wf.ID, 10),
@@ -252,8 +264,8 @@ func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.Ge
 			IconURI:          wf.IconURI,
 			Status:           devStatus,
 			Type:             wf.ContentType,
-			CreateTime:       wf.CreatedAt.UnixMilli(),
-			UpdateTime:       wf.UpdatedAt.UnixMilli(),
+			CreateTime:       wf.CreatedAt.Unix(),
+			UpdateTime:       updateTime.Unix(),
 			Tag:              wf.Tag,
 			TemplateAuthorID: ternary.IFElse(wf.AuthorID > 0, ptr.Of(strconv.FormatInt(wf.AuthorID, 10)), nil),
 			SpaceID:          ptr.Of(strconv.FormatInt(wf.SpaceID, 10)),
@@ -298,6 +310,7 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 	exeCfg := vo.ExecuteConfig{
 		ID:           mustParseInt64(req.GetWorkflowID()),
 		From:         vo.FromDraft,
+		CommitID:     req.GetCommitID(),
 		Operator:     uID,
 		Mode:         vo.ExecuteModeDebug,
 		AppID:        appID,
@@ -312,7 +325,7 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 		return nil, errors.New("project_id and bot_id cannot be set at the same time")
 	}
 
-	exeID, _, err := GetWorkflowDomainSVC().AsyncExecute(ctx, exeCfg, maps.ToAnyValue(req.Input))
+	exeID, err := GetWorkflowDomainSVC().AsyncExecute(ctx, exeCfg, maps.ToAnyValue(req.Input))
 	if err != nil {
 		return nil, err
 	}
@@ -755,8 +768,6 @@ const (
 	InterruptEvent StreamRunEventType = "interrupt"
 )
 
-var debugURLTpl = "https://www.coze.cn/work_flow?execute_id=%d&space_id=%d&workflow_id=%d&execute_mode=2"
-
 func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *workflow.OpenAPIStreamRunFlowResponse, err error) {
 	var (
 		messageID  int
@@ -783,13 +794,13 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 				return &workflow.OpenAPIStreamRunFlowResponse{
 					ID:       strconv.Itoa(messageID),
 					Event:    string(DoneEvent),
-					DebugUrl: ptr.Of(fmt.Sprintf(debugURLTpl, executeID, spaceID, workflowID)),
+					DebugUrl: ptr.Of(fmt.Sprintf(vo.DebugURLTpl, executeID, spaceID, workflowID)),
 				}, nil
 			case entity.WorkflowFailed, entity.WorkflowCancel:
 				return &workflow.OpenAPIStreamRunFlowResponse{
 					ID:           strconv.Itoa(messageID),
 					Event:        string(ErrEvent),
-					DebugUrl:     ptr.Of(fmt.Sprintf(debugURLTpl, executeID, spaceID, workflowID)),
+					DebugUrl:     ptr.Of(fmt.Sprintf(vo.DebugURLTpl, executeID, spaceID, workflowID)),
 					ErrorCode:    ptr.Of(int64(msg.StateMessage.LastError.Code)),
 					ErrorMessage: ptr.Of(msg.StateMessage.LastError.Msg),
 				}, nil
@@ -797,7 +808,7 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 				return &workflow.OpenAPIStreamRunFlowResponse{
 					ID:       strconv.Itoa(messageID),
 					Event:    string(InterruptEvent),
-					DebugUrl: ptr.Of(fmt.Sprintf(debugURLTpl, executeID, spaceID, workflowID)),
+					DebugUrl: ptr.Of(fmt.Sprintf(vo.DebugURLTpl, executeID, spaceID, workflowID)),
 					InterruptData: &workflow.Interrupt{
 						EventID: fmt.Sprintf("%d/%d", executeID, msg.InterruptEvent.ID),
 						Type:    workflow.InterruptType(msg.InterruptEvent.EventType),
@@ -1045,14 +1056,14 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 
 	if req.GetIsAsync() {
 		exeCfg.SyncPattern = vo.SyncPatternAsync
-		exeID, wfBasic, err := GetWorkflowDomainSVC().AsyncExecute(ctx, exeCfg, parameters)
+		exeID, err := GetWorkflowDomainSVC().AsyncExecute(ctx, exeCfg, parameters)
 		if err != nil {
 			return nil, err
 		}
 
 		return &workflow.OpenAPIRunFlowResponse{
 			ExecuteID: ptr.Of(strconv.FormatInt(exeID, 10)),
-			DebugUrl:  ptr.Of(fmt.Sprintf(debugURLTpl, exeID, wfBasic.SpaceID, meta.ID)),
+			DebugUrl:  ptr.Of(fmt.Sprintf(vo.DebugURLTpl, exeID, meta.SpaceID, meta.ID)),
 		}, nil
 	}
 
@@ -1087,7 +1098,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	return &workflow.OpenAPIRunFlowResponse{
 		Data:      data,
 		ExecuteID: ptr.Of(strconv.FormatInt(wfExe.ID, 10)),
-		DebugUrl:  ptr.Of(fmt.Sprintf(debugURLTpl, wfExe.ID, wfExe.SpaceID, meta.ID)),
+		DebugUrl:  ptr.Of(fmt.Sprintf(vo.DebugURLTpl, wfExe.ID, wfExe.SpaceID, meta.ID)),
 		Token:     ptr.Of(wfExe.TokenInfo.InputTokens + wfExe.TokenInfo.OutputTokens),
 		Cost:      ptr.Of("0.00000"),
 	}, nil
@@ -1137,7 +1148,7 @@ func (w *ApplicationService) OpenAPIGetWorkflowRunHistory(ctx context.Context, r
 				LogID:         ptr.Of(exe.LogID),
 				CreateTime:    ptr.Of(exe.CreatedAt.Unix()),
 				UpdateTime:    updateTime,
-				DebugUrl:      ptr.Of(fmt.Sprintf(debugURLTpl, exe.ID, exe.SpaceID, exe.WorkflowID)),
+				DebugUrl:      ptr.Of(fmt.Sprintf(vo.DebugURLTpl, exe.ID, exe.SpaceID, exe.WorkflowID)),
 				Input:         exe.Input,
 				Output:        exe.Output,
 				Token:         ptr.Of(exe.TokenInfo.InputTokens + exe.TokenInfo.OutputTokens),
@@ -1431,6 +1442,7 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 			Name:             w.Name,
 			Desc:             w.Desc,
 			IconURI:          w.IconURI,
+			URL:              w.IconURL,
 			CreateTime:       w.CreatedAt.Unix(),
 			Type:             w.ContentType,
 			SchemaType:       workflow.SchemaType_FDL,
@@ -2146,6 +2158,72 @@ func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.Cop
 			WorkflowID: strconv.FormatInt(copiedID, 10),
 		},
 	}, err
+}
+
+func (w *ApplicationService) GetHistorySchema(ctx context.Context, req *workflow.GetHistorySchemaRequest) (resp *workflow.GetHistorySchemaResponse, err error) {
+	spaceID := mustParseInt64(req.GetSpaceID())
+	if err = checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+		return nil, err
+	}
+
+	workflowID := mustParseInt64(req.GetWorkflowID())
+	executeID := mustParseInt64(req.GetExecuteID())
+
+	var subExecuteID *int64
+	if req.IsSetSubExecuteID() {
+		subExecuteID = ptr.Of(mustParseInt64(req.GetSubExecuteID()))
+	}
+
+	exe := &entity.WorkflowExecution{
+		WorkflowID: workflowID,
+		SpaceID:    spaceID,
+	}
+
+	if subExecuteID == nil {
+		exe.ID = executeID
+		exe.RootExecutionID = executeID
+	} else {
+		exe.ID = *subExecuteID
+		exe.RootExecutionID = executeID
+	}
+	// use executeID and sub_executeID to get the workflow execution
+	exe, err = GetWorkflowDomainSVC().GetExecution(ctx, exe, false)
+	if err != nil {
+		return nil, err
+	}
+
+	// verify the workflowID
+	if exe.WorkflowID != workflowID {
+		return nil, fmt.Errorf("workflowID mismatch")
+	}
+
+	// get the workflow entity for that workflowID and commitID
+	policy := &vo.GetPolicy{
+		ID:       workflowID,
+		QType:    ternary.IFElse(len(exe.Version) > 0, vo.FromSpecificVersion, vo.FromDraft),
+		Version:  exe.Version,
+		CommitID: exe.CommitID,
+	}
+
+	wfEntity, err := GetWorkflowDomainSVC().Get(ctx, policy)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert the workflow entity to workflow history schema
+	return &workflow.GetHistorySchemaResponse{
+		Data: &workflow.GetHistorySchemaData{
+			Name:         wfEntity.Name,
+			Describe:     wfEntity.Desc,
+			URL:          wfEntity.IconURL,
+			Schema:       wfEntity.Canvas,
+			FlowMode:     wfEntity.Mode,
+			WorkflowID:   req.GetWorkflowID(),
+			CommitID:     wfEntity.CommitID,
+			ExecuteID:    req.ExecuteID,
+			SubExecuteID: req.SubExecuteID,
+		},
+	}, nil
 }
 
 func mustParseInt64(s string) int64 {

@@ -33,6 +33,10 @@ const (
 func (o *Operator) WillAccept(leftT, rightT reflect.Type) error {
 	switch *o {
 	case OperatorEqual, OperatorNotEqual:
+		if leftT == nil || rightT == nil {
+			return nil
+		}
+
 		if leftT != reflect.TypeOf(int64(0)) && leftT != reflect.TypeOf(float64(0)) && leftT.Kind() != reflect.Bool && leftT.Kind() != reflect.String {
 			return fmt.Errorf("operator %v only accepts int64, float64, bool or string, not %v", *o, leftT)
 		}
@@ -53,10 +57,18 @@ func (o *Operator) WillAccept(leftT, rightT reflect.Type) error {
 			return fmt.Errorf("operator %v does not accept non-nil right operant: %v", *o, rightT)
 		}
 	case OperatorGreater, OperatorGreaterOrEqual, OperatorLesser, OperatorLesserOrEqual:
+		if leftT == nil {
+			return nil
+		}
+
 		if leftT != reflect.TypeOf(int64(0)) && leftT != reflect.TypeOf(float64(0)) {
 			return fmt.Errorf("operator %v only accepts float64 or int64, not %v", *o, leftT)
 		}
 	case OperatorIsTrue, OperatorIsFalse:
+		if leftT == nil {
+			return nil
+		}
+
 		if rightT != nil {
 			return fmt.Errorf("operator %v does not accept non-nil right operant: %v", *o, rightT)
 		}
@@ -65,6 +77,10 @@ func (o *Operator) WillAccept(leftT, rightT reflect.Type) error {
 			return fmt.Errorf("operator %v only accepts boolean, not %v", *o, leftT)
 		}
 	case OperatorLengthGreater, OperatorLengthGreaterOrEqual, OperatorLengthLesser, OperatorLengthLesserOrEqual:
+		if leftT == nil {
+			return nil
+		}
+
 		if leftT.Kind() != reflect.String && leftT.Kind() != reflect.Slice {
 			return fmt.Errorf("operator %v left operant only accepts string or slice, not %v", *o, leftT)
 		}

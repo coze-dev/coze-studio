@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bytedance/sonic"
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/spf13/cast"
 
@@ -33,7 +32,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (sc *compose.WorkflowSchema, err error) {
@@ -892,11 +893,29 @@ func toBatchNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, 
 }
 
 func toSubWorkflowNodeSchema(ctx context.Context, n *vo.Node) (*compose.NodeSchema, error) {
-	subCanvas, err := workflow.GetRepository().GetSubWorkflowCanvas(ctx, n)
+	idStr := n.Data.Inputs.WorkflowID
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse subworkflow id: %w", err)
+		return nil, fmt.Errorf("failed to parse workflow id: %w", err)
 	}
-	subWorkflowSC, err := CanvasToWorkflowSchema(ctx, subCanvas)
+
+	version := n.Data.Inputs.WorkflowVersion
+
+	subWF, err := workflow.GetRepository().GetEntity(ctx, &vo.GetPolicy{
+		ID:      id,
+		QType:   ternary.IFElse(len(version) == 0, vo.FromDraft, vo.FromSpecificVersion),
+		Version: version,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var subCanvas vo.Canvas
+	if err = sonic.UnmarshalString(subWF.Canvas, &subCanvas); err != nil {
+		return nil, err
+	}
+
+	subWorkflowSC, err := CanvasToWorkflowSchema(ctx, &subCanvas)
 	if err != nil {
 		return nil, err
 	}
@@ -905,6 +924,7 @@ func toSubWorkflowNodeSchema(ctx context.Context, n *vo.Node) (*compose.NodeSche
 		Key:               vo.NodeKey(n.ID),
 		Type:              entity.NodeTypeSubWorkflow,
 		Name:              n.Data.Meta.Title,
+		SubWorkflowBasic:  subWF.GetBasic(),
 		SubWorkflowSchema: subWorkflowSC,
 	}
 

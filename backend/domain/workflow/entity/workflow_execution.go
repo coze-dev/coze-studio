@@ -86,16 +86,6 @@ type NodeExecution struct {
 	Extra *NodeExtra
 }
 
-func (we *WorkflowExecution) GetBasic() *WorkflowBasic {
-	return &WorkflowBasic{
-		ID:       we.WorkflowID,
-		Version:  we.Version,
-		SpaceID:  we.SpaceID,
-		AppID:    we.AppID,
-		CommitID: we.CommitID,
-	}
-}
-
 type NodeExtra struct {
 	CurrentSubExecuteID int64          `json:"current_sub_execute_id,omitempty"`
 	ResponseExtra       *ResponseExtra `json:"response_extra,omitempty"`

@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bytedance/sonic"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
@@ -20,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 type executeHistoryStoreImpl struct {
@@ -65,6 +65,7 @@ func (e *executeHistoryStoreImpl) CreateWorkflowExecution(ctx context.Context, e
 		ConnectorUID:    execution.ConnectorUID,
 		NodeCount:       execution.NodeCount,
 		SyncPattern:     syncPattern,
+		CommitID:        execution.CommitID,
 	}
 
 	if execution.ParentNodeID == nil {
@@ -227,6 +228,7 @@ func (e *executeHistoryStoreImpl) GetWorkflowExecution(ctx context.Context, id i
 		NodeExecutions:         nil, // keep it nil here, query node executions separately
 		RootExecutionID:        rootExe.RootExecutionID,
 		CurrentResumingEventID: ternary.IFElse(rootExe.ResumeEventID == 0, nil, ptr.Of(rootExe.ResumeEventID)),
+		CommitID:               rootExe.CommitID,
 	}
 
 	return exe, true, nil

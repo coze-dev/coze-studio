@@ -14,7 +14,7 @@ import (
 
 type Executable interface {
 	SyncExecute(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*entity.WorkflowExecution, vo.TerminatePlan, error)
-	AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (int64, *entity.WorkflowBasic, error)
+	AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (int64, error)
 	AsyncExecuteNode(ctx context.Context, nodeID string, config vo.ExecuteConfig, input map[string]any) (int64, error)
 	AsyncResume(ctx context.Context, req *entity.ResumeRequest, config vo.ExecuteConfig) error
 	StreamExecute(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*schema.StreamReader[*entity.Message], error)

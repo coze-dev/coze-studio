@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	sonic2 "code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 type Config struct {
@@ -103,7 +104,7 @@ func (i *InputReceiver) Invoke(ctx context.Context, in map[string]any) (map[stri
 func jsonParseRelaxed(data string, schema_ map[string]*vo.TypeInfo) (map[string]any, error) {
 	var result map[string]any
 
-	err := sonic.UnmarshalString(data, &result)
+	err := sonic2.UnmarshalString(data, &result)
 	if err != nil {
 		return nil, err
 	}

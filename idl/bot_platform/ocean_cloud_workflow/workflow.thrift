@@ -531,7 +531,7 @@ enum OperateType {
 struct GetHistorySchemaRequest {
     1  : required string      space_id   ,
     2  : required string      workflow_id,
-    3  : required string      commit_id  , // 多次分页的时候需要传入
+    3  : optional string      commit_id  , // 多次分页的时候需要传入
     4  : required OperateType type       ,
     5  : optional string      env        ,
     6  : optional string      workflow_version,

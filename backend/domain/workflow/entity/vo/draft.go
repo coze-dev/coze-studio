@@ -5,23 +5,25 @@ import "time"
 type DraftInfo struct {
 	*DraftMeta
 
-	Canvas       string
-	InputParams  string
-	OutputParams string
+	Canvas          string
+	InputParamsStr  string
+	OutputParamsStr string
 
 	CommitID string
 }
 
 type CanvasInfo struct {
-	Canvas       string
-	InputParams  string
-	OutputParams string
+	Canvas          string
+	InputParamsStr  string
+	OutputParamsStr string
 }
 
 type CanvasInfoV2 struct {
-	Canvas       string
-	InputParams  []*NamedTypeInfo
-	OutputParams []*NamedTypeInfo
+	Canvas          string
+	InputParams     []*NamedTypeInfo
+	OutputParams    []*NamedTypeInfo
+	InputParamsStr  string
+	OutputParamsStr string
 }
 
 type DraftMeta struct {

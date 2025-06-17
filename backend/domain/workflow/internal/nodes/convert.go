@@ -5,10 +5,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bytedance/sonic"
-
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 func ConvertInputs(in map[string]any, tInfo map[string]*vo.TypeInfo) (map[string]any, error) {
@@ -174,7 +173,10 @@ func convertMapInput(in map[string]any, t *vo.TypeInfo) (map[string]any, error) 
 		case vo.DataTypeString, vo.DataTypeBoolean, vo.DataTypeNumber, vo.DataTypeFile:
 			out[k] = v
 		case vo.DataTypeInteger:
-			out[k] = int64(v.(float64))
+			out[k], ok = v.(int64)
+			if !ok {
+				out[k] = int64(v.(float64))
+			}
 		case vo.DataTypeTime:
 			ti, err := parseTime(v.(string))
 			if err != nil {

@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bytedance/sonic"
-
 	cloudworkflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
@@ -15,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/adaptor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/validate"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]*validate.Issue, error) {

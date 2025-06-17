@@ -1,9 +1,8 @@
 package vo
 
 import (
-	"github.com/bytedance/sonic"
-
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 type WorkFlowAsToolInfo struct {

@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bytedance/sonic"
 	einoCompose "github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
@@ -21,6 +20,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/selector"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 func CanvasVariableToTypeInfo(v *vo.Variable) (*vo.TypeInfo, error) {

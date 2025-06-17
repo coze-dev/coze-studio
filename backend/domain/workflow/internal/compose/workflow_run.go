@@ -43,7 +43,7 @@ func Prepare(ctx context.Context,
 	)
 
 	if resumeReq == nil {
-		executeID, err = wf.GetRepository().GenID(ctx)
+		executeID, err = repo.GenID(ctx)
 		if err != nil {
 			return ctx, 0, nil, nil, fmt.Errorf("failed to generate workflow execute ID: %w", err)
 		}
@@ -203,7 +203,7 @@ func Prepare(ctx context.Context,
 
 		// this goroutine should not use the cancelCtx because it needs to be alive to receive workflow cancel events
 		lastEventChan <- execute.HandleExecuteEvent(ctx, eventChan, cancelFn, timeoutFn,
-			cancelSignalChan, clearFn, wf.GetRepository(), sw, config)
+			cancelSignalChan, clearFn, repo, sw, config)
 		close(lastEventChan)
 	}()
 

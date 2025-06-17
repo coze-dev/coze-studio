@@ -16,7 +16,6 @@ import (
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/bytedance/mockey"
-	"github.com/bytedance/sonic"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
 	"github.com/redis/go-redis/v9"
@@ -68,6 +67,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
@@ -110,6 +110,7 @@ var req2URL = map[reflect.Type]string{
 	reflect.TypeOf(&workflow.GetLLMNodeFCSettingsMergedRequest{}): "/api/workflow_api/llm_fc_setting_merged",
 	reflect.TypeOf(&workflow.CopyWorkflowRequest{}):               "/api/workflow_api/copy",
 	reflect.TypeOf(&workflow.BatchDeleteWorkflowRequest{}):        "/api/workflow_api/batch_delete",
+	reflect.TypeOf(&workflow.GetHistorySchemaRequest{}):           "/api/workflow_api/history_schema",
 }
 
 func newWfTestRunner(t *testing.T) *wfTestRunner {
@@ -148,6 +149,7 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	h.POST("/api/workflow_api/batch_delete", BatchDeleteWorkflow)
 	h.POST("/api/workflow_api/node_type", QueryWorkflowNodeTypes)
 	h.GET("/v1/workflow/get_run_history", OpenAPIGetWorkflowRunHistory)
+	h.POST("/api/workflow_api/history_schema", GetHistorySchema)
 
 	ctrl := gomock.NewController(t, gomock.WithOverridableExpectations())
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -1257,7 +1259,7 @@ func TestResumeWithQANode(t *testing.T) {
 		assert.Equal(t, map[string]any{
 			"USER_RESPONSE": "1 year old",
 			"name":          "eino",
-			"age":           float64(1),
+			"age":           int64(1),
 		}, mustUnmarshalToMap(t, e3.output))
 	})
 }
@@ -1307,9 +1309,9 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 		}).AnyTimes()
 
 		topID := r.load("subworkflow/top_workflow.json")
-		r.load("subworkflow/middle_workflow.json", withID(7494849202016272435))
-		r.load("subworkflow/bottom_workflow.json", withID(7468899413567684634))
-		r.load("input_receiver.json", withID(7469607842648457243))
+		midID := r.load("subworkflow/middle_workflow.json", withID(7494849202016272435))
+		bottomID := r.load("subworkflow/bottom_workflow.json", withID(7468899413567684634))
+		inputID := r.load("input_receiver.json", withID(7469607842648457243))
 
 		exeID := r.testRun(topID, map[string]string{
 			"input": "hello",
@@ -1332,6 +1334,76 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 		e3 := r.getProcess(topID, exeID, withPreviousEventID(e2.event.ID))
 		e3.assertSuccess()
 		assert.Equal(t, "I don't know.\nI don't know too.\nb\n['new_a_more info 1', 'new_b_more info 2']", e3.output)
+
+		mockey.PatchConvey("verify history schema for all workflows", func() {
+			// get current draft commit ID of top_workflow
+			canvas := post[workflow.GetCanvasInfoResponse](r, &workflow.GetCanvasInfoRequest{
+				WorkflowID: ptr.Of(topID),
+			})
+			topCommitID := canvas.Data.VcsData.DraftCommitID
+
+			// get history schema of top_workflow
+			resp := post[workflow.GetHistorySchemaResponse](r, &workflow.GetHistorySchemaRequest{
+				WorkflowID: topID,
+				ExecuteID:  ptr.Of(exeID),
+			})
+
+			assert.Equal(t, topCommitID, resp.Data.CommitID)
+
+			// get sub_executeID for middle_workflow
+			nodeHis := r.getNodeExeHistory(topID, exeID, "198743", nil)
+			extra := mustUnmarshalToMap(t, nodeHis.GetExtra())
+			midExeID := extra["subExecuteID"].(int64)
+
+			// do the same for middle_workflow
+			canvas = post[workflow.GetCanvasInfoResponse](r, &workflow.GetCanvasInfoRequest{
+				WorkflowID: ptr.Of(midID),
+			})
+			resp = post[workflow.GetHistorySchemaResponse](r, &workflow.GetHistorySchemaRequest{
+				WorkflowID:   midID,
+				ExecuteID:    ptr.Of(exeID),
+				SubExecuteID: ptr.Of(strconv.FormatInt(midExeID, 10)),
+			})
+			assert.Equal(t, canvas.Data.VcsData.DraftCommitID, resp.Data.CommitID)
+
+			nodeHis = r.getNodeExeHistory(midID, strconv.FormatInt(midExeID, 10), "112956", nil)
+			extra = mustUnmarshalToMap(t, nodeHis.GetExtra())
+			bottomExeID := extra["subExecuteID"].(int64)
+
+			// do the same for bottom_workflow
+			canvas = post[workflow.GetCanvasInfoResponse](r, &workflow.GetCanvasInfoRequest{
+				WorkflowID: ptr.Of(bottomID),
+			})
+			resp = post[workflow.GetHistorySchemaResponse](r, &workflow.GetHistorySchemaRequest{
+				WorkflowID:   bottomID,
+				ExecuteID:    ptr.Of(exeID),
+				SubExecuteID: ptr.Of(strconv.FormatInt(bottomExeID, 10)),
+			})
+			assert.Equal(t, canvas.Data.VcsData.DraftCommitID, resp.Data.CommitID)
+
+			nodeHis = r.getNodeExeHistory(bottomID, strconv.FormatInt(bottomExeID, 10), "141303", nil)
+			extra = mustUnmarshalToMap(t, nodeHis.GetExtra())
+			inputExeID := extra["subExecuteID"].(int64)
+
+			// do the same for input_receiver workflow
+			canvas = post[workflow.GetCanvasInfoResponse](r, &workflow.GetCanvasInfoRequest{
+				WorkflowID: ptr.Of(inputID),
+			})
+			resp = post[workflow.GetHistorySchemaResponse](r, &workflow.GetHistorySchemaRequest{
+				WorkflowID:   inputID,
+				ExecuteID:    ptr.Of(exeID),
+				SubExecuteID: ptr.Of(strconv.FormatInt(inputExeID, 10)),
+			})
+			assert.Equal(t, canvas.Data.VcsData.DraftCommitID, resp.Data.CommitID)
+
+			// update the top_workflow's draft, we still can get it's history schema
+			r.save(topID, "subworkflow/middle_workflow.json")
+			resp = post[workflow.GetHistorySchemaResponse](r, &workflow.GetHistorySchemaRequest{
+				WorkflowID: topID,
+				ExecuteID:  ptr.Of(exeID),
+			})
+			assert.Equal(t, topCommitID, resp.Data.CommitID)
+		})
 	})
 }
 
@@ -2129,7 +2201,7 @@ func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 		detailInfoResponse := post[map[string]any](r, detailInfoReq)
 		assert.Equal(t, 1, len((*detailInfoResponse)["data"].([]any)))
 		assert.Equal(t, "v0.0.2", (*detailInfoResponse)["data"].([]any)[0].(map[string]any)["latest_flow_version"].(string))
-		assert.Equal(t, float64(1), (*detailInfoResponse)["data"].([]any)[0].(map[string]any)["end_type"].(float64))
+		assert.Equal(t, int64(1), (*detailInfoResponse)["data"].([]any)[0].(map[string]any)["end_type"].(int64))
 
 		deleteReq := &workflow.DeleteWorkflowRequest{
 			WorkflowID: id,
@@ -2262,7 +2334,7 @@ func TestParallelInterrupts(t *testing.T) {
 			"gender":      "prefer not to say",
 			"user_input":  "this is the user input",
 			"user_name":   "eino",
-			"user_age":    float64(1),
+			"user_age":    int64(1),
 			"nationality": "China",
 		}, mustUnmarshalToMap(t, e6.output))
 	})
@@ -2285,16 +2357,16 @@ func TestInputComplex(t *testing.T) {
 		assert.Equal(t, map[string]any{
 			"output": map[string]any{
 				"name": "eino",
-				"age":  float64(1),
+				"age":  int64(1),
 			},
 			"output_list": []any{
 				map[string]any{
 					"name": "user_1",
-					"age":  float64(0), // TODO: this is different to online behavior which is nil
+					"age":  int64(0), // TODO: this is different to online behavior which is nil
 				},
 				map[string]any{
 					"name": "", // TODO: this is different to online behavior which is nil
-					"age":  float64(2),
+					"age":  int64(2),
 				},
 			},
 		}, mustUnmarshalToMap(t, e2.output))
@@ -2496,7 +2568,7 @@ func TestLLMWithSkills(t *testing.T) {
 					assert.Nil(t, err)
 					assert.Equal(t, nil, result["output_object"])
 					assert.Equal(t, "input_string", result["output_string"])
-					assert.Equal(t, float64(123), result["output_number"])
+					assert.Equal(t, int64(123), result["output_number"])
 					return &schema.Message{
 						Role:    schema.Assistant,
 						Content: `output_data`,
@@ -3427,7 +3499,7 @@ func TestLLMException(t *testing.T) {
 			e.assertSuccess()
 			assert.Equal(t, map[string]any{
 				"name":      "eino",
-				"age":       float64(1),
+				"age":       int64(1),
 				"isSuccess": true,
 			}, mustUnmarshalToMap(t, e.output))
 		})
@@ -3446,11 +3518,11 @@ func TestLLMException(t *testing.T) {
 			e.assertSuccess()
 			assert.Equal(t, map[string]any{
 				"name":      "zhangsan",
-				"age":       float64(3),
+				"age":       int64(3),
 				"isSuccess": false,
 				"errorBody": map[string]any{
 					"errorMessage": "[GraphRunError]\ncontext has been canceled: context deadline exceeded",
-					"errorCode":    float64(-1),
+					"errorCode":    int64(-1),
 				},
 			}, mustUnmarshalToMap(t, e.output))
 		})

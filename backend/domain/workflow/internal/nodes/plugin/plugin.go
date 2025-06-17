@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/components/tool"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 type Config struct {

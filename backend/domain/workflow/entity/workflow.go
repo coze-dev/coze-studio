@@ -1,8 +1,6 @@
 package entity
 
 import (
-	"time"
-
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
@@ -53,30 +51,6 @@ func (w *Workflow) GetVersion() string {
 type IDVersionPair struct {
 	ID      int64
 	Version string
-}
-
-type WorkflowMeta struct {
-	ID int64
-
-	SpaceID     int64
-	CreatorID   int64
-	CreatedAt   time.Time
-	ContentType ContentType
-	Tag         *Tag
-	AppID       *int64
-	SourceID    *int64
-	AuthorID    int64
-
-	Name      string
-	Desc      string
-	IconURI   string
-	IconURL   string
-	Mode      Mode
-	UpdatedAt *time.Time
-	UpdaterID *int64
-	DeletedAt *time.Time
-
-	HasPublished bool
 }
 
 type Stage uint8

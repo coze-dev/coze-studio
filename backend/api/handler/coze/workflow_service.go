@@ -7,7 +7,6 @@ import (
 	"errors"
 	"io"
 
-	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/schema"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -16,6 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 // CreateWorkflow .
@@ -1010,7 +1010,11 @@ func GetHistorySchema(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetHistorySchemaResponse)
+	resp, err := appworkflow.SVC.GetHistorySchema(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

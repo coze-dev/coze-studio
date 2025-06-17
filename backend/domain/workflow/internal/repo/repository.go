@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bytedance/sonic"
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/redis/go-redis/v9"
@@ -31,6 +30,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 type RepositoryImpl struct {
@@ -63,41 +63,6 @@ func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Client, to
 			redis: redis,
 		},
 	}
-}
-
-func (r *RepositoryImpl) GetSubWorkflowCanvas(ctx context.Context, parent *vo.Node) (*vo.Canvas, error) {
-	idStr := parent.Data.Inputs.WorkflowID
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse workflow id: %w", err)
-	}
-
-	version := parent.Data.Inputs.WorkflowVersion
-	if version == "" {
-		draft, err := r.DraftV2(ctx, id, "")
-		if err != nil {
-			return nil, err
-		}
-
-		var canvas vo.Canvas
-		err = sonic.UnmarshalString(draft.Canvas, &canvas)
-		if err != nil {
-			return nil, err
-		}
-
-		return &canvas, nil
-	}
-
-	versionInfo, err := r.GetVersion(ctx, id, version)
-	if err != nil {
-		return nil, err
-	}
-	var canvas vo.Canvas
-	err = sonic.UnmarshalString(versionInfo.Canvas, &canvas)
-	if err != nil {
-		return nil, err
-	}
-	return &canvas, nil
 }
 
 func (r *RepositoryImpl) CreateMeta(ctx context.Context, meta *vo.Meta) (int64, error) {
@@ -143,8 +108,8 @@ func (r *RepositoryImpl) CreateVersion(ctx context.Context, id int64, info *vo.V
 		Version:            info.Version,
 		VersionDescription: info.VersionDescription,
 		Canvas:             info.Canvas,
-		InputParams:        info.InputParams,
-		OutputParams:       info.OutputParams,
+		InputParams:        info.InputParamsStr,
+		OutputParams:       info.OutputParamsStr,
 		CreatorID:          info.VersionCreatorID,
 		CommitID:           info.CommitID,
 	}); err != nil {
@@ -184,8 +149,8 @@ func (r *RepositoryImpl) CreateOrUpdateDraft(ctx context.Context, id int64, draf
 	d := &model.WorkflowDraft{
 		ID:             id,
 		Canvas:         draft.Canvas,
-		InputParams:    draft.InputParams,
-		OutputParams:   draft.OutputParams,
+		InputParams:    draft.InputParamsStr,
+		OutputParams:   draft.OutputParamsStr,
 		Modified:       draft.Modified,
 		TestRunSuccess: draft.TestRunSuccess,
 		CommitID:       draft.CommitID,
@@ -361,6 +326,91 @@ func (r *RepositoryImpl) UpdateMeta(ctx context.Context, id int64, metaUpdate *v
 	return nil
 }
 
+func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (*entity.Workflow, error) {
+	meta, err := r.GetMeta(ctx, policy.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if policy.MetaOnly {
+		return &entity.Workflow{
+			ID:   policy.ID,
+			Meta: meta,
+		}, nil
+	}
+
+	var (
+		canvas, inputParams, outputParams string
+		draftMeta                         *vo.DraftMeta
+		versionMeta                       *vo.VersionMeta
+		commitID                          string
+	)
+	switch policy.QType {
+	case vo.FromDraft:
+		draft, err := r.DraftV2(ctx, policy.ID, policy.CommitID)
+		if err != nil {
+			return nil, err
+		}
+
+		canvas = draft.Canvas
+		inputParams = draft.InputParamsStr
+		outputParams = draft.OutputParamsStr
+		draftMeta = draft.DraftMeta
+		commitID = draft.CommitID
+	case vo.FromSpecificVersion:
+		v, err := r.GetVersion(ctx, policy.ID, policy.Version)
+		if err != nil {
+			return nil, err
+		}
+		canvas = v.Canvas
+		inputParams = v.InputParamsStr
+		outputParams = v.OutputParamsStr
+		versionMeta = v.VersionMeta
+		commitID = v.CommitID
+	case vo.FromLatestVersion:
+		v, err := r.GetLatestVersion(ctx, policy.ID)
+		if err != nil {
+			return nil, err
+		}
+		canvas = v.Canvas
+		inputParams = v.InputParamsStr
+		outputParams = v.OutputParamsStr
+		versionMeta = v.VersionMeta
+		commitID = v.CommitID
+	default:
+		return nil, errors.New("invalid query type")
+	}
+
+	var inputs, outputs []*vo.NamedTypeInfo
+	if inputParams != "" {
+		err = sonic.UnmarshalString(inputParams, &inputs)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if outputParams != "" {
+		err = sonic.UnmarshalString(outputParams, &outputs)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &entity.Workflow{
+		ID:       policy.ID,
+		CommitID: commitID,
+		Meta:     meta,
+		CanvasInfoV2: &vo.CanvasInfoV2{
+			Canvas:          canvas,
+			InputParams:     inputs,
+			OutputParams:    outputs,
+			InputParamsStr:  inputParams,
+			OutputParamsStr: outputParams,
+		},
+		DraftMeta:   draftMeta,
+		VersionMeta: versionMeta,
+	}, nil
+}
+
 func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version string) (*vo.VersionInfo, error) {
 	wfVersion, err := r.query.WorkflowVersion.WithContext(ctx).
 		Where(r.query.WorkflowVersion.ID.Eq(id), r.query.WorkflowVersion.Version.Eq(version)).
@@ -380,9 +430,9 @@ func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version strin
 			VersionCreatorID:   wfVersion.CreatorID,
 		},
 		CanvasInfo: vo.CanvasInfo{
-			Canvas:       wfVersion.Canvas,
-			InputParams:  wfVersion.InputParams,
-			OutputParams: wfVersion.OutputParams,
+			Canvas:          wfVersion.Canvas,
+			InputParamsStr:  wfVersion.InputParams,
+			OutputParamsStr: wfVersion.OutputParams,
 		},
 		CommitID: wfVersion.CommitID,
 	}, nil
@@ -421,10 +471,10 @@ func (r *RepositoryImpl) DraftV2(ctx context.Context, id int64, commitID string)
 						IsSnapshot: true,
 					},
 
-					Canvas:       snapshot.Canvas,
-					InputParams:  snapshot.InputParams,
-					OutputParams: snapshot.OutputParams,
-					CommitID:     snapshot.CommitID,
+					Canvas:          snapshot.Canvas,
+					InputParamsStr:  snapshot.InputParams,
+					OutputParamsStr: snapshot.OutputParams,
+					CommitID:        snapshot.CommitID,
 				}, nil
 			}
 		}
@@ -439,10 +489,10 @@ func (r *RepositoryImpl) DraftV2(ctx context.Context, id int64, commitID string)
 			IsSnapshot:     false,
 		},
 
-		Canvas:       draft.Canvas,
-		InputParams:  draft.InputParams,
-		OutputParams: draft.OutputParams,
-		CommitID:     draft.CommitID,
+		Canvas:          draft.Canvas,
+		InputParamsStr:  draft.InputParams,
+		OutputParamsStr: draft.OutputParams,
+		CommitID:        draft.CommitID,
 	}, nil
 }
 
@@ -465,10 +515,10 @@ func (r *RepositoryImpl) MGetDraft(ctx context.Context, ids []int64) (map[int64]
 				IsSnapshot:     false,
 			},
 
-			Canvas:       draft.Canvas,
-			InputParams:  draft.InputParams,
-			OutputParams: draft.OutputParams,
-			CommitID:     draft.CommitID,
+			Canvas:          draft.Canvas,
+			InputParamsStr:  draft.InputParams,
+			OutputParamsStr: draft.OutputParams,
+			CommitID:        draft.CommitID,
 		}
 	}
 	return result, nil
@@ -556,6 +606,8 @@ func (r *RepositoryImpl) MGetMeta(ctx context.Context, query *vo.MetaQuery) (map
 
 	if query.AppID != nil {
 		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(*query.AppID))
+	} else { // if AppID not specified, we can only query those within Library
+		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(0))
 	}
 
 	var (
@@ -571,6 +623,9 @@ func (r *RepositoryImpl) MGetMeta(ctx context.Context, query *vo.MetaQuery) (map
 			return nil, err
 		}
 	} else {
+		if len(conditions) == 0 {
+			return nil, errors.New("no conditions provided")
+		}
 		result, err = workflowMetaDo.Find()
 		if err != nil {
 			return nil, err
@@ -607,9 +662,9 @@ func (r *RepositoryImpl) GetLatestVersion(ctx context.Context, id int64) (*vo.Ve
 			VersionCreatorID:   version.CreatorID,
 		},
 		CanvasInfo: vo.CanvasInfo{
-			Canvas:       version.Canvas,
-			InputParams:  version.InputParams,
-			OutputParams: version.OutputParams,
+			Canvas:          version.Canvas,
+			InputParamsStr:  version.InputParams,
+			OutputParamsStr: version.OutputParams,
 		},
 	}, nil
 }
@@ -646,6 +701,40 @@ func (r *RepositoryImpl) MGetSubWorkflowReferences(ctx context.Context, ids ...i
 	return wfID2Reference, nil
 }
 
+func (r *RepositoryImpl) CreateSnapshotIfNeeded(ctx context.Context, id int64, commitID string) error {
+	latestSnapshot, err := r.query.WorkflowSnapshot.WithContext(ctx).Where(
+		r.query.WorkflowSnapshot.WorkflowID.Eq(id),
+		r.query.WorkflowSnapshot.CommitID.Eq(commitID),
+	).First()
+
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			logs.CtxErrorf(ctx, "query workflow snapshot failed err=%v", err)
+		}
+	} else if latestSnapshot != nil { // already have this snapshot, no need to create it
+		return nil
+	}
+
+	draft, err := r.query.WorkflowDraft.WithContext(ctx).Where(
+		r.query.WorkflowDraft.ID.Eq(id),
+		r.query.WorkflowDraft.CommitID.Eq(commitID),
+	).First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("workflow draft not found for ID %d, commitID %s: %w", id, commitID, err)
+		}
+		return fmt.Errorf("failed to query workflow draft for ID %d, commitID %s: %w", id, commitID, err)
+	}
+
+	return r.query.WorkflowSnapshot.WithContext(ctx).Save(&model.WorkflowSnapshot{
+		WorkflowID:   id,
+		CommitID:     commitID,
+		Canvas:       draft.Canvas,
+		InputParams:  draft.InputParams,
+		OutputParams: draft.OutputParams,
+	})
+}
+
 func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy, wfToolConfig vo.WorkflowToolConfig) (workflow.ToolFromWorkflow, error) {
 	var (
 		canvas               vo.Canvas
@@ -657,88 +746,17 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 		})
 	)
 
-	wfMeta, err := r.GetMeta(ctx, policy.ID)
+	wfEntity, err := r.GetEntity(ctx, &policy)
 	if err != nil {
 		return nil, err
 	}
 
-	wfEntity := &entity.Workflow{
-		ID:           policy.ID,
-		Meta:         wfMeta,
-		CanvasInfoV2: &vo.CanvasInfoV2{},
+	if err = sonic.UnmarshalString(wfEntity.Canvas, &canvas); err != nil {
+		return nil, err
 	}
 
-	name := fmt.Sprintf("ts_%s_%s", wfMeta.Name, wfMeta.Name)
-	desc := wfMeta.Desc
-
-	switch policy.QType {
-	case vo.FromDraft:
-		draft, err := r.DraftV2(ctx, policy.ID, "")
-		if err != nil {
-			return nil, err
-		}
-
-		wfEntity.DraftMeta = draft.DraftMeta
-
-		if len(draft.InputParams) == 0 {
-			return nil, fmt.Errorf("no input params for draft with id %d", policy.ID)
-		}
-
-		err = sonic.UnmarshalString(draft.InputParams, &namedTypeInfoList)
-		if err != nil {
-			return nil, err
-		}
-
-		err = sonic.UnmarshalString(draft.Canvas, &canvas)
-		if err != nil {
-			return nil, err
-		}
-
-		wfEntity.Canvas = draft.Canvas
-		wfEntity.InputParams = namedTypeInfoList
-	case vo.FromSpecificVersion:
-		version, err := r.GetLatestVersion(ctx, policy.ID)
-		if err != nil {
-			return nil, err
-		}
-
-		wfEntity.VersionMeta = version.VersionMeta
-
-		err = sonic.UnmarshalString(version.InputParams, &namedTypeInfoList)
-		if err != nil {
-			return nil, err
-		}
-
-		err = sonic.UnmarshalString(version.Canvas, &canvas)
-		if err != nil {
-			return nil, err
-		}
-
-		wfEntity.Canvas = version.Canvas
-		wfEntity.InputParams = namedTypeInfoList
-	case vo.FromLatestVersion:
-		version, err := r.GetVersion(ctx, policy.ID, policy.Version)
-		if err != nil {
-			return nil, err
-		}
-
-		wfEntity.VersionMeta = version.VersionMeta
-
-		err = sonic.UnmarshalString(version.InputParams, &namedTypeInfoList)
-		if err != nil {
-			return nil, err
-		}
-
-		err = sonic.UnmarshalString(version.Canvas, &canvas)
-		if err != nil {
-			return nil, err
-		}
-
-		wfEntity.Canvas = version.Canvas
-		wfEntity.InputParams = namedTypeInfoList
-	default:
-		panic("impossible")
-	}
+	name := fmt.Sprintf("ts_%s_%s", wfEntity.Name, wfEntity.Name)
+	desc := wfEntity.Desc
 
 	params := make(map[string]*schema.ParameterInfo)
 
@@ -1048,9 +1066,9 @@ func (r *RepositoryImpl) GetDraftWorkflowsByAppID(ctx context.Context, AppID int
 	result := make(map[int64]*vo.DraftInfo, len(wfDrafts))
 	for _, d := range wfDrafts {
 		result[d.ID] = &vo.DraftInfo{
-			Canvas:       d.Canvas,
-			InputParams:  d.InputParams,
-			OutputParams: d.OutputParams,
+			Canvas:          d.Canvas,
+			InputParamsStr:  d.InputParams,
+			OutputParamsStr: d.OutputParams,
 		}
 	}
 

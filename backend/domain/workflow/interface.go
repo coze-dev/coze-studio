@@ -35,8 +35,6 @@ type Service interface {
 }
 
 type Repository interface {
-	GetSubWorkflowCanvas(ctx context.Context, parent *vo.Node) (*vo.Canvas, error)
-
 	CreateMeta(ctx context.Context, meta *vo.Meta) (int64, error)
 	CreateVersion(ctx context.Context, id int64, info *vo.VersionInfo) (err error)
 	CreateOrUpdateDraft(ctx context.Context, id int64, draft *vo.DraftInfo) error
@@ -45,6 +43,9 @@ type Repository interface {
 	GetMeta(ctx context.Context, id int64) (*vo.Meta, error)
 	UpdateMeta(ctx context.Context, id int64, metaUpdate *vo.MetaUpdate) error
 	GetVersion(ctx context.Context, id int64, version string) (*vo.VersionInfo, error)
+
+	GetEntity(ctx context.Context, policy *vo.GetPolicy) (*entity.Workflow, error)
+
 	GetLatestVersion(ctx context.Context, id int64) (*vo.VersionInfo, error)
 
 	DraftV2(ctx context.Context, id int64, commitID string) (*vo.DraftInfo, error)
@@ -58,6 +59,8 @@ type Repository interface {
 	MGetMeta(ctx context.Context, query *vo.MetaQuery) (map[int64]*vo.Meta, error)
 	MGetSubWorkflowReferences(ctx context.Context, id ...int64) (map[int64][]*entity.WorkflowReference, error)
 	MGetDraft(ctx context.Context, ids []int64) (map[int64]*vo.DraftInfo, error)
+
+	CreateSnapshotIfNeeded(ctx context.Context, id int64, commitID string) error
 
 	InterruptEventStore
 	CancelSignalStore

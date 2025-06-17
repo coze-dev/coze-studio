@@ -34,9 +34,25 @@ func (c *Clause) Resolve() (bool, error) {
 
 	switch c.Op {
 	case OperatorEqual:
+		if leftV == nil && rightV == nil {
+			return true, nil
+		}
+
+		if leftV == nil || rightV == nil {
+			return false, nil
+		}
+
 		leftV, rightV = alignNumberTypes(leftV, rightV, leftT, rightT)
 		return leftV == rightV, nil
 	case OperatorNotEqual:
+		if leftV == nil && rightV == nil {
+			return false, nil
+		}
+
+		if leftV == nil || rightV == nil {
+			return true, nil
+		}
+
 		leftV, rightV = alignNumberTypes(leftV, rightV, leftT, rightT)
 		return leftV != rightV, nil
 	case OperatorEmpty:
@@ -44,40 +60,108 @@ func (c *Clause) Resolve() (bool, error) {
 	case OperatorNotEmpty:
 		return leftV != nil, nil
 	case OperatorGreater:
+		if leftV == nil {
+			return false, nil
+		}
+
+		if rightV == nil {
+			return true, nil
+		}
+
 		leftV, rightV = alignNumberTypes(leftV, rightV, leftT, rightT)
 		if reflect.TypeOf(leftV).Kind() == reflect.Float64 {
 			return leftV.(float64) > rightV.(float64), nil
 		}
 		return leftV.(int64) > rightV.(int64), nil
 	case OperatorGreaterOrEqual:
+		if leftV == nil {
+			if rightV == nil {
+				return true, nil
+			}
+			return false, nil
+		}
+
+		if rightV == nil {
+			return true, nil
+		}
+
 		leftV, rightV = alignNumberTypes(leftV, rightV, leftT, rightT)
 		if reflect.TypeOf(leftV).Kind() == reflect.Float64 {
 			return leftV.(float64) >= rightV.(float64), nil
 		}
 		return leftV.(int64) >= rightV.(int64), nil
 	case OperatorLesser:
+		if leftV == nil {
+			if rightV == nil {
+				return false, nil
+			}
+			return true, nil
+		}
+
+		if rightV == nil {
+			return false, nil
+		}
+
 		leftV, rightV = alignNumberTypes(leftV, rightV, leftT, rightT)
 		if reflect.TypeOf(leftV).Kind() == reflect.Float64 {
 			return leftV.(float64) < rightV.(float64), nil
 		}
 		return leftV.(int64) < rightV.(int64), nil
 	case OperatorLesserOrEqual:
+		if leftV == nil {
+			return true, nil
+		}
+
+		if rightV == nil {
+			return false, nil
+		}
+
 		leftV, rightV = alignNumberTypes(leftV, rightV, leftT, rightT)
 		if reflect.TypeOf(leftV).Kind() == reflect.Float64 {
 			return leftV.(float64) <= rightV.(float64), nil
 		}
 		return leftV.(int64) <= rightV.(int64), nil
 	case OperatorIsTrue:
+		if leftV == nil {
+			return false, nil
+		}
+
 		return leftV.(bool), nil
 	case OperatorIsFalse:
+		if leftV == nil {
+			return true, nil
+		}
+
 		return !leftV.(bool), nil
 	case OperatorLengthGreater:
+		if leftV == nil {
+			return false, nil
+		}
+
 		return int64(reflect.ValueOf(leftV).Len()) > rightV.(int64), nil
 	case OperatorLengthGreaterOrEqual:
+		if leftV == nil {
+			if rightV.(int64) == 0 {
+				return true, nil
+			}
+			return false, nil
+		}
+
 		return int64(reflect.ValueOf(leftV).Len()) >= rightV.(int64), nil
 	case OperatorLengthLesser:
+		if leftV == nil {
+			if rightV.(int64) == 0 {
+				return false, nil
+			}
+			return true, nil
+		}
+
 		return int64(reflect.ValueOf(leftV).Len()) < rightV.(int64), nil
 	case OperatorLengthLesserOrEqual:
+		if leftV == nil {
+			return true, nil
+		}
+
 		return int64(reflect.ValueOf(leftV).Len()) <= rightV.(int64), nil
 	case OperatorContain:
 		if leftV == nil { // treat it as empty slice
