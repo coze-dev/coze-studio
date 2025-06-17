@@ -239,10 +239,10 @@ func (dao *KnowledgeDocumentSliceDAO) FindSliceByCondition(ctx context.Context, 
 	if opts.Keyword != nil && len(*opts.Keyword) != 0 {
 		do = do.Where(s.Content.Like(*opts.Keyword))
 	}
-	do = do.Offset(int(opts.Sequence)).Order(s.Sequence.Asc())
 
 	if opts.PageSize != 0 {
 		do = do.Limit(int(opts.PageSize))
+		do = do.Offset(int(opts.Sequence)).Order(s.Sequence.Asc())
 	}
 	if opts.NotEmpty != nil {
 		if ptr.From(opts.NotEmpty) {

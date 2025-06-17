@@ -107,15 +107,11 @@ func (dao *KnowledgeDAO) FindKnowledgeByCondition(ctx context.Context, opts *ent
 	if len(opts.Status) > 0 {
 		do = do.Where(k.Status.In(opts.Status...))
 	}
-	if opts.UserID != nil && *opts.UserID != 0 {
+	if opts.UserID != nil && ptr.From(opts.UserID) != 0 {
 		do = do.Where(k.CreatorID.Eq(*opts.UserID))
 	}
 	if opts.FormatType != nil {
 		do = do.Where(k.FormatType.Eq(int32(*opts.FormatType)))
-	}
-	total, err = do.Count()
-	if err != nil {
-		return nil, 0, err
 	}
 	if opts.Order != nil {
 		if *opts.Order == entity.OrderCreatedAt {
@@ -145,6 +141,13 @@ func (dao *KnowledgeDAO) FindKnowledgeByCondition(ctx context.Context, opts *ent
 		do = do.Limit(*opts.PageSize).Offset(offset)
 	}
 	knowledge, err = do.Find()
+	if err != nil {
+		return nil, 0, err
+	}
+	total, err = do.Limit(-1).Offset(-1).Count()
+	if err != nil {
+		return nil, 0, err
+	}
 	return knowledge, total, err
 }
 

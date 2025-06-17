@@ -480,10 +480,12 @@ func (k *knowledgeSVC) ListDocument(ctx context.Context, request *ListDocumentRe
 	resp := &ListDocumentResponse{
 		Total: total,
 	}
-	if len(documents) < int(total) {
+	if len(documents)+ptr.From(opts.Offset) < int(total) {
 		resp.HasMore = true
-		nextCursor := strconv.FormatInt(documents[len(documents)-1].ID, 10)
-		resp.NextCursor = &nextCursor
+		if len(documents) > 0 {
+			nextCursor := strconv.FormatInt(documents[len(documents)-1].ID, 10)
+			resp.NextCursor = &nextCursor
+		}
 	}
 	resp.Documents = []*entity.Document{}
 	for i := range documents {

@@ -126,9 +126,9 @@ func (dao *KnowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 		if opts.Limit != 0 {
 			do = do.Limit(opts.Limit)
 		}
-	}
-	if opts.Offset != nil {
-		do = do.Offset(ptr.From(opts.Offset))
+		if opts.Offset != nil {
+			do = do.Offset(ptr.From(opts.Offset))
+		}
 	}
 	if opts.Cursor != nil {
 		id, err := dao.fromCursor(ptr.From(opts.Cursor))
@@ -141,7 +141,7 @@ func (dao *KnowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 	if err != nil {
 		return nil, 0, err
 	}
-	total, err := do.Limit(-1).Count()
+	total, err := do.Limit(-1).Offset(-1).Count()
 	if err != nil {
 		return nil, 0, err
 	}

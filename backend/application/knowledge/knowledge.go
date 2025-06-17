@@ -327,7 +327,6 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 }
 
 func (k *KnowledgeApplicationService) ListDocument(ctx context.Context, req *dataset.ListDocumentRequest) (*dataset.ListDocumentResponse, error) {
-	// req.keywords在coze的代码里没有用到
 	var limit int = int(req.GetSize())
 	var offset int = int(req.GetPage() * req.GetSize())
 	var err error
