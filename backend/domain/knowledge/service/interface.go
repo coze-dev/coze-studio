@@ -18,7 +18,7 @@ type Knowledge interface {
 	UpdateKnowledge(ctx context.Context, request *UpdateKnowledgeRequest) error
 	DeleteKnowledge(ctx context.Context, request *DeleteKnowledgeRequest) error
 	CopyKnowledge(ctx context.Context, request *CopyKnowledgeRequest) (*CopyKnowledgeResponse, error)
-	MigrateKnowledge(ctx context.Context, request *MigrateKnowledgeRequest) error
+	MoveKnowledgeToLibrary(ctx context.Context, request *MoveKnowledgeToLibraryRequest) error
 	ListKnowledge(ctx context.Context, request *ListKnowledgeRequest) (response *ListKnowledgeResponse, err error)
 	GetKnowledgeByID(ctx context.Context, request *GetKnowledgeByIDRequest) (response *GetKnowledgeByIDResponse, err error)
 	MGetKnowledgeByID(ctx context.Context, request *MGetKnowledgeByIDRequest) (response *MGetKnowledgeByIDResponse, err error)
@@ -311,7 +311,7 @@ type MGetDocumentReviewResponse struct {
 type CopyKnowledgeRequest = knowledge.CopyKnowledgeRequest
 type CopyKnowledgeResponse = knowledge.CopyKnowledgeResponse
 
-type MigrateKnowledgeRequest = knowledge.MigrateKnowledgeRequest
+type MoveKnowledgeToLibraryRequest = knowledge.MoveKnowledgeToLibraryRequest
 
 type GetKnowledgeByIDRequest = knowledge.GetKnowledgeByIDRequest
 type GetKnowledgeByIDResponse = knowledge.GetKnowledgeByIDResponse

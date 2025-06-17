@@ -24,7 +24,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -55,11 +54,11 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *CopyKnowledge
 		TaskUniqKey:   request.TaskUniqKey,
 		OriginDataID:  request.KnowledgeID,
 		TargetDataID:  newID,
-		OriginSpaceID: request.OriginSpaceID,
+		OriginSpaceID: kn.SpaceID,
 		TargetSpaceID: request.TargetSpaceID,
 		OriginUserID:  kn.CreatorID,
 		TargetUserID:  request.TargetUserID,
-		OriginAppID:   request.OriginAppID,
+		OriginAppID:   kn.AppID,
 		TargetAppID:   request.TargetAppID,
 		DataType:      copyEntity.DataTypeKnowledge,
 		StartTime:     time.Now().UnixMilli(),
@@ -518,7 +517,7 @@ type knowledgeCopyCtx struct {
 	NewRDBTableNames []string
 }
 
-func (k *knowledgeSVC) MigrateKnowledge(ctx context.Context, request *MigrateKnowledgeRequest) error {
+func (k *knowledgeSVC) MoveKnowledgeToLibrary(ctx context.Context, request *MoveKnowledgeToLibraryRequest) error {
 	if request == nil || request.KnowledgeID == 0 {
 		return errors.New("invalid request")
 	}
@@ -529,10 +528,7 @@ func (k *knowledgeSVC) MigrateKnowledge(ctx context.Context, request *MigrateKno
 	if kn == nil || kn.ID == 0 {
 		return errors.New("knowledge not found")
 	}
-	if request.TargetAppID != nil {
-		kn.AppID = ptr.From(request.TargetAppID)
-	}
-	kn.SpaceID = request.TargetSpaceID
+	kn.AppID = 0
 	err = k.knowledgeRepo.Update(ctx, kn)
 	return err
 }

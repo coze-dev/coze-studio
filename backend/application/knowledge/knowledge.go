@@ -964,17 +964,17 @@ func (k *KnowledgeApplicationService) UpdatePhotoCaption(ctx context.Context, re
 	return resp, nil
 }
 
-func (k *KnowledgeApplicationService) MigrateKnowledge(ctx context.Context, req *model.MigrateKnowledgeRequest) error {
-	err := k.DomainSVC.MigrateKnowledge(ctx, req)
+func (k *KnowledgeApplicationService) MigrateKnowledge(ctx context.Context, req *model.MoveKnowledgeToLibraryRequest) error {
+	err := k.DomainSVC.MoveKnowledgeToLibrary(ctx, req)
 	if err != nil {
 		return err
 	}
 	err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 		OpType: resourceEntity.Updated,
 		Resource: &resourceEntity.ResourceDocument{
-			ResID:   req.KnowledgeID,
-			APPID:   req.TargetAppID,
-			SpaceID: &req.TargetSpaceID,
+			ResID:        req.KnowledgeID,
+			APPID:        ptr.Of(int64(0)),
+			UpdateTimeMS: ptr.Of(time.Now().UnixMilli()),
 		},
 	})
 	if err != nil {

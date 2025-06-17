@@ -238,9 +238,7 @@ type MGetKnowledgeByIDResponse struct {
 
 type CopyKnowledgeRequest struct {
 	KnowledgeID   int64
-	OriginAppID   int64
 	TargetAppID   int64
-	OriginSpaceID int64
 	TargetSpaceID int64
 	TargetUserID  int64
 	TaskUniqKey   string
@@ -260,9 +258,6 @@ type CopyKnowledgeResponse struct {
 	CopyStatus        CopyStatus
 	ErrMsg            string
 }
-type MigrateKnowledgeRequest struct {
-	KnowledgeID   int64
-	TargetAppID   *int64
-	TargetSpaceID int64
-	TaskUniqKey   string
+type MoveKnowledgeToLibraryRequest struct {
+	KnowledgeID int64
 }
