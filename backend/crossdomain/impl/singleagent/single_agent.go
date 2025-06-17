@@ -34,6 +34,9 @@ func InitDomainService(c singleagent.SingleAgent) crossagent.SingleAgent {
 func (c *impl) StreamExecute(ctx context.Context, historyMsg []*message.Message,
 	query *message.Message, agentRuntime *model.AgentRuntime,
 ) (*schema.StreamReader[*model.AgentEvent], error) {
+
+	historyMsg = c.historyPairs(historyMsg)
+
 	singleAgentStreamExecReq := c.buildSingleAgentStreamExecuteReq(ctx, historyMsg, query, agentRuntime)
 
 	streamEvent, err := c.DomainSVC.StreamExecute(ctx, singleAgentStreamExecReq)
@@ -78,6 +81,33 @@ func (c *impl) buildSingleAgentStreamExecuteReq(ctx context.Context, historyMsg 
 	}
 }
 
+func (c *impl) historyPairs(historyMsg []*message.Message) []*message.Message {
+
+	fcMsgPairs := make(map[int64][]*message.Message)
+	for _, one := range historyMsg {
+		if one.MessageType != message.MessageTypeFunctionCall && one.MessageType != message.MessageTypeToolResponse {
+			continue
+		}
+		if _, ok := fcMsgPairs[one.RunID]; !ok {
+			fcMsgPairs[one.RunID] = []*message.Message{one}
+		} else {
+			fcMsgPairs[one.RunID] = append(fcMsgPairs[one.RunID], one)
+		}
+	}
+
+	var historyAfterPairs []*message.Message
+	for _, value := range historyMsg {
+		if value.MessageType == message.MessageTypeFunctionCall {
+			if len(fcMsgPairs[value.RunID])%2 == 0 {
+				historyAfterPairs = append(historyAfterPairs, value)
+			}
+		} else {
+			historyAfterPairs = append(historyAfterPairs, value)
+		}
+	}
+	return historyAfterPairs
+
+}
 func (c *impl) checkResumeInfo(_ context.Context, historyMsg []*message.Message) *crossagent.ResumeInfo {
 
 	var resumeInfo *crossagent.ResumeInfo
