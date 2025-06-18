@@ -120,9 +120,9 @@ func newDatabaseTools(ctx context.Context, conf *databaseConfig) ([]tool.Invokab
 func buildDatabaseToolDescription(tableInfo *bot_common.Database) string {
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf("mysql '%s' query tool.", tableInfo.GetTableName()))
+	sb.WriteString(fmt.Sprintf("Mysql query tool. Table name is '%s'.", tableInfo.GetTableName()))
 	if tableInfo.GetTableDesc() != "" {
-		sb.WriteString(fmt.Sprintf(" This table stores %s.", tableInfo.GetTableDesc()))
+		sb.WriteString(fmt.Sprintf(" This table's desc is %s.", tableInfo.GetTableDesc()))
 	}
 	sb.WriteString("\n\nTable structure:\n")
 
