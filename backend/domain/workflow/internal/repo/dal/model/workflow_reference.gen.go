@@ -13,16 +13,13 @@ const TableNameWorkflowReference = "workflow_reference"
 // WorkflowReference mapped from table <workflow_reference>
 type WorkflowReference struct {
 	ID               int64          `gorm:"column:id;primaryKey;comment:workflow id" json:"id"`                                                                                      // workflow id
-	SpaceID          int64          `gorm:"column:space_id;not null;comment:workflow space id" json:"space_id"`                                                                      // workflow space id
-	ReferringID      int64          `gorm:"column:referring_id;primaryKey;comment:the entity id that refers this workflow" json:"referring_id"`                                      // the entity id that refers this workflow
+	ReferredID       int64          `gorm:"column:referred_id;not null;comment:the id of the workflow that is referred by other entities" json:"referred_id"`                        // the id of the workflow that is referred by other entities
+	ReferringID      int64          `gorm:"column:referring_id;not null;comment:the entity id that refers this workflow" json:"referring_id"`                                        // the entity id that refers this workflow
 	ReferType        int32          `gorm:"column:refer_type;not null;comment:1 subworkflow 2 tool" json:"refer_type"`                                                               // 1 subworkflow 2 tool
 	ReferringBizType int32          `gorm:"column:referring_biz_type;not null;comment:the biz type the referring entity belongs to: 1. workflow 2. agent" json:"referring_biz_type"` // the biz type the referring entity belongs to: 1. workflow 2. agent
 	CreatedAt        int64          `gorm:"column:created_at;not null;autoCreateTime:milli;comment:create time in millisecond" json:"created_at"`                                    // create time in millisecond
-	CreatorID        int64          `gorm:"column:creator_id;not null;comment:the user id of the creator" json:"creator_id"`                                                         // the user id of the creator
-	Stage            int32          `gorm:"column:stage;not null;comment:the stage of this reference: 1. draft 2. published" json:"stage"`                                           // the stage of this reference: 1. draft 2. published
-	UpdatedAt        int64          `gorm:"column:updated_at;autoUpdateTime:milli;comment:update time in millisecond" json:"updated_at"`                                             // update time in millisecond
-	UpdaterID        int64          `gorm:"column:updater_id;comment:the user id of the updater" json:"updater_id"`                                                                  // the user id of the updater
-	DeletedAt        gorm.DeletedAt `gorm:"column:deleted_at;comment:delete time in millisecond" json:"deleted_at"`                                                                  // delete time in millisecond
+	Status           int32          `gorm:"column:status;not null;comment:whether this reference currently takes effect. 0: disabled 1: enabled" json:"status"`                      // whether this reference currently takes effect. 0: disabled 1: enabled
+	DeletedAt        gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
 }
 
 // TableName WorkflowReference's table name

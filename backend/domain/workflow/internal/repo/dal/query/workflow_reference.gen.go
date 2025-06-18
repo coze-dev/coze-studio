@@ -28,15 +28,12 @@ func newWorkflowReference(db *gorm.DB, opts ...gen.DOOption) workflowReference {
 	tableName := _workflowReference.workflowReferenceDo.TableName()
 	_workflowReference.ALL = field.NewAsterisk(tableName)
 	_workflowReference.ID = field.NewInt64(tableName, "id")
-	_workflowReference.SpaceID = field.NewInt64(tableName, "space_id")
+	_workflowReference.ReferredID = field.NewInt64(tableName, "referred_id")
 	_workflowReference.ReferringID = field.NewInt64(tableName, "referring_id")
 	_workflowReference.ReferType = field.NewInt32(tableName, "refer_type")
 	_workflowReference.ReferringBizType = field.NewInt32(tableName, "referring_biz_type")
 	_workflowReference.CreatedAt = field.NewInt64(tableName, "created_at")
-	_workflowReference.CreatorID = field.NewInt64(tableName, "creator_id")
-	_workflowReference.Stage = field.NewInt32(tableName, "stage")
-	_workflowReference.UpdatedAt = field.NewInt64(tableName, "updated_at")
-	_workflowReference.UpdaterID = field.NewInt64(tableName, "updater_id")
+	_workflowReference.Status = field.NewInt32(tableName, "status")
 	_workflowReference.DeletedAt = field.NewField(tableName, "deleted_at")
 
 	_workflowReference.fillFieldMap()
@@ -49,16 +46,13 @@ type workflowReference struct {
 
 	ALL              field.Asterisk
 	ID               field.Int64 // workflow id
-	SpaceID          field.Int64 // workflow space id
+	ReferredID       field.Int64 // the id of the workflow that is referred by other entities
 	ReferringID      field.Int64 // the entity id that refers this workflow
 	ReferType        field.Int32 // 1 subworkflow 2 tool
 	ReferringBizType field.Int32 // the biz type the referring entity belongs to: 1. workflow 2. agent
 	CreatedAt        field.Int64 // create time in millisecond
-	CreatorID        field.Int64 // the user id of the creator
-	Stage            field.Int32 // the stage of this reference: 1. draft 2. published
-	UpdatedAt        field.Int64 // update time in millisecond
-	UpdaterID        field.Int64 // the user id of the updater
-	DeletedAt        field.Field // delete time in millisecond
+	Status           field.Int32 // whether this reference currently takes effect. 0: disabled 1: enabled
+	DeletedAt        field.Field
 
 	fieldMap map[string]field.Expr
 }
@@ -76,15 +70,12 @@ func (w workflowReference) As(alias string) *workflowReference {
 func (w *workflowReference) updateTableName(table string) *workflowReference {
 	w.ALL = field.NewAsterisk(table)
 	w.ID = field.NewInt64(table, "id")
-	w.SpaceID = field.NewInt64(table, "space_id")
+	w.ReferredID = field.NewInt64(table, "referred_id")
 	w.ReferringID = field.NewInt64(table, "referring_id")
 	w.ReferType = field.NewInt32(table, "refer_type")
 	w.ReferringBizType = field.NewInt32(table, "referring_biz_type")
 	w.CreatedAt = field.NewInt64(table, "created_at")
-	w.CreatorID = field.NewInt64(table, "creator_id")
-	w.Stage = field.NewInt32(table, "stage")
-	w.UpdatedAt = field.NewInt64(table, "updated_at")
-	w.UpdaterID = field.NewInt64(table, "updater_id")
+	w.Status = field.NewInt32(table, "status")
 	w.DeletedAt = field.NewField(table, "deleted_at")
 
 	w.fillFieldMap()
@@ -102,17 +93,14 @@ func (w *workflowReference) GetFieldByName(fieldName string) (field.OrderExpr, b
 }
 
 func (w *workflowReference) fillFieldMap() {
-	w.fieldMap = make(map[string]field.Expr, 11)
+	w.fieldMap = make(map[string]field.Expr, 8)
 	w.fieldMap["id"] = w.ID
-	w.fieldMap["space_id"] = w.SpaceID
+	w.fieldMap["referred_id"] = w.ReferredID
 	w.fieldMap["referring_id"] = w.ReferringID
 	w.fieldMap["refer_type"] = w.ReferType
 	w.fieldMap["referring_biz_type"] = w.ReferringBizType
 	w.fieldMap["created_at"] = w.CreatedAt
-	w.fieldMap["creator_id"] = w.CreatorID
-	w.fieldMap["stage"] = w.Stage
-	w.fieldMap["updated_at"] = w.UpdatedAt
-	w.fieldMap["updater_id"] = w.UpdaterID
+	w.fieldMap["status"] = w.Status
 	w.fieldMap["deleted_at"] = w.DeletedAt
 }
 

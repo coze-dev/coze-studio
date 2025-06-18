@@ -10,6 +10,7 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/exp/maps"
 	"gorm.io/gen"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
@@ -102,7 +103,135 @@ func (r *RepositoryImpl) CreateMeta(ctx context.Context, meta *vo.Meta) (int64, 
 	return id, nil
 }
 
-func (r *RepositoryImpl) CreateVersion(ctx context.Context, id int64, info *vo.VersionInfo) (err error) {
+func (r *RepositoryImpl) updateReferences(ctx context.Context, id int64, wfRefs map[entity.WorkflowReferenceKey]struct{}) error {
+	currentRefs, err := r.query.WorkflowReference.WithContext(ctx).Where(
+		r.query.WorkflowReference.ReferringID.Eq(id)).Find()
+	if err != nil {
+		return fmt.Errorf("failed to find workflow reference: %w", err)
+	}
+
+	if len(currentRefs) == 0 {
+		if len(wfRefs) == 0 {
+			return nil
+		}
+
+		refsToCreateModel := make([]*model.WorkflowReference, 0, len(wfRefs))
+		refIDs, err := r.GenMultiIDs(ctx, len(wfRefs))
+		if err != nil {
+			return fmt.Errorf("failed to gen id for workflow reference: %w", err)
+		}
+		var index int
+		for key := range wfRefs {
+			refsToCreateModel = append(refsToCreateModel, &model.WorkflowReference{
+				ID:               refIDs[index],
+				ReferredID:       key.ReferredID,
+				ReferringID:      key.ReferringID,
+				ReferType:        int32(key.ReferType),
+				ReferringBizType: int32(key.ReferringBizType),
+				Status:           1,
+			})
+			index++
+		}
+
+		return r.query.WorkflowReference.WithContext(ctx).Create(refsToCreateModel...)
+	}
+
+	if len(wfRefs) == 0 {
+		_, err = r.query.WorkflowReference.WithContext(ctx).
+			Where(r.query.WorkflowReference.ID.In(slices.Transform(currentRefs,
+				func(reference *model.WorkflowReference) int64 {
+					return reference.ID
+				})...)).
+			UpdateColumnSimple(r.query.WorkflowReference.Status.Value(0))
+		return err
+	}
+
+	var (
+		refsToDisable  []int64
+		refsToEnable   []int64
+		refsToCreate   = maps.Clone(wfRefs)
+		existingRefMap = slices.ToMap(currentRefs, func(reference *model.WorkflowReference) (
+			entity.WorkflowReferenceKey, *model.WorkflowReference) {
+			return entity.WorkflowReferenceKey{
+				ReferredID:       reference.ReferredID,
+				ReferringID:      reference.ReferringID,
+				ReferType:        vo.ReferType(reference.ReferType),
+				ReferringBizType: vo.ReferringBizType(reference.ReferringBizType),
+			}, reference
+		})
+	)
+	for key, ref := range existingRefMap {
+		if ref.Status == 1 {
+			if _, ok := wfRefs[key]; !ok {
+				refsToDisable = append(refsToDisable, ref.ID)
+			}
+		} else {
+			if _, ok := wfRefs[key]; ok {
+				refsToEnable = append(refsToEnable, ref.ID)
+				delete(refsToCreate, key)
+			}
+		}
+	}
+
+	for key := range refsToCreate {
+		if _, ok := existingRefMap[key]; ok {
+			delete(refsToCreate, key)
+		}
+	}
+
+	if len(refsToCreate) > 0 {
+		refsToCreateModel := make([]*model.WorkflowReference, 0, len(refsToCreate))
+		refIDs, err := r.GenMultiIDs(ctx, len(refsToCreate))
+		if err != nil {
+			return fmt.Errorf("failed to gen id for workflow reference: %w", err)
+		}
+		var index int
+		for key := range refsToCreate {
+			refsToCreateModel = append(refsToCreateModel, &model.WorkflowReference{
+				ID:               refIDs[index],
+				ReferredID:       key.ReferredID,
+				ReferringID:      key.ReferringID,
+				ReferType:        int32(key.ReferType),
+				ReferringBizType: int32(key.ReferringBizType),
+				Status:           1,
+			})
+			index++
+		}
+
+		if err = r.query.WorkflowReference.WithContext(ctx).Create(refsToCreateModel...); err != nil {
+			return fmt.Errorf("failed to create workflow reference for workflowID %d, childIDs %v: %v",
+				id, refsToCreate, err)
+		}
+	}
+
+	if len(refsToDisable) > 0 {
+		_, err = r.query.WorkflowReference.WithContext(ctx).
+			Where(r.query.WorkflowReference.ID.In(refsToDisable...)).
+			UpdateColumnSimple(r.query.WorkflowReference.Status.Value(0))
+		if err != nil {
+			return fmt.Errorf("failed to disable workflow reference for workflowID %d, childIDs %v: %v",
+				id, refsToDisable, err)
+		}
+	}
+
+	if len(refsToEnable) > 0 {
+		_, err = r.query.WorkflowReference.WithContext(ctx).
+			Where(r.query.WorkflowReference.ID.In(refsToEnable...)).
+			UpdateColumnSimple(r.query.WorkflowReference.Status.Value(1))
+		if err != nil {
+			return fmt.Errorf("failed to enable workflow reference for workflowID %d, childIDs %v: %v",
+				id, refsToEnable, err)
+		}
+	}
+
+	return nil
+}
+
+func (r *RepositoryImpl) CreateVersion(ctx context.Context, id int64, info *vo.VersionInfo, newRefs map[entity.WorkflowReferenceKey]struct{}) (err error) {
+	if err = r.updateReferences(ctx, id, newRefs); err != nil {
+		return err
+	}
+
 	if err = r.query.WorkflowVersion.WithContext(ctx).Create(&model.WorkflowVersion{
 		ID:                 id,
 		Version:            info.Version,
@@ -189,7 +318,7 @@ func (r *RepositoryImpl) Delete(ctx context.Context, id int64) error {
 			return fmt.Errorf("delete workflow versions: %w", err)
 		}
 
-		_, err = tx.WorkflowReference.WithContext(ctx).Where(tx.WorkflowReference.ID.Eq(id)).Delete()
+		_, err = tx.WorkflowReference.WithContext(ctx).Where(tx.WorkflowReference.ReferredID.Eq(id)).Delete()
 		if err != nil {
 			return fmt.Errorf("delete workflow references: %w", err)
 		}
@@ -496,7 +625,7 @@ func (r *RepositoryImpl) DraftV2(ctx context.Context, id int64, commitID string)
 	}, nil
 }
 
-func (r *RepositoryImpl) MGetDraft(ctx context.Context, ids []int64) (map[int64]*vo.DraftInfo, error) {
+func (r *RepositoryImpl) MGetDrafts(ctx context.Context, ids []int64) (map[int64]*vo.DraftInfo, error) {
 	drafts, err := r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.In(ids...)).Find()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -524,65 +653,73 @@ func (r *RepositoryImpl) MGetDraft(ctx context.Context, ids []int64) (map[int64]
 	return result, nil
 }
 
-func (r *RepositoryImpl) GetWorkflowReference(ctx context.Context, id int64) ([]*entity.WorkflowReference, error) {
-	// Query workflow_reference table for records matching the ID
-	refs, err := r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowReference.ID.Eq(id)).Find()
-	if err != nil {
-		// Don't treat RecordNotFound as an error, just return an empty slice
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return []*entity.WorkflowReference{}, nil
-		}
-		return nil, fmt.Errorf("failed to query workflow references for ID %d: %w", id, err)
+func (r *RepositoryImpl) MGetReferences(ctx context.Context, policy *vo.MGetReferencePolicy) (
+	[]*entity.WorkflowReference, error) {
+	if len(policy.ReferredIDs) == 0 {
+		return nil, errors.New("referred IDs cannot be empty when querying references")
 	}
 
-	// Convert model objects to entity objects
+	var conds []gen.Condition
+	if len(policy.ReferredIDs) == 1 {
+		conds = append(conds, r.query.WorkflowReference.ReferredID.Eq(policy.ReferredIDs[0]))
+	} else {
+		conds = append(conds, r.query.WorkflowReference.ReferredID.In(policy.ReferredIDs...))
+	}
+
+	if len(policy.ReferringIDs) == 1 {
+		conds = append(conds, r.query.WorkflowReference.ReferringID.Eq(policy.ReferringIDs[0]))
+	} else if len(policy.ReferringIDs) > 1 {
+		conds = append(conds, r.query.WorkflowReference.ReferringID.In(policy.ReferringIDs...))
+	}
+
+	if len(policy.ReferType) == 1 {
+		conds = append(conds, r.query.WorkflowReference.ReferType.Eq(int32(policy.ReferType[0])))
+	} else if len(policy.ReferType) > 1 {
+		conds = append(conds, r.query.WorkflowReference.ReferType.In(
+			slices.Transform(policy.ReferType, func(r vo.ReferType) int32 {
+				return int32(r)
+			})...))
+	}
+
+	if len(policy.ReferringBizType) == 1 {
+		conds = append(conds, r.query.WorkflowReference.ReferringBizType.Eq(int32(policy.ReferringBizType[0])))
+	} else if len(policy.ReferringBizType) > 1 {
+		conds = append(conds, r.query.WorkflowReference.ReferringBizType.In(
+			slices.Transform(policy.ReferringBizType, func(r vo.ReferringBizType) int32 {
+				return int32(r)
+			})...))
+	}
+
+	conds = append(conds, r.query.WorkflowReference.Status.Eq(1))
+
+	refs, err := r.query.WorkflowReference.WithContext(ctx).Where(conds...).Find()
+	if err != nil {
+		return nil, fmt.Errorf("failed to query workflow references: %w", err)
+	}
+
 	result := make([]*entity.WorkflowReference, 0, len(refs))
 	for _, ref := range refs {
 		result = append(result, &entity.WorkflowReference{
-			ID:               ref.ID,
-			SpaceID:          ref.SpaceID,
-			ReferringID:      ref.ReferringID,
-			ReferType:        entity.ReferType(ref.ReferType),
-			ReferringBizType: entity.ReferringBizType(ref.ReferringBizType),
-			CreatorID:        ref.CreatorID,
-			Stage:            entity.Stage(ref.Stage),
-			CreatedAt:        time.UnixMilli(ref.CreatedAt),
-			UpdatedAt:        ptr.Of(time.UnixMilli(ref.UpdatedAt)),
+			ID: ref.ID,
+			WorkflowReferenceKey: entity.WorkflowReferenceKey{
+				ReferredID:       ref.ReferredID,
+				ReferringID:      ref.ReferringID,
+				ReferType:        vo.ReferType(ref.ReferType),
+				ReferringBizType: vo.ReferringBizType(ref.ReferringBizType),
+			},
+			CreatedAt: time.UnixMilli(ref.CreatedAt),
+			Enabled:   ref.Status == 1,
 		})
 	}
 
 	return result, nil
 }
 
-func (r *RepositoryImpl) GetParentWorkflowsBySubWorkflowID(ctx context.Context, id int64) ([]*entity.WorkflowReference, error) {
-
-	refs, err := r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowReference.ReferringID.Eq(id)).Find()
-	if err != nil {
-		// Don't treat RecordNotFound as an error, just return an empty slice
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return []*entity.WorkflowReference{}, nil
-		}
-		return nil, fmt.Errorf("failed to query workflow references for ID %d: %w", id, err)
-	}
-	result := make([]*entity.WorkflowReference, 0, len(refs))
-	for _, ref := range refs {
-		result = append(result, &entity.WorkflowReference{
-			ID:               ref.ID,
-			SpaceID:          ref.SpaceID,
-			ReferringID:      ref.ReferringID,
-			ReferType:        entity.ReferType(ref.ReferType),
-			ReferringBizType: entity.ReferringBizType(ref.ReferringBizType),
-			CreatorID:        ref.CreatorID,
-			Stage:            entity.Stage(ref.Stage),
-			CreatedAt:        time.UnixMilli(ref.CreatedAt),
-			UpdatedAt:        ptr.Of(time.UnixMilli(ref.UpdatedAt)),
-		})
+func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (map[int64]*vo.Meta, error) {
+	if len(query.IDs) == 0 && query.Page == nil && query.Name == nil && query.AppID == nil {
+		return nil, fmt.Errorf("insufficient query parameters for workflow meta: %+v", query)
 	}
 
-	return result, nil
-}
-
-func (r *RepositoryImpl) MGetMeta(ctx context.Context, query *vo.MetaQuery) (map[int64]*vo.Meta, error) {
 	var conditions []gen.Condition
 	if len(query.IDs) > 0 {
 		conditions = append(conditions, r.query.WorkflowMeta.ID.In(query.IDs...))
@@ -606,7 +743,9 @@ func (r *RepositoryImpl) MGetMeta(ctx context.Context, query *vo.MetaQuery) (map
 
 	if query.AppID != nil {
 		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(*query.AppID))
-	} else { // if AppID not specified, we can only query those within Library
+	}
+
+	if query.LibOnly { // if AppID not specified, we can only query those within Library
 		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(0))
 	}
 
@@ -667,38 +806,6 @@ func (r *RepositoryImpl) GetLatestVersion(ctx context.Context, id int64) (*vo.Ve
 			OutputParamsStr: version.OutputParams,
 		},
 	}, nil
-}
-
-func (r *RepositoryImpl) MGetSubWorkflowReferences(ctx context.Context, ids ...int64) (map[int64][]*entity.WorkflowReference, error) {
-	wfReferences, err := r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowReference.ID.In(ids...)).Find()
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return map[int64][]*entity.WorkflowReference{}, nil
-		}
-		return nil, err
-	}
-
-	wfID2Reference := make(map[int64][]*entity.WorkflowReference, len(ids))
-	for _, ref := range wfReferences {
-		wfReference := &entity.WorkflowReference{
-			ID:               ref.ID,
-			ReferringID:      ref.ReferringID,
-			ReferType:        entity.ReferType(ref.ReferType),
-			ReferringBizType: entity.ReferringBizType(ref.ReferringBizType),
-			CreatorID:        ref.CreatorID,
-			CreatedAt:        time.UnixMilli(ref.CreatedAt),
-		}
-		wfID2Reference[ref.ID] = append(wfID2Reference[ref.ID], wfReference)
-		if ref.UpdatedAt != 0 {
-			wfReference.UpdatedAt = ptr.Of(time.UnixMilli(ref.UpdatedAt))
-		}
-		if ref.UpdaterID != 0 {
-			wfReference.UpdaterID = ptr.Of(ref.UpdaterID)
-		}
-
-	}
-
-	return wfID2Reference, nil
 }
 
 func (r *RepositoryImpl) CreateSnapshotIfNeeded(ctx context.Context, id int64, commitID string) error {
@@ -987,7 +1094,7 @@ func (r *RepositoryImpl) CopyWorkflowFromAppToLibrary(ctx context.Context, workf
 		workflowDraft = r.query.WorkflowDraft
 	)
 
-	copiedID, err = r.IDGenerator.GenID(ctx)
+	copiedID, err = r.GenID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1000,6 +1107,8 @@ func (r *RepositoryImpl) CopyWorkflowFromAppToLibrary(ctx context.Context, workf
 	if err != nil {
 		return nil, err
 	}
+
+	commitID := strconv.FormatInt(copiedID, 10)
 
 	err = r.query.Transaction(func(tx *query.Query) error {
 		wfMeta.ID = copiedID
@@ -1019,6 +1128,7 @@ func (r *RepositoryImpl) CopyWorkflowFromAppToLibrary(ctx context.Context, workf
 		wfDraft.Modified = false
 		wfDraft.UpdatedAt = 0
 		wfDraft.Canvas = modifiedCanvasSchema
+		wfDraft.CommitID = commitID
 		err = workflowDraft.WithContext(ctx).Create(wfDraft)
 		if err != nil {
 			return err

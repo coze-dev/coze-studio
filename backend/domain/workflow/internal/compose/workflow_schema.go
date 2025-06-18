@@ -192,6 +192,12 @@ func (w *WorkflowSchema) IsEqual(other *WorkflowSchema) bool {
 		if !reflect.DeepEqual(node.OutputSources, other.OutputSources) {
 			return false
 		}
+		if !reflect.DeepEqual(node.MetaConfigs, other.MetaConfigs) {
+			return false
+		}
+		if !reflect.DeepEqual(node.SubWorkflowBasic, other.SubWorkflowBasic) {
+			return false
+		}
 		return true
 
 	}) {

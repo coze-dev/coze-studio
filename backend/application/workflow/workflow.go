@@ -261,6 +261,11 @@ func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.Ge
 		updateTime = wf.VersionMeta.VersionCreatedAt
 	}
 
+	pluginID := "0"
+	if wf.HasPublished {
+		pluginID = strconv.FormatInt(wf.ID, 10)
+	}
+
 	canvasData := &workflow.CanvasData{
 		Workflow: &workflow.Workflow{
 			WorkflowID:       strconv.FormatInt(wf.ID, 10),
@@ -284,6 +289,7 @@ func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.Ge
 			ProjectID: i64PtrToStringPtr(wf.AppID),
 
 			PersistenceModel: workflow.PersistenceModel_DB,
+			PluginID:         pluginID,
 		},
 		VcsData: &workflow.VCSCanvasData{
 			SubmitCommitID: wf.CommitID,
@@ -1355,35 +1361,30 @@ func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *wor
 	}
 	for id, wk := range workflows {
 		wfw := &workflow.Workflow{
-			WorkflowID: strconv.FormatInt(id, 10),
-			Name:       wk.Name,
-			Desc:       wk.Desc,
-			URL:        wk.IconURL,
-			IconURI:    wk.IconURI,
-
-			CreateTime: wk.CreatedAt.UnixMilli(),
-			SchemaType: workflow.SchemaType_FDL,
-
+			WorkflowID:       strconv.FormatInt(id, 10),
+			Name:             wk.Name,
+			Desc:             wk.Desc,
+			URL:              wk.IconURL,
+			IconURI:          wk.IconURI,
+			Status:           workflow.WorkFlowDevStatus_HadSubmit,
+			CreateTime:       wk.CreatedAt.Unix(),
 			Tag:              wk.Tag,
 			TemplateAuthorID: ptr.Of(strconv.FormatInt(wk.AuthorID, 10)),
-
-			SpaceID: ptr.Of(strconv.FormatInt(wk.SpaceID, 10)),
+			SpaceID:          ptr.Of(strconv.FormatInt(wk.SpaceID, 10)),
 			Creator: &workflow.Creator{
 				ID: strconv.FormatInt(wk.CreatorID, 10),
-			}, // 创作者信息
-			PersistenceModel:   workflow.PersistenceModel_DB,
-			FlowMode:           wk.Mode,
-			ProductDraftStatus: workflow.ProductDraftStatus_Default,
-			CollaboratorMode:   workflow.CollaboratorMode_Close,
+			},
+			FlowMode: wk.Mode,
 		}
 
 		if wk.UpdatedAt != nil {
-			wfw.UpdateTime = wk.UpdatedAt.UnixMilli()
+			wfw.UpdateTime = wk.UpdatedAt.Unix()
 		}
 
 		if wk.AppID != nil {
 			wfw.ProjectID = ptr.Of(strconv.FormatInt(ptr.From(wk.AppID), 10))
 		}
+
 		response.Data.WorkflowList = append(response.Data.WorkflowList, wfw)
 	}
 
@@ -1540,6 +1541,8 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 
 	if req.ProjectID != nil {
 		option.AppID = ptr.Of(mustParseInt64(*req.ProjectID))
+	} else {
+		option.LibOnly = true
 	}
 
 	status := req.GetStatus()
@@ -1648,6 +1651,10 @@ func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflo
 		return nil, err
 	}
 
+	if len(ids) == 0 {
+		return &vo.WorkflowDetailDataList{}, nil
+	}
+
 	wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
 		MetaQuery: vo.MetaQuery{
 			IDs: ids,
@@ -1733,6 +1740,10 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 			locator = vo.FromSpecificVersion
 			id2Version[id] = *wf.WorkflowVersion
 		}
+	}
+
+	if len(ids) == 0 {
+		return &vo.WorkflowDetailInfoDataList{}, nil
 	}
 
 	wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{

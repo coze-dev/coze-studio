@@ -31,7 +31,7 @@ type Executable interface {
 }
 
 type AsTool interface {
-	WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) ([]tool.BaseTool, error)
+	WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) ([]ToolFromWorkflow, error)
 	WithMessagePipe() (compose.Option, *schema.StreamReader[*entity.Message])
 	WithExecuteConfig(cfg vo.ExecuteConfig) compose.Option
 	WithResumeToolWorkflow(resumingEvent *entity.ToolInterruptEvent, resumeData string,

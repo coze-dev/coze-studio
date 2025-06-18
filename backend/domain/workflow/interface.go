@@ -38,7 +38,7 @@ type Service interface {
 
 type Repository interface {
 	CreateMeta(ctx context.Context, meta *vo.Meta) (int64, error)
-	CreateVersion(ctx context.Context, id int64, info *vo.VersionInfo) (err error)
+	CreateVersion(ctx context.Context, id int64, info *vo.VersionInfo, newRefs map[entity.WorkflowReferenceKey]struct{}) (err error)
 	CreateOrUpdateDraft(ctx context.Context, id int64, draft *vo.DraftInfo) error
 	Delete(ctx context.Context, id int64) error
 	MDelete(ctx context.Context, ids []int64) error
@@ -52,15 +52,12 @@ type Repository interface {
 
 	DraftV2(ctx context.Context, id int64, commitID string) (*vo.DraftInfo, error)
 
-	GetWorkflowReference(ctx context.Context, id int64) ([]*entity.WorkflowReference, error)
-
 	UpdateWorkflowDraftTestRunSuccess(ctx context.Context, id int64) error
 
-	GetParentWorkflowsBySubWorkflowID(ctx context.Context, id int64) ([]*entity.WorkflowReference, error)
-
-	MGetMeta(ctx context.Context, query *vo.MetaQuery) (map[int64]*vo.Meta, error)
-	MGetSubWorkflowReferences(ctx context.Context, id ...int64) (map[int64][]*entity.WorkflowReference, error)
-	MGetDraft(ctx context.Context, ids []int64) (map[int64]*vo.DraftInfo, error)
+	MGetReferences(ctx context.Context, policy *vo.MGetReferencePolicy) (
+		[]*entity.WorkflowReference, error)
+	MGetMetas(ctx context.Context, query *vo.MetaQuery) (map[int64]*vo.Meta, error)
+	MGetDrafts(ctx context.Context, ids []int64) (map[int64]*vo.DraftInfo, error)
 
 	CreateSnapshotIfNeeded(ctx context.Context, id int64, commitID string) error
 

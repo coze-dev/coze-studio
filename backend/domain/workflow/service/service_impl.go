@@ -223,7 +223,7 @@ func (i *impl) Delete(ctx context.Context, policy *vo.DeletePolicy) (err error) 
 
 	ids := policy.IDs
 	if policy.AppID != nil {
-		metas, err := i.repo.MGetMeta(ctx, &vo.MetaQuery{
+		metas, err := i.repo.MGetMetas(ctx, &vo.MetaQuery{
 			AppID: policy.AppID,
 		})
 		if err != nil {
@@ -254,7 +254,10 @@ func (i *impl) Get(ctx context.Context, policy *vo.GetPolicy) (*entity.Workflow,
 }
 
 func (i *impl) GetWorkflowReference(ctx context.Context, id int64) (map[int64]*vo.Meta, error) {
-	parent, err := i.repo.GetParentWorkflowsBySubWorkflowID(ctx, id)
+	parent, err := i.repo.MGetReferences(ctx, &vo.MGetReferencePolicy{
+		ReferredIDs:      []int64{id},
+		ReferringBizType: []vo.ReferringBizType{vo.ReferringBizTypeWorkflow},
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -264,19 +267,14 @@ func (i *impl) GetWorkflowReference(ctx context.Context, id int64) (map[int64]*v
 		return map[int64]*vo.Meta{}, nil
 	}
 
-	wfIDs := make([]int64, 0, len(parent))
+	wfIDs := make(map[int64]struct{}, len(parent))
 	for _, ref := range parent {
-		wfIDs = append(wfIDs, ref.ID)
+		wfIDs[ref.ReferringID] = struct{}{}
 	}
 
-	wfMetas, err := i.repo.MGetMeta(ctx, &vo.MetaQuery{
-		IDs: wfIDs,
+	return i.repo.MGetMetas(ctx, &vo.MetaQuery{
+		IDs: maps.Keys(wfIDs),
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return wfMetas, nil
 }
 
 func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*cloudworkflow.ValidateTreeInfo, error) {
@@ -463,6 +461,60 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 	return nodePropertyMap, nil
 }
 
+func canvasToRefs(referringID int64, canvasStr string) (map[entity.WorkflowReferenceKey]struct{}, error) {
+	var canvas vo.Canvas
+	if err := sonic.UnmarshalString(canvasStr, &canvas); err != nil {
+		return nil, err
+	}
+
+	wfRefs := map[entity.WorkflowReferenceKey]struct{}{}
+	var getRefFn func([]*vo.Node) error
+	getRefFn = func(nodes []*vo.Node) error {
+		for _, node := range nodes {
+			if node.Type == vo.BlockTypeBotSubWorkflow {
+				referredID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+				if err != nil {
+					return err
+				}
+				wfRefs[entity.WorkflowReferenceKey{
+					ReferredID:       referredID,
+					ReferringID:      referringID,
+					ReferType:        vo.ReferTypeSubWorkflow,
+					ReferringBizType: vo.ReferringBizTypeWorkflow,
+				}] = struct{}{}
+			} else if node.Type == vo.BlockTypeBotLLM {
+				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+					for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+						referredID, err := strconv.ParseInt(w.WorkflowID, 10, 64)
+						if err != nil {
+							return err
+						}
+						wfRefs[entity.WorkflowReferenceKey{
+							ReferredID:       referredID,
+							ReferringID:      referringID,
+							ReferType:        vo.ReferTypeTool,
+							ReferringBizType: vo.ReferringBizTypeWorkflow,
+						}] = struct{}{}
+					}
+				}
+			} else if len(node.Blocks) > 0 {
+				for _, subNode := range node.Blocks {
+					if err := getRefFn([]*vo.Node{subNode}); err != nil {
+						return err
+					}
+				}
+			}
+		}
+		return nil
+	}
+
+	if err := getRefFn(canvas.Nodes); err != nil {
+		return nil, err
+	}
+
+	return wfRefs, nil
+}
+
 func (i *impl) Publish(ctx context.Context, policy *vo.PublishPolicy) (err error) {
 	meta, err := i.repo.GetMeta(ctx, policy.ID)
 	if err != nil {
@@ -493,6 +545,11 @@ func (i *impl) Publish(ctx context.Context, policy *vo.PublishPolicy) (err error
 		return fmt.Errorf("workflow %d's current draft needs to pass the test run before publishing", policy.ID)
 	}
 
+	wfRefs, err := canvasToRefs(policy.ID, draft.Canvas)
+	if err != nil {
+		return err
+	}
+
 	versionInfo := &vo.VersionInfo{
 		VersionMeta: &vo.VersionMeta{
 			Version:            policy.Version,
@@ -507,7 +564,7 @@ func (i *impl) Publish(ctx context.Context, policy *vo.PublishPolicy) (err error
 		CommitID: draft.CommitID,
 	}
 
-	if err = i.repo.CreateVersion(ctx, policy.ID, versionInfo); err != nil {
+	if err = i.repo.CreateVersion(ctx, policy.ID, versionInfo, wfRefs); err != nil {
 		return err
 	}
 
@@ -577,6 +634,9 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 		},
 		QType: vo.FromDraft,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	relatedPlugins := make(map[int64]*vo.PluginEntity, len(config.PluginIDs))
 	relatedWorkflow := make(map[int64]entity.IDVersionPair, len(wfs))
@@ -661,11 +721,17 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 				InputParamsStr:  inputStr,
 				OutputParamsStr: outputStr,
 			},
+			CommitID: wf.CommitID,
 		}
 	}
 
 	for id, vInfo := range workflowsToPublish {
-		if err = i.repo.CreateVersion(ctx, id, vInfo); err != nil {
+		wfRefs, err := canvasToRefs(id, vInfo.Canvas)
+		if err != nil {
+			return nil, err
+		}
+
+		if err = i.repo.CreateVersion(ctx, id, vInfo, wfRefs); err != nil {
 			return nil, err
 		}
 	}
@@ -893,6 +959,11 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 				return err
 			}
 
+			wfRefs, err := canvasToRefs(cwf.ID, modifiedCanvasString)
+			if err != nil {
+				return err
+			}
+
 			err = i.repo.CreateVersion(ctx, cwf.ID, &vo.VersionInfo{
 				CommitID: cwf.CommitID,
 				VersionMeta: &vo.VersionMeta{
@@ -904,7 +975,7 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 					InputParamsStr:  inputParams,
 					OutputParamsStr: outputParams,
 				},
-			})
+			}, wfRefs)
 			if err != nil {
 				return err
 			}
@@ -1086,7 +1157,7 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 }
 
 func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, error) {
-	metas, err := i.repo.MGetMeta(ctx, &policy.MetaQuery)
+	metas, err := i.repo.MGetMetas(ctx, &policy.MetaQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -1128,7 +1199,7 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 
 	switch policy.QType {
 	case vo.FromDraft:
-		draftInfos, err := i.repo.MGetDraft(ctx, maps.Keys(metas))
+		draftInfos, err := i.repo.MGetDrafts(ctx, maps.Keys(metas))
 		if err != nil {
 			return nil, err
 		}

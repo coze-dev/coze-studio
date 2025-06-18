@@ -49,4 +49,5 @@ type MetaQuery struct {
 	Name          *string
 	PublishStatus *PublishStatus
 	AppID         *int64
+	LibOnly       bool
 }
