@@ -10,6 +10,7 @@ neverBuiltDependencies:
 
 overrides:
   '@coze-arch/coze-design': 0.0.6-alpha.fe013d
+  inversify: 6.0.2
   sass@1.74.1>immutable: 3.8.2
   web-streams-polyfill: 3.3.2
   vitest@1.4.0>vite: 5.1.6
@@ -14376,8 +14377,8 @@ importers:
         specifier: ^2.3.2
         version: 2.5.1
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.1.14)
+        specifier: 6.0.2
+        version: 6.0.2
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -19942,8 +19943,8 @@ importers:
         specifier: workspace:*
         version: link:../client
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.2.2)
+        specifier: 6.0.2
+        version: 6.0.2
       react-router-dom:
         specifier: ^6.22.0
         version: 6.30.1(react-dom@18.2.0)(react@18.2.0)
@@ -20040,8 +20041,8 @@ importers:
         specifier: ^2.3.2
         version: 2.5.1
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.2.2)
+        specifier: 6.0.2
+        version: 6.0.2
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -20558,8 +20559,8 @@ importers:
         specifier: workspace:*
         version: link:../../common/flowgram-adapter/common
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.1.14)
+        specifier: 6.0.2
+        version: 6.0.2
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -20610,8 +20611,8 @@ importers:
         specifier: workspace:*
         version: link:../../common/flowgram-adapter/common
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.1.14)
+        specifier: 6.0.2
+        version: 6.0.2
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -20695,8 +20696,8 @@ importers:
         specifier: 3.7.8
         version: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.2.2)
+        specifier: 6.0.2
+        version: 6.0.2
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -20855,8 +20856,8 @@ importers:
         specifier: ^4.0.8
         version: 4.0.11
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.1.14)
+        specifier: 6.0.2
+        version: 6.0.2
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -20986,8 +20987,8 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.1.14)
+        specifier: 6.0.2
+        version: 6.0.2
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -25189,8 +25190,8 @@ importers:
         specifier: ^10.0.3
         version: 10.1.1
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.1.14)
+        specifier: 6.0.2
+        version: 6.0.2
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -25274,8 +25275,8 @@ importers:
         specifier: workspace:*
         version: link:../../common/flowgram-adapter/free-layout-editor
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.1.14)
+        specifier: 6.0.2
+        version: 6.0.2
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -25374,8 +25375,8 @@ importers:
         specifier: ^10.0.3
         version: 10.1.1
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.1.14)
+        specifier: 6.0.2
+        version: 6.0.2
       io-ts:
         specifier: 2.2.20
         version: 2.2.20(fp-ts@2.16.10)
@@ -25774,8 +25775,8 @@ importers:
         specifier: ^3.1.1
         version: 3.1.1
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.1.14)
+        specifier: 6.0.2
+        version: 6.0.2
       io-ts:
         specifier: 2.2.20
         version: 2.2.20(fp-ts@2.16.10)
@@ -26036,8 +26037,8 @@ importers:
         specifier: ^2.3.2
         version: 2.5.1
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.1.14)
+        specifier: 6.0.2
+        version: 6.0.2
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -26378,8 +26379,8 @@ importers:
         specifier: ^1.11.7
         version: 1.11.13
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.2.2)
+        specifier: 6.0.2
+        version: 6.0.2
       json-bigint:
         specifier: ~1.0.0
         version: 1.0.0
@@ -26737,8 +26738,8 @@ importers:
         specifier: ~8.12.0
         version: 8.12.0
       inversify:
-        specifier: ^6.0.1
-        version: 6.2.2(reflect-metadata@0.1.14)
+        specifier: 6.0.2
+        version: 6.0.2
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -31077,7 +31078,7 @@ packages:
     dependencies:
       '@flowgram.ai/core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       reflect-metadata: 0.2.2
@@ -31090,7 +31091,7 @@ packages:
       react-dom: 18.2.0
     dependencies:
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       reflect-metadata: 0.2.2
@@ -31107,7 +31108,7 @@ packages:
       '@phosphor/messaging': 1.3.0
       '@tweenjs/tween.js': 18.6.4
       clsx: 1.2.1
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       nanoid: 4.0.2
       react: 18.2.0
@@ -31120,7 +31121,7 @@ packages:
     dependencies:
       '@flowgram.ai/core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       nanoid: 4.0.2
       reflect-metadata: 0.2.2
@@ -31154,7 +31155,7 @@ packages:
       '@flowgram.ai/shortcuts-plugin': 0.1.28(@babel/core@7.27.4)(react-dom@18.2.0)(react-is@19.1.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/variable-plugin': 0.1.28(@babel/core@7.27.4)(react-dom@18.2.0)(react-is@19.1.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       reflect-metadata: 0.2.2
@@ -31173,7 +31174,7 @@ packages:
       '@flowgram.ai/core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/document': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/renderer': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       reflect-metadata: 0.2.2
@@ -31187,7 +31188,7 @@ packages:
       '@flowgram.ai/form-core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/history': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       reflect-metadata: 0.2.2
     transitivePeerDependencies:
@@ -31205,7 +31206,7 @@ packages:
       '@flowgram.ai/document': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/renderer': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       reflect-metadata: 0.2.2
@@ -31226,7 +31227,7 @@ packages:
       '@flowgram.ai/reactive': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/select-box-plugin': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       reflect-metadata: 0.2.2
@@ -31245,7 +31246,7 @@ packages:
       '@flowgram.ai/core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/document': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -31279,7 +31280,7 @@ packages:
       '@flowgram.ai/free-layout-core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/renderer': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -31302,7 +31303,7 @@ packages:
       '@flowgram.ai/renderer': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/shortcuts-plugin': 0.1.28(@babel/core@7.27.4)(react-dom@18.2.0)(react-is@19.1.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -31325,7 +31326,7 @@ packages:
       '@flowgram.ai/free-layout-core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/history': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -31344,7 +31345,7 @@ packages:
       '@flowgram.ai/renderer': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/select-box-plugin': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       reflect-metadata: 0.2.2
@@ -31362,7 +31363,7 @@ packages:
       '@flowgram.ai/node': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/reactive': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash-es: 4.17.21
       nanoid: 4.0.2
       react: 18.2.0
@@ -31388,7 +31389,7 @@ packages:
       '@flowgram.ai/select-box-plugin': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       clsx: 1.2.1
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       reflect-metadata: 0.2.2
@@ -31412,7 +31413,7 @@ packages:
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       bezier-js: 6.1.4
       clsx: 1.2.1
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       reflect-metadata: 0.2.2
@@ -31432,7 +31433,7 @@ packages:
       '@flowgram.ai/free-layout-core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/renderer': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -31452,7 +31453,7 @@ packages:
       '@flowgram.ai/free-layout-core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/renderer': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -31472,7 +31473,7 @@ packages:
       '@flowgram.ai/free-layout-core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/renderer': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -31490,7 +31491,7 @@ packages:
       '@flowgram.ai/document': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/renderer': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       reflect-metadata: 0.2.2
@@ -31510,7 +31511,7 @@ packages:
       '@flowgram.ai/history': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/node': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -31523,7 +31524,7 @@ packages:
     dependencies:
       '@flowgram.ai/core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       nanoid: 4.0.2
       reflect-metadata: 0.2.2
@@ -31562,7 +31563,7 @@ packages:
       '@flowgram.ai/form-core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/renderer': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       reflect-metadata: 0.2.2
@@ -31580,7 +31581,7 @@ packages:
       '@flowgram.ai/document': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/renderer': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -31601,7 +31602,7 @@ packages:
       '@flowgram.ai/node': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/renderer': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       reflect-metadata: 0.2.2
@@ -31621,7 +31622,7 @@ packages:
       '@flowgram.ai/node': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/variable-plugin': 0.1.28(@babel/core@7.27.4)(react-dom@18.2.0)(react-is@19.1.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -31643,7 +31644,7 @@ packages:
       '@flowgram.ai/form': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/form-core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       nanoid: 4.0.2
       react: 18.2.0
@@ -31661,7 +31662,7 @@ packages:
       '@flowgram.ai/core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/shortcuts-plugin': 0.1.28(@babel/core@7.27.4)(react-dom@18.2.0)(react-is@19.1.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       reflect-metadata: 0.2.2
@@ -31686,7 +31687,7 @@ packages:
     dependencies:
       '@flowgram.ai/core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/variable-core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       reflect-metadata: 0.2.2
       styled-components: 5.3.11(@babel/core@7.27.4)(react-dom@18.2.0)(react-is@19.1.0)(react@18.2.0)
     transitivePeerDependencies:
@@ -31706,7 +31707,7 @@ packages:
       '@flowgram.ai/document': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/i18n': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -31721,7 +31722,7 @@ packages:
     dependencies:
       '@flowgram.ai/core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/renderer': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       reflect-metadata: 0.2.2
@@ -31733,7 +31734,7 @@ packages:
       '@flowgram.ai/core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/document': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       reflect-metadata: 0.2.2
       styled-components: 5.3.11(@babel/core@7.27.4)(react-dom@18.2.0)(react-is@19.1.0)(react@18.2.0)
     transitivePeerDependencies:
@@ -31750,7 +31751,7 @@ packages:
       react-dom: 18.2.0
     dependencies:
       clsx: 1.2.1
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       nanoid: 4.0.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -31766,7 +31767,7 @@ packages:
       '@flowgram.ai/core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       fast-equals: 2.0.4
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       lodash: 4.17.21
       nanoid: 4.0.2
       react: 18.2.0
@@ -31783,7 +31784,7 @@ packages:
       '@flowgram.ai/free-layout-core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/variable-core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       reflect-metadata: 0.2.2
       styled-components: 5.3.11(@babel/core@7.27.4)(react-dom@18.2.0)(react-is@19.1.0)(react@18.2.0)
     transitivePeerDependencies:
@@ -31802,7 +31803,7 @@ packages:
       '@flowgram.ai/utils': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/variable-core': 0.1.28(react-dom@18.2.0)(react@18.2.0)
       '@flowgram.ai/variable-layout': 0.1.28(@babel/core@7.27.4)(react-dom@18.2.0)(react-is@19.1.0)(react@18.2.0)
-      inversify: 6.2.2(reflect-metadata@0.2.2)
+      inversify: 6.0.2
       reflect-metadata: 0.2.2
       styled-components: 5.3.11(@babel/core@7.27.4)(react-dom@18.2.0)(react-is@19.1.0)(react@18.2.0)
     transitivePeerDependencies:
@@ -31985,44 +31986,6 @@ packages:
     resolution: {integrity: sha512-MJttijd8rMFcKJC8NYmprWr6hD3r9Gd9qUC0XwPNwoEPWSMVJwA2MlXxF+nhZZNMY+HXsWa+o7KY2emWYIn0jQ==}
     engines: {node: '>=18'}
     dev: true
-
-  /@inversifyjs/common@1.4.0:
-    resolution: {integrity: sha512-qfRJ/3iOlCL/VfJq8+4o5X4oA14cZSBbpAmHsYj8EsIit1xDndoOl0xKOyglKtQD4u4gdNVxMHx4RWARk/I4QA==}
-    dev: false
-
-  /@inversifyjs/core@1.3.5(reflect-metadata@0.1.14):
-    resolution: {integrity: sha512-B4MFXabhNTAmrfgB+yeD6wd/GIvmvWC6IQ8Rh/j2C3Ix69kmqwz9pr8Jt3E+Nho9aEHOQCZaGmrALgtqRd+oEQ==}
-    dependencies:
-      '@inversifyjs/common': 1.4.0
-      '@inversifyjs/reflect-metadata-utils': 0.2.4(reflect-metadata@0.1.14)
-    transitivePeerDependencies:
-      - reflect-metadata
-    dev: false
-
-  /@inversifyjs/core@1.3.5(reflect-metadata@0.2.2):
-    resolution: {integrity: sha512-B4MFXabhNTAmrfgB+yeD6wd/GIvmvWC6IQ8Rh/j2C3Ix69kmqwz9pr8Jt3E+Nho9aEHOQCZaGmrALgtqRd+oEQ==}
-    dependencies:
-      '@inversifyjs/common': 1.4.0
-      '@inversifyjs/reflect-metadata-utils': 0.2.4(reflect-metadata@0.2.2)
-    transitivePeerDependencies:
-      - reflect-metadata
-    dev: false
-
-  /@inversifyjs/reflect-metadata-utils@0.2.4(reflect-metadata@0.1.14):
-    resolution: {integrity: sha512-u95rV3lKfG+NT2Uy/5vNzoDujos8vN8O18SSA5UyhxsGYd4GLQn/eUsGXfOsfa7m34eKrDelTKRUX1m/BcNX5w==}
-    peerDependencies:
-      reflect-metadata: 0.2.2
-    dependencies:
-      reflect-metadata: 0.1.14
-    dev: false
-
-  /@inversifyjs/reflect-metadata-utils@0.2.4(reflect-metadata@0.2.2):
-    resolution: {integrity: sha512-u95rV3lKfG+NT2Uy/5vNzoDujos8vN8O18SSA5UyhxsGYd4GLQn/eUsGXfOsfa7m34eKrDelTKRUX1m/BcNX5w==}
-    peerDependencies:
-      reflect-metadata: 0.2.2
-    dependencies:
-      reflect-metadata: 0.2.2
-    dev: false
 
   /@isaacs/cliui@8.0.2:
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -41731,7 +41694,7 @@ packages:
     resolution: {integrity: sha512-ds37W8CytHgwnhGGTi88pcPyR15qoNkOpYwmMMfnWqqWgESapLqvDx6huFjQ5vqWSn2Z06173XNA7LtMOeUh1A==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
       upper-case-first: 2.0.2
 
   /caseless@0.12.0:
@@ -42357,7 +42320,7 @@ packages:
     resolution: {integrity: sha512-I2hSBi7Vvs7BEuJDr5dDHfzb/Ruj3FyvFyh7KLilAjNQw3Be+xgqUBA2W6scVEcL0hL1dwPRtIqEPVUCKkSsyQ==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
       upper-case: 2.0.2
 
   /content-disposition@0.5.4:
@@ -46673,7 +46636,7 @@ packages:
     resolution: {integrity: sha512-H/vuk5TEEVZwrR0lp2zed9OCo1uAILMlx0JEMgC26rzyJJ3N1v6XkwHHXJQdR2doSjcGPM6OKPYoJgf0plJ11Q==}
     dependencies:
       capital-case: 1.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   /helpertypes@0.0.19:
     resolution: {integrity: sha512-J00e55zffgi3yVnUp0UdbMztNkr2PnizEkOe9URNohnrNhW5X0QpegkuLpOmFQInpi93Nb8MCjQRHAiCDF42NQ==}
@@ -47193,24 +47156,8 @@ packages:
       loose-envify: 1.4.0
     dev: true
 
-  /inversify@6.2.2(reflect-metadata@0.1.14):
-    resolution: {integrity: sha512-KB836KHbZ9WrUnB8ax5MtadOwnqQYa+ZJO3KWbPFgcr4RIEnHM621VaqFZzOZd9+U7ln6upt9n0wJei7x2BNqw==}
-    peerDependencies:
-      reflect-metadata: ~0.2.2
-    dependencies:
-      '@inversifyjs/common': 1.4.0
-      '@inversifyjs/core': 1.3.5(reflect-metadata@0.1.14)
-      reflect-metadata: 0.1.14
-    dev: false
-
-  /inversify@6.2.2(reflect-metadata@0.2.2):
-    resolution: {integrity: sha512-KB836KHbZ9WrUnB8ax5MtadOwnqQYa+ZJO3KWbPFgcr4RIEnHM621VaqFZzOZd9+U7ln6upt9n0wJei7x2BNqw==}
-    peerDependencies:
-      reflect-metadata: ~0.2.2
-    dependencies:
-      '@inversifyjs/common': 1.4.0
-      '@inversifyjs/core': 1.3.5(reflect-metadata@0.2.2)
-      reflect-metadata: 0.2.2
+  /inversify@6.0.2:
+    resolution: {integrity: sha512-i9m8j/7YIv4mDuYXUAcrpKPSaju/CIly9AHK5jvCBeoiM/2KEsuCQTTP+rzSWWpLYWRukdXFSl6ZTk2/uumbiA==}
     dev: false
 
   /io-ts@2.2.20(fp-ts@2.16.10):
@@ -51206,7 +51153,7 @@ packages:
     resolution: {integrity: sha512-qO4qCFjXqVTrcbPt/hQfhTQ+VhFsqNKOPtytgNKkKxSoEp3XPUQ8ObFuePylOIok5gjn69ry8XiULxCwot3Wfg==}
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   /path-data-parser@0.1.0:
     resolution: {integrity: sha512-NOnmBpt5Y2RWbuv0LMzsayp3lVylAHLPUTut412ZA3l+C4uw4ZVkQbjShYCQ8TCpUMdPapr4YjUqLYD6v68j+w==}
@@ -54857,7 +54804,7 @@ packages:
     resolution: {integrity: sha512-8LS0JInaQMCRoQ7YUytAo/xUu5W2XnQxV2HI/6uM6U7CITS1RqPElr30V6uIqyMKM9lJGRVFy5/4CuzcixNYSg==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
       upper-case-first: 2.0.2
 
   /serialize-javascript@6.0.2:
@@ -57742,7 +57689,7 @@ packages:
   /upper-case-first@2.0.2:
     resolution: {integrity: sha512-514ppYHBaKwfJRK/pNC6c/OxfGa0obSnAl106u97Ed0I625Nin96KAjttZF6ZL3e1XLtphxnqrOi9iWgm+u+bg==}
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   /upper-case@2.0.2:
     resolution: {integrity: sha512-KgdgDGJt2TpuwBUIjgG6lzw2GWFRCW9Qkfkiv0DxqHHLYJHmtmdUIKcZd8rHgFSjopVTlw6ggzCm1b8MFQwikg==}
