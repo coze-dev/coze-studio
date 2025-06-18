@@ -196,7 +196,6 @@ func (dao *KnowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, d
 			for _, slice := range slices {
 				sliceIDs = append(sliceIDs, slice.ID)
 			}
-			sliceIDs = append(sliceIDs, sliceIDs...)
 			mu.Unlock()
 			return nil
 		})
