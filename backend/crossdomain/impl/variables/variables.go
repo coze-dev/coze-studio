@@ -28,3 +28,8 @@ func (s *impl) GetVariableInstance(ctx context.Context, e *model.UserVariableMet
 	m := entity.NewUserVariableMeta(e)
 	return s.DomainSVC.GetVariableInstance(ctx, m, keywords)
 }
+
+func (s *impl) SetVariableInstance(ctx context.Context, e *model.UserVariableMeta, items []*kvmemory.KVItem) ([]string, error) {
+	m := entity.NewUserVariableMeta(e)
+	return s.DomainSVC.SetVariableInstance(ctx, m, items)
+}

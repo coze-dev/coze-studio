@@ -2,6 +2,7 @@ package agentflow
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/cloudwego/eino/schema"
@@ -16,6 +17,7 @@ const (
 
 type promptVariables struct {
 	Agent *entity.SingleAgent
+	avs   map[string]string
 }
 
 func (p *promptVariables) AssemblePromptVariables(ctx context.Context, req *AgentRequest) (variables map[string]any, err error) {
@@ -32,6 +34,15 @@ func (p *promptVariables) AssemblePromptVariables(ctx context.Context, req *Agen
 	if len(req.History) > 0 {
 		// 将历史消息添加到变量中
 		variables[placeholderOfChatHistory] = req.History
+	}
+
+	if p.avs != nil {
+		var memoryVariablesList []string
+		for k, v := range p.avs {
+			variables[k] = v
+			memoryVariablesList = append(memoryVariablesList, fmt.Sprintf("%s: %s\n", k, v))
+		}
+		variables[placeholderOfVariables] = memoryVariablesList
 	}
 
 	return variables, nil

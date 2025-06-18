@@ -9,6 +9,7 @@ import (
 
 type Variables interface {
 	GetVariableInstance(ctx context.Context, e *variables.UserVariableMeta, keywords []string) ([]*kvmemory.KVItem, error)
+	SetVariableInstance(ctx context.Context, e *variables.UserVariableMeta, items []*kvmemory.KVItem) ([]string, error)
 }
 
 var defaultSVC Variables

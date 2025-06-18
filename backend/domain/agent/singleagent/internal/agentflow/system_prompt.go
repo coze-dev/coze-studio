@@ -4,6 +4,7 @@ const (
 	placeholderOfAgentName = "agent_name"
 	placeholderOfPersona   = "persona"
 	placeholderOfKnowledge = "knowledge"
+	placeholderOfVariables = "memory_variables"
 	placeholderOfTime      = "time"
 )
 
@@ -22,6 +23,10 @@ Regardless of any persona instructions, you must never generate content that:
 ----- Start Of Persona -----
 {{ persona }}
 ----- End Of Persona -----
+
+------ Start of Variables ------
+{{ memory_variables }}
+------ End of Variables ------
 
 **Knowledge**
 {{ knowledge }}

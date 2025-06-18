@@ -38,14 +38,25 @@ const (
 func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	persona := conf.Agent.Prompt.GetPrompt()
 
-	personaVars := &personaRender{
-		personaVariableNames: extractJinja2Placeholder(persona),
-		persona:              persona,
-		// variables:            conf.Variables,
+	avConf := &variableConf{
+		Agent:       conf.Agent,
+		UserID:      conf.UserID,
+		ConnectorID: conf.Identity.ConnectorID,
+	}
+	avs, err := loadAgentVariables(ctx, avConf)
+	if err != nil {
+		return nil, err
 	}
 
 	promptVars := &promptVariables{
 		Agent: conf.Agent,
+		avs:   avs,
+	}
+
+	personaVars := &personaRender{
+		personaVariableNames: extractJinja2Placeholder(persona),
+		persona:              persona,
+		variables:            avs,
 	}
 
 	kr, err := newKnowledgeRetriever(ctx, &retrieverConfig{
@@ -101,12 +112,24 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		}
 	}
 
-	agentTools := make([]tool.BaseTool, 0, len(pluginTools)+len(wfTools)+len(dbTools))
+	var avTools []tool.InvokableTool
+	if avs != nil {
+		avTools, err = newAgentVariableTools(ctx, avConf)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	agentTools := make([]tool.BaseTool, 0, len(pluginTools)+len(wfTools)+len(dbTools)+len(avTools))
 	agentTools = append(agentTools, slices.Transform(pluginTools, func(a tool.InvokableTool) tool.BaseTool {
 		return a
 	})...)
 	agentTools = append(agentTools, wfTools...)
 	agentTools = append(agentTools, slices.Transform(dbTools, func(a tool.InvokableTool) tool.BaseTool {
+		return a
+	})...)
+
+	agentTools = append(agentTools, slices.Transform(avTools, func(a tool.InvokableTool) tool.BaseTool {
 		return a
 	})...)
 

@@ -108,6 +108,9 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 		return
 	}
 
+	c.rtDependence.runID = runRecord.ID
+	c.rtDependence.agentInfo = agentInfo
+
 	history, err := c.handlerHistory(ctx)
 	if err != nil {
 		return
@@ -119,8 +122,6 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 	}
 
 	c.rtDependence.questionMsgID = input.ID
-	c.rtDependence.runID = runRecord.ID
-	c.rtDependence.agentInfo = agentInfo
 
 	err = c.handlerStreamExecute(ctx, sw, history, input, runRecord)
 	return
