@@ -263,7 +263,7 @@ services:
       - coze-network
 
   minio:
-    image: bitnami/minio:2025
+    image: minio/minio:latest
     container_name: coze-minio
     user: root
     privileged: true
@@ -271,28 +271,18 @@ services:
       - '9000:9000'
       - '9001:9001'
     volumes:
-      - ./data/bitnami/minio/data:/bitnami/minio/data:rw,Z
-      - ./data/bitnami/minio/.mc/:/.mc/:rw,Z
+      - ./data/minio:/data
     environment:
-      MINIO_BROWSER: on
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
       MINIO_DEFAULT_BUCKETS: ${MINIO_BUCKET:-opencoze},${MINIO_DEFAULT_BUCKETS:-milvus}
-    command: >
-      bash -c "
-        /opt/bitnami/scripts/minio/setup.sh
-        # Set proper permissions for data and config directories
-        chown -R minio:minio /bitnami/minio/data /.mc
-        chmod g+s /bitnami/minio/data /.mc
-        # Start Minio server
-        exec /opt/bitnami/scripts/minio/entrypoint.sh /opt/bitnami/scripts/minio/run.sh
-      "
+    command: server /data --console-address ":9001"
     healthcheck:
-      test: ['CMD-SHELL', 'mc mb --ignore-existing local/healthcheck-test']
-      interval: 5s
+      test: ['CMD-SHELL', 'curl -f http://localhost:9000/minio/health/live']
+      interval: 30s
       timeout: 10s
-      retries: 10
-      start_period: 10s
+      retries: 3
+      start_period: 30s
     networks:
       - coze-network
 
@@ -383,8 +373,9 @@ services:
       - ./volumes/elasticsearch/es_index_schema:/es_index_schema
     command: >
       sh -c "
-        apk add --no-cache bash curl && \
-        (bash -x /setup_es.sh || exit 1) && \
+        set -e
+        apk add --no-cache bash curl
+        bash -x /setup_es.sh
         echo 'Elasticsearch setup complete, container will keep running.'
       "
     networks:
@@ -413,7 +404,7 @@ services:
     # build:
     #   c6ntext: ../
     #   dockerfile: backend/Dockerfile
-    image: fanlv/opencoze:0.0.7
+    image: fanlv/opencoze:0.0.8
     container_name: coze-server
     environment:
       LISTEN_ADDR: 0.0.0.0:8888

@@ -66,7 +66,7 @@ func loadEnv() (err error) {
 	}
 
 	if err != nil {
-		log.Fatalf("Error loading .env file , err = %v ", err)
+		log.Fatalf("Error loading .env file, err = %v ", err)
 	}
 
 	return err

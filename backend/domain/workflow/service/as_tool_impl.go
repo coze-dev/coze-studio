@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	
+
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
