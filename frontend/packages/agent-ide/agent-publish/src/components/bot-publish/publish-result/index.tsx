@@ -5,13 +5,10 @@ import { useMemo } from 'react';
 
 import { partition } from 'lodash-es';
 import classNames from 'classnames';
-import { PublishPlatformDescription } from '@coze-agent-ide/space-bot/component';
-import {
-  type PublishResultInfo,
-  type ConnectResultInfo,
-} from '@coze-agent-ide/space-bot';
+import { useIsPublishRecordReady } from '@coze-studio/publish-manage-hooks';
 import { IntelligenceType } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
+import { IconCozInfoCircleFill } from '@coze-arch/coze-design/icons';
 import { type DynamicParams } from '@coze-arch/bot-typings/teamspace';
 import { type ColumnProps } from '@coze-arch/bot-semi/Table';
 import {
@@ -28,11 +25,14 @@ import {
   BindType,
   PublishResultStatus,
 } from '@coze-arch/bot-api/developer_api';
-import { useIsPublishRecordReady } from '@coze-studio/publish-manage-hooks';
-import { IconCozInfoCircleFill } from '@coze-arch/coze-design/icons';
+import { PublishPlatformDescription } from '@coze-agent-ide/space-bot/component';
+import {
+  type PublishResultInfo,
+  type ConnectResultInfo,
+} from '@coze-agent-ide/space-bot';
 
-import styles from '../index.module.less';
 import { PublishResultArea } from './component/publish-result-area';
+import styles from '../index.module.less';
 
 interface PublishResultProps {
   // 隐藏Banner
@@ -190,12 +190,14 @@ export const PublishResult = ({
               bordered
               icon={null}
               closeIcon={null}
+              data-testid="agent-ide.publish-result"
             >
               <div className={styles['publish-result-tip']}>
                 {isAllFailPublish
                   ? `⚠️ ${I18n.t('publish_result_all_failed')}`
                   : `🎉  ${I18n.t('publish_success')}`}
               </div>
+              {/* 社区版暂不支持该功能 */}
               {IS_OVERSEA && !publishResult?.monetizeConfigSuccess ? (
                 <div className="mt-[12px] flex items-center gap-[8px] coz-fg-primary">
                   <IconCozInfoCircleFill className="coz-fg-hglt-yellow" />

@@ -159,6 +159,7 @@ export const KnowledgeCardListVertical: FC<DatasetCardListVerticalProps> = ({
 
           <div
             className={styles.content}
+            data-testid={`${BotE2e.BotKnowledgeSelectListModalName}.${item.name}`}
             data-dtestid={`${BotE2e.BotKnowledgeSelectListModalName}.${item.name}`}
           >
             <Text className={styles.title} ellipsis={{ showTooltip: true }}>
@@ -225,7 +226,7 @@ export const KnowledgeCardListVertical: FC<DatasetCardListVerticalProps> = ({
           <div
             className={styles.right}
             onClick={e => e.stopPropagation()}
-            data-dtestid={`${BotE2e.BotKnowledgeSelectListModalAddBtn}.${item.name}`}
+            data-testid={`${BotE2e.BotKnowledgeSelectListModalAddBtn}.${item.name}`}
           >
             {isAdded(item.dataset_id || '') ? (
               <AddedButton
@@ -239,6 +240,7 @@ export const KnowledgeCardListVertical: FC<DatasetCardListVerticalProps> = ({
                 disabled={item.status === DatasetStatus.DatasetForbid}
                 className={styles.button}
                 onClick={() => onAdd(item)}
+                data-testid="bot.database.add.modal.add.button"
               >
                 {I18n.t('Add_2')}
               </UIButton>

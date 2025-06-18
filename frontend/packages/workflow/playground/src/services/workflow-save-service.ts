@@ -25,6 +25,7 @@ import {
   type WorkflowNodeJSON,
   reporter,
 } from '@coze-workflow/base';
+import { userStoreService } from '@coze-studio/user-store';
 import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { logger } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
@@ -287,9 +288,12 @@ export class WorkflowSaveService {
       projectApi?.setWidgetUIState('saving');
       this.hideRenderLayer();
 
+      const userInfo = userStoreService.getUserInfo();
+      const locale = userInfo?.locale ?? navigator.language ?? 'en-US';
+
       // 加载节点信息
       const [, workflowJSON] = await Promise.all([
-        this.context.loadNodeInfos(),
+        this.context.loadNodeInfos(locale),
         this.loadWorkflowJson(),
         // this.loadGlobalVariables(),
       ]);

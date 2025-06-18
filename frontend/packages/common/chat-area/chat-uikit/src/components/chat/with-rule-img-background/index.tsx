@@ -94,6 +94,7 @@ export const WithRuleImgBackground: React.FC<WithRuleImgBackgroundProps> = ({
 
   return (
     <div
+      data-testid="chat.with_rule_img_background"
       ref={targetRef}
       className={
         'rule-img-background absolute left-1/2 -translate-x-1/2 w-full h-full overflow-hidden pointer-events-none'

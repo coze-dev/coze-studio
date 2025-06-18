@@ -3,11 +3,7 @@ import { useMemo, useRef, useState } from 'react';
 
 import { useRequest } from 'ahooks';
 import { userStoreService } from '@coze-studio/user-store';
-import {
-  type PublishResultInfo,
-  type PublishRef,
-  PublishDisabledType,
-} from '@coze-agent-ide/space-bot';
+import { BackButton } from '@coze-foundation/layout';
 import { useReportTti } from '@coze-arch/report-tti';
 import {
   createReportEvent,
@@ -23,7 +19,11 @@ import {
   type PublishConnectorInfo,
   type ConnectorBrandInfo,
 } from '@coze-arch/bot-api/developer_api';
-import { BackButton } from '@coze-foundation/layout';
+import {
+  type PublishResultInfo,
+  type PublishRef,
+  PublishDisabledType,
+} from '@coze-agent-ide/space-bot';
 
 import { PublishTableContext, PublishTable } from './publish-table';
 import { PublishResult } from './publish-result';
@@ -116,6 +116,7 @@ export const AgentPublishPage = () => {
       disabled={Boolean(publishDisabled) || !botInfo.name}
       loading={publishLoading}
       onClick={handlePublish}
+      data-testid="agent-ide.publish-button"
     >
       {I18n.t('Publish')}
     </UIButton>

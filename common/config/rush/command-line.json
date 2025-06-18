@@ -16,6 +16,7 @@
       "enableParallelism": true,
       "incremental": true,
       "shellCommand": "eslint ./ --cache",
+      "ignoreDependencyOrder": true,
       "allowWarningsInSuccessfulBuild": true,
       "summary": "⭐️️ Run lint command for each package",
       "safeForSimultaneousRushProcesses": true

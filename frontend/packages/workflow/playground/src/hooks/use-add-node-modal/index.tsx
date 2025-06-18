@@ -1,14 +1,15 @@
 import { useRef } from 'react';
 
 import { useService } from '@flowgram-adapter/free-layout-editor';
+import { WorkflowNodesService } from '@coze-workflow/nodes';
 import {
   isSelectProjectCategory,
   useOpenWorkflowDetail,
   useWorkflowModal,
+  WorkflowCategory,
   WorkflowModalFrom,
   type WorkFlowModalModeProps,
 } from '@coze-workflow/components';
-import { WorkflowNodesService } from '@coze-workflow/nodes';
 import { type Workflow } from '@coze-workflow/base/api';
 import {
   StandardNodeType,
@@ -16,9 +17,9 @@ import {
   type WorkflowNodeJSON,
 } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
+import { Button, Space, Toast, Typography } from '@coze-arch/coze-design';
 import { From } from '@coze-agent-ide/plugin-shared';
 import { usePluginApisModal } from '@coze-agent-ide/bot-plugin/components/plugin-apis/use-plugin-apis-modal';
-import { Button, Space, Toast, Typography } from '@coze-arch/coze-design';
 
 import { WorkflowPlaygroundContext } from '@/workflow-playground-context';
 import { WorkflowEditService } from '@/services';
@@ -168,6 +169,8 @@ export const useAddNodeModal = (prevAddNodeRef: {
     bindBizId: globalState.config?.bindBizID,
     bindBizType: globalState.config?.bindBizType,
     excludedWorkflowIds: [globalState.workflowId],
+    // The community version does not currently support workflow example category, for future expansion
+    hiddenWorkflowCategories: IS_OPEN_SOURCE ? [WorkflowCategory.Example] : [],
     projectId: globalState.projectId,
     onDupSuccess: () => null,
     onClose: onCloseModal,

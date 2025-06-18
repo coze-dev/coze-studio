@@ -17,11 +17,11 @@ import { UpdateUserAvatar } from '@coze-common/biz-components';
 import { REPORT_EVENTS, createReportEvent } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
 import { refreshUserInfo } from '@coze-arch/foundation-sdk';
+import { IconCozWarningCircleFillPalette } from '@coze-arch/coze-design/icons';
+import { Input, Toast, Select } from '@coze-arch/coze-design';
 import { Form, type Upload } from '@coze-arch/bot-semi';
 import { isApiError } from '@coze-arch/bot-http';
 import { DeveloperApi } from '@coze-arch/bot-api';
-import { IconCozWarningCircleFillPalette } from '@coze-arch/coze-design/icons';
-import { Input, Toast, Select } from '@coze-arch/coze-design';
 
 import { UsernameInput } from './username-input';
 import { UserInfoField, type UserInfoFieldProps } from './user-info-field';
@@ -386,8 +386,7 @@ export const UserInfoPanel = () => {
           />
         </div>
       </UserInfoFieldWrap>
-      {/* @ts-expect-error -- ignore */}
-      <UserInfoFieldWrap label={I18n.t('密码')}>
+      <UserInfoFieldWrap label={I18n.t('user_info_password')}>
         <div className="flex">
           <UserInfoField
             className={styles['info-field']}

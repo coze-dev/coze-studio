@@ -1,12 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import React, { type PropsWithChildren, useCallback } from 'react';
 
-import { I18n } from '@coze-arch/i18n';
-import {
-  useProjectAuth,
-  EProjectPermission,
-  useProjectRole,
-} from '@coze-common/auth';
 import { PublishButton } from '@coze-studio/project-publish';
 import {
   useCopyProjectModal,
@@ -19,6 +13,12 @@ import {
   useSpaceId,
   useCommitVersion,
 } from '@coze-project-ide/framework';
+import {
+  useProjectAuth,
+  EProjectPermission,
+  useProjectRole,
+} from '@coze-common/auth';
+import { I18n } from '@coze-arch/i18n';
 import { IconCozEye, IconCozMore } from '@coze-arch/coze-design/icons';
 import {
   Button,
@@ -93,7 +93,7 @@ export const Operators = () => {
           <PublishButton
             spaceId={spaceId}
             projectId={projectId}
-            hasPublished={!!projectInfo?.publish_time}
+            hasPublished={Boolean(Number(projectInfo?.publish_time))}
           />
           <Popover
             trigger="click"

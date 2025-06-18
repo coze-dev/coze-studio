@@ -13,6 +13,7 @@ export const defaultVitestConfig: UserConfig = {
     },
   },
   test: {
+    testTimeout: 10 * 1000,
     pool: 'forks',
     poolOptions: {
       forks: {

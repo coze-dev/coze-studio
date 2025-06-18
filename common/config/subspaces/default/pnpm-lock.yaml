@@ -17676,7 +17676,7 @@ importers:
         version: link:../../arch/i18n
       '@dagrejs/dagre':
         specifier: ^1.0.2
-        version: 1.1.4
+        version: 1.1.5
       '@visactor/vgrammar':
         specifier: 0.12.5-alpha.4
         version: 0.12.5-alpha.4
@@ -29857,8 +29857,8 @@ packages:
     dependencies:
       postcss-selector-parser: 6.1.2
 
-  /@dagrejs/dagre@1.1.4:
-    resolution: {integrity: sha512-QUTc54Cg/wvmlEUxB+uvoPVKFazM1H18kVHBQNmK2NbrDR5ihOCR6CXLnDSZzMcSQKJtabPUWridBOlJM3WkDg==}
+  /@dagrejs/dagre@1.1.5:
+    resolution: {integrity: sha512-Ghgrh08s12DCL5SeiR6AoyE80mQELTWhJBRmXfFoqDiFkR458vPEdgTbbjA0T+9ETNxUblnD0QW55tfdvi5pjQ==}
     dependencies:
       '@dagrejs/graphlib': 2.2.4
     dev: false
@@ -32546,7 +32546,7 @@ packages:
       '@swc/helpers': 0.5.17
       caniuse-lite: 1.0.30001723
       lodash: 4.17.21
-      rslog: 1.2.6
+      rslog: 1.2.7
     dev: true
 
   /@module-federation/error-codes@0.14.0:
@@ -34291,7 +34291,7 @@ packages:
       rollup:
         optional: true
     dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.43.0)
+      '@rollup/pluginutils': 5.2.0(rollup@4.43.0)
       commondir: 1.0.1
       estree-walker: 2.0.2
       glob: 8.1.0
@@ -34309,7 +34309,7 @@ packages:
       rollup:
         optional: true
     dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.43.0)
+      '@rollup/pluginutils': 5.2.0(rollup@4.43.0)
       rollup: 4.43.0
     dev: true
 
@@ -34322,7 +34322,7 @@ packages:
       rollup:
         optional: true
     dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.43.0)
+      '@rollup/pluginutils': 5.2.0(rollup@4.43.0)
       '@types/resolve': 1.20.2
       deepmerge: 4.3.1
       is-builtin-module: 3.2.1
@@ -34353,8 +34353,8 @@ packages:
       rollup: 4.43.0
     dev: true
 
-  /@rollup/pluginutils@5.1.4(rollup@4.43.0):
-    resolution: {integrity: sha512-USm05zrsFxYLPdWWq+K3STlWiT/3ELn3RcV5hJMghpeAIhxfsUIg6mt12CBJBInWMV4VneoV7SfGv8xIwo2qNQ==}
+  /@rollup/pluginutils@5.2.0(rollup@4.43.0):
+    resolution: {integrity: sha512-qWJ2ZTbmumwiLFomfzTyt5Kng4hwPi9rwCYN4SHb6eaRU1KNO4ccxINHr/VhH4GgPlt1XfSTLX2LBTme8ne4Zw==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
@@ -34750,7 +34750,7 @@ packages:
       get-port: 5.1.1
       json-stream-stringify: 3.0.1
       lines-and-columns: 2.0.4
-      rslog: 1.2.6
+      rslog: 1.2.7
       strip-ansi: 6.0.1
     transitivePeerDependencies:
       - '@rspack/core'
@@ -36987,7 +36987,7 @@ packages:
       vite: ^3.0.0 || ^4.0.0 || ^5.0.0
     dependencies:
       '@joshwooding/vite-plugin-react-docgen-typescript': 0.3.0(typescript@5.8.2)(vite@4.5.14)
-      '@rollup/pluginutils': 5.1.4(rollup@4.43.0)
+      '@rollup/pluginutils': 5.2.0(rollup@4.43.0)
       '@storybook/builder-vite': 7.6.20(typescript@5.8.2)(vite@4.5.14)
       '@storybook/react': 7.6.20(react-dom@18.2.0)(react@18.2.0)(typescript@5.8.2)
       '@vitejs/plugin-react': 3.1.0(vite@4.5.14)
@@ -37014,7 +37014,7 @@ packages:
       vite: ^3.0.0 || ^4.0.0 || ^5.0.0
     dependencies:
       '@joshwooding/vite-plugin-react-docgen-typescript': 0.3.0(typescript@5.8.2)(vite@4.5.14)
-      '@rollup/pluginutils': 5.1.4(rollup@4.43.0)
+      '@rollup/pluginutils': 5.2.0(rollup@4.43.0)
       '@storybook/builder-vite': 7.6.20(typescript@5.8.2)(vite@4.5.14)
       '@storybook/react': 7.6.20(react-dom@18.2.0)(react@18.2.0)(typescript@5.8.2)
       '@vitejs/plugin-react': 3.1.0(vite@4.5.14)
@@ -39985,8 +39985,8 @@ packages:
       tinyrainbow: 2.0.0
     dev: true
 
-  /@vitest/pretty-format@3.2.3:
-    resolution: {integrity: sha512-yFglXGkr9hW/yEXngO+IKMhP0jxyFw2/qys/CK4fFUZnSltD+MU7dVYGrH8rvPcK/O6feXQA+EU33gjaBBbAng==}
+  /@vitest/pretty-format@3.2.4:
+    resolution: {integrity: sha512-IVNZik8IVRJRTr9fxlitMKeJeXFFFN0JaB9PHPGQ8NKQbGpfjlTx9zO4RefN8gp7eqjNy8nyK3NZmBzOPeIxtA==}
     dependencies:
       tinyrainbow: 2.0.0
     dev: true
@@ -41500,7 +41500,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001723
-      electron-to-chromium: 1.5.168
+      electron-to-chromium: 1.5.169
     dev: true
 
   /browserslist@4.25.0:
@@ -41509,7 +41509,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001723
-      electron-to-chromium: 1.5.168
+      electron-to-chromium: 1.5.169
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.0)
 
@@ -41731,7 +41731,7 @@ packages:
     resolution: {integrity: sha512-ds37W8CytHgwnhGGTi88pcPyR15qoNkOpYwmMMfnWqqWgESapLqvDx6huFjQ5vqWSn2Z06173XNA7LtMOeUh1A==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.8.1
+      tslib: 2.6.3
       upper-case-first: 2.0.2
 
   /caseless@0.12.0:
@@ -42357,7 +42357,7 @@ packages:
     resolution: {integrity: sha512-I2hSBi7Vvs7BEuJDr5dDHfzb/Ruj3FyvFyh7KLilAjNQw3Be+xgqUBA2W6scVEcL0hL1dwPRtIqEPVUCKkSsyQ==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.8.1
+      tslib: 2.6.3
       upper-case: 2.0.2
 
   /content-disposition@0.5.4:
@@ -43637,8 +43637,8 @@ packages:
       jake: 10.9.2
     dev: true
 
-  /electron-to-chromium@1.5.168:
-    resolution: {integrity: sha512-RUNQmFLNIWVW6+z32EJQ5+qx8ci6RGvdtDC0Ls+F89wz6I2AthpXF0w0DIrn2jpLX0/PU9ZCo+Qp7bg/EckJmA==}
+  /electron-to-chromium@1.5.169:
+    resolution: {integrity: sha512-q7SQx6mkLy0GTJK9K9OiWeaBMV4XQtBSdf6MJUzDB/H/5tFXfIiX38Lci1Kl6SsgiEhz1SQI1ejEOU5asWEhwQ==}
 
   /elegant-spinner@1.0.1:
     resolution: {integrity: sha512-B+ZM+RXvRqQaAmkMlO/oSe5nMUOaUnyfGYCEHoR8wrXsZR2mA0XVibsxV1bvTwxdRWah1PkQqso2EzhILGHtEQ==}
@@ -46673,7 +46673,7 @@ packages:
     resolution: {integrity: sha512-H/vuk5TEEVZwrR0lp2zed9OCo1uAILMlx0JEMgC26rzyJJ3N1v6XkwHHXJQdR2doSjcGPM6OKPYoJgf0plJ11Q==}
     dependencies:
       capital-case: 1.0.4
-      tslib: 2.8.1
+      tslib: 2.6.3
 
   /helpertypes@0.0.19:
     resolution: {integrity: sha512-J00e55zffgi3yVnUp0UdbMztNkr2PnizEkOe9URNohnrNhW5X0QpegkuLpOmFQInpi93Nb8MCjQRHAiCDF42NQ==}
@@ -46764,7 +46764,7 @@ packages:
       entities: 4.5.0
       param-case: 3.0.4
       relateurl: 0.2.7
-      terser: 5.42.0
+      terser: 5.43.0
     dev: true
 
   /html-react-parser@3.0.15(react@18.2.0):
@@ -51206,7 +51206,7 @@ packages:
     resolution: {integrity: sha512-qO4qCFjXqVTrcbPt/hQfhTQ+VhFsqNKOPtytgNKkKxSoEp3XPUQ8ObFuePylOIok5gjn69ry8XiULxCwot3Wfg==}
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.8.1
+      tslib: 2.6.3
 
   /path-data-parser@0.1.0:
     resolution: {integrity: sha512-NOnmBpt5Y2RWbuv0LMzsayp3lVylAHLPUTut412ZA3l+C4uw4ZVkQbjShYCQ8TCpUMdPapr4YjUqLYD6v68j+w==}
@@ -54314,7 +54314,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.27.4
-      '@rollup/pluginutils': 5.1.4(rollup@4.43.0)
+      '@rollup/pluginutils': 5.2.0(rollup@4.43.0)
       '@swc/core': 1.12.1(@swc/helpers@0.4.37)
       '@swc/helpers': 0.4.37
       '@wessberg/stringutil': 1.0.19
@@ -54397,8 +54397,8 @@ packages:
     resolution: {integrity: sha512-UhLsi8XLAu1NIBcFZjykoPiSLEAxfkGxkmr/Tnv4KnqhG18A65dVTCWovRvFdpzng6IyVW2f6nTAKz7lw+QhgQ==}
     dev: true
 
-  /rslog@1.2.6:
-    resolution: {integrity: sha512-TGqKQNWVdVTQBG8dtIhdzJheYMCQy4JNG778OmyQAHc3NksEPK0ESexnHm/5EHC7BYAjYkc0r9SDI9PnKtzodw==}
+  /rslog@1.2.7:
+    resolution: {integrity: sha512-8fnO9sQfJ4wxg1rCoden42V9A1TloS8HfgvSXZg8lZjgP74iM+PnlV8Sj4+9ouRP8juWx5qkO/+GFjTKAf2s0Q==}
     dev: true
 
   /run-async@3.0.0:
@@ -54857,7 +54857,7 @@ packages:
     resolution: {integrity: sha512-8LS0JInaQMCRoQ7YUytAo/xUu5W2XnQxV2HI/6uM6U7CITS1RqPElr30V6uIqyMKM9lJGRVFy5/4CuzcixNYSg==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.8.1
+      tslib: 2.6.3
       upper-case-first: 2.0.2
 
   /serialize-javascript@6.0.2:
@@ -56583,7 +56583,7 @@ packages:
       jest-worker: 27.5.1
       schema-utils: 4.3.2
       serialize-javascript: 6.0.2
-      terser: 5.42.0
+      terser: 5.43.0
       webpack: 5.76.0(@swc/core@1.12.1)(esbuild@0.17.19)
     dev: true
 
@@ -56609,7 +56609,7 @@ packages:
       jest-worker: 27.5.1
       schema-utils: 4.3.2
       serialize-javascript: 6.0.2
-      terser: 5.42.0
+      terser: 5.43.0
       webpack: 5.91.0(@swc/core@1.12.1)(esbuild@0.17.19)
     dev: true
 
@@ -56635,7 +56635,7 @@ packages:
       jest-worker: 27.5.1
       schema-utils: 4.3.2
       serialize-javascript: 6.0.2
-      terser: 5.42.0
+      terser: 5.43.0
       webpack: 5.91.0(@swc/core@1.12.1)(esbuild@0.18.20)
     dev: true
 
@@ -56660,7 +56660,7 @@ packages:
       jest-worker: 27.5.1
       schema-utils: 4.3.2
       serialize-javascript: 6.0.2
-      terser: 5.42.0
+      terser: 5.43.0
       webpack: 5.91.0(esbuild@0.18.20)
     dev: true
 
@@ -56684,7 +56684,7 @@ packages:
       jest-worker: 27.5.1
       schema-utils: 4.3.2
       serialize-javascript: 6.0.2
-      terser: 5.42.0
+      terser: 5.43.0
       webpack: 5.89.0
     dev: true
 
@@ -56708,11 +56708,11 @@ packages:
       jest-worker: 27.5.1
       schema-utils: 4.3.2
       serialize-javascript: 6.0.2
-      terser: 5.42.0
+      terser: 5.43.0
       webpack: 5.91.0
 
-  /terser@5.42.0:
-    resolution: {integrity: sha512-UYCvU9YQW2f/Vwl+P0GfhxJxbUGLwd+5QrrGgLajzWAtC/23AX0vcise32kkP7Eu0Wu9VlzzHAXkLObgjQfFlQ==}
+  /terser@5.43.0:
+    resolution: {integrity: sha512-CqNNxKSGKSZCunSvwKLTs8u8sGGlp27sxNZ4quGh0QeNuyHM0JSEM/clM9Mf4zUp6J+tO2gUXhgXT2YMMkwfKQ==}
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
@@ -57742,7 +57742,7 @@ packages:
   /upper-case-first@2.0.2:
     resolution: {integrity: sha512-514ppYHBaKwfJRK/pNC6c/OxfGa0obSnAl106u97Ed0I625Nin96KAjttZF6ZL3e1XLtphxnqrOi9iWgm+u+bg==}
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.6.3
 
   /upper-case@2.0.2:
     resolution: {integrity: sha512-KgdgDGJt2TpuwBUIjgG6lzw2GWFRCW9Qkfkiv0DxqHHLYJHmtmdUIKcZd8rHgFSjopVTlw6ggzCm1b8MFQwikg==}
@@ -58210,7 +58210,7 @@ packages:
     peerDependencies:
       vite: ^2.6.0 || 3 || 4
     dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.43.0)
+      '@rollup/pluginutils': 5.2.0(rollup@4.43.0)
       '@svgr/core': 8.1.0(typescript@5.8.2)
       '@svgr/plugin-jsx': 8.1.0(@svgr/core@8.1.0)
       vite: 4.5.14(less@4.3.0)
@@ -58225,7 +58225,7 @@ packages:
     peerDependencies:
       vite: ^2.6.0 || 3 || 4
     dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.43.0)
+      '@rollup/pluginutils': 5.2.0(rollup@4.43.0)
       '@svgr/core': 8.1.0(typescript@5.8.2)
       '@svgr/plugin-jsx': 8.1.0(@svgr/core@8.1.0)
       vite: 4.5.14(@types/node@18.18.9)(less@3.13.1)
@@ -58562,7 +58562,7 @@ packages:
       '@types/node': 18.18.9
       '@vitest/expect': 3.0.9
       '@vitest/mocker': 3.0.9(vite@6.3.5)
-      '@vitest/pretty-format': 3.2.3
+      '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.0.9
       '@vitest/snapshot': 3.0.9
       '@vitest/spy': 3.0.9
@@ -58627,7 +58627,7 @@ packages:
       '@types/node': 18.18.9
       '@vitest/expect': 3.0.9
       '@vitest/mocker': 3.0.9(vite@6.3.5)
-      '@vitest/pretty-format': 3.2.3
+      '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.0.9
       '@vitest/snapshot': 3.0.9
       '@vitest/spy': 3.0.9
@@ -58692,7 +58692,7 @@ packages:
       '@types/node': 18.18.9
       '@vitest/expect': 3.0.9
       '@vitest/mocker': 3.0.9(vite@6.3.5)
-      '@vitest/pretty-format': 3.2.3
+      '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.0.9
       '@vitest/snapshot': 3.0.9
       '@vitest/spy': 3.0.9
@@ -58757,7 +58757,7 @@ packages:
       '@types/node': 18.18.9
       '@vitest/expect': 3.0.9
       '@vitest/mocker': 3.0.9(vite@6.3.5)
-      '@vitest/pretty-format': 3.2.3
+      '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.0.9
       '@vitest/snapshot': 3.0.9
       '@vitest/spy': 3.0.9
@@ -58821,7 +58821,7 @@ packages:
       '@types/node': 18.18.9
       '@vitest/expect': 3.0.9
       '@vitest/mocker': 3.0.9(vite@6.3.5)
-      '@vitest/pretty-format': 3.2.3
+      '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.0.9
       '@vitest/snapshot': 3.0.9
       '@vitest/spy': 3.0.9
@@ -58884,7 +58884,7 @@ packages:
     dependencies:
       '@vitest/expect': 3.0.9
       '@vitest/mocker': 3.0.9(vite@6.3.5)
-      '@vitest/pretty-format': 3.2.3
+      '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.0.9
       '@vitest/snapshot': 3.0.9
       '@vitest/spy': 3.0.9
@@ -58948,7 +58948,7 @@ packages:
     dependencies:
       '@vitest/expect': 3.0.9
       '@vitest/mocker': 3.0.9(vite@6.3.5)
-      '@vitest/pretty-format': 3.2.3
+      '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.0.9
       '@vitest/snapshot': 3.0.9
       '@vitest/spy': 3.0.9
@@ -59012,7 +59012,7 @@ packages:
     dependencies:
       '@vitest/expect': 3.0.9
       '@vitest/mocker': 3.0.9(vite@6.3.5)
-      '@vitest/pretty-format': 3.2.3
+      '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.0.9
       '@vitest/snapshot': 3.0.9
       '@vitest/spy': 3.0.9

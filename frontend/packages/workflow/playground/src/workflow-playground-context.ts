@@ -100,7 +100,9 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
   /**
    * 获取 工作流节点模板
    */
-  async loadNodeInfos(): Promise<void> {
+  async loadNodeInfos(locale: string): Promise<void> {
+    console.log('current locale is ', locale); // todo zxh: 增加 locale 扩展，zh-CN 中文模板，en-US 英文模板
+
     const nodeIds: StandardNodeType[] = Object.values(StandardNodeType);
     let resp: NodeTemplateListResponse | undefined;
     let favoritePlugins: GetUserFavoriteListData | undefined;
@@ -218,6 +220,14 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
     pageNum: number;
     pageSize?: number;
   }): Promise<GetUserFavoriteListData | undefined> {
+    // The community version does not currently support plugin favorite function, for future expansion
+    if (IS_OPEN_SOURCE) {
+      return {
+        favorite_products: [],
+        has_more: false,
+      };
+    }
+
     const resp = await ProductApi.PublicGetUserFavoriteList({
       entity_type: ProductEntityType.Plugin,
       sort_type: SortType.Newest,

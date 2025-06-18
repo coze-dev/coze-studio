@@ -43,6 +43,7 @@ export const CropperFooter: React.FC<CropperFooterProps> = ({
         {I18n.t('Cancel')}
       </Button>
       <Button
+        data-testid="agent-ide.chat_background_img_submit"
         onClick={handleSubmit}
         loading={loading}
         disabled={disabledConfig.submit}

@@ -85,6 +85,7 @@ export const DatabaseListItem: FC<IProps> = props => {
           />
         ) : (
           <Button
+            data-testid="bot.database.add.modal.add.button"
             className={cn(
               'w-[53px] flex justify-center items-center',
               styles['database-add'],

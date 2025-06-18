@@ -1,11 +1,11 @@
 import { Fragment } from 'react';
 
-import { BotDebugButton } from '@coze-agent-ide/space-bot/component';
 import { usePageRuntimeStore } from '@coze-studio/bot-detail-store/page-runtime';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozCheckMarkCircleFillPalette } from '@coze-arch/coze-design/icons';
 import { Tooltip } from '@coze-arch/coze-design';
 import { type Type } from '@coze-arch/bot-semi/Button';
+import { BotDebugButton } from '@coze-agent-ide/space-bot/component';
 
 import { useDeployService } from './hooks/service';
 
@@ -63,6 +63,7 @@ export const DeployButtonUI = ({
       visible={showChangeTip}
     >
       <BotDebugButton
+        data-testid="agent-ide.goto.publish-button"
         theme="solid"
         type={btnType}
         iconPosition="right"

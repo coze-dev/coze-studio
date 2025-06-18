@@ -14,10 +14,9 @@ import {
   uniqMemoryList,
   VariableKeyErrType,
 } from '@coze-studio/bot-detail-store';
-import { I18n } from '@coze-arch/i18n';
-import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
-import { BotE2e } from '@coze-data/e2e';
 import { useBotInfoAuditor } from '@coze-studio/bot-audit-adapter';
+import { BotE2e } from '@coze-data/e2e';
+import { I18n } from '@coze-arch/i18n';
 import { IconCozTrashCan, IconCozPlus } from '@coze-arch/coze-design/icons';
 import {
   IconButton,
@@ -31,6 +30,7 @@ import {
   Switch,
   Button,
 } from '@coze-arch/coze-design';
+import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 
 import { AddButton } from '../add-button';
 import { MemoryTemplateModal } from './memory-template-modal';
@@ -183,6 +183,7 @@ export const MemoryAddModal: React.FC<MemoryAddModalProps> = props => {
           })}
         >
           <Input
+            data-testid={`${BotE2e.BotVariableAddModalNameInput}.${item.key}`}
             data-dtestid={`${BotE2e.BotVariableAddModalNameInput}.${item.key}`}
             disabled={isReadonly}
             placeholder={I18n.t('variable_name_placeholder')}
@@ -212,7 +213,7 @@ export const MemoryAddModal: React.FC<MemoryAddModalProps> = props => {
         </div>
       ) : (
         <Typography.Text
-          data-dtestid={`${BotE2e.BotVariableAddModalNameInput}.${item.key}`}
+          data-testid={`${BotE2e.BotVariableAddModalNameInput}.${item.key}`}
           className={classNames(
             s['memory-key-readonly'],
             !item.key && s['readonly-none'],
@@ -225,7 +226,7 @@ export const MemoryAddModal: React.FC<MemoryAddModalProps> = props => {
       ),
       description: !isReadonly ? (
         <Input
-          data-dtestid={`${BotE2e.BotVariableAddModalDescInput}.${item.key}`}
+          data-testid={`${BotE2e.BotVariableAddModalDescInput}.${item.key}`}
           disabled={isReadonly}
           className={classNames(s['memory-description'], 'flex-1')}
           placeholder={I18n.t('bot_edit_variable_description_placeholder')}
@@ -241,7 +242,7 @@ export const MemoryAddModal: React.FC<MemoryAddModalProps> = props => {
         />
       ) : (
         <Typography.Text
-          data-dtestid={`${BotE2e.BotVariableAddModalDescInput}.${item.key}`}
+          data-testid={`${BotE2e.BotVariableAddModalDescInput}.${item.key}`}
           className={classNames(
             s['memory-description-readonly'],
             !item.description && s['readonly-none'],
@@ -254,7 +255,7 @@ export const MemoryAddModal: React.FC<MemoryAddModalProps> = props => {
       ),
       default_value: !isReadonly ? (
         <Input
-          data-dtestid={`${BotE2e.BotVariableAddModalDefaultValueInput}.${item.key}`}
+          data-testid={`${BotE2e.BotVariableAddModalDefaultValueInput}.${item.key}`}
           disabled={isReadonly}
           className={classNames(
             s['memory-description'],
@@ -273,7 +274,7 @@ export const MemoryAddModal: React.FC<MemoryAddModalProps> = props => {
         />
       ) : (
         <Typography.Text
-          data-dtestid={`${BotE2e.BotVariableAddModalDefaultValueInput}.${item.key}`}
+          data-testid={`${BotE2e.BotVariableAddModalDefaultValueInput}.${item.key}`}
           className={classNames(
             s['memory-description-readonly'],
             !item.default_value && s['readonly-none'],
@@ -297,7 +298,7 @@ export const MemoryAddModal: React.FC<MemoryAddModalProps> = props => {
             </div>
           </Tooltip>
           <Switch
-            data-dtestid={`${BotE2e.BotVariableAddModalSwitch}.${item.key}`}
+            data-testid={`${BotE2e.BotVariableAddModalSwitch}.${item.key}`}
             size="small"
             checked={!item?.is_disabled}
             onChange={checked => {
