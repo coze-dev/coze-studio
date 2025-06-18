@@ -171,3 +171,11 @@ type MGetDatabaseRequest struct {
 type MGetDatabaseResponse struct {
 	Databases []*Database
 }
+
+type GetAllDatabaseByAppIDRequest struct {
+	AppID int64
+}
+
+type GetAllDatabaseByAppIDResponse struct {
+	Databases []*Database // online databases
+}
