@@ -2067,3 +2067,14 @@ func (d databaseService) listDatabasesByAppID(ctx context.Context, appID int64, 
 
 	return dbInfos, nil
 }
+
+func (d databaseService) GetAllDatabaseByAppID(ctx context.Context, req *GetAllDatabaseByAppIDRequest) (*GetAllDatabaseByAppIDResponse, error) {
+	onlineDBs, err := d.listDatabasesByAppID(ctx, req.AppID, table.TableType_OnlineTable)
+	if err != nil {
+		return nil, err
+	}
+
+	return &GetAllDatabaseByAppIDResponse{
+		Databases: onlineDBs,
+	}, nil
+}

@@ -141,6 +141,21 @@ func (mr *MockDatabaseMockRecorder) ExecuteSQL(ctx, req any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteSQL", reflect.TypeOf((*MockDatabase)(nil).ExecuteSQL), ctx, req)
 }
 
+// GetAllDatabaseByAppID mocks base method.
+func (m *MockDatabase) GetAllDatabaseByAppID(ctx context.Context, req *service.GetAllDatabaseByAppIDRequest) (*service.GetAllDatabaseByAppIDResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllDatabaseByAppID", ctx, req)
+	ret0, _ := ret[0].(*service.GetAllDatabaseByAppIDResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllDatabaseByAppID indicates an expected call of GetAllDatabaseByAppID.
+func (mr *MockDatabaseMockRecorder) GetAllDatabaseByAppID(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllDatabaseByAppID", reflect.TypeOf((*MockDatabase)(nil).GetAllDatabaseByAppID), ctx, req)
+}
+
 // GetDatabaseFileProgressData mocks base method.
 func (m *MockDatabase) GetDatabaseFileProgressData(ctx context.Context, req *service.GetDatabaseFileProgressDataRequest) (*service.GetDatabaseFileProgressDataResponse, error) {
 	m.ctrl.T.Helper()

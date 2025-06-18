@@ -19,6 +19,7 @@ type Database interface {
 	ListDatabase(ctx context.Context, req *ListDatabaseRequest) (*ListDatabaseResponse, error)
 	GetDraftDatabaseByOnlineID(ctx context.Context, req *GetDraftDatabaseByOnlineIDRequest) (*GetDraftDatabaseByOnlineIDResponse, error)
 	DeleteDatabaseByAppID(ctx context.Context, req *DeleteDatabaseByAppIDRequest) (*DeleteDatabaseByAppIDResponse, error)
+	GetAllDatabaseByAppID(ctx context.Context, req *GetAllDatabaseByAppIDRequest) (*GetAllDatabaseByAppIDResponse, error)
 
 	GetDatabaseTemplate(ctx context.Context, req *GetDatabaseTemplateRequest) (*GetDatabaseTemplateResponse, error)
 	GetDatabaseTableSchema(ctx context.Context, req *GetDatabaseTableSchemaRequest) (*GetDatabaseTableSchemaResponse, error)
@@ -235,3 +236,7 @@ type DeleteDatabaseByAppIDRequest struct {
 type DeleteDatabaseByAppIDResponse struct {
 	DeletedDatabaseIDs []int64 //online database ids
 }
+
+type GetAllDatabaseByAppIDRequest = database.GetAllDatabaseByAppIDRequest
+
+type GetAllDatabaseByAppIDResponse = database.GetAllDatabaseByAppIDResponse
