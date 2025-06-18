@@ -63,6 +63,7 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *Import
 		savedDoc          = &TableSchemaResponse{}
 		targetColumns     []*entity.TableColumn
 		alignCurrentTable = req.DocumentID != nil && req.PreviewTableMeta == nil
+		allSheets         []*entity.TableSheet
 	)
 
 	if alignCurrentTable {
@@ -87,6 +88,7 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *Import
 
 		for i := range allRawSheets {
 			s := allRawSheets[i]
+			allSheets = append(allSheets, s.sheet)
 			if s.sheet.SheetId == reqSheet.SheetId {
 				sheet = s
 			}
@@ -101,21 +103,27 @@ func (k *knowledgeSVC) GetImportDataTableSchema(ctx context.Context, req *Import
 		if err != nil {
 			return nil, fmt.Errorf("[GetImportDataTableSchema] loadTableSourceInfo failed, %w", err)
 		}
+		if sheet.sheet.SheetName == "" {
+			sheet.sheet.SheetName = "default"
+		}
+		allSheets = []*entity.TableSheet{sheet.sheet}
 	}
 
 	// first time import / import with current document schema
 	if !alignCurrentTable {
 		return k.FormatTableSchemaResponse(&TableSchemaResponse{
-			TableSheet:  sheet.sheet,
-			TableMeta:   sheet.cols,
-			PreviewData: sheet.vals,
+			TableSheet:     sheet.sheet,
+			AllTableSheets: allSheets,
+			TableMeta:      sheet.cols,
+			PreviewData:    sheet.vals,
 		}, req.PreviewTableMeta, req.TableDataType)
 	}
 
 	return k.FormatTableSchemaResponse(&TableSchemaResponse{
-		TableSheet:  savedDoc.TableSheet,
-		TableMeta:   sheet.cols,
-		PreviewData: sheet.vals,
+		TableSheet:     savedDoc.TableSheet,
+		AllTableSheets: allSheets,
+		TableMeta:      sheet.cols,
+		PreviewData:    sheet.vals,
 	}, savedDoc.TableMeta, req.TableDataType)
 }
 
