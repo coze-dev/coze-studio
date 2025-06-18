@@ -5787,7 +5787,9 @@ func (p *DeleteMessageResponse) String() string {
 }
 
 type BreakMessageRequest struct {
+	//会话id
 	ConversationID int64 `thrift:"conversation_id,1,required" form:"conversation_id,required" json:"conversation_id,string,required" query:"conversation_id,required"`
+	// 当前问题id
 	QueryMessageID int64 `thrift:"query_message_id,2,required" form:"query_message_id,required" json:"query_message_id,string,required" query:"query_message_id,required"`
 	// 当前问题下哪一条回复被打断了
 	AnswerMessageID *int64 `thrift:"answer_message_id,3,optional" form:"answer_message_id" json:"answer_message_id,string,omitempty" query:"answer_message_id"`
@@ -6342,14 +6344,19 @@ func (p *BreakMessageResponse) String() string {
 
 // 批量查询
 type ListMessageApiRequest struct {
-	//connector层的会话id
-	ConversationID int64      `thrift:"conversation_id,1,required" json:"conversation_id,string,required" query:"conversation_id,required"`
-	Limit          *int64     `thrift:"limit,2,optional" form:"limit" json:"limit,omitempty"`
-	Order          *string    `thrift:"order,3,optional" form:"order" json:"order,omitempty"`
-	ChatID         *int64     `thrift:"chat_id,4,optional" form:"chat_id" json:"chat_id,string,omitempty"`
-	BeforeID       *int64     `thrift:"before_id,5,optional" form:"before_id" json:"before_id,string,omitempty"`
-	AfterID        *int64     `thrift:"after_id,6,optional" form:"after_id" json:"after_id,string,omitempty"`
-	Base           *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
+	//会话id
+	ConversationID int64 `thrift:"conversation_id,1,required" json:"conversation_id,string,required" query:"conversation_id,required"`
+	// 限制条数
+	Limit *int64 `thrift:"limit,2,optional" form:"limit" json:"limit,omitempty"`
+	// 排序方式 desc/asc
+	Order *string `thrift:"order,3,optional" form:"order" json:"order,omitempty"`
+	//一次对话的id
+	ChatID *int64 `thrift:"chat_id,4,optional" form:"chat_id" json:"chat_id,string,omitempty"`
+	// 向前翻页需要传的ID
+	BeforeID *int64 `thrift:"before_id,5,optional" form:"before_id" json:"before_id,string,omitempty"`
+	// 向后返回需要传的ID
+	AfterID *int64     `thrift:"after_id,6,optional" form:"after_id" json:"after_id,string,omitempty"`
+	Base    *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
 }
 
 func NewListMessageApiRequest() *ListMessageApiRequest {
@@ -6822,19 +6829,31 @@ func (p *ListMessageApiRequest) String() string {
 
 type OpenMessageApi struct {
 	// 主键ID
-	ID               int64             `thrift:"id,1" form:"id" json:"id,string" query:"id"`
-	BotID            int64             `thrift:"bot_id,2" form:"bot_id" json:"bot_id,string" query:"bot_id"`
-	Role             string            `thrift:"role,3" form:"role" json:"role" query:"role"`
-	Content          string            `thrift:"content,4" form:"content" json:"content" query:"content"`
-	ConversationID   int64             `thrift:"conversation_id,5" form:"conversation_id" json:"conversation_id" query:"conversation_id"`
-	MetaData         map[string]string `thrift:"meta_data,6" form:"meta_data" json:"meta_data" query:"meta_data"`
-	CreatedAt        int64             `thrift:"created_at,7" form:"created_at" json:"created_at" query:"created_at"`
-	UpdatedAt        int64             `thrift:"updated_at,8" form:"updated_at" json:"updated_at" query:"updated_at"`
-	ChatID           int64             `thrift:"chat_id,9" form:"chat_id" json:"chat_id" query:"chat_id"`
-	ContentType      string            `thrift:"content_type,10" form:"content_type" json:"content_type" query:"content_type"`
-	Type             string            `thrift:"type,11" form:"type" json:"type" query:"type"`
-	SectionID        string            `thrift:"section_id,12" form:"section_id" json:"section_id" query:"section_id"`
-	ReasoningContent *string           `thrift:"reasoning_content,13,optional" form:"reasoning_content" json:"reasoning_content,omitempty" query:"reasoning_content"`
+	ID int64 `thrift:"id,1" form:"id" json:"id,string" query:"id"`
+	// agent id
+	BotID int64 `thrift:"bot_id,2" form:"bot_id" json:"bot_id,string" query:"bot_id"`
+	// user / assistant/tool
+	Role string `thrift:"role,3" form:"role" json:"role" query:"role"`
+	//消息内容
+	Content string `thrift:"content,4" form:"content" json:"content" query:"content"`
+	//会话id
+	ConversationID int64 `thrift:"conversation_id,5" form:"conversation_id" json:"conversation_id" query:"conversation_id"`
+	// 自定义字段
+	MetaData map[string]string `thrift:"meta_data,6" form:"meta_data" json:"meta_data" query:"meta_data"`
+	//创建时间
+	CreatedAt int64 `thrift:"created_at,7" form:"created_at" json:"created_at" query:"created_at"`
+	//更新时间
+	UpdatedAt int64 `thrift:"updated_at,8" form:"updated_at" json:"updated_at" query:"updated_at"`
+	// 一次对话的id
+	ChatID int64 `thrift:"chat_id,9" form:"chat_id" json:"chat_id" query:"chat_id"`
+	// content 类型 ，text/mix
+	ContentType string `thrift:"content_type,10" form:"content_type" json:"content_type" query:"content_type"`
+	//消息类型 answer/question/function_call/tool_response
+	Type string `thrift:"type,11" form:"type" json:"type" query:"type"`
+	// 会话的section_id
+	SectionID string `thrift:"section_id,12" form:"section_id" json:"section_id" query:"section_id"`
+	//模型思维链
+	ReasoningContent *string `thrift:"reasoning_content,13,optional" form:"reasoning_content" json:"reasoning_content,omitempty" query:"reasoning_content"`
 }
 
 func NewOpenMessageApi() *OpenMessageApi {
@@ -7542,9 +7561,12 @@ func (p *OpenMessageApi) String() string {
 
 type ListMessageApiResponse struct {
 	Messages []*OpenMessageApi `thrift:"messages,1,optional" form:"data" json:"data,omitempty"`
-	HasMore  *bool             `thrift:"has_more,2,optional" form:"has_more" json:"has_more,omitempty"`
-	FirstID  *int64            `thrift:"first_id,3,optional" form:"first_id" json:"first_id,string,omitempty"`
-	LastID   *int64            `thrift:"last_id,4,optional" form:"last_id" json:"last_id,string,omitempty"`
+	// 是否还有数据，true 有，false 没有
+	HasMore *bool `thrift:"has_more,2,optional" form:"has_more" json:"has_more,omitempty"`
+	// 第一条数据的id
+	FirstID *int64 `thrift:"first_id,3,optional" form:"first_id" json:"first_id,string,omitempty"`
+	// 最后一条数据的id
+	LastID *int64 `thrift:"last_id,4,optional" form:"last_id" json:"last_id,string,omitempty"`
 }
 
 func NewListMessageApiResponse() *ListMessageApiResponse {

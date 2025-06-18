@@ -170,8 +170,8 @@ struct DeleteMessageResponse  {
 }
 
 struct BreakMessageRequest  {
-    1: required i64 conversation_id (api.js_conv='true')
-    2: required i64 query_message_id (api.js_conv='true')
+    1: required i64 conversation_id (api.js_conv='true') //会话id
+    2: required i64 query_message_id (api.js_conv='true')// 当前问题id
     3: optional i64 answer_message_id  (api.js_conv='true') // 当前问题下哪一条回复被打断了
     4: optional i32    broken_pos        // 打断位置
     5: optional common.Scene  scene
@@ -183,35 +183,35 @@ struct BreakMessageResponse  {
 
 //批量查询
 struct ListMessageApiRequest {
-    1:   required  i64    conversation_id (api.query = "conversation_id",api.js_conv='true') //connector层的会话id
-    2:   optional  i64    limit (api.body = "limit")
-    3:   optional  string order (api.body = "order")
-    4:   optional  i64    chat_id (api.body = "chat_id",api.js_conv='true')
-    5:   optional  i64    before_id (api.body = "before_id",api.js_conv='true')
-    6:   optional  i64    after_id (api.body = "after_id",api.js_conv='true')
+    1:   required  i64    conversation_id (api.query = "conversation_id",api.js_conv='true') //会话id
+    2:   optional  i64    limit (api.body = "limit")  // 限制条数
+    3:   optional  string order (api.body = "order")  // 排序方式 desc/asc
+    4:   optional  i64    chat_id (api.body = "chat_id",api.js_conv='true') //一次对话的id
+    5:   optional  i64    before_id (api.body = "before_id",api.js_conv='true') // 向前翻页需要传的ID
+    6:   optional  i64    after_id (api.body = "after_id",api.js_conv='true')   // 向后返回需要传的ID
     255: base.Base Base
 }
 
 struct OpenMessageApi {
     1:  i64                id  (api.js_conv='true')// 主键ID
-    2:  i64                bot_id (api.js_conv='true')
-    3:  string             role
-    4:  string             content
-    5:  i64                conversation_id
-    6:  map<string,string> meta_data
-    7:  i64                created_at
-    8:  i64                updated_at
-    9:  i64                chat_id
-    10: string             content_type
-    11: string             type
-    12: string             section_id
-    13: optional string    reasoning_content
+    2:  i64                bot_id (api.js_conv='true') // agent id
+    3:  string             role  // user / assistant/tool
+    4:  string             content //消息内容
+    5:  i64                conversation_id //会话id
+    6:  map<string,string> meta_data // 自定义字段
+    7:  i64                created_at //创建时间
+    8:  i64                updated_at   //更新时间
+    9:  i64                chat_id // 一次对话的id
+    10: string             content_type // content 类型 ，text/mix
+    11: string             type //消息类型 answer/question/function_call/tool_response
+    12: string             section_id // 会话的section_id
+    13: optional string    reasoning_content //模型思维链
 }
 
 
 struct ListMessageApiResponse {
     1:   optional list<OpenMessageApi> messages (api.body = "data")
-    2:   optional bool                 has_more (api.body = "has_more")
-    3:   optional i64                  first_id (api.body = "first_id",api.js_conv='true')
-    4:   optional i64                  last_id (api.body = "last_id",api.js_conv='true')
+    2:   optional bool                 has_more (api.body = "has_more") // 是否还有数据，true 有，false 没有
+    3:   optional i64                  first_id (api.body = "first_id",api.js_conv='true') // 第一条数据的id
+    4:   optional i64                  last_id (api.body = "last_id",api.js_conv='true')    // 最后一条数据的id
 }

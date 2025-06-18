@@ -2131,9 +2131,12 @@ func (p *AdditionalContent) String() string {
 }
 
 type AgentRunRequest struct {
-	BotID           int64             `thrift:"bot_id,1" form:"bot_id" json:"bot_id,string" query:"bot_id"`
-	ConversationID  int64             `thrift:"conversation_id,2,required" form:"conversation_id,required" json:"conversation_id,string,required" query:"conversation_id,required"`
-	Query           string            `thrift:"query,5,required" form:"query,required" json:"query,required" query:"query,required"`
+	//agent id
+	BotID int64 `thrift:"bot_id,1" form:"bot_id" json:"bot_id,string" query:"bot_id"`
+	// 会话id
+	ConversationID int64  `thrift:"conversation_id,2,required" form:"conversation_id,required" json:"conversation_id,string,required" query:"conversation_id,required"`
+	Query          string `thrift:"query,5,required" form:"query,required" json:"query,required" query:"query,required"`
+	// ext 透传字段
 	Extra           map[string]string `thrift:"extra,7" form:"extra" json:"extra" query:"extra"`
 	CustomVariables map[string]string `thrift:"custom_variables,9" form:"custom_variables" json:"custom_variables" query:"custom_variables"`
 	// 草稿bot or 线上bot
@@ -4944,14 +4947,20 @@ func (p *ShortcutCommandDetail) String() string {
 }
 
 type ChatV3Request struct {
-	BotID              int64             `thrift:"BotID,1,required" form:"bot_id,required" json:"bot_id,string,required"`
-	ConversationID     *int64            `thrift:"ConversationID,2,optional" json:"ConversationID,string,omitempty" query:"conversation_id"`
-	User               string            `thrift:"User,3,required" form:"user_id,required" json:"user_id,required"`
-	Stream             *bool             `thrift:"Stream,4,optional" form:"stream" json:"stream,omitempty"`
-	AdditionalMessages []*EnterMessage   `thrift:"AdditionalMessages,5,optional" form:"additional_messages" json:"additional_messages,omitempty"`
-	CustomVariables    map[string]string `thrift:"CustomVariables,6,optional" form:"custom_variables" json:"custom_variables,omitempty"`
-	MetaData           map[string]string `thrift:"MetaData,8,optional" form:"meta_data" json:"meta_data,omitempty"`
-	CustomConfig       *CustomConfig     `thrift:"CustomConfig,10,optional" form:"custom_config" json:"custom_config,omitempty"`
+	//agent_id
+	BotID int64 `thrift:"BotID,1,required" form:"bot_id,required" json:"bot_id,string,required"`
+	//conversation_id
+	ConversationID *int64 `thrift:"ConversationID,2,optional" json:"ConversationID,string,omitempty" query:"conversation_id"`
+	//user_id，数据隔离标识，需要保证唯一
+	User string `thrift:"User,3,required" form:"user_id,required" json:"user_id,required"`
+	//是否流式，当前仅支持流失
+	Stream *bool `thrift:"Stream,4,optional" form:"stream" json:"stream,omitempty"`
+	//本次对话消息，当前仅支持role=user
+	AdditionalMessages []*EnterMessage `thrift:"AdditionalMessages,5,optional" form:"additional_messages" json:"additional_messages,omitempty"`
+	//用户自定义变量
+	CustomVariables map[string]string `thrift:"CustomVariables,6,optional" form:"custom_variables" json:"custom_variables,omitempty"`
+	MetaData        map[string]string `thrift:"MetaData,8,optional" form:"meta_data" json:"meta_data,omitempty"`
+	CustomConfig    *CustomConfig     `thrift:"CustomConfig,10,optional" form:"custom_config" json:"custom_config,omitempty"`
 	// 透传参数到 plugin/workflow 等下游
 	ExtraParams map[string]string `thrift:"ExtraParams,11,optional" form:"extra_params" json:"extra_params,omitempty"`
 	// 手动指定渠道 id 聊天。目前仅支持 websdk(=999)

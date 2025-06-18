@@ -39,7 +39,7 @@ struct ConversationData {
 }
 
 struct CreateConversationRequest {
-    1:   optional  map<string,string> MetaData (api.body = "meta_data")
+    1:   optional  map<string,string> MetaData (api.body = "meta_data") //自定义透传字段
     3:   optional  i64             BotId (api.body = "bot_id",  api.js_conv="true")
     4:   optional  i64             ConnectorId (api.body= "connector_id",  api.js_conv="true")
 }

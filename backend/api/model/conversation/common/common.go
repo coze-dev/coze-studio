@@ -11,10 +11,11 @@ import (
 type Scene int64
 
 const (
-	Scene_Default    Scene = 0
-	Scene_Explore    Scene = 1
-	Scene_BotStore   Scene = 2
-	Scene_CozeHome   Scene = 3
+	Scene_Default  Scene = 0
+	Scene_Explore  Scene = 1
+	Scene_BotStore Scene = 2
+	Scene_CozeHome Scene = 3
+	//调试
 	Scene_Playground Scene = 4
 	// 评测平台
 	Scene_Evaluation Scene = 5
@@ -23,7 +24,8 @@ const (
 	Scene_PromptOptimize Scene = 7
 	// createbot的nl2bot功能
 	Scene_GenerateAgentInfo Scene = 8
-	Scene_SceneOpenApi      Scene = 9
+	//openapi
+	Scene_SceneOpenApi Scene = 9
 )
 
 func (p Scene) String() string {

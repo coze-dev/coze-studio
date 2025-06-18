@@ -1507,6 +1507,7 @@ func (p *ConversationData) String() string {
 }
 
 type CreateConversationRequest struct {
+	//自定义透传字段
 	MetaData    map[string]string `thrift:"MetaData,1,optional" form:"meta_data" json:"meta_data,omitempty"`
 	BotId       *int64            `thrift:"BotId,3,optional" form:"bot_id" json:"bot_id,string,omitempty"`
 	ConnectorId *int64            `thrift:"ConnectorId,4,optional" form:"connector_id" json:"connector_id,string,omitempty"`

@@ -82,10 +82,10 @@ struct AdditionalContent {
 }
 
 struct AgentRunRequest  {
-    1 :          i64             bot_id    (api.js_conv='true') ,
-    2 : required i64             conversation_id  (api.js_conv='true')         ,
+    1 :          i64             bot_id    (api.js_conv='true') , //agent id
+    2 : required i64             conversation_id  (api.js_conv='true')         , // 会话id
     5 : required string             query                      ,
-    7 :          map<string,string> extra                      ,
+    7 :          map<string,string> extra                      , // ext 透传字段
     9 :          map<string,string> custom_variables           ,
     10: optional bool               draft_mode                 , // 草稿bot or 线上bot
     11: optional common.Scene              scene               , // explore场景
@@ -145,12 +145,12 @@ struct ShortcutCommandDetail {
 
 
 struct ChatV3Request {
-    1: required i64 BotID (api.body = "bot_id",api.js_conv='true'),
-    2: optional i64 ConversationID (api.query = "conversation_id", api.js_conv='true'),
-    3: required string User (api.body = "user_id"),
-    4: optional bool Stream (api.body = "stream"),
-    5: optional list<EnterMessage> AdditionalMessages (api.body = "additional_messages"),
-    6: optional map<string,string> CustomVariables (api.body = "custom_variables"),
+    1: required i64 BotID (api.body = "bot_id",api.js_conv='true'), //agent_id
+    2: optional i64 ConversationID (api.query = "conversation_id", api.js_conv='true'), //conversation_id
+    3: required string User (api.body = "user_id"), //user_id，数据隔离标识，需要保证唯一
+    4: optional bool Stream (api.body = "stream"), //是否流式，当前仅支持流失
+    5: optional list<EnterMessage> AdditionalMessages (api.body = "additional_messages"), //本次对话消息，当前仅支持role=user
+    6: optional map<string,string> CustomVariables (api.body = "custom_variables"), //用户自定义变量
     8: optional map<string, string> MetaData (api.body = "meta_data")
     10:optional CustomConfig CustomConfig (api.body = "custom_config")
     11:optional map<string, string> ExtraParams (api.body = "extra_params") // 透传参数到 plugin/workflow 等下游
