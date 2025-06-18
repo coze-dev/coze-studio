@@ -1,0 +1,342 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 180,
+          "y": 35.2
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 2020,
+          "y": 22.200000000000003
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "198958",
+                    "name": "output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "198958",
+      "type": "9",
+      "meta": {
+        "position": {
+          "x": 1100,
+          "y": 21.5
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "c2",
+          "description": "c2",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
+          "isImageflow": false
+        },
+        "inputs": {
+          "workflowId": "7516826283318181888",
+          "spaceId": "666",
+          "workflowVersion": "",
+          "inputDefs": [
+            {
+              "name": "input",
+              "type": "string"
+            }
+          ],
+          "type": 0,
+          "inputParameters": [],
+          "settingOnError": {}
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output"
+          }
+        ]
+      }
+    },
+    {
+      "id": "136894",
+      "type": "43",
+      "meta": {
+        "position": {
+          "x": 1560,
+          "y": 0
+        }
+      },
+      "data": {
+        "inputs": {
+          "databaseInfoList": [
+            {
+              "databaseInfoID": "7516826768238444544"
+            }
+          ],
+          "selectParam": {
+            "condition": {
+              "conditionList": [
+                [
+                  {
+                    "name": "left",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "v2"
+                      }
+                    }
+                  },
+                  {
+                    "name": "operation",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "IS_NOT_NULL"
+                      }
+                    }
+                  },
+                  null
+                ]
+              ],
+              "logic": "AND"
+            },
+            "orderByList": [],
+            "limit": 100
+          }
+        },
+        "outputs": [
+          {
+            "type": "list",
+            "name": "outputList",
+            "schema": {
+              "type": "object",
+              "schema": []
+            }
+          },
+          {
+            "type": "integer",
+            "name": "rowNum"
+          }
+        ],
+        "nodeMeta": {
+          "title": "查询数据",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icaon-database-select.jpg",
+          "description": "从表获取数据，用户可定义查询条件、选择列等，输出符合条件的数据",
+          "mainColor": "#F2B600",
+          "subTitle": "查询数据"
+        }
+      }
+    },
+    {
+      "id": "113678",
+      "type": "6",
+      "meta": {
+        "position": {
+          "x": 671.4402618657938,
+          "y": -63.62765957446808
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "知识库检索",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeQuery-v2.jpg",
+          "description": "在选定的知识中,根据输入变量召回最匹配的信息,并以列表形式返回",
+          "mainColor": "#FF811A",
+          "subTitle": "知识库检索"
+        },
+        "outputs": [
+          {
+            "type": "list",
+            "name": "outputList",
+            "schema": {
+              "type": "object",
+              "schema": [
+                {
+                  "type": "string",
+                  "name": "output"
+                }
+              ]
+            }
+          }
+        ],
+        "inputs": {
+          "datasetParam": [
+            {
+              "name": "datasetList",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "literal",
+                  "content": [
+                    "7516826802006786048"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "topK",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": 5
+                }
+              }
+            },
+            {
+              "name": "useRerank",
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "type": "literal",
+                  "content": true,
+                  "rawMeta": {
+                    "type": 3
+                  }
+                }
+              }
+            },
+            {
+              "name": "useRewrite",
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "type": "literal",
+                  "content": true,
+                  "rawMeta": {
+                    "type": 3
+                  }
+                }
+              }
+            },
+            {
+              "name": "isPersonalOnly",
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "type": "literal",
+                  "content": true,
+                  "rawMeta": {
+                    "type": 3
+                  }
+                }
+              }
+            },
+            {
+              "name": "minScore",
+              "input": {
+                "type": "float",
+                "value": {
+                  "type": "literal",
+                  "content": 0.5
+                }
+              }
+            },
+            {
+              "name": "strategy",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": 1
+                }
+              }
+            }
+          ],
+          "inputParameters": [
+            {
+              "name": "Query",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "113678"
+    },
+    {
+      "sourceNodeID": "136894",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "113678",
+      "targetNodeID": "198958"
+    },
+    {
+      "sourceNodeID": "198958",
+      "targetNodeID": "136894"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

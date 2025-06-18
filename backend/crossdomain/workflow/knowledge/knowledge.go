@@ -12,16 +12,19 @@ import (
 	domainknowledge "code.byted.org/flow/opencoze/backend/domain/knowledge/service"
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
+	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 type Knowledge struct {
 	client domainknowledge.Knowledge
+	idGen  idgen.IDGenerator
 }
 
-func NewKnowledgeRepository(client domainknowledge.Knowledge) *Knowledge {
+func NewKnowledgeRepository(client domainknowledge.Knowledge, idGen idgen.IDGenerator) *Knowledge {
 	return &Knowledge{
 		client: client,
+		idGen:  idGen,
 	}
 }
 
@@ -154,6 +157,7 @@ func (k *Knowledge) ListKnowledgeDetail(ctx context.Context, req *crossknowledge
 
 	return resp, nil
 }
+
 func toSearchType(typ crossknowledge.SearchType) (knowledge.SearchType, error) {
 	switch typ {
 	case crossknowledge.SearchTypeSemantic:

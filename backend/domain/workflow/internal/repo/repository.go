@@ -1023,6 +1023,7 @@ func (r *RepositoryImpl) CopyWorkflowFromAppToLibrary(ctx context.Context, workf
 		if err != nil {
 			return err
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -1030,11 +1031,14 @@ func (r *RepositoryImpl) CopyWorkflowFromAppToLibrary(ctx context.Context, workf
 	}
 
 	wf = &entity.Workflow{
-		ID: copiedID,
+		ID:       copiedID,
+		CommitID: wfDraft.CommitID,
 		Meta: &vo.Meta{
 			SpaceID:   wfMeta.SpaceID,
 			CreatorID: wfMeta.CreatorID,
 			IconURI:   wfMeta.IconURI,
+			Desc:      wfMeta.Description,
+			Name:      wfMeta.Name,
 		},
 		CanvasInfoV2: &vo.CanvasInfoV2{
 			Canvas: modifiedCanvasSchema,

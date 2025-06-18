@@ -66,6 +66,7 @@ func (u *Update) Update(ctx context.Context, in map[string]any) (map[string]any,
 		ConditionGroup: inventory.ConditionGroup,
 		Fields:         fields,
 		IsDebugRun:     isDebugExecute(ctx),
+		UserID:         getExecUserID(ctx),
 	}
 
 	response, err := u.config.Updater.Update(ctx, req)

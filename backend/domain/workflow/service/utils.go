@@ -175,7 +175,7 @@ func isIncremental(prev version, next version) bool {
 	return next.Patch > prev.Patch
 }
 
-func replaceRelatedWorkflowOrPluginInWorkflowNodes(nodes []*vo.Node, relatedWorkflows map[int64]entity.IDVersionPair, relatedPlugins map[int64]entity.PluginEntity) error {
+func replaceRelatedWorkflowOrPluginInWorkflowNodes(nodes []*vo.Node, relatedWorkflows map[int64]entity.IDVersionPair, relatedPlugins map[int64]vo.PluginEntity) error {
 	for _, node := range nodes {
 		if node.Type == vo.BlockTypeBotSubWorkflow {
 			workflowID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)

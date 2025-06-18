@@ -50,6 +50,7 @@ func (d *Delete) Delete(ctx context.Context, in map[string]any) (map[string]any,
 		DatabaseInfoID: d.config.DatabaseInfoID,
 		ConditionGroup: conditionGroup,
 		IsDebugRun:     isDebugExecute(ctx),
+		UserID:         getExecUserID(ctx),
 	}
 
 	response, err := d.config.Deleter.Delete(ctx, request)

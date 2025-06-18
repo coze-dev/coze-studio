@@ -47,6 +47,7 @@ func (c *CustomSQL) Execute(ctx context.Context, input map[string]any) (map[stri
 	req := &database.CustomSQLRequest{
 		DatabaseInfoID: c.config.DatabaseInfoID,
 		IsDebugRun:     isDebugExecute(ctx),
+		UserID:         getExecUserID(ctx),
 	}
 	templateSQL := c.config.SQLTemplate
 

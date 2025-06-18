@@ -18,36 +18,45 @@ import (
 	"github.com/bytedance/mockey"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
-	"github.com/redis/go-redis/v9"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/ut"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
+	"github.com/redis/go-redis/v9"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 
+	modelknowledge "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	plugin2 "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	pluginmodel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	appknowledge "code.byted.org/flow/opencoze/backend/application/knowledge"
+	appmemory "code.byted.org/flow/opencoze/backend/application/memory"
+	appplugin "code.byted.org/flow/opencoze/backend/application/plugin"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
 	plugin3 "code.byted.org/flow/opencoze/backend/crossdomain/workflow/plugin"
+	entity4 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
 	entity3 "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	entity5 "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge/knowledgemock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin/pluginmock"
 	crosssearch "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/search/searchmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
@@ -84,6 +93,8 @@ type wfTestRunner struct {
 	plugin      *mockPlugin.MockPluginService
 	tos         *storageMock.MockStorage
 	knowledge   *knowledgemock.MockKnowledgeOperator
+	database    *databasemock.MockDatabaseOperator
+	pluginSrv   *pluginmock.MockPluginService
 	ctx         context.Context
 	closeFn     func()
 }
@@ -153,7 +164,6 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 
 	ctrl := gomock.NewController(t, gomock.WithOverridableExpectations())
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
-
 	var previousID atomic.Int64
 	mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
 		newID := time.Now().UnixNano()
@@ -161,6 +171,18 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 			newID = previousID.Add(1)
 		}
 		return newID, nil
+	}).AnyTimes()
+
+	mockIDGen.EXPECT().GenMultiIDs(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, counts int) ([]int64, error) {
+		ids := make([]int64, counts)
+		for i := 0; i < counts; i++ {
+			newID := time.Now().UnixNano()
+			if newID == previousID.Load() {
+				newID = previousID.Add(1)
+			}
+			ids = append(ids, newID)
+		}
+		return ids, nil
 	}).AnyTimes()
 
 	dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
@@ -227,6 +249,12 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	m4 := mockey.Mock(ctxutil.MustGetUIDFromCtx).Return(int64(1)).Build()
 	m5 := mockey.Mock(ctxutil.GetUIDFromCtx).Return(ptr.Of(int64(1))).Build()
 
+	mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
+	database.SetDatabaseOperator(mockDatabaseOperator)
+
+	mockPluginSrv := pluginmock.NewMockPluginService(ctrl)
+	plugin.SetPluginService(mockPluginSrv)
+
 	f := func() {
 		m.UnPatch()
 		m1.UnPatch()
@@ -252,8 +280,10 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 		plugin:      mPlugin,
 		tos:         mockTos,
 		knowledge:   mockKwOperator,
+		database:    mockDatabaseOperator,
 		ctx:         context.Background(),
 		closeFn:     f,
+		pluginSrv:   mockPluginSrv,
 	}
 }
 
@@ -312,6 +342,13 @@ type loadOptions struct {
 	req       *workflow.CreateWorkflowRequest
 	version   string
 	projectID int64
+	data      []byte
+}
+
+func withWorkflowData(data []byte) func(*loadOptions) {
+	return func(o *loadOptions) {
+		o.data = data
+	}
 }
 
 func withName(n string) func(*loadOptions) {
@@ -394,8 +431,13 @@ func (r *wfTestRunner) load(schemaFile string, opts ...func(*loadOptions)) strin
 	_, err := strconv.ParseInt(idStr, 10, 64)
 	assert.NoError(r.t, err)
 
-	data, err := os.ReadFile(fmt.Sprintf("../../../domain/workflow/internal/canvas/examples/%s", schemaFile))
-	assert.NoError(r.t, err)
+	var data []byte
+	if len(loadOpts.data) > 0 {
+		data = loadOpts.data
+	} else {
+		data, err = os.ReadFile(fmt.Sprintf("../../../domain/workflow/internal/canvas/examples/%s", schemaFile))
+		assert.NoError(r.t, err)
+	}
 
 	saveReq := &workflow.SaveWorkflowRequest{
 		WorkflowID: idStr,
@@ -756,6 +798,18 @@ func (r *wfTestRunner) save(id string, schema string) {
 	}
 
 	_ = post[workflow.SaveWorkflowResponse](r, saveReq)
+}
+
+func getCanvas(ctx context.Context, id string) (string, error) {
+	response, err := appworkflow.SVC.GetCanvasInfo(ctx, &workflow.GetCanvasInfoRequest{
+		SpaceID:    "123",
+		WorkflowID: ptr.Of(id),
+	})
+	if err != nil {
+		return "", err
+	}
+	return response.GetData().GetWorkflow().GetSchemaJSON(), nil
+
 }
 
 func (r *wfTestRunner) openapiStream(id string, input any) *sse.Reader {
@@ -2514,9 +2568,9 @@ func TestLLMWithSkills(t *testing.T) {
 			{ID: int64(7509353598782816256), Operation: operation},
 		}, nil).AnyTimes()
 
-		toolSrv := plugin3.NewToolService(r.plugin, r.tos)
+		pluginSrv := plugin3.NewPluginService(r.plugin, r.tos)
 
-		plugin.SetToolService(toolSrv)
+		plugin.SetPluginService(pluginSrv)
 
 		t.Run("llm with plugin tool", func(t *testing.T) {
 			id := r.load("llm_node_with_skills/llm_node_with_plugin_tool.json")
@@ -3052,8 +3106,8 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 			{ID: 123, Operation: operation},
 		}, nil).AnyTimes()
 
-		toolSrv := plugin3.NewToolService(r.plugin, r.tos)
-		plugin.SetToolService(toolSrv)
+		pluginSrv := plugin3.NewPluginService(r.plugin, r.tos)
+		plugin.SetPluginService(pluginSrv)
 
 		t.Run("plugin tool info ", func(t *testing.T) {
 			fcSettingDetailReq := &workflow.GetLLMNodeFCSettingDetailRequest{
@@ -3169,8 +3223,8 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 			{ID: 123, Operation: operation},
 		}, nil).AnyTimes()
 
-		toolSrv := plugin3.NewToolService(r.plugin, r.tos)
-		plugin.SetToolService(toolSrv)
+		pluginSrv := plugin3.NewPluginService(r.plugin, r.tos)
+		plugin.SetPluginService(pluginSrv)
 
 		t.Run("plugin merge", func(t *testing.T) {
 			fcSettingMergedReq := &workflow.GetLLMNodeFCSettingsMergedRequest{
@@ -3618,7 +3672,7 @@ func TestCodeExceptionBranch(t *testing.T) {
 	})
 }
 
-func TestCopyWorkflowByScenario(t *testing.T) {
+func TestCopyWorkflowAppToLibrary(t *testing.T) {
 	r := newWfTestRunner(t)
 	defer r.closeFn()
 
@@ -3646,7 +3700,7 @@ func TestCopyWorkflowByScenario(t *testing.T) {
 
 	r.varGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
 
-	mockey.PatchConvey("test copy ", t, func() {
+	mockey.PatchConvey("copy only with subworkflow", t, func() {
 		var copiedIDs = make([]int64, 0)
 		var mockPublishWorkflowResource func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error
 		var ignoreIDs = map[int64]bool{
@@ -3707,8 +3761,281 @@ func TestCopyWorkflowByScenario(t *testing.T) {
 		r.load("copy_to_app/child_1.json", withID(7515027150387281920), withProjectID(appIDInt64))
 		r.load("copy_to_app/main.json", withID(7515027091302121472), withProjectID(appIDInt64))
 
-		is, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(t.Context(), 7515027091302121472, appIDInt64, nil)
+		is, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(t.Context(), 7515027091302121472, appIDInt64, appIDInt64)
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(is))
+	})
+
+	mockey.PatchConvey("copy only with external resource", t, func() {
+		var copiedIDs = make([]int64, 0)
+		var mockPublishWorkflowResource func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error
+		var ignoreIDs = map[int64]bool{
+			7516518409656336384: true,
+			7516516198096306176: true,
+		}
+		mockPublishWorkflowResource = func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error {
+			if ignoreIDs[event.WorkflowID] {
+				return nil
+			}
+			wf, err := appworkflow.GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
+				ID:    event.WorkflowID,
+				QType: vo.FromLatestVersion,
+			})
+
+			copiedIDs = append(copiedIDs, event.WorkflowID)
+			assert.NoError(t, err)
+			assert.Equal(t, "v0.0.1", wf.Version)
+			canvas := &vo.Canvas{}
+			err = sonic.UnmarshalString(wf.Canvas, canvas)
+			assert.NoError(t, err)
+
+			copiedIDMap := slices.ToMap(copiedIDs, func(e int64) (string, bool) {
+				return strconv.FormatInt(e, 10), true
+			})
+			var validateSubWorkflowIDs func(nodes []*vo.Node)
+			validateSubWorkflowIDs = func(nodes []*vo.Node) {
+				for _, node := range nodes {
+					switch node.Type {
+					case vo.BlockTypeBotSubWorkflow:
+						assert.True(t, copiedIDMap[node.Data.Inputs.WorkflowID])
+					case vo.BlockTypeBotLLM:
+						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+							for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+								assert.True(t, copiedIDMap[w.WorkflowID])
+							}
+						}
+
+						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.PluginFCParam != nil {
+							for _, p := range node.Data.Inputs.FCParam.PluginFCParam.PluginList {
+								_ = p
+							}
+						}
+
+						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.KnowledgeFCParam != nil {
+							for _, k := range node.Data.Inputs.FCParam.KnowledgeFCParam.KnowledgeList {
+								assert.Equal(t, "100100", k.ID)
+							}
+						}
+					case vo.BlockTypeBotDataset, vo.BlockTypeBotDatasetWrite:
+						datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
+						knowledgeIDs := datasetListInfoParam.Input.Value.Content.([]any)
+						for idx := range knowledgeIDs {
+							assert.Equal(t, "100100", knowledgeIDs[idx].(string))
+						}
+					case vo.BlockTypeDatabase, vo.BlockTypeDatabaseSelect, vo.BlockTypeDatabaseInsert, vo.BlockTypeDatabaseDelete, vo.BlockTypeDatabaseUpdate:
+						for _, d := range node.Data.Inputs.DatabaseInfoList {
+							assert.Equal(t, "100100", d.DatabaseInfoID)
+						}
+
+					}
+
+				}
+			}
+
+			validateSubWorkflowIDs(canvas.Nodes)
+			return nil
+
+		}
+
+		r.search.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(mockPublishWorkflowResource).AnyTimes()
+
+		defer mockey.Mock((*appknowledge.KnowledgeApplicationService).CopyKnowledge).Return(&modelknowledge.CopyKnowledgeResponse{
+			TargetKnowledgeID: 100100,
+		}, nil).Build().UnPatch()
+
+		mockCopyDatabase := func(ctx context.Context, req *appmemory.CopyDatabaseRequest) (*appmemory.CopyDatabaseResponse, error) {
+			es := make(map[int64]*entity4.Database)
+			for _, id := range req.DatabaseIDs {
+				es[id] = &entity4.Database{ID: 100100}
+			}
+			return &appmemory.CopyDatabaseResponse{
+				Databases: es,
+			}, nil
+		}
+
+		defer mockey.Mock((*appmemory.DatabaseApplicationService).CopyDatabase).To(mockCopyDatabase).Build().UnPatch()
+
+		defer mockey.Mock((*appplugin.PluginApplicationService).CopyPlugin).Return(&appplugin.CopyPluginResponse{
+			Plugin: &entity5.PluginInfo{
+				PluginInfo: &pluginmodel.PluginInfo{
+					ID:      time.Now().Unix(),
+					Version: ptr.Of("v0.0.1"),
+				},
+			},
+		}, nil).Build().UnPatch()
+
+		appIDInt64 := int64(7516515408422109184)
+
+		r.load("copy_to_app/child2_1.json", withID(7516518409656336384), withProjectID(appIDInt64))
+		r.load("copy_to_app/main2.json", withID(7516516198096306176), withProjectID(appIDInt64))
+
+		ret, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(t.Context(), 7516516198096306176, 123, appIDInt64)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(ret))
+	})
+}
+
+func TestMoveWorkflowAppToLibrary(t *testing.T) {
+	mockey.PatchConvey("test move workflow", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		vars := []*variable.VarMeta{
+			{
+				Name: "app_v1",
+				TypeInfo: variable.VarTypeInfo{
+					Type: variable.VarTypeString,
+				},
+			}, {
+				Name: "app_list_v1",
+				TypeInfo: variable.VarTypeInfo{
+					Type: variable.VarTypeArray,
+					ElemTypeInfo: &variable.VarTypeInfo{
+						Type: variable.VarTypeString,
+					},
+				},
+			}, {
+				Name: "app_list_v2",
+				TypeInfo: variable.VarTypeInfo{
+					Type: variable.VarTypeString,
+				},
+			},
+		}
+
+		r.varGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
+		t.Run("move workflow", func(t *testing.T) {
+
+			var mockPublishWorkflowResource func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error
+
+			named2Idx := []string{"c1", "c2", "cc1", "main"}
+			callCount := 0
+			initialWf2ID := map[string]int64{}
+			old2newID := map[int64]int64{}
+			mockPublishWorkflowResource = func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error {
+				if callCount <= 3 {
+					initialWf2ID[named2Idx[callCount]] = event.WorkflowID
+					callCount++
+					return nil
+				}
+				if OpType == crosssearch.Created {
+					if oldID, ok := initialWf2ID[*event.Name]; ok {
+						old2newID[oldID] = event.WorkflowID
+					}
+				}
+
+				return nil
+
+			}
+
+			r.search.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(mockPublishWorkflowResource).AnyTimes()
+
+			defer mockey.Mock((*appknowledge.KnowledgeApplicationService).MoveKnowledgeToLibrary).Return(nil).Build().UnPatch()
+			defer mockey.Mock((*appmemory.DatabaseApplicationService).MoveDatabaseToLibrary).Return(&appmemory.MoveDatabaseToLibraryResponse{}, nil).Build().UnPatch()
+
+			defer mockey.Mock((*appplugin.PluginApplicationService).MoveAPPPluginToLibrary).Return(&entity5.PluginInfo{
+				PluginInfo: &pluginmodel.PluginInfo{
+					ID:      time.Now().Unix(),
+					Version: ptr.Of("v0.0.1"),
+				},
+			}, nil).Build().UnPatch()
+
+			ctx := t.Context()
+
+			appIDInt64 := time.Now().UnixNano()
+			c1IdStr := r.load("move_to_app/c1.json", withName("c1"), withProjectID(appIDInt64))
+			c2IdStr := r.load("move_to_app/c2.json", withName("c2"), withProjectID(appIDInt64))
+
+			data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/move_to_app/main.json")
+			assert.NoError(t, err)
+			mainCanvas := &vo.Canvas{}
+			err = sonic.Unmarshal(data, mainCanvas)
+			assert.NoError(t, err)
+			for _, node := range mainCanvas.Nodes {
+				if node.Type == vo.BlockTypeBotSubWorkflow {
+					if node.Data.Inputs.WorkflowID == "7516826260387921920" {
+						node.Data.Inputs.WorkflowID = c1IdStr
+					}
+					if node.Data.Inputs.WorkflowID == "7516826283318181888" {
+						node.Data.Inputs.WorkflowID = c2IdStr
+					}
+				}
+			}
+
+			cc1Data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/move_to_app/cc1.json")
+			assert.NoError(t, err)
+			cc1Canvas := &vo.Canvas{}
+			err = sonic.Unmarshal(cc1Data, cc1Canvas)
+			assert.NoError(t, err)
+			for _, node := range cc1Canvas.Nodes {
+				if node.Type == vo.BlockTypeBotSubWorkflow {
+					if node.Data.Inputs.WorkflowID == "7516826283318181888" {
+						node.Data.Inputs.WorkflowID = c2IdStr
+					}
+				}
+			}
+			cc1Data, _ = sonic.Marshal(cc1Canvas)
+			cc1IdStr := r.load("", withName("cc1"), withProjectID(appIDInt64), withWorkflowData(cc1Data))
+			data, _ = sonic.Marshal(mainCanvas)
+			mIdStr := r.load("", withName("main"), withProjectID(appIDInt64), withWorkflowData(data))
+
+			mId, err := strconv.ParseInt(mIdStr, 10, 64)
+
+			vs, err := appworkflow.SVC.MoveWorkflowFromAppToLibrary(ctx, mId, 123, appIDInt64)
+			assert.NoError(t, err)
+			assert.Equal(t, 0, len(vs))
+
+			_, err = getCanvas(ctx, mIdStr)
+
+			assert.NotNil(t, err)
+			assert.Contains(t, err.Error(), "record not found")
+			_, err = getCanvas(ctx, c1IdStr)
+
+			assert.NotNil(t, err)
+			assert.Contains(t, err.Error(), "record not found")
+			_, err = getCanvas(ctx, c2IdStr)
+			assert.NotNil(t, err)
+			assert.Contains(t, err.Error(), "record not found")
+
+			mIdInt64, _ := strconv.ParseInt(mIdStr, 10, 64)
+			newMainID := old2newID[mIdInt64]
+			schemaJson, err := getCanvas(ctx, strconv.FormatInt(newMainID, 10))
+
+			assert.NoError(t, err)
+
+			c1IDInt64, _ := strconv.ParseInt(c1IdStr, 10, 64)
+			c2IDInt64, _ := strconv.ParseInt(c2IdStr, 10, 64)
+
+			newC1ID := old2newID[c1IDInt64]
+			newC2ID := old2newID[c2IDInt64]
+
+			newSubWorkflowID := map[string]bool{
+				strconv.FormatInt(newC1ID, 10): true,
+				strconv.FormatInt(newC2ID, 10): true,
+			}
+			newMainCanvas := &vo.Canvas{}
+			err = sonic.UnmarshalString(schemaJson, newMainCanvas)
+			assert.NoError(t, err)
+
+			for _, node := range newMainCanvas.Nodes {
+				if node.Type == vo.BlockTypeBotSubWorkflow {
+					assert.True(t, newSubWorkflowID[node.Data.Inputs.WorkflowID])
+					assert.Equal(t, "v0.0.1", node.Data.Inputs.WorkflowVersion)
+				}
+			}
+
+			schemaJson, err = getCanvas(ctx, cc1IdStr)
+			assert.NoError(t, err)
+
+			cc1Canvas = &vo.Canvas{}
+			err = sonic.UnmarshalString(schemaJson, cc1Canvas)
+			assert.NoError(t, err)
+
+			for _, node := range cc1Canvas.Nodes {
+				if node.Type == vo.BlockTypeBotSubWorkflow {
+					assert.True(t, newSubWorkflowID[node.Data.Inputs.WorkflowID])
+					assert.Equal(t, "v0.0.1", node.Data.Inputs.WorkflowVersion)
+				}
+			}
+		})
+
 	})
 }

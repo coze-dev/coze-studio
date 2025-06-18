@@ -60,6 +60,7 @@ func (is *Insert) Insert(ctx context.Context, input map[string]any) (map[string]
 		DatabaseInfoID: is.config.DatabaseInfoID,
 		Fields:         fields,
 		IsDebugRun:     isDebugExecute(ctx),
+		UserID:         getExecUserID(ctx),
 	}
 
 	response, err := is.config.Inserter.Insert(ctx, req)
@@ -71,7 +72,6 @@ func (is *Insert) Insert(ctx context.Context, input map[string]any) (map[string]
 	if err != nil {
 		return nil, err
 	}
-	ret[rowNum] = response.RowNumber
 
 	return ret, nil
 }

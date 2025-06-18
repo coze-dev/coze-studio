@@ -54,7 +54,8 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		assert.NoError(t, err)
 		ctx := t.Context()
 		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{}, 123, false, &entity.InterruptEvent{}, vo.ExecuteConfig{
-			Mode: vo.ExecuteModeDebug,
+			Mode:     vo.ExecuteModeDebug,
+			Operator: 123,
 		})
 		assert.NoError(t, err)
 		ctrl := gomock.NewController(t)
@@ -114,8 +115,8 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		assert.Equal(t, ret[0]["v2"], int64(123))
 		assert.Equal(t, ret[1]["v2"], int64(345))
 
-		number := response["number"].(*int64)
-		assert.Equal(t, int64(2), *number)
+		number := response["number"].(int64)
+		assert.Equal(t, int64(2), number)
 		eventChan := make(chan *execute.Event)
 
 		opts := []einoCompose.Option{
@@ -219,7 +220,7 @@ func mockDelete(t *testing.T) func(context.Context, *crossdatabase.DeleteRequest
 		assert.Equal(t, req.ConditionGroup.Conditions[0], &crossdatabase.Condition{
 			Left:     "v2",
 			Operator: "=",
-			Right:    &nn,
+			Right:    nn,
 		})
 
 		n := int64(1)
@@ -875,8 +876,8 @@ func TestCodeAndPluginNodes(t *testing.T) {
 			},
 		}, nil)
 
-		mockToolService := pluginmock.NewMockToolService(ctrl)
-		mockey.Mock(plugin.GetToolService).Return(mockToolService).Build()
+		mockToolService := pluginmock.NewMockPluginService(ctrl)
+		mockey.Mock(plugin.GetPluginService).Return(mockToolService).Build()
 		mockToolService.EXPECT().GetPluginInvokableTools(gomock.Any(), gomock.Any()).Return(map[int64]plugin.PluginInvokableTool{
 			7348853341923016714: &mockInvokableTool{},
 		}, nil)

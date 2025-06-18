@@ -10,16 +10,22 @@ import (
 	"time"
 
 	"github.com/cloudwego/eino/schema"
+	xmaps "golang.org/x/exp/maps"
 
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
+	pluginmodel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	appknowledge "code.byted.org/flow/opencoze/backend/application/knowledge"
+	appmemory "code.byted.org/flow/opencoze/backend/application/memory"
+	appplugin "code.byted.org/flow/opencoze/backend/application/plugin"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
 	domainWorkflow "code.byted.org/flow/opencoze/backend/domain/workflow"
 	workflowDomain "code.byted.org/flow/opencoze/backend/domain/workflow"
 	crossknowledge "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/knowledge"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
+	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
@@ -648,8 +654,76 @@ func (w *ApplicationService) CheckWorkflowsExistByAppID(ctx context.Context, app
 	return len(wfs) > 0, err
 }
 
-func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, appID int64, relatedPlugins map[int64]entity.PluginEntity) ([]*vo.ValidateIssue, error) {
-	return GetWorkflowDomainSVC().CopyWorkflowFromAppToLibrary(ctx, workflowID, appID, relatedPlugins)
+func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, appID int64) ([]*vo.ValidateIssue, error) {
+	ds, err := GetWorkflowDomainSVC().GetWorkflowDependenceResource(ctx, workflowID)
+	if err != nil {
+		return nil, err
+	}
+
+	pluginMap := make(map[int64]*vo.PluginEntity)
+	if len(ds.PluginIDs) > 0 {
+		for idx := range ds.PluginIDs {
+			id := ds.PluginIDs[idx]
+			response, err := appplugin.PluginApplicationSVC.CopyPlugin(ctx, &appplugin.CopyPluginRequest{
+				PluginID:  id,
+				UserID:    ctxutil.MustGetUIDFromCtx(ctx),
+				CopyScene: pluginmodel.CopySceneOfToLibrary,
+			})
+			if err != nil {
+				return nil, err
+			}
+			pInfo := response.Plugin
+			pluginMap[id] = &vo.PluginEntity{
+				PluginID:      pInfo.ID,
+				PluginVersion: pInfo.Version,
+			}
+
+		}
+	}
+	relatedKnowledgeMap := make(map[int64]int64, len(ds.KnowledgeIDs))
+	if len(ds.KnowledgeIDs) > 0 {
+		for idx := range ds.KnowledgeIDs {
+			id := ds.KnowledgeIDs[idx]
+			response, err := appknowledge.KnowledgeSVC.CopyKnowledge(ctx, &model.CopyKnowledgeRequest{
+				KnowledgeID:   id,
+				TargetAppID:   appID,
+				TargetSpaceID: spaceID,
+				TargetUserID:  ctxutil.MustGetUIDFromCtx(ctx),
+			})
+			if err != nil {
+				return nil, err
+			}
+			if response.CopyStatus == model.CopyStatus_Failed {
+				return nil, fmt.Errorf("failed to copy knowledge, knowledge id=%d", id)
+			}
+			relatedKnowledgeMap[id] = response.TargetKnowledgeID
+		}
+	}
+
+	relatedDatabaseMap := make(map[int64]int64, len(ds.DatabaseIDs))
+	if len(ds.DatabaseIDs) > 0 {
+		response, err := appmemory.DatabaseApplicationSVC.CopyDatabase(ctx, &appmemory.CopyDatabaseRequest{
+			DatabaseIDs: ds.DatabaseIDs,
+		})
+		if err != nil {
+			return nil, err
+		}
+		for oid, e := range response.Databases {
+			relatedDatabaseMap[oid] = e.ID
+		}
+
+	}
+
+	_, vIssues, err := GetWorkflowDomainSVC().CopyWorkflowFromAppToLibrary(ctx, workflowID, appID, vo.ExternalResourceRelated{
+		PluginMap:    pluginMap,
+		KnowledgeMap: relatedKnowledgeMap,
+		DatabaseMap:  relatedDatabaseMap,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return vIssues, nil
 }
 
 func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, workflowID int64, appID int64) error {
@@ -659,7 +733,83 @@ func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, w
 	if err != nil {
 		return err
 	}
+
 	return err
+}
+
+func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, appID int64) ([]*vo.ValidateIssue, error) {
+	ds, err := GetWorkflowDomainSVC().GetWorkflowDependenceResource(ctx, workflowID)
+	if err != nil {
+		return nil, err
+	}
+
+	pluginMap := make(map[int64]*vo.PluginEntity)
+	if len(ds.PluginIDs) > 0 {
+		for idx := range ds.PluginIDs {
+			id := ds.PluginIDs[idx]
+			pInfo, err := appplugin.PluginApplicationSVC.MoveAPPPluginToLibrary(ctx, id)
+			if err != nil {
+				return nil, err
+			}
+			pluginMap[id] = &vo.PluginEntity{
+				PluginID:      pInfo.ID,
+				PluginVersion: pInfo.Version,
+			}
+
+		}
+
+	}
+
+	if len(ds.KnowledgeIDs) > 0 {
+		for idx := range ds.KnowledgeIDs {
+			id := ds.KnowledgeIDs[idx]
+			err := appknowledge.KnowledgeSVC.MoveKnowledgeToLibrary(ctx, &model.MoveKnowledgeToLibraryRequest{
+				KnowledgeID: id,
+			})
+			if err != nil {
+				return nil, err
+			}
+		}
+
+	}
+
+	if len(ds.DatabaseIDs) > 0 {
+		_, err = appmemory.DatabaseApplicationSVC.MoveDatabaseToLibrary(ctx, &appmemory.MoveDatabaseToLibraryRequest{
+			DatabaseIDs: ds.DatabaseIDs,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	relatedWorkflows, vIssues, err := GetWorkflowDomainSVC().CopyWorkflowFromAppToLibrary(ctx, workflowID, appID, vo.ExternalResourceRelated{
+		PluginMap: pluginMap,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	if len(vIssues) > 0 {
+		return vIssues, nil
+	}
+
+	err = GetWorkflowDomainSVC().SyncRelatedWorkflowResources(ctx, appID, relatedWorkflows, vo.ExternalResourceRelated{
+		PluginMap: pluginMap,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	deleteWorkflowIDs := xmaps.Keys(relatedWorkflows)
+	err = GetWorkflowDomainSVC().Delete(ctx, &vo.DeletePolicy{
+		IDs: deleteWorkflowIDs,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }
 
 func convertNodeExecution(nodeExe *entity.NodeExecution) (*workflow.NodeResult, error) {
@@ -1722,8 +1872,8 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 		return nil, err
 	}
 
-	toolInfoResponse, err := plugin.GetToolService().GetPluginToolsInfo(ctx, &plugin.PluginToolsInfoRequest{
-		PluginEntity: plugin.PluginEntity{
+	toolInfoResponse, err := crossplugin.GetPluginService().GetPluginToolsInfo(ctx, &crossplugin.PluginToolsInfoRequest{
+		PluginEntity: crossplugin.PluginEntity{
 			PluginID:      pluginID,
 			PluginVersion: req.PluginVersion,
 		},
@@ -1750,17 +1900,18 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 
 	toolDetailInfo := &vo.ToolDetailInfo{
 		ApiDetailData: &workflow.ApiDetailData{
-			PluginID:          req.GetPluginID(),
-			SpaceID:           req.GetSpaceID(),
-			Icon:              toolInfoResponse.IconURL,
-			Name:              toolInfoResponse.PluginName,
-			Desc:              toolInfoResponse.Description,
-			ApiName:           toolInfo.ToolName,
-			Version:           &toolInfoResponse.Version,
-			VersionName:       &toolInfoResponse.Version,
-			PluginType:        workflow.PluginType(toolInfoResponse.PluginType),
-			LatestVersionName: toolInfoResponse.LatestVersion,
-			LatestVersion:     toolInfoResponse.LatestVersion,
+			PluginID:            req.GetPluginID(),
+			SpaceID:             req.GetSpaceID(),
+			Icon:                toolInfoResponse.IconURL,
+			Name:                toolInfoResponse.PluginName,
+			Desc:                toolInfoResponse.Description,
+			ApiName:             toolInfo.ToolName,
+			Version:             &toolInfoResponse.Version,
+			VersionName:         &toolInfoResponse.Version,
+			PluginType:          workflow.PluginType(toolInfoResponse.PluginType),
+			LatestVersionName:   toolInfoResponse.LatestVersion,
+			LatestVersion:       toolInfoResponse.LatestVersion,
+			PluginProductStatus: ternary.IFElse(toolInfoResponse.IsOfficial, int64(1), 0),
 		},
 		ToolInputs:  inputVars,
 		ToolOutputs: outputVars,
@@ -1776,8 +1927,8 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 	}
 
 	var (
-		toolSvc             = plugin.GetToolService()
-		pluginToolsInfoReqs = make(map[int64]*plugin.PluginToolsInfoRequest)
+		pluginSvc           = crossplugin.GetPluginService()
+		pluginToolsInfoReqs = make(map[int64]*crossplugin.PluginToolsInfoRequest)
 		pluginDetailMap     = make(map[string]*workflow.PluginDetail)
 		toolsDetailInfo     = make(map[string]*workflow.APIDetail)
 		workflowDetailMap   = make(map[string]*workflow.WorkflowDetail)
@@ -1799,8 +1950,8 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 			if r, ok := pluginToolsInfoReqs[pluginID]; ok {
 				r.ToolIDs = append(r.ToolIDs, toolID)
 			} else {
-				pluginToolsInfoReqs[pluginID] = &plugin.PluginToolsInfoRequest{
-					PluginEntity: plugin.PluginEntity{
+				pluginToolsInfoReqs[pluginID] = &crossplugin.PluginToolsInfoRequest{
+					PluginEntity: crossplugin.PluginEntity{
 						PluginID:      pluginID,
 						PluginVersion: pl.PluginVersion,
 					},
@@ -1811,7 +1962,7 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 
 		}
 		for _, r := range pluginToolsInfoReqs {
-			resp, err := toolSvc.GetPluginToolsInfo(ctx, r)
+			resp, err := pluginSvc.GetPluginToolsInfo(ctx, r)
 			if err != nil {
 				return nil, err
 			}
@@ -1952,7 +2103,7 @@ func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req
 	var fcPluginSetting *workflow.FCPluginSetting
 	if req.GetPluginFcSetting() != nil {
 		var (
-			toolSvc         = plugin.GetToolService()
+			pluginSvc       = crossplugin.GetPluginService()
 			pluginFcSetting = req.GetPluginFcSetting()
 			isDraft         = pluginFcSetting.GetIsDraft()
 		)
@@ -1967,15 +2118,15 @@ func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req
 			return nil, err
 		}
 
-		pluginReq := &plugin.PluginToolsInfoRequest{
-			PluginEntity: plugin.PluginEntity{
+		pluginReq := &crossplugin.PluginToolsInfoRequest{
+			PluginEntity: vo.PluginEntity{
 				PluginID: pluginID,
 			},
 			ToolIDs: []int64{toolID},
 			IsDraft: isDraft,
 		}
 
-		pInfo, err := toolSvc.GetPluginToolsInfo(ctx, pluginReq)
+		pInfo, err := pluginSvc.GetPluginToolsInfo(ctx, pluginReq)
 		if err != nil {
 			return nil, err
 		}

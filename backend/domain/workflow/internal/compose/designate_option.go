@@ -280,7 +280,7 @@ func llmToolCallbackOptions(ctx context.Context, ns *NodeSchema, eventChan chan 
 					return nil, err
 				}
 
-				toolInfoResponse, err := plugin.GetToolService().GetPluginToolsInfo(ctx, &plugin.PluginToolsInfoRequest{
+				toolInfoResponse, err := plugin.GetPluginService().GetPluginToolsInfo(ctx, &plugin.PluginToolsInfoRequest{
 					PluginEntity: plugin.PluginEntity{
 						PluginID:      pluginID,
 						PluginVersion: ptr.Of(p.PluginVersion),

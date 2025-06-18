@@ -55,6 +55,7 @@ func (ds *Query) Query(ctx context.Context, in map[string]any) (map[string]any, 
 		SelectFields:   ds.config.QueryFields,
 		Limit:          ds.config.Limit,
 		IsDebugRun:     isDebugExecute(ctx),
+		UserID:         getExecUserID(ctx),
 	}
 
 	req.ConditionGroup = conditionGroup

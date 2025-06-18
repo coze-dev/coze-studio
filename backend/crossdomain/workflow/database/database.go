@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cast"
@@ -45,11 +46,7 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 		OperateType: database.OperateType_Custom,
 		SQL:         &request.SQL,
 		TableType:   tableType,
-	}
-
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	if uid != nil {
-		req.UserID = conv.Int64ToStr(*uid)
+		UserID:      strconv.FormatInt(request.UserID, 10),
 	}
 
 	req.SQLParams = make([]*database.SQLParamVal, 0, len(request.Params))
@@ -85,12 +82,9 @@ func (d *DatabaseRepository) Delete(ctx context.Context, request *nodedatabase.D
 		DatabaseID:  databaseInfoID,
 		OperateType: database.OperateType_Delete,
 		TableType:   tableType,
+		UserID:      strconv.FormatInt(request.UserID, 10),
 	}
 
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	if uid != nil {
-		req.UserID = conv.Int64ToStr(*uid)
-	}
 	if request.ConditionGroup != nil {
 		req.Condition, req.SQLParams, err = buildComplexCondition(request.ConditionGroup)
 		if err != nil {
@@ -123,11 +117,7 @@ func (d *DatabaseRepository) Query(ctx context.Context, request *nodedatabase.Qu
 		DatabaseID:  databaseInfoID,
 		OperateType: database.OperateType_Select,
 		TableType:   tableType,
-	}
-
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	if uid != nil {
-		req.UserID = conv.Int64ToStr(*uid)
+		UserID:      strconv.FormatInt(request.UserID, 10),
 	}
 
 	req.SelectFieldList = &database.SelectFieldList{FieldID: make([]string, 0, len(request.SelectFields))}
@@ -229,12 +219,9 @@ func (d *DatabaseRepository) Insert(ctx context.Context, request *nodedatabase.I
 		DatabaseID:  databaseInfoID,
 		OperateType: database.OperateType_Insert,
 		TableType:   tableType,
+		UserID:      strconv.FormatInt(request.UserID, 10),
 	}
 
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	if uid != nil {
-		req.UserID = conv.Int64ToStr(*uid)
-	}
 	req.UpsertRows, req.SQLParams, err = resolveUpsertRow(request.Fields)
 	if err != nil {
 		return nil, err

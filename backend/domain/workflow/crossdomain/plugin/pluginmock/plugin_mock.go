@@ -18,32 +18,32 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockToolService is a mock of ToolService interface.
-type MockToolService struct {
+// MockPluginService is a mock of PluginService interface.
+type MockPluginService struct {
 	ctrl     *gomock.Controller
-	recorder *MockToolServiceMockRecorder
+	recorder *MockPluginServiceMockRecorder
 	isgomock struct{}
 }
 
-// MockToolServiceMockRecorder is the mock recorder for MockToolService.
-type MockToolServiceMockRecorder struct {
-	mock *MockToolService
+// MockPluginServiceMockRecorder is the mock recorder for MockPluginService.
+type MockPluginServiceMockRecorder struct {
+	mock *MockPluginService
 }
 
-// NewMockToolService creates a new mock instance.
-func NewMockToolService(ctrl *gomock.Controller) *MockToolService {
-	mock := &MockToolService{ctrl: ctrl}
-	mock.recorder = &MockToolServiceMockRecorder{mock}
+// NewMockPluginService creates a new mock instance.
+func NewMockPluginService(ctrl *gomock.Controller) *MockPluginService {
+	mock := &MockPluginService{ctrl: ctrl}
+	mock.recorder = &MockPluginServiceMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockToolService) EXPECT() *MockToolServiceMockRecorder {
+func (m *MockPluginService) EXPECT() *MockPluginServiceMockRecorder {
 	return m.recorder
 }
 
 // GetPluginInvokableTools mocks base method.
-func (m *MockToolService) GetPluginInvokableTools(ctx context.Context, req *plugin.PluginToolsInvokableRequest) (map[int64]plugin.PluginInvokableTool, error) {
+func (m *MockPluginService) GetPluginInvokableTools(ctx context.Context, req *plugin.PluginToolsInvokableRequest) (map[int64]plugin.PluginInvokableTool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPluginInvokableTools", ctx, req)
 	ret0, _ := ret[0].(map[int64]plugin.PluginInvokableTool)
@@ -52,13 +52,13 @@ func (m *MockToolService) GetPluginInvokableTools(ctx context.Context, req *plug
 }
 
 // GetPluginInvokableTools indicates an expected call of GetPluginInvokableTools.
-func (mr *MockToolServiceMockRecorder) GetPluginInvokableTools(ctx, req any) *gomock.Call {
+func (mr *MockPluginServiceMockRecorder) GetPluginInvokableTools(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginInvokableTools", reflect.TypeOf((*MockToolService)(nil).GetPluginInvokableTools), ctx, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginInvokableTools", reflect.TypeOf((*MockPluginService)(nil).GetPluginInvokableTools), ctx, req)
 }
 
 // GetPluginToolsInfo mocks base method.
-func (m *MockToolService) GetPluginToolsInfo(ctx context.Context, req *plugin.PluginToolsInfoRequest) (*plugin.PluginToolsInfoResponse, error) {
+func (m *MockPluginService) GetPluginToolsInfo(ctx context.Context, req *plugin.PluginToolsInfoRequest) (*plugin.PluginToolsInfoResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPluginToolsInfo", ctx, req)
 	ret0, _ := ret[0].(*plugin.PluginToolsInfoResponse)
@@ -67,9 +67,9 @@ func (m *MockToolService) GetPluginToolsInfo(ctx context.Context, req *plugin.Pl
 }
 
 // GetPluginToolsInfo indicates an expected call of GetPluginToolsInfo.
-func (mr *MockToolServiceMockRecorder) GetPluginToolsInfo(ctx, req any) *gomock.Call {
+func (mr *MockPluginServiceMockRecorder) GetPluginToolsInfo(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginToolsInfo", reflect.TypeOf((*MockToolService)(nil).GetPluginToolsInfo), ctx, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginToolsInfo", reflect.TypeOf((*MockPluginService)(nil).GetPluginToolsInfo), ctx, req)
 }
 
 // MockPluginInvokableTool is a mock of PluginInvokableTool interface.

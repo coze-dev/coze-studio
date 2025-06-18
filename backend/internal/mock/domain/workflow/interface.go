@@ -13,16 +13,15 @@ import (
 	context "context"
 	reflect "reflect"
 
+	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
+	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
+	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	tool "github.com/cloudwego/eino/components/tool"
 	compose "github.com/cloudwego/eino/compose"
 	schema "github.com/cloudwego/eino/schema"
 	redis "github.com/redis/go-redis/v9"
 	gomock "go.uber.org/mock/gomock"
-
-	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
-	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 // MockService is a mock of Service interface.
@@ -123,18 +122,19 @@ func (mr *MockServiceMockRecorder) CopyWorkflow(ctx, workflowID, cfg any) *gomoc
 }
 
 // CopyWorkflowFromAppToLibrary mocks base method.
-func (m *MockService) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID, appID int64, relatedPlugins map[int64]entity.PluginEntity) ([]*vo.ValidateIssue, error) {
+func (m *MockService) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID, appID int64, related vo.ExternalResourceRelated) (map[int64]entity.IDVersionPair, []*vo.ValidateIssue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CopyWorkflowFromAppToLibrary", ctx, workflowID, appID, relatedPlugins)
-	ret0, _ := ret[0].([]*vo.ValidateIssue)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "CopyWorkflowFromAppToLibrary", ctx, workflowID, appID, related)
+	ret0, _ := ret[0].(map[int64]entity.IDVersionPair)
+	ret1, _ := ret[1].([]*vo.ValidateIssue)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // CopyWorkflowFromAppToLibrary indicates an expected call of CopyWorkflowFromAppToLibrary.
-func (mr *MockServiceMockRecorder) CopyWorkflowFromAppToLibrary(ctx, workflowID, appID, relatedPlugins any) *gomock.Call {
+func (mr *MockServiceMockRecorder) CopyWorkflowFromAppToLibrary(ctx, workflowID, appID, related any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflowFromAppToLibrary", reflect.TypeOf((*MockService)(nil).CopyWorkflowFromAppToLibrary), ctx, workflowID, appID, relatedPlugins)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflowFromAppToLibrary", reflect.TypeOf((*MockService)(nil).CopyWorkflowFromAppToLibrary), ctx, workflowID, appID, related)
 }
 
 // Create mocks base method.
@@ -243,6 +243,21 @@ func (m *MockService) GetNodeExecution(ctx context.Context, exeID int64, nodeID 
 func (mr *MockServiceMockRecorder) GetNodeExecution(ctx, exeID, nodeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNodeExecution", reflect.TypeOf((*MockService)(nil).GetNodeExecution), ctx, exeID, nodeID)
+}
+
+// GetWorkflowDependenceResource mocks base method.
+func (m *MockService) GetWorkflowDependenceResource(ctx context.Context, workflowID int64) (*vo.DependenceResource, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWorkflowDependenceResource", ctx, workflowID)
+	ret0, _ := ret[0].(*vo.DependenceResource)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWorkflowDependenceResource indicates an expected call of GetWorkflowDependenceResource.
+func (mr *MockServiceMockRecorder) GetWorkflowDependenceResource(ctx, workflowID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkflowDependenceResource", reflect.TypeOf((*MockService)(nil).GetWorkflowDependenceResource), ctx, workflowID)
 }
 
 // GetWorkflowReference mocks base method.
@@ -392,6 +407,20 @@ func (m *MockService) SyncExecute(ctx context.Context, config vo.ExecuteConfig, 
 func (mr *MockServiceMockRecorder) SyncExecute(ctx, config, input any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncExecute", reflect.TypeOf((*MockService)(nil).SyncExecute), ctx, config, input)
+}
+
+// SyncRelatedWorkflowResources mocks base method.
+func (m *MockService) SyncRelatedWorkflowResources(ctx context.Context, appID int64, relatedWorkflows map[int64]entity.IDVersionPair, related vo.ExternalResourceRelated) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SyncRelatedWorkflowResources", ctx, appID, relatedWorkflows, related)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SyncRelatedWorkflowResources indicates an expected call of SyncRelatedWorkflowResources.
+func (mr *MockServiceMockRecorder) SyncRelatedWorkflowResources(ctx, appID, relatedWorkflows, related any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncRelatedWorkflowResources", reflect.TypeOf((*MockService)(nil).SyncRelatedWorkflowResources), ctx, appID, relatedWorkflows, related)
 }
 
 // UpdateMeta mocks base method.
