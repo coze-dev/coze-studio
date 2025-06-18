@@ -729,6 +729,10 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 		return 0, nil, err
 	}
 
+	if len(vIssues) > 0 {
+		return 0, vIssues, nil
+	}
+
 	copiedWf, ok := relatedWorkflows[workflowID]
 	if !ok {
 		return 0, nil, fmt.Errorf("failed to get copy workflow id, workflow id=%d", workflowID)
