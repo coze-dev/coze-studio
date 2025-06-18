@@ -122,6 +122,7 @@ var req2URL = map[reflect.Type]string{
 	reflect.TypeOf(&workflow.CopyWorkflowRequest{}):               "/api/workflow_api/copy",
 	reflect.TypeOf(&workflow.BatchDeleteWorkflowRequest{}):        "/api/workflow_api/batch_delete",
 	reflect.TypeOf(&workflow.GetHistorySchemaRequest{}):           "/api/workflow_api/history_schema",
+	reflect.TypeOf(&workflow.GetWorkflowReferencesRequest{}):      "/api/workflow_api/workflow_references",
 }
 
 func newWfTestRunner(t *testing.T) *wfTestRunner {
@@ -161,29 +162,40 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	h.POST("/api/workflow_api/node_type", QueryWorkflowNodeTypes)
 	h.GET("/v1/workflow/get_run_history", OpenAPIGetWorkflowRunHistory)
 	h.POST("/api/workflow_api/history_schema", GetHistorySchema)
+	h.POST("/api/workflow_api/workflow_references", GetWorkflowReferences)
 
 	ctrl := gomock.NewController(t, gomock.WithOverridableExpectations())
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
 	var previousID atomic.Int64
 	mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
 		newID := time.Now().UnixNano()
-		if newID == previousID.Load() {
-			newID = previousID.Add(1)
+		for {
+			if newID == previousID.Load() {
+				newID = time.Now().UnixNano()
+			} else {
+				previousID.Store(newID)
+				break
+			}
 		}
 		return newID, nil
 	}).AnyTimes()
-
-	mockIDGen.EXPECT().GenMultiIDs(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, counts int) ([]int64, error) {
-		ids := make([]int64, counts)
-		for i := 0; i < counts; i++ {
-			newID := time.Now().UnixNano()
-			if newID == previousID.Load() {
-				newID = previousID.Add(1)
+	mockIDGen.EXPECT().GenMultiIDs(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, count int) ([]int64, error) {
+			ids := make([]int64, count)
+			for i := 0; i < count; i++ {
+				newID := time.Now().UnixNano()
+				for {
+					if newID == previousID.Load() {
+						newID = time.Now().UnixNano()
+					} else {
+						previousID.Store(newID)
+						break
+					}
+				}
+				ids[i] = newID
 			}
-			ids = append(ids, newID)
-		}
-		return ids, nil
-	}).AnyTimes()
+			return ids, nil
+		}).AnyTimes()
 
 	dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
 	if os.Getenv("CI_JOB_NAME") != "" {
@@ -1363,6 +1375,12 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 		}).AnyTimes()
 
 		topID := r.load("subworkflow/top_workflow.json")
+		defer func() {
+			post[workflow.DeleteWorkflowResponse](r, &workflow.DeleteWorkflowRequest{
+				WorkflowID: topID,
+			})
+		}()
+
 		midID := r.load("subworkflow/middle_workflow.json", withID(7494849202016272435))
 		bottomID := r.load("subworkflow/bottom_workflow.json", withID(7468899413567684634))
 		inputID := r.load("input_receiver.json", withID(7469607842648457243))
@@ -1388,6 +1406,14 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 		e3 := r.getProcess(topID, exeID, withPreviousEventID(e2.event.ID))
 		e3.assertSuccess()
 		assert.Equal(t, "I don't know.\nI don't know too.\nb\n['new_a_more info 1', 'new_b_more info 2']", e3.output)
+
+		r.publish(topID, "v0.0.1", false) // publish the top workflow to
+
+		refs := post[workflow.GetWorkflowReferencesResponse](r, &workflow.GetWorkflowReferencesRequest{
+			WorkflowID: midID,
+		})
+		assert.Equal(t, 1, len(refs.Data.WorkflowList))
+		assert.Equal(t, topID, refs.Data.WorkflowList[0].WorkflowID)
 
 		mockey.PatchConvey("verify history schema for all workflows", func() {
 			// get current draft commit ID of top_workflow
@@ -1457,6 +1483,12 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 				ExecuteID:  ptr.Of(exeID),
 			})
 			assert.Equal(t, topCommitID, resp.Data.CommitID)
+
+			r.publish(topID, "v0.0.2", true)
+			refs := post[workflow.GetWorkflowReferencesResponse](r, &workflow.GetWorkflowReferencesRequest{
+				WorkflowID: midID,
+			})
+			assert.Equal(t, 0, len(refs.Data.WorkflowList))
 		})
 	})
 }
@@ -1637,7 +1669,7 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 
-		r.load("function_call/tool_workflow_1.json", withID(7492075279843737651), withPublish("v0.0.1"))
+		toolID := r.load("function_call/tool_workflow_1.json", withID(7492075279843737651), withPublish("v0.0.1"))
 
 		chatModel := &testutil.UTChatModel{
 			InvokeResultProvider: func(index int, in []*schema.Message) (*schema.Message, error) {
@@ -1681,6 +1713,11 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
 
 		id := r.load("function_call/llm_with_workflow_as_tool.json")
+		defer func() {
+			post[workflow.DeleteWorkflowResponse](r, &workflow.DeleteWorkflowRequest{
+				WorkflowID: id,
+			})
+		}()
 
 		exeID := r.testRun(id, map[string]string{
 			"input": "this is the user input",
@@ -1708,8 +1745,14 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 				return nil
 			})
 			assert.NoError(t, err)
-		})
 
+			// check workflow references are correct
+			refs := post[workflow.GetWorkflowReferencesResponse](r, &workflow.GetWorkflowReferencesRequest{
+				WorkflowID: toolID,
+			})
+			assert.Equal(t, 1, len(refs.Data.WorkflowList))
+			assert.Equal(t, id, refs.Data.WorkflowList[0].WorkflowID)
+		})
 	})
 }
 
@@ -1815,7 +1858,7 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 			outerModel.Reset()
 			innerModel.Reset()
 			defer r.runServer()()
-			r.publish(id, "v0.0.1", false)
+			r.publish(id, "v0.0.1", true)
 			sseReader := r.openapiStream(id, map[string]any{
 				"input": "hello",
 			})

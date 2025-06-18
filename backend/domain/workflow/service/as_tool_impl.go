@@ -2,8 +2,7 @@ package service
 
 import (
 	"context"
-
-	"github.com/cloudwego/eino/components/tool"
+	
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
@@ -36,7 +35,7 @@ func (a *asToolImpl) WithResumeToolWorkflow(resumingEvent *entity.ToolInterruptE
 			}, allInterruptEvents)))
 }
 
-func (a *asToolImpl) WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) (tools []tool.BaseTool, err error) {
+func (a *asToolImpl) WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) (tools []workflow.ToolFromWorkflow, err error) {
 	for _, id := range policies {
 		t, err := a.repo.WorkflowAsTool(ctx, *id, vo.WorkflowToolConfig{})
 		if err != nil {

@@ -64,3 +64,24 @@ type MGetPolicy struct {
 	MetaOnly bool
 	Versions map[int64]string
 }
+
+type MGetReferencePolicy struct {
+	ReferredIDs      []int64
+	ReferringIDs     []int64
+	ReferringBizType []ReferringBizType
+	ReferType        []ReferType
+}
+
+type ReferType uint8
+
+const (
+	ReferTypeSubWorkflow ReferType = 1
+	ReferTypeTool        ReferType = 2
+)
+
+type ReferringBizType uint8
+
+const (
+	ReferringBizTypeWorkflow ReferringBizType = 1
+	ReferringBizTypeAgent    ReferringBizType = 2
+)

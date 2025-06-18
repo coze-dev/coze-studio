@@ -350,7 +350,7 @@ func (cv *CanvasValidator) CheckSubWorkFlowTerminatePlanType(ctx context.Context
 	wfID2Canvas := make(map[int64]*vo.Canvas)
 
 	if len(draftIDs) > 0 {
-		draftWFs, err := workflow.GetRepository().MGetDraft(ctx, draftIDs)
+		draftWFs, err := workflow.GetRepository().MGetDrafts(ctx, draftIDs)
 		if err != nil {
 			return nil, err
 		}

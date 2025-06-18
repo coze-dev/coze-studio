@@ -3,16 +3,16 @@ package crossworkflow
 import (
 	"context"
 
-	"github.com/cloudwego/eino/components/tool"
 	einoCompose "github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 // TODO(@fanlv): 参数引用需要修改。
 type Workflow interface {
-	WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) ([]tool.BaseTool, error)
+	WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) ([]workflow.ToolFromWorkflow, error)
 	DeleteWorkflow(ctx context.Context, id int64) error
 	PublishWorkflow(ctx context.Context, info *vo.PublishPolicy) (err error)
 	WithResumeToolWorkflow(resumingEvent *workflowEntity.ToolInterruptEvent, resumeData string,

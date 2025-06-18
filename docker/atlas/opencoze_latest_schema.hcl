@@ -4005,11 +4005,11 @@ table "workflow_reference" {
     unsigned = true
     comment  = "workflow id"
   }
-  column "space_id" {
+  column "referred_id" {
     null     = false
     type     = bigint
     unsigned = true
-    comment  = "workflow space id"
+    comment  = "the id of the workflow that is referred by other entities"
   }
   column "referring_id" {
     null     = false
@@ -4035,40 +4035,28 @@ table "workflow_reference" {
     unsigned = true
     comment  = "create time in millisecond"
   }
-  column "creator_id" {
-    null     = false
-    type     = bigint
-    unsigned = true
-    comment  = "the user id of the creator"
-  }
-  column "stage" {
+  column "status" {
     null     = false
     type     = tinyint
     unsigned = true
-    comment  = "the stage of this reference: 1. draft 2. published"
-  }
-  column "updated_at" {
-    null     = true
-    type     = bigint
-    unsigned = true
-    comment  = "update time in millisecond"
-  }
-  column "updater_id" {
-    null     = true
-    type     = bigint
-    unsigned = true
-    comment  = "the user id of the updater"
+    comment  = "whether this reference currently takes effect. 0: disabled 1: enabled"
   }
   column "deleted_at" {
-    null    = true
-    type    = datetime(3)
-    comment = "delete time in millisecond"
+    null = true
+    type = datetime(3)
   }
   primary_key {
-    columns = [column.id, column.referring_id]
+    columns = [column.id]
   }
-  index "idx_id_referring_biz_type" {
-    columns = [column.id, column.referring_biz_type]
+  index "idx_referred_id_referring_biz_type_status" {
+    columns = [column.referred_id, column.referring_biz_type, column.status]
+  }
+  index "idx_referring_id_status" {
+    columns = [column.referring_id, column.status]
+  }
+  index "uniq_referred_id_referring_id_refer_type" {
+    unique  = true
+    columns = [column.referred_id, column.referring_id, column.refer_type]
   }
 }
 table "workflow_snapshot" {

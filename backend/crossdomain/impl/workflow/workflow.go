@@ -3,7 +3,6 @@ package workflow
 import (
 	"context"
 
-	"github.com/cloudwego/eino/components/tool"
 	einoCompose "github.com/cloudwego/eino/compose"
 
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
@@ -28,7 +27,7 @@ func InitDomainService(c workflow.Service) crossworkflow.Workflow {
 	return defaultSVC
 }
 
-func (i *impl) WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) ([]tool.BaseTool, error) {
+func (i *impl) WorkflowAsModelTool(ctx context.Context, policies []*vo.GetPolicy) ([]workflow.ToolFromWorkflow, error) {
 	return i.DomainSVC.WorkflowAsModelTool(ctx, policies)
 }
 

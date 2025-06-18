@@ -203,6 +203,7 @@ func PrepareSubExeCtx(ctx context.Context, wb *entity.WorkflowBasic, requireChec
 		BatchInfo:      c.BatchInfo,
 		TokenCollector: newTokenCollector(c.TokenCollector),
 		CheckPointID:   newCheckpointID,
+		StartTime:      time.Now().UnixMilli(),
 	}
 
 	if requireCheckpoint {
