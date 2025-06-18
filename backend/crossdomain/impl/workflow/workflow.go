@@ -11,6 +11,7 @@ import (
 	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 var defaultSVC crossworkflow.Workflow
@@ -50,4 +51,19 @@ func (i *impl) WithResumeToolWorkflow(resumingEvent *workflowEntity.ToolInterrup
 }
 func (i *impl) SyncExecuteWorkflow(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error) {
 	return i.DomainSVC.SyncExecute(ctx, config, input)
+}
+
+func (i *impl) GetWorkflowIDsByAppID(ctx context.Context, appID int64) ([]int64, error) {
+	metas, err := i.DomainSVC.MGet(ctx, &vo.MGetPolicy{
+		MetaQuery: vo.MetaQuery{
+			AppID: ptr.Of(appID),
+		},
+		MetaOnly: true,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return slices.Transform(metas, func(a *workflowEntity.Workflow) int64 {
+		return a.ID
+	}), err
 }
