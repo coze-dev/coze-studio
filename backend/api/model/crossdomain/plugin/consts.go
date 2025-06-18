@@ -88,7 +88,8 @@ const (
 type CopyScene string
 
 const (
-	CopySceneOfToAPP      CopyScene = "to_app"
-	CopySceneOfToLibrary  CopyScene = "to_library"
-	CopySceneOfDuplicated CopyScene = "duplicated"
+	CopySceneOfToAPP        CopyScene = "to_app"
+	CopySceneOfToLibrary    CopyScene = "to_library"
+	CopySceneOfDuplicate    CopyScene = "duplicate"
+	CopySceneOfAPPDuplicate CopyScene = "app_duplicate"
 )

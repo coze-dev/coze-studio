@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"math"
 
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
@@ -151,7 +152,7 @@ func (r *APPReleaseRecordDAO) GetReleaseRecordWithVersion(ctx context.Context, a
 func (r *APPReleaseRecordDAO) GetAPPAllPublishRecords(ctx context.Context, appID int64, opt *APPSelectedOption) (apps []*entity.APP, err error) {
 	table := r.query.AppReleaseRecord
 
-	cursor := int64(0)
+	cursor := int64(math.MaxInt64)
 	limit := 20
 
 	for {

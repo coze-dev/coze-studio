@@ -9,8 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudwego/eino/schema"
 	xmaps "golang.org/x/exp/maps"
+
+	"github.com/cloudwego/eino/schema"
 
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	pluginmodel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
@@ -736,15 +737,15 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 	return copiedWf.ID, vIssues, nil
 }
 
-func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, workflowID int64, appID int64) error {
-	_, err := GetWorkflowDomainSVC().CopyWorkflow(ctx, workflowID, vo.CopyWorkflowConfig{
+func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, workflowID int64, appID int64) (int64, error) {
+	workflowID, err := GetWorkflowDomainSVC().CopyWorkflow(ctx, workflowID, vo.CopyWorkflowConfig{
 		TargetAppID: &appID,
 	})
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return err
+	return workflowID, nil
 }
 
 func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, appID int64) ([]*vo.ValidateIssue, error) {

@@ -99,6 +99,15 @@ func (p *pluginServiceImpl) DeleteAPPAllPlugins(ctx context.Context, appID int64
 	return p.pluginRepo.DeleteAPPAllPlugins(ctx, appID)
 }
 
+func (p *pluginServiceImpl) GetAPPAllPlugins(ctx context.Context, appID int64) (plugins []*entity.PluginInfo, err error) {
+	plugins, err = p.pluginRepo.GetAPPAllDraftPlugins(ctx, appID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "GetAPPAllDraftPlugins failed, appID=%d", appID)
+	}
+
+	return plugins, nil
+}
+
 func (p *pluginServiceImpl) MGetVersionPlugins(ctx context.Context, versionPlugins []entity.VersionPlugin) (plugins []*entity.PluginInfo, err error) {
 	plugins, err = p.pluginRepo.MGetVersionPlugins(ctx, versionPlugins)
 	if err != nil {
@@ -157,9 +166,13 @@ func (p *pluginServiceImpl) CopyPlugin(ctx context.Context, req *CopyPluginReque
 
 func (p *pluginServiceImpl) changePluginAndToolsInfoForCopy(req *CopyPluginRequest, plugin *entity.PluginInfo, tools []*entity.ToolInfo) {
 	plugin.Version = nil
+	plugin.VersionDesc = nil
 
 	plugin.DeveloperID = req.UserID
-	plugin.SetName(fmt.Sprintf("%s_copy", plugin.GetName()))
+
+	if req.CopyScene != model.CopySceneOfAPPDuplicate {
+		plugin.SetName(fmt.Sprintf("%s_copy", plugin.GetName()))
+	}
 
 	if req.CopyScene == model.CopySceneOfToLibrary {
 		const (
@@ -183,11 +196,15 @@ func (p *pluginServiceImpl) changePluginAndToolsInfoForCopy(req *CopyPluginReque
 			tool.DebugStatus = ptr.Of(pluginCommon.APIDebugStatus_DebugPassed)
 		}
 	}
+
+	if req.CopyScene == model.CopySceneOfAPPDuplicate {
+		plugin.APPID = req.TargetAPPID
+	}
 }
 
 func (p *pluginServiceImpl) checkCanCopyPlugin(ctx context.Context, pluginID int64, scene model.CopyScene) (err error) {
 	switch scene {
-	case model.CopySceneOfToAPP, model.CopySceneOfDuplicated:
+	case model.CopySceneOfToAPP, model.CopySceneOfDuplicate, model.CopySceneOfAPPDuplicate:
 		return nil
 	case model.CopySceneOfToLibrary:
 		return p.checkToolsDebugStatus(ctx, pluginID)
@@ -200,7 +217,7 @@ func (p *pluginServiceImpl) getCopySourcePluginAndTools(ctx context.Context, plu
 	switch scene {
 	case model.CopySceneOfToAPP:
 		return p.getOnlinePluginAndTools(ctx, pluginID)
-	case model.CopySceneOfToLibrary, model.CopySceneOfDuplicated:
+	case model.CopySceneOfToLibrary, model.CopySceneOfDuplicate, model.CopySceneOfAPPDuplicate:
 		return p.getDraftPluginAndTools(ctx, pluginID)
 	default:
 		return nil, nil, fmt.Errorf("unsupported copy scene '%s'", scene)

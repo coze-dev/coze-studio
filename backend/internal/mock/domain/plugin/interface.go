@@ -159,6 +159,20 @@ func (mr *MockPluginServiceMockRecorder) DeleteDraftPlugin(ctx, pluginID any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDraftPlugin", reflect.TypeOf((*MockPluginService)(nil).DeleteDraftPlugin), ctx, pluginID)
 }
 
+// DuplicateDraftAgentTools mocks base method.
+func (m *MockPluginService) DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DuplicateDraftAgentTools", ctx, fromAgentID, toAgentID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DuplicateDraftAgentTools indicates an expected call of DuplicateDraftAgentTools.
+func (mr *MockPluginServiceMockRecorder) DuplicateDraftAgentTools(ctx, fromAgentID, toAgentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DuplicateDraftAgentTools", reflect.TypeOf((*MockPluginService)(nil).DuplicateDraftAgentTools), ctx, fromAgentID, toAgentID)
+}
+
 // ExecuteTool mocks base method.
 func (m *MockPluginService) ExecuteTool(ctx context.Context, req *service.ExecuteToolRequest, opts ...entity.ExecuteToolOpt) (*service.ExecuteToolResponse, error) {
 	m.ctrl.T.Helper()
@@ -177,6 +191,21 @@ func (mr *MockPluginServiceMockRecorder) ExecuteTool(ctx, req any, opts ...any) 
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, req}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteTool", reflect.TypeOf((*MockPluginService)(nil).ExecuteTool), varargs...)
+}
+
+// GetAPPAllPlugins mocks base method.
+func (m *MockPluginService) GetAPPAllPlugins(ctx context.Context, appID int64) ([]*entity.PluginInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAPPAllPlugins", ctx, appID)
+	ret0, _ := ret[0].([]*entity.PluginInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAPPAllPlugins indicates an expected call of GetAPPAllPlugins.
+func (mr *MockPluginServiceMockRecorder) GetAPPAllPlugins(ctx, appID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAPPAllPlugins", reflect.TypeOf((*MockPluginService)(nil).GetAPPAllPlugins), ctx, appID)
 }
 
 // GetDraftAgentToolByName mocks base method.

@@ -25,6 +25,7 @@ type ToolRepository interface {
 	MGetVersionTools(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)
 
 	BindDraftAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error)
+	DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) (err error)
 	GetDraftAgentTool(ctx context.Context, agentID, toolID int64) (tool *entity.ToolInfo, exist bool, err error)
 	GetDraftAgentToolWithToolName(ctx context.Context, agentID int64, toolName string) (tool *entity.ToolInfo, exist bool, err error)
 	MGetDraftAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (tools []*entity.ToolInfo, err error)

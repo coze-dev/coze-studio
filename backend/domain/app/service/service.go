@@ -12,6 +12,7 @@ type AppService interface {
 	GetDraftAPP(ctx context.Context, appID int64) (app *entity.APP, err error)
 	DeleteDraftAPP(ctx context.Context, appID int64) (err error)
 	UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPPRequest) (err error)
+	GetDraftAPPResources(ctx context.Context, appID int64) (resources []*entity.Resource, err error)
 
 	PublishAPP(ctx context.Context, req *PublishAPPRequest) (resp *PublishAPPResponse, err error)
 
@@ -33,6 +34,13 @@ type UpdateDraftAPPRequest struct {
 	Name    *string
 	Desc    *string
 	IconURI *string
+}
+
+type DuplicateDraftAPPRequest struct {
+	APPID   int64
+	Name    string
+	Desc    string
+	IconURI string
 }
 
 type PublishAPPRequest struct {

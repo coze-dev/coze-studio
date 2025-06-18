@@ -8,10 +8,16 @@ import (
 	"gorm.io/gorm"
 
 	connectorModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/connector"
+	databaseModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
+	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossconnector"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossknowledge"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 )
 
 type Components struct {
@@ -122,4 +128,49 @@ func (a *appServiceImpl) GetPublishConnectorList(ctx context.Context, _ *GetPubl
 	}
 
 	return resp, nil
+}
+
+func (a *appServiceImpl) GetDraftAPPResources(ctx context.Context, appID int64) (resources []*entity.Resource, err error) {
+	plugins, err := crossplugin.DefaultSVC().GetAPPAllPlugins(ctx, appID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "GetAPPAllPlugins failed, appID=%d", appID)
+	}
+	databaseRes, err := crossdatabase.DefaultSVC().GetAllDatabaseByAppID(ctx, &databaseModel.GetAllDatabaseByAppIDRequest{
+		AppID: appID,
+	})
+	if err != nil {
+		return nil, errorx.Wrapf(err, "GetAllDatabaseByAppID failed, appID=%d", appID)
+	}
+	knowledgeRes, err := crossknowledge.DefaultSVC().ListKnowledge(ctx, &knowledgeModel.ListKnowledgeRequest{
+		AppID: &appID,
+	})
+	if err != nil {
+		return nil, errorx.Wrapf(err, "ListKnowledge failed, appID=%d", appID)
+	}
+
+	resources = make([]*entity.Resource, 0, len(plugins)+len(databaseRes.Databases)+len(knowledgeRes.KnowledgeList))
+
+	for _, pl := range plugins {
+		resources = append(resources, &entity.Resource{
+			ResID:   pl.ID,
+			ResName: pl.GetName(),
+			ResType: entity.ResourceTypeOfPlugin,
+		})
+	}
+	for _, db := range databaseRes.Databases {
+		resources = append(resources, &entity.Resource{
+			ResID:   db.ID,
+			ResName: db.TableName,
+			ResType: entity.ResourceTypeOfDatabase,
+		})
+	}
+	for _, kl := range knowledgeRes.KnowledgeList {
+		resources = append(resources, &entity.Resource{
+			ResID:   kl.ID,
+			ResName: kl.Name,
+			ResType: entity.ResourceTypeOfKnowledge,
+		})
+	}
+
+	return resources, nil
 }

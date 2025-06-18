@@ -27,6 +27,7 @@ type PluginService interface {
 	UpdateDraftPluginWithCode(ctx context.Context, req *UpdateDraftPluginWithCodeRequest) (err error)
 	DeleteDraftPlugin(ctx context.Context, pluginID int64) (err error)
 	DeleteAPPAllPlugins(ctx context.Context, appID int64) (pluginIDs []int64, err error)
+	GetAPPAllPlugins(ctx context.Context, appID int64) (plugins []*entity.PluginInfo, err error)
 
 	// Online Plugin
 	PublishPlugin(ctx context.Context, req *PublishPluginRequest) (err error)
@@ -52,6 +53,7 @@ type PluginService interface {
 
 	// Agent Tool
 	BindAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error)
+	DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) (err error)
 	GetDraftAgentToolByName(ctx context.Context, agentID int64, toolName string) (tool *entity.ToolInfo, err error)
 	MGetAgentTools(ctx context.Context, req *MGetAgentToolsRequest) (tools []*entity.ToolInfo, err error)
 	UpdateBotDefaultParams(ctx context.Context, req *UpdateBotDefaultParamsRequest) (err error)
