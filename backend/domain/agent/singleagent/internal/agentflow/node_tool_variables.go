@@ -75,7 +75,15 @@ type avTool struct {
 	ConnectorID int64
 }
 
-func (a *avTool) Invoke(ctx context.Context, v map[string]string) (string, error) {
+type KVMeta struct {
+	Keyword string `json:"keyword" jsonschema:"required,description=the keyword of memory variable"`
+	Value   string `json:"value" jsonschema:"required,description=the value of memory variable"`
+}
+type KVMemoryVariable struct {
+	Data []*KVMeta `json:"data"`
+}
+
+func (a *avTool) Invoke(ctx context.Context, v *KVMemoryVariable) (string, error) {
 
 	vbMeta := &variables.UserVariableMeta{
 		BizType:      project_memory.VariableConnector_Bot,
@@ -87,10 +95,10 @@ func (a *avTool) Invoke(ctx context.Context, v map[string]string) (string, error
 
 	var items []*kvmemory.KVItem
 	if v != nil {
-		for keyword, value := range v {
+		for _, item := range v.Data {
 			items = append(items, &kvmemory.KVItem{
-				Keyword: keyword,
-				Value:   value,
+				Keyword: item.Keyword,
+				Value:   item.Value,
 			})
 		}
 		if len(items) > 0 {
