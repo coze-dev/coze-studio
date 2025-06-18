@@ -611,8 +611,8 @@ func (i *impl) UpdateMeta(ctx context.Context, id int64, metaUpdate *vo.MetaUpda
 	return nil
 }
 
-func (i *impl) CopyWorkflow(ctx context.Context, workflowID int64, cfg vo.CopyWorkflowConfig) (int64, error) {
-	wf, err := i.repo.CopyWorkflow(ctx, workflowID, cfg)
+func (i *impl) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (int64, error) {
+	wf, err := i.repo.CopyWorkflow(ctx, workflowID, policy)
 	if err != nil {
 		return 0, err
 	}
@@ -757,9 +757,10 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 		refWfs    map[int64]*copiedWorkflow
 	}
 	var (
-		err          error
-		vIssues      = make([]*vo.ValidateIssue, 0)
-		draftVersion *vo.DraftInfo
+		err                    error
+		vIssues                = make([]*vo.ValidateIssue, 0)
+		draftVersion           *vo.DraftInfo
+		workflowPublishVersion = "v0.0.1"
 	)
 
 	draftVersion, err = i.repo.DraftV2(ctx, workflowID, "")
@@ -932,8 +933,6 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 
 	hasPublishedWorkflows := make(map[int64]entity.IDVersionPair)
 
-	workflowPublishVersion := "v0.0.1"
-
 	copyAndPublishWorkflowProcess = func(wf *copiedWorkflow) error {
 		for _, refWorkflow := range wf.refWfs {
 			err := copyAndPublishWorkflowProcess(refWorkflow)
@@ -964,7 +963,10 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 				return err
 			}
 
-			cwf, err := i.repo.CopyWorkflowFromAppToLibrary(ctx, wf.id, modifiedCanvasString)
+			cwf, err := i.repo.CopyWorkflow(ctx, wf.id, vo.CopyWorkflowPolicy{
+				TargetAppID:          ptr.Of(int64(0)),
+				ModifiedCanvasSchema: ptr.Of(modifiedCanvasString),
+			})
 			if err != nil {
 				return err
 			}
@@ -1018,6 +1020,193 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 	}
 
 	return hasPublishedWorkflows, nil, nil
+
+}
+
+func (i *impl) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targetAppID int64, related vo.ExternalResourceRelated) error {
+
+	type copiedWorkflow struct {
+		id           int64
+		draftInfo    *vo.DraftInfo
+		refWfs       map[int64]*copiedWorkflow
+		err          error
+		draftVersion *vo.DraftInfo
+	}
+
+	draftWorkflows, _, err := i.repo.GetDraftWorkflowsByAppID(ctx, sourceAppID)
+	if err != nil {
+		return err
+	}
+
+	var duplicateWorkflowProcess func(workflowID int64, info *vo.DraftInfo) error
+
+	hasCopiedWorkflows := make(map[int64]entity.IDVersionPair)
+	var buildWorkflowReference func(nodes []*vo.Node, wf *copiedWorkflow) error
+	buildWorkflowReference = func(nodes []*vo.Node, wf *copiedWorkflow) error {
+		for _, node := range nodes {
+			if node.Type == vo.BlockTypeBotSubWorkflow {
+				var (
+					v    *vo.DraftInfo
+					wfID int64
+					ok   bool
+				)
+				wfID, err = strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+				if err != nil {
+					return err
+				}
+
+				if v, ok = draftWorkflows[wfID]; !ok {
+					continue
+				}
+				if _, ok = wf.refWfs[wfID]; ok {
+					continue
+				}
+
+				swf := &copiedWorkflow{
+					id:        wfID,
+					draftInfo: v,
+					refWfs:    make(map[int64]*copiedWorkflow),
+				}
+				wf.refWfs[wfID] = swf
+				var subCanvas *vo.Canvas
+				err = sonic.UnmarshalString(v.Canvas, &subCanvas)
+				if err != nil {
+					return err
+				}
+				err = buildWorkflowReference(subCanvas.Nodes, swf)
+				if err != nil {
+					return err
+				}
+
+			}
+			if node.Type == vo.BlockTypeBotLLM {
+				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+					for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+						var (
+							v    *vo.DraftInfo
+							wfID int64
+							ok   bool
+						)
+						wfID, err = strconv.ParseInt(w.WorkflowID, 10, 64)
+						if err != nil {
+							return err
+						}
+
+						if v, ok = draftWorkflows[wfID]; !ok {
+							continue
+						}
+
+						if _, ok = wf.refWfs[wfID]; ok {
+							continue
+						}
+
+						swf := &copiedWorkflow{
+							id:        wfID,
+							draftInfo: v,
+							refWfs:    make(map[int64]*copiedWorkflow),
+						}
+						wf.refWfs[wfID] = swf
+						var subCanvas *vo.Canvas
+						err = sonic.UnmarshalString(v.Canvas, &subCanvas)
+						if err != nil {
+							return err
+						}
+
+						err = buildWorkflowReference(subCanvas.Nodes, swf)
+						if err != nil {
+							return err
+						}
+					}
+
+				}
+
+			}
+			if len(node.Blocks) > 0 {
+				err := buildWorkflowReference(node.Blocks, wf)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+	var duplicateWorkflow func(wf *copiedWorkflow) error
+	duplicateWorkflow = func(wf *copiedWorkflow) error {
+		for _, refWorkflow := range wf.refWfs {
+			err := duplicateWorkflow(refWorkflow)
+			if err != nil {
+				return err
+			}
+		}
+		if _, ok := hasCopiedWorkflows[wf.id]; !ok {
+			draftCanvasString := wf.draftInfo.Canvas
+			canvas := &vo.Canvas{}
+			err = sonic.UnmarshalString(draftCanvasString, &canvas)
+			if err != nil {
+				return err
+			}
+			err = replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(canvas.Nodes, hasCopiedWorkflows, related)
+			if err != nil {
+				return err
+			}
+
+			modifiedCanvasString, err := sonic.MarshalString(canvas)
+			if err != nil {
+				return err
+			}
+
+			copiedID, err := i.CopyWorkflow(ctx, wf.id, vo.CopyWorkflowPolicy{
+				TargetAppID:          ptr.Of(targetAppID),
+				ModifiedCanvasSchema: ptr.Of(modifiedCanvasString),
+			})
+			if err != nil {
+				return err
+			}
+
+			if err != nil {
+				return err
+			}
+
+			hasCopiedWorkflows[wf.id] = entity.IDVersionPair{
+				ID: copiedID,
+			}
+		}
+		return nil
+	}
+
+	duplicateWorkflowProcess = func(workflowID int64, draftVersion *vo.DraftInfo) error {
+		copiedWf := &copiedWorkflow{
+			id:        workflowID,
+			draftInfo: draftVersion,
+			refWfs:    make(map[int64]*copiedWorkflow),
+		}
+		draftCanvas := &vo.Canvas{}
+		err = sonic.UnmarshalString(draftVersion.Canvas, &draftCanvas)
+		if err != nil {
+			return err
+		}
+		err = buildWorkflowReference(draftCanvas.Nodes, copiedWf)
+		if err != nil {
+			return err
+		}
+		err = duplicateWorkflow(copiedWf)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	for workflowID, draftVersion := range draftWorkflows {
+		if _, ok := hasCopiedWorkflows[workflowID]; ok {
+			continue
+		}
+		err = duplicateWorkflowProcess(workflowID, draftVersion)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 
 }
 

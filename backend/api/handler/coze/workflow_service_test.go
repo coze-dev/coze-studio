@@ -4197,3 +4197,96 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 
 	})
 }
+
+func TestDuplicateWorkflowsByAppID(t *testing.T) {
+	mockey.PatchConvey("copy ddd", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		vars := []*variable.VarMeta{
+			{
+				Name: "app_v1",
+				TypeInfo: variable.VarTypeInfo{
+					Type: variable.VarTypeString,
+				},
+			}, {
+				Name: "app_list_v1",
+				TypeInfo: variable.VarTypeInfo{
+					Type: variable.VarTypeArray,
+					ElemTypeInfo: &variable.VarTypeInfo{
+						Type: variable.VarTypeString,
+					},
+				},
+			}, {
+				Name: "app_list_v2",
+				TypeInfo: variable.VarTypeInfo{
+					Type: variable.VarTypeString,
+				},
+			},
+		}
+
+		r.varGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
+		var copiedIDs = make([]int64, 0)
+		var mockPublishWorkflowResource func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error
+		var ignoreIDs = map[int64]bool{
+			7515027325977624576: true,
+			7515027249628708864: true,
+			7515027182796668928: true,
+			7515027150387281920: true,
+			7515027091302121472: true,
+			7515027325977624579: true,
+		}
+		mockPublishWorkflowResource = func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error {
+			if ignoreIDs[event.WorkflowID] {
+				return nil
+			}
+			copiedIDs = append(copiedIDs, event.WorkflowID)
+			return nil
+
+		}
+
+		r.search.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(mockPublishWorkflowResource).AnyTimes()
+
+		appIDInt64 := int64(7513788954458456064)
+
+		r.load("copy_to_app/child_5.json", withID(7515027325977624579), withProjectID(appIDInt64))
+		r.load("copy_to_app/child_4.json", withID(7515027325977624576), withProjectID(appIDInt64))
+		r.load("copy_to_app/child_3.json", withID(7515027249628708864), withProjectID(appIDInt64))
+		r.load("copy_to_app/child_2.json", withID(7515027182796668928), withProjectID(appIDInt64))
+		r.load("copy_to_app/child_1.json", withID(7515027150387281920), withProjectID(appIDInt64))
+		r.load("copy_to_app/main.json", withID(7515027091302121472), withProjectID(appIDInt64))
+		targetAppID := int64(7513788954458456066)
+
+		err := appworkflow.SVC.DuplicateWorkflowsByAppID(t.Context(), appIDInt64, targetAppID, vo.ExternalResourceRelated{})
+		assert.NoError(t, err)
+
+		copiedIDMap := slices.ToMap(copiedIDs, func(e int64) (string, bool) {
+			return strconv.FormatInt(e, 10), true
+		})
+		var validateSubWorkflowIDs func(nodes []*vo.Node)
+		validateSubWorkflowIDs = func(nodes []*vo.Node) {
+			for _, node := range nodes {
+				if node.Type == vo.BlockTypeBotSubWorkflow {
+					assert.True(t, copiedIDMap[node.Data.Inputs.WorkflowID])
+				}
+				if node.Type == vo.BlockTypeBotLLM {
+					if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+						for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+							assert.True(t, copiedIDMap[w.WorkflowID])
+						}
+					}
+				}
+
+			}
+		}
+		for id := range copiedIDMap {
+			schemaString, err := getCanvas(t.Context(), id)
+			assert.NoError(t, err)
+			cs := &vo.Canvas{}
+			err = sonic.UnmarshalString(schemaString, cs)
+			assert.NoError(t, err)
+			validateSubWorkflowIDs(cs.Nodes)
+		}
+
+	})
+}

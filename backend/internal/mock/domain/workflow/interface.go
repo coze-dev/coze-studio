@@ -107,18 +107,18 @@ func (mr *MockServiceMockRecorder) Cancel(ctx, wfExeID, wfID, spaceID any) *gomo
 }
 
 // CopyWorkflow mocks base method.
-func (m *MockService) CopyWorkflow(ctx context.Context, workflowID int64, cfg vo.CopyWorkflowConfig) (int64, error) {
+func (m *MockService) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CopyWorkflow", ctx, workflowID, cfg)
+	ret := m.ctrl.Call(m, "CopyWorkflow", ctx, workflowID, policy)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CopyWorkflow indicates an expected call of CopyWorkflow.
-func (mr *MockServiceMockRecorder) CopyWorkflow(ctx, workflowID, cfg any) *gomock.Call {
+func (mr *MockServiceMockRecorder) CopyWorkflow(ctx, workflowID, policy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflow", reflect.TypeOf((*MockService)(nil).CopyWorkflow), ctx, workflowID, cfg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflow", reflect.TypeOf((*MockService)(nil).CopyWorkflow), ctx, workflowID, policy)
 }
 
 // CopyWorkflowFromAppToLibrary mocks base method.
@@ -164,6 +164,20 @@ func (m *MockService) Delete(ctx context.Context, policy *vo.DeletePolicy) error
 func (mr *MockServiceMockRecorder) Delete(ctx, policy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockService)(nil).Delete), ctx, policy)
+}
+
+// DuplicateWorkflowsByAppID mocks base method.
+func (m *MockService) DuplicateWorkflowsByAppID(ctx context.Context, sourceAPPID, targetAppID int64, related vo.ExternalResourceRelated) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DuplicateWorkflowsByAppID", ctx, sourceAPPID, targetAppID, related)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DuplicateWorkflowsByAppID indicates an expected call of DuplicateWorkflowsByAppID.
+func (mr *MockServiceMockRecorder) DuplicateWorkflowsByAppID(ctx, sourceAPPID, targetAppID, related any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DuplicateWorkflowsByAppID", reflect.TypeOf((*MockService)(nil).DuplicateWorkflowsByAppID), ctx, sourceAPPID, targetAppID, related)
 }
 
 // Get mocks base method.
@@ -549,33 +563,18 @@ func (mr *MockRepositoryMockRecorder) CancelAllRunningNodes(ctx, wfExeID any) *g
 }
 
 // CopyWorkflow mocks base method.
-func (m *MockRepository) CopyWorkflow(ctx context.Context, workflowID int64, cfg vo.CopyWorkflowConfig) (*entity.Workflow, error) {
+func (m *MockRepository) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CopyWorkflow", ctx, workflowID, cfg)
+	ret := m.ctrl.Call(m, "CopyWorkflow", ctx, workflowID, policy)
 	ret0, _ := ret[0].(*entity.Workflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CopyWorkflow indicates an expected call of CopyWorkflow.
-func (mr *MockRepositoryMockRecorder) CopyWorkflow(ctx, workflowID, cfg any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) CopyWorkflow(ctx, workflowID, policy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflow", reflect.TypeOf((*MockRepository)(nil).CopyWorkflow), ctx, workflowID, cfg)
-}
-
-// CopyWorkflowFromAppToLibrary mocks base method.
-func (m *MockRepository) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, modifiedCanvasSchema string) (*entity.Workflow, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CopyWorkflowFromAppToLibrary", ctx, workflowID, modifiedCanvasSchema)
-	ret0, _ := ret[0].(*entity.Workflow)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CopyWorkflowFromAppToLibrary indicates an expected call of CopyWorkflowFromAppToLibrary.
-func (mr *MockRepositoryMockRecorder) CopyWorkflowFromAppToLibrary(ctx, workflowID, modifiedCanvasSchema any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflowFromAppToLibrary", reflect.TypeOf((*MockRepository)(nil).CopyWorkflowFromAppToLibrary), ctx, workflowID, modifiedCanvasSchema)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyWorkflow", reflect.TypeOf((*MockRepository)(nil).CopyWorkflow), ctx, workflowID, policy)
 }
 
 // CreateMeta mocks base method.

@@ -989,7 +989,7 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 	), nil
 }
 
-func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, cfg vo.CopyWorkflowConfig) (*entity.Workflow, error) {
+func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error) {
 	const (
 		copyWorkflowRedisKeyPrefix         = "copy_workflow_redis_key_prefix"
 		copyWorkflowRedisKeyExpireInterval = time.Hour * 24 * 7
@@ -1006,16 +1006,6 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, cfg
 		return nil, err
 	}
 
-	copiedWorkflowRedisKey := fmt.Sprintf("%s:%d:%d", copyWorkflowRedisKeyPrefix, workflowID, ctxutil.MustGetUIDFromCtx(ctx))
-
-	copiedNameSuffix, err := r.redis.Incr(ctx, copiedWorkflowRedisKey).Result()
-	if err != nil {
-		return nil, err
-	}
-	err = r.redis.Expire(ctx, copiedWorkflowRedisKey, copyWorkflowRedisKeyExpireInterval).Err()
-	if err != nil {
-		logs.Warnf("failed to set the rediskey %v expiration time, err=%v", copiedWorkflowRedisKey, err)
-	}
 	var copiedWorkflow *entity.Workflow
 	wfMeta, err := workflowMeta.WithContext(ctx).Where(workflowMeta.ID.Eq(workflowID)).First()
 	if err != nil {
@@ -1032,20 +1022,35 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, cfg
 		return nil, err
 	}
 
+	var copiedWorkflowName string
+	if policy.ShouldModifyWorkflowName {
+		copiedWorkflowRedisKey := fmt.Sprintf("%s:%d:%d", copyWorkflowRedisKeyPrefix, workflowID, ctxutil.MustGetUIDFromCtx(ctx))
+		copiedNameSuffix, err := r.redis.Incr(ctx, copiedWorkflowRedisKey).Result()
+		if err != nil {
+			return nil, err
+		}
+		err = r.redis.Expire(ctx, copiedWorkflowRedisKey, copyWorkflowRedisKeyExpireInterval).Err()
+		if err != nil {
+			logs.Warnf("failed to set the rediskey %v expiration time, err=%v", copiedWorkflowRedisKey, err)
+		}
+		copiedWorkflowName = fmt.Sprintf("%s_%d", wfMeta.Name, copiedNameSuffix)
+	} else {
+		copiedWorkflowName = wfMeta.Name
+	}
+
 	err = r.query.Transaction(func(tx *query.Query) error {
-		wfMeta.Name = fmt.Sprintf("%s_%d", wfMeta.Name, copiedNameSuffix)
+		wfMeta.Name = copiedWorkflowName
 		wfMeta.SourceID = workflowID
 		wfMeta.Status = 0
 		wfMeta.ID = copiedID
 		wfMeta.CreatedAt = 0
 		wfMeta.UpdatedAt = 0
 		wfMeta.LatestVersion = ""
-
-		if cfg.TargetSpaceID != nil {
-			wfMeta.SpaceID = *cfg.TargetSpaceID
+		if policy.TargetSpaceID != nil {
+			wfMeta.SpaceID = *policy.TargetSpaceID
 		}
-		if cfg.TargetAppID != nil {
-			wfMeta.AppID = *cfg.TargetAppID
+		if policy.TargetAppID != nil {
+			wfMeta.AppID = *policy.TargetAppID
 		}
 		wfMeta.CreatorID = ctxutil.MustGetUIDFromCtx(ctx)
 		err = workflowMeta.WithContext(ctx).Create(wfMeta)
@@ -1058,6 +1063,9 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, cfg
 		wfDraft.Modified = false
 		wfDraft.UpdatedAt = 0
 		wfDraft.CommitID = strconv.FormatInt(commitID, 10)
+		if policy.ModifiedCanvasSchema != nil {
+			wfDraft.Canvas = *policy.ModifiedCanvasSchema
+		}
 		err = workflowDraft.WithContext(ctx).Create(wfDraft)
 		if err != nil {
 			return err
@@ -1070,92 +1078,22 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, cfg
 	}
 
 	copiedWorkflow = &entity.Workflow{
-		ID: copiedID,
-		Meta: &vo.Meta{
-			SpaceID:   wfMeta.SpaceID,
-			Name:      wfMeta.Name,
-			CreatorID: wfMeta.CreatorID,
-			IconURI:   wfMeta.IconURI,
-			Desc:      wfMeta.Description,
-		},
-	}
-
-	if wfMeta.AppID > 0 {
-		copiedWorkflow.AppID = &wfMeta.AppID
-	}
-
-	return copiedWorkflow, nil
-}
-
-func (r *RepositoryImpl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, modifiedCanvasSchema string) (wf *entity.Workflow, err error) {
-	var (
-		copiedID      int64
-		workflowMeta  = r.query.WorkflowMeta
-		workflowDraft = r.query.WorkflowDraft
-	)
-
-	copiedID, err = r.GenID(ctx)
-	if err != nil {
-		return nil, err
-	}
-	wfMeta, err := workflowMeta.WithContext(ctx).Where(workflowMeta.ID.Eq(workflowID)).First()
-	if err != nil {
-		return nil, err
-	}
-
-	wfDraft, err := workflowDraft.WithContext(ctx).Where(workflowDraft.ID.Eq(workflowID)).First()
-	if err != nil {
-		return nil, err
-	}
-
-	commitID := strconv.FormatInt(copiedID, 10)
-
-	err = r.query.Transaction(func(tx *query.Query) error {
-		wfMeta.ID = copiedID
-		wfMeta.SourceID = workflowID
-		wfMeta.Status = 0
-		wfMeta.CreatedAt = 0
-		wfMeta.UpdatedAt = 0
-		wfMeta.AppID = 0
-		wfMeta.CreatorID = ctxutil.MustGetUIDFromCtx(ctx)
-		err = workflowMeta.WithContext(ctx).Create(wfMeta)
-		if err != nil {
-			return err
-		}
-
-		wfDraft.ID = copiedID
-		wfDraft.TestRunSuccess = false
-		wfDraft.Modified = false
-		wfDraft.UpdatedAt = 0
-		wfDraft.Canvas = modifiedCanvasSchema
-		wfDraft.CommitID = commitID
-		err = workflowDraft.WithContext(ctx).Create(wfDraft)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	wf = &entity.Workflow{
 		ID:       copiedID,
 		CommitID: wfDraft.CommitID,
 		Meta: &vo.Meta{
 			SpaceID:   wfMeta.SpaceID,
+			Name:      wfMeta.Name,
 			CreatorID: wfMeta.CreatorID,
 			IconURI:   wfMeta.IconURI,
 			Desc:      wfMeta.Description,
-			Name:      wfMeta.Name,
+			AppID:     ptr.Of(wfMeta.AppID),
 		},
 		CanvasInfoV2: &vo.CanvasInfoV2{
-			Canvas: modifiedCanvasSchema,
+			Canvas: wfDraft.Canvas,
 		},
 	}
 
-	return wf, nil
+	return copiedWorkflow, nil
 }
 
 func (r *RepositoryImpl) GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error) {

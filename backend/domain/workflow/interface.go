@@ -21,6 +21,8 @@ type Service interface {
 	Delete(ctx context.Context, policy *vo.DeletePolicy) (err error)
 	Publish(ctx context.Context, policy *vo.PublishPolicy) (err error)
 	UpdateMeta(ctx context.Context, id int64, metaUpdate *vo.MetaUpdate) (err error)
+	CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (int64, error)
+
 	QueryNodeProperties(ctx context.Context, id int64) (map[string]*vo.NodeProperty, error) // only draft
 	ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*workflow.ValidateTreeInfo, error)
 
@@ -29,9 +31,9 @@ type Service interface {
 	Executable
 	AsTool
 
-	CopyWorkflow(ctx context.Context, workflowID int64, cfg vo.CopyWorkflowConfig) (int64, error)
 	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
 	CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, appID int64, related vo.ExternalResourceRelated) (map[int64]entity.IDVersionPair, []*vo.ValidateIssue, error)
+	DuplicateWorkflowsByAppID(ctx context.Context, sourceAPPID, targetAppID int64, related vo.ExternalResourceRelated) error
 	GetWorkflowDependenceResource(ctx context.Context, workflowID int64) (*vo.DependenceResource, error)
 	SyncRelatedWorkflowResources(ctx context.Context, appID int64, relatedWorkflows map[int64]entity.IDVersionPair, related vo.ExternalResourceRelated) error
 }
@@ -66,11 +68,10 @@ type Repository interface {
 	ExecuteHistoryStore
 
 	WorkflowAsTool(ctx context.Context, policy vo.GetPolicy, wfToolConfig vo.WorkflowToolConfig) (ToolFromWorkflow, error)
-	CopyWorkflow(ctx context.Context, workflowID int64, cfg vo.CopyWorkflowConfig) (*entity.Workflow, error)
+
+	CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error)
 
 	GetDraftWorkflowsByAppID(ctx context.Context, AppID int64) (map[int64]*vo.DraftInfo, map[int64]string, error)
-	CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, modifiedCanvasSchema string) (*entity.Workflow, error)
-
 	compose.CheckPointStore
 	idgen.IDGenerator
 }
