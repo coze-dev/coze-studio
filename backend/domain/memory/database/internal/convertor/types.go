@@ -75,7 +75,7 @@ func ConvertValueByType(value string, fieldType table.FieldItemType) (interface{
 			return "", fmt.Errorf("cannot convert %s to date", value)
 		}
 
-		return t.UTC(), nil
+		return t, nil
 
 	case table.FieldItemType_Text:
 		return value, nil

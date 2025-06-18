@@ -498,7 +498,7 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *AddDatabase
 		}
 		convertedRecord[database.DefaultUidColName] = req.UserID
 		convertedRecord[database.DefaultCidColName] = cid
-		convertedRecord[database.DefaultCreateTimeColName] = time.Now().UTC()
+		convertedRecord[database.DefaultCreateTimeColName] = time.Now()
 
 		if _, ok := recordMap[database.DefaultIDColName]; ok {
 			delete(recordMap, database.DefaultIDColName)
@@ -1183,7 +1183,7 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 			rowData[database.DefaultUidColName] = req.UserID
 		}
 		rowData[database.DefaultCidColName] = cid
-		rowData[database.DefaultCreateTimeColName] = time.Now().UTC()
+		rowData[database.DefaultCreateTimeColName] = time.Now()
 		rowData[database.DefaultIDColName] = ids[index]
 
 		for _, record := range upsertRow.Records {

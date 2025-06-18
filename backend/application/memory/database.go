@@ -769,7 +769,7 @@ func (d *DatabaseApplicationService) DeleteDatabaseByAppID(ctx context.Context, 
 	return nil
 }
 
-func (d *DatabaseApplicationService) DuplicateDatabase(ctx context.Context, req *DuplicateDatabaseRequest) (*DuplicateDatabaseResponse, error) {
+func (d *DatabaseApplicationService) CopyDatabase(ctx context.Context, req *CopyDatabaseRequest) (*CopyDatabaseResponse, error) {
 	var err error
 
 	basics := make([]*model.DatabaseBasic, 0, len(req.DatabaseIDs))
@@ -785,7 +785,7 @@ func (d *DatabaseApplicationService) DuplicateDatabase(ctx context.Context, req 
 		return nil, err
 	}
 
-	duplicateDatabases := make([]*entity.Database, 0, len(req.DatabaseIDs))
+	copyDatabases := make(map[int64]*entity.Database, len(res.Databases))
 	draftMaps := make(map[int64]int64)
 	onlineMaps := make(map[int64]int64)
 
@@ -820,8 +820,8 @@ func (d *DatabaseApplicationService) DuplicateDatabase(ctx context.Context, req 
 			return nil, err
 		}
 
+		copyDatabases[srcDB.ID] = onlineDatabase
 		draftDatabase := draftResp.Database
-		duplicateDatabases = append(duplicateDatabases, onlineDatabase)
 		draftMaps[srcDB.GetDraftID()] = draftDatabase.ID
 		onlineMaps[srcDB.GetOnlineID()] = onlineDatabase.ID
 
@@ -844,8 +844,8 @@ func (d *DatabaseApplicationService) DuplicateDatabase(ctx context.Context, req 
 	}
 
 	if !req.IsCopyData {
-		return &DuplicateDatabaseResponse{
-			Databases: duplicateDatabases,
+		return &CopyDatabaseResponse{
+			Databases: copyDatabases,
 		}, nil
 	}
 
@@ -862,8 +862,8 @@ func (d *DatabaseApplicationService) DuplicateDatabase(ctx context.Context, req 
 		}
 	}
 
-	return &DuplicateDatabaseResponse{
-		Databases: duplicateDatabases,
+	return &CopyDatabaseResponse{
+		Databases: copyDatabases,
 	}, nil
 }
 
@@ -904,7 +904,7 @@ func (d *DatabaseApplicationService) duplicateRecords(ctx context.Context, srcDa
 	return nil
 }
 
-type DuplicateDatabaseRequest struct {
+type CopyDatabaseRequest struct {
 	DatabaseIDs []int64
 	TableType   table.TableType // table type of the source databases
 	CreatorID   int64
@@ -915,8 +915,8 @@ type DuplicateDatabaseRequest struct {
 	Suffix        *string // table name suffix for the copied table, default is "_copy"
 }
 
-type DuplicateDatabaseResponse struct {
-	Databases []*entity.Database // the new online databases
+type CopyDatabaseResponse struct {
+	Databases map[int64]*entity.Database // key is original database id (online id or draft id), value is the new online database
 }
 
 func (d *DatabaseApplicationService) MoveDatabaseToLibrary(ctx context.Context, req *MoveDatabaseToLibraryRequest) (*MoveDatabaseToLibraryResponse, error) {

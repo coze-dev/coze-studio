@@ -10,12 +10,13 @@ import (
 
 	"github.com/joho/godotenv"
 
+	"github.com/cloudwego/hertz/pkg/app/server"
+
 	"code.byted.org/flow/opencoze/backend/api/middleware"
 	"code.byted.org/flow/opencoze/backend/api/router"
 	"code.byted.org/flow/opencoze/backend/application"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
 func main() {

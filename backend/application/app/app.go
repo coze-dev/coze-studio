@@ -790,7 +790,7 @@ func copyDatabase(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.
 		targetAPPID = req.GetProjectID()
 	}
 
-	res, err := memory.DatabaseApplicationSVC.DuplicateDatabase(ctx, &memory.DuplicateDatabaseRequest{
+	res, err := memory.DatabaseApplicationSVC.CopyDatabase(ctx, &memory.CopyDatabaseRequest{
 		DatabaseIDs: []int64{req.ResID},
 		TableType:   table.TableType_OnlineTable,
 		CreatorID:   metaInfo.userID,
@@ -798,14 +798,14 @@ func copyDatabase(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.
 		TargetAppID: targetAPPID,
 	})
 	if err != nil {
-		return 0, errorx.Wrapf(err, "DuplicateDatabase failed, databaseID=%d, scene=%s", req.ResID, req.Scene)
+		return 0, errorx.Wrapf(err, "CopyDatabase failed, databaseID=%d, scene=%s", req.ResID, req.Scene)
 	}
 
-	if len(res.Databases) == 0 {
-		return 0, fmt.Errorf("duplicate database failed, databaseID=%d", req.ResID)
+	if _, ok := res.Databases[req.ResID]; !ok {
+		return 0, fmt.Errorf("copy database failed, databaseID=%d", req.ResID)
 	}
 
-	return res.Databases[0].ID, nil
+	return res.Databases[req.ResID].ID, nil
 }
 
 func moveAPPDatabase(ctx context.Context, _ *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (err error) {
