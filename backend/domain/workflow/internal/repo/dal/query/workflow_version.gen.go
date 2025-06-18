@@ -33,10 +33,10 @@ func newWorkflowVersion(db *gorm.DB, opts ...gen.DOOption) workflowVersion {
 	_workflowVersion.Canvas = field.NewString(tableName, "canvas")
 	_workflowVersion.InputParams = field.NewString(tableName, "input_params")
 	_workflowVersion.OutputParams = field.NewString(tableName, "output_params")
-	_workflowVersion.CommitID = field.NewString(tableName, "commit_id")
 	_workflowVersion.CreatorID = field.NewInt64(tableName, "creator_id")
 	_workflowVersion.CreatedAt = field.NewInt64(tableName, "created_at")
 	_workflowVersion.DeletedAt = field.NewField(tableName, "deleted_at")
+	_workflowVersion.CommitID = field.NewString(tableName, "commit_id")
 
 	_workflowVersion.fillFieldMap()
 
@@ -53,10 +53,10 @@ type workflowVersion struct {
 	Canvas             field.String // 前端 schema
 	InputParams        field.String
 	OutputParams       field.String
-	CommitID           field.String // the commit id corresponding to this version
 	CreatorID          field.Int64  // 发布用户 ID
 	CreatedAt          field.Int64  // 创建时间毫秒时间戳
 	DeletedAt          field.Field  // 删除毫秒时间戳
+	CommitID           field.String // the commit id corresponding to this version
 
 	fieldMap map[string]field.Expr
 }
@@ -79,10 +79,10 @@ func (w *workflowVersion) updateTableName(table string) *workflowVersion {
 	w.Canvas = field.NewString(table, "canvas")
 	w.InputParams = field.NewString(table, "input_params")
 	w.OutputParams = field.NewString(table, "output_params")
-	w.CommitID = field.NewString(table, "commit_id")
 	w.CreatorID = field.NewInt64(table, "creator_id")
 	w.CreatedAt = field.NewInt64(table, "created_at")
 	w.DeletedAt = field.NewField(table, "deleted_at")
+	w.CommitID = field.NewString(table, "commit_id")
 
 	w.fillFieldMap()
 
@@ -106,10 +106,10 @@ func (w *workflowVersion) fillFieldMap() {
 	w.fieldMap["canvas"] = w.Canvas
 	w.fieldMap["input_params"] = w.InputParams
 	w.fieldMap["output_params"] = w.OutputParams
-	w.fieldMap["commit_id"] = w.CommitID
 	w.fieldMap["creator_id"] = w.CreatorID
 	w.fieldMap["created_at"] = w.CreatedAt
 	w.fieldMap["deleted_at"] = w.DeletedAt
+	w.fieldMap["commit_id"] = w.CommitID
 }
 
 func (w workflowVersion) clone(db *gorm.DB) workflowVersion {

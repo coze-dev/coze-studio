@@ -67,7 +67,7 @@ type message struct {
 	Content          field.String // 内容
 	MessageType      field.String // 消息类型：
 	DisplayContent   field.String // 展示内容
-	Ext              field.String // 'message 扩展字段'
+	Ext              field.String // message 扩展字段
 	SectionID        field.Int64  // 段落id
 	BrokenPosition   field.Int32  // 打断位置
 	Status           field.Int32  // 消息状态 1 Available 2 Deleted 3 Replaced 4 Broken 5 Failed 6 Streaming 7 Pending

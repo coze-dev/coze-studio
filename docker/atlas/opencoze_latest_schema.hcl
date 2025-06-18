@@ -269,6 +269,62 @@ table "api_key" {
     columns = [column.id]
   }
 }
+table "app_connector_release_ref" {
+  schema  = schema.opencoze
+  comment = "Connector Release Record Reference"
+  column "id" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Primary Key"
+  }
+  column "record_id" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Publish Record ID"
+  }
+  column "connector_id" {
+    null     = true
+    type     = bigint
+    unsigned = true
+    comment  = "Publish Connector ID"
+  }
+  column "publish_config" {
+    null    = true
+    type    = json
+    comment = "Publish Configuration"
+  }
+  column "publish_status" {
+    null    = false
+    type    = tinyint
+    default = 0
+    comment = "Publish Status"
+  }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Create Time in Milliseconds"
+  }
+  column "updated_at" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Update Time in Milliseconds"
+  }
+  primary_key {
+    columns = [column.id]
+  }
+  index "idx_record_connector" {
+    unique  = true
+    columns = [column.record_id, column.connector_id]
+  }
+}
 table "app_draft" {
   schema  = schema.opencoze
   comment = "Draft Application"
@@ -333,39 +389,87 @@ table "app_draft" {
     columns = [column.id]
   }
 }
-table "connector_release_ref" {
+table "app_release_record" {
   schema  = schema.opencoze
-  comment = "Connector Release Record Reference"
+  comment = "Application Release Record"
   column "id" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Primary Key"
-  }
-  column "record_id" {
     null     = false
     type     = bigint
     default  = 0
     unsigned = true
     comment  = "Publish Record ID"
   }
-  column "connector_id" {
-    null     = true
+  column "app_id" {
+    null     = false
     type     = bigint
+    default  = 0
     unsigned = true
-    comment  = "Publish Connector ID"
+    comment  = "Application ID"
   }
-  column "publish_config" {
+  column "space_id" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Space ID"
+  }
+  column "owner_id" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Owner ID"
+  }
+  column "icon_uri" {
+    null    = false
+    type    = varchar(512)
+    default = ""
+    comment = "Icon URI"
+  }
+  column "Name" {
+    null    = false
+    type    = varchar(255)
+    default = ""
+    comment = "Application Name"
+  }
+  column "desc" {
+    null    = true
+    type    = text
+    comment = "Application Description"
+  }
+  column "connector_ids" {
     null    = true
     type    = json
-    comment = "Publish Configuration"
+    comment = "Publish Connector IDs"
+  }
+  column "extra_info" {
+    null    = true
+    type    = json
+    comment = "Publish Extra Info"
+  }
+  column "version" {
+    null    = false
+    type    = varchar(255)
+    default = ""
+    comment = "Release Version"
+  }
+  column "version_desc" {
+    null    = true
+    type    = text
+    comment = "Version Description"
   }
   column "publish_status" {
     null    = false
     type    = tinyint
     default = 0
     comment = "Publish Status"
+  }
+  column "publish_at" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Publish Time in Milliseconds"
   }
   column "created_at" {
     null     = false
@@ -384,9 +488,12 @@ table "connector_release_ref" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_record_connector" {
+  index "idx_app_publish_at" {
+    columns = [column.app_id, column.publish_at]
+  }
+  index "uniq_idx_app_version_connector" {
     unique  = true
-    columns = [column.record_id, column.connector_id]
+    columns = [column.app_id, column.version]
   }
 }
 table "conversation" {
@@ -1932,113 +2039,6 @@ table "prompt_resource" {
     columns = [column.creator_id]
   }
 }
-table "release_record" {
-  schema  = schema.opencoze
-  comment = "Application Release Record"
-  column "id" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Publish Record ID"
-  }
-  column "app_id" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Application ID"
-  }
-  column "space_id" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Space ID"
-  }
-  column "owner_id" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Owner ID"
-  }
-  column "icon_uri" {
-    null    = false
-    type    = varchar(512)
-    default = ""
-    comment = "Icon URI"
-  }
-  column "Name" {
-    null    = false
-    type    = varchar(255)
-    default = ""
-    comment = "Application Name"
-  }
-  column "desc" {
-    null    = true
-    type    = text
-    comment = "Application Description"
-  }
-  column "connector_ids" {
-    null    = true
-    type    = json
-    comment = "Publish Connector IDs"
-  }
-  column "extra_info" {
-    null    = true
-    type    = json
-    comment = "Publish Extra Info"
-  }
-  column "version" {
-    null    = false
-    type    = varchar(255)
-    default = ""
-    comment = "Release Version"
-  }
-  column "version_desc" {
-    null    = true
-    type    = text
-    comment = "Version Description"
-  }
-  column "publish_status" {
-    null    = false
-    type    = tinyint
-    default = 0
-    comment = "Publish Status"
-  }
-  column "publish_at" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Publish Time in Milliseconds"
-  }
-  column "created_at" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Create Time in Milliseconds"
-  }
-  column "updated_at" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Update Time in Milliseconds"
-  }
-  primary_key {
-    columns = [column.id]
-  }
-  index "idx_app_publish_at" {
-    columns = [column.app_id, column.publish_at]
-  }
-  index "uniq_idx_app_version_connector" {
-    unique  = true
-    columns = [column.app_id, column.version]
-  }
-}
 table "run_record" {
   schema  = schema.opencoze
   comment = "执行记录表"
@@ -2816,6 +2816,322 @@ table "space_user" {
   index "uk_space_user" {
     unique  = true
     columns = [column.space_id, column.user_id]
+  }
+}
+table "table_7516761620106706944" {
+  schema = schema.opencoze
+  column "f_1" {
+    null = true
+    type = varchar(255)
+  }
+  column "bstudio_id" {
+    null           = false
+    type           = bigint
+    auto_increment = true
+  }
+  column "bstudio_connector_uid" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_connector_id" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_create_time" {
+    null    = false
+    type    = timestamp
+    default = sql("CURRENT_TIMESTAMP")
+  }
+  primary_key {
+    columns = [column.bstudio_id]
+  }
+  index "idx_uid" {
+    columns = [column.bstudio_connector_uid, column.bstudio_connector_id]
+  }
+}
+table "table_7516761620295450624" {
+  schema = schema.opencoze
+  column "f_1" {
+    null = true
+    type = varchar(255)
+  }
+  column "bstudio_id" {
+    null           = false
+    type           = bigint
+    auto_increment = true
+  }
+  column "bstudio_connector_uid" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_connector_id" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_create_time" {
+    null    = false
+    type    = timestamp
+    default = sql("CURRENT_TIMESTAMP")
+  }
+  primary_key {
+    columns = [column.bstudio_id]
+  }
+  index "idx_uid" {
+    columns = [column.bstudio_connector_uid, column.bstudio_connector_id]
+  }
+}
+table "table_7516847751217283072" {
+  schema = schema.opencoze
+  column "f_1" {
+    null = true
+    type = varchar(255)
+  }
+  column "bstudio_id" {
+    null           = false
+    type           = bigint
+    auto_increment = true
+  }
+  column "bstudio_connector_uid" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_connector_id" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_create_time" {
+    null    = false
+    type    = timestamp
+    default = sql("CURRENT_TIMESTAMP")
+  }
+  primary_key {
+    columns = [column.bstudio_id]
+  }
+  index "idx_uid" {
+    columns = [column.bstudio_connector_uid, column.bstudio_connector_id]
+  }
+}
+table "table_7516847751389249536" {
+  schema = schema.opencoze
+  column "f_1" {
+    null = true
+    type = varchar(255)
+  }
+  column "bstudio_id" {
+    null           = false
+    type           = bigint
+    auto_increment = true
+  }
+  column "bstudio_connector_uid" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_connector_id" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_create_time" {
+    null    = false
+    type    = timestamp
+    default = sql("CURRENT_TIMESTAMP")
+  }
+  primary_key {
+    columns = [column.bstudio_id]
+  }
+  index "idx_uid" {
+    columns = [column.bstudio_connector_uid, column.bstudio_connector_id]
+  }
+}
+table "table_7516850986934075392" {
+  schema = schema.opencoze
+  column "f_1" {
+    null    = false
+    type    = varchar(255)
+    comment = "ddd"
+  }
+  column "bstudio_id" {
+    null           = false
+    type           = bigint
+    auto_increment = true
+  }
+  column "bstudio_connector_uid" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_connector_id" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_create_time" {
+    null    = false
+    type    = timestamp
+    default = sql("CURRENT_TIMESTAMP")
+  }
+  primary_key {
+    columns = [column.bstudio_id]
+  }
+  index "idx_uid" {
+    columns = [column.bstudio_connector_uid, column.bstudio_connector_id]
+  }
+}
+table "table_7516850987017961472" {
+  schema = schema.opencoze
+  column "f_1" {
+    null    = false
+    type    = varchar(255)
+    comment = "ddd"
+  }
+  column "bstudio_id" {
+    null           = false
+    type           = bigint
+    auto_increment = true
+  }
+  column "bstudio_connector_uid" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_connector_id" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_create_time" {
+    null    = false
+    type    = timestamp
+    default = sql("CURRENT_TIMESTAMP")
+  }
+  primary_key {
+    columns = [column.bstudio_id]
+  }
+  index "idx_uid" {
+    columns = [column.bstudio_connector_uid, column.bstudio_connector_id]
+  }
+}
+table "table_7516851000183881728" {
+  schema = schema.opencoze
+  column "f_1" {
+    null    = false
+    type    = varchar(255)
+    comment = "ddd"
+  }
+  column "bstudio_id" {
+    null           = false
+    type           = bigint
+    auto_increment = true
+  }
+  column "bstudio_connector_uid" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_connector_id" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_create_time" {
+    null    = false
+    type    = timestamp
+    default = sql("CURRENT_TIMESTAMP")
+  }
+  primary_key {
+    columns = [column.bstudio_id]
+  }
+  index "idx_uid" {
+    columns = [column.bstudio_connector_uid, column.bstudio_connector_id]
+  }
+}
+table "table_7516851000246796288" {
+  schema = schema.opencoze
+  column "f_1" {
+    null    = false
+    type    = varchar(255)
+    comment = "ddd"
+  }
+  column "bstudio_id" {
+    null           = false
+    type           = bigint
+    auto_increment = true
+  }
+  column "bstudio_connector_uid" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_connector_id" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_create_time" {
+    null    = false
+    type    = timestamp
+    default = sql("CURRENT_TIMESTAMP")
+  }
+  primary_key {
+    columns = [column.bstudio_id]
+  }
+  index "idx_uid" {
+    columns = [column.bstudio_connector_uid, column.bstudio_connector_id]
+  }
+}
+table "table_7516851021776158720" {
+  schema = schema.opencoze
+  column "f_1" {
+    null    = false
+    type    = varchar(255)
+    comment = "ddd"
+  }
+  column "bstudio_id" {
+    null           = false
+    type           = bigint
+    auto_increment = true
+  }
+  column "bstudio_connector_uid" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_connector_id" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_create_time" {
+    null    = false
+    type    = timestamp
+    default = sql("CURRENT_TIMESTAMP")
+  }
+  primary_key {
+    columns = [column.bstudio_id]
+  }
+  index "idx_uid" {
+    columns = [column.bstudio_connector_uid, column.bstudio_connector_id]
+  }
+}
+table "table_7516851021826490368" {
+  schema = schema.opencoze
+  column "f_1" {
+    null    = false
+    type    = varchar(255)
+    comment = "ddd"
+  }
+  column "bstudio_id" {
+    null           = false
+    type           = bigint
+    auto_increment = true
+  }
+  column "bstudio_connector_uid" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_connector_id" {
+    null = false
+    type = varchar(255)
+  }
+  column "bstudio_create_time" {
+    null    = false
+    type    = timestamp
+    default = sql("CURRENT_TIMESTAMP")
+  }
+  primary_key {
+    columns = [column.bstudio_id]
+  }
+  index "idx_uid" {
+    columns = [column.bstudio_connector_uid, column.bstudio_connector_id]
   }
 }
 table "template" {
@@ -3824,11 +4140,6 @@ table "workflow_version" {
     null = true
     type = mediumtext
   }
-  column "commit_id" {
-    null    = false
-    type    = varchar(255)
-    comment = "the commit id corresponding to this version"
-  }
   column "creator_id" {
     null     = false
     type     = bigint
@@ -3845,6 +4156,11 @@ table "workflow_version" {
     null    = true
     type    = datetime(3)
     comment = "删除毫秒时间戳"
+  }
+  column "commit_id" {
+    null    = false
+    type    = varchar(255)
+    comment = "the commit id corresponding to this version"
   }
   primary_key {
     columns = [column.id, column.version]

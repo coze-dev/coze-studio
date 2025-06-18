@@ -46,7 +46,7 @@ elif [ "$OS" = "Linux" ]; then
         --url "$ATLAS_URL" \
         --dir "file://migrations" \
         --revisions-schema opencoze \
-        --baseline "20250609083036"
+        --baseline "20250618025620"
     echo -e "${GREEN}✅ migrate mysql successfully${NC}"
 elif [ "$OS" = "Windows" ]; then
     echo -e "${RED}Windows is not supported. Please install Atlas manually.${NC}"

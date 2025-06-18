@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `connector_release_ref`
+CREATE TABLE IF NOT EXISTS `app_connector_release_ref`
 (
     `id`             bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Primary Key',
     `record_id`      bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Publish Record ID',
@@ -14,4 +14,4 @@ CREATE TABLE IF NOT EXISTS `connector_release_ref`
 
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_unicode_ci COMMENT = 'Connector Release Record Reference';
+  COLLATE = utf8mb4_unicode_ci COMMENT = 'Application Connector Release Record Reference';

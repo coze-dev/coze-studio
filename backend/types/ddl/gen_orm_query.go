@@ -117,7 +117,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"status":      modelEntity.ModelMetaStatus(0),
 		},
 		"model_entity": {
-			//"scenario":       modelEntity.Scenario(0),
+			"scenario":       modelEntity.Scenario(0),
 			"default_params": []*modelEntity.Parameter{},
 			"status":         modelEntity.ModelEntityStatus(0),
 		},
@@ -159,11 +159,11 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	},
 	"domain/app/internal/dal/query": {
 		"app_draft": {},
-		"release_record": {
+		"app_release_record": {
 			"connector_ids": []int64{},
 			"extra_info":    &appEntity.PublishRecordExtraInfo{},
 		},
-		"connector_release_ref": {
+		"app_connector_release_ref": {
 			"publish_config": appEntity.PublishConfig{},
 		},
 	},

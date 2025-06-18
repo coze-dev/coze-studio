@@ -15,19 +15,19 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-func NewReleaseRecordDAO(db *gorm.DB, idGen idgen.IDGenerator) *ReleaseRecordDAO {
-	return &ReleaseRecordDAO{
+func NewAPPReleaseRecordDAO(db *gorm.DB, idGen idgen.IDGenerator) *APPReleaseRecordDAO {
+	return &APPReleaseRecordDAO{
 		idGen: idGen,
 		query: query.Use(db),
 	}
 }
 
-type ReleaseRecordDAO struct {
+type APPReleaseRecordDAO struct {
 	idGen idgen.IDGenerator
 	query *query.Query
 }
 
-type releaseRecordPO model.ReleaseRecord
+type releaseRecordPO model.AppReleaseRecord
 
 func (a releaseRecordPO) ToDO() *entity.APP {
 	return &entity.APP{
@@ -49,12 +49,12 @@ func (a releaseRecordPO) ToDO() *entity.APP {
 	}
 }
 
-func (r *ReleaseRecordDAO) getSelected(opt *APPSelectedOption) (selected []field.Expr) {
+func (r *APPReleaseRecordDAO) getSelected(opt *APPSelectedOption) (selected []field.Expr) {
 	if opt == nil {
 		return selected
 	}
 
-	table := r.query.ReleaseRecord
+	table := r.query.AppReleaseRecord
 
 	if opt.PublishRecordID {
 		selected = append(selected, table.ID)
@@ -75,8 +75,8 @@ func (r *ReleaseRecordDAO) getSelected(opt *APPSelectedOption) (selected []field
 	return selected
 }
 
-func (r *ReleaseRecordDAO) GetLatestReleaseRecord(ctx context.Context, appID int64) (app *entity.APP, exist bool, err error) {
-	table := r.query.ReleaseRecord
+func (r *APPReleaseRecordDAO) GetLatestReleaseRecord(ctx context.Context, appID int64) (app *entity.APP, exist bool, err error) {
+	table := r.query.AppReleaseRecord
 	res, err := table.WithContext(ctx).
 		Where(table.AppID.Eq(appID)).
 		Order(table.PublishAt.Desc()).
@@ -93,8 +93,8 @@ func (r *ReleaseRecordDAO) GetLatestReleaseRecord(ctx context.Context, appID int
 	return app, true, nil
 }
 
-func (r *ReleaseRecordDAO) GetOldestReleaseRecord(ctx context.Context, appID int64) (app *entity.APP, exist bool, err error) {
-	table := r.query.ReleaseRecord
+func (r *APPReleaseRecordDAO) GetOldestReleaseRecord(ctx context.Context, appID int64) (app *entity.APP, exist bool, err error) {
+	table := r.query.AppReleaseRecord
 	res, err := table.WithContext(ctx).
 		Where(table.AppID.Eq(appID)).
 		Order(table.PublishAt.Asc()).
@@ -111,8 +111,8 @@ func (r *ReleaseRecordDAO) GetOldestReleaseRecord(ctx context.Context, appID int
 	return app, true, nil
 }
 
-func (r *ReleaseRecordDAO) GetReleaseRecordWithID(ctx context.Context, recordID int64) (app *entity.APP, exist bool, err error) {
-	table := r.query.ReleaseRecord
+func (r *APPReleaseRecordDAO) GetReleaseRecordWithID(ctx context.Context, recordID int64) (app *entity.APP, exist bool, err error) {
+	table := r.query.AppReleaseRecord
 	res, err := table.WithContext(ctx).
 		Where(table.ID.Eq(recordID)).
 		First()
@@ -128,8 +128,8 @@ func (r *ReleaseRecordDAO) GetReleaseRecordWithID(ctx context.Context, recordID 
 	return app, true, nil
 }
 
-func (r *ReleaseRecordDAO) GetReleaseRecordWithVersion(ctx context.Context, appID int64, version string) (app *entity.APP, exist bool, err error) {
-	table := r.query.ReleaseRecord
+func (r *APPReleaseRecordDAO) GetReleaseRecordWithVersion(ctx context.Context, appID int64, version string) (app *entity.APP, exist bool, err error) {
+	table := r.query.AppReleaseRecord
 	res, err := table.WithContext(ctx).
 		Where(
 			table.AppID.Eq(appID),
@@ -148,8 +148,8 @@ func (r *ReleaseRecordDAO) GetReleaseRecordWithVersion(ctx context.Context, appI
 	return app, true, nil
 }
 
-func (r *ReleaseRecordDAO) GetAPPAllPublishRecords(ctx context.Context, appID int64, opt *APPSelectedOption) (apps []*entity.APP, err error) {
-	table := r.query.ReleaseRecord
+func (r *APPReleaseRecordDAO) GetAPPAllPublishRecords(ctx context.Context, appID int64, opt *APPSelectedOption) (apps []*entity.APP, err error) {
+	table := r.query.AppReleaseRecord
 
 	cursor := int64(0)
 	limit := 20
@@ -182,8 +182,8 @@ func (r *ReleaseRecordDAO) GetAPPAllPublishRecords(ctx context.Context, appID in
 	return apps, nil
 }
 
-func (r *ReleaseRecordDAO) UpdatePublishStatus(ctx context.Context, recordID int64, status entity.PublishStatus, extraInfo *entity.PublishRecordExtraInfo) (err error) {
-	table := r.query.ReleaseRecord
+func (r *APPReleaseRecordDAO) UpdatePublishStatus(ctx context.Context, recordID int64, status entity.PublishStatus, extraInfo *entity.PublishRecordExtraInfo) (err error) {
+	table := r.query.AppReleaseRecord
 
 	updateMap := map[string]any{
 		table.PublishStatus.ColumnName().String(): int32(status),
@@ -206,13 +206,13 @@ func (r *ReleaseRecordDAO) UpdatePublishStatus(ctx context.Context, recordID int
 	return nil
 }
 
-func (r *ReleaseRecordDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, app *entity.APP) (recordID int64, err error) {
+func (r *APPReleaseRecordDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, app *entity.APP) (recordID int64, err error) {
 	id, err := r.idGen.GenID(ctx)
 	if err != nil {
 		return 0, err
 	}
 
-	m := &model.ReleaseRecord{
+	m := &model.AppReleaseRecord{
 		ID:            id,
 		AppID:         app.ID,
 		SpaceID:       app.SpaceID,
@@ -227,7 +227,7 @@ func (r *ReleaseRecordDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, 
 		PublishAt:     app.GetPublishedAtMS(),
 	}
 
-	err = tx.ReleaseRecord.WithContext(ctx).Create(m)
+	err = tx.AppReleaseRecord.WithContext(ctx).Create(m)
 	if err != nil {
 		return 0, err
 	}

@@ -18,10 +18,10 @@ type WorkflowVersion struct {
 	Canvas             string         `gorm:"column:canvas;not null;comment:前端 schema" json:"canvas"`                      // 前端 schema
 	InputParams        string         `gorm:"column:input_params" json:"input_params"`
 	OutputParams       string         `gorm:"column:output_params" json:"output_params"`
-	CommitID           string         `gorm:"column:commit_id;not null;comment:the commit id corresponding to this version" json:"commit_id"` // the commit id corresponding to this version
 	CreatorID          int64          `gorm:"column:creator_id;not null;comment:发布用户 ID" json:"creator_id"`                                   // 发布用户 ID
 	CreatedAt          int64          `gorm:"column:created_at;not null;autoCreateTime:milli;comment:创建时间毫秒时间戳" json:"created_at"`            // 创建时间毫秒时间戳
 	DeletedAt          gorm.DeletedAt `gorm:"column:deleted_at;comment:删除毫秒时间戳" json:"deleted_at"`                                            // 删除毫秒时间戳
+	CommitID           string         `gorm:"column:commit_id;not null;comment:the commit id corresponding to this version" json:"commit_id"` // the commit id corresponding to this version
 }
 
 // TableName WorkflowVersion's table name

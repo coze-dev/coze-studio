@@ -6,10 +6,10 @@ package model
 
 import "code.byted.org/flow/opencoze/backend/domain/app/entity"
 
-const TableNameConnectorReleaseRef = "connector_release_ref"
+const TableNameAppConnectorReleaseRef = "app_connector_release_ref"
 
-// ConnectorReleaseRef Connector Release Record Reference
-type ConnectorReleaseRef struct {
+// AppConnectorReleaseRef Connector Release Record Reference
+type AppConnectorReleaseRef struct {
 	ID            int64                `gorm:"column:id;primaryKey;comment:Primary Key" json:"id"`                                                    // Primary Key
 	RecordID      int64                `gorm:"column:record_id;not null;comment:Publish Record ID" json:"record_id"`                                  // Publish Record ID
 	ConnectorID   int64                `gorm:"column:connector_id;comment:Publish Connector ID" json:"connector_id"`                                  // Publish Connector ID
@@ -19,7 +19,7 @@ type ConnectorReleaseRef struct {
 	UpdatedAt     int64                `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
 }
 
-// TableName ConnectorReleaseRef's table name
-func (*ConnectorReleaseRef) TableName() string {
-	return TableNameConnectorReleaseRef
+// TableName AppConnectorReleaseRef's table name
+func (*AppConnectorReleaseRef) TableName() string {
+	return TableNameAppConnectorReleaseRef
 }

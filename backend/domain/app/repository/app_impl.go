@@ -25,10 +25,10 @@ type appRepoImpl struct {
 	idGen idgen.IDGenerator
 	query *query.Query
 
-	appDraftDAO      *dal.APPDraftDAO
-	releaseRecordDAO *dal.ReleaseRecordDAO
-	connectorRefDAO  *dal.ConnectorReleaseRefDAO
-	cacheCli         *dal.AppCache
+	appDraftDAO         *dal.APPDraftDAO
+	appReleaseRecordDAO *dal.APPReleaseRecordDAO
+	appConnectorRefDAO  *dal.APPConnectorReleaseRefDAO
+	cacheCli            *dal.AppCache
 }
 
 type APPRepoComponents struct {
@@ -39,12 +39,12 @@ type APPRepoComponents struct {
 
 func NewAPPRepo(components *APPRepoComponents) AppRepository {
 	return &appRepoImpl{
-		idGen:            components.IDGen,
-		query:            query.Use(components.DB),
-		appDraftDAO:      dal.NewAPPDraftDAO(components.DB, components.IDGen),
-		releaseRecordDAO: dal.NewReleaseRecordDAO(components.DB, components.IDGen),
-		connectorRefDAO:  dal.NewConnectorReleaseRefDAO(components.DB, components.IDGen),
-		cacheCli:         dal.NewAppCache(components.CacheCli),
+		idGen:               components.IDGen,
+		query:               query.Use(components.DB),
+		appDraftDAO:         dal.NewAPPDraftDAO(components.DB, components.IDGen),
+		appReleaseRecordDAO: dal.NewAPPReleaseRecordDAO(components.DB, components.IDGen),
+		appConnectorRefDAO:  dal.NewAPPConnectorReleaseRefDAO(components.DB, components.IDGen),
+		cacheCli:            dal.NewAppCache(components.CacheCli),
 	}
 }
 
@@ -85,11 +85,11 @@ func (a *appRepoImpl) UpdateDraftAPP(ctx context.Context, app *entity.APP) (err 
 func (a *appRepoImpl) GetPublishRecord(ctx context.Context, req *GetPublishRecordRequest) (record *entity.PublishRecord, exist bool, err error) {
 	var app *entity.APP
 	if req.RecordID != nil {
-		app, exist, err = a.releaseRecordDAO.GetReleaseRecordWithID(ctx, *req.RecordID)
+		app, exist, err = a.appReleaseRecordDAO.GetReleaseRecordWithID(ctx, *req.RecordID)
 	} else if req.Oldest {
-		app, exist, err = a.releaseRecordDAO.GetOldestReleaseRecord(ctx, req.APPID)
+		app, exist, err = a.appReleaseRecordDAO.GetOldestReleaseRecord(ctx, req.APPID)
 	} else {
-		app, exist, err = a.releaseRecordDAO.GetLatestReleaseRecord(ctx, req.APPID)
+		app, exist, err = a.appReleaseRecordDAO.GetLatestReleaseRecord(ctx, req.APPID)
 	}
 	if err != nil {
 		return nil, false, err
@@ -98,7 +98,7 @@ func (a *appRepoImpl) GetPublishRecord(ctx context.Context, req *GetPublishRecor
 		return nil, false, nil
 	}
 
-	publishRecords, err := a.connectorRefDAO.GetAllConnectorRecords(ctx, app.GetPublishRecordID())
+	publishRecords, err := a.appConnectorRefDAO.GetAllConnectorRecords(ctx, app.GetPublishRecordID())
 	if err != nil {
 		return nil, false, err
 	}
@@ -112,7 +112,7 @@ func (a *appRepoImpl) GetPublishRecord(ctx context.Context, req *GetPublishRecor
 }
 
 func (a *appRepoImpl) CheckAPPVersionExist(ctx context.Context, appID int64, version string) (exist bool, err error) {
-	_, exist, err = a.releaseRecordDAO.GetReleaseRecordWithVersion(ctx, appID, version)
+	_, exist, err = a.appReleaseRecordDAO.GetReleaseRecordWithVersion(ctx, appID, version)
 	return exist, err
 }
 
@@ -137,12 +137,12 @@ func (a *appRepoImpl) CreateAPPPublishRecord(ctx context.Context, record *entity
 		}
 	}()
 
-	recordID, err = a.releaseRecordDAO.CreateWithTX(ctx, tx, record.APP)
+	recordID, err = a.appReleaseRecordDAO.CreateWithTX(ctx, tx, record.APP)
 	if err != nil {
 		return 0, err
 	}
 
-	err = a.connectorRefDAO.BatchCreateWithTX(ctx, tx, recordID, record.ConnectorPublishRecords)
+	err = a.appConnectorRefDAO.BatchCreateWithTX(ctx, tx, recordID, record.ConnectorPublishRecords)
 	if err != nil {
 		return 0, err
 	}
@@ -156,11 +156,11 @@ func (a *appRepoImpl) CreateAPPPublishRecord(ctx context.Context, record *entity
 }
 
 func (a *appRepoImpl) UpdateAPPPublishStatus(ctx context.Context, req *UpdateAPPPublishStatusRequest) (err error) {
-	return a.releaseRecordDAO.UpdatePublishStatus(ctx, req.RecordID, req.PublishStatus, req.PublishRecordExtraInfo)
+	return a.appReleaseRecordDAO.UpdatePublishStatus(ctx, req.RecordID, req.PublishStatus, req.PublishRecordExtraInfo)
 }
 
 func (a *appRepoImpl) UpdateConnectorPublishStatus(ctx context.Context, recordID int64, status entity.ConnectorPublishStatus) (err error) {
-	return a.connectorRefDAO.UpdatePublishStatus(ctx, recordID, status)
+	return a.appConnectorRefDAO.UpdatePublishStatus(ctx, recordID, status)
 }
 
 func (a *appRepoImpl) GetAPPAllPublishRecords(ctx context.Context, appID int64, opts ...APPSelectedOptions) (records []*entity.PublishRecord, err error) {
@@ -172,7 +172,7 @@ func (a *appRepoImpl) GetAPPAllPublishRecords(ctx context.Context, appID int64, 
 		}
 	}
 
-	apps, err := a.releaseRecordDAO.GetAPPAllPublishRecords(ctx, appID, opt)
+	apps, err := a.appReleaseRecordDAO.GetAPPAllPublishRecords(ctx, appID, opt)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +181,7 @@ func (a *appRepoImpl) GetAPPAllPublishRecords(ctx context.Context, appID int64, 
 	lock := sync.Mutex{}
 	for _, r := range apps {
 		tasks.Go(func() error {
-			connectorPublishRecords, err := a.connectorRefDAO.GetAllConnectorPublishRecords(ctx, r.GetPublishRecordID())
+			connectorPublishRecords, err := a.appConnectorRefDAO.GetAllConnectorPublishRecords(ctx, r.GetPublishRecordID())
 			if err != nil {
 				return err
 			}

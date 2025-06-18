@@ -6,10 +6,10 @@ package model
 
 import "code.byted.org/flow/opencoze/backend/domain/app/entity"
 
-const TableNameReleaseRecord = "release_record"
+const TableNameAppReleaseRecord = "app_release_record"
 
-// ReleaseRecord Application Release Record
-type ReleaseRecord struct {
+// AppReleaseRecord Application Release Record
+type AppReleaseRecord struct {
 	ID            int64                          `gorm:"column:id;primaryKey;comment:Publish Record ID" json:"id"`                                              // Publish Record ID
 	AppID         int64                          `gorm:"column:app_id;not null;comment:Application ID" json:"app_id"`                                           // Application ID
 	SpaceID       int64                          `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                                             // Space ID
@@ -27,7 +27,7 @@ type ReleaseRecord struct {
 	UpdatedAt     int64                          `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
 }
 
-// TableName ReleaseRecord's table name
-func (*ReleaseRecord) TableName() string {
-	return TableNameReleaseRecord
+// TableName AppReleaseRecord's table name
+func (*AppReleaseRecord) TableName() string {
+	return TableNameAppReleaseRecord
 }

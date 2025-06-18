@@ -11,14 +11,14 @@ type Message struct {
 	ID               int64  `gorm:"column:id;primaryKey;autoIncrement:true;comment:主键ID" json:"id"`                                                             // 主键ID
 	RunID            int64  `gorm:"column:run_id;not null;comment:对应的run_id" json:"run_id"`                                                                     // 对应的run_id
 	ConversationID   int64  `gorm:"column:conversation_id;not null;comment:conversation id" json:"conversation_id"`                                             // conversation id
-	UserID           string `gorm:"column:user_id;not null;default:0;comment:user id" json:"user_id"`                                                           // user id
+	UserID           string `gorm:"column:user_id;not null;comment:user id" json:"user_id"`                                                                     // user id
 	AgentID          int64  `gorm:"column:agent_id;not null;comment:agent_id" json:"agent_id"`                                                                  // agent_id
 	Role             string `gorm:"column:role;not null;comment:角色: user、assistant、system" json:"role"`                                                         // 角色: user、assistant、system
 	ContentType      string `gorm:"column:content_type;not null;comment:内容类型 1 text" json:"content_type"`                                                       // 内容类型 1 text
 	Content          string `gorm:"column:content;comment:内容" json:"content"`                                                                                   // 内容
 	MessageType      string `gorm:"column:message_type;not null;comment:消息类型：" json:"message_type"`                                                             // 消息类型：
 	DisplayContent   string `gorm:"column:display_content;comment:展示内容" json:"display_content"`                                                                 // 展示内容
-	Ext              string `gorm:"column:ext;comment:'message 扩展字段'" json:"ext"`                                                                               // 'message 扩展字段'
+	Ext              string `gorm:"column:ext;comment:message 扩展字段" json:"ext"`                                                                                 // message 扩展字段
 	SectionID        int64  `gorm:"column:section_id;comment:段落id" json:"section_id"`                                                                           // 段落id
 	BrokenPosition   int32  `gorm:"column:broken_position;default:-1;comment:打断位置" json:"broken_position"`                                                      // 打断位置
 	Status           int32  `gorm:"column:status;not null;comment:消息状态 1 Available 2 Deleted 3 Replaced 4 Broken 5 Failed 6 Streaming 7 Pending" json:"status"` // 消息状态 1 Available 2 Deleted 3 Replaced 4 Broken 5 Failed 6 Streaming 7 Pending

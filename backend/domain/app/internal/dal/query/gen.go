@@ -16,44 +16,44 @@ import (
 )
 
 var (
-	Q                   = new(Query)
-	AppDraft            *appDraft
-	ConnectorReleaseRef *connectorReleaseRef
-	ReleaseRecord       *releaseRecord
+	Q                      = new(Query)
+	AppConnectorReleaseRef *appConnectorReleaseRef
+	AppDraft               *appDraft
+	AppReleaseRecord       *appReleaseRecord
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	AppConnectorReleaseRef = &Q.AppConnectorReleaseRef
 	AppDraft = &Q.AppDraft
-	ConnectorReleaseRef = &Q.ConnectorReleaseRef
-	ReleaseRecord = &Q.ReleaseRecord
+	AppReleaseRecord = &Q.AppReleaseRecord
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:                  db,
-		AppDraft:            newAppDraft(db, opts...),
-		ConnectorReleaseRef: newConnectorReleaseRef(db, opts...),
-		ReleaseRecord:       newReleaseRecord(db, opts...),
+		db:                     db,
+		AppConnectorReleaseRef: newAppConnectorReleaseRef(db, opts...),
+		AppDraft:               newAppDraft(db, opts...),
+		AppReleaseRecord:       newAppReleaseRecord(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	AppDraft            appDraft
-	ConnectorReleaseRef connectorReleaseRef
-	ReleaseRecord       releaseRecord
+	AppConnectorReleaseRef appConnectorReleaseRef
+	AppDraft               appDraft
+	AppReleaseRecord       appReleaseRecord
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:                  db,
-		AppDraft:            q.AppDraft.clone(db),
-		ConnectorReleaseRef: q.ConnectorReleaseRef.clone(db),
-		ReleaseRecord:       q.ReleaseRecord.clone(db),
+		db:                     db,
+		AppConnectorReleaseRef: q.AppConnectorReleaseRef.clone(db),
+		AppDraft:               q.AppDraft.clone(db),
+		AppReleaseRecord:       q.AppReleaseRecord.clone(db),
 	}
 }
 
@@ -67,24 +67,24 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:                  db,
-		AppDraft:            q.AppDraft.replaceDB(db),
-		ConnectorReleaseRef: q.ConnectorReleaseRef.replaceDB(db),
-		ReleaseRecord:       q.ReleaseRecord.replaceDB(db),
+		db:                     db,
+		AppConnectorReleaseRef: q.AppConnectorReleaseRef.replaceDB(db),
+		AppDraft:               q.AppDraft.replaceDB(db),
+		AppReleaseRecord:       q.AppReleaseRecord.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	AppDraft            IAppDraftDo
-	ConnectorReleaseRef IConnectorReleaseRefDo
-	ReleaseRecord       IReleaseRecordDo
+	AppConnectorReleaseRef IAppConnectorReleaseRefDo
+	AppDraft               IAppDraftDo
+	AppReleaseRecord       IAppReleaseRecordDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		AppDraft:            q.AppDraft.WithContext(ctx),
-		ConnectorReleaseRef: q.ConnectorReleaseRef.WithContext(ctx),
-		ReleaseRecord:       q.ReleaseRecord.WithContext(ctx),
+		AppConnectorReleaseRef: q.AppConnectorReleaseRef.WithContext(ctx),
+		AppDraft:               q.AppDraft.WithContext(ctx),
+		AppReleaseRecord:       q.AppReleaseRecord.WithContext(ctx),
 	}
 }
 

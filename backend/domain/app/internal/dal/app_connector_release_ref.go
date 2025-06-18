@@ -11,21 +11,21 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 )
 
-func NewConnectorReleaseRefDAO(db *gorm.DB, idGen idgen.IDGenerator) *ConnectorReleaseRefDAO {
-	return &ConnectorReleaseRefDAO{
+func NewAPPConnectorReleaseRefDAO(db *gorm.DB, idGen idgen.IDGenerator) *APPConnectorReleaseRefDAO {
+	return &APPConnectorReleaseRefDAO{
 		idGen: idGen,
 		query: query.Use(db),
 	}
 }
 
-type ConnectorReleaseRefDAO struct {
+type APPConnectorReleaseRefDAO struct {
 	idGen idgen.IDGenerator
 	query *query.Query
 }
 
-type connectorReleaseRefPO model.ConnectorReleaseRef
+type appConnectorReleaseRefPO model.AppConnectorReleaseRef
 
-func (a connectorReleaseRefPO) ToDO() *entity.ConnectorPublishRecord {
+func (a appConnectorReleaseRefPO) ToDO() *entity.ConnectorPublishRecord {
 	return &entity.ConnectorPublishRecord{
 		ConnectorID:   a.ConnectorID,
 		PublishStatus: entity.ConnectorPublishStatus(a.PublishStatus),
@@ -33,8 +33,8 @@ func (a connectorReleaseRefPO) ToDO() *entity.ConnectorPublishRecord {
 	}
 }
 
-func (c *ConnectorReleaseRefDAO) MGetConnectorPublishRecords(ctx context.Context, recordID int64, connectorIDs []int64) ([]*entity.ConnectorPublishRecord, error) {
-	table := c.query.ConnectorReleaseRef
+func (c *APPConnectorReleaseRefDAO) MGetConnectorPublishRecords(ctx context.Context, recordID int64, connectorIDs []int64) ([]*entity.ConnectorPublishRecord, error) {
+	table := c.query.AppConnectorReleaseRef
 	res, err := table.WithContext(ctx).
 		Where(
 			table.RecordID.Eq(recordID),
@@ -47,14 +47,14 @@ func (c *ConnectorReleaseRefDAO) MGetConnectorPublishRecords(ctx context.Context
 
 	publishInfo := make([]*entity.ConnectorPublishRecord, 0, len(res))
 	for _, r := range res {
-		publishInfo = append(publishInfo, connectorReleaseRefPO(*r).ToDO())
+		publishInfo = append(publishInfo, appConnectorReleaseRefPO(*r).ToDO())
 	}
 
 	return publishInfo, nil
 }
 
-func (c *ConnectorReleaseRefDAO) GetAllConnectorPublishRecords(ctx context.Context, recordID int64) ([]*entity.ConnectorPublishRecord, error) {
-	table := c.query.ConnectorReleaseRef
+func (c *APPConnectorReleaseRefDAO) GetAllConnectorPublishRecords(ctx context.Context, recordID int64) ([]*entity.ConnectorPublishRecord, error) {
+	table := c.query.AppConnectorReleaseRef
 	res, err := table.WithContext(ctx).
 		Where(table.RecordID.Eq(recordID)).
 		Find()
@@ -64,14 +64,14 @@ func (c *ConnectorReleaseRefDAO) GetAllConnectorPublishRecords(ctx context.Conte
 
 	records := make([]*entity.ConnectorPublishRecord, 0, len(res))
 	for _, r := range res {
-		records = append(records, connectorReleaseRefPO(*r).ToDO())
+		records = append(records, appConnectorReleaseRefPO(*r).ToDO())
 	}
 
 	return records, nil
 }
 
-func (c *ConnectorReleaseRefDAO) GetAllConnectorRecords(ctx context.Context, recordID int64) ([]*entity.ConnectorPublishRecord, error) {
-	table := c.query.ConnectorReleaseRef
+func (c *APPConnectorReleaseRefDAO) GetAllConnectorRecords(ctx context.Context, recordID int64) ([]*entity.ConnectorPublishRecord, error) {
+	table := c.query.AppConnectorReleaseRef
 	res, err := table.WithContext(ctx).
 		Where(table.RecordID.Eq(recordID)).
 		Find()
@@ -81,14 +81,14 @@ func (c *ConnectorReleaseRefDAO) GetAllConnectorRecords(ctx context.Context, rec
 
 	publishInfo := make([]*entity.ConnectorPublishRecord, 0, len(res))
 	for _, r := range res {
-		publishInfo = append(publishInfo, connectorReleaseRefPO(*r).ToDO())
+		publishInfo = append(publishInfo, appConnectorReleaseRefPO(*r).ToDO())
 	}
 
 	return publishInfo, nil
 }
 
-func (c *ConnectorReleaseRefDAO) UpdatePublishStatus(ctx context.Context, recordID int64, status entity.ConnectorPublishStatus) error {
-	table := c.query.ConnectorReleaseRef
+func (c *APPConnectorReleaseRefDAO) UpdatePublishStatus(ctx context.Context, recordID int64, status entity.ConnectorPublishStatus) error {
+	table := c.query.AppConnectorReleaseRef
 
 	_, err := table.WithContext(ctx).
 		Where(table.RecordID.Eq(recordID)).
@@ -100,15 +100,15 @@ func (c *ConnectorReleaseRefDAO) UpdatePublishStatus(ctx context.Context, record
 	return nil
 }
 
-func (c *ConnectorReleaseRefDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, recordID int64, publishRecords []*entity.ConnectorPublishRecord) error {
-	records := make([]*model.ConnectorReleaseRef, 0, len(publishRecords))
+func (c *APPConnectorReleaseRefDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx, recordID int64, publishRecords []*entity.ConnectorPublishRecord) error {
+	records := make([]*model.AppConnectorReleaseRef, 0, len(publishRecords))
 	for _, r := range publishRecords {
 		id, err := c.idGen.GenID(ctx)
 		if err != nil {
 			return err
 		}
 
-		records = append(records, &model.ConnectorReleaseRef{
+		records = append(records, &model.AppConnectorReleaseRef{
 			ID:            id,
 			RecordID:      recordID,
 			ConnectorID:   r.ConnectorID,
@@ -117,5 +117,5 @@ func (c *ConnectorReleaseRefDAO) BatchCreateWithTX(ctx context.Context, tx *quer
 		})
 	}
 
-	return tx.ConnectorReleaseRef.WithContext(ctx).Create(records...)
+	return tx.AppConnectorReleaseRef.WithContext(ctx).Create(records...)
 }

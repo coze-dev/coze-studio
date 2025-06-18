@@ -30,13 +30,13 @@ func newModelEntity(db *gorm.DB, opts ...gen.DOOption) modelEntity {
 	_modelEntity.ID = field.NewInt64(tableName, "id")
 	_modelEntity.MetaID = field.NewInt64(tableName, "meta_id")
 	_modelEntity.Name = field.NewString(tableName, "name")
+	_modelEntity.Description = field.NewString(tableName, "description")
+	_modelEntity.DefaultParams = field.NewField(tableName, "default_params")
 	_modelEntity.Scenario = field.NewField(tableName, "scenario")
+	_modelEntity.Status = field.NewField(tableName, "status")
 	_modelEntity.CreatedAt = field.NewInt64(tableName, "created_at")
 	_modelEntity.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_modelEntity.DeletedAt = field.NewField(tableName, "deleted_at")
-	_modelEntity.Description = field.NewString(tableName, "description")
-	_modelEntity.DefaultParams = field.NewField(tableName, "default_params")
-	_modelEntity.Status = field.NewField(tableName, "status")
 
 	_modelEntity.fillFieldMap()
 
@@ -51,13 +51,13 @@ type modelEntity struct {
 	ID            field.Int64  // 主键ID
 	MetaID        field.Int64  // 模型元信息 id
 	Name          field.String // 名称
+	Description   field.String // 描述
+	DefaultParams field.Field  // 默认参数
 	Scenario      field.Field  // 模型应用场景
+	Status        field.Field  // 模型状态
 	CreatedAt     field.Int64  // Create Time in Milliseconds
 	UpdatedAt     field.Int64  // Update Time in Milliseconds
 	DeletedAt     field.Field  // Delete Time in Milliseconds
-	Description   field.String // 描述
-	DefaultParams field.Field  // 默认参数
-	Status        field.Field  // 模型状态
 
 	fieldMap map[string]field.Expr
 }
@@ -77,13 +77,13 @@ func (m *modelEntity) updateTableName(table string) *modelEntity {
 	m.ID = field.NewInt64(table, "id")
 	m.MetaID = field.NewInt64(table, "meta_id")
 	m.Name = field.NewString(table, "name")
+	m.Description = field.NewString(table, "description")
+	m.DefaultParams = field.NewField(table, "default_params")
 	m.Scenario = field.NewField(table, "scenario")
+	m.Status = field.NewField(table, "status")
 	m.CreatedAt = field.NewInt64(table, "created_at")
 	m.UpdatedAt = field.NewInt64(table, "updated_at")
 	m.DeletedAt = field.NewField(table, "deleted_at")
-	m.Description = field.NewString(table, "description")
-	m.DefaultParams = field.NewField(table, "default_params")
-	m.Status = field.NewField(table, "status")
 
 	m.fillFieldMap()
 
@@ -104,13 +104,13 @@ func (m *modelEntity) fillFieldMap() {
 	m.fieldMap["id"] = m.ID
 	m.fieldMap["meta_id"] = m.MetaID
 	m.fieldMap["name"] = m.Name
+	m.fieldMap["description"] = m.Description
+	m.fieldMap["default_params"] = m.DefaultParams
 	m.fieldMap["scenario"] = m.Scenario
+	m.fieldMap["status"] = m.Status
 	m.fieldMap["created_at"] = m.CreatedAt
 	m.fieldMap["updated_at"] = m.UpdatedAt
 	m.fieldMap["deleted_at"] = m.DeletedAt
-	m.fieldMap["description"] = m.Description
-	m.fieldMap["default_params"] = m.DefaultParams
-	m.fieldMap["status"] = m.Status
 }
 
 func (m modelEntity) clone(db *gorm.DB) modelEntity {

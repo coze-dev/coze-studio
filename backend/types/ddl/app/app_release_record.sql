@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `release_record`
+CREATE TABLE IF NOT EXISTS `app_release_record`
 (
     `id`             bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Publish Record ID',
     `app_id`         bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Application ID',

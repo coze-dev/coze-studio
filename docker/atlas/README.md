@@ -1,19 +1,18 @@
 ## 0. setup environment
 
-On Mac : 
+On Mac :
 
 	brew install ariga/tap/atlas
 
 On Linux :
-	
+
 	curl -sSf https://atlasgo.sh | sh -s -- --community
-	
+
 Setup to you database url :
-	
+
 	export ATLAS_URL="mysql://coze:coze123@localhost:3306/opencoze?charset=utf8mb4&parseTime=True"
 
 ## 2. init baseline
-
 
 	# cd ./docker/atlas
 	atlas migrate diff initial --env local --to $ATLAS_URL
@@ -24,7 +23,7 @@ Setup to you database url :
 	  --to $ATLAS_URL \
 	  --dev-url "docker://mysql/8/"
 
-## 3. update database table 
+## 3. update database table
 
 On developer machine（I want add/update table for my business）
 
@@ -51,21 +50,17 @@ On developer machine（I want add/update table for my business）
 	
 	# Last, dump the lastest database schema for other developer
 	atlas schema inspect -u $ATLAS_URL --exclude "atlas_schema_revisions,table_*"  > opencoze_latest_schema.hcl # step 3 
-	
-
 
 ## 4. apply migration
-
 
 On developer machine（I want to update my local database with the changes that others developer have made）
 
 	# cd ./docker/atlas
 	atlas schema apply -u $ATLAS_URL --to file://opencoze_latest_schema.hcl # step 1 for developer on mac, this command will execute in start_debug.sh
 
-
 On Server machine
 
-	atlas migrate apply --url $ATLAS_URL --dir "file://migrations"  --baseline "20250609083036" # step 1 for dev server
+	atlas migrate apply --url $ATLAS_URL --dir "file://migrations"  --baseline "20250618025620" # step 1 for dev server
 
 
 
