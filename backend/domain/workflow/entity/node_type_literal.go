@@ -42,6 +42,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		PreFillZero:      true,
 		PostFillNil:      true,
 		CallbackEnabled:  true,
+		MayUseChatModel:  true,
 	},
 	{
 		ID:               4,
@@ -164,6 +165,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		PreFillZero:      true,
 		PostFillNil:      true,
 		CallbackEnabled:  true,
+		MayUseChatModel:  true,
 	},
 	{
 		ID:           19,
@@ -216,6 +218,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		PreFillZero:      true,
 		PostFillNil:      true,
 		CallbackEnabled:  true,
+		MayUseChatModel:  true,
 	},
 	{
 		ID:               27,

@@ -3,7 +3,9 @@ package execute
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/cloudwego/eino/compose"
@@ -63,7 +65,7 @@ type BatchInfo struct {
 
 type contextKey struct{}
 
-func restoreWorkflowCtx(ctx context.Context, event *entity.InterruptEvent) (context.Context, error) {
+func restoreWorkflowCtx(ctx context.Context, h *WorkflowHandler) (context.Context, error) {
 	var storedCtx *Context
 	err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
 		if state == nil {
@@ -87,7 +89,7 @@ func restoreWorkflowCtx(ctx context.Context, event *entity.InterruptEvent) (cont
 		return ctx, errors.New("stored workflow context is nil")
 	}
 
-	storedCtx.ResumeEvent = event
+	storedCtx.ResumeEvent = h.resumeEvent
 
 	// restore the parent-child relationship between token collectors
 	if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil {
@@ -139,22 +141,26 @@ func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey, resumeEvent *entity
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil
 }
 
-func PrepareRootExeCtx(ctx context.Context, wb *entity.WorkflowBasic, executeID int64,
-	requireCheckpoint bool, resumeEvent *entity.InterruptEvent, exeCfg vo.ExecuteConfig) (context.Context, error) {
+func PrepareRootExeCtx(ctx context.Context, h *WorkflowHandler) (context.Context, error) {
+	var parentTokenCollector *TokenCollector
+	if currentC := GetExeCtx(ctx); currentC != nil {
+		parentTokenCollector = currentC.TokenCollector
+	}
+
 	rootExeCtx := &Context{
 		RootCtx: RootCtx{
-			RootWorkflowBasic: wb,
-			RootExecuteID:     executeID,
-			ResumeEvent:       resumeEvent,
-			ExeCfg:            exeCfg,
+			RootWorkflowBasic: h.rootWorkflowBasic,
+			RootExecuteID:     h.rootExecuteID,
+			ResumeEvent:       h.resumeEvent,
+			ExeCfg:            h.exeCfg,
 		},
 
-		TokenCollector: newTokenCollector(nil),
+		TokenCollector: newTokenCollector(fmt.Sprintf("wf_%d", h.rootWorkflowBasic.ID), parentTokenCollector),
 		StartTime:      time.Now().UnixMilli(),
 	}
 
-	if requireCheckpoint {
-		rootExeCtx.CheckPointID = strconv.FormatInt(executeID, 10)
+	if h.requireCheckpoint {
+		rootExeCtx.CheckPointID = strconv.FormatInt(h.rootExecuteID, 10)
 		err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
 			if state == nil {
 				return errors.New("state is nil")
@@ -201,7 +207,7 @@ func PrepareSubExeCtx(ctx context.Context, wb *entity.WorkflowBasic, requireChec
 		},
 		NodeCtx:        c.NodeCtx,
 		BatchInfo:      c.BatchInfo,
-		TokenCollector: newTokenCollector(c.TokenCollector),
+		TokenCollector: newTokenCollector(fmt.Sprintf("sub_wf_%d", wb.ID), c.TokenCollector),
 		CheckPointID:   newCheckpointID,
 		StartTime:      time.Now().UnixMilli(),
 	}
@@ -232,6 +238,7 @@ func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string,
 	if err != nil {
 		return nil, err
 	}
+
 	newC := &Context{
 		RootCtx:        c.RootCtx,
 		SubWorkflowCtx: c.SubWorkflowCtx,
@@ -242,10 +249,9 @@ func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string,
 			NodeType:      nodeType,
 			TerminatePlan: plan,
 		},
-		BatchInfo:      c.BatchInfo,
-		TokenCollector: newTokenCollector(c.TokenCollector),
-		StartTime:      time.Now().UnixMilli(),
-		CheckPointID:   c.CheckPointID,
+		BatchInfo:    c.BatchInfo,
+		StartTime:    time.Now().UnixMilli(),
+		CheckPointID: c.CheckPointID,
 	}
 
 	if c.NodeCtx == nil { // node within top level workflow, also not under composite node
@@ -257,6 +263,12 @@ func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string,
 			newC.NodeCtx.NodePath = append(c.NodeCtx.NodePath, InterruptEventIndexPrefix+strconv.Itoa(c.BatchInfo.Index), string(nodeKey))
 		}
 	}
+
+	tc := c.TokenCollector
+	if entity.NodeMetaByNodeType(nodeType).MayUseChatModel {
+		tc = newTokenCollector(strings.Join(append([]string{string(newC.NodeType)}, newC.NodeCtx.NodePath...), "."), c.TokenCollector)
+	}
+	newC.TokenCollector = tc
 
 	return context.WithValue(ctx, contextKey{}, newC), nil
 }

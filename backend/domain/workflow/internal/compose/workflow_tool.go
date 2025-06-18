@@ -72,6 +72,16 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 
 	cfg := execute.GetExecuteConfig(opts...)
 
+	var runOpts []WorkflowRunnerOption
+	if rInfo != nil {
+		runOpts = append(runOpts, WithResumeReq(rInfo))
+	} else {
+		runOpts = append(runOpts, WithInput(argumentsInJSON))
+	}
+	if sw := execute.GetIntermediateStreamWriter(opts...); sw != nil {
+		runOpts = append(runOpts, WithStreamWriter(sw))
+	}
+
 	var (
 		cancelCtx context.Context
 		executeID int64
@@ -79,25 +89,16 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 		in        map[string]any
 		err       error
 	)
-	if rInfo != nil {
-		cancelCtx, executeID, callOpts, _, err = Prepare(ctx, "", i.wfEntity.GetBasic(),
-			rInfo, i.repo, i.sc,
-			execute.GetIntermediateStreamWriter(opts...), cfg)
-		if err != nil {
-			return "", err
-		}
-	} else {
-		in = make(map[string]any)
-		if err := sonic.UnmarshalString(argumentsInJSON, &in); err != nil {
-			return "", err
-		}
 
-		cancelCtx, executeID, callOpts, _, err = Prepare(ctx, argumentsInJSON, i.wfEntity.GetBasic(),
-			nil, i.repo, i.sc,
-			execute.GetIntermediateStreamWriter(opts...), cfg)
-		if err != nil {
+	if rInfo == nil {
+		if err = sonic.UnmarshalString(argumentsInJSON, &in); err != nil {
 			return "", err
 		}
+	}
+
+	cancelCtx, executeID, callOpts, _, err = NewWorkflowRunner(i.wfEntity.GetBasic(), i.sc, cfg, runOpts...).Prepare(ctx)
+	if err != nil {
+		return "", err
 	}
 
 	out, err := i.invoke(cancelCtx, in, callOpts...)
@@ -202,6 +203,16 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 
 	cfg := execute.GetExecuteConfig(opts...)
 
+	var runOpts []WorkflowRunnerOption
+	if rInfo != nil {
+		runOpts = append(runOpts, WithResumeReq(rInfo))
+	} else {
+		runOpts = append(runOpts, WithInput(argumentsInJSON))
+	}
+	if sw := execute.GetIntermediateStreamWriter(opts...); sw != nil {
+		runOpts = append(runOpts, WithStreamWriter(sw))
+	}
+
 	var (
 		cancelCtx context.Context
 		executeID int64
@@ -209,25 +220,16 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 		in        map[string]any
 		err       error
 	)
-	if rInfo != nil {
-		cancelCtx, executeID, callOpts, _, err = Prepare(ctx, "", s.wfEntity.GetBasic(),
-			rInfo, s.repo, s.sc,
-			execute.GetIntermediateStreamWriter(opts...), cfg)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		in = make(map[string]any)
-		if err := sonic.UnmarshalString(argumentsInJSON, &in); err != nil {
-			return nil, err
-		}
 
-		cancelCtx, executeID, callOpts, _, err = Prepare(ctx, argumentsInJSON, s.wfEntity.GetBasic(),
-			nil, s.repo, s.sc,
-			execute.GetIntermediateStreamWriter(opts...), cfg)
-		if err != nil {
+	if rInfo == nil {
+		if err = sonic.UnmarshalString(argumentsInJSON, &in); err != nil {
 			return nil, err
 		}
+	}
+
+	cancelCtx, executeID, callOpts, _, err = NewWorkflowRunner(s.wfEntity.GetBasic(), s.sc, cfg, runOpts...).Prepare(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	outStream, err := s.stream(cancelCtx, in, callOpts...)

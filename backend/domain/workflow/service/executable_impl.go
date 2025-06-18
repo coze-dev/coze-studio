@@ -75,8 +75,9 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 	if err != nil {
 		return nil, "", err
 	}
-	cancelCtx, executeID, opts, lastEventChan, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(),
-		nil, i.repo, workflowSC, nil, config)
+
+	cancelCtx, executeID, opts, lastEventChan, err := compose.NewWorkflowRunner(wfEntity.GetBasic(), workflowSC, config,
+		compose.WithInput(inStr)).Prepare(ctx)
 	if err != nil {
 		return nil, "", err
 	}
@@ -201,8 +202,9 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 	if err != nil {
 		return 0, err
 	}
-	cancelCtx, executeID, opts, _, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(),
-		nil, i.repo, workflowSC, nil, config)
+
+	cancelCtx, executeID, opts, _, err := compose.NewWorkflowRunner(wfEntity.GetBasic(), workflowSC, config,
+		compose.WithInput(inStr)).Prepare(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -264,8 +266,9 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 	if err != nil {
 		return 0, err
 	}
-	cancelCtx, executeID, opts, _, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(),
-		nil, i.repo, newSC, nil, config)
+
+	cancelCtx, executeID, opts, _, err := compose.NewWorkflowRunner(wfEntity.GetBasic(), newSC, config,
+		compose.WithInput(inStr)).Prepare(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -339,8 +342,8 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 
 	sr, sw := schema.Pipe[*entity.Message](10)
 
-	cancelCtx, executeID, opts, _, err := compose.Prepare(ctx, inStr, wfEntity.GetBasic(),
-		nil, i.repo, workflowSC, sw, config)
+	cancelCtx, executeID, opts, _, err := compose.NewWorkflowRunner(wfEntity.GetBasic(), workflowSC, config,
+		compose.WithInput(inStr), compose.WithStreamWriter(sw)).Prepare(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -647,8 +650,11 @@ func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, confi
 
 		config.Mode = vo.ExecuteModeNodeDebug
 
-		cancelCtx, _, opts, _, err := compose.Prepare(ctx, "", wfEntity.GetBasic(),
-			req, i.repo, newSC, nil, config)
+		cancelCtx, _, opts, _, err := compose.NewWorkflowRunner(
+			wfEntity.GetBasic(), newSC, config, compose.WithResumeReq(req)).Prepare(ctx)
+		if err != nil {
+			return err
+		}
 
 		wf.AsyncRun(cancelCtx, nil, opts...)
 		return nil
@@ -665,8 +671,11 @@ func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, confi
 		return fmt.Errorf("failed to create workflow: %w", err)
 	}
 
-	cancelCtx, _, opts, _, err := compose.Prepare(ctx, "", wfEntity.GetBasic(),
-		req, i.repo, workflowSC, nil, config)
+	cancelCtx, _, opts, _, err := compose.NewWorkflowRunner(
+		wfEntity.GetBasic(), workflowSC, config, compose.WithResumeReq(req)).Prepare(ctx)
+	if err != nil {
+		return err
+	}
 
 	wf.AsyncRun(cancelCtx, nil, opts...)
 
@@ -747,8 +756,12 @@ func (i *impl) StreamResume(ctx context.Context, req *entity.ResumeRequest, conf
 	}
 
 	sr, sw := schema.Pipe[*entity.Message](10)
-	cancelCtx, _, opts, _, err := compose.Prepare(ctx, "", wfEntity.GetBasic(),
-		req, i.repo, workflowSC, sw, config)
+
+	cancelCtx, _, opts, _, err := compose.NewWorkflowRunner(wfEntity.GetBasic(), workflowSC, config,
+		compose.WithResumeReq(req), compose.WithStreamWriter(sw)).Prepare(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	wf.AsyncRun(cancelCtx, nil, opts...)
 

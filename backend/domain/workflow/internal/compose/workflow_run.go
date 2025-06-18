@@ -22,15 +22,61 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
-func Prepare(ctx context.Context,
-	in string,
-	wb *entity.WorkflowBasic,
-	resumeReq *entity.ResumeRequest,
-	repo wf.Repository,
-	sc *WorkflowSchema,
-	sw *schema.StreamWriter[*entity.Message],
-	config vo.ExecuteConfig,
-) (
+type WorkflowRunner struct {
+	basic        *entity.WorkflowBasic
+	input        string
+	resumeReq    *entity.ResumeRequest
+	schema       *WorkflowSchema
+	streamWriter *schema.StreamWriter[*entity.Message]
+	config       vo.ExecuteConfig
+
+	executeID      int64
+	eventChan      chan *execute.Event
+	interruptEvent *entity.InterruptEvent
+}
+
+type workflowRunOptions struct {
+	input              string
+	resumeReq          *entity.ResumeRequest
+	streamWriter       *schema.StreamWriter[*entity.Message]
+	rootTokenCollector *execute.TokenCollector
+}
+
+type WorkflowRunnerOption func(*workflowRunOptions)
+
+func WithInput(input string) WorkflowRunnerOption {
+	return func(opts *workflowRunOptions) {
+		opts.input = input
+	}
+}
+func WithResumeReq(resumeReq *entity.ResumeRequest) WorkflowRunnerOption {
+	return func(opts *workflowRunOptions) {
+		opts.resumeReq = resumeReq
+	}
+}
+func WithStreamWriter(sw *schema.StreamWriter[*entity.Message]) WorkflowRunnerOption {
+	return func(opts *workflowRunOptions) {
+		opts.streamWriter = sw
+	}
+}
+
+func NewWorkflowRunner(b *entity.WorkflowBasic, sc *WorkflowSchema, config vo.ExecuteConfig, opts ...WorkflowRunnerOption) *WorkflowRunner {
+	options := &workflowRunOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	return &WorkflowRunner{
+		basic:        b,
+		input:        options.input,
+		resumeReq:    options.resumeReq,
+		schema:       sc,
+		streamWriter: options.streamWriter,
+		config:       config,
+	}
+}
+
+func (r *WorkflowRunner) Prepare(ctx context.Context) (
 	context.Context,
 	int64,
 	[]einoCompose.Option,
@@ -40,9 +86,15 @@ func Prepare(ctx context.Context,
 	var (
 		err       error
 		executeID int64
+		repo      = wf.GetRepository()
+		resumeReq = r.resumeReq
+		wb        = r.basic
+		sc        = r.schema
+		sw        = r.streamWriter
+		config    = r.config
 	)
 
-	if resumeReq == nil {
+	if r.resumeReq == nil {
 		executeID, err = repo.GenID(ctx)
 		if err != nil {
 			return ctx, 0, nil, nil, fmt.Errorf("failed to generate workflow execute ID: %w", err)
@@ -74,7 +126,11 @@ func Prepare(ctx context.Context,
 
 	}
 
-	composeOpts, err := DesignateOptions(ctx, wb, sc, executeID, eventChan, interruptEvent, sw, config)
+	r.executeID = executeID
+	r.eventChan = eventChan
+	r.interruptEvent = interruptEvent
+
+	ctx, composeOpts, err := r.designateOptions(ctx)
 	if err != nil {
 		return ctx, 0, nil, nil, err
 	}
@@ -160,7 +216,7 @@ func Prepare(ctx context.Context,
 			SpaceID:                wb.SpaceID,
 			ExecuteConfig:          config,
 			Status:                 entity.WorkflowRunning,
-			Input:                  ptr.Of(in),
+			Input:                  ptr.Of(r.input),
 			RootExecutionID:        executeID,
 			NodeCount:              sc.NodeCount(),
 			CurrentResumingEventID: ptr.Of(int64(0)),

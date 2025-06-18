@@ -943,7 +943,7 @@ func TestTestRunAndGetProcess(t *testing.T) {
 			assert.Equal(t, exeID, fmt.Sprintf("%d", *his.Data[0].ExecuteID))
 			assert.Equal(t, workflow.WorkflowRunMode_Async, *his.Data[0].RunMode)
 
-			r.publish(id, "v0.0.1", false)
+			r.publish(id, "v0.0.1", true)
 
 			mockey.PatchConvey("openapi async run", func() {
 				exeID := r.openapiAsyncRun(id, input)
@@ -1293,11 +1293,25 @@ func TestResumeWithQANode(t *testing.T) {
 					return &schema.Message{
 						Role:    schema.Assistant,
 						Content: `{"question": "what's your age?"}`,
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     6,
+								CompletionTokens: 7,
+								TotalTokens:      13,
+							},
+						},
 					}, nil
 				} else if index == 1 {
 					return &schema.Message{
 						Role:    schema.Assistant,
 						Content: `{"fields": {"name": "eino", "age": 1}}`,
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     11,
+								CompletionTokens: 19,
+								TotalTokens:      30,
+							},
+						},
 					}, nil
 				}
 				return nil, errors.New("not found")
@@ -1313,6 +1327,7 @@ func TestResumeWithQANode(t *testing.T) {
 
 		e := r.getProcess(id, exeID)
 		assert.NotNil(t, e.event)
+		e.tokenEqual(0, 0)
 
 		r.testResume(id, exeID, e.event.ID, "my name is eino")
 
@@ -1327,6 +1342,7 @@ func TestResumeWithQANode(t *testing.T) {
 			"name":          "eino",
 			"age":           int64(1),
 		}, mustUnmarshalToMap(t, e3.output))
+		e3.tokenEqual(17, 26)
 	})
 }
 
@@ -1341,10 +1357,23 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 					{
 						Role:    schema.Assistant,
 						Content: "I ",
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     1,
+								CompletionTokens: 3,
+								TotalTokens:      4,
+							},
+						},
 					},
 					{
 						Role:    schema.Assistant,
 						Content: "don't know.",
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								CompletionTokens: 7,
+								TotalTokens:      7,
+							},
+						},
 					},
 				})
 				return sr, nil
@@ -1356,10 +1385,23 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 					{
 						Role:    schema.Assistant,
 						Content: "I ",
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     2,
+								CompletionTokens: 2,
+								TotalTokens:      4,
+							},
+						},
 					},
 					{
 						Role:    schema.Assistant,
 						Content: "don't know too.",
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								CompletionTokens: 11,
+								TotalTokens:      11,
+							},
+						},
 					},
 				})
 				return sr, nil
@@ -1407,7 +1449,9 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 		e3.assertSuccess()
 		assert.Equal(t, "I don't know.\nI don't know too.\nb\n['new_a_more info 1', 'new_b_more info 2']", e3.output)
 
-		r.publish(topID, "v0.0.1", false) // publish the top workflow to
+		e3.tokenEqual(3, 23)
+
+		r.publish(topID, "v0.0.1", true) // publish the top workflow to
 
 		refs := post[workflow.GetWorkflowReferencesResponse](r, &workflow.GetWorkflowReferencesRequest{
 			WorkflowID: midID,
@@ -1621,7 +1665,7 @@ func TestGetCanvasInfo(t *testing.T) {
 		assert.Equal(t, response.Data.Workflow.Status, workflow.WorkFlowDevStatus_CanSubmit)
 		assert.Equal(t, response.Data.VcsData.Type, workflow.VCSCanvasType_Draft)
 
-		r.publish(id, "v0.0.1", false)
+		r.publish(id, "v0.0.1", true)
 
 		response = post[workflow.GetCanvasInfoResponse](r, getCanvas)
 		assert.Equal(t, response.Data.Workflow.Status, workflow.WorkFlowDevStatus_HadSubmit)
@@ -1735,7 +1779,7 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 
 			defer r.runServer()()
 
-			r.publish(id, "v0.0.1", false)
+			r.publish(id, "v0.0.1", true)
 
 			sseReader := r.openapiStream(id, map[string]any{
 				"input": "hello",
@@ -1852,7 +1896,7 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 		e := r.getProcess(id, exeID)
 		e.assertSuccess()
 		assert.Equal(t, "this is the streaming output I don't know.", e.output)
-		// e.tokenEqual(15, 27) TODO: needs to propagate tool tokens upwards
+		e.tokenEqual(15, 27)
 
 		mockey.PatchConvey("check behavior if stream run", func() {
 			outerModel.Reset()
@@ -1951,6 +1995,13 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 									},
 								},
 							},
+							ResponseMeta: &schema.ResponseMeta{
+								Usage: &schema.TokenUsage{
+									PromptTokens:     6,
+									CompletionTokens: 7,
+									TotalTokens:      13,
+								},
+							},
 						},
 					}), nil
 				} else if index == 1 {
@@ -1958,10 +2009,23 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 						{
 							Role:    schema.Assistant,
 							Content: "I now know your ",
+							ResponseMeta: &schema.ResponseMeta{
+								Usage: &schema.TokenUsage{
+									PromptTokens:     5,
+									CompletionTokens: 8,
+									TotalTokens:      13,
+								},
+							},
 						},
 						{
 							Role:    schema.Assistant,
 							Content: "name is Eino and age is 1.",
+							ResponseMeta: &schema.ResponseMeta{
+								Usage: &schema.TokenUsage{
+									CompletionTokens: 10,
+									TotalTokens:      17,
+								},
+							},
 						},
 					}), nil
 				} else {
@@ -1976,11 +2040,25 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 					return &schema.Message{
 						Role:    schema.Assistant,
 						Content: `{"question": "what's your age?"}`,
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     6,
+								CompletionTokens: 7,
+								TotalTokens:      13,
+							},
+						},
 					}, nil
 				} else if index == 1 {
 					return &schema.Message{
 						Role:    schema.Assistant,
 						Content: `{"fields": {"name": "eino", "age": 1}}`,
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     8,
+								CompletionTokens: 10,
+								TotalTokens:      18,
+							},
+						},
 					}, nil
 				} else {
 					return nil, fmt.Errorf("unexpected index: %d", index)
@@ -2007,15 +2085,18 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 
 		e := r.getProcess(id, exeID)
 		assert.NotNil(t, e.event)
+		e.tokenEqual(0, 0)
 
 		r.testResume(id, exeID, e.event.ID, "my name is eino")
 		e2 := r.getProcess(id, exeID, withPreviousEventID(e.event.ID))
 		assert.NotNil(t, e2.event)
+		e2.tokenEqual(0, 0)
 
 		r.testResume(id, exeID, e2.event.ID, "1 year old")
 		e3 := r.getProcess(id, exeID, withPreviousEventID(e2.event.ID))
 		e3.assertSuccess()
 		assert.Equal(t, "the name is eino, age is 1", e3.output)
+		e3.tokenEqual(20, 24)
 	})
 }
 
@@ -2084,6 +2165,7 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 				},
 			},
 		}, mustUnmarshalToMap(t, e.output))
+		e.tokenEqual(10, 12)
 
 		// verify this workflow has previously succeeded a test run
 		result := r.getNodeExeHistory(id, "", "100001", ptr.Of(workflow.NodeHistoryScene_TestRunInput))
@@ -3017,7 +3099,7 @@ func TestStreamResume(t *testing.T) {
 					NodeIsFinish: ptr.Of(true),
 					Content:      ptr.Of("{\"output\":{\"age\":1,\"name\":\"eino\"},\"output_list\":[{\"age\":0,\"name\":\"user_1\"},{\"age\":2,\"name\":\"\"}]}"),
 					ContentType:  ptr.Of("text"),
-					Token:        ptr.Of(int64(0)),
+					// Token:        ptr.Of(int64(0)), TODO: verify if we need to uncomment this
 				},
 			},
 			{

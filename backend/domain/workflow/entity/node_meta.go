@@ -17,6 +17,7 @@ type NodeTypeMeta struct {
 	PostFillNil      bool     `json:"post_fill_nil,omitempty"`
 	CallbackEnabled  bool     `json:"callback_enabled,omitempty"` // is false, Eino framework will inject callbacks for this node
 	Disabled         bool     `json:"disabled,omitempty"`
+	MayUseChatModel  bool     `json:"may_use_chat_model,omitempty"`
 }
 
 type PluginNodeMeta struct {

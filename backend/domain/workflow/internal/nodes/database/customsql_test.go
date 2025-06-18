@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
+	"github.com/bytedance/mockey"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 )
@@ -47,6 +47,15 @@ func TestCustomSQL_Execute(t *testing.T) {
 		},
 	}
 
+	defer mockey.Mock(execute.GetExeCtx).Return(&execute.Context{
+		RootCtx: execute.RootCtx{
+			ExeCfg: vo.ExecuteConfig{
+				Mode:     vo.ExecuteModeDebug,
+				Operator: 123,
+			},
+		},
+	}).Build().UnPatch()
+
 	mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
 	mockDatabaseOperator.EXPECT().Execute(gomock.Any(), gomock.Any()).DoAndReturn(mockSQLer.Execute()).AnyTimes()
 
@@ -66,13 +75,7 @@ func TestCustomSQL_Execute(t *testing.T) {
 		config: cfg,
 	}
 
-	ctx := t.Context()
-	ctx, err := execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{}, 123, false, &entity.InterruptEvent{}, vo.ExecuteConfig{
-		Mode: vo.ExecuteModeDebug,
-	})
-	assert.NoError(t, err)
-
-	ret, err := cl.Execute(ctx, map[string]any{
+	ret, err := cl.Execute(t.Context(), map[string]any{
 		"v1": "v1_value",
 		"v2": "v2_value",
 		"v3": "v3_value",

@@ -10,10 +10,11 @@ import (
 )
 
 type workflowToolOption struct {
-	resumeReq          *entity.ResumeRequest
-	sw                 *schema.StreamWriter[*entity.Message]
-	exeCfg             vo.ExecuteConfig
-	allInterruptEvents map[string]*entity.ToolInterruptEvent
+	resumeReq            *entity.ResumeRequest
+	sw                   *schema.StreamWriter[*entity.Message]
+	exeCfg               vo.ExecuteConfig
+	allInterruptEvents   map[string]*entity.ToolInterruptEvent
+	parentTokenCollector *TokenCollector
 }
 
 func WithResume(req *entity.ResumeRequest, all map[string]*entity.ToolInterruptEvent) tool.Option {

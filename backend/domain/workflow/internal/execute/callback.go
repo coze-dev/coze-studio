@@ -40,26 +40,20 @@ type NodeHandler struct {
 }
 
 type WorkflowHandler struct {
-	ch                chan<- *Event
-	rootWorkflowBasic *entity.WorkflowBasic
-	rootExecuteID     int64
-	subWorkflowBasic  *entity.WorkflowBasic
-	nodeCount         int32
-	requireCheckpoint bool
-	resumeEvent       *entity.InterruptEvent
-	exeCfg            vo.ExecuteConfig
+	ch                 chan<- *Event
+	rootWorkflowBasic  *entity.WorkflowBasic
+	rootExecuteID      int64
+	subWorkflowBasic   *entity.WorkflowBasic
+	nodeCount          int32
+	requireCheckpoint  bool
+	resumeEvent        *entity.InterruptEvent
+	exeCfg             vo.ExecuteConfig
+	rootTokenCollector *TokenCollector
 }
 
 type ToolHandler struct {
 	ch   chan<- *Event
 	info entity.FunctionInfo
-}
-
-func NewWorkflowHandler(workflowID int64, ch chan<- *Event) callbacks.Handler { // TODO: to be removed
-	return &WorkflowHandler{
-		ch:                ch,
-		rootWorkflowBasic: &entity.WorkflowBasic{ID: workflowID},
-	}
 }
 
 func NewRootWorkflowHandler(wb *entity.WorkflowBasic, executeID int64, requireCheckpoint bool,
@@ -142,14 +136,13 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 	if w.subWorkflowBasic == nil {
 		if w.resumeEvent != nil {
 			resume = true
-			newCtx, err = restoreWorkflowCtx(ctx, w.resumeEvent)
+			newCtx, err = restoreWorkflowCtx(ctx, w)
 			if err != nil {
 				logs.Errorf("failed to restore root execute context: %v", err)
 				return ctx, false
 			}
 		} else {
-			newCtx, err = PrepareRootExeCtx(ctx, w.rootWorkflowBasic, w.rootExecuteID, w.requireCheckpoint,
-				w.resumeEvent, w.exeCfg)
+			newCtx, err = PrepareRootExeCtx(ctx, w)
 			if err != nil {
 				logs.Errorf("failed to prepare root exe context: %v", err)
 				return ctx, false
@@ -186,7 +179,7 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 		}
 
 		if resume {
-			newCtx, err = restoreWorkflowCtx(ctx, nil)
+			newCtx, err = restoreWorkflowCtx(ctx, w)
 			if err != nil {
 				logs.Errorf("failed to restore sub execute context: %v", err)
 				return ctx, false
@@ -667,7 +660,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		extra:     &entity.NodeExtra{},
 	}
 
-	if c.TokenCollector != nil {
+	if c.TokenCollector != nil && entity.NodeMetaByNodeType(c.NodeType).MayUseChatModel {
 		usage := c.TokenCollector.wait()
 		e.Token = &TokenInfo{
 			InputToken:  int64(usage.PromptTokens),
@@ -820,7 +813,7 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 	}
 
 	// currently Exit, OutputEmitter can potentially trigger this.
-	// later VariableAggregator can also potentially trigger this.
+	// VariableAggregator can also potentially trigger this.
 	// we may receive nodes.KeyIsFinished from the stream, which should be discarded when concatenating the map.
 	if info.Type != string(entity.NodeTypeExit) &&
 		info.Type != string(entity.NodeTypeOutputEmitter) &&
@@ -1193,15 +1186,6 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 						}
 						return fmt.Sprint(o["output"])
 					}
-				}
-			}
-
-			if c.TokenCollector != nil {
-				usage := c.TokenCollector.wait()
-				e.Token = &TokenInfo{
-					InputToken:  int64(usage.PromptTokens),
-					OutputToken: int64(usage.CompletionTokens),
-					TotalToken:  int64(usage.TotalTokens),
 				}
 			}
 
