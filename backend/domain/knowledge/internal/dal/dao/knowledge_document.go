@@ -35,43 +35,6 @@ func (dao *KnowledgeDocumentDAO) Delete(ctx context.Context, id int64) error {
 	return err
 }
 
-func (dao *KnowledgeDocumentDAO) List(ctx context.Context, knowledgeID int64, name *string, limit int, cursor *string) (
-	pos []*model.KnowledgeDocument, nextCursor *string, hasMore bool, err error) {
-	k := dao.Query.KnowledgeDocument
-
-	do := k.WithContext(ctx).
-		Where(k.KnowledgeID.Eq(knowledgeID))
-
-	if name != nil {
-		do.Where(k.Name.Like(*name))
-	}
-	// 疑问，document现在还是软删除吗，如果是软删除，这里应该是否应该是只删除未被删除的文档
-	do.Where(k.Status.NotIn(int32(entity.DocumentStatusDeleted)))
-
-	// 目前未按 updated_at 排序
-	if cursor != nil {
-		id, err := dao.fromCursor(*cursor)
-		if err != nil {
-			return nil, nil, false, err
-		}
-		do.Where(k.ID.Lt(id))
-	}
-
-	pos, err = do.Limit(limit).Order(k.ID.Desc()).Find()
-	if err != nil {
-		return nil, nil, false, err
-	}
-
-	if len(pos) == 0 {
-		return nil, nil, false, nil
-	}
-
-	hasMore = len(pos) == limit
-	nextCursor = dao.toCursor(pos[len(pos)-1].ID)
-
-	return pos, nextCursor, hasMore, err
-}
-
 func (dao *KnowledgeDocumentDAO) MGetByID(ctx context.Context, ids []int64) ([]*model.KnowledgeDocument, error) {
 	if len(ids) == 0 {
 		return nil, nil
@@ -89,11 +52,6 @@ func (dao *KnowledgeDocumentDAO) MGetByID(ctx context.Context, ids []int64) ([]*
 func (dao *KnowledgeDocumentDAO) fromCursor(cursor string) (id int64, err error) {
 	id, err = strconv.ParseInt(cursor, 10, 64)
 	return
-}
-
-func (dao *KnowledgeDocumentDAO) toCursor(id int64) *string {
-	c := strconv.FormatInt(id, 10)
-	return &c
 }
 
 func (dao *KnowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, opts *entity.WhereDocumentOpt) ([]*model.KnowledgeDocument, int64, error) {

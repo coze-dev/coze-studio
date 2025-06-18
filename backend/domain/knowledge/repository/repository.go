@@ -46,8 +46,6 @@ type KnowledgeDocumentRepo interface {
 	Create(ctx context.Context, document *model.KnowledgeDocument) error
 	Update(ctx context.Context, document *model.KnowledgeDocument) error
 	Delete(ctx context.Context, id int64) error
-	List(ctx context.Context, knowledgeID int64, name *string, limit int, cursor *string) (
-		resp []*model.KnowledgeDocument, nextCursor *string, hasMore bool, err error)
 	MGetByID(ctx context.Context, ids []int64) ([]*model.KnowledgeDocument, error)
 	GetByID(ctx context.Context, id int64) (*model.KnowledgeDocument, error)
 	FindDocumentByCondition(ctx context.Context, opts *entity.WhereDocumentOpt) (
