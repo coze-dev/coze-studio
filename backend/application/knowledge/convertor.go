@@ -30,7 +30,6 @@ func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData
 	if val == "" {
 		return cd, nil
 	}
-	// TODO: 先不处理 image
 	switch typ {
 	case document.TableColumnTypeString:
 		return &document.ColumnData{
@@ -88,7 +87,11 @@ func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData
 			Type:       document.TableColumnTypeBoolean,
 			ValBoolean: &t,
 		}, nil
-
+	case document.TableColumnTypeImage:
+		return &document.ColumnData{
+			Type:     document.TableColumnTypeImage,
+			ValImage: &val,
+		}, nil
 	default:
 		return nil, fmt.Errorf("[assertValAs] type not support, type=%d, val=%s", typ, val)
 	}

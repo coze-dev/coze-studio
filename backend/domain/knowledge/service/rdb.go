@@ -73,9 +73,11 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 				logs.CtxErrorf(ctx, "parse any data failed: %v", err)
 				return nil, errorx.New(errno.ErrKnowledgeColumnParseFailCode, errorx.KV("msg", err.Error()))
 			}
-			if columnData.Type == document.TableColumnTypeString || columnData.Type == document.TableColumnTypeImage {
-				processedVal := k.formatSliceContent(ctx, columnData.GetStringValue())
-				columnData.ValString = ptr.Of(processedVal)
+			if columnData.Type == document.TableColumnTypeString {
+				columnData.ValString = ptr.Of(k.formatSliceContent(ctx, columnData.GetStringValue()))
+			}
+			if columnData.Type == document.TableColumnTypeImage {
+				columnData.ValImage = ptr.Of(k.formatSliceContent(ctx, columnData.GetStringValue()))
 			}
 			sliceEntity.RawContent[0].Table.Columns = append(sliceEntity.RawContent[0].Table.Columns, columnData)
 		}
