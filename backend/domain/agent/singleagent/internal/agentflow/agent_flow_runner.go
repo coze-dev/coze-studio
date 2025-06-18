@@ -12,6 +12,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
@@ -91,11 +92,18 @@ func (r *AgentRunner) preHandlerInput(input *schema.Message) *schema.Message {
 	for _, v := range input.MultiContent {
 		switch v.Type {
 		case schema.ChatMessagePartTypeImageURL:
-			if !slices.Contains(r.modelInfo.Meta.Capability.InputModal, "image") {
+			if !slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalImage) {
 				input.Content = input.Content + ": " + v.ImageURL.URL
 			} else {
 				multiContent = append(multiContent, v)
 			}
+		case schema.ChatMessagePartTypeFileURL:
+			if !slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalFile) {
+				input.Content = input.Content + ": " + v.FileURL.URL
+			} else {
+				multiContent = append(multiContent, v)
+			}
+
 		case schema.ChatMessagePartTypeText:
 			break
 

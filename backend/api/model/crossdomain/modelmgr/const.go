@@ -38,6 +38,7 @@ type Modal string
 const (
 	ModalText  Modal = "text"
 	ModalImage Modal = "image"
+	ModalFile  Modal = "file"
 	ModalAudio Modal = "audio"
 	ModalVideo Modal = "video"
 )
