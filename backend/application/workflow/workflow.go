@@ -660,10 +660,10 @@ func (w *ApplicationService) CheckWorkflowsExistByAppID(ctx context.Context, app
 	return len(wfs) > 0, err
 }
 
-func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, appID int64) ([]*vo.ValidateIssue, error) {
+func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, appID int64) (int64, []*vo.ValidateIssue, error) {
 	ds, err := GetWorkflowDomainSVC().GetWorkflowDependenceResource(ctx, workflowID)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
 	pluginMap := make(map[int64]*vo.PluginEntity)
@@ -676,7 +676,7 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 				CopyScene: pluginmodel.CopySceneOfToLibrary,
 			})
 			if err != nil {
-				return nil, err
+				return 0, nil, err
 			}
 			pInfo := response.Plugin
 			pluginMap[id] = &vo.PluginEntity{
@@ -697,10 +697,10 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 				TargetUserID:  ctxutil.MustGetUIDFromCtx(ctx),
 			})
 			if err != nil {
-				return nil, err
+				return 0, nil, err
 			}
 			if response.CopyStatus == model.CopyStatus_Failed {
-				return nil, fmt.Errorf("failed to copy knowledge, knowledge id=%d", id)
+				return 0, nil, fmt.Errorf("failed to copy knowledge, knowledge id=%d", id)
 			}
 			relatedKnowledgeMap[id] = response.TargetKnowledgeID
 		}
@@ -712,7 +712,7 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 			DatabaseIDs: ds.DatabaseIDs,
 		})
 		if err != nil {
-			return nil, err
+			return 0, nil, err
 		}
 		for oid, e := range response.Databases {
 			relatedDatabaseMap[oid] = e.ID
@@ -720,16 +720,21 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 
 	}
 
-	_, vIssues, err := GetWorkflowDomainSVC().CopyWorkflowFromAppToLibrary(ctx, workflowID, appID, vo.ExternalResourceRelated{
+	relatedWorkflows, vIssues, err := GetWorkflowDomainSVC().CopyWorkflowFromAppToLibrary(ctx, workflowID, appID, vo.ExternalResourceRelated{
 		PluginMap:    pluginMap,
 		KnowledgeMap: relatedKnowledgeMap,
 		DatabaseMap:  relatedDatabaseMap,
 	})
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
-	return vIssues, nil
+	copiedWf, ok := relatedWorkflows[workflowID]
+	if !ok {
+		return 0, nil, fmt.Errorf("failed to get copy workflow id, workflow id=%d", workflowID)
+	}
+
+	return copiedWf.ID, vIssues, nil
 }
 
 func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, workflowID int64, appID int64) error {

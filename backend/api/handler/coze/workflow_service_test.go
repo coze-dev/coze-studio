@@ -3886,7 +3886,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 		r.load("copy_to_app/child_1.json", withID(7515027150387281920), withProjectID(appIDInt64))
 		r.load("copy_to_app/main.json", withID(7515027091302121472), withProjectID(appIDInt64))
 
-		is, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(t.Context(), 7515027091302121472, appIDInt64, appIDInt64)
+		_, is, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(t.Context(), 7515027091302121472, appIDInt64, appIDInt64)
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(is))
 	})
@@ -3994,7 +3994,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 		r.load("copy_to_app/child2_1.json", withID(7516518409656336384), withProjectID(appIDInt64))
 		r.load("copy_to_app/main2.json", withID(7516516198096306176), withProjectID(appIDInt64))
 
-		ret, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(t.Context(), 7516516198096306176, 123, appIDInt64)
+		_, ret, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(t.Context(), 7516516198096306176, 123, appIDInt64)
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(ret))
 	})
