@@ -799,8 +799,8 @@ func (d *DatabaseApplicationService) CopyDatabase(ctx context.Context, req *Copy
 			srcDB.SpaceID = *req.TargetSpaceID
 		}
 
+		originalID := srcDB.ID
 		srcDB.AppID = req.TargetAppID
-
 		srcDB.CreatorID = req.CreatorID
 		if req.TargetSpaceID != nil {
 
@@ -820,7 +820,7 @@ func (d *DatabaseApplicationService) CopyDatabase(ctx context.Context, req *Copy
 			return nil, err
 		}
 
-		copyDatabases[srcDB.ID] = onlineDatabase
+		copyDatabases[originalID] = onlineDatabase
 		draftDatabase := draftResp.Database
 		draftMaps[srcDB.GetDraftID()] = draftDatabase.ID
 		onlineMaps[srcDB.GetOnlineID()] = onlineDatabase.ID
