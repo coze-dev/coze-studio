@@ -472,7 +472,7 @@ struct GetUploadAuthTokenRequest {
 
 struct UploadFileRequest {
     1: CommonFileInfo file_head // 文件相关描述
-    2: string         data      // 文件数据
+    2: string         data      // 文件数据，base64编码
 }
 
 // 上传文件，文件头

@@ -25,13 +25,13 @@ enum FieldItemType {
 }
 
 struct FieldItem {
-    1: string        name
-    2: string        desc
-    3: FieldItemType type
-    4: bool          must_required
-    5: i64           id            // 该字段只用来判断是否发布，不为 0 就是已发布的，前端对已发布的字段不能修改字段类型
-    6: i64           alterId       // 修改字段时（alter、publish）用来判断增删改，0 表示新增，非 0 表示修改或删除
-    7: bool          is_system_field // 是否是系统字段
+    1: string        name (tnt.tag = "required")
+    2: string        desc (tnt.tag = "required")
+    3: FieldItemType type (tnt.tag = "required")
+    4: bool          must_required (tnt.tag = "required")
+    5: i64           id          (tnt.tag = "optional")  // 该字段只用来判断是否发布，不为 0 就是已发布的，前端对已发布的字段不能修改字段类型
+    6: i64           alterId     (tnt.tag = "optional") // 修改字段时（alter、publish）用来判断增删改，0 表示新增，非 0 表示修改或删除
+    7: bool          is_system_field (tnt.tag = "optional")// 是否是系统字段
 }
 
 enum BotTableRWMode {
@@ -59,7 +59,7 @@ struct Criterion{
 struct ListDatabaseRequest {
     1:   optional i64        creator_id  (api.js_conv="str") // 获取创建者为某个用户的的数据库
     2:   optional i64        project_id (api.js_conv="str") // 获取project下的数据库
-    3:   optional i64        space_id (api.js_conv="str") //获取空间下的可见数据库
+    3:   optional i64        space_id (api.js_conv="str",tnt.tag = "required") //获取空间下的可见数据库
     4:   optional i64        bot_id (api.js_conv="str")  //对bot_id进行过滤，过滤掉已经添加到bot中的database
     5:   optional string     table_name // 表格名称，模糊搜索
     6:   required TableType  table_type // 查草稿态database
@@ -72,7 +72,7 @@ struct ListDatabaseRequest {
 }
 
 struct DatabaseInfo {
-    1:  i64             id          (api.js_conv="str", api.key="id") // online_database_info的主键id
+    1:  i64             id          (api.js_conv="str", api.key="id") // 默认是online_database_info的主键id，（特殊情况，当ListDatabase入参中的TableType是草稿时，这个字段返回的是草稿的id，即draft_id）
     2:  i64             space_id    (api.js_conv="str") // 空间的id
     3:  i64             project_id  (api.js_conv="str") // project id
     4:  string          datamodel_table_id    // datamodel侧的表id
@@ -84,13 +84,13 @@ struct DatabaseInfo {
     10: i64             creator_id  (api.js_conv="str") // 创建者id
     11: i64             create_time // 创建时间
     12: i64             update_time // 更新时间
-    13: list<FieldItem> field_list  // 字段信息
+    13: list<FieldItem> field_list  // 字段信息，会返回3个系统字段与n个用户字段，用户字段数目取决于用户创建的字段数量
     14: string          actual_table_name    // 数据表实际名称
     15: BotTableRWMode  rw_mode     // 读写模式
     16: bool            prompt_disabled  // 是否支持prompt调用
     17: bool            is_visible   // 是否可见
     18: optional i64    draft_id     (api.js_conv="str")   // 对应草稿态的id
-    19: optional i64    bot_id       (api.js_conv="str", api.key="bot_id") // 相关id. bot_id，老的有，新的没有
+    19: optional i64    bot_id       (api.js_conv="str", api.key="bot_id") // 废弃，稳定返回nil
     20: optional map<string,string> extra_info // 扩展信息
     21: optional bool   is_added_to_bot // 是否已经添加到bot中
 }
@@ -109,7 +109,7 @@ struct SingleDatabaseRequest{
     1:  i64   id         (api.js_conv="str", api.key="id") // database_info的主键id
     2:  bool  is_draft   (api.key="is_draft") //传入的是否是草稿态数据，默认是false
     3:  bool  need_sys_fields (api.key="need_sys_fields") //是否需要系统字段
-    4:  i64   version    (api.js_conv="str") // 版本号，不传默认是最新的
+    4:  i64   version    (api.js_conv="str",tnt.tag = "optional") // 版本号，不传或者传"0"默认是最新的
     255: optional base.Base  Base
 }
 
@@ -124,7 +124,7 @@ struct SingleDatabaseResponse{
 struct AddDatabaseRequest{
     1:  i64             creator_id  (api.js_conv="str") // 创建者id
     2:  i64             space_id    (api.js_conv="str") // 空间的id
-    3:  i64             project_id  (api.js_conv="str") // project id
+    3:  i64             project_id  (api.js_conv="str", tnt.tag="optional") // 非必填参数，project id
     4:  string          icon_uri    // 头像url
     5:  string          table_name  // 表名
     6:  string          table_desc  // 表描述
@@ -159,7 +159,7 @@ struct DeleteDatabaseResponse {
 }
 
 struct BindDatabaseToBotRequest{
-    1: i64 database_id (api.js_conv="str") // 草稿态数据database表主键id，注意是草稿态哈
+    1: i64 database_id (api.js_conv="str") // 草稿态数据database表draft_id，注意是草稿态哈
     2: i64 bot_id    (api.js_conv="str") // bot_id
     255: optional base.Base Base
 }
@@ -213,9 +213,9 @@ struct ListDatabaseRecordsResponse{
 
 struct UpdateDatabaseRecordsRequest{
     1: required i64 database_id (api.js_conv="str") // database_id
-    2: optional list<map<string,string>> record_data_add // 新增的
-    3: optional list<map<string,string>> record_data_alter // 修改的
-    4: optional list<map<string,string>> record_data_delete // 删除的
+    2: optional list<map<string,string>> record_data_add // 新增的，新增的字段格式为：{"<对应字段的key>":"<要新增的value>"}
+    3: optional list<map<string,string>> record_data_alter // 修改的，修改的字段格式为：{"bstudio_id":"n（一个整数，代表原本字段的bstudio_id）","<对应字段的key>":"<要修改成的value>"}
+    4: optional list<map<string,string>> record_data_delete // 删除的，删除的字段格式为：{"bstudio_id":"n（一个整数，代表原本字段的bstudio_id）"}
     5: optional TableType table_type    // 要更新的的是草稿态还是线上态
     6: optional string    ori_connector_id // 更新时需穿入connector id
     255: optional base.Base  Base

@@ -9,7 +9,7 @@ namespace go ocean.cloud.workflow
 service WorkflowService {
     // 创建流程
     workflow.CreateWorkflowResponse CreateWorkflow(1:workflow.CreateWorkflowRequest request) (api.post='/api/workflow_api/create', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
-    // 查询流程
+    // 获取流程编辑态详情，包括画布信息、节点信息、边信息、变量信息、权限信息、版本信息等
     workflow.GetCanvasInfoResponse GetCanvasInfo(1:workflow.GetCanvasInfoRequest request) (api.post='/api/workflow_api/canvas', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.GetHistorySchemaResponse GetHistorySchema(1:workflow.GetHistorySchemaRequest request) (api.post='/api/workflow_api/history_schema', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     // 保存流程
@@ -23,22 +23,26 @@ service WorkflowService {
     workflow.CopyWorkflowResponse CopyWorkflow(1:workflow.CopyWorkflowRequest request) (api.post='/api/workflow_api/copy', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.CopyWkTemplateApiResponse CopyWkTemplateApi(1:workflow.CopyWkTemplateApiRequest request) (api.post='/api/workflow_api/copy_wk_template', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.GetReleasedWorkflowsResponse GetReleasedWorkflows(1: workflow.GetReleasedWorkflowsRequest request) (api.post='/api/workflow_api/released_workflows', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+    // 查询指定工作流被哪些其他工作流所引用。
     workflow.GetWorkflowReferencesResponse GetWorkflowReferences(1: workflow.GetWorkflowReferencesRequest request) (api.post='/api/workflow_api/workflow_references', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     // 获取流程列表。
     workflow.GetWorkFlowListResponse GetWorkFlowList(1: workflow.GetWorkFlowListRequest request) (api.post='/api/workflow_api/workflow_list', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+    // 查询流程中的节点类型
     workflow.QueryWorkflowNodeTypeResponse QueryWorkflowNodeTypes(1: workflow.QueryWorkflowNodeTypeRequest request)(api.post="/api/workflow_api/node_type", api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     // 画布
     workflow.NodeTemplateListResponse NodeTemplateList(1: workflow.NodeTemplateListRequest request)(api.post='/api/workflow_api/node_template_list', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.NodePanelSearchResponse NodePanelSearch(1: workflow.NodePanelSearchRequest request)(api.post='/api/workflow_api/node_panel_search', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.GetLLMNodeFCSettingsMergedResponse GetLLMNodeFCSettingsMerged(1: workflow.GetLLMNodeFCSettingsMergedRequest req)(api.post='/api/workflow_api/llm_fc_setting_merged', api.category="workflow_api", api.gen_path="workflow_trace", agw.preserve_base = "true")
     workflow.GetLLMNodeFCSettingDetailResponse GetLLMNodeFCSettingDetail(1: workflow.GetLLMNodeFCSettingDetailRequest req)(api.post='/api/workflow_api/llm_fc_setting_detail', api.category="workflow_api", api.gen_path="workflow_trace", agw.preserve_base = "true")
-   // 试运行流程（test run）
+    // 试运行流程（test run）异步接口，需要轮询GetWorkFlowProcess接口来进行流程运行结果的检查
     workflow.WorkFlowTestRunResponse WorkFlowTestRun(1:workflow.WorkFlowTestRunRequest request) (api.post='/api/workflow_api/test_run', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.WorkflowTestResumeResponse WorkFlowTestResume(1:workflow.WorkflowTestResumeRequest request) (api.post='/api/workflow_api/test_resume', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.CancelWorkFlowResponse CancelWorkFlow(1:workflow.CancelWorkFlowRequest request) (api.post='/api/workflow_api/cancel', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
-    // 查看试运行执行历史。
+    // 查看试运行执行历史。使用时需要轮询查看一个流程的试运行执行历史。
     workflow.GetWorkflowProcessResponse GetWorkFlowProcess(1:workflow.GetWorkflowProcessRequest request)(api.get='/api/workflow_api/get_process', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+    // 查询节点执行历史。使用时需要轮询查看一个节点的执行历史。
     workflow.GetNodeExecuteHistoryResponse GetNodeExecuteHistory(1:workflow.GetNodeExecuteHistoryRequest request)(api.get='/api/workflow_api/get_node_execute_history', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+    // 获取插件内api的详情
     workflow.GetApiDetailResponse GetApiDetail(1: workflow.GetApiDetailRequest request) (api.get='/api/workflow_api/apiDetail', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.WorkflowNodeDebugV2Response WorkflowNodeDebugV2(1: workflow.WorkflowNodeDebugV2Request request) (api.post='/api/workflow_api/nodeDebug', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
 
@@ -48,6 +52,7 @@ service WorkflowService {
     // conversation
     workflow.CreateProjectConversationDefResponse CreateProjectConversationDef(1: workflow.CreateProjectConversationDefRequest request)(api.post = '/api/workflow_api/project_conversation/create', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.UpdateProjectConversationDefResponse UpdateProjectConversationDef(1: workflow.UpdateProjectConversationDefRequest request)(api.post = '/api/workflow_api/project_conversation/update', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+    // 删除项目中的会话定义，如果会话没有绑定过工作流可以直接删除，否则不传递replace字段会先返回绑定的流程列表，之后需要传递 replace 字段，将会话绑定的工作流替换成其他会话同时删除原会话。
     workflow.DeleteProjectConversationDefResponse DeleteProjectConversationDef(1: workflow.DeleteProjectConversationDefRequest request)(api.post = '/api/workflow_api/project_conversation/delete', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.ListProjectConversationResponse ListProjectConversationDef(1: workflow.ListProjectConversationRequest request)(api.get = '/api/workflow_api/project_conversation/list', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     // Trace
@@ -56,6 +61,7 @@ service WorkflowService {
     trace.GetTraceSDKResponse GetTraceSDK (1: trace.GetTraceSDKRequest req)(api.post='/api/workflow_api/get_trace', api.category="workflow_trace", api.gen_path="workflow_trace", agw.preserve_base = "true")
     // App
     workflow.GetWorkflowDetailResponse GetWorkflowDetail(1: workflow.GetWorkflowDetailRequest request) (api.post='/api/workflow_api/workflow_detail', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+    // 获取流程情况
     workflow.GetWorkflowDetailInfoResponse GetWorkflowDetailInfo(1: workflow.GetWorkflowDetailInfoRequest request) (api.post='/api/workflow_api/workflow_detail_info', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.ValidateTreeResponse ValidateTree(1: workflow.ValidateTreeRequest request) (api.post='/api/workflow_api/validate_tree', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     // chat flow role config
@@ -66,10 +72,15 @@ service WorkflowService {
     workflow.ListPublishWorkflowResponse ListPublishWorkflow(1: workflow.ListPublishWorkflowRequest request) (api.post='/api/workflow_api/list_publish_workflow', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
 
     // Open API
+    // OpenAPI运行流程。执行已发布的工作流 (非流式)
     workflow.OpenAPIRunFlowResponse OpenAPIRunFlow(1: workflow.OpenAPIRunFlowRequest request)(api.post = "/v1/workflow/run", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api" )
-    workflow.OpenAPIStreamRunFlowResponse OpenAPIStreamRunFlow(1: workflow.OpenAPIRunFlowRequest request)(api.post = "/v1/workflow/stream_run", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api")
-    workflow.OpenAPIStreamRunFlowResponse OpenAPIStreamResumeFlow(1: workflow.OpenAPIStreamResumeFlowRequest request)(api.post = "/v1/workflow/stream_resume", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api")
+    // OpenAPI流式运行流程。执行已发布的工作流，响应方式为流式响应。
+    workflow.OpenAPIStreamRunFlowResponse OpenAPIStreamRunFlow(1: workflow.OpenAPIRunFlowRequest request)(api.post = "/v1/workflow/stream_run", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api", streaming.mode="server", agw.target_streaming_protocol="sse")
+    // OpenAPI恢复运行工作流。恢复运行已中断的工作流，响应方式为流式响应。
+    workflow.OpenAPIStreamRunFlowResponse OpenAPIStreamResumeFlow(1: workflow.OpenAPIStreamResumeFlowRequest request)(api.post = "/v1/workflow/stream_resume", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api", streaming.mode="server", agw.target_streaming_protocol="sse")
+    // OpenAPI查询工作流异步执行结果。工作流异步运行后，查看执行结果。
     workflow.GetWorkflowRunHistoryResponse OpenAPIGetWorkflowRunHistory(1:workflow.GetWorkflowRunHistoryRequest request)(api.get='/v1/workflow/get_run_history', api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_api", agw.preserve_base = "false")
-    workflow.ChatFlowRunResponse OpenAPIChatFlowRun(1: workflow.ChatFlowRunRequest request)(api.post = "/v1/workflows/chat", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api")
+    // OpenAPI流式运行对话流
+    workflow.ChatFlowRunResponse OpenAPIChatFlowRun(1: workflow.ChatFlowRunRequest request)(api.post = "/v1/workflows/chat", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api", streaming.mode="server", agw.target_streaming_protocol="sse")
     workflow.OpenAPIGetWorkflowInfoResponse OpenAPIGetWorkflowInfo(1: workflow.OpenAPIGetWorkflowInfoRequest request)(api.get = "/v1/workflows/:workflow_id", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api")
 }

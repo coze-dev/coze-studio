@@ -232,13 +232,13 @@ struct SourceInfo {
 
     // document_source 本地: 如果不传 tos 地址, 则需要传文件 base64, 类型
     7: optional string file_base64 // 文件经过 base64 后的字符串
-    8: optional string file_type // 文件类型, 比如 pdf
+    8: optional string file_type // 文件类型, 支持 pdf、txt、doc、docx、md
 
     // imagex_uri, 和 tos_uri 二选一, imagex_uri 优先，需要通过 imagex 的方法获取数据和签发 url
     10: optional string imagex_uri
 }
 struct TableSheet {
-    1: i64 sheet_id        (agw.js_conv="str", agw.key="sheet_id", api.js_conv="true", api.body="sheet_id")       , // 用户选择的 sheet id
+    1: i64 sheet_id        (agw.js_conv="str", agw.key="sheet_id", api.js_conv="true", api.body="sheet_id")       , // 用户选择的 sheet id，"0"表示选择第一个sheet，以此类推
     2: i64 header_line_idx (agw.js_conv="str", agw.key="header_line_idx", api.js_conv="true", api.body="header_line_idx"), // 用户选择的表头行数，从 0 开始编号
     3: i64 start_line_idx  (agw.js_conv="str", agw.key="start_line_idx", api.js_conv="true", api.body="start_line_idx") , // 用户选择的起始行号，从 0 开始编号
 }

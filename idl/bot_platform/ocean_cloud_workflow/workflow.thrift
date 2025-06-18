@@ -32,14 +32,14 @@ enum CollaboratorMode {
 }
 
 struct Workflow{
-    1 :          string             workflow_id                ,
-    2 :          string             name                       ,
+    1 :          string             workflow_id                , // 流程id，全局唯一
+    2 :          string             name                       , // 流程名称
     3 :          string             desc                       ,
-    4 :          string             url                        ,
+    4 :          string             url                        , // 流程url
     5 :          string             icon_uri                   ,
-    6 :          WorkFlowDevStatus  status                     ,
+    6 :          WorkFlowDevStatus  status                     , // 流程的提交状态
     7 :          WorkFlowType       type                       , // 类型，1:官方模版
-    8 :          string             plugin_id                  , // workflow对应的插件id
+    8 :          string             plugin_id                  , // workfklow对应的插件id
     9 :          i64                create_time                ,
     10:          i64                update_time                ,
     11:          SchemaType         schema_type                ,
@@ -55,7 +55,7 @@ struct Workflow{
     21:          PersistenceModel   persistence_model          , // 存储模型
     22:          WorkflowMode       flow_mode                  , // workflow or imageflow，默认值为workflow
     23:          ProductDraftStatus product_draft_status       , // workflow商品审核版本状态
-    24: optional string             external_flow_info         , // {"project_id":"xxx","flow_id":xxxx}
+    24: optional string             external_flow_info         , // 当前一定返回nil, {"project_id":"xxx","flow_id":xxxx}
     25:          CollaboratorMode   collaborator_mode          , // workflow多人协作按钮状态
     26: list<CheckResult> check_result,
     27: optional string project_id,
@@ -350,17 +350,17 @@ struct Parameter {
     12: optional i64                   sub_assist_type, // 如果Type是数组，表示子元素的辅助类型；sub_type=string生效，0 为unset
 }
 
-//状态，1不可提交 2可提交  3已提交 4废弃
+//流程提交的状态，1不可提交 2可提交  3已提交 4废弃
 enum WorkFlowDevStatus{
-    CanNotSubmit = 1, // 不可提交
-    CanSubmit    = 2, // 可提交
+    CanNotSubmit = 1, // 不可提交（流程未提交且最新的版本未test run成功）
+    CanSubmit    = 2, // 未提交且可提交 （流程未提交但最新的版本已经test run成功）
     HadSubmit    = 3, // 已提交
     Deleted      = 4, // 删除
 }
-//状态，1不可发布 2可发布  3已发布 4删除 5下架
+//流程发布的状态，1不可发布 2可发布  3已发布 4删除 5下架
 enum WorkFlowStatus{
-    CanNotPublish = 1, // 不可发布
-    CanPublish    = 2, // 可发布
+    CanNotPublish = 1, // 不可发布 （流程未发布且最新的提交版本未test run成功）
+    CanPublish    = 2, // 未发布且可发布 （流程未发布但最新的提交版本已经test run成功）
     HadPublished  = 3, // 已发布
     Deleted       = 4, // 删除
     Unlisted      = 5, // 下架
@@ -369,13 +369,13 @@ enum WorkFlowStatus{
 
 
 struct CreateWorkflowRequest{
-    1  : required string       name         , // 流程名
-    2  : required string       desc         , // 流程描述，不可为空
+    1  : required string       name         , // 流程名，不可为空，只能英文字母开头，名称内只能包含英文字母、数字、下划线，长度必须在1-100之间
+    2  : required string       desc         , // 流程描述，不可为空，长度必须在1-600之间。
     3  : required string       icon_uri     , // 流程图标uri，不可为空
-    4  : required string       space_id     , // 空间id，不可为空
+    4  : required string       space_id     , // 空间id，不可为空，用于标识工作流所属的空间。
     5  : optional WorkflowMode flow_mode    , // workflow or chatflow，默认值为workflow
-    6  : optional SchemaType   schema_type  ,
-    7  : optional string       bind_biz_id  ,
+    6  : optional SchemaType   schema_type  , // 如果不提供则默认为FDL。用于指定工作流的模式类型。目前也只支持传FDL。
+    7  : optional string       bind_biz_id  , // 绑定业务id，非必要不填写。
     8  : optional i32          bind_biz_type, // 绑定业务类型，非必要不填写。参考BindBizType结构体，值为3时代表抖音分身
     9  : optional string       project_id   , // 应用id，填写时代表流程是project下的流程，需要跟随project发布
     10 : optional bool         create_conversation, // 是否创建会话，仅当flow_mode=chatflow时生效
@@ -390,7 +390,7 @@ struct CreateWorkflowData{
     4:          WorkFlowStatus status            ,
     5:          SchemaType     type              ,
     6:          list<Node>     node_list         ,
-    7: optional string         external_flow_info, // {"project_id":"xxx","flow_id":xxxx}
+    7: optional string         external_flow_info, // 当前一定返回nil
 }
 
 struct CreateWorkflowResponse{
@@ -404,12 +404,12 @@ struct CreateWorkflowResponse{
 struct SaveWorkflowRequest{
     1  : required string    workflow_id           , // 流程的id，用来标识唯一的流程
     2  : optional string    schema                , // 流程的schema
-    3  : optional string    space_id              , // required，空间id，不可为空
-    4  : optional string    name                  ,
-    5  : optional string    desc                  ,
-    6  : optional string    icon_uri              ,
-    7  : required string    submit_commit_id      , // 提交的 commit_id。其作用是唯一标识一个流程的单个提交版本（每个 commit_id 仅对应且仅能对应一个流程的一次提交版本）。
-    8  : optional bool      ignore_status_transfer,
+    3  : optional string    space_id (tnt.tag = "required"), // required，空间id，不可为空字符串，用于标识工作流所属的空间。
+    4  : optional string    name                  , // 非必填，如果提供则长度必须在1-100之间。用于更新工作流的名称。
+    5  : optional string    desc                  , // 非必填，如果提供则长度必须在1-600之间。用于更新工作流的描述信息。
+    6  : optional string    icon_uri              , // 非必填，如果提供则不能为空字符串。用于更新工作流的图标URI。
+    7  : required string    submit_commit_id      , // 不可为空字符串。其作用是唯一标识一个流程的单个提交版本（每个 submit_commit_id 仅对应且仅能对应一个流程的一次提交版本）。
+    8  : optional bool      ignore_status_transfer, // 是否忽略提交状态流转，默认为false。如果为true，则忽略状态流转。如果为false，查询流程提交状态，流程提交状态会变成CanNotSubmit。
 
     255: optional base.Base Base                  ,
 }
@@ -478,11 +478,11 @@ enum VCSCanvasType {
     Publish = 3,
 }
 struct VCSCanvasData {
-    1:          string        submit_commit_id ,
-    2:          string        draft_commit_id  ,
-    3:          VCSCanvasType type             ,
-    4:          bool          can_edit         ,
-    5: optional string        publish_commit_id,
+    1:          string        submit_commit_id , // 提交的commit_id
+    2:          string        draft_commit_id  , // 草稿的commit_id
+    3:          VCSCanvasType type             , // 版本类型
+    4:          bool          can_edit         , // 当前用户是否有权限编辑
+    5: optional string        publish_commit_id, // 发布的commit_id
 }
 struct DBCanvasData {
     1: WorkFlowStatus status,
@@ -494,26 +494,26 @@ struct OperationInfo {
 }
 
 struct CanvasData {
-    1:          Workflow      workflow          ,
-    2:          VCSCanvasData vcs_data          ,
-    3:          DBCanvasData  db_data           ,
-    4:          OperationInfo operation_info    ,
-    5: optional string        external_flow_info,
+    1:          Workflow      workflow          , // 流程核心数据
+    2:          VCSCanvasData vcs_data          , // 版本相关数据（草稿版本、提交版本、发布版本）
+    3:          DBCanvasData  db_data           , // 发布状态相关数据
+    4:          OperationInfo operation_info    , // 操作者信息
+    5: optional string        external_flow_info, // 当前一定返回nil
     6: optional bool          is_bind_agent     , // 是否绑定了Agent
     7: optional string        bind_biz_id       ,
     8: optional i32           bind_biz_type     ,
-    9: optional string        workflow_version  ,
+    9: optional string        workflow_version  , // 发布workflow的版本号
 }
 
 struct GetCanvasInfoRequest {
-    1  : required string    space_id   , // 空间id，不可为空
-    2  : optional string    workflow_id, // required，流程id，不可为空
+    1  : required string    space_id   , // 空间id，不可为空或0，用于标识工作流所属的空间。
+    2  : optional string    workflow_id (tnt.tag = "required"), // required，流程id，不可为空或0，用于唯一标识一个工作流。
 
     255: optional base.Base Base       ,
 }
 
 struct GetCanvasInfoResponse {
-    1  : required CanvasData    data    ,
+    1  : required CanvasData    data    , // 流程核心数据
 
     253: required i64           code    ,
     254: required string        msg     ,
@@ -633,12 +633,12 @@ enum DeleteType{
 }
 
 struct PublishWorkflowRequest{
-    1  : required string    workflow_id     ,
-    2  : required string    space_id        ,
-    3  : required bool      has_collaborator,
+    1  : required string    workflow_id     , // 不可为空或0，用于唯一标识一个工作流。
+    2  : required string    space_id        , // 不可为空或0，用于标识工作流所属的空间。
+    3  : required bool      has_collaborator, // 用于标识是否有协作者，默认为false。
     4  : optional string    env             ,     // 发布到哪个环境，不填默认线上
-    5  : optional string    commit_id       ,    // 使用哪个版本发布，不填默认最新提交版本
-    6  : optional bool      force           ,    // 强制发布。若流程发布前执行了 TestRun 步骤，“force” 参数值应为 false，或不传递该参数；若流程发布前未执行 TestRun 步骤，“force” 参数值应为 true 。
+    5  : optional string    commit_id       ,    // 使用哪个版本发布，不填默认最新提交版本，如果提供则需要与WorkflowId匹配。用于指定使用哪个版本的工作流。
+    6  : optional bool      force           ,    // 强制发布。若流程提交的上一步执行了 TestRun 步骤且运行结果是流程运行成功，“force” 参数值应为 false，或不传递该参数；若流程提交的上一步不是执行 TestRun 步骤 或者 上一步是TestRun但是流程运行结果不成功/未知，“force” 参数值应为 true 。
     7  : optional string    workflow_version,    // required, 发布workflow的版本号，遵循 SemVer 格式为"vx.y.z"，必须比当前版本大，可通过 GetCanvasInfo 获取当前版本
     8  : optional string    version_description, // workflow的版本描述
 
@@ -806,7 +806,7 @@ struct GetWorkFlowListRequest {
     8  : optional WorkFlowListStatus status           , // 根据流程是否已发布筛选流程
     9  : optional OrderBy            order_by         ,
     10 : optional bool               login_user_create, // 根据接口请求人是否为流程创建人筛选流程
-    11 : optional WorkflowMode       flow_mode        , // workflow or chatflow, 默认为workflow。根据流程类型筛选流程
+    11 : optional WorkflowMode       flow_mode        , // workflow or imageflow, 默认为workflow
     12 : optional list<SchemaType>   schema_type_list , // 新增字段，用于筛选schema_type
     13 : optional string             project_id       , // 在对应project下查询流程
     14 : optional list<CheckType>    checker, // 用于project发布过滤，此列表中的每个 CheckType 元素可指定特定规则，决定了返回的流程是否通过检查。
@@ -844,8 +844,8 @@ struct GetWorkFlowListResponse {
 }
 
 struct QueryWorkflowNodeTypeRequest{
-    1  :          string    space_id   ,
-    2  :          string    workflow_id,
+    1  :          string    space_id (tnt.tag ="required"),
+    2  :          string    workflow_id (tnt.tag ="required"),
 
     255: optional base.Base Base       ,
 }
@@ -873,13 +873,13 @@ struct WorkflowNodeTypeData{
 }
 
 struct WorkFlowTestRunRequest {
-    1  : required string             workflow_id     ,
-    2  :          map<string,string> input           ,
-    3  : optional string             space_id        ,
+    1  : required string             workflow_id     , // required，工作流id，不可为空, 用于唯一标识一个工作流。
+    2  :          map<string,string> input           , // 用于提供工作流测试执行的输入参数。
+    3  : optional string             space_id        , // required，空间id, 不可为空,用于标识工作流所属的空间。
     4  : optional string             bot_id          ,  // agent的id，非project下的流程，涉及变量节点、数据库的流程
     5  : optional string             submit_commit_id,  // 废弃
-    6  : optional string             commit_id       ,  // 指定vcs commit_id，默认为空
-    7  : optional string             project_id,
+    6  : optional string             commit_id       ,  // 流程画布的CanvasInfo中指定vcs的draft_commit_id，默认为空，为空时默认选最新的草稿版本, 用于指定使用哪个草稿版本的工作流。
+    7  : optional string             project_id, // 用于标识工作流所属的项目。
 
     255: optional base.Base          Base            ,
 }
@@ -897,7 +897,7 @@ struct WorkFlowTestRunResponse{
 }
 
 struct WorkflowTestResumeRequest {
-    1: required string workflow_id,
+    1: required string workflow_id, //required 异步运行的工作流 ID。
     2: required string execute_id,
     3: required string event_id,
     4: required string data,
@@ -942,7 +942,7 @@ struct WkPluginBasicData{
     5 : string         Url          (agw.key="url")                           ,
     6 : string         IconUri      (agw.key="icon_uri")                      ,
     7 : WorkFlowStatus Status       (agw.key="status")                        ,
-    8 : i64            PluginId     (agw.js_conv="str", agw.key="plugin_id")  , // workflow 对应的插件id
+    8 : i64            PluginId     (agw.js_conv="str", agw.key="plugin_id")  , // workfklow对应的插件id
     9 : i64            CreateTime   (agw.key="create_time")                   ,
     10: i64            UpdateTime   (agw.key="update_time")                   ,
     11: i64            SourceId     (agw.js_conv="str",agw.key="source_id")   ,
@@ -972,13 +972,13 @@ struct CopyWkTemplateApiResponse{
 
 // === node history ===
 struct GetWorkflowProcessRequest{
-    1  : required string    workflow_id, // 流程id，不为空
-    2  : required string    space_id   , // 空间id，不为空
-    3  : optional string    execute_id , // 流程的执行id
-    4  : optional string    sub_execute_id, // 子流程的执行id
-    5  : optional bool need_async, // 是否返回所有的batch节点内容
+    1  : required string    workflow_id, // 流程id，不为空字符串，用于唯一标识一个工作流。
+    2  : required string    space_id   , // 空间id，不为空字符串，用于标识工作流所属的空间。
+    3  : optional string    execute_id  (tnt.tag ="required"), // 用于唯一标识一个工作流执行实例。
+    4  : optional string    sub_execute_id, // 用于唯一标识一个子工作流执行实例。
+    5  : optional bool need_async, // 用于指定是否需要异步获取执行过程，是否返回所有的batch节点内容
     6  : optional string log_id,  // 未传execute_id时，可通过log_id取到execute_id
-    7  : optional i64 node_id (agw.key="node_id", agw.js_conv="str", api.js_conv='true'),
+    7  : optional i64 node_id (agw.key="node_id", agw.js_conv="str", api.js_conv='true'), // 工作流中特定节点的id，检索该节点的运行情况
 
     255: optional base.Base Base       ,
 }
@@ -1034,17 +1034,17 @@ struct GetNodeExecuteHistoryResponse{
 struct GetWorkFlowProcessData{
     1 :          string                   workFlowId      ,
     2 :          string                   executeId       ,
-    3 :          WorkflowExeStatus        executeStatus   ,
-    4 :          list<NodeResult>         nodeResults     ,
+    3 :          WorkflowExeStatus        executeStatus   , // 工作流实例的当前执行状态
+    4 :          list<NodeResult>         nodeResults     , // 执行中各个节点的结果/状态列表。
     5 :          string                   rate            , // 执行进度
     6 :          WorkflowExeHistoryStatus exeHistoryStatus, // 现节点试运行状态 1：没有试运行 2：试运行过
     7 :          string                   workflowExeCost , // workflow试运行耗时
     8 : optional TokenAndCost             tokenAndCost    , // 消耗
     9 : optional string                   reason          , // 失败原因
     10: optional string                   lastNodeID      , // 最后一个节点的ID
-    11:          string                   logID           ,
+    11:          string                   logID           , // 本次查询的日志id
     12: list<NodeEvent> nodeEvents, // 只返回中断中的 event
-    13: string projectId,
+    13: string projectId, // 工作流所属的project id，工作流属于资源库时为空
 }
 
 enum NodeExeStatus{
@@ -1100,7 +1100,8 @@ struct NodeEvent{
 }
 
 struct GetUploadAuthTokenRequest {
-    1  :string scene,
+    1  :          string    scene, // 上传场景，可选值："imageflow"
+
     255: optional base.Base Base ,
 }
 
@@ -1258,10 +1259,10 @@ struct WorkflowNodeDebugV2Response{
 }
 
 struct GetApiDetailRequest {
-    1  :          string    pluginID,
-    2  :          string    apiName ,
-    3  :          string    space_id,
-    4  :          string    api_id  ,
+    1  :          string    pluginID (tnt.tag = "required"), // 插件的唯一标识符。用于指定要查询哪个插件下的 API 详情。
+    2  :          string    apiName (tnt.tag = "required"), // API 的名称。用于在指定插件下查找特定的 API。
+    3  :          string    space_id, // 空间 ID。用于限定 API 查询的范围，API 可能属于某个特定的空间。
+    4  :          string    api_id  , // API 的唯一标识符。用于更精确地定位 API。
     5  : optional string    project_id,
     6  : optional string    plugin_version,
     255: optional base.Base Base    ,
@@ -1282,16 +1283,16 @@ enum PluginType {
 }
 
 struct ApiDetailData {
-    1 :          string       pluginID                                           ,
-    2 :          string       apiName                                            ,
-    3 :          string       inputs                  (agw.target="body_dynamic"),
-    4 :          string       outputs                 (agw.target="body_dynamic"),
-    5 :          string       icon                                               ,
-    6 :          string       name                                               ,
+    1 :          string       pluginID                                           , // 插件的唯一标识。
+    2 :          string       apiName                                            , // API 的名称。
+    3 :          string       inputs                  (agw.target="body_dynamic"), // API 的输入参数定义，通常是 JSON 字符串格式，描述输入参数的结构、类型等元信息。
+    4 :          string       outputs                 (agw.target="body_dynamic"), // API 的输出参数定义，通常是 JSON 字符串格式，描述输出结果的结构和类型。
+    5 :          string       icon                                               , // API 的图标 URL。
+    6 :          string       name                                               , // API 的显示名称和Label
     7 :          string       desc                                               ,
-    8 :          i64          pluginProductStatus                                ,
+    8 :          i64          pluginProductStatus                                , // 插件的状态，默认：0，已上架/已发布：1，已下架：2，审核中：3。
     9 :          i64          pluginProductUnlistType                            ,
-    10:          string       spaceID                                            ,
+    10:          string       spaceID                                            , // API 所属的空间 ID。
     11: optional DebugExample debugExample            (agw.key="debug_example")  ,
     12:          i64          updateTime                                         ,
     13: optional string       projectID                                          ,
@@ -1317,7 +1318,7 @@ struct NodeInfo {
 
 struct GetWorkflowDetailInfoRequest {
     1  : optional list<WorkflowFilter> workflow_filter_list, // 过滤条件，支持workflow_id和workflow_version
-    2  : optional string       space_id         ,
+    2  : optional string       space_id (tnt.tag = "required"),// 空间ID，用于筛选该空间内的工作流。
 
     255: optional base.Base    Base             ,
 }
@@ -1535,9 +1536,9 @@ struct DatasetFCItem {
 struct GetLLMNodeFCSettingDetailRequest {
      1  : required string  workflow_id ,
      2  : required string  space_id   ,
-     3  : optional list<PluginFCItem> plugin_list,
-     4  : optional list<WorkflowFCItem> workflow_list,
-     5  : optional list<DatasetFCItem> dataset_list,
+     3  : optional list<PluginFCItem> plugin_list, // llm节点使用的插件类型技能列表
+     4  : optional list<WorkflowFCItem> workflow_list, // llm节点使用的工作流类型技能列表
+     5  : optional list<DatasetFCItem> dataset_list, // llm节点使用的知识库类型技能列表
 
      255: optional base.Base Base       ,
 }
@@ -1628,7 +1629,7 @@ struct DeleteProjectConversationDefRequest {
     1: required string project_id   ,
     2: required string unique_id,
     3: map<string, string> replace, // 替换表，每个 wf 草稿分别替换成哪个, 未替换的情况下 success =false，replace 会返回待替换列表
-    4: bool check_only,
+    4: bool check_only, // 是否仅进行检查，不实际执行删除操作。主要用于查询当前绑定会话的流程都有哪些。
     5: required string space_id,
 
     255: optional base.Base    Base     ,
@@ -1806,8 +1807,8 @@ struct DeleteChatFlowRoleResponse{
 
 struct GetChatFlowRoleRequest{
 	1: string WorkflowID (agw.key = "workflow_id")
-    2: string ConnectorID (agw.key = "connector_id")
-    3: bool IsDebug (agw.key = "is_debug")
+    2: string ConnectorID (agw.key = "connector_id") // 渠道ID
+    3: bool IsDebug (agw.key = "is_debug") // 是否是调试模式，当字段为true时，会忽略connector_id的值；当字段为false时，会根据connector_id去查询对应渠道版本
 //    4: optional string AppID (api.query = "app_id")
     5: optional map<string,string> Ext (api.query = "ext")
     255: optional base.Base Base
@@ -1820,22 +1821,22 @@ struct GetChatFlowRoleResponse{
 }
 
 enum NodePanelSearchType {
-    All              = 0,
-    ResourceWorkflow = 1,
-    ProjectWorkflow  = 2,
-    FavoritePlugin   = 3,
-    ResourcePlugin   = 4,
-    ProjectPlugin    = 5,
-    StorePlugin      = 6,
+    All              = 0, // 搜索所有类型
+    ResourceWorkflow = 1, // 搜索资源库中的workflow
+    ProjectWorkflow  = 2, // 搜索project中的workflow
+    FavoritePlugin   = 3, // 搜索收藏的插件
+    ResourcePlugin   = 4, // 搜索资源库中的插件
+    ProjectPlugin    = 5, // 搜索project中的插件
+    StorePlugin      = 6, // 搜索插件商店中的插件
 }
 
 struct NodePanelSearchRequest {
-    1 : NodePanelSearchType search_type, // 搜索的数据类型，传空、不传或者传All表示搜索所有类型
-    2 : string          space_id,
+    1 : NodePanelSearchType search_type(tnt.tag = "required"), // 搜索的数据类型，传空、不传或者传All表示搜索所有类型
+    2 : string          space_id (tnt.tag = "required"),
     3 : optional string project_id,
-    4 : string          search_key,
-    5 : string          page_or_cursor, // 首次请求时值为"", 底层实现时根据数据源的分页模式转换成page or cursor
-    6 : i32             page_size,
+    4 : string          search_key, // 搜索关键字
+    5 : string          page_or_cursor, // 首次请求时值为"", 底层实现时根据数据源的分页模式转换成page or cursor。当 search_type 为 ResourceWorkflow, ProjectWorkflow, ResourcePlugin, ProjectPlugin 时：此字段代表 页码 ，必须为可转换为 >0 的 int64 的字符串。当 search_type 为 FavoritePlugin, StorePlugin 时：此字段代表 游标 。首次请求时可以为空字符串；后续请求传入上一页返回的 next_page_or_cursor。当 search_type 为 All 时：此字段的校验被跳过。
+    6 : i32             page_size, // 每页返回的结果数量。大于等于1，小于等于50。
     7 : string          exclude_workflow_id, // 排除的workflow_id，用于搜索workflow时排除当前workflow的id
 
     255: optional base.Base Base,
@@ -2132,7 +2133,7 @@ struct ChatFlowRunRequest{
     12:optional string ProjectID (agw.key="project_id"), // 项目ID，为了兼容ui builder
     13:optional SuggestReplyInfo SuggestReplyInfo (api.body = "suggest_reply_info"), // 建议回复信息
 
-    255: optional base.Base          Base ,
+    255: optional base.Base Base    ,
 }
 
 struct ChatFlowRunResponse {

@@ -6,12 +6,12 @@ namespace go flow.dataengine.dataset
 
 struct CreateDatasetRequest  {
     1: string name                   // 知识库名称，长度不超过100个字符
-    2: string description            // 知识库描述
+    2: string description  (tnt.tag="optional")  // 知识库描述
     3: i64 space_id (agw.js_conv="str", api.js_conv="true")  // 空间ID
     4: string icon_uri                // 知识库头像URI
-    5: common.FormatType format_type
-    6: i64 biz_id (agw.js_conv="str", api.js_conv="true") // 开放给第三方的业务标识, coze 传 0 或者不传
-    7: i64 project_id (agw.js_conv="str", api.js_conv="true") //新增project ID
+    5: common.FormatType format_type // 知识库类型，仅支持知识库类型，0: 文本，1: 表格，2: 图片
+    6: i64 biz_id (agw.js_conv="str", api.js_conv="true", tnt.tag="optional") // 开放给第三方的业务标识, coze 传 0 或者不传
+    7: i64 project_id (agw.js_conv="str", api.js_conv="true", tnt.tag="optional") //新增project ID
 
     255: optional base.Base Base
 }

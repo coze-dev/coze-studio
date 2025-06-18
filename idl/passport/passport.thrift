@@ -58,7 +58,7 @@ struct PassportWebEmailLoginPostResponse {
 
 struct PassportWebEmailPasswordResetGetRequest {
     1: string password
-    2: string code
+    2: string code // 传空就好，当前不校验
     3: string email
 }
 

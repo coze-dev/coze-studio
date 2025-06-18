@@ -33,7 +33,7 @@ struct GroupVariableInfo{
     5: list<GroupVariableInfo> SubGroupList
     6: bool IsReadOnly
     7: optional VariableChannel DefaultChannel
-}
+}(tnt.alias = "ProjectGroupVariableInfo")
 
 
 struct GetProjectVariableListReq  {
@@ -74,7 +74,7 @@ enum VariableConnector{
 
 
 struct GetMemoryVariableMetaReq  {
-    1: string ConnectorID
+    1: string ConnectorID // bot或project id
     2: VariableConnector ConnectorType
     3: optional string version
 
