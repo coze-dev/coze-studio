@@ -800,6 +800,8 @@ func (d *DatabaseApplicationService) CopyDatabase(ctx context.Context, req *Copy
 		}
 
 		originalID := srcDB.ID
+		originalDraftID := srcDB.GetDraftID()
+		originalOnlineID := srcDB.GetOnlineID()
 		srcDB.AppID = req.TargetAppID
 		srcDB.CreatorID = req.CreatorID
 		if req.TargetSpaceID != nil {
@@ -822,8 +824,8 @@ func (d *DatabaseApplicationService) CopyDatabase(ctx context.Context, req *Copy
 
 		copyDatabases[originalID] = onlineDatabase
 		draftDatabase := draftResp.Database
-		draftMaps[srcDB.GetDraftID()] = draftDatabase.ID
-		onlineMaps[srcDB.GetOnlineID()] = onlineDatabase.ID
+		draftMaps[originalDraftID] = draftDatabase.ID
+		onlineMaps[originalOnlineID] = onlineDatabase.ID
 
 		err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 			OpType: searchEntity.Created,

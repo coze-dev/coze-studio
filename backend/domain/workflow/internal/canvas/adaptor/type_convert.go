@@ -476,7 +476,7 @@ func LLMParamsToLLMParam(params vo.LLMParam) (*model.LLMParams, error) {
 		case "systemPrompt":
 			strVal := param.Input.Value.Content.(string)
 			p.SystemPrompt = strVal
-		case "chatHistoryRound", "generationDiversity":
+		case "chatHistoryRound", "generationDiversity", "frequencyPenalty", "presencePenalty":
 		// do nothing
 		case "topP":
 			strVal := param.Input.Value.Content.(string)

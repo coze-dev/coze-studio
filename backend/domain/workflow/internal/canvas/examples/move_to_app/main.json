@@ -1,0 +1,321 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 180,
+          "y": 35.2
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 2480,
+          "y": 22.200000000000003
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "175430",
+                    "name": "output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "164736",
+      "type": "9",
+      "meta": {
+        "position": {
+          "x": 611.063829787234,
+          "y": -7.436170212765955
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "c1",
+          "description": "2",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
+          "isImageflow": false
+        },
+        "inputs": {
+          "workflowId": "7516826260387921920",
+          "spaceId": "666",
+          "workflowVersion": "",
+          "inputDefs": [
+            {
+              "name": "input",
+              "type": "string"
+            }
+          ],
+          "type": 0,
+          "inputParameters": [],
+          "settingOnError": {}
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output"
+          }
+        ]
+      }
+    },
+    {
+      "id": "175430",
+      "type": "9",
+      "meta": {
+        "position": {
+          "x": 2020,
+          "y": 21.5
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "c2",
+          "description": "c2",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
+          "isImageflow": false
+        },
+        "inputs": {
+          "workflowId": "7516826283318181888",
+          "spaceId": "666",
+          "workflowVersion": "",
+          "inputDefs": [
+            {
+              "name": "input",
+              "type": "string"
+            }
+          ],
+          "type": 0,
+          "inputParameters": [],
+          "settingOnError": {}
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output"
+          }
+        ]
+      }
+    },
+    {
+      "id": "146468",
+      "type": "43",
+      "meta": {
+        "position": {
+          "x": 1560,
+          "y": 0
+        }
+      },
+      "data": {
+        "inputs": {
+          "databaseInfoList": [
+            {
+              "databaseInfoID": "7516826768238444544"
+            }
+          ],
+          "selectParam": {
+            "condition": {
+              "conditionList": [
+                [
+                  {
+                    "name": "left",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "v2"
+                      }
+                    }
+                  },
+                  {
+                    "name": "operation",
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "type": "literal",
+                        "content": "IS_NOT_NULL"
+                      }
+                    }
+                  },
+                  null
+                ]
+              ],
+              "logic": "AND"
+            },
+            "orderByList": [],
+            "limit": 100
+          }
+        },
+        "outputs": [
+          {
+            "type": "list",
+            "name": "outputList",
+            "schema": {
+              "type": "object",
+              "schema": []
+            }
+          },
+          {
+            "type": "integer",
+            "name": "rowNum"
+          }
+        ],
+        "nodeMeta": {
+          "title": "查询数据",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icaon-database-select.jpg",
+          "description": "从表获取数据，用户可定义查询条件、选择列等，输出符合条件的数据",
+          "mainColor": "#F2B600",
+          "subTitle": "查询数据"
+        }
+      }
+    },
+    {
+      "id": "165863",
+      "type": "27",
+      "meta": {
+        "position": {
+          "x": 1100,
+          "y": 8.5
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "知识库写入",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeWriting-v2.jpg",
+          "description": "写入节点可以添加 文本类型 的知识库，仅可以添加一个知识库",
+          "mainColor": "#FF811A",
+          "subTitle": "知识库写入"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "documentId"
+          },
+          {
+            "type": "string",
+            "name": "fileName"
+          },
+          {
+            "type": "string",
+            "name": "fileUrl"
+          }
+        ],
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "knowledge",
+              "input": {
+                "type": "string",
+                "assistType": 1,
+                "value": {
+                  "type": "literal",
+                  "content": "http://pic.fanlv.fun/tos-cn-i-2vw640id5q/1bae997c10aa45cd8244b4d1786b8475.txt~tplv-2vw640id5q-image.image?x-wf-file_name=%E5%8C%97%E4%BA%AC%E6%97%85%E6%B8%B8%E6%99%AF%E7%82%B9.txt",
+                  "rawMeta": {
+                    "fileName": "北京旅游景点.txt",
+                    "type": 8
+                  }
+                }
+              }
+            }
+          ],
+          "datasetParam": [
+            {
+              "name": "datasetList",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "literal",
+                  "content": [
+                    "7516826802006786048"
+                  ]
+                }
+              }
+            }
+          ],
+          "strategyParam": {
+            "parsingStrategy": {
+              "parsingType": "fast"
+            },
+            "chunkStrategy": {
+              "chunkType": "default"
+            },
+            "indexStrategy": {}
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "164736"
+    },
+    {
+      "sourceNodeID": "175430",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "164736",
+      "targetNodeID": "165863"
+    },
+    {
+      "sourceNodeID": "146468",
+      "targetNodeID": "175430"
+    },
+    {
+      "sourceNodeID": "165863",
+      "targetNodeID": "146468"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

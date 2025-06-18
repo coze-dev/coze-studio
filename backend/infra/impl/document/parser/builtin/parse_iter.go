@@ -89,7 +89,9 @@ func parseByRowIterator(iter rowIterator, config *contract.Config, opts ...parse
 					})
 				}
 			}
-			expData = append(expData, rowData)
+			if rowData != nil {
+				expData = append(expData, rowData)
+			}
 		}
 
 		i++

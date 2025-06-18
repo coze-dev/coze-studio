@@ -7,28 +7,27 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 )
 
 //go:generate  mockgen -destination pluginmock/plugin_mock.go --package pluginmock -source plugin.go
-type ToolService interface {
+type PluginService interface {
 	GetPluginToolsInfo(ctx context.Context, req *PluginToolsInfoRequest) (*PluginToolsInfoResponse, error)
 	GetPluginInvokableTools(ctx context.Context, req *PluginToolsInvokableRequest) (map[int64]PluginInvokableTool, error)
 }
 
-func GetToolService() ToolService {
-	return toolSrvImpl
+func GetPluginService() PluginService {
+	return pluginSrvImpl
 }
 
-func SetToolService(ts ToolService) {
-	toolSrvImpl = ts
+func SetPluginService(ts PluginService) {
+	pluginSrvImpl = ts
 }
 
-var toolSrvImpl ToolService
+var pluginSrvImpl PluginService
 
-type PluginEntity = entity.PluginEntity
+type PluginEntity = vo.PluginEntity
 
 type WorkflowAPIParameters = []*workflow3.APIParameter
 type PluginToolsInfoRequest struct {

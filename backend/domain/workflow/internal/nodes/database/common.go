@@ -159,8 +159,11 @@ func responseFormatted(configOutput map[string]*vo.TypeInfo, response *database.
 	} else {
 		ret[outputList] = list
 	}
-
-	ret[rowNum] = response.RowNumber
+	if response.RowNumber != nil {
+		ret[rowNum] = *response.RowNumber
+	} else {
+		ret[rowNum] = nil
+	}
 
 	return ret, nil
 }
@@ -298,4 +301,12 @@ func isDebugExecute(ctx context.Context) bool {
 		panic(fmt.Errorf("unable to get exe context"))
 	}
 	return execCtx.RootCtx.ExeCfg.Mode == vo.ExecuteModeDebug || execCtx.RootCtx.ExeCfg.Mode == vo.ExecuteModeNodeDebug
+}
+
+func getExecUserID(ctx context.Context) int64 {
+	execCtx := execute.GetExeCtx(ctx)
+	if execCtx == nil {
+		panic(fmt.Errorf("unable to get exe context"))
+	}
+	return execCtx.RootCtx.ExeCfg.Operator
 }

@@ -51,10 +51,10 @@ func (o *oauthRepoImpl) makeAccessTokenKey(userID string, clientID string, token
 
 	var key string
 	if len(scopes) == 0 {
-		key = fmt.Sprintf("access_token:%d:%s:%s", userID, clientID, urlParse.Hostname())
+		key = fmt.Sprintf("access_token:%s:%s:%s", userID, clientID, urlParse.Hostname())
 	} else {
 		scope := strings.Join(scopes, ",")
-		key = fmt.Sprintf("access_token:%d:%s:%s:%s", userID, clientID, urlParse.Hostname(), scope)
+		key = fmt.Sprintf("access_token:%s:%s:%s:%s", userID, clientID, urlParse.Hostname(), scope)
 	}
 
 	return key, nil

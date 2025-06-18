@@ -157,7 +157,7 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 				)
 				if p.FCSetting != nil {
 					requestParameters = p.FCSetting.RequestParameters
-					responseParameters = p.FCSetting.RequestParameters
+					responseParameters = p.FCSetting.ResponseParameters
 				}
 
 				if req, ok := pluginToolsInvokableReq[pid]; ok {
@@ -185,7 +185,7 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 			}
 			inInvokableTools := make([]tool.BaseTool, 0, len(fcParams.PluginFCParam.PluginList))
 			for _, req := range pluginToolsInvokableReq {
-				toolMap, err := crossplugin.GetToolService().GetPluginInvokableTools(ctx, req)
+				toolMap, err := crossplugin.GetPluginService().GetPluginInvokableTools(ctx, req)
 				if err != nil {
 					return nil, err
 				}
@@ -540,7 +540,7 @@ func (s *NodeSchema) ToPluginConfig() (*plugin.Config, error) {
 		PluginID:      mustGetKey[int64]("PluginID", s.Configs),
 		ToolID:        mustGetKey[int64]("ToolID", s.Configs),
 		PluginVersion: mustGetKey[string]("PluginVersion", s.Configs),
-		ToolService:   crossplugin.GetToolService(),
+		PluginService: crossplugin.GetPluginService(),
 	}, nil
 
 }

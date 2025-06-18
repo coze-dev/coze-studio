@@ -22,13 +22,13 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
-type toolService struct {
+type pluginService struct {
 	client service.PluginService
 	tos    storage.Storage
 }
 
-func NewToolService(client service.PluginService, tos storage.Storage) crossplugin.ToolService {
-	return &toolService{client: client, tos: tos}
+func NewPluginService(client service.PluginService, tos storage.Storage) crossplugin.PluginService {
+	return &pluginService{client: client, tos: tos}
 }
 
 type pluginInfo struct {
@@ -36,7 +36,7 @@ type pluginInfo struct {
 	LatestVersion *string
 }
 
-func (t *toolService) getPluginsWithTools(ctx context.Context, pluginEntity *crossplugin.PluginEntity, toolIDs []int64, isDraft bool) (*pluginInfo, []*entity.ToolInfo, error) {
+func (t *pluginService) getPluginsWithTools(ctx context.Context, pluginEntity *crossplugin.PluginEntity, toolIDs []int64, isDraft bool) (*pluginInfo, []*entity.ToolInfo, error) {
 	var pluginsInfo []*entity.PluginInfo
 	var latestPluginInfo *entity.PluginInfo
 	pluginID := pluginEntity.PluginID
@@ -121,7 +121,7 @@ func (t *toolService) getPluginsWithTools(ctx context.Context, pluginEntity *cro
 	return &pluginInfo{PluginInfo: pInfo}, toolsInfo, nil
 }
 
-func (t *toolService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.PluginToolsInfoRequest) (*crossplugin.PluginToolsInfoResponse, error) {
+func (t *pluginService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.PluginToolsInfoRequest) (*crossplugin.PluginToolsInfoResponse, error) {
 	var toolsInfo []*entity.ToolInfo
 	isDraft := req.IsDraft || (req.PluginEntity.PluginVersion != nil && *req.PluginEntity.PluginVersion == "0")
 	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, &crossplugin.PluginEntity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, req.ToolIDs, isDraft)
@@ -183,7 +183,7 @@ func (t *toolService) GetPluginToolsInfo(ctx context.Context, req *crossplugin.P
 	return response, nil
 }
 
-func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplugin.PluginToolsInvokableRequest) (map[int64]crossplugin.PluginInvokableTool, error) {
+func (t *pluginService) GetPluginInvokableTools(ctx context.Context, req *crossplugin.PluginToolsInvokableRequest) (map[int64]crossplugin.PluginInvokableTool, error) {
 	var toolsInfo []*entity.ToolInfo
 	isDraft := req.IsDraft || (req.PluginEntity.PluginVersion != nil && *req.PluginEntity.PluginVersion == "0")
 	pInfo, toolsInfo, err := t.getPluginsWithTools(ctx, &crossplugin.PluginEntity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, maps.Keys(req.ToolsInvokableInfo), isDraft)
@@ -206,11 +206,13 @@ func (t *toolService) GetPluginInvokableTools(ctx context.Context, req *crossplu
 		if r, ok := req.ToolsInvokableInfo[tf.ID]; ok && (r.RequestAPIParametersConfig != nil && r.ResponseAPIParametersConfig != nil) {
 			reqPluginCommonAPIParameters := slices.Transform(r.RequestAPIParametersConfig, toPluginCommonAPIParameter)
 			respPluginCommonAPIParameters := slices.Transform(r.ResponseAPIParametersConfig, toPluginCommonAPIParameter)
+
 			tl.toolOperation, err = pluginutil.APIParamsToOpenapiOperation(reqPluginCommonAPIParameters, respPluginCommonAPIParameters)
+			tl.toolOperation.OperationID = tf.Operation.OperationID
+			tl.toolOperation.Summary = tf.Operation.Summary
 			if err != nil {
 				return nil, err
 			}
-
 		}
 
 		result[tf.ID] = tl
@@ -257,6 +259,7 @@ func (p *pluginInvokeTool) PluginInvoke(ctx context.Context, argumentsInJSON str
 		ToolID:          p.toolInfo.ID,
 		ExecScene:       plugin.ExecSceneOfWorkflow,
 		ArgumentsInJson: argumentsInJSON,
+		ExecDraftTool:   p.IsDraft,
 	}
 	execOpts := []entity.ExecuteToolOpt{
 		plugin.WithInvalidRespProcessStrategy(plugin.InvalidResponseProcessStrategyOfReturnDefault),
@@ -264,10 +267,6 @@ func (p *pluginInvokeTool) PluginInvoke(ctx context.Context, argumentsInJSON str
 
 	if p.pluginEntity.PluginVersion != nil {
 		execOpts = append(execOpts, plugin.WithToolVersion(*p.pluginEntity.PluginVersion))
-	}
-
-	if p.IsDraft {
-		req.ExecDraftTool = true
 	}
 
 	if p.toolOperation != nil {

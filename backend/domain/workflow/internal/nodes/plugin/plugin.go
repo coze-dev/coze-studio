@@ -20,7 +20,7 @@ type Config struct {
 
 	IgnoreException bool
 	DefaultOutput   map[string]any
-	ToolService     plugin.ToolService
+	PluginService   plugin.PluginService
 }
 
 type Plugin struct {
@@ -37,14 +37,14 @@ func NewPlugin(ctx context.Context, cfg *Config) (*Plugin, error) {
 	if cfg.ToolID == 0 {
 		return nil, errors.New("tool id is required")
 	}
-	if cfg.ToolService == nil {
+	if cfg.PluginService == nil {
 		return nil, errors.New("tool service is required")
 	}
 	return &Plugin{config: cfg}, nil
 }
 
 func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map[string]any, err error) {
-	invokeMap, err := p.config.ToolService.GetPluginInvokableTools(ctx, &plugin.PluginToolsInvokableRequest{
+	invokeMap, err := p.config.PluginService.GetPluginInvokableTools(ctx, &plugin.PluginToolsInvokableRequest{
 		PluginEntity: plugin.PluginEntity{
 			PluginID: p.config.PluginID,
 			// if the plugin version is equal to '', set the plugin version = nil to be considered online, otherwise it is considered for the version

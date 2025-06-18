@@ -1,0 +1,394 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": -239.17391562719308,
+          "y": -485.2679266746656
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "The starting node of the workflow, used to set the information needed to initiate the workflow.",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start.png",
+          "subTitle": "",
+          "title": "Start"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 726.092034161139,
+          "y": -118.77658977203274
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "The final node of the workflow, used to return the result information after the workflow runs.",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End.png",
+          "subTitle": "",
+          "title": "End"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "140884",
+                    "name": "output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "140884",
+      "type": "3",
+      "meta": {
+        "position": {
+          "x": 220.85957287256923,
+          "y": -572.3157579290518
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "LLM",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg",
+          "description": "Invoke the large language model, generate responses using variables and prompt words.",
+          "mainColor": "#5C62FF",
+          "subTitle": "LLM"
+        },
+        "inputs": {
+          "inputParameters": [],
+          "llmParam": [
+            {
+              "name": "modelType",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": "1",
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "modleName",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "豆包·1.5·Pro·32k",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "generationDiversity",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "balance",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "temperature",
+              "input": {
+                "type": "float",
+                "value": {
+                  "type": "literal",
+                  "content": "0.8",
+                  "rawMeta": {
+                    "type": 4
+                  }
+                }
+              }
+            },
+            {
+              "name": "maxTokens",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": "4096",
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "responseFormat",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": "2",
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "prompt",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "enableChatHistory",
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "type": "literal",
+                  "content": false,
+                  "rawMeta": {
+                    "type": 3
+                  }
+                }
+              }
+            },
+            {
+              "name": "chatHistoryRound",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": "3",
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "systemPrompt",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "fcParam": {
+            "pluginFCParam": {
+              "pluginList": [
+                {
+                  "plugin_id": "7516515556770447360",
+                  "api_id": "7516515616698662912",
+                  "api_name": "top_news",
+                  "plugin_version": "0",
+                  "is_draft": true
+                }
+              ]
+            },
+            "knowledgeFCParam": {
+              "knowledgeList": [
+                {
+                  "id": "7516515692099665920",
+                  "name": "knowv1"
+                }
+              ],
+              "global_setting": {
+                "auto": false,
+                "min_score": 0.5,
+                "no_recall_reply_customize_prompt": "抱歉，您的问题超出了我的知识范围，并且无法在当前阶段回答",
+                "no_recall_reply_mode": 0,
+                "show_source": false,
+                "show_source_mode": 0,
+                "top_k": 3,
+                "use_rerank": true,
+                "use_rewrite": true,
+                "use_nl2_sql": true,
+                "search_mode": 0
+              }
+            }
+          },
+          "settingOnError": {
+            "processType": 1,
+            "timeoutMs": 180000,
+            "retryTimes": 0
+          }
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output"
+          }
+        ],
+        "version": "3"
+      }
+    },
+    {
+      "id": "157683",
+      "type": "12",
+      "meta": {
+        "position": {
+          "x": 1043.449575532565,
+          "y": -502.4679266746656
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "SQL Customization",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Database-v2.jpg",
+          "description": "Complete the operations of adding, deleting, modifying and querying the database based on user-defined SQL",
+          "mainColor": "#FF811A",
+          "subTitle": "SQL Customization"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "databaseInfoList": [
+            {
+              "databaseInfoID": "7516516171512807424"
+            }
+          ],
+          "sql": "select * from v1;",
+          "settingOnError": {
+            "processType": 1,
+            "timeoutMs": 60000,
+            "retryTimes": 0
+          }
+        },
+        "outputs": [
+          {
+            "type": "list",
+            "name": "outputList",
+            "schema": {
+              "type": "object",
+              "schema": []
+            }
+          },
+          {
+            "type": "integer",
+            "name": "rowNum"
+          }
+        ]
+      }
+    },
+    {
+      "id": "150915",
+      "type": "9",
+      "meta": {
+        "position": {
+          "x": 646.3887080343196,
+          "y": -506.07295576483375
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "child_v1",
+          "description": "123",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
+          "isImageflow": false
+        },
+        "inputs": {
+          "workflowId": "7516518409656336384",
+          "spaceId": "666",
+          "workflowVersion": "",
+          "inputDefs": [
+            {
+              "name": "input",
+              "type": "string"
+            }
+          ],
+          "type": 0,
+          "inputParameters": [],
+          "settingOnError": {}
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output"
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "140884"
+    },
+    {
+      "sourceNodeID": "157683",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "140884",
+      "targetNodeID": "150915"
+    },
+    {
+      "sourceNodeID": "150915",
+      "targetNodeID": "157683"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"testing"
 
@@ -104,6 +105,64 @@ func TestParseCSV(t *testing.T) {
 	for i, doc := range docs {
 		assertSheet(t, i, doc)
 	}
+}
+
+func TestParseCSVBadCases(t *testing.T) {
+	t.Run("test nil row", func(t *testing.T) {
+		ctx := context.Background()
+		f, err := os.Open("test_data/test_csv_badcase_1.csv")
+		assert.NoError(t, err)
+		b, err := io.ReadAll(f)
+		assert.NoError(t, err)
+
+		pfn := parseCSV(&contract.Config{
+			FileExtension: "csv",
+			ParsingStrategy: &contract.ParsingStrategy{
+				ExtractImage:        true,
+				ExtractTable:        true,
+				ImageOCR:            false,
+				SheetID:             nil,
+				HeaderLine:          0,
+				DataStartLine:       1,
+				RowsCount:           0,
+				IsAppend:            false,
+				Columns:             nil,
+				IgnoreColumnTypeErr: true,
+				ImageAnnotationType: 0,
+			},
+		})
+
+		resp, err := pfn(ctx, bytes.NewReader(b))
+		assert.NoError(t, err)
+		assert.True(t, len(resp) > 0)
+		cols, err := document.GetDocumentColumns(resp[0])
+		assert.NoError(t, err)
+		cols[5].Nullable = false
+		npfn := parseCSV(&contract.Config{
+			FileExtension: "csv",
+			ParsingStrategy: &contract.ParsingStrategy{
+				ExtractImage:        true,
+				ExtractTable:        true,
+				ImageOCR:            false,
+				SheetID:             nil,
+				HeaderLine:          0,
+				DataStartLine:       1,
+				RowsCount:           0,
+				IsAppend:            false,
+				Columns:             cols,
+				IgnoreColumnTypeErr: true,
+				ImageAnnotationType: 0,
+			},
+		})
+		resp, err = npfn(ctx, bytes.NewReader(b))
+		assert.NoError(t, err)
+		assert.True(t, len(resp) > 0)
+		for _, item := range resp {
+			data, err := document.GetDocumentColumnData(item)
+			assert.NoError(t, err)
+			assert.NotNil(t, data[5].GetValue())
+		}
+	})
 }
 
 func assertSheet(t *testing.T, i int, doc *schema.Document) {
