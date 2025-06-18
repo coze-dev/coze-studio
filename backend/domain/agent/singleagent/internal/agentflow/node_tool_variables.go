@@ -51,7 +51,16 @@ func newAgentVariableTools(ctx context.Context, v *variableConf) ([]tool.Invokab
 		ConnectorID: v.ConnectorID,
 	}
 
-	desc := "When user needs to set variables, call this tool."
+	desc := `
+## Skills Conditions
+1. When the user's intention is to set a variable and the user provides the variable to be set, call the tool.
+2. If the user wants to set a variable but does not provide the variable, do not call the tool.
+3. If the user's intention is not to set a variable, do not call the tool.
+
+## Constraints
+- Only make decisions regarding tool invocation based on the user's intention and input related to variable setting.
+- Do not call the tool in any other situation not meeting the above conditions.
+`
 	at, err := utils.InferTool("setKeywordMemory", desc, a.Invoke)
 	if err != nil {
 		return nil, err
@@ -84,10 +93,12 @@ func (a *avTool) Invoke(ctx context.Context, v map[string]string) (string, error
 				Value:   value,
 			})
 		}
-		_, err := crossvariables.DefaultSVC().SetVariableInstance(ctx, vbMeta, items)
-		if err != nil {
-			logs.CtxErrorf(ctx, "setVariableInstance failed, err=%v", err)
-			return "fail", nil
+		if len(items) > 0 {
+			_, err := crossvariables.DefaultSVC().SetVariableInstance(ctx, vbMeta, items)
+			if err != nil {
+				logs.CtxErrorf(ctx, "setVariableInstance failed, err=%v", err)
+				return "fail", nil
+			}
 		}
 	}
 
