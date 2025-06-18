@@ -379,7 +379,7 @@ struct CreateWorkflowRequest{
     8  : optional i32          bind_biz_type, // 绑定业务类型，非必要不填写。参考BindBizType结构体，值为3时代表抖音分身
     9  : optional string       project_id   , // 应用id，填写时代表流程是project下的流程，需要跟随project发布
     10 : optional bool         create_conversation, // 是否创建会话，仅当flow_mode=chatflow时生效
-
+    11  : locale locale
     255: optional base.Base    Base     ,
 }
 
@@ -1200,12 +1200,15 @@ struct PluginCategory {
     4: string icon_url ,
     5: string node_type,
 }
-
+enum locale {
+    zh_CN = 1
+    en_US = 2
+}
 struct NodeTemplateListRequest {
     1  : optional list<NodeTemplateType> need_types, // 需要的节点类型 不传默认返回全部
     2  : optional list<string>           node_types, // 需要的节点类型, string 类型
-
-    255: optional base.Base              Base      ,
+    3  : locale locale
+    255: optional base.Base              Base,
 }
 
 struct NodeTemplateListData {

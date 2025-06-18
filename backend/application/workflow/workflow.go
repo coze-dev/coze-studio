@@ -59,8 +59,7 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 		}
 		toQueryTypes[entityType] = true
 	}
-
-	category2NodeMetaList, err := GetWorkflowDomainSVC().ListNodeMeta(ctx, toQueryTypes)
+	category2NodeMetaList, err := GetWorkflowDomainSVC().ListNodeMeta(ctx, toQueryTypes, ternary.IFElse(req.GetLocale() == workflow.Locale_en_US, entity.EnUS, entity.ZhCN))
 	if err != nil {
 		return nil, err
 	}
@@ -83,8 +82,8 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 			tpl := &workflow.NodeTemplate{
 				ID:           fmt.Sprintf("%d", nodeMeta.ID),
 				Type:         tplType,
-				Name:         nodeMeta.Name,
-				Desc:         nodeMeta.Desc,
+				Name:         ternary.IFElse(req.GetLocale() == workflow.Locale_en_US, nodeMeta.EnUSName, nodeMeta.Name),
+				Desc:         ternary.IFElse(req.GetLocale() == workflow.Locale_en_US, nodeMeta.EnUSDescription, nodeMeta.Desc),
 				IconURL:      nodeMeta.IconURL,
 				SupportBatch: ternary.IFElse(nodeMeta.SupportBatch, workflow.SupportBatch_SUPPORT, workflow.SupportBatch_NOT_SUPPORT),
 				NodeType:     fmt.Sprintf("%d", tplType),
@@ -124,16 +123,16 @@ func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.C
 	if err := checkUserSpace(ctx, uID, spaceID); err != nil {
 		return nil, err
 	}
-
-	wf := &vo.Meta{
-		CreatorID:   uID,
-		SpaceID:     spaceID,
-		ContentType: workflow.WorkFlowType_User,
-		Name:        req.Name,
-		Desc:        req.Desc,
-		IconURI:     req.IconURI,
-		AppID:       parseInt64(req.ProjectID),
-		Mode:        ternary.IFElse(req.IsSetFlowMode(), req.GetFlowMode(), workflow.WorkflowMode_Workflow),
+	wf := &vo.MetaCreate{
+		CreatorID:        uID,
+		SpaceID:          spaceID,
+		ContentType:      workflow.WorkFlowType_User,
+		Name:             req.Name,
+		Desc:             req.Desc,
+		IconURI:          req.IconURI,
+		AppID:            parseInt64(req.ProjectID),
+		Mode:             ternary.IFElse(req.IsSetFlowMode(), req.GetFlowMode(), workflow.WorkflowMode_Workflow),
+		InitCanvasSchema: entity.GetDefaultInitCanvasJsonSchema(ternary.IFElse(req.GetLocale() == workflow.Locale_en_US, entity.EnUS, entity.ZhCN)),
 	}
 
 	id, err := GetWorkflowDomainSVC().Create(ctx, wf)

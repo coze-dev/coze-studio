@@ -1,19 +1,24 @@
 package entity
 
+import "code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
+
 // NodeTypeMetas holds the metadata for all available node types.
 // It is initialized with built-in types and potentially extended by loading from external sources.
 var NodeTypeMetas = []*NodeTypeMeta{
 	{
-		ID:           1,
-		Name:         "开始",
-		Type:         NodeTypeEntry,
-		Category:     "输入&输出", // Mapped from cate_list
-		Desc:         "工作流的起始节点，用于设定启动工作流需要的信息",
-		Color:        "#5C62FF",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
-		IsComposite:  false,
-		SupportBatch: false, // supportBatch: 1
-		PostFillNil:  true,
+		ID:              1,
+		Name:            "开始",
+		Type:            NodeTypeEntry,
+		Category:        "输入&输出", // Mapped from cate_list
+		Desc:            "工作流的起始节点，用于设定启动工作流需要的信息",
+		Color:           "#5C62FF",
+		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+		IsComposite:     false,
+		SupportBatch:    false, // supportBatch: 1
+		PostFillNil:     true,
+		EnUSCategory:    "Input&Output",
+		EnUSName:        "Start",
+		EnUSDescription: "The starting node of the workflow, used to set the information needed to initiate the workflow.",
 	},
 	{
 		ID:              2,
@@ -27,6 +32,9 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		SupportBatch:    false, // supportBatch: 1
 		PreFillZero:     true,
 		CallbackEnabled: true,
+		EnUSCategory:    "Input&Output",
+		EnUSName:        "End",
+		EnUSDescription: "The final node of the workflow, used to return the result information after the workflow runs.",
 	},
 	{
 		ID:               3,
@@ -42,8 +50,12 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		PreFillZero:      true,
 		PostFillNil:      true,
 		CallbackEnabled:  true,
+		EnUSCategory:     "",
+		EnUSName:         "LLM",
+		EnUSDescription:  "Invoke the large language model, generate responses using variables and prompt words.",
 		MayUseChatModel:  true,
 	},
+
 	{
 		ID:               4,
 		Name:             "插件",
@@ -57,6 +69,9 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		DefaultTimeoutMS: 3 * 60 * 1000, // 3 minutes
 		PreFillZero:      true,
 		PostFillNil:      true,
+		EnUSCategory:     "",
+		EnUSName:         "Plugin",
+		EnUSDescription:  "Used to access external real-time data and perform operations",
 	},
 	{
 		ID:               5,
@@ -72,6 +87,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		PreFillZero:      true,
 		PostFillNil:      true,
 		CallbackEnabled:  true,
+
+		EnUSCategory:    "Logic",
+		EnUSName:        "Code",
+		EnUSDescription: "Write code to process input variables to generate return values.",
 	},
 	{
 		ID:               6,
@@ -86,6 +105,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		DefaultTimeoutMS: 60 * 1000, // 1 minute
 		PreFillZero:      true,
 		PostFillNil:      true,
+
+		EnUSCategory:    "Data",
+		EnUSName:        "Knowledge retrieval",
+		EnUSDescription: "In the selected knowledge, the best matching information is recalled based on the input variable and returned as an Array.",
 	},
 	{
 		ID:              8,
@@ -98,6 +121,9 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		IsComposite:     false,
 		SupportBatch:    false, // supportBatch: 1
 		CallbackEnabled: true,
+		EnUSCategory:    "Logic",
+		EnUSName:        "Condition",
+		EnUSDescription: "Connect multiple downstream branches. Only the corresponding branch will be executed if the set conditions are met. If none are met, only the 'else' branch will be executed.",
 	},
 	{
 		ID:              9,
@@ -110,6 +136,9 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		IsComposite:     false, // Assuming false as it's not explicitly composite like Loop/Batch
 		SupportBatch:    true,  // supportBatch: 2
 		CallbackEnabled: true,
+		EnUSCategory:    "",
+		EnUSName:        "Workflow",
+		EnUSDescription: "Add published workflows to execute subtasks",
 	},
 	{
 		ID:               12,
@@ -124,6 +153,9 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		DefaultTimeoutMS: 60 * 1000, // 1 minute
 		PreFillZero:      true,
 		PostFillNil:      true,
+		EnUSCategory:     "Database",
+		EnUSName:         "SQL Customization",
+		EnUSDescription:  "Complete the operations of adding, deleting, modifying and querying the database based on user-defined SQL",
 	},
 	{
 		ID:              13,
@@ -137,6 +169,9 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		SupportBatch:    false,
 		PreFillZero:     true,
 		CallbackEnabled: true,
+		EnUSCategory:    "Input&Output",
+		EnUSName:        "Output",
+		EnUSDescription: "The node is renamed from \"message\" to \"output\", Supports message output in the intermediate process and streaming and non-streaming methods",
 	},
 	{
 		ID:              15,
@@ -150,6 +185,9 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		SupportBatch:    false, // supportBatch: 2
 		PreFillZero:     true,
 		CallbackEnabled: true,
+		EnUSCategory:    "Utilities",
+		EnUSName:        "Text Processing",
+		EnUSDescription: "The format used for handling multiple string-type variables.",
 	},
 	{
 		ID:               18,
@@ -166,17 +204,23 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		PostFillNil:      true,
 		CallbackEnabled:  true,
 		MayUseChatModel:  true,
+		EnUSCategory:     "Utilities",
+		EnUSName:         "Question",
+		EnUSDescription:  "Support asking questions to the user in the middle of the conversation, with both preset options and open-ended questions",
 	},
 	{
-		ID:           19,
-		Name:         "终止循环",
-		Type:         NodeTypeBreak,
-		Category:     "业务逻辑", // Mapped from cate_list
-		Desc:         "用于立即终止当前所在的循环，跳出循环体",
-		Color:        "#00B2B2",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Break-v2.jpg",
-		IsComposite:  false,
-		SupportBatch: false, // supportBatch: 1
+		ID:              19,
+		Name:            "终止循环",
+		Type:            NodeTypeBreak,
+		Category:        "业务逻辑", // Mapped from cate_list
+		Desc:            "用于立即终止当前所在的循环，跳出循环体",
+		Color:           "#00B2B2",
+		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Break-v2.jpg",
+		IsComposite:     false,
+		SupportBatch:    false, // supportBatch: 1
+		EnUSName:        "Break",
+		EnUSCategory:    "Logic",
+		EnUSDescription: "Used to immediately terminate the current loop and jump out of the loop",
 	},
 	{
 		ID:           20,
@@ -188,6 +232,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LoopSetVariable-v2.jpg",
 		IsComposite:  false,
 		SupportBatch: false, // supportBatch: 1
+
+		EnUSName:        "Set Variable",
+		EnUSCategory:    "Logic",
+		EnUSDescription: "Used to reset the value of the loop variable so that it uses the reset value in the next iteration",
 	},
 	{
 		ID:               21,
@@ -203,6 +251,9 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		PreFillZero:      true,
 		PostFillNil:      true,
 		CallbackEnabled:  true,
+		EnUSName:         "Loop",
+		EnUSCategory:     "Logic",
+		EnUSDescription:  "Used to repeatedly execute a series of tasks by setting the number of iterations and logic",
 	},
 	{
 		ID:               22,
@@ -219,6 +270,9 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		PostFillNil:      true,
 		CallbackEnabled:  true,
 		MayUseChatModel:  true,
+		EnUSName:         "Intent recognition",
+		EnUSCategory:     "Logic",
+		EnUSDescription:  "Used for recognizing the intent in user input and matching it with preset intent options.",
 	},
 	{
 		ID:               27,
@@ -233,6 +287,10 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		DefaultTimeoutMS: 60 * 1000, // 1 minute
 		PreFillZero:      true,
 		PostFillNil:      true,
+
+		EnUSName:        "Knowledge writing",
+		EnUSCategory:    "Data",
+		EnUSDescription: "The write node can add a knowledge base of type text. Only one knowledge base can be added.",
 	},
 	{
 		ID:               28,
@@ -248,29 +306,38 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		PreFillZero:      true,
 		PostFillNil:      true,
 		CallbackEnabled:  true,
+		EnUSName:         "Knowledge writing",
+		EnUSCategory:     "Data",
+		EnUSDescription:  "By setting the number of batch runs and logic, run the tasks in the batch body.",
 	},
 	{
-		ID:           29,
-		Name:         "继续循环",
-		Type:         NodeTypeContinue,
-		Category:     "业务逻辑", // Mapped from cate_list
-		Desc:         "用于终止当前循环，执行下次循环",
-		Color:        "#00B2B2",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Continue-v2.jpg",
-		IsComposite:  false,
-		SupportBatch: false, // supportBatch: 1
+		ID:              29,
+		Name:            "继续循环",
+		Type:            NodeTypeContinue,
+		Category:        "业务逻辑", // Mapped from cate_list
+		Desc:            "用于终止当前循环，执行下次循环",
+		Color:           "#00B2B2",
+		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Continue-v2.jpg",
+		IsComposite:     false,
+		SupportBatch:    false, // supportBatch: 1
+		EnUSName:        "Continue",
+		EnUSCategory:    "Logic",
+		EnUSDescription: "Used to immediately terminate the current loop and execute next loop",
 	},
 	{
-		ID:           30,
-		Name:         "输入",
-		Type:         NodeTypeInputReceiver,
-		Category:     "输入&输出", // Mapped from cate_list
-		Desc:         "支持中间过程的信息输入",
-		Color:        "#5C62FF",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Input-v2.jpg",
-		IsComposite:  false,
-		SupportBatch: false, // supportBatch: 1
-		PostFillNil:  true,
+		ID:              30,
+		Name:            "输入",
+		Type:            NodeTypeInputReceiver,
+		Category:        "输入&输出", // Mapped from cate_list
+		Desc:            "支持中间过程的信息输入",
+		Color:           "#5C62FF",
+		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Input-v2.jpg",
+		IsComposite:     false,
+		SupportBatch:    false, // supportBatch: 1
+		PostFillNil:     true,
+		EnUSName:        "Input",
+		EnUSCategory:    "Input&Output",
+		EnUSDescription: "Support intermediate information input",
 	},
 	{
 		ID:           31,
@@ -282,6 +349,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		IconURL:      "comment_icon", // Placeholder from JSON
 		IsComposite:  false,
 		SupportBatch: false, // supportBatch: 1
+		EnUSName:     "Comment",
 	},
 	{
 		ID:              32,
@@ -295,59 +363,74 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		SupportBatch:    false, // supportBatch: 1
 		PostFillNil:     true,
 		CallbackEnabled: true,
+		EnUSName:        "Variable Merge",
+		EnUSCategory:    "Logic",
+		EnUSDescription: "Aggregate the outputs of multiple branches.",
 	},
 	{
-		ID:           37,
-		Name:         "查询消息列表",
-		Type:         NodeTypeMessageList,
-		Category:     "会话管理", // Mapped from cate_list
-		Desc:         "用于查询消息列表",
-		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-List.jpeg",
-		IsComposite:  false,
-		SupportBatch: false, // supportBatch: 1
-		PreFillZero:  true,
-		PostFillNil:  true,
-		Disabled:     true,
+		ID:              37,
+		Name:            "查询消息列表",
+		Type:            NodeTypeMessageList,
+		Category:        "会话管理", // Mapped from cate_list
+		Desc:            "用于查询消息列表",
+		Color:           "#F2B600",
+		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-List.jpeg",
+		IsComposite:     false,
+		SupportBatch:    false, // supportBatch: 1
+		PreFillZero:     true,
+		PostFillNil:     true,
+		Disabled:        true,
+		EnUSName:        "Query message list",
+		EnUSCategory:    "Message",
+		EnUSDescription: "Used to query the message list",
 	},
 	{
-		ID:           38,
-		Name:         "清除上下文",
-		Type:         NodeTypeClearMessage,
-		Category:     "会话管理", // Mapped from cate_list
-		Desc:         "用于清空会话历史，清空后LLM看到的会话历史为空",
-		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Delete.jpeg",
-		IsComposite:  false,
-		SupportBatch: false, // supportBatch: 1
-		PreFillZero:  true,
-		PostFillNil:  true,
-		Disabled:     true,
+		ID:              38,
+		Name:            "清除上下文",
+		Type:            NodeTypeClearMessage,
+		Category:        "会话管理", // Mapped from cate_list
+		Desc:            "用于清空会话历史，清空后LLM看到的会话历史为空",
+		Color:           "#F2B600",
+		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Delete.jpeg",
+		IsComposite:     false,
+		SupportBatch:    false, // supportBatch: 1
+		PreFillZero:     true,
+		PostFillNil:     true,
+		Disabled:        true,
+		EnUSName:        "Clear conversation history",
+		EnUSCategory:    "Message",
+		EnUSDescription: "Used to clear conversation history. After clearing, the conversation history visible to the LLM node will be empty.",
 	},
 	{
-		ID:           39,
-		Name:         "创建会话",
-		Type:         NodeTypeCreateConversation,
-		Category:     "会话管理", // Mapped from cate_list
-		Desc:         "用于创建会话",
-		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Create.jpeg",
-		IsComposite:  false,
-		SupportBatch: false, // supportBatch: 1
-		PreFillZero:  true,
-		PostFillNil:  true,
-		Disabled:     true,
+		ID:              39,
+		Name:            "创建会话",
+		Type:            NodeTypeCreateConversation,
+		Category:        "会话管理", // Mapped from cate_list
+		Desc:            "用于创建会话",
+		Color:           "#F2B600",
+		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Create.jpeg",
+		IsComposite:     false,
+		SupportBatch:    false, // supportBatch: 1
+		PreFillZero:     true,
+		PostFillNil:     true,
+		Disabled:        true,
+		EnUSName:        "Create conversation",
+		EnUSCategory:    "Message",
+		EnUSDescription: "This node is used to create a conversation.",
 	},
 	{
-		ID:           40,
-		Name:         "变量赋值",
-		Type:         NodeTypeVariableAssigner,
-		Category:     "知识库&数据", // Mapped from cate_list
-		Desc:         "用于给支持写入的变量赋值，包括应用变量、用户变量",
-		Color:        "#FF811A",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/Variable.jpg",
-		IsComposite:  false,
-		SupportBatch: false, // supportBatch: 1
+		ID:              40,
+		Name:            "变量赋值",
+		Type:            NodeTypeVariableAssigner,
+		Category:        "知识库&数据", // Mapped from cate_list
+		Desc:            "用于给支持写入的变量赋值，包括应用变量、用户变量",
+		Color:           "#FF811A",
+		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/Variable.jpg",
+		IsComposite:     false,
+		SupportBatch:    false, // supportBatch: 1
+		EnUSName:        "Variable assign",
+		EnUSCategory:    "Data",
+		EnUSDescription: "Assigns values to variables that support the write operation, including app and user variables.",
 	},
 	{
 		ID:               42,
@@ -362,12 +445,15 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		DefaultTimeoutMS: 60 * 1000, // 1 minute
 		PreFillZero:      true,
 		CallbackEnabled:  true,
+		EnUSName:         "Update Data",
+		EnUSCategory:     "Database",
+		EnUSDescription:  "Modify the existing data records in the table, and the user specifies the update conditions and contents to update the data",
 	},
 	{
 		ID:               43,
 		Name:             "查询数据", // Corrected Name from JSON (was "插入数据")
 		Type:             NodeTypeDatabaseQuery,
-		Category:         "数据库",                             // Mapped from cate_list
+		Category:         "数据库",                                                      // Mapped from cate_list
 		Desc:             "从表获取数据，用户可定义查询条件、选择列等，输出符合条件的数据", // Corrected Desc from JSON
 		Color:            "#F2B600",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icaon-database-select.jpg", // Corrected Icon URL from JSON
@@ -376,12 +462,15 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		DefaultTimeoutMS: 60 * 1000, // 1 minute
 		PreFillZero:      true,
 		CallbackEnabled:  true,
+		EnUSName:         "Query Data",
+		EnUSCategory:     "Database",
+		EnUSDescription:  "Query data from the table, and the user can define query conditions, select columns, etc., and output the data that meets the conditions",
 	},
 	{
 		ID:               44,
 		Name:             "删除数据",
 		Type:             NodeTypeDatabaseDelete,
-		Category:         "数据库",                          // Mapped from cate_list
+		Category:         "数据库",                                                  // Mapped from cate_list
 		Desc:             "从表中删除数据记录，用户指定删除条件来删除符合条件的记录", // Corrected Desc from JSON
 		Color:            "#F2B600",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-delete.jpg", // Corrected Icon URL from JSON
@@ -390,12 +479,15 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		DefaultTimeoutMS: 60 * 1000, // 1 minute
 		PreFillZero:      true,
 		CallbackEnabled:  true,
+		EnUSName:         "Delete Data",
+		EnUSCategory:     "Database",
+		EnUSDescription:  "Delete data records from the table, and the user specifies the deletion conditions to delete the records that meet the conditions",
 	},
 	{
 		ID:               45,
 		Name:             "HTTP 请求",
 		Type:             NodeTypeHTTPRequester,
-		Category:         "组件",                // Mapped from cate_list
+		Category:         "组件",                           // Mapped from cate_list
 		Desc:             "用于发送API请求，从接口返回数据", // Corrected Desc from JSON
 		Color:            "#3071F2",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-HTTP.png", // Corrected Icon URL from JSON
@@ -405,12 +497,15 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		PreFillZero:      true,
 		PostFillNil:      true,
 		CallbackEnabled:  true,
+		EnUSName:         "HTTP request",
+		EnUSCategory:     "Utilities",
+		EnUSDescription:  "It is used to send API requests and return data from the interface.",
 	},
 	{
 		ID:               46,
 		Name:             "新增数据", // Corrected Name from JSON (was "查询数据")
 		Type:             NodeTypeDatabaseInsert,
-		Category:         "数据库",                      // Mapped from cate_list
+		Category:         "数据库",                                          // Mapped from cate_list
 		Desc:             "向表添加新数据记录，用户输入数据内容后插入数据库", // Corrected Desc from JSON
 		Color:            "#F2B600",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-insert.jpg", // Corrected Icon URL from JSON
@@ -419,6 +514,9 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		DefaultTimeoutMS: 60 * 1000, // 1 minute
 		PreFillZero:      true,
 		CallbackEnabled:  true,
+		EnUSName:         "Add Data",
+		EnUSCategory:     "Database",
+		EnUSDescription:  "Add new data records to the table, and insert them into the database after the user enters the data content",
 	},
 	// --- End of nodes parsed from template_list ---
 }
@@ -437,4 +535,171 @@ func NodeMetaByNodeType(t NodeType) *NodeTypeMeta {
 	}
 
 	return nil
+}
+
+type Locale string
+
+const (
+	ZhCN Locale = "zh-CN"
+	EnUS Locale = "en-US"
+)
+
+const defaultZhCNInitCanvasJsonSchema = `{
+ "nodes": [
+  {
+   "id": "100001",
+   "type": "1",
+   "meta": {
+    "position": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "data": {
+    "nodeMeta": {
+     "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start.png",
+     "subTitle": "",
+     "title": "开始"
+    },
+    "outputs": [
+     {
+      "type": "string",
+      "name": "input",
+      "required": false
+     }
+    ],
+    "trigger_parameters": [
+     {
+      "type": "string",
+      "name": "input",
+      "required": false
+     }
+    ]
+   }
+  },
+  {
+   "id": "900001",
+   "type": "2",
+   "meta": {
+    "position": {
+     "x": 1000,
+     "y": 0
+    }
+   },
+   "data": {
+    "nodeMeta": {
+     "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End.png",
+     "subTitle": "",
+     "title": "结束"
+    },
+    "inputs": {
+     "terminatePlan": "returnVariables",
+     "inputParameters": [
+      {
+       "name": "output",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "ref",
+         "content": {
+          "source": "block-output",
+          "blockID": "",
+          "name": ""
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "edges": [],
+ "versions": {
+  "loop": "v2"
+ }
+}`
+
+const defaultEnUSInitCanvasJsonSchema = `{
+ "nodes": [
+  {
+   "id": "100001",
+   "type": "1",
+   "meta": {
+    "position": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "data": {
+    "nodeMeta": {
+     "description": "The starting node of the workflow, used to set the information needed to initiate the workflow.",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start.png",
+     "subTitle": "",
+     "title": "Start"
+    },
+    "outputs": [
+     {
+      "type": "string",
+      "name": "input",
+      "required": false
+     }
+    ],
+    "trigger_parameters": [
+     {
+      "type": "string",
+      "name": "input",
+      "required": false
+     }
+    ]
+   }
+  },
+  {
+   "id": "900001",
+   "type": "2",
+   "meta": {
+    "position": {
+     "x": 1000,
+     "y": 0
+    }
+   },
+   "data": {
+    "nodeMeta": {
+     "description": "The final node of the workflow, used to return the result information after the workflow runs.",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End.png",
+     "subTitle": "",
+     "title": "End"
+    },
+    "inputs": {
+     "terminatePlan": "returnVariables",
+     "inputParameters": [
+      {
+       "name": "output",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "ref",
+         "content": {
+          "source": "block-output",
+          "blockID": "",
+          "name": ""
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "edges": [],
+ "versions": {
+  "loop": "v2"
+ }
+}`
+
+func GetDefaultInitCanvasJsonSchema(locale Locale) string {
+	return ternary.IFElse(locale == EnUS, defaultEnUSInitCanvasJsonSchema, defaultZhCNInitCanvasJsonSchema)
 }

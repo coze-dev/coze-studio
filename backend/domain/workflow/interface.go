@@ -13,8 +13,8 @@ import (
 
 //go:generate mockgen -destination ../../internal/mock/domain/workflow/interface.go --package mockWorkflow -source interface.go
 type Service interface {
-	ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, error)
-	Create(ctx context.Context, meta *vo.Meta) (int64, error)
+	ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool, locale entity.Locale) (map[string][]*entity.NodeTypeMeta, error)
+	Create(ctx context.Context, meta *vo.MetaCreate) (int64, error)
 	Save(ctx context.Context, id int64, schema string) error
 	Get(ctx context.Context, policy *vo.GetPolicy) (*entity.Workflow, error)
 	MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, error)

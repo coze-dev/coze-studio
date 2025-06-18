@@ -27,6 +27,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
@@ -54,7 +55,7 @@ func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Cl
 	return repo.NewRepository(idgen, db, redis, tos, cpStore)
 }
 
-func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, error) {
+func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]bool, locale entity.Locale) (map[string][]*entity.NodeTypeMeta, error) {
 	// Initialize result maps
 	nodeMetaMap := make(map[string][]*entity.NodeTypeMeta)
 
@@ -74,7 +75,7 @@ func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]boo
 	// Process standard node types
 	for _, meta := range entity.NodeTypeMetas {
 		if shouldInclude(meta) {
-			category := meta.Category
+			category := ternary.IFElse(locale == entity.EnUS, meta.EnUSCategory, meta.Category)
 			nodeMetaMap[category] = append(nodeMetaMap[category], meta)
 		}
 	}
@@ -82,14 +83,23 @@ func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]boo
 	return nodeMetaMap, nil
 }
 
-func (i *impl) Create(ctx context.Context, meta *vo.Meta) (int64, error) {
-	id, err := i.repo.CreateMeta(ctx, meta)
+func (i *impl) Create(ctx context.Context, meta *vo.MetaCreate) (int64, error) {
+	id, err := i.repo.CreateMeta(ctx, &vo.Meta{
+		CreatorID:   meta.CreatorID,
+		SpaceID:     meta.SpaceID,
+		ContentType: meta.ContentType,
+		Name:        meta.Name,
+		Desc:        meta.Desc,
+		IconURI:     meta.IconURI,
+		AppID:       meta.AppID,
+		Mode:        meta.Mode,
+	})
 	if err != nil {
 		return 0, err
 	}
 
 	// save the initialized  canvas information to the draft
-	if err = i.Save(ctx, id, vo.GetDefaultInitCanvasJsonSchema()); err != nil {
+	if err = i.Save(ctx, id, meta.InitCanvasSchema); err != nil {
 		return 0, err
 	}
 

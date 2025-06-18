@@ -13,15 +13,14 @@ import (
 	context "context"
 	reflect "reflect"
 
-	compose "github.com/cloudwego/eino/compose"
-	schema "github.com/cloudwego/eino/schema"
-	redis "github.com/redis/go-redis/v9"
-	gomock "go.uber.org/mock/gomock"
-
 	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	compose "github.com/cloudwego/eino/compose"
+	schema "github.com/cloudwego/eino/schema"
+	redis "github.com/redis/go-redis/v9"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockService is a mock of Service interface.
@@ -138,7 +137,7 @@ func (mr *MockServiceMockRecorder) CopyWorkflowFromAppToLibrary(ctx, workflowID,
 }
 
 // Create mocks base method.
-func (m *MockService) Create(ctx context.Context, meta *vo.Meta) (int64, error) {
+func (m *MockService) Create(ctx context.Context, meta *vo.MetaCreate) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, meta)
 	ret0, _ := ret[0].(int64)
@@ -276,18 +275,18 @@ func (mr *MockServiceMockRecorder) GetWorkflowReference(ctx, id any) *gomock.Cal
 }
 
 // ListNodeMeta mocks base method.
-func (m *MockService) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, error) {
+func (m *MockService) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool, locale entity.Locale) (map[string][]*entity.NodeTypeMeta, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListNodeMeta", ctx, nodeTypes)
+	ret := m.ctrl.Call(m, "ListNodeMeta", ctx, nodeTypes, locale)
 	ret0, _ := ret[0].(map[string][]*entity.NodeTypeMeta)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListNodeMeta indicates an expected call of ListNodeMeta.
-func (mr *MockServiceMockRecorder) ListNodeMeta(ctx, nodeTypes any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ListNodeMeta(ctx, nodeTypes, locale any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNodeMeta", reflect.TypeOf((*MockService)(nil).ListNodeMeta), ctx, nodeTypes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNodeMeta", reflect.TypeOf((*MockService)(nil).ListNodeMeta), ctx, nodeTypes, locale)
 }
 
 // MGet mocks base method.

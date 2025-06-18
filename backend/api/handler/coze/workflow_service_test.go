@@ -895,7 +895,7 @@ func (r *wfTestRunner) runServer() func() {
 }
 
 func TestNodeTemplateList(t *testing.T) {
-	mockey.PatchConvey("test node template list", t, func() {
+	mockey.PatchConvey("test node cn template list", t, func() {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 
@@ -905,7 +905,40 @@ func TestNodeTemplateList(t *testing.T) {
 
 		assert.Equal(t, 3, len(resp.Data.TemplateList))
 		assert.Equal(t, 3, len(resp.Data.CateList))
+
+		id2Name := map[string]string{
+			"3":  "大模型",
+			"5":  "代码",
+			"18": "问答",
+		}
+		for _, tl := range resp.Data.TemplateList {
+			assert.Equal(t, tl.Name, id2Name[tl.ID])
+		}
+
 	})
+	mockey.PatchConvey("test node en template list", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		resp := post[workflow.NodeTemplateListResponse](r, &workflow.NodeTemplateListRequest{
+			NodeTypes: []string{"3", "5", "18"},
+			Locale:    workflow.Locale_en_US,
+		})
+
+		id2Name := map[string]string{
+			"3":  "LLM",
+			"5":  "Code",
+			"18": "Question",
+		}
+		assert.Equal(t, 3, len(resp.Data.TemplateList))
+		assert.Equal(t, 3, len(resp.Data.CateList))
+
+		for _, tl := range resp.Data.TemplateList {
+			assert.Equal(t, tl.Name, id2Name[tl.ID])
+		}
+
+	})
+
 }
 
 func TestTestRunAndGetProcess(t *testing.T) {

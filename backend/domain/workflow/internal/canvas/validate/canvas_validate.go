@@ -486,12 +486,14 @@ func validateConnections(ctx context.Context, c *vo.Canvas) (issues []*Issue, er
 				if node.Data.Inputs.QA.OptionType == vo.QAOptionTypeDynamic {
 					selectorPorts[nodeID][fmt.Sprintf("branch_%v", 0)] = true
 				}
-
 			}
 		default:
 			if node.Data.Inputs != nil && node.Data.Inputs.SettingOnError != nil &&
 				node.Data.Inputs.SettingOnError.ProcessType != nil &&
 				*node.Data.Inputs.SettingOnError.ProcessType == vo.ErrorProcessTypeExceptionBranch {
+				if _, exists := selectorPorts[nodeID]; !exists {
+					selectorPorts[nodeID] = make(map[string]bool)
+				}
 				selectorPorts[nodeID]["branch_error"] = true
 				selectorPorts[nodeID]["default"] = true
 			} else {
