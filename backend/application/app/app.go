@@ -64,7 +64,7 @@ type APPApplicationService struct {
 func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *projectAPI.DraftProjectCreateRequest) (resp *projectAPI.DraftProjectCreateResponse, err error) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
-		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV(errno.APPMsgKey, "session is required"))
 	}
 
 	appID, err := a.DomainSVC.CreateDraftAPP(ctx, &service.CreateDraftAPPRequest{
@@ -75,7 +75,7 @@ func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *pro
 		Desc:    req.Description,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "CreateDraftAPP failed, spaceID=%d", req.SpaceID)
 	}
 
 	err = a.projectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
@@ -90,7 +90,7 @@ func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *pro
 		},
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "publish project '%d' failed", appID)
 	}
 
 	resp = &projectAPI.DraftProjectCreateResponse{
@@ -105,7 +105,7 @@ func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *pro
 func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, req *intelligenceAPI.GetDraftIntelligenceInfoRequest) (resp *intelligenceAPI.GetDraftIntelligenceInfoResponse, err error) {
 	draftAPP, err := a.DomainSVC.GetDraftAPP(ctx, req.IntelligenceID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetDraftAPP failed, id=%d", req.IntelligenceID)
 	}
 
 	basicInfo, err := a.getAPPBasicInfo(ctx, draftAPP)
@@ -135,7 +135,7 @@ func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, re
 func (a *APPApplicationService) DraftProjectDelete(ctx context.Context, req *projectAPI.DraftProjectDeleteRequest) (resp *projectAPI.DraftProjectDeleteResponse, err error) {
 	err = a.DomainSVC.DeleteDraftAPP(ctx, req.ProjectID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "DeleteDraftAPP failed, id=%d", req.ProjectID)
 	}
 
 	err = a.projectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
@@ -146,12 +146,12 @@ func (a *APPApplicationService) DraftProjectDelete(ctx context.Context, req *pro
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish project event failed, id=%d, err=%v", req.ProjectID, err)
+		logs.CtxErrorf(ctx, "publish project '%d' failed, err=%v", req.ProjectID, err)
 	}
 
 	err = a.deleteAPPResources(ctx, req.ProjectID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app resources failed, id=%d, err=%v", req.ProjectID, err)
+		logs.CtxErrorf(ctx, "delete app '%d' resources failed, err=%v", req.ProjectID, err)
 	}
 
 	resp = &projectAPI.DraftProjectDeleteResponse{}
@@ -162,27 +162,27 @@ func (a *APPApplicationService) DraftProjectDelete(ctx context.Context, req *pro
 func (a *APPApplicationService) deleteAPPResources(ctx context.Context, appID int64) (err error) {
 	err = plugin.PluginApplicationSVC.DeleteAPPAllPlugins(ctx, appID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app plugins failed, err=%v", err)
+		logs.CtxErrorf(ctx, "delete app '%d' plugins failed, err=%v", appID, err)
 	}
 
 	err = memory.DatabaseApplicationSVC.DeleteDatabaseByAppID(ctx, appID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app databases failed, err=%v", err)
+		logs.CtxErrorf(ctx, "delete app '%d' databases failed, err=%v", appID, err)
 	}
 
 	err = a.variablesSVC.DeleteAllVariable(ctx, project_memory.VariableConnector_Project, conv.Int64ToStr(appID))
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app variables failed, err=%v", err)
+		logs.CtxErrorf(ctx, "delete app '%d' variables failed, err=%v", appID, err)
 	}
 
 	err = knowledge.KnowledgeSVC.DeleteAppKnowledge(ctx, &knowledge.DeleteAppKnowledgeRequest{AppID: appID})
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app knowledge failed, err=%v", err)
-		return err
+		logs.CtxErrorf(ctx, "delete app '%d' knowledge failed, err=%v", appID, err)
 	}
+
 	err = workflow.SVC.DeleteWorkflowsByAppID(ctx, appID)
 	if err != nil {
-		return err
+		logs.CtxErrorf(ctx, "delete app '%d' workflow failed, err=%v", appID, err)
 	}
 
 	return nil
@@ -196,7 +196,7 @@ func (a *APPApplicationService) DraftProjectUpdate(ctx context.Context, req *pro
 		IconURI: req.IconURI,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "UpdateDraftAPP failed, id=%d", req.ProjectID)
 	}
 
 	err = a.projectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
@@ -208,7 +208,7 @@ func (a *APPApplicationService) DraftProjectUpdate(ctx context.Context, req *pro
 		},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("publish project event failed, id=%d, err=%v", req.ProjectID, err)
+		return nil, errorx.Wrapf(err, "publish project '%d' failed", req.ProjectID)
 	}
 
 	resp = &projectAPI.DraftProjectUpdateResponse{}
@@ -241,12 +241,12 @@ func (a *APPApplicationService) ProjectPublishConnectorList(ctx context.Context,
 func (a *APPApplicationService) getAPPPublishConnectorList(ctx context.Context, appID int64) ([]*publishAPI.PublishConnectorInfo, error) {
 	res, err := a.DomainSVC.GetPublishConnectorList(ctx, &service.GetPublishConnectorListRequest{})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetPublishConnectorList failed, appID=%d", appID)
 	}
 
 	hasWorkflow, err := workflow.SVC.CheckWorkflowsExistByAppID(ctx, appID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "CheckWorkflowsExistByAppID failed, appID=%d", appID)
 	}
 
 	connectorList := make([]*publishAPI.PublishConnectorInfo, 0, len(res.Connectors))
@@ -300,7 +300,7 @@ func (a *APPApplicationService) getLatestPublishRecord(ctx context.Context, appI
 		Oldest: false,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetAPPPublishRecord failed, appID=%d", appID)
 	}
 	if !exist {
 		return &publishAPI.LastPublishInfo{
@@ -335,7 +335,7 @@ func (a *APPApplicationService) ReportUserBehavior(ctx context.Context, req *pla
 		},
 	})
 	if err != nil {
-		logs.CtxWarnf(ctx, "publish updated project event failed id=%v, err=%v", req.ResourceID, err)
+		logs.CtxWarnf(ctx, "publish project '%d' event failed err=%s", req.ResourceID, err)
 	}
 
 	return &playground.ReportUserBehaviorResponse{}, nil
@@ -344,7 +344,7 @@ func (a *APPApplicationService) ReportUserBehavior(ctx context.Context, req *pla
 func (a *APPApplicationService) CheckProjectVersionNumber(ctx context.Context, req *publishAPI.CheckProjectVersionNumberRequest) (resp *publishAPI.CheckProjectVersionNumberResponse, err error) {
 	exist, err := a.appRepo.CheckAPPVersionExist(ctx, req.ProjectID, req.VersionNumber)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "CheckAPPVersionExist failed, appID=%d, version=%s", req.ProjectID, req.VersionNumber)
 	}
 
 	resp = &publishAPI.CheckProjectVersionNumberResponse{
@@ -373,7 +373,7 @@ func (a *APPApplicationService) PublishAPP(ctx context.Context, req *publishAPI.
 		ConnectorPublishConfigs: connectorPublishConfigs,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "PublishAPP failed, id=%d", req.ProjectID)
 	}
 
 	resp = &publishAPI.PublishProjectResponse{
@@ -396,7 +396,7 @@ func (a *APPApplicationService) PublishAPP(ctx context.Context, req *publishAPI.
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish project event failed, id=%v, err=%v", req.ProjectID, err)
+		logs.CtxErrorf(ctx, "publish project '%d' failed,  err=%v", req.ProjectID, err)
 	}
 
 	return resp, nil
@@ -415,7 +415,7 @@ func (a *APPApplicationService) getConnectorPublishConfigs(ctx context.Context, 
 		selectedWorkflows := make([]*entity.SelectedWorkflow, 0, len(config.SelectedWorkflows))
 		for _, w := range config.SelectedWorkflows {
 			if w.WorkflowID == 0 {
-				return nil, errorx.New(errno.ErrAppInvalidParamCode, errorx.KV("msg", "invalid workflow id"))
+				return nil, errorx.New(errno.ErrAppInvalidParamCode, errorx.KV(errno.APPMsgKey, "invalid workflow id"))
 			}
 			selectedWorkflows = append(selectedWorkflows, &entity.SelectedWorkflow{
 				WorkflowID:   w.WorkflowID,
@@ -434,12 +434,12 @@ func (a *APPApplicationService) getConnectorPublishConfigs(ctx context.Context, 
 func (a *APPApplicationService) GetPublishRecordList(ctx context.Context, req *publishAPI.GetPublishRecordListRequest) (resp *publishAPI.GetPublishRecordListResponse, err error) {
 	connectorInfo, err := a.connectorSVC.GetByIDs(ctx, entity.ConnectorIDWhiteList)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetByIDs failed, ids=%v", entity.ConnectorIDWhiteList)
 	}
 
 	records, err := a.DomainSVC.GetAPPAllPublishRecords(ctx, req.ProjectID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetAPPAllPublishRecords failed, appID=%d", req.ProjectID)
 	}
 
 	if len(records) == 0 {
@@ -486,7 +486,7 @@ func (a *APPApplicationService) GetPublishRecordList(ctx context.Context, req *p
 func (a *APPApplicationService) GetPublishRecordDetail(ctx context.Context, req *publishAPI.GetPublishRecordDetailRequest) (resp *publishAPI.GetPublishRecordDetailResponse, err error) {
 	connectorInfo, err := a.connectorSVC.GetByIDs(ctx, entity.ConnectorIDWhiteList)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetByIDs failed, ids=%v", entity.ConnectorIDWhiteList)
 	}
 
 	record, exist, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
@@ -494,7 +494,7 @@ func (a *APPApplicationService) GetPublishRecordDetail(ctx context.Context, req 
 		RecordID: req.PublishRecordID,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetAPPPublishRecord failed, appID=%d, recordID=%d", req.ProjectID, req.PublishRecordID)
 	}
 	if !exist {
 		return &publishAPI.GetPublishRecordDetailResponse{
@@ -543,12 +543,12 @@ type copyMetaInfo struct {
 func (a *APPApplicationService) ResourceCopyDispatch(ctx context.Context, req *resourceAPI.ResourceCopyDispatchRequest) (resp *resourceAPI.ResourceCopyDispatchResponse, err error) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
-		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV("msg", "session is required"))
+		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV(errno.APPMsgKey, "session is required"))
 	}
 
 	app, err := a.DomainSVC.GetDraftAPP(ctx, req.GetProjectID())
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetDraftAPP failed, id=%d", req.ProjectID)
 	}
 
 	taskID, err := a.initTask(ctx, req)
@@ -891,7 +891,7 @@ func copyWorkflow(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.
 			return 0, errorx.Wrapf(err, "CopyWorkflowFromAppToLibrary failed, workflowID=%d", req.ResID)
 		}
 		if len(issues) > 0 {
-			return 0, errorx.New(errno.ErrAppInvalidParamCode, errorx.KVf(errno.APPMsgKey, "workflow validate failed"))
+			return 0, errorx.New(errno.ErrAppInvalidParamCode, errorx.KVf(errno.APPMsgKey, "workflow validates failed"))
 		}
 
 		return newWorkflowID, nil

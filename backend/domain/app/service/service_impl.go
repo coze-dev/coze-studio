@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"sort"
 
 	"gorm.io/gorm"
@@ -18,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type Components struct {
@@ -46,7 +46,12 @@ func (a *appServiceImpl) CreateDraftAPP(ctx context.Context, req *CreateDraftAPP
 		OwnerID: req.OwnerID,
 	}
 
-	return a.APPRepo.CreateDraftAPP(ctx, app)
+	appID, err = a.APPRepo.CreateDraftAPP(ctx, app)
+	if err != nil {
+		return 0, errorx.Wrapf(err, "CreateDraftAPP failed, spaceID=%d", req.SpaceID)
+	}
+
+	return appID, nil
 }
 
 func (a *appServiceImpl) GetDraftAPP(ctx context.Context, appID int64) (app *entity.APP, err error) {
@@ -55,14 +60,19 @@ func (a *appServiceImpl) GetDraftAPP(ctx context.Context, appID int64) (app *ent
 		return nil, err
 	}
 	if !exist {
-		return nil, fmt.Errorf("draft app '%d' not exist", appID)
+		return nil, errorx.New(errno.ErrAppRecordNotFound)
 	}
 
 	return app, nil
 }
 
 func (a *appServiceImpl) DeleteDraftAPP(ctx context.Context, appID int64) (err error) {
-	return a.APPRepo.DeleteDraftAPP(ctx, appID)
+	err = a.APPRepo.DeleteDraftAPP(ctx, appID)
+	if err != nil {
+		return errorx.Wrapf(err, "DeleteDraftAPP failed, appID=%d", appID)
+	}
+
+	return nil
 }
 
 func (a *appServiceImpl) UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPPRequest) (err error) {
@@ -73,15 +83,25 @@ func (a *appServiceImpl) UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPP
 		IconURI: req.IconURI,
 	}
 
-	return a.APPRepo.UpdateDraftAPP(ctx, app)
+	err = a.APPRepo.UpdateDraftAPP(ctx, app)
+	if err != nil {
+		return errorx.Wrapf(err, "UpdateDraftAPP failed, appID=%d", req.APPID)
+	}
+
+	return nil
 }
 
 func (a *appServiceImpl) GetAPPPublishRecord(ctx context.Context, req *GetAPPPublishRecordRequest) (record *entity.PublishRecord, exist bool, err error) {
-	return a.APPRepo.GetPublishRecord(ctx, &repository.GetPublishRecordRequest{
+	record, exist, err = a.APPRepo.GetPublishRecord(ctx, &repository.GetPublishRecordRequest{
 		APPID:    req.APPID,
 		RecordID: req.RecordID,
 		Oldest:   req.Oldest,
 	})
+	if err != nil {
+		return nil, false, errorx.Wrapf(err, "GetPublishRecord failed, appID=%d", req.APPID)
+	}
+
+	return record, exist, nil
 }
 
 func (a *appServiceImpl) GetAPPAllPublishRecords(ctx context.Context, appID int64) (records []*entity.PublishRecord, err error) {
@@ -94,7 +114,7 @@ func (a *appServiceImpl) GetAPPAllPublishRecords(ctx context.Context, appID int6
 		repository.WithPublishRecordExtraInfo(),
 	)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetAPPAllPublishRecords failed, appID=%d", appID)
 	}
 
 	sort.Slice(records, func(i, j int) bool {
@@ -112,7 +132,7 @@ func (a *appServiceImpl) GetAPPAllPublishRecords(ctx context.Context, appID int6
 func (a *appServiceImpl) GetPublishConnectorList(ctx context.Context, _ *GetPublishConnectorListRequest) (resp *GetPublishConnectorListResponse, err error) {
 	connectorMap, err := crossconnector.DefaultSVC().GetByIDs(ctx, entity.ConnectorIDWhiteList)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetByIDs failed, ids=%v", entity.ConnectorIDWhiteList)
 	}
 
 	connectorList := make([]*connectorModel.Connector, 0, len(connectorMap))
@@ -135,12 +155,14 @@ func (a *appServiceImpl) GetDraftAPPResources(ctx context.Context, appID int64) 
 	if err != nil {
 		return nil, errorx.Wrapf(err, "GetAPPAllPlugins failed, appID=%d", appID)
 	}
+
 	databaseRes, err := crossdatabase.DefaultSVC().GetAllDatabaseByAppID(ctx, &databaseModel.GetAllDatabaseByAppIDRequest{
 		AppID: appID,
 	})
 	if err != nil {
 		return nil, errorx.Wrapf(err, "GetAllDatabaseByAppID failed, appID=%d", appID)
 	}
+
 	knowledgeRes, err := crossknowledge.DefaultSVC().ListKnowledge(ctx, &knowledgeModel.ListKnowledgeRequest{
 		AppID: &appID,
 	})

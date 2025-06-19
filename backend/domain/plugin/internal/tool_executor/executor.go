@@ -156,8 +156,8 @@ func (t *executorImpl) Execute(ctx context.Context, argumentsInJson string) (res
 	}, nil
 }
 
-func (t *executorImpl) preprocessArgumentsInJson(ctx context.Context, argumentsInJson string) (newArgs map[string]any, err error) {
-	args, err := t.prepareArguments(ctx, argumentsInJson)
+func (t *executorImpl) preprocessArgumentsInJson(ctx context.Context, argumentsInJson string) (args map[string]any, err error) {
+	args, err = t.prepareArguments(ctx, argumentsInJson)
 	if err != nil {
 		return nil, err
 	}
@@ -380,7 +380,6 @@ func (t *executorImpl) convertURItoURL(ctx context.Context, arg any, scVal *open
 	if !ok {
 		return arg, nil
 	}
-
 	if !model.IsValidAPIAssistType(model.APIFileAssistType(_at)) {
 		return arg, nil
 	}
@@ -396,7 +395,7 @@ func (t *executorImpl) convertURItoURL(ctx context.Context, arg any, scVal *open
 
 	newArg, err = t.oss.GetObjectUrl(ctx, uri)
 	if err != nil {
-		return nil, fmt.Errorf("GetObjectUrl failed, uri=%s, err=%v", uri, err)
+		return nil, errorx.Wrapf(err, "GetObjectUrl failed, uri=%s", uri)
 	}
 
 	return newArg, nil

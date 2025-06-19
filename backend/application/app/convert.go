@@ -19,7 +19,7 @@ func toResourceType(resType resourceCommon.ResType) (entity.ResourceType, error)
 		return entity.ResourceTypeOfDatabase, nil
 	default:
 		return "", errorx.New(errno.ErrAppInvalidParamCode,
-			errorx.KVf("msg", "unsupported resource type '%s'", resType))
+			errorx.KVf(errno.APPMsgKey, "unsupported resource type '%s'", resType))
 	}
 }
 
@@ -35,6 +35,6 @@ func toThriftResourceType(resType entity.ResourceType) (resourceCommon.ResType, 
 		return resourceCommon.ResType_Database, nil
 	default:
 		return 0, errorx.New(errno.ErrAppInvalidParamCode,
-			errorx.KVf("msg", "unsupported resource type '%s'", resType))
+			errorx.KVf(errno.APPMsgKey, "unsupported resource type '%s'", resType))
 	}
 }
