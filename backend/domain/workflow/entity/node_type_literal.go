@@ -453,7 +453,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		ID:               43,
 		Name:             "查询数据", // Corrected Name from JSON (was "插入数据")
 		Type:             NodeTypeDatabaseQuery,
-		Category:         "数据库",                                                      // Mapped from cate_list
+		Category:         "数据库",                             // Mapped from cate_list
 		Desc:             "从表获取数据，用户可定义查询条件、选择列等，输出符合条件的数据", // Corrected Desc from JSON
 		Color:            "#F2B600",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icaon-database-select.jpg", // Corrected Icon URL from JSON
@@ -470,7 +470,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		ID:               44,
 		Name:             "删除数据",
 		Type:             NodeTypeDatabaseDelete,
-		Category:         "数据库",                                                  // Mapped from cate_list
+		Category:         "数据库",                          // Mapped from cate_list
 		Desc:             "从表中删除数据记录，用户指定删除条件来删除符合条件的记录", // Corrected Desc from JSON
 		Color:            "#F2B600",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-delete.jpg", // Corrected Icon URL from JSON
@@ -487,7 +487,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		ID:               45,
 		Name:             "HTTP 请求",
 		Type:             NodeTypeHTTPRequester,
-		Category:         "组件",                           // Mapped from cate_list
+		Category:         "组件",                // Mapped from cate_list
 		Desc:             "用于发送API请求，从接口返回数据", // Corrected Desc from JSON
 		Color:            "#3071F2",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-HTTP.png", // Corrected Icon URL from JSON
@@ -505,7 +505,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		ID:               46,
 		Name:             "新增数据", // Corrected Name from JSON (was "查询数据")
 		Type:             NodeTypeDatabaseInsert,
-		Category:         "数据库",                                          // Mapped from cate_list
+		Category:         "数据库",                      // Mapped from cate_list
 		Desc:             "向表添加新数据记录，用户输入数据内容后插入数据库", // Corrected Desc from JSON
 		Color:            "#F2B600",
 		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-insert.jpg", // Corrected Icon URL from JSON

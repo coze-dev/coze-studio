@@ -19,15 +19,18 @@ popd
 # 复制构建产物到后端静态目录
 echo -e "${YELLOW}正在复制构建产物到后端静态目录...${NC}"
 BACKEND_STATIC_DIR="${SCRIPT_DIR}/../backend/static"
+BIN_STATIC_DIR="${SCRIPT_DIR}/../bin/resources/static"
 FRONTEND_DIST_DIR="${FRONTEND_DIR}/apps/coze-studio/dist"
 
-# 创建后端静态目录（如果不存在）
+rm -rf "${BACKEND_STATIC_DIR}"
+rm -rf "${BIN_STATIC_DIR}"
 mkdir -p "${BACKEND_STATIC_DIR}"
+mkdir -p "${BIN_STATIC_DIR}"
 
 # 清空目标目录并复制新的构建产物
 rm -rf "${BACKEND_STATIC_DIR}"/*
 cp -r "${FRONTEND_DIST_DIR}"/* "${BACKEND_STATIC_DIR}/"
+cp -r "${FRONTEND_DIST_DIR}"/* "${BIN_STATIC_DIR}/"
 
 echo -e "${GREEN}构建产物复制完成！${NC}"
-echo -e "${GREEN}前端文件已复制到: ${BACKEND_STATIC_DIR}${NC}"
-
+echo -e "${GREEN}前端文件已复制到: \n ${BACKEND_STATIC_DIR} \n ${BIN_STATIC_DIR} ${NC}"

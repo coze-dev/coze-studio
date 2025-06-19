@@ -15,7 +15,7 @@ if [ "$SKIP_COMMIT_MSG_HOOK" = "true" ]; then
   exit 0
 fi
 
-source scripts/block-unresolved-conflict.sh
+source scripts/githooks/block-unresolved-conflict.sh
 
 block_unresolved_conflict '--cached'
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BASE_DIR="$(dirname "$SCRIPT_DIR")"
+BASE_DIR="$(cd "$SCRIPT_DIR/../../" && pwd)"
 BACKEND_DIR="$BASE_DIR/backend"
 BIN_DIR="$BASE_DIR/bin"
 CONFIG_DIR="$BIN_DIR/resources/conf"
@@ -15,6 +15,7 @@ if command -v goimports >/dev/null 2>&1; then
         -path "$BACKEND_DIR/api/model" -prune -o \
         -path "$BACKEND_DIR/api/router" -prune -o \
         -path "*/dal/query*" -prune -o \
+        -path "*/mock/*" -prune -o \
         -path "*_mock.go" -prune -o \
         -path "*/dal/model*" -prune -o \
         -name "*.go" -exec goimports -w -local "code.byted.org/flow/opencoze" {} \;
