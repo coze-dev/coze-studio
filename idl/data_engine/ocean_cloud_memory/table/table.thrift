@@ -80,7 +80,7 @@ struct DatabaseInfo {
     6:  string          icon_uri    // 头像url
     7:  string          table_name  // 表名
     8:  string          table_desc  // 表描述
-    9:  BotTableStatus  status      // 状态
+    9:  BotTableStatus  status      // 已废弃，不需要关注
     10: i64             creator_id  (api.js_conv="str") // 创建者id
     11: i64             create_time // 创建时间
     12: i64             update_time // 更新时间
