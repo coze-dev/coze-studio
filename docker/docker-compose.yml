@@ -57,6 +57,11 @@ services:
 
         exec /opt/bitnami/scripts/redis/entrypoint.sh /opt/bitnami/scripts/redis/run.sh
       "
+    depends_on:
+      minio-setup:
+        condition: service_completed_successfully
+      elasticsearch-setup:
+        condition: service_completed_successfully
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
