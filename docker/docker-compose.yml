@@ -404,7 +404,7 @@ services:
     # build:
     #   c6ntext: ../
     #   dockerfile: backend/Dockerfile
-    image: fanlv/opencoze:0.0.8
+    image: fanlv/opencoze:0.0.9
     container_name: coze-server
     environment:
       LISTEN_ADDR: 0.0.0.0:8888

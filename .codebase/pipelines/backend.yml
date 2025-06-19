@@ -16,7 +16,7 @@ jobs:
         inputs:
           db_name: opencoze
           host: mysql
-          path: "backend/types/ddl/*/*.sql"
+          path: "docker/atlas/migrations/*.sql"
           user: root
           password: root
       - name: Go Test
