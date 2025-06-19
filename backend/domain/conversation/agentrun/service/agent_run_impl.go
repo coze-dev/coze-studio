@@ -896,6 +896,12 @@ func (c *runImpl) handlerInterruptVerbose(ctx context.Context, chunk *entity.Age
 }
 
 func (c *runImpl) buildSendMsg(_ context.Context, msg *msgEntity.Message, isFinish bool) *entity.ChunkMessageItem {
+	
+	copyMap := make(map[string]string)
+	for k, v := range msg.Ext {
+		copyMap[k] = v
+	}
+	
 	return &entity.ChunkMessageItem{
 		ID:               msg.ID,
 		ConversationID:   msg.ConversationID,
@@ -909,7 +915,7 @@ func (c *runImpl) buildSendMsg(_ context.Context, msg *msgEntity.Message, isFini
 		Type:             msg.MessageType,
 		CreatedAt:        msg.CreatedAt,
 		UpdatedAt:        msg.UpdatedAt,
-		Ext:              msg.Ext,
+		Ext:              copyMap,
 		IsFinish:         isFinish,
 		ReasoningContent: ptr.Of(msg.ReasoningContent),
 	}
