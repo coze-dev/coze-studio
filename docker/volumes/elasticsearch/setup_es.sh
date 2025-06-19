@@ -27,7 +27,8 @@ else
     if echo "$response" | grep -q '"acknowledged":true'; then
       echo -e "✅ Template $template_name registered successfully"
     else
-      echo -e "⚠️ Template registration response: $response"
+      echo -e "❌ Failed to register template $template_name. Response: $response"
+      exit 1
     fi
 
     index_name=$(basename "$template_file" | sed 's/\.index-template\.json$//')

@@ -376,7 +376,7 @@ services:
         set -e
         apk add --no-cache bash curl
         bash -x /setup_es.sh
-        echo 'Elasticsearch setup complete, container will keep running.'
+        echo 'Elasticsearch setup complete.'
       "
     networks:
       - coze-network
@@ -394,7 +394,7 @@ services:
         (/usr/bin/mc alias set localminio http://coze-minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin123} && \
         /usr/bin/mc mb --ignore-existing localminio/opencoze && \
         /usr/bin/mc cp --recursive /default_icon/ localminio/opencoze/default_icon/ && \
-        echo 'MinIO setup complete: Files uploaded to opencoze bucket. Container will keep running.') || exit 1; \
+        echo 'MinIO setup complete: Files uploaded to opencoze bucket.') || exit 1; \
       "
     networks:
       - coze-network
