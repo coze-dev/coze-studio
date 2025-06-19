@@ -25,7 +25,6 @@ func AccessLogMW() app.HandlerFunc {
 		latency := time.Since(start)
 		method := bytesToString(ctx.Request.Header.Method())
 		clientIP := ctx.ClientIP()
-		logID, _ := ctx.Get("logID")
 
 		handlerPkgPath := strings.Split(ctx.HandlerName(), "/")
 		handleName := ""
@@ -34,8 +33,8 @@ func AccessLogMW() app.HandlerFunc {
 		}
 
 		requestType := ctx.GetInt32(RequestAuthTypeStr)
-		baseLog := fmt.Sprintf("| %s | %s | %d | %v | %s | %s | %v | %s | %d",
-			logID, ctx.Host(), status, latency, clientIP, method, path, handleName, requestType)
+		baseLog := fmt.Sprintf("| %s | %d | %v | %s | %s | %v | %s | %d",
+			ctx.Host(), status, latency, clientIP, method, path, handleName, requestType)
 
 		switch {
 		case status >= http.StatusInternalServerError:
@@ -65,7 +64,8 @@ func AccessLogMW() app.HandlerFunc {
 func SetLogIDMW() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
 		logID := uuid.New().String()
-		c.Set("logID", logID)
+		ctx = context.WithValue(ctx, "coze-log-id", logID)
+
 		c.Header("X-Log-ID", logID)
 		c.Next(ctx)
 	}
