@@ -10,6 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/google/uuid"
 
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -24,6 +25,7 @@ func AccessLogMW() app.HandlerFunc {
 		latency := time.Since(start)
 		method := bytesToString(ctx.Request.Header.Method())
 		clientIP := ctx.ClientIP()
+		logID, _ := ctx.Get("logID")
 
 		handlerPkgPath := strings.Split(ctx.HandlerName(), "/")
 		handleName := ""
@@ -32,8 +34,8 @@ func AccessLogMW() app.HandlerFunc {
 		}
 
 		requestType := ctx.GetInt32(RequestAuthTypeStr)
-		baseLog := fmt.Sprintf("| %s | %d | %v | %s | %s | %v | %s | %d",
-			ctx.Host(), status, latency, clientIP, method, path, handleName, requestType)
+		baseLog := fmt.Sprintf("| %s | %s | %d | %v | %s | %s | %v | %s | %d",
+			logID, ctx.Host(), status, latency, clientIP, method, path, handleName, requestType)
 
 		switch {
 		case status >= http.StatusInternalServerError:
@@ -60,7 +62,15 @@ func AccessLogMW() app.HandlerFunc {
 		}
 	}
 }
+func SetLogIDMW() app.HandlerFunc {
+	return func(ctx context.Context, c *app.RequestContext) {
+		logID := uuid.New().String()
+		c.Set("logID", logID)
+		c.Header("X-Log-ID", logID)
+		c.Next(ctx)
+	}
+}
 
 func bytesToString(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b)) //nolint
+	return *(*string)(unsafe.Pointer(&b)) // nolint
 }
