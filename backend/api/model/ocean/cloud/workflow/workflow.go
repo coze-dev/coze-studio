@@ -2056,6 +2056,48 @@ func (p *ValidateErrorType) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
+type Locale int64
+
+const (
+	Locale_zh_CN Locale = 1
+	Locale_en_US Locale = 2
+)
+
+func (p Locale) String() string {
+	switch p {
+	case Locale_zh_CN:
+		return "zh_CN"
+	case Locale_en_US:
+		return "en_US"
+	}
+	return "<UNSET>"
+}
+
+func LocaleFromString(s string) (Locale, error) {
+	switch s {
+	case "zh_CN":
+		return Locale_zh_CN, nil
+	case "en_US":
+		return Locale_en_US, nil
+	}
+	return Locale(0), fmt.Errorf("not a valid Locale string")
+}
+
+func LocalePtr(v Locale) *Locale { return &v }
+func (p *Locale) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = Locale(result.Int64)
+	return
+}
+
+func (p *Locale) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
 type PluginType int64
 
 const (
@@ -10442,6 +10484,7 @@ type CreateWorkflowRequest struct {
 	ProjectID *string `thrift:"project_id,9,optional" form:"project_id" json:"project_id,omitempty" query:"project_id"`
 	// 是否创建会话，仅当flow_mode=chatflow时生效
 	CreateConversation *bool      `thrift:"create_conversation,10,optional" form:"create_conversation" json:"create_conversation,omitempty" query:"create_conversation"`
+	Locale             Locale     `thrift:"locale,11" form:"locale" json:"locale" query:"locale"`
 	Base               *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -10522,6 +10565,10 @@ func (p *CreateWorkflowRequest) GetCreateConversation() (v bool) {
 	return *p.CreateConversation
 }
 
+func (p *CreateWorkflowRequest) GetLocale() (v Locale) {
+	return p.Locale
+}
+
 var CreateWorkflowRequest_Base_DEFAULT *base.Base
 
 func (p *CreateWorkflowRequest) GetBase() (v *base.Base) {
@@ -10542,6 +10589,7 @@ var fieldIDToName_CreateWorkflowRequest = map[int16]string{
 	8:   "bind_biz_type",
 	9:   "project_id",
 	10:  "create_conversation",
+	11:  "locale",
 	255: "Base",
 }
 
@@ -10674,6 +10722,14 @@ func (p *CreateWorkflowRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 10:
 			if fieldTypeId == thrift.BOOL {
 				if err = p.ReadField10(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 11:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField11(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -10849,6 +10905,17 @@ func (p *CreateWorkflowRequest) ReadField10(iprot thrift.TProtocol) error {
 	p.CreateConversation = _field
 	return nil
 }
+func (p *CreateWorkflowRequest) ReadField11(iprot thrift.TProtocol) error {
+
+	var _field Locale
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = Locale(v)
+	}
+	p.Locale = _field
+	return nil
+}
 func (p *CreateWorkflowRequest) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBase()
 	if err := _field.Read(iprot); err != nil {
@@ -10902,6 +10969,10 @@ func (p *CreateWorkflowRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField10(oprot); err != nil {
 			fieldId = 10
+			goto WriteFieldError
+		}
+		if err = p.writeField11(oprot); err != nil {
+			fieldId = 11
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -11097,6 +11168,22 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
+}
+func (p *CreateWorkflowRequest) writeField11(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("locale", thrift.I32, 11); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(int32(p.Locale)); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
 }
 func (p *CreateWorkflowRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {
@@ -41614,6 +41701,7 @@ type NodeTemplateListRequest struct {
 	NeedTypes []NodeTemplateType `thrift:"need_types,1,optional" form:"need_types" json:"need_types,omitempty" query:"need_types"`
 	// 需要的节点类型, string 类型
 	NodeTypes []string   `thrift:"node_types,2,optional" form:"node_types" json:"node_types,omitempty" query:"node_types"`
+	Locale    Locale     `thrift:"locale,3" form:"locale" json:"locale" query:"locale"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -41642,6 +41730,10 @@ func (p *NodeTemplateListRequest) GetNodeTypes() (v []string) {
 	return p.NodeTypes
 }
 
+func (p *NodeTemplateListRequest) GetLocale() (v Locale) {
+	return p.Locale
+}
+
 var NodeTemplateListRequest_Base_DEFAULT *base.Base
 
 func (p *NodeTemplateListRequest) GetBase() (v *base.Base) {
@@ -41654,6 +41746,7 @@ func (p *NodeTemplateListRequest) GetBase() (v *base.Base) {
 var fieldIDToName_NodeTemplateListRequest = map[int16]string{
 	1:   "need_types",
 	2:   "node_types",
+	3:   "locale",
 	255: "Base",
 }
 
@@ -41698,6 +41791,14 @@ func (p *NodeTemplateListRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 2:
 			if fieldTypeId == thrift.LIST {
 				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -41786,6 +41887,17 @@ func (p *NodeTemplateListRequest) ReadField2(iprot thrift.TProtocol) error {
 	p.NodeTypes = _field
 	return nil
 }
+func (p *NodeTemplateListRequest) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field Locale
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = Locale(v)
+	}
+	p.Locale = _field
+	return nil
+}
 func (p *NodeTemplateListRequest) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBase()
 	if err := _field.Read(iprot); err != nil {
@@ -41807,6 +41919,10 @@ func (p *NodeTemplateListRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -41882,6 +41998,22 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *NodeTemplateListRequest) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("locale", thrift.I32, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(int32(p.Locale)); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *NodeTemplateListRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {

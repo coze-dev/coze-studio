@@ -15,15 +15,14 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/bytedance/sonic"
+	redisV9 "github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
+
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/repository"
-	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
-
-	"github.com/bytedance/sonic"
-	redisV9 "github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/consts"
@@ -32,6 +31,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/events"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
 	"code.byted.org/flow/opencoze/backend/infra/contract/cache"
+	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
@@ -300,6 +300,7 @@ func (k *knowledgeSVC) ListKnowledge(ctx context.Context, request *ListKnowledge
 		Total:         total,
 	}, nil
 }
+
 func (k *knowledgeSVC) checkRequest(request *CreateDocumentRequest) error {
 	if len(request.Documents) == 0 {
 		return errors.New("document is empty")
@@ -1383,6 +1384,7 @@ func (k *knowledgeSVC) ExtractPhotoCaption(ctx context.Context, request *Extract
 	response.Caption = schemaDoc[0].Content
 	return response, nil
 }
+
 func (k *knowledgeSVC) MGetKnowledgeByID(ctx context.Context, request *MGetKnowledgeByIDRequest) (response *MGetKnowledgeByIDResponse, err error) {
 	if request == nil || len(request.KnowledgeIDs) == 0 {
 		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
@@ -1407,8 +1409,10 @@ func (k *knowledgeSVC) MGetKnowledgeByID(ctx context.Context, request *MGetKnowl
 	return response, nil
 }
 
-const expireTime = 21600
-const cacheTime = 7200
+const (
+	expireTime = 21600
+	cacheTime  = 7200
+)
 
 func (k *knowledgeSVC) getObjectURL(ctx context.Context, uri string) (string, error) {
 	cmd := k.cacheCli.Get(ctx, uri)

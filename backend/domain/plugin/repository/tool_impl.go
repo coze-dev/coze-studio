@@ -296,6 +296,44 @@ func (t *toolRepoImpl) BindDraftAgentTools(ctx context.Context, agentID int64, t
 	return tx.Commit()
 }
 
+func (t *toolRepoImpl) DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) (err error) {
+	tools, err := t.agentToolDraftDAO.GetAll(ctx, fromAgentID)
+	if err != nil {
+		return err
+	}
+
+	if len(tools) == 0 {
+		return nil
+	}
+
+	tx := t.query.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			if e := tx.Rollback(); e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
+			return
+		}
+		if err != nil {
+			if e := tx.Rollback(); e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
+		}
+	}()
+
+	err = t.agentToolDraftDAO.BatchCreateWithTX(ctx, tx, toAgentID, tools)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func (t *toolRepoImpl) GetDraftAgentTool(ctx context.Context, agentID, toolID int64) (tool *entity.ToolInfo, exist bool, err error) {
 	return t.agentToolDraftDAO.Get(ctx, agentID, toolID)
 }

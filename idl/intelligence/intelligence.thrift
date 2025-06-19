@@ -12,6 +12,7 @@ service IntelligenceService {
     project.DraftProjectCreateResponse DraftProjectCreate(1: project.DraftProjectCreateRequest request)(api.post='/api/intelligence_api/draft_project/create', api.category="draft_project",agw.preserve_base="true")
     project.DraftProjectUpdateResponse DraftProjectUpdate(1: project.DraftProjectUpdateRequest request)(api.post='/api/intelligence_api/draft_project/update', api.category="draft_project",agw.preserve_base="true")
     project.DraftProjectDeleteResponse DraftProjectDelete(1: project.DraftProjectDeleteRequest request)(api.post='/api/intelligence_api/draft_project/delete', api.category="draft_project",agw.preserve_base="true")
+    project.DraftProjectCopyResponse   DraftProjectCopy(1: project.DraftProjectCopyRequest request)(api.post='/api/intelligence_api/draft_project/copy', api.category="draft_project",agw.preserve_base="true")
 
     task.DraftProjectInnerTaskListResponse DraftProjectInnerTaskList(1: task.DraftProjectInnerTaskListRequest request)(api.post='/api/intelligence_api/draft_project/inner_task_list', api.category="draft_project",agw.preserve_base="true")
 

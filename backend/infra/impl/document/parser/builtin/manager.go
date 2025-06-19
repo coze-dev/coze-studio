@@ -7,6 +7,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
+	"code.byted.org/flow/opencoze/backend/pkg/goutil"
 )
 
 func NewManager(storage storage.Storage, ocr ocr.OCR, imageAnnotationModel chatmodel.BaseChatModel) parser.Manager {
@@ -35,13 +36,13 @@ func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
 
 	switch config.FileExtension {
 	case parser.FileExtensionPDF:
-		pFn = parseByPython(config, m.storage, m.ocr, ".venv/bin/python3", "parse_pdf.py")
+		pFn = parseByPython(config, m.storage, m.ocr, goutil.GetPython3Path(), goutil.GetPythonFilePath("parse_pdf.py"))
 	case parser.FileExtensionTXT:
 		pFn = parseText(config)
 	case parser.FileExtensionMarkdown:
 		pFn = parseMarkdown(config, m.storage, m.ocr)
 	case parser.FileExtensionDocx:
-		pFn = parseByPython(config, m.storage, m.ocr, ".venv/bin/python3", "parse_docx.py")
+		pFn = parseByPython(config, m.storage, m.ocr, goutil.GetPython3Path(), goutil.GetPythonFilePath("parse_docx.py"))
 	case parser.FileExtensionCSV:
 		pFn = parseCSV(config)
 	case parser.FileExtensionXLSX:

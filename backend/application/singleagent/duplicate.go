@@ -7,6 +7,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossplugin"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	shortcutCMDEntity "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/entity"
@@ -121,9 +122,11 @@ func duplicateVariables(ctx context.Context, appContext *ServiceComponents, oldA
 	return newAgent, nil
 }
 
-func duplicatePlugin(ctx context.Context, appContext *ServiceComponents, oldAgent, newAgent *entity.SingleAgent) (*entity.SingleAgent, error) {
-	// TODO(mrh): fix me
-	//  newAgent.Plugin
+func duplicatePlugin(ctx context.Context, _ *ServiceComponents, oldAgent, newAgent *entity.SingleAgent) (*entity.SingleAgent, error) {
+	err := crossplugin.DefaultSVC().DuplicateDraftAgentTools(ctx, oldAgent.AgentID, newAgent.AgentID)
+	if err != nil {
+		return nil, err
+	}
 	return newAgent, nil
 }
 

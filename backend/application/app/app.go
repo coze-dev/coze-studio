@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
+
 	connectorModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/connector"
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	pluginModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
@@ -53,8 +55,7 @@ type APPApplicationService struct {
 	oss             storage.Storage
 	projectEventBus search.ProjectEventBus
 
-	userSVC   user.User
-	searchSVC search.Search
+	userSVC user.User
 
 	connectorSVC connector.Connector
 	variablesSVC variables.Variables
@@ -63,7 +64,7 @@ type APPApplicationService struct {
 func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *projectAPI.DraftProjectCreateRequest) (resp *projectAPI.DraftProjectCreateResponse, err error) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
-		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV("msg", "session required"))
+		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV(errno.APPMsgKey, "session is required"))
 	}
 
 	appID, err := a.DomainSVC.CreateDraftAPP(ctx, &service.CreateDraftAPPRequest{
@@ -74,7 +75,7 @@ func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *pro
 		Desc:    req.Description,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "CreateDraftAPP failed, spaceID=%d", req.SpaceID)
 	}
 
 	err = a.projectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
@@ -89,7 +90,7 @@ func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *pro
 		},
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "publish project '%d' failed", appID)
 	}
 
 	resp = &projectAPI.DraftProjectCreateResponse{
@@ -104,61 +105,20 @@ func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *pro
 func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, req *intelligenceAPI.GetDraftIntelligenceInfoRequest) (resp *intelligenceAPI.GetDraftIntelligenceInfoResponse, err error) {
 	draftAPP, err := a.DomainSVC.GetDraftAPP(ctx, req.IntelligenceID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetDraftAPP failed, id=%d", req.IntelligenceID)
 	}
 
-	record, exist, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
-		APPID:  req.IntelligenceID,
-		Oldest: false,
-	})
+	basicInfo, err := a.getAPPBasicInfo(ctx, draftAPP)
 	if err != nil {
 		return nil, err
-	}
-
-	var (
-		published bool
-		publishAt int64
-	)
-
-	if exist {
-		published = true
-		publishAt = record.APP.GetPublishedAtMS() / 1000
-	}
-
-	iconURL, err := a.oss.GetObjectUrl(ctx, draftAPP.GetIconURI())
-	if err != nil {
-		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", draftAPP.GetIconURI(), err)
-	}
-
-	basicInfo := &common.IntelligenceBasicInfo{
-		ID:          draftAPP.ID,
-		SpaceID:     draftAPP.SpaceID,
-		OwnerID:     draftAPP.OwnerID,
-		Name:        draftAPP.GetName(),
-		Description: draftAPP.GetDesc(),
-		IconURI:     draftAPP.GetIconURI(),
-		IconURL:     iconURL,
-		CreateTime:  draftAPP.CreatedAtMS / 1000,
-		UpdateTime:  draftAPP.UpdatedAtMS / 1000,
-		PublishTime: publishAt,
-		Status:      common.IntelligenceStatus_Using,
 	}
 
 	publishRecord := &intelligenceAPI.IntelligencePublishInfo{
-		HasPublished: published,
-		PublishTime:  strconv.FormatInt(publishAt, 10),
+		HasPublished: basicInfo.PublishTime != 0,
+		PublishTime:  strconv.FormatInt(basicInfo.PublishTime, 10),
 	}
 
-	ui, err := a.userSVC.GetUserInfo(ctx, draftAPP.OwnerID)
-	if err != nil {
-		return nil, err
-	}
-	ownerInfo := &common.User{
-		UserID:         ui.UserID,
-		Nickname:       ui.Name,
-		AvatarURL:      ui.IconURL,
-		UserUniqueName: ui.UniqueName,
-	}
+	ownerInfo := a.getAPPUserInfo(ctx, draftAPP.OwnerID)
 
 	resp = &intelligenceAPI.GetDraftIntelligenceInfoResponse{
 		Data: &intelligenceAPI.GetDraftIntelligenceInfoData{
@@ -175,7 +135,7 @@ func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, re
 func (a *APPApplicationService) DraftProjectDelete(ctx context.Context, req *projectAPI.DraftProjectDeleteRequest) (resp *projectAPI.DraftProjectDeleteResponse, err error) {
 	err = a.DomainSVC.DeleteDraftAPP(ctx, req.ProjectID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "DeleteDraftAPP failed, id=%d", req.ProjectID)
 	}
 
 	err = a.projectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
@@ -186,12 +146,12 @@ func (a *APPApplicationService) DraftProjectDelete(ctx context.Context, req *pro
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish project event failed, id=%d, err=%v", req.ProjectID, err)
+		logs.CtxErrorf(ctx, "publish project '%d' failed, err=%v", req.ProjectID, err)
 	}
 
 	err = a.deleteAPPResources(ctx, req.ProjectID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app resources failed, id=%d, err=%v", req.ProjectID, err)
+		logs.CtxErrorf(ctx, "delete app '%d' resources failed, err=%v", req.ProjectID, err)
 	}
 
 	resp = &projectAPI.DraftProjectDeleteResponse{}
@@ -202,27 +162,27 @@ func (a *APPApplicationService) DraftProjectDelete(ctx context.Context, req *pro
 func (a *APPApplicationService) deleteAPPResources(ctx context.Context, appID int64) (err error) {
 	err = plugin.PluginApplicationSVC.DeleteAPPAllPlugins(ctx, appID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app plugins failed, err=%v", err)
+		logs.CtxErrorf(ctx, "delete app '%d' plugins failed, err=%v", appID, err)
 	}
 
 	err = memory.DatabaseApplicationSVC.DeleteDatabaseByAppID(ctx, appID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app databases failed, err=%v", err)
+		logs.CtxErrorf(ctx, "delete app '%d' databases failed, err=%v", appID, err)
 	}
 
 	err = a.variablesSVC.DeleteAllVariable(ctx, project_memory.VariableConnector_Project, conv.Int64ToStr(appID))
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app variables failed, err=%v", err)
+		logs.CtxErrorf(ctx, "delete app '%d' variables failed, err=%v", appID, err)
 	}
 
 	err = knowledge.KnowledgeSVC.DeleteAppKnowledge(ctx, &knowledge.DeleteAppKnowledgeRequest{AppID: appID})
 	if err != nil {
-		logs.CtxErrorf(ctx, "delete app knowledge failed, err=%v", err)
-		return err
+		logs.CtxErrorf(ctx, "delete app '%d' knowledge failed, err=%v", appID, err)
 	}
+
 	err = workflow.SVC.DeleteWorkflowsByAppID(ctx, appID)
 	if err != nil {
-		return err
+		logs.CtxErrorf(ctx, "delete app '%d' workflow failed, err=%v", appID, err)
 	}
 
 	return nil
@@ -236,7 +196,7 @@ func (a *APPApplicationService) DraftProjectUpdate(ctx context.Context, req *pro
 		IconURI: req.IconURI,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "UpdateDraftAPP failed, id=%d", req.ProjectID)
 	}
 
 	err = a.projectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
@@ -248,7 +208,7 @@ func (a *APPApplicationService) DraftProjectUpdate(ctx context.Context, req *pro
 		},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("publish project event failed, id=%d, err=%v", req.ProjectID, err)
+		return nil, errorx.Wrapf(err, "publish project '%d' failed", req.ProjectID)
 	}
 
 	resp = &projectAPI.DraftProjectUpdateResponse{}
@@ -281,12 +241,12 @@ func (a *APPApplicationService) ProjectPublishConnectorList(ctx context.Context,
 func (a *APPApplicationService) getAPPPublishConnectorList(ctx context.Context, appID int64) ([]*publishAPI.PublishConnectorInfo, error) {
 	res, err := a.DomainSVC.GetPublishConnectorList(ctx, &service.GetPublishConnectorListRequest{})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetPublishConnectorList failed, appID=%d", appID)
 	}
 
 	hasWorkflow, err := workflow.SVC.CheckWorkflowsExistByAppID(ctx, appID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "CheckWorkflowsExistByAppID failed, appID=%d", appID)
 	}
 
 	connectorList := make([]*publishAPI.PublishConnectorInfo, 0, len(res.Connectors))
@@ -340,7 +300,7 @@ func (a *APPApplicationService) getLatestPublishRecord(ctx context.Context, appI
 		Oldest: false,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetAPPPublishRecord failed, appID=%d", appID)
 	}
 	if !exist {
 		return &publishAPI.LastPublishInfo{
@@ -375,7 +335,7 @@ func (a *APPApplicationService) ReportUserBehavior(ctx context.Context, req *pla
 		},
 	})
 	if err != nil {
-		logs.CtxWarnf(ctx, "publish updated project event failed id=%v, err=%v", req.ResourceID, err)
+		logs.CtxWarnf(ctx, "publish project '%d' event failed err=%s", req.ResourceID, err)
 	}
 
 	return &playground.ReportUserBehaviorResponse{}, nil
@@ -384,7 +344,7 @@ func (a *APPApplicationService) ReportUserBehavior(ctx context.Context, req *pla
 func (a *APPApplicationService) CheckProjectVersionNumber(ctx context.Context, req *publishAPI.CheckProjectVersionNumberRequest) (resp *publishAPI.CheckProjectVersionNumberResponse, err error) {
 	exist, err := a.appRepo.CheckAPPVersionExist(ctx, req.ProjectID, req.VersionNumber)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "CheckAPPVersionExist failed, appID=%d, version=%s", req.ProjectID, req.VersionNumber)
 	}
 
 	resp = &publishAPI.CheckProjectVersionNumberResponse{
@@ -413,7 +373,7 @@ func (a *APPApplicationService) PublishAPP(ctx context.Context, req *publishAPI.
 		ConnectorPublishConfigs: connectorPublishConfigs,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "PublishAPP failed, id=%d", req.ProjectID)
 	}
 
 	resp = &publishAPI.PublishProjectResponse{
@@ -436,7 +396,7 @@ func (a *APPApplicationService) PublishAPP(ctx context.Context, req *publishAPI.
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish project event failed, id=%v, err=%v", req.ProjectID, err)
+		logs.CtxErrorf(ctx, "publish project '%d' failed,  err=%v", req.ProjectID, err)
 	}
 
 	return resp, nil
@@ -455,7 +415,7 @@ func (a *APPApplicationService) getConnectorPublishConfigs(ctx context.Context, 
 		selectedWorkflows := make([]*entity.SelectedWorkflow, 0, len(config.SelectedWorkflows))
 		for _, w := range config.SelectedWorkflows {
 			if w.WorkflowID == 0 {
-				return nil, errorx.New(errno.ErrAppInvalidParamCode, errorx.KV("msg", "invalid workflow id"))
+				return nil, errorx.New(errno.ErrAppInvalidParamCode, errorx.KV(errno.APPMsgKey, "invalid workflow id"))
 			}
 			selectedWorkflows = append(selectedWorkflows, &entity.SelectedWorkflow{
 				WorkflowID:   w.WorkflowID,
@@ -474,12 +434,12 @@ func (a *APPApplicationService) getConnectorPublishConfigs(ctx context.Context, 
 func (a *APPApplicationService) GetPublishRecordList(ctx context.Context, req *publishAPI.GetPublishRecordListRequest) (resp *publishAPI.GetPublishRecordListResponse, err error) {
 	connectorInfo, err := a.connectorSVC.GetByIDs(ctx, entity.ConnectorIDWhiteList)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetByIDs failed, ids=%v", entity.ConnectorIDWhiteList)
 	}
 
 	records, err := a.DomainSVC.GetAPPAllPublishRecords(ctx, req.ProjectID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetAPPAllPublishRecords failed, appID=%d", req.ProjectID)
 	}
 
 	if len(records) == 0 {
@@ -526,7 +486,7 @@ func (a *APPApplicationService) GetPublishRecordList(ctx context.Context, req *p
 func (a *APPApplicationService) GetPublishRecordDetail(ctx context.Context, req *publishAPI.GetPublishRecordDetailRequest) (resp *publishAPI.GetPublishRecordDetailResponse, err error) {
 	connectorInfo, err := a.connectorSVC.GetByIDs(ctx, entity.ConnectorIDWhiteList)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetByIDs failed, ids=%v", entity.ConnectorIDWhiteList)
 	}
 
 	record, exist, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
@@ -534,7 +494,7 @@ func (a *APPApplicationService) GetPublishRecordDetail(ctx context.Context, req 
 		RecordID: req.PublishRecordID,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetAPPPublishRecord failed, appID=%d, recordID=%d", req.ProjectID, req.PublishRecordID)
 	}
 	if !exist {
 		return &publishAPI.GetPublishRecordDetailResponse{
@@ -576,21 +536,19 @@ func (a *APPApplicationService) GetPublishRecordDetail(ctx context.Context, req 
 
 type copyMetaInfo struct {
 	userID  int64
-	appID   int64
 	spaceID int64
 	taskID  string
-	scene   resourceCommon.ResourceCopyScene
 }
 
 func (a *APPApplicationService) ResourceCopyDispatch(ctx context.Context, req *resourceAPI.ResourceCopyDispatchRequest) (resp *resourceAPI.ResourceCopyDispatchResponse, err error) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
-		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV("msg", "session is required"))
+		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV(errno.APPMsgKey, "session is required"))
 	}
 
 	app, err := a.DomainSVC.GetDraftAPP(ctx, req.GetProjectID())
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "GetDraftAPP failed, id=%d", req.ProjectID)
 	}
 
 	taskID, err := a.initTask(ctx, req)
@@ -600,7 +558,6 @@ func (a *APPApplicationService) ResourceCopyDispatch(ctx context.Context, req *r
 
 	metaInfo := &copyMetaInfo{
 		userID:  *userID,
-		appID:   req.GetProjectID(),
 		taskID:  taskID,
 		spaceID: app.SpaceID,
 	}
@@ -734,11 +691,13 @@ func copyPlugin(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.Re
 	var copyScene pluginModel.CopyScene
 	switch req.Scene {
 	case resourceCommon.ResourceCopyScene_CopyProjectResource:
-		copyScene = pluginModel.CopySceneOfDuplicated
+		copyScene = pluginModel.CopySceneOfDuplicate
 	case resourceCommon.ResourceCopyScene_CopyResourceToLibrary:
 		copyScene = pluginModel.CopySceneOfToLibrary
 	case resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
 		copyScene = pluginModel.CopySceneOfToAPP
+	case resourceCommon.ResourceCopyScene_CopyProject:
+		copyScene = pluginModel.CopySceneOfAPPDuplicate
 	default:
 		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
 	}
@@ -785,9 +744,14 @@ func databaseCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, re
 }
 
 func copyDatabase(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newDatabaseID int64, err error) {
-	targetAPPID := int64(0)
-	if req.Scene != resourceCommon.ResourceCopyScene_CopyResourceToLibrary {
-		targetAPPID = req.GetProjectID()
+	targetAPPID := req.GetProjectID()
+	if req.Scene == resourceCommon.ResourceCopyScene_CopyResourceToLibrary {
+		targetAPPID = int64(0)
+	}
+
+	var suffix *string
+	if req.Scene == resourceCommon.ResourceCopyScene_CopyProject {
+		suffix = ptr.Of("")
 	}
 
 	res, err := memory.DatabaseApplicationSVC.CopyDatabase(ctx, &memory.CopyDatabaseRequest{
@@ -796,6 +760,7 @@ func copyDatabase(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.
 		CreatorID:   metaInfo.userID,
 		IsCopyData:  true,
 		TargetAppID: targetAPPID,
+		Suffix:      suffix,
 	})
 	if err != nil {
 		return 0, errorx.Wrapf(err, "CopyDatabase failed, databaseID=%d, scene=%s", req.ResID, req.Scene)
@@ -845,16 +810,22 @@ func copyKnowledge(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI
 		TargetUserID: metaInfo.userID,
 		TaskUniqKey:  metaInfo.taskID,
 	}
+
 	switch req.Scene {
 	case resourceCommon.ResourceCopyScene_CopyProjectResource:
-		copyReq.TargetAppID = metaInfo.appID
+		copyReq.TargetAppID = req.GetProjectID()
 		copyReq.TargetSpaceID = metaInfo.spaceID
 	case resourceCommon.ResourceCopyScene_CopyResourceToLibrary:
 		copyReq.TargetAppID = 0
 		copyReq.TargetSpaceID = metaInfo.spaceID
 	case resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
-		copyReq.TargetAppID = metaInfo.appID
+		copyReq.TargetAppID = req.GetProjectID()
 		copyReq.TargetSpaceID = metaInfo.spaceID
+	case resourceCommon.ResourceCopyScene_CopyProject:
+		copyReq.TargetAppID = req.GetProjectID()
+		copyReq.TargetSpaceID = metaInfo.spaceID
+	default:
+		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
 	}
 
 	res, err := knowledge.KnowledgeSVC.CopyKnowledge(ctx, copyReq)
@@ -886,12 +857,14 @@ func workflowCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, re
 		resourceCommon.ResourceCopyScene_CopyResourceToLibrary,
 		resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
 		return copyWorkflow(ctx, metaInfo, req)
+
 	case resourceCommon.ResourceCopyScene_MoveResourceToLibrary:
 		err = moveAPPWorkflow(ctx, metaInfo, req)
 		if err != nil {
 			return 0, err
 		}
 		return req.ResID, nil
+
 	default:
 		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
 	}
@@ -913,16 +886,26 @@ func copyWorkflow(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.
 		return newWorkflowID, nil
 
 	case resourceCommon.ResourceCopyScene_CopyResourceToLibrary:
-		// TODO(@zhuangjie): workflow 内完成依赖资源 copy 的逻辑
-		//workflow.SVC.CopyWorkflowFromAppToLibrary(ctx, req.ResID, metaInfo.appID, map[int64]workflowEntity.PluginEntity{})
-		panic("implement me")
+		newWorkflowID, issues, err := workflow.SVC.CopyWorkflowFromAppToLibrary(ctx, req.ResID, metaInfo.spaceID, req.GetProjectID())
+		if err != nil {
+			return 0, errorx.Wrapf(err, "CopyWorkflowFromAppToLibrary failed, workflowID=%d", req.ResID)
+		}
+		if len(issues) > 0 {
+			return 0, errorx.New(errno.ErrAppInvalidParamCode, errorx.KVf(errno.APPMsgKey, "workflow validates failed"))
+		}
+
+		return newWorkflowID, nil
 
 	case resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
-		// TODO(@zhuangjie): 返回 new workflow id
-		//err = workflow.SVC.CopyWorkflowFromLibraryToApp(ctx, req.ResID, metaInfo.appID)
-		//if err != nil {
-		//	return 0, errorx.Wrapf(err, "CopyWorkflowFromLibraryToApp failed, workflowID=%d", req.ResID)
-		//}
+		newWorkflowID, err = workflow.SVC.CopyWorkflowFromLibraryToApp(ctx, req.ResID, req.GetProjectID())
+		if err != nil {
+			return 0, errorx.Wrapf(err, "CopyWorkflowFromLibraryToApp failed, workflowID=%d", req.ResID)
+		}
+
+		return newWorkflowID, nil
+
+	case resourceCommon.ResourceCopyScene_CopyProject:
+		//TODO(@zhuangjie): 提供应用 duplicate workflow 接口
 		panic("implement me")
 
 	default:
@@ -931,8 +914,15 @@ func copyWorkflow(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.
 }
 
 func moveAPPWorkflow(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (err error) {
-	// TODO(@zhuangjie): 提供 move 接口
-	panic("implement me")
+	issues, err := workflow.SVC.MoveWorkflowFromAppToLibrary(ctx, req.ResID, metaInfo.spaceID, req.GetProjectID())
+	if err != nil {
+		return errorx.Wrapf(err, "MoveWorkflowFromAppToLibrary failed, workflowID=%d", req.ResID)
+	}
+	if len(issues) > 0 {
+		return errorx.New(errno.ErrAppInvalidParamCode, errorx.KVf(errno.APPMsgKey, "workflow validate failed"))
+	}
+
+	return nil
 }
 
 func (a *APPApplicationService) ResourceCopyDetail(ctx context.Context, req *resourceAPI.ResourceCopyDetailRequest) (resp *resourceAPI.ResourceCopyDetailResponse, err error) {
@@ -973,4 +963,227 @@ func (a *APPApplicationService) DraftProjectInnerTaskList(ctx context.Context, r
 	}
 
 	return resp, nil
+}
+
+func (a *APPApplicationService) DraftProjectCopy(ctx context.Context, req *projectAPI.DraftProjectCopyRequest) (resp *projectAPI.DraftProjectCopyResponse, err error) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV(errno.APPMsgKey, "session is required"))
+	}
+
+	draftAPP, err := a.DomainSVC.GetDraftAPP(ctx, req.ProjectID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "GetDraftAPP failed, projectID=%d", req.ProjectID)
+	}
+
+	newAPPID, err := a.duplicateDraftAPP(ctx, *userID, req)
+	if err != nil {
+		return nil, err
+	}
+
+	err = a.projectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
+		OpType: searchEntity.Created,
+		Project: &searchEntity.ProjectDocument{
+			Status:  common.IntelligenceStatus_Using,
+			Type:    common.IntelligenceType_Project,
+			ID:      newAPPID,
+			SpaceID: &req.ToSpaceID,
+			OwnerID: userID,
+			Name:    &req.Name,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	draftAPP.ID = newAPPID
+	draftAPP.Name = &req.Name
+	draftAPP.Desc = &req.Description
+	draftAPP.IconURI = &req.IconURI
+
+	userInfo := a.getAPPUserInfo(ctx, *userID)
+	basicInfo, err := a.getAPPBasicInfo(ctx, draftAPP)
+	if err != nil {
+		return nil, err
+	}
+
+	resp = &projectAPI.DraftProjectCopyResponse{
+		Data: &projectAPI.DraftProjectCopyResponseData{
+			BasicInfo: basicInfo,
+			UserInfo:  userInfo,
+		},
+	}
+
+	return resp, nil
+}
+
+func (a *APPApplicationService) duplicateDraftAPP(ctx context.Context, userID int64, req *projectAPI.DraftProjectCopyRequest) (newAppID int64, err error) {
+	newAppID, err = a.DomainSVC.CreateDraftAPP(ctx, &service.CreateDraftAPPRequest{
+		SpaceID: req.ToSpaceID,
+		OwnerID: userID,
+		Name:    req.Name,
+		Desc:    req.Description,
+		IconURI: req.IconURI,
+	})
+	if err != nil {
+		return 0, errorx.Wrapf(err, "CreateDraftAPP failed, spaceID=%d", req.ToSpaceID)
+	}
+
+	err = a.duplicateDraftAPPResources(ctx, userID, newAppID, req)
+	if err != nil {
+		return 0, err
+	}
+
+	return newAppID, nil
+}
+
+func (a *APPApplicationService) duplicateDraftAPPResources(ctx context.Context, userID, newAppID int64, req *projectAPI.DraftProjectCopyRequest) (err error) {
+	err = a.duplicateAPPVariables(ctx, userID, req.ProjectID, newAppID)
+	if err != nil {
+		return err
+	}
+
+	resources, err := a.DomainSVC.GetDraftAPPResources(ctx, req.GetProjectID())
+	if err != nil {
+		return errorx.Wrapf(err, "GetDraftAPPResources failed, appID=%d", req.GetProjectID())
+	}
+
+	metaInfo := &copyMetaInfo{
+		userID:  userID,
+		spaceID: req.ToSpaceID,
+		taskID:  uuid.New().String(),
+	}
+
+	for _, res := range resources {
+		switch res.ResType {
+		case entity.ResourceTypeOfPlugin:
+			_, err = copyPlugin(ctx, metaInfo, &resourceAPI.ResourceCopyDispatchRequest{
+				Scene:     resourceCommon.ResourceCopyScene_CopyProject,
+				ResID:     res.ResID,
+				ResName:   &res.ResName,
+				ResType:   resourceCommon.ResType_Plugin,
+				ProjectID: &newAppID,
+			})
+			if err != nil {
+				return err
+			}
+
+		case entity.ResourceTypeOfDatabase:
+			_, err = copyDatabase(ctx, metaInfo, &resourceAPI.ResourceCopyDispatchRequest{
+				Scene:     resourceCommon.ResourceCopyScene_CopyProject,
+				ResID:     res.ResID,
+				ResName:   &res.ResName,
+				ResType:   resourceCommon.ResType_Database,
+				ProjectID: &newAppID,
+			})
+			if err != nil {
+				return err
+			}
+
+		case entity.ResourceTypeOfKnowledge:
+			_, err = copyKnowledge(ctx, metaInfo, &resourceAPI.ResourceCopyDispatchRequest{
+				Scene:     resourceCommon.ResourceCopyScene_CopyProject,
+				ResID:     res.ResID,
+				ResName:   &res.ResName,
+				ResType:   resourceCommon.ResType_Knowledge,
+				ProjectID: &newAppID,
+			})
+			if err != nil {
+				return err
+			}
+
+		case entity.ResourceTypeOfWorkflow:
+			_, err = copyWorkflow(ctx, metaInfo, &resourceAPI.ResourceCopyDispatchRequest{
+				Scene:     resourceCommon.ResourceCopyScene_CopyProject,
+				ResID:     res.ResID,
+				ResName:   &res.ResName,
+				ResType:   resourceCommon.ResType_Workflow,
+				ProjectID: &newAppID,
+			})
+			if err != nil {
+				return err
+			}
+
+		default:
+			return fmt.Errorf("unsupported resource type '%s'", res.ResType)
+		}
+	}
+
+	return nil
+}
+
+func (a *APPApplicationService) duplicateAPPVariables(ctx context.Context, userID, fromAPPID, toAPPID int64) (err error) {
+	vars, err := a.variablesSVC.GetProjectVariablesMeta(ctx, strconv.FormatInt(fromAPPID, 10), "")
+	if err != nil {
+		return err
+	}
+	if vars == nil {
+		return nil
+	}
+
+	vars.ID = 0
+	vars.BizID = conv.Int64ToStr(toAPPID)
+	vars.BizType = project_memory.VariableConnector_Project
+	vars.Version = ""
+	vars.CreatorID = userID
+
+	_, err = a.variablesSVC.UpsertMeta(ctx, vars)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *APPApplicationService) getAPPUserInfo(ctx context.Context, userID int64) (userInfo *common.User) {
+	ui, err := a.userSVC.GetUserInfo(ctx, userID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "GetUserInfo failed, userID=%d, err=%v", userID, err)
+		return nil
+	}
+
+	userInfo = &common.User{
+		UserID:         ui.UserID,
+		Nickname:       ui.Name,
+		UserUniqueName: ui.UniqueName,
+		AvatarURL:      ui.IconURL,
+	}
+
+	return userInfo
+}
+
+func (a *APPApplicationService) getAPPBasicInfo(ctx context.Context, draftAPP *entity.APP) (info *common.IntelligenceBasicInfo, err error) {
+	record, exist, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
+		APPID:  draftAPP.ID,
+		Oldest: false,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var publishAt int64
+	if exist {
+		publishAt = record.APP.GetPublishedAtMS() / 1000
+	}
+
+	iconURL, err := a.oss.GetObjectUrl(ctx, draftAPP.GetIconURI())
+	if err != nil {
+		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", draftAPP.GetIconURI(), err)
+	}
+
+	basicInfo := &common.IntelligenceBasicInfo{
+		ID:          draftAPP.ID,
+		SpaceID:     draftAPP.SpaceID,
+		OwnerID:     draftAPP.OwnerID,
+		Name:        draftAPP.GetName(),
+		Description: draftAPP.GetDesc(),
+		IconURI:     draftAPP.GetIconURI(),
+		IconURL:     iconURL,
+		CreateTime:  draftAPP.CreatedAtMS / 1000,
+		UpdateTime:  draftAPP.UpdatedAtMS / 1000,
+		PublishTime: publishAt,
+		Status:      common.IntelligenceStatus_Using,
+	}
+
+	return basicInfo, nil
 }

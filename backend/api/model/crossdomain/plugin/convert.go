@@ -91,6 +91,11 @@ func ToThriftAPIAssistType(typ APIFileAssistType) (common.AssistParameterType, b
 	return _typ, ok
 }
 
+func IsValidAPIAssistType(typ APIFileAssistType) bool {
+	_, ok := thriftAPIAssistTypes[typ]
+	return ok
+}
+
 var httpMethods = map[common.APIMethod]string{
 	common.APIMethod_GET:    http.MethodGet,
 	common.APIMethod_POST:   http.MethodPost,

@@ -11,7 +11,11 @@
 
 # block unresolved conflict; https://git-scm.com/docs/git-diff
 
-source scripts/block-unresolved-conflict.sh
+if [ "$SKIP_COMMIT_MSG_HOOK" = "true" ]; then
+  exit 0
+fi
+
+source scripts/githooks/block-unresolved-conflict.sh
 
 block_unresolved_conflict '--cached'
 

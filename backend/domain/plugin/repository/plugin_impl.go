@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
@@ -84,8 +85,16 @@ func (p *pluginRepoImpl) MGetDraftPlugins(ctx context.Context, pluginIDs []int64
 	return p.pluginDraftDAO.MGet(ctx, pluginIDs, opt)
 }
 
-func (p *pluginRepoImpl) GetAPPAllDraftPlugins(ctx context.Context, appID int64) (plugins []*entity.PluginInfo, err error) {
-	return p.pluginDraftDAO.GetAPPAllPlugins(ctx, appID, nil)
+func (p *pluginRepoImpl) GetAPPAllDraftPlugins(ctx context.Context, appID int64, opts ...PluginSelectedOptions) (plugins []*entity.PluginInfo, err error) {
+	var opt *dal.PluginSelectedOption
+	if len(opts) > 0 {
+		opt = &dal.PluginSelectedOption{}
+		for _, o := range opts {
+			o(opt)
+		}
+	}
+
+	return p.pluginDraftDAO.GetAPPAllPlugins(ctx, appID, opt)
 }
 
 func (p *pluginRepoImpl) ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error) {
@@ -549,9 +558,13 @@ func (p *pluginRepoImpl) UpdateDraftPluginWithCode(ctx context.Context, req *Upd
 		}
 	}()
 
-	// plugin 表只存储 root 信息，更新后需要还原
-	paths := req.OpenapiDoc.Paths
-	req.OpenapiDoc.Paths = openapi3.Paths{}
+	newDoc := &model.Openapi3T{}
+	err = copier.CopyWithOption(newDoc, req.OpenapiDoc, copier.Option{DeepCopy: true, IgnoreEmpty: true})
+	if err != nil {
+		return err
+	}
+
+	newDoc.Paths = openapi3.Paths{} // reset paths
 
 	updatedPlugin := entity.NewPluginInfo(&model.PluginInfo{
 		ID:         req.PluginID,
@@ -582,9 +595,6 @@ func (p *pluginRepoImpl) UpdateDraftPluginWithCode(ctx context.Context, req *Upd
 	if err != nil {
 		return err
 	}
-
-	// plugin 表只存储 root 信息，需要还原
-	req.OpenapiDoc.Paths = paths
 
 	return nil
 }
@@ -707,24 +717,45 @@ func (p *pluginRepoImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest)
 		tool.ID = toolIDs[i]
 	}
 
+	if req.Plugin.GetVersion() == "" {
+		err = tx.Commit()
+		if err != nil {
+			return 0, err
+		}
+
+		return newPluginID, nil
+	}
+
 	// publish plugin
-	if req.Plugin.GetVersion() != "" {
-		err = p.pluginDAO.UpsertWithTX(ctx, tx, req.Plugin)
-		if err != nil {
-			return 0, err
+	filteredTools := make([]*entity.ToolInfo, 0, len(req.Tools))
+	for _, tool := range req.Tools {
+		if tool.GetActivatedStatus() == model.DeactivateTool ||
+			tool.GetDebugStatus() == common.APIDebugStatus_DebugWaiting {
+			continue
 		}
-		err = p.pluginVersionDAO.CreateWithTX(ctx, tx, req.Plugin)
-		if err != nil {
-			return 0, err
-		}
-		err = p.toolDAO.BatchCreateWithTX(ctx, tx, req.Tools)
-		if err != nil {
-			return 0, err
-		}
-		err = p.toolVersionDAO.BatchCreateWithTX(ctx, tx, req.Tools)
-		if err != nil {
-			return 0, err
-		}
+		filteredTools = append(filteredTools, tool)
+	}
+
+	if len(filteredTools) == 0 {
+		return 0, fmt.Errorf("at least one activated tool is required in plugin '%d'", req.Plugin.ID)
+	}
+
+	err = p.pluginDAO.UpsertWithTX(ctx, tx, req.Plugin)
+	if err != nil {
+		return 0, err
+	}
+	err = p.pluginVersionDAO.CreateWithTX(ctx, tx, req.Plugin)
+	if err != nil {
+		return 0, err
+	}
+
+	err = p.toolDAO.BatchCreateWithTX(ctx, tx, filteredTools)
+	if err != nil {
+		return 0, err
+	}
+	err = p.toolVersionDAO.BatchCreateWithTX(ctx, tx, filteredTools)
+	if err != nil {
+		return 0, err
 	}
 
 	err = tx.Commit()

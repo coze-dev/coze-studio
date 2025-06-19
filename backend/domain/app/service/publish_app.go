@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
@@ -11,10 +10,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/app/entity"
 	"code.byted.org/flow/opencoze/backend/domain/app/repository"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	commonConsts "code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func (a *appServiceImpl) PublishAPP(ctx context.Context, req *PublishAPPRequest) (resp *PublishAPPResponse, err error) {
@@ -30,7 +31,7 @@ func (a *appServiceImpl) PublishAPP(ctx context.Context, req *PublishAPPRequest)
 
 	success, err := a.publishByConnectors(ctx, recordID, req)
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish by connectors failed, err=%v", err)
+		logs.CtxErrorf(ctx, "publish by connectors failed, recordID=%d, err=%v", recordID, err)
 	}
 
 	resp = &PublishAPPResponse{
@@ -49,7 +50,7 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 				PublishStatus: entity.PublishStatusOfPackFailed,
 			})
 			if updateErr != nil {
-				logs.CtxErrorf(ctx, "update publish status failed, err=%v", updateErr)
+				logs.CtxErrorf(ctx, "UpdateAPPPublishStatus failed, recordID=%d, err=%v", recordID, updateErr)
 			}
 		}
 	}()
@@ -59,10 +60,11 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 		return false, err
 	}
 	if len(failedResources) > 0 {
-		logs.CtxWarnf(ctx, "pack resources failed, len=%d", len(failedResources))
+		logs.CtxWarnf(ctx, "packResources failed, recordID=%d, len=%d", recordID, len(failedResources))
+
 		processErr := a.packResourcesFailedPostProcess(ctx, recordID, failedResources)
 		if processErr != nil {
-			logs.CtxErrorf(ctx, "pack resources failed post process failed, err=%v", processErr)
+			logs.CtxErrorf(ctx, "packResourcesFailedPostProcess failed, recordID=%d, err=%v", recordID, processErr)
 		}
 
 		return false, nil
@@ -75,14 +77,17 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 			if updateSuccessErr == nil {
 				continue
 			}
+
+			logs.CtxErrorf(ctx, "failed to update connector '%d' publish status to success, err=%v", cid, updateSuccessErr)
+
 			updateFailedErr := a.APPRepo.UpdateAPPPublishStatus(ctx, &repository.UpdateAPPPublishStatusRequest{
 				RecordID:      recordID,
 				PublishStatus: entity.PublishStatusOfPackFailed,
 			})
+
 			if updateFailedErr != nil {
 				logs.CtxWarnf(ctx, "failed to update connector '%d' publish status to failed, err=%v", cid, updateFailedErr)
 			}
-			logs.CtxErrorf(ctx, "failed to update connector '%d' publish status to success, err=%v", cid, updateSuccessErr)
 
 		default:
 			continue
@@ -94,7 +99,7 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 		PublishStatus: entity.PublishStatusOfPublishDone,
 	})
 	if err != nil {
-		return false, err
+		return false, errorx.Wrapf(err, "UpdateAPPPublishStatus failed, recordID=%d", recordID)
 	}
 
 	return true, nil
@@ -103,10 +108,10 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 func (a *appServiceImpl) checkCanPublishAPP(ctx context.Context, req *PublishAPPRequest) (err error) {
 	exist, err := a.APPRepo.CheckAPPVersionExist(ctx, req.APPID, req.Version)
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "CheckAPPVersionExist failed, appID=%d, version=%s", req.APPID, req.Version)
 	}
 	if exist {
-		return fmt.Errorf("version '%s' already exist", req.Version)
+		return errorx.New(errno.ErrAppRecordNotFound)
 	}
 
 	return nil
@@ -115,10 +120,10 @@ func (a *appServiceImpl) checkCanPublishAPP(ctx context.Context, req *PublishAPP
 func (a *appServiceImpl) createPublishVersion(ctx context.Context, req *PublishAPPRequest) (recordID int64, err error) {
 	draftAPP, exist, err := a.APPRepo.GetDraftAPP(ctx, req.APPID)
 	if err != nil {
-		return 0, err
+		return 0, errorx.Wrapf(err, "GetDraftAPP failed, appID=%d", req.APPID)
 	}
 	if !exist {
-		return 0, fmt.Errorf("draft app '%d' not exist", req.APPID)
+		return 0, errorx.New(errno.ErrAppRecordNotFound)
 	}
 
 	draftAPP.PublishedAtMS = ptr.Of(time.Now().UnixMilli())
@@ -141,7 +146,7 @@ func (a *appServiceImpl) createPublishVersion(ctx context.Context, req *PublishA
 		ConnectorPublishRecords: publishRecords,
 	})
 	if err != nil {
-		return 0, err
+		return 0, errorx.Wrapf(err, "CreateAPPPublishRecord failed, appID=%d", req.APPID)
 	}
 
 	return recordID, nil
@@ -178,7 +183,7 @@ func (a *appServiceImpl) packPlugins(ctx context.Context, appID int64, version s
 		Version: version,
 	})
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errorx.Wrapf(err, "PublishAPPPlugins failed, appID=%d, version=%s", appID, version)
 	}
 
 	failedInfo = make([]*entity.PackResourceFailedInfo, 0, len(res.FailedPlugins))
@@ -200,7 +205,7 @@ func (a *appServiceImpl) packWorkflows(ctx context.Context, appID int64, version
 		PluginIDs: allDraftPluginIDs,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrapf(err, "ReleaseApplicationWorkflows failed, appID=%d, version=%s", appID, version)
 	}
 
 	if len(issues) == 0 {
@@ -223,13 +228,13 @@ func (a *appServiceImpl) packResourcesFailedPostProcess(ctx context.Context, rec
 	publishFailedInfo := &entity.PublishRecordExtraInfo{
 		PackFailedInfo: packFailedInfo,
 	}
-	updateErr := a.APPRepo.UpdateAPPPublishStatus(ctx, &repository.UpdateAPPPublishStatusRequest{
+	err = a.APPRepo.UpdateAPPPublishStatus(ctx, &repository.UpdateAPPPublishStatusRequest{
 		RecordID:               recordID,
 		PublishStatus:          entity.PublishStatusOfPackFailed,
 		PublishRecordExtraInfo: publishFailedInfo,
 	})
-	if updateErr != nil {
-		return updateErr
+	if err != nil {
+		return errorx.Wrapf(err, "UpdateAPPPublishStatus failed, recordID=%d", recordID)
 	}
 
 	return nil

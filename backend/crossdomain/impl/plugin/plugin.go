@@ -41,6 +41,10 @@ func (s *impl) BindAgentTools(ctx context.Context, agentID int64, toolIDs []int6
 	return s.DomainSVC.BindAgentTools(ctx, agentID, toolIDs)
 }
 
+func (s *impl) DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) (err error) {
+	return s.DomainSVC.DuplicateDraftAgentTools(ctx, fromAgentID, toAgentID)
+}
+
 func (s *impl) MGetAgentTools(ctx context.Context, req *model.MGetAgentToolsRequest) (tools []*model.ToolInfo, err error) {
 	return s.DomainSVC.MGetAgentTools(ctx, req)
 }
@@ -71,4 +75,17 @@ func (s *impl) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (
 
 func (s *impl) MGetVersionTools(ctx context.Context, versionTools []model.VersionTool) (tools []*model.ToolInfo, err error) {
 	return s.DomainSVC.MGetVersionTools(ctx, versionTools)
+}
+
+func (s *impl) GetAPPAllPlugins(ctx context.Context, appID int64) (plugins []*model.PluginInfo, err error) {
+	_plugins, err := s.DomainSVC.GetAPPAllPlugins(ctx, appID)
+	if err != nil {
+		return nil, err
+	}
+
+	plugins = slices.Transform(_plugins, func(e *entity.PluginInfo) *model.PluginInfo {
+		return e.PluginInfo
+	})
+
+	return plugins, nil
 }

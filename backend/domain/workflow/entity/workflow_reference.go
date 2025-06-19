@@ -2,32 +2,20 @@ package entity
 
 import (
 	"time"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 type WorkflowReference struct {
-	ID          int64
-	SpaceID     int64
-	ReferringID int64
-	ReferType
-	ReferringBizType
+	ID int64
+	WorkflowReferenceKey
 	CreatedAt time.Time
-	CreatorID int64
-
-	Stage
-	UpdatedAt *time.Time
-	UpdaterID *int64
+	Enabled   bool
 }
 
-type ReferType uint8
-
-const (
-	ReferTypeSubWorkflow ReferType = 1
-	ReferTypeTool        ReferType = 2
-)
-
-type ReferringBizType uint8
-
-const (
-	ReferringBizTypeWorkflow ReferringBizType = 1
-	ReferringBizTypeAgent    ReferringBizType = 2
-)
+type WorkflowReferenceKey struct {
+	ReferredID  int64
+	ReferringID int64
+	vo.ReferType
+	vo.ReferringBizType
+}

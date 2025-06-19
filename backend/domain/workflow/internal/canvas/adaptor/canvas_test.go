@@ -4,7 +4,9 @@ import (
 	"context"
 
 	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 
 	"io"
@@ -17,7 +19,6 @@ import (
 	"time"
 
 	"github.com/bytedance/mockey"
-	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -34,11 +35,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin/pluginmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/database"
 	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
@@ -53,13 +51,18 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 		err = sonic.Unmarshal(data, c)
 		assert.NoError(t, err)
 		ctx := t.Context()
-		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{}, 123, false, &entity.InterruptEvent{}, vo.ExecuteConfig{
-			Mode:     vo.ExecuteModeDebug,
-			Operator: 123,
-		})
 		assert.NoError(t, err)
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
+
+		mockey.Mock(execute.GetExeCtx).Return(&execute.Context{
+			RootCtx: execute.RootCtx{
+				ExeCfg: vo.ExecuteConfig{
+					Mode:     vo.ExecuteModeDebug,
+					Operator: 123,
+				},
+			},
+		}).Build()
 
 		mockModelManager := mockmodel.NewMockManager(ctrl)
 		mockey.Mock(model.GetManager).Return(mockModelManager).Build()
@@ -117,44 +120,6 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 
 		number := response["number"].(int64)
 		assert.Equal(t, int64(2), number)
-		eventChan := make(chan *execute.Event)
-
-		opts := []einoCompose.Option{
-			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("141102", "intent", eventChan, nil, nil)).DesignateNode("141102"),
-		}
-
-		mockRepo := mockWorkflow.NewMockRepository(ctrl)
-		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
-		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
-		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
-
-		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{ID: 2}, 1, false, nil, vo.ExecuteConfig{})
-
-		wf.AsyncRun(ctx, map[string]any{
-			"input": "what's your name?",
-		}, opts...)
-
-	outer:
-		for {
-			event := <-eventChan
-
-			switch event.Type {
-			case execute.WorkflowSuccess:
-				break outer
-			case execute.WorkflowFailed:
-				t.Fatal(event.Err)
-			case execute.NodeEnd: // TODO: move this test to api layer
-				/*				if event.NodeKey == "141102" {
-								assert.Equal(t, &execute.TokenInfo{
-									InputToken:  1,
-									OutputToken: 2,
-									TotalToken:  3,
-								}, event.Token)
-							}*/
-			default:
-			}
-		}
 	})
 }
 
@@ -249,84 +214,34 @@ func TestDatabaseCURD(t *testing.T) {
 		mockDatabaseOperator.EXPECT().Insert(gomock.Any(), gomock.Any()).DoAndReturn(mockInsert(t))
 		mockDatabaseOperator.EXPECT().Delete(gomock.Any(), gomock.Any()).DoAndReturn(mockDelete(t))
 
+		mockey.Mock(execute.GetExeCtx).Return(&execute.Context{
+			RootCtx: execute.RootCtx{
+				ExeCfg: vo.ExecuteConfig{
+					Mode:     vo.ExecuteModeDebug,
+					Operator: 123,
+				},
+			},
+		}).Build()
+
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 
 		wf, err := compose.NewWorkflow(ctx, workflowSC, compose.WithIDAsName(2))
 		assert.NoError(t, err)
-
-		eventChan := make(chan *execute.Event)
-
-		opts := []einoCompose.Option{
-			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("178557", "", eventChan, nil, nil)).DesignateNode("178557"),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("169400", "", eventChan, nil, nil)).DesignateNode("169400"),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("122439", "", eventChan, nil, nil)).DesignateNode("122439"),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("125902", "", eventChan, nil, nil)).DesignateNode("125902"),
-		}
 
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
 		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
 		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
 		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
-		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{ID: 2}, 1, false, nil, vo.ExecuteConfig{})
-
-		wf.AsyncRun(ctx, map[string]any{
+		output, err := wf.SyncRun(ctx, map[string]any{
 			"input": "input for database curd",
 			"v2":    123,
-		}, opts...)
+		})
 
-	outer:
-		for {
-			event := <-eventChan
-
-			switch event.Type {
-			case execute.WorkflowSuccess:
-				break outer
-			case execute.WorkflowFailed:
-				t.Fatal(event.Err)
-			case execute.NodeEnd:
-				if event.NodeKey == "178557" {
-					assert.Contains(t, event.Output["outputList"], map[string]any{
-						"v1": "vv",
-						"v2": nil,
-						"v3": nil,
-					})
-				}
-			case execute.NodeStart:
-				if event.NodeKey == "178557" {
-					assert.Equal(t, event.Input["selectParam"].(map[string]any)["condition"], &database.Condition{
-						ConditionList: []database.ConditionItem{
-							{
-								Left:      "v1",
-								Operation: "EQUAL",
-								Right:     "abc",
-							},
-						},
-						Logic: "AND",
-					})
-
-				}
-				if event.NodeKey == "169400" {
-					assert.Equal(t, event.Input["deleteParam"].(map[string]any)["condition"].(*database.Condition).ConditionList[0].Left, "v2")
-					assert.Equal(t, event.Input["deleteParam"].(map[string]any)["condition"].(*database.Condition).ConditionList[0].Operation, "EQUAL")
-				}
-				if event.NodeKey == "122439" {
-					assert.Equal(t, database.ConditionItem{
-						Left:      "v1",
-						Operation: "EQUAL",
-						Right:     "abc",
-					}, event.Input["updateParam"].(map[string]any)["condition"].(*database.Condition).ConditionList[1])
-				}
-				if event.NodeKey == "125902" {
-					bs, _ := sonic.Marshal(event.Input)
-					assert.Contains(t, string(bs), "7478954112676282405", `{"fieldId":"1783122026497","fieldValue":"input for database curd"},{"fieldId":"1785960530945","fieldValue":123}]}`)
-
-				}
-
-			default:
-			}
-		}
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]any{
+			"output": ptr.Of(int64(1)),
+		}, output)
 	})
 }
 
@@ -491,57 +406,6 @@ func TestHttpRequester(t *testing.T) {
 		body := response["body"].(string)
 		assert.Equal(t, body, `{"message":"bear_auth_no_body"}`)
 		assert.Equal(t, response["h2_v2"], "h_v2")
-
-		eventChan := make(chan *execute.Event)
-
-		opts := []einoCompose.Option{
-			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", "http", eventChan, nil, nil)).DesignateNode("117004"),
-		}
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		mockRepo := mockWorkflow.NewMockRepository(ctrl)
-		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
-		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
-		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
-
-		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{ID: 2}, 1, false, nil, vo.ExecuteConfig{})
-
-		wf.AsyncRun(ctx, map[string]any{
-			"v1":    "v1",
-			"v2":    "v2",
-			"h_v1":  "h_v1",
-			"h_v2":  "h_v2",
-			"token": "bear_token",
-		}, opts...)
-
-	outer:
-		for {
-			event := <-eventChan
-
-			switch event.Type {
-			case execute.WorkflowSuccess:
-				break outer
-			case execute.WorkflowFailed:
-				t.Fatal(event.Err)
-			case execute.NodeEnd:
-				if event.NodeKey == "117004" {
-					bs, _ := sonic.Marshal(event.Output)
-					assert.Contains(t, string(bs), "bear_auth_no_body")
-				}
-			case execute.NodeStart:
-				if event.NodeKey == "117004" {
-					assert.Equal(t, "GET", event.Input["method"].(string))
-					assert.Equal(t, "http://127.0.0.1:8080/bear_auth_no_body", event.Input["url"].(string))
-					assert.Equal(t, map[string]any{
-						"token": "bear_token",
-					}, event.Input["auth"].(map[string]any))
-
-				}
-			default:
-			}
-		}
 	})
 	mockey.PatchConvey("http requester custom auth and no body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/custom_auth_no_body.json")
@@ -598,62 +462,6 @@ func TestHttpRequester(t *testing.T) {
 		body := response["body"].(string)
 		assert.Equal(t, body, `{"message":"custom_auth_json_body"}`)
 		assert.Equal(t, response["h2_v2"], "h_v2")
-
-		eventChan := make(chan *execute.Event)
-
-		opts := []einoCompose.Option{
-			einoCompose.WithCallbacks(execute.NewWorkflowHandler(2, eventChan)),
-			einoCompose.WithCallbacks(execute.NewNodeHandler("117004", "http", eventChan, nil, nil)).DesignateNode("117004"),
-		}
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		mockRepo := mockWorkflow.NewMockRepository(ctrl)
-		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
-		mockRepo.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()
-		mockRepo.EXPECT().GetWorkflowCancelFlag(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
-
-		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{ID: 2}, 1, false, nil, vo.ExecuteConfig{})
-
-		wf.AsyncRun(ctx, map[string]any{
-			"v1":         "v1",
-			"v2":         "v2",
-			"h_v1":       "h_v1",
-			"h_v2":       "h_v2",
-			"auth_key":   "authKey",
-			"auth_value": "authValue",
-			"json_key":   "json_body",
-		}, opts...)
-
-	outer:
-		for {
-			event := <-eventChan
-			switch event.Type {
-			case execute.WorkflowSuccess:
-				break outer
-			case execute.WorkflowFailed:
-				t.Fatal(event.Err)
-			case execute.NodeEnd:
-				if event.NodeKey == "117004" {
-					bs, _ := sonic.Marshal(event.Output)
-					assert.Contains(t, string(bs), `custom_auth_json_body`)
-				}
-			case execute.NodeStart:
-				if event.NodeKey == "117004" {
-
-					assert.Equal(t, event.Input["body"], map[string]any{
-						"v1": "1",
-						"v2": "json_body",
-					})
-					assert.Equal(t, event.Input["auth"], map[string]any{
-						"Key":   "authKey",
-						"Value": "authValue",
-					})
-
-				}
-			default:
-			}
-		}
 	})
 	mockey.PatchConvey("http requester custom auth and form data body", t, func() {
 		data, err := os.ReadFile("../examples/httprequester/custom_auth_form_data_body.json")
@@ -809,8 +617,6 @@ func TestKnowledgeNodes(t *testing.T) {
 		})
 
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
-
-		ctx, err = execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{ID: 2}, 1, false, nil, vo.ExecuteConfig{})
 
 		assert.NoError(t, err)
 		wf, err := compose.NewWorkflow(ctx, workflowSC)

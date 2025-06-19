@@ -38,7 +38,12 @@
         "name": {
           "type": "text",
           "analyzer": "smartcn",
-          "search_analyzer": "smartcn"
+          "search_analyzer": "smartcn",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            }
+          }
         },
         "owner_id": {
           "type": "keyword"

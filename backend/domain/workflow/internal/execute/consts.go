@@ -46,7 +46,6 @@ func IncrAndCheckExecutedNodes(ctx context.Context) (int64, bool) {
 }
 
 func InitExecutedNodesCounter(ctx context.Context) context.Context {
-	ctx = ctxcache.Init(ctx)
 	ctxcache.Store(ctx, executedNodeCountKey, atomic.Int64{})
 	return ctx
 }

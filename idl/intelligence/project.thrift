@@ -64,3 +64,26 @@ struct DraftProjectDeleteResponse {
     254: required string msg,
     255: optional base.BaseResp BaseResp (api.none="true")
 }
+
+struct DraftProjectCopyRequest {
+    1 :  i64 project_id (agw.js_conv="str", api.js_conv="true")
+    3 :  i64 to_space_id (agw.js_conv="str", api.js_conv="true")
+    4 :  string         name       ,
+    5 :  string         description,
+    6 :  string         icon_uri  ,
+    255: optional base.Base Base (api.none="true")
+}
+
+struct DraftProjectCopyResponse {
+    1 :  DraftProjectCopyResponseData data
+
+    253: required i64 code,
+    254: required string msg,
+    255: optional base.BaseResp BaseResp (api.none="true")
+}
+
+struct DraftProjectCopyResponseData {
+    1 :  intelligence_common_struct.IntelligenceBasicInfo basic_info
+    2 :  common_struct.AuditData audit_data
+    3 :  common_struct.User user_info
+}

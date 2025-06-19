@@ -105,3 +105,9 @@ type ResourceCopyResult struct {
 	CopyScene    resourceCommon.ResourceCopyScene `json:"copy_scene"`
 	FailedReason string                           `json:"reason"`
 }
+
+type Resource struct {
+	ResID   int64
+	ResType ResourceType
+	ResName string
+}

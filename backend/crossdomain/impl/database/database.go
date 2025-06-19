@@ -45,3 +45,7 @@ func (c *databaseImpl) UnBindDatabase(ctx context.Context, req *model.UnBindData
 func (c *databaseImpl) MGetDatabase(ctx context.Context, req *model.MGetDatabaseRequest) (*model.MGetDatabaseResponse, error) {
 	return c.DomainSVC.MGetDatabase(ctx, req)
 }
+
+func (c *databaseImpl) GetAllDatabaseByAppID(ctx context.Context, req *model.GetAllDatabaseByAppIDRequest) (*model.GetAllDatabaseByAppIDResponse, error) {
+	return c.DomainSVC.GetAllDatabaseByAppID(ctx, req)
+}

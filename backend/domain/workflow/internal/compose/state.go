@@ -390,14 +390,17 @@ func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string
 	return func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
 
 		opts := make([]variable.OptionFn, 0, 1)
-		exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
 
-		opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
-			AgentID:     exeCfg.AgentID,
-			AppID:       exeCfg.AppID,
-			ConnectorID: exeCfg.ConnectorID,
-			//ConnectorUID:
-		}))
+		if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
+			exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
+
+			opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
+				AgentID:     exeCfg.AgentID,
+				AppID:       exeCfg.AppID,
+				ConnectorID: exeCfg.ConnectorID,
+				//ConnectorUID:
+			}))
+		}
 		out := make(map[string]any)
 		for k, v := range in {
 			out[k] = v

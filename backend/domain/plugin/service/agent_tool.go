@@ -19,6 +19,10 @@ func (p *pluginServiceImpl) BindAgentTools(ctx context.Context, agentID int64, t
 	return p.toolRepo.BindDraftAgentTools(ctx, agentID, toolIDs)
 }
 
+func (p *pluginServiceImpl) DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) (err error) {
+	return p.toolRepo.DuplicateDraftAgentTools(ctx, fromAgentID, toAgentID)
+}
+
 func (p *pluginServiceImpl) GetDraftAgentToolByName(ctx context.Context, agentID int64, toolName string) (tool *entity.ToolInfo, err error) {
 	draftAgentTool, exist, err := p.toolRepo.GetDraftAgentToolWithToolName(ctx, agentID, toolName)
 	if err != nil {

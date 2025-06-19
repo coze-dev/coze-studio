@@ -6,6 +6,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"runtime/debug"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -65,7 +66,7 @@ func loadEnv() (err error) {
 	}
 
 	if err != nil {
-		log.Fatalf("Error loading .env file , err = %v ", err)
+		log.Fatalf("Error loading .env file, err = %v ", err)
 	}
 
 	return err
@@ -92,4 +93,7 @@ func setLogLevel() {
 	default:
 		logs.SetLevel(logs.LevelInfo)
 	}
+
+	crashFile, _ := os.Create("crash.log")
+	debug.SetCrashOutput(crashFile, debug.CrashOptions{})
 }

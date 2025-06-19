@@ -9,6 +9,8 @@ const (
 	ErrAppRecordNotFound   = 109000002
 )
 
+const APPMsgKey = "msg"
+
 func init() {
 	code.Register(
 		ErrAppPermissionCode,

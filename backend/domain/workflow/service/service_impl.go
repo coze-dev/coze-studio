@@ -27,6 +27,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
@@ -54,7 +55,7 @@ func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Cl
 	return repo.NewRepository(idgen, db, redis, tos, cpStore)
 }
 
-func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, error) {
+func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]bool, locale entity.Locale) (map[string][]*entity.NodeTypeMeta, error) {
 	// Initialize result maps
 	nodeMetaMap := make(map[string][]*entity.NodeTypeMeta)
 
@@ -74,7 +75,7 @@ func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]boo
 	// Process standard node types
 	for _, meta := range entity.NodeTypeMetas {
 		if shouldInclude(meta) {
-			category := meta.Category
+			category := ternary.IFElse(locale == entity.EnUS, meta.EnUSCategory, meta.Category)
 			nodeMetaMap[category] = append(nodeMetaMap[category], meta)
 		}
 	}
@@ -82,14 +83,23 @@ func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]boo
 	return nodeMetaMap, nil
 }
 
-func (i *impl) Create(ctx context.Context, meta *vo.Meta) (int64, error) {
-	id, err := i.repo.CreateMeta(ctx, meta)
+func (i *impl) Create(ctx context.Context, meta *vo.MetaCreate) (int64, error) {
+	id, err := i.repo.CreateMeta(ctx, &vo.Meta{
+		CreatorID:   meta.CreatorID,
+		SpaceID:     meta.SpaceID,
+		ContentType: meta.ContentType,
+		Name:        meta.Name,
+		Desc:        meta.Desc,
+		IconURI:     meta.IconURI,
+		AppID:       meta.AppID,
+		Mode:        meta.Mode,
+	})
 	if err != nil {
 		return 0, err
 	}
 
 	// save the initialized  canvas information to the draft
-	if err = i.Save(ctx, id, vo.GetDefaultInitCanvasJsonSchema()); err != nil {
+	if err = i.Save(ctx, id, meta.InitCanvasSchema); err != nil {
 		return 0, err
 	}
 
@@ -223,7 +233,7 @@ func (i *impl) Delete(ctx context.Context, policy *vo.DeletePolicy) (err error) 
 
 	ids := policy.IDs
 	if policy.AppID != nil {
-		metas, err := i.repo.MGetMeta(ctx, &vo.MetaQuery{
+		metas, err := i.repo.MGetMetas(ctx, &vo.MetaQuery{
 			AppID: policy.AppID,
 		})
 		if err != nil {
@@ -254,7 +264,10 @@ func (i *impl) Get(ctx context.Context, policy *vo.GetPolicy) (*entity.Workflow,
 }
 
 func (i *impl) GetWorkflowReference(ctx context.Context, id int64) (map[int64]*vo.Meta, error) {
-	parent, err := i.repo.GetParentWorkflowsBySubWorkflowID(ctx, id)
+	parent, err := i.repo.MGetReferences(ctx, &vo.MGetReferencePolicy{
+		ReferredIDs:      []int64{id},
+		ReferringBizType: []vo.ReferringBizType{vo.ReferringBizTypeWorkflow},
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -264,19 +277,14 @@ func (i *impl) GetWorkflowReference(ctx context.Context, id int64) (map[int64]*v
 		return map[int64]*vo.Meta{}, nil
 	}
 
-	wfIDs := make([]int64, 0, len(parent))
+	wfIDs := make(map[int64]struct{}, len(parent))
 	for _, ref := range parent {
-		wfIDs = append(wfIDs, ref.ID)
+		wfIDs[ref.ReferringID] = struct{}{}
 	}
 
-	wfMetas, err := i.repo.MGetMeta(ctx, &vo.MetaQuery{
-		IDs: wfIDs,
+	return i.repo.MGetMetas(ctx, &vo.MetaQuery{
+		IDs: maps.Keys(wfIDs),
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return wfMetas, nil
 }
 
 func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*cloudworkflow.ValidateTreeInfo, error) {
@@ -463,6 +471,60 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 	return nodePropertyMap, nil
 }
 
+func canvasToRefs(referringID int64, canvasStr string) (map[entity.WorkflowReferenceKey]struct{}, error) {
+	var canvas vo.Canvas
+	if err := sonic.UnmarshalString(canvasStr, &canvas); err != nil {
+		return nil, err
+	}
+
+	wfRefs := map[entity.WorkflowReferenceKey]struct{}{}
+	var getRefFn func([]*vo.Node) error
+	getRefFn = func(nodes []*vo.Node) error {
+		for _, node := range nodes {
+			if node.Type == vo.BlockTypeBotSubWorkflow {
+				referredID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+				if err != nil {
+					return err
+				}
+				wfRefs[entity.WorkflowReferenceKey{
+					ReferredID:       referredID,
+					ReferringID:      referringID,
+					ReferType:        vo.ReferTypeSubWorkflow,
+					ReferringBizType: vo.ReferringBizTypeWorkflow,
+				}] = struct{}{}
+			} else if node.Type == vo.BlockTypeBotLLM {
+				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+					for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+						referredID, err := strconv.ParseInt(w.WorkflowID, 10, 64)
+						if err != nil {
+							return err
+						}
+						wfRefs[entity.WorkflowReferenceKey{
+							ReferredID:       referredID,
+							ReferringID:      referringID,
+							ReferType:        vo.ReferTypeTool,
+							ReferringBizType: vo.ReferringBizTypeWorkflow,
+						}] = struct{}{}
+					}
+				}
+			} else if len(node.Blocks) > 0 {
+				for _, subNode := range node.Blocks {
+					if err := getRefFn([]*vo.Node{subNode}); err != nil {
+						return err
+					}
+				}
+			}
+		}
+		return nil
+	}
+
+	if err := getRefFn(canvas.Nodes); err != nil {
+		return nil, err
+	}
+
+	return wfRefs, nil
+}
+
 func (i *impl) Publish(ctx context.Context, policy *vo.PublishPolicy) (err error) {
 	meta, err := i.repo.GetMeta(ctx, policy.ID)
 	if err != nil {
@@ -493,6 +555,11 @@ func (i *impl) Publish(ctx context.Context, policy *vo.PublishPolicy) (err error
 		return fmt.Errorf("workflow %d's current draft needs to pass the test run before publishing", policy.ID)
 	}
 
+	wfRefs, err := canvasToRefs(policy.ID, draft.Canvas)
+	if err != nil {
+		return err
+	}
+
 	versionInfo := &vo.VersionInfo{
 		VersionMeta: &vo.VersionMeta{
 			Version:            policy.Version,
@@ -507,7 +574,7 @@ func (i *impl) Publish(ctx context.Context, policy *vo.PublishPolicy) (err error
 		CommitID: draft.CommitID,
 	}
 
-	if err = i.repo.CreateVersion(ctx, policy.ID, versionInfo); err != nil {
+	if err = i.repo.CreateVersion(ctx, policy.ID, versionInfo, wfRefs); err != nil {
 		return err
 	}
 
@@ -544,8 +611,8 @@ func (i *impl) UpdateMeta(ctx context.Context, id int64, metaUpdate *vo.MetaUpda
 	return nil
 }
 
-func (i *impl) CopyWorkflow(ctx context.Context, workflowID int64, cfg vo.CopyWorkflowConfig) (int64, error) {
-	wf, err := i.repo.CopyWorkflow(ctx, workflowID, cfg)
+func (i *impl) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (int64, error) {
+	wf, err := i.repo.CopyWorkflow(ctx, workflowID, policy)
 	if err != nil {
 		return 0, err
 	}
@@ -577,6 +644,9 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 		},
 		QType: vo.FromDraft,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	relatedPlugins := make(map[int64]*vo.PluginEntity, len(config.PluginIDs))
 	relatedWorkflow := make(map[int64]entity.IDVersionPair, len(wfs))
@@ -661,11 +731,17 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 				InputParamsStr:  inputStr,
 				OutputParamsStr: outputStr,
 			},
+			CommitID: wf.CommitID,
 		}
 	}
 
 	for id, vInfo := range workflowsToPublish {
-		if err = i.repo.CreateVersion(ctx, id, vInfo); err != nil {
+		wfRefs, err := canvasToRefs(id, vInfo.Canvas)
+		if err != nil {
+			return nil, err
+		}
+
+		if err = i.repo.CreateVersion(ctx, id, vInfo, wfRefs); err != nil {
 			return nil, err
 		}
 	}
@@ -681,9 +757,10 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 		refWfs    map[int64]*copiedWorkflow
 	}
 	var (
-		err          error
-		vIssues      = make([]*vo.ValidateIssue, 0)
-		draftVersion *vo.DraftInfo
+		err                    error
+		vIssues                = make([]*vo.ValidateIssue, 0)
+		draftVersion           *vo.DraftInfo
+		workflowPublishVersion = "v0.0.1"
 	)
 
 	draftVersion, err = i.repo.DraftV2(ctx, workflowID, "")
@@ -856,8 +933,6 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 
 	hasPublishedWorkflows := make(map[int64]entity.IDVersionPair)
 
-	workflowPublishVersion := "v0.0.1"
-
 	copyAndPublishWorkflowProcess = func(wf *copiedWorkflow) error {
 		for _, refWorkflow := range wf.refWfs {
 			err := copyAndPublishWorkflowProcess(refWorkflow)
@@ -888,7 +963,15 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 				return err
 			}
 
-			cwf, err := i.repo.CopyWorkflowFromAppToLibrary(ctx, wf.id, modifiedCanvasString)
+			cwf, err := i.repo.CopyWorkflow(ctx, wf.id, vo.CopyWorkflowPolicy{
+				TargetAppID:          ptr.Of(int64(0)),
+				ModifiedCanvasSchema: ptr.Of(modifiedCanvasString),
+			})
+			if err != nil {
+				return err
+			}
+
+			wfRefs, err := canvasToRefs(cwf.ID, modifiedCanvasString)
 			if err != nil {
 				return err
 			}
@@ -904,7 +987,7 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 					InputParamsStr:  inputParams,
 					OutputParamsStr: outputParams,
 				},
-			})
+			}, wfRefs)
 			if err != nil {
 				return err
 			}
@@ -937,6 +1020,193 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 	}
 
 	return hasPublishedWorkflows, nil, nil
+
+}
+
+func (i *impl) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targetAppID int64, related vo.ExternalResourceRelated) error {
+
+	type copiedWorkflow struct {
+		id           int64
+		draftInfo    *vo.DraftInfo
+		refWfs       map[int64]*copiedWorkflow
+		err          error
+		draftVersion *vo.DraftInfo
+	}
+
+	draftWorkflows, _, err := i.repo.GetDraftWorkflowsByAppID(ctx, sourceAppID)
+	if err != nil {
+		return err
+	}
+
+	var duplicateWorkflowProcess func(workflowID int64, info *vo.DraftInfo) error
+
+	hasCopiedWorkflows := make(map[int64]entity.IDVersionPair)
+	var buildWorkflowReference func(nodes []*vo.Node, wf *copiedWorkflow) error
+	buildWorkflowReference = func(nodes []*vo.Node, wf *copiedWorkflow) error {
+		for _, node := range nodes {
+			if node.Type == vo.BlockTypeBotSubWorkflow {
+				var (
+					v    *vo.DraftInfo
+					wfID int64
+					ok   bool
+				)
+				wfID, err = strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+				if err != nil {
+					return err
+				}
+
+				if v, ok = draftWorkflows[wfID]; !ok {
+					continue
+				}
+				if _, ok = wf.refWfs[wfID]; ok {
+					continue
+				}
+
+				swf := &copiedWorkflow{
+					id:        wfID,
+					draftInfo: v,
+					refWfs:    make(map[int64]*copiedWorkflow),
+				}
+				wf.refWfs[wfID] = swf
+				var subCanvas *vo.Canvas
+				err = sonic.UnmarshalString(v.Canvas, &subCanvas)
+				if err != nil {
+					return err
+				}
+				err = buildWorkflowReference(subCanvas.Nodes, swf)
+				if err != nil {
+					return err
+				}
+
+			}
+			if node.Type == vo.BlockTypeBotLLM {
+				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+					for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+						var (
+							v    *vo.DraftInfo
+							wfID int64
+							ok   bool
+						)
+						wfID, err = strconv.ParseInt(w.WorkflowID, 10, 64)
+						if err != nil {
+							return err
+						}
+
+						if v, ok = draftWorkflows[wfID]; !ok {
+							continue
+						}
+
+						if _, ok = wf.refWfs[wfID]; ok {
+							continue
+						}
+
+						swf := &copiedWorkflow{
+							id:        wfID,
+							draftInfo: v,
+							refWfs:    make(map[int64]*copiedWorkflow),
+						}
+						wf.refWfs[wfID] = swf
+						var subCanvas *vo.Canvas
+						err = sonic.UnmarshalString(v.Canvas, &subCanvas)
+						if err != nil {
+							return err
+						}
+
+						err = buildWorkflowReference(subCanvas.Nodes, swf)
+						if err != nil {
+							return err
+						}
+					}
+
+				}
+
+			}
+			if len(node.Blocks) > 0 {
+				err := buildWorkflowReference(node.Blocks, wf)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+	var duplicateWorkflow func(wf *copiedWorkflow) error
+	duplicateWorkflow = func(wf *copiedWorkflow) error {
+		for _, refWorkflow := range wf.refWfs {
+			err := duplicateWorkflow(refWorkflow)
+			if err != nil {
+				return err
+			}
+		}
+		if _, ok := hasCopiedWorkflows[wf.id]; !ok {
+			draftCanvasString := wf.draftInfo.Canvas
+			canvas := &vo.Canvas{}
+			err = sonic.UnmarshalString(draftCanvasString, &canvas)
+			if err != nil {
+				return err
+			}
+			err = replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(canvas.Nodes, hasCopiedWorkflows, related)
+			if err != nil {
+				return err
+			}
+
+			modifiedCanvasString, err := sonic.MarshalString(canvas)
+			if err != nil {
+				return err
+			}
+
+			copiedID, err := i.CopyWorkflow(ctx, wf.id, vo.CopyWorkflowPolicy{
+				TargetAppID:          ptr.Of(targetAppID),
+				ModifiedCanvasSchema: ptr.Of(modifiedCanvasString),
+			})
+			if err != nil {
+				return err
+			}
+
+			if err != nil {
+				return err
+			}
+
+			hasCopiedWorkflows[wf.id] = entity.IDVersionPair{
+				ID: copiedID,
+			}
+		}
+		return nil
+	}
+
+	duplicateWorkflowProcess = func(workflowID int64, draftVersion *vo.DraftInfo) error {
+		copiedWf := &copiedWorkflow{
+			id:        workflowID,
+			draftInfo: draftVersion,
+			refWfs:    make(map[int64]*copiedWorkflow),
+		}
+		draftCanvas := &vo.Canvas{}
+		err = sonic.UnmarshalString(draftVersion.Canvas, &draftCanvas)
+		if err != nil {
+			return err
+		}
+		err = buildWorkflowReference(draftCanvas.Nodes, copiedWf)
+		if err != nil {
+			return err
+		}
+		err = duplicateWorkflow(copiedWf)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	for workflowID, draftVersion := range draftWorkflows {
+		if _, ok := hasCopiedWorkflows[workflowID]; ok {
+			continue
+		}
+		err = duplicateWorkflowProcess(workflowID, draftVersion)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 
 }
 
@@ -1086,7 +1356,7 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 }
 
 func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, error) {
-	metas, err := i.repo.MGetMeta(ctx, &policy.MetaQuery)
+	metas, err := i.repo.MGetMetas(ctx, &policy.MetaQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -1128,7 +1398,7 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 
 	switch policy.QType {
 	case vo.FromDraft:
-		draftInfos, err := i.repo.MGetDraft(ctx, maps.Keys(metas))
+		draftInfos, err := i.repo.MGetDrafts(ctx, maps.Keys(metas))
 		if err != nil {
 			return nil, err
 		}

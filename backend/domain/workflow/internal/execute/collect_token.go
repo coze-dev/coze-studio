@@ -13,14 +13,16 @@ import (
 )
 
 type TokenCollector struct {
+	Key    string
 	Usage  *model.TokenUsage
 	wg     sync.WaitGroup
 	mu     sync.Mutex
 	Parent *TokenCollector
 }
 
-func newTokenCollector(parent *TokenCollector) *TokenCollector {
+func newTokenCollector(key string, parent *TokenCollector) *TokenCollector {
 	return &TokenCollector{
+		Key:    key,
 		Usage:  &model.TokenUsage{},
 		Parent: parent,
 	}
@@ -32,6 +34,10 @@ func (t *TokenCollector) addTokenUsage(usage *model.TokenUsage) {
 	t.Usage.PromptTokens += usage.PromptTokens
 	t.Usage.CompletionTokens += usage.CompletionTokens
 	t.Usage.TotalTokens += usage.TotalTokens
+
+	if t.Parent != nil {
+		t.Parent.addTokenUsage(usage)
+	}
 }
 
 func (t *TokenCollector) wait() *model.TokenUsage {
@@ -43,9 +49,6 @@ func (t *TokenCollector) wait() *model.TokenUsage {
 		TotalTokens:      t.Usage.TotalTokens,
 	}
 	t.mu.Unlock()
-	if t.Parent != nil {
-		t.Parent.addTokenUsage(usage)
-	}
 	return usage
 }
 

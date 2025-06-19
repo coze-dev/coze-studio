@@ -270,6 +270,8 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 			mu.Unlock()
 		}
 
+		// if the innerWorkflow has output emitter that requires stream output, then we need to stream the inner workflow
+		// the output then needs to be concatenated.
 		taskOutput, err := b.config.InnerWorkflow.Invoke(subCtx, input, ithOpts...)
 		if err != nil {
 			info, ok := compose.ExtractInterruptInfo(err)

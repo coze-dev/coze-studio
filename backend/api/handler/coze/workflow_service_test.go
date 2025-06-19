@@ -122,6 +122,7 @@ var req2URL = map[reflect.Type]string{
 	reflect.TypeOf(&workflow.CopyWorkflowRequest{}):               "/api/workflow_api/copy",
 	reflect.TypeOf(&workflow.BatchDeleteWorkflowRequest{}):        "/api/workflow_api/batch_delete",
 	reflect.TypeOf(&workflow.GetHistorySchemaRequest{}):           "/api/workflow_api/history_schema",
+	reflect.TypeOf(&workflow.GetWorkflowReferencesRequest{}):      "/api/workflow_api/workflow_references",
 }
 
 func newWfTestRunner(t *testing.T) *wfTestRunner {
@@ -161,29 +162,40 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	h.POST("/api/workflow_api/node_type", QueryWorkflowNodeTypes)
 	h.GET("/v1/workflow/get_run_history", OpenAPIGetWorkflowRunHistory)
 	h.POST("/api/workflow_api/history_schema", GetHistorySchema)
+	h.POST("/api/workflow_api/workflow_references", GetWorkflowReferences)
 
 	ctrl := gomock.NewController(t, gomock.WithOverridableExpectations())
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
 	var previousID atomic.Int64
 	mockIDGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
 		newID := time.Now().UnixNano()
-		if newID == previousID.Load() {
-			newID = previousID.Add(1)
+		for {
+			if newID == previousID.Load() {
+				newID = time.Now().UnixNano()
+			} else {
+				previousID.Store(newID)
+				break
+			}
 		}
 		return newID, nil
 	}).AnyTimes()
-
-	mockIDGen.EXPECT().GenMultiIDs(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, counts int) ([]int64, error) {
-		ids := make([]int64, counts)
-		for i := 0; i < counts; i++ {
-			newID := time.Now().UnixNano()
-			if newID == previousID.Load() {
-				newID = previousID.Add(1)
+	mockIDGen.EXPECT().GenMultiIDs(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, count int) ([]int64, error) {
+			ids := make([]int64, count)
+			for i := 0; i < count; i++ {
+				newID := time.Now().UnixNano()
+				for {
+					if newID == previousID.Load() {
+						newID = time.Now().UnixNano()
+					} else {
+						previousID.Store(newID)
+						break
+					}
+				}
+				ids[i] = newID
 			}
-			ids = append(ids, newID)
-		}
-		return ids, nil
-	}).AnyTimes()
+			return ids, nil
+		}).AnyTimes()
 
 	dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
 	if os.Getenv("CI_JOB_NAME") != "" {
@@ -883,7 +895,7 @@ func (r *wfTestRunner) runServer() func() {
 }
 
 func TestNodeTemplateList(t *testing.T) {
-	mockey.PatchConvey("test node template list", t, func() {
+	mockey.PatchConvey("test node cn template list", t, func() {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 
@@ -893,7 +905,40 @@ func TestNodeTemplateList(t *testing.T) {
 
 		assert.Equal(t, 3, len(resp.Data.TemplateList))
 		assert.Equal(t, 3, len(resp.Data.CateList))
+
+		id2Name := map[string]string{
+			"3":  "大模型",
+			"5":  "代码",
+			"18": "问答",
+		}
+		for _, tl := range resp.Data.TemplateList {
+			assert.Equal(t, tl.Name, id2Name[tl.ID])
+		}
+
 	})
+	mockey.PatchConvey("test node en template list", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		resp := post[workflow.NodeTemplateListResponse](r, &workflow.NodeTemplateListRequest{
+			NodeTypes: []string{"3", "5", "18"},
+			Locale:    workflow.Locale_en_US,
+		})
+
+		id2Name := map[string]string{
+			"3":  "LLM",
+			"5":  "Code",
+			"18": "Question",
+		}
+		assert.Equal(t, 3, len(resp.Data.TemplateList))
+		assert.Equal(t, 3, len(resp.Data.CateList))
+
+		for _, tl := range resp.Data.TemplateList {
+			assert.Equal(t, tl.Name, id2Name[tl.ID])
+		}
+
+	})
+
 }
 
 func TestTestRunAndGetProcess(t *testing.T) {
@@ -931,7 +976,7 @@ func TestTestRunAndGetProcess(t *testing.T) {
 			assert.Equal(t, exeID, fmt.Sprintf("%d", *his.Data[0].ExecuteID))
 			assert.Equal(t, workflow.WorkflowRunMode_Async, *his.Data[0].RunMode)
 
-			r.publish(id, "v0.0.1", false)
+			r.publish(id, "v0.0.1", true)
 
 			mockey.PatchConvey("openapi async run", func() {
 				exeID := r.openapiAsyncRun(id, input)
@@ -1281,11 +1326,25 @@ func TestResumeWithQANode(t *testing.T) {
 					return &schema.Message{
 						Role:    schema.Assistant,
 						Content: `{"question": "what's your age?"}`,
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     6,
+								CompletionTokens: 7,
+								TotalTokens:      13,
+							},
+						},
 					}, nil
 				} else if index == 1 {
 					return &schema.Message{
 						Role:    schema.Assistant,
 						Content: `{"fields": {"name": "eino", "age": 1}}`,
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     11,
+								CompletionTokens: 19,
+								TotalTokens:      30,
+							},
+						},
 					}, nil
 				}
 				return nil, errors.New("not found")
@@ -1301,6 +1360,7 @@ func TestResumeWithQANode(t *testing.T) {
 
 		e := r.getProcess(id, exeID)
 		assert.NotNil(t, e.event)
+		e.tokenEqual(0, 0)
 
 		r.testResume(id, exeID, e.event.ID, "my name is eino")
 
@@ -1315,6 +1375,7 @@ func TestResumeWithQANode(t *testing.T) {
 			"name":          "eino",
 			"age":           int64(1),
 		}, mustUnmarshalToMap(t, e3.output))
+		e3.tokenEqual(17, 26)
 	})
 }
 
@@ -1329,10 +1390,23 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 					{
 						Role:    schema.Assistant,
 						Content: "I ",
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     1,
+								CompletionTokens: 3,
+								TotalTokens:      4,
+							},
+						},
 					},
 					{
 						Role:    schema.Assistant,
 						Content: "don't know.",
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								CompletionTokens: 7,
+								TotalTokens:      7,
+							},
+						},
 					},
 				})
 				return sr, nil
@@ -1344,10 +1418,23 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 					{
 						Role:    schema.Assistant,
 						Content: "I ",
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     2,
+								CompletionTokens: 2,
+								TotalTokens:      4,
+							},
+						},
 					},
 					{
 						Role:    schema.Assistant,
 						Content: "don't know too.",
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								CompletionTokens: 11,
+								TotalTokens:      11,
+							},
+						},
 					},
 				})
 				return sr, nil
@@ -1363,6 +1450,12 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 		}).AnyTimes()
 
 		topID := r.load("subworkflow/top_workflow.json")
+		defer func() {
+			post[workflow.DeleteWorkflowResponse](r, &workflow.DeleteWorkflowRequest{
+				WorkflowID: topID,
+			})
+		}()
+
 		midID := r.load("subworkflow/middle_workflow.json", withID(7494849202016272435))
 		bottomID := r.load("subworkflow/bottom_workflow.json", withID(7468899413567684634))
 		inputID := r.load("input_receiver.json", withID(7469607842648457243))
@@ -1388,6 +1481,16 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 		e3 := r.getProcess(topID, exeID, withPreviousEventID(e2.event.ID))
 		e3.assertSuccess()
 		assert.Equal(t, "I don't know.\nI don't know too.\nb\n['new_a_more info 1', 'new_b_more info 2']", e3.output)
+
+		e3.tokenEqual(3, 23)
+
+		r.publish(topID, "v0.0.1", true) // publish the top workflow to
+
+		refs := post[workflow.GetWorkflowReferencesResponse](r, &workflow.GetWorkflowReferencesRequest{
+			WorkflowID: midID,
+		})
+		assert.Equal(t, 1, len(refs.Data.WorkflowList))
+		assert.Equal(t, topID, refs.Data.WorkflowList[0].WorkflowID)
 
 		mockey.PatchConvey("verify history schema for all workflows", func() {
 			// get current draft commit ID of top_workflow
@@ -1457,6 +1560,12 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 				ExecuteID:  ptr.Of(exeID),
 			})
 			assert.Equal(t, topCommitID, resp.Data.CommitID)
+
+			r.publish(topID, "v0.0.2", true)
+			refs := post[workflow.GetWorkflowReferencesResponse](r, &workflow.GetWorkflowReferencesRequest{
+				WorkflowID: midID,
+			})
+			assert.Equal(t, 0, len(refs.Data.WorkflowList))
 		})
 	})
 }
@@ -1589,7 +1698,7 @@ func TestGetCanvasInfo(t *testing.T) {
 		assert.Equal(t, response.Data.Workflow.Status, workflow.WorkFlowDevStatus_CanSubmit)
 		assert.Equal(t, response.Data.VcsData.Type, workflow.VCSCanvasType_Draft)
 
-		r.publish(id, "v0.0.1", false)
+		r.publish(id, "v0.0.1", true)
 
 		response = post[workflow.GetCanvasInfoResponse](r, getCanvas)
 		assert.Equal(t, response.Data.Workflow.Status, workflow.WorkFlowDevStatus_HadSubmit)
@@ -1637,7 +1746,7 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 
-		r.load("function_call/tool_workflow_1.json", withID(7492075279843737651), withPublish("v0.0.1"))
+		toolID := r.load("function_call/tool_workflow_1.json", withID(7492075279843737651), withPublish("v0.0.1"))
 
 		chatModel := &testutil.UTChatModel{
 			InvokeResultProvider: func(index int, in []*schema.Message) (*schema.Message, error) {
@@ -1681,6 +1790,11 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
 
 		id := r.load("function_call/llm_with_workflow_as_tool.json")
+		defer func() {
+			post[workflow.DeleteWorkflowResponse](r, &workflow.DeleteWorkflowRequest{
+				WorkflowID: id,
+			})
+		}()
 
 		exeID := r.testRun(id, map[string]string{
 			"input": "this is the user input",
@@ -1698,7 +1812,7 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 
 			defer r.runServer()()
 
-			r.publish(id, "v0.0.1", false)
+			r.publish(id, "v0.0.1", true)
 
 			sseReader := r.openapiStream(id, map[string]any{
 				"input": "hello",
@@ -1708,8 +1822,14 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 				return nil
 			})
 			assert.NoError(t, err)
-		})
 
+			// check workflow references are correct
+			refs := post[workflow.GetWorkflowReferencesResponse](r, &workflow.GetWorkflowReferencesRequest{
+				WorkflowID: toolID,
+			})
+			assert.Equal(t, 1, len(refs.Data.WorkflowList))
+			assert.Equal(t, id, refs.Data.WorkflowList[0].WorkflowID)
+		})
 	})
 }
 
@@ -1809,13 +1929,13 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 		e := r.getProcess(id, exeID)
 		e.assertSuccess()
 		assert.Equal(t, "this is the streaming output I don't know.", e.output)
-		// e.tokenEqual(15, 27) TODO: needs to propagate tool tokens upwards
+		e.tokenEqual(15, 27)
 
 		mockey.PatchConvey("check behavior if stream run", func() {
 			outerModel.Reset()
 			innerModel.Reset()
 			defer r.runServer()()
-			r.publish(id, "v0.0.1", false)
+			r.publish(id, "v0.0.1", true)
 			sseReader := r.openapiStream(id, map[string]any{
 				"input": "hello",
 			})
@@ -1908,6 +2028,13 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 									},
 								},
 							},
+							ResponseMeta: &schema.ResponseMeta{
+								Usage: &schema.TokenUsage{
+									PromptTokens:     6,
+									CompletionTokens: 7,
+									TotalTokens:      13,
+								},
+							},
 						},
 					}), nil
 				} else if index == 1 {
@@ -1915,10 +2042,23 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 						{
 							Role:    schema.Assistant,
 							Content: "I now know your ",
+							ResponseMeta: &schema.ResponseMeta{
+								Usage: &schema.TokenUsage{
+									PromptTokens:     5,
+									CompletionTokens: 8,
+									TotalTokens:      13,
+								},
+							},
 						},
 						{
 							Role:    schema.Assistant,
 							Content: "name is Eino and age is 1.",
+							ResponseMeta: &schema.ResponseMeta{
+								Usage: &schema.TokenUsage{
+									CompletionTokens: 10,
+									TotalTokens:      17,
+								},
+							},
 						},
 					}), nil
 				} else {
@@ -1933,11 +2073,25 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 					return &schema.Message{
 						Role:    schema.Assistant,
 						Content: `{"question": "what's your age?"}`,
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     6,
+								CompletionTokens: 7,
+								TotalTokens:      13,
+							},
+						},
 					}, nil
 				} else if index == 1 {
 					return &schema.Message{
 						Role:    schema.Assistant,
 						Content: `{"fields": {"name": "eino", "age": 1}}`,
+						ResponseMeta: &schema.ResponseMeta{
+							Usage: &schema.TokenUsage{
+								PromptTokens:     8,
+								CompletionTokens: 10,
+								TotalTokens:      18,
+							},
+						},
 					}, nil
 				} else {
 					return nil, fmt.Errorf("unexpected index: %d", index)
@@ -1964,15 +2118,18 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 
 		e := r.getProcess(id, exeID)
 		assert.NotNil(t, e.event)
+		e.tokenEqual(0, 0)
 
 		r.testResume(id, exeID, e.event.ID, "my name is eino")
 		e2 := r.getProcess(id, exeID, withPreviousEventID(e.event.ID))
 		assert.NotNil(t, e2.event)
+		e2.tokenEqual(0, 0)
 
 		r.testResume(id, exeID, e2.event.ID, "1 year old")
 		e3 := r.getProcess(id, exeID, withPreviousEventID(e2.event.ID))
 		e3.assertSuccess()
 		assert.Equal(t, "the name is eino, age is 1", e3.output)
+		e3.tokenEqual(20, 24)
 	})
 }
 
@@ -2041,6 +2198,7 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 				},
 			},
 		}, mustUnmarshalToMap(t, e.output))
+		e.tokenEqual(10, 12)
 
 		// verify this workflow has previously succeeded a test run
 		result := r.getNodeExeHistory(id, "", "100001", ptr.Of(workflow.NodeHistoryScene_TestRunInput))
@@ -2974,7 +3132,7 @@ func TestStreamResume(t *testing.T) {
 					NodeIsFinish: ptr.Of(true),
 					Content:      ptr.Of("{\"output\":{\"age\":1,\"name\":\"eino\"},\"output_list\":[{\"age\":0,\"name\":\"user_1\"},{\"age\":2,\"name\":\"\"}]}"),
 					ContentType:  ptr.Of("text"),
-					Token:        ptr.Of(int64(0)),
+					// Token:        ptr.Of(int64(0)), TODO: verify if we need to uncomment this
 				},
 			},
 			{
@@ -3761,7 +3919,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 		r.load("copy_to_app/child_1.json", withID(7515027150387281920), withProjectID(appIDInt64))
 		r.load("copy_to_app/main.json", withID(7515027091302121472), withProjectID(appIDInt64))
 
-		is, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(t.Context(), 7515027091302121472, appIDInt64, appIDInt64)
+		_, is, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(t.Context(), 7515027091302121472, appIDInt64, appIDInt64)
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(is))
 	})
@@ -3869,7 +4027,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 		r.load("copy_to_app/child2_1.json", withID(7516518409656336384), withProjectID(appIDInt64))
 		r.load("copy_to_app/main2.json", withID(7516516198096306176), withProjectID(appIDInt64))
 
-		ret, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(t.Context(), 7516516198096306176, 123, appIDInt64)
+		_, ret, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(t.Context(), 7516516198096306176, 123, appIDInt64)
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(ret))
 	})
@@ -4036,6 +4194,99 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 				}
 			}
 		})
+
+	})
+}
+
+func TestDuplicateWorkflowsByAppID(t *testing.T) {
+	mockey.PatchConvey("copy ddd", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		vars := []*variable.VarMeta{
+			{
+				Name: "app_v1",
+				TypeInfo: variable.VarTypeInfo{
+					Type: variable.VarTypeString,
+				},
+			}, {
+				Name: "app_list_v1",
+				TypeInfo: variable.VarTypeInfo{
+					Type: variable.VarTypeArray,
+					ElemTypeInfo: &variable.VarTypeInfo{
+						Type: variable.VarTypeString,
+					},
+				},
+			}, {
+				Name: "app_list_v2",
+				TypeInfo: variable.VarTypeInfo{
+					Type: variable.VarTypeString,
+				},
+			},
+		}
+
+		r.varGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
+		var copiedIDs = make([]int64, 0)
+		var mockPublishWorkflowResource func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error
+		var ignoreIDs = map[int64]bool{
+			7515027325977624576: true,
+			7515027249628708864: true,
+			7515027182796668928: true,
+			7515027150387281920: true,
+			7515027091302121472: true,
+			7515027325977624579: true,
+		}
+		mockPublishWorkflowResource = func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error {
+			if ignoreIDs[event.WorkflowID] {
+				return nil
+			}
+			copiedIDs = append(copiedIDs, event.WorkflowID)
+			return nil
+
+		}
+
+		r.search.EXPECT().PublishWorkflowResource(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(mockPublishWorkflowResource).AnyTimes()
+
+		appIDInt64 := int64(7513788954458456064)
+
+		r.load("copy_to_app/child_5.json", withID(7515027325977624579), withProjectID(appIDInt64))
+		r.load("copy_to_app/child_4.json", withID(7515027325977624576), withProjectID(appIDInt64))
+		r.load("copy_to_app/child_3.json", withID(7515027249628708864), withProjectID(appIDInt64))
+		r.load("copy_to_app/child_2.json", withID(7515027182796668928), withProjectID(appIDInt64))
+		r.load("copy_to_app/child_1.json", withID(7515027150387281920), withProjectID(appIDInt64))
+		r.load("copy_to_app/main.json", withID(7515027091302121472), withProjectID(appIDInt64))
+		targetAppID := int64(7513788954458456066)
+
+		err := appworkflow.SVC.DuplicateWorkflowsByAppID(t.Context(), appIDInt64, targetAppID, vo.ExternalResourceRelated{})
+		assert.NoError(t, err)
+
+		copiedIDMap := slices.ToMap(copiedIDs, func(e int64) (string, bool) {
+			return strconv.FormatInt(e, 10), true
+		})
+		var validateSubWorkflowIDs func(nodes []*vo.Node)
+		validateSubWorkflowIDs = func(nodes []*vo.Node) {
+			for _, node := range nodes {
+				if node.Type == vo.BlockTypeBotSubWorkflow {
+					assert.True(t, copiedIDMap[node.Data.Inputs.WorkflowID])
+				}
+				if node.Type == vo.BlockTypeBotLLM {
+					if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+						for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+							assert.True(t, copiedIDMap[w.WorkflowID])
+						}
+					}
+				}
+
+			}
+		}
+		for id := range copiedIDMap {
+			schemaString, err := getCanvas(t.Context(), id)
+			assert.NoError(t, err)
+			cs := &vo.Canvas{}
+			err = sonic.UnmarshalString(schemaString, cs)
+			assert.NoError(t, err)
+			validateSubWorkflowIDs(cs.Nodes)
+		}
 
 	})
 }

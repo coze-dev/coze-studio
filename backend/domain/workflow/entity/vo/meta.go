@@ -34,6 +34,18 @@ type Meta struct {
 	LatestPublishedVersion *string
 }
 
+type MetaCreate struct {
+	Name             string
+	Desc             string
+	IconURI          string
+	SpaceID          int64
+	CreatorID        int64
+	ContentType      ContentType
+	AppID            *int64
+	Mode             Mode
+	InitCanvasSchema string
+}
+
 type MetaUpdate struct {
 	Name                   *string
 	Desc                   *string
@@ -49,4 +61,5 @@ type MetaQuery struct {
 	Name          *string
 	PublishStatus *PublishStatus
 	AppID         *int64
+	LibOnly       bool
 }

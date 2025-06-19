@@ -350,7 +350,7 @@ func (cv *CanvasValidator) CheckSubWorkFlowTerminatePlanType(ctx context.Context
 	wfID2Canvas := make(map[int64]*vo.Canvas)
 
 	if len(draftIDs) > 0 {
-		draftWFs, err := workflow.GetRepository().MGetDraft(ctx, draftIDs)
+		draftWFs, err := workflow.GetRepository().MGetDrafts(ctx, draftIDs)
 		if err != nil {
 			return nil, err
 		}
@@ -486,12 +486,14 @@ func validateConnections(ctx context.Context, c *vo.Canvas) (issues []*Issue, er
 				if node.Data.Inputs.QA.OptionType == vo.QAOptionTypeDynamic {
 					selectorPorts[nodeID][fmt.Sprintf("branch_%v", 0)] = true
 				}
-
 			}
 		default:
 			if node.Data.Inputs != nil && node.Data.Inputs.SettingOnError != nil &&
 				node.Data.Inputs.SettingOnError.ProcessType != nil &&
 				*node.Data.Inputs.SettingOnError.ProcessType == vo.ErrorProcessTypeExceptionBranch {
+				if _, exists := selectorPorts[nodeID]; !exists {
+					selectorPorts[nodeID] = make(map[string]bool)
+				}
 				selectorPorts[nodeID]["branch_error"] = true
 				selectorPorts[nodeID]["default"] = true
 			} else {

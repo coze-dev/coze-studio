@@ -272,17 +272,17 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 			})
 		case run.ContentTypeFile:
 
-			resourceUrl, err := c.appContext.ImageX.GetResourceURL(ctx, item.Image.Key)
+			resourceUrl, err := c.appContext.TosClient.GetObjectUrl(ctx, item.File.FileKey)
 			if err != nil {
 				continue
 			}
-			mc[index].File.FileURL = resourceUrl.URL
+			mc[index].File.FileURL = resourceUrl
 
 			multiContents = append(multiContents, &message.InputMetaData{
 				Type: message.InputTypeFile,
 				FileData: []*message.FileData{
 					{
-						Url: resourceUrl.URL,
+						Url: resourceUrl,
 					},
 				},
 			})

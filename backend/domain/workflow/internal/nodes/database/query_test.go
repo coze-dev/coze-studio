@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/bytedance/mockey"
 	"go.uber.org/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database/databasemock"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 )
@@ -36,14 +36,17 @@ func (m *mockDsSelect) Query() func(ctx context.Context, request *database.Query
 }
 
 func TestDataset_Query(t *testing.T) {
+	defer mockey.Mock(execute.GetExeCtx).Return(&execute.Context{
+		RootCtx: execute.RootCtx{
+			ExeCfg: vo.ExecuteConfig{
+				Mode:     vo.ExecuteModeDebug,
+				Operator: 123,
+			},
+		},
+	}).Build().UnPatch()
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	ctx := context.Background()
-	ctx, err := execute.PrepareRootExeCtx(ctx, &entity.WorkflowBasic{}, 123, false, &entity.InterruptEvent{}, vo.ExecuteConfig{
-		Mode: vo.ExecuteModeDebug,
-	})
-	assert.NoError(t, err)
 	t.Run("string case", func(t *testing.T) {
 
 		t.Run("single", func(t *testing.T) {
@@ -97,7 +100,7 @@ func TestDataset_Query(t *testing.T) {
 				"SingleRight": 1,
 			}
 
-			result, err := ds.Query(ctx, in)
+			result, err := ds.Query(t.Context(), in)
 			assert.NoError(t, err)
 			assert.Equal(t, "1", result["outputList"].([]any)[0].(database.Object)["v1"])
 			assert.Equal(t, "2", result["outputList"].([]any)[0].(database.Object)["v2"])
@@ -162,7 +165,7 @@ func TestDataset_Query(t *testing.T) {
 				"Multi_1_Right": 2,
 			}
 
-			result, err := ds.Query(ctx, in)
+			result, err := ds.Query(t.Context(), in)
 			assert.NoError(t, err)
 			assert.NoError(t, err)
 			assert.Equal(t, "1", result["outputList"].([]any)[0].(database.Object)["v1"])
@@ -221,7 +224,7 @@ func TestDataset_Query(t *testing.T) {
 				"SingleRight": 1,
 			}
 
-			result, err := ds.Query(ctx, in)
+			result, err := ds.Query(t.Context(), in)
 			assert.NoError(t, err)
 			fmt.Println(result)
 			assert.Equal(t, nil, result["outputList"])
@@ -276,7 +279,7 @@ func TestDataset_Query(t *testing.T) {
 
 			in := map[string]any{"SingleRight": 1}
 
-			result, err := ds.Query(ctx, in)
+			result, err := ds.Query(t.Context(), in)
 			assert.NoError(t, err)
 			fmt.Println(result)
 			assert.Equal(t, int64(1), result["outputList"].([]any)[0].(database.Object)["v1"])
@@ -350,7 +353,7 @@ func TestDataset_Query(t *testing.T) {
 			"SingleRight": 1,
 		}
 
-		result, err := ds.Query(ctx, in)
+		result, err := ds.Query(t.Context(), in)
 		assert.NoError(t, err)
 
 		assert.Equal(t, int64(1), result["outputList"].([]any)[0].(database.Object)["v1"])
@@ -414,7 +417,7 @@ func TestDataset_Query(t *testing.T) {
 			"SingleRight": 1,
 		}
 
-		result, err := ds.Query(ctx, in)
+		result, err := ds.Query(t.Context(), in)
 		assert.NoError(t, err)
 		assert.Equal(t, result["outputList"].([]any)[0].(database.Object), database.Object{
 			"v1": "1",

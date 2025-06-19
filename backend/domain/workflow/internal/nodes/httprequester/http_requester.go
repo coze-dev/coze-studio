@@ -181,7 +181,7 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 		return nil, err
 	}
 
-	params := url.Values{}
+	params := u.Query()
 	for key, value := range req.Params {
 		params.Set(key, value)
 	}

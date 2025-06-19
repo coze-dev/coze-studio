@@ -43,6 +43,7 @@ func InitService(ctx context.Context, components *ServiceComponents) (*PluginApp
 	pluginSVC := service.NewService(&service.Components{
 		IDGen:      components.IDGen,
 		DB:         components.DB,
+		OSS:        components.OSS,
 		PluginRepo: pluginRepo,
 		ToolRepo:   toolRepo,
 	})

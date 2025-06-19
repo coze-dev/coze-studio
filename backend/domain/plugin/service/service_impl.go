@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -22,6 +23,7 @@ import (
 type Components struct {
 	IDGen      idgen.IDGenerator
 	DB         *gorm.DB
+	OSS        storage.Storage
 	PluginRepo repository.PluginRepository
 	ToolRepo   repository.ToolRepository
 }
@@ -29,6 +31,7 @@ type Components struct {
 func NewService(components *Components) PluginService {
 	return &pluginServiceImpl{
 		db:         components.DB,
+		oss:        components.OSS,
 		pluginRepo: components.PluginRepo,
 		toolRepo:   components.ToolRepo,
 	}
@@ -36,6 +39,7 @@ func NewService(components *Components) PluginService {
 
 type pluginServiceImpl struct {
 	db         *gorm.DB
+	oss        storage.Storage
 	pluginRepo repository.PluginRepository
 	toolRepo   repository.ToolRepository
 }

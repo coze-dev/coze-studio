@@ -13,6 +13,7 @@ type Database interface {
 	BindDatabase(ctx context.Context, req *database.BindDatabaseToAgentRequest) error
 	UnBindDatabase(ctx context.Context, req *database.UnBindDatabaseToAgentRequest) error
 	MGetDatabase(ctx context.Context, req *database.MGetDatabaseRequest) (*database.MGetDatabaseResponse, error)
+	GetAllDatabaseByAppID(ctx context.Context, req *database.GetAllDatabaseByAppIDRequest) (*database.GetAllDatabaseByAppIDResponse, error)
 }
 
 var defaultSVC Database

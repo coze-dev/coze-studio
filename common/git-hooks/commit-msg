@@ -24,6 +24,10 @@
 #   exit 1
 # fi
 
+if [ "$SKIP_COMMIT_MSG_HOOK" = "true" ]; then
+  exit 0
+fi
+
 # rebase 过程中分支名格式为 (no branch, rebasing chore/replace-rushtool)
 # 正常提交时分支名格式为 chore/replace-rushtool
 BRANCH_NAME=$(git branch | grep '*' | sed 's/* //')

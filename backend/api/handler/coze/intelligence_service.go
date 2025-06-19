@@ -351,3 +351,40 @@ func DraftProjectInnerTaskList(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// DraftProjectCopy .
+// @router /api/intelligence_api/draft_project/copy [POST]
+func DraftProjectCopy(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req project.DraftProjectCopyRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.ProjectID <= 0 {
+		invalidParamRequestResponse(c, "invalid project id")
+		return
+	}
+	if req.ToSpaceID <= 0 {
+		invalidParamRequestResponse(c, "invalid to space id")
+		return
+	}
+	if req.Name == "" || len(req.Name) > 256 {
+		invalidParamRequestResponse(c, "invalid name")
+		return
+	}
+	if req.IconURI == "" || len(req.IconURI) > 512 {
+		invalidParamRequestResponse(c, "invalid icon uri")
+		return
+	}
+
+	resp, err := appApplication.APPApplicationSVC.DraftProjectCopy(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

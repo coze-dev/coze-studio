@@ -16,17 +16,23 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
-func DesignateOptions(ctx context.Context,
-	wb *entity.WorkflowBasic,
-	workflowSC *WorkflowSchema,
-	executeID int64,
-	eventChan chan *execute.Event,
-	resumedEvent *entity.InterruptEvent,
-	sw *schema.StreamWriter[*entity.Message],
-	exeCfg vo.ExecuteConfig) ([]einoCompose.Option, error) {
+func (r *WorkflowRunner) designateOptions(ctx context.Context) (context.Context, []einoCompose.Option, error) {
+	var (
+		wb           = r.basic
+		exeCfg       = r.config
+		executeID    = r.executeID
+		workflowSC   = r.schema
+		eventChan    = r.eventChan
+		resumedEvent = r.interruptEvent
+		sw           = r.streamWriter
+	)
+
+	const tokenCallbackKey = "token_callback_key"
+
 	if wb.AppID != nil && exeCfg.AppID == nil {
 		exeCfg.AppID = wb.AppID
 	}
@@ -56,21 +62,18 @@ func DesignateOptions(ctx context.Context,
 		if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
 			opts = append(opts, nodeOpt)
 			if ns.Type == entity.NodeTypeSubWorkflow {
-				subOpts, err := designateOptionsForSubWorkflow(ctx,
+				subOpts, err := r.designateOptionsForSubWorkflow(ctx,
 					rootHandler.(*execute.WorkflowHandler),
 					ns,
-					eventChan,
-					resumedEvent,
-					sw,
 					string(key))
 				if err != nil {
-					return nil, err
+					return ctx, nil, err
 				}
 				opts = append(opts, subOpts...)
 			} else if ns.Type == entity.NodeTypeLLM {
 				llmNodeOpts, err := llmToolCallbackOptions(ctx, ns, eventChan, sw)
 				if err != nil {
-					return nil, err
+					return ctx, nil, err
 				}
 
 				opts = append(opts, llmNodeOpts...)
@@ -79,15 +82,12 @@ func DesignateOptions(ctx context.Context,
 			parent := workflowSC.GetAllNodes()[parent]
 			opts = append(opts, WrapOpt(nodeOpt, parent.Key))
 			if ns.Type == entity.NodeTypeSubWorkflow {
-				subOpts, err := designateOptionsForSubWorkflow(ctx,
+				subOpts, err := r.designateOptionsForSubWorkflow(ctx,
 					rootHandler.(*execute.WorkflowHandler),
 					ns,
-					eventChan,
-					resumedEvent,
-					sw,
 					string(key))
 				if err != nil {
-					return nil, err
+					return ctx, nil, err
 				}
 				for _, subO := range subOpts {
 					opts = append(opts, WrapOpt(subO, parent.Key))
@@ -95,7 +95,7 @@ func DesignateOptions(ctx context.Context,
 			} else if ns.Type == entity.NodeTypeLLM {
 				llmNodeOpts, err := llmToolCallbackOptions(ctx, ns, eventChan, sw)
 				if err != nil {
-					return nil, err
+					return ctx, nil, err
 				}
 				for _, subO := range llmNodeOpts {
 					opts = append(opts, WrapOpt(subO, parent.Key))
@@ -108,9 +108,13 @@ func DesignateOptions(ctx context.Context,
 		opts = append(opts, einoCompose.WithCheckPointID(strconv.FormatInt(executeID, 10)))
 	}
 
-	opts = append(opts, einoCompose.WithCallbacks(execute.GetTokenCallbackHandler()))
+	if !ctxcache.HasKey(ctx, tokenCallbackKey) {
+		opts = append(opts, einoCompose.WithCallbacks(execute.GetTokenCallbackHandler()))
+		ctx = ctxcache.Init(ctx)
+		ctxcache.Store(ctx, tokenCallbackKey, true)
+	}
 
-	return opts, nil
+	return ctx, opts, nil
 }
 
 func nodeCallbackOption(key vo.NodeKey, name string, eventChan chan *execute.Event, resumeEvent *entity.InterruptEvent,
@@ -126,13 +130,15 @@ func WrapOptWithIndex(opt einoCompose.Option, parentNodeKey vo.NodeKey, index in
 	return einoCompose.WithLambdaOption(nodes.WithOptsForIndexed(index, opt)).DesignateNode(string(parentNodeKey))
 }
 
-func designateOptionsForSubWorkflow(ctx context.Context,
+func (r *WorkflowRunner) designateOptionsForSubWorkflow(ctx context.Context,
 	parentHandler *execute.WorkflowHandler,
 	ns *NodeSchema,
-	eventChan chan *execute.Event,
-	resumeEvent *entity.InterruptEvent,
-	sw *schema.StreamWriter[*entity.Message],
 	pathPrefix ...string) (opts []einoCompose.Option, err error) {
+	var (
+		resumeEvent = r.interruptEvent
+		eventChan   = r.eventChan
+		sw          = r.streamWriter
+	)
 	subHandler := execute.NewSubWorkflowHandler(
 		parentHandler,
 		ns.SubWorkflowBasic,
@@ -158,12 +164,9 @@ func designateOptionsForSubWorkflow(ctx context.Context,
 		if parent, ok := workflowSC.Hierarchy[key]; !ok { // top level nodes, just add the node handler
 			opts = append(opts, WrapOpt(nodeOpt, ns.Key))
 			if subNS.Type == entity.NodeTypeSubWorkflow {
-				subOpts, err := designateOptionsForSubWorkflow(ctx,
+				subOpts, err := r.designateOptionsForSubWorkflow(ctx,
 					subHandler.(*execute.WorkflowHandler),
 					subNS,
-					eventChan,
-					resumeEvent,
-					sw,
 					fullPath...)
 				if err != nil {
 					return nil, err
@@ -184,12 +187,9 @@ func designateOptionsForSubWorkflow(ctx context.Context,
 			parent := workflowSC.GetAllNodes()[parent]
 			opts = append(opts, WrapOpt(WrapOpt(nodeOpt, parent.Key), ns.Key))
 			if subNS.Type == entity.NodeTypeSubWorkflow {
-				subOpts, err := designateOptionsForSubWorkflow(ctx,
+				subOpts, err := r.designateOptionsForSubWorkflow(ctx,
 					subHandler.(*execute.WorkflowHandler),
 					subNS,
-					eventChan,
-					resumeEvent,
-					sw,
 					fullPath...)
 				if err != nil {
 					return nil, err

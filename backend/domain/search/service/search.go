@@ -38,6 +38,7 @@ const (
 	fieldOfID             = "id"
 	fieldOfAPPID          = "app_id"
 	fieldOfName           = "name"
+	fieldOfNameRaw        = "name.raw"
 	fieldOfHasPublished   = "has_published"
 	fieldOfStatus         = "status"
 	fieldOfType           = "type"
@@ -87,7 +88,7 @@ func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.Searc
 		mustQueries = append(mustQueries,
 			types.Query{
 				Wildcard: map[string]types.WildcardQuery{
-					fieldOfName: {
+					fieldOfNameRaw: {
 						Value:           ptr.Of("*" + req.Name + "*"),
 						CaseInsensitive: ptr.Of(true), // 忽略大小写
 					},
@@ -363,7 +364,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 		mustQueries = append(mustQueries,
 			types.Query{
 				Wildcard: map[string]types.WildcardQuery{
-					fieldOfName: {
+					fieldOfNameRaw: {
 						Value:           ptr.Of("*" + req.Name + "*"),
 						CaseInsensitive: ptr.Of(true), // 忽略大小写
 					},
