@@ -750,7 +750,7 @@ func copyDatabase(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.
 	}
 
 	var suffix *string
-	if req.Scene == resourceCommon.ResourceCopyScene_CopyProject {
+	if req.Scene == resourceCommon.ResourceCopyScene_CopyProject || req.Scene == resourceCommon.ResourceCopyScene_CopyResourceFromLibrary {
 		suffix = ptr.Of("")
 	}
 
