@@ -362,8 +362,7 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 		if end > len(sliceIDs) {
 			end = len(sliceIDs)
 		}
-		sliceIDs := sliceIDs[i:end]
-		sliceInfo, err := k.sliceRepo.MGetSlices(ctx, sliceIDs)
+		sliceInfo, err := k.sliceRepo.MGetSlices(ctx, sliceIDs[i:end])
 		if err != nil {
 			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 		}
@@ -440,7 +439,7 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 			}
 
 			if _, err = ss.Store(ctx, ssDocs,
-				searchstore.WithPartition(strconv.FormatInt(doc.ID, 10)),
+				searchstore.WithPartition(strconv.FormatInt(newDoc.ID, 10)),
 				searchstore.WithIndexingFields(indexingFields),
 			); err != nil {
 				return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", err.Error()))

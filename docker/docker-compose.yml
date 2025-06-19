@@ -177,7 +177,7 @@ services:
     privileged: true
     environment:
       # Add Java certificate trust configuration
-      - ES_JAVA_OPTS=-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djavax.net.ssl.trustAll=true
+      - ES_JAVA_OPTS=-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djavax.net.ssl.trustAll=true -Xms4096m -Xmx4096m
     ports:
       - '9200:9200'
     volumes:
