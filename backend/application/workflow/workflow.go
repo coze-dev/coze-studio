@@ -667,6 +667,8 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 	}
 
 	pluginMap := make(map[int64]*vo.PluginEntity)
+	pluginToolMap := make(map[int64]int64)
+
 	if len(ds.PluginIDs) > 0 {
 		for idx := range ds.PluginIDs {
 			id := ds.PluginIDs[idx]
@@ -682,6 +684,9 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 			pluginMap[id] = &vo.PluginEntity{
 				PluginID:      pInfo.ID,
 				PluginVersion: pInfo.Version,
+			}
+			for o, n := range response.Tools {
+				pluginToolMap[o] = n.ID
 			}
 
 		}
@@ -721,9 +726,10 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 	}
 
 	relatedWorkflows, vIssues, err := GetWorkflowDomainSVC().CopyWorkflowFromAppToLibrary(ctx, workflowID, appID, vo.ExternalResourceRelated{
-		PluginMap:    pluginMap,
-		KnowledgeMap: relatedKnowledgeMap,
-		DatabaseMap:  relatedDatabaseMap,
+		PluginMap:     pluginMap,
+		PluginToolMap: pluginToolMap,
+		KnowledgeMap:  relatedKnowledgeMap,
+		DatabaseMap:   relatedDatabaseMap,
 	})
 	if err != nil {
 		return 0, nil, err
@@ -741,7 +747,27 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 	return copiedWf.ID, vIssues, nil
 }
 
-func (w *ApplicationService) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targetAppID int64, externalResourceRelated vo.ExternalResourceRelated) error {
+type ExternalResource struct {
+	PluginMap     map[int64]int64
+	PluginToolMap map[int64]int64
+	KnowledgeMap  map[int64]int64
+	DatabaseMap   map[int64]int64
+}
+
+func (w *ApplicationService) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targetAppID int64, externalResource ExternalResource) error {
+	pluginMap := make(map[int64]*vo.PluginEntity)
+	for o, n := range externalResource.PluginMap {
+		pluginMap[o] = &vo.PluginEntity{
+			PluginID: n,
+		}
+	}
+	externalResourceRelated := vo.ExternalResourceRelated{
+		PluginMap:     pluginMap,
+		PluginToolMap: externalResource.PluginToolMap,
+		KnowledgeMap:  externalResource.KnowledgeMap,
+		DatabaseMap:   externalResource.DatabaseMap,
+	}
+
 	return GetWorkflowDomainSVC().DuplicateWorkflowsByAppID(ctx, sourceAppID, targetAppID, externalResourceRelated)
 
 }

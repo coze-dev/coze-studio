@@ -4256,7 +4256,7 @@ func TestDuplicateWorkflowsByAppID(t *testing.T) {
 		r.load("copy_to_app/main.json", withID(7515027091302121472), withProjectID(appIDInt64))
 		targetAppID := int64(7513788954458456066)
 
-		err := appworkflow.SVC.DuplicateWorkflowsByAppID(t.Context(), appIDInt64, targetAppID, vo.ExternalResourceRelated{})
+		err := appworkflow.SVC.DuplicateWorkflowsByAppID(t.Context(), appIDInt64, targetAppID, appworkflow.ExternalResource{})
 		assert.NoError(t, err)
 
 		copiedIDMap := slices.ToMap(copiedIDs, func(e int64) (string, bool) {

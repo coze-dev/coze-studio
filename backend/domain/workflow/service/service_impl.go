@@ -1567,11 +1567,23 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 			}
 
 			if refPlugin, ok := related.PluginMap[pID]; ok {
-				pluginIDParam.Input.Value.Content = refPlugin.PluginID
+				pluginIDParam.Input.Value.Content = strconv.FormatInt(refPlugin.PluginID, 10)
 				if refPlugin.PluginVersion != nil {
 					pluginVersionParam.Input.Value.Content = *refPlugin.PluginVersion
 				}
+			}
 
+			apiIDParam, ok := apiParams["apiID"]
+			if !ok {
+				return fmt.Errorf("apiID param is not found")
+			}
+			apiID, err := strconv.ParseInt(apiIDParam.Input.Value.Content.(string), 10, 64)
+			if err != nil {
+				return err
+			}
+
+			if refApiID, ok := related.PluginToolMap[apiID]; ok {
+				apiIDParam.Input.Value.Content = strconv.FormatInt(refApiID, 10)
 			}
 
 		case vo.BlockTypeBotLLM:

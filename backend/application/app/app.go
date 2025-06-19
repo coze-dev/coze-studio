@@ -1133,21 +1133,14 @@ func (a *APPApplicationService) duplicateDraftAPPResources(ctx context.Context, 
 		return err
 	}
 
-	taskGroup = taskgroup.NewTaskGroup(ctx, 5)
-
-	for _, res := range resources {
-		if res.ResType != entity.ResourceTypeOfWorkflow {
-			continue
-		}
-
-		//taskGroup.Go(func() error {
-		//	panic("implement me")
-		//})
-	}
-
-	err = taskGroup.Wait()
+	err = workflow.SVC.DuplicateWorkflowsByAppID(ctx, req.GetProjectID(), newAppID, workflow.ExternalResource{
+		PluginMap:     copyPluginIDMap,
+		PluginToolMap: copyToolIDMap,
+		DatabaseMap:   copyDatabaseIDMap,
+		KnowledgeMap:  copyKnowledgeIDMap,
+	})
 	if err != nil {
-		return err
+		return errorx.Wrapf(err, "DuplicateWorkflowsByAppID failed, appID=%d", req.GetProjectID())
 	}
 
 	return nil
