@@ -45,14 +45,13 @@ func NewVariableAggregator(_ context.Context, cfg *Config) (*VariableAggregator,
 	if cfg == nil {
 		return nil, errors.New("config is required")
 	}
+	if cfg.MergeStrategy != FirstNotNullValue {
+		return nil, fmt.Errorf("merge strategy not supported: %v", cfg.MergeStrategy)
+	}
 	return &VariableAggregator{config: cfg}, nil
 }
 
-func (v *VariableAggregator) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
-	if v.config.MergeStrategy != FirstNotNullValue {
-		return nil, fmt.Errorf("merge strategy not supported: %v", v.config.MergeStrategy)
-	}
-
+func (v *VariableAggregator) Invoke(ctx context.Context, input map[string]any) (_ map[string]any, err error) {
 	in, err := inputConverter(input)
 	if err != nil {
 		return nil, err
@@ -70,67 +69,84 @@ func (v *VariableAggregator) Invoke(ctx context.Context, input map[string]any) (
 				}
 			}
 		}
+
+		if _, ok := result[group]; !ok {
+			groupToChoice[group] = -1
+		}
 	}
 
 	_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.DynamicStreamContainer) error {
-		state.SaveDynamicChoice(v.config.NodeKey, groupToChoice) // TODO: what if the group's all choices are nil?
+		state.SaveDynamicChoice(v.config.NodeKey, groupToChoice)
 		return nil
 	})
+
+	ctxcache.Store(ctx, groupChoiceTypeCacheKey, map[string]nodes.FieldStreamType{}) // none of the choices are stream
 
 	return result, nil
 }
 
+const (
+	resolvedSourcesCacheKey = "resolved_sources"
+	groupChoiceTypeCacheKey = "group_choice_type"
+)
+
 // Transform picks the first non-nil value from each group from a stream of map[group]items.
-func (v *VariableAggregator) Transform(ctx context.Context, input *schema.StreamReader[map[string]any]) (*schema.StreamReader[map[string]any], error) {
-	if v.config.MergeStrategy != FirstNotNullValue {
-		input.Close()
-		return nil, fmt.Errorf("merge strategy not supported: %v", v.config.MergeStrategy)
-	}
-
-	groupToSkipped, err := v.getGroupToSkipped(ctx)
-	if err != nil {
-		return nil, err
-	}
-
+func (v *VariableAggregator) Transform(ctx context.Context, input *schema.StreamReader[map[string]any]) (
+	_ *schema.StreamReader[map[string]any], err error) {
 	inStream := streamInputConverter(input)
 
-	resolvedSources, err := nodes.ResolveStreamSources(ctx, v.config.FullSources)
-	if err != nil {
-		return nil, err
+	resolvedSources, ok := ctxcache.Get[map[string]*nodes.SourceInfo](ctx, resolvedSourcesCacheKey)
+	if !ok {
+		panic("unable to get resolvesSources from ctx cache.")
 	}
-
-	// goal: find the first non-nil element in each group. 'First' means the smallest index in each group's slice.
-	// We have the information that some of the elements in each group are absolutely not present,
-	// because the nodes they come from are not executed.
-	// So we need to find the first non-nil element in each group, and skip the elements that are not present.
-	// This we have an 'early stop' strategy for each group, because we know beforehand the smallest possible index of each group.
-	// when the smallest possible index is already found and not nil, we can stop the iteration for this group.
-	// Note: if an element is a stream, and the node it comes from is executed, it will ALWAYS has at least one chunk in the stream.
-	// This chunk will be KeyIsFinished.
 
 	groupToItems := make(map[string][]any)
 	groupToChoice := make(map[string]int)
-	groupToCurrentIndex := make(map[string]int)
 	type skipped struct{}
 	type null struct{}
 	type stream struct{}
-	for group, length := range v.config.GroupLen {
-		groupToItems[group] = make([]any, length)
-		for i := 0; i < length; i++ {
-			skip := false
-			if _, ok := groupToSkipped[group]; ok {
-				if _, ok := groupToSkipped[group][i]; ok {
-					groupToItems[group][i] = skipped{}
-					skip = true
+
+	defer func() {
+		if err == nil {
+			groupChoiceToStreamType := map[string]nodes.FieldStreamType{}
+			for group, choice := range groupToChoice {
+				if choice != -1 {
+					item := groupToItems[group][choice]
+					if _, ok := item.(stream); ok {
+						groupChoiceToStreamType[group] = nodes.FieldIsStream
+					}
 				}
 			}
 
-			if !skip {
-				if resolvedSources[group].SubSources[strconv.Itoa(i)].FieldIsStream == nodes.FieldIsStream {
-					groupToItems[group][i] = stream{}
-					if _, ok := groupToCurrentIndex[group]; !ok {
-						groupToCurrentIndex[group] = i
-					}
+			if err == nil { // store group -> field type for use in callbacks.OnEnd
+				ctxcache.Store(ctx, groupChoiceTypeCacheKey, groupChoiceToStreamType)
+			}
+		}
+	}()
+
+	// goal: find the first non-nil element in each group. 'First' means the smallest index in each group's slice.
+	// For a stream element, if the stream source is not skipped, then this stream element is non-nil,
+	// even if there's no content in the stream.
+	// steps:
+	// - for each group, iterate over each element in order, check the element's stream type
+	// - if an element is skipped, move on
+	// - if an element is stream, pick it
+	// - if an element is not stream, actually receive from the stream to check if it's non-nil
+
+	groupToCurrentIndex := make(map[string]int) // the currently known smallest index that is non-nil for each group
+	for group, length := range v.config.GroupLen {
+		groupToItems[group] = make([]any, length)
+		groupToCurrentIndex[group] = math.MaxInt
+		for i := 0; i < length; i++ {
+			fType := resolvedSources[group].SubSources[strconv.Itoa(i)].FieldType
+			if fType == nodes.FieldSkipped {
+				groupToItems[group][i] = skipped{}
+				continue
+			}
+			if fType == nodes.FieldIsStream {
+				groupToItems[group][i] = stream{}
+				if ci, _ := groupToCurrentIndex[group]; i < ci {
+					groupToCurrentIndex[group] = i
 				}
 			}
 		}
@@ -143,14 +159,14 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 			}
 
 			_, ok := groupToItems[group][i].(stream)
-			if ok {
+			if ok { // if none of the elements before this one is none-stream, pick this first stream
 				groupToChoice[group] = i
 				break
 			}
 		}
 
 		if _, ok := groupToChoice[group]; !ok && !hasUndecided {
-			groupToChoice[group] = -1 // this group won't have any non-nil value
+			groupToChoice[group] = -1 // all of this group's elements are skipped, won't have any non-nil ones
 		}
 	}
 
@@ -166,20 +182,20 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 	}
 
 	alreadyDone := allDone()
-	if alreadyDone {
+	if alreadyDone { // all groups have made their choices, no need to actually read input streams
 		result := make(map[string]any, len(v.config.GroupLen))
 		allSkip := true
 		for group := range groupToChoice {
 			choice := groupToChoice[group]
 			if choice == -1 {
-				result[group] = nil // all groups are nil
+				result[group] = nil // all elements of this group are skipped
 			} else {
 				result[group] = choice
 				allSkip = false
 			}
 		}
 
-		if allSkip {
+		if allSkip { // no need to convert input streams for the output, because all groups are skipped
 			_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.DynamicStreamContainer) error {
 				state.SaveDynamicChoice(v.config.NodeKey, groupToChoice)
 				return nil
@@ -210,21 +226,17 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 					continue // already made the decision for the group.
 				}
 
-				currentIndex, ok := groupToCurrentIndex[group]
-				if !ok {
-					currentIndex = math.MaxInt
-				}
-
 				for i := range items {
-					if i >= currentIndex {
+					if i >= groupToCurrentIndex[group] {
 						continue
 					}
 
 					existing := groupToItems[group][i]
-					if existing != nil {
+					if existing != nil { // belongs to a stream element
 						continue
 					}
 
+					// now the item is always a non-stream element
 					item := items[i]
 					if item == nil {
 						groupToItems[group][i] = null{}
@@ -371,19 +383,9 @@ func (v *VariableAggregator) Init(ctx context.Context) (context.Context, error) 
 	if err != nil {
 		return nil, err
 	}
-	ctxcache.Store(ctx, "resolved_sources", resolvedSources)
 
-	var dynamicStreamType map[string]nodes.FieldStreamType
-	e := compose.ProcessState(ctx, func(ctx context.Context, state nodes.DynamicStreamContainer) error {
-		var e1 error
-		dynamicStreamType, e1 = state.GetAllDynamicStreamTypes(v.config.NodeKey)
-		return e1
-	})
-	if e != nil {
-		return nil, e
-	}
-
-	ctxcache.Store(ctx, "dynamic_stream_type", dynamicStreamType)
+	// need this info for callbacks.OnStart, so we put it in cache within Init()
+	ctxcache.Store(ctx, resolvedSourcesCacheKey, resolvedSources)
 
 	return ctx, nil
 }
@@ -393,9 +395,9 @@ type streamMarkerType string
 const streamMarker streamMarkerType = "<Stream Data...>"
 
 func (v *VariableAggregator) ToCallbackInput(ctx context.Context, input map[string]any) (map[string]any, error) {
-	resolvedSources, ok := ctxcache.Get[map[string]*nodes.SourceInfo](ctx, "resolved_sources")
+	resolvedSources, ok := ctxcache.Get[map[string]*nodes.SourceInfo](ctx, resolvedSourcesCacheKey)
 	if !ok {
-		return nil, errors.New("resolved_sources not found")
+		panic("unable to get resolved_sources from ctx cache")
 	}
 
 	in, err := inputConverter(input)
@@ -412,7 +414,9 @@ func (v *VariableAggregator) ToCallbackInput(ctx context.Context, input map[stri
 		for index := range vars {
 			orderedVars[index] = vars[index]
 			if len(resolvedSources) > 0 {
-				if resolvedSources[groupName].SubSources[strconv.Itoa(index)].FieldIsStream == nodes.FieldIsStream {
+				if resolvedSources[groupName].SubSources[strconv.Itoa(index)].FieldType == nodes.FieldIsStream {
+					// replace the streams with streamMarker,
+					// because we won't read, save to execution history, or display these streams to user
 					orderedVars[index] = streamMarker
 				}
 			}
@@ -435,10 +439,11 @@ func (v *VariableAggregator) ToCallbackInput(ctx context.Context, input map[stri
 }
 
 func (v *VariableAggregator) ToCallbackOutput(ctx context.Context, output map[string]any) (*nodes.StructuredCallbackOutput, error) {
-	dynamicStreamType, ok := ctxcache.Get[map[string]nodes.FieldStreamType](ctx, "dynamic_stream_type")
+	dynamicStreamType, ok := ctxcache.Get[map[string]nodes.FieldStreamType](ctx, groupChoiceTypeCacheKey)
 	if !ok {
-		return nil, errors.New("dynamic_stream_type not found")
+		panic("unable to get dynamic stream types from ctx cache")
 	}
+
 	if len(dynamicStreamType) == 0 {
 		return &nodes.StructuredCallbackOutput{
 			Output:    output,
@@ -456,37 +461,6 @@ func (v *VariableAggregator) ToCallbackOutput(ctx context.Context, output map[st
 		Output:    newOut,
 		RawOutput: newOut,
 	}, nil
-}
-
-type NodeExecuteStatusAware interface {
-	NodeExecuted(key vo.NodeKey) bool
-}
-
-func (v *VariableAggregator) getGroupToSkipped(ctx context.Context) (groupToSkipped map[string]map[int]bool, err error) {
-	groupToSkipped = map[string]map[int]bool{}
-
-	err = compose.ProcessState(ctx, func(ctx context.Context, sa NodeExecuteStatusAware) error {
-		for _, fieldInfo := range v.config.InputSources {
-			if fieldInfo.Source.Ref != nil && fieldInfo.Source.Ref.VariableType == nil {
-				fromNodeKey := fieldInfo.Source.Ref.FromNodeKey
-				if !sa.NodeExecuted(fromNodeKey) {
-					group := fieldInfo.Path[0]
-					indexStr := fieldInfo.Path[1]
-					index, err := strconv.Atoi(indexStr)
-					if err != nil {
-						return err
-					}
-					if _, ok := groupToSkipped[group]; !ok {
-						groupToSkipped[group] = map[int]bool{}
-					}
-					groupToSkipped[group][index] = true
-				}
-			}
-		}
-		return nil
-	})
-
-	return groupToSkipped, nil
 }
 
 func concatVACallbackInputs(vs [][]vaCallbackInput) ([]vaCallbackInput, error) {

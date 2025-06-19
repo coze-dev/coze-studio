@@ -138,15 +138,13 @@ type KnowledgeRecallConfig struct {
 }
 
 type Config struct {
-	ChatModel           model.BaseChatModel
-	Tools               []tool.BaseTool
-	SystemPrompt        string
-	UserPrompt          string
-	OutputFormat        Format
-	OutputFields        map[string]*vo.TypeInfo
-	ToolsReturnDirectly map[string]bool
-	// TODO: needs to support descriptions for output fields
-
+	ChatModel             model.BaseChatModel
+	Tools                 []tool.BaseTool
+	SystemPrompt          string
+	UserPrompt            string
+	OutputFormat          Format
+	OutputFields          map[string]*vo.TypeInfo
+	ToolsReturnDirectly   map[string]bool
 	KnowledgeRecallConfig *KnowledgeRecallConfig
 }
 

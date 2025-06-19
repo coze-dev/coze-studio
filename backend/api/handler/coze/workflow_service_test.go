@@ -2235,7 +2235,6 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 		})
 	})
 }
-
 func TestAggregateStreamVariables(t *testing.T) {
 	mockey.PatchConvey("test aggregate stream variables", t, func() {
 		r := newWfTestRunner(t)
