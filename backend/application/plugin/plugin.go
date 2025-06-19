@@ -1062,7 +1062,7 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 
 	resp = &pluginAPI.DebugAPIResponse{
 		Success: false,
-		RawReq:  req.Parameters,
+		RawReq:  "{}",
 		RawResp: "{}",
 		Resp:    "{}",
 	}
@@ -1091,7 +1091,7 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 	resp = &pluginAPI.DebugAPIResponse{
 		Success:        true,
 		Resp:           res.TrimmedResp,
-		RawReq:         req.Parameters,
+		RawReq:         res.Request,
 		RawResp:        res.RawResp,
 		ResponseParams: []*common.APIParameter{},
 	}

@@ -109,6 +109,7 @@ type ExecuteToolRequest struct {
 
 type ExecuteToolResponse struct {
 	Tool        *ToolInfo
+	Request     string
 	TrimmedResp string
 	RawResp     string
 }

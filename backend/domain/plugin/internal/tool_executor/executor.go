@@ -18,11 +18,13 @@ import (
 
 	openauthModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/openauth"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/variables"
 	"code.byted.org/flow/opencoze/backend/api/model/project_memory"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossopenauth"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossvariables"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -41,16 +43,22 @@ type ExecutorConfig struct {
 
 	ProjectInfo *entity.ProjectInfo
 
+	ExecScene                  plugin.ExecuteScene
 	InvalidRespProcessStrategy plugin.InvalidResponseProcessStrategy
+
+	OSS storage.Storage
 }
 
 type ExecuteResponse struct {
+	Request     string
 	TrimmedResp string
 	RawResp     string
 }
 
 type executorImpl struct {
-	config *ExecutorConfig
+	config    *ExecutorConfig
+	oss       storage.Storage
+	execScene plugin.ExecuteScene
 }
 
 var (
@@ -64,7 +72,9 @@ func NewExecutor(config *ExecutorConfig) Executor {
 	})
 
 	return &executorImpl{
-		config: config,
+		config:    config,
+		oss:       config.OSS,
+		execScene: config.ExecScene,
 	}
 }
 
@@ -75,7 +85,17 @@ func (t *executorImpl) Execute(ctx context.Context, argumentsInJson string) (res
 		return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KV(errno.PluginMsgKey, "argumentsInJson is required"))
 	}
 
-	httpReq, err := t.buildHTTPRequest(ctx, argumentsInJson)
+	args, err := t.preprocessArgumentsInJson(ctx, argumentsInJson)
+	if err != nil {
+		return nil, err
+	}
+
+	requestStr, err := sonic.MarshalString(args)
+	if err != nil {
+		return nil, err
+	}
+
+	httpReq, err := t.buildHTTPRequest(ctx, args)
 	if err != nil {
 		return nil, err
 	}
@@ -115,6 +135,7 @@ func (t *executorImpl) Execute(ctx context.Context, argumentsInJson string) (res
 	rawResp := string(httpResp.Body())
 	if rawResp == "" {
 		return &ExecuteResponse{
+			Request:     requestStr,
 			TrimmedResp: defaultResp,
 			RawResp:     defaultResp,
 		}, nil
@@ -129,17 +150,77 @@ func (t *executorImpl) Execute(ctx context.Context, argumentsInJson string) (res
 	}
 
 	return &ExecuteResponse{
+		Request:     requestStr,
 		TrimmedResp: trimmedResp,
 		RawResp:     rawResp,
 	}, nil
 }
 
-func (t *executorImpl) buildHTTPRequest(ctx context.Context, argumentsInJson string) (httpReq *http.Request, err error) {
-	argMaps, err := t.prepareArguments(ctx, argumentsInJson)
+func (t *executorImpl) preprocessArgumentsInJson(ctx context.Context, argumentsInJson string) (newArgs map[string]any, err error) {
+	args, err := t.prepareArguments(ctx, argumentsInJson)
 	if err != nil {
 		return nil, err
 	}
 
+	paramRefs := t.config.Tool.Operation.Parameters
+	for _, paramRef := range paramRefs {
+		paramVal := paramRef.Value
+		if paramVal.In == openapi3.ParameterInCookie {
+			continue
+		}
+
+		scVal := paramVal.Schema.Value
+		typ := scVal.Type
+		if typ == openapi3.TypeObject || typ == openapi3.TypeArray {
+			return nil, fmt.Errorf("the '%s' parameter '%s' does not support object or array type", paramVal.In, paramVal.Name)
+		}
+
+		argValue, ok := args[paramVal.Name]
+		if !ok {
+			continue
+		}
+
+		argValue, err := t.convertURItoURL(ctx, argValue, scVal)
+		if err != nil {
+			return nil, err
+		}
+
+		args[paramVal.Name] = argValue
+	}
+
+	_, bodySchema := getReqBodySchema(t.config.Tool.Operation)
+	if bodySchema == nil || bodySchema.Value == nil {
+		return args, nil
+	}
+
+	// body 限制为 object 类型
+	if bodySchema.Value.Type != openapi3.TypeObject {
+		return nil, fmt.Errorf("[preprocessArgumentsInJson] requset body is not object, type=%s",
+			bodySchema.Value.Type)
+	}
+
+	if len(bodySchema.Value.Properties) == 0 {
+		return args, nil
+	}
+
+	for paramName, prop := range bodySchema.Value.Properties {
+		argValue, ok := args[paramName]
+		if !ok {
+			continue
+		}
+
+		argValue, err := t.convertURItoURL(ctx, argValue, prop.Value)
+		if err != nil {
+			return nil, err
+		}
+
+		args[paramName] = argValue
+	}
+
+	return args, nil
+}
+
+func (t *executorImpl) buildHTTPRequest(ctx context.Context, argMaps map[string]any) (httpReq *http.Request, err error) {
 	tool := t.config.Tool
 	rawURL := t.config.Plugin.GetServerURL() + tool.GetSubURL()
 
@@ -179,7 +260,7 @@ func (t *executorImpl) buildHTTPRequest(ctx context.Context, argumentsInJson str
 		bodyArgs[k] = v
 	}
 
-	bodyBytes, contentType, err := t.buildHTTPRequestBody(ctx, tool.Operation, bodyArgs)
+	bodyBytes, contentType, err := t.buildRequestBody(ctx, tool.Operation, bodyArgs)
 	if err != nil {
 		return nil, err
 	}
@@ -256,6 +337,11 @@ func (t *executorImpl) getLocationArguments(ctx context.Context, args map[string
 			}
 		}
 
+		argValue, err := t.convertURItoURL(ctx, argValue, scVal)
+		if err != nil {
+			return nil, err
+		}
+
 		v := valueWithSchema{
 			argValue:    argValue,
 			paramSchema: paramVal,
@@ -278,6 +364,42 @@ func (t *executorImpl) getLocationArguments(ctx context.Context, args map[string
 	}
 
 	return locArgs, nil
+}
+
+func (t *executorImpl) convertURItoURL(ctx context.Context, arg any, scVal *openapi3.Schema) (newArg any, err error) {
+	if t.execScene != model.ExecSceneOfToolDebug {
+		return arg, nil
+	}
+
+	at, ok := scVal.Extensions[plugin.APISchemaExtendAssistType]
+	if !ok || at == nil {
+		return arg, nil
+	}
+
+	_at, ok := at.(string)
+	if !ok {
+		return arg, nil
+	}
+
+	if !model.IsValidAPIAssistType(model.APIFileAssistType(_at)) {
+		return arg, nil
+	}
+
+	uri, ok := arg.(string)
+	if !ok {
+		return arg, nil
+	}
+
+	if strings.HasPrefix(uri, "http://") || strings.HasPrefix(uri, "https://") {
+		return arg, nil
+	}
+
+	newArg, err = t.oss.GetObjectUrl(ctx, uri)
+	if err != nil {
+		return nil, fmt.Errorf("GetObjectUrl failed, uri=%s, err=%v", uri, err)
+	}
+
+	return newArg, nil
 }
 
 func (t *executorImpl) getDefaultValue(ctx context.Context, scVal *openapi3.Schema) (any, error) {
@@ -686,77 +808,17 @@ func (l *locationArguments) buildHTTPRequestHeader(_ context.Context) (http.Head
 	return header, nil
 }
 
-func (t *executorImpl) buildHTTPRequestBody(ctx context.Context, op *plugin.Openapi3Operation, bodyArgs map[string]any) (body []byte, contentType string, err error) {
+func (t *executorImpl) buildRequestBody(ctx context.Context, op *plugin.Openapi3Operation, bodyArgs map[string]any) (body []byte, contentType string, err error) {
 	contentType, bodySchema := getReqBodySchema(op)
 	if bodySchema == nil || bodySchema.Value == nil {
 		return nil, "", nil
 	}
 
-	// body 限制为 object 类型
-	if bodySchema.Value.Type != openapi3.TypeObject {
-		return nil, "", fmt.Errorf("[buildHTTPRequestBody] requset body is not object, type=%s",
-			bodySchema.Value.Type)
-	}
-
 	if len(bodySchema.Value.Properties) == 0 {
 		return nil, "", nil
 	}
-	var fillObjectDefaultValue func(sc *openapi3.Schema, vals map[string]any) (map[string]any, error)
-	fillObjectDefaultValue = func(sc *openapi3.Schema, vals map[string]any) (map[string]any, error) {
-		required := slices.ToMap(sc.Required, func(e string) (string, bool) {
-			return e, true
-		})
 
-		res := make(map[string]any, len(sc.Properties))
-
-		for paramName, prop := range sc.Properties {
-			paramSchema := prop.Value
-			if paramSchema.Type == openapi3.TypeObject {
-				val := vals[paramName]
-				if val == nil {
-					val = map[string]any{}
-				}
-
-				mapVal, ok := val.(map[string]any)
-				if !ok {
-					return nil, fmt.Errorf("[buildHTTPRequestBody] parameter '%s' is not object", paramName)
-				}
-
-				newMapVal, err := fillObjectDefaultValue(paramSchema, mapVal)
-				if err != nil {
-					return nil, err
-				}
-
-				if len(newMapVal) > 0 {
-					res[paramName] = newMapVal
-				}
-
-				continue
-			}
-
-			if val := vals[paramName]; val != nil {
-				res[paramName] = val
-				continue
-			}
-
-			defaultVal, err := t.getDefaultValue(ctx, paramSchema)
-			if err != nil {
-				return nil, err
-			}
-			if defaultVal == nil {
-				if !required[paramName] {
-					continue
-				}
-				return nil, fmt.Errorf("[buildHTTPRequestBody] parameter '%s' is required", paramName)
-			}
-
-			res[paramName] = defaultVal
-		}
-
-		return res, nil
-	}
-
-	bodyMap, err := fillObjectDefaultValue(bodySchema.Value, bodyArgs)
+	bodyMap, err := t.injectRequestBodyDefaultValue(ctx, bodySchema.Value, bodyArgs)
 	if err != nil {
 		return nil, "", err
 	}
@@ -777,10 +839,70 @@ func (t *executorImpl) buildHTTPRequestBody(ctx context.Context, op *plugin.Open
 
 	reqBodyStr, err := encodeBodyWithContentType(contentType, bodyMap)
 	if err != nil {
-		return nil, "", fmt.Errorf("[buildHTTPRequestBody] encodeBodyWithContentType failed, err=%v", err)
+		return nil, "", fmt.Errorf("[buildRequestBody] encodeBodyWithContentType failed, err=%v", err)
 	}
 
 	return reqBodyStr, contentType, nil
+}
+
+func (t *executorImpl) injectRequestBodyDefaultValue(ctx context.Context, sc *openapi3.Schema, vals map[string]any) (newVals map[string]any, err error) {
+	required := slices.ToMap(sc.Required, func(e string) (string, bool) {
+		return e, true
+	})
+
+	newVals = make(map[string]any, len(sc.Properties))
+
+	for paramName, prop := range sc.Properties {
+		paramSchema := prop.Value
+		if paramSchema.Type == openapi3.TypeObject {
+			val := vals[paramName]
+			if val == nil {
+				val = map[string]any{}
+			}
+
+			mapVal, ok := val.(map[string]any)
+			if !ok {
+				return nil, fmt.Errorf("[injectRequestBodyDefaultValue] parameter '%s' is not object", paramName)
+			}
+
+			newMapVal, err := t.injectRequestBodyDefaultValue(ctx, paramSchema, mapVal)
+			if err != nil {
+				return nil, err
+			}
+
+			if len(newMapVal) > 0 {
+				newVals[paramName] = newMapVal
+			}
+
+			continue
+		}
+
+		if val := vals[paramName]; val != nil {
+			val, err = t.convertURItoURL(ctx, val, paramSchema)
+			if err != nil {
+				return nil, err
+			}
+
+			newVals[paramName] = val
+
+			continue
+		}
+
+		defaultVal, err := t.getDefaultValue(ctx, paramSchema)
+		if err != nil {
+			return nil, err
+		}
+		if defaultVal == nil {
+			if !required[paramName] {
+				continue
+			}
+			return nil, fmt.Errorf("[injectRequestBodyDefaultValue] parameter '%s' is required", paramName)
+		}
+
+		newVals[paramName] = defaultVal
+	}
+
+	return newVals, nil
 }
 
 var contentTypeArray = []string{

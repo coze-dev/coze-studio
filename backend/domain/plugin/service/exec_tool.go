@@ -42,6 +42,7 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 
 	resp = &ExecuteToolResponse{
 		Tool:        config.Tool,
+		Request:     result.Request,
 		RawResp:     result.RawResp,
 		TrimmedResp: result.TrimmedResp,
 	}
@@ -81,7 +82,9 @@ func (p *pluginServiceImpl) buildExecConfig(ctx context.Context, req *ExecuteToo
 		Plugin:                     pl,
 		Tool:                       tl,
 		ProjectInfo:                execOpt.ProjectInfo,
+		ExecScene:                  req.ExecScene,
 		InvalidRespProcessStrategy: execOpt.InvalidRespProcessStrategy,
+		OSS:                        p.oss,
 	}
 
 	if execOpt.Operation != nil {
