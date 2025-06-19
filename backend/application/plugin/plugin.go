@@ -1410,7 +1410,7 @@ func (p *PluginApplicationService) RevokeAuthToken(ctx context.Context, req *plu
 }
 
 func (p *PluginApplicationService) CopyPlugin(ctx context.Context, req *CopyPluginRequest) (resp *CopyPluginResponse, err error) {
-	plugin, err := p.DomainSVC.CopyPlugin(ctx, &service.CopyPluginRequest{
+	res, err := p.DomainSVC.CopyPlugin(ctx, &service.CopyPluginRequest{
 		UserID:      req.UserID,
 		PluginID:    req.PluginID,
 		CopyScene:   req.CopyScene,
@@ -1419,6 +1419,8 @@ func (p *PluginApplicationService) CopyPlugin(ctx context.Context, req *CopyPlug
 	if err != nil {
 		return nil, errorx.Wrapf(err, "CopyPlugin failed, pluginID=%d", req.PluginID)
 	}
+
+	plugin := res.Plugin
 
 	now := time.Now().UnixMilli()
 	resDoc := &searchEntity.ResourceDocument{

@@ -137,21 +137,25 @@ func (p *pluginServiceImpl) MGetPluginLatestVersion(ctx context.Context, pluginI
 	return resp, nil
 }
 
-func (p *pluginServiceImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest) (plugin *entity.PluginInfo, err error) {
+func (p *pluginServiceImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest) (resp *CopyPluginResponse, err error) {
 	err = p.checkCanCopyPlugin(ctx, req.PluginID, req.CopyScene)
 	if err != nil {
 		return nil, err
 	}
 
-	var tools []*entity.ToolInfo
-	plugin, tools, err = p.getCopySourcePluginAndTools(ctx, req.PluginID, req.CopyScene)
+	plugin, tools, err := p.getCopySourcePluginAndTools(ctx, req.PluginID, req.CopyScene)
 	if err != nil {
 		return nil, err
 	}
 
 	p.changePluginAndToolsInfoForCopy(req, plugin, tools)
 
-	newPluginID, err := p.pluginRepo.CopyPlugin(ctx, &repository.CopyPluginRequest{
+	toolMap := make(map[int64]*entity.ToolInfo, len(tools))
+	for _, tool := range tools {
+		toolMap[tool.ID] = tool
+	}
+
+	plugin, tools, err = p.pluginRepo.CopyPlugin(ctx, &repository.CopyPluginRequest{
 		Plugin: plugin,
 		Tools:  tools,
 	})
@@ -159,9 +163,12 @@ func (p *pluginServiceImpl) CopyPlugin(ctx context.Context, req *CopyPluginReque
 		return nil, errorx.Wrapf(err, "CopyPlugin failed, pluginID=%d", req.PluginID)
 	}
 
-	plugin.ID = newPluginID
+	resp = &CopyPluginResponse{
+		Plugin: plugin,
+		Tools:  toolMap,
+	}
 
-	return plugin, nil
+	return resp, nil
 }
 
 func (p *pluginServiceImpl) changePluginAndToolsInfoForCopy(req *CopyPluginRequest, plugin *entity.PluginInfo, tools []*entity.ToolInfo) {

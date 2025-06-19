@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -42,6 +43,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/taskgroup"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -534,12 +536,6 @@ func (a *APPApplicationService) GetPublishRecordDetail(ctx context.Context, req 
 	return resp, nil
 }
 
-type copyMetaInfo struct {
-	userID  int64
-	spaceID int64
-	taskID  string
-}
-
 func (a *APPApplicationService) ResourceCopyDispatch(ctx context.Context, req *resourceAPI.ResourceCopyDispatchRequest) (resp *resourceAPI.ResourceCopyDispatchResponse, err error) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
@@ -556,10 +552,28 @@ func (a *APPApplicationService) ResourceCopyDispatch(ctx context.Context, req *r
 		return nil, err
 	}
 
+	var toAppID *int64
+	if req.Scene != resourceCommon.ResourceCopyScene_CopyResourceToLibrary {
+		toAppID = req.ProjectID
+	}
+
 	metaInfo := &copyMetaInfo{
-		userID:  *userID,
-		taskID:  taskID,
-		spaceID: app.SpaceID,
+		scene:      req.Scene,
+		userID:     *userID,
+		appSpaceID: app.SpaceID,
+		copyTaskID: taskID,
+		fromAppID:  app.ID,
+		toAppID:    toAppID,
+	}
+
+	resType, err := toResourceType(req.ResType)
+	if err != nil {
+		return nil, err
+	}
+	res := &entity.Resource{
+		ResID:   req.ResID,
+		ResType: resType,
+		ResName: req.GetResName(),
 	}
 
 	var (
@@ -568,15 +582,16 @@ func (a *APPApplicationService) ResourceCopyDispatch(ctx context.Context, req *r
 	)
 	switch req.ResType {
 	case resourceCommon.ResType_Plugin:
-		newResID, handleErr = pluginCopyDispatchHandler(ctx, metaInfo, req)
+		newResID, handleErr = pluginCopyDispatchHandler(ctx, metaInfo, res)
 	case resourceCommon.ResType_Database:
-		newResID, handleErr = databaseCopyDispatchHandler(ctx, metaInfo, req)
+		newResID, handleErr = databaseCopyDispatchHandler(ctx, metaInfo, res)
 	case resourceCommon.ResType_Knowledge:
-		newResID, handleErr = knowledgeCopyDispatchHandler(ctx, metaInfo, req)
+		newResID, handleErr = knowledgeCopyDispatchHandler(ctx, metaInfo, res)
 	case resourceCommon.ResType_Workflow:
-		newResID, handleErr = workflowCopyDispatchHandler(ctx, metaInfo, req)
+		newResID, handleErr = workflowCopyDispatchHandler(ctx, metaInfo, res)
 	default:
-		return nil, errorx.New(errno.ErrAppInvalidParamCode, errorx.KVf("msg", "unsupported resource type '%s'", req.ResType))
+		return nil, errorx.New(errno.ErrAppInvalidParamCode, errorx.KVf(errno.APPMsgKey,
+			"unsupported resource type '%s'", req.ResType))
 	}
 
 	if handleErr != nil {
@@ -668,28 +683,32 @@ func (a *APPApplicationService) handleCopyResult(ctx context.Context, taskID str
 	return result.FailedReason, nil
 }
 
-func pluginCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newPluginID int64, err error) {
-	switch req.Scene {
+func pluginCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resource) (newPluginID int64, err error) {
+	switch metaInfo.scene {
 	case resourceCommon.ResourceCopyScene_CopyProjectResource,
 		resourceCommon.ResourceCopyScene_CopyResourceToLibrary,
 		resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
-		return copyPlugin(ctx, metaInfo, req)
-
-	case resourceCommon.ResourceCopyScene_MoveResourceToLibrary:
-		err = moveAPPPlugin(ctx, metaInfo, req)
+		resp, err := copyPlugin(ctx, metaInfo, res)
 		if err != nil {
 			return 0, err
 		}
-		return req.ResID, nil
+		return resp.Plugin.ID, nil
+
+	case resourceCommon.ResourceCopyScene_MoveResourceToLibrary:
+		err = moveAPPPlugin(ctx, metaInfo, res)
+		if err != nil {
+			return 0, err
+		}
+		return res.ResID, nil
 
 	default:
-		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
+		return 0, fmt.Errorf("unsupported copy scene '%s'", metaInfo.scene)
 	}
 }
 
-func copyPlugin(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newPluginID int64, err error) {
+func copyPlugin(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resource) (resp *plugin.CopyPluginResponse, err error) {
 	var copyScene pluginModel.CopyScene
-	switch req.Scene {
+	switch metaInfo.scene {
 	case resourceCommon.ResourceCopyScene_CopyProjectResource:
 		copyScene = pluginModel.CopySceneOfDuplicate
 	case resourceCommon.ResourceCopyScene_CopyResourceToLibrary:
@@ -699,196 +718,191 @@ func copyPlugin(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.Re
 	case resourceCommon.ResourceCopyScene_CopyProject:
 		copyScene = pluginModel.CopySceneOfAPPDuplicate
 	default:
-		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
+		return nil, fmt.Errorf("unsupported copy scene '%s'", metaInfo.scene)
 	}
 
-	newPlugin, err := plugin.PluginApplicationSVC.CopyPlugin(ctx, &plugin.CopyPluginRequest{
+	resp, err = plugin.PluginApplicationSVC.CopyPlugin(ctx, &plugin.CopyPluginRequest{
 		CopyScene:   copyScene,
-		PluginID:    req.ResID,
+		PluginID:    res.ResID,
 		UserID:      metaInfo.userID,
-		TargetAPPID: req.ProjectID,
+		TargetAPPID: metaInfo.toAppID,
 	})
 	if err != nil {
-		return 0, errorx.Wrapf(err, "CopyPlugin failed, pluginID=%d, scene=%s", req.ResID, req.Scene)
+		return nil, errorx.Wrapf(err, "CopyPlugin failed, pluginID=%d, scene=%s", res.ResID, metaInfo.scene)
 	}
 
-	return newPlugin.Plugin.ID, nil
+	return resp, nil
 }
 
-func moveAPPPlugin(ctx context.Context, _ *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (err error) {
-	_, err = plugin.PluginApplicationSVC.MoveAPPPluginToLibrary(ctx, req.ResID)
+func moveAPPPlugin(ctx context.Context, _ *copyMetaInfo, res *entity.Resource) (err error) {
+	_, err = plugin.PluginApplicationSVC.MoveAPPPluginToLibrary(ctx, res.ResID)
 	if err != nil {
-		return errorx.Wrapf(err, "MoveAPPPluginToLibrary failed, pluginID=%d", req.ResID)
+		return errorx.Wrapf(err, "MoveAPPPluginToLibrary failed, pluginID=%d", res.ResID)
 	}
 
 	return nil
 }
 
-func databaseCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newDatabaseID int64, err error) {
-	switch req.Scene {
+func databaseCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resource) (newDatabaseID int64, err error) {
+	switch metaInfo.scene {
 	case resourceCommon.ResourceCopyScene_CopyProjectResource,
 		resourceCommon.ResourceCopyScene_CopyResourceToLibrary,
 		resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
-		return copyDatabase(ctx, metaInfo, req)
+		return copyDatabase(ctx, metaInfo, res)
 
 	case resourceCommon.ResourceCopyScene_MoveResourceToLibrary:
-		err = moveAPPDatabase(ctx, metaInfo, req)
+		err = moveAPPDatabase(ctx, metaInfo, res)
 		if err != nil {
 			return 0, err
 		}
-		return req.ResID, nil
+		return res.ResID, nil
 
 	default:
-		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
+		return 0, fmt.Errorf("unsupported copy scene '%s'", metaInfo.scene)
 	}
 }
 
-func copyDatabase(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newDatabaseID int64, err error) {
-	targetAPPID := req.GetProjectID()
-	if req.Scene == resourceCommon.ResourceCopyScene_CopyResourceToLibrary {
-		targetAPPID = int64(0)
-	}
-
+func copyDatabase(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resource) (newDatabaseID int64, err error) {
 	var suffix *string
-	if req.Scene == resourceCommon.ResourceCopyScene_CopyProject || req.Scene == resourceCommon.ResourceCopyScene_CopyResourceFromLibrary {
+	if metaInfo.scene == resourceCommon.ResourceCopyScene_CopyProject ||
+		metaInfo.scene == resourceCommon.ResourceCopyScene_CopyResourceFromLibrary {
 		suffix = ptr.Of("")
 	}
 
-	res, err := memory.DatabaseApplicationSVC.CopyDatabase(ctx, &memory.CopyDatabaseRequest{
-		DatabaseIDs: []int64{req.ResID},
+	resp, err := memory.DatabaseApplicationSVC.CopyDatabase(ctx, &memory.CopyDatabaseRequest{
+		DatabaseIDs: []int64{res.ResID},
 		TableType:   table.TableType_OnlineTable,
 		CreatorID:   metaInfo.userID,
 		IsCopyData:  true,
-		TargetAppID: targetAPPID,
+		TargetAppID: ptr.FromOrDefault(metaInfo.toAppID, 0),
 		Suffix:      suffix,
 	})
 	if err != nil {
-		return 0, errorx.Wrapf(err, "CopyDatabase failed, databaseID=%d, scene=%s", req.ResID, req.Scene)
+		return 0, errorx.Wrapf(err, "CopyDatabase failed, databaseID=%d, scene=%s", res.ResID, metaInfo.scene)
 	}
 
-	if _, ok := res.Databases[req.ResID]; !ok {
-		return 0, fmt.Errorf("copy database failed, databaseID=%d", req.ResID)
+	if _, ok := resp.Databases[res.ResID]; !ok {
+		return 0, fmt.Errorf("copy database failed, databaseID=%d", res.ResID)
 	}
 
-	return res.Databases[req.ResID].ID, nil
+	return resp.Databases[res.ResID].ID, nil
 }
 
-func moveAPPDatabase(ctx context.Context, _ *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (err error) {
+func moveAPPDatabase(ctx context.Context, _ *copyMetaInfo, res *entity.Resource) (err error) {
 	_, err = memory.DatabaseApplicationSVC.MoveDatabaseToLibrary(ctx, &memory.MoveDatabaseToLibraryRequest{
-		DatabaseIDs: []int64{req.ResID},
+		DatabaseIDs: []int64{res.ResID},
 		TableType:   table.TableType_OnlineTable,
 	})
 	if err != nil {
-		return errorx.Wrapf(err, "MoveDatabaseToLibrary failed, databaseID=%d", req.ResID)
+		return errorx.Wrapf(err, "MoveDatabaseToLibrary failed, databaseID=%d", res.ResID)
 	}
 
 	return nil
 }
 
-func knowledgeCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newKnowledgeID int64, err error) {
-	switch req.Scene {
+func knowledgeCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resource) (newKnowledgeID int64, err error) {
+	switch metaInfo.scene {
 	case resourceCommon.ResourceCopyScene_CopyProjectResource,
 		resourceCommon.ResourceCopyScene_CopyResourceToLibrary,
 		resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
-		return copyKnowledge(ctx, metaInfo, req)
+		return copyKnowledge(ctx, metaInfo, res)
 
 	case resourceCommon.ResourceCopyScene_MoveResourceToLibrary:
-		err = moveAPPKnowledge(ctx, metaInfo, req)
+		err = moveAPPKnowledge(ctx, metaInfo, res)
 		if err != nil {
 			return 0, err
 		}
-		return req.ResID, nil
+		return res.ResID, nil
 
 	default:
-		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
+		return 0, fmt.Errorf("unsupported copy scene '%s'", metaInfo.scene)
 	}
 }
 
-func copyKnowledge(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newKnowledgeID int64, err error) {
+func copyKnowledge(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resource) (newKnowledgeID int64, err error) {
 	copyReq := &knowledgeModel.CopyKnowledgeRequest{
-		KnowledgeID:  req.ResID,
+		KnowledgeID:  res.ResID,
 		TargetUserID: metaInfo.userID,
-		TaskUniqKey:  metaInfo.taskID,
+		TaskUniqKey:  metaInfo.copyTaskID,
 	}
 
-	switch req.Scene {
+	switch metaInfo.scene {
 	case resourceCommon.ResourceCopyScene_CopyProjectResource:
-		copyReq.TargetAppID = req.GetProjectID()
-		copyReq.TargetSpaceID = metaInfo.spaceID
+		copyReq.TargetAppID = *metaInfo.toAppID
+		copyReq.TargetSpaceID = metaInfo.appSpaceID
 	case resourceCommon.ResourceCopyScene_CopyResourceToLibrary:
-		copyReq.TargetAppID = 0
-		copyReq.TargetSpaceID = metaInfo.spaceID
+		copyReq.TargetSpaceID = metaInfo.appSpaceID
 	case resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
-		copyReq.TargetAppID = req.GetProjectID()
-		copyReq.TargetSpaceID = metaInfo.spaceID
+		copyReq.TargetAppID = *metaInfo.toAppID
+		copyReq.TargetSpaceID = metaInfo.appSpaceID
 	case resourceCommon.ResourceCopyScene_CopyProject:
-		copyReq.TargetAppID = req.GetProjectID()
-		copyReq.TargetSpaceID = metaInfo.spaceID
+		copyReq.TargetAppID = *metaInfo.toAppID
+		copyReq.TargetSpaceID = metaInfo.appSpaceID
 	default:
-		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
+		return 0, fmt.Errorf("unsupported copy scene '%s'", metaInfo.scene)
 	}
 
-	res, err := knowledge.KnowledgeSVC.CopyKnowledge(ctx, copyReq)
+	resp, err := knowledge.KnowledgeSVC.CopyKnowledge(ctx, copyReq)
 	if err != nil {
-		return 0, errorx.Wrapf(err, "CopyKnowledge failed, knowledgeID=%d, scene=%s", req.ResID, req.Scene)
+		return 0, errorx.Wrapf(err, "CopyKnowledge failed, knowledgeID=%d, scene=%s", res.ResID, metaInfo.scene)
 	}
 
-	if res.CopyStatus != knowledgeModel.CopyStatus_Successful {
-		return 0, fmt.Errorf("copy knowledge failed, knowledgeID=%d, scene=%s", req.ResID, req.Scene)
+	if resp.CopyStatus != knowledgeModel.CopyStatus_Successful {
+		return 0, fmt.Errorf("copy knowledge failed, knowledgeID=%d, scene=%s", res.ResID, metaInfo.scene)
 	}
 
-	return res.TargetKnowledgeID, nil
+	return resp.TargetKnowledgeID, nil
 }
 
-func moveAPPKnowledge(ctx context.Context, _ *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (err error) {
+func moveAPPKnowledge(ctx context.Context, _ *copyMetaInfo, res *entity.Resource) (err error) {
 	err = knowledge.KnowledgeSVC.MoveKnowledgeToLibrary(ctx, &knowledgeModel.MoveKnowledgeToLibraryRequest{
-		KnowledgeID: req.ResID,
+		KnowledgeID: res.ResID,
 	})
 	if err != nil {
-		return errorx.Wrapf(err, "MoveKnowledgeToLibrary failed, knowledgeID=%d", req.ResID)
+		return errorx.Wrapf(err, "MoveKnowledgeToLibrary failed, knowledgeID=%d", res.ResID)
 	}
 
 	return nil
 }
 
-func workflowCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newWorkflowID int64, err error) {
-	switch req.Scene {
+func workflowCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resource) (newWorkflowID int64, err error) {
+	switch metaInfo.scene {
 	case resourceCommon.ResourceCopyScene_CopyProjectResource,
 		resourceCommon.ResourceCopyScene_CopyResourceToLibrary,
 		resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
-		return copyWorkflow(ctx, metaInfo, req)
+		return copyWorkflow(ctx, metaInfo, res)
 
 	case resourceCommon.ResourceCopyScene_MoveResourceToLibrary:
-		err = moveAPPWorkflow(ctx, metaInfo, req)
+		err = moveAPPWorkflow(ctx, metaInfo, res)
 		if err != nil {
 			return 0, err
 		}
-		return req.ResID, nil
+		return res.ResID, nil
 
 	default:
-		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
+		return 0, fmt.Errorf("unsupported copy scene '%s'", metaInfo.scene)
 	}
 }
 
-func copyWorkflow(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (newWorkflowID int64, err error) {
-	switch req.Scene {
+func copyWorkflow(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resource) (newWorkflowID int64, err error) {
+	switch metaInfo.scene {
 	case resourceCommon.ResourceCopyScene_CopyProjectResource:
-		res, err := workflow.SVC.CopyWorkflow(ctx, &workflowAPI.CopyWorkflowRequest{
-			WorkflowID: strconv.FormatInt(req.ResID, 10),
-			SpaceID:    strconv.FormatInt(metaInfo.spaceID, 10),
+		resp, err := workflow.SVC.CopyWorkflow(ctx, &workflowAPI.CopyWorkflowRequest{
+			WorkflowID: strconv.FormatInt(res.ResID, 10),
+			SpaceID:    strconv.FormatInt(metaInfo.appSpaceID, 10),
 		})
 		if err != nil {
-			return 0, errorx.Wrapf(err, "CopyWorkflow failed, workflowID=%d", req.ResID)
+			return 0, errorx.Wrapf(err, "CopyWorkflow failed, workflowID=%d", res.ResID)
 		}
 
-		newWorkflowID, _ = strconv.ParseInt(res.Data.WorkflowID, 10, 64)
+		newWorkflowID, _ = strconv.ParseInt(resp.Data.WorkflowID, 10, 64)
 
 		return newWorkflowID, nil
 
 	case resourceCommon.ResourceCopyScene_CopyResourceToLibrary:
-		newWorkflowID, issues, err := workflow.SVC.CopyWorkflowFromAppToLibrary(ctx, req.ResID, metaInfo.spaceID, req.GetProjectID())
+		newWorkflowID, issues, err := workflow.SVC.CopyWorkflowFromAppToLibrary(ctx, res.ResID, metaInfo.appSpaceID, metaInfo.fromAppID)
 		if err != nil {
-			return 0, errorx.Wrapf(err, "CopyWorkflowFromAppToLibrary failed, workflowID=%d", req.ResID)
+			return 0, errorx.Wrapf(err, "CopyWorkflowFromAppToLibrary failed, workflowID=%d", res.ResID)
 		}
 		if len(issues) > 0 {
 			return 0, errorx.New(errno.ErrAppInvalidParamCode, errorx.KVf(errno.APPMsgKey, "workflow validates failed"))
@@ -897,26 +911,22 @@ func copyWorkflow(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.
 		return newWorkflowID, nil
 
 	case resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
-		newWorkflowID, err = workflow.SVC.CopyWorkflowFromLibraryToApp(ctx, req.ResID, req.GetProjectID())
+		newWorkflowID, err = workflow.SVC.CopyWorkflowFromLibraryToApp(ctx, res.ResID, *metaInfo.toAppID)
 		if err != nil {
-			return 0, errorx.Wrapf(err, "CopyWorkflowFromLibraryToApp failed, workflowID=%d", req.ResID)
+			return 0, errorx.Wrapf(err, "CopyWorkflowFromLibraryToApp failed, workflowID=%d", res.ResID)
 		}
 
 		return newWorkflowID, nil
 
-	case resourceCommon.ResourceCopyScene_CopyProject:
-		//TODO(@zhuangjie): 提供应用 duplicate workflow 接口
-		panic("implement me")
-
 	default:
-		return 0, fmt.Errorf("unsupported copy scene '%s'", req.Scene)
+		return 0, fmt.Errorf("unsupported copy scene '%s'", metaInfo.scene)
 	}
 }
 
-func moveAPPWorkflow(ctx context.Context, metaInfo *copyMetaInfo, req *resourceAPI.ResourceCopyDispatchRequest) (err error) {
-	issues, err := workflow.SVC.MoveWorkflowFromAppToLibrary(ctx, req.ResID, metaInfo.spaceID, req.GetProjectID())
+func moveAPPWorkflow(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resource) (err error) {
+	issues, err := workflow.SVC.MoveWorkflowFromAppToLibrary(ctx, res.ResID, metaInfo.appSpaceID, metaInfo.fromAppID)
 	if err != nil {
-		return errorx.Wrapf(err, "MoveWorkflowFromAppToLibrary failed, workflowID=%d", req.ResID)
+		return errorx.Wrapf(err, "MoveWorkflowFromAppToLibrary failed, workflowID=%d", res.ResID)
 	}
 	if len(issues) > 0 {
 		return errorx.New(errno.ErrAppInvalidParamCode, errorx.KVf(errno.APPMsgKey, "workflow validate failed"))
@@ -1049,64 +1059,95 @@ func (a *APPApplicationService) duplicateDraftAPPResources(ctx context.Context, 
 	}
 
 	metaInfo := &copyMetaInfo{
-		userID:  userID,
-		spaceID: req.ToSpaceID,
-		taskID:  uuid.New().String(),
+		scene:      resourceCommon.ResourceCopyScene_CopyProject,
+		userID:     userID,
+		appSpaceID: req.ToSpaceID,
+		copyTaskID: uuid.New().String(),
+		fromAppID:  req.ProjectID,
+		toAppID:    &newAppID,
 	}
 
+	copyPluginIDMap := make(map[int64]int64)
+	copyToolIDMap := make(map[int64]int64)
+	copyDatabaseIDMap := make(map[int64]int64)
+	copyKnowledgeIDMap := make(map[int64]int64)
+
+	taskGroup := taskgroup.NewTaskGroup(ctx, 5)
+	mu := sync.Mutex{}
+
 	for _, res := range resources {
-		switch res.ResType {
-		case entity.ResourceTypeOfPlugin:
-			_, err = copyPlugin(ctx, metaInfo, &resourceAPI.ResourceCopyDispatchRequest{
-				Scene:     resourceCommon.ResourceCopyScene_CopyProject,
-				ResID:     res.ResID,
-				ResName:   &res.ResName,
-				ResType:   resourceCommon.ResType_Plugin,
-				ProjectID: &newAppID,
-			})
-			if err != nil {
-				return err
-			}
+		if res.ResType == entity.ResourceTypeOfPlugin {
+			taskGroup.Go(func() error {
+				resp, err := copyPlugin(ctx, metaInfo, res)
+				if err != nil {
+					return err
+				}
 
-		case entity.ResourceTypeOfDatabase:
-			_, err = copyDatabase(ctx, metaInfo, &resourceAPI.ResourceCopyDispatchRequest{
-				Scene:     resourceCommon.ResourceCopyScene_CopyProject,
-				ResID:     res.ResID,
-				ResName:   &res.ResName,
-				ResType:   resourceCommon.ResType_Database,
-				ProjectID: &newAppID,
-			})
-			if err != nil {
-				return err
-			}
+				mu.Lock()
+				defer mu.Unlock()
 
-		case entity.ResourceTypeOfKnowledge:
-			_, err = copyKnowledge(ctx, metaInfo, &resourceAPI.ResourceCopyDispatchRequest{
-				Scene:     resourceCommon.ResourceCopyScene_CopyProject,
-				ResID:     res.ResID,
-				ResName:   &res.ResName,
-				ResType:   resourceCommon.ResType_Knowledge,
-				ProjectID: &newAppID,
-			})
-			if err != nil {
-				return err
-			}
+				copyPluginIDMap[res.ResID] = resp.Plugin.ID
+				for oldToolID, newToolID := range resp.ToolIDs {
+					copyToolIDMap[oldToolID] = newToolID
+				}
 
-		case entity.ResourceTypeOfWorkflow:
-			_, err = copyWorkflow(ctx, metaInfo, &resourceAPI.ResourceCopyDispatchRequest{
-				Scene:     resourceCommon.ResourceCopyScene_CopyProject,
-				ResID:     res.ResID,
-				ResName:   &res.ResName,
-				ResType:   resourceCommon.ResType_Workflow,
-				ProjectID: &newAppID,
+				return nil
 			})
-			if err != nil {
-				return err
-			}
-
-		default:
-			return fmt.Errorf("unsupported resource type '%s'", res.ResType)
 		}
+
+		if res.ResType == entity.ResourceTypeOfDatabase {
+			taskGroup.Go(func() error {
+				newDatabaseID, err := copyDatabase(ctx, metaInfo, res)
+				if err != nil {
+					return err
+				}
+
+				mu.Lock()
+				defer mu.Unlock()
+
+				copyDatabaseIDMap[res.ResID] = newDatabaseID
+
+				return nil
+			})
+		}
+
+		if res.ResType == entity.ResourceTypeOfKnowledge {
+			taskGroup.Go(func() error {
+				newKnowledgeID, err := copyKnowledge(ctx, metaInfo, res)
+				if err != nil {
+					return err
+				}
+
+				mu.Lock()
+				defer mu.Unlock()
+
+				copyKnowledgeIDMap[res.ResID] = newKnowledgeID
+
+				return nil
+			})
+		}
+	}
+
+	err = taskGroup.Wait()
+	if err != nil {
+		return err
+	}
+
+	taskGroup = taskgroup.NewTaskGroup(ctx, 5)
+
+	for _, res := range resources {
+		if res.ResType != entity.ResourceTypeOfWorkflow {
+			continue
+		}
+
+		//taskGroup.Go(func() error {
+		//	panic("implement me")
+		//})
+	}
+
+	err = taskGroup.Wait()
+	if err != nil {
+		return err
 	}
 
 	return nil

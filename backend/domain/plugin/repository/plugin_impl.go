@@ -676,10 +676,10 @@ func (p *pluginRepoImpl) CreateDraftPluginWithCode(ctx context.Context, req *Cre
 	}, nil
 }
 
-func (p *pluginRepoImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest) (newPluginID int64, err error) {
+func (p *pluginRepoImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest) (plugin *entity.PluginInfo, tools []*entity.ToolInfo, err error) {
 	tx := p.query.Begin()
 	if tx.Error != nil {
-		return 0, tx.Error
+		return nil, nil, tx.Error
 	}
 
 	defer func() {
@@ -697,20 +697,19 @@ func (p *pluginRepoImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest)
 		}
 	}()
 
-	newPluginID, err = p.pluginDraftDAO.CreateWithTX(ctx, tx, req.Plugin)
+	newPluginID, err := p.pluginDraftDAO.CreateWithTX(ctx, tx, req.Plugin)
 	if err != nil {
-		return 0, err
+		return nil, nil, err
 	}
 
 	req.Plugin.ID = newPluginID
-
-	tools := slices.Transform(req.Tools, func(tool *entity.ToolInfo) *entity.ToolInfo {
+	for _, tool := range req.Tools {
 		tool.PluginID = newPluginID
-		return tool
-	})
-	toolIDs, err := p.toolDraftDAO.BatchCreateWithTX(ctx, tx, tools)
+	}
+
+	toolIDs, err := p.toolDraftDAO.BatchCreateWithTX(ctx, tx, req.Tools)
 	if err != nil {
-		return 0, err
+		return nil, nil, err
 	}
 
 	for i, tool := range req.Tools {
@@ -720,10 +719,10 @@ func (p *pluginRepoImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest)
 	if req.Plugin.GetVersion() == "" {
 		err = tx.Commit()
 		if err != nil {
-			return 0, err
+			return nil, nil, err
 		}
 
-		return newPluginID, nil
+		return req.Plugin, req.Tools, nil
 	}
 
 	// publish plugin
@@ -737,33 +736,33 @@ func (p *pluginRepoImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest)
 	}
 
 	if len(filteredTools) == 0 {
-		return 0, fmt.Errorf("at least one activated tool is required in plugin '%d'", req.Plugin.ID)
+		return nil, nil, fmt.Errorf("at least one activated tool is required in plugin '%d'", req.Plugin.ID)
 	}
 
 	err = p.pluginDAO.UpsertWithTX(ctx, tx, req.Plugin)
 	if err != nil {
-		return 0, err
+		return nil, nil, err
 	}
 	err = p.pluginVersionDAO.CreateWithTX(ctx, tx, req.Plugin)
 	if err != nil {
-		return 0, err
+		return nil, nil, err
 	}
 
 	err = p.toolDAO.BatchCreateWithTX(ctx, tx, filteredTools)
 	if err != nil {
-		return 0, err
+		return nil, nil, err
 	}
 	err = p.toolVersionDAO.BatchCreateWithTX(ctx, tx, filteredTools)
 	if err != nil {
-		return 0, err
+		return nil, nil, err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return 0, err
+		return nil, nil, err
 	}
 
-	return newPluginID, nil
+	return plugin, tools, nil
 }
 
 func (p *pluginRepoImpl) MoveAPPPluginToLibrary(ctx context.Context, draftPlugin *entity.PluginInfo,
