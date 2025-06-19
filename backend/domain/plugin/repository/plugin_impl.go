@@ -697,37 +697,39 @@ func (p *pluginRepoImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest)
 		}
 	}()
 
-	newPluginID, err := p.pluginDraftDAO.CreateWithTX(ctx, tx, req.Plugin)
+	plugin, tools = req.Plugin, req.Tools
+
+	newPluginID, err := p.pluginDraftDAO.CreateWithTX(ctx, tx, plugin)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	req.Plugin.ID = newPluginID
-	for _, tool := range req.Tools {
+	plugin.ID = newPluginID
+	for _, tool := range tools {
 		tool.PluginID = newPluginID
 	}
 
-	toolIDs, err := p.toolDraftDAO.BatchCreateWithTX(ctx, tx, req.Tools)
+	toolIDs, err := p.toolDraftDAO.BatchCreateWithTX(ctx, tx, tools)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	for i, tool := range req.Tools {
+	for i, tool := range tools {
 		tool.ID = toolIDs[i]
 	}
 
-	if req.Plugin.GetVersion() == "" {
+	if plugin.GetVersion() == "" {
 		err = tx.Commit()
 		if err != nil {
 			return nil, nil, err
 		}
 
-		return req.Plugin, req.Tools, nil
+		return plugin, tools, nil
 	}
 
 	// publish plugin
-	filteredTools := make([]*entity.ToolInfo, 0, len(req.Tools))
-	for _, tool := range req.Tools {
+	filteredTools := make([]*entity.ToolInfo, 0, len(tools))
+	for _, tool := range tools {
 		if tool.GetActivatedStatus() == model.DeactivateTool ||
 			tool.GetDebugStatus() == common.APIDebugStatus_DebugWaiting {
 			continue
@@ -736,14 +738,14 @@ func (p *pluginRepoImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest)
 	}
 
 	if len(filteredTools) == 0 {
-		return nil, nil, fmt.Errorf("at least one activated tool is required in plugin '%d'", req.Plugin.ID)
+		return nil, nil, fmt.Errorf("at least one activated tool is required in plugin '%d'", plugin.ID)
 	}
 
-	err = p.pluginDAO.UpsertWithTX(ctx, tx, req.Plugin)
+	err = p.pluginDAO.UpsertWithTX(ctx, tx, plugin)
 	if err != nil {
 		return nil, nil, err
 	}
-	err = p.pluginVersionDAO.CreateWithTX(ctx, tx, req.Plugin)
+	err = p.pluginVersionDAO.CreateWithTX(ctx, tx, plugin)
 	if err != nil {
 		return nil, nil, err
 	}

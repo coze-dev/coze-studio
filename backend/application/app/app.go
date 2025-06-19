@@ -1087,8 +1087,8 @@ func (a *APPApplicationService) duplicateDraftAPPResources(ctx context.Context, 
 				defer mu.Unlock()
 
 				copyPluginIDMap[res.ResID] = resp.Plugin.ID
-				for oldToolID, newToolID := range resp.ToolIDs {
-					copyToolIDMap[oldToolID] = newToolID
+				for oldToolID, tool := range resp.Tools {
+					copyToolIDMap[oldToolID] = tool.ID
 				}
 
 				return nil

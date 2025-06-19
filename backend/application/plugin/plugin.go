@@ -1448,7 +1448,8 @@ func (p *PluginApplicationService) CopyPlugin(ctx context.Context, req *CopyPlug
 	}
 
 	resp = &CopyPluginResponse{
-		Plugin: plugin,
+		Plugin: res.Plugin,
+		Tools:  res.Tools,
 	}
 
 	return resp, nil

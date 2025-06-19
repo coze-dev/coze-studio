@@ -89,10 +89,17 @@ func (p *pluginPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", plugin.GetIconURI(), err)
 	}
 
+	status := int32(1)
+	err = p.appContext.PluginDomainSVC.CheckToolsDebugStatus(ctx, plugin.ID)
+	if err != nil {
+		status = 0
+	}
+
 	return &dataInfo{
 		iconURI: ptr.Of(plugin.GetIconURI()),
 		iconURL: iconURL,
 		desc:    ptr.Of(plugin.GetDesc()),
+		status:  &status,
 	}, nil
 }
 
@@ -112,11 +119,11 @@ func (p *pluginPacker) GetProjectDefaultActions(ctx context.Context) []*common.P
 		},
 		{
 			Key:    common.ProjectResourceActionKey_CopyToLibrary,
-			Enable: true,
+			Enable: false,
 		},
 		{
 			Key:    common.ProjectResourceActionKey_MoveToLibrary,
-			Enable: true,
+			Enable: false,
 		},
 	}
 }

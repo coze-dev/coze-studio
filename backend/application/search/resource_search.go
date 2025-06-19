@@ -334,6 +334,25 @@ func (s *SearchApplicationService) packProjectResource(ctx context.Context, reso
 		}
 	}
 
+	if resource.ResType == common.ResType_Plugin {
+		di, err := packer.GetDataInfo(ctx)
+		if err != nil {
+			logs.CtxWarnf(ctx, "GetDataInfo failed, resID=%d, resType=%d, err=%v",
+				resource.ResID, resource.ResType, err)
+		} else {
+			info.BizResStatus = ptr.Of(*di.status)
+			if *di.status == int32(1) {
+				actions := slices.Clone(info.Actions)
+				for _, a := range actions {
+					if a.Key == common.ProjectResourceActionKey_MoveToLibrary ||
+						a.Key == common.ProjectResourceActionKey_CopyToLibrary {
+						a.Enable = true
+					}
+				}
+			}
+		}
+	}
+
 	return info, nil
 }
 

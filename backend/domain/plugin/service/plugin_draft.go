@@ -564,7 +564,12 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 	}
 
 	op := draftTool.Operation
-
+	if req.Name != nil {
+		op.OperationID = *req.Name
+	}
+	if req.Desc != nil {
+		op.Summary = *req.Desc
+	}
 	if req.Parameters != nil {
 		op.Parameters = req.Parameters
 	}
