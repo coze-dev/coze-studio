@@ -764,7 +764,7 @@ func (p *pluginRepoImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest)
 		return nil, nil, err
 	}
 
-	return plugin, tools, nil
+	return req.Plugin, req.Tools, nil
 }
 
 func (p *pluginRepoImpl) MoveAPPPluginToLibrary(ctx context.Context, draftPlugin *entity.PluginInfo,

@@ -13,15 +13,14 @@ import (
 	context "context"
 	reflect "reflect"
 
-	compose "github.com/cloudwego/eino/compose"
-	schema "github.com/cloudwego/eino/schema"
-	redis "github.com/redis/go-redis/v9"
-	gomock "go.uber.org/mock/gomock"
-
 	workflow "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	workflow0 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	entity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	vo "code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	compose "github.com/cloudwego/eino/compose"
+	schema "github.com/cloudwego/eino/schema"
+	redis "github.com/redis/go-redis/v9"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockService is a mock of Service interface.
@@ -107,10 +106,10 @@ func (mr *MockServiceMockRecorder) Cancel(ctx, wfExeID, wfID, spaceID any) *gomo
 }
 
 // CopyWorkflow mocks base method.
-func (m *MockService) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (int64, error) {
+func (m *MockService) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CopyWorkflow", ctx, workflowID, policy)
-	ret0, _ := ret[0].(int64)
+	ret0, _ := ret[0].(*entity.Workflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -299,8 +299,29 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	}
 }
 
-func post[T any](r *wfTestRunner, req any) *T {
+type PostOption struct {
+	Headers map[string]string
+}
+type PostOptionFn func(option *PostOption)
+
+func WithHeaders(hds map[string]string) PostOptionFn {
+	return func(option *PostOption) {
+		if option.Headers == nil {
+			option.Headers = map[string]string{}
+		}
+		for k, v := range hds {
+			option.Headers[k] = v
+		}
+	}
+}
+
+func post[T any](r *wfTestRunner, req any, opts ...PostOptionFn) *T {
 	// if req has a field SpaceID, set it's value to "123"
+	opt := &PostOption{}
+	for _, fn := range opts {
+		fn(opt)
+	}
+
 	typ := reflect.TypeOf(req)
 	if typ.Kind() == reflect.Ptr {
 		typ1 := typ.Elem()
@@ -318,8 +339,17 @@ func post[T any](r *wfTestRunner, req any) *T {
 	url := req2URL[typ]
 	m, err := sonic.Marshal(req)
 	assert.NoError(r.t, err)
+
+	headers := make([]ut.Header, 0)
+	headers = append(headers, ut.Header{
+		Key:   "Content-Type",
+		Value: "application/json",
+	})
+	for k, v := range opt.Headers {
+		headers = append(headers, ut.Header{Key: k, Value: v})
+	}
 	w := ut.PerformRequest(r.h.Engine, "POST", url, &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)},
-		ut.Header{Key: "Content-Type", Value: "application/json"})
+		headers...)
 	res := w.Result()
 	if res.StatusCode() != http.StatusOK {
 		r.t.Fatalf("unexpected status code: %d, body: %s", res.StatusCode(), string(res.Body()))
@@ -922,8 +952,9 @@ func TestNodeTemplateList(t *testing.T) {
 
 		resp := post[workflow.NodeTemplateListResponse](r, &workflow.NodeTemplateListRequest{
 			NodeTypes: []string{"3", "5", "18"},
-			Locale:    workflow.Locale_en_US,
-		})
+		}, WithHeaders(map[string]string{
+			"x-locale": "en-US",
+		}))
 
 		id2Name := map[string]string{
 			"3":  "LLM",
@@ -4198,7 +4229,7 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 }
 
 func TestDuplicateWorkflowsByAppID(t *testing.T) {
-	mockey.PatchConvey("copy ddd", t, func() {
+	mockey.PatchConvey("test duplicate work", t, func() {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 

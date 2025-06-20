@@ -73,6 +73,7 @@ type PluginToolsInfoResponse struct {
 	ToolInfoList  map[int64]ToolInfo
 	LatestVersion *string
 	IsOfficial    bool
+	AppID         int64
 }
 
 type ExecConfig = vo.ExecuteConfig

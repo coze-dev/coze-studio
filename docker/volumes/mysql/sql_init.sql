@@ -81,3 +81,683 @@ INSERT INTO single_agent_draft (
 INSERT INTO template (agent_id, space_id, product_entity_type, meta_info) VALUES(
 7418535986059067392, 1, 21,'{"category": {"active_icon_url": "", "count": 0, "icon_url": "", "id": "7420259113692659712", "index": 0, "name": "零售提效"}, "covers": [{"uri": "c8e35fde204a4086bf9060c3eca4d2a7", "url": "https://p6-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/c8e35fde204a4086bf9060c3eca4d2a7~tplv-13w3uml6bg-resize:800:320.image?rk3s=2e2596fd&x-expires=1752219912&x-signature=7IerzZTi0PACL%2FlDtb6bBkTqQKw%3D"}], "description": "AI模拟真实顾客进店场景，有效考核导购的需求洞察力、产品搭配技巧和口才；销售成长之旅，与 SalesGenius 同行。\\n", "entity_id": "7417666939788918793", "entity_type": 21, "entity_version": "1727616333981", "favorite_count": 0, "heat": 1615, "icon_url": "https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/975021cd14cb43a386839fdc70a54104~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1752219714&x-signature=DYIhDa%2FcAz3AXtPn3OnzjsMXobQ%3D", "id": "7418535986059067392", "is_favorited": false, "is_free": true, "is_official": true, "is_professional": true, "is_template": true, "labels": [{"name": "语音"}, {"name": "Prompt"}], "listed_at": "1730815604", "medium_icon_url": "", "name": "导购陪练", "origin_icon_url": "", "seller": {"avatar_url": "https://p9-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/78f519713ce46901120fb7695f257c9a.png~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1752219692&x-signature=VxfoUMrJl75k%2BpSXmcj%2BSZwYucE%3D", "id": "0", "name": ""}, "status": 1, "user_info": {"avatar_url": "https://p9-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/78f519713ce46901120fb7695f257c9a.png~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1752219692&x-signature=VxfoUMrJl75k%2BpSXmcj%2BSZwYucE%3D", "name": "扣子官方", "user_id": "0", "user_name": ""}}')
     ON DUPLICATE KEY UPDATE agent_id = VALUES(agent_id), meta_info = VALUES(meta_info);
+
+
+INSERT INTO opencoze.workflow_meta(id,space_id, name, description, icon_uri, created_at,status, content_type, mode, creator_id, tag, author_id) VALUES
+    (1, 1,'split_messages', '示例：把较长的文本消息拆分多个，适合拟人发消息场景', 'default_icon/default_workflow_icon.png', 1750254785913,3, 0, 0,  0, 0, 0);
+
+INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, test_run_success, modified, updated_at, deleted_at, commit_id) VALUES (1, '{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "trigger_parameters": []
+      },
+      "meta": {
+        "defaultCollapsed": false,
+        "position": {
+          "x": 180,
+          "y": 241.39999999999998
+        },
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "data": {
+        "inputs": {
+          "content": {
+            "type": "string",
+            "value": {
+              "content": "{{output}}",
+              "type": "literal"
+            }
+          },
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "170340",
+                    "name": "last",
+                    "source": "block-output"
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output"
+            }
+          ],
+          "streamingOutput": false,
+          "terminatePlan": "useAnswerContent"
+        },
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        }
+      },
+      "meta": {
+        "defaultCollapsed": false,
+        "position": {
+          "x": 2279.9286563614746,
+          "y": 228.39999999999998
+        },
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": "193248",
+      "type": "21",
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": {
+                    "blockID": "170340",
+                    "name": "arr",
+                    "source": "block-output"
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            }
+          ],
+          "loopCount": {
+            "type": "integer",
+            "value": {
+              "content": "10",
+              "type": "literal"
+            }
+          },
+          "loopType": "array",
+          "variableParameters": []
+        },
+        "nodeMeta": {
+          "description": "用于通过设定循环次数和逻辑，重复执行一系列任务",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Loop-v2.jpg",
+          "subTitle": "循环",
+          "title": "循环"
+        },
+        "outputs": [],
+        "version": "2"
+      },
+      "meta": {
+        "defaultCollapsed": false,
+        "position": {
+          "x": 1712.0689655172416,
+          "y": 214.7
+        },
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "blocks": [
+        {
+          "id": "48846",
+          "type": "8",
+          "data": {
+            "inputs": {
+              "branches": [
+                {
+                  "condition": {
+                    "conditions": [
+                      {
+                        "left": {
+                          "input": {
+                            "type": "string",
+                            "value": {
+                              "content": {
+                                "blockID": "193248",
+                                "name": "input",
+                                "source": "block-output"
+                              },
+                              "type": "ref"
+                            }
+                          }
+                        },
+                        "operator": 3,
+                        "right": {
+                          "input": {
+                            "type": "string",
+                            "value": {
+                              "content": "0",
+                              "type": "literal"
+                            }
+                          }
+                        }
+                      }
+                    ],
+                    "logic": 2
+                  }
+                }
+              ]
+            },
+            "nodeMeta": {
+              "description": "连接多个下游分支，若设定的条件成立则仅运行对应的分支，若均不成立则只运行“否则”分支",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Condition-v2.jpg",
+              "subTitle": "选择器",
+              "title": "选择器"
+            }
+          },
+          "meta": {
+            "defaultCollapsed": false,
+            "position": {
+              "x": 180,
+              "y": 0
+            },
+            "canvasPosition": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        },
+        {
+          "id": "38626",
+          "type": "5",
+          "data": {
+            "nodeMeta": {
+              "title": "代码_1",
+              "description": "编写代码，处理输入变量来生成返回值",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg"
+            },
+            "settings": null,
+            "version": "",
+            "outputs": [
+              {
+                "name": "output",
+                "type": "string",
+                "input": {},
+                "required": false
+              }
+            ],
+            "inputs": {
+              "inputParameters": [
+                {
+                  "name": "input",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "ref",
+                      "inputMode": "",
+                      "content": {
+                        "blockID": "193248",
+                        "name": "input",
+                        "source": "block-output"
+                      },
+                      "dependencies": {
+                        "variables": null
+                      }
+                    }
+                  },
+                  "left": {},
+                  "right": {}
+                }
+              ],
+              "code": "import time\\nimport random\\n\\nasync def main(args: Args) -> Output:\\n    params = args.params\\n    ret: Output = {\\n        \\"output\\": params[\'input\'],\\n    }\\n    time.sleep(random.random() * 1.5 + 0.6)\\n    return ret",
+              "language": 3,
+              "functionID": "38v848cc8t2ar",
+              "settingOnError": {
+                "switch": false,
+                "processType": 0
+              }
+            }
+          },
+          "meta": {
+            "defaultCollapsed": false,
+            "position": {
+              "x": 1075.8858501783589,
+              "y": -75.34441141498203
+            },
+            "canvasPosition": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        },
+        {
+          "id": "57003",
+          "type": "31",
+          "data": {
+            "inputs": {
+              "note": "[{\\"type\\":\\"paragraph\\",\\"children\\":[{\\"text\\":\\"每次循环时，在输出节点中输出本次拆分后的内容\\",\\"type\\":\\"text\\"}]}]",
+              "schemaType": "slate"
+            },
+            "size": {
+              "height": 80,
+              "width": 302.1128397287728
+            }
+          },
+          "meta": {
+            "defaultCollapsed": false,
+            "position": {
+              "x": 612.0451843043993,
+              "y": 139.39999999999998
+            },
+            "canvasPosition": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        },
+        {
+          "id": "07062",
+          "type": "13",
+          "data": {
+            "inputs": {
+              "content": {
+                "type": "string",
+                "value": {
+                  "content": "{{output}}",
+                  "type": "literal"
+                }
+              },
+              "inputParameters": [
+                {
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "content": {
+                        "blockID": "193248",
+                        "name": "input",
+                        "source": "block-output"
+                      },
+                      "type": "ref"
+                    }
+                  },
+                  "name": "output"
+                }
+              ],
+              "streamingOutput": false
+            },
+            "nodeMeta": {
+              "description": "节点从“消息”更名为“输出”，支持中间过程的消息输出，支持流式和非流式两种方式",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Output-v2.jpg",
+              "mainColor": "#5C62FF",
+              "subTitle": "输出",
+              "title": "输出"
+            }
+          },
+          "meta": {
+            "defaultCollapsed": false,
+            "position": {
+              "x": 627.9429250891795,
+              "y": -75.34441141498215
+            },
+            "canvasPosition": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        }
+      ],
+      "edges": [
+        {
+          "sourceNodeID": "193248",
+          "targetNodeID": "48846",
+          "sourcePortID": "loop-function-inline-output"
+        },
+        {
+          "sourceNodeID": "48846",
+          "targetNodeID": "193248",
+          "sourcePortID": "false",
+          "targetPortID": "loop-function-inline-input"
+        },
+        {
+          "sourceNodeID": "48846",
+          "targetNodeID": "07062",
+          "sourcePortID": "true"
+        },
+        {
+          "sourceNodeID": "07062",
+          "targetNodeID": "38626",
+          "sourcePortID": ""
+        },
+        {
+          "sourceNodeID": "38626",
+          "targetNodeID": "193248",
+          "sourcePortID": "",
+          "targetPortID": "loop-function-inline-input"
+        }
+      ]
+    },
+    {
+      "id": "170340",
+      "type": "5",
+      "data": {
+        "nodeMeta": {
+          "title": "代码",
+          "description": "编写代码，处理输入变量来生成返回值",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg"
+        },
+        "settings": null,
+        "version": "",
+        "outputs": [
+          {
+            "name": "last",
+            "type": "string",
+            "input": {},
+            "required": false
+          },
+          {
+            "name": "arr",
+            "type": "list",
+            "schema": {
+              "type": "string"
+            },
+            "input": {},
+            "required": false
+          }
+        ],
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "ref",
+                  "inputMode": "",
+                  "content": {
+                    "blockID": "191914",
+                    "name": "output",
+                    "source": "block-output"
+                  },
+                  "dependencies": {
+                    "variables": null
+                  }
+                }
+              },
+              "left": {},
+              "right": {}
+            }
+          ],
+          "code": "async function main({ params }: Args): Promise<Output> {\\n    var last = \\"\\"\\n    var arrEnd = params.input.length-1\\n    for (var i = params.input.length - 1; i >= 0; i--) { \\n        if (params.input[i].length > 0) {\\n            last = params.input[i]\\n            arrEnd = i\\n            break\\n        }\\n    }\\n    const ret = {\\n        \\"last\\": last,\\n        \\"arr\\": params.input.slice(0, arrEnd),\\n    };\\n\\n    return ret;\\n}",
+          "language": 5,
+          "functionID": "38v84ohu75kua",
+          "settingOnError": {
+            "switch": false,
+            "processType": 0
+          }
+        }
+      },
+      "meta": {
+        "defaultCollapsed": false,
+        "position": {
+          "x": 1100,
+          "y": 227.7
+        },
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": "191914",
+      "type": "15",
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "String"
+            }
+          ],
+          "method": "split",
+          "splitParams": [
+            {
+              "input": {
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": [
+                    "。",
+                    "，",
+                    "\\n"
+                  ],
+                  "type": "literal"
+                }
+              },
+              "name": "delimiters"
+            },
+            {
+              "input": {
+                "schema": {
+                  "schema": [
+                    {
+                      "name": "label",
+                      "required": true,
+                      "type": "string"
+                    },
+                    {
+                      "name": "value",
+                      "required": true,
+                      "type": "string"
+                    },
+                    {
+                      "name": "isDefault",
+                      "required": true,
+                      "type": "boolean"
+                    }
+                  ],
+                  "type": "object"
+                },
+                "type": "list",
+                "value": {
+                  "content": [
+                    {
+                      "isDefault": true,
+                      "label": "换行",
+                      "value": "\\n"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "制表符",
+                      "value": "\\t"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "句号",
+                      "value": "。"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "逗号",
+                      "value": "，"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "分号",
+                      "value": "；"
+                    },
+                    {
+                      "isDefault": true,
+                      "label": "空格",
+                      "value": " "
+                    }
+                  ],
+                  "type": "literal"
+                }
+              },
+              "name": "allDelimiters"
+            }
+          ]
+        },
+        "nodeMeta": {
+          "description": "用于处理多个字符串类型变量的格式",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
+          "subTitle": "文本处理",
+          "title": "文本处理"
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "type": "list"
+          }
+        ]
+      },
+      "meta": {
+        "defaultCollapsed": false,
+        "position": {
+          "x": 640,
+          "y": 227.7
+        },
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": "147411",
+      "type": "31",
+      "data": {
+        "inputs": {
+          "note": "[{\\"type\\":\\"paragraph\\",\\"children\\":[{\\"text\\":\\"将切分后的数组分成前面几组array数组+最后一组（留给结束节点输出）\\",\\"type\\":\\"text\\"}]}]",
+          "schemaType": "slate"
+        },
+        "size": {
+          "height": 80,
+          "width": 302.1128397287728
+        }
+      },
+      "meta": {
+        "defaultCollapsed": false,
+        "position": {
+          "x": 1071.05,
+          "y": 117.93507728894171
+        },
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": "166756",
+      "type": "31",
+      "data": {
+        "inputs": {
+          "note": "[{\\"type\\":\\"paragraph\\",\\"children\\":[{\\"text\\":\\"通过文本处理，将稍长的文本通过分隔符来切分\\",\\"type\\":\\"text\\"}]}]",
+          "schemaType": "slate"
+        },
+        "size": {
+          "height": 80,
+          "width": 302.1128397287728
+        }
+      },
+      "meta": {
+        "defaultCollapsed": false,
+        "position": {
+          "x": 611.05,
+          "y": 117.93507728894173
+        },
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": "179884",
+      "type": "31",
+      "data": {
+        "inputs": {
+          "note": "[{\\"type\\":\\"paragraph\\",\\"children\\":[{\\"text\\":\\"适用于拟人对话场景，制造分多条消息回复的效果\\",\\"type\\":\\"text\\"}]}]",
+          "schemaType": "slate"
+        },
+        "size": {
+          "height": 80,
+          "width": 302.1128397287728
+        }
+      },
+      "meta": {
+        "defaultCollapsed": false,
+        "position": {
+          "x": 151.05,
+          "y": 117.93507728894173
+        },
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "191914",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "193248",
+      "targetNodeID": "900001",
+      "sourcePortID": "loop-output"
+    },
+    {
+      "sourceNodeID": "170340",
+      "targetNodeID": "193248",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "191914",
+      "targetNodeID": "170340",
+      "sourcePortID": ""
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}', '[{"name":"input","type":"string","required":true}]', '[{"name":"output","type":"string"}]', 1, 0, null, null, '1');

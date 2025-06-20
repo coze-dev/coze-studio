@@ -611,10 +611,10 @@ func (i *impl) UpdateMeta(ctx context.Context, id int64, metaUpdate *vo.MetaUpda
 	return nil
 }
 
-func (i *impl) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (int64, error) {
+func (i *impl) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error) {
 	wf, err := i.repo.CopyWorkflow(ctx, workflowID, policy)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	// TODO(zhuangjie): publish workflow resource logic should move to application
@@ -631,9 +631,9 @@ func (i *impl) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.Cop
 	})
 
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return wf.ID, nil
+	return wf, nil
 
 }
 
@@ -1155,7 +1155,7 @@ func (i *impl) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targe
 				return err
 			}
 
-			copiedID, err := i.CopyWorkflow(ctx, wf.id, vo.CopyWorkflowPolicy{
+			cwf, err := i.CopyWorkflow(ctx, wf.id, vo.CopyWorkflowPolicy{
 				TargetAppID:          ptr.Of(targetAppID),
 				ModifiedCanvasSchema: ptr.Of(modifiedCanvasString),
 			})
@@ -1168,7 +1168,7 @@ func (i *impl) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targe
 			}
 
 			hasCopiedWorkflows[wf.id] = entity.IDVersionPair{
-				ID: copiedID,
+				ID: cwf.ID,
 			}
 		}
 		return nil
@@ -1577,6 +1577,7 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 			if !ok {
 				return fmt.Errorf("apiID param is not found")
 			}
+
 			apiID, err := strconv.ParseInt(apiIDParam.Input.Value.Content.(string), 10, 64)
 			if err != nil {
 				return err

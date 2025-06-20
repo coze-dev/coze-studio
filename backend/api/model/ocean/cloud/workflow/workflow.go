@@ -2056,48 +2056,6 @@ func (p *ValidateErrorType) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
-type Locale int64
-
-const (
-	Locale_zh_CN Locale = 1
-	Locale_en_US Locale = 2
-)
-
-func (p Locale) String() string {
-	switch p {
-	case Locale_zh_CN:
-		return "zh_CN"
-	case Locale_en_US:
-		return "en_US"
-	}
-	return "<UNSET>"
-}
-
-func LocaleFromString(s string) (Locale, error) {
-	switch s {
-	case "zh_CN":
-		return Locale_zh_CN, nil
-	case "en_US":
-		return Locale_en_US, nil
-	}
-	return Locale(0), fmt.Errorf("not a valid Locale string")
-}
-
-func LocalePtr(v Locale) *Locale { return &v }
-func (p *Locale) Scan(value interface{}) (err error) {
-	var result sql.NullInt64
-	err = result.Scan(value)
-	*p = Locale(result.Int64)
-	return
-}
-
-func (p *Locale) Value() (driver.Value, error) {
-	if p == nil {
-		return nil, nil
-	}
-	return int64(*p), nil
-}
-
 type PluginType int64
 
 const (
@@ -10484,7 +10442,6 @@ type CreateWorkflowRequest struct {
 	ProjectID *string `thrift:"project_id,9,optional" form:"project_id" json:"project_id,omitempty" query:"project_id"`
 	// 是否创建会话，仅当flow_mode=chatflow时生效
 	CreateConversation *bool      `thrift:"create_conversation,10,optional" form:"create_conversation" json:"create_conversation,omitempty" query:"create_conversation"`
-	Locale             Locale     `thrift:"locale,11" form:"locale" json:"locale" query:"locale"`
 	Base               *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -10565,10 +10522,6 @@ func (p *CreateWorkflowRequest) GetCreateConversation() (v bool) {
 	return *p.CreateConversation
 }
 
-func (p *CreateWorkflowRequest) GetLocale() (v Locale) {
-	return p.Locale
-}
-
 var CreateWorkflowRequest_Base_DEFAULT *base.Base
 
 func (p *CreateWorkflowRequest) GetBase() (v *base.Base) {
@@ -10589,7 +10542,6 @@ var fieldIDToName_CreateWorkflowRequest = map[int16]string{
 	8:   "bind_biz_type",
 	9:   "project_id",
 	10:  "create_conversation",
-	11:  "locale",
 	255: "Base",
 }
 
@@ -10722,14 +10674,6 @@ func (p *CreateWorkflowRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 10:
 			if fieldTypeId == thrift.BOOL {
 				if err = p.ReadField10(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 11:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField11(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -10905,17 +10849,6 @@ func (p *CreateWorkflowRequest) ReadField10(iprot thrift.TProtocol) error {
 	p.CreateConversation = _field
 	return nil
 }
-func (p *CreateWorkflowRequest) ReadField11(iprot thrift.TProtocol) error {
-
-	var _field Locale
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = Locale(v)
-	}
-	p.Locale = _field
-	return nil
-}
 func (p *CreateWorkflowRequest) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBase()
 	if err := _field.Read(iprot); err != nil {
@@ -10969,10 +10902,6 @@ func (p *CreateWorkflowRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField10(oprot); err != nil {
 			fieldId = 10
-			goto WriteFieldError
-		}
-		if err = p.writeField11(oprot); err != nil {
-			fieldId = 11
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -11168,22 +11097,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
-}
-func (p *CreateWorkflowRequest) writeField11(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("locale", thrift.I32, 11); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(int32(p.Locale)); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
 }
 func (p *CreateWorkflowRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {
@@ -26237,6 +26150,774 @@ func (p *GetWorkflowReferencesResponse) String() string {
 
 }
 
+type GetExampleWorkFlowListResponse struct {
+	Data     *WorkFlowListData `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
+	Code     int64             `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg      string            `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
+	BaseResp *base.BaseResp    `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
+}
+
+func NewGetExampleWorkFlowListResponse() *GetExampleWorkFlowListResponse {
+	return &GetExampleWorkFlowListResponse{}
+}
+
+func (p *GetExampleWorkFlowListResponse) InitDefault() {
+}
+
+var GetExampleWorkFlowListResponse_Data_DEFAULT *WorkFlowListData
+
+func (p *GetExampleWorkFlowListResponse) GetData() (v *WorkFlowListData) {
+	if !p.IsSetData() {
+		return GetExampleWorkFlowListResponse_Data_DEFAULT
+	}
+	return p.Data
+}
+
+func (p *GetExampleWorkFlowListResponse) GetCode() (v int64) {
+	return p.Code
+}
+
+func (p *GetExampleWorkFlowListResponse) GetMsg() (v string) {
+	return p.Msg
+}
+
+var GetExampleWorkFlowListResponse_BaseResp_DEFAULT *base.BaseResp
+
+func (p *GetExampleWorkFlowListResponse) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return GetExampleWorkFlowListResponse_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+
+var fieldIDToName_GetExampleWorkFlowListResponse = map[int16]string{
+	1:   "data",
+	253: "code",
+	254: "msg",
+	255: "BaseResp",
+}
+
+func (p *GetExampleWorkFlowListResponse) IsSetData() bool {
+	return p.Data != nil
+}
+
+func (p *GetExampleWorkFlowListResponse) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *GetExampleWorkFlowListResponse) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetData bool = false
+	var issetCode bool = false
+	var issetMsg bool = false
+	var issetBaseResp bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetData = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 253:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField253(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 254:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField254(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 255:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField255(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetBaseResp = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetData {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetCode {
+		fieldId = 253
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 254
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetBaseResp {
+		fieldId = 255
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_GetExampleWorkFlowListResponse[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_GetExampleWorkFlowListResponse[fieldId]))
+}
+
+func (p *GetExampleWorkFlowListResponse) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewWorkFlowListData()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Data = _field
+	return nil
+}
+func (p *GetExampleWorkFlowListResponse) ReadField253(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *GetExampleWorkFlowListResponse) ReadField254(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
+	return nil
+}
+func (p *GetExampleWorkFlowListResponse) ReadField255(iprot thrift.TProtocol) error {
+	_field := base.NewBaseResp()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.BaseResp = _field
+	return nil
+}
+
+func (p *GetExampleWorkFlowListResponse) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetExampleWorkFlowListResponse"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField253(oprot); err != nil {
+			fieldId = 253
+			goto WriteFieldError
+		}
+		if err = p.writeField254(oprot); err != nil {
+			fieldId = 254
+			goto WriteFieldError
+		}
+		if err = p.writeField255(oprot); err != nil {
+			fieldId = 255
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *GetExampleWorkFlowListResponse) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("data", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Data.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *GetExampleWorkFlowListResponse) writeField253(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I64, 253); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 end error: ", p), err)
+}
+func (p *GetExampleWorkFlowListResponse) writeField254(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 254); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 end error: ", p), err)
+}
+func (p *GetExampleWorkFlowListResponse) writeField255(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("BaseResp", thrift.STRUCT, 255); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.BaseResp.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
+}
+
+func (p *GetExampleWorkFlowListResponse) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetExampleWorkFlowListResponse(%+v)", *p)
+
+}
+
+type GetExampleWorkFlowListRequest struct {
+	// 分页功能，指定希望获取的结果列表的页码。
+	Page *int32 `thrift:"page,1,optional" form:"page" json:"page,omitempty" query:"page"`
+	// 分页功能，指定每页返回的条目数量, 必须大于0，小于等于100
+	Size *int32 `thrift:"size,2,optional" form:"size" json:"size,omitempty" query:"size"`
+	// 根据工作流的名称来筛选示例工作流列表。
+	Name *string `thrift:"name,5,optional" form:"name" json:"name,omitempty" query:"name"`
+	// 根据工作流的模式（例如：标准工作流、对话流等）筛选示例工作流列表。
+	FlowMode *WorkflowMode `thrift:"flow_mode,11,optional" form:"flow_mode" json:"flow_mode,omitempty" query:"flow_mode"`
+	// Bot的 Workflow as Agent模式会使用，只会使用BotAgent = 3的场景
+	Checker []CheckType `thrift:"checker,14,optional" form:"checker" json:"checker,omitempty" query:"checker"`
+	Base    *base.Base  `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+}
+
+func NewGetExampleWorkFlowListRequest() *GetExampleWorkFlowListRequest {
+	return &GetExampleWorkFlowListRequest{}
+}
+
+func (p *GetExampleWorkFlowListRequest) InitDefault() {
+}
+
+var GetExampleWorkFlowListRequest_Page_DEFAULT int32
+
+func (p *GetExampleWorkFlowListRequest) GetPage() (v int32) {
+	if !p.IsSetPage() {
+		return GetExampleWorkFlowListRequest_Page_DEFAULT
+	}
+	return *p.Page
+}
+
+var GetExampleWorkFlowListRequest_Size_DEFAULT int32
+
+func (p *GetExampleWorkFlowListRequest) GetSize() (v int32) {
+	if !p.IsSetSize() {
+		return GetExampleWorkFlowListRequest_Size_DEFAULT
+	}
+	return *p.Size
+}
+
+var GetExampleWorkFlowListRequest_Name_DEFAULT string
+
+func (p *GetExampleWorkFlowListRequest) GetName() (v string) {
+	if !p.IsSetName() {
+		return GetExampleWorkFlowListRequest_Name_DEFAULT
+	}
+	return *p.Name
+}
+
+var GetExampleWorkFlowListRequest_FlowMode_DEFAULT WorkflowMode
+
+func (p *GetExampleWorkFlowListRequest) GetFlowMode() (v WorkflowMode) {
+	if !p.IsSetFlowMode() {
+		return GetExampleWorkFlowListRequest_FlowMode_DEFAULT
+	}
+	return *p.FlowMode
+}
+
+var GetExampleWorkFlowListRequest_Checker_DEFAULT []CheckType
+
+func (p *GetExampleWorkFlowListRequest) GetChecker() (v []CheckType) {
+	if !p.IsSetChecker() {
+		return GetExampleWorkFlowListRequest_Checker_DEFAULT
+	}
+	return p.Checker
+}
+
+var GetExampleWorkFlowListRequest_Base_DEFAULT *base.Base
+
+func (p *GetExampleWorkFlowListRequest) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return GetExampleWorkFlowListRequest_Base_DEFAULT
+	}
+	return p.Base
+}
+
+var fieldIDToName_GetExampleWorkFlowListRequest = map[int16]string{
+	1:   "page",
+	2:   "size",
+	5:   "name",
+	11:  "flow_mode",
+	14:  "checker",
+	255: "Base",
+}
+
+func (p *GetExampleWorkFlowListRequest) IsSetPage() bool {
+	return p.Page != nil
+}
+
+func (p *GetExampleWorkFlowListRequest) IsSetSize() bool {
+	return p.Size != nil
+}
+
+func (p *GetExampleWorkFlowListRequest) IsSetName() bool {
+	return p.Name != nil
+}
+
+func (p *GetExampleWorkFlowListRequest) IsSetFlowMode() bool {
+	return p.FlowMode != nil
+}
+
+func (p *GetExampleWorkFlowListRequest) IsSetChecker() bool {
+	return p.Checker != nil
+}
+
+func (p *GetExampleWorkFlowListRequest) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *GetExampleWorkFlowListRequest) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 11:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField11(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 14:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField14(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 255:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField255(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_GetExampleWorkFlowListRequest[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *GetExampleWorkFlowListRequest) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Page = _field
+	return nil
+}
+func (p *GetExampleWorkFlowListRequest) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Size = _field
+	return nil
+}
+func (p *GetExampleWorkFlowListRequest) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Name = _field
+	return nil
+}
+func (p *GetExampleWorkFlowListRequest) ReadField11(iprot thrift.TProtocol) error {
+
+	var _field *WorkflowMode
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		tmp := WorkflowMode(v)
+		_field = &tmp
+	}
+	p.FlowMode = _field
+	return nil
+}
+func (p *GetExampleWorkFlowListRequest) ReadField14(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]CheckType, 0, size)
+	for i := 0; i < size; i++ {
+
+		var _elem CheckType
+		if v, err := iprot.ReadI32(); err != nil {
+			return err
+		} else {
+			_elem = CheckType(v)
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.Checker = _field
+	return nil
+}
+func (p *GetExampleWorkFlowListRequest) ReadField255(iprot thrift.TProtocol) error {
+	_field := base.NewBase()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Base = _field
+	return nil
+}
+
+func (p *GetExampleWorkFlowListRequest) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetExampleWorkFlowListRequest"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField11(oprot); err != nil {
+			fieldId = 11
+			goto WriteFieldError
+		}
+		if err = p.writeField14(oprot); err != nil {
+			fieldId = 14
+			goto WriteFieldError
+		}
+		if err = p.writeField255(oprot); err != nil {
+			fieldId = 255
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *GetExampleWorkFlowListRequest) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetPage() {
+		if err = oprot.WriteFieldBegin("page", thrift.I32, 1); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.Page); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *GetExampleWorkFlowListRequest) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSize() {
+		if err = oprot.WriteFieldBegin("size", thrift.I32, 2); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.Size); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *GetExampleWorkFlowListRequest) writeField5(oprot thrift.TProtocol) (err error) {
+	if p.IsSetName() {
+		if err = oprot.WriteFieldBegin("name", thrift.STRING, 5); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Name); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+func (p *GetExampleWorkFlowListRequest) writeField11(oprot thrift.TProtocol) (err error) {
+	if p.IsSetFlowMode() {
+		if err = oprot.WriteFieldBegin("flow_mode", thrift.I32, 11); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(int32(*p.FlowMode)); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
+}
+func (p *GetExampleWorkFlowListRequest) writeField14(oprot thrift.TProtocol) (err error) {
+	if p.IsSetChecker() {
+		if err = oprot.WriteFieldBegin("checker", thrift.LIST, 14); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteListBegin(thrift.I32, len(p.Checker)); err != nil {
+			return err
+		}
+		for _, v := range p.Checker {
+			if err := oprot.WriteI32(int32(v)); err != nil {
+				return err
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 14 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 14 end error: ", p), err)
+}
+func (p *GetExampleWorkFlowListRequest) writeField255(oprot thrift.TProtocol) (err error) {
+	if p.IsSetBase() {
+		if err = oprot.WriteFieldBegin("Base", thrift.STRUCT, 255); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Base.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
+}
+
+func (p *GetExampleWorkFlowListRequest) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetExampleWorkFlowListRequest(%+v)", *p)
+
+}
+
 type GetWorkFlowListRequest struct {
 	Page *int32 `thrift:"page,1,optional" form:"page" json:"page,omitempty" query:"page"`
 	// 分页大小，一般为10
@@ -32064,25 +32745,25 @@ func (p *CancelWorkFlowResponse) String() string {
 
 // workflow快照基本信息
 type WkPluginBasicData struct {
-	WorkflowId int64          `thrift:"WorkflowId,1" form:"WorkflowId" json:"WorkflowId" query:"WorkflowId"`
-	SpaceId    int64          `thrift:"SpaceId,2" form:"SpaceId" json:"SpaceId" query:"SpaceId"`
-	Name       string         `thrift:"Name,3" form:"Name" json:"Name" query:"Name"`
-	Desc       string         `thrift:"Desc,4" form:"Desc" json:"Desc" query:"Desc"`
-	Url        string         `thrift:"Url,5" form:"Url" json:"Url" query:"Url"`
-	IconUri    string         `thrift:"IconUri,6" form:"IconUri" json:"IconUri" query:"IconUri"`
-	Status     WorkFlowStatus `thrift:"Status,7" form:"Status" json:"Status" query:"Status"`
+	WorkflowID int64          `thrift:"workflow_id,1" form:"workflow_id" json:"workflow_id,string" query:"workflow_id"`
+	SpaceID    int64          `thrift:"space_id,2" form:"space_id" json:"space_id,string" query:"space_id"`
+	Name       string         `thrift:"name,3" form:"name" json:"name" query:"name"`
+	Desc       string         `thrift:"desc,4" form:"desc" json:"desc" query:"desc"`
+	URL        string         `thrift:"url,5" form:"url" json:"url" query:"url"`
+	IconURI    string         `thrift:"icon_uri,6" form:"icon_uri" json:"icon_uri" query:"icon_uri"`
+	Status     WorkFlowStatus `thrift:"status,7" form:"status" json:"status" query:"status"`
 	// workflow 对应的插件id
-	PluginId              int64        `thrift:"PluginId,8" form:"PluginId" json:"PluginId" query:"PluginId"`
-	CreateTime            int64        `thrift:"CreateTime,9" form:"CreateTime" json:"CreateTime" query:"CreateTime"`
-	UpdateTime            int64        `thrift:"UpdateTime,10" form:"UpdateTime" json:"UpdateTime" query:"UpdateTime"`
-	SourceId              int64        `thrift:"SourceId,11" form:"SourceId" json:"SourceId" query:"SourceId"`
-	Creator               *Creator     `thrift:"Creator,12" form:"Creator" json:"Creator" query:"Creator"`
-	Schema                string       `thrift:"Schema,13" form:"Schema" json:"Schema" query:"Schema"`
-	StartNode             *Node        `thrift:"StartNode,14" form:"StartNode" json:"StartNode" query:"StartNode"`
-	FlowMode              WorkflowMode `thrift:"FlowMode,15" form:"FlowMode" json:"FlowMode" query:"FlowMode"`
-	SubWorkflows          []int64      `thrift:"SubWorkflows,16" form:"SubWorkflows" json:"SubWorkflows" query:"SubWorkflows"`
-	LatestPublishCommitID string       `thrift:"LatestPublishCommitID,17" form:"LatestPublishCommitID" json:"LatestPublishCommitID" query:"LatestPublishCommitID"`
-	EndNode               *Node        `thrift:"EndNode,18" form:"EndNode" json:"EndNode" query:"EndNode"`
+	PluginID              int64        `thrift:"plugin_id,8" form:"plugin_id" json:"plugin_id,string" query:"plugin_id"`
+	CreateTime            int64        `thrift:"create_time,9" form:"create_time" json:"create_time" query:"create_time"`
+	UpdateTime            int64        `thrift:"update_time,10" form:"update_time" json:"update_time" query:"update_time"`
+	SourceID              int64        `thrift:"source_id,11" form:"source_id" json:"source_id,string" query:"source_id"`
+	Creator               *Creator     `thrift:"creator,12" form:"creator" json:"creator" query:"creator"`
+	Schema                string       `thrift:"schema,13" form:"schema" json:"schema" query:"schema"`
+	StartNode             *Node        `thrift:"start_node,14" form:"start_node" json:"start_node" query:"start_node"`
+	FlowMode              WorkflowMode `thrift:"flow_mode,15" form:"flow_mode" json:"flow_mode" query:"flow_mode"`
+	SubWorkflows          []int64      `thrift:"sub_workflows,16" form:"sub_workflows" json:"sub_workflows" query:"sub_workflows"`
+	LatestPublishCommitID string       `thrift:"latest_publish_commit_id,17" form:"latest_publish_commit_id" json:"latest_publish_commit_id" query:"latest_publish_commit_id"`
+	EndNode               *Node        `thrift:"end_node,18" form:"end_node" json:"end_node" query:"end_node"`
 }
 
 func NewWkPluginBasicData() *WkPluginBasicData {
@@ -32092,12 +32773,12 @@ func NewWkPluginBasicData() *WkPluginBasicData {
 func (p *WkPluginBasicData) InitDefault() {
 }
 
-func (p *WkPluginBasicData) GetWorkflowId() (v int64) {
-	return p.WorkflowId
+func (p *WkPluginBasicData) GetWorkflowID() (v int64) {
+	return p.WorkflowID
 }
 
-func (p *WkPluginBasicData) GetSpaceId() (v int64) {
-	return p.SpaceId
+func (p *WkPluginBasicData) GetSpaceID() (v int64) {
+	return p.SpaceID
 }
 
 func (p *WkPluginBasicData) GetName() (v string) {
@@ -32108,20 +32789,20 @@ func (p *WkPluginBasicData) GetDesc() (v string) {
 	return p.Desc
 }
 
-func (p *WkPluginBasicData) GetUrl() (v string) {
-	return p.Url
+func (p *WkPluginBasicData) GetURL() (v string) {
+	return p.URL
 }
 
-func (p *WkPluginBasicData) GetIconUri() (v string) {
-	return p.IconUri
+func (p *WkPluginBasicData) GetIconURI() (v string) {
+	return p.IconURI
 }
 
 func (p *WkPluginBasicData) GetStatus() (v WorkFlowStatus) {
 	return p.Status
 }
 
-func (p *WkPluginBasicData) GetPluginId() (v int64) {
-	return p.PluginId
+func (p *WkPluginBasicData) GetPluginID() (v int64) {
+	return p.PluginID
 }
 
 func (p *WkPluginBasicData) GetCreateTime() (v int64) {
@@ -32132,8 +32813,8 @@ func (p *WkPluginBasicData) GetUpdateTime() (v int64) {
 	return p.UpdateTime
 }
 
-func (p *WkPluginBasicData) GetSourceId() (v int64) {
-	return p.SourceId
+func (p *WkPluginBasicData) GetSourceID() (v int64) {
+	return p.SourceID
 }
 
 var WkPluginBasicData_Creator_DEFAULT *Creator
@@ -32180,24 +32861,24 @@ func (p *WkPluginBasicData) GetEndNode() (v *Node) {
 }
 
 var fieldIDToName_WkPluginBasicData = map[int16]string{
-	1:  "WorkflowId",
-	2:  "SpaceId",
-	3:  "Name",
-	4:  "Desc",
-	5:  "Url",
-	6:  "IconUri",
-	7:  "Status",
-	8:  "PluginId",
-	9:  "CreateTime",
-	10: "UpdateTime",
-	11: "SourceId",
-	12: "Creator",
-	13: "Schema",
-	14: "StartNode",
-	15: "FlowMode",
-	16: "SubWorkflows",
-	17: "LatestPublishCommitID",
-	18: "EndNode",
+	1:  "workflow_id",
+	2:  "space_id",
+	3:  "name",
+	4:  "desc",
+	5:  "url",
+	6:  "icon_uri",
+	7:  "status",
+	8:  "plugin_id",
+	9:  "create_time",
+	10: "update_time",
+	11: "source_id",
+	12: "creator",
+	13: "schema",
+	14: "start_node",
+	15: "flow_mode",
+	16: "sub_workflows",
+	17: "latest_publish_commit_id",
+	18: "end_node",
 }
 
 func (p *WkPluginBasicData) IsSetCreator() bool {
@@ -32411,7 +33092,7 @@ func (p *WkPluginBasicData) ReadField1(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.WorkflowId = _field
+	p.WorkflowID = _field
 	return nil
 }
 func (p *WkPluginBasicData) ReadField2(iprot thrift.TProtocol) error {
@@ -32422,7 +33103,7 @@ func (p *WkPluginBasicData) ReadField2(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.SpaceId = _field
+	p.SpaceID = _field
 	return nil
 }
 func (p *WkPluginBasicData) ReadField3(iprot thrift.TProtocol) error {
@@ -32455,7 +33136,7 @@ func (p *WkPluginBasicData) ReadField5(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.Url = _field
+	p.URL = _field
 	return nil
 }
 func (p *WkPluginBasicData) ReadField6(iprot thrift.TProtocol) error {
@@ -32466,7 +33147,7 @@ func (p *WkPluginBasicData) ReadField6(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.IconUri = _field
+	p.IconURI = _field
 	return nil
 }
 func (p *WkPluginBasicData) ReadField7(iprot thrift.TProtocol) error {
@@ -32488,7 +33169,7 @@ func (p *WkPluginBasicData) ReadField8(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.PluginId = _field
+	p.PluginID = _field
 	return nil
 }
 func (p *WkPluginBasicData) ReadField9(iprot thrift.TProtocol) error {
@@ -32521,7 +33202,7 @@ func (p *WkPluginBasicData) ReadField11(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.SourceId = _field
+	p.SourceID = _field
 	return nil
 }
 func (p *WkPluginBasicData) ReadField12(iprot thrift.TProtocol) error {
@@ -32702,10 +33383,10 @@ WriteStructEndError:
 }
 
 func (p *WkPluginBasicData) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("WorkflowId", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("workflow_id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.WorkflowId); err != nil {
+	if err := oprot.WriteI64(p.WorkflowID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -32718,10 +33399,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("SpaceId", thrift.I64, 2); err != nil {
+	if err = oprot.WriteFieldBegin("space_id", thrift.I64, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.SpaceId); err != nil {
+	if err := oprot.WriteI64(p.SpaceID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -32734,7 +33415,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Name", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Name); err != nil {
@@ -32750,7 +33431,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Desc", thrift.STRING, 4); err != nil {
+	if err = oprot.WriteFieldBegin("desc", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Desc); err != nil {
@@ -32766,10 +33447,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Url", thrift.STRING, 5); err != nil {
+	if err = oprot.WriteFieldBegin("url", thrift.STRING, 5); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Url); err != nil {
+	if err := oprot.WriteString(p.URL); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -32782,10 +33463,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("IconUri", thrift.STRING, 6); err != nil {
+	if err = oprot.WriteFieldBegin("icon_uri", thrift.STRING, 6); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.IconUri); err != nil {
+	if err := oprot.WriteString(p.IconURI); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -32798,7 +33479,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Status", thrift.I32, 7); err != nil {
+	if err = oprot.WriteFieldBegin("status", thrift.I32, 7); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(int32(p.Status)); err != nil {
@@ -32814,10 +33495,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("PluginId", thrift.I64, 8); err != nil {
+	if err = oprot.WriteFieldBegin("plugin_id", thrift.I64, 8); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.PluginId); err != nil {
+	if err := oprot.WriteI64(p.PluginID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -32830,7 +33511,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField9(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("CreateTime", thrift.I64, 9); err != nil {
+	if err = oprot.WriteFieldBegin("create_time", thrift.I64, 9); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.CreateTime); err != nil {
@@ -32846,7 +33527,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField10(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("UpdateTime", thrift.I64, 10); err != nil {
+	if err = oprot.WriteFieldBegin("update_time", thrift.I64, 10); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI64(p.UpdateTime); err != nil {
@@ -32862,10 +33543,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField11(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("SourceId", thrift.I64, 11); err != nil {
+	if err = oprot.WriteFieldBegin("source_id", thrift.I64, 11); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.SourceId); err != nil {
+	if err := oprot.WriteI64(p.SourceID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -32878,7 +33559,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField12(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Creator", thrift.STRUCT, 12); err != nil {
+	if err = oprot.WriteFieldBegin("creator", thrift.STRUCT, 12); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := p.Creator.Write(oprot); err != nil {
@@ -32894,7 +33575,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField13(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Schema", thrift.STRING, 13); err != nil {
+	if err = oprot.WriteFieldBegin("schema", thrift.STRING, 13); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.Schema); err != nil {
@@ -32910,7 +33591,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField14(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("StartNode", thrift.STRUCT, 14); err != nil {
+	if err = oprot.WriteFieldBegin("start_node", thrift.STRUCT, 14); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := p.StartNode.Write(oprot); err != nil {
@@ -32926,7 +33607,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 14 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField15(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("FlowMode", thrift.I32, 15); err != nil {
+	if err = oprot.WriteFieldBegin("flow_mode", thrift.I32, 15); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteI32(int32(p.FlowMode)); err != nil {
@@ -32942,7 +33623,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 15 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField16(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("SubWorkflows", thrift.LIST, 16); err != nil {
+	if err = oprot.WriteFieldBegin("sub_workflows", thrift.LIST, 16); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteListBegin(thrift.I64, len(p.SubWorkflows)); err != nil {
@@ -32966,7 +33647,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 16 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField17(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("LatestPublishCommitID", thrift.STRING, 17); err != nil {
+	if err = oprot.WriteFieldBegin("latest_publish_commit_id", thrift.STRING, 17); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.LatestPublishCommitID); err != nil {
@@ -32982,7 +33663,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 17 end error: ", p), err)
 }
 func (p *WkPluginBasicData) writeField18(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("EndNode", thrift.STRUCT, 18); err != nil {
+	if err = oprot.WriteFieldBegin("end_node", thrift.STRUCT, 18); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := p.EndNode.Write(oprot); err != nil {
@@ -33007,10 +33688,9 @@ func (p *WkPluginBasicData) String() string {
 }
 
 type CopyWkTemplateApiRequest struct {
-	// 拷贝模板的所有父子workflow或者单个workflow集合
-	WorkflowIds []int64 `thrift:"workflow_ids,1,required" form:"workflow_ids,required" json:"workflow_ids,required" query:"workflow_ids,required"`
+	WorkflowIds []string `thrift:"workflow_ids,1,required" form:"workflow_ids,required" json:"workflow_ids,required" query:"workflow_ids,required"`
 	// 拷贝的目标空间
-	TargetSpaceID int64      `thrift:"target_space_id,2,required" form:"target_space_id,required" json:"target_space_id,required" query:"target_space_id,required"`
+	TargetSpaceID int64      `thrift:"target_space_id,2,required" form:"target_space_id,required" json:"target_space_id,string,required" query:"target_space_id,required"`
 	Base          *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -33021,7 +33701,7 @@ func NewCopyWkTemplateApiRequest() *CopyWkTemplateApiRequest {
 func (p *CopyWkTemplateApiRequest) InitDefault() {
 }
 
-func (p *CopyWkTemplateApiRequest) GetWorkflowIds() (v []int64) {
+func (p *CopyWkTemplateApiRequest) GetWorkflowIds() (v []string) {
 	return p.WorkflowIds
 }
 
@@ -33139,11 +33819,11 @@ func (p *CopyWkTemplateApiRequest) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -33217,11 +33897,11 @@ func (p *CopyWkTemplateApiRequest) writeField1(oprot thrift.TProtocol) (err erro
 	if err = oprot.WriteFieldBegin("workflow_ids", thrift.LIST, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.WorkflowIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.WorkflowIds)); err != nil {
 		return err
 	}
 	for _, v := range p.WorkflowIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -33282,7 +33962,7 @@ func (p *CopyWkTemplateApiRequest) String() string {
 
 type CopyWkTemplateApiResponse struct {
 	// 模板ID：拷贝副本的数据
-	Data     map[int64]*WkPluginBasicData `thrift:"data,1,required" form:"data,required" json:"data,required" query:"data,required"`
+	Data     map[int64]*WkPluginBasicData `thrift:"data,1,required" form:"data,required" json:"data,string,required" query:"data,required"`
 	Code     int64                        `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string                       `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 	BaseResp *base.BaseResp               `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
@@ -41701,7 +42381,6 @@ type NodeTemplateListRequest struct {
 	NeedTypes []NodeTemplateType `thrift:"need_types,1,optional" form:"need_types" json:"need_types,omitempty" query:"need_types"`
 	// 需要的节点类型, string 类型
 	NodeTypes []string   `thrift:"node_types,2,optional" form:"node_types" json:"node_types,omitempty" query:"node_types"`
-	Locale    Locale     `thrift:"locale,3" form:"locale" json:"locale" query:"locale"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -41730,10 +42409,6 @@ func (p *NodeTemplateListRequest) GetNodeTypes() (v []string) {
 	return p.NodeTypes
 }
 
-func (p *NodeTemplateListRequest) GetLocale() (v Locale) {
-	return p.Locale
-}
-
 var NodeTemplateListRequest_Base_DEFAULT *base.Base
 
 func (p *NodeTemplateListRequest) GetBase() (v *base.Base) {
@@ -41746,7 +42421,6 @@ func (p *NodeTemplateListRequest) GetBase() (v *base.Base) {
 var fieldIDToName_NodeTemplateListRequest = map[int16]string{
 	1:   "need_types",
 	2:   "node_types",
-	3:   "locale",
 	255: "Base",
 }
 
@@ -41791,14 +42465,6 @@ func (p *NodeTemplateListRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 2:
 			if fieldTypeId == thrift.LIST {
 				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -41887,17 +42553,6 @@ func (p *NodeTemplateListRequest) ReadField2(iprot thrift.TProtocol) error {
 	p.NodeTypes = _field
 	return nil
 }
-func (p *NodeTemplateListRequest) ReadField3(iprot thrift.TProtocol) error {
-
-	var _field Locale
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = Locale(v)
-	}
-	p.Locale = _field
-	return nil
-}
 func (p *NodeTemplateListRequest) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBase()
 	if err := _field.Read(iprot); err != nil {
@@ -41919,10 +42574,6 @@ func (p *NodeTemplateListRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -41998,22 +42649,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-func (p *NodeTemplateListRequest) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("locale", thrift.I32, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(int32(p.Locale)); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 func (p *NodeTemplateListRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {

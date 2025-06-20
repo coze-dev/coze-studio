@@ -379,7 +379,6 @@ struct CreateWorkflowRequest{
     8  : optional i32          bind_biz_type, // 绑定业务类型，非必要不填写。参考BindBizType结构体，值为3时代表抖音分身
     9  : optional string       project_id   , // 应用id，填写时代表流程是project下的流程，需要跟随project发布
     10 : optional bool         create_conversation, // 是否创建会话，仅当flow_mode=chatflow时生效
-    11  : locale locale
     255: optional base.Base    Base     ,
 }
 
@@ -776,6 +775,24 @@ struct GetWorkflowReferencesResponse {
     255: required base.BaseResp          BaseResp,
 }
 
+struct GetExampleWorkFlowListResponse {
+    1  : required WorkFlowListData data    ,
+
+    253: required i64              code    ,
+    254: required string           msg     ,
+    255: required base.BaseResp    BaseResp,
+}
+
+struct GetExampleWorkFlowListRequest {
+    1  : optional i32                page  , // 分页功能，指定希望获取的结果列表的页码。
+    2  : optional i32                size  , // 分页功能，指定每页返回的条目数量, 必须大于0，小于等于100
+    5  : optional string             name             , // 根据工作流的名称来筛选示例工作流列表。
+    11 : optional WorkflowMode       flow_mode        , // 根据工作流的模式（例如：标准工作流、对话流等）筛选示例工作流列表。
+    14 : optional list<CheckType>    checker          , // Bot的 Workflow as Agent模式会使用，只会使用BotAgent = 3的场景
+
+    255: optional base.Base          Base             ,
+}
+
 enum WorkFlowListStatus {
     UnPublished  = 1,
     HadPublished = 2,
@@ -935,35 +952,35 @@ struct CancelWorkFlowResponse {
 
 // workflow快照基本信息
 struct WkPluginBasicData{
-    1 : i64            WorkflowId   (agw.js_conv="str", agw.key="workflow_id"),
-    2 : i64            SpaceId      (agw.js_conv="str", agw.key="space_id")   ,
-    3 : string         Name         (agw.key="name")                          ,
-    4 : string         Desc         (agw.key="desc")                          ,
-    5 : string         Url          (agw.key="url")                           ,
-    6 : string         IconUri      (agw.key="icon_uri")                      ,
-    7 : WorkFlowStatus Status       (agw.key="status")                        ,
-    8 : i64            PluginId     (agw.js_conv="str", agw.key="plugin_id")  , // workflow 对应的插件id
-    9 : i64            CreateTime   (agw.key="create_time")                   ,
-    10: i64            UpdateTime   (agw.key="update_time")                   ,
-    11: i64            SourceId     (agw.js_conv="str",agw.key="source_id")   ,
-    12: Creator        Creator      (agw.key="creator")                       ,
-    13: string         Schema       (agw.key="schema")                        ,
-    14: Node           StartNode    (agw.key="start_node")                    ,
-    15: WorkflowMode   FlowMode     (agw.key="flow_mode")                     ,
-    16: list<i64>      SubWorkflows (agw.key="sub_workflows")                 ,
-    17: string         LatestPublishCommitID (agw.key="latest_publish_commit_id"),
-    18: Node           EndNode      (agw.key="end_node")                      ,
+    1 : i64            workflow_id   (api.js_conv="true"),
+    2 : i64            space_id      (api.js_conv="true"),
+    3 : string         name  ,
+    4 : string         desc ,
+    5 : string         url  ,
+    6 : string         icon_uri  ,
+    7 : WorkFlowStatus status,
+    8 : i64            plugin_id     (api.js_conv="true"), // workflow 对应的插件id
+    9 : i64            create_time  ,
+    10: i64            update_time  ,
+    11: i64            source_id     (api.js_conv="true"),
+    12: Creator        creator ,
+    13: string         schema ,
+    14: Node           start_node ,
+    15: WorkflowMode   flow_mode ,
+    16: list<i64>      sub_workflows ,
+    17: string         latest_publish_commit_id,
+    18: Node           end_node ,
 }
 
 struct CopyWkTemplateApiRequest{
-    1  : required list<i64> workflow_ids    (agw.js_conv="str"), // 拷贝模板的所有父子workflow或者单个workflow集合
-    2  : required i64       target_space_id (agw.js_conv="str"), // 拷贝的目标空间
+    1  : required list<string> workflow_ids,
+    2  : required i64  target_space_id (api.js_conv='true'), // 拷贝的目标空间
 
     255: optional base.Base Base                               ,
 }
 
 struct CopyWkTemplateApiResponse{
-    1  : required map<i64,WkPluginBasicData> data     (agw.js_conv="str"), // 模板ID：拷贝副本的数据
+    1  : required map<i64,WkPluginBasicData> data     (api.js_conv='true'), // 模板ID：拷贝副本的数据
 
     253: required i64                        code                        ,
     254: required string                     msg                         ,
@@ -1200,14 +1217,10 @@ struct PluginCategory {
     4: string icon_url ,
     5: string node_type,
 }
-enum locale {
-    zh_CN = 1
-    en_US = 2
-}
+
 struct NodeTemplateListRequest {
     1  : optional list<NodeTemplateType> need_types, // 需要的节点类型 不传默认返回全部
     2  : optional list<string>           node_types, // 需要的节点类型, string 类型
-    3  : locale locale
     255: optional base.Base              Base,
 }
 

@@ -29,6 +29,7 @@ func CreateWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	appworkflow.SetLocale(ctx, string(c.GetHeader("x-locale")))
 	resp, err := appworkflow.SVC.CreateWorkflow(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
@@ -202,9 +203,11 @@ func CopyWkTemplateApi(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-
-	resp := new(workflow.CopyWkTemplateApiResponse)
-
+	resp, err := appworkflow.SVC.CopyWkTemplateApi(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -291,7 +294,7 @@ func NodeTemplateList(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-
+	appworkflow.SetLocale(ctx, string(c.GetHeader("x-locale")))
 	resp, err := appworkflow.SVC.GetNodeTemplateList(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
@@ -1011,6 +1014,26 @@ func GetHistorySchema(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := appworkflow.SVC.GetHistorySchema(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetExampleWorkFlowList .
+// @router /api/workflow_api/example_workflow_list [POST]
+func GetExampleWorkFlowList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.GetExampleWorkFlowListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := appworkflow.SVC.GetExampleWorkFlowList(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return

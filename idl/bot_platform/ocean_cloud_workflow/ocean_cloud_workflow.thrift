@@ -24,6 +24,9 @@ service WorkflowService {
     workflow.CopyWkTemplateApiResponse CopyWkTemplateApi(1:workflow.CopyWkTemplateApiRequest request) (api.post='/api/workflow_api/copy_wk_template', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.GetReleasedWorkflowsResponse GetReleasedWorkflows(1: workflow.GetReleasedWorkflowsRequest request) (api.post='/api/workflow_api/released_workflows', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.GetWorkflowReferencesResponse GetWorkflowReferences(1: workflow.GetWorkflowReferencesRequest request) (api.post='/api/workflow_api/workflow_references', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+    // 获取示例流程列表
+    workflow.GetExampleWorkFlowListResponse GetExampleWorkFlowList(1: workflow.GetExampleWorkFlowListRequest request)(api.post='/api/workflow_api/example_workflow_list', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+
     // 获取流程列表。
     workflow.GetWorkFlowListResponse GetWorkFlowList(1: workflow.GetWorkFlowListRequest request) (api.post='/api/workflow_api/workflow_list', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     workflow.QueryWorkflowNodeTypeResponse QueryWorkflowNodeTypes(1: workflow.QueryWorkflowNodeTypeRequest request)(api.post="/api/workflow_api/node_type", api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
