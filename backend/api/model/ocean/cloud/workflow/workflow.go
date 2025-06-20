@@ -70978,21 +70978,21 @@ func (p *ValidateTreeResponse) String() string {
 
 // OpenAPI
 type OpenAPIRunFlowRequest struct {
-	WorkflowID string            `thrift:"WorkflowID,1" form:"WorkflowID" json:"WorkflowID" query:"WorkflowID"`
-	Parameters *string           `thrift:"Parameters,2,optional" form:"Parameters" json:"Parameters,omitempty" query:"Parameters"`
-	Ext        map[string]string `thrift:"Ext,3" form:"Ext" json:"Ext" query:"Ext"`
-	BotID      *string           `thrift:"BotID,4,optional" form:"BotID" json:"BotID,omitempty" query:"BotID"`
-	IsAsync    *bool             `thrift:"IsAsync,5,optional" form:"IsAsync" json:"IsAsync,omitempty" query:"IsAsync"`
+	WorkflowID string            `thrift:"WorkflowID,1" json:"workflow_id" form:"WorkflowID" query:"WorkflowID"`
+	Parameters *string           `thrift:"Parameters,2,optional" json:"parameters" form:"Parameters" query:"Parameters"`
+	Ext        map[string]string `thrift:"Ext,3" json:"ext" form:"Ext" query:"Ext"`
+	BotID      *string           `thrift:"BotID,4,optional" json:"bot_id" form:"BotID" query:"BotID"`
+	IsAsync    *bool             `thrift:"IsAsync,5,optional" json:"is_async" form:"IsAsync" query:"IsAsync"`
 	// 默认为正式运行，试运行需要传入"DEBUG"
-	ExecuteMode *string `thrift:"ExecuteMode,6,optional" form:"ExecuteMode" json:"ExecuteMode,omitempty" query:"ExecuteMode"`
+	ExecuteMode *string `thrift:"ExecuteMode,6,optional" json:"execute_mode" form:"ExecuteMode" query:"ExecuteMode"`
 	// 版本号，可能是workflow版本或者project版本
-	Version *string `thrift:"Version,7,optional" form:"Version" json:"Version,omitempty" query:"Version"`
+	Version *string `thrift:"Version,7,optional" json:"version" form:"Version" query:"Version"`
 	// 渠道ID，比如ui builder、template、商店等
-	ConnectorID *string `thrift:"ConnectorID,8,optional" form:"ConnectorID" json:"ConnectorID,omitempty" query:"ConnectorID"`
+	ConnectorID *string `thrift:"ConnectorID,8,optional" json:"connector_id" form:"ConnectorID" query:"ConnectorID"`
 	// 引用workflow 的应用ID
-	AppID *string `thrift:"AppID,9,optional" form:"AppID" json:"AppID,omitempty" query:"AppID"`
+	AppID *string `thrift:"AppID,9,optional" json:"app_id" form:"AppID" query:"AppID"`
 	// 项目ID，为了兼容ui builder
-	ProjectID *string    `thrift:"ProjectID,10,optional" form:"ProjectID" json:"ProjectID,omitempty" query:"ProjectID"`
+	ProjectID *string    `thrift:"ProjectID,10,optional" json:"project_id" form:"ProjectID" query:"ProjectID"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -71698,16 +71698,16 @@ func (p *OpenAPIRunFlowRequest) String() string {
 
 type OpenAPIRunFlowResponse struct {
 	// 通用字段
-	Code int64 `thrift:"Code,1,required" form:"Code,required" json:"Code,required" query:"Code,required"`
+	Code int64 `thrift:"Code,1,required" json:"code" form:"Code,required" query:"Code,required"`
 	// 成功为success, 失败为简单的错误信息、
-	Msg *string `thrift:"Msg,2,optional" form:"Msg" json:"Msg,omitempty" query:"Msg"`
+	Msg *string `thrift:"Msg,2,optional" json:"msg" form:"Msg" query:"Msg"`
 	// 同步返回字段
-	Data     *string `thrift:"Data,3,optional" form:"Data" json:"Data,omitempty" query:"Data"`
-	Token    *int64  `thrift:"Token,4,optional" form:"Token" json:"Token,omitempty" query:"Token"`
-	Cost     *string `thrift:"Cost,5,optional" form:"Cost" json:"Cost,omitempty" query:"Cost"`
-	DebugUrl *string `thrift:"DebugUrl,6,optional" form:"DebugUrl" json:"DebugUrl,omitempty" query:"DebugUrl"`
+	Data     *string `thrift:"Data,3,optional" json:"data" form:"Data" query:"Data"`
+	Token    *int64  `thrift:"Token,4,optional" json:"token" form:"Token" query:"Token"`
+	Cost     *string `thrift:"Cost,5,optional" json:"cost" form:"Cost" query:"Cost"`
+	DebugUrl *string `thrift:"DebugUrl,6,optional" json:"debug_url" form:"DebugUrl" query:"DebugUrl"`
 	// 异步返回字段
-	ExecuteID *string        `thrift:"ExecuteID,50,optional" form:"ExecuteID" json:"ExecuteID,omitempty" query:"ExecuteID"`
+	ExecuteID *string        `thrift:"ExecuteID,50,optional" json:"execute_id" form:"ExecuteID" query:"ExecuteID"`
 	BaseResp  *base.BaseResp `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
 }
 
@@ -72242,9 +72242,9 @@ func (p *OpenAPIRunFlowResponse) String() string {
 }
 
 type Interrupt struct {
-	EventID string        `thrift:"EventID,1" form:"EventID" json:"EventID" query:"EventID"`
-	Type    InterruptType `thrift:"Type,2" form:"Type" json:"Type" query:"Type"`
-	InData  string        `thrift:"InData,3" form:"InData" json:"InData" query:"InData"`
+	EventID string        `thrift:"EventID,1" json:"event_id" form:"EventID" query:"EventID"`
+	Type    InterruptType `thrift:"Type,2" json:"type" form:"Type" query:"Type"`
+	InData  string        `thrift:"InData,3" json:"data" form:"InData" query:"InData"`
 }
 
 func NewInterrupt() *Interrupt {
@@ -72474,32 +72474,32 @@ type OpenAPIStreamRunFlowResponse struct {
 	// 绝对序号
 	ID string `thrift:"id,1" form:"id" json:"id" query:"id"`
 	// 事件类型:message,done,error
-	Event string `thrift:"Event,2" form:"Event" json:"Event" query:"Event"`
+	Event string `thrift:"Event,2" json:"event" form:"Event" query:"Event"`
 	// 节点信息
-	NodeSeqID *string `thrift:"NodeSeqID,50,optional" form:"NodeSeqID" json:"NodeSeqID,omitempty" query:"NodeSeqID"`
+	NodeSeqID *string `thrift:"NodeSeqID,50,optional" json:"node_seq_id" form:"NodeSeqID" query:"NodeSeqID"`
 	// 节点名称
-	NodeTitle *string `thrift:"NodeTitle,52,optional" form:"NodeTitle" json:"NodeTitle,omitempty" query:"NodeTitle"`
+	NodeTitle *string `thrift:"NodeTitle,52,optional" json:"node_title" form:"NodeTitle" query:"NodeTitle"`
 	// ContentType为Text时的返回
-	Content *string `thrift:"Content,54,optional" form:"Content" json:"Content,omitempty" query:"Content"`
+	Content *string `thrift:"Content,54,optional" json:"content" form:"Content" query:"Content"`
 	// 节点是否执行完成
-	NodeIsFinish *bool `thrift:"NodeIsFinish,55,optional" form:"NodeIsFinish" json:"NodeIsFinish,omitempty" query:"NodeIsFinish"`
+	NodeIsFinish *bool `thrift:"NodeIsFinish,55,optional" json:"node_is_finish" form:"NodeIsFinish" query:"NodeIsFinish"`
 	//content type为interrupt时传输，中断协议
-	InterruptData *Interrupt `thrift:"InterruptData,56,optional" form:"InterruptData" json:"InterruptData,omitempty" query:"InterruptData"`
+	InterruptData *Interrupt `thrift:"InterruptData,56,optional" json:"interrupt_data" form:"InterruptData" query:"InterruptData"`
 	// 返回的数据类型
-	ContentType *string `thrift:"ContentType,57,optional" form:"ContentType" json:"ContentType,omitempty" query:"ContentType"`
+	ContentType *string `thrift:"ContentType,57,optional" json:"content_type" form:"ContentType" query:"ContentType"`
 	// Content Type为Card时返回的卡片内容
-	CardBody *string `thrift:"CardBody,58,optional" form:"CardBody" json:"CardBody,omitempty" query:"CardBody"`
+	CardBody *string `thrift:"CardBody,58,optional" json:"card_body" form:"CardBody" query:"CardBody"`
 	// 节点类型
 	NodeType *string `thrift:"NodeType,59,optional" json:"node_type" form:"NodeType" query:"NodeType"`
 	NodeID   *string `thrift:"NodeID,60,optional" json:"node_id" form:"NodeID" query:"NodeID"`
 	// 成功时最后一条消息
-	Ext   map[string]string `thrift:"Ext,100,optional" form:"Ext" json:"Ext,omitempty" query:"Ext"`
-	Token *int64            `thrift:"Token,101,optional" form:"Token" json:"Token,omitempty" query:"Token"`
-	Cost  *string           `thrift:"Cost,102,optional" form:"Cost" json:"Cost,omitempty" query:"Cost"`
+	Ext   map[string]string `thrift:"Ext,100,optional" json:"ext" form:"Ext" query:"Ext"`
+	Token *int64            `thrift:"Token,101,optional" json:"token" form:"Token" query:"Token"`
+	Cost  *string           `thrift:"Cost,102,optional" json:"cost" form:"Cost" query:"Cost"`
 	// 错误信息
-	ErrorCode    *int64         `thrift:"ErrorCode,151,optional" form:"ErrorCode" json:"ErrorCode,omitempty" query:"ErrorCode"`
-	ErrorMessage *string        `thrift:"ErrorMessage,152,optional" form:"ErrorMessage" json:"ErrorMessage,omitempty" query:"ErrorMessage"`
-	DebugUrl     *string        `thrift:"DebugUrl,153,optional" form:"DebugUrl" json:"DebugUrl,omitempty" query:"DebugUrl"`
+	ErrorCode    *int64         `thrift:"ErrorCode,151,optional" json:"error_code" form:"ErrorCode" query:"ErrorCode"`
+	ErrorMessage *string        `thrift:"ErrorMessage,152,optional" json:"error_message" form:"ErrorMessage" query:"ErrorMessage"`
+	DebugUrl     *string        `thrift:"DebugUrl,153,optional" json:"debug_url" form:"DebugUrl" query:"DebugUrl"`
 	BaseResp     *base.BaseResp `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
 }
 
@@ -73592,13 +73592,13 @@ func (p *OpenAPIStreamRunFlowResponse) String() string {
 }
 
 type OpenAPIStreamResumeFlowRequest struct {
-	EventID       string            `thrift:"EventID,1" form:"EventID" json:"EventID" query:"EventID"`
-	InterruptType InterruptType     `thrift:"InterruptType,2" form:"InterruptType" json:"InterruptType" query:"InterruptType"`
-	ResumeData    string            `thrift:"ResumeData,3" form:"ResumeData" json:"ResumeData" query:"ResumeData"`
-	Ext           map[string]string `thrift:"Ext,4" form:"Ext" json:"Ext" query:"Ext"`
-	WorkflowID    string            `thrift:"WorkflowID,5" form:"WorkflowID" json:"WorkflowID" query:"WorkflowID"`
+	EventID       string            `thrift:"EventID,1" json:"event_id" form:"EventID" query:"EventID"`
+	InterruptType InterruptType     `thrift:"InterruptType,2" json:"interrupt_type" form:"InterruptType" query:"InterruptType"`
+	ResumeData    string            `thrift:"ResumeData,3" json:"resume_data" form:"ResumeData" query:"ResumeData"`
+	Ext           map[string]string `thrift:"Ext,4" json:"ext" form:"Ext" query:"Ext"`
+	WorkflowID    string            `thrift:"WorkflowID,5" json:"workflow_id" form:"WorkflowID" query:"WorkflowID"`
 	// 渠道ID，比如ui builder、template、商店等
-	ConnectorID *string    `thrift:"ConnectorID,6,optional" form:"ConnectorID" json:"ConnectorID,omitempty" query:"ConnectorID"`
+	ConnectorID *string    `thrift:"ConnectorID,6,optional" json:"connector_id" form:"ConnectorID" query:"ConnectorID"`
 	Base        *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
 }
 
@@ -74304,26 +74304,26 @@ func (p *GetWorkflowRunHistoryRequest) String() string {
 }
 
 type WorkflowExecuteHistory struct {
-	ExecuteID     *int64           `thrift:"ExecuteID,1,optional" form:"ExecuteID" json:"ExecuteID,omitempty" query:"ExecuteID"`
-	ExecuteStatus *string          `thrift:"ExecuteStatus,2,optional" form:"ExecuteStatus" json:"ExecuteStatus,omitempty" query:"ExecuteStatus"`
-	BotID         *int64           `thrift:"BotID,3,optional" form:"BotID" json:"BotID,omitempty" query:"BotID"`
-	ConnectorID   *int64           `thrift:"ConnectorID,4,optional" form:"ConnectorID" json:"ConnectorID,omitempty" query:"ConnectorID"`
-	ConnectorUID  *string          `thrift:"ConnectorUID,5,optional" form:"ConnectorUID" json:"ConnectorUID,omitempty" query:"ConnectorUID"`
-	RunMode       *WorkflowRunMode `thrift:"RunMode,6,optional" form:"RunMode" json:"RunMode,omitempty" query:"RunMode"`
-	LogID         *string          `thrift:"LogID,7,optional" form:"LogID" json:"LogID,omitempty" query:"LogID"`
-	CreateTime    *int64           `thrift:"CreateTime,8,optional" form:"CreateTime" json:"CreateTime,omitempty" query:"CreateTime"`
-	UpdateTime    *int64           `thrift:"UpdateTime,9,optional" form:"UpdateTime" json:"UpdateTime,omitempty" query:"UpdateTime"`
-	DebugUrl      *string          `thrift:"DebugUrl,10,optional" form:"DebugUrl" json:"DebugUrl,omitempty" query:"DebugUrl"`
+	ExecuteID     *int64           `thrift:"ExecuteID,1,optional" json:"execute_id" form:"ExecuteID" query:"ExecuteID"`
+	ExecuteStatus *string          `thrift:"ExecuteStatus,2,optional" json:"execute_status" form:"ExecuteStatus" query:"ExecuteStatus"`
+	BotID         *int64           `thrift:"BotID,3,optional" json:"bot_id" form:"BotID" query:"BotID"`
+	ConnectorID   *int64           `thrift:"ConnectorID,4,optional" json:"connector_id" form:"ConnectorID" query:"ConnectorID"`
+	ConnectorUID  *string          `thrift:"ConnectorUID,5,optional" json:"connector_uid" form:"ConnectorUID" query:"ConnectorUID"`
+	RunMode       *WorkflowRunMode `thrift:"RunMode,6,optional" json:"run_mode" form:"RunMode" query:"RunMode"`
+	LogID         *string          `thrift:"LogID,7,optional" json:"log_id" form:"LogID" query:"LogID"`
+	CreateTime    *int64           `thrift:"CreateTime,8,optional" json:"create_time" form:"CreateTime" query:"CreateTime"`
+	UpdateTime    *int64           `thrift:"UpdateTime,9,optional" json:"update_time" form:"UpdateTime" query:"UpdateTime"`
+	DebugUrl      *string          `thrift:"DebugUrl,10,optional" json:"debug_url" form:"DebugUrl" query:"DebugUrl"`
 	// 执行成功
-	Input    *string           `thrift:"Input,51,optional" form:"Input" json:"Input,omitempty" query:"Input"`
-	Output   *string           `thrift:"Output,52,optional" form:"Output" json:"Output,omitempty" query:"Output"`
-	Token    *int64            `thrift:"Token,53,optional" form:"Token" json:"Token,omitempty" query:"Token"`
-	Cost     *string           `thrift:"Cost,54,optional" form:"Cost" json:"Cost,omitempty" query:"Cost"`
-	CostUnit *string           `thrift:"CostUnit,55,optional" form:"CostUnit" json:"CostUnit,omitempty" query:"CostUnit"`
-	Ext      map[string]string `thrift:"Ext,56,optional" form:"Ext" json:"Ext,omitempty" query:"Ext"`
+	Input    *string           `thrift:"Input,51,optional" json:"input" form:"Input" query:"Input"`
+	Output   *string           `thrift:"Output,52,optional" json:"output" form:"Output" query:"Output"`
+	Token    *int64            `thrift:"Token,53,optional" json:"token" form:"Token" query:"Token"`
+	Cost     *string           `thrift:"Cost,54,optional" json:"cost" form:"Cost" query:"Cost"`
+	CostUnit *string           `thrift:"CostUnit,55,optional" json:"cost_unit" form:"CostUnit" query:"CostUnit"`
+	Ext      map[string]string `thrift:"Ext,56,optional" json:"ext" form:"Ext" query:"Ext"`
 	// 执行失败
-	ErrorCode *string `thrift:"ErrorCode,101,optional" form:"ErrorCode" json:"ErrorCode,omitempty" query:"ErrorCode"`
-	ErrorMsg  *string `thrift:"ErrorMsg,102,optional" form:"ErrorMsg" json:"ErrorMsg,omitempty" query:"ErrorMsg"`
+	ErrorCode *string `thrift:"ErrorCode,101,optional" json:"error_code" form:"ErrorCode" query:"ErrorCode"`
+	ErrorMsg  *string `thrift:"ErrorMsg,102,optional" json:"error_msg" form:"ErrorMsg" query:"ErrorMsg"`
 }
 
 func NewWorkflowExecuteHistory() *WorkflowExecuteHistory {
@@ -75779,13 +75779,13 @@ func (p *GetWorkflowRunHistoryResponse) String() string {
 }
 
 type EnterMessage struct {
-	Role string `thrift:"Role,1,required" form:"Role,required" json:"Role,required" query:"Role,required"`
+	Role string `thrift:"Role,1,required" json:"role" form:"Role,required" query:"Role,required"`
 	// 内容
-	Content  string            `thrift:"Content,2" form:"Content" json:"Content" query:"Content"`
-	MetaData map[string]string `thrift:"MetaData,3" form:"MetaData" json:"MetaData" query:"MetaData"`
+	Content  string            `thrift:"Content,2" json:"content" form:"Content" query:"Content"`
+	MetaData map[string]string `thrift:"MetaData,3" json:"meta_data" form:"MetaData" query:"MetaData"`
 	//text/card/object_string
-	ContentType string `thrift:"ContentType,4" form:"ContentType" json:"ContentType" query:"ContentType"`
-	Type        string `thrift:"Type,5" form:"Type" json:"Type" query:"Type"`
+	ContentType string `thrift:"ContentType,4" json:"content_type" form:"ContentType" query:"ContentType"`
+	Type        string `thrift:"Type,5" json:"type" form:"Type" query:"Type"`
 }
 
 func NewEnterMessage() *EnterMessage {
@@ -76137,25 +76137,25 @@ func (p *EnterMessage) String() string {
 }
 
 type ChatFlowRunRequest struct {
-	WorkflowID string            `thrift:"WorkflowID,1" form:"WorkflowID" json:"WorkflowID" query:"WorkflowID"`
-	Parameters *string           `thrift:"Parameters,2,optional" form:"Parameters" json:"Parameters,omitempty" query:"Parameters"`
-	Ext        map[string]string `thrift:"Ext,3" form:"Ext" json:"Ext" query:"Ext"`
-	BotID      *string           `thrift:"BotID,4,optional" form:"BotID" json:"BotID,omitempty" query:"BotID"`
+	WorkflowID string            `thrift:"WorkflowID,1" json:"workflow_id" form:"WorkflowID" query:"WorkflowID"`
+	Parameters *string           `thrift:"Parameters,2,optional" json:"parameters" form:"Parameters" query:"Parameters"`
+	Ext        map[string]string `thrift:"Ext,3" json:"ext" form:"Ext" query:"Ext"`
+	BotID      *string           `thrift:"BotID,4,optional" json:"bot_id" form:"BotID" query:"BotID"`
 	// 默认为正式运行，试运行需要传入"DEBUG"
-	ExecuteMode *string `thrift:"ExecuteMode,6,optional" form:"ExecuteMode" json:"ExecuteMode,omitempty" query:"ExecuteMode"`
+	ExecuteMode *string `thrift:"ExecuteMode,6,optional" json:"execute_mode" form:"ExecuteMode" query:"ExecuteMode"`
 	// 版本号，可能是workflow版本或者project版本
-	Version *string `thrift:"Version,7,optional" form:"Version" json:"Version,omitempty" query:"Version"`
+	Version *string `thrift:"Version,7,optional" json:"version" form:"Version" query:"Version"`
 	// 渠道ID，比如ui builder、template、商店等
-	ConnectorID *string `thrift:"ConnectorID,8,optional" form:"ConnectorID" json:"ConnectorID,omitempty" query:"ConnectorID"`
-	AppID       *string `thrift:"AppID,9,optional" form:"AppID" json:"AppID,omitempty" query:"AppID"`
+	ConnectorID *string `thrift:"ConnectorID,8,optional" json:"connector_id" form:"ConnectorID" query:"ConnectorID"`
+	AppID       *string `thrift:"AppID,9,optional" json:"app_id" form:"AppID" query:"AppID"`
 	// 会话ID
-	ConversationID *string `thrift:"ConversationID,10,optional" form:"ConversationID" json:"ConversationID,omitempty" query:"ConversationID"`
+	ConversationID *string `thrift:"ConversationID,10,optional" json:"conversation_id" form:"ConversationID" query:"ConversationID"`
 	// 用户希望先写入的消息
-	AdditionalMessages []*EnterMessage `thrift:"AdditionalMessages,11,optional" form:"additional_messages" json:"additional_messages,omitempty"`
+	AdditionalMessages []*EnterMessage `thrift:"AdditionalMessages,11,optional" json:"additional_messages" form:"additional_messages" `
 	// 项目ID，为了兼容ui builder
-	ProjectID *string `thrift:"ProjectID,12,optional" form:"ProjectID" json:"ProjectID,omitempty" query:"ProjectID"`
+	ProjectID *string `thrift:"ProjectID,12,optional" json:"project_id" form:"ProjectID" query:"ProjectID"`
 	// 建议回复信息
-	SuggestReplyInfo *SuggestReplyInfo `thrift:"SuggestReplyInfo,13,optional" form:"suggest_reply_info" json:"suggest_reply_info,omitempty"`
+	SuggestReplyInfo *SuggestReplyInfo `thrift:"SuggestReplyInfo,13,optional" json:"suggest_reply_info" form:"suggest_reply_info" `
 	Base             *base.Base        `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -76988,9 +76988,9 @@ func (p *ChatFlowRunRequest) String() string {
 
 type ChatFlowRunResponse struct {
 	// 事件类型
-	Event string `thrift:"Event,1" form:"Event" json:"Event" query:"Event"`
+	Event string `thrift:"Event,1" json:"event" form:"Event" query:"Event"`
 	// msg、error等数据，为了对齐不同的消息类型，使用json序列化
-	Data string `thrift:"Data,2" form:"Data" json:"Data" query:"Data"`
+	Data string `thrift:"Data,2" json:"data" form:"Data" query:"Data"`
 	//    2: optional ChatFlowMessageDetail MessageData (api.body = "message_data") // 消息内容
 	//    3: optional ChatFlowChatDetail ChatData (api.body = "chat_data") // 对话内容
 	//    4: optional LastError ErrorData (api.body = "error_data") // 错误信息
@@ -77236,11 +77236,11 @@ func (p *ChatFlowRunResponse) String() string {
 }
 
 type OpenAPIGetWorkflowInfoRequest struct {
-	WorkflowID  string `thrift:"WorkflowID,1" json:"WorkflowID" path:"workflow_id"`
-	ConnectorID string `thrift:"ConnectorID,2" json:"ConnectorID" query:"connector_id"`
-	IsDebug     bool   `thrift:"IsDebug,3" json:"IsDebug" query:"is_debug"`
+	WorkflowID  string `thrift:"WorkflowID,1" json:"workflow_id" path:"workflow_id" `
+	ConnectorID string `thrift:"ConnectorID,2" json:"connector_id" query:"connector_id" `
+	IsDebug     bool   `thrift:"IsDebug,3" json:"is_debug" query:"is_debug" `
 	//    4: optional string AppID (api.query = "app_id")
-	Caller *string    `thrift:"Caller,5,optional" json:"Caller,omitempty" query:"caller"`
+	Caller *string    `thrift:"Caller,5,optional" json:"caller" query:"caller" `
 	Base   *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
