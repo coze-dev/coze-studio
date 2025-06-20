@@ -43,7 +43,7 @@ type PluginService interface {
 	UpdateDraftTool(ctx context.Context, req *UpdateToolDraftRequest) (err error)
 	ConvertToOpenapi3Doc(ctx context.Context, req *ConvertToOpenapi3DocRequest) (resp *ConvertToOpenapi3DocResponse)
 	CreateDraftToolsWithCode(ctx context.Context, req *CreateDraftToolsWithCodeRequest) (resp *CreateDraftToolsWithCodeResponse, err error)
-	CheckToolsDebugStatus(ctx context.Context, pluginID int64) (err error)
+	CheckPluginToolsDebugStatus(ctx context.Context, pluginID int64) (err error)
 
 	// Online Tool
 	GetOnlineTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, err error)

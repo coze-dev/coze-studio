@@ -110,13 +110,13 @@ func (a *APPApplicationService) GetDraftIntelligenceInfo(ctx context.Context, re
 		return nil, errorx.Wrapf(err, "GetDraftAPP failed, id=%d", req.IntelligenceID)
 	}
 
-	basicInfo, err := a.getAPPBasicInfo(ctx, draftAPP)
+	basicInfo, published, err := a.getAPPBasicInfo(ctx, draftAPP)
 	if err != nil {
 		return nil, err
 	}
 
 	publishRecord := &intelligenceAPI.IntelligencePublishInfo{
-		HasPublished: basicInfo.PublishTime != 0,
+		HasPublished: published,
 		PublishTime:  strconv.FormatInt(basicInfo.PublishTime, 10),
 	}
 
@@ -1012,7 +1012,7 @@ func (a *APPApplicationService) DraftProjectCopy(ctx context.Context, req *proje
 	draftAPP.IconURI = &req.IconURI
 
 	userInfo := a.getAPPUserInfo(ctx, *userID)
-	basicInfo, err := a.getAPPBasicInfo(ctx, draftAPP)
+	basicInfo, _, err := a.getAPPBasicInfo(ctx, draftAPP)
 	if err != nil {
 		return nil, err
 	}
@@ -1186,18 +1186,19 @@ func (a *APPApplicationService) getAPPUserInfo(ctx context.Context, userID int64
 	return userInfo
 }
 
-func (a *APPApplicationService) getAPPBasicInfo(ctx context.Context, draftAPP *entity.APP) (info *common.IntelligenceBasicInfo, err error) {
+func (a *APPApplicationService) getAPPBasicInfo(ctx context.Context, draftAPP *entity.APP) (info *common.IntelligenceBasicInfo, published bool, err error) {
 	record, exist, err := a.DomainSVC.GetAPPPublishRecord(ctx, &service.GetAPPPublishRecordRequest{
 		APPID:  draftAPP.ID,
 		Oldest: false,
 	})
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	var publishAt int64
 	if exist {
 		publishAt = record.APP.GetPublishedAtMS() / 1000
+		published = record.APP.Published()
 	}
 
 	iconURL, err := a.oss.GetObjectUrl(ctx, draftAPP.GetIconURI())
@@ -1219,5 +1220,5 @@ func (a *APPApplicationService) getAPPBasicInfo(ctx context.Context, draftAPP *e
 		Status:      common.IntelligenceStatus_Using,
 	}
 
-	return basicInfo, nil
+	return basicInfo, published, nil
 }

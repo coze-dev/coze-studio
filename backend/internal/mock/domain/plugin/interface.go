@@ -55,18 +55,18 @@ func (mr *MockPluginServiceMockRecorder) BindAgentTools(ctx, agentID, toolIDs an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindAgentTools", reflect.TypeOf((*MockPluginService)(nil).BindAgentTools), ctx, agentID, toolIDs)
 }
 
-// CheckToolsDebugStatus mocks base method.
-func (m *MockPluginService) CheckToolsDebugStatus(ctx context.Context, pluginID int64) error {
+// CheckPluginToolsDebugStatus mocks base method.
+func (m *MockPluginService) CheckPluginToolsDebugStatus(ctx context.Context, pluginID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckToolsDebugStatus", ctx, pluginID)
+	ret := m.ctrl.Call(m, "CheckPluginToolsDebugStatus", ctx, pluginID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CheckToolsDebugStatus indicates an expected call of CheckToolsDebugStatus.
-func (mr *MockPluginServiceMockRecorder) CheckToolsDebugStatus(ctx, pluginID any) *gomock.Call {
+// CheckPluginToolsDebugStatus indicates an expected call of CheckPluginToolsDebugStatus.
+func (mr *MockPluginServiceMockRecorder) CheckPluginToolsDebugStatus(ctx, pluginID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckToolsDebugStatus", reflect.TypeOf((*MockPluginService)(nil).CheckToolsDebugStatus), ctx, pluginID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPluginToolsDebugStatus", reflect.TypeOf((*MockPluginService)(nil).CheckPluginToolsDebugStatus), ctx, pluginID)
 }
 
 // ConvertToOpenapi3Doc mocks base method.

@@ -213,6 +213,6 @@ func (p *pluginServiceImpl) checkToolsDebugStatus(ctx context.Context, pluginID 
 	return nil
 }
 
-func (p *pluginServiceImpl) CheckToolsDebugStatus(ctx context.Context, pluginID int64) (err error) {
+func (p *pluginServiceImpl) CheckPluginToolsDebugStatus(ctx context.Context, pluginID int64) (err error) {
 	return p.checkToolsDebugStatus(ctx, pluginID)
 }
