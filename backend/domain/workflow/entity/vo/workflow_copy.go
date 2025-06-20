@@ -12,7 +12,9 @@ type DependenceResource struct {
 }
 
 type ExternalResourceRelated struct {
-	PluginMap    map[int64]*PluginEntity
+	PluginMap     map[int64]*PluginEntity
+	PluginToolMap map[int64]int64
+
 	KnowledgeMap map[int64]int64
 	DatabaseMap  map[int64]int64
 }

@@ -193,6 +193,16 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 			if err = repo.UpdateFirstInterruptEvent(ctx, executeID, interruptEvent); err != nil {
 				return ctx, 0, nil, nil, fmt.Errorf("failed to update interrupt event: %w", err)
 			}
+		} else if interruptEvent.EventType == entity.InterruptEventLLM &&
+			interruptEvent.ToolInterruptEvent.EventType == entity.InterruptEventQuestion {
+			modifiedData, err := qa.AppendInterruptData(interruptEvent.ToolInterruptEvent.InterruptData, resumeReq.ResumeData)
+			if err != nil {
+				return ctx, 0, nil, nil, fmt.Errorf("failed to append interrupt data for LLM node: %w", err)
+			}
+			interruptEvent.ToolInterruptEvent.InterruptData = modifiedData
+			if err = repo.UpdateFirstInterruptEvent(ctx, executeID, interruptEvent); err != nil {
+				return ctx, 0, nil, nil, fmt.Errorf("failed to update interrupt event: %w", err)
+			}
 		}
 
 		success, currentStatus, err := repo.TryLockWorkflowExecution(ctx, executeID, resumeReq.EventID)

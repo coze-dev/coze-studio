@@ -170,6 +170,23 @@ func (ll *defaultLogger) logf(lv Level, format *string, v ...interface{}) {
 		os.Exit(1)
 	}
 }
+func (ll *defaultLogger) logfCtx(ctx context.Context, lv Level, format *string, v ...interface{}) {
+	if ll.level > lv {
+		return
+	}
+	msg := lv.toString()
+	logID := ctx.Value("coze-log-id")
+	msg += fmt.Sprintf("[coze-log-id: %v] ", logID)
+	if format != nil {
+		msg += fmt.Sprintf(*format, v...)
+	} else {
+		msg += fmt.Sprint(v...)
+	}
+	ll.stdlog.Output(4, msg)
+	if lv == LevelFatal {
+		os.Exit(1)
+	}
+}
 
 func (ll *defaultLogger) Fatal(v ...interface{}) {
 	ll.logf(LevelFatal, nil, v...)
@@ -228,29 +245,29 @@ func (ll *defaultLogger) Tracef(format string, v ...interface{}) {
 }
 
 func (ll *defaultLogger) CtxFatalf(ctx context.Context, format string, v ...interface{}) {
-	ll.logf(LevelFatal, &format, v...)
+	ll.logfCtx(ctx, LevelFatal, &format, v...)
 }
 
 func (ll *defaultLogger) CtxErrorf(ctx context.Context, format string, v ...interface{}) {
-	ll.logf(LevelError, &format, v...)
+	ll.logfCtx(ctx, LevelError, &format, v...)
 }
 
 func (ll *defaultLogger) CtxWarnf(ctx context.Context, format string, v ...interface{}) {
-	ll.logf(LevelWarn, &format, v...)
+	ll.logfCtx(ctx, LevelWarn, &format, v...)
 }
 
 func (ll *defaultLogger) CtxNoticef(ctx context.Context, format string, v ...interface{}) {
-	ll.logf(LevelNotice, &format, v...)
+	ll.logfCtx(ctx, LevelNotice, &format, v...)
 }
 
 func (ll *defaultLogger) CtxInfof(ctx context.Context, format string, v ...interface{}) {
-	ll.logf(LevelInfo, &format, v...)
+	ll.logfCtx(ctx, LevelInfo, &format, v...)
 }
 
 func (ll *defaultLogger) CtxDebugf(ctx context.Context, format string, v ...interface{}) {
-	ll.logf(LevelDebug, &format, v...)
+	ll.logfCtx(ctx, LevelDebug, &format, v...)
 }
 
 func (ll *defaultLogger) CtxTracef(ctx context.Context, format string, v ...interface{}) {
-	ll.logf(LevelTrace, &format, v...)
+	ll.logfCtx(ctx, LevelTrace, &format, v...)
 }

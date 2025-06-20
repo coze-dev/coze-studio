@@ -1,16 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 import { useRef, type FC } from 'react';
 
+import { cozeMitt } from '@coze-common/coze-mitt';
 import { logger } from '@coze-arch/logger';
 import { type User } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
-import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
-import { useUIModal } from '@coze-arch/bot-semi';
-import { DeveloperApi } from '@coze-arch/bot-api';
-import { cozeMitt } from '@coze-common/coze-mitt';
-import { CustomError } from '@coze-arch/bot-error';
 import { IconCozWarningCircleFill } from '@coze-arch/coze-design/icons';
 import { Menu, Toast, Tooltip } from '@coze-arch/coze-design';
+import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
+import { useUIModal } from '@coze-arch/bot-semi';
+import { CustomError } from '@coze-arch/bot-error';
+import { DeveloperApi } from '@coze-arch/bot-api';
 
 export interface MenuCommonProps {
   id: string;
@@ -116,6 +116,7 @@ export const MenuCopyBot: FC<MenuCopyBotProps> = ({
       content={I18n.t('coze_copy_to_tips_1')}
     >
       <Menu.Item
+        data-testid="bot-card.copy"
         disabled={disabled}
         onClick={() => {
           if (lock.current) {

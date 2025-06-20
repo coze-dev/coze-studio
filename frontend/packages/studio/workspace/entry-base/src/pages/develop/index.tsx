@@ -12,7 +12,11 @@ export {
 export { highlightFilterStyle } from '../../constants/filter-style';
 export { WorkspaceEmpty } from '../../components/workspace-empty';
 export { DevelopCustomPublishStatus, DevelopCustomTypeStatus } from './type';
-export { isPublishStatus, isSearchScopeEnum } from './page-utils/predicate';
+export {
+  isPublishStatus,
+  isSearchScopeEnum,
+  isRecentOpen,
+} from './page-utils/predicate';
 export {
   getPublishRequestParam,
   getTypeRequestParams,

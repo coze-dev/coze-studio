@@ -33,7 +33,7 @@ const PreviewContextMenu: React.FC<PreviewContextMenuProps> = props => {
   return (
     <div
       ref={contextMenuRef}
-      className="fixed bg-white shadow-lg rounded-md py-1 z-50"
+      className="absolute bg-white shadow-lg rounded-md py-1 z-50"
       style={{
         top: `${y}px`,
         left: `${x}px`,

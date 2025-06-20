@@ -104,6 +104,9 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 	if uid == nil {
 		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
+	if *uid != req.CreatorID {
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "creator id is invalid"))
+	}
 
 	spaces, err := crossuser.DefaultSVC().GetUserSpaceList(ctx, *uid)
 	if err != nil {

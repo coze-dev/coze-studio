@@ -13,10 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
-
 	entity "code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	service "code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPluginService is a mock of PluginService interface.
@@ -56,6 +55,20 @@ func (mr *MockPluginServiceMockRecorder) BindAgentTools(ctx, agentID, toolIDs an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindAgentTools", reflect.TypeOf((*MockPluginService)(nil).BindAgentTools), ctx, agentID, toolIDs)
 }
 
+// CheckPluginToolsDebugStatus mocks base method.
+func (m *MockPluginService) CheckPluginToolsDebugStatus(ctx context.Context, pluginID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckPluginToolsDebugStatus", ctx, pluginID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CheckPluginToolsDebugStatus indicates an expected call of CheckPluginToolsDebugStatus.
+func (mr *MockPluginServiceMockRecorder) CheckPluginToolsDebugStatus(ctx, pluginID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPluginToolsDebugStatus", reflect.TypeOf((*MockPluginService)(nil).CheckPluginToolsDebugStatus), ctx, pluginID)
+}
+
 // ConvertToOpenapi3Doc mocks base method.
 func (m *MockPluginService) ConvertToOpenapi3Doc(ctx context.Context, req *service.ConvertToOpenapi3DocRequest) *service.ConvertToOpenapi3DocResponse {
 	m.ctrl.T.Helper()
@@ -71,10 +84,10 @@ func (mr *MockPluginServiceMockRecorder) ConvertToOpenapi3Doc(ctx, req any) *gom
 }
 
 // CopyPlugin mocks base method.
-func (m *MockPluginService) CopyPlugin(ctx context.Context, req *service.CopyPluginRequest) (*entity.PluginInfo, error) {
+func (m *MockPluginService) CopyPlugin(ctx context.Context, req *service.CopyPluginRequest) (*service.CopyPluginResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CopyPlugin", ctx, req)
-	ret0, _ := ret[0].(*entity.PluginInfo)
+	ret0, _ := ret[0].(*service.CopyPluginResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

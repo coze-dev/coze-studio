@@ -6,7 +6,6 @@ import {
   isSelectProjectCategory,
   useOpenWorkflowDetail,
   useWorkflowModal,
-  WorkflowCategory,
   WorkflowModalFrom,
   type WorkFlowModalModeProps,
 } from '@coze-workflow/components';
@@ -169,8 +168,6 @@ export const useAddNodeModal = (prevAddNodeRef: {
     bindBizId: globalState.config?.bindBizID,
     bindBizType: globalState.config?.bindBizType,
     excludedWorkflowIds: [globalState.workflowId],
-    // The community version does not currently support workflow example category, for future expansion
-    hiddenWorkflowCategories: IS_OPEN_SOURCE ? [WorkflowCategory.Example] : [],
     projectId: globalState.projectId,
     onDupSuccess: () => null,
     onClose: onCloseModal,

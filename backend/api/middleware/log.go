@@ -10,6 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/google/uuid"
 
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -60,7 +61,16 @@ func AccessLogMW() app.HandlerFunc {
 		}
 	}
 }
+func SetLogIDMW() app.HandlerFunc {
+	return func(ctx context.Context, c *app.RequestContext) {
+		logID := uuid.New().String()
+		ctx = context.WithValue(ctx, "coze-log-id", logID)
+
+		c.Header("X-Log-ID", logID)
+		c.Next(ctx)
+	}
+}
 
 func bytesToString(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b)) //nolint
+	return *(*string)(unsafe.Pointer(&b)) // nolint
 }

@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"sync"
+
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/common"
@@ -51,6 +53,7 @@ type ChunkMessageItem struct {
 	CreatedAt        int64                    `json:"created_at"`
 	UpdatedAt        int64                    `json:"updated_at"`
 	IsFinish         bool                     `json:"is_finish"`
+	ExtMutex         sync.RWMutex
 }
 
 type RunError struct {

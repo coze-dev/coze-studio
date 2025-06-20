@@ -24,13 +24,10 @@ block_unresolved_conflict() {
 
   # Specify the pattern you want to exclude
   EXCLUDE_PATTERNS=(
-    'scripts/block-unresolved-conflict.sh'
-    'packages/arch/bot-api/src/auto-generate/**'
-    'packages/arch/idl/src/**'
-    'apps/bot-op/src/services/bam-auto-generate/**'
-    'apps/prompt-platform/src/services/auto-generate/**'
+    'frontend/scripts/block-unresolved-conflict.sh'
+    'frontend/packages/arch/bot-api/src/auto-generate/**'
+    'frontend/packages/arch/idl/src/**'
     'common/git-hooks/**'
-    'apps/fornax/libraries/api/src/auto-generate/**'
   )
 
   for pattern in "${EXCLUDE_PATTERNS[@]}"; do

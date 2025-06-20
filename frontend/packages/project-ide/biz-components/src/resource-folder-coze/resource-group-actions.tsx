@@ -1,5 +1,10 @@
 import React, { useMemo } from 'react';
 
+import {
+  ResourceTypeEnum,
+  ShortcutsService,
+  useIDEService,
+} from '@coze-project-ide/framework';
 import { I18n } from '@coze-arch/i18n';
 import {
   IconCozPlus,
@@ -7,12 +12,7 @@ import {
   IconCozTray,
 } from '@coze-arch/coze-design/icons';
 import { IconButton, Menu, Tooltip } from '@coze-arch/coze-design';
-import { type ProjectResourceGroupType } from '@coze-arch/bot-api/plugin_develop';
-import {
-  ResourceTypeEnum,
-  ShortcutsService,
-  useIDEService,
-} from '@coze-project-ide/framework';
+import { ProjectResourceGroupType } from '@coze-arch/bot-api/plugin_develop';
 
 import {
   type BizGroupTypeWithFolder,
@@ -27,6 +27,12 @@ import {
 } from './constants';
 
 import styles from './styles.module.less';
+
+const ProjectResourceStringType = {
+  [ProjectResourceGroupType.Workflow]: 'workflow',
+  [ProjectResourceGroupType.Plugin]: 'plugin',
+  [ProjectResourceGroupType.Data]: 'data',
+};
 
 interface ResourceGroupActionsProps {
   groupType: ProjectResourceGroupType;
@@ -58,6 +64,7 @@ export const ResourceGroupActions: React.FC<ResourceGroupActionsProps> = ({
     createResourceConfig.map(({ icon, label, tooltip, subType }) => {
       const children = (
         <Menu.Item
+          data-testid={`project-ide.resource-group.actions.menu-item.${subType}`}
           onClick={(value, event) => {
             event.stopPropagation();
             onCreateResource?.(groupType, subType);
@@ -134,6 +141,7 @@ export const ResourceGroupActions: React.FC<ResourceGroupActionsProps> = ({
       }
     >
       <IconButton
+        data-testid={`project-${ProjectResourceStringType[groupType]}-add-resource`}
         color="secondary"
         size="small"
         icon={<IconCozPlus className="coz-fg-primary" />}

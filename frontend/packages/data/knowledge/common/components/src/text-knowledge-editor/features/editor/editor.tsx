@@ -3,12 +3,12 @@ import React, { useRef } from 'react';
 import classNames from 'classnames';
 import { EditorContent, type Editor } from '@tiptap/react';
 
+import { getEditorContent } from '@/text-knowledge-editor/services/use-case/get-editor-content';
 import { getEditorWordsCls } from '@/text-knowledge-editor/services/inner/get-editor-words-cls';
 import { getEditorTableClassname } from '@/text-knowledge-editor/services/inner/get-editor-table-cls';
 import { getEditorImgClassname } from '@/text-knowledge-editor/services/inner/get-editor-img-cls';
-import { processEditorContent } from '@/text-knowledge-editor/services/inner/document-editor.service';
 import { useOutEditorMode } from '@/text-knowledge-editor/hooks/inner/use-out-editor-mode';
-import { useControlEditorContextMenu } from '@/text-knowledge-editor/hooks/inner/use-control-editor-context-menu';
+import { useControlContextMenu } from '@/text-knowledge-editor/hooks/inner/use-control-context-menu';
 
 import { EditorContextMenu } from '../editor-context-menu';
 import { type EditorActionRegistry } from '../editor-actions/registry';
@@ -33,29 +33,20 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = props => {
   const contextMenuRef = useRef<HTMLDivElement>(null);
 
   /**
-   * 使用编辑器上下文菜单功能
    * 当右键点击编辑器时，显示上下文菜单
    */
-
-  // 使用内部 hook 处理右键菜单
-  const { contextMenuPosition, openContextMenu } = useControlEditorContextMenu({
+  const { contextMenuPosition, openContextMenu } = useControlContextMenu({
     contextMenuRef,
   });
 
   /**
-   * 使用编辑器外部点击功能
-   * 当点击编辑器外部时，退出编辑模式
+   * 当点击编辑器外部时
    */
   useOutEditorMode({
     editorRef,
     exclude: [contextMenuRef],
     onExitEditMode: () => {
-      if (!editor) {
-        return;
-      }
-      const rawContent = editor.isEmpty ? '' : editor.getHTML();
-      // 处理编辑器输出内容，移除不必要的<p>标签
-      const newContent = processEditorContent(rawContent);
+      const newContent = getEditorContent(editor);
       onBlur?.(newContent);
     },
   });
@@ -65,7 +56,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = props => {
   }
 
   return (
-    <>
+    <div className="relative">
       <div
         ref={editorRef}
         className={classNames(
@@ -107,6 +98,6 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = props => {
           editorActionRegistry={editorContextMenuItemsRegistry}
         />
       ) : null}
-    </>
+    </div>
   );
 };

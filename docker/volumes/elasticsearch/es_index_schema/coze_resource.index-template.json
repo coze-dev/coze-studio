@@ -1,7 +1,5 @@
 {
-  "index_patterns": [
-    "coze_resource*"
-  ],
+  "index_patterns": ["coze_resource*"],
   "template": {
     "settings": {
       "number_of_shards": 1,
@@ -11,11 +9,7 @@
           "text_analyzer": {
             "type": "custom",
             "tokenizer": "standard",
-            "filter": [
-              "lowercase",
-              "stop",
-              "snowball"
-            ]
+            "filter": ["lowercase", "stop", "snowball"]
           },
           "smartcn": {
             "type": "smartcn"

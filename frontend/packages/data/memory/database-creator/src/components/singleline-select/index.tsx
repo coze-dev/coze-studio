@@ -14,7 +14,10 @@ export type SLSelectProps = InputProps & {
   handleChange?: (v: SelectProps['value']) => void;
   errorMsg?: string;
   errorMsgFloat?: boolean;
-  selectProps?: SelectProps & { 'data-dtestid'?: string };
+  selectProps?: SelectProps & {
+    'data-testid'?: string;
+    'data-dtestid'?: string;
+  };
 };
 
 export const SLSelect: React.FC<SLSelectProps> = props => {

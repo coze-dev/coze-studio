@@ -35,7 +35,7 @@ func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema) error {
 				if current, ok := currentSource[path[j]]; !ok {
 					currentSource[path[j]] = &nodes.SourceInfo{
 						IsIntermediate: true,
-						FieldIsStream:  nodes.FieldNotStream,
+						FieldType:      nodes.FieldNotStream,
 						SubSources:     make(map[string]*nodes.SourceInfo),
 					}
 				} else if !current.IsIntermediate {
@@ -48,10 +48,11 @@ func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema) error {
 
 		lastPath := path[len(path)-1]
 
+		// static values or variables
 		if fInfo.Source.Ref == nil || fInfo.Source.Ref.FromNodeKey == "" {
 			currentSource[lastPath] = &nodes.SourceInfo{
 				IsIntermediate: false,
-				FieldIsStream:  nodes.FieldNotStream,
+				FieldType:      nodes.FieldNotStream,
 			}
 			continue
 		}
@@ -74,7 +75,7 @@ func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema) error {
 
 		currentSource[lastPath] = &nodes.SourceInfo{
 			IsIntermediate: false,
-			FieldIsStream:  streamType,
+			FieldType:      streamType,
 			FromNodeKey:    fromNodeKey,
 			FromPath:       fInfo.Source.Ref.FromPath,
 		}

@@ -413,7 +413,7 @@ func (d databaseService) ListDatabase(ctx context.Context, req *ListDatabaseRequ
 		CreatorID: req.CreatorID,
 		SpaceID:   req.SpaceID,
 		TableName: req.TableName,
-		AppID:     req.AppID,
+		AppID:     &req.AppID,
 	}
 
 	page := &entity2.Pagination{
@@ -2045,7 +2045,7 @@ func (d databaseService) listDatabasesByAppID(ctx context.Context, appID int64, 
 	dbInfos := make([]*entity2.Database, 0)
 	for {
 		resp, err := d.ListDatabase(ctx, &ListDatabaseRequest{
-			AppID:     ptr.Of(appID),
+			AppID:     appID,
 			TableType: tableType,
 			Limit:     batchSize,
 			Offset:    offset,

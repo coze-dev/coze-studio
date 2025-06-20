@@ -145,6 +145,7 @@ func (t *pluginService) GetPluginToolsInfo(ctx context.Context, req *crossplugin
 		ToolInfoList:  make(map[int64]crossplugin.ToolInfo),
 		LatestVersion: pInfo.LatestVersion,
 		IsOfficial:    pInfo.IsOfficial(),
+		AppID:         pInfo.GetAPPID(),
 	}
 
 	for _, tf := range toolsInfo {

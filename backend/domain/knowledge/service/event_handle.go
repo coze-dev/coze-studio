@@ -328,6 +328,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	}
 	progressbar := progressbar.NewProgressBar(ctx, doc.ID, int64(len(ssDocs)*len(k.searchStoreManagers)), k.cacheCli, true)
 	for _, manager := range k.searchStoreManagers {
+		now := time.Now()
 		// TODO: knowledge 可以记录 search store 状态，不需要每次都 create 然后靠 create 检查
 		if err = manager.Create(ctx, &searchstore.CreateRequest{
 			CollectionName: collectionName,
@@ -351,6 +352,8 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		); err != nil {
 			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("store search store failed, err: %v", err)))
 		}
+		logs.CtxDebugf(ctx, "[indexDocument] ss type=%v, len(docs)=%d, finished after %d ms",
+			manager.GetType(), len(ssDocs), time.Now().Sub(now).Milliseconds())
 	}
 	// set slice status
 	if err = k.sliceRepo.BatchSetStatus(ctx, allIDs, int32(model.SliceStatusDone), ""); err != nil {

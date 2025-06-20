@@ -1089,7 +1089,9 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, pol
 			AppID:     ptr.Of(wfMeta.AppID),
 		},
 		CanvasInfoV2: &vo.CanvasInfoV2{
-			Canvas: wfDraft.Canvas,
+			Canvas:          wfDraft.Canvas,
+			InputParamsStr:  wfDraft.InputParams,
+			OutputParamsStr: wfDraft.OutputParams,
 		},
 	}
 

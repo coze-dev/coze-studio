@@ -30,6 +30,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/maps"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -60,7 +61,7 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 		}
 		toQueryTypes[entityType] = true
 	}
-	category2NodeMetaList, err := GetWorkflowDomainSVC().ListNodeMeta(ctx, toQueryTypes, ternary.IFElse(req.GetLocale() == workflow.Locale_en_US, entity.EnUS, entity.ZhCN))
+	category2NodeMetaList, err := GetWorkflowDomainSVC().ListNodeMeta(ctx, toQueryTypes, GetLocale(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -83,8 +84,8 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 			tpl := &workflow.NodeTemplate{
 				ID:           fmt.Sprintf("%d", nodeMeta.ID),
 				Type:         tplType,
-				Name:         ternary.IFElse(req.GetLocale() == workflow.Locale_en_US, nodeMeta.EnUSName, nodeMeta.Name),
-				Desc:         ternary.IFElse(req.GetLocale() == workflow.Locale_en_US, nodeMeta.EnUSDescription, nodeMeta.Desc),
+				Name:         ternary.IFElse(GetLocale(ctx) == entity.EnUS, nodeMeta.EnUSName, nodeMeta.Name),
+				Desc:         ternary.IFElse(GetLocale(ctx) == entity.EnUS, nodeMeta.EnUSDescription, nodeMeta.Desc),
 				IconURL:      nodeMeta.IconURL,
 				SupportBatch: ternary.IFElse(nodeMeta.SupportBatch, workflow.SupportBatch_SUPPORT, workflow.SupportBatch_NOT_SUPPORT),
 				NodeType:     fmt.Sprintf("%d", tplType),
@@ -133,7 +134,7 @@ func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.C
 		IconURI:          req.IconURI,
 		AppID:            parseInt64(req.ProjectID),
 		Mode:             ternary.IFElse(req.IsSetFlowMode(), req.GetFlowMode(), workflow.WorkflowMode_Workflow),
-		InitCanvasSchema: entity.GetDefaultInitCanvasJsonSchema(ternary.IFElse(req.GetLocale() == workflow.Locale_en_US, entity.EnUS, entity.ZhCN)),
+		InitCanvasSchema: entity.GetDefaultInitCanvasJsonSchema(GetLocale(ctx)),
 	}
 
 	id, err := GetWorkflowDomainSVC().Create(ctx, wf)
@@ -667,6 +668,8 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 	}
 
 	pluginMap := make(map[int64]*vo.PluginEntity)
+	pluginToolMap := make(map[int64]int64)
+
 	if len(ds.PluginIDs) > 0 {
 		for idx := range ds.PluginIDs {
 			id := ds.PluginIDs[idx]
@@ -682,6 +685,9 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 			pluginMap[id] = &vo.PluginEntity{
 				PluginID:      pInfo.ID,
 				PluginVersion: pInfo.Version,
+			}
+			for o, n := range response.Tools {
+				pluginToolMap[o] = n.ID
 			}
 
 		}
@@ -721,9 +727,10 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 	}
 
 	relatedWorkflows, vIssues, err := GetWorkflowDomainSVC().CopyWorkflowFromAppToLibrary(ctx, workflowID, appID, vo.ExternalResourceRelated{
-		PluginMap:    pluginMap,
-		KnowledgeMap: relatedKnowledgeMap,
-		DatabaseMap:  relatedDatabaseMap,
+		PluginMap:     pluginMap,
+		PluginToolMap: pluginToolMap,
+		KnowledgeMap:  relatedKnowledgeMap,
+		DatabaseMap:   relatedDatabaseMap,
 	})
 	if err != nil {
 		return 0, nil, err
@@ -741,20 +748,40 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 	return copiedWf.ID, vIssues, nil
 }
 
-func (w *ApplicationService) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targetAppID int64, externalResourceRelated vo.ExternalResourceRelated) error {
+type ExternalResource struct {
+	PluginMap     map[int64]int64
+	PluginToolMap map[int64]int64
+	KnowledgeMap  map[int64]int64
+	DatabaseMap   map[int64]int64
+}
+
+func (w *ApplicationService) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targetAppID int64, externalResource ExternalResource) error {
+	pluginMap := make(map[int64]*vo.PluginEntity)
+	for o, n := range externalResource.PluginMap {
+		pluginMap[o] = &vo.PluginEntity{
+			PluginID: n,
+		}
+	}
+	externalResourceRelated := vo.ExternalResourceRelated{
+		PluginMap:     pluginMap,
+		PluginToolMap: externalResource.PluginToolMap,
+		KnowledgeMap:  externalResource.KnowledgeMap,
+		DatabaseMap:   externalResource.DatabaseMap,
+	}
+
 	return GetWorkflowDomainSVC().DuplicateWorkflowsByAppID(ctx, sourceAppID, targetAppID, externalResourceRelated)
 
 }
 
 func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, workflowID int64, appID int64) (int64, error) {
-	copiedID, err := GetWorkflowDomainSVC().CopyWorkflow(ctx, workflowID, vo.CopyWorkflowPolicy{
+	wf, err := GetWorkflowDomainSVC().CopyWorkflow(ctx, workflowID, vo.CopyWorkflowPolicy{
 		TargetAppID: &appID,
 	})
 	if err != nil {
 		return 0, err
 	}
 
-	return copiedID, nil
+	return wf.ID, nil
 }
 
 func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, appID int64) ([]*vo.ValidateIssue, error) {
@@ -1937,6 +1964,7 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 			LatestVersionName:   toolInfoResponse.LatestVersion,
 			LatestVersion:       toolInfoResponse.LatestVersion,
 			PluginProductStatus: ternary.IFElse(toolInfoResponse.IsOfficial, int64(1), 0),
+			ProjectID:           ternary.IFElse(toolInfoResponse.AppID != 0, ptr.Of(strconv.FormatInt(toolInfoResponse.AppID, 10)), nil),
 		},
 		ToolInputs:  inputVars,
 		ToolOutputs: outputVars,
@@ -2324,7 +2352,7 @@ func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.Cop
 		return nil, err
 	}
 
-	copiedID, err := GetWorkflowDomainSVC().CopyWorkflow(ctx, workflowID, vo.CopyWorkflowPolicy{
+	wf, err := GetWorkflowDomainSVC().CopyWorkflow(ctx, workflowID, vo.CopyWorkflowPolicy{
 		ShouldModifyWorkflowName: true,
 	})
 	if err != nil {
@@ -2333,7 +2361,7 @@ func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.Cop
 
 	return &workflow.CopyWorkflowResponse{
 		Data: &workflow.CopyWorkflowData{
-			WorkflowID: strconv.FormatInt(copiedID, 10),
+			WorkflowID: strconv.FormatInt(wf.ID, 10),
 		},
 	}, err
 }
@@ -2402,6 +2430,182 @@ func (w *ApplicationService) GetHistorySchema(ctx context.Context, req *workflow
 			SubExecuteID: req.SubExecuteID,
 		},
 	}, nil
+}
+
+func (w *ApplicationService) GetExampleWorkFlowList(ctx context.Context, req *workflow.GetExampleWorkFlowListRequest) (resp *workflow.GetExampleWorkFlowListResponse, err error) {
+	page := &vo.Page{}
+	if req.GetPage() > 0 {
+		page.Page = req.GetPage()
+	}
+
+	if req.GetSize() > 0 {
+		page.Size = req.GetSize()
+	}
+
+	option := vo.MetaQuery{
+		Page:    page,
+		SpaceID: ptr.Of(consts.TemplateSpaceID),
+	}
+	if len(req.GetName()) > 0 {
+		option.Name = req.Name
+	}
+
+	wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+		MetaQuery: option,
+		QType:     vo.FromDraft,
+		MetaOnly:  false,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	response := &workflow.GetExampleWorkFlowListResponse{
+		Data: &workflow.WorkFlowListData{
+			AuthList:     make([]*workflow.ResourceAuthInfo, 0),
+			WorkflowList: make([]*workflow.Workflow, 0, len(wfs)),
+		},
+	}
+	for _, w := range wfs {
+		ww := &workflow.Workflow{
+			WorkflowID:       strconv.FormatInt(w.ID, 10),
+			Name:             w.Name,
+			Desc:             w.Desc,
+			IconURI:          w.IconURI,
+			URL:              w.IconURL,
+			CreateTime:       w.CreatedAt.Unix(),
+			Type:             w.ContentType,
+			SchemaType:       workflow.SchemaType_FDL,
+			Tag:              w.Tag,
+			TemplateAuthorID: ptr.Of(strconv.FormatInt(w.AuthorID, 10)),
+			SpaceID:          ptr.Of(strconv.FormatInt(w.SpaceID, 10)),
+		}
+		if w.UpdatedAt != nil {
+			ww.UpdateTime = w.UpdatedAt.Unix()
+		}
+
+		startNode := &workflow.Node{
+			NodeID:    "100001",
+			NodeName:  "start-node",
+			NodeParam: &workflow.NodeParam{InputParameters: make([]*workflow.Parameter, 0)},
+		}
+		for _, in := range w.InputParams {
+			param, err := toWorkflowParameter(in)
+			if err != nil {
+				return nil, err
+			}
+			startNode.NodeParam.InputParameters = append(startNode.NodeParam.InputParameters, param)
+		}
+
+		ww.StartNode = startNode
+		response.Data.WorkflowList = append(response.Data.WorkflowList, ww)
+	}
+
+	return response, nil
+}
+
+func (w *ApplicationService) CopyWkTemplateApi(ctx context.Context, req *workflow.CopyWkTemplateApiRequest) (resp *workflow.CopyWkTemplateApiResponse, err error) {
+
+	if err = checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), req.GetTargetSpaceID()); err != nil {
+		return nil, err
+	}
+
+	resp = &workflow.CopyWkTemplateApiResponse{
+		Data: map[int64]*workflow.WkPluginBasicData{},
+	}
+	for _, widStr := range req.GetWorkflowIds() {
+		wid, err := strconv.ParseInt(widStr, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		wf, err := GetWorkflowDomainSVC().CopyWorkflow(ctx, wid, vo.CopyWorkflowPolicy{
+			ShouldModifyWorkflowName: true,
+			TargetSpaceID:            ptr.Of(req.GetTargetSpaceID()),
+			TargetAppID:              ptr.Of(int64(0)),
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		err = GetWorkflowDomainSVC().Publish(ctx, &vo.PublishPolicy{
+			ID:        wf.ID,
+			Version:   "v0.0.0",
+			CommitID:  wf.CommitID,
+			CreatorID: ctxutil.MustGetUIDFromCtx(ctx),
+			Force:     true,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+		var (
+			inputs    []*vo.NamedTypeInfo
+			outputs   []*vo.NamedTypeInfo
+			startNode *workflow.Node
+			endNode   *workflow.Node
+		)
+		if len(wf.InputParamsStr) > 0 {
+			err = sonic.UnmarshalString(wf.InputParamsStr, &inputs)
+			if err != nil {
+				return nil, err
+			}
+			startNode = &workflow.Node{
+				NodeID:    "100001",
+				NodeName:  "start-node",
+				NodeParam: &workflow.NodeParam{InputParameters: make([]*workflow.Parameter, 0, len(inputs))},
+			}
+			for _, in := range inputs {
+				param, err := toWorkflowParameter(in)
+				if err != nil {
+					return nil, err
+				}
+				startNode.NodeParam.InputParameters = append(startNode.NodeParam.InputParameters, param)
+			}
+		}
+
+		if len(wf.OutputParamsStr) > 0 {
+			err = sonic.UnmarshalString(wf.OutputParamsStr, &outputs)
+			if err != nil {
+				return nil, err
+			}
+			endNode = &workflow.Node{
+				NodeID:    "900001",
+				NodeName:  "end-node",
+				NodeParam: &workflow.NodeParam{InputParameters: make([]*workflow.Parameter, 0, len(outputs))},
+			}
+			for _, in := range outputs {
+				param, err := toWorkflowParameter(in)
+				if err != nil {
+					return nil, err
+				}
+				endNode.NodeParam.InputParameters = append(endNode.NodeParam.InputParameters, param)
+			}
+		}
+
+		resp.Data[wid] = &workflow.WkPluginBasicData{
+			WorkflowID: wf.ID,
+			SpaceID:    req.GetTargetSpaceID(),
+			Name:       wf.Name,
+			Desc:       wf.Desc,
+			URL:        wf.IconURL,
+			IconURI:    wf.IconURI,
+			Status:     workflow.WorkFlowStatus_HadPublished,
+			PluginID:   wf.ID,
+			CreateTime: time.Now().Unix(),
+			SourceID:   wid,
+			Creator: &workflow.Creator{
+				ID:   strconv.FormatInt(wf.CreatorID, 10),
+				Self: ternary.IFElse[bool](wf.CreatorID == ptr.From(ctxutil.GetUIDFromCtx(ctx)), true, false),
+			},
+			Schema:                wf.Canvas,
+			FlowMode:              wf.Mode,
+			LatestPublishCommitID: wf.CommitID,
+			StartNode:             startNode,
+			EndNode:               endNode,
+		}
+
+	}
+
+	return resp, err
 }
 
 func mustParseInt64(s string) int64 {
@@ -2927,4 +3131,15 @@ func checkUserSpace(ctx context.Context, uid int64, spaceID int64) error {
 	}
 
 	return nil
+}
+
+func SetLocale(ctx context.Context, locale string) {
+	ctxcache.Store(ctx, "locale", locale)
+}
+func GetLocale(ctx context.Context) entity.Locale {
+	r, ok := ctxcache.Get[string](ctx, "locale")
+	if !ok {
+		return ""
+	}
+	return entity.Locale(r)
 }

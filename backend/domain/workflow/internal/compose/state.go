@@ -188,8 +188,8 @@ func (s *State) GetDynamicStreamType(nodeKey vo.NodeKey, group string) (nodes.Fi
 		return nodes.FieldNotStream, fmt.Errorf("dynamic group %s of node %s does not contain sub source for choice %d", group, nodeKey, choice)
 	}
 
-	if subInfo.FieldIsStream != nodes.FieldMaybeStream {
-		return subInfo.FieldIsStream, nil
+	if subInfo.FieldType != nodes.FieldMaybeStream {
+		return subInfo.FieldType, nil
 	}
 
 	if len(subInfo.FromNodeKey) == 0 {
@@ -547,7 +547,7 @@ func (s *NodeSchema) streamStatePreHandlerForStreamSources() compose.StreamState
 		checker   func(source *nodes.SourceInfo) bool
 	)
 	checker = func(source *nodes.SourceInfo) bool {
-		if source.FieldIsStream != nodes.FieldNotStream {
+		if source.FieldType != nodes.FieldNotStream {
 			return true
 		}
 		for _, subSource := range source.SubSources {
@@ -592,7 +592,7 @@ func (s *NodeSchema) streamStatePreHandlerForStreamSources() compose.StreamState
 				return result, nil
 			}
 
-			streamType := source.FieldIsStream
+			streamType := source.FieldType
 			if streamType == nodes.FieldMaybeStream {
 				streamType, err = state.GetDynamicStreamType(source.FromNodeKey, source.FromPath[0])
 				if err != nil {

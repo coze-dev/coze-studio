@@ -2,7 +2,6 @@ export { type Chunk } from './types/chunk';
 export { DocumentEditor } from './features/editor';
 export { DocumentPreview } from './features/preview';
 export { useSaveChunk } from './hooks/use-case/use-save-chunk';
-export { usePreviewContextMenu } from './hooks/use-case/use-preview-context-menu';
 export { useInitEditor } from './hooks/use-case/use-init-editor';
 export { EditorToolbar } from './features/editor-toolbar';
 export {

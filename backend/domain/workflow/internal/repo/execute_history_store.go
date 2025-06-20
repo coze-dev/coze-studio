@@ -296,8 +296,9 @@ func (e *executeHistoryStoreImpl) UpdateNodeExecution(ctx context.Context, execu
 }
 
 func (e *executeHistoryStoreImpl) CancelAllRunningNodes(ctx context.Context, wfExeID int64) error {
-	res, err := e.query.NodeExecution.WithContext(ctx).
-		Where(e.query.NodeExecution.ExecuteID.Eq(wfExeID), e.query.NodeExecution.Status.Eq(int32(entity.NodeRunning))).
+	_, err := e.query.NodeExecution.WithContext(ctx).
+		Where(e.query.NodeExecution.ExecuteID.Eq(wfExeID),
+			e.query.NodeExecution.Status.In(int32(entity.NodeRunning))).
 		Updates(map[string]interface{}{
 			"error_info":  "workflow cancel by user",
 			"error_level": execute.LevelCancel,
@@ -306,7 +307,17 @@ func (e *executeHistoryStoreImpl) CancelAllRunningNodes(ctx context.Context, wfE
 	if err != nil {
 		return fmt.Errorf("failed to cancel running nodes: %w", err)
 	}
-	_ = res
+
+	_, err = e.query.WorkflowExecution.WithContext(ctx).
+		Where(e.query.WorkflowExecution.RootExecutionID.Eq(wfExeID)).
+		Updates(map[string]interface{}{
+			"status":      int32(entity.WorkflowCancel),
+			"fail_reason": "workflow cancel by user",
+			"error_code":  "-1", // TODO: give it the proper code
+		})
+	if err != nil {
+		return fmt.Errorf("failed to cancel workflow execution: %w", err)
+	}
 	return nil
 }
 

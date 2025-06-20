@@ -30,7 +30,7 @@ type PluginRepository interface {
 	PublishPlugin(ctx context.Context, draftPlugin *entity.PluginInfo) (err error)
 	PublishPlugins(ctx context.Context, draftPlugins []*entity.PluginInfo) (err error)
 
-	CopyPlugin(ctx context.Context, req *CopyPluginRequest) (pluginID int64, err error)
+	CopyPlugin(ctx context.Context, req *CopyPluginRequest) (plugin *entity.PluginInfo, tools []*entity.ToolInfo, err error)
 	MoveAPPPluginToLibrary(ctx context.Context, draftPlugin *entity.PluginInfo, draftTools []*entity.ToolInfo) (err error)
 }
 

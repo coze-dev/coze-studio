@@ -8,14 +8,10 @@ import TableHeader from '@tiptap/extension-table-header';
 import TableCell from '@tiptap/extension-table-cell';
 import Table from '@tiptap/extension-table';
 import Image from '@tiptap/extension-image';
-import HardBreak from '@tiptap/extension-hard-break';
 
 import { type Chunk } from '@/text-knowledge-editor/types/chunk';
-import {
-  getHtmlContent,
-  processEditorContent,
-} from '@/text-knowledge-editor/services/inner/document-editor.service';
-
+import { getInitEditorContent } from '@/text-knowledge-editor/services/use-case/get-init-editor-content';
+import { getEditorContent } from '@/text-knowledge-editor/services/use-case/get-editor-content';
 interface UseDocumentEditorProps {
   chunk: Chunk | null;
   editorProps?: EditorProps;
@@ -46,9 +42,8 @@ export const useInitEditor = ({
         inline: false,
         allowBase64: true,
       }),
-      HardBreak,
     ],
-    content: getHtmlContent(chunk?.content || ''),
+    content: getInitEditorContent(chunk?.content || ''),
     parseOptions: {
       preserveWhitespace: 'full',
     },
@@ -56,9 +51,7 @@ export const useInitEditor = ({
       if (!chunk || !editorInstance) {
         return;
       }
-      const rawContent = editorInstance.isEmpty ? '' : editorInstance.getHTML();
-      // 处理编辑器输出内容，移除不必要的<p>标签
-      const newContent = processEditorContent(rawContent);
+      const newContent = getEditorContent(editorInstance);
       onChange?.({
         ...chunk,
         content: newContent,
@@ -76,7 +69,7 @@ export const useInitEditor = ({
         if (text?.includes('\n')) {
           event.preventDefault(); // 阻止默认粘贴行为
 
-          const html = getHtmlContent(text);
+          const html = getInitEditorContent(text);
 
           // 将转换后的 HTML 插入编辑器
           editor.chain().focus().insertContent(html).run();
@@ -94,7 +87,7 @@ export const useInitEditor = ({
     if (!editor || !chunk) {
       return;
     }
-    const htmlContent = getHtmlContent(chunk.content || '');
+    const htmlContent = getInitEditorContent(chunk.content || '');
     // 设置内容，保留换行符
     editor.commands.setContent(htmlContent || '', false, {
       preserveWhitespace: 'full',

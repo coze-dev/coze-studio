@@ -17,6 +17,10 @@ export const TestFormHeader: React.FC = () => {
   const { open } = useOpenTraceListPanel();
 
   const handleOpenTraceBottomSheet = useCallback(() => {
+    // The community version does not currently support trace, for future expansion
+    if (IS_OPEN_SOURCE) {
+      return;
+    }
     open();
   }, [open]);
 
@@ -35,9 +39,12 @@ export const TestFormHeader: React.FC = () => {
           hiddenStateText
           onClick={handleOpenTraceBottomSheet}
           extra={
-            <span className={'cursor-pointer font-medium'}>
-              {I18n.t('workflow_testset_view_log')}
-            </span>
+            // The community version does not currently support trace, for future expansion
+            !IS_OPEN_SOURCE && (
+              <span className={'cursor-pointer font-medium'}>
+                {I18n.t('workflow_testset_view_log')}
+              </span>
+            )
           }
         />
         <IconButton

@@ -306,8 +306,8 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		PreFillZero:      true,
 		PostFillNil:      true,
 		CallbackEnabled:  true,
-		EnUSName:         "Knowledge writing",
-		EnUSCategory:     "Data",
+		EnUSName:         "Batch",
+		EnUSCategory:     "Logic",
 		EnUSDescription:  "By setting the number of batch runs and logic, run the tasks in the batch body.",
 	},
 	{

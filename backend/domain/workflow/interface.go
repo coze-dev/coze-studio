@@ -21,7 +21,7 @@ type Service interface {
 	Delete(ctx context.Context, policy *vo.DeletePolicy) (err error)
 	Publish(ctx context.Context, policy *vo.PublishPolicy) (err error)
 	UpdateMeta(ctx context.Context, id int64, metaUpdate *vo.MetaUpdate) (err error)
-	CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (int64, error)
+	CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error)
 
 	QueryNodeProperties(ctx context.Context, id int64) (map[string]*vo.NodeProperty, error) // only draft
 	ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*workflow.ValidateTreeInfo, error)

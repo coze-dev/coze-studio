@@ -58,7 +58,7 @@ func (c *cacheStore) put(k string, v any) (*cachedVal, error) {
 	}
 
 	if !sInfo.IsIntermediate { // this is not an intermediate object container
-		isStream := sInfo.FieldIsStream == nodes.FieldIsStream
+		isStream := sInfo.FieldType == nodes.FieldIsStream
 		if !isStream {
 			_, ok := c.store[k]
 			if !ok {
@@ -141,7 +141,7 @@ func (c *cacheStore) put(k string, v any) (*cachedVal, error) {
 func (c *cacheStore) finished(k string) bool {
 	cached, ok := c.store[k]
 	if !ok {
-		return false
+		return c.infos[k].FieldType == nodes.FieldSkipped
 	}
 
 	if cached.finished {
@@ -177,7 +177,7 @@ func (c *cacheStore) find(part templatePart) (root any, subCache *cachedVal, sou
 	currentCache := rootCached
 	currentSource := c.infos[part.root]
 	for i := range subPaths {
-		if currentSource.SubSources == nil {
+		if !currentSource.IsIntermediate {
 			// currentSource is already the leaf, no need to look further
 			break
 		}
@@ -193,6 +193,8 @@ func (c *cacheStore) find(part templatePart) (root any, subCache *cachedVal, sou
 
 		subCache, ok = currentCache.subCaches.store[subPath]
 		if !ok {
+			// subPath corresponds to a real Field Source,
+			// if it's not cached, then it hasn't appeared in the stream yet
 			return rootCached.val, nil, subInfo, actualPath
 		}
 		if !subCache.finished {
@@ -273,13 +275,19 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 				continue
 			}
 
-			// now this 'part' is a variable, look for a hit within cache store
+			// now this 'part' is a variable, first check if the source(s) for it are skipped (the nodes are not selected)
+			// if skipped, just move on to the next 'part'
+			if part.skipped(resolvedSources) {
+				continue
+			}
+
+			// now this 'part' definitely should have a match, look for a hit within cache store
 			// if found in cache store, emit the root only if the match is finished or the match is stream
 			// the rule for a hit: the nearest match within the source tree
 			// if hit, and the cachedVal is also finished, continue to next template part
 			cachedRoot, subCache, sourceInfo, _ := caches.find(part)
 			if cachedRoot != nil && subCache != nil {
-				if subCache.finished || sourceInfo.FieldIsStream == nodes.FieldIsStream {
+				if subCache.finished || sourceInfo.FieldType == nodes.FieldIsStream {
 					hasErr = part.renderAndSend(part.root, cachedRoot, sw)
 					if hasErr {
 						return
@@ -347,7 +355,7 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 									shouldChangePart = true
 								}
 							} else {
-								if sourceInfo.FieldIsStream == nodes.FieldIsStream {
+								if sourceInfo.FieldType == nodes.FieldIsStream {
 									currentV := v
 									for i := 0; i < len(actualPath)-1; i++ {
 										currentM, ok := currentV.(map[string]any)
@@ -508,6 +516,49 @@ func (tp templatePart) renderAndSend(k string, v any, sw *schema.StreamWriter[ma
 	return false
 }
 
-func (e *OutputEmitter) IsCallbacksEnabled() bool {
-	return true
+func (tp templatePart) skipped(resolvedSources map[string]*nodes.SourceInfo) bool {
+	// examine along the templatePart's root and sub paths,
+	// trying to find a matching SourceInfo as far as possible.
+	// the result would be one of two cases:
+	// - a REAL field source is matched, just check if that field source is skipped
+	// - otherwise an INTERMEDIATE field source is matched, it can only be skipped if ALL its sub sources are skipped
+	matchingSource, ok := resolvedSources[tp.root]
+	if !ok { // the user specified a non-existing source, it can never have any value, just skip it
+		return true
+	}
+
+	if !matchingSource.IsIntermediate {
+		return matchingSource.FieldType == nodes.FieldSkipped
+	}
+
+	for _, subPath := range tp.subPathsBeforeSlice {
+		subSource, ok := matchingSource.SubSources[subPath]
+		if !ok { // has gone deeper than the field source
+			if matchingSource.IsIntermediate { // the user specified a non-existing source, just skip it
+				return true
+			}
+			return matchingSource.FieldType == nodes.FieldSkipped
+		}
+
+		matchingSource = subSource
+	}
+
+	if !matchingSource.IsIntermediate {
+		return matchingSource.FieldType == nodes.FieldSkipped
+	}
+
+	var checkSourceSkipped func(sInfo *nodes.SourceInfo) bool
+	checkSourceSkipped = func(sInfo *nodes.SourceInfo) bool {
+		if !sInfo.IsIntermediate {
+			return sInfo.FieldType == nodes.FieldSkipped
+		}
+		for _, subSource := range sInfo.SubSources {
+			if !checkSourceSkipped(subSource) {
+				return false
+			}
+		}
+		return true
+	}
+
+	return checkSourceSkipped(matchingSource)
 }

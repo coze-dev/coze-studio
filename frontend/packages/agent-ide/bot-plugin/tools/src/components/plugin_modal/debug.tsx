@@ -96,7 +96,10 @@ export const Debug: React.FC<{
   }, [debugExample]);
 
   return (
-    <div className={s['debug-check']}>
+    <div
+      className={s['debug-check']}
+      data-testid="plugin.tool.debug-modal-content"
+    >
       <Row gutter={16}>
         <Col span={12}>
           <div className={s['main-container']}>

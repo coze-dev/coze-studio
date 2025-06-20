@@ -68,7 +68,7 @@ export const TypescriptEditor = (props: EditorProps & EditorOtherProps) => {
           languageId: 'typescript',
           theme: 'code-editor-dark',
           height,
-          readOnly: readonly,
+          editable: !readonly,
           fontSize: 12,
         }}
       />

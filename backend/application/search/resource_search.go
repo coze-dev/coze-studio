@@ -2,6 +2,7 @@ package search
 
 import (
 	"context"
+	"errors"
 	"slices"
 	"strconv"
 	"sync"
@@ -318,7 +319,7 @@ func (s *SearchApplicationService) packProjectResource(ctx context.Context, reso
 		}
 		di, err := packer.GetDataInfo(ctx)
 		if err != nil {
-			logs.CtxWarnf(ctx, "GetDataInfo failed, resID=%d, resType=%d, err=%v",
+			logs.CtxErrorf(ctx, "GetDataInfo failed, resID=%d, resType=%d, err=%v",
 				resource.ResID, resource.ResType, err)
 		} else {
 			info.BizResStatus = ptr.Of(*di.status)
@@ -328,6 +329,26 @@ func (s *SearchApplicationService) packProjectResource(ctx context.Context, reso
 					if a.Key == common.ProjectResourceActionKey_Disable {
 						a.Key = common.ProjectResourceActionKey_Enable
 						break
+					}
+				}
+			}
+		}
+	}
+
+	if resource.ResType == common.ResType_Plugin {
+		err = s.PluginDomainSVC.CheckPluginToolsDebugStatus(ctx, resource.ResID)
+		if err != nil {
+			var e errorx.StatusError
+			if !errors.As(err, &e) {
+				logs.CtxErrorf(ctx, "CheckPluginToolsDebugStatus failed, resID=%d, resType=%d, err=%v",
+					resource.ResID, resource.ResType, err)
+			} else {
+				actions := slices.Clone(info.Actions)
+				for _, a := range actions {
+					if a.Key == common.ProjectResourceActionKey_MoveToLibrary ||
+						a.Key == common.ProjectResourceActionKey_CopyToLibrary {
+						a.Enable = false
+						a.Hint = ptr.Of(e.Msg())
 					}
 				}
 			}

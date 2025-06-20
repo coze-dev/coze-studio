@@ -43,12 +43,13 @@ type PluginService interface {
 	UpdateDraftTool(ctx context.Context, req *UpdateToolDraftRequest) (err error)
 	ConvertToOpenapi3Doc(ctx context.Context, req *ConvertToOpenapi3DocRequest) (resp *ConvertToOpenapi3DocResponse)
 	CreateDraftToolsWithCode(ctx context.Context, req *CreateDraftToolsWithCodeRequest) (resp *CreateDraftToolsWithCodeResponse, err error)
+	CheckPluginToolsDebugStatus(ctx context.Context, pluginID int64) (err error)
 
 	// Online Tool
 	GetOnlineTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, err error)
 	MGetOnlineTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error)
 	MGetVersionTools(ctx context.Context, versionTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)
-	CopyPlugin(ctx context.Context, req *CopyPluginRequest) (plugin *entity.PluginInfo, err error)
+	CopyPlugin(ctx context.Context, req *CopyPluginRequest) (resp *CopyPluginResponse, err error)
 	MoveAPPPluginToLibrary(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error)
 
 	// Agent Tool
@@ -352,6 +353,11 @@ type CopyPluginRequest struct {
 	CopyScene model.CopyScene
 
 	TargetAPPID *int64
+}
+
+type CopyPluginResponse struct {
+	Plugin *entity.PluginInfo
+	Tools  map[int64]*entity.ToolInfo // old tool id -> new tool
 }
 
 type MoveAPPPluginToLibRequest struct {

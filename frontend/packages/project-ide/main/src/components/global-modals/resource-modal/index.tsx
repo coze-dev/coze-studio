@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { I18n } from '@coze-arch/i18n';
-import { IconCozWarningCircleFillPalette } from '@coze-arch/coze-design/icons';
-import { Modal } from '@coze-arch/coze-design';
-import { ResourceCopyScene } from '@coze-arch/bot-api/plugin_develop';
 import {
   ModalService,
   ModalType,
   useIDEService,
 } from '@coze-project-ide/framework';
+import { I18n } from '@coze-arch/i18n';
+import { IconCozWarningCircleFillPalette } from '@coze-arch/coze-design/icons';
+import { Modal } from '@coze-arch/coze-design';
+import { ResourceCopyScene } from '@coze-arch/bot-api/plugin_develop';
 
 import { LoopContent } from './loop-content';
 
@@ -83,6 +83,10 @@ export const ResourceModal = () => {
   }, [error, errorContent, resourceName, scene]);
 
   const okText = useMemo(() => {
+    // Retry is not supported in the open-source environment.
+    if (IS_OPEN_SOURCE) {
+      return '';
+    }
     if (typeof error === 'string') {
       return '';
     } else if (error) {
@@ -116,6 +120,14 @@ export const ResourceModal = () => {
     };
   }, []);
 
+  const cancelText = useMemo(() => {
+    // Cancel logic changes in the open-source environment.
+    if (IS_OPEN_SOURCE) {
+      return error ? I18n.t('resource_process_modal_cancel_button') : undefined;
+    }
+    return I18n.t('resource_process_modal_cancel_button');
+  }, [error]);
+
   return (
     <Modal
       visible={visible}
@@ -124,7 +136,7 @@ export const ResourceModal = () => {
       title={title}
       okText={okText}
       onOk={handleOk}
-      cancelText={I18n.t('resource_process_modal_cancel_button')}
+      cancelText={cancelText}
       onCancel={handleCancel}
       maskClosable={false}
     >

@@ -18,6 +18,7 @@ import { DataNamespace, dataReporter } from '@coze-data/reporter';
 import { BotE2e } from '@coze-data/e2e';
 import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
+import { Button, Switch, Form } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import {
   UITable,
@@ -35,7 +36,6 @@ import {
   type FieldItemType,
 } from '@coze-arch/bot-api/memory';
 import { MemoryApi } from '@coze-arch/bot-api';
-import { Button, Switch, Form } from '@coze-arch/coze-design';
 
 import { SLSelect } from '../singleline-select';
 import { FormSLInput, SLInput } from '../singleline-input';
@@ -518,6 +518,7 @@ export const DatabaseTableStructure = forwardRef<
                     onRef={inputRef}
                     value={record.name}
                     inputProps={{
+                      'data-testid': BotE2e.BotDatabaseAddModalFieldNameInput,
                       'data-dtestid': BotE2e.BotDatabaseAddModalFieldNameInput,
                       disabled:
                         isReadonly || record.isSystemField || isReadonlyMode,
@@ -546,7 +547,7 @@ export const DatabaseTableStructure = forwardRef<
                 ) : (
                   <div
                     ref={scrollRef}
-                    date-testid={BotE2e.BotDatabaseAddModalAddBtn}
+                    data-testid={BotE2e.BotDatabaseAddModalAddBtn}
                   >
                     {isRowMaxLimit ? (
                       <div style={{ paddingRight: 10 }}>
@@ -593,6 +594,7 @@ export const DatabaseTableStructure = forwardRef<
                     value={record.desc}
                     maxCount={300}
                     inputProps={{
+                      'data-testid': `${BotE2e.BotDatabaseAddModalFieldDescInput}.${index}.${record.name}`,
                       'data-dtestid': `${BotE2e.BotDatabaseAddModalFieldDescInput}.${index}.${record.name}`,
                       maxLength: 300,
                       disabled:
@@ -630,6 +632,7 @@ export const DatabaseTableStructure = forwardRef<
                   <SLSelect
                     value={record.type}
                     selectProps={{
+                      'data-testid': `${BotE2e.BotDatabaseAddModalFieldTypeSelect}.${index}.${record.name}`,
                       'data-dtestid': `${BotE2e.BotDatabaseAddModalFieldTypeSelect}.${index}.${record.name}`,
                       disabled:
                         isReadonly ||
@@ -674,6 +677,7 @@ export const DatabaseTableStructure = forwardRef<
                 record.operate !== 'add' ? (
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Switch
+                      data-testid={`${BotE2e.BotDatabaseAddModalFieldRequiredSwitch}.${index}.${record.name}`}
                       data-dtestid={`${BotE2e.BotDatabaseAddModalFieldRequiredSwitch}.${index}.${record.name}`}
                       disabled={
                         isReadonly ||

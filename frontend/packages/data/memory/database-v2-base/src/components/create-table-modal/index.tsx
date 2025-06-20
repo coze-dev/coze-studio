@@ -5,14 +5,15 @@ import {
   type DatabaseInfo,
   type TableMemoryItem,
 } from '@coze-studio/bot-detail-store';
+import { BotE2e } from '@coze-data/e2e';
 import { I18n } from '@coze-arch/i18n';
+import { IconCozCross } from '@coze-arch/coze-design/icons';
+import { IconButton, Modal, Button } from '@coze-arch/coze-design';
 import {
   type BotTableRWMode,
   type AlterBotTableResponse,
   type InsertBotTableResponse,
 } from '@coze-arch/bot-api/memory';
-import { IconCozCross } from '@coze-arch/coze-design/icons';
-import { IconButton, Modal, Button } from '@coze-arch/coze-design';
 
 import { DismissibleBanner } from '../dismissible-banner';
 import {
@@ -271,6 +272,7 @@ export function DatabaseCreateTableModal({
             {isModify ? I18n.t('db_del_field_confirm_no') : I18n.t('db2_003')}
           </Button>
           <Button
+            data-testid={BotE2e.BotDatabaseAddModalSubmitBtn}
             loading={saveBtnLoading}
             onClick={onCreateSubmit}
             disabled={saveBtnDisabled}

@@ -31,7 +31,7 @@ fi
     echo -e "${RED}❌ setup_python.sh failed${NC}"
     exit 1
 }
-"${SCRIPT_DIR}"/build_server.sh -start || {
+"${SCRIPT_DIR}"/setup/server.sh -start || {
     echo -e "${RED}❌ build_server.sh failed${NC}"
     exit 1
 }

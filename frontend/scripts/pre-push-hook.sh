@@ -23,4 +23,3 @@ if git status --porcelain | grep -q "pnpm-lock.yaml"; then
   exit 1
 fi
 
-node common/scripts/install-run-rush.js install --check-only --ignore-hooks || exit $?

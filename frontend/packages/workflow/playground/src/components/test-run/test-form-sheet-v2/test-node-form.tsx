@@ -188,6 +188,10 @@ const TestNodeFormCore: React.FC<TestNodeFormBaseProps> = ({
   const { open } = useOpenTraceListPanel();
 
   const handleOpenTraceBottomSheet = useCallback(() => {
+    // The community version does not currently support trace, for future expansion
+    if (IS_OPEN_SOURCE) {
+      return;
+    }
     open();
   }, [open]);
 
@@ -202,9 +206,12 @@ const TestNodeFormCore: React.FC<TestNodeFormBaseProps> = ({
           onClick={handleOpenTraceBottomSheet}
           hiddenStateText
           extra={
-            <span className={'font-medium cursor-pointer'}>
-              {I18n.t('workflow_testset_view_log')}
-            </span>
+            // The community version does not currently support trace, for future expansion
+            !IS_OPEN_SOURCE && (
+              <span className={'font-medium cursor-pointer'}>
+                {I18n.t('workflow_testset_view_log')}
+              </span>
+            )
           }
         />
       )}

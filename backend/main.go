@@ -47,6 +47,7 @@ func main() {
 	// ContextCacheMW -> RequestInspectorMW -> AccessLogMW -> OtherMiddleware
 	s.Use(middleware.ContextCacheMW())
 	s.Use(middleware.RequestInspectorMW())
+	s.Use(middleware.SetLogIDMW())
 	s.Use(middleware.AccessLogMW())
 	s.Use(middleware.OpenapiAuthMW())
 	s.Use(middleware.SessionAuthMW())

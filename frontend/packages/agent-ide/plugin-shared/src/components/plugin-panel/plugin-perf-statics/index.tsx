@@ -23,6 +23,10 @@ export const PluginPerfStatics = (props: PluginPerfStaticsProps) => {
   const { avgExecTime, callAmount, successRate, botsUseCount, className } =
     props;
 
+  if (IS_OPEN_SOURCE) {
+    return null;
+  }
+
   if (
     [avgExecTime, callAmount, successRate, botsUseCount].every(
       r => r === undefined,

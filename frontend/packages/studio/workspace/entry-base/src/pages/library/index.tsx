@@ -3,14 +3,6 @@ import { forwardRef, useImperativeHandle } from 'react';
 import classNames from 'classnames';
 import { useInfiniteScroll } from 'ahooks';
 import { I18n } from '@coze-arch/i18n';
-import { renderHtmlTitle } from '@coze-arch/bot-utils';
-import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
-import {
-  type ResType,
-  type LibraryResourceListRequest,
-  type ResourceInfo,
-} from '@coze-arch/bot-api/plugin_develop';
-import { PluginDevelopApi } from '@coze-arch/bot-api';
 import {
   Table,
   Select,
@@ -19,6 +11,14 @@ import {
   Cascader,
   Space,
 } from '@coze-arch/coze-design';
+import { renderHtmlTitle } from '@coze-arch/bot-utils';
+import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
+import {
+  type ResType,
+  type LibraryResourceListRequest,
+  type ResourceInfo,
+} from '@coze-arch/bot-api/plugin_develop';
+import { PluginDevelopApi } from '@coze-arch/bot-api';
 
 import { highlightFilterStyle } from '@/constants/filter-style';
 import { WorkspaceEmpty } from '@/components/workspace-empty';
@@ -128,16 +128,17 @@ export const BaseLibraryPage = forwardRef<
                   value={params.res_type_filter}
                   treeData={typeFilterData}
                   onChange={v => {
+                    const typeFilter = typeFilterData.find(
+                      item =>
+                        item.value === ((v as Array<number>)?.[0] as number),
+                    );
                     sendTeaEvent(EVENT_NAMES.workspace_action_front, {
                       space_id: spaceId,
                       space_type: isPersonalSpace ? 'personal' : 'teamspace',
                       tab_name: 'library',
                       action: 'filter',
                       filter_type: 'types',
-                      filter_name: typeFilterData.find(
-                        item =>
-                          item.value === ((v as Array<number>)?.[0] as number),
-                      )?.label,
+                      filter_name: typeFilter?.filterName ?? typeFilter?.label,
                     });
 
                     setParams(prev => ({

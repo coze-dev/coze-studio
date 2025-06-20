@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import { userStoreService } from '@coze-studio/user-store';
 import { type DatabaseInfo as DatabaseInitInfo } from '@coze-studio/bot-detail-store';
 import { type WidgetUIState } from '@coze-data/knowledge-stores';
+import { BotE2e } from '@coze-data/e2e';
 import { DatabaseTabs } from '@coze-data/database-v2-base/types';
 import { DismissibleBanner } from '@coze-data/database-v2-base/components/dismissible-banner';
 import {
@@ -15,13 +16,6 @@ import { DatabaseModeSelect } from '@coze-data/database-v2-adapter/components/da
 import { DatabaseCreateTableModal } from '@coze-data/database-v2-adapter/components/create-table-modal';
 import { DatabaseBaseInfoModal } from '@coze-data/database-v2-adapter/components/base-info-modal';
 import { I18n } from '@coze-arch/i18n';
-import {
-  BotTableRWMode,
-  TableType,
-  type DatabaseInfo,
-  type UpdateDatabaseRequest,
-} from '@coze-arch/bot-api/memory';
-import { MemoryApi } from '@coze-arch/bot-api';
 import {
   IconCozEdit,
   IconCozCross,
@@ -37,6 +31,13 @@ import {
   Typography,
   Space,
 } from '@coze-arch/coze-design';
+import {
+  BotTableRWMode,
+  TableType,
+  type DatabaseInfo,
+  type UpdateDatabaseRequest,
+} from '@coze-arch/bot-api/memory';
+import { MemoryApi } from '@coze-arch/bot-api';
 
 import { DatabaseTableStructureReadonly } from '../database-table-structure-readonly';
 import { DatabaseTableData } from '../database-table-data';
@@ -303,6 +304,7 @@ export const DatabaseDetail = ({
                 </Space>
                 {activeKey === DatabaseTabs.Structure ? (
                   <Button
+                    data-testid={BotE2e.BotDatabaseEditTableStructureBtn}
                     onClick={() => setCreateTableVisible(true)}
                     icon={<IconCozEdit />}
                     color="highlight"

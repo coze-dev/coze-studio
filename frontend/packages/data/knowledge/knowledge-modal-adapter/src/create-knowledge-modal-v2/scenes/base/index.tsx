@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
 
 import { useDataModalWithCoze } from '@coze-data/utils';
-import { UnitType } from '@coze-data/knowledge-resource-processor-core';
 import { useDataNavigate } from '@coze-data/knowledge-stores';
+import { UnitType } from '@coze-data/knowledge-resource-processor-core';
 import {
   CozeKnowledgeAddTypeContent,
   type CozeKnowledgeAddTypeContentFormData,
@@ -85,6 +85,8 @@ export const useCreateKnowledgeModalV2 = (
           {I18n.t('kl_write_108')}
         </LoadingButton>
         <LoadingButton
+          data-testid={KnowledgeE2e.CreateKnowledgeModalSubmitAndImportButton}
+          color="primary"
           onClick={async () => {
             beforeCreate?.(true);
             const datasetId = await createDataset();

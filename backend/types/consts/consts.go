@@ -48,5 +48,5 @@ const (
 )
 
 const (
-	TemplateSpaceID = 1 // special space id for template
+	TemplateSpaceID = int64(1) // special space id for template
 )

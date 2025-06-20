@@ -804,15 +804,15 @@ func (i *impl) Cancel(ctx context.Context, wfExeID int64, wfID, spaceID int64) e
 		return fmt.Errorf("failed to save workflow execution to canceled while interrupted: %v", err)
 	} else if updatedRows == 0 {
 		if currentStatus != entity.WorkflowRunning {
-			return nil // already terminal state
+			// already terminal state, try cancel all nodes just in case
+			return i.repo.CancelAllRunningNodes(ctx, wfExe.ID)
+		} else {
+			// current running, let the execution time event handle do the actual updating status to cancel
 		}
-
-		// current running, let the execution time event handle do the actual updating status to cancel
+	} else if err = i.repo.CancelAllRunningNodes(ctx, wfExe.ID); err != nil { // we updated the workflow from interrupted to cancel, so we need to cancel all interrupting nodes
+		return fmt.Errorf("failed to update all running nodes to cancel: %v", err)
 	}
 
-	err = i.repo.EmitWorkflowCancelSignal(ctx, wfExeID)
-	if err != nil {
-		return err
-	}
-	return nil
+	// emit cancel signal just in case the execution is running
+	return i.repo.EmitWorkflowCancelSignal(ctx, wfExeID)
 }

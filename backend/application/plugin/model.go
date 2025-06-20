@@ -14,4 +14,5 @@ type CopyPluginRequest struct {
 
 type CopyPluginResponse struct {
 	Plugin *entity.PluginInfo
+	Tools  map[int64]*entity.ToolInfo // old tool id -> new tool id
 }

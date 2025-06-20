@@ -14,18 +14,9 @@ import { useResourceOperation } from './use-resource-operation';
 
 type TabType = 'knowledge' | 'database';
 
-const useImportData = () => {
+export const ImportDataModal = (props: { onClose?: () => void }) => {
+  const { onClose } = props;
   const [activeKey, setActiveKey] = useState<TabType>('knowledge');
-
-  const [visible, setVisible] = useState(false);
-
-  const open = () => {
-    setVisible(true);
-  };
-
-  const close = () => {
-    setVisible(false);
-  };
 
   const projectID = useProjectId();
   const spaceID = useSpaceId();
@@ -49,7 +40,7 @@ const useImportData = () => {
           },
         });
         refetch();
-        close();
+        onClose?.();
       }
     },
     canCreate: false,
@@ -74,18 +65,18 @@ const useImportData = () => {
         },
       });
       refetch();
-      close();
+      onClose?.();
     },
     onClickDatabase: () => void 0,
     enterFrom: 'project',
     spaceId: spaceID,
   });
 
-  const modal = (
+  return (
     <UITabsModal
       keepDOM={false}
-      visible={visible}
-      onCancel={close}
+      visible
+      onCancel={onClose}
       tabs={{
         tabsProps: {
           lazyRender: true,
@@ -142,8 +133,23 @@ const useImportData = () => {
       }}
     />
   );
+};
 
-  return { open, close, modal };
+const useImportData = () => {
+  const [visible, setVisible] = useState(false);
+
+  const open = () => {
+    setVisible(true);
+  };
+
+  const close = () => {
+    setVisible(false);
+  };
+  return {
+    modal: visible ? <ImportDataModal onClose={close} /> : null,
+    open,
+    close,
+  };
 };
 
 export default useImportData;

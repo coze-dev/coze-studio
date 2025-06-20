@@ -37,11 +37,10 @@ const getResTypeLabelFromConfigMap = (
   if (item.res_type === undefined) {
     return '-';
   }
-  return (
-    entityConfigs.find(config =>
-      config.target.includes(item.res_type as ResType),
-    )?.typeFilter?.label ?? '-'
-  );
+  const target = entityConfigs.find(config =>
+    config.target.includes(item.res_type as ResType),
+  )?.typeFilter;
+  return target?.filterName ?? target?.label ?? '-';
 };
 
 export const useGetColumns = ({

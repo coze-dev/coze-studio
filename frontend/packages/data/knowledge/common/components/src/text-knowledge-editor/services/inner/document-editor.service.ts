@@ -26,18 +26,6 @@ export const getActiveChunk = (
   }
   return chunks.find(chunk => chunk.slice_id === activeChunkId) || undefined;
 };
-/**
- * 编辑器对/n不会换行，所以需要转换为<br />标签
- */
-export const getHtmlContent = (content: string) => {
-  if (content === '') {
-    return '';
-  }
-  if (!content.includes('\n')) {
-    return content;
-  }
-  return content.replace(/\n/g, '<br />');
-};
 
 /**
  * 处理编辑器输出的HTML内容
@@ -55,13 +43,4 @@ export const processEditorContent = (content: string): string => {
   }
 
   return content;
-};
-
-/**
- * 判断内容是否改变
- */
-export const isContentChange = (chunks: Chunk[], chunk: Chunk): boolean => {
-  const newContent = processEditorContent(chunk.content ?? '');
-  const oldContent = chunks.find(c => c.slice_id === chunk.slice_id)?.content;
-  return newContent !== oldContent;
 };

@@ -603,6 +603,7 @@ export const DatabaseTableStructure = forwardRef<
                     onRef={inputRef}
                     value={record.name}
                     inputProps={{
+                      'data-testid': BotE2e.BotDatabaseAddModalFieldNameInput,
                       'data-dtestid': BotE2e.BotDatabaseAddModalFieldNameInput,
                       disabled: isReadonly || record.isSystemField,
                       placeholder: 'Enter Name',
@@ -629,7 +630,7 @@ export const DatabaseTableStructure = forwardRef<
                 ) : (
                   <div
                     ref={scrollRef}
-                    date-testid={BotE2e.BotDatabaseAddModalAddBtn}
+                    data-testid={BotE2e.BotDatabaseAddModalAddBtn}
                   >
                     {isRowMaxLimit ? (
                       <div style={{ paddingRight: 10 }}>
@@ -685,6 +686,7 @@ export const DatabaseTableStructure = forwardRef<
                     value={record.desc}
                     maxCount={300}
                     inputProps={{
+                      'data-testid': `${BotE2e.BotDatabaseAddModalFieldDescInput}.${index}.${record.name}`,
                       'data-dtestid': `${BotE2e.BotDatabaseAddModalFieldDescInput}.${index}.${record.name}`,
                       maxLength: 300,
                       disabled: isReadonly || record.isSystemField,
@@ -721,6 +723,7 @@ export const DatabaseTableStructure = forwardRef<
                   <SLSelect
                     value={record.type}
                     selectProps={{
+                      'data-testid': `${BotE2e.BotDatabaseAddModalFieldTypeSelect}.${index}.${record.name}`,
                       'data-dtestid': `${BotE2e.BotDatabaseAddModalFieldTypeSelect}.${index}.${record.name}`,
                       disabled:
                         isReadonly ||
@@ -765,6 +768,7 @@ export const DatabaseTableStructure = forwardRef<
                 record.operate !== 'add' ? (
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Switch
+                      data-testid={`${BotE2e.BotDatabaseAddModalFieldRequiredSwitch}.${index}.${record.name}`}
                       data-dtestid={`${BotE2e.BotDatabaseAddModalFieldRequiredSwitch}.${index}.${record.name}`}
                       style={{ margin: '4px 0 4px 12px' }}
                       disabled={

@@ -25,6 +25,9 @@ service WorkflowService {
     workflow.GetReleasedWorkflowsResponse GetReleasedWorkflows(1: workflow.GetReleasedWorkflowsRequest request) (api.post='/api/workflow_api/released_workflows', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     // 查询指定工作流被哪些其他工作流所引用。
     workflow.GetWorkflowReferencesResponse GetWorkflowReferences(1: workflow.GetWorkflowReferencesRequest request) (api.post='/api/workflow_api/workflow_references', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+    // 获取示例流程列表
+    workflow.GetExampleWorkFlowListResponse GetExampleWorkFlowList(1: workflow.GetExampleWorkFlowListRequest request)(api.post='/api/workflow_api/example_workflow_list', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+
     // 获取流程列表。
     workflow.GetWorkFlowListResponse GetWorkFlowList(1: workflow.GetWorkFlowListRequest request) (api.post='/api/workflow_api/workflow_list', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
     // 查询流程中的节点类型

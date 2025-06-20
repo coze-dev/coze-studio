@@ -54,6 +54,10 @@ python:
 	@echo "Setting up Python..."
 	@bash $(SETUP_PYTHON_SCRIPT)
 
+atlas-hash:
+	@echo "Rehash atlas migration files..."
+	@(cd ./docker/atlas && atlas migrate hash)
+
 help:
 	@echo "Usage: make [target]"
 	@echo ""
@@ -69,4 +73,5 @@ help:
 	@echo "  docker-down      - Stop the docker containers."
 	@echo "  docker-clean     - Stop the docker containers and clean volumes."
 	@echo "  python           - Setup python environment."
+	@echo "  atlas-hash       - Rehash atlas migration files."
 	@echo "  help             - Show this help message."
