@@ -6,7 +6,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
+	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"github.com/cloudwego/eino/schema"
 )
 
 type workflowConfig struct {
@@ -44,4 +46,8 @@ func newWorkflowTools(ctx context.Context, conf *workflowConfig) ([]workflow.Too
 	}
 
 	return workflowTools, toolsReturnDirectly, err
+}
+
+func newChatflowStreamExecuteNode(ctx context.Context, req *AgentRequest) (*schema.StreamReader[*workflowEntity.Message], error) {
+	return nil, nil
 }

@@ -2441,6 +2441,17 @@ table "single_agent_draft" {
     type    = json
     comment = "shortcut command"
   }
+  column "bot_mode" {
+    null    = false
+    type    = tinyint
+    default = 0
+    comment = "编排模式,0:single mode 2:chatflow mode"
+  }
+  column "layout_info" {
+    null    = true
+    type    = text
+    comment = "chatflow模式的编排信息"
+  }
   primary_key {
     columns = [column.id]
   }
@@ -2679,6 +2690,17 @@ table "single_agent_version" {
     null    = true
     type    = json
     comment = "shortcut command"
+  }
+  column "bot_mode" {
+    null    = false
+    type    = tinyint
+    default = 0
+    comment = "编排模式,0:single mode 2:chatflow mode"
+  }
+  column "layout_info" {
+    null    = true
+    type    = text
+    comment = "chatflow模式的编排信息"
   }
   primary_key {
     columns = [column.id]
@@ -3689,12 +3711,6 @@ table "workflow_reference" {
     unsigned = true
     comment  = "workflow id"
   }
-  column "referred_id" {
-    null     = false
-    type     = bigint
-    unsigned = true
-    comment  = "the id of the workflow that is referred by other entities"
-  }
   column "referring_id" {
     null     = false
     type     = bigint
@@ -3719,15 +3735,21 @@ table "workflow_reference" {
     unsigned = true
     comment  = "create time in millisecond"
   }
+  column "deleted_at" {
+    null = true
+    type = datetime(3)
+  }
+  column "referred_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "the id of the workflow that is referred by other entities"
+  }
   column "status" {
     null     = false
     type     = tinyint
     unsigned = true
     comment  = "whether this reference currently takes effect. 0: disabled 1: enabled"
-  }
-  column "deleted_at" {
-    null = true
-    type = datetime(3)
   }
   primary_key {
     columns = [column.id]

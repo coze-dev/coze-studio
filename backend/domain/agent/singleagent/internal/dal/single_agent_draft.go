@@ -13,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -128,6 +129,8 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftPo2Do(po *model.SingleAgentDraft)
 			BackgroundImageInfoList: po.BackgroundImageInfoList,
 			Database:                po.Database,
 			ShortcutCommand:         po.ShortcutCommand,
+			BotMode:                 ptr.From(botModePo2Do(ptr.Of(po.BotMode))),
+			LayoutInfo:              po.LayoutInfo,
 		},
 	}
 }
@@ -155,5 +158,35 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftDo2Po(do *entity.SingleAgent) *mo
 		BackgroundImageInfoList: do.BackgroundImageInfoList,
 		Database:                do.Database,
 		ShortcutCommand:         do.ShortcutCommand,
+		BotMode:                 ptr.From(botModeDo2Po(ptr.Of(do.BotMode))),
+		LayoutInfo:              do.LayoutInfo,
+	}
+}
+
+func botModeDo2Po(mode *singleagent.BotMode) *int32 {
+	if mode == nil {
+		return nil
+	}
+	switch ptr.From(mode) {
+	case singleagent.BotMode_SingleMode:
+		return ptr.Of(int32(singleagent.BotMode_SingleMode))
+	case singleagent.BotMode_WorkflowMode:
+		return ptr.Of(int32(singleagent.BotMode_WorkflowMode))
+	default:
+		return nil
+	}
+}
+
+func botModePo2Do(mode *int32) *singleagent.BotMode {
+	if mode == nil {
+		return nil
+	}
+	switch *mode {
+	case int32(singleagent.BotMode_SingleMode):
+		return ptr.Of(singleagent.BotMode_SingleMode)
+	case int32(singleagent.BotMode_WorkflowMode):
+		return ptr.Of(singleagent.BotMode_WorkflowMode)
+	default:
+		return nil
 	}
 }

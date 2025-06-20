@@ -12,6 +12,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -89,6 +90,8 @@ func (sa *SingleAgentVersionDAO) singleAgentVersionPo2Do(po *model.SingleAgentVe
 			Database:        po.Database,
 			ShortcutCommand: po.ShortcutCommand,
 			Version:         po.Version,
+			BotMode:         ptr.From(botModePo2Do(ptr.Of(po.BotMode))),
+			LayoutInfo:      po.LayoutInfo,
 		},
 	}
 }
@@ -115,5 +118,7 @@ func (sa *SingleAgentVersionDAO) singleAgentVersionDo2Po(do *entity.SingleAgent)
 		VariablesMetaID: do.VariablesMetaID,
 		Database:        do.Database,
 		ShortcutCommand: do.ShortcutCommand,
+		BotMode:         ptr.From(botModeDo2Po(ptr.Of(do.BotMode))),
+		LayoutInfo:      do.LayoutInfo,
 	}
 }

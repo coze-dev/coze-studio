@@ -51,6 +51,8 @@ func newSingleAgentVersion(db *gorm.DB, opts ...gen.DOOption) singleAgentVersion
 	_singleAgentVersion.BackgroundImageInfoList = field.NewField(tableName, "background_image_info_list")
 	_singleAgentVersion.Database = field.NewField(tableName, "database")
 	_singleAgentVersion.ShortcutCommand = field.NewField(tableName, "shortcut_command")
+	_singleAgentVersion.BotMode = field.NewInt32(tableName, "bot_mode")
+	_singleAgentVersion.LayoutInfo = field.NewField(tableName, "layout_info")
 
 	_singleAgentVersion.fillFieldMap()
 
@@ -86,6 +88,8 @@ type singleAgentVersion struct {
 	BackgroundImageInfoList field.Field  // Background image
 	Database                field.Field  // Agent Database Base Configuration
 	ShortcutCommand         field.Field  // shortcut command
+	BotMode                 field.Int32  // 编排模式,0:single mode 2:chatflow mode
+	LayoutInfo              field.Field  // chatflow模式的编排信息
 
 	fieldMap map[string]field.Expr
 }
@@ -126,6 +130,8 @@ func (s *singleAgentVersion) updateTableName(table string) *singleAgentVersion {
 	s.BackgroundImageInfoList = field.NewField(table, "background_image_info_list")
 	s.Database = field.NewField(table, "database")
 	s.ShortcutCommand = field.NewField(table, "shortcut_command")
+	s.BotMode = field.NewInt32(table, "bot_mode")
+	s.LayoutInfo = field.NewField(table, "layout_info")
 
 	s.fillFieldMap()
 
@@ -142,7 +148,7 @@ func (s *singleAgentVersion) GetFieldByName(fieldName string) (field.OrderExpr, 
 }
 
 func (s *singleAgentVersion) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 24)
+	s.fieldMap = make(map[string]field.Expr, 26)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["agent_id"] = s.AgentID
 	s.fieldMap["creator_id"] = s.CreatorID
@@ -167,6 +173,8 @@ func (s *singleAgentVersion) fillFieldMap() {
 	s.fieldMap["background_image_info_list"] = s.BackgroundImageInfoList
 	s.fieldMap["database"] = s.Database
 	s.fieldMap["shortcut_command"] = s.ShortcutCommand
+	s.fieldMap["bot_mode"] = s.BotMode
+	s.fieldMap["layout_info"] = s.LayoutInfo
 }
 
 func (s singleAgentVersion) clone(db *gorm.DB) singleAgentVersion {

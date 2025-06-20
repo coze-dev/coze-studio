@@ -87,13 +87,14 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent(ctx context.Contex
 					UseRewrite: ptr.Of(true),
 				},
 			},
+			BotMode:      singleagent.BotMode_SingleMode,
 			Workflow:     []*bot_common.WorkflowInfo{},
 			SuggestReply: &bot_common.SuggestReplyInfo{},
 			JumpConfig:   &bot_common.JumpConfig{},
 			Database:     []*bot_common.Database{},
-
-			CreatedAt: now,
-			UpdatedAt: now,
+			LayoutInfo:   &bot_common.LayoutInfo{},
+			CreatedAt:    now,
+			UpdatedAt:    now,
 		},
 	}, nil
 }

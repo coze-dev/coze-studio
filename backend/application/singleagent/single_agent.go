@@ -346,7 +346,12 @@ func (s *SingleAgentApplicationService) applyAgentUpdates(target *entity.SingleA
 		}
 		target.Database = patch.DatabaseList
 	}
-
+	if patch.BotMode != nil {
+		target.BotMode = ptr.From(botModeVo2Do(patch.BotMode))
+	}
+	if patch.LayoutInfo != nil {
+		target.LayoutInfo = patch.LayoutInfo
+	}
 	return target, nil
 }
 
@@ -395,11 +400,12 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 		TaskInfo:                &bot_common.TaskInfo{},
 		CreateTime:              do.CreatedAt / 1000,
 		UpdateTime:              do.UpdatedAt / 1000,
-		BotMode:                 bot_common.BotMode_SingleMode,
+		BotMode:                 ptr.From(botModeDo2Vo(ptr.Of(do.BotMode))),
 		BackgroundImageInfoList: do.BackgroundImageInfoList,
 		Status:                  bot_common.BotStatus_Using,
 		DatabaseList:            do.Database,
 		ShortcutSort:            do.ShortcutCommand,
+		LayoutInfo:              do.LayoutInfo,
 	}
 
 	if do.VariablesMetaID != nil {

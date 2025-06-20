@@ -39,6 +39,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"background_image_info_list": []*bot_common.BackgroundImageInfo{},
 			"database":                   []*bot_common.Database{},
 			"shortcut_command":           []string{},
+			"layout_info":                &bot_common.LayoutInfo{},
 		},
 		"single_agent_version": {
 			// "variable":        []*bot_common.Variable{},
@@ -53,6 +54,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 			"background_image_info_list": []*bot_common.BackgroundImageInfo{},
 			"database":                   []*bot_common.Database{},
 			"shortcut_command":           []string{},
+			"layout_info":                &bot_common.LayoutInfo{},
 		},
 		"single_agent_publish": {
 			"connector_ids": []int64{},

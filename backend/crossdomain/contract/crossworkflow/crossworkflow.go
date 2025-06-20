@@ -8,6 +8,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"github.com/cloudwego/eino/schema"
 )
 
 // TODO(@fanlv): 参数引用需要修改。
@@ -20,6 +21,7 @@ type Workflow interface {
 	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
 	GetWorkflowIDsByAppID(ctx context.Context, appID int64) ([]int64, error)
 	SyncExecuteWorkflow(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error)
+	StreamExecuteWorkflow(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*schema.StreamReader[*workflowEntity.Message], error)
 }
 
 type ReleaseWorkflowConfig = vo.ReleaseWorkflowConfig

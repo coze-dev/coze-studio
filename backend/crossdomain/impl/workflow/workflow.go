@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"github.com/cloudwego/eino/schema"
 )
 
 var defaultSVC crossworkflow.Workflow
@@ -65,4 +66,8 @@ func (i *impl) GetWorkflowIDsByAppID(ctx context.Context, appID int64) ([]int64,
 	return slices.Transform(metas, func(a *workflowEntity.Workflow) int64 {
 		return a.ID
 	}), err
+}
+
+func (i *impl) StreamExecuteWorkflow(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*schema.StreamReader[*workflowEntity.Message], error) {
+	return i.DomainSVC.StreamExecute(ctx, config, input)
 }

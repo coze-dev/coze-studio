@@ -37,6 +37,8 @@ type SingleAgentVersion struct {
 	BackgroundImageInfoList []*bot_common.BackgroundImageInfo `gorm:"column:background_image_info_list;comment:Background image;serializer:json" json:"background_image_info_list"` // Background image
 	Database                []*bot_common.Database            `gorm:"column:database;comment:Agent Database Base Configuration;serializer:json" json:"database"`                    // Agent Database Base Configuration
 	ShortcutCommand         []string                          `gorm:"column:shortcut_command;comment:shortcut command;serializer:json" json:"shortcut_command"`                     // shortcut command
+	BotMode                 int32                             `gorm:"column:bot_mode;not null;comment:编排模式,0:single mode 2:chatflow mode" json:"bot_mode"`                          // 编排模式,0:single mode 2:chatflow mode
+	LayoutInfo              *bot_common.LayoutInfo            `gorm:"column:layout_info;comment:chatflow模式的编排信息;serializer:json" json:"layout_info"`                                // chatflow模式的编排信息
 }
 
 // TableName SingleAgentVersion's table name

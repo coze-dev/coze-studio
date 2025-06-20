@@ -8,6 +8,7 @@ import (
 
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
@@ -462,4 +463,32 @@ func workflowDo2Vo(wfInfos []*workflowEntity.Workflow) map[int64]*playground.Wor
 			},
 		}
 	})
+}
+
+func botModeVo2Do(mode *bot_common.BotMode) *singleagent.BotMode {
+	if mode == nil {
+		return nil
+	}
+	switch ptr.From(mode) {
+	case bot_common.BotMode_SingleMode:
+		return ptr.Of(singleagent.BotMode_SingleMode)
+	case bot_common.BotMode_WorkflowMode:
+		return ptr.Of(singleagent.BotMode_WorkflowMode)
+	default:
+		return nil
+	}
+}
+
+func botModeDo2Vo(mode *singleagent.BotMode) *bot_common.BotMode {
+	if mode == nil {
+		return nil
+	}
+	switch ptr.From(mode) {
+	case singleagent.BotMode_SingleMode:
+		return ptr.Of(bot_common.BotMode_SingleMode)
+	case singleagent.BotMode_WorkflowMode:
+		return ptr.Of(bot_common.BotMode_WorkflowMode)
+	default:
+		return nil
+	}
 }

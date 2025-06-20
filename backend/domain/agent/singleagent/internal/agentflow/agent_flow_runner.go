@@ -8,15 +8,15 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/cloudwego/eino/compose"
-	"github.com/cloudwego/eino/schema"
-
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
+	"github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
 )
 
 type AgentState struct {
@@ -39,14 +39,18 @@ type AgentRequest struct {
 
 type AgentRunner struct {
 	runner            compose.Runnable[*AgentRequest, *schema.Message]
+	chatflowRunner    compose.Runnable[*AgentRequest, *schema.StreamReader[*workflowEntity.Message]]
 	requireCheckpoint bool
-
-	modelInfo *crossmodelmgr.Model
+	AgentMode         singleagent.BotMode
+	modelInfo         *crossmodelmgr.Model
 }
 
 func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
 	sr *schema.StreamReader[*entity.AgentEvent], err error,
 ) {
+	if r.AgentMode == singleagent.BotMode_WorkflowMode {
+		return r.chatflowStreamExecute(ctx, req)
+	}
 	executeID := uuid.New()
 
 	hdl, sr, sw := newReplyCallback(ctx, executeID.String())

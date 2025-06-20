@@ -11,8 +11,10 @@ import (
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
+	workflowEntity "code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -27,17 +29,29 @@ type Config struct {
 }
 
 const (
-	keyOfPersonRender           = "persona_render"
-	keyOfKnowledgeRetriever     = "knowledge_retriever"
-	keyOfKnowledgeRetrieverPack = "knowledge_retriever_pack"
-	keyOfPromptVariables        = "prompt_variables"
-	keyOfPromptTemplate         = "prompt_template"
-	keyOfReActAgent             = "react_agent"
-	keyOfLLM                    = "llm"
-	keyOfToolsPreRetriever      = "tools_pre_retriever"
+	keyOfPersonRender              = "persona_render"
+	keyOfKnowledgeRetriever        = "knowledge_retriever"
+	keyOfKnowledgeRetrieverPack    = "knowledge_retriever_pack"
+	keyOfPromptVariables           = "prompt_variables"
+	keyOfPromptTemplate            = "prompt_template"
+	keyOfReActAgent                = "react_agent"
+	keyOfLLM                       = "llm"
+	keyOfToolsPreRetriever         = "tools_pre_retriever"
+	keyOfChatflowStreamExecuteNode = "chatflow_stream_execute_node"
 )
 
 func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
+	switch conf.Agent.BotMode {
+	case singleagent.BotMode_SingleMode:
+		return buildSingleAgent(ctx, conf)
+	case singleagent.BotMode_WorkflowMode:
+		return buildChatflowAgent(ctx, conf)
+	default:
+		return nil, fmt.Errorf("unknown bot mode")
+	}
+}
+
+func buildSingleAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	persona := conf.Agent.Prompt.GetPrompt()
 
 	avConf := &variableConf{
@@ -251,6 +265,24 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		runner:            runner,
 		requireCheckpoint: requireCheckpoint,
 		modelInfo:         modelInfo,
+	}, nil
+}
+
+func buildChatflowAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
+	g := compose.NewGraph[*AgentRequest, *schema.StreamReader[*workflowEntity.Message]](
+		compose.WithGenLocalState(func(ctx context.Context) (state *AgentState) {
+			return &AgentState{}
+		}))
+	_ = g.AddLambdaNode(keyOfChatflowStreamExecuteNode, compose.InvokableLambda[*AgentRequest, *schema.StreamReader[*workflowEntity.Message]](newChatflowStreamExecuteNode))
+	_ = g.AddEdge(compose.START, keyOfChatflowStreamExecuteNode)
+	_ = g.AddEdge(keyOfChatflowStreamExecuteNode, compose.END)
+	runner, err := g.Compile(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &AgentRunner{
+		chatflowRunner: runner,
+		AgentMode:      singleagent.BotMode_WorkflowMode,
 	}, nil
 }
 

@@ -51,6 +51,7 @@ type SingleAgent struct {
 	Version   string
 	DeletedAt gorm.DeletedAt
 
+	BotMode                 BotMode // 0:single mode 2:chatflow mode
 	VariablesMetaID         *int64
 	OnboardingInfo          *bot_common.OnboardingInfo
 	ModelInfo               *bot_common.ModelInfo
@@ -63,7 +64,15 @@ type SingleAgent struct {
 	BackgroundImageInfoList []*bot_common.BackgroundImageInfo
 	Database                []*bot_common.Database
 	ShortcutCommand         []string
+	LayoutInfo              *bot_common.LayoutInfo
 }
+
+type BotMode int32
+
+const (
+	BotMode_SingleMode   BotMode = 0
+	BotMode_WorkflowMode BotMode = 2
+)
 
 type InterruptInfo struct {
 	AllToolInterruptData map[string]*crossworkflow.ToolInterruptEvent
