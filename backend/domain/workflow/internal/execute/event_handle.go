@@ -419,13 +419,13 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		fcInfos := getFCInfos(ctx, event.NodeKey)
 		if len(fcInfos) > 0 {
 			if nodeExec.Extra.ResponseExtra == nil {
-				nodeExec.Extra.ResponseExtra = &entity.ResponseExtra{}
+				nodeExec.Extra.ResponseExtra = map[string]any{}
 			}
-			nodeExec.Extra.ResponseExtra.FCCalledDetail = &entity.FCCalledDetail{
+			nodeExec.Extra.ResponseExtra["fc_called_detail"] = &entity.FCCalledDetail{
 				FCCalledList: make([]*entity.FCCalled, 0, len(fcInfos)),
 			}
 			for _, fcInfo := range fcInfos {
-				nodeExec.Extra.ResponseExtra.FCCalledDetail.FCCalledList = append(nodeExec.Extra.ResponseExtra.FCCalledDetail.FCCalledList, &entity.FCCalled{
+				nodeExec.Extra.ResponseExtra["fc_called_detail"].(*entity.FCCalledDetail).FCCalledList = append(nodeExec.Extra.ResponseExtra["fc_called_detail"].(*entity.FCCalledDetail).FCCalledList, &entity.FCCalled{
 					Input:  fcInfo.inputString(),
 					Output: fcInfo.outputString(),
 				})

@@ -35,6 +35,7 @@ type Config struct {
 	FullSources   map[string]*nodes.SourceInfo
 	NodeKey       vo.NodeKey
 	InputSources  []*vo.FieldInfo
+	GroupOrder    []string // the order the groups are declared in frontend canvas
 }
 
 type VariableAggregator struct {
@@ -82,12 +83,25 @@ func (v *VariableAggregator) Invoke(ctx context.Context, input map[string]any) (
 
 	ctxcache.Store(ctx, groupChoiceTypeCacheKey, map[string]nodes.FieldStreamType{}) // none of the choices are stream
 
+	groupChoices := make([]any, 0, len(v.config.GroupOrder))
+	for _, group := range v.config.GroupOrder {
+		choice := groupToChoice[group]
+		if choice == -1 {
+			groupChoices = append(groupChoices, nil)
+		} else {
+			groupChoices = append(groupChoices, choice)
+		}
+	}
+
+	ctxcache.Store(ctx, groupChoiceCacheKey, groupChoices)
+
 	return result, nil
 }
 
 const (
 	resolvedSourcesCacheKey = "resolved_sources"
 	groupChoiceTypeCacheKey = "group_choice_type"
+	groupChoiceCacheKey     = "group_choice"
 )
 
 // Transform picks the first non-nil value from each group from a stream of map[group]items.
@@ -118,9 +132,19 @@ func (v *VariableAggregator) Transform(ctx context.Context, input *schema.Stream
 				}
 			}
 
-			if err == nil { // store group -> field type for use in callbacks.OnEnd
-				ctxcache.Store(ctx, groupChoiceTypeCacheKey, groupChoiceToStreamType)
+			groupChoices := make([]any, 0, len(v.config.GroupOrder))
+			for _, group := range v.config.GroupOrder {
+				choice := groupToChoice[group]
+				if choice == -1 {
+					groupChoices = append(groupChoices, nil)
+				} else {
+					groupChoices = append(groupChoices, choice)
+				}
 			}
+
+			// store group -> field type for use in callbacks.OnEnd
+			ctxcache.Store(ctx, groupChoiceTypeCacheKey, groupChoiceToStreamType)
+			ctxcache.Store(ctx, groupChoiceCacheKey, groupChoices)
 		}
 	}()
 
@@ -444,10 +468,18 @@ func (v *VariableAggregator) ToCallbackOutput(ctx context.Context, output map[st
 		panic("unable to get dynamic stream types from ctx cache")
 	}
 
+	groupChoices, ok := ctxcache.Get[[]any](ctx, groupChoiceCacheKey)
+	if !ok {
+		panic("unable to get group choices from ctx cache")
+	}
+
 	if len(dynamicStreamType) == 0 {
 		return &nodes.StructuredCallbackOutput{
 			Output:    output,
 			RawOutput: output,
+			Extra: map[string]any{
+				"variable_select": groupChoices,
+			},
 		}, nil
 	}
 
@@ -457,9 +489,13 @@ func (v *VariableAggregator) ToCallbackOutput(ctx context.Context, output map[st
 			newOut[k] = streamMarker
 		}
 	}
+
 	return &nodes.StructuredCallbackOutput{
 		Output:    newOut,
 		RawOutput: newOut,
+		Extra: map[string]any{
+			"variable_select": groupChoices,
+		},
 	}, nil
 }
 

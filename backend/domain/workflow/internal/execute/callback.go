@@ -16,7 +16,6 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 	callbacks2 "github.com/cloudwego/eino/utils/callbacks"
-	"golang.org/x/exp/maps"
 
 	workflow2 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
@@ -631,8 +630,8 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 	}
 
 	var (
-		outputMap, rawOutputMap map[string]any
-		ok                      bool
+		outputMap, rawOutputMap, customExtra map[string]any
+		ok                                   bool
 	)
 
 	outputMap, ok = output.(map[string]any)
@@ -645,6 +644,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		}
 		outputMap = structuredOutput.Output
 		rawOutputMap = structuredOutput.RawOutput
+		customExtra = structuredOutput.Extra
 	}
 
 	c := GetExeCtx(ctx)
@@ -673,20 +673,15 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		e.Answer = output.(map[string]any)["output"].(string)
 	} else if c.NodeType == entity.NodeTypeExit && *c.TerminatePlan == vo.UseAnswerContent {
 		e.Answer = output.(map[string]any)["output"].(string)
-	} else if c.NodeType == entity.NodeTypeVariableAggregator {
-		var groupChoices map[string]int
-		_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.DynamicStreamContainer) error {
-			groupChoices = state.GetDynamicChoice(n.nodeKey)
-			return nil
-		})
-		varSelect := make([]int, len(groupChoices))
-		keys := maps.Keys(groupChoices)
-		slices.Sort(keys)
-		for i, key := range keys {
-			varSelect[i] = groupChoices[key]
+	}
+
+	if len(customExtra) > 0 {
+		if e.extra.ResponseExtra == nil {
+			e.extra.ResponseExtra = map[string]any{}
 		}
-		e.extra.ResponseExtra = &entity.ResponseExtra{
-			VariableSelect: varSelect,
+
+		for k := range customExtra {
+			e.extra.ResponseExtra[k] = customExtra[k]
 		}
 	}
 
@@ -704,8 +699,8 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		}
 		if *terminatePlan == vo.UseAnswerContent {
 			e.extra = &entity.NodeExtra{
-				ResponseExtra: &entity.ResponseExtra{
-					TerminalPlan: workflow2.TerminatePlanType_USESETTING,
+				ResponseExtra: map[string]any{
+					"terminal_plan": workflow2.TerminatePlanType_USESETTING,
 				},
 			}
 			e.outputExtractor = func(o map[string]any) string {
@@ -956,8 +951,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 						}
 
 						if reasoning != nil {
-							e.extra.ResponseExtra = &entity.ResponseExtra{
-								ReasoningContent: fullOutput["reasoning_content"].(string),
+							e.extra.ResponseExtra = map[string]any{
+								"reasoning_content": fullOutput["reasoning_content"].(string),
 							}
 						}
 					}
@@ -977,20 +972,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				extra.CurrentSubExecuteID = c.SubExecuteID
 			}
 
-			var groupChoices map[string]int
-			_ = compose.ProcessState(ctx, func(ctx context.Context, state nodes.DynamicStreamContainer) error {
-				groupChoices = state.GetDynamicChoice(n.nodeKey)
-				return nil
-			})
-			varSelect := make([]int, len(groupChoices))
-			keys := maps.Keys(groupChoices)
-			slices.Sort(keys)
-			for i, key := range keys {
-				varSelect[i] = groupChoices[key]
-			}
-			extra.ResponseExtra = &entity.ResponseExtra{
-				VariableSelect: varSelect,
-			}
+			extra.ResponseExtra = make(map[string]any)
 
 			fullOutput := &nodes.StructuredCallbackOutput{
 				Output:    make(map[string]any),
@@ -1025,6 +1007,10 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					logs.Errorf("failed to concat two maps: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
+				}
+
+				if first {
+					extra.ResponseExtra = chunk.(*nodes.StructuredCallbackOutput).Extra
 				}
 
 				fullOutput = &nodes.StructuredCallbackOutput{
@@ -1145,8 +1131,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 						}
 						if *terminatePlan == vo.UseAnswerContent {
 							firstEvent.extra = &entity.NodeExtra{
-								ResponseExtra: &entity.ResponseExtra{
-									TerminalPlan: workflow2.TerminatePlanType_USESETTING,
+								ResponseExtra: map[string]any{
+									"terminal_plan": workflow2.TerminatePlanType_USESETTING,
 								},
 							}
 						}
@@ -1201,8 +1187,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					terminatePlan = ptr.Of(vo.ReturnVariables)
 				}
 				if *terminatePlan == vo.UseAnswerContent {
-					e.extra.ResponseExtra = &entity.ResponseExtra{
-						TerminalPlan: workflow2.TerminatePlanType_USESETTING,
+					e.extra.ResponseExtra = map[string]any{
+						"terminal_plan": workflow2.TerminatePlanType_USESETTING,
 					}
 				}
 			}

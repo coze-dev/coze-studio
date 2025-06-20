@@ -88,15 +88,8 @@ type NodeExecution struct {
 
 type NodeExtra struct {
 	CurrentSubExecuteID int64          `json:"current_sub_execute_id,omitempty"`
-	ResponseExtra       *ResponseExtra `json:"response_extra,omitempty"`
+	ResponseExtra       map[string]any `json:"response_extra,omitempty"`
 	SubExecuteID        int64          `json:"subExecuteID,omitempty"` // for subworkflow node, the execute id of the sub workflow
-}
-
-type ResponseExtra struct {
-	ReasoningContent string                     `json:"reasoning_content,omitempty"`
-	FCCalledDetail   *FCCalledDetail            `json:"fc_called_detail,omitempty"`
-	VariableSelect   []int                      `json:"variable_select,omitempty"`
-	TerminalPlan     workflow.TerminatePlanType `json:"terminal_plan,omitempty"`
 }
 
 type FCCalled struct {

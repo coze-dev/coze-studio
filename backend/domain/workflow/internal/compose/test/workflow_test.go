@@ -333,6 +333,10 @@ func TestVariableAggregator(t *testing.T) {
 				"Group1": 1,
 				"Group2": 1,
 			},
+			"GroupOrder": []string{
+				"Group1",
+				"Group2",
+			},
 		},
 		InputSources: []*vo.FieldInfo{
 			{

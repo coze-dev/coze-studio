@@ -321,6 +321,7 @@ func (s *NodeSchema) ToVariableAggregatorConfig() (*variableaggregator.Config, e
 		FullSources:   getKeyOrZero[map[string]*nodes.SourceInfo]("FullSources", s.Configs),
 		NodeKey:       s.Key,
 		InputSources:  s.InputSources,
+		GroupOrder:    mustGetKey[[]string]("GroupOrder", s.Configs),
 	}, nil
 }
 
