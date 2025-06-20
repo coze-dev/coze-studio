@@ -277,7 +277,12 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 
 			// now this 'part' is a variable, first check if the source(s) for it are skipped (the nodes are not selected)
 			// if skipped, just move on to the next 'part'
-			if part.Skipped(resolvedSources) {
+			skipped, invalid := part.Skipped(resolvedSources)
+			if skipped {
+				continue
+			}
+			if invalid {
+				sw.Send(map[string]any{outputKey: "{{" + part.Value + "}}"}, nil)
 				continue
 			}
 

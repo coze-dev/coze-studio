@@ -2,7 +2,6 @@ package nodes
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -156,7 +155,11 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 
 	i, err := n.Interface()
 	if err != nil {
-		return fmt.Sprintf("%v", i), nil
+		return tp.Value, nil
+	}
+
+	if i == nil {
+		return "", nil
 	}
 
 	if len(options.type2CustomRenderer) > 0 {
@@ -184,9 +187,9 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 	}
 }
 
-func (tp TemplatePart) Skipped(resolvedSources map[string]*SourceInfo) bool {
+func (tp TemplatePart) Skipped(resolvedSources map[string]*SourceInfo) (skipped bool, invalid bool) {
 	if len(resolvedSources) == 0 { // no information available, maybe outside the scope of a workflow
-		return false
+		return false, false
 	}
 
 	// examine along the TemplatePart's root and sub paths,
@@ -196,27 +199,27 @@ func (tp TemplatePart) Skipped(resolvedSources map[string]*SourceInfo) bool {
 	// - otherwise an INTERMEDIATE field source is matched, it can only be skipped if ALL its sub sources are skipped
 	matchingSource, ok := resolvedSources[tp.Root]
 	if !ok { // the user specified a non-existing source, it can never have any value, just skip it
-		return true
+		return false, true
 	}
 
 	if !matchingSource.IsIntermediate {
-		return matchingSource.FieldType == FieldSkipped
+		return matchingSource.FieldType == FieldSkipped, false
 	}
 
 	for _, subPath := range tp.SubPathsBeforeSlice {
 		subSource, ok := matchingSource.SubSources[subPath]
 		if !ok { // has gone deeper than the field source
 			if matchingSource.IsIntermediate { // the user specified a non-existing source, just skip it
-				return true
+				return false, true
 			}
-			return matchingSource.FieldType == FieldSkipped
+			return matchingSource.FieldType == FieldSkipped, false
 		}
 
 		matchingSource = subSource
 	}
 
 	if !matchingSource.IsIntermediate {
-		return matchingSource.FieldType == FieldSkipped
+		return matchingSource.FieldType == FieldSkipped, false
 	}
 
 	var checkSourceSkipped func(sInfo *SourceInfo) bool
@@ -232,7 +235,7 @@ func (tp TemplatePart) Skipped(resolvedSources map[string]*SourceInfo) bool {
 		return true
 	}
 
-	return checkSourceSkipped(matchingSource)
+	return checkSourceSkipped(matchingSource), false
 }
 
 func Render(ctx context.Context, tpl string, input map[string]any, sources map[string]*SourceInfo, opts ...RenderOption) (string, error) {
@@ -254,14 +257,20 @@ func Render(ctx context.Context, tpl string, input map[string]any, sources map[s
 			continue
 		}
 
-		if part.Skipped(resolvedSources) {
+		skipped, invalid := part.Skipped(resolvedSources)
+		if skipped {
+			continue
+		}
+
+		if invalid {
+			sb.WriteString("{{" + part.Value + "}}")
 			continue
 		}
 
 		i, err := part.Render(mi, opts...)
 		if err != nil {
 			logs.CtxErrorf(ctx, "failed to render template part %v from %v: %v", part, string(mi), err)
-			sb.WriteString(part.Value)
+			sb.WriteString("{{" + part.Value + "}}")
 			continue
 		}
 
