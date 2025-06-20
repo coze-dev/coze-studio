@@ -70,10 +70,9 @@ type Node struct {
 
 func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]any, map[string]any],
 	sc *WorkflowSchema, streamRun bool) (*Node, error) {
-	if streamRun {
-		if err := s.SetFullSources(sc.GetAllNodes()); err != nil {
-			return nil, err
-		}
+	// TODO: only set sources on nodes that need them
+	if err := s.SetFullSources(sc.GetAllNodes()); err != nil {
+		return nil, err
 	}
 
 	switch s.Type {

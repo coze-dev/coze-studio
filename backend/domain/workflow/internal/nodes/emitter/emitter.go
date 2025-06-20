@@ -6,11 +6,14 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"strconv"
 	"strings"
 
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
@@ -247,7 +250,7 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 	}
 
 	sr, sw := schema.Pipe[map[string]any](0)
-	parts := parseJinja2Template(e.cfg.Template)
+	parts := parseTemplate(e.cfg.Template)
 	safego.Go(ctx, func() {
 		hasErr := false
 		defer func() {
@@ -419,15 +422,41 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 	return sr, nil
 }
 
-func (e *OutputEmitter) Emit(_ context.Context, in map[string]any) (output map[string]any, err error) {
-	var out string
-	out, err = nodes.Jinja2TemplateRender(e.cfg.Template, in)
+func (e *OutputEmitter) Emit(ctx context.Context, in map[string]any) (output map[string]any, err error) {
+	mi, err := sonic.Marshal(in)
 	if err != nil {
 		return nil, err
 	}
 
+	resolvedSources, err := nodes.ResolveStreamSources(ctx, e.cfg.FullSources)
+	if err != nil {
+		return nil, err
+	}
+
+	var sb strings.Builder
+	parts := parseTemplate(e.cfg.Template)
+	for _, part := range parts {
+		if !part.isVariable {
+			sb.WriteString(part.value)
+			continue
+		}
+
+		if part.skipped(resolvedSources) {
+			continue
+		}
+
+		i, err := part.render(mi)
+		if err != nil {
+			logs.CtxErrorf(ctx, "failed to render template part %v from %v: %v", part, string(mi), err)
+			sb.WriteString(part.value)
+			continue
+		}
+
+		sb.WriteString(i)
+	}
+
 	output = map[string]any{
-		outputKey: out,
+		outputKey: sb.String(),
 	}
 
 	return output, nil
@@ -438,15 +467,17 @@ type templatePart struct {
 	value               string
 	root                string
 	subPathsBeforeSlice []string
+	jsonPath            []any
 }
 
 var re = regexp.MustCompile(`{{\s*([^}]+)\s*}}`)
 
-func parseJinja2Template(template string) []templatePart {
+func parseTemplate(template string) []templatePart {
 	matches := re.FindAllStringSubmatchIndex(template, -1)
 	parts := make([]templatePart, 0)
 	lastEnd := 0
 
+loop:
 	for _, match := range matches {
 		start, end := match[0], match[1]
 		placeholderStart, placeholderEnd := match[2], match[3]
@@ -471,11 +502,58 @@ func parseJinja2Template(template string) []templatePart {
 				subPaths = append(subPaths, segments[i])
 			}
 		}
+
+		var jsonPath []any
+		for _, segment := range segments {
+			// find the first '[' to separate the initial key from array accessors
+			firstBracket := strings.Index(segment, "[")
+			if firstBracket == -1 {
+				// No brackets, the whole segment is a key
+				jsonPath = append(jsonPath, segment)
+				continue
+			}
+
+			// Add the initial key part
+			key := segment[:firstBracket]
+			if key != "" {
+				jsonPath = append(jsonPath, key)
+			}
+
+			// Now, parse the array accessors like [1][2]
+			rest := segment[firstBracket:]
+			for strings.HasPrefix(rest, "[") {
+				closeBracket := strings.Index(rest, "]")
+				if closeBracket == -1 {
+					// Malformed, treat as literal
+					parts = append(parts, templatePart{isVariable: false, value: val})
+					continue loop
+				}
+
+				idxStr := rest[1:closeBracket]
+				idx, err := strconv.Atoi(idxStr)
+				if err != nil {
+					// Malformed, treat as literal
+					parts = append(parts, templatePart{isVariable: false, value: val})
+					continue loop
+				}
+
+				jsonPath = append(jsonPath, idx)
+				rest = rest[closeBracket+1:]
+			}
+
+			if rest != "" {
+				// Malformed, treat as literal
+				parts = append(parts, templatePart{isVariable: false, value: val})
+				continue loop
+			}
+		}
+
 		parts = append(parts, templatePart{
 			isVariable:          true,
 			value:               val,
 			root:                removeSlice(segments[0]),
 			subPathsBeforeSlice: subPaths,
+			jsonPath:            jsonPath,
 		})
 
 		lastEnd = end
@@ -500,19 +578,53 @@ func removeSlice(s string) string {
 	return s
 }
 
+func (tp templatePart) render(m []byte) (string, error) {
+	n, err := sonic.Get(m, tp.jsonPath...)
+	if err != nil {
+		return tp.value, nil
+	}
+
+	i, err := n.Interface()
+	if err != nil {
+		return fmt.Sprintf("%v", i), nil
+	}
+
+	switch i.(type) {
+	case string:
+		return i.(string), nil
+	case int64:
+		return strconv.FormatInt(i.(int64), 10), nil
+	case float64:
+		return strconv.FormatFloat(i.(float64), 'f', -1, 64), nil
+	case bool:
+		return strconv.FormatBool(i.(bool)), nil
+	default:
+		ms, err := sonic.ConfigStd.MarshalToString(i) // keep order of the map keys
+		if err != nil {
+			return "", err
+		}
+		return ms, nil
+	}
+}
+
 func (tp templatePart) renderAndSend(k string, v any, sw *schema.StreamWriter[map[string]any]) bool /*hasError*/ {
-	tpl := fmt.Sprintf("{{%s}}", tp.value)
-	formatted, err := nodes.Jinja2TemplateRender(tpl, map[string]any{k: v})
+	m, err := sonic.Marshal(map[string]any{k: v})
 	if err != nil {
 		sw.Send(nil, err)
 		return true
 	}
 
-	if len(formatted) == 0 { // won't send if formatted result is empty string
+	r, err := tp.render(m)
+	if err != nil {
+		sw.Send(nil, err)
+		return true
+	}
+
+	if len(r) == 0 { // won't send if formatted result is empty string
 		return false
 	}
 
-	sw.Send(map[string]any{outputKey: formatted}, nil)
+	sw.Send(map[string]any{outputKey: r}, nil)
 	return false
 }
 

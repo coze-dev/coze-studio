@@ -133,6 +133,11 @@ func convertArrInput(in []any, t *vo.TypeInfo) ([]any, error) {
 		case vo.DataTypeString, vo.DataTypeBoolean, vo.DataTypeNumber, vo.DataTypeFile:
 			out[i] = in[i]
 		case vo.DataTypeInteger:
+			i64, ok := in[i].(int64)
+			if ok {
+				out[i] = i64
+				continue
+			}
 			out[i] = int64(in[i].(float64))
 		case vo.DataTypeTime:
 			t, err := parseTime(in[i].(string))

@@ -26,6 +26,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -981,12 +982,12 @@ func TestTestRunAndGetProcess(t *testing.T) {
 			mockey.PatchConvey("openapi async run", func() {
 				exeID := r.openapiAsyncRun(id, input)
 				e := r.getProcess(id, exeID)
-				assert.Equal(t, "1.0_['1234', '5678']", e.output)
+				assert.Equal(t, "1_[\"1234\",\"5678\"]", e.output)
 			})
 
 			mockey.PatchConvey("openapi sync run", func() {
 				output, exeID := r.openapiSyncRun(id, input)
-				assert.Equal(t, "1.0_['1234', '5678']", output["data"])
+				assert.Equal(t, "1_[\"1234\",\"5678\"]", output["data"])
 				his := r.getOpenAPIProcess(id, exeID)
 				assert.Equal(t, exeID, fmt.Sprintf("%d", *his.Data[0].ExecuteID))
 				assert.Equal(t, workflow.WorkflowRunMode_Sync, *his.Data[0].RunMode)
@@ -1480,7 +1481,7 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 
 		e3 := r.getProcess(topID, exeID, withPreviousEventID(e2.event.ID))
 		e3.assertSuccess()
-		assert.Equal(t, "I don't know.\nI don't know too.\nb\n['new_a_more info 1', 'new_b_more info 2']", e3.output)
+		assert.Equal(t, "I don't know.\nI don't know too.\nb\n[\"new_a_more info 1\",\"new_b_more info 2\"]", e3.output)
 
 		e3.tokenEqual(3, 23)
 
@@ -2332,7 +2333,7 @@ func TestAggregateStreamVariables(t *testing.T) {
 		})
 		e := r.getProcess(id, exeID)
 		e.assertSuccess()
-		assert.Equal(t, "I won't tell you.\nI won't tell you.\n{'Group1': 'I won't tell you.', 'input': 'I've got an important question'}", e.output)
+		assert.Equal(t, "I won't tell you.\nI won't tell you.\n{\"Group1\":\"I won't tell you.\",\"input\":\"I've got an important question\"}", e.output)
 
 		defer r.runServer()()
 
@@ -3004,7 +3005,8 @@ func TestStreamRun(t *testing.T) {
 				exeID := strings.TrimPrefix(strings.Split(*debugURL, "&")[0], "https://www.coze.cn/work_flow?execute_id=")
 				expectedEvents[index].Data.DebugURL = ptr.Of(strings.ReplaceAll(*debugURL, "{{exeID}}", exeID))
 			}
-			assert.Equal(t, expectedEvents[index], expectedE{
+			require.Equal(t, expectedEvents[index].Data.Content, streamE.Content)
+			require.Equal(t, expectedEvents[index], expectedE{
 				ID:    e.ID,
 				Event: appworkflow.StreamRunEventType(e.Type),
 				Data:  &streamE,
