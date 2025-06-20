@@ -3,6 +3,7 @@ package validate
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
@@ -124,7 +125,19 @@ func (cv *CanvasValidator) CheckRefVariable(ctx context.Context) (issues []*Issu
 		for nodeID, node := range reachability.reachableNodes {
 			if node.Data != nil && node.Data.Inputs != nil && node.Data.Inputs.InputParameters != nil { // only validate InputParameters
 				parameters := node.Data.Inputs.InputParameters
+
 				for _, p := range parameters {
+					valid := validateInputParameterName(p.Name)
+					if !valid {
+						issues = append(issues, &Issue{
+							NodeErr: &NodeErr{
+								NodeID:   nodeID,
+								NodeName: node.Data.Meta.Title,
+							},
+							Message: fmt.Sprintf(`it only allow include number or alphabet and begin with alphabet, but it's "%v"`, p.Name),
+						})
+					}
+
 					if p.Input != nil {
 						if p.Input.Value.Type != vo.BlockInputValueTypeRef {
 							continue
@@ -133,9 +146,22 @@ func (cv *CanvasValidator) CheckRefVariable(ctx context.Context) (issues []*Issu
 						if err != nil {
 							return err
 						}
-						if ref.BlockID == "" {
+
+						if ref.Source == vo.RefSourceTypeBlockOutput && ref.BlockID == "" {
+							issues = append(issues, &Issue{
+								NodeErr: &NodeErr{
+									NodeID:   nodeID,
+									NodeName: node.Data.Meta.Title,
+								},
+								Message: fmt.Sprintf(`ref block '%v' format error, not found [blockID]`, p.Name),
+							})
 							continue
 						}
+
+						if ref.Source == vo.RefSourceTypeGlobalApp || ref.Source == vo.RefSourceTypeGlobalSystem || ref.Source == vo.RefSourceTypeGlobalUser {
+							continue
+						}
+
 						if _, exists := combinedReachable[ref.BlockID]; !exists {
 							issues = append(issues, &Issue{
 								NodeErr: &NodeErr{
@@ -875,4 +901,10 @@ func parseBlockInputRef(content any) (*vo.BlockInputReference, error) {
 	}
 
 	return p, nil
+}
+
+var validateNameRegex = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+
+func validateInputParameterName(name string) bool {
+	return validateNameRegex.Match([]byte(name))
 }

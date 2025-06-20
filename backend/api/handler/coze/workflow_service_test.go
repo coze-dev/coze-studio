@@ -1136,6 +1136,14 @@ func TestValidateTree(t *testing.T) {
 				}
 			}
 		})
+
+		t.Run("invalid_input_parameter", func(t *testing.T) {
+			errs := r.validateTree("validate/invalid_input_parameter.json")
+			assert.Equal(t, len(errs[0]), 2)
+			assert.Equal(t, errs[0][0].Message, `it only allow include number or alphabet and begin with alphabet, but it's "123"`)
+			assert.Equal(t, errs[0][1].Message, `ref block 'output' format error, not found [blockID]`)
+		})
+
 	})
 }
 
