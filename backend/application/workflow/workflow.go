@@ -2640,6 +2640,8 @@ func entityNodeTypeToAPINodeTemplateType(nodeType entity.NodeType) (workflow.Nod
 		// Maps to DatabaseInsert (ID 41) in the API model, despite entity ID being 46.
 		// return workflow.NodeTemplateType_DatabaseInsert, nil
 		return workflow.NodeTemplateType(46), nil
+	case entity.NodeTypeLambda:
+		return 0, nil
 	default:
 		// Handle entity types that don't have a corresponding NodeTemplateType
 		return workflow.NodeTemplateType(0), fmt.Errorf("cannot map entity node type '%s' to a workflow.NodeTemplateType", nodeType)

@@ -55,7 +55,7 @@ func (r *WorkflowRunner) designateOptions(ctx context.Context) (context.Context,
 		if ns.Type == entity.NodeTypeExit {
 			nodeOpt = nodeCallbackOption(key, ns.Name, eventChan, resumedEvent,
 				ptr.Of(mustGetKey[vo.TerminatePlan]("TerminalPlan", ns.Configs)))
-		} else {
+		} else if ns.Type != entity.NodeTypeLambda {
 			nodeOpt = nodeCallbackOption(key, ns.Name, eventChan, resumedEvent, nil)
 		}
 

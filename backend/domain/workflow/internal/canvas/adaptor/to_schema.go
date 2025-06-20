@@ -767,6 +767,7 @@ func toLoopNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, m
 	)
 
 	for _, childN := range n.Blocks {
+		childN.SetParent(n)
 		childNS, _, err := NodeToNodeSchema(ctx, childN)
 		if err != nil {
 			return nil, nil, err
@@ -848,6 +849,7 @@ func toBatchNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, 
 	)
 
 	for _, childN := range n.Blocks {
+		childN.SetParent(n)
 		childNS, _, err := NodeToNodeSchema(ctx, childN)
 		if err != nil {
 			return nil, nil, err

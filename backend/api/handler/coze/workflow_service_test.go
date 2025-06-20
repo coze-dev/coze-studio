@@ -477,7 +477,9 @@ func getProcess(t *testing.T, h *server.Hertz, idStr string, exeID string) *work
 	w := ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/api/workflow_api/get_process?workflow_id=%s&space_id=%s&execute_id=%s", getProcessReq.WorkflowID, getProcessReq.SpaceID, *getProcessReq.ExecuteID), nil,
 		ut.Header{Key: "Content-Type", Value: "application/json"})
 	res := w.Result()
-	assert.Equal(t, http.StatusOK, res.StatusCode())
+	if res.StatusCode() != http.StatusOK {
+		t.Fatalf("unexpected status code: %d, body: %s", res.StatusCode(), string(res.Body()))
+	}
 	getProcessResp := &workflow.GetWorkflowProcessResponse{}
 	err := sonic.Unmarshal(res.Body(), getProcessResp)
 	assert.NoError(t, err)

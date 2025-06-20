@@ -26,7 +26,7 @@ func (s *NodeSchema) outputValueFiller() func(ctx context.Context, output map[st
 		}
 
 		for k, tInfo := range s.OutputTypes {
-			if err := fillIfNotRequired(tInfo, newOutput, k, fillNil); err != nil {
+			if err := FillIfNotRequired(tInfo, newOutput, k, FillNil); err != nil {
 				return nil, err
 			}
 		}
@@ -51,7 +51,7 @@ func (s *NodeSchema) inputValueFiller() func(ctx context.Context, input map[stri
 		}
 
 		for k, tInfo := range s.InputTypes {
-			if err := fillIfNotRequired(tInfo, newInput, k, fillZero); err != nil {
+			if err := FillIfNotRequired(tInfo, newInput, k, FillZero); err != nil {
 				return nil, err
 			}
 		}
@@ -60,18 +60,18 @@ func (s *NodeSchema) inputValueFiller() func(ctx context.Context, input map[stri
 	}
 }
 
-type fillStrategy string
+type FillStrategy string
 
 const (
-	fillZero fillStrategy = "zero"
-	fillNil  fillStrategy = "nil"
+	FillZero FillStrategy = "zero"
+	FillNil  FillStrategy = "nil"
 )
 
-func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, strategy fillStrategy) error {
+func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, strategy FillStrategy) error {
 	v, ok := container[k]
 	if ok {
 		if len(tInfo.Properties) == 0 {
-			if v == nil && strategy == fillZero {
+			if v == nil && strategy == FillZero {
 				v = tInfo.Zero()
 				container[k] = v
 				return nil
@@ -96,7 +96,7 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 				container[k] = copiedVal
 				for i := range copiedVal {
 					if copiedVal[i] == nil {
-						if strategy == fillZero {
+						if strategy == FillZero {
 							copiedVal[i] = elemTInfo.Zero()
 							continue
 						}
@@ -111,7 +111,7 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 						newSubContainer := maps.Clone(subContainer)
 
 						for subK, subL := range elemTInfo.Properties {
-							if err := fillIfNotRequired(subL, newSubContainer, subK, strategy); err != nil {
+							if err := FillIfNotRequired(subL, newSubContainer, subK, strategy); err != nil {
 								return err
 							}
 						}
@@ -142,7 +142,7 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 
 			newSubContainer := maps.Clone(subContainer)
 			for subK, subT := range tInfo.Properties {
-				if err := fillIfNotRequired(subT, newSubContainer, subK, strategy); err != nil {
+				if err := FillIfNotRequired(subT, newSubContainer, subK, strategy); err != nil {
 					return err
 				}
 			}
@@ -154,7 +154,7 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 			return fmt.Errorf("output field %s is required but not present", k)
 		} else {
 			var z any
-			if strategy == fillZero {
+			if strategy == FillZero {
 				z = tInfo.Zero()
 			}
 
@@ -165,7 +165,7 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 				container[k] = z
 				subContainer := z.(map[string]any)
 				for subK, subL := range tInfo.Properties {
-					if err := fillIfNotRequired(subL, subContainer, subK, strategy); err != nil {
+					if err := FillIfNotRequired(subL, subContainer, subK, strategy); err != nil {
 						return err
 					}
 				}

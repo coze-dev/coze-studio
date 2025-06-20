@@ -241,12 +241,17 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
 	}
 
-	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, c)
+	/*workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, c)
+	if err != nil {
+		return 0, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
+	}*/
+
+	workflowSC, err := adaptor.WorkflowSchemaFromNode(ctx, c, nodeID)
 	if err != nil {
 		return 0, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
-	wf, newSC, err := compose.NewWorkflowFromNode(ctx, workflowSC, vo.NodeKey(nodeID), einoCompose.WithGraphName(fmt.Sprintf("%d", wfEntity.ID)))
+	wf, err := compose.NewWorkflowFromNodeV2(ctx, workflowSC, vo.NodeKey(nodeID), einoCompose.WithGraphName(fmt.Sprintf("%d", wfEntity.ID)))
 	if err != nil {
 		return 0, fmt.Errorf("failed to create workflow: %w", err)
 	}
@@ -267,7 +272,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 		return 0, err
 	}
 
-	cancelCtx, executeID, opts, _, err := compose.NewWorkflowRunner(wfEntity.GetBasic(), newSC, config,
+	cancelCtx, executeID, opts, _, err := compose.NewWorkflowRunner(wfEntity.GetBasic(), workflowSC, config,
 		compose.WithInput(inStr)).Prepare(ctx)
 	if err != nil {
 		return 0, err
