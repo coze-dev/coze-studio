@@ -11,6 +11,7 @@ DUMP_DB_SCRIPT := $(SCRIPTS_DIR)/setup/db_migrate_dump.sh
 SETUP_DOCKER_SCRIPT := $(SCRIPTS_DIR)/setup/docker.sh
 SETUP_PYTHON_SCRIPT := $(SCRIPTS_DIR)/setup/python.sh
 COMPOSE_FILE := docker/docker-compose.yml
+ENV_FILE := ./docker/.env
 
 debug: docker sync_db python server
 
@@ -36,15 +37,16 @@ dump_db:
 
 docker:
 	@echo "Start docker environment for opencoze app"
-	@bash $(SETUP_DOCKER_SCRIPT)
+	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile middleware up -d --wait
+
 
 docker-web:
 	@echo "Start web server in docker"
-	@docker compose -f $(COMPOSE_FILE) --env-file ./backend/.env up -d
+	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile '*' up -d
 
 docker-down:
 	@echo "Stop all docker containers"
-	@docker compose -f $(COMPOSE_FILE) down
+	@docker compose -f $(COMPOSE_FILE) --profile '*' down
 
 docker-clean: docker-down
 	@echo "Remove docker containers and volumes"

@@ -6,6 +6,7 @@ BACKEND_DIR="$BASE_DIR/backend"
 BIN_DIR="$BASE_DIR/bin"
 CONFIG_DIR="$BIN_DIR/resources/conf"
 RESOURCES_DIR="$BIN_DIR/resources/"
+DOCKER_DIR="$BASE_DIR/docker"
 
 echo "🧹 Checking for goimports availability..."
 
@@ -37,8 +38,8 @@ fi
 echo "✅ Build completed successfully!"
 
 echo "📑 Copying environment file..."
-if [ -f "$BACKEND_DIR/.env" ]; then
-    cp "$BACKEND_DIR/.env" "$BIN_DIR/.env"
+if [ -f "$DOCKER_DIR/.env" ]; then
+    cp "$DOCKER_DIR/.env" "$BIN_DIR/.env"
 else
     echo "❌ .env file not found in $BACKEND_DIR"
     exit 1

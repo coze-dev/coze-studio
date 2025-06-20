@@ -1,3 +1,6 @@
+x-env-file: &env_file
+  - .env
+
 services:
   mysql:
     image: mysql:8.4.5
@@ -7,7 +10,8 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-opencoze}
       MYSQL_USER: ${MYSQL_USER:-coze}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-coze123}
-
+    profiles: ['middleware']
+    env_file: *env_file
     ports:
       - '3306:3306'
     volumes:
@@ -39,6 +43,8 @@ services:
     container_name: coze-redis
     user: root
     privileged: true
+    profiles: ['middleware']
+    env_file: *env_file
     environment:
       - REDIS_AOF_ENABLED=${REDIS_AOF_ENABLED:-no}
       - REDIS_PORT_NUMBER=${REDIS_PORT_NUMBER:-6379}
@@ -76,6 +82,8 @@ services:
     container_name: coze-rocketmq-namesrv
     privileged: true
     user: root
+    profiles: ['middleware']
+    env_file: *env_file
     ports:
       - '9876:9876'
     volumes:
@@ -110,6 +118,8 @@ services:
     container_name: coze-rocketmq-broker
     privileged: true
     user: root
+    profiles: ['middleware']
+    env_file: *env_file
     ports:
       - '10909:10909'
       - '10911:10911'
@@ -175,6 +185,8 @@ services:
     container_name: coze-elasticsearch
     user: root
     privileged: true
+    profiles: ['middleware']
+    env_file: *env_file
     environment:
       # Add Java certificate trust configuration
       - ES_JAVA_OPTS=-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djavax.net.ssl.trustAll=true -Xms4096m -Xmx4096m
@@ -239,6 +251,8 @@ services:
     container_name: coze-kibana
     user: root
     privileged: true
+    profiles: ['middleware']
+    env_file: *env_file
     ports:
       - '5601:5601'
     environment:
@@ -272,6 +286,8 @@ services:
     container_name: coze-minio
     user: root
     privileged: true
+    profiles: ['middleware']
+    env_file: *env_file
     ports:
       - '9000:9000'
       - '9001:9001'
@@ -296,6 +312,8 @@ services:
     container_name: coze-etcd
     user: root
     privileged: true
+    profiles: ['middleware']
+    env_file: *env_file
     environment:
       - ETCD_AUTO_COMPACTION_MODE=revision
       - ETCD_AUTO_COMPACTION_RETENTION=1000
@@ -330,6 +348,8 @@ services:
     image: milvusdb/milvus:v2.5.10
     user: root
     privileged: true
+    profiles: ['middleware']
+    env_file: *env_file
     command: >
       bash -c "
         # Set proper permissions for data directories
@@ -370,6 +390,8 @@ services:
   elasticsearch-setup:
     image: alpine:3.22.0
     container_name: coze-elasticsearch-setup
+    profiles: ['middleware']
+    env_file: *env_file
     depends_on:
       elasticsearch:
         condition: service_healthy
@@ -389,6 +411,8 @@ services:
   minio-setup:
     image: minio/mc
     container_name: coze-minio-setup
+    profiles: ['middleware']
+    env_file: *env_file
     depends_on:
       minio:
         condition: service_healthy
@@ -411,6 +435,8 @@ services:
     #   dockerfile: backend/Dockerfile
     image: fanlv/opencoze:0.0.9
     container_name: coze-server
+    profiles: ['server']
+    env_file: *env_file
     environment:
       LISTEN_ADDR: 0.0.0.0:8888
     networks:
@@ -418,7 +444,7 @@ services:
     ports:
       - '8888:8888'
     volumes:
-      - ../backend/.env:/app/.env
+      - ../docker/.env:/app/.env
       - ../backend/conf:/app/resources/conf
       # - ../backend/static:/app/resources/static
     depends_on:
