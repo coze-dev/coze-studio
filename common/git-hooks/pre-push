@@ -4,6 +4,6 @@ if [ "$SKIP_COMMIT_MSG_HOOK" = "true" ]; then
     exit 0
 fi
 
-source scripts/githooks/block-unresolved-conflict.sh
+source frontend/scripts/block-unresolved-conflict.sh
 
-source scripts/githooks/pre-push-hook.sh
+source frontend/scripts/pre-push-hook.sh

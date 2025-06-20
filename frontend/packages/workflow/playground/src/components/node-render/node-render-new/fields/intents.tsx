@@ -25,10 +25,11 @@ export function Intents() {
       <div className="mt-[20px]" />
       {intents?.map((intent: { name: string }, index: number) => (
         <Field
-          key={intent?.name + index}
+          key={index}
           label={I18n.t('workflow_ques_ans_type_option_title')}
         >
           <AnswerItem
+            key={intent?.name + index}
             showLabel={false}
             label=""
             content={intent?.name}

@@ -101,6 +101,7 @@ export const PluginSettingEnter = (
         tooltips={I18n.t('plugin_bot_ide_plugin_setting_icon_tip')}
         onClick={() => doVisible(!0)}
         disabled={props.disabled}
+        data-testid="bot.editor.tool.added-tool-plugin-action-setting"
       />
     </>
   );

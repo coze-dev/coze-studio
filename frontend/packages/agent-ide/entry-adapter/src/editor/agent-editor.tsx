@@ -1,16 +1,23 @@
+import { useEffect } from 'react';
+
 import { useShallow } from 'zustand/react/shallow';
+import { usePageRuntimeStore } from '@coze-studio/bot-detail-store/page-runtime';
+import { useBotInfoStore } from '@coze-studio/bot-detail-store/bot-info';
+import { PromptEditorProvider } from '@coze-common/prompt-kit-base/editor';
+import { useInitStatus } from '@coze-common/chat-area';
+import { useReportTti } from '@coze-arch/report-tti';
+import { useSpaceStore } from '@coze-arch/bot-studio-store';
+import {
+  BehaviorType,
+  SpaceResourceType,
+} from '@coze-arch/bot-api/playground_api';
+import { BotMode } from '@coze-arch/bot-api/developer_api';
+import { PlaygroundApi } from '@coze-arch/bot-api';
 import {
   useEditConfirm,
   useSubscribeOnboardingAndUpdateChatArea,
 } from '@coze-agent-ide/space-bot/hook';
 import { BotEditorServiceProvider } from '@coze-agent-ide/space-bot';
-import { useReportTti } from '@coze-arch/report-tti';
-import { useSpaceStore } from '@coze-arch/bot-studio-store';
-import { BotMode } from '@coze-arch/bot-api/developer_api';
-import { usePageRuntimeStore } from '@coze-studio/bot-detail-store/page-runtime';
-import { useBotInfoStore } from '@coze-studio/bot-detail-store/bot-info';
-import { PromptEditorProvider } from '@coze-common/prompt-kit-base/editor';
-import { useInitStatus } from '@coze-common/chat-area';
 import {
   FormilyProvider,
   useGetModelList,
@@ -35,7 +42,7 @@ const BotEditor: React.FC = () => {
     })),
   );
 
-  const { mode } = useBotInfoStore(
+  const { mode, botId } = useBotInfoStore(
     useShallow(state => ({
       botId: state.botId,
       mode: state.mode,
@@ -60,6 +67,18 @@ const BotEditor: React.FC = () => {
       mode: 'bot-ide',
     },
   });
+
+  /**
+   * 上报最近打开
+   */
+  useEffect(() => {
+    PlaygroundApi.ReportUserBehavior({
+      resource_id: botId,
+      resource_type: SpaceResourceType.DraftBot,
+      behavior_type: BehaviorType.Visit,
+      space_id: spaceId,
+    });
+  }, []);
 
   if (status === 'unInit' || status === 'loading') {
     return null;

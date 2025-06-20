@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
 import { useRequest } from 'ahooks';
+import { useCreateAgent } from '@coze-studio/entity-adapter';
+import { type RenderAutoGenerateParams } from '@coze-common/biz-components/picture-upload';
 import { type DraftProjectCreateRequest } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
 import { intelligenceApi } from '@coze-arch/bot-api';
-import { type RenderAutoGenerateParams } from '@coze-common/biz-components/picture-upload';
-import { useCreateAgent } from '@coze-studio/entity-adapter';
 
 import { commonProjectFormValid } from '../utils/common-project-form-valid';
 import { ProjectTemplateModal } from '../components/project-template-modal';
@@ -84,7 +84,8 @@ export const useCreateProjectModalBase = ({
     setGuideModalVisible(false);
 
     if (guideType === 'project') {
-      if (IS_OVERSEA) {
+      // 海外版和开源版不支持项目模板
+      if (IS_OVERSEA || IS_OPEN_SOURCE) {
         setProjectModalVisible(true);
         return;
       }

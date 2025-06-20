@@ -21,8 +21,8 @@ dependencies:
     specifier: alpha
     version: 0.0.3-alpha.f72758(@types/node@18.19.112)(commander@13.1.0)
   '@coze-arch/rush-run-tsc-plugin':
-    specifier: latest
-    version: 0.0.1-alpha.0c17f8
+    specifier: 0.0.1-alpha.5f6259
+    version: 0.0.1-alpha.5f6259
   json5:
     specifier: ^2.2.1
     version: 2.2.3
@@ -152,8 +152,8 @@ packages:
       - '@types/node'
     dev: false
 
-  /@coze-arch/rush-run-tsc-plugin@0.0.1-alpha.0c17f8:
-    resolution: {integrity: sha512-85u3q7o9UMrOn8wOBQeqUmqxMbMSdnZZC4P1IiffBgylTJICyJl52AFLtGi/DZjfGxtzatls3sPinT3D196HxA==}
+  /@coze-arch/rush-run-tsc-plugin@0.0.1-alpha.5f6259:
+    resolution: {integrity: sha512-eVIBO35wZD8W6zoKyZWsd+QfUvvNbXApoeehiOcrm7P8LBeXeDPt3rMjq5Lpj4EZMmTgL10p0euh6vqCDkP4Fw==}
     dev: false
 
   /@cspotcode/source-map-support@0.8.1:
@@ -482,8 +482,8 @@ packages:
       supports-color: 8.1.1
     dev: false
 
-  /@tsconfig/node14@14.1.3:
-    resolution: {integrity: sha512-ZC9/Kq2c0+4l8sDx/z3YQyP7+OSMTQr/xxJaSFHLGhGL0t9bPjuX1Zwmg3C2VB5KWGgI8MXMRShXRJroy4utGA==}
+  /@tsconfig/node14@14.1.4:
+    resolution: {integrity: sha512-S5G+j19uQt/7wiXFqGapQ1cSYHlAoxYreObGkOmawAknegyUjx8EXngqy6vAitLHqCFu3rzluPlk77pWMD4n1Q==}
     dev: false
 
   /@tsconfig/node16@16.1.4:
@@ -494,8 +494,8 @@ packages:
     resolution: {integrity: sha512-5xxU8vVs9/FNcvm3gE07fPbn9tl6tqGGWA9tSlwsUEkBxtRnTsNmwrV8gasZ9F/EobaSv9+nu8AxUKccw77JpQ==}
     dev: false
 
-  /@tsconfig/node20@20.1.5:
-    resolution: {integrity: sha512-Vm8e3WxDTqMGPU4GATF9keQAIy1Drd7bPwlgzKJnZtoOsTm1tduUTbDjg0W5qERvGuxPI2h9RbMufH0YdfBylA==}
+  /@tsconfig/node20@20.1.6:
+    resolution: {integrity: sha512-sz+Hqx9zwZDpZIV871WSbUzSqNIsXzghZydypnfgzPKLltVJfkINfUeTct31n/tTSa9ZE1ZOfKdRre1uHHquYQ==}
     dev: false
 
   /@types/glob@7.2.0:
@@ -1648,8 +1648,8 @@ packages:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
     dev: false
 
-  /end-of-stream@1.4.4:
-    resolution: {integrity: sha512-+uw1inIHVPQoaVuHzRyXd21icM+cnt4CzD5rW+NC1wjOUSTOs+Te7FOv7AhN7vS9x/oIyhLP5PR1H+phQAHu5Q==}
+  /end-of-stream@1.4.5:
+    resolution: {integrity: sha512-ooEGc6HP26xXq/N+GCGOT0JKCLDGrq2bQUZrQ7gyrJiZANJ/8YDTxTpQBXGMn+WbIQXNVpyWymm7KYVICQnyOg==}
     dependencies:
       once: 1.4.0
     dev: false
@@ -1960,7 +1960,7 @@ packages:
     resolution: {integrity: sha512-GMat4EJ5161kIy2HevLlr4luNjBgvmj413KaQA7jt4V8B4RDsfpHk7WQ9GVqfYyyx8OS/L66Kox+rJRNklLK7w==}
     engines: {node: '>=6'}
     dependencies:
-      pump: 3.0.2
+      pump: 3.0.3
     dev: false
 
   /get-value@2.0.6:
@@ -3441,10 +3441,10 @@ packages:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
     dev: false
 
-  /pump@3.0.2:
-    resolution: {integrity: sha512-tUPXtzlGM8FE3P0ZL6DVs/3P58k9nk8/jZeQCurTJylQA8qFYzHFfhBJkuqyE0FifOsQ0uKWekiZ5g8wtr28cw==}
+  /pump@3.0.3:
+    resolution: {integrity: sha512-todwxLMY7/heScKmntwQG8CXVkWUOdYxIvY2s0VWAAMh/nd8SoYiRaKjlr7+iCs984f2P8zvrfWcDDYVb73NfA==}
     dependencies:
-      end-of-stream: 1.4.4
+      end-of-stream: 1.4.5
       once: 1.4.0
     dev: false
 
@@ -4315,10 +4315,10 @@ packages:
         optional: true
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
-      '@tsconfig/node14': 14.1.3
+      '@tsconfig/node14': 14.1.4
       '@tsconfig/node16': 16.1.4
       '@tsconfig/node18': 18.2.4
-      '@tsconfig/node20': 20.1.5
+      '@tsconfig/node20': 20.1.6
       '@types/node': 18.19.112
       acorn: 8.15.0
       acorn-walk: 8.3.4

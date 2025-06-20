@@ -9,10 +9,10 @@ import {
 } from '@coze-arch/idl/plugin_develop';
 import { DatasetStatus } from '@coze-arch/idl/knowledge';
 import { I18n, type I18nKeysNoOptionsType } from '@coze-arch/i18n';
-import { KnowledgeApi } from '@coze-arch/bot-api';
-import { safeJSONParse } from '@coze-agent-ide/space-bot/util';
 import { IconCozClock, IconCozKnowledge } from '@coze-arch/coze-design/icons';
 import { Menu, Switch, Tag, Toast, Table } from '@coze-arch/coze-design';
+import { KnowledgeApi } from '@coze-arch/bot-api';
+import { safeJSONParse } from '@coze-agent-ide/space-bot/util';
 
 import { BaseLibraryItem } from '../../components/base-library-item';
 import DocDefaultIcon from '../../assets/doc_default_icon.png';
@@ -93,6 +93,50 @@ const renderKnowledgeItem = (item: ResourceInfo) => {
   );
 };
 
+const getTypeFilters = () => ({
+  label: (
+    <span data-testid="space.library.filter.knowledge">
+      {I18n.t('library_resource_type_knowledge')}
+    </span>
+  ),
+  filterName: I18n.t('library_resource_type_knowledge'),
+  value: ResType.Knowledge,
+  children: [
+    {
+      label: (
+        <span data-testid="space.library.filter.knowledge.all_types">
+          {I18n.t('library_filter_tags_all_types')}
+        </span>
+      ),
+      value: -1,
+    },
+    {
+      label: (
+        <span data-testid="space.library.filter.knowledge.text">
+          {I18n.t('library_filter_tags_text')}
+        </span>
+      ),
+      value: 0,
+    },
+    {
+      label: (
+        <span data-testid="space.library.filter.knowledge.table">
+          {I18n.t('library_filter_tags_table')}
+        </span>
+      ),
+      value: 1,
+    },
+    {
+      label: (
+        <span data-testid="space.library.filter.knowledge.image">
+          {I18n.t('library_filter_tags_image')}
+        </span>
+      ),
+      value: 2,
+    },
+  ],
+});
+
 export const useKnowledgeConfig: UseEntityConfigHook = ({
   spaceId,
   reloadList,
@@ -149,16 +193,7 @@ export const useKnowledgeConfig: UseEntityConfigHook = ({
   return {
     modals: <>{createKnowledgeModal}</>,
     config: {
-      typeFilter: {
-        label: I18n.t('library_resource_type_knowledge'),
-        value: ResType.Knowledge,
-        children: [
-          { label: I18n.t('library_filter_tags_all_types'), value: -1 },
-          { label: I18n.t('library_filter_tags_text'), value: 0 },
-          { label: I18n.t('library_filter_tags_table'), value: 1 },
-          { label: I18n.t('library_filter_tags_image'), value: 2 },
-        ],
-      },
+      typeFilter: getTypeFilters(),
       renderCreateMenu: () => (
         <Menu.Item
           data-testid="workspace.library.header.create.knowledge"

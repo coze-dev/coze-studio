@@ -9,6 +9,7 @@ import {
   WorkspaceEmpty,
   DevelopCustomPublishStatus,
   isPublishStatus,
+  isRecentOpen,
   isSearchScopeEnum,
   getPublishRequestParam,
   getTypeRequestParams,
@@ -240,19 +241,14 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
                   : filterParams.isPublish
               }
               onChange={val => {
-                if (isPublishStatus(val)) {
-                  setFilterParams(p => ({
-                    ...p,
-                    recentlyOpen: false,
-                    isPublish: val,
-                  }));
-                } else {
-                  setFilterParams(p => ({
-                    ...p,
-                    searchScope: SearchScope.All,
-                    recentlyOpen: true,
-                  }));
-                }
+                setFilterParams(p => ({
+                  ...p,
+                  searchScope: SearchScope.All,
+                  recentlyOpen: isRecentOpen(val),
+                  isPublish: isPublishStatus(val)
+                    ? val
+                    : DevelopCustomPublishStatus.All,
+                }));
                 // tea 埋点
                 sendTeaEvent(EVENT_NAMES.workspace_action_front, {
                   space_id: spaceId,

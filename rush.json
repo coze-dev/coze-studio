@@ -977,7 +977,7 @@
     {
       "packageName": "@coze-arch/idl2ts-generator",
       "projectFolder": "frontend/infra/idl/idl2ts-generator",
-      "tags": ["level-2"]
+      "tags": ["level-2", "rush-tools"]
     },
     {
       "packageName": "@coze-arch/idl2ts-helper",

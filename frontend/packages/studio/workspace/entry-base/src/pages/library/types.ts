@@ -9,9 +9,9 @@ import {
 
 export interface LibraryEntityConfig {
   /**
-   * 资源类型筛选器配置，传入级联选择器的数据类型，约束 label 只能使用 string 类型
+   * 资源类型筛选器配置，传入级联选择器的数据类型
    **/
-  typeFilter?: CascaderData & { label: string };
+  typeFilter?: CascaderData & ({ filterName: string } | { label: string });
 
   /**
    * 允许各个业务定制请求参数的格式化逻辑，避免特化逻辑侵入到底层组件中

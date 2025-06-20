@@ -5,21 +5,15 @@ import { useMemo, useRef, useState, type FC } from 'react';
 
 import classNames from 'classnames';
 import { useMount } from 'ahooks';
+import { CommonE2e } from '@coze-data/e2e';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozEdit } from '@coze-arch/coze-design/icons';
 import { type FileItem, type UploadProps } from '@coze-arch/bot-semi/Upload';
 import { type CommonFieldProps } from '@coze-arch/bot-semi/Form';
-import {
-  UIButton,
-  Toast,
-  withField,
-  Image,
-  Upload,
-} from '@coze-arch/bot-semi';
+import { UIButton, Toast, withField, Image, Upload } from '@coze-arch/bot-semi';
 import { IconAvatarEditMask } from '@coze-arch/bot-icons';
 import { type FileBizType, IconType } from '@coze-arch/bot-api/developer_api';
 import { DeveloperApi } from '@coze-arch/bot-api';
-import { CommonE2e } from '@coze-data/e2e';
 
 import customUploadRequest from './utils/custom-upload-request';
 
@@ -83,6 +77,7 @@ interface PackageUploadProps {
   onSizeError?: () => void;
   // 自定义自定生成图片逻辑
   renderAutoGenerate?: (params: RenderAutoGenerateParams) => React.ReactNode;
+  testId?: string;
 }
 
 // eslint-disable-next-line @coze-arch/max-line-per-function
@@ -111,6 +106,7 @@ const _PictureUpload = (props: PackageUploadProps) => {
     renderAutoGenerate,
     onSizeError,
     maxSize = 2 * 1024,
+    testId,
   } = props;
   const uploadRef = useRef<Upload>(null);
   const pictureValue = value?.at(0);
@@ -229,6 +225,7 @@ const _PictureUpload = (props: PackageUploadProps) => {
             'cursor-pointer',
             triggerClassName,
           )}
+          data-testid={testId}
         >
           <Image
             preview={false}

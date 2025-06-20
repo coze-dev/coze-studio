@@ -4,6 +4,7 @@
 import { useMemo, useRef, useState } from 'react';
 
 import { isFunction } from 'lodash-es';
+import { type WorkflowJSON } from '@flowgram-adapter/free-layout-editor';
 import { type FrontWorkflowInfo } from '@coze-workflow/base/types';
 import {
   type BindBizType,
@@ -15,9 +16,12 @@ import {
   WORKFLOW_NAME_MAX_LEN,
   WORKFLOW_NAME_REGEX,
 } from '@coze-workflow/base';
+import { PictureUpload } from '@coze-common/biz-components/picture-upload';
+import { type UploadValue } from '@coze-common/biz-components';
 import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { reporter } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
+import { useUserInfo } from '@coze-arch/foundation-sdk';
 import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
 import {
   Button,
@@ -27,17 +31,9 @@ import {
   Tooltip,
 } from '@coze-arch/coze-design';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
-import {
-  Form,
-  Typography,
-  UIFormTextArea,
-  UIModal,
-} from '@coze-arch/bot-semi';
+import { Form, Typography, UIFormTextArea, UIModal } from '@coze-arch/bot-semi';
 import { CustomError } from '@coze-arch/bot-error';
 import { FileBizType, IconType } from '@coze-arch/bot-api/developer_api';
-import { type WorkflowJSON } from '@flowgram-adapter/free-layout-editor';
-import { PictureUpload } from '@coze-common/biz-components/picture-upload';
-import { type UploadValue } from '@coze-common/biz-components';
 
 import s from './index.module.less';
 /** 输入合规校验异常的错误码 */
@@ -141,6 +137,8 @@ export function CreateWorkflowModal({
   const formRef = useRef<Form<Partial<FormValue>>>(null);
   const [confirmDisabled, setConfirmDisabled] = useState(initConfirmDisabled);
   const [sensitiveTip, setSensitiveTip] = useState<string | undefined>();
+  const userInfo = useUserInfo();
+  const currentLocale = userInfo?.locale ?? navigator.language ?? 'en-US';
 
   const getValues = async () => {
     const formApi = formRef.current?.formApi;
@@ -242,7 +240,12 @@ export function CreateWorkflowModal({
           : undefined,
       };
 
-      const resp = await workflowApi.CreateWorkflow(reqParams);
+      const resp = await workflowApi.CreateWorkflow(reqParams, {
+        headers: {
+          'x-locale': currentLocale,
+        },
+      });
+
       const content =
         flowMode === WorkflowMode.Imageflow
           ? I18n.t('imageflow_create_toast_success')

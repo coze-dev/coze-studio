@@ -163,6 +163,7 @@ export const CozeKnowledgeAddTypeContent = (params: AddTypeContentProps) => {
       <PictureUpload
         label={I18n.t('datasets_model_create_avatar')}
         field="icon_uri"
+        testId={KnowledgeE2e.CreateKnowledgeModalAvatarUploader}
         fileBizType={FileBizType.BIZ_DATASET_ICON}
         uploadClassName={styles['upload-avatar-container']}
         iconType={IconType.Dataset}

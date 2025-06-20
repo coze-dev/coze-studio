@@ -50,45 +50,51 @@ export const BaseTextKnowledgeEditor = ({
   // 监听右键菜单事件
   useEventListener(
     'previewContextMenuItemAction',
-    useCallback(({ type, newChunk, chunks: newChunks, targetChunk }) => {
-      if (type === 'add-after') {
-        newChunk && setActiveChunk(newChunk);
-        newChunks && setChunks(newChunks);
-      }
-      if (type === 'add-before') {
-        newChunk && setActiveChunk(newChunk);
-        newChunks && setChunks(newChunks);
-      }
-      if (type === 'delete') {
-        onDeleteChunk?.(targetChunk);
-        newChunks && onChange?.(newChunks);
-      }
-      if (type === 'edit') {
-        setActiveChunk(targetChunk);
-      }
-    }, []),
+    useCallback(
+      ({ type, newChunk, chunks: newChunks, targetChunk }) => {
+        if (type === 'add-after') {
+          newChunk && setActiveChunk(newChunk);
+          newChunks && setChunks(newChunks);
+        }
+        if (type === 'add-before') {
+          newChunk && setActiveChunk(newChunk);
+          newChunks && setChunks(newChunks);
+        }
+        if (type === 'delete') {
+          onDeleteChunk?.(targetChunk);
+          newChunks && onChange?.(newChunks);
+        }
+        if (type === 'edit') {
+          setActiveChunk(targetChunk);
+        }
+      },
+      [onDeleteChunk, onChange],
+    ),
   );
 
   // 监听悬浮编辑栏事件
   useEventListener(
     'hoverEditBarAction',
-    useCallback(({ type, targetChunk, chunks: newChunks, newChunk }) => {
-      if (type === 'add-after') {
-        newChunk && setActiveChunk(newChunk);
-        newChunks && setChunks(newChunks);
-      }
-      if (type === 'add-before') {
-        newChunk && setActiveChunk(newChunk);
-        newChunks && setChunks(newChunks);
-      }
-      if (type === 'delete') {
-        onDeleteChunk?.(targetChunk);
-        newChunks && onChange?.(newChunks);
-      }
-      if (type === 'edit') {
-        setActiveChunk(targetChunk);
-      }
-    }, []),
+    useCallback(
+      ({ type, targetChunk, chunks: newChunks, newChunk }) => {
+        if (type === 'add-after') {
+          newChunk && setActiveChunk(newChunk);
+          newChunks && setChunks(newChunks);
+        }
+        if (type === 'add-before') {
+          newChunk && setActiveChunk(newChunk);
+          newChunks && setChunks(newChunks);
+        }
+        if (type === 'delete') {
+          onDeleteChunk?.(targetChunk);
+          newChunks && onChange?.(newChunks);
+        }
+        if (type === 'edit') {
+          setActiveChunk(targetChunk);
+        }
+      },
+      [onDeleteChunk, onChange],
+    ),
   );
 
   useEffect(() => {

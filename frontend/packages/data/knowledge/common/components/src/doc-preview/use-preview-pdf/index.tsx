@@ -1,3 +1,4 @@
+/* eslint-disable @coze-arch/max-line-per-function */
 import { Document, Page, pdfjs } from 'react-pdf';
 import { useMemo, useRef, useState } from 'react';
 
@@ -25,6 +26,8 @@ const options = {
         `//lf-cdn.coze.cn/obj/unpkg/pdfjs-dist/${pdfjs.version}/cmaps/`
       : // cp-disable-next-line
         `//sf-cdn.coze.com/obj/unpkg-va/pdfjs-dist/${pdfjs.version}/cmaps/`,
+  // 提升性能
+  cMapPacked: true,
 };
 
 export const usePreviewPdf = (props: IUsePreviewPdfProps) => {
@@ -146,6 +149,8 @@ export const usePreviewPdf = (props: IUsePreviewPdfProps) => {
         >
           <Document
             file={fileUrl}
+            // bug fix https://github.com/wojtekmaj/react-pdf/issues/974
+            key={fileUrl}
             onLoadSuccess={onDocumentLoadSuccess}
             options={options}
             className={cls('flex w-full h-full')}

@@ -67,6 +67,8 @@ export enum BotE2e {
   BotDatabaseAddModalFieldRequiredSwitch = 'bot.database.add.modal.field_required.switch',
   BotDatabaseAddModalFieldDelBtn = 'bot.database.add.modal.field_del.btn',
   BotDatabaseAddModalAddBtn = 'bot.database.add.modal.add.btn',
+  BotDatabaseAddModalSubmitBtn = 'bot.database.add.modal.submit.btn',
+  BotDatabaseEditTableStructureBtn = 'bot.database.edit_table_structure.btn',
   /** database-debug */
   BotDatabaseDebugModalTableNameTab = 'bot.database.debug.modal.table_name.tab',
   BotDatabaseDebugModalResetBtn = 'bot.database.debug.modal.reset.btn',

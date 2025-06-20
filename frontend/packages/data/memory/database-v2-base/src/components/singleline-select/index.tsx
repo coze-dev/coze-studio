@@ -1,5 +1,9 @@
 import classnames from 'classnames';
-import { Select, type SelectProps, type InputProps } from '@coze-arch/coze-design';
+import {
+  Select,
+  type SelectProps,
+  type InputProps,
+} from '@coze-arch/coze-design';
 
 import s from './index.module.less';
 
@@ -12,8 +16,12 @@ export type SLSelectProps = InputProps & {
   handleChange?: (v: SelectProps['value']) => void;
   errorMsg?: string;
   errorMsgFloat?: boolean;
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- 历史逻辑
-  selectProps?: SelectProps & { 'data-dtestid'?: string };
+  selectProps?: SelectProps & {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    'data-dtestid'?: string;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    'data-testid'?: string;
+  };
 };
 
 export const SLSelect: React.FC<SLSelectProps> = props => {

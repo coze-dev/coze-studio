@@ -57,7 +57,7 @@ export const PythonEditor = (props: EditorProps & EditorOtherProps) => {
           languageId: 'python',
           theme: 'code-editor-dark',
           height,
-          readOnly: readonly,
+          editable: !readonly,
           fontSize: 12,
         }}
       />

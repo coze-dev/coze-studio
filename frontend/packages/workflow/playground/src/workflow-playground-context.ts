@@ -101,15 +101,20 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
    * 获取 工作流节点模板
    */
   async loadNodeInfos(locale: string): Promise<void> {
-    console.log('current locale is ', locale); // todo zxh: 增加 locale 扩展，zh-CN 中文模板，en-US 英文模板
-
     const nodeIds: StandardNodeType[] = Object.values(StandardNodeType);
     let resp: NodeTemplateListResponse | undefined;
     let favoritePlugins: GetUserFavoriteListData | undefined;
     const response = await Promise.allSettled([
-      workflowApi.NodeTemplateList({
-        node_types: nodeIds,
-      }),
+      workflowApi.NodeTemplateList(
+        {
+          node_types: nodeIds,
+        },
+        {
+          headers: {
+            'x-locale': locale, // zh-CN, en-US
+          },
+        },
+      ),
       this.fetchFavoritePlugins({ pageNum: 1 }),
     ]);
     response[0].status === 'fulfilled' && (resp = response[0].value);

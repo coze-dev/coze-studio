@@ -62,6 +62,7 @@ const ItemRender = ({
 
   return (
     <div
+      data-testid={`agent-ide.resource-item.${resource.type}.${resource.name}`}
       key={resource.id}
       className={'base-item'}
       style={{

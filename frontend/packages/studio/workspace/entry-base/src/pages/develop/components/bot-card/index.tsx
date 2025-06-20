@@ -307,6 +307,7 @@ export const BotCard: React.FC<BotCardProps> = ({
                                   }
                                   onCopyProject?.(basic_info);
                                 }}
+                                data-testid="bot-card.copy"
                               >
                                 {I18n.t('project_ide_create_duplicate')}
                               </Menu.Item>

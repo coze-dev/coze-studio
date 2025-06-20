@@ -31,8 +31,8 @@ import {
   type ConnectResultInfo,
 } from '@coze-agent-ide/space-bot';
 
-import { PublishResultArea } from './component/publish-result-area';
 import styles from '../index.module.less';
+import { PublishResultArea } from './component/publish-result-area';
 
 interface PublishResultProps {
   // 隐藏Banner

@@ -1,8 +1,8 @@
 import { useRef, type RefObject } from 'react';
 
 import cls from 'classnames';
-import { Divider } from '@coze-arch/coze-design';
 import { usePlayground } from '@flowgram-adapter/free-layout-editor';
+import { Divider } from '@coze-arch/coze-design';
 
 import { useTemplateService } from '@/hooks/use-template-service';
 
@@ -62,7 +62,8 @@ export const Tools = (props: ITool) => {
                 margin={3}
               />
             ) : null}
-            <OpenTraceButton />
+            {/* The community version does not currently support trace, for future expansion  */}
+            {!IS_OPEN_SOURCE && <OpenTraceButton />}
             <StartTestRunButton />
           </>
         )}

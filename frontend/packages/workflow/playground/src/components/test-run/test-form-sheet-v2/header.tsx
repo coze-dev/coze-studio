@@ -22,6 +22,10 @@ export const TestFormSheetHeaderV2 = () => {
   const { open } = useOpenTraceListPanel();
 
   const handleOpenTraceBottomSheet = useCallback(() => {
+    // The community version does not currently support trace, for future expansion
+    if (IS_OPEN_SOURCE) {
+      return;
+    }
     open();
   }, [open]);
 
@@ -41,9 +45,12 @@ export const TestFormSheetHeaderV2 = () => {
             onClick={handleOpenTraceBottomSheet}
             hiddenStateText
             extra={
-              <span className={cls('cursor-pointer font-medium')}>
-                {I18n.t('workflow_testset_view_log')}
-              </span>
+              // The community version does not currently support trace, for future expansion
+              !IS_OPEN_SOURCE && (
+                <span className={cls('cursor-pointer font-medium')}>
+                  {I18n.t('workflow_testset_view_log')}
+                </span>
+              )
             }
           />
         )}

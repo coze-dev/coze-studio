@@ -27,6 +27,7 @@ const MoreTools = ({
 
   const btnElm = (
     <Button
+      data-testid={`agent-ide.resource-item.${resource.type}.${resource.name}.more-tools`}
       {...(typeof renderMoreSuffix === 'object' && renderMoreSuffix?.extraProps
         ? renderMoreSuffix?.extraProps
         : {})}

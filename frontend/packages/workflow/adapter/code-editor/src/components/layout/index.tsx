@@ -1,5 +1,6 @@
 import React, { useMemo, type ReactNode } from 'react';
 
+import { concatTestId, useNodeTestId } from '@coze-workflow/base';
 import {
   IconCozCodeFill,
   IconCozPlayCircle,
@@ -50,6 +51,9 @@ export const Layout = ({
     [languageTemplates],
   );
 
+  const { getNodeSetterId } = useNodeTestId();
+  const setterTestId = getNodeSetterId('biz-editor-layout');
+
   return (
     <div className={style.container}>
       <div className={style.header}>
@@ -73,6 +77,7 @@ export const Layout = ({
             <Select
               onChange={value => onLanguageSelect?.(value as LanguageType)}
               value={language}
+              data-testid={concatTestId(setterTestId, 'language-select')}
               renderSelectedItem={item => (
                 <span
                   style={{
@@ -92,6 +97,7 @@ export const Layout = ({
         <div style={{ display: 'flex', gap: 8 }}>
           <Button
             color={'highlight'}
+            data-testid={concatTestId(setterTestId, 'test-run')}
             icon={
               testRunIcon ? (
                 <span
@@ -118,6 +124,7 @@ export const Layout = ({
             color={'secondary'}
             size={'small'}
             icon={<IconCozSideCollapse style={{ fontSize: 18 }} />}
+            data-testid={concatTestId(setterTestId, 'expand-button')}
           />
         </div>
       </div>

@@ -7,10 +7,10 @@ import {
   type RenderAutoGenerateParams,
 } from '@coze-common/biz-components/picture-upload';
 import { I18n } from '@coze-arch/i18n';
+import { Form, type FormApi, Modal } from '@coze-arch/coze-design';
 import { FormatType } from '@coze-arch/bot-api/memory';
 import { FileBizType, IconType } from '@coze-arch/bot-api/developer_api';
 import { KnowledgeApi } from '@coze-arch/bot-api';
-import { Form, type FormApi, Modal } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 
@@ -193,6 +193,10 @@ export const DatabaseBaseInfoModal: FC<DatabaseBaseInfoModalProps> = ({
       onCancel={handleClose}
       className="w-[480px]"
       okText={I18n.t('db2_004')}
+      okButtonProps={{
+        // @ts-expect-error -- for e2e
+        'data-testid': 'database.info_modal.button.confirm',
+      }}
       cancelText={I18n.t('db_del_field_confirm_no')}
       onOk={handleSubmit}
       maskClosable={false}
@@ -207,6 +211,7 @@ export const DatabaseBaseInfoModal: FC<DatabaseBaseInfoModalProps> = ({
         {({ formState }) => (
           <>
             <CozeInputWithCountField
+              data-testid="database.info_modal.input.name"
               field="name"
               label={I18n.t('db_add_table_name')}
               placeholder={I18n.t('db_add_table_name_tips')}
@@ -231,6 +236,7 @@ export const DatabaseBaseInfoModal: FC<DatabaseBaseInfoModalProps> = ({
               ]}
             />
             <CozeFormTextArea
+              data-testid="database.info_modal.input.description"
               field="description"
               label={I18n.t('db_add_table_desc')}
               placeholder={I18n.t('db_add_table_desc_tips')}

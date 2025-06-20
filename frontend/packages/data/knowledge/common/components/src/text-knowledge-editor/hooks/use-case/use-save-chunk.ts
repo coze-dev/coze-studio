@@ -1,5 +1,5 @@
 import { type Chunk } from '@/text-knowledge-editor/types/chunk';
-import { isContentChange } from '@/text-knowledge-editor/services/inner/document-editor.service';
+import { isEditorContentChange } from '@/text-knowledge-editor/services/use-case/is-editor-content-change';
 import {
   deleteLocalChunk,
   deleteRemoteChunk,
@@ -53,7 +53,7 @@ export const useSaveChunk = ({
     if (!chunk.slice_id) {
       return;
     }
-    if (!isContentChange(chunks, chunk)) {
+    if (!isEditorContentChange(chunks, chunk)) {
       onChunksChange?.(chunks);
       return;
     }

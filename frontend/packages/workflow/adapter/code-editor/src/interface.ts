@@ -4,6 +4,7 @@ import type {
   ViewVariableTreeNode,
   ViewVariableType,
 } from '@coze-workflow/base';
+import { type EditorAPI } from '@coze-editor/editor/preset-code';
 
 export interface Input {
   name?: string;
@@ -55,7 +56,7 @@ export interface EditorProps {
 }
 
 export interface EditorOtherProps {
-  didMount?: (api?: { getValue?: () => string }) => void;
+  didMount?: (api: EditorAPI) => void;
   language?: LanguageType;
 }
 

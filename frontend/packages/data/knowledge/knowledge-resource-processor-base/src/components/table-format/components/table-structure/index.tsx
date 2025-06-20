@@ -31,13 +31,11 @@ import {
 } from '@coze-data/utils';
 import { OptType } from '@coze-data/knowledge-resource-processor-core';
 import { KnowledgeE2e } from '@coze-data/e2e';
-import { type ColumnProps, type TableProps } from '@coze-arch/bot-semi/Table';
-import { UIButton, Typography } from '@coze-arch/bot-semi';
-import { IconDragOutlined } from '@coze-arch/bot-icons';
-import { type DocTableColumn } from '@coze-arch/bot-api/memory';
-import { ColumnType } from '@coze-arch/bot-api/knowledge';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozInfoCircle, IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import {
+  IconCozInfoCircle,
+  IconCozTrashCan,
+} from '@coze-arch/coze-design/icons';
 import {
   Input,
   Table,
@@ -45,6 +43,11 @@ import {
   Checkbox,
   type CheckboxProps,
 } from '@coze-arch/coze-design';
+import { type ColumnProps, type TableProps } from '@coze-arch/bot-semi/Table';
+import { UIButton, Typography } from '@coze-arch/bot-semi';
+import { IconDragOutlined } from '@coze-arch/bot-icons';
+import { type DocTableColumn } from '@coze-arch/bot-api/memory';
+import { ColumnType } from '@coze-arch/bot-api/knowledge';
 
 import { type IValidateRes, validateField, useOptFromQuery } from '@/utils';
 import { type TableItem } from '@/types/table';
@@ -293,6 +296,7 @@ export const TableStructure: React.FC<TableStructureProps> = ({
                 checked={value}
                 disabled={hasDisable}
                 onChange={onChange}
+                data-testid={KnowledgeE2e.TableStructureIndexCheckbox}
               />
             </Wrapper>
           </div>
@@ -581,7 +585,7 @@ export const TableStructure: React.FC<TableStructureProps> = ({
           className: styles[baseClassName],
           ...tableProps,
         }}
-      ></Table>
+      />
     );
   };
 

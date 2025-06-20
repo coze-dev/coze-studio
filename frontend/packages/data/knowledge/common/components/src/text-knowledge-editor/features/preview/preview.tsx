@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 import classNames from 'classnames';
 
 import { type Chunk } from '@/text-knowledge-editor/types/chunk';
 import { useHoverEffect } from '@/text-knowledge-editor/hooks/inner/use-hover-effect';
-import { useControlPreviewContextMenu } from '@/text-knowledge-editor/hooks/inner/use-control-preview-context-menu';
+import { useControlContextMenu } from '@/text-knowledge-editor/hooks/inner/use-control-context-menu';
 import { DocumentChunkPreview } from '@/text-knowledge-editor/components/preview-chunk/document';
 
 import { type PreviewContextMenuItemRegistry } from '../preview-context-menu-items/registry';
@@ -31,20 +31,21 @@ const DocumentPreviewComponent: React.FC<DocumentPreviewProps> = props => {
     hoverEditBarActionsRegistry,
     previewContextMenuItemsRegistry,
   } = props;
-
+  const contextMenuRef = useRef<HTMLDivElement>(null);
   const { hoveredChunk, handleMouseEnter, handleMouseLeave } = useHoverEffect();
 
-  const { contextMenuInfo, contextMenuRef, openContextMenu } =
-    useControlPreviewContextMenu();
+  const { contextMenuPosition, openContextMenu } = useControlContextMenu({
+    contextMenuRef,
+  });
 
   return (
-    <>
+    <div className="relative">
       <div
         className={classNames(
           // 布局
           'relative overflow-hidden',
         )}
-        onContextMenu={readonly ? undefined : e => openContextMenu(e, chunk)}
+        onContextMenu={readonly ? undefined : e => openContextMenu(e)}
         onMouseEnter={
           readonly
             ? undefined
@@ -67,18 +68,18 @@ const DocumentPreviewComponent: React.FC<DocumentPreviewProps> = props => {
       </div>
 
       {/* 右键菜单 */}
-      {contextMenuInfo ? (
+      {contextMenuPosition ? (
         <PreviewContextMenu
           previewContextMenuItemsRegistry={previewContextMenuItemsRegistry}
-          x={contextMenuInfo.x}
-          y={contextMenuInfo.y}
-          chunk={contextMenuInfo.chunk}
+          x={contextMenuPosition.x}
+          y={contextMenuPosition.y}
+          chunk={chunk}
           chunks={chunks}
           readonly={readonly}
           contextMenuRef={contextMenuRef}
         />
       ) : null}
-    </>
+    </div>
   );
 };
 

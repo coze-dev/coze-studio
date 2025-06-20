@@ -24,6 +24,7 @@ export enum KnowledgeE2e {
   CreateKnowledgeModalPhotoRadioGroup = 'knowledge.create.modal.photo.RadioGroup',
   CreateKnowledgeModalNameInput = 'knowledge.create.modal.name.input',
   CreateKnowledgeModalDescInput = 'knowledge.create.modal.desc.input',
+  CreateKnowledgeModalAvatarUploader = 'knowledge.create.modal.avatar.uploader',
   CreateKnowledgeModalTextLocalRadio = 'knowledge.create.modal.text.local.radio',
   CreateKnowledgeModalTextOnlineRadio = 'knowledge.create.modal.text.online.radio',
   CreateKnowledgeModalTextNotionRadio = 'knowledge.create.modal.text.notion.radio',
@@ -39,7 +40,7 @@ export enum KnowledgeE2e {
   CreateKnowledgeModalPhotoImgRadio = 'knowledge.create.modal.photo.img.radio',
   CreateKnowledgeModalTextLarkRadio = 'knowledge.create.modal.text.lark.radio',
   CreateKnowledgeModalTableLarkRadio = 'knowledge.create.modal.table.lark.radio',
-
+  CreateKnowledgeModalSubmitAndImportButton = 'knowledge.create.modal.submit_and_import.button',
   // 创建文本类型
   CreateTextUploadNav = 'knowledge.create.text.upload.nav.text',
   /** 创建知识库步骤条 */
@@ -106,6 +107,8 @@ export enum KnowledgeE2e {
   TableApiAddUrlModalFrequency = 'knowledge.create.table.api.modal.frequency.select',
   /** table-custom */
   TableCustomUAddFieldBtn = 'knowledge.create.table.custom.add_field.btn',
+  TableStructureIndexCheckbox = 'knowledge.create.table.table_structure.index.checkbox',
+
   /** image */
   ImageAnnotationAiRadio = 'knowledge.create.image.annotation.ai.radio',
   ImageAnnotationManualRadio = 'knowledge.create.image.annotation.manual.radio',
@@ -120,6 +123,7 @@ export enum KnowledgeE2e {
   // CreateKnowledgeModalCancelBtn = 'knowledge.create.modal.cancel.btn',
   // CreateKnowledgeModalNextBtn = 'knowledge.create.modal.next.btn',
   /** segment详情页 */
+  SegmentDetailUpdateBtn = 'knowledge.segment.detail.update.btn',
   SegmentDetailTitle = 'knowledge.segment.detail.title.text',
   SegmentDetailTitleEditIcon = 'knowledge.segment.detail.title.edit.icon',
   SegmentDetailResetBtn = 'knowledge.segment.detail.reset.btn',
