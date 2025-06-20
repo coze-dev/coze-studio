@@ -19,10 +19,11 @@ const (
 )
 
 type Config struct {
-	Type       Type     `json:"type"`
-	Tpl        string   `json:"tpl"`
-	ConcatChar string   `json:"concatChar"`
-	Separators []string `json:"separator"`
+	Type        Type                         `json:"type"`
+	Tpl         string                       `json:"tpl"`
+	ConcatChar  string                       `json:"concatChar"`
+	Separators  []string                     `json:"separator"`
+	FullSources map[string]*nodes.SourceInfo `json:"fullSources"`
 }
 
 var parserRegexp = regexp.MustCompile(`\{\{([^}]+)}}`)
@@ -69,7 +70,7 @@ func (t *TextProcessor) Invoke(ctx context.Context, input map[string]any) (map[s
 			return nil, err
 		}
 
-		result, err := nodes.Jinja2TemplateRender(formatedTpl, formatedInputs)
+		result, err := nodes.Render(ctx, formatedTpl, formatedInputs, t.config.FullSources)
 		if err != nil {
 			return nil, err
 		}

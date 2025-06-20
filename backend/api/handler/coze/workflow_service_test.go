@@ -3795,7 +3795,7 @@ func TestCodeExceptionBranch(t *testing.T) {
 			e.assertSuccess()
 			assert.Equal(t, map[string]any{
 				"output":  false,
-				"output1": "code result: False",
+				"output1": "code result: false",
 			}, mustUnmarshalToMap(t, e.output))
 		})
 

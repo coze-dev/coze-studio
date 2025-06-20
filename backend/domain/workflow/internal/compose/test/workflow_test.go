@@ -585,7 +585,7 @@ func TestTextProcessor(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
-			"output": "True_1.0_a",
+			"output": "true_1_a",
 		}, out)
 	})
 }

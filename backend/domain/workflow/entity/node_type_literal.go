@@ -176,20 +176,21 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		InputSourceAware: true,
 	},
 	{
-		ID:              15,
-		Name:            "文本处理",
-		Type:            NodeTypeTextProcessor,
-		Category:        "组件", // Mapped from cate_list
-		Desc:            "用于处理多个字符串类型变量的格式",
-		Color:           "#3071F2",
-		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
-		IsComposite:     false,
-		SupportBatch:    false, // supportBatch: 2
-		PreFillZero:     true,
-		CallbackEnabled: true,
-		EnUSCategory:    "Utilities",
-		EnUSName:        "Text Processing",
-		EnUSDescription: "The format used for handling multiple string-type variables.",
+		ID:               15,
+		Name:             "文本处理",
+		Type:             NodeTypeTextProcessor,
+		Category:         "组件", // Mapped from cate_list
+		Desc:             "用于处理多个字符串类型变量的格式",
+		Color:            "#3071F2",
+		IconURL:          "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
+		IsComposite:      false,
+		SupportBatch:     false, // supportBatch: 2
+		PreFillZero:      true,
+		CallbackEnabled:  true,
+		EnUSCategory:     "Utilities",
+		EnUSName:         "Text Processing",
+		EnUSDescription:  "The format used for handling multiple string-type variables.",
+		InputSourceAware: true,
 	},
 	{
 		ID:               18,

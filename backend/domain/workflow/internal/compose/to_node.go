@@ -359,10 +359,11 @@ func (s *NodeSchema) variableAggregatorStreamInputConverter(in *schema.StreamRea
 
 func (s *NodeSchema) ToTextProcessorConfig() (*textprocessor.Config, error) {
 	return &textprocessor.Config{
-		Type:       s.Configs.(map[string]any)["Type"].(textprocessor.Type),
-		Tpl:        getKeyOrZero[string]("Tpl", s.Configs.(map[string]any)),
-		ConcatChar: getKeyOrZero[string]("ConcatChar", s.Configs.(map[string]any)),
-		Separators: getKeyOrZero[[]string]("Separators", s.Configs.(map[string]any)),
+		Type:        s.Configs.(map[string]any)["Type"].(textprocessor.Type),
+		Tpl:         getKeyOrZero[string]("Tpl", s.Configs.(map[string]any)),
+		ConcatChar:  getKeyOrZero[string]("ConcatChar", s.Configs.(map[string]any)),
+		Separators:  getKeyOrZero[[]string]("Separators", s.Configs.(map[string]any)),
+		FullSources: getKeyOrZero[map[string]*nodes.SourceInfo]("FullSources", s.Configs),
 	}, nil
 }
 
