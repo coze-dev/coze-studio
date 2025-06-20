@@ -21,7 +21,7 @@ type selectorCallbackField struct {
 type selectorCondition struct {
 	Left     selectorCallbackField  `json:"left"`
 	Operator vo.OperatorType        `json:"operator"`
-	Right    *selectorCallbackField `json:"right"`
+	Right    *selectorCallbackField `json:"right,omitempty"`
 }
 
 type selectorBranch struct {
