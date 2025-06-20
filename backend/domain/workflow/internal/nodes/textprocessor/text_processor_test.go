@@ -48,6 +48,6 @@ func TestNewTextProcessorNodeGenerator(t *testing.T) {
 
 		result, err := p.Invoke(ctx, in)
 		assert.NoError(t, err)
-		assert.Equal(t, result["output"], `fx1\t{"1":1}\t3==["1","2","3"]==2=={"c1":"1"}`)
+		assert.Equal(t, result["output"], `fx1\t{"1":1}\t3==1\t2\t3==2=={"c1":"1"}`)
 	})
 }

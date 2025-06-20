@@ -3,6 +3,7 @@ package nodes
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -128,7 +129,26 @@ func removeSlice(s string) string {
 	return s
 }
 
-func (tp TemplatePart) Render(m []byte) (string, error) {
+type renderOptions struct {
+	type2CustomRenderer map[reflect.Type]func(any) (string, error)
+}
+
+type RenderOption func(options *renderOptions)
+
+func WithCustomRender(rType reflect.Type, fn func(any) (string, error)) RenderOption {
+	return func(opts *renderOptions) {
+		opts.type2CustomRenderer[rType] = fn
+	}
+}
+
+func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
+	options := &renderOptions{
+		type2CustomRenderer: make(map[reflect.Type]func(any) (string, error)),
+	}
+	for _, opt := range opts {
+		opt(options)
+	}
+
 	n, err := sonic.Get(m, tp.JsonPath...)
 	if err != nil {
 		return tp.Value, nil
@@ -137,6 +157,13 @@ func (tp TemplatePart) Render(m []byte) (string, error) {
 	i, err := n.Interface()
 	if err != nil {
 		return fmt.Sprintf("%v", i), nil
+	}
+
+	if len(options.type2CustomRenderer) > 0 {
+		rType := reflect.TypeOf(i)
+		if fn, ok := options.type2CustomRenderer[rType]; ok {
+			return fn(i)
+		}
 	}
 
 	switch i.(type) {
@@ -208,7 +235,7 @@ func (tp TemplatePart) Skipped(resolvedSources map[string]*SourceInfo) bool {
 	return checkSourceSkipped(matchingSource)
 }
 
-func Render(ctx context.Context, tpl string, input map[string]any, sources map[string]*SourceInfo) (string, error) {
+func Render(ctx context.Context, tpl string, input map[string]any, sources map[string]*SourceInfo, opts ...RenderOption) (string, error) {
 	mi, err := sonic.Marshal(input)
 	if err != nil {
 		return "", err
@@ -231,7 +258,7 @@ func Render(ctx context.Context, tpl string, input map[string]any, sources map[s
 			continue
 		}
 
-		i, err := part.Render(mi)
+		i, err := part.Render(mi, opts...)
 		if err != nil {
 			logs.CtxErrorf(ctx, "failed to render template part %v from %v: %v", part, string(mi), err)
 			sb.WriteString(part.Value)
