@@ -219,7 +219,7 @@ func (c *ConversationApplicationService) buildMultiContent(ctx context.Context, 
 			Type: message.InputTypeText,
 			Text: ar.Query,
 		})
-	case run.ContentTypeImage, run.ContentTypeFile, run.ContentTypeMix:
+	case run.ContentTypeImage, run.ContentTypeFile, run.ContentTypeMix, run.ContentTypeVideo, run.ContentTypeAudio:
 		var mc *run.MixContentModel
 
 		err := json.Unmarshal([]byte(ar.Query), &mc)
@@ -270,7 +270,7 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 					},
 				},
 			})
-		case run.ContentTypeFile:
+		case run.ContentTypeFile, run.ContentTypeAudio, run.ContentTypeVideo:
 
 			resourceUrl, err := c.appContext.TosClient.GetObjectUrl(ctx, item.File.FileKey)
 			if err != nil {
@@ -279,7 +279,7 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 			mc[index].File.FileURL = resourceUrl
 
 			multiContents = append(multiContents, &message.InputMetaData{
-				Type: message.InputTypeFile,
+				Type: message.InputType(item.Type),
 				FileData: []*message.FileData{
 					{
 						Url: resourceUrl,

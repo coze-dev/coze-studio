@@ -114,7 +114,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	}
 
 	var avTools []tool.InvokableTool
-	if avs != nil {
+	if len(avs) > 0 {
 		avTools, err = newAgentVariableTools(ctx, avConf)
 		if err != nil {
 			return nil, err
