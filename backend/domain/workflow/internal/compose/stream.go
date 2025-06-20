@@ -25,6 +25,10 @@ func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema) error {
 		return nil
 	}
 
+	if s.Type != entity.NodeTypeVariableAggregator && s.Type != entity.NodeTypeOutputEmitter && s.Type != entity.NodeTypeExit {
+		return nil
+	}
+
 	fullSource := make(map[string]*nodes.SourceInfo)
 	for i := range s.InputSources {
 		fInfo := s.InputSources[i]

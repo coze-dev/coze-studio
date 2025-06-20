@@ -947,7 +947,7 @@ func TestTestRunAndGetProcess(t *testing.T) {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 
-		r.appVarS.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(1.0, nil).AnyTimes()
+		r.appVarS.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return("1.0", nil).AnyTimes()
 
 		id := r.load("entry_exit.json")
 		input := map[string]string{
@@ -982,12 +982,12 @@ func TestTestRunAndGetProcess(t *testing.T) {
 			mockey.PatchConvey("openapi async run", func() {
 				exeID := r.openapiAsyncRun(id, input)
 				e := r.getProcess(id, exeID)
-				assert.Equal(t, "1_[\"1234\",\"5678\"]", e.output)
+				assert.Equal(t, "1.0_[\"1234\",\"5678\"]", e.output)
 			})
 
 			mockey.PatchConvey("openapi sync run", func() {
 				output, exeID := r.openapiSyncRun(id, input)
-				assert.Equal(t, "1_[\"1234\",\"5678\"]", output["data"])
+				assert.Equal(t, "1.0_[\"1234\",\"5678\"]", output["data"])
 				his := r.getOpenAPIProcess(id, exeID)
 				assert.Equal(t, exeID, fmt.Sprintf("%d", *his.Data[0].ExecuteID))
 				assert.Equal(t, workflow.WorkflowRunMode_Sync, *his.Data[0].RunMode)

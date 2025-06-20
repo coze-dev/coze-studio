@@ -21,6 +21,7 @@ type NodeTypeMeta struct {
 	EnUSCategory     string   `json:"en_us_category,omitempty"`
 	EnUSName         string   `json:"en_us_name,omitempty"`
 	EnUSDescription  string   `json:"en_us_description,omitempty"`
+	InputSourceAware bool     `json:"input_source_aware,omitempty"` // whether this node needs to know the runtime status of its input sources
 }
 
 type PluginNodeMeta struct {

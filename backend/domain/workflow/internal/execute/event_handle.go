@@ -677,7 +677,7 @@ func HandleExecuteEvent(ctx context.Context,
 
 			signal, err := handleEvent(ctx, event, repo, sw)
 			if err != nil {
-				logs.Error("failed to handle event: %v", err)
+				logs.CtxErrorf(ctx, "failed to handle event: %v", err)
 			}
 
 			switch signal {
@@ -689,7 +689,7 @@ func HandleExecuteEvent(ctx context.Context,
 				wfSuccessEvent = event
 				if lastNodeIsDone || exeCfg.Mode == vo.ExecuteModeNodeDebug {
 					if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
-						logs.Errorf("failed to set root workflow success for workflow %d: %v",
+						logs.CtxErrorf(ctx, "failed to set root workflow success for workflow %d: %v",
 							wfSuccessEvent.RootWorkflowBasic.ID, err)
 					}
 					return wfSuccessEvent
@@ -698,7 +698,7 @@ func HandleExecuteEvent(ctx context.Context,
 				lastNodeIsDone = true
 				if wfSuccessEvent != nil {
 					if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
-						logs.Errorf("failed to set root workflow success: %v", err)
+						logs.CtxErrorf(ctx, "failed to set root workflow success: %v", err)
 					}
 					return wfSuccessEvent
 				}

@@ -404,6 +404,10 @@ func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[str
 			continue
 		}
 
+		if _, ok := conf.IntermediateVars[key]; ok { // exclude arrays in intermediate vars
+			continue
+		}
+
 		conf.InputArrays = append(conf.InputArrays, key)
 	}
 
