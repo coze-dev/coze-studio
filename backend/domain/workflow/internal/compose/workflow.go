@@ -261,8 +261,16 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 		return nil, fmt.Errorf("node instance has no Lambda: %s", key)
 	}
 
+	for fromNodeKey := range deps.inputsFull {
+		wNode.AddInput(string(fromNodeKey))
+	}
+
 	for fromNodeKey, fieldMappings := range deps.inputs {
 		wNode.AddInput(string(fromNodeKey), fieldMappings...)
+	}
+
+	for fromNodeKey := range deps.inputsNoDirectDependencyFull {
+		wNode.AddInputWithOptions(string(fromNodeKey), nil, compose.WithNoDirectDependency())
 	}
 
 	for fromNodeKey, fieldMappings := range deps.inputsNoDirectDependency {
@@ -382,8 +390,16 @@ func (w *Workflow) getInnerWorkflow(ctx context.Context, cNode *CompositeNode) (
 
 	n := inner.End()
 
+	for fromNodeKey := range endDeps.inputsFull {
+		n.AddInput(string(fromNodeKey))
+	}
+
 	for fromNodeKey, fieldMappings := range endDeps.inputs {
 		n.AddInput(string(fromNodeKey), fieldMappings...)
+	}
+
+	for fromNodeKey := range endDeps.inputsNoDirectDependencyFull {
+		n.AddInputWithOptions(string(fromNodeKey), nil, compose.WithNoDirectDependency())
 	}
 
 	for fromNodeKey, fieldMappings := range endDeps.inputsNoDirectDependency {
@@ -415,15 +431,25 @@ func (w *Workflow) getInnerWorkflow(ctx context.Context, cNode *CompositeNode) (
 }
 
 type dependencyInfo struct {
-	inputs                   map[vo.NodeKey][]*compose.FieldMapping
-	dependencies             []vo.NodeKey
-	inputsNoDirectDependency map[vo.NodeKey][]*compose.FieldMapping
-	staticValues             []*staticValue
-	inputsForParent          map[vo.NodeKey][]*compose.FieldMapping
+	inputs                       map[vo.NodeKey][]*compose.FieldMapping
+	inputsFull                   map[vo.NodeKey]struct{}
+	dependencies                 []vo.NodeKey
+	inputsNoDirectDependency     map[vo.NodeKey][]*compose.FieldMapping
+	inputsNoDirectDependencyFull map[vo.NodeKey]struct{}
+	staticValues                 []*staticValue
+	inputsForParent              map[vo.NodeKey][]*compose.FieldMapping
 }
 
 func (d *dependencyInfo) merge(mappings map[vo.NodeKey][]*compose.FieldMapping) error {
 	for nKey, fms := range mappings {
+		if _, ok := d.inputsFull[nKey]; ok {
+			return fmt.Errorf("duplicate input for node: %s", nKey)
+		}
+
+		if _, ok := d.inputsNoDirectDependencyFull[nKey]; ok {
+			return fmt.Errorf("duplicate input for node: %s", nKey)
+		}
+
 		if currentFMS, ok := d.inputs[nKey]; ok {
 			for i := range fms {
 				fm := fms[i]
@@ -529,10 +555,12 @@ func (w *Workflow) resolveBranch(n vo.NodeKey, portCount int) (*BranchMapping, e
 
 func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.FieldInfo) (*dependencyInfo, error) {
 	var (
-		inputs                   = make(map[vo.NodeKey][]*compose.FieldMapping)
-		dependencies             []vo.NodeKey
-		inputsNoDirectDependency = make(map[vo.NodeKey][]*compose.FieldMapping)
-		staticValues             []*staticValue
+		inputs                       = make(map[vo.NodeKey][]*compose.FieldMapping)
+		inputFull                    map[vo.NodeKey]struct{}
+		dependencies                 []vo.NodeKey
+		inputsNoDirectDependency     = make(map[vo.NodeKey][]*compose.FieldMapping)
+		inputsNoDirectDependencyFull map[vo.NodeKey]struct{}
+		staticValues                 []*staticValue
 
 		// inputsForParent contains all the field mappings from any nodes of the parent workflow
 		inputsForParent = make(map[vo.NodeKey][]*compose.FieldMapping)
@@ -563,10 +591,24 @@ func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.Field
 
 			if ok := IsInSameWorkflow(w.hierarchy, n, fromNode); ok {
 				if _, ok := connMap[fromNode]; ok { // direct dependency
-					inputs[fromNode] = append(inputs[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, swp.Path))
+					if len(swp.Source.Ref.FromPath) == 0 && len(swp.Path) == 0 {
+						if inputFull == nil {
+							inputFull = make(map[vo.NodeKey]struct{})
+						}
+						inputFull[fromNode] = struct{}{}
+					} else {
+						inputs[fromNode] = append(inputs[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, swp.Path))
+					}
 				} else { // indirect dependency
-					inputsNoDirectDependency[fromNode] = append(inputsNoDirectDependency[fromNode],
-						compose.MapFieldPaths(swp.Source.Ref.FromPath, swp.Path))
+					if len(swp.Source.Ref.FromPath) == 0 && len(swp.Path) == 0 {
+						if inputsNoDirectDependencyFull == nil {
+							inputsNoDirectDependencyFull = make(map[vo.NodeKey]struct{})
+						}
+						inputsNoDirectDependencyFull[fromNode] = struct{}{}
+					} else {
+						inputsNoDirectDependency[fromNode] = append(inputsNoDirectDependency[fromNode],
+							compose.MapFieldPaths(swp.Source.Ref.FromPath, swp.Path))
+					}
 				}
 			} else if ok := IsBelowOneLevel(w.hierarchy, n, fromNode); ok {
 				firstNodesInInnerWorkflow := true
@@ -616,17 +658,32 @@ func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.Field
 
 		if _, ok := inputs[fromNodeKey]; !ok {
 			if _, ok := inputsNoDirectDependency[fromNodeKey]; !ok {
-				dependencies = append(dependencies, fromNodeKey)
+				var hasFullInput, hasFullDataInput bool
+				if inputFull != nil {
+					if _, ok = inputFull[fromNodeKey]; ok {
+						hasFullInput = true
+					}
+				}
+				if inputsNoDirectDependencyFull != nil {
+					if _, ok = inputsNoDirectDependencyFull[fromNodeKey]; ok {
+						hasFullDataInput = true
+					}
+				}
+				if !hasFullInput && !hasFullDataInput {
+					dependencies = append(dependencies, fromNodeKey)
+				}
 			}
 		}
 	}
 
 	return &dependencyInfo{
-		inputs:                   inputs,
-		dependencies:             dependencies,
-		inputsNoDirectDependency: inputsNoDirectDependency,
-		staticValues:             staticValues,
-		inputsForParent:          inputsForParent,
+		inputs:                       inputs,
+		inputsFull:                   inputFull,
+		dependencies:                 dependencies,
+		inputsNoDirectDependency:     inputsNoDirectDependency,
+		inputsNoDirectDependencyFull: inputsNoDirectDependencyFull,
+		staticValues:                 staticValues,
+		inputsForParent:              inputsForParent,
 	}, nil
 }
 

@@ -111,7 +111,6 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 	}
 
 	startOutputTypes := maps.Clone(ns.InputTypes)
-	inputFillerSources := make([]*vo.FieldInfo, 0, len(ns.InputSources))
 
 	// For chosen node, change input sources to be from einoCompose.START,
 	// unless it's static value or from variables.
@@ -130,13 +129,6 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 				Path: input.Path,
 				Source: vo.FieldSource{Ref: &vo.Reference{
 					FromNodeKey: inputFillerKey,
-					FromPath:    input.Path,
-				}},
-			})
-			inputFillerSources = append(inputFillerSources, &vo.FieldInfo{
-				Path: input.Path,
-				Source: vo.FieldSource{Ref: &vo.Reference{
-					FromNodeKey: einoCompose.START,
 					FromPath:    input.Path,
 				}},
 			})
@@ -173,13 +165,6 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 					}},
 				})
 				startOutputTypes[input.Path[0]] = inner.InputTypes[input.Path[0]]
-				inputFillerSources = append(inputFillerSources, &vo.FieldInfo{
-					Path: input.Path,
-					Source: vo.FieldSource{Ref: &vo.Reference{
-						FromNodeKey: einoCompose.START,
-						FromPath:    input.Path,
-					}},
-				})
 			}
 		}
 		inner.InputSources = innerInputSources
@@ -201,10 +186,20 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 	}
 
 	inputFiller := &compose.NodeSchema{
-		Key:          inputFillerKey,
-		Type:         entity.NodeTypeLambda,
-		Lambda:       einoCompose.InvokableLambda(i),
-		InputSources: inputFillerSources,
+		Key:    inputFillerKey,
+		Type:   entity.NodeTypeLambda,
+		Lambda: einoCompose.InvokableLambda(i),
+		InputSources: []*vo.FieldInfo{
+			{
+				Path: einoCompose.FieldPath{},
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
+						FromNodeKey: einoCompose.START,
+						FromPath:    einoCompose.FieldPath{},
+					},
+				},
+			},
+		},
 	}
 
 	trimmedSC := &compose.WorkflowSchema{
