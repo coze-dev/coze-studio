@@ -1,7 +1,19 @@
-#!/usr/bin/env bash
+#!/bin/sh
+
+if [[ "$ES_ADDR" == *"localhost"* || "$ES_ADDR" == *"127.0.0.1"* ]]; then
+  echo "ES_ADDR is localhost, using docker address: http://elasticsearch:9200"
+  ES_ADDR="http://elasticsearch:9200"
+fi
+
+echo "ES_ADDR: $ES_ADDR"
+
+AUTH_PARAM=""
+if [ -n "$ES_USERNAME" ]; then
+  AUTH_PARAM="-k -u $ES_USERNAME:$ES_PASSWORD"
+fi
 
 echo -e "🔍 Checking smartcn plugin status..."
-if ! curl -s "http://elasticsearch:9200/_cat/plugins" | grep -q "analysis-smartcn"; then
+if ! curl -s $AUTH_PARAM "${ES_ADDR}/_cat/plugins" | grep -q "analysis-smartcn"; then
   echo -e "❌ smartcn plugin not loaded correctly, please ensure the plugin is installed and Elasticsearch is restarted"
   exit 1
 fi
@@ -19,7 +31,7 @@ else
     echo -e "➡️ Registering template: $template_name"
 
     # Attempt to register index template
-    response=$(curl -s -X PUT "http://elasticsearch:9200/_index_template/$template_name" \
+    response=$(curl -s $AUTH_PARAM -X PUT "${ES_ADDR}/_index_template/$template_name" \
       -H "Content-Type: application/json" \
       -d @"$template_file" 2>&1)
 
@@ -35,14 +47,14 @@ else
     echo -e "➡️ Creating index: $index_name"
 
     # Check if index exists
-    if ! curl -s -f "http://elasticsearch:9200/_cat/indices/$index_name" >/dev/null; then
+    if ! curl -s -f $AUTH_PARAM "${ES_ADDR}/_cat/indices/$index_name" >/dev/null; then
       # Create index (matching template's index_patterns)
-      curl -X PUT "http://elasticsearch:9200/$index_name" -H "Content-Type: application/json"
+      curl $AUTH_PARAM -X PUT "${ES_ADDR}/$index_name" -H "Content-Type: application/json"
       echo ""
 
       # Set refresh interval if index was just created
       echo -e "🔄 Setting refresh_interval for index: $index_name..."
-      CURL_OUTPUT=$(curl -s -w "\nHTTP_STATUS_CODE:%{http_code}" -X PUT "elasticsearch:9200/${index_name}/_settings" -H 'Content-Type: application/json' -d'
+      CURL_OUTPUT=$(curl -s $AUTH_PARAM -w "\nHTTP_STATUS_CODE:%{http_code}" -X PUT "${ES_ADDR}/${index_name}/_settings" -H 'Content-Type: application/json' -d'
           {
             "index": {
               "refresh_interval": "10ms"
