@@ -23,6 +23,10 @@ restricted_globals = {
     '_limited_builtins': limited_builtins,
     '__name__': '__main__',
     'dict': dict,
+    'list': list,
+    'print': print,
+    'set': set,
+
 }
 
 class Args:
