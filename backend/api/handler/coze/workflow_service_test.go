@@ -2,6 +2,7 @@ package coze
 
 import (
 	"bytes"
+
 	"context"
 	"errors"
 	"fmt"
@@ -33,12 +34,14 @@ import (
 	modelknowledge "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	plugin2 "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	pluginmodel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	appknowledge "code.byted.org/flow/opencoze/backend/application/knowledge"
 	appmemory "code.byted.org/flow/opencoze/backend/application/memory"
 	appplugin "code.byted.org/flow/opencoze/backend/application/plugin"
+	"code.byted.org/flow/opencoze/backend/application/user"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
 	plugin3 "code.byted.org/flow/opencoze/backend/crossdomain/workflow/plugin"
@@ -266,6 +269,10 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 
 	mockPluginSrv := pluginmock.NewMockPluginService(ctrl)
 	plugin.SetPluginService(mockPluginSrv)
+
+	mockey.Mock((*user.UserApplicationService).MGetUserBasicInfo).Return(&playground.MGetUserBasicInfoResponse{
+		UserBasicInfoMap: make(map[string]*playground.UserBasicInfo),
+	}, nil).Build()
 
 	f := func() {
 		m.UnPatch()
@@ -2390,7 +2397,6 @@ func TestListWorkflowAsToolData(t *testing.T) {
 	mockey.PatchConvey("publish list workflow & list workflow as tool data", t, func() {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
-
 		name := "pb_wf" + strconv.FormatInt(time.Now().UnixMilli(), 10)
 		id := r.load("publish/publish_workflow.json", withName(name))
 
