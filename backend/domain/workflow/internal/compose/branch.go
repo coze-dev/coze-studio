@@ -17,8 +17,8 @@ import (
 
 func (s *NodeSchema) OutputPortCount() (int, bool) {
 	var hasExceptionPort bool
-	if s.MetaConfigs != nil && s.MetaConfigs.ProcessType != nil &&
-		*s.MetaConfigs.ProcessType == vo.ErrorProcessTypeExceptionBranch {
+	if s.ExceptionConfigs != nil && s.ExceptionConfigs.ProcessType != nil &&
+		*s.ExceptionConfigs.ProcessType == vo.ErrorProcessTypeExceptionBranch {
 		hasExceptionPort = true
 	}
 

@@ -3,24 +3,41 @@ package entity
 type NodeType string
 
 type NodeTypeMeta struct {
-	ID               int64    `json:"id"`
-	Name             string   `json:"name"`
-	Type             NodeType `json:"type"`
-	Category         string   `json:"category"`
-	Color            string   `json:"color"`
-	Desc             string   `json:"desc"`
-	IconURL          string   `json:"icon_url"`
-	IsComposite      bool     `json:"is_composite"`
-	SupportBatch     bool     `json:"support_batch"`
-	DefaultTimeoutMS int64    `json:"default_timeout_ms,omitempty"` // default timeout in milliseconds, 0 means no timeout
-	PreFillZero      bool     `json:"pre_fill_zero,omitempty"`
-	PostFillNil      bool     `json:"post_fill_nil,omitempty"`
-	CallbackEnabled  bool     `json:"callback_enabled,omitempty"` // is false, Eino framework will inject callbacks for this node
-	Disabled         bool     `json:"disabled,omitempty"`
-	MayUseChatModel  bool     `json:"may_use_chat_model,omitempty"`
-	EnUSCategory     string   `json:"en_us_category,omitempty"`
-	EnUSName         string   `json:"en_us_name,omitempty"`
-	EnUSDescription  string   `json:"en_us_description,omitempty"`
+	ID              int64    `json:"id"`
+	Name            string   `json:"name"`
+	Type            NodeType `json:"type"`
+	Category        string   `json:"category"`
+	Color           string   `json:"color"`
+	Desc            string   `json:"desc"`
+	IconURL         string   `json:"icon_url"`
+	SupportBatch    bool     `json:"support_batch"`
+	Disabled        bool     `json:"disabled,omitempty"`
+	EnUSCategory    string   `json:"en_us_category,omitempty"`
+	EnUSName        string   `json:"en_us_name,omitempty"`
+	EnUSDescription string   `json:"en_us_description,omitempty"`
+
+	ExecutableMeta
+}
+
+type StreamingParadigm string
+
+const (
+	Invoke    StreamingParadigm = "invoke"
+	Stream    StreamingParadigm = "stream"
+	Collect   StreamingParadigm = "collect"
+	Transform StreamingParadigm = "transform"
+)
+
+type ExecutableMeta struct {
+	IsComposite          bool                       `json:"is_composite,omitempty"`
+	DefaultTimeoutMS     int64                      `json:"default_timeout_ms,omitempty"` // default timeout in milliseconds, 0 means no timeout
+	PreFillZero          bool                       `json:"pre_fill_zero,omitempty"`
+	PostFillNil          bool                       `json:"post_fill_nil,omitempty"`
+	CallbackEnabled      bool                       `json:"callback_enabled,omitempty"` // is false, Eino framework will inject callbacks for this node
+	MayUseChatModel      bool                       `json:"may_use_chat_model,omitempty"`
+	InputSourceAware     bool                       `json:"input_source_aware,omitempty"` // whether this node needs to know the runtime status of its input sources
+	StreamingParadigms   map[StreamingParadigm]bool `json:"streaming_paradigms,omitempty"`
+	StreamSourceEOFAware bool                       `json:"needs_stream_source_eof,omitempty"` // whether this node needs to be aware stream sources' SourceEOF error
 }
 
 type PluginNodeMeta struct {

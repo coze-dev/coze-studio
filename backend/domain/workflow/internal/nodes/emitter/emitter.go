@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
 
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
@@ -51,7 +52,7 @@ func newCacheStore(infos map[string]*nodes.SourceInfo) *cacheStore {
 	}
 }
 
-func (c *cacheStore) put(k string, v any) (*cachedVal, error) {
+func (c *cacheStore) put(k string, v any) (any, error) {
 	sInfo, ok := c.infos[k]
 	if !ok {
 		return nil, fmt.Errorf("no such key found from SourceInfos: %s", k)
@@ -67,7 +68,7 @@ func (c *cacheStore) put(k string, v any) (*cachedVal, error) {
 					finished: true,
 				}
 				c.store[k] = out
-				return out, nil
+				return v, nil
 			} else {
 				return nil, fmt.Errorf("source %s not intermediate, not stream, appears multiple times", k)
 			}
@@ -95,7 +96,7 @@ func (c *cacheStore) put(k string, v any) (*cachedVal, error) {
 			}
 			c.store[k] = out
 
-			return out, nil
+			return vStr, nil
 		}
 	}
 
@@ -135,7 +136,7 @@ func (c *cacheStore) put(k string, v any) (*cachedVal, error) {
 
 	_ = c.finished(k)
 
-	return currentCache, nil
+	return vMap, nil
 }
 
 func (c *cacheStore) finished(k string) bool {
@@ -164,18 +165,18 @@ func (c *cacheStore) finished(k string) bool {
 	return true
 }
 
-func (c *cacheStore) find(part templatePart) (root any, subCache *cachedVal, sourceInfo *nodes.SourceInfo,
+func (c *cacheStore) find(part nodes.TemplatePart) (root any, subCache *cachedVal, sourceInfo *nodes.SourceInfo,
 	actualPath []string,
 ) {
-	rootCached, ok := c.store[part.root]
+	rootCached, ok := c.store[part.Root]
 	if !ok {
 		return nil, nil, nil, nil
 	}
 
 	// now try to find the nearest match within the cached tree
-	subPaths := part.subPathsBeforeSlice
+	subPaths := part.SubPathsBeforeSlice
 	currentCache := rootCached
-	currentSource := c.infos[part.root]
+	currentSource := c.infos[part.Root]
 	for i := range subPaths {
 		if !currentSource.IsIntermediate {
 			// currentSource is already the leaf, no need to look further
@@ -206,6 +207,63 @@ func (c *cacheStore) find(part templatePart) (root any, subCache *cachedVal, sou
 	}
 
 	return rootCached.val, currentCache, currentSource, actualPath
+}
+
+func (c *cacheStore) readyForPart(part nodes.TemplatePart, sw *schema.StreamWriter[map[string]any]) (
+	hasErr bool, partFinished bool) {
+	cachedRoot, subCache, sourceInfo, _ := c.find(part)
+	if cachedRoot != nil && subCache != nil {
+		if subCache.finished || sourceInfo.FieldType == nodes.FieldIsStream {
+			hasErr = renderAndSend(part, part.Root, cachedRoot, sw)
+			if hasErr {
+				return true, false
+			}
+			if subCache.finished { // move on to next part in template
+				return false, true
+			}
+		}
+	}
+
+	return false, false
+}
+
+func (c *cacheStore) fillZero(nodeKey vo.NodeKey) map[string]any {
+	filled := make(map[string]any)
+	for field, sInfo := range c.infos {
+		if !sInfo.FromNode(nodeKey) {
+			continue
+		}
+
+		cacheV, ok := c.store[field]
+		if !sInfo.IsIntermediate {
+			if !ok {
+				c.store[field] = &cachedVal{
+					val:       sInfo.TypeInfo.Zero(),
+					finished:  true,
+					subCaches: nil,
+				}
+
+				filled[field] = true
+			}
+
+			continue
+		}
+
+		if !ok {
+			cacheV = &cachedVal{
+				val:       make(map[string]any),
+				subCaches: newCacheStore(sInfo.SubSources),
+			}
+			c.store[field] = cacheV
+		}
+
+		subFilled := cacheV.subCaches.fillZero(nodeKey)
+		if len(subFilled) > 0 {
+			filled[field] = subFilled
+		}
+	}
+
+	return filled
 }
 
 func merge(a, b any) any {
@@ -247,7 +305,7 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 	}
 
 	sr, sw := schema.Pipe[map[string]any](0)
-	parts := parseJinja2Template(e.cfg.Template)
+	parts := nodes.ParseTemplate(e.cfg.Template)
 	safego.Go(ctx, func() {
 		hasErr := false
 		defer func() {
@@ -270,14 +328,19 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 			default:
 			}
 
-			if !part.isVariable { // literal string within template, just emit it
-				sw.Send(map[string]any{outputKey: part.value}, nil)
+			if !part.IsVariable { // literal string within template, just emit it
+				sw.Send(map[string]any{outputKey: part.Value}, nil)
 				continue
 			}
 
 			// now this 'part' is a variable, first check if the source(s) for it are skipped (the nodes are not selected)
 			// if skipped, just move on to the next 'part'
-			if part.skipped(resolvedSources) {
+			skipped, invalid := part.Skipped(resolvedSources)
+			if skipped {
+				continue
+			}
+			if invalid {
+				sw.Send(map[string]any{outputKey: "{{" + part.Value + "}}"}, nil)
 				continue
 			}
 
@@ -285,17 +348,13 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 			// if found in cache store, emit the root only if the match is finished or the match is stream
 			// the rule for a hit: the nearest match within the source tree
 			// if hit, and the cachedVal is also finished, continue to next template part
-			cachedRoot, subCache, sourceInfo, _ := caches.find(part)
-			if cachedRoot != nil && subCache != nil {
-				if subCache.finished || sourceInfo.FieldType == nodes.FieldIsStream {
-					hasErr = part.renderAndSend(part.root, cachedRoot, sw)
-					if hasErr {
-						return
-					}
-					if subCache.finished { // move on to next part in template
-						continue
-					}
-				}
+			var partFinished bool
+			hasErr, partFinished = caches.readyForPart(part, sw)
+			if hasErr {
+				return
+			}
+			if partFinished {
+				continue
 			}
 
 			for {
@@ -307,12 +366,36 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 				default:
 				}
 
+				shouldChangePart := false
+
 				chunk, err := in.Recv()
 				if err != nil {
 					if err == io.EOF {
 						// current part is not fulfilled, emit the literal part content and move on to next part
-						sw.Send(map[string]any{outputKey: part.value}, nil)
+						sw.Send(map[string]any{outputKey: part.Value}, nil)
 						break
+					}
+
+					if sn, ok := schema.GetSourceName(err); ok {
+						// received end signal for a particular predecessor nodeID, do the following:
+						// - obtain the field sources mapped from this predecessor node
+						// - check which fields are still missing in the cache store
+						// - fill zero value for these missing fields
+						// - check if the current template part should be rendered and sent immediately
+						// - check if we should move on to next part in template
+						filled := caches.fillZero(vo.NodeKey(sn))
+						if _, okk := filled[part.Root]; okk {
+							// current part is influenced by the 'fill zero' operation
+							hasErr, shouldChangePart = caches.readyForPart(part, sw)
+							if hasErr {
+								return
+							}
+							if shouldChangePart {
+								continue partsLoop
+							}
+						}
+
+						continue
 					}
 
 					hasErr = true
@@ -320,11 +403,10 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 					return
 				}
 
-				shouldChangePart := false
 			chunkLoop:
 				for k := range chunk {
 					v := chunk[k]
-					_, err = caches.put(k, v) // always update the cache
+					v, err = caches.put(k, v) // always update the cache
 					if err != nil {
 						hasErr = true
 						sw.Send(nil, err)
@@ -339,7 +421,7 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 					// - the source is intermediate:
 					//   - the source is not finished, do not emit it
 					//   - the source is finished, emit the full content (cached + new) immediately
-					if k == part.root {
+					if k == part.Root {
 						cachedRoot, subCache, sourceInfo, actualPath := caches.find(part)
 						if sourceInfo == nil {
 							panic("impossible, k is part.root, but sourceInfo is nil")
@@ -348,7 +430,7 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 						if subCache != nil {
 							if sourceInfo.IsIntermediate {
 								if subCache.finished {
-									hasErr = part.renderAndSend(part.root, cachedRoot, sw)
+									hasErr = renderAndSend(part, part.Root, cachedRoot, sw)
 									if hasErr {
 										return
 									}
@@ -392,9 +474,9 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 										}
 									}
 
-									hasErr = part.renderAndSend(part.root, delta, sw)
+									hasErr = renderAndSend(part, part.Root, delta, sw)
 								} else {
-									hasErr = part.renderAndSend(part.root, v, sw)
+									hasErr = renderAndSend(part, part.Root, v, sw)
 								}
 
 								if hasErr {
@@ -419,146 +501,36 @@ func (e *OutputEmitter) EmitStream(ctx context.Context, in *schema.StreamReader[
 	return sr, nil
 }
 
-func (e *OutputEmitter) Emit(_ context.Context, in map[string]any) (output map[string]any, err error) {
-	var out string
-	out, err = nodes.Jinja2TemplateRender(e.cfg.Template, in)
+func (e *OutputEmitter) Emit(ctx context.Context, in map[string]any) (output map[string]any, err error) {
+	s, err := nodes.Render(ctx, e.cfg.Template, in, e.cfg.FullSources)
 	if err != nil {
 		return nil, err
 	}
 
 	output = map[string]any{
-		outputKey: out,
+		outputKey: s,
 	}
 
 	return output, nil
 }
 
-type templatePart struct {
-	isVariable          bool
-	value               string
-	root                string
-	subPathsBeforeSlice []string
-}
-
-var re = regexp.MustCompile(`{{\s*([^}]+)\s*}}`)
-
-func parseJinja2Template(template string) []templatePart {
-	matches := re.FindAllStringSubmatchIndex(template, -1)
-	parts := make([]templatePart, 0)
-	lastEnd := 0
-
-	for _, match := range matches {
-		start, end := match[0], match[1]
-		placeholderStart, placeholderEnd := match[2], match[3]
-
-		// Add the literal part before the current variable placeholder
-		if start > lastEnd {
-			parts = append(parts, templatePart{
-				isVariable: false,
-				value:      template[lastEnd:start],
-			})
-		}
-
-		// Add the variable placeholder
-		val := template[placeholderStart:placeholderEnd]
-		segments := strings.Split(val, ".")
-		var subPaths []string
-		if !strings.Contains(segments[0], "[") {
-			for i := 1; i < len(segments); i++ {
-				if strings.Contains(segments[i], "[") {
-					break
-				}
-				subPaths = append(subPaths, segments[i])
-			}
-		}
-		parts = append(parts, templatePart{
-			isVariable:          true,
-			value:               val,
-			root:                removeSlice(segments[0]),
-			subPathsBeforeSlice: subPaths,
-		})
-
-		lastEnd = end
-	}
-
-	// Add the remaining literal part if there is any
-	if lastEnd < len(template) {
-		parts = append(parts, templatePart{
-			isVariable: false,
-			value:      template[lastEnd:],
-		})
-	}
-
-	return parts
-}
-
-func removeSlice(s string) string {
-	i := strings.Index(s, "[")
-	if i != -1 {
-		return s[:i]
-	}
-	return s
-}
-
-func (tp templatePart) renderAndSend(k string, v any, sw *schema.StreamWriter[map[string]any]) bool /*hasError*/ {
-	tpl := fmt.Sprintf("{{%s}}", tp.value)
-	formatted, err := nodes.Jinja2TemplateRender(tpl, map[string]any{k: v})
+func renderAndSend(tp nodes.TemplatePart, k string, v any, sw *schema.StreamWriter[map[string]any]) bool /*hasError*/ {
+	m, err := sonic.Marshal(map[string]any{k: v})
 	if err != nil {
 		sw.Send(nil, err)
 		return true
 	}
 
-	if len(formatted) == 0 { // won't send if formatted result is empty string
+	r, err := tp.Render(m)
+	if err != nil {
+		sw.Send(nil, err)
+		return true
+	}
+
+	if len(r) == 0 { // won't send if formatted result is empty string
 		return false
 	}
 
-	sw.Send(map[string]any{outputKey: formatted}, nil)
+	sw.Send(map[string]any{outputKey: r}, nil)
 	return false
-}
-
-func (tp templatePart) skipped(resolvedSources map[string]*nodes.SourceInfo) bool {
-	// examine along the templatePart's root and sub paths,
-	// trying to find a matching SourceInfo as far as possible.
-	// the result would be one of two cases:
-	// - a REAL field source is matched, just check if that field source is skipped
-	// - otherwise an INTERMEDIATE field source is matched, it can only be skipped if ALL its sub sources are skipped
-	matchingSource, ok := resolvedSources[tp.root]
-	if !ok { // the user specified a non-existing source, it can never have any value, just skip it
-		return true
-	}
-
-	if !matchingSource.IsIntermediate {
-		return matchingSource.FieldType == nodes.FieldSkipped
-	}
-
-	for _, subPath := range tp.subPathsBeforeSlice {
-		subSource, ok := matchingSource.SubSources[subPath]
-		if !ok { // has gone deeper than the field source
-			if matchingSource.IsIntermediate { // the user specified a non-existing source, just skip it
-				return true
-			}
-			return matchingSource.FieldType == nodes.FieldSkipped
-		}
-
-		matchingSource = subSource
-	}
-
-	if !matchingSource.IsIntermediate {
-		return matchingSource.FieldType == nodes.FieldSkipped
-	}
-
-	var checkSourceSkipped func(sInfo *nodes.SourceInfo) bool
-	checkSourceSkipped = func(sInfo *nodes.SourceInfo) bool {
-		if !sInfo.IsIntermediate {
-			return sInfo.FieldType == nodes.FieldSkipped
-		}
-		for _, subSource := range sInfo.SubSources {
-			if !checkSourceSkipped(subSource) {
-				return false
-			}
-		}
-		return true
-	}
-
-	return checkSourceSkipped(matchingSource)
 }

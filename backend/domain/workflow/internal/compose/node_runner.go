@@ -20,16 +20,18 @@ import (
 )
 
 type nodeRunConfig[O any] struct {
-	nodeKey                 vo.NodeKey
-	nodeName                string
-	nodeType                entity.NodeType
-	timeoutMS               int64
-	maxRetry                int64
-	errProcessType          vo.ErrorProcessType
-	dataOnErr               func() map[string]any
-	callbackEnabled         bool
-	preProcessors           []func(ctx context.Context, input map[string]any) (map[string]any, error)
-	postProcessors          []func(ctx context.Context, input map[string]any) (map[string]any, error)
+	nodeKey             vo.NodeKey
+	nodeName            string
+	nodeType            entity.NodeType
+	timeoutMS           int64
+	maxRetry            int64
+	errProcessType      vo.ErrorProcessType
+	dataOnErr           func() map[string]any
+	callbackEnabled     bool
+	preProcessors       []func(ctx context.Context, input map[string]any) (map[string]any, error)
+	postProcessors      []func(ctx context.Context, input map[string]any) (map[string]any, error)
+	streamPreProcessors []func(ctx context.Context,
+		input *schema.StreamReader[map[string]any]) *schema.StreamReader[map[string]any]
 	callbackInputConverter  func(context.Context, map[string]any) (map[string]any, error)
 	callbackOutputConverter func(context.Context, map[string]any) (*nodes.StructuredCallbackOutput, error)
 	init                    []func(context.Context) (context.Context, error)
@@ -51,15 +53,15 @@ func newNodeRunConfig[O any](ns *NodeSchema,
 		errProcessType = vo.ErrorProcessTypeThrow
 		dataOnErr      func() map[string]any
 	)
-	if ns.MetaConfigs != nil {
-		timeoutMS = ns.MetaConfigs.TimeoutMS
-		maxRetry = ns.MetaConfigs.MaxRetry
-		if ns.MetaConfigs.ProcessType != nil {
-			errProcessType = *ns.MetaConfigs.ProcessType
+	if ns.ExceptionConfigs != nil {
+		timeoutMS = ns.ExceptionConfigs.TimeoutMS
+		maxRetry = ns.ExceptionConfigs.MaxRetry
+		if ns.ExceptionConfigs.ProcessType != nil {
+			errProcessType = *ns.ExceptionConfigs.ProcessType
 		}
-		if len(ns.MetaConfigs.DataOnErr) > 0 {
+		if len(ns.ExceptionConfigs.DataOnErr) > 0 {
 			dataOnErr = func() map[string]any {
-				return parseDefaultOutputOrFallback(ns.MetaConfigs.DataOnErr, ns.OutputTypes)
+				return parseDefaultOutputOrFallback(ns.ExceptionConfigs.DataOnErr, ns.OutputTypes)
 			}
 		}
 	}
@@ -72,6 +74,12 @@ func newNodeRunConfig[O any](ns *NodeSchema,
 	var postProcessors []func(ctx context.Context, input map[string]any) (map[string]any, error)
 	if meta.PostFillNil {
 		postProcessors = append(postProcessors, ns.outputValueFiller())
+	}
+
+	var streamPreProcessors []func(ctx context.Context,
+		input *schema.StreamReader[map[string]any]) *schema.StreamReader[map[string]any]
+	if meta.PreFillZero {
+		streamPreProcessors = append(streamPreProcessors, ns.streamInputValueFiller())
 	}
 
 	opts.init = append(opts.init, func(ctx context.Context) (context.Context, error) {
@@ -93,6 +101,7 @@ func newNodeRunConfig[O any](ns *NodeSchema,
 		callbackEnabled:         meta.CallbackEnabled,
 		preProcessors:           preProcessors,
 		postProcessors:          postProcessors,
+		streamPreProcessors:     streamPreProcessors,
 		callbackInputConverter:  opts.callbackInputConverter,
 		callbackOutputConverter: opts.callbackOutputConverter,
 		init:                    opts.init,
@@ -315,6 +324,10 @@ func (nc *nodeRunConfig[O]) transform() func(ctx context.Context, input *schema.
 			if ctx, err = i(ctx); err != nil {
 				return nil, err
 			}
+		}
+
+		for _, p := range runner.streamPreProcessors {
+			input = p(ctx, input)
 		}
 
 		if ctx, input, err = runner.onStartStream(ctx, input); err != nil {

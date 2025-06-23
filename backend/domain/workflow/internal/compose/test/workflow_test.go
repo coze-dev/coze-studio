@@ -333,6 +333,10 @@ func TestVariableAggregator(t *testing.T) {
 				"Group1": 1,
 				"Group2": 1,
 			},
+			"GroupOrder": []string{
+				"Group1",
+				"Group2",
+			},
 		},
 		InputSources: []*vo.FieldInfo{
 			{
@@ -350,6 +354,24 @@ func TestVariableAggregator(t *testing.T) {
 					Ref: &vo.Reference{
 						FromNodeKey: entry.Key,
 						FromPath:    compose.FieldPath{"Int1"},
+					},
+				},
+			},
+		},
+		InputTypes: map[string]*vo.TypeInfo{
+			"Group1": {
+				Type: vo.DataTypeObject,
+				Properties: map[string]*vo.TypeInfo{
+					"0": {
+						Type: vo.DataTypeString,
+					},
+				},
+			},
+			"Group2": {
+				Type: vo.DataTypeObject,
+				Properties: map[string]*vo.TypeInfo{
+					"0": {
+						Type: vo.DataTypeInteger,
 					},
 				},
 			},
@@ -585,7 +607,7 @@ func TestTextProcessor(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
-			"output": "True_1.0_a",
+			"output": "true_1_a",
 		}, out)
 	})
 }
