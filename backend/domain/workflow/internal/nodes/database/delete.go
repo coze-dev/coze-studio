@@ -62,8 +62,6 @@ func (d *Delete) Delete(ctx context.Context, in map[string]any) (map[string]any,
 	if err != nil {
 		return nil, err
 	}
-	ret[rowNum] = response.RowNumber
-
 	return ret, nil
 }
 

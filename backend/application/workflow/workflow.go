@@ -1567,17 +1567,19 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 		return nil, errors.New("space id is required")
 	}
 
+	if req.GetPage() <= 0 || req.GetSize() <= 0 || req.GetSize() > 100 {
+		return nil, fmt.Errorf("the number of page or size must be greater than 0, and the size must be greater than 0 and less than 100")
+	}
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
 
-	page := &vo.Page{}
-	if req.GetPage() > 0 {
-		page.Page = req.GetPage()
+	page := &vo.Page{
+		Page: req.GetPage(),
+		Size: req.GetSize(),
 	}
-	if req.GetSize() > 0 {
-		page.Size = req.GetSize()
-	}
+
 	option := vo.MetaQuery{
 		Page: page,
 	}
