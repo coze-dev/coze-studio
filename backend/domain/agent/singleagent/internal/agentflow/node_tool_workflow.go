@@ -13,7 +13,7 @@ type workflowConfig struct {
 	wfInfos []*bot_common.WorkflowInfo
 }
 
-func newWorkflowTools(ctx context.Context, conf *workflowConfig) ([]workflow.ToolFromWorkflow, error) {
+func newWorkflowTools(ctx context.Context, conf *workflowConfig) ([]workflow.ToolFromWorkflow, map[string]struct{}, error) {
 	var policies []*vo.GetPolicy
 
 	for _, info := range conf.wfInfos {
@@ -24,5 +24,24 @@ func newWorkflowTools(ctx context.Context, conf *workflowConfig) ([]workflow.Too
 		})
 	}
 
-	return crossworkflow.DefaultSVC().WorkflowAsModelTool(ctx, policies)
+	toolsReturnDirectly := make(map[string]struct{})
+
+	workflowTools, err := crossworkflow.DefaultSVC().WorkflowAsModelTool(ctx, policies)
+
+	if len(workflowTools) > 0 {
+		for _, workflowTool := range workflowTools {
+			if workflowTool.TerminatePlan() == vo.UseAnswerContent {
+				toolInfo, err := workflowTool.Info(ctx)
+				if err != nil {
+					return nil, nil, err
+				}
+				if toolInfo == nil || toolInfo.Name == "" {
+					continue
+				}
+				toolsReturnDirectly[toolInfo.Name] = struct{}{}
+			}
+		}
+	}
+
+	return workflowTools, toolsReturnDirectly, err
 }
