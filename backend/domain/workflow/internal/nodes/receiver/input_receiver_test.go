@@ -1,6 +1,7 @@
 package receiver
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,7 +26,7 @@ func Test_jsonParseRelaxed(t *testing.T) {
 
 	data := `{"str_key": "val"}`
 
-	result, err := jsonParseRelaxed(data, tInfos)
+	result, err := jsonParseRelaxed(context.Background(), data, tInfos)
 	assert.NoError(t, err)
 	assert.Equal(t, map[string]any{"str_key": "val"}, result)
 }

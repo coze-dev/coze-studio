@@ -1,6 +1,7 @@
 package nodes
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -9,18 +10,22 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
-func ConvertInputs(in map[string]any, tInfo map[string]*vo.TypeInfo) (map[string]any, error) {
+func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.TypeInfo) (map[string]any, error) {
+	if len(in) == 0 {
+		return in, nil
+	}
+
 	out := make(map[string]any)
 	for k, v := range in {
 		t, ok := tInfo[k]
 		if !ok {
 			// for input fields not explicitly defined, just pass the string value through
-			logs.Warnf("input %s not found in type info", k)
+			logs.CtxWarnf(ctx, "input %s not found in type info", k)
 			out[k] = in[k]
 			continue
 		}
 
-		converted, err := Convert(v, t)
+		converted, err := Convert(ctx, v, t)
 		if err != nil {
 			return nil, err
 		}
@@ -30,29 +35,33 @@ func ConvertInputs(in map[string]any, tInfo map[string]*vo.TypeInfo) (map[string
 	return out, nil
 }
 
-func Convert(in any, t *vo.TypeInfo) (any, error) {
+func Convert(ctx context.Context, in any, t *vo.TypeInfo) (any, error) {
+	if in == nil {
+		return in, nil
+	}
+
 	switch t.Type {
 	case vo.DataTypeString, vo.DataTypeFile, vo.DataTypeTime:
-		return convertToString(in)
+		return convertToString(ctx, in)
 	case vo.DataTypeInteger:
-		return convertToInt64(in)
+		return convertToInt64(ctx, in)
 	case vo.DataTypeNumber:
-		return convertToFloat64(in)
+		return convertToFloat64(ctx, in)
 	case vo.DataTypeBoolean:
-		return convertToBool(in)
+		return convertToBool(ctx, in)
 	case vo.DataTypeObject:
-		return convertToObject(in, t)
+		return convertToObject(ctx, in, t)
 	case vo.DataTypeArray:
-		return convertToArray(in, t)
+		return convertToArray(ctx, in, t)
 	default:
 		return nil, fmt.Errorf("unknown input type %s", t.Type)
 	}
 }
 
-func convertToString(in any) (out string, err error) {
+func convertToString(ctx context.Context, in any) (out string, err error) {
 	defer func() {
 		if err != nil {
-			logs.Errorf("failed to convert input %v to string: %v, fallback to empty string", in, err)
+			logs.CtxErrorf(ctx, "failed to convert input %v to string: %v, fallback to empty string", in, err)
 			err = nil
 			out = ""
 		}
@@ -75,10 +84,10 @@ func convertToString(in any) (out string, err error) {
 	}
 }
 
-func convertToInt64(in any) (out int64, err error) {
+func convertToInt64(ctx context.Context, in any) (out int64, err error) {
 	defer func() {
 		if err != nil {
-			logs.Errorf("failed to convert input %v to int64: %v, fallback to 0", in, err)
+			logs.CtxErrorf(ctx, "failed to convert input %v to int64: %v, fallback to 0", in, err)
 			err = nil
 			out = 0
 		}
@@ -96,10 +105,10 @@ func convertToInt64(in any) (out int64, err error) {
 	}
 }
 
-func convertToFloat64(in any) (out float64, err error) {
+func convertToFloat64(ctx context.Context, in any) (out float64, err error) {
 	defer func() {
 		if err != nil {
-			logs.Errorf("failed to convert input %v to float64: %v, fallback to 0", in, err)
+			logs.CtxErrorf(ctx, "failed to convert input %v to float64: %v, fallback to 0", in, err)
 			err = nil
 			out = 0
 		}
@@ -117,10 +126,10 @@ func convertToFloat64(in any) (out float64, err error) {
 	}
 }
 
-func convertToBool(in any) (out bool, err error) {
+func convertToBool(ctx context.Context, in any) (out bool, err error) {
 	defer func() {
 		if err != nil {
-			logs.Errorf("failed to convert input %v to bool: %v, fallback to false", in, err)
+			logs.CtxErrorf(ctx, "failed to convert input %v to bool: %v, fallback to false", in, err)
 			err = nil
 			out = false
 		}
@@ -136,10 +145,10 @@ func convertToBool(in any) (out bool, err error) {
 	}
 }
 
-func convertToObject(in any, t *vo.TypeInfo) (out map[string]any, err error) {
+func convertToObject(ctx context.Context, in any, t *vo.TypeInfo) (out map[string]any, err error) {
 	defer func() {
 		if err != nil {
-			logs.Errorf("failed to convert input %v to object: %v, fallback to nil", in, err)
+			logs.CtxErrorf(ctx, "failed to convert input %v to object: %v, fallback to nil", in, err)
 			err = nil
 			out = nil
 		}
@@ -162,11 +171,11 @@ func convertToObject(in any, t *vo.TypeInfo) (out map[string]any, err error) {
 		t, ok := t.Properties[k]
 		if !ok {
 			// for input fields not explicitly defined, just pass the string value through
-			logs.Warnf("input %s not found in type info", k)
+			logs.CtxWarnf(ctx, "input %s not found in type info", k)
 			continue
 		}
 
-		newV, err := Convert(v, t)
+		newV, err := Convert(ctx, v, t)
 		if err != nil {
 			return nil, err
 		}
@@ -177,10 +186,10 @@ func convertToObject(in any, t *vo.TypeInfo) (out map[string]any, err error) {
 	return m, nil
 }
 
-func convertToArray(in any, t *vo.TypeInfo) (out []any, err error) {
+func convertToArray(ctx context.Context, in any, t *vo.TypeInfo) (out []any, err error) {
 	defer func() {
 		if err != nil {
-			logs.Errorf("failed to convert input %v to array: %v, fallback to nil", in, err)
+			logs.CtxErrorf(ctx, "failed to convert input %v to array: %v, fallback to nil", in, err)
 			err = nil
 			out = nil
 		}
@@ -201,9 +210,9 @@ func convertToArray(in any, t *vo.TypeInfo) (out []any, err error) {
 
 	elemType := t.ElemTypeInfo
 	for i := range a {
-		newV, err := Convert(a[i], elemType)
+		newV, err := Convert(ctx, a[i], elemType)
 		if err != nil {
-			logs.Errorf("failed to convert %dth element of array to type %v: %v", i, elemType.Type, err)
+			logs.CtxErrorf(ctx, "failed to convert %dth element of array to type %v: %v", i, elemType.Type, err)
 		}
 
 		out = append(out, newV)

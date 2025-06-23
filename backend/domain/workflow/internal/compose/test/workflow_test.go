@@ -171,7 +171,7 @@ func TestAddSelector(t *testing.T) {
 						Type: vo.DataTypeString,
 					},
 					selector.RightKey: {
-						Type: vo.DataTypeInteger,
+						Type: vo.DataTypeString,
 					},
 				},
 			},

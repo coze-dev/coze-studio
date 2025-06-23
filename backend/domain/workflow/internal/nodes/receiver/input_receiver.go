@@ -93,7 +93,7 @@ func (i *InputReceiver) Invoke(ctx context.Context, in map[string]any) (map[stri
 		return nil, compose.InterruptAndRerun
 	}
 
-	out, err := jsonParseRelaxed(input, i.outputTypes)
+	out, err := jsonParseRelaxed(ctx, input, i.outputTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (i *InputReceiver) Invoke(ctx context.Context, in map[string]any) (map[stri
 	return out, nil
 }
 
-func jsonParseRelaxed(data string, schema_ map[string]*vo.TypeInfo) (map[string]any, error) {
+func jsonParseRelaxed(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo) (map[string]any, error) {
 	var result map[string]any
 
 	err := sonic2.UnmarshalString(data, &result)
@@ -111,7 +111,7 @@ func jsonParseRelaxed(data string, schema_ map[string]*vo.TypeInfo) (map[string]
 
 	for k, v := range result {
 		if s, ok := schema_[k]; ok {
-			if val, err := nodes.Convert(v, s); err == nil {
+			if val, err := nodes.Convert(ctx, v, s); err == nil {
 				result[k] = val
 			}
 		}

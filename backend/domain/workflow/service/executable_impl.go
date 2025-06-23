@@ -66,7 +66,7 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 		config.AppID = wfEntity.AppID
 	}
 
-	convertedInput, err := nodes.ConvertInputs(input, wf.Inputs())
+	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to convert inputs: %w", err)
 	}
@@ -193,7 +193,7 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 
 	config.CommitID = wfEntity.CommitID
 
-	convertedInput, err := nodes.ConvertInputs(input, wf.Inputs())
+	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
 		return 0, fmt.Errorf("failed to convert inputs: %w", err)
 	}
@@ -251,7 +251,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 		return 0, fmt.Errorf("failed to create workflow: %w", err)
 	}
 
-	convertedInput, err := nodes.ConvertInputs(input, wf.Inputs())
+	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
 		return 0, fmt.Errorf("failed to convert inputs: %w", err)
 	}
@@ -330,7 +330,7 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 
 	config.CommitID = wfEntity.CommitID
 
-	input, err = nodes.ConvertInputs(input, wf.Inputs())
+	input, err = nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert inputs: %w", err)
 	}

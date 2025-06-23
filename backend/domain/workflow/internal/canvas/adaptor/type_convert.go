@@ -54,16 +54,18 @@ func CanvasVariableToTypeInfo(v *vo.Variable) (*vo.TypeInfo, error) {
 	case vo.VariableTypeObject:
 		tInfo.Type = vo.DataTypeObject
 		tInfo.Properties = make(map[string]*vo.TypeInfo)
-		for _, subVAny := range v.Schema.([]any) {
-			subV, err := vo.ParseVariable(subVAny)
-			if err != nil {
-				return nil, err
+		if v.Schema != nil {
+			for _, subVAny := range v.Schema.([]any) {
+				subV, err := vo.ParseVariable(subVAny)
+				if err != nil {
+					return nil, err
+				}
+				subTInfo, err := CanvasVariableToTypeInfo(subV)
+				if err != nil {
+					return nil, err
+				}
+				tInfo.Properties[subV.Name] = subTInfo
 			}
-			subTInfo, err := CanvasVariableToTypeInfo(subV)
-			if err != nil {
-				return nil, err
-			}
-			tInfo.Properties[subV.Name] = subTInfo
 		}
 	case vo.VariableTypeList:
 		tInfo.Type = vo.DataTypeArray

@@ -135,7 +135,7 @@ func mockUpdate(t *testing.T) func(context.Context, *crossdatabase.UpdateRequest
 		})
 		assert.Equal(t, req.ConditionGroup.Relation, crossdatabase.ClauseRelationAND)
 		assert.Equal(t, req.Fields, map[string]interface{}{
-			"1783392627713": 123,
+			"1783392627713": int64(123),
 		})
 
 		return &crossdatabase.Response{}, nil
@@ -232,7 +232,7 @@ func TestDatabaseCURD(t *testing.T) {
 
 		output, err := wf.SyncRun(ctx, map[string]any{
 			"input": "input for database curd",
-			"v2":    123,
+			"v2":    int64(123),
 		})
 
 		assert.NoError(t, err)

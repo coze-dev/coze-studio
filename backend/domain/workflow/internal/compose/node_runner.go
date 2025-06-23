@@ -26,7 +26,7 @@ type nodeRunConfig[O any] struct {
 	timeoutMS           int64
 	maxRetry            int64
 	errProcessType      vo.ErrorProcessType
-	dataOnErr           func() map[string]any
+	dataOnErr           func(ctx context.Context) map[string]any
 	callbackEnabled     bool
 	preProcessors       []func(ctx context.Context, input map[string]any) (map[string]any, error)
 	postProcessors      []func(ctx context.Context, input map[string]any) (map[string]any, error)
@@ -51,7 +51,7 @@ func newNodeRunConfig[O any](ns *NodeSchema,
 		timeoutMS      = meta.DefaultTimeoutMS
 		maxRetry       int64
 		errProcessType = vo.ErrorProcessTypeThrow
-		dataOnErr      func() map[string]any
+		dataOnErr      func(ctx context.Context) map[string]any
 	)
 	if ns.ExceptionConfigs != nil {
 		timeoutMS = ns.ExceptionConfigs.TimeoutMS
@@ -60,13 +60,15 @@ func newNodeRunConfig[O any](ns *NodeSchema,
 			errProcessType = *ns.ExceptionConfigs.ProcessType
 		}
 		if len(ns.ExceptionConfigs.DataOnErr) > 0 {
-			dataOnErr = func() map[string]any {
-				return parseDefaultOutputOrFallback(ns.ExceptionConfigs.DataOnErr, ns.OutputTypes)
+			dataOnErr = func(ctx context.Context) map[string]any {
+				return parseDefaultOutputOrFallback(ctx, ns.ExceptionConfigs.DataOnErr, ns.OutputTypes)
 			}
 		}
 	}
 
-	var preProcessors []func(ctx context.Context, input map[string]any) (map[string]any, error)
+	preProcessors := []func(ctx context.Context, input map[string]any) (map[string]any, error){
+		preTypeConverter(ns.InputTypes),
+	}
 	if meta.PreFillZero {
 		preProcessors = append(preProcessors, ns.inputValueFiller())
 	}
@@ -76,8 +78,15 @@ func newNodeRunConfig[O any](ns *NodeSchema,
 		postProcessors = append(postProcessors, ns.outputValueFiller())
 	}
 
-	var streamPreProcessors []func(ctx context.Context,
-		input *schema.StreamReader[map[string]any]) *schema.StreamReader[map[string]any]
+	streamPreProcessors := []func(ctx context.Context,
+		input *schema.StreamReader[map[string]any]) *schema.StreamReader[map[string]any]{
+		func(ctx context.Context, input *schema.StreamReader[map[string]any]) *schema.StreamReader[map[string]any] {
+			f := func(in map[string]any) (map[string]any, error) {
+				return preTypeConverter(ns.InputTypes)(ctx, in)
+			}
+			return schema.StreamReaderWithConvert(input, f)
+		},
+	}
 	if meta.PreFillZero {
 		streamPreProcessors = append(streamPreProcessors, ns.streamInputValueFiller())
 	}
@@ -607,7 +616,7 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 
 	switch r.errProcessType {
 	case vo.ErrorProcessTypeDefault:
-		d := r.dataOnErr()
+		d := r.dataOnErr(ctx)
 		d["errorBody"] = map[string]any{
 			"errorMessage": err.Error(),
 			"errorCode":    -1,
@@ -636,7 +645,7 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 	}
 }
 
-func parseDefaultOutput(data string, schema_ map[string]*vo.TypeInfo) (map[string]any, error) {
+func parseDefaultOutput(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo) (map[string]any, error) {
 	var result map[string]any
 
 	err := sonic.UnmarshalString(data, &result)
@@ -646,7 +655,7 @@ func parseDefaultOutput(data string, schema_ map[string]*vo.TypeInfo) (map[strin
 
 	for k, v := range result {
 		if s, ok := schema_[k]; ok {
-			if val, err := nodes.Convert(v, s); err == nil {
+			if val, err := nodes.Convert(ctx, v, s); err == nil {
 				result[k] = val
 			} else {
 				return nil, fmt.Errorf("invalid type: %v, %v", k, err)
@@ -657,8 +666,8 @@ func parseDefaultOutput(data string, schema_ map[string]*vo.TypeInfo) (map[strin
 	return result, nil
 }
 
-func parseDefaultOutputOrFallback(data string, schema_ map[string]*vo.TypeInfo) map[string]any {
-	result, err := parseDefaultOutput(data, schema_)
+func parseDefaultOutputOrFallback(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo) map[string]any {
+	result, err := parseDefaultOutput(ctx, data, schema_)
 	if err != nil {
 		fallback := make(map[string]any, len(schema_))
 		for k, v := range schema_ {
@@ -671,4 +680,11 @@ func parseDefaultOutputOrFallback(data string, schema_ map[string]*vo.TypeInfo) 
 		return fallback
 	}
 	return result
+}
+
+func preTypeConverter(inTypes map[string]*vo.TypeInfo) func(ctx context.Context, in map[string]any) (map[string]any, error) {
+	return func(ctx context.Context, in map[string]any) (map[string]any, error) {
+		out, err := nodes.ConvertInputs(ctx, in, inTypes)
+		return out, err
+	}
 }

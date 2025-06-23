@@ -4341,3 +4341,44 @@ func TestDuplicateWorkflowsByAppID(t *testing.T) {
 
 	})
 }
+
+func TestMismatchedTypeConvert(t *testing.T) {
+	mockey.PatchConvey("test mismatched type convert", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		chatModel := &testutil.UTChatModel{
+			StreamResultProvider: func(_ int, in []*schema.Message) (*schema.StreamReader[*schema.Message], error) {
+				sr := schema.StreamReaderFromArray([]*schema.Message{
+					{
+						Role:    schema.Assistant,
+						Content: "I ",
+					},
+					{
+						Role:    schema.Assistant,
+						Content: "don't know.",
+					},
+				})
+				return sr, nil
+			},
+		}
+
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+
+		id := r.load("type_convert/mismatched_types.json")
+		exeID := r.testRun(id, map[string]string{
+			"input": "what's the meaning of life",
+			"arr_str": `[
+  "{\"a\":1}"
+]`,
+			"bool_a":  "True",
+			"int_a":   "2",
+			"num_a":   "3.5",
+			"obj":     `{"b":true}`,
+			"obj_str": `{"s":[2,false]}`,
+		})
+		e := r.getProcess(id, exeID)
+		e.assertSuccess()
+		assert.Equal(t, "false  {\"s\":[2,false]} [{\"a\":1}] 3 0 {\"b\":true}\nI don't know.", e.output)
+	})
+}

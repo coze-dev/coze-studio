@@ -105,7 +105,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 		if entryNode == nil {
 			panic("entry node not found in tool workflow")
 		}
-		in, err = nodes.ConvertInputs(in, entryNode.OutputTypes)
+		in, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
 		if err != nil {
 			return "", err
 		}
@@ -251,7 +251,7 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 		if entryNode == nil {
 			panic("entry node not found in tool workflow")
 		}
-		in, err = nodes.ConvertInputs(in, entryNode.OutputTypes)
+		in, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
 		if err != nil {
 			return nil, err
 		}
