@@ -8,7 +8,7 @@ import (
 	"github.com/bytedance/sonic"
 
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
+	"code.byted.org/flow/opencoze/backend/infra/contract/es"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -17,17 +17,18 @@ import (
 const projectIndexName = "project_draft"
 
 type projectHandlerImpl struct {
-	esClient *es8.Client
+	esClient es.Client
 }
 
 type ConsumerHandler = eventbus.ConsumerHandler
 
 var defaultProjectHandle *projectHandlerImpl
 
-func NewProjectHandler(ctx context.Context, e *es8.Client) ConsumerHandler {
+func NewProjectHandler(ctx context.Context, e es.Client) ConsumerHandler {
 	defaultProjectHandle = &projectHandlerImpl{
 		esClient: e,
 	}
+
 	return defaultProjectHandle
 }
 
@@ -61,15 +62,11 @@ func (s *projectHandlerImpl) indexProject(ctx context.Context, ev *entity.Projec
 
 	switch ev.OpType {
 	case entity.Created:
-		_, err := s.esClient.Index(projectIndexName).Id(conv.Int64ToStr(ev.Project.ID)).Document(ev.Project).Do(ctx)
-		return err
+		return s.esClient.Create(ctx, projectIndexName, conv.Int64ToStr(ev.Project.ID), ev.Project)
 	case entity.Updated:
-		_, err := s.esClient.Update(projectIndexName, conv.Int64ToStr(ev.Project.ID)).
-			Doc(ev.Project).Do(ctx)
-		return err
+		return s.esClient.Update(ctx, projectIndexName, conv.Int64ToStr(ev.Project.ID), ev.Project)
 	case entity.Deleted:
-		_, err := s.esClient.Delete(projectIndexName, conv.Int64ToStr(ev.Project.ID)).Do(ctx)
-		return err
+		return s.esClient.Delete(ctx, projectIndexName, conv.Int64ToStr(ev.Project.ID))
 	}
 
 	return fmt.Errorf("unexpected op type: %v", ev.OpType)

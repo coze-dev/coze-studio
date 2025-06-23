@@ -11,14 +11,10 @@ import (
 	"github.com/cloudwego/eino/components/indexer"
 	"github.com/cloudwego/eino/components/retriever"
 	"github.com/cloudwego/eino/schema"
-	"github.com/elastic/go-elasticsearch/v8/esutil"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/core/search"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/operator"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/textquerytype"
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
+	"code.byted.org/flow/opencoze/backend/infra/contract/es"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
@@ -38,10 +34,7 @@ func (e *esSearchStore) Store(ctx context.Context, docs []*schema.Document, opts
 	}()
 	cli := e.config.Client
 	index := e.indexName
-	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
-		Client: cli,
-		Index:  index,
-	})
+	bi, err := cli.NewBulkIndexer(index)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +49,7 @@ func (e *esSearchStore) Store(ctx context.Context, docs []*schema.Document, opts
 			return nil, err
 		}
 
-		if err = bi.Add(ctx, esutil.BulkIndexerItem{
+		if err = bi.Add(ctx, es.BulkIndexerItem{
 			Index:      e.indexName,
 			Action:     "index",
 			DocumentID: doc.ID,
@@ -86,36 +79,21 @@ func (e *esSearchStore) Retrieve(ctx context.Context, query string, opts ...retr
 
 		options         = retriever.GetCommonOptions(&retriever.Options{TopK: ptr.Of(topK)}, opts...)
 		implSpecOptions = retriever.GetImplSpecificOptions(&searchstore.RetrieverOptions{}, opts...)
+		req             = &es.Request{
+			Query: &es.Query{
+				Bool: &es.BoolQuery{},
+			},
+			Size: options.TopK,
+		}
 	)
 
-	var q *types.Query
 	if implSpecOptions.MultiMatch == nil {
-		q = &types.Query{
-			Bool: &types.BoolQuery{
-				Must: []types.Query{
-					{
-						Match: map[string]types.MatchQuery{
-							searchstore.FieldTextContent: {Query: query},
-						},
-					},
-				},
-			},
-		}
+		req.Query.Bool.Must = append(req.Query.Bool.Must,
+			es.NewMatchQuery(searchstore.FieldTextContent, query))
 	} else {
-		q = &types.Query{
-			Bool: &types.BoolQuery{
-				Must: []types.Query{
-					{
-						MultiMatch: &types.MultiMatchQuery{
-							Fields:   implSpecOptions.MultiMatch.Fields,
-							Operator: &operator.Or,
-							Query:    query,
-							Type:     &textquerytype.Bestfields,
-						},
-					},
-				},
-			},
-		}
+		req.Query.Bool.Must = append(req.Query.Bool.Must,
+			es.NewMultiMatchQuery(implSpecOptions.MultiMatch.Fields, query,
+				"best_fields", es.Or))
 	}
 
 	dsl, err := searchstore.LoadDSL(options.DSLInfo)
@@ -123,20 +101,15 @@ func (e *esSearchStore) Retrieve(ctx context.Context, query string, opts ...retr
 		return nil, err
 	}
 
-	if err = e.travDSL(q, dsl); err != nil {
+	if err = e.travDSL(req.Query, dsl); err != nil {
 		return nil, err
 	}
 
-	req := &search.Request{
-		Query: q,
-		Size:  options.TopK,
-	}
-
 	if options.ScoreThreshold != nil {
-		req.MinScore = (*types.Float64)(options.ScoreThreshold)
+		req.MinScore = options.ScoreThreshold
 	}
 
-	resp, err := search.NewSearchFunc(cli)().Index(index).Request(req).Do(ctx)
+	resp, err := cli.Search(ctx, index, req)
 	if err != nil {
 		return nil, err
 	}
@@ -150,16 +123,13 @@ func (e *esSearchStore) Retrieve(ctx context.Context, query string, opts ...retr
 }
 
 func (e *esSearchStore) Delete(ctx context.Context, ids []string) error {
-	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
-		Client: e.config.Client,
-		Index:  e.indexName,
-	})
+	bi, err := e.config.Client.NewBulkIndexer(e.indexName)
 	if err != nil {
 		return err
 	}
 
 	for _, id := range ids {
-		if err = bi.Add(ctx, esutil.BulkIndexerItem{
+		if err = bi.Add(ctx, es.BulkIndexerItem{
 			Index:      e.indexName,
 			Action:     "delete",
 			DocumentID: id,
@@ -171,66 +141,48 @@ func (e *esSearchStore) Delete(ctx context.Context, ids []string) error {
 	return bi.Close(ctx)
 }
 
-func (e *esSearchStore) travDSL(query *types.Query, dsl *searchstore.DSL) error {
+func (e *esSearchStore) travDSL(query *es.Query, dsl *searchstore.DSL) error {
 	if dsl == nil {
 		return nil
 	}
 
 	switch dsl.Op {
 	case searchstore.OpEq:
-		query.Bool.Must = append(query.Bool.Must, types.Query{
-			Term: map[string]types.TermQuery{
-				dsl.Field: {Value: stringifyValue(dsl.Value)},
-			},
-		})
+		query.Bool.Must = append(query.Bool.Must,
+			es.NewEqualQuery(dsl.Field, stringifyValue(dsl.Value)))
 	case searchstore.OpNe:
-		query.Bool.MustNot = append(query.Bool.MustNot, types.Query{
-			Term: map[string]types.TermQuery{
-				dsl.Field: {Value: stringifyValue(dsl.Value)},
-			},
-		})
+		query.Bool.MustNot = append(query.Bool.MustNot,
+			es.NewEqualQuery(dsl.Field, stringifyValue(dsl.Value)))
+
 	case searchstore.OpLike:
 		s, ok := dsl.Value.(string)
 		if !ok {
 			return fmt.Errorf("[travDSL] OpLike value should be string, but got %v", dsl.Value)
 		}
-		query.Bool.Must = append(query.Bool.Must, types.Query{
-			Match: map[string]types.MatchQuery{
-				dsl.Field: {Query: s},
-			},
-		})
+		query.Bool.Must = append(query.Bool.Must, es.NewMatchQuery(dsl.Field, s))
+
 	case searchstore.OpIn:
-		query.Bool.Must = append(query.Bool.Must, types.Query{
-			Terms: &types.TermsQuery{
-				TermsQuery: map[string]types.TermsQueryField{
-					dsl.Field: stringifyValue(dsl.Value),
-				},
-			},
-		})
-	case searchstore.OpAnd:
+		query.Bool.Must = append(query.Bool.MustNot,
+			es.NewInQuery(dsl.Field, stringifyValue(dsl.Value)))
+
+	case searchstore.OpAnd, searchstore.OpOr:
 		conds, ok := dsl.Value.([]*searchstore.DSL)
 		if !ok {
-			return fmt.Errorf("[trav] value type assertion failed for or")
+			return fmt.Errorf("[travDSL] value type assertion failed for or")
 		}
+
 		for _, cond := range conds {
-			sub := &types.Query{}
+			sub := &es.Query{}
 			if err := e.travDSL(sub, cond); err != nil {
 				return err
 			}
-			query.Bool.Must = append(query.Bool.Must, *sub)
-		}
-	case searchstore.OpOr:
-		conds, ok := dsl.Value.([]*searchstore.DSL)
-		if !ok {
-			return fmt.Errorf("[trav] value type assertion failed for or")
-		}
-		for _, cond := range conds {
-			sub := &types.Query{}
-			if err := e.travDSL(sub, cond); err != nil {
-				return err
+			if dsl.Op == searchstore.OpOr {
+				query.Bool.Should = append(query.Bool.Should, *sub)
+			} else {
+				query.Bool.Must = append(query.Bool.Must, *sub)
 			}
-			query.Bool.Should = append(query.Bool.Should, *sub)
 		}
+
 	default:
 		return fmt.Errorf("[trav] unknown op %s", dsl.Op)
 	}
@@ -238,7 +190,7 @@ func (e *esSearchStore) travDSL(query *types.Query, dsl *searchstore.DSL) error 
 	return nil
 }
 
-func (e *esSearchStore) parseSearchResult(resp *search.Response) (docs []*schema.Document, err error) {
+func (e *esSearchStore) parseSearchResult(resp *es.Response) (docs []*schema.Document, err error) {
 	docs = make([]*schema.Document, 0, len(resp.Hits.Hits))
 	firstScore := 0.0
 	for i, hit := range resp.Hits.Hits {

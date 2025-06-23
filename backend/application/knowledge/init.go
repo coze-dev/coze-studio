@@ -31,7 +31,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
-	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
+	"code.byted.org/flow/opencoze/backend/infra/contract/es"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/messages2query"
@@ -59,7 +59,7 @@ type ServiceComponents struct {
 	Storage  storage.Storage
 	RDB      rdb.RDB
 	ImageX   imagex.ImageX
-	ES       *es8.Client
+	ES       es.Client
 	EventBus search.ResourceEventBus
 	CacheCli cache.Cmdable
 }

@@ -5,13 +5,11 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/cloudwego/eino/schema"
-	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -31,6 +29,7 @@ import (
 	sses "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/elasticsearch"
 	ssmilvus "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/milvus"
 	hembed "code.byted.org/flow/opencoze/backend/infra/impl/embedding/http"
+	"code.byted.org/flow/opencoze/backend/infra/impl/es"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
@@ -57,7 +56,7 @@ type KnowledgeTestSuite struct {
 	spaceID int64
 
 	db      *gorm.DB
-	es      *elasticsearch.TypedClient
+	es      es.Client
 	st      storage.Storage
 	svc     *knowledgeSVC
 	eventCh chan *eventbus.Message
@@ -71,7 +70,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		rmqEndpoint = "127.0.0.1:9876"
 		embEndpoint = "http://127.0.0.1:6543"
 		// esCertPath    = os.Getenv("ES_CA_CERT_PATH")
-		esAddr = os.Getenv("ES_ADDR")
+		// esAddr = os.Getenv("ES_ADDR")
 		// esUsername    = os.Getenv("ES_USERNAME")
 		// esPassword    = os.Getenv("ES_PASSWORD")
 		milvusAddr    = os.Getenv("MILVUS_ADDR")
@@ -117,12 +116,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 	//	panic(err)
 	// }
 
-	knowledgeES, err := elasticsearch.NewTypedClient(elasticsearch.Config{
-		Addresses: strings.Split(esAddr, ";"),
-		// Username:  esUsername,
-		// Password:  esPassword,
-		// CACert:    cert,
-	})
+	knowledgeES, err := es.New()
 	if err != nil {
 		panic(err)
 	}

@@ -11,7 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
-	"code.byted.org/flow/opencoze/backend/infra/impl/es8"
+	"code.byted.org/flow/opencoze/backend/infra/impl/es"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/imagex/veimagex"
@@ -24,7 +24,7 @@ type AppDependencies struct {
 	DB                    *gorm.DB
 	CacheCli              *redis.Client
 	IDGenSVC              idgen.IDGenerator
-	ESClient              *es8.Client
+	ESClient              es.Client
 	ImageXClient          imagex.ImageX
 	TOSClient             storage.Storage
 	ResourceEventProducer eventbus.Producer
@@ -47,7 +47,7 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		return nil, err
 	}
 
-	deps.ESClient, err = es8.New()
+	deps.ESClient, err = es.New()
 	if err != nil {
 		return nil, err
 	}

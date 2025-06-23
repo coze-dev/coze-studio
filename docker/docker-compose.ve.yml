@@ -7,6 +7,7 @@ services:
     container_name: coze-rocketmq-namesrv
     privileged: true
     user: root
+    profiles: ['middleware']
     env_file: *env_file
     ports:
       - '9876:9876'
@@ -42,6 +43,7 @@ services:
     container_name: coze-rocketmq-broker
     privileged: true
     user: root
+    profiles: ['middleware']
     env_file: *env_file
     ports:
       - '10909:10909'
@@ -108,6 +110,7 @@ services:
     container_name: coze-minio
     user: root
     privileged: true
+    profiles: ['middleware']
     env_file: *env_file
     ports:
       - '9000:9000'
@@ -133,6 +136,7 @@ services:
     container_name: coze-etcd
     user: root
     privileged: true
+    profiles: ['middleware']
     env_file: *env_file
     environment:
       - ETCD_AUTO_COMPACTION_MODE=revision
@@ -168,6 +172,7 @@ services:
     image: milvusdb/milvus:v2.5.10
     user: root
     privileged: true
+    profiles: ['middleware']
     env_file: *env_file
     command: >
       bash -c "
@@ -210,6 +215,7 @@ services:
     image: alpine/curl:8.12.1
     container_name: coze-elasticsearch-setup
     env_file: *env_file
+    profiles: ['middleware']
     volumes:
       - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh
       - ./volumes/elasticsearch/es_index_schema:/es_index_schema
@@ -227,6 +233,7 @@ services:
     image: minio/mc
     container_name: coze-minio-setup
     env_file: *env_file
+    profiles: ['middleware']
     depends_on:
       minio:
         condition: service_healthy
@@ -246,6 +253,7 @@ services:
     image: mysql:8.4.5
     container_name: coze-mysql-setup-init-sql
     env_file: *env_file
+    profiles: ['middleware']
     command:
       - /bin/sh
       - -c

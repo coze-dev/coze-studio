@@ -9,8 +9,9 @@ VENV_DIR="$BIN_DIR/.venv"
 
 echo "Checking for Python virtual environment under $BIN_DIR"
 
-if [ ! -d "$VENV_DIR" ]; then
-    echo "No virtual environment found. Creating virtual environment"
+if [ ! -f "$VENV_DIR/bin/activate" ]; then
+    echo "Virtual environment not found or incomplete. Re-creating..."
+    rm -rf "$VENV_DIR"
     python3 -m venv "$VENV_DIR"
 
     if [ $? -ne 0 ]; then
@@ -31,7 +32,6 @@ pip install pillow pdfplumber RestrictedPython python-docx
 if [ $? -ne 0 ]; then
     echo "Failed to install Python packages - aborting startup"
     deactivate
-    rm -rf "$VENV_DIR"
     exit 1
 fi
 

@@ -4,18 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/elastic/go-elasticsearch/v8/typedapi/indices/create"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/indices/delete"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/indices/exists"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
-
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
-	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
+	"code.byted.org/flow/opencoze/backend/infra/contract/es"
 )
 
 type ManagerConfig struct {
-	Client *es8.Client
+	Client es.Client
 }
 
 func NewManager(config *ManagerConfig) searchstore.Manager {
@@ -29,7 +24,7 @@ type esManager struct {
 func (e *esManager) Create(ctx context.Context, req *searchstore.CreateRequest) error {
 	cli := e.config.Client
 	index := req.CollectionName
-	indexExists, err := exists.NewExistsFunc(cli)(index).Do(ctx)
+	indexExists, err := cli.Exists(ctx, index)
 	if err != nil {
 		return err
 	}
@@ -37,7 +32,7 @@ func (e *esManager) Create(ctx context.Context, req *searchstore.CreateRequest) 
 		return nil
 	}
 
-	properties := make(map[string]types.Property)
+	properties := make(map[string]any)
 	var foundID, foundCreatorID, foundTextContent bool
 	for _, field := range req.Fields {
 		switch field.Name {
@@ -51,12 +46,12 @@ func (e *esManager) Create(ctx context.Context, req *searchstore.CreateRequest) 
 
 		}
 
-		var property types.Property
+		var property any
 		switch field.Type {
 		case searchstore.FieldTypeInt64:
-			property = types.NewLongNumberProperty()
+			property = cli.Types().NewLongNumberProperty()
 		case searchstore.FieldTypeText:
-			property = types.NewTextProperty()
+			property = cli.Types().NewTextProperty()
 		default:
 			return fmt.Errorf("[Create] es unsupported field type: %d", field.Type)
 		}
@@ -65,20 +60,17 @@ func (e *esManager) Create(ctx context.Context, req *searchstore.CreateRequest) 
 	}
 
 	if !foundID {
-		properties[searchstore.FieldID] = types.NewLongNumberProperty()
+		properties[searchstore.FieldID] = cli.Types().NewLongNumberProperty()
 	}
 	if !foundCreatorID {
-		properties[searchstore.FieldCreatorID] = types.NewUnsignedLongNumberProperty()
+		properties[searchstore.FieldCreatorID] = cli.Types().NewUnsignedLongNumberProperty()
 	}
 	if !foundTextContent {
-		properties[searchstore.FieldTextContent] = types.NewTextProperty()
+		properties[searchstore.FieldTextContent] = cli.Types().NewTextProperty()
 	}
 
-	if _, err = create.NewCreateFunc(cli)(index).Request(&create.Request{
-		Mappings: &types.TypeMapping{
-			Properties: properties,
-		},
-	}).Do(ctx); err != nil {
+	err = cli.CreateIndex(ctx, index, properties)
+	if err != nil {
 		return err
 	}
 
@@ -88,8 +80,8 @@ func (e *esManager) Create(ctx context.Context, req *searchstore.CreateRequest) 
 func (e *esManager) Drop(ctx context.Context, req *searchstore.DropRequest) error {
 	cli := e.config.Client
 	index := req.CollectionName
-	_, err := delete.NewDeleteFunc(cli)(index).IgnoreUnavailable(true).Do(ctx)
-	return err
+
+	return cli.DeleteIndex(ctx, index)
 }
 
 func (e *esManager) GetType() searchstore.SearchStoreType {
