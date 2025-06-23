@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -14,7 +13,6 @@ type UpdateConfig struct {
 	DatabaseInfoID int64
 	ClauseGroup    *database.ClauseGroup
 	OutputConfig   map[string]*vo.TypeInfo
-	InputTimeTypes map[string]*vo.TypeInfo
 	Updater        database.DatabaseOperator
 }
 
@@ -54,11 +52,7 @@ func (u *Update) Update(ctx context.Context, in map[string]any) (map[string]any,
 	fields := make(map[string]any)
 
 	for key, value := range inventory.Fields {
-		if _, ok := u.config.InputTimeTypes[key]; ok {
-			fields[key] = value.(time.Time).Format(time.DateTime)
-		} else {
-			fields[key] = value
-		}
+		fields[key] = value
 	}
 
 	req := &database.UpdateRequest{

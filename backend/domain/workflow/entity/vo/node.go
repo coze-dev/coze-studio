@@ -2,7 +2,6 @@ package vo
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
@@ -61,17 +60,6 @@ const (
 	DataTypeFile    DataType = "file"    // string (url)
 )
 
-func toInt64(v any) (any, bool) {
-	switch val := v.(type) {
-	case int64:
-		return val, true
-	case float64:
-		return int64(val), true
-	default:
-		return nil, false
-	}
-}
-
 // Zero creates a zero value
 func (t *TypeInfo) Zero() any {
 	switch t.Type {
@@ -84,7 +72,7 @@ func (t *TypeInfo) Zero() any {
 	case DataTypeBoolean:
 		return false
 	case DataTypeTime:
-		return time.Time{}
+		return ""
 	case DataTypeObject:
 		var m map[string]any
 		return m

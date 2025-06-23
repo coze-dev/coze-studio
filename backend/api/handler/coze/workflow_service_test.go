@@ -1170,7 +1170,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 		userInput := map[string]any{
 			"input": "user input",
 			"obj": map[string]any{
-				"field1": []string{"1", "2"},
+				"field1": []any{"1", "2"},
 			},
 		}
 		userInputStr, err := sonic.MarshalString(userInput)
@@ -1224,7 +1224,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 			assert.Equal(t, map[string]any{
 				"input":    "user input",
 				"inputArr": nil,
-				"field1":   []any{"1", "2"},
+				"field1":   `["1","2"]`,
 			}, mustUnmarshalToMap(t, e.output))
 		})
 
@@ -1242,7 +1242,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 				"input":    "user input",
 				"inputArr": nil,
 				"obj": map[string]any{
-					"field1": []any{"1", "2"},
+					"field1": `["1","2"]`,
 				},
 			}, mustUnmarshalToMap(t, e2.output))
 

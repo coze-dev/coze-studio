@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/cloudwego/eino/compose"
 
@@ -16,7 +15,6 @@ import (
 type InsertConfig struct {
 	DatabaseInfoID int64
 	OutputConfig   map[string]*vo.TypeInfo
-	InputTimeTypes map[string]*vo.TypeInfo
 	Inserter       database.DatabaseOperator
 }
 
@@ -49,11 +47,7 @@ func (is *Insert) Insert(ctx context.Context, input map[string]any) (map[string]
 
 	fields := make(map[string]any)
 	for key, value := range fs.(map[string]any) {
-		if _, ok := is.config.InputTimeTypes[key]; ok {
-			fields[key] = value.(time.Time).Format(time.DateTime)
-		} else {
-			fields[key] = value
-		}
+		fields[key] = value
 	}
 
 	req := &database.InsertRequest{
