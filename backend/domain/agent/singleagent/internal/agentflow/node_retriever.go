@@ -2,7 +2,9 @@ package agentflow
 
 import (
 	"context"
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/cloudwego/eino/schema"
 
@@ -60,6 +62,17 @@ func (r *knowledgeRetriever) Retrieve(ctx context.Context, req *AgentRequest) ([
 	}
 
 	return docs, nil
+}
+
+func (r *knowledgeRetriever) PackRetrieveResultInfo(ctx context.Context, docs []*schema.Document) (string, error) {
+	packedRes := strings.Builder{}
+	for idx, doc := range docs {
+		if doc == nil {
+			continue
+		}
+		packedRes.WriteString(fmt.Sprintf("---\nrecall slice %d: %s\n", idx+1, doc.Content))
+	}
+	return packedRes.String(), nil
 }
 
 func genKnowledgeRequest(_ context.Context, ids []int64, conf *bot_common.Knowledge,

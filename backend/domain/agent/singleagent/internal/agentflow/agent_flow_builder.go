@@ -27,13 +27,14 @@ type Config struct {
 }
 
 const (
-	keyOfPersonRender       = "persona_render"
-	keyOfKnowledgeRetriever = "knowledge_retriever"
-	keyOfPromptVariables    = "prompt_variables"
-	keyOfPromptTemplate     = "prompt_template"
-	keyOfReActAgent         = "react_agent"
-	keyOfLLM                = "llm"
-	keyOfToolsPreRetriever  = "tools_pre_retriever"
+	keyOfPersonRender           = "persona_render"
+	keyOfKnowledgeRetriever     = "knowledge_retriever"
+	keyOfKnowledgeRetrieverPack = "knowledge_retriever_pack"
+	keyOfPromptVariables        = "prompt_variables"
+	keyOfPromptTemplate         = "prompt_template"
+	keyOfReActAgent             = "react_agent"
+	keyOfLLM                    = "llm"
+	keyOfToolsPreRetriever      = "tools_pre_retriever"
 )
 
 func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
@@ -183,7 +184,6 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	_ = g.AddLambdaNode(keyOfKnowledgeRetriever,
 		compose.InvokableLambda[*AgentRequest, []*schema.Document](kr.Retrieve),
-		compose.WithOutputKey(placeholderOfKnowledge),
 		compose.WithNodeName(keyOfKnowledgeRetriever))
 
 	_ = g.AddLambdaNode(keyOfToolsPreRetriever,
@@ -191,7 +191,10 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		compose.WithOutputKey(keyOfToolsPreRetriever),
 		compose.WithNodeName(keyOfToolsPreRetriever),
 	)
-
+	_ = g.AddLambdaNode(keyOfKnowledgeRetrieverPack,
+		compose.InvokableLambda[[]*schema.Document, string](kr.PackRetrieveResultInfo),
+		compose.WithOutputKey(placeholderOfKnowledge),
+	)
 	_ = g.AddChatTemplateNode(keyOfPromptTemplate, chatPrompt)
 
 	agentNodeOpts = append(agentNodeOpts, compose.WithNodeName(agentNodeName))
@@ -219,7 +222,8 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	_ = g.AddEdge(keyOfPersonRender, keyOfPromptTemplate)
 	_ = g.AddEdge(keyOfPromptVariables, keyOfPromptTemplate)
-	_ = g.AddEdge(keyOfKnowledgeRetriever, keyOfPromptTemplate)
+	_ = g.AddEdge(keyOfKnowledgeRetriever, keyOfKnowledgeRetrieverPack)
+	_ = g.AddEdge(keyOfKnowledgeRetrieverPack, keyOfPromptTemplate)
 	_ = g.AddEdge(keyOfToolsPreRetriever, keyOfPromptTemplate)
 
 	_ = g.AddEdge(keyOfPromptTemplate, agentNodeName)
@@ -234,7 +238,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	var opts []compose.GraphCompileOption
 	if requireCheckpoint {
-		opts = append(opts, compose.WithCheckPointStore(conf.CPStore))
+		opts = append(opts, compose.WithCheckPointStore(conf.CPStore), compose.WithNodeTriggerMode(compose.AllPredecessor))
 	}
 
 	runner, err := g.Compile(ctx, opts...)
