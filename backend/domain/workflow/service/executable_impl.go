@@ -241,12 +241,12 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
 	}
 
-	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, c)
+	workflowSC, err := adaptor.WorkflowSchemaFromNode(ctx, c, nodeID)
 	if err != nil {
 		return 0, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
-	wf, newSC, err := compose.NewWorkflowFromNode(ctx, workflowSC, vo.NodeKey(nodeID), einoCompose.WithGraphName(fmt.Sprintf("%d", wfEntity.ID)))
+	wf, err := compose.NewWorkflowFromNode(ctx, workflowSC, vo.NodeKey(nodeID), einoCompose.WithGraphName(fmt.Sprintf("%d", wfEntity.ID)))
 	if err != nil {
 		return 0, fmt.Errorf("failed to create workflow: %w", err)
 	}
@@ -267,7 +267,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 		return 0, err
 	}
 
-	cancelCtx, executeID, opts, _, err := compose.NewWorkflowRunner(wfEntity.GetBasic(), newSC, config,
+	cancelCtx, executeID, opts, _, err := compose.NewWorkflowRunner(wfEntity.GetBasic(), workflowSC, config,
 		compose.WithInput(inStr)).Prepare(ctx)
 	if err != nil {
 		return 0, err
@@ -609,11 +609,6 @@ func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, confi
 		return err
 	}
 
-	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, &canvas)
-	if err != nil {
-		return fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
-	}
-
 	config.From = from
 	config.Version = wfExe.Version
 	config.AppID = wfExe.AppID
@@ -642,7 +637,12 @@ func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, confi
 			}
 		}
 
-		wf, newSC, err := compose.NewWorkflowFromNode(ctx, workflowSC, vo.NodeKey(nodeID),
+		workflowSC, err := adaptor.WorkflowSchemaFromNode(ctx, &canvas, nodeID)
+		if err != nil {
+			return fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
+		}
+
+		wf, err := compose.NewWorkflowFromNode(ctx, workflowSC, vo.NodeKey(nodeID),
 			einoCompose.WithGraphName(fmt.Sprintf("%d", wfExe.WorkflowID)))
 		if err != nil {
 			return fmt.Errorf("failed to create workflow: %w", err)
@@ -651,13 +651,18 @@ func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, confi
 		config.Mode = vo.ExecuteModeNodeDebug
 
 		cancelCtx, _, opts, _, err := compose.NewWorkflowRunner(
-			wfEntity.GetBasic(), newSC, config, compose.WithResumeReq(req)).Prepare(ctx)
+			wfEntity.GetBasic(), workflowSC, config, compose.WithResumeReq(req)).Prepare(ctx)
 		if err != nil {
 			return err
 		}
 
 		wf.AsyncRun(cancelCtx, nil, opts...)
 		return nil
+	}
+
+	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, &canvas)
+	if err != nil {
+		return fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
 	var wfOpts []compose.WorkflowOption

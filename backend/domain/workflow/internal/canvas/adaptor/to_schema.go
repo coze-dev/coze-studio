@@ -222,7 +222,7 @@ func NodeToNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, m
 			return nil, nil, err
 		}
 
-		if ns.MetaConfigs, err = toMetaConfig(n, ns.Type); err != nil {
+		if ns.ExceptionConfigs, err = toMetaConfig(n, ns.Type); err != nil {
 			return nil, nil, err
 		}
 
@@ -239,7 +239,7 @@ func NodeToNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, m
 		if err != nil {
 			return nil, nil, err
 		}
-		if ns.MetaConfigs, err = toMetaConfig(n, ns.Type); err != nil {
+		if ns.ExceptionConfigs, err = toMetaConfig(n, ns.Type); err != nil {
 			return nil, nil, err
 		}
 		return []*compose.NodeSchema{ns}, nil, nil
@@ -270,7 +270,7 @@ func EdgeToConnection(e *vo.Edge) *compose.Connection {
 	return conn
 }
 
-func toMetaConfig(n *vo.Node, nType entity.NodeType) (*compose.MetaConfig, error) {
+func toMetaConfig(n *vo.Node, nType entity.NodeType) (*compose.ExceptionConfig, error) {
 	nodeMeta := entity.NodeMetaByNodeType(nType)
 
 	var settingOnErr *vo.SettingOnError
@@ -284,12 +284,12 @@ func toMetaConfig(n *vo.Node, nType entity.NodeType) (*compose.MetaConfig, error
 		return nil, nil
 	}
 
-	metaConf := &compose.MetaConfig{
+	metaConf := &compose.ExceptionConfig{
 		TimeoutMS: nodeMeta.DefaultTimeoutMS,
 	}
 
 	if settingOnErr != nil {
-		metaConf = &compose.MetaConfig{
+		metaConf = &compose.ExceptionConfig{
 			TimeoutMS:   settingOnErr.TimeoutMs,
 			MaxRetry:    settingOnErr.RetryTimes,
 			DataOnErr:   settingOnErr.DataOnErr,
@@ -352,8 +352,14 @@ func toExitNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 
 	if streamingOutput {
 		ns.SetConfigKV("Mode", nodes.Streaming)
+		ns.StreamConfigs = &compose.StreamConfig{
+			RequireStreamingInput: true,
+		}
 	} else {
 		ns.SetConfigKV("Mode", nodes.NonStreaming)
+		ns.StreamConfigs = &compose.StreamConfig{
+			RequireStreamingInput: false,
+		}
 	}
 
 	if content != nil {
@@ -389,8 +395,14 @@ func toOutputEmitterNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 
 	if streamingOutput {
 		ns.SetConfigKV("Mode", nodes.Streaming)
+		ns.StreamConfigs = &compose.StreamConfig{
+			RequireStreamingInput: true,
+		}
 	} else {
 		ns.SetConfigKV("Mode", nodes.NonStreaming)
+		ns.StreamConfigs = &compose.StreamConfig{
+			RequireStreamingInput: false,
+		}
 	}
 
 	if content != nil {
@@ -467,6 +479,36 @@ func toLLMNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 
 	if err = SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
+	}
+
+	if resFormat == llm.FormatJSON {
+		if len(ns.OutputTypes) == 1 {
+			for _, v := range ns.OutputTypes {
+				if v.Type == vo.DataTypeString {
+					resFormat = llm.FormatText
+					break
+				}
+			}
+		} else if len(ns.OutputTypes) == 2 {
+			if _, ok := ns.OutputTypes[llm.ReasoningOutputKey]; ok {
+				for k, v := range ns.OutputTypes {
+					if k != llm.ReasoningOutputKey && v.Type == vo.DataTypeString {
+						resFormat = llm.FormatText
+						break
+					}
+				}
+			}
+		}
+	}
+
+	if resFormat == llm.FormatJSON {
+		ns.StreamConfigs = &compose.StreamConfig{
+			CanGeneratesStream: false,
+		}
+	} else {
+		ns.StreamConfigs = &compose.StreamConfig{
+			CanGeneratesStream: true,
+		}
 	}
 
 	if n.Data.Inputs.FCParam != nil {
@@ -767,6 +809,7 @@ func toLoopNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, m
 	)
 
 	for _, childN := range n.Blocks {
+		childN.SetParent(n)
 		childNS, _, err := NodeToNodeSchema(ctx, childN)
 		if err != nil {
 			return nil, nil, err
@@ -822,7 +865,7 @@ func toLoopNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, m
 		ns.AddInputSource(sources...)
 	}
 
-	if ns.MetaConfigs, err = toMetaConfig(n, entity.NodeTypeLoop); err != nil {
+	if ns.ExceptionConfigs, err = toMetaConfig(n, entity.NodeTypeLoop); err != nil {
 		return nil, nil, err
 	}
 
@@ -848,6 +891,7 @@ func toBatchNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, 
 	)
 
 	for _, childN := range n.Blocks {
+		childN.SetParent(n)
 		childNS, _, err := NodeToNodeSchema(ctx, childN)
 		if err != nil {
 			return nil, nil, err
@@ -887,7 +931,7 @@ func toBatchNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, 
 		return nil, nil, err
 	}
 
-	if ns.MetaConfigs, err = toMetaConfig(n, entity.NodeTypeBatch); err != nil {
+	if ns.ExceptionConfigs, err = toMetaConfig(n, entity.NodeTypeBatch); err != nil {
 		return nil, nil, err
 	}
 
@@ -1625,7 +1669,14 @@ func toVariableAggregatorSchema(n *vo.Node) (*compose.NodeSchema, error) {
 		groupToLen[group.Name] = length
 	}
 
+	groupOrder := make([]string, 0, len(groupToLen))
+	for i := range inputs.VariableAggregator.MergeGroups {
+		group := inputs.VariableAggregator.MergeGroups[i]
+		groupOrder = append(groupOrder, group.Name)
+	}
+
 	ns.SetConfigKV("GroupToLen", groupToLen)
+	ns.SetConfigKV("GroupOrder", groupOrder)
 
 	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err

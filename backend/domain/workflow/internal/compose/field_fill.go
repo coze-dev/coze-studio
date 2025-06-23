@@ -6,6 +6,8 @@ import (
 	"maps"
 	"slices"
 
+	"github.com/cloudwego/eino/schema"
+
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
@@ -26,7 +28,7 @@ func (s *NodeSchema) outputValueFiller() func(ctx context.Context, output map[st
 		}
 
 		for k, tInfo := range s.OutputTypes {
-			if err := fillIfNotRequired(tInfo, newOutput, k, fillNil); err != nil {
+			if err := FillIfNotRequired(tInfo, newOutput, k, FillNil); err != nil {
 				return nil, err
 			}
 		}
@@ -51,7 +53,7 @@ func (s *NodeSchema) inputValueFiller() func(ctx context.Context, input map[stri
 		}
 
 		for k, tInfo := range s.InputTypes {
-			if err := fillIfNotRequired(tInfo, newInput, k, fillZero); err != nil {
+			if err := FillIfNotRequired(tInfo, newInput, k, FillZero); err != nil {
 				return nil, err
 			}
 		}
@@ -60,18 +62,42 @@ func (s *NodeSchema) inputValueFiller() func(ctx context.Context, input map[stri
 	}
 }
 
-type fillStrategy string
+func (s *NodeSchema) streamInputValueFiller() func(ctx context.Context,
+	input *schema.StreamReader[map[string]any]) *schema.StreamReader[map[string]any] {
+	fn := func(ctx context.Context, i map[string]any) (map[string]any, error) {
+		newI := make(map[string]any)
+		for k := range i {
+			newI[k] = i[k]
+		}
+
+		for k, tInfo := range s.InputTypes {
+			if err := replaceNilWithZero(tInfo, newI, k); err != nil {
+				return nil, err
+			}
+		}
+
+		return newI, nil
+	}
+
+	return func(ctx context.Context, input *schema.StreamReader[map[string]any]) *schema.StreamReader[map[string]any] {
+		return schema.StreamReaderWithConvert(input, func(in map[string]any) (map[string]any, error) {
+			return fn(ctx, in)
+		})
+	}
+}
+
+type FillStrategy string
 
 const (
-	fillZero fillStrategy = "zero"
-	fillNil  fillStrategy = "nil"
+	FillZero FillStrategy = "zero"
+	FillNil  FillStrategy = "nil"
 )
 
-func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, strategy fillStrategy) error {
+func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, strategy FillStrategy) error {
 	v, ok := container[k]
 	if ok {
 		if len(tInfo.Properties) == 0 {
-			if v == nil && strategy == fillZero {
+			if v == nil && strategy == FillZero {
 				v = tInfo.Zero()
 				container[k] = v
 				return nil
@@ -96,7 +122,7 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 				container[k] = copiedVal
 				for i := range copiedVal {
 					if copiedVal[i] == nil {
-						if strategy == fillZero {
+						if strategy == FillZero {
 							copiedVal[i] = elemTInfo.Zero()
 							continue
 						}
@@ -111,7 +137,7 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 						newSubContainer := maps.Clone(subContainer)
 
 						for subK, subL := range elemTInfo.Properties {
-							if err := fillIfNotRequired(subL, newSubContainer, subK, strategy); err != nil {
+							if err := FillIfNotRequired(subL, newSubContainer, subK, strategy); err != nil {
 								return err
 							}
 						}
@@ -142,7 +168,7 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 
 			newSubContainer := maps.Clone(subContainer)
 			for subK, subT := range tInfo.Properties {
-				if err := fillIfNotRequired(subT, newSubContainer, subK, strategy); err != nil {
+				if err := FillIfNotRequired(subT, newSubContainer, subK, strategy); err != nil {
 					return err
 				}
 			}
@@ -154,7 +180,7 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 			return fmt.Errorf("output field %s is required but not present", k)
 		} else {
 			var z any
-			if strategy == fillZero {
+			if strategy == FillZero {
 				z = tInfo.Zero()
 			}
 
@@ -165,12 +191,99 @@ func fillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 				container[k] = z
 				subContainer := z.(map[string]any)
 				for subK, subL := range tInfo.Properties {
-					if err := fillIfNotRequired(subL, subContainer, subK, strategy); err != nil {
+					if err := FillIfNotRequired(subL, subContainer, subK, strategy); err != nil {
 						return err
 					}
 				}
 			}
 		}
+	}
+
+	return nil
+}
+
+func replaceNilWithZero(tInfo *vo.TypeInfo, container map[string]any, k string) error {
+	v, ok := container[k]
+	if !ok {
+		return nil
+	}
+
+	if len(tInfo.Properties) == 0 {
+		if v == nil {
+			v = tInfo.Zero()
+			container[k] = v
+			return nil
+		}
+
+		if tInfo.Type == vo.DataTypeArray {
+			val, ok := v.([]any)
+			if !ok {
+				valStr, ok := v.(string)
+				if ok {
+					err := sonic.UnmarshalString(valStr, &val)
+					if err != nil {
+						return err
+					}
+					container[k] = val
+				} else {
+					return fmt.Errorf("layer field %s is not a []any or string", k)
+				}
+			}
+			elemTInfo := tInfo.ElemTypeInfo
+			copiedVal := slices.Clone(val)
+			container[k] = copiedVal
+			for i := range copiedVal {
+				if copiedVal[i] == nil {
+					copiedVal[i] = elemTInfo.Zero()
+					continue
+				}
+
+				if len(elemTInfo.Properties) > 0 {
+					subContainer, ok := copiedVal[i].(map[string]any)
+					if !ok {
+						return fmt.Errorf("map item under array %s is not map[string]any", k)
+					}
+
+					newSubContainer := maps.Clone(subContainer)
+
+					for subK, subL := range elemTInfo.Properties {
+						if err := replaceNilWithZero(subL, newSubContainer, subK); err != nil {
+							return err
+						}
+					}
+
+					copiedVal[i] = newSubContainer
+				}
+			}
+		}
+	} else {
+		if v == nil {
+			return nil
+		}
+		// recursively handle the layered object.
+		subContainer, ok := v.(map[string]any)
+		if !ok {
+			subContainerStr, ok := v.(string)
+			if ok {
+				subContainer = make(map[string]any)
+				err := sonic.UnmarshalString(subContainerStr, &subContainer)
+				if err != nil {
+					return err
+				}
+				container[k] = subContainer
+			} else {
+				return fmt.Errorf("layer field %s is not a map[string]any or string", k)
+			}
+		}
+
+		newSubContainer := maps.Clone(subContainer)
+		for subK, subT := range tInfo.Properties {
+			if err := replaceNilWithZero(subT, newSubContainer, subK); err != nil {
+				return err
+			}
+		}
+
+		container[k] = newSubContainer
 	}
 
 	return nil

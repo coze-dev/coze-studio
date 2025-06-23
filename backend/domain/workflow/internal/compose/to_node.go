@@ -71,7 +71,7 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 		return nil, err
 	}
 
-	metaConfigs := s.MetaConfigs
+	metaConfigs := s.ExceptionConfigs
 	if metaConfigs != nil && metaConfigs.MaxRetry > 0 {
 		backupModelParams := getKeyOrZero[*model.LLMParams]("BackupLLMParams", s.Configs)
 		if backupModelParams != nil {
@@ -321,6 +321,7 @@ func (s *NodeSchema) ToVariableAggregatorConfig() (*variableaggregator.Config, e
 		FullSources:   getKeyOrZero[map[string]*nodes.SourceInfo]("FullSources", s.Configs),
 		NodeKey:       s.Key,
 		InputSources:  s.InputSources,
+		GroupOrder:    mustGetKey[[]string]("GroupOrder", s.Configs),
 	}, nil
 }
 
@@ -359,10 +360,11 @@ func (s *NodeSchema) variableAggregatorStreamInputConverter(in *schema.StreamRea
 
 func (s *NodeSchema) ToTextProcessorConfig() (*textprocessor.Config, error) {
 	return &textprocessor.Config{
-		Type:       s.Configs.(map[string]any)["Type"].(textprocessor.Type),
-		Tpl:        getKeyOrZero[string]("Tpl", s.Configs.(map[string]any)),
-		ConcatChar: getKeyOrZero[string]("ConcatChar", s.Configs.(map[string]any)),
-		Separators: getKeyOrZero[[]string]("Separators", s.Configs.(map[string]any)),
+		Type:        s.Configs.(map[string]any)["Type"].(textprocessor.Type),
+		Tpl:         getKeyOrZero[string]("Tpl", s.Configs.(map[string]any)),
+		ConcatChar:  getKeyOrZero[string]("ConcatChar", s.Configs.(map[string]any)),
+		Separators:  getKeyOrZero[[]string]("Separators", s.Configs.(map[string]any)),
+		FullSources: getKeyOrZero[map[string]*nodes.SourceInfo]("FullSources", s.Configs),
 	}, nil
 }
 
@@ -401,6 +403,10 @@ func (s *NodeSchema) ToLoopConfig(inner compose.Runnable[map[string]any, map[str
 
 	for key, tInfo := range s.InputTypes {
 		if tInfo.Type != vo.DataTypeArray {
+			continue
+		}
+
+		if _, ok := conf.IntermediateVars[key]; ok { // exclude arrays in intermediate vars
 			continue
 		}
 

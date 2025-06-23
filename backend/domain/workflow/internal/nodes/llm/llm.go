@@ -63,7 +63,7 @@ Strictly reply in valid Markdown format.
 )
 
 const (
-	reasoningOutputKey = "reasoning_content"
+	ReasoningOutputKey = "reasoning_content"
 )
 
 const knowledgeUserPromptTemplate = `根据引用的内容回答问题: 
@@ -234,9 +234,9 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 				}
 			}
 		} else if len(cfg.OutputFields) == 2 {
-			if _, ok := cfg.OutputFields[reasoningOutputKey]; ok {
+			if _, ok := cfg.OutputFields[ReasoningOutputKey]; ok {
 				for k, v := range cfg.OutputFields {
-					if k != reasoningOutputKey && v.Type == vo.DataTypeString {
+					if k != ReasoningOutputKey && v.Type == vo.DataTypeString {
 						format = FormatText
 						break
 					}
@@ -341,7 +341,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 				panic("impossible")
 			}
 
-			if k == reasoningOutputKey {
+			if k == ReasoningOutputKey {
 				hasReasoning = true
 			} else {
 				outputKey = k
@@ -351,7 +351,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 		iConvert := func(_ context.Context, msg *schema.Message, _ ...struct{}) (map[string]any, error) {
 			out := map[string]any{outputKey: msg.Content}
 			if hasReasoning {
-				out[reasoningOutputKey] = getReasoningContent(msg)
+				out[ReasoningOutputKey] = getReasoningContent(msg)
 			}
 			return out, nil
 		}
@@ -380,7 +380,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 					if hasReasoning {
 						reasoning := getReasoningContent(msg)
 						if len(reasoning) > 0 {
-							sw.Send(map[string]any{reasoningOutputKey: reasoning}, nil)
+							sw.Send(map[string]any{ReasoningOutputKey: reasoning}, nil)
 						}
 					}
 
@@ -388,7 +388,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 						if !reasoningDone && hasReasoning {
 							reasoningDone = true
 							sw.Send(map[string]any{
-								reasoningOutputKey: nodes.KeyIsFinished,
+								ReasoningOutputKey: nodes.KeyIsFinished,
 							}, nil)
 						}
 						sw.Send(map[string]any{outputKey: msg.Content}, nil)

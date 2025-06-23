@@ -27,6 +27,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -513,7 +514,9 @@ func getProcess(t *testing.T, h *server.Hertz, idStr string, exeID string) *work
 	w := ut.PerformRequest(h.Engine, "GET", fmt.Sprintf("/api/workflow_api/get_process?workflow_id=%s&space_id=%s&execute_id=%s", getProcessReq.WorkflowID, getProcessReq.SpaceID, *getProcessReq.ExecuteID), nil,
 		ut.Header{Key: "Content-Type", Value: "application/json"})
 	res := w.Result()
-	assert.Equal(t, http.StatusOK, res.StatusCode())
+	if res.StatusCode() != http.StatusOK {
+		t.Fatalf("unexpected status code: %d, body: %s", res.StatusCode(), string(res.Body()))
+	}
 	getProcessResp := &workflow.GetWorkflowProcessResponse{}
 	err := sonic.Unmarshal(res.Body(), getProcessResp)
 	assert.NoError(t, err)
@@ -984,7 +987,7 @@ func TestTestRunAndGetProcess(t *testing.T) {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 
-		r.appVarS.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(1.0, nil).AnyTimes()
+		r.appVarS.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return("1.0", nil).AnyTimes()
 
 		id := r.load("entry_exit.json")
 		input := map[string]string{
@@ -1019,12 +1022,12 @@ func TestTestRunAndGetProcess(t *testing.T) {
 			mockey.PatchConvey("openapi async run", func() {
 				exeID := r.openapiAsyncRun(id, input)
 				e := r.getProcess(id, exeID)
-				assert.Equal(t, "1.0_['1234', '5678']", e.output)
+				assert.Equal(t, "1.0_[\"1234\",\"5678\"]", e.output)
 			})
 
 			mockey.PatchConvey("openapi sync run", func() {
 				output, exeID := r.openapiSyncRun(id, input)
-				assert.Equal(t, "1.0_['1234', '5678']", output["data"])
+				assert.Equal(t, "1.0_[\"1234\",\"5678\"]", output["data"])
 				his := r.getOpenAPIProcess(id, exeID)
 				assert.Equal(t, exeID, fmt.Sprintf("%d", *his.Data[0].ExecuteID))
 				assert.Equal(t, workflow.WorkflowRunMode_Sync, *his.Data[0].RunMode)
@@ -1147,8 +1150,11 @@ func TestValidateTree(t *testing.T) {
 		t.Run("invalid_input_parameter", func(t *testing.T) {
 			errs := r.validateTree("validate/invalid_input_parameter.json")
 			assert.Equal(t, len(errs[0]), 2)
-			assert.Equal(t, errs[0][0].Message, `it only allow include number or alphabet and begin with alphabet, but it's "123"`)
-			assert.Equal(t, errs[0][1].Message, `ref block 'output' format error, not found [blockID]`)
+			msgs := slices.Transform(errs[0], func(item *workflow.ValidateErrorData) string {
+				return item.Message
+			})
+			assert.Contains(t, msgs, `it only allow include number or alphabet and begin with alphabet, but it's "123"`)
+			assert.Contains(t, msgs, `ref block 'output' format error, not found [blockID]`)
 		})
 
 	})
@@ -1526,7 +1532,7 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 
 		e3 := r.getProcess(topID, exeID, withPreviousEventID(e2.event.ID))
 		e3.assertSuccess()
-		assert.Equal(t, "I don't know.\nI don't know too.\nb\n['new_a_more info 1', 'new_b_more info 2']", e3.output)
+		assert.Equal(t, "I don't know.\nI don't know too.\nb\n[\"new_a_more info 1\",\"new_b_more info 2\"]", e3.output)
 
 		e3.tokenEqual(3, 23)
 
@@ -2378,7 +2384,7 @@ func TestAggregateStreamVariables(t *testing.T) {
 		})
 		e := r.getProcess(id, exeID)
 		e.assertSuccess()
-		assert.Equal(t, "I won't tell you.\nI won't tell you.\n{'Group1': 'I won't tell you.', 'input': 'I've got an important question'}", e.output)
+		assert.Equal(t, "I won't tell you.\nI won't tell you.\n{\"Group1\":\"I won't tell you.\",\"input\":\"I've got an important question\"}", e.output)
 
 		defer r.runServer()()
 
@@ -3049,7 +3055,8 @@ func TestStreamRun(t *testing.T) {
 				exeID := strings.TrimPrefix(strings.Split(*debugURL, "&")[0], "https://www.coze.cn/work_flow?execute_id=")
 				expectedEvents[index].Data.DebugURL = ptr.Of(strings.ReplaceAll(*debugURL, "{{exeID}}", exeID))
 			}
-			assert.Equal(t, expectedEvents[index], expectedE{
+			require.Equal(t, expectedEvents[index].Data.Content, streamE.Content)
+			require.Equal(t, expectedEvents[index], expectedE{
 				ID:    e.ID,
 				Event: appworkflow.StreamRunEventType(e.Type),
 				Data:  &streamE,
@@ -3838,7 +3845,7 @@ func TestCodeExceptionBranch(t *testing.T) {
 			e.assertSuccess()
 			assert.Equal(t, map[string]any{
 				"output":  false,
-				"output1": "code result: False",
+				"output1": "code result: false",
 			}, mustUnmarshalToMap(t, e.output))
 		})
 

@@ -56,9 +56,38 @@ func (c *Clause) Resolve() (bool, error) {
 		leftV, rightV = alignNumberTypes(leftV, rightV, leftT, rightT)
 		return leftV != rightV, nil
 	case OperatorEmpty:
-		return leftV == nil, nil
+		if leftV == nil {
+			return true, nil
+		}
+
+		if leftArray, ok := leftV.([]any); ok {
+			return len(leftArray) == 0, nil
+		}
+
+		if leftObj, ok := leftV.(map[string]any); ok {
+			return len(leftObj) == 0, nil
+		}
+
+		if leftStr, ok := leftV.(string); ok {
+			return len(leftStr) == 0 || leftStr == "None", nil
+		}
+
+		if leftInt, ok := leftV.(int64); ok {
+			return leftInt == 0, nil
+		}
+
+		if leftFloat, ok := leftV.(float64); ok {
+			return leftFloat == 0, nil
+		}
+
+		if leftBool, ok := leftV.(bool); ok {
+			return !leftBool, nil
+		}
+
+		return false, nil
 	case OperatorNotEmpty:
-		return leftV != nil, nil
+		empty, err := (&Clause{LeftOperant: leftV, Op: OperatorEmpty}).Resolve()
+		return !empty, err
 	case OperatorGreater:
 		if leftV == nil {
 			return false, nil

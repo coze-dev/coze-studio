@@ -49,7 +49,8 @@ type NodeSchema struct {
 	OutputTypes   map[string]*vo.TypeInfo `json:"output_types,omitempty"`
 	OutputSources []*vo.FieldInfo         `json:"output_sources,omitempty"` // only applicable to composite nodes such as Batch or Loop
 
-	MetaConfigs *MetaConfig `json:"meta_configs,omitempty"` // generic configurations applicable to most nodes
+	ExceptionConfigs *ExceptionConfig `json:"exception_configs,omitempty"` // generic configurations applicable to most nodes
+	StreamConfigs    *StreamConfig    `json:"stream_configs,omitempty"`
 
 	SubWorkflowBasic  *entity.WorkflowBasic `json:"sub_workflow_basic,omitempty"`
 	SubWorkflowSchema *WorkflowSchema       `json:"sub_workflow_schema,omitempty"`
@@ -57,11 +58,20 @@ type NodeSchema struct {
 	Lambda *compose.Lambda // not serializable, used for internal test.
 }
 
-type MetaConfig struct {
+type ExceptionConfig struct {
 	TimeoutMS   int64                `json:"timeout_ms,omitempty"`   // timeout in milliseconds, 0 means no timeout
 	MaxRetry    int64                `json:"max_retry,omitempty"`    // max retry times, 0 means no retry
 	ProcessType *vo.ErrorProcessType `json:"process_type,omitempty"` // error process type, 0 means throw error
 	DataOnErr   string               `json:"data_on_err,omitempty"`  // data to return when error, effective when ProcessType==Default occurs
+}
+
+type StreamConfig struct {
+	// whether this node has the ability to produce genuine streaming output.
+	// not include nodes that only passes stream down as they receives them
+	CanGeneratesStream bool `json:"can_generates_stream,omitempty"`
+	// whether this node prioritize streaming input over none-streaming input.
+	// not include nodes that can accept both and does not have preference.
+	RequireStreamingInput bool `json:"can_process_stream,omitempty"`
 }
 
 type Node struct {
@@ -69,8 +79,8 @@ type Node struct {
 }
 
 func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]any, map[string]any],
-	sc *WorkflowSchema, streamRun bool) (*Node, error) {
-	if streamRun {
+	sc *WorkflowSchema) (*Node, error) {
+	if m := entity.NodeMetaByNodeType(s.Type); m != nil && m.InputSourceAware {
 		if err := s.SetFullSources(sc.GetAllNodes()); err != nil {
 			return nil, err
 		}

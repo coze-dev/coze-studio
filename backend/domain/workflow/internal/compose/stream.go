@@ -10,16 +10,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
-func (s *NodeSchema) RequiresStreaming() bool {
-	switch s.Type {
-	case entity.NodeTypeOutputEmitter, entity.NodeTypeExit, entity.NodeTypeSubWorkflow:
-		mode := getKeyOrZero[nodes.Mode]("Mode", s.Configs)
-		return mode == nodes.Streaming
-	default:
-		return false
-	}
-}
-
 func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema) error {
 	if len(s.InputSources) == 0 {
 		return nil
@@ -30,12 +20,21 @@ func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema) error {
 		fInfo := s.InputSources[i]
 		path := fInfo.Path
 		currentSource := fullSource
+		var (
+			tInfo    *vo.TypeInfo
+			lastPath string
+		)
 		if len(path) > 1 {
+			tInfo = s.InputTypes[path[0]]
 			for j := 0; j < len(path)-1; j++ {
+				if j > 0 {
+					tInfo = tInfo.Properties[path[j]]
+				}
 				if current, ok := currentSource[path[j]]; !ok {
 					currentSource[path[j]] = &nodes.SourceInfo{
 						IsIntermediate: true,
 						FieldType:      nodes.FieldNotStream,
+						TypeInfo:       tInfo,
 						SubSources:     make(map[string]*nodes.SourceInfo),
 					}
 				} else if !current.IsIntermediate {
@@ -44,15 +43,20 @@ func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema) error {
 
 				currentSource = currentSource[path[j]].SubSources
 			}
-		}
 
-		lastPath := path[len(path)-1]
+			lastPath = path[len(path)-1]
+			tInfo = tInfo.Properties[lastPath]
+		} else {
+			lastPath = path[0]
+			tInfo = s.InputTypes[lastPath]
+		}
 
 		// static values or variables
 		if fInfo.Source.Ref == nil || fInfo.Source.Ref.FromNodeKey == "" {
 			currentSource[lastPath] = &nodes.SourceInfo{
 				IsIntermediate: false,
 				FieldType:      nodes.FieldNotStream,
+				TypeInfo:       tInfo,
 			}
 			continue
 		}
@@ -78,6 +82,7 @@ func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema) error {
 			FieldType:      streamType,
 			FromNodeKey:    fromNodeKey,
 			FromPath:       fInfo.Source.Ref.FromPath,
+			TypeInfo:       tInfo,
 		}
 	}
 

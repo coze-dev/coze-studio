@@ -36,6 +36,7 @@ type SourceInfo struct {
 	FromNodeKey vo.NodeKey
 	// FromPath is the path of this field source within the source node. empty if the field is a static value or variable.
 	FromPath compose.FieldPath
+	TypeInfo *vo.TypeInfo
 	// SubSources are SourceInfo for keys within this intermediate Map(Object) field.
 	SubSources map[string]*SourceInfo
 }
@@ -60,6 +61,7 @@ func ResolveStreamSources(ctx context.Context, sources map[string]*SourceInfo) (
 			FieldType:      sInfo.FieldType,
 			FromNodeKey:    sInfo.FromNodeKey,
 			FromPath:       sInfo.FromPath,
+			TypeInfo:       sInfo.TypeInfo,
 		}
 
 		if len(sInfo.SubSources) > 0 {
@@ -116,6 +118,7 @@ func ResolveStreamSources(ctx context.Context, sources map[string]*SourceInfo) (
 				FromNodeKey:    sInfo.FromNodeKey,
 				FromPath:       sInfo.FromPath,
 				SubSources:     sInfo.SubSources,
+				TypeInfo:       sInfo.TypeInfo,
 			}, nil
 		}
 
@@ -149,4 +152,18 @@ func (s *SourceInfo) Skipped() bool {
 	}
 
 	return true
+}
+
+func (s *SourceInfo) FromNode(nodeKey vo.NodeKey) bool {
+	if !s.IsIntermediate {
+		return s.FromNodeKey == nodeKey
+	}
+
+	for _, sub := range s.SubSources {
+		if sub.FromNode(nodeKey) {
+			return true
+		}
+	}
+
+	return false
 }
