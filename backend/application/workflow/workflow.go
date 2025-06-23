@@ -2530,6 +2530,11 @@ func (w *ApplicationService) GetExampleWorkFlowList(ctx context.Context, req *wo
 
 		ww.StartNode = startNode
 		response.Data.WorkflowList = append(response.Data.WorkflowList, ww)
+		response.Data.AuthList = append(response.Data.AuthList, &workflow.ResourceAuthInfo{
+			WorkflowID: strconv.FormatInt(w.ID, 10),
+			UserID:     strconv.FormatInt(w.CreatorID, 10),
+			Auth:       &workflow.ResourceActionAuth{CanEdit: false, CanDelete: false, CanCopy: true},
+		})
 	}
 
 	return response, nil

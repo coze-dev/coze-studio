@@ -357,7 +357,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		return invokableNode(s, r.RunCode), nil
+		return invokableNode(s, r.RunCode, withCallbackOutputConverter(r.ToCallbackOutput)), nil
 	case entity.NodeTypePlugin:
 		conf, err := s.ToPluginConfig()
 		if err != nil {

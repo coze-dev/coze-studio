@@ -686,7 +686,7 @@ func TestCodeAndPluginNodes(t *testing.T) {
 		}, nil)
 
 		ctx := t.Context()
-
+		ctx = ctxcache.Init(ctx)
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 		assert.NoError(t, err)
 
