@@ -16,6 +16,8 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_common"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	"code.byted.org/flow/opencoze/backend/application/plugin"
 	"code.byted.org/flow/opencoze/backend/application/search"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
@@ -169,6 +171,19 @@ func PublicDuplicateProduct(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
+		if req.Name != nil {
+			_, err = singleagent.SingleAgentSVC.UpdateSingleAgentDraft(ctx, &playground.UpdateDraftBotInfoAgwRequest{
+				BotInfo: &bot_common.BotInfoForUpdate{
+					BotId: &bot.Data.BotID,
+					Name:  req.Name,
+				},
+			})
+			if err != nil {
+				internalServerErrorResponse(ctx, c, err)
+				return
+			}
+		}
+
 		resp.Data.NewEntityID = bot.Data.BotID
 
 	case product_common.ProductEntityType_WorkflowTemplateV2:
@@ -188,6 +203,18 @@ func PublicDuplicateProduct(ctx context.Context, c *app.RequestContext) {
 		}
 		resp.Data.NewEntityID = newWorkflowID
 		resp.Data.NewPluginID = &newWorkflowID
+
+		if req.Name != nil {
+			_, err = appworkflow.SVC.UpdateWorkflowMeta(ctx, &workflow.UpdateWorkflowMetaRequest{
+				WorkflowID: workflowResp.Data.WorkflowID,
+				SpaceID:    strconv.FormatInt(req.GetSpaceID(), 10),
+				Name:       req.Name,
+			})
+			if err != nil {
+				internalServerErrorResponse(ctx, c, err)
+				return
+			}
+		}
 	}
 
 	c.JSON(consts.StatusOK, resp)
