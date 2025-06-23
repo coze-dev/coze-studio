@@ -8,19 +8,27 @@ import (
 )
 
 type IndexerOptions struct {
+	PartitionKey   *string
 	Partition      *string // 存储分片映射
 	IndexingFields []string
 	ProgressBar    progressbar.ProgressBar
 }
 
 type RetrieverOptions struct {
-	MultiMatch *MultiMatch // 多 field 查询
-	Partitions []string    // 查询分片映射
+	MultiMatch   *MultiMatch // 多 field 查询
+	PartitionKey *string
+	Partitions   []string // 查询分片映射
 }
 
 type MultiMatch struct {
 	Fields []string
 	Query  string
+}
+
+func WithIndexerPartitionKey(key string) indexer.Option {
+	return indexer.WrapImplSpecificOptFn(func(o *IndexerOptions) {
+		o.PartitionKey = &key
+	})
 }
 
 func WithPartition(partition string) indexer.Option {
@@ -47,6 +55,12 @@ func WithMultiMatch(fields []string, query string) retriever.Option {
 			Fields: fields,
 			Query:  query,
 		}
+	})
+}
+
+func WithRetrieverPartitionKey(key string) retriever.Option {
+	return retriever.WrapImplSpecificOptFn(func(o *RetrieverOptions) {
+		o.PartitionKey = &key
 	})
 }
 

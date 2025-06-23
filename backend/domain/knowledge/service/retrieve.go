@@ -271,6 +271,7 @@ func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *RetrieveContex
 			continue
 		}
 		opts := []retriever.Option{
+			searchstore.WithRetrieverPartitionKey(fieldNameDocumentID),
 			searchstore.WithPartitions(partitions),
 			retriever.WithDSLInfo(dsl.DSL()),
 		}

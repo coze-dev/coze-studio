@@ -36,7 +36,7 @@ require (
 	github.com/spf13/cast v1.7.1
 	github.com/stretchr/testify v1.10.0
 	github.com/tealeg/xlsx/v3 v3.3.13
-	github.com/volcengine/volc-sdk-golang v1.0.203
+	github.com/volcengine/volc-sdk-golang v1.0.211
 	github.com/xuri/excelize/v2 v2.9.0
 	go.uber.org/mock v0.5.1
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394
