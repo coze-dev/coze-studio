@@ -200,12 +200,16 @@ func convertToArray(ctx context.Context, in any, t *vo.TypeInfo) (out []any, err
 	case []any:
 		a = in.([]any)
 	case string:
-		err := sonic.UnmarshalString(in.(string), &a)
+		err = sonic.UnmarshalString(in.(string), &a)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal input as array: %w", err)
 		}
 	default:
 		return nil, fmt.Errorf("cannot convert type %T to array", in)
+	}
+
+	if len(a) == 0 {
+		return a, nil
 	}
 
 	elemType := t.ElemTypeInfo
