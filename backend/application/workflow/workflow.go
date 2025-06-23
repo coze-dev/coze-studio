@@ -15,6 +15,7 @@ import (
 
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	pluginmodel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
@@ -22,6 +23,7 @@ import (
 	appknowledge "code.byted.org/flow/opencoze/backend/application/knowledge"
 	appmemory "code.byted.org/flow/opencoze/backend/application/memory"
 	appplugin "code.byted.org/flow/opencoze/backend/application/plugin"
+	"code.byted.org/flow/opencoze/backend/application/user"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossuser"
 	domainWorkflow "code.byted.org/flow/opencoze/backend/domain/workflow"
 	workflowDomain "code.byted.org/flow/opencoze/backend/domain/workflow"
@@ -1630,7 +1632,11 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 			WorkflowList: make([]*workflow.Workflow, 0, len(wfs)),
 		},
 	}
+
+	wf2CreatorID := make(map[int64]string)
+	workflowList := make([]*workflow.Workflow, 0, len(wfs))
 	for _, w := range wfs {
+		wf2CreatorID[w.ID] = strconv.FormatInt(w.CreatorID, 10)
 		ww := &workflow.Workflow{
 			WorkflowID:       strconv.FormatInt(w.ID, 10),
 			Name:             w.Name,
@@ -1649,6 +1655,10 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 				}
 				return strconv.FormatInt(w.ID, 10)
 			}(),
+			Creator: &workflow.Creator{
+				ID:   strconv.FormatInt(w.CreatorID, 10),
+				Self: ternary.IFElse[bool](w.CreatorID == ptr.From(ctxutil.GetUIDFromCtx(ctx)), true, false),
+			},
 		}
 		if w.UpdatedAt != nil {
 			ww.UpdateTime = w.UpdatedAt.Unix()
@@ -1669,8 +1679,28 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 		}
 
 		ww.StartNode = startNode
-		response.Data.WorkflowList = append(response.Data.WorkflowList, ww)
+
+		auth := &workflow.ResourceAuthInfo{
+			WorkflowID: strconv.FormatInt(w.ID, 10),
+			UserID:     strconv.FormatInt(w.CreatorID, 10),
+			Auth:       &workflow.ResourceActionAuth{CanEdit: true, CanDelete: true, CanCopy: true},
+		}
+		workflowList = append(workflowList, ww)
+		response.Data.AuthList = append(response.Data.AuthList, auth)
 	}
+
+	userBasicInfoResponse, err := user.UserApplicationSVC.MGetUserBasicInfo(ctx, &playground.MGetUserBasicInfoRequest{UserIds: slices.Unique(xmaps.Values(wf2CreatorID))})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, w := range workflowList {
+		if u, ok := userBasicInfoResponse.UserBasicInfoMap[w.Creator.ID]; ok {
+			w.Creator.Name = u.Username
+			w.Creator.AvatarURL = u.UserAvatar
+		}
+	}
+	response.Data.WorkflowList = workflowList
 
 	return response, nil
 }
