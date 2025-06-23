@@ -813,8 +813,8 @@ enum BindBizType {
 }
 
 struct GetWorkFlowListRequest {
-    1  : optional i32                page             ,
-    2  : optional i32                size             , // 分页大小，一般为10
+    1  : optional i32                page             , // required
+    2  : optional i32                size             , // required, 分页大小，一般为10
     3  : optional list<string>       workflow_ids     , // 根据流程id列表查询对应的流程
     4  : optional WorkFlowType       type             , // 根据流程类型筛选流程
     5  : optional string             name             , // 根据流程名称筛选流程
