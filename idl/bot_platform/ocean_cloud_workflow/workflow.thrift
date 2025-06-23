@@ -1994,16 +1994,16 @@ struct ValidateTreeResponse {
 // OpenAPI
 
 struct OpenAPIRunFlowRequest{
-    1  :          string             WorkflowID (agw.key = "workflow_id")                            ,
-    2  : optional string             Parameters (agw.source = "body_dynamic", agw.key = "parameters"),
-    3  :          map<string,string> Ext        (agw.key = "ext")                                    ,
-    4  : optional string             BotID      (agw.key = "bot_id")                                 ,
-    5  : optional bool               IsAsync    (agw.key = "is_async")                               ,
-    6  : optional string             ExecuteMode(agw.key="execute_mode")                             , // 默认为正式运行，试运行需要传入"DEBUG"
-    7  : optional string             Version    (agw.key="version")                                  , // 版本号，可能是workflow版本或者project版本
-    8  : optional string             ConnectorID(agw.key="connector_id")                             , // 渠道ID，比如ui builder、template、商店等
-    9  : optional string             AppID  (agw.key="app_id")                              , // 引用workflow 的应用ID
-    10 : optional string             ProjectID (agw.key="project_id"),                      // 项目ID，为了兼容ui builder
+    1  :          string             WorkflowID (go.tag="json:\"workflow_id\"")                            ,
+    2  : optional string             Parameters (go.tag="json:\"parameters\""),
+    3  :          map<string,string> Ext        (go.tag="json:\"ext\"")                                    ,
+    4  : optional string             BotID      (go.tag="json:\"bot_id\"")                                 ,
+    5  : optional bool               IsAsync    (go.tag="json:\"is_async\"")                               ,
+    6  : optional string             ExecuteMode(go.tag="json:\"execute_mode\"")                             , // 默认为正式运行，试运行需要传入"DEBUG"
+    7  : optional string             Version    (go.tag="json:\"version\"")                                  , // 版本号，可能是workflow版本或者project版本
+    8  : optional string             ConnectorID(go.tag="json:\"connector_id\"")                             , // 渠道ID，比如ui builder、template、商店等
+    9  : optional string             AppID      (go.tag="json:\"app_id\"")                              , // 引用workflow 的应用ID
+    10 : optional string             ProjectID ( go.tag="json:\"project_id\""),                      // 项目ID，为了兼容ui builder
 
 
     255: optional base.Base          Base                                                            ,
@@ -2011,17 +2011,17 @@ struct OpenAPIRunFlowRequest{
 
 struct OpenAPIRunFlowResponse {
     // 通用字段
-    1  : required i64           Code     (agw.key = "code") , // 调用结果
-    2  : optional string        Msg      (agw.key = "msg")  , // 成功为success, 失败为简单的错误信息、
+    1  : required i64           Code     (go.tag="json:\"code\"") , // 调用结果
+    2  : optional string        Msg      (go.tag="json:\"msg\"")  , // 成功为success, 失败为简单的错误信息、
 
     // 同步返回字段
-    3  : optional string        Data     (agw.key = "data") , // 执行结果，通常为json序列化字符串，也有可能是非json结构的字符串
-    4  : optional i64           Token    (agw.key = "token"),
-    5  : optional string        Cost     (agw.key = "cost") ,
-    6  : optional string        DebugUrl (agw.key = "debug_url") ,
+    3  : optional string        Data     (go.tag="json:\"data\"") , // 执行结果，通常为json序列化字符串，也有可能是非json结构的字符串
+    4  : optional i64           Token    (go.tag="json:\"token\""),
+    5  : optional string        Cost     (go.tag="json:\"cost\"") ,
+    6  : optional string        DebugUrl (go.tag="json:\"debug_url\"") ,
 
     // 异步返回字段
-    50 : optional string        ExecuteID(agw.key = "execute_id"),
+    50 : optional string        ExecuteID(go.tag="json:\"execute_id\""),
 
     255: required base.BaseResp BaseResp                    ,
 }
@@ -2038,45 +2038,45 @@ enum InterruptType {
 }
 
 struct Interrupt {
-    1: string EventID(agw.key ="event_id"),
-    2: InterruptType Type(agw.key ="type"),
-    3: string InData(agw.key ="data"),
+    1: string EventID( go.tag="json:\"event_id\""),
+    2: InterruptType Type(go.tag="json:\"type\""),
+    3: string InData( go.tag="json:\"data\""),
 }
 
 struct OpenAPIStreamRunFlowResponse {
-    1:  string id(agw.target="sse"), // 绝对序号
-    2:  string Event(agw.key = "event",agw.target="sse") // 事件类型:message,done,error
+    1:  string id, // 绝对序号
+    2:  string Event(go.tag="json:\"event\"") // 事件类型:message,done,error
 
     // 节点信息
-    50 : optional string NodeSeqID(agw.key = "node_seq_id"), //节点中的序号
-    52 : optional string NodeTitle(agw.key = "node_title"), // 节点名称
-    54 : optional string Content(agw.key="content"), // ContentType为Text时的返回
-    55 : optional bool NodeIsFinish(agw.key="node_is_finish"), // 节点是否执行完成
-    56:  optional Interrupt InterruptData(agw.key="interrupt_data"),  //content type为interrupt时传输，中断协议
-    57:  optional string ContentType(agw.key="content_type"),  // 返回的数据类型
-    58: optional string CardBody(agw.key="card_body"), // Content Type为Card时返回的卡片内容
-    59: optional string NodeType(agw.key="node_type",go.tag= "json:\"node_type\"" ), // 节点类型
-    60 : optional string NodeID (agw.key = "node_id" , go.tag= "json:\"node_id\"") ,
+    50 : optional string NodeSeqID(go.tag="json:\"node_seq_id\""), //节点中的序号
+    52 : optional string NodeTitle(go.tag="json:\"node_title\""), // 节点名称
+    54 : optional string Content(go.tag="json:\"content\""), // ContentType为Text时的返回
+    55 : optional bool NodeIsFinish(go.tag="json:\"node_is_finish\""), // 节点是否执行完成
+    56:  optional Interrupt InterruptData( go.tag="json:\"interrupt_data\""),  //content type为interrupt时传输，中断协议
+    57:  optional string ContentType( go.tag="json:\"content_type\""),  // 返回的数据类型
+    58: optional string CardBody(go.tag="json:\"card_body\""), // Content Type为Card时返回的卡片内容
+    59: optional string NodeType(go.tag= "json:\"node_type\"" ), // 节点类型
+    60 : optional string NodeID (go.tag= "json:\"node_id\"") ,
     // 成功时最后一条消息
-    100 : optional map<string,string> Ext(agw.key="ext"),
-    101: optional i64 Token(agw.key="token"),
-    102: optional string Cost (agw.key="cost"),
+    100 : optional map<string,string> Ext(go.tag= "json:\"ext\""),
+    101: optional i64 Token(go.tag= "json:\"token\""),
+    102: optional string Cost (go.tag= "json:\"cost\""),
 
     // 错误信息
-    151: optional i64 ErrorCode(agw.key="error_code"),
-    152: optional string ErrorMessage(agw.key="error_message"),
-    153: optional string DebugUrl (agw.key="debug_url") ,
+    151: optional i64 ErrorCode( go.tag= "json:\"error_code\""),
+    152: optional string ErrorMessage(go.tag= "json:\"error_message\""),
+    153: optional string DebugUrl (go.tag= "json:\"debug_url\"") ,
 
     255: required base.BaseResp BaseResp                    ,
 }
 
 struct OpenAPIStreamResumeFlowRequest{
-    1: string EventID (agw.key="event_id")
-    2: InterruptType InterruptType (agw.key="interrupt_type")
-    3: string ResumeData (agw.key="resume_data")
-    4: map<string,string> Ext (agw.key="ext")
-    5: string WorkflowID (agw.key="workflow_id")
-    6: optional string ConnectorID (agw.key="connector_id"), // 渠道ID，比如ui builder、template、商店等
+    1: string EventID (go.tag= "json:\"event_id\"" )
+    2: InterruptType InterruptType (go.tag= "json:\"interrupt_type\"" )
+    3: string ResumeData (go.tag= "json:\"resume_data\"" )
+    4: map<string,string> Ext (go.tag= "json:\"ext\"")
+    5: string WorkflowID (go.tag= "json:\"workflow_id\"")
+    6: optional string ConnectorID (go.tag= "json:\"connector_id\""), // 渠道ID，比如ui builder、template、商店等
 
     255: base.Base Base
 }
@@ -2095,28 +2095,28 @@ enum WorkflowRunMode {
 }
 
 struct WorkflowExecuteHistory{
-    1: optional i64 ExecuteID (agw.key="execute_id")
-    2: optional string ExecuteStatus (agw.key="execute_status")
-    3: optional i64 BotID (agw.key="bot_id")
-    4: optional i64 ConnectorID     (agw.key="connector_id")
-    5: optional string ConnectorUID    (agw.key="connector_uid")
-    6: optional WorkflowRunMode RunMode (agw.key="run_mode")
-    7: optional string LogID (agw.key="log_id")
-    8: optional i64 CreateTime (agw.key="create_time")
-    9: optional i64 UpdateTime (agw.key="update_time")
-    10: optional string DebugUrl (agw.key="debug_url") ,
+    1: optional i64 ExecuteID (go.tag= "json:\"execute_id\"")
+    2: optional string ExecuteStatus (go.tag= "json:\"execute_status\"")
+    3: optional i64 BotID (go.tag= "json:\"bot_id\"")
+    4: optional i64 ConnectorID (go.tag= "json:\"connector_id\"")
+    5: optional string ConnectorUID    (go.tag= "json:\"connector_uid\"")
+    6: optional WorkflowRunMode RunMode (go.tag= "json:\"run_mode\"")
+    7: optional string LogID (go.tag= "json:\"log_id\"")
+    8: optional i64 CreateTime (go.tag= "json:\"create_time\"")
+    9: optional i64 UpdateTime (go.tag= "json:\"update_time\"")
+    10: optional string DebugUrl (go.tag= "json:\"debug_url\"") ,
 
     // 执行成功
-    51: optional  string Input (agw.key="input")
-    52: optional  string Output (agw.key="output")
-    53: optional i64 Token (agw.key="token")
-    54: optional string Cost (agw.key="cost")
-    55: optional string CostUnit (agw.key="cost_unit")
-    56: optional map<string,string> Ext (agw.key="ext")
+    51: optional  string Input ( go.tag= "json:\"input\"")
+    52: optional  string Output (go.tag= "json:\"output\"")
+    53: optional i64 Token (go.tag= "json:\"token\"")
+    54: optional string Cost (go.tag= "json:\"cost\"")
+    55: optional string CostUnit (go.tag= "json:\"cost_unit\"")
+    56: optional map<string,string> Ext (go.tag= "json:\"ext\"")
 
     // 执行失败
-    101: optional  string ErrorCode (agw.key="error_code")
-    102: optional  string ErrorMsg (agw.key="error_msg")
+    101: optional  string ErrorCode (go.tag= "json:\"error_code\"")
+    102: optional  string ErrorMsg (go.tag= "json:\"error_msg\"")
 }
 
 struct GetWorkflowRunHistoryResponse{
@@ -2128,33 +2128,33 @@ struct GetWorkflowRunHistoryResponse{
 }
 
 struct EnterMessage {
-    1: required           string Role (agw.key = "role")
-    2: string             Content (agw.key = "content") // 内容
-    3: map<string,string> MetaData (agw.key = "meta_data")
-    4: string             ContentType (agw.key = "content_type") //text/card/object_string
-    5: string             Type (agw.key = "type")
+    1: required           string Role ( go.tag= "json:\"role\"")
+    2: string             Content (go.tag= "json:\"content\"") // 内容
+    3: map<string,string> MetaData (go.tag= "json:\"meta_data\"")
+    4: string             ContentType (go.tag= "json:\"content_type\"") //text/card/object_string
+    5: string             Type (go.tag= "json:\"type\"")
 }
 
 struct ChatFlowRunRequest{
-    1: string WorkflowID (agw.key = "workflow_id")  ,
-    2: optional string Parameters (agw.source = "body_dynamic", agw.key = "parameters"),
-    3: map<string,string> Ext    (agw.key = "ext")                                    ,
-    4: optional string BotID     (agw.key = "bot_id")                                 ,
-    6: optional string ExecuteMode(agw.key="execute_mode")                             , // 默认为正式运行，试运行需要传入"DEBUG"
-    7: optional string Version    (agw.key="version")                                  , // 版本号，可能是workflow版本或者project版本
-    8: optional string ConnectorID(agw.key="connector_id")                             , // 渠道ID，比如ui builder、template、商店等
-    9: optional string AppID(agw.key="app_id"),
-    10:optional string ConversationID  (agw.key = "conversation_id"), // 会话ID
-    11:optional list<EnterMessage> AdditionalMessages (api.body = "additional_messages"), // 用户希望先写入的消息
-    12:optional string ProjectID (agw.key="project_id"), // 项目ID，为了兼容ui builder
-    13:optional SuggestReplyInfo SuggestReplyInfo (api.body = "suggest_reply_info"), // 建议回复信息
+    1: string WorkflowID (go.tag= "json:\"workflow_id\"")  ,
+    2: optional string Parameters (go.tag= "json:\"parameters\""),
+    3: map<string,string> Ext     (go.tag= "json:\"ext\"")                                    ,
+    4: optional string BotID      (go.tag= "json:\"bot_id\"")                                 ,
+    6: optional string ExecuteMode(go.tag= "json:\"execute_mode\"")                             , // 默认为正式运行，试运行需要传入"DEBUG"
+    7: optional string Version    (go.tag= "json:\"version\"")                                  , // 版本号，可能是workflow版本或者project版本
+    8: optional string ConnectorID( go.tag= "json:\"connector_id\"")                             , // 渠道ID，比如ui builder、template、商店等
+    9: optional string AppID(agw.key="app_id" go.tag= "json:\"app_id\""),
+    10:optional string ConversationID  ( go.tag= "json:\"conversation_id\""), // 会话ID
+    11:optional list<EnterMessage> AdditionalMessages (api.body = "additional_messages" go.tag= "json:\"additional_messages\""), // 用户希望先写入的消息
+    12:optional string ProjectID ( go.tag= "json:\"project_id\""), // 项目ID，为了兼容ui builder
+    13:optional SuggestReplyInfo SuggestReplyInfo (api.body = "suggest_reply_info" go.tag= "json:\"suggest_reply_info\""), // 建议回复信息
 
     255: optional base.Base Base    ,
 }
 
 struct ChatFlowRunResponse {
-    1:  string Event(agw.key = "event",agw.target="sse") // 事件类型
-    2:  string Data(agw.key = "data",agw.target="sse") // msg、error等数据，为了对齐不同的消息类型，使用json序列化
+    1:  string Event(agw.key = "event",agw.target="sse" go.tag= "json:\"event\"") // 事件类型
+    2:  string Data(agw.key = "data",agw.target="sse" go.tag= "json:\"data\"") // msg、error等数据，为了对齐不同的消息类型，使用json序列化
 //    2: optional ChatFlowMessageDetail MessageData (api.body = "message_data") // 消息内容
 //    3: optional ChatFlowChatDetail ChatData (api.body = "chat_data") // 对话内容
 //    4: optional LastError ErrorData (api.body = "error_data") // 错误信息
@@ -2164,11 +2164,11 @@ struct ChatFlowRunResponse {
 }
 
 struct OpenAPIGetWorkflowInfoRequest{
-	1: string WorkflowID (api.path="workflow_id")
-    2: string ConnectorID (api.query = "connector_id")
-    3: bool IsDebug (api.query = "is_debug")
+	1: string WorkflowID (api.path="workflow_id"  go.tag= "json:\"workflow_id\"")
+    2: string ConnectorID (api.query = "connector_id", go.tag= "json:\"connector_id\"")
+    3: bool IsDebug (api.query = "is_debug", go.tag= "json:\"is_debug\"")
 //    4: optional string AppID (api.query = "app_id")
-    5: optional string Caller (api.query = "caller")
+    5: optional string Caller (api.query = "caller",  go.tag= "json:\"caller\"")
 
     255: optional base.Base Base
 }

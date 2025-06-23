@@ -15,6 +15,7 @@ if [ -z "$ATLAS_URL" ]; then
     exit 1
 fi
 
+source "$DOCKER_DIR/.env"
 echo "ATLAS_URL: $ATLAS_URL"
 
 #  check if atlas is installed
@@ -28,13 +29,10 @@ else
         echo -e "${RED}Atlas is not installed. Please execute the following command to install:${NC}"
         echo -e "${RED}brew install ariga/tap/atlas${NC}"
         exit 1
-    elif [ "$OS" = "Linux" ]; then
+    else
         # Linux prompt
         echo -e "${RED}Atlas is not installed. Please execute the following command to install:${NC}"
         echo -e "${RED}curl -sSf https://atlasgo.sh | sh -s -- --community${NC}"
-        exit 1
-    else
-        echo -e "${RED}Unsupported operating system. Please install Atlas manually.${NC}"
         exit 1
     fi
 fi

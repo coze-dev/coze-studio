@@ -173,8 +173,8 @@ struct ResponseStyle {
 }
 
 struct CodeInfo {
-    1: string plugin_desc  , // json
-    2: string openapi_desc , // yaml
+    1: string plugin_desc  , // plugin manifest in json string
+    2: string openapi_desc , // plugin openapi3 document in yaml string
     3: string client_id    ,
     4: string client_secret,
     5: string service_token,
@@ -194,19 +194,19 @@ struct UserLabel {
 }
 
 struct PluginMetaInfo{
-    1 :          string                                         name         ,
-    2 :          string                                         desc         ,
-    3 :          string                                         url          ,
-    4 :          PluginIcon                                     icon         ,
-    5 :          list<AuthorizationType>                        auth_type    ,
-    6 : optional AuthorizationServiceLocation                   location     , // service
-    7 : optional string                                         key          , // service
-    8 : optional string                                         service_token, // service
-    9 : optional string                                         oauth_info   , // json序列化
-    10: optional map<ParameterLocation,list<commonParamSchema>> common_params,
-    11: optional i32                                            sub_auth_type,
-    12: optional string                                         auth_payload ,
-    13:          bool                                           fixed_export_ip, // 是否固定出口ip
+    1 :          string                                         name         , // 插件名
+    2 :          string                                         desc         , // 插件描述
+    3 :          string                                         url          , // 插件服务地址前缀
+    4 :          PluginIcon                                     icon         , // 插件图标
+    5 :          list<AuthorizationType>                        auth_type    , // 插件授权类型，0：无授权，1：service，3：oauth
+    6 : optional AuthorizationServiceLocation                   location     , // 子授权类型为api/token时，token参数位置
+    7 : optional string                                         key          , // 子授权类型为api/token时，token参数key
+    8 : optional string                                         service_token, // 子授权类型为api/token时，token参数值
+    9 : optional string                                         oauth_info   , // 子授权类型为oauth时，oauth信息
+    10: optional map<ParameterLocation,list<commonParamSchema>> common_params, // 插件公共参数，key为参数位置，value为参数列表
+    11: optional i32                                            sub_auth_type, // 子授权类型，0: api/token of service, 10: client credentials of oauth
+    12: optional string                                         auth_payload , // 可忽略
+    13:          bool                                           fixed_export_ip, // 可忽略
 }
 
 struct PluginIcon {
@@ -301,32 +301,32 @@ struct PluginAPIInfo{
     8 :          list<APIParameter>    response_params     ,
     9 :          string                create_time         ,
     10:          APIDebugStatus        debug_status        ,
-    11:          bool                  disabled            ,
-    12:          PluginStatisticData   statistic_data      ,
-    13:          OnlineStatus          online_status       , // ide创建插件展示tool的在线状态
-    14:          APIExtend             api_extend          ,
-    15: optional PresetCardBindingInfo card_binding_info   , // 卡片绑定信息，未绑定则为nil
+    11:          bool                  disabled            , // ignore
+    12:          PluginStatisticData   statistic_data      , // ignore
+    13:          OnlineStatus          online_status       , // if tool has been published, online_status is Online
+    14:          APIExtend             api_extend          , // ignore
+    15: optional PresetCardBindingInfo card_binding_info   , // ignore
     16: optional DebugExample          debug_example       , // 调试示例
     17:          DebugExampleStatus    debug_example_status, // 调试示例状态
-    18:          string                function_name       ,
+    18:          string                function_name       , // ignore
 }
 
 struct APIParameter {
     1 :          string             id                    , // for前端，无实际意义
-    2 :          string             name                  ,
-    3 :          string             desc                  ,
-    4 :          ParameterType      type                  ,
-    5 : optional ParameterType      sub_type              ,
-    6 :          ParameterLocation  location              ,
-    7 :          bool               is_required           ,
-    8 :          list<APIParameter> sub_parameters        ,
-    9 : optional string             global_default        ,
-    10:          bool               global_disable        ,
-    11: optional string             local_default         ,
-    12:          bool               local_disable         ,
-    13: optional DefaultParamSource default_param_source  , // 默认入参的设置来源
+    2 :          string             name                  , // parameter name
+    3 :          string             desc                  , // parameter desc
+    4 :          ParameterType      type                  , // parameter type
+    5 : optional ParameterType      sub_type              , // 可忽略
+    6 :          ParameterLocation  location              , // 参数位置
+    7 :          bool               is_required           , // 是否必填
+    8 :          list<APIParameter> sub_parameters        , // 子参数
+    9 : optional string             global_default        , // 全局默认值
+    10:          bool               global_disable        , // 全局是否启用
+    11: optional string             local_default         , // 智能体内设置的默认值
+    12:          bool               local_disable         , // 智能体内是否启用
+    13: optional DefaultParamSource default_param_source  , // 可忽略
     14: optional string             variable_ref          , // 引用variable的key
-    15: optional AssistParameterType assist_type          ,
+    15: optional AssistParameterType assist_type          , // 多模态辅助参数类型
 }
 
 struct PluginStatisticData {
@@ -346,8 +346,8 @@ struct PresetCardBindingInfo{
 }
 
 struct DebugExample {
-    1: string req_example ,
-    2: string resp_example,
+    1: string req_example , // request example in json
+    2: string resp_example, // response example in json
 }
 
 struct UpdatePluginData {
@@ -390,7 +390,7 @@ enum DebugOperation{
 
 struct RegisterPluginData {
     1: i64 plugin_id (api.js_conv = "str"),
-    2: string openapi  ,
+    2: string openapi, // the same as the request 'openapi'
 }
 
 enum ScopeType {

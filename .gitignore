@@ -18,9 +18,6 @@
 go.work
 go.work.sum
 
-# env file
-.env
-
 # the result of the go build
 backend/**/output*
 output/*

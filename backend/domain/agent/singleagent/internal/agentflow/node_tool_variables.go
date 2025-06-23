@@ -35,7 +35,7 @@ func loadAgentVariables(ctx context.Context, vc *variableConf) (map[string]strin
 	if err != nil {
 		return nil, err
 	}
-	if vb != nil {
+	if len(vb) > 0 {
 		for _, v := range vb {
 			vbs[v.Keyword] = v.Value
 		}

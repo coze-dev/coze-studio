@@ -103,7 +103,18 @@ func (r *AgentRunner) preHandlerInput(input *schema.Message) *schema.Message {
 			} else {
 				multiContent = append(multiContent, v)
 			}
-
+		case schema.ChatMessagePartTypeAudioURL:
+			if !slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalAudio) {
+				input.Content = input.Content + ": " + v.FileURL.URL
+			} else {
+				multiContent = append(multiContent, v)
+			}
+		case schema.ChatMessagePartTypeVideoURL:
+			if !slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalVideo) {
+				input.Content = input.Content + ": " + v.FileURL.URL
+			} else {
+				multiContent = append(multiContent, v)
+			}
 		case schema.ChatMessagePartTypeText:
 			break
 

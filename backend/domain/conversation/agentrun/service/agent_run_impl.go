@@ -705,8 +705,6 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context) (*msgEntity.Message, err
 
 func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt) error {
 	msg.IsFinish = true
-	msg.ExtMutex.Lock()
-	defer msg.ExtMutex.Unlock()
 
 	if msg.Ext == nil {
 		msg.Ext = map[string]string{}
@@ -896,12 +894,12 @@ func (c *runImpl) handlerInterruptVerbose(ctx context.Context, chunk *entity.Age
 }
 
 func (c *runImpl) buildSendMsg(_ context.Context, msg *msgEntity.Message, isFinish bool) *entity.ChunkMessageItem {
-	
+
 	copyMap := make(map[string]string)
 	for k, v := range msg.Ext {
 		copyMap[k] = v
 	}
-	
+
 	return &entity.ChunkMessageItem{
 		ID:               msg.ID,
 		ConversationID:   msg.ConversationID,

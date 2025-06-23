@@ -143,9 +143,6 @@ func sendMessageEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, event stri
 func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest) []byte {
 	chunkMessageItem := chunk.ChunkMessageItem
 
-	chunkMessageItem.ExtMutex.RLock()
-	defer chunkMessageItem.ExtMutex.RUnlock()
-
 	chunkMessage := &run.RunStreamResponse{
 		ConversationID: strconv.FormatInt(chunkMessageItem.ConversationID, 10),
 		IsFinish:       ptr.Of(chunk.ChunkMessageItem.IsFinish),

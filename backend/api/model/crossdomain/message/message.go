@@ -50,6 +50,8 @@ const (
 	InputTypeText  InputType = "text"
 	InputTypeFile  InputType = "file"
 	InputTypeImage InputType = "image"
+	InputTypeVideo InputType = "video"
+	InputTypeAudio InputType = "audio"
 )
 
 type FileData struct {

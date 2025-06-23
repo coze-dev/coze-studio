@@ -257,6 +257,16 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 			one.FileURL = &schema.ChatMessageFileURL{
 				URL: contentData.FileData[0].Url,
 			}
+		case message.InputTypeVideo:
+			one.Type = schema.ChatMessagePartTypeVideoURL
+			one.VideoURL = &schema.ChatMessageVideoURL{
+				URL: contentData.FileData[0].Url,
+			}
+		case message.InputTypeAudio:
+			one.Type = schema.ChatMessagePartTypeFileURL
+			one.AudioURL = &schema.ChatMessageAudioURL{
+				URL: contentData.FileData[0].Url,
+			}
 		}
 		multiContent = append(multiContent, one)
 	}

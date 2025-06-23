@@ -2,88 +2,11 @@ x-env-file: &env_file
   - .env
 
 services:
-  mysql:
-    image: mysql:8.4.5
-    container_name: coze-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-opencoze}
-      MYSQL_USER: ${MYSQL_USER:-coze}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-coze123}
-    profiles: ['middleware', 'mysql-setup', 'mysql']
-    env_file: *env_file
-    ports:
-      - '3306:3306'
-    volumes:
-      - ./data/mysql:/var/lib/mysql
-    command:
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
-    healthcheck:
-      test:
-        [
-          'CMD',
-          'mysqladmin',
-          'ping',
-          '-h',
-          'localhost',
-          '-u$${MYSQL_USER}',
-          '-p$${MYSQL_PASSWORD}',
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    networks:
-      - coze-network
-
-  redis:
-    image: bitnami/redis:8.0
-    container_name: coze-redis
-    user: root
-    privileged: true
-    profiles: ['middleware']
-    env_file: *env_file
-    environment:
-      - REDIS_AOF_ENABLED=${REDIS_AOF_ENABLED:-no}
-      - REDIS_PORT_NUMBER=${REDIS_PORT_NUMBER:-6379}
-      - REDIS_IO_THREADS=${REDIS_IO_THREADS:-4}
-      - ALLOW_EMPTY_PASSWORD=${ALLOW_EMPTY_PASSWORD:-yes}
-    ports:
-      - '6379:6379'
-    volumes:
-      - ./data/bitnami/redis:/bitnami/redis/data:rw,Z
-    command: >
-      bash -c "
-        /opt/bitnami/scripts/redis/setup.sh
-        # Set proper permissions for data directories
-        chown -R redis:redis /bitnami/redis/data
-        chmod g+s /bitnami/redis/data
-
-        exec /opt/bitnami/scripts/redis/entrypoint.sh /opt/bitnami/scripts/redis/run.sh
-      "
-    depends_on:
-      minio-setup:
-        condition: service_completed_successfully
-      elasticsearch-setup:
-        condition: service_completed_successfully
-      mysql-setup-init-sql:
-        condition: service_completed_successfully
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 5s
-      timeout: 10s
-      retries: 10
-      start_period: 10s
-    networks:
-      - coze-network
-
   rocketmq-namesrv:
     image: apache/rocketmq:5.3.2
     container_name: coze-rocketmq-namesrv
     privileged: true
     user: root
-    profiles: ['middleware']
     env_file: *env_file
     ports:
       - '9876:9876'
@@ -119,7 +42,6 @@ services:
     container_name: coze-rocketmq-broker
     privileged: true
     user: root
-    profiles: ['middleware']
     env_file: *env_file
     ports:
       - '10909:10909'
@@ -181,113 +103,11 @@ services:
       retries: 10
       start_period: 10s
 
-  elasticsearch:
-    image: bitnami/elasticsearch:8.18.0
-    container_name: coze-elasticsearch
-    user: root
-    privileged: true
-    profiles: ['middleware']
-    env_file: *env_file
-    environment:
-      # Add Java certificate trust configuration
-      - ES_JAVA_OPTS=-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djavax.net.ssl.trustAll=true -Xms4096m -Xmx4096m
-    ports:
-      - '9200:9200'
-    volumes:
-      - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data
-      - ./volumes/elasticsearch/elasticsearch.yml:/opt/bitnami/elasticsearch/config/my_elasticsearch.yml
-      - ./volumes/elasticsearch/analysis-smartcn.zip:/opt/bitnami/elasticsearch/analysis-smartcn.zip:rw,Z
-    healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'curl -f http://localhost:9200 && [ -f /tmp/es_plugins_ready ]',
-        ]
-      interval: 5s
-      timeout: 10s
-      retries: 10
-      start_period: 10s
-    networks:
-      - coze-network
-    # Install smartcn analyzer plugin
-    command: >
-      bash -c "
-        /opt/bitnami/scripts/elasticsearch/setup.sh
-        # Set proper permissions for data directories
-        chown -R elasticsearch:elasticsearch /bitnami/elasticsearch/data
-        chmod g+s /bitnami/elasticsearch/data
-
-        # Create plugin directory
-        mkdir -p /bitnami/elasticsearch/plugins;
-
-        # Unzip plugin to plugin directory and set correct permissions
-        echo 'Installing smartcn plugin...';
-        if [ ! -d /opt/bitnami/elasticsearch/plugins/analysis-smartcn ]; then
-
-          # Download plugin package locally
-          echo 'Copying smartcn plugin...';
-          cp /opt/bitnami/elasticsearch/analysis-smartcn.zip /tmp/analysis-smartcn.zip 
-
-          elasticsearch-plugin install file:///tmp/analysis-smartcn.zip
-          if [[ "$?" != "0" ]]; then
-            echo 'Plugin installation failed, exiting operation';
-            rm -rf /opt/bitnami/elasticsearch/plugins/analysis-smartcn
-            exit 1;
-          fi;
-          rm -f /tmp/analysis-smartcn.zip;
-        fi;
-
-        # Create marker file indicating plugin installation success
-        touch /tmp/es_plugins_ready;
-        echo 'Plugin installation successful, marker file created';
-
-        # Start Elasticsearch
-        exec /opt/bitnami/scripts/elasticsearch/entrypoint.sh /opt/bitnami/scripts/elasticsearch/run.sh
-
-        echo -e "⏳ Adjusting Elasticsearch disk watermark settings..."
-      "
-
-  kibana:
-    image: bitnami/kibana:8.18.0
-    container_name: coze-kibana
-    user: root
-    privileged: true
-    profiles: ['middleware']
-    env_file: *env_file
-    ports:
-      - '5601:5601'
-    environment:
-      # - ELASTICSEARCH_HOSTS=http://coze-elasticsearch:9200
-      - KIBANA_ELASTICSEARCH_URL=coze-elasticsearch
-    volumes:
-      - ./data/bitnami/kibana:/bitnami/kibana:rw,Z
-    command: >
-      bash -c "
-        /opt/bitnami/scripts/kibana/setup.sh
-        # Set proper permissions for data directories
-        chown -R kibana:kibana /bitnami/kibana
-        chmod g+s /bitnami/kibana
-
-        exec /opt/bitnami/scripts/kibana/entrypoint.sh /opt/bitnami/scripts/kibana/run.sh
-      "
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:5601/api/status']
-      interval: 5s
-      timeout: 10s
-      retries: 10
-      start_period: 10s
-    networks:
-      - coze-network
-
   minio:
     image: minio/minio:latest
     container_name: coze-minio
     user: root
     privileged: true
-    profiles: ['middleware']
     env_file: *env_file
     ports:
       - '9000:9000'
@@ -313,7 +133,6 @@ services:
     container_name: coze-etcd
     user: root
     privileged: true
-    profiles: ['middleware']
     env_file: *env_file
     environment:
       - ETCD_AUTO_COMPACTION_MODE=revision
@@ -349,7 +168,6 @@ services:
     image: milvusdb/milvus:v2.5.10
     user: root
     privileged: true
-    profiles: ['middleware']
     env_file: *env_file
     command: >
       bash -c "
@@ -391,11 +209,7 @@ services:
   elasticsearch-setup:
     image: alpine/curl:8.12.1
     container_name: coze-elasticsearch-setup
-    profiles: ['middleware']
     env_file: *env_file
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
     volumes:
       - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh
       - ./volumes/elasticsearch/es_index_schema:/es_index_schema
@@ -412,7 +226,6 @@ services:
   minio-setup:
     image: minio/mc
     container_name: coze-minio-setup
-    profiles: ['middleware']
     env_file: *env_file
     depends_on:
       minio:
@@ -429,55 +242,10 @@ services:
     networks:
       - coze-network
     restart: 'no'
-
-  mysql-setup-schema:
-    image: arigaio/atlas:0.35.0-community-alpine
-    container_name: coze-mysql-setup-schema
-    profiles: ['middleware', 'mysql-setup', 'run-server']
-    env_file: *env_file
-    depends_on:
-      mysql:
-        condition: service_healthy
-    volumes:
-      - ./atlas/opencoze_latest_schema.hcl:/opencoze_latest_schema.hcl
-    entrypoint:
-      - /bin/sh
-      - -c
-      - |
-        set -ex
-        TMP_ATLAS_URL="${ATLAS_URL}"
-        if [ "${MYSQL_HOST}" = "localhost" ] || [ "${MYSQL_HOST}" = "127.0.0.1" ]; then
-            echo "MYSQL_HOST is localhost or 127.0.0.1, replacing with docker network address"
-            TMP_ATLAS_URL="mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:${MYSQL_PORT}/${MYSQL_DATABASE}?charset=utf8mb4&parseTime=True"
-        fi
-
-        echo "final atlas url: $${TMP_ATLAS_URL}"
-        for i in `seq 1 60`; do
-             if atlas schema apply \
-                 -u "$${TMP_ATLAS_URL}" \
-                 --to file:///opencoze_latest_schema.hcl \
-                 --exclude "atlas_schema_revisions,table_*" \
-                 --auto-approve; then
-                 echo "MySQL setup complete."
-                 exit 0
-             fi
-             echo "atlas schema apply failed, retrying...($$i/60)"
-             sleep 1
-         done
-         echo "MySQL setup failed after 60 retries."
-         exit 1
-    networks:
-      - coze-network
   mysql-setup-init-sql:
     image: mysql:8.4.5
     container_name: coze-mysql-setup-init-sql
-    profiles: ['middleware', 'mysql-setup', 'run-server']
     env_file: *env_file
-    depends_on:
-      mysql:
-        condition: service_healthy
-      mysql-setup-schema:
-        condition: service_completed_successfully
     command:
       - /bin/sh
       - -c
@@ -503,7 +271,6 @@ services:
       - ./volumes/mysql/schema.sql:/schema.sql
     networks:
       - coze-network
-    restart: 'no'
 
   coze-server:
     # build:
@@ -511,7 +278,6 @@ services:
     #   dockerfile: backend/Dockerfile
     image: fanlv/opencoze:0.1.0
     container_name: coze-server
-    profiles: ['run-server']
     env_file: *env_file
     environment:
       LISTEN_ADDR: 0.0.0.0:8888
@@ -524,15 +290,9 @@ services:
       - ../backend/conf:/app/resources/conf
       # - ../backend/static:/app/resources/static
     depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
       rocketmq-namesrv:
         condition: service_healthy
       rocketmq-broker:
-        condition: service_healthy
-      elasticsearch:
         condition: service_healthy
       minio:
         condition: service_healthy

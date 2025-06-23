@@ -12,8 +12,12 @@ type Client = es8.Client
 
 func New() (*es8.Client, error) {
 	esAddr := os.Getenv("ES_ADDR")
+	esUsername := os.Getenv("ES_USERNAME")
+	esPassword := os.Getenv("ES_PASSWORD")
 	esClient, err := elasticsearch.NewTypedClient(elasticsearch.Config{
 		Addresses: []string{esAddr},
+		Username:  esUsername,
+		Password:  esPassword,
 	})
 	if err != nil {
 		return nil, err
