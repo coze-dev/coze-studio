@@ -390,8 +390,8 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 		Type:     WorkflowFailed,
 		Context:  c,
 		Duration: time.Since(time.UnixMilli(c.StartTime)),
-		Err: &ErrorInfo{
-			Level: LevelError,
+		Err: &vo.ErrorInfo{
+			Level: vo.LevelError,
 			Err:   err,
 		},
 	}
@@ -643,6 +643,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 
 	var (
 		outputMap, rawOutputMap, customExtra map[string]any
+		errInfo                              *vo.ErrorInfo
 		ok                                   bool
 	)
 
@@ -657,6 +658,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		outputMap = structuredOutput.Output
 		rawOutputMap = structuredOutput.RawOutput
 		customExtra = structuredOutput.Extra
+		errInfo = structuredOutput.Error
 	}
 
 	c := GetExeCtx(ctx)
@@ -669,6 +671,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		Duration:  time.Since(time.UnixMilli(c.StartTime)),
 		Output:    outputMap,
 		RawOutput: rawOutputMap,
+		Err:       errInfo,
 		extra:     &entity.NodeExtra{},
 	}
 
@@ -771,8 +774,8 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 			Type:     NodeError,
 			Context:  c,
 			Duration: time.Since(time.UnixMilli(c.StartTime)),
-			Err: &ErrorInfo{
-				Level: LevelCancel,
+			Err: &vo.ErrorInfo{
+				Level: vo.LevelCancel,
 				Err:   err,
 			},
 		}
@@ -793,8 +796,8 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 		Type:     NodeError,
 		Context:  c,
 		Duration: time.Since(time.UnixMilli(c.StartTime)),
-		Err: &ErrorInfo{
-			Level: LevelError, // TODO: handle warn level errors
+		Err: &vo.ErrorInfo{
+			Level: vo.LevelError, // TODO: handle warn level errors
 			Err:   err,
 		},
 	}
@@ -1351,8 +1354,8 @@ func (t *ToolHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 			FunctionInfo: t.info,
 			CallID:       compose.GetToolCallID(ctx),
 		},
-		Err: &ErrorInfo{
-			Level: LevelError, // TODO: handle warn level errors
+		Err: &vo.ErrorInfo{
+			Level: vo.LevelError, // TODO: handle warn level errors
 			Err:   err,
 		},
 	}

@@ -475,6 +475,9 @@ const (
 	BlockTypeBotHttp           BlockType = "45"
 	BlockTypeDatabaseInsert    BlockType = "46"
 	BlockTypeBotLocalPlugin    BlockType = "7"
+
+	BlockTypeJsonSerialization   BlockType = "58"
+	BlockTypeJsonDeserialization BlockType = "59"
 )
 
 type VariableType string

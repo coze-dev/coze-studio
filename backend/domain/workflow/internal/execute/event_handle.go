@@ -411,6 +411,14 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			Extra: event.extra,
 		}
 
+		if event.Err != nil {
+			var errorInfo, errorLevel string
+			errorInfo = event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]
+			errorLevel = string(event.Err.Level)
+			nodeExec.ErrorInfo = ptr.Of(errorInfo)
+			nodeExec.ErrorLevel = ptr.Of(errorLevel)
+		}
+
 		if event.outputExtractor != nil {
 			nodeExec.Output = ptr.Of(event.outputExtractor(event.Output))
 			nodeExec.RawOutput = ptr.Of(event.outputExtractor(event.RawOutput))
@@ -559,10 +567,10 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		var errorInfo, errorLevel string
 		if errors.Is(event.Err.Err, context.Canceled) {
 			errorInfo = "workflow cancel by user"
-			errorLevel = string(LevelCancel)
+			errorLevel = string(vo.LevelCancel)
 		} else {
 			errorInfo = event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]
-			errorLevel = string(LevelError)
+			errorLevel = string(vo.LevelError)
 		}
 
 		if event.Context == nil || event.Context.NodeCtx == nil {

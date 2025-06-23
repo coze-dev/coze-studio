@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -69,7 +70,12 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 
 	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to convert inputs: %w", err)
+		var warnings nodes.ConversionWarnings
+		if errors.As(err, &warnings) {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+		} else {
+			return nil, "", fmt.Errorf("failed to convert inputs: %w", err)
+		}
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -196,7 +202,12 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 
 	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
-		return 0, fmt.Errorf("failed to convert inputs: %w", err)
+		var warnings nodes.ConversionWarnings
+		if errors.As(err, &warnings) {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+		} else {
+			return 0, fmt.Errorf("failed to convert inputs: %w", err)
+		}
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -254,7 +265,12 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 
 	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
-		return 0, fmt.Errorf("failed to convert inputs: %w", err)
+		var warnings nodes.ConversionWarnings
+		if errors.As(err, &warnings) {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+		} else {
+			return 0, fmt.Errorf("failed to convert inputs: %w", err)
+		}
 	}
 
 	if wfEntity.AppID != nil && config.AppID == nil {
@@ -333,7 +349,12 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 
 	input, err = nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
-		return nil, fmt.Errorf("failed to convert inputs: %w", err)
+		var warnings nodes.ConversionWarnings
+		if errors.As(err, &warnings) {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+		} else {
+			return nil, fmt.Errorf("failed to convert inputs: %w", err)
+		}
 	}
 
 	inStr, err := sonic.MarshalString(input)

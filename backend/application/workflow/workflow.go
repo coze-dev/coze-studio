@@ -2792,6 +2792,10 @@ func nodeType2EntityNodeType(t string) (entity.NodeType, error) {
 		return entity.NodeTypeHTTPRequester, nil
 	case 46:
 		return entity.NodeTypeDatabaseInsert, nil
+	case 58:
+		return entity.NodeTypeJsonSerialization, nil
+	case 59:
+		return entity.NodeTypeJsonDeserialization, nil
 	default:
 		// Handle all unknown or unsupported types here
 		return "", fmt.Errorf("unsupported or unknown node type ID: %d", i)
@@ -2877,6 +2881,10 @@ func entityNodeTypeToAPINodeTemplateType(nodeType entity.NodeType) (workflow.Nod
 		// Maps to DatabaseInsert (ID 41) in the API model, despite entity ID being 46.
 		// return workflow.NodeTemplateType_DatabaseInsert, nil
 		return workflow.NodeTemplateType(46), nil
+	case entity.NodeTypeJsonSerialization:
+		return workflow.NodeTemplateType_JsonSerialization, nil
+	case entity.NodeTypeJsonDeserialization:
+		return workflow.NodeTemplateType_JsonDeserialization, nil
 	case entity.NodeTypeLambda:
 		return 0, nil
 	default:

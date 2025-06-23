@@ -168,10 +168,17 @@ func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo
 
 	for k, v := range result {
 		if s, ok := schema_[k]; ok {
-			if val, err := nodes.Convert(ctx, v, s); err == nil {
-				result[k] = val
+			val, err := nodes.Convert(ctx, v, k, s)
+			if err != nil {
+				var warnings nodes.ConversionWarnings
+				if errors.As(err, &warnings) {
+					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+					result[k] = val
+				} else {
+					return nil, fmt.Errorf("invalid type: %v, %v", k, err)
+				}
 			} else {
-				return nil, fmt.Errorf("invalid type: %v, %v", k, err)
+				result[k] = val
 			}
 		}
 	}

@@ -47,6 +47,19 @@ type NamedTypeInfo struct {
 	Properties   []*NamedTypeInfo `json:"properties,omitempty"`
 }
 
+type ErrorLevel string
+
+const (
+	LevelWarn   ErrorLevel = "warn"
+	LevelError  ErrorLevel = "Error"
+	LevelCancel ErrorLevel = "pending" // TODO: this 'pending' will be changed to 'cancel' or similar in the near future
+)
+
+type ErrorInfo struct {
+	Err   error
+	Level ErrorLevel
+}
+
 type DataType string
 
 const (

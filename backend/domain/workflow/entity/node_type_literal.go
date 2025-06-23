@@ -581,6 +581,45 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		EnUSCategory:    "Database",
 		EnUSDescription: "Add new data records to the table, and insert them into the database after the user enters the data content",
 	},
+	{
+		ID:           58,
+		Name:         "JSON 序列化",
+		Type:         NodeTypeJsonSerialization,
+		Category:     "组件",
+		Desc:         "用于把变量转化为JSON字符串",
+		Color:        "F2B600",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-to_json.png",
+		SupportBatch: false,
+		ExecutableMeta: ExecutableMeta{
+			DefaultTimeoutMS:   60 * 1000, // 1 minute
+			PreFillZero:        true,
+			CallbackEnabled:    true,
+			StreamingParadigms: map[StreamingParadigm]bool{Invoke: true},
+		},
+		EnUSName:        "JSON serialization",
+		EnUSCategory:    "Utilities",
+		EnUSDescription: "Convert variable to JSON string",
+	},
+	{
+		ID:           59,
+		Name:         "JSON 反序列化",
+		Type:         NodeTypeJsonDeserialization,
+		Category:     "组件",
+		Desc:         "用于将JSON字符串解析为变量",
+		Color:        "F2B600",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-from_json.png",
+		SupportBatch: false,
+		ExecutableMeta: ExecutableMeta{
+			DefaultTimeoutMS:   60 * 1000, // 1 minute
+			PreFillZero:        true,
+			PostFillNil:        true,
+			CallbackEnabled:    true,
+			StreamingParadigms: map[StreamingParadigm]bool{Invoke: true},
+		},
+		EnUSName:        "JSON deserialization",
+		EnUSCategory:    "Utilities",
+		EnUSDescription: "Parse JSON string to variable",
+	},
 	// --- End of nodes parsed from template_list ---
 }
 

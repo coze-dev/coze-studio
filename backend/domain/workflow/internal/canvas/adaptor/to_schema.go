@@ -184,30 +184,32 @@ func normalizePorts(connections []*compose.Connection, nodeMap map[string]*vo.No
 }
 
 var blockTypeToNodeSchema = map[vo.BlockType]func(*vo.Node) (*compose.NodeSchema, error){
-	vo.BlockTypeBotStart:           toEntryNodeSchema,
-	vo.BlockTypeBotEnd:             toExitNodeSchema,
-	vo.BlockTypeBotLLM:             toLLMNodeSchema,
-	vo.BlockTypeBotLoopSetVariable: toLoopSetVariableNodeSchema,
-	vo.BlockTypeBotBreak:           toBreakNodeSchema,
-	vo.BlockTypeBotContinue:        toContinueNodeSchema,
-	vo.BlockTypeCondition:          toSelectorNodeSchema,
-	vo.BlockTypeBotText:            toTextProcessorNodeSchema,
-	vo.BlockTypeBotIntent:          toIntentDetectorSchema,
-	vo.BlockTypeDatabase:           toDatabaseCustomSQLSchema,
-	vo.BlockTypeDatabaseSelect:     toDatabaseQuerySchema,
-	vo.BlockTypeDatabaseInsert:     toDatabaseInsertSchema,
-	vo.BlockTypeDatabaseDelete:     toDatabaseDeleteSchema,
-	vo.BlockTypeDatabaseUpdate:     toDatabaseUpdateSchema,
-	vo.BlockTypeBotHttp:            toHttpRequesterSchema,
-	vo.BlockTypeBotDatasetWrite:    toKnowledgeIndexerSchema,
-	vo.BlockTypeBotDataset:         toKnowledgeRetrieverSchema,
-	vo.BlockTypeBotAssignVariable:  toVariableAssignerSchema,
-	vo.BlockTypeBotCode:            toCodeRunnerSchema,
-	vo.BlockTypeBotAPI:             toPluginSchema,
-	vo.BlockTypeBotVariableMerge:   toVariableAggregatorSchema,
-	vo.BlockTypeBotInput:           toInputReceiverSchema,
-	vo.BlockTypeBotMessage:         toOutputEmitterNodeSchema,
-	vo.BlockTypeQuestion:           toQASchema,
+	vo.BlockTypeBotStart:            toEntryNodeSchema,
+	vo.BlockTypeBotEnd:              toExitNodeSchema,
+	vo.BlockTypeBotLLM:              toLLMNodeSchema,
+	vo.BlockTypeBotLoopSetVariable:  toLoopSetVariableNodeSchema,
+	vo.BlockTypeBotBreak:            toBreakNodeSchema,
+	vo.BlockTypeBotContinue:         toContinueNodeSchema,
+	vo.BlockTypeCondition:           toSelectorNodeSchema,
+	vo.BlockTypeBotText:             toTextProcessorNodeSchema,
+	vo.BlockTypeBotIntent:           toIntentDetectorSchema,
+	vo.BlockTypeDatabase:            toDatabaseCustomSQLSchema,
+	vo.BlockTypeDatabaseSelect:      toDatabaseQuerySchema,
+	vo.BlockTypeDatabaseInsert:      toDatabaseInsertSchema,
+	vo.BlockTypeDatabaseDelete:      toDatabaseDeleteSchema,
+	vo.BlockTypeDatabaseUpdate:      toDatabaseUpdateSchema,
+	vo.BlockTypeBotHttp:             toHttpRequesterSchema,
+	vo.BlockTypeBotDatasetWrite:     toKnowledgeIndexerSchema,
+	vo.BlockTypeBotDataset:          toKnowledgeRetrieverSchema,
+	vo.BlockTypeBotAssignVariable:   toVariableAssignerSchema,
+	vo.BlockTypeBotCode:             toCodeRunnerSchema,
+	vo.BlockTypeBotAPI:              toPluginSchema,
+	vo.BlockTypeBotVariableMerge:    toVariableAggregatorSchema,
+	vo.BlockTypeBotInput:            toInputReceiverSchema,
+	vo.BlockTypeBotMessage:          toOutputEmitterNodeSchema,
+	vo.BlockTypeQuestion:            toQASchema,
+	vo.BlockTypeJsonSerialization:   toJSONSerializeSchema,
+	vo.BlockTypeJsonDeserialization: toJSONDeserializeSchema,
 }
 
 var blockTypeToSkip = map[vo.BlockType]bool{
@@ -1772,6 +1774,42 @@ func toQASchema(n *vo.Node) (*compose.NodeSchema, error) {
 	}
 
 	if err = SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toJSONSerializeSchema(n *vo.Node) (*compose.NodeSchema, error) {
+	ns := &compose.NodeSchema{
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeJsonSerialization,
+		Name: n.Data.Meta.Title,
+	}
+
+	if err := SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toJSONDeserializeSchema(n *vo.Node) (*compose.NodeSchema, error) {
+	ns := &compose.NodeSchema{
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeJsonDeserialization,
+		Name: n.Data.Meta.Title,
+	}
+
+	if err := SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 

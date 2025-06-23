@@ -33,6 +33,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/intentdetector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/json"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
@@ -365,6 +366,18 @@ func (s *NodeSchema) ToTextProcessorConfig() (*textprocessor.Config, error) {
 		ConcatChar:  getKeyOrZero[string]("ConcatChar", s.Configs.(map[string]any)),
 		Separators:  getKeyOrZero[[]string]("Separators", s.Configs.(map[string]any)),
 		FullSources: getKeyOrZero[map[string]*nodes.SourceInfo]("FullSources", s.Configs),
+	}, nil
+}
+
+func (s *NodeSchema) ToJsonSerializationConfig() (*json.SerializationConfig, error) {
+	return &json.SerializationConfig{
+		InputTypes: s.InputTypes,
+	}, nil
+}
+
+func (s *NodeSchema) ToJsonDeserializationConfig() (*json.DeserializationConfig, error) {
+	return &json.DeserializationConfig{
+		OutputFields: s.OutputTypes,
 	}, nil
 }
 
