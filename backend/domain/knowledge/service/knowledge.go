@@ -554,6 +554,11 @@ func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request *Resegment
 	if request == nil {
 		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
 	}
+	if request.ChunkingStrategy != nil {
+		if request.ChunkingStrategy.ChunkType == parser.ChunkTypeDefault {
+			request.ChunkingStrategy = getDefaultChunkStrategy()
+		}
+	}
 	doc, err := k.documentRepo.GetByID(ctx, request.DocumentID)
 	if err != nil {
 		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
