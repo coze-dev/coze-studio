@@ -3,6 +3,7 @@ package rmq
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/apache/rocketmq-client-go/v2"
 	"github.com/apache/rocketmq-client-go/v2/consumer"
@@ -10,9 +11,11 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/rlog"
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/signal"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.ConsumerHandler, opts ...eventbus.ConsumerOpt) error {
@@ -42,6 +45,10 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 		consumer.WithGroupName(group),
 		consumer.WithNsResolver(primitive.NewPassthroughResolver([]string{nameServer})),
 		consumer.WithConsumeFromWhere(consumer.ConsumeFromLastOffset),
+		consumer.WithCredentials(primitive.Credentials{
+			AccessKey: os.Getenv(consts.RMQAccessKey),
+			SecretKey: os.Getenv(consts.RMQSecretKey),
+		}),
 	}
 
 	if o.Orderly != nil {
@@ -50,23 +57,12 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 
 	c, err := rocketmq.NewPushConsumer(defaultOptions...)
 	if err != nil {
-		return err
+		return fmt.Errorf("[RegisterConsumer] nameServer: %s, topic: %s, group : %s, err: %w", nameServer, topic, group, err)
 	}
 
 	err = c.Subscribe(topic, consumer.MessageSelector{},
 		func(ctx context.Context, msgArr ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
 			for i := range msgArr {
-				subCtx := ctx
-				if cc, ok := primitive.GetConsumerCtx(ctx); ok {
-					subCtx = primitive.WithConsumerCtx(ctx, &primitive.ConsumeMessageContext{
-						ConsumerGroup: cc.ConsumerGroup,
-						Msgs:          []*primitive.MessageExt{cc.Msgs[i]},
-						MQ:            cc.MQ,
-						Success:       cc.Success,
-						Status:        cc.Status,
-						Properties:    cc.Properties,
-					})
-				}
 
 				msg := &eventbus.Message{
 					Topic: msgArr[i].Topic,
@@ -74,8 +70,10 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 					Body:  msgArr[i].Body,
 				}
 
-				err := consumerHandler.HandleMessage(subCtx, msg)
+				logs.CtxDebugf(ctx, "[Subscribe] receive msg : %v \n", conv.DebugJsonToStr(msg))
+				err = consumerHandler.HandleMessage(ctx, msg)
 				if err != nil {
+					logs.CtxErrorf(ctx, "[Subscribe] handle msg failed, topic : %s , group : %s, err: %v \n", msg.Topic, msg.Group, err)
 					return consumer.ConsumeRetryLater, err // TODO: 策略可以可以配置
 				}
 
@@ -89,7 +87,7 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 	}
 
 	if err = c.Start(); err != nil {
-		return fmt.Errorf("consumer Start failed, err=%w", err)
+		return fmt.Errorf("[RegisterConsumer-Start] nameServer: %s, topic: %s, group : %s, err: %w", nameServer, topic, group, err)
 	}
 
 	safego.Go(context.Background(), func() {

@@ -3,6 +3,7 @@ package rmq
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/apache/rocketmq-client-go/v2"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
@@ -12,6 +13,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/signal"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 type producerImpl struct {
@@ -33,6 +35,12 @@ func NewProducer(nameServer, topic, group string, retries int) (eventbus.Produce
 		producer.WithNsResolver(primitive.NewPassthroughResolver([]string{nameServer})),
 		producer.WithRetry(retries),
 		producer.WithGroupName(group),
+		producer.WithCredentials(primitive.Credentials{
+			AccessKey: os.Getenv(consts.RMQAccessKey),
+			SecretKey: os.Getenv(consts.RMQSecretKey),
+		}),
+		// producer.WithNsResolver(primitive.NewGRPCCredentialsResolver(nil)),
+		// producer.WithInstanceName("rocketmq-cnngf291ea363b7a"),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("NewProducer failed, nameServer: %s, topic: %s, err: %w", nameServer, topic, err)
