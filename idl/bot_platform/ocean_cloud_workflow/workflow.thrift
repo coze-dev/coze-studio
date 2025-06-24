@@ -1373,8 +1373,8 @@ struct WorkflowDetailInfoData {
 }
 
 struct GetWorkflowDetailRequest {
-    1  : optional list<string> workflow_ids     ,
-    2  : optional string       space_id         ,
+    1  : optional list<string> workflow_ids     , // required
+    2  : optional string       space_id         , // required
 
     255: optional base.Base    Base             ,
 }

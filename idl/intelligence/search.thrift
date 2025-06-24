@@ -94,7 +94,7 @@ struct IntelligenceData {
 
 struct DraftIntelligenceListData {
     1: list<IntelligenceData> intelligences,
-    2: i32 total,
+    2: i32 total, // 当前页拉取的总条数
     3: bool has_more,
     4: string next_cursor_id,
 }
