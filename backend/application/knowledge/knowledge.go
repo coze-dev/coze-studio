@@ -251,7 +251,6 @@ func (k *KnowledgeApplicationService) UpdateKnowledge(ctx context.Context, req *
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "publish resource event failed, err: %v", err)
-		return dataset.NewUpdateDatasetResponse(), err
 	}
 	return &dataset.UpdateDatasetResponse{}, nil
 }
@@ -323,6 +322,17 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 	for i := range createResp.Documents {
 		resp.DocumentInfos = append(resp.DocumentInfos, convertDocument2Model(createResp.Documents[i]))
 	}
+	err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
+		OpType: resourceEntity.Updated,
+		Resource: &resourceEntity.ResourceDocument{
+			ResType:      resource.ResType_Knowledge,
+			ResID:        req.GetDatasetID(),
+			UpdateTimeMS: ptr.Of(time.Now().UnixMilli()),
+		},
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "publish resource event failed, err: %v", err)
+	}
 	return resp, nil
 }
 
@@ -390,6 +400,7 @@ func (k *KnowledgeApplicationService) UpdateDocument(ctx context.Context, req *d
 			Columns: convertTableColumns2Entity(req.GetTableMeta()),
 		},
 	})
+	k.getKnowledgeIDByDocumentID(ctx, req.GetDocumentID())
 	if err != nil {
 		logs.CtxErrorf(ctx, "update document failed, err: %v", err)
 		return dataset.NewUpdateDocumentResponse(), err
@@ -467,6 +478,7 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 	if uid == nil {
 		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
+	k.DomainSVC.GetDocumentByID(ctx, &service.GetDocumentByIDRequest{DocumentID: req.GetDocumentID()})
 	listResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{
 		DocumentIDs: []int64{req.GetDocumentID()},
 	})
@@ -1103,4 +1115,15 @@ func (k *KnowledgeApplicationService) ExtractPhotoCaption(ctx context.Context, r
 
 type DeleteAppKnowledgeRequest struct {
 	AppID int64 `json:"app_id"`
+}
+
+func (k *KnowledgeApplicationService) getKnowledgeIDByDocumentID(ctx context.Context, documentID int64) (int64, error) {
+	docInfo, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{DocumentIDs: []int64{documentID}})
+	if err != nil {
+		return 0, err
+	}
+	if len(docInfo.Documents) == 0 {
+		return 0, errors.New("document not found")
+	}
+	return docInfo.Documents[0].KnowledgeID, nil
 }

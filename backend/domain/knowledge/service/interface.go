@@ -28,6 +28,7 @@ type Knowledge interface {
 	DeleteDocument(ctx context.Context, request *DeleteDocumentRequest) error
 	ExtractPhotoCaption(ctx context.Context, request *ExtractPhotoCaptionRequest) (response *ExtractPhotoCaptionResponse, err error)
 	ListDocument(ctx context.Context, request *ListDocumentRequest) (response *ListDocumentResponse, err error)
+	GetDocumentByID(ctx context.Context, request *GetDocumentByIDRequest) (response *GetDocumentByIDResponse, err error)
 	MGetDocumentProgress(ctx context.Context, request *MGetDocumentProgressRequest) (response *MGetDocumentProgressResponse, err error)
 	ResegmentDocument(ctx context.Context, request *ResegmentDocumentRequest) (response *ResegmentDocumentResponse, err error)
 	GetAlterTableSchema(ctx context.Context, request *AlterTableSchemaRequest) (response *TableSchemaResponse, err error)
@@ -338,3 +339,11 @@ type ExtractPhotoCaptionResponse struct {
 }
 type MGetKnowledgeByIDRequest = knowledge.MGetKnowledgeByIDRequest
 type MGetKnowledgeByIDResponse = knowledge.MGetKnowledgeByIDResponse
+
+type GetDocumentByIDRequest struct {
+	DocumentID int64
+}
+
+type GetDocumentByIDResponse struct {
+	Document *entity.Document
+}

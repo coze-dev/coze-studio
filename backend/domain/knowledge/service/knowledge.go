@@ -447,6 +447,27 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, request *DeleteDocume
 	return nil
 }
 
+func (k *knowledgeSVC) GetDocumentByID(ctx context.Context, request *GetDocumentByIDRequest) (response *GetDocumentByIDResponse, err error) {
+	if request == nil {
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	doc, err := k.documentRepo.GetByID(ctx, request.DocumentID)
+	if err != nil {
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+	}
+	if doc == nil || doc.ID == 0 {
+		logs.CtxWarnf(ctx, "[GetDocumentByID] document not found, doc_id: %d", request.DocumentID)
+		return nil, errorx.New(errno.ErrKnowledgeDocumentNotExistCode)
+	}
+	docItem, err := k.fromModelDocument(ctx, doc)
+	if err != nil {
+		return nil, err
+	}
+	return &GetDocumentByIDResponse{
+		Document: docItem,
+	}, nil
+}
+
 func (k *knowledgeSVC) ListDocument(ctx context.Context, request *ListDocumentRequest) (response *ListDocumentResponse, err error) {
 	if request == nil {
 		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
