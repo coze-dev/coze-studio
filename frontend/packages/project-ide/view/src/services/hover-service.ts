@@ -215,6 +215,9 @@ export class HoverService {
 
   protected listenForMouseOut(): void {
     const handleMouseMove = (e: MouseEvent) => {
+      if (!this.hoverTarget) {
+        return;
+      }
       if (
         e.target instanceof Node &&
         !this.hoverHost.contains(e.target) &&

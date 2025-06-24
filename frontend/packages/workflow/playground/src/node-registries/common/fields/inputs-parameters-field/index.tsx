@@ -13,6 +13,7 @@ interface InputsSectionProps extends FieldProps<InputValueVO[]> {
   isTree?: boolean;
   paramsTitle?: string;
   expressionTitle?: string;
+  testId?: string;
   disabledTypes?: ViewVariableType[];
   onAppend?: () => InputValueVO;
   inputPlaceholder?: string;
@@ -35,6 +36,7 @@ export const InputsParametersField = ({
   isTree,
   nameProps,
   customReadonly,
+  testId,
 }: InputsSectionProps) =>
   isTree ? (
     <InputsTreeField
@@ -43,6 +45,7 @@ export const InputsParametersField = ({
       title={title}
       tooltip={tooltip}
       customReadonly={customReadonly}
+      testId={testId}
     />
   ) : (
     <InputsField

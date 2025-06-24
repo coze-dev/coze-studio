@@ -59,6 +59,7 @@ export const PythonEditor = (props: EditorProps & EditorOtherProps) => {
           height,
           editable: !readonly,
           fontSize: 12,
+          tabSize: 4,
         }}
       />
     </EditorProvider>

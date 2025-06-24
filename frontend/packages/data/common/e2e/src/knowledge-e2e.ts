@@ -133,6 +133,7 @@ export enum KnowledgeE2e {
   SegmentDetailSystemWebUrlDropdownMenu = 'knowledge.segment.detail.system.web_url.dropdown_menu',
   SegmentDetailTableConfigBtn = 'knowledge.segment.detail.table_config.btn',
   SegmentDetailDropdownItem = 'knowledge.segment.detail.dropdown.item',
+  SegmentDetailLocalFileItem = 'knowledge.segment.detail.dropdown.item.text_doc',
   SegmentDetailContentItemEditIcon = 'knowledge.segment.detail.content.edit.icon',
   SegmentDetailContentItemFrequencyIcon = 'knowledge.segment.detail.content.frequency.icon',
   SegmentDetailContentItemAddTopIcon = 'knowledge.segment.detail.content.add_top.icon',

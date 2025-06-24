@@ -1,14 +1,17 @@
 import { type FC, useCallback, useMemo } from 'react';
 
 import classNames from 'classnames';
+import {
+  useService,
+  useEntityFromContext,
+} from '@flowgram-adapter/free-layout-editor';
+import { type WorkflowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import { GenerationDiversity, useNodeTestId } from '@coze-workflow/base';
+import { JsonViewer } from '@coze-common/json-viewer';
 import { IconCozSetting } from '@coze-arch/coze-design/icons';
 import { IconButton, type PopoverProps } from '@coze-arch/coze-design';
 import { type OptionItem } from '@coze-arch/bot-semi/Radio';
 import { Popover } from '@coze-arch/bot-semi';
-import { useService, useEntityFromContext } from '@flowgram-adapter/free-layout-editor';
-import { type WorkflowNodeEntity } from '@flowgram-adapter/free-layout-editor';
-import { JsonViewer } from '@coze-common/json-viewer';
 
 import type { IModelValue, ComponentProps } from '@/typing';
 import { WorkflowModelsService } from '@/services';
@@ -104,9 +107,9 @@ export const ModelSelect: FC<ModelSelectProps> = ({
           'flex gap-[4px] items-center relative',
           className,
         )}
+        data-testid={setterTestId}
       >
         <ModelSelector
-          data-testid={setterTestId}
           readonly={readonly}
           value={value?.modelType}
           onChange={_v => {

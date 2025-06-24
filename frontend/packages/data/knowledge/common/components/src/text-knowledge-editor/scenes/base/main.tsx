@@ -116,12 +116,10 @@ export const BaseTextKnowledgeEditor = ({
                   editor={editor}
                   editorContextMenuItemsRegistry={editorContextActionRegistry}
                   onBlur={content => {
-                    if (content) {
-                      saveChunk({
-                        ...activeChunk,
-                        content,
-                      });
-                    }
+                    saveChunk({
+                      ...activeChunk,
+                      content,
+                    });
                   }}
                 />
               );

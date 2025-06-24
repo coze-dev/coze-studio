@@ -1,4 +1,5 @@
 /* eslint-disable @coze-arch/no-deep-relative-import */
+import { VariableE2e } from '@coze-data/e2e';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozTrashCan } from '@coze-arch/coze-design/icons';
 import { Tooltip, IconButton, Switch } from '@coze-arch/coze-design';
@@ -74,6 +75,7 @@ export default function ParamOperator({
       ) : null}
       {/* 删除 */}
       <IconButton
+        data-testid={VariableE2e.VariableTreeDeleteBtn}
         color="secondary"
         onClick={onDelete}
         disabled={!showDeleteButton}
