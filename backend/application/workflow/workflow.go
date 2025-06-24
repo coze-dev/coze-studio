@@ -288,10 +288,9 @@ func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.Ge
 				ID:   strconv.FormatInt(wf.CreatorID, 10),
 				Self: ternary.IFElse[bool](wf.CreatorID == ptr.From(ctxutil.GetUIDFromCtx(ctx)), true, false),
 			},
-			FlowMode:  wf.Mode,
-			ProjectID: i64PtrToStringPtr(wf.AppID),
-
-			PersistenceModel: workflow.PersistenceModel_DB,
+			FlowMode:         wf.Mode,
+			ProjectID:        i64PtrToStringPtr(wf.AppID),
+			PersistenceModel: workflow.PersistenceModel_VCS, // the front-end validation logic, this field returns VCS, developers don't need to pay attention
 			PluginID:         pluginID,
 		},
 		VcsData: &workflow.VCSCanvasData{

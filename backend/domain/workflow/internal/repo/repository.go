@@ -726,7 +726,7 @@ func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (ma
 	}
 
 	if query.Name != nil {
-		conditions = append(conditions, r.query.WorkflowMeta.Name.Like(*query.Name))
+		conditions = append(conditions, r.query.WorkflowMeta.Name.Like(`%%`+*query.Name+`%%`))
 	}
 
 	if query.SpaceID != nil {

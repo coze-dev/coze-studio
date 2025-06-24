@@ -8,6 +8,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
@@ -65,7 +66,16 @@ func (v *VariableAssigner) Assign(ctx context.Context, in map[string]any) (map[s
 				return nil, err
 			}
 		case variable.GlobalUser:
-			err := v.config.Handler.Set(ctx, *pair.Left.VariableType, pair.Left.FromPath, right)
+			opts := make([]variable.OptionFn, 0, 1)
+			if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
+				exeCfg := exeCtx.RootCtx.ExeCfg
+				opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
+					AgentID:     exeCfg.AgentID,
+					AppID:       exeCfg.AppID,
+					ConnectorID: exeCfg.ConnectorID,
+				}))
+			}
+			err := v.config.Handler.Set(ctx, *pair.Left.VariableType, pair.Left.FromPath, right, opts...)
 			if err != nil {
 				return nil, err
 			}
