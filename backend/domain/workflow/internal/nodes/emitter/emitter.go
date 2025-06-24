@@ -12,6 +12,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
@@ -530,6 +531,8 @@ func renderAndSend(tp nodes.TemplatePart, k string, v any, sw *schema.StreamWrit
 	if len(r) == 0 { // won't send if formatted result is empty string
 		return false
 	}
+
+	logs.Infof("send: %v", r)
 
 	sw.Send(map[string]any{outputKey: r}, nil)
 	return false
