@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"regexp"
 	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -28,10 +29,11 @@ var needAuthPath = map[string]bool{
 	"/v1/workflow/stream_run":       true,
 	"/v1/workflow/stream_resume":    true,
 	"/v1/workflow/get_run_history":  true,
+	"/v1/bot/get_online_info":       true,
 }
 
 var needAuthFunc = map[string]bool{
-	"coze.ClearConversationApi": true, // v1/conversations/:conversation_id/clear
+	"^/v1/conversations/[0-9]+/clear$": true, // v1/conversations/:conversation_id/clear
 }
 
 func parseBearerAuthToken(authHeader string) string {
@@ -54,9 +56,13 @@ func parseBearerAuthToken(authHeader string) string {
 func isNeedOpenapiAuth(c *app.RequestContext) bool {
 	isNeedAuth := false
 
-	handlerParse := strings.Split(c.HandlerName(), "/")
-	if len(handlerParse) > 0 && needAuthFunc[handlerParse[len(handlerParse)-1]] {
-		isNeedAuth = true
+	uriPath := c.URI().Path()
+
+	for rule, res := range needAuthFunc {
+		if regexp.MustCompile(rule).MatchString(string(uriPath)) {
+			isNeedAuth = res
+			break
+		}
 	}
 
 	if needAuthPath[string(c.GetRequest().URI().Path())] {

@@ -9,9 +9,9 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/joho/godotenv"
-
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/hertz-contrib/cors"
+	"github.com/joho/godotenv"
 
 	"code.byted.org/flow/opencoze/backend/api/middleware"
 	"code.byted.org/flow/opencoze/backend/api/router"
@@ -47,6 +47,12 @@ func main() {
 	// ContextCacheMW -> RequestInspectorMW -> AccessLogMW -> OtherMiddleware
 	s.Use(middleware.ContextCacheMW())
 	s.Use(middleware.RequestInspectorMW())
+
+	// cors option
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	corsHandler := cors.New(config)
+	s.Use(corsHandler)
 	s.Use(middleware.SetLogIDMW())
 	s.Use(middleware.AccessLogMW())
 	s.Use(middleware.OpenapiAuthMW())

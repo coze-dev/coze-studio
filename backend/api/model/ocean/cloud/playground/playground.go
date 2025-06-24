@@ -16759,6 +16759,526 @@ func (p *File) String() string {
 
 }
 
+type GetBotOnlineInfoReq struct {
+	// botId
+	BotID int64 `thrift:"bot_id,1,required" form:"bot_id,required" json:"bot_id,string,required" query:"bot_id,required"`
+	// 先保留，不暴露且不使用该字段
+	ConnectorID *string `thrift:"connector_id,2,optional" form:"connector_id" json:"connector_id,omitempty" query:"connector_id"`
+	// bot版本，不传则获取最新版本
+	Version *string `thrift:"version,3,optional" form:"version" json:"version,omitempty" query:"version"`
+}
+
+func NewGetBotOnlineInfoReq() *GetBotOnlineInfoReq {
+	return &GetBotOnlineInfoReq{}
+}
+
+func (p *GetBotOnlineInfoReq) InitDefault() {
+}
+
+func (p *GetBotOnlineInfoReq) GetBotID() (v int64) {
+	return p.BotID
+}
+
+var GetBotOnlineInfoReq_ConnectorID_DEFAULT string
+
+func (p *GetBotOnlineInfoReq) GetConnectorID() (v string) {
+	if !p.IsSetConnectorID() {
+		return GetBotOnlineInfoReq_ConnectorID_DEFAULT
+	}
+	return *p.ConnectorID
+}
+
+var GetBotOnlineInfoReq_Version_DEFAULT string
+
+func (p *GetBotOnlineInfoReq) GetVersion() (v string) {
+	if !p.IsSetVersion() {
+		return GetBotOnlineInfoReq_Version_DEFAULT
+	}
+	return *p.Version
+}
+
+var fieldIDToName_GetBotOnlineInfoReq = map[int16]string{
+	1: "bot_id",
+	2: "connector_id",
+	3: "version",
+}
+
+func (p *GetBotOnlineInfoReq) IsSetConnectorID() bool {
+	return p.ConnectorID != nil
+}
+
+func (p *GetBotOnlineInfoReq) IsSetVersion() bool {
+	return p.Version != nil
+}
+
+func (p *GetBotOnlineInfoReq) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetBotID bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetBotID = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetBotID {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_GetBotOnlineInfoReq[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_GetBotOnlineInfoReq[fieldId]))
+}
+
+func (p *GetBotOnlineInfoReq) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.BotID = _field
+	return nil
+}
+func (p *GetBotOnlineInfoReq) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.ConnectorID = _field
+	return nil
+}
+func (p *GetBotOnlineInfoReq) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Version = _field
+	return nil
+}
+
+func (p *GetBotOnlineInfoReq) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetBotOnlineInfoReq"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *GetBotOnlineInfoReq) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("bot_id", thrift.I64, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.BotID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *GetBotOnlineInfoReq) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetConnectorID() {
+		if err = oprot.WriteFieldBegin("connector_id", thrift.STRING, 2); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.ConnectorID); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *GetBotOnlineInfoReq) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetVersion() {
+		if err = oprot.WriteFieldBegin("version", thrift.STRING, 3); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Version); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *GetBotOnlineInfoReq) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetBotOnlineInfoReq(%+v)", *p)
+
+}
+
+// resp
+type GetBotOnlineInfoResp struct {
+	Code int32                      `thrift:"code,1,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg  string                     `thrift:"msg,2,required" form:"msg,required" json:"msg,required" query:"msg,required"`
+	Data *bot_common.OpenAPIBotInfo `thrift:"data,3,required" form:"data,required" json:"data,required" query:"data,required"`
+}
+
+func NewGetBotOnlineInfoResp() *GetBotOnlineInfoResp {
+	return &GetBotOnlineInfoResp{}
+}
+
+func (p *GetBotOnlineInfoResp) InitDefault() {
+}
+
+func (p *GetBotOnlineInfoResp) GetCode() (v int32) {
+	return p.Code
+}
+
+func (p *GetBotOnlineInfoResp) GetMsg() (v string) {
+	return p.Msg
+}
+
+var GetBotOnlineInfoResp_Data_DEFAULT *bot_common.OpenAPIBotInfo
+
+func (p *GetBotOnlineInfoResp) GetData() (v *bot_common.OpenAPIBotInfo) {
+	if !p.IsSetData() {
+		return GetBotOnlineInfoResp_Data_DEFAULT
+	}
+	return p.Data
+}
+
+var fieldIDToName_GetBotOnlineInfoResp = map[int16]string{
+	1: "code",
+	2: "msg",
+	3: "data",
+}
+
+func (p *GetBotOnlineInfoResp) IsSetData() bool {
+	return p.Data != nil
+}
+
+func (p *GetBotOnlineInfoResp) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetCode bool = false
+	var issetMsg bool = false
+	var issetData bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetData = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetCode {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 2
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetData {
+		fieldId = 3
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_GetBotOnlineInfoResp[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_GetBotOnlineInfoResp[fieldId]))
+}
+
+func (p *GetBotOnlineInfoResp) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *GetBotOnlineInfoResp) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
+	return nil
+}
+func (p *GetBotOnlineInfoResp) ReadField3(iprot thrift.TProtocol) error {
+	_field := bot_common.NewOpenAPIBotInfo()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Data = _field
+	return nil
+}
+
+func (p *GetBotOnlineInfoResp) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetBotOnlineInfoResp"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *GetBotOnlineInfoResp) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *GetBotOnlineInfoResp) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *GetBotOnlineInfoResp) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("data", thrift.STRUCT, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Data.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *GetBotOnlineInfoResp) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetBotOnlineInfoResp(%+v)", *p)
+
+}
+
 type PlaygroundService interface {
 	UpdateDraftBotInfoAgw(ctx context.Context, request *UpdateDraftBotInfoAgwRequest) (r *UpdateDraftBotInfoAgwResponse, err error)
 
@@ -16787,6 +17307,8 @@ type PlaygroundService interface {
 	GetSpaceListV2(ctx context.Context, request *GetSpaceListV2Request) (r *GetSpaceListV2Response, err error)
 
 	MGetUserBasicInfo(ctx context.Context, request *MGetUserBasicInfoRequest) (r *MGetUserBasicInfoResponse, err error)
+	//openapi
+	GetBotOnlineInfo(ctx context.Context, request *GetBotOnlineInfoReq) (r *GetBotOnlineInfoResp, err error)
 	// File 相关 OpenAPI
 	UploadFileOpen(ctx context.Context, request *UploadFileOpenRequest) (r *UploadFileOpenResponse, err error)
 }
@@ -16943,6 +17465,15 @@ func (p *PlaygroundServiceClient) MGetUserBasicInfo(ctx context.Context, request
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *PlaygroundServiceClient) GetBotOnlineInfo(ctx context.Context, request *GetBotOnlineInfoReq) (r *GetBotOnlineInfoResp, err error) {
+	var _args PlaygroundServiceGetBotOnlineInfoArgs
+	_args.Request = request
+	var _result PlaygroundServiceGetBotOnlineInfoResult
+	if err = p.Client_().Call(ctx, "GetBotOnlineInfo", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 func (p *PlaygroundServiceClient) UploadFileOpen(ctx context.Context, request *UploadFileOpenRequest) (r *UploadFileOpenResponse, err error) {
 	var _args PlaygroundServiceUploadFileOpenArgs
 	_args.Request = request
@@ -16987,6 +17518,7 @@ func NewPlaygroundServiceProcessor(handler PlaygroundService) *PlaygroundService
 	self.AddToProcessorMap("DeletePromptResource", &playgroundServiceProcessorDeletePromptResource{handler: handler})
 	self.AddToProcessorMap("GetSpaceListV2", &playgroundServiceProcessorGetSpaceListV2{handler: handler})
 	self.AddToProcessorMap("MGetUserBasicInfo", &playgroundServiceProcessorMGetUserBasicInfo{handler: handler})
+	self.AddToProcessorMap("GetBotOnlineInfo", &playgroundServiceProcessorGetBotOnlineInfo{handler: handler})
 	self.AddToProcessorMap("UploadFileOpen", &playgroundServiceProcessorUploadFileOpen{handler: handler})
 	return self
 }
@@ -17663,6 +18195,54 @@ func (p *playgroundServiceProcessorMGetUserBasicInfo) Process(ctx context.Contex
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("MGetUserBasicInfo", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type playgroundServiceProcessorGetBotOnlineInfo struct {
+	handler PlaygroundService
+}
+
+func (p *playgroundServiceProcessorGetBotOnlineInfo) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := PlaygroundServiceGetBotOnlineInfoArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetBotOnlineInfo", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := PlaygroundServiceGetBotOnlineInfoResult{}
+	var retval *GetBotOnlineInfoResp
+	if retval, err2 = p.handler.GetBotOnlineInfo(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetBotOnlineInfo: "+err2.Error())
+		oprot.WriteMessageBegin("GetBotOnlineInfo", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetBotOnlineInfo", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -21813,6 +22393,298 @@ func (p *PlaygroundServiceMGetUserBasicInfoResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("PlaygroundServiceMGetUserBasicInfoResult(%+v)", *p)
+
+}
+
+type PlaygroundServiceGetBotOnlineInfoArgs struct {
+	Request *GetBotOnlineInfoReq `thrift:"request,1"`
+}
+
+func NewPlaygroundServiceGetBotOnlineInfoArgs() *PlaygroundServiceGetBotOnlineInfoArgs {
+	return &PlaygroundServiceGetBotOnlineInfoArgs{}
+}
+
+func (p *PlaygroundServiceGetBotOnlineInfoArgs) InitDefault() {
+}
+
+var PlaygroundServiceGetBotOnlineInfoArgs_Request_DEFAULT *GetBotOnlineInfoReq
+
+func (p *PlaygroundServiceGetBotOnlineInfoArgs) GetRequest() (v *GetBotOnlineInfoReq) {
+	if !p.IsSetRequest() {
+		return PlaygroundServiceGetBotOnlineInfoArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_PlaygroundServiceGetBotOnlineInfoArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *PlaygroundServiceGetBotOnlineInfoArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *PlaygroundServiceGetBotOnlineInfoArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PlaygroundServiceGetBotOnlineInfoArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *PlaygroundServiceGetBotOnlineInfoArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewGetBotOnlineInfoReq()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *PlaygroundServiceGetBotOnlineInfoArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetBotOnlineInfo_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *PlaygroundServiceGetBotOnlineInfoArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *PlaygroundServiceGetBotOnlineInfoArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("PlaygroundServiceGetBotOnlineInfoArgs(%+v)", *p)
+
+}
+
+type PlaygroundServiceGetBotOnlineInfoResult struct {
+	Success *GetBotOnlineInfoResp `thrift:"success,0,optional"`
+}
+
+func NewPlaygroundServiceGetBotOnlineInfoResult() *PlaygroundServiceGetBotOnlineInfoResult {
+	return &PlaygroundServiceGetBotOnlineInfoResult{}
+}
+
+func (p *PlaygroundServiceGetBotOnlineInfoResult) InitDefault() {
+}
+
+var PlaygroundServiceGetBotOnlineInfoResult_Success_DEFAULT *GetBotOnlineInfoResp
+
+func (p *PlaygroundServiceGetBotOnlineInfoResult) GetSuccess() (v *GetBotOnlineInfoResp) {
+	if !p.IsSetSuccess() {
+		return PlaygroundServiceGetBotOnlineInfoResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_PlaygroundServiceGetBotOnlineInfoResult = map[int16]string{
+	0: "success",
+}
+
+func (p *PlaygroundServiceGetBotOnlineInfoResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *PlaygroundServiceGetBotOnlineInfoResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PlaygroundServiceGetBotOnlineInfoResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *PlaygroundServiceGetBotOnlineInfoResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewGetBotOnlineInfoResp()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *PlaygroundServiceGetBotOnlineInfoResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetBotOnlineInfo_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *PlaygroundServiceGetBotOnlineInfoResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *PlaygroundServiceGetBotOnlineInfoResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("PlaygroundServiceGetBotOnlineInfoResult(%+v)", *p)
 
 }
 
