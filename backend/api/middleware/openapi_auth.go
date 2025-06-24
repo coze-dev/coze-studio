@@ -27,6 +27,7 @@ var needAuthPath = map[string]bool{
 	"/v1/workflow/run":              true,
 	"/v1/workflow/stream_run":       true,
 	"/v1/workflow/stream_resume":    true,
+	"/v1/workflow/get_run_history":  true,
 }
 
 var needAuthFunc = map[string]bool{

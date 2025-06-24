@@ -1062,28 +1062,30 @@ func BlockInputToNamedTypeInfo(name string, b *vo.BlockInput) (*vo.NamedTypeInfo
 		tInfo.Type = vo.DataTypeBoolean
 	case vo.VariableTypeObject:
 		tInfo.Type = vo.DataTypeObject
-		tInfo.Properties = make([]*vo.NamedTypeInfo, 0, len(b.Schema.([]any)))
-		for _, subVAny := range b.Schema.([]any) {
-			if b.Value.Type == vo.BlockInputValueTypeRef {
-				subV, err := vo.ParseVariable(subVAny)
-				if err != nil {
-					return nil, err
+		if b.Schema != nil {
+			tInfo.Properties = make([]*vo.NamedTypeInfo, 0, len(b.Schema.([]any)))
+			for _, subVAny := range b.Schema.([]any) {
+				if b.Value.Type == vo.BlockInputValueTypeRef {
+					subV, err := vo.ParseVariable(subVAny)
+					if err != nil {
+						return nil, err
+					}
+					subNInfo, err := VariableToNamedTypeInfo(subV)
+					if err != nil {
+						return nil, err
+					}
+					tInfo.Properties = append(tInfo.Properties, subNInfo)
+				} else if b.Value.Type == vo.BlockInputValueTypeObjectRef {
+					subV, err := parseParam(subVAny)
+					if err != nil {
+						return nil, err
+					}
+					subNInfo, err := BlockInputToNamedTypeInfo(subV.Name, subV.Input)
+					if err != nil {
+						return nil, err
+					}
+					tInfo.Properties = append(tInfo.Properties, subNInfo)
 				}
-				subNInfo, err := VariableToNamedTypeInfo(subV)
-				if err != nil {
-					return nil, err
-				}
-				tInfo.Properties = append(tInfo.Properties, subNInfo)
-			} else if b.Value.Type == vo.BlockInputValueTypeObjectRef {
-				subV, err := parseParam(subVAny)
-				if err != nil {
-					return nil, err
-				}
-				subNInfo, err := BlockInputToNamedTypeInfo(subV.Name, subV.Input)
-				if err != nil {
-					return nil, err
-				}
-				tInfo.Properties = append(tInfo.Properties, subNInfo)
 			}
 		}
 	case vo.VariableTypeList:
@@ -1136,18 +1138,20 @@ func VariableToNamedTypeInfo(v *vo.Variable) (*vo.NamedTypeInfo, error) {
 		nInfo.Type = vo.DataTypeBoolean
 	case vo.VariableTypeObject:
 		nInfo.Type = vo.DataTypeObject
-		nInfo.Properties = make([]*vo.NamedTypeInfo, 0)
-		for _, subVAny := range v.Schema.([]any) {
-			subV, err := vo.ParseVariable(subVAny)
-			if err != nil {
-				return nil, err
-			}
-			subTInfo, err := VariableToNamedTypeInfo(subV)
-			if err != nil {
-				return nil, err
-			}
-			nInfo.Properties = append(nInfo.Properties, subTInfo)
+		if v.Schema != nil {
+			nInfo.Properties = make([]*vo.NamedTypeInfo, 0)
+			for _, subVAny := range v.Schema.([]any) {
+				subV, err := vo.ParseVariable(subVAny)
+				if err != nil {
+					return nil, err
+				}
+				subTInfo, err := VariableToNamedTypeInfo(subV)
+				if err != nil {
+					return nil, err
+				}
+				nInfo.Properties = append(nInfo.Properties, subTInfo)
 
+			}
 		}
 	case vo.VariableTypeList:
 		nInfo.Type = vo.DataTypeArray
