@@ -272,10 +272,6 @@ func (v *variablesImpl) GetVariableChannelInstance(ctx context.Context, e *entit
 	metaKey2Variable := map[string]*entity.VariableMeta{}
 	metaKeys := make([]string, 0, len(meta.Variables))
 	for _, variable := range meta.Variables {
-		if variable.Channel == project_memory.VariableChannel_System {
-			continue
-		}
-
 		metaKeys = append(metaKeys, variable.Keyword)
 		metaKey2Variable[variable.Keyword] = variable
 	}
@@ -323,7 +319,7 @@ func (v *variablesImpl) GetVariableChannelInstance(ctx context.Context, e *entit
 
 	sysKVItems, err := v.getSysKVItems(ctx, meta, e)
 
-	res := v.mergeKVItem(sysKVItems, resMemory)
+	res := v.mergeKVItem(resMemory, sysKVItems)
 	res = v.sortKVItem(res, meta)
 
 	return res, nil

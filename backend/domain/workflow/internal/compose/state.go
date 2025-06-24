@@ -393,12 +393,15 @@ func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string
 
 		if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
 			exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
-
+			cUID, err := strconv.ParseInt(exeCfg.ConnectorUID, 10, 64)
+			if err != nil {
+				return nil, err
+			}
 			opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
-				AgentID:     exeCfg.AgentID,
-				AppID:       exeCfg.AppID,
-				ConnectorID: exeCfg.ConnectorID,
-				//ConnectorUID:
+				AgentID:      exeCfg.AgentID,
+				AppID:        exeCfg.AppID,
+				ConnectorID:  exeCfg.ConnectorID,
+				ConnectorUID: cUID,
 			}))
 		}
 		out := make(map[string]any)
