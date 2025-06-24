@@ -686,5 +686,7 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
  "versions": {
   "loop": "v2"
  }
-}', '[{"name":"input","type":"string","required":true}]', '[{"name":"output","type":"string"}]', 1, 0, null, null, '1');
+}', '[{"name":"input","type":"string","required":true}]', '[{"name":"output","type":"string"}]', 1, 0, null, null, '1')
+ON DUPLICATE KEY UPDATE
+    id = VALUES(id);
 
