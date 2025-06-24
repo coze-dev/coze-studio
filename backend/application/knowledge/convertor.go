@@ -470,12 +470,7 @@ func convertChunkingStrategy2Entity(strategy *dataset.ChunkStrategy) *entity.Chu
 	}
 	if strategy.ChunkType == dataset.ChunkType_DefaultChunk {
 		return &entity.ChunkingStrategy{
-			ChunkType:       convertChunkType2Entity(dataset.ChunkType_DefaultChunk),
-			ChunkSize:       defaultChunkSize,
-			Separator:       defaultSeparator,
-			Overlap:         defaultOverlap,
-			TrimSpace:       defaultTrimSpace,
-			TrimURLAndEmail: defaultTrimURLAndEmail,
+			ChunkType: convertChunkType2Entity(dataset.ChunkType_DefaultChunk),
 		}
 	}
 	return &entity.ChunkingStrategy{
