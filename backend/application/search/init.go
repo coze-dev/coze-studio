@@ -54,7 +54,7 @@ func InitService(ctx context.Context, s *ServiceComponents) (*SearchApplicationS
 	searchConsumer := search.NewProjectHandler(ctx, s.ESClient)
 
 	logs.Infof("start search domain consumer...")
-	nameServer := os.Getenv(consts.RocketMQServer)
+	nameServer := os.Getenv(consts.RMQServer)
 
 	err := rmq.RegisterConsumer(nameServer, "opencoze_search_app", "cg_search_app", searchConsumer)
 	if err != nil {

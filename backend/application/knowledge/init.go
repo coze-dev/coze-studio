@@ -67,9 +67,9 @@ type ServiceComponents struct {
 func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	ctx := context.Background()
 
-	nameServer := os.Getenv(consts.RocketMQServer)
+	nameServer := os.Getenv(consts.RMQServer)
 
-	knowledgeProducer, err := rmq.NewProducer(nameServer, "opencoze_knowledge", "cg_knowledge", 2)
+	knowledgeProducer, err := rmq.NewProducer(nameServer, consts.RMQTopicKnowledge, consts.RMQTopicKnowledgeSearch, 2)
 	if err != nil {
 		return nil, fmt.Errorf("init knowledge producer failed, err=%w", err)
 	}
