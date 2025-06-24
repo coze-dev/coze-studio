@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
@@ -112,7 +113,12 @@ func prepareOptions(ctx context.Context, opts ...nodes.NestedWorkflowOption) ([]
 
 	checkPointID := exeCtx.CheckPointID
 	if len(checkPointID) > 0 {
-		nestedOpts = append(nestedOpts, compose.WithCheckPointID(checkPointID+"_0"))
+		newCheckpointID := checkPointID
+		if exeCtx.SubWorkflowCtx != nil {
+			newCheckpointID += "_" + strconv.Itoa(int(exeCtx.SubWorkflowCtx.SubExecuteID))
+		}
+		newCheckpointID += "_" + strconv.Itoa(int(exeCtx.NodeCtx.NodeExecuteID))
+		nestedOpts = append(nestedOpts, compose.WithCheckPointID(newCheckpointID))
 	}
 
 	if len(options.GetResumeIndexes()) > 0 {

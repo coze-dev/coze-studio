@@ -1,27 +1,31 @@
 package nodes
 
 import (
+	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
-func ConvertInputs(in map[string]any, tInfo map[string]*vo.TypeInfo) (map[string]any, error) {
+func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.TypeInfo) (map[string]any, error) {
+	if len(in) == 0 {
+		return in, nil
+	}
+
 	out := make(map[string]any)
 	for k, v := range in {
 		t, ok := tInfo[k]
 		if !ok {
 			// for input fields not explicitly defined, just pass the string value through
-			logs.Warnf("input %s not found in type info", k)
+			logs.CtxWarnf(ctx, "input %s not found in type info", k)
 			out[k] = in[k]
 			continue
 		}
 
-		converted, err := Convert(v, t)
+		converted, err := Convert(ctx, v, t)
 		if err != nil {
 			return nil, err
 		}
@@ -31,191 +35,192 @@ func ConvertInputs(in map[string]any, tInfo map[string]*vo.TypeInfo) (map[string
 	return out, nil
 }
 
-func Convert(in any, t *vo.TypeInfo) (out any, err error) {
-	switch t.Type {
-	case vo.DataTypeString, vo.DataTypeFile, vo.DataTypeTime, vo.DataTypeInteger, vo.DataTypeNumber, vo.DataTypeBoolean:
-		return convertSingleInput(in, t)
-	case vo.DataTypeObject:
-		vMap, ok := in.(map[string]any)
-		if !ok {
-			vStr, ok := in.(string)
-			if !ok {
-				return nil, fmt.Errorf("map input is not a map or string: %v", in)
-			}
-			err := sonic.UnmarshalString(vStr, &vMap)
-			if err != nil {
-				return nil, fmt.Errorf("failed to unmarshal input as object: %w", err)
-			}
-		}
-		return convertMapInput(vMap, t)
-	case vo.DataTypeArray:
-		vArr, ok := in.([]any)
-		if !ok {
-			vStr, ok := in.(string)
-			if !ok {
-				return nil, fmt.Errorf("array input is not a array or string: %v", in)
-			}
-			err := sonic.UnmarshalString(vStr, &vArr)
-			if err != nil {
-				return nil, fmt.Errorf("failed to unmarshal input as array: %w", err)
-			}
-		}
+func Convert(ctx context.Context, in any, t *vo.TypeInfo) (any, error) {
+	if in == nil {
+		return in, nil
+	}
 
-		return convertArrInput(vArr, t)
+	switch t.Type {
+	case vo.DataTypeString, vo.DataTypeFile, vo.DataTypeTime:
+		return convertToString(ctx, in)
+	case vo.DataTypeInteger:
+		return convertToInt64(ctx, in)
+	case vo.DataTypeNumber:
+		return convertToFloat64(ctx, in)
+	case vo.DataTypeBoolean:
+		return convertToBool(ctx, in)
+	case vo.DataTypeObject:
+		return convertToObject(ctx, in, t)
+	case vo.DataTypeArray:
+		return convertToArray(ctx, in, t)
 	default:
 		return nil, fmt.Errorf("unknown input type %s", t.Type)
 	}
 }
 
-func convertSingleInput(in any, t *vo.TypeInfo) (out any, err error) {
-	switch t.Type {
-	case vo.DataTypeString, vo.DataTypeFile:
+func convertToString(ctx context.Context, in any) (out string, err error) {
+	defer func() {
+		if err != nil {
+			logs.CtxErrorf(ctx, "failed to convert input %v to string: %v, fallback to empty string", in, err)
+			err = nil
+			out = ""
+		}
+	}()
+
+	// also used as convertToTime, convertToFile, because under the hood time and file are both strings
+	switch in.(type) {
+	case string:
 		return in.(string), nil
-	case vo.DataTypeInteger:
-		var i int64
-		switch in.(type) {
-		case int64:
-			i = in.(int64)
-		case float64:
-			i = int64(in.(float64))
-		case string:
-			i, err = strconv.ParseInt(in.(string), 10, 64)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse input %s as integer: %w", in, err)
-			}
-		default:
-			return nil, fmt.Errorf("unsupported integer value %v", in)
-		}
-		return i, nil
-	case vo.DataTypeBoolean:
-		var b bool
-		switch in.(type) {
-		case bool:
-			b = in.(bool)
-		case string:
-			b, err = strconv.ParseBool(in.(string))
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse input %s as boolean: %w", in.(string), err)
-			}
-		case float64:
-			b = in.(float64) != 0
-		default:
-			return nil, fmt.Errorf("unsupported bool value %v", in)
-		}
-		return b, nil
-	case vo.DataTypeNumber:
-		var f float64
-		switch in.(type) {
-		case float64:
-			f = in.(float64)
-		case int64:
-			f = float64(in.(int64))
-		case string:
-			f, err = strconv.ParseFloat(in.(string), 64)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse input %s as float: %w", in, err)
-			}
-		default:
-			return nil, fmt.Errorf("unsupported float value %v", in)
-		}
-		return f, nil
-	case vo.DataTypeTime:
-		return parseTime(in.(string))
+	case int64:
+		return strconv.FormatInt(in.(int64), 10), nil
+	case float64:
+		return strconv.FormatFloat(in.(float64), 'f', -1, 64), nil
+	case bool:
+		return strconv.FormatBool(in.(bool)), nil
+	case []any, map[string]any:
+		return sonic.MarshalString(in)
 	default:
-		return nil, fmt.Errorf("not a single input type %s", t.Type)
+		return "", fmt.Errorf("cannot convert type %T to string", in)
 	}
 }
 
-func convertArrInput(in []any, t *vo.TypeInfo) ([]any, error) {
-	out := make([]any, len(in))
-	for i := range in {
-		switch t.ElemTypeInfo.Type {
-		case vo.DataTypeString, vo.DataTypeBoolean, vo.DataTypeNumber, vo.DataTypeFile:
-			out[i] = in[i]
-		case vo.DataTypeInteger:
-			i64, ok := in[i].(int64)
-			if ok {
-				out[i] = i64
-				continue
-			}
-			out[i] = int64(in[i].(float64))
-		case vo.DataTypeTime:
-			t, err := parseTime(in[i].(string))
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse input %s as time: %w", in[i], err)
-			}
-			out[i] = t
-		case vo.DataTypeObject:
-			newM, err := convertMapInput(in[i].(map[string]any), t.ElemTypeInfo)
-			if err != nil {
-				return nil, err
-			}
-			out[i] = newM
-		case vo.DataTypeArray:
-			newA, err := convertArrInput(in[i].([]any), t.ElemTypeInfo)
-			if err != nil {
-				return nil, err
-			}
-			out[i] = newA
-		default:
-			return nil, fmt.Errorf("unknown input type %s", t.ElemTypeInfo.Type)
+func convertToInt64(ctx context.Context, in any) (out int64, err error) {
+	defer func() {
+		if err != nil {
+			logs.CtxErrorf(ctx, "failed to convert input %v to int64: %v, fallback to 0", in, err)
+			err = nil
+			out = 0
 		}
+	}()
+
+	switch in.(type) {
+	case int64:
+		return in.(int64), nil
+	case float64:
+		return int64(in.(float64)), nil
+	case string:
+		return strconv.ParseInt(in.(string), 10, 64)
+	default:
+		return 0, fmt.Errorf("cannot convert type %T to integer", in)
 	}
-	return out, nil
 }
 
-func convertMapInput(in map[string]any, t *vo.TypeInfo) (map[string]any, error) {
-	out := make(map[string]any)
-	for k, v := range in {
+func convertToFloat64(ctx context.Context, in any) (out float64, err error) {
+	defer func() {
+		if err != nil {
+			logs.CtxErrorf(ctx, "failed to convert input %v to float64: %v, fallback to 0", in, err)
+			err = nil
+			out = 0
+		}
+	}()
+
+	switch in.(type) {
+	case int64:
+		return float64(in.(int64)), nil
+	case float64:
+		return in.(float64), nil
+	case string:
+		return strconv.ParseFloat(in.(string), 64)
+	default:
+		return 0, fmt.Errorf("cannot convert type %T to float", in)
+	}
+}
+
+func convertToBool(ctx context.Context, in any) (out bool, err error) {
+	defer func() {
+		if err != nil {
+			logs.CtxErrorf(ctx, "failed to convert input %v to bool: %v, fallback to false", in, err)
+			err = nil
+			out = false
+		}
+	}()
+
+	switch in.(type) {
+	case bool:
+		return in.(bool), nil
+	case string:
+		return strconv.ParseBool(in.(string))
+	default:
+		return false, fmt.Errorf("cannot convert type %T to bool", in)
+	}
+}
+
+func convertToObject(ctx context.Context, in any, t *vo.TypeInfo) (out map[string]any, err error) {
+	defer func() {
+		if err != nil {
+			logs.CtxErrorf(ctx, "failed to convert input %v to object: %v, fallback to nil", in, err)
+			err = nil
+			out = nil
+		}
+	}()
+
+	var m map[string]any
+	switch in.(type) {
+	case map[string]any:
+		m = in.(map[string]any)
+	case string:
+		err := sonic.UnmarshalString(in.(string), &m)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal input as object: %w", err)
+		}
+	default:
+		return nil, fmt.Errorf("cannot convert type %T to object", in)
+	}
+
+	for k, v := range m {
 		t, ok := t.Properties[k]
 		if !ok {
 			// for input fields not explicitly defined, just pass the string value through
-			logs.Warnf("input %s not found in type info", k)
-			out[k] = in[k]
+			logs.CtxWarnf(ctx, "input %s not found in type info", k)
 			continue
 		}
-		switch t.Type {
-		case vo.DataTypeString, vo.DataTypeBoolean, vo.DataTypeNumber, vo.DataTypeFile:
-			out[k] = v
-		case vo.DataTypeInteger:
-			out[k], ok = v.(int64)
-			if !ok {
-				out[k] = int64(v.(float64))
-			}
-		case vo.DataTypeTime:
-			ti, err := parseTime(v.(string))
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse input %s as time: %w", v, err)
-			}
-			out[k] = ti
-		case vo.DataTypeObject:
-			newM, err := convertMapInput(v.(map[string]any), t)
-			if err != nil {
-				return nil, err
-			}
-			out[k] = newM
-		case vo.DataTypeArray:
-			newA, err := convertArrInput(v.([]any), t)
-			if err != nil {
-				return nil, err
-			}
-			out[k] = newA
-		default:
-			return nil, fmt.Errorf("unknown input type %s", t.Type)
+
+		newV, err := Convert(ctx, v, t)
+		if err != nil {
+			return nil, err
 		}
+
+		m[k] = newV
 	}
-	return out, nil
+
+	return m, nil
 }
 
-func parseTime(in string) (t time.Time, err error) {
-	const layout = "2006-01-02T15:04:05Z"
-	t, err = time.Parse(layout, in)
-	if err != nil {
-		t, err = time.Parse(time.DateTime, in)
+func convertToArray(ctx context.Context, in any, t *vo.TypeInfo) (out []any, err error) {
+	defer func() {
 		if err != nil {
-			return t, fmt.Errorf("failed to parse input %s as time: %w", in, err)
+			logs.CtxErrorf(ctx, "failed to convert input %v to array: %v, fallback to nil", in, err)
+			err = nil
+			out = nil
 		}
+	}()
+
+	var a []any
+	switch in.(type) {
+	case []any:
+		a = in.([]any)
+	case string:
+		err = sonic.UnmarshalString(in.(string), &a)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal input as array: %w", err)
+		}
+	default:
+		return nil, fmt.Errorf("cannot convert type %T to array", in)
 	}
 
-	return t, nil
+	if len(a) == 0 {
+		return a, nil
+	}
+
+	elemType := t.ElemTypeInfo
+	for i := range a {
+		newV, err := Convert(ctx, a[i], elemType)
+		if err != nil {
+			logs.CtxErrorf(ctx, "failed to convert %dth element of array to type %v: %v", i, elemType.Type, err)
+		}
+
+		out = append(out, newV)
+	}
+
+	return out, nil
 }

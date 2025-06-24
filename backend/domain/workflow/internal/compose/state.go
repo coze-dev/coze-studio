@@ -349,10 +349,10 @@ func (s *NodeSchema) StatePreHandler(stream bool) compose.GraphAddNodeOpt {
 		streamHandlers = append(streamHandlers, handlerForVars)
 	}
 
-	handlerForStreamSource := s.streamStatePreHandlerForStreamSources()
+	/*handlerForStreamSource := s.streamStatePreHandlerForStreamSources()
 	if handlerForStreamSource != nil {
 		streamHandlers = append(streamHandlers, handlerForStreamSource)
-	}
+	}*/
 
 	if len(streamHandlers) > 0 {
 		streamHandler := func(ctx context.Context, in *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
@@ -483,11 +483,8 @@ func (s *NodeSchema) streamStatePreHandlerForVars() compose.StreamStatePreHandle
 			case variable.GlobalSystem, variable.GlobalUser:
 				v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
 			case variable.GlobalAPP:
-				if len(input.Source.Ref.FromPath) != 1 {
-					return nil, fmt.Errorf("invalid path: %v", input.Source.Ref.FromPath)
-				}
 				var ok bool
-				path := input.Source.Ref.FromPath[0]
+				path := strings.Join(input.Source.Ref.FromPath, ".")
 				if v, ok = state.GetAppVariableValue(path); !ok {
 					v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
 					if err != nil {

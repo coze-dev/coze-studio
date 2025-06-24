@@ -253,7 +253,7 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 	}
 
 	result["body"] = string(bodyBytes)
-	result["statusCode"] = response.StatusCode
+	result["statusCode"] = int64(response.StatusCode)
 
 	return result, nil
 }

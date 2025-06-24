@@ -94,7 +94,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	}
 	tr := newPreToolRetriever(&toolPreCallConf{})
 
-	wfTools, err := newWorkflowTools(ctx, &workflowConfig{
+	wfTools, toolsReturnDirectly, err := newWorkflowTools(ctx, &workflowConfig{
 		wfInfos: conf.Agent.Workflow,
 	})
 	if err != nil {
@@ -153,6 +153,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 			ToolsConfig: compose.ToolsNodeConfig{
 				Tools: agentTools,
 			},
+			ToolReturnDirectly: toolsReturnDirectly,
 		})
 		if err != nil {
 			return nil, err
@@ -238,9 +239,9 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 
 	var opts []compose.GraphCompileOption
 	if requireCheckpoint {
-		opts = append(opts, compose.WithCheckPointStore(conf.CPStore), compose.WithNodeTriggerMode(compose.AllPredecessor))
+		opts = append(opts, compose.WithCheckPointStore(conf.CPStore))
 	}
-
+	opts = append(opts, compose.WithNodeTriggerMode(compose.AllPredecessor))
 	runner, err := g.Compile(ctx, opts...)
 	if err != nil {
 		return nil, err

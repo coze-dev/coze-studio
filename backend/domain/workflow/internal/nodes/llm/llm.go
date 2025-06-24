@@ -156,7 +156,7 @@ type LLM struct {
 	requireCheckpoint bool
 }
 
-func jsonParse(data string, schema_ map[string]*vo.TypeInfo) (map[string]any, error) {
+func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo) (map[string]any, error) {
 	data = nodes.ExtractJSONString(data)
 
 	var result map[string]any
@@ -168,7 +168,7 @@ func jsonParse(data string, schema_ map[string]*vo.TypeInfo) (map[string]any, er
 
 	for k, v := range result {
 		if s, ok := schema_[k]; ok {
-			if val, err := nodes.Convert(v, s); err == nil {
+			if val, err := nodes.Convert(ctx, v, s); err == nil {
 				result[k] = val
 			} else {
 				return nil, fmt.Errorf("invalid type: %v, %v", k, err)
@@ -321,8 +321,8 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	_ = g.AddEdge(templateNodeKey, llmNodeKey)
 
 	if format == FormatJSON {
-		iConvert := func(_ context.Context, msg *schema.Message) (map[string]any, error) {
-			return jsonParse(msg.Content, cfg.OutputFields)
+		iConvert := func(ctx context.Context, msg *schema.Message) (map[string]any, error) {
+			return jsonParse(ctx, msg.Content, cfg.OutputFields)
 		}
 
 		convertNode := compose.InvokableLambda(iConvert)

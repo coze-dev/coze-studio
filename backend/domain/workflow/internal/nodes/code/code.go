@@ -6,9 +6,14 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 )
 
-const occurWarnErrorKey = "#occur_code_warn_errors"
+const (
+	coderRunnerRawOutputCtxKey      = "ctx_raw_output"
+	coderRunnerWarnErrorLevelCtxKey = "ctx_warn_error_level"
+)
 
 type Config struct {
 	Code         string
@@ -56,12 +61,34 @@ func (c *CodeRunner) RunCode(ctx context.Context, input map[string]any) (ret map
 	if err != nil {
 		return nil, err
 	}
-	result := response.Result
 
-	return formatOutput(c.config.OutputConfig, result)
+	result := response.Result
+	ctxcache.Store(ctx, coderRunnerRawOutputCtxKey, result)
+	output, err := formatOutput(ctx, c.config.OutputConfig, result)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
 }
 
-func formatOutput(inInfo map[string]*vo.TypeInfo, in map[string]any) (map[string]any, error) {
+func (c *CodeRunner) ToCallbackOutput(ctx context.Context, output map[string]any) (*nodes.StructuredCallbackOutput, error) {
+	rawOutput, ok := ctxcache.Get[map[string]any](ctx, coderRunnerRawOutputCtxKey)
+	if !ok {
+		return nil, errors.New("raw output config is required")
+	}
+
+	//TODO(zhuangjie) need to get the warn error info information from ctx and return it
+	//_, _ = ctxcache.Get[string](ctx, coderRunnerWarnErrorLevelCtxKey)
+
+	return &nodes.StructuredCallbackOutput{
+		Output:    output,
+		RawOutput: rawOutput,
+	}, nil
+}
+
+func formatOutput(ctx context.Context, inInfo map[string]*vo.TypeInfo, in map[string]any) (map[string]any, error) {
 	ret := make(map[string]any, len(inInfo))
 	var warnError = &WarnError{errs: make([]error, 0, len(inInfo))}
 	for k, info := range inInfo {
@@ -69,6 +96,7 @@ func formatOutput(inInfo map[string]*vo.TypeInfo, in map[string]any) (map[string
 			ret[k] = nil
 			continue
 		}
+
 		vv, wError := codeResponseFormatted(k, in[k], info)
 		if wError != nil && len(wError.errs) != 0 {
 			warnError.errs = append(warnError.errs, wError.errs...)
@@ -77,7 +105,8 @@ func formatOutput(inInfo map[string]*vo.TypeInfo, in map[string]any) (map[string
 	}
 
 	if len(warnError.errs) != 0 {
-		ret[occurWarnErrorKey] = warnError.Error()
+		ctxcache.Store(ctx, coderRunnerWarnErrorLevelCtxKey, warnError.Error())
 	}
+
 	return ret, nil
 }

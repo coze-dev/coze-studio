@@ -143,7 +143,7 @@ export const KnowledgeCardListVertical: FC<DatasetCardListVerticalProps> = ({
     if (onClickKnowledgeDetail) {
       onClickKnowledgeDetail(id);
     } else {
-      window.open(`/space/${spaceId}/dataset/${id}`);
+      window.open(`/space/${spaceId}/knowledge/${id}`);
     }
   };
 

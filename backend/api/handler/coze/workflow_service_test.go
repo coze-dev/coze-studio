@@ -1170,7 +1170,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 		userInput := map[string]any{
 			"input": "user input",
 			"obj": map[string]any{
-				"field1": []string{"1", "2"},
+				"field1": []any{"1", "2"},
 			},
 		}
 		userInputStr, err := sonic.MarshalString(userInput)
@@ -1224,7 +1224,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 			assert.Equal(t, map[string]any{
 				"input":    "user input",
 				"inputArr": nil,
-				"field1":   []any{"1", "2"},
+				"field1":   `["1","2"]`,
 			}, mustUnmarshalToMap(t, e.output))
 		})
 
@@ -1242,7 +1242,7 @@ func TestTestResumeWithInputNode(t *testing.T) {
 				"input":    "user input",
 				"inputArr": nil,
 				"obj": map[string]any{
-					"field1": []any{"1", "2"},
+					"field1": `["1","2"]`,
 				},
 			}, mustUnmarshalToMap(t, e2.output))
 
@@ -4339,5 +4339,46 @@ func TestDuplicateWorkflowsByAppID(t *testing.T) {
 			validateSubWorkflowIDs(cs.Nodes)
 		}
 
+	})
+}
+
+func TestMismatchedTypeConvert(t *testing.T) {
+	mockey.PatchConvey("test mismatched type convert", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		chatModel := &testutil.UTChatModel{
+			StreamResultProvider: func(_ int, in []*schema.Message) (*schema.StreamReader[*schema.Message], error) {
+				sr := schema.StreamReaderFromArray([]*schema.Message{
+					{
+						Role:    schema.Assistant,
+						Content: "I ",
+					},
+					{
+						Role:    schema.Assistant,
+						Content: "don't know.",
+					},
+				})
+				return sr, nil
+			},
+		}
+
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+
+		id := r.load("type_convert/mismatched_types.json")
+		exeID := r.testRun(id, map[string]string{
+			"input": "what's the meaning of life",
+			"arr_str": `[
+  "{\"a\":1}"
+]`,
+			"bool_a":  "True",
+			"int_a":   "2",
+			"num_a":   "3.5",
+			"obj":     `{"b":true}`,
+			"obj_str": `{"s":[2,false]}`,
+		})
+		e := r.getProcess(id, exeID)
+		e.assertSuccess()
+		assert.Equal(t, "false  {\"s\":[2,false]} [{\"a\":1}] 3 0 {\"b\":true}\nI don't know.", e.output)
 	})
 }

@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 )
 
 var codeTpl string
@@ -186,6 +187,7 @@ async def main(args:Args)->Output:
     return ret
 `
 		ctx := t.Context()
+		ctx = ctxcache.Init(ctx)
 		ret := map[string]any{
 			"key0": 11231123,
 			"key1": []any{"hello", "world"},
@@ -228,10 +230,13 @@ async def main(args:Args)->Output:
 		assert.NoError(t, err)
 		assert.Equal(t, int64(11231123), ret["key0"])
 		assert.Equal(t, []any{float64(123), float64(345)}, ret["key2"])
-		assert.Contains(t, ret[occurWarnErrorKey], "field key3.key34.key343.0 is not a number")
-		assert.Contains(t, ret[occurWarnErrorKey], "field key3.key34.key343.1 is not a number")
-		assert.Contains(t, ret[occurWarnErrorKey], "field key1.0 is not a number")
-		assert.Contains(t, ret[occurWarnErrorKey], "field key1.1 is not a number")
+
+		s, ok := ctxcache.Get[string](ctx, coderRunnerWarnErrorLevelCtxKey)
+		assert.True(t, ok)
+		assert.Contains(t, s, "field key3.key34.key343.0 is not a number")
+		assert.Contains(t, s, "field key3.key34.key343.1 is not a number")
+		assert.Contains(t, s, "field key1.0 is not a number")
+		assert.Contains(t, s, "field key1.1 is not a number")
 
 	})
 }

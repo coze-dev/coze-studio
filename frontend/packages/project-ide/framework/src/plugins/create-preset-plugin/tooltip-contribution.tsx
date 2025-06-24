@@ -1,12 +1,12 @@
 import React from 'react';
 
 import { inject, injectable, postConstruct } from 'inversify';
-import { Tooltip } from '@coze-arch/coze-design';
 import {
   type URI,
   type LabelHandler,
   HoverService,
 } from '@coze-project-ide/client';
+import { Tooltip } from '@coze-arch/coze-design';
 
 // 自定义 IDE HoverService 样式
 @injectable()
@@ -35,6 +35,7 @@ class TooltipContribution implements LabelHandler {
         position={opt.position}
         // 覆盖设置重置 foundation opacity，避免 tooltip 跳动
         style={{ opacity: 1 }}
+        trigger="custom"
         getPopupContainer={() => document.body}
         visible={true}
       >

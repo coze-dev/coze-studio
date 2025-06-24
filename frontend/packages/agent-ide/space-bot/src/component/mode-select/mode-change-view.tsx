@@ -40,16 +40,6 @@ export const ModeLabel: React.FC<ModeLabelProps> = ({
           isDisabled ? 'coz-fg-dim' : 'coz-fg-primary',
         )}
       >
-        {/* {Number(key) === BotMode.WorkflowMode ? (
-          <div className="flex items-center">
-            {value.title}
-            <div className="ml-[12px] rounded-[9px] coz-mg-hglt-plus coz-shadow-default px-[4px] h-[16px] text-[12px] font-[500] leading-[16px] coz-fg-white">
-              {I18n.t('singleagent_workflow_mode_beta')}
-            </div>
-          </div>
-        ) : (
-          value.title
-        )} */}
         {title}
       </div>
       <Typography.Text

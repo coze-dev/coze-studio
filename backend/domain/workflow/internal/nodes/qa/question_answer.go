@@ -351,7 +351,7 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 	realOutput := make(map[string]any)
 	for k, v := range fields.(map[string]any) {
 		if s, ok := q.config.OutputFields[k]; ok {
-			if val, err := nodes.Convert(v, s); err == nil {
+			if val, err := nodes.Convert(ctx, v, s); err == nil {
 				realOutput[k] = val
 			} else {
 				return nil, fmt.Errorf("invalid type: %v, %v", k, err)

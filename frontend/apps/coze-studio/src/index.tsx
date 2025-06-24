@@ -4,7 +4,6 @@ import { dynamicImportMdBoxStyle } from '@coze-arch/bot-md-box-adapter/style';
 import { pullFeatureFlags, type FEATURE_FLAGS } from '@coze-arch/bot-flags';
 
 import { App } from './app';
-// import '@coze-common/assets/style/index.less';
 import './global.less';
 import './index.less';
 
@@ -16,11 +15,15 @@ const initFlags = () => {
 };
 
 const main = () => {
+  // 初始化功能开关的值
   initFlags();
+  // 初始化i18n
   initI18nInstance({
     lng: IS_OVERSEA ? 'en' : 'zh-CN',
   });
+  // 动态导入mdbox 样式
   dynamicImportMdBoxStyle();
+
   const $root = document.getElementById('root');
   if (!$root) {
     throw new Error('root element not found');

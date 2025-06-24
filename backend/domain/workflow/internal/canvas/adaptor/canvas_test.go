@@ -2,13 +2,6 @@ package adaptor
 
 import (
 	"context"
-
-	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
-	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
-	"code.byted.org/flow/opencoze/backend/types/consts"
-
 	"io"
 	"net"
 	"net/http"
@@ -23,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	userentity "code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	crossdatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
@@ -37,10 +31,13 @@ import (
 	mockvar "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable/varmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	mockWorkflow "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow"
 	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 func TestIntentDetectorAndDatabase(t *testing.T) {
@@ -138,7 +135,7 @@ func mockUpdate(t *testing.T) func(context.Context, *crossdatabase.UpdateRequest
 		})
 		assert.Equal(t, req.ConditionGroup.Relation, crossdatabase.ClauseRelationAND)
 		assert.Equal(t, req.Fields, map[string]interface{}{
-			"1783392627713": 123,
+			"1783392627713": int64(123),
 		})
 
 		return &crossdatabase.Response{}, nil
@@ -235,12 +232,12 @@ func TestDatabaseCURD(t *testing.T) {
 
 		output, err := wf.SyncRun(ctx, map[string]any{
 			"input": "input for database curd",
-			"v2":    123,
+			"v2":    int64(123),
 		})
 
 		assert.NoError(t, err)
 		assert.Equal(t, map[string]any{
-			"output": ptr.Of(int64(1)),
+			"output": int64(1),
 		}, output)
 	})
 }
@@ -689,7 +686,7 @@ func TestCodeAndPluginNodes(t *testing.T) {
 		}, nil)
 
 		ctx := t.Context()
-
+		ctx = ctxcache.Init(ctx)
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 		assert.NoError(t, err)
 

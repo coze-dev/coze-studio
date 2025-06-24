@@ -493,7 +493,6 @@ func (s *NodeSchema) ToDatabaseInsertConfig() (*database.InsertConfig, error) {
 	return &database.InsertConfig{
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		OutputConfig:   s.OutputTypes,
-		InputTimeTypes: inputTimeTypes,
 		Inserter:       crossdatabase.GetDatabaseOperator(),
 	}, nil
 }
@@ -519,7 +518,6 @@ func (s *NodeSchema) ToDatabaseUpdateConfig() (*database.UpdateConfig, error) {
 		DatabaseInfoID: mustGetKey[int64]("DatabaseInfoID", s.Configs),
 		ClauseGroup:    mustGetKey[*crossdatabase.ClauseGroup]("ClauseGroup", s.Configs),
 		OutputConfig:   s.OutputTypes,
-		InputTimeTypes: inputTimeTypes,
 		Updater:        crossdatabase.GetDatabaseOperator(),
 	}, nil
 }

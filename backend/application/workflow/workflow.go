@@ -1004,14 +1004,27 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 					ErrorMessage: ptr.Of(msg.StateMessage.LastError.Msg),
 				}, nil
 			case entity.WorkflowInterrupted:
+				if msg.InterruptEvent.ToolInterruptEvent == nil {
+					return &workflow.OpenAPIStreamRunFlowResponse{
+						ID:       strconv.Itoa(messageID),
+						Event:    string(InterruptEvent),
+						DebugUrl: ptr.Of(fmt.Sprintf(vo.DebugURLTpl, executeID, spaceID, workflowID)),
+						InterruptData: &workflow.Interrupt{
+							EventID: fmt.Sprintf("%d/%d", executeID, msg.InterruptEvent.ID),
+							Type:    workflow.InterruptType(msg.InterruptEvent.EventType),
+							InData:  msg.InterruptEvent.InterruptData,
+						},
+					}, nil
+				}
+
 				return &workflow.OpenAPIStreamRunFlowResponse{
 					ID:       strconv.Itoa(messageID),
 					Event:    string(InterruptEvent),
 					DebugUrl: ptr.Of(fmt.Sprintf(vo.DebugURLTpl, executeID, spaceID, workflowID)),
 					InterruptData: &workflow.Interrupt{
 						EventID: fmt.Sprintf("%d/%d", executeID, msg.InterruptEvent.ID),
-						Type:    workflow.InterruptType(msg.InterruptEvent.EventType),
-						InData:  msg.InterruptEvent.InterruptData,
+						Type:    workflow.InterruptType(msg.InterruptEvent.ToolInterruptEvent.EventType),
+						InData:  msg.InterruptEvent.ToolInterruptEvent.InterruptData,
 					},
 				}, nil
 			case entity.WorkflowRunning:
@@ -1567,17 +1580,19 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 		return nil, errors.New("space id is required")
 	}
 
+	if req.GetPage() <= 0 || req.GetSize() <= 0 || req.GetSize() > 100 {
+		return nil, fmt.Errorf("the number of page or size must be greater than 0, and the size must be greater than 0 and less than 100")
+	}
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
 
-	page := &vo.Page{}
-	if req.GetPage() > 0 {
-		page.Page = req.GetPage()
+	page := &vo.Page{
+		Page: req.GetPage(),
+		Size: req.GetSize(),
 	}
-	if req.GetSize() > 0 {
-		page.Size = req.GetSize()
-	}
+
 	option := vo.MetaQuery{
 		Page: page,
 	}
@@ -1882,9 +1897,19 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 		if err != nil {
 			return nil, err
 		}
-		outputs[wfIDStr], err = toVariables(wf.OutputParams)
-		if err != nil {
-			return nil, err
+
+		if wd.EndType == 1 {
+			outputs[wfIDStr] = []*vo.Variable{
+				{
+					Name: "output",
+					Type: vo.VariableTypeString,
+				},
+			}
+		} else {
+			outputs[wfIDStr], err = toVariables(wf.OutputParams)
+			if err != nil {
+				return nil, err
+			}
 		}
 		workflowDetailInfoDataList.List = append(workflowDetailInfoDataList.List, wd)
 	}
@@ -2528,6 +2553,11 @@ func (w *ApplicationService) GetExampleWorkFlowList(ctx context.Context, req *wo
 
 		ww.StartNode = startNode
 		response.Data.WorkflowList = append(response.Data.WorkflowList, ww)
+		response.Data.AuthList = append(response.Data.AuthList, &workflow.ResourceAuthInfo{
+			WorkflowID: strconv.FormatInt(w.ID, 10),
+			UserID:     strconv.FormatInt(w.CreatorID, 10),
+			Auth:       &workflow.ResourceActionAuth{CanEdit: false, CanDelete: false, CanCopy: true},
+		})
 	}
 
 	return response, nil

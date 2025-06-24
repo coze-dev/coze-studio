@@ -280,7 +280,12 @@ func InheritExeCtxWithBatchInfo(ctx context.Context, index int, items map[string
 	}
 	var newCheckpointID string
 	if len(c.CheckPointID) > 0 {
-		newCheckpointID = c.CheckPointID + "_" + strconv.Itoa(index)
+		newCheckpointID = c.CheckPointID
+		if c.SubWorkflowCtx != nil {
+			newCheckpointID += "_" + strconv.Itoa(int(c.SubWorkflowCtx.SubExecuteID))
+		}
+		newCheckpointID += "_" + strconv.Itoa(int(c.NodeCtx.NodeExecuteID))
+		newCheckpointID += "_" + strconv.Itoa(index)
 	}
 	return context.WithValue(ctx, contextKey{}, &Context{
 		RootCtx:        c.RootCtx,

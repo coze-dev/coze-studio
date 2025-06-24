@@ -94,6 +94,21 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 		if err = sonic.UnmarshalString(argumentsInJSON, &in); err != nil {
 			return "", err
 		}
+
+		var entryNode *NodeSchema
+		for _, node := range i.sc.Nodes {
+			if node.Type == entity.NodeTypeEntry {
+				entryNode = node
+				break
+			}
+		}
+		if entryNode == nil {
+			panic("entry node not found in tool workflow")
+		}
+		in, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	cancelCtx, executeID, callOpts, _, err = NewWorkflowRunner(i.wfEntity.GetBasic(), i.sc, cfg, runOpts...).Prepare(ctx)
@@ -223,6 +238,21 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 
 	if rInfo == nil {
 		if err = sonic.UnmarshalString(argumentsInJSON, &in); err != nil {
+			return nil, err
+		}
+
+		var entryNode *NodeSchema
+		for _, node := range s.sc.Nodes {
+			if node.Type == entity.NodeTypeEntry {
+				entryNode = node
+				break
+			}
+		}
+		if entryNode == nil {
+			panic("entry node not found in tool workflow")
+		}
+		in, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
+		if err != nil {
 			return nil, err
 		}
 	}
