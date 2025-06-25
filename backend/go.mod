@@ -55,7 +55,6 @@ replace parse-curl => github.com/killlowkey/parse-curl v1.0.0
 require github.com/alicebob/miniredis/v2 v2.34.0
 
 require (
-	github.com/apache/rocketmq-clients/golang/v5 v5.1.2
 	github.com/cloudwego/eino-ext/components/embedding/ark v0.0.0-20250522060253-ddb617598b09
 	github.com/cloudwego/eino-ext/components/embedding/openai v0.0.0-20250522060253-ddb617598b09
 	github.com/cloudwego/eino-ext/components/model/ollama v0.0.0-20250610035057-2c4e7c8488a5
@@ -73,31 +72,17 @@ require (
 )
 
 require (
-	contrib.go.opencensus.io/exporter/ocagent v0.6.0 // indirect
 	github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302 // indirect
-	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cloudwego/gopkg v0.1.4 // indirect
-	github.com/dchest/siphash v1.2.3 // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/extrame/ole2 v0.0.0-20160812065207-d69429661ad7 // indirect
 	github.com/frankban/quicktest v1.14.6 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
-	github.com/go-playground/locales v0.14.1 // indirect
-	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.20.0 // indirect
-	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/btree v1.1.2 // indirect
-	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/meguminnnnnnnnn/go-openai v0.0.0-20250523041550-e202cd57070c // indirect
-	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/peterbourgon/diskv/v3 v3.0.1 // indirect
-	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/rogpeppe/fastuuid v1.2.0 // indirect
 	github.com/shabbyrobe/xmlwriter v0.0.0-20200208144257-9fca06d00ffa // indirect
-	github.com/valyala/fastrand v1.1.0 // indirect
 	github.com/yuin/gopher-lua v1.1.1 // indirect
-	go.opencensus.io v0.24.0 // indirect
-	google.golang.org/api v0.189.0 // indirect
 )
 
 require (
