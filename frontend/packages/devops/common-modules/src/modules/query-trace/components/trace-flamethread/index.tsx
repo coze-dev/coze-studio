@@ -30,7 +30,6 @@ const TraceFlamethread: FC<TraceFlamethreadProps> = props => {
     labelStyle: _labelStyle,
     globalStyle: _globalStyle,
     visibleColumnCount,
-    // valuePerColumn,
     datazoomDecimals = defaultProps.datazoomDecimals,
     axisLabelSuffix,
     selectedSpanId,
@@ -146,7 +145,6 @@ const TraceFlamethread: FC<TraceFlamethreadProps> = props => {
       labelText={labelText}
       datazoomDecimals={datazoomDecimals}
       visibleColumnCount={visibleColumnCount}
-      // valuePerColumn={valuePerColumn}
       axisLabelSuffix={axisLabelSuffix}
       selectedKey={selectedSpanId}
       disableViewScroll={disableViewScroll}

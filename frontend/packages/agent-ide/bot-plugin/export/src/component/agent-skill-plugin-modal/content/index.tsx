@@ -11,10 +11,6 @@ import { InfiniteList, type InfiniteListRef } from '@coze-community/components';
 import { I18n } from '@coze-arch/i18n';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { UICompositionModalMain, Collapse } from '@coze-arch/bot-semi';
-// import {
-//   type PluginApi,
-//   type PluginInfoForPlayground,
-// } from '@coze-arch/bot-api/developer_api';
 import {
   type PluginApi,
   type PluginInfoForPlayground,

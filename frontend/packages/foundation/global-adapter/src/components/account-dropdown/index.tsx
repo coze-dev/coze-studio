@@ -43,7 +43,6 @@ export const AccountDropdown = () => {
           },
           dataTestId: 'layout_avatar_profile-settings',
         },
-        // TODO szy：联系我们
         <Dropdown.Divider />,
         {
           prefixIcon: <IconCozExit />,

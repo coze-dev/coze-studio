@@ -433,7 +433,6 @@ export class WorkflowSaveService {
       projectApi?.setWidgetUIState('saving');
       const json = await this.workflowDocument.toJSON();
 
-      // TODO DELETE schemaGray 临时字段，后端灰度刷数据标记，全量后删除
       if (this.globalState.config.schemaGray) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 临时字段
         (json as any).versions = this.globalState.config.schemaGray;

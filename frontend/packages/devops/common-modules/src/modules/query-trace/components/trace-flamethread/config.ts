@@ -9,7 +9,6 @@ type DefaultProps = Pick<
 >;
 
 export const defaultProps: DefaultProps = {
-  // rectStyle: {},
   labelStyle: {
     position: 'inside-left',
     fontSize: 12,

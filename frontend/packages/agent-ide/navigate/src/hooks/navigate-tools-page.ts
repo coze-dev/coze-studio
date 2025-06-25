@@ -25,7 +25,7 @@ export function useNavigateWorkflowEditPage(
     setWorkflowState: state.setWorkflowState,
   }));
 
-  // 为了兼容老逻辑，优先使用 url 参数，虽然看起来优先级不太对，但为了缩小影响范围这么改安全一些
+  // 为了兼容老逻辑，优先使用 url 参数
   const spaceID = spaceIDFromURL ?? param?.spaceID;
   const botID = botIDFromURL ?? '';
 

@@ -11,7 +11,6 @@ import {
 export const useResourceActionsDemo = () => {
   const onChangeName: ResourceFolderProps['onChangeName'] =
     async changeNameEvent => {
-      // TODO: chaoyang805 在这里调接口重命名资源并校验
       await console.log('[ResourceFolder]on change name>>>', changeNameEvent);
     };
 

@@ -26,8 +26,6 @@ export const useLayoutResponsive = () => {
         setMobileTips(true);
       }
 
-      // TODO 梳理历史逻辑，统一迁移使用路由配置
-      // 增加移动端适配判断，如果是移动端环境应通过setMobileBody取消min-width, min-height的设置（历史逻辑不动）
       if (isResponsive) {
         setMobileBody();
       } else {

@@ -13,6 +13,7 @@ import {
 import { object as zObject, string as zString, type TypeOf } from 'zod';
 import { isUndefined, omit } from 'lodash-es';
 import classNames from 'classnames';
+import { JsonViewer } from '@coze-common/json-viewer';
 import { VerboseMsgType } from '@coze-common/chat-core';
 import { typeSafeJsonParse } from '@coze-common/chat-area-utils';
 import { reporter } from '@coze-arch/logger';
@@ -20,7 +21,6 @@ import { I18n } from '@coze-arch/i18n';
 import { Collapsible, Tag, Button } from '@coze-arch/coze-design';
 import { MdBoxLazy } from '@coze-arch/bot-md-box-adapter/lazy';
 import { MockHitStatus } from '@coze-arch/bot-api/debugger_api';
-import { JsonViewer } from '@coze-common/json-viewer';
 
 import {
   isKnowledgeRecallVerboseContentDeprecated,
@@ -89,7 +89,10 @@ const JsonViewerWithFilter: React.FC<{ content: string }> = memo(
     }
     return (
       <div className={s['md-box-wrapper']}>
-        <MdBoxLazy markDown={content} imageOptions={{ forceHttps: true }} />
+        <MdBoxLazy
+          markDown={content}
+          imageOptions={{ forceHttps: !IS_OPEN_SOURCE }}
+        />
       </div>
     );
   },

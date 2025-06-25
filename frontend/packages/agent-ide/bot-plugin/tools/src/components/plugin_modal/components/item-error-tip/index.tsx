@@ -16,7 +16,7 @@ export const ItemErrorTip: FC<{ withDescription?: boolean; tip?: string }> = ({
         s['form-check-tip'],
         withDescription ? '!top-[16px]' : '!top-0',
         'errorDebugClassTag',
-      )} // 这个class是用来校验是否通过
+      )}
     >
       {tip}
     </span>

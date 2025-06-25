@@ -7,7 +7,7 @@ import { FieldName } from '../constants';
 const generateTestsetData = (testsetData?: TestsetData) => {
   const dataArray = safeJSONParse(testsetData?.caseBase?.input, []);
   let botData: string | undefined;
-  /** TODO: 目前 node 只可能有一个，未来有多个需要视情况扩展 @jiangxujin */
+  /** TODO: 目前 node 只可能有一个，未来有多个需要视情况扩展 */
   let nodeData: Record<string, unknown> | undefined;
   dataArray.forEach(data => {
     /** 特殊虚拟节点 */

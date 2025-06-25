@@ -10,7 +10,6 @@ import {
 } from '@coze-project-ide/framework';
 
 export const ConversationRegistry: WidgetRegistry = {
-  // TODO: 持久化兼容，一段时间后下掉对 session 的兼容 @jiangxujin
   match: /(\/session.*|\/conversation.*)/,
   area: LayoutPanelType.MAIN_PANEL,
   load: (ctx: WidgetContext) =>

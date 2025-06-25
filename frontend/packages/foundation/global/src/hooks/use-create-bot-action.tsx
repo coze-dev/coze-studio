@@ -15,7 +15,6 @@ export const useCreateBotAction = ({
 }) => {
   // 创建 bot 功能
   const newWindowRef = useRef<Window | null>(null);
-  // const newWindowRef = use
   const openWindow = () => {
     newWindowRef.current = window.open();
   };

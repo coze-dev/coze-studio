@@ -137,7 +137,6 @@ export const ToolContentBlock: React.FC<
   const setOpen = ($isOpen: boolean) => {
     setIsOpen($isOpen);
     // 记录用户使用状态
-    // TODO： @liushuoyan 优化这里的逻辑
     if (editable && !isReadonly && (abilityKey || blockEventName)) {
       if (blockEventName) {
         const blockKey = openBlockEventToToolKey[blockEventName];

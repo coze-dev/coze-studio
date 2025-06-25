@@ -71,7 +71,6 @@ export const RelatedFieldCollapse: React.FC<RelatedFieldCollapseProps> = ({
     };
     onChange(nextValue);
     onBlur();
-    // 从老版本迁移过来的副作用，期望未来可以优化
     globalVariableService.loadGlobalVariables(
       next.type === IntelligenceType.Bot ? 'bot' : 'project',
       next.id,

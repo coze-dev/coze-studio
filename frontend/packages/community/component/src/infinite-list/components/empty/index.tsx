@@ -35,7 +35,6 @@ function Index(props: EmptyProps) {
             />
           ) : (
             <UIEmpty
-              // 理论上不会出现 explore 为空的现象，只可能是搜不到，即 not found
               isNotFound={!!isSearching}
               empty={{
                 title: text?.emptyTitle || I18n.t('inifinit_list_empty_title'),

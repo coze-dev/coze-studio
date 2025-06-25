@@ -66,7 +66,7 @@ const updateOutputWithNewType = (
 };
 
 export const useSyncOutput = (outputPath: string, node: FlowNodeEntity) => {
-  // TODO: 改到 effects 中实现 ，依赖节点引擎支持自定义事件触发 effects cc @heyuan
+  // TODO: 改到 effects 中实现 ，依赖节点引擎支持自定义事件触发 effects
   const updateOutput = (output: ParsedOutput[]) => {
     if (outputPath) {
       const formModel =

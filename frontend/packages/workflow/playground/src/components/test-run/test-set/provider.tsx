@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- TODO: 临时处理，后面会换个组件 @jiangxujin */
+/* eslint-disable @typescript-eslint/no-explicit-any -- TODO: 临时处理，后面会换个组件 */
 import {
   TestsetManageEventName,
   TestsetManageProvider,

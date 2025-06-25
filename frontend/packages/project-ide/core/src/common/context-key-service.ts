@@ -24,7 +24,6 @@ export class ContextKeyService implements ContextMatcher {
   private _contextKeys: Map<string, unknown> = new Map();
 
   public constructor() {
-    // TODO: 测试用，这里之后要接入 view
     this._contextKeys.set(ContextKey.editorFocus, true);
   }
 

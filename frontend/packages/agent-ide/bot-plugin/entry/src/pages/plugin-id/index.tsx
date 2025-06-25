@@ -187,7 +187,6 @@ const PluginDetailPage = ({
   );
 
   useEffect(() => {
-    // TODO: 这里需要解耦 url
     const editExampleId = searchParams.get('edit_example_id');
     const editPlugin = searchParams.get('edit_plugin');
     const findTool = data?.api_info?.find(
@@ -412,7 +411,6 @@ const PluginDetailPage = ({
           <Layout.Header
             className={s['layout-header']}
             breadcrumb={
-              // TODO: 这个要改
               <UIBreadcrumb
                 showTooltip={{ width: '300px' }}
                 pluginInfo={pluginInfo?.meta_info}

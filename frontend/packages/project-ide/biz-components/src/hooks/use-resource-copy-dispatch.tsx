@@ -146,7 +146,6 @@ export const useResourceCopyDispatch = () => {
           resTypeDTOToVO(props.res_type) ?? '',
           props.res_id ?? '',
         );
-        // TODO: chaoyang805 关闭子流程
         projectIDEServices.view.closeWidgetByUri(uri);
       }
       return taskInfo;

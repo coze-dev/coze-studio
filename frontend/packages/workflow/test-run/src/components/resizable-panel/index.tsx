@@ -40,7 +40,7 @@ export interface ResizablePanelRef {
 const MIN_HEIGHT = 156;
 
 /**
- * TODO: 这里的核心伸缩能力后面想换成 semi 的 Resizable，这里先临时写一些逻辑适配 @jiangxujin
+ * TODO: 这里的核心伸缩能力后面想换成 semi 的 Resizable，这里先临时写一些逻辑适配
  */
 export const ResizablePanel = forwardRef<
   ResizablePanelRef,

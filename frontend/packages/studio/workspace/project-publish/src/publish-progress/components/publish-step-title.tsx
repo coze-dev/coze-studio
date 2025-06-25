@@ -9,7 +9,10 @@ export interface PublishStepTitleProps {
 export function PublishStepTitle({ title, tag, color }: PublishStepTitleProps) {
   return (
     <div className="flex items-center gap-[4px]">
-      <Typography.Text className="leading-[20px] font-normal">
+      <Typography.Text
+        className="leading-[20px] font-normal"
+        data-testid="project.publish.result"
+      >
         {title}
       </Typography.Text>
       {typeof tag === 'string' ? (

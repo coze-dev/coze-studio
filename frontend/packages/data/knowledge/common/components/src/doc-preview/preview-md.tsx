@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 
 import { Spin } from '@coze-arch/coze-design';
-// import { MdBoxLazy } from '@coze-arch/bot-md-box-adapter/lazy';
 
 interface IPreviewMdProps {
   fileUrl: string;
@@ -59,7 +58,6 @@ export const PreviewMd = (props: IPreviewMdProps) => {
         }}
       >
         {mdContent ? (
-          // <MdBoxLazy className="max-w-full" markDown={mdContent} />
           <div>
             <pre
               className="max-w-full overflow-auto whitespace-pre-wrap break-all text-[14px] leading-[22px]"

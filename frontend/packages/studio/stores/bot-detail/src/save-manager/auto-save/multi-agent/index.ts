@@ -16,17 +16,8 @@ import { registerMultiAgentConfig } from './config';
 
 const saveRequestAgent: SaveRequest<Agent, ItemTypeExtra> = async (
   payload: Agent,
-  // key: ScopeKey,
-  // diff: DiffChange[],
 ) =>
   await saveFetcher(() => {
-    // TODO: 按需提交
-    // const params = {};
-    // for (const change of diff) {
-    //   const changePath = change.path[0];
-    //   params[changePath] = payload[changePath];
-    // }
-
     const params = useMultiAgentStore.getState().transformVo2Dto.agent(payload);
     return PlaygroundApi.UpdateAgentV2({
       ...params,

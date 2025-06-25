@@ -213,7 +213,6 @@ export const extInfoText: Record<string, ExtInfoText[]> = {
       ),
     },
   ],
-  // TODO @wangzian 补充表单的Popover info信息
   private_link_id: [
     {
       type: 'title',

@@ -13,7 +13,6 @@ interface ListRefSchema {
   };
 }
 
-// TODO 暂时写死格式，后面统一看
 export const toListRefSchema = (value: string[]): ListRefSchema => {
   const [nodeId, ...keyPaths] = value;
   return {

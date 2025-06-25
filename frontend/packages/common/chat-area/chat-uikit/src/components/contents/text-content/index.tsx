@@ -61,7 +61,7 @@ export const TextContent: FC<IMessageContentProps> = props => {
         autoFixSyntax={{ autoFixEnding: isStreaming }}
         showIndicator={isStreaming}
         smooth={isStreaming}
-        imageOptions={{ forceHttps: true, ...imageOptions }}
+        imageOptions={{ forceHttps: !IS_OPEN_SOURCE, ...imageOptions }}
         eventCallbacks={{
           onImageClick: (e, eventData) => {
             eventData.src &&

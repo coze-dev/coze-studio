@@ -9,7 +9,6 @@ import s from './index.module.less';
 const TextAreaInner: any = withField(TextArea, {});
 
 export const UIFormTextArea: typeof TextAreaInner = forwardRef(
-  // FIXME: @刘开展
   // @ts-expect-error -- to fix
   ({ fieldClassName, ...props }, ref) => (
     <TextAreaInner

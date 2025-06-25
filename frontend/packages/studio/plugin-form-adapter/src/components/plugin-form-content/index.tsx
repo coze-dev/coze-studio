@@ -427,8 +427,6 @@ export const PluginForm: FC<{
           treeData={authOption}
           displayRender={(list: any) => {
             if (IS_RELEASE_VERSION) {
-              // release 环境要去掉 zti
-              // 但同一用户在 inhouse 配置了 zti 后，访问 release 环境要展示 zti 在 select 框内
               const value = formApi.current?.getValue('auth_type');
               if (value?.[0] === 1 && value?.[1] === 1) {
                 return I18n.t('plugin_auth_method_service_zti');

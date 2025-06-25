@@ -102,13 +102,18 @@ const VersionForm: React.FC<{
     if (forcePushVisible) {
       return (
         <div className={'flex flex-row-reverse mt-12px'}>
-          <Button color="highlight" onClick={onTestRun}>
+          <Button
+            color="highlight"
+            onClick={onTestRun}
+            data-testid="workflow-testrun-button"
+          >
             {I18n.t('workflow_detail_title_testrun')}
           </Button>
           <Button
             color="primary"
             onClick={handleForcePublish}
             className={'mr-[8px]'}
+            data-testid="workflow-force-publish-button"
           >
             {I18n.t('workflow_publish_not_testrun_ insist')}
           </Button>
@@ -116,6 +121,7 @@ const VersionForm: React.FC<{
             color="primary"
             onClick={onForceCancel}
             className={'mr-[8px]'}
+            data-testid="workflow-publish-cancel-button"
           >
             {I18n.t('workflow_list_create_modal_footer_cancel')}
           </Button>
@@ -125,11 +131,19 @@ const VersionForm: React.FC<{
 
     return (
       <div className={'flex flex-row-reverse mt-12px'}>
-        <Button onClick={() => handleSubmit()}>
+        <Button
+          onClick={() => handleSubmit()}
+          data-testid="workflow-publish-button"
+        >
           {I18n.t('workflow_detail_title_publish')}
         </Button>
 
-        <Button color="primary" onClick={onCancel} className={'mr-[8px]'}>
+        <Button
+          color="primary"
+          onClick={onCancel}
+          className={'mr-[8px]'}
+          data-testid="workflow-publish-cancel-button"
+        >
           {I18n.t('workflow_list_create_modal_footer_cancel')}
         </Button>
       </div>
@@ -158,6 +172,7 @@ const VersionForm: React.FC<{
           required
           field="version"
           initValue={getDefaultVersion()}
+          data-testid="workflow-publish-version-name"
           rules={[
             {
               required: true,
@@ -197,6 +212,7 @@ const VersionForm: React.FC<{
             '请描述本次版本更新内容',
           )}
           field="description"
+          data-testid="workflow-publish-version-description"
           rules={[
             {
               required: true,

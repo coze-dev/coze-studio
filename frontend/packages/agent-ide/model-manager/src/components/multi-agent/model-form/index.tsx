@@ -59,8 +59,6 @@ export const MultiAgentModelForm: React.FC<{ agentId: string }> = ({
         target.model = {
           model: modelId,
           ...values,
-          // 据服务端说不清楚历史逻辑 需要保留原样的特性
-          // 有这个字段结构就行
           ShortMemPolicy,
         };
       });

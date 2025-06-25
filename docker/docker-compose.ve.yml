@@ -28,92 +28,6 @@ services:
     networks:
       - coze-network
 
-  etcd:
-    image: bitnami/etcd:3.5
-    container_name: coze-etcd
-    user: root
-    privileged: true
-    profiles: ['middleware']
-    env_file: *env_file
-    environment:
-      - ETCD_AUTO_COMPACTION_MODE=revision
-      - ETCD_AUTO_COMPACTION_RETENTION=1000
-      - ETCD_QUOTA_BACKEND_BYTES=4294967296
-      - ALLOW_NONE_AUTHENTICATION=yes
-    ports:
-      - 2379:2379
-      - 2380:2380
-    volumes:
-      - ./data/bitnami/etcd:/bitnami/etcd:rw,Z
-      - ./volumes/etcd/etcd.conf.yml:/opt/bitnami/etcd/conf/etcd.conf.yml:ro,Z
-    command: >
-      bash -c "
-        /opt/bitnami/scripts/etcd/setup.sh
-        # Set proper permissions for data and config directories
-        chown -R etcd:etcd /bitnami/etcd
-        chmod g+s /bitnami/etcd
-
-        exec /opt/bitnami/scripts/etcd/entrypoint.sh /opt/bitnami/scripts/etcd/run.sh
-      "
-    healthcheck:
-      test: ['CMD', 'etcdctl', 'endpoint', 'health']
-      interval: 5s
-      timeout: 10s
-      retries: 10
-      start_period: 10s
-    networks:
-      - coze-network
-
-  milvus:
-    container_name: coze-milvus
-    image: milvusdb/milvus:v2.5.10
-    user: root
-    privileged: true
-    profiles: ['middleware']
-    env_file: *env_file
-    command: >
-      bash -c "
-        # Set proper permissions for data directories
-        chown -R root:root /var/lib/milvus
-        chmod g+s /var/lib/milvus
-
-        exec milvus run standalone
-      "
-    security_opt:
-      - seccomp:unconfined
-    environment:
-      ETCD_ENDPOINTS: coze-etcd:2379
-      MINIO_ADDRESS: coze-minio:9000
-      MINIO_BUCKET_NAME: ${MINIO_BUCKET:-milvus}
-      MINIO_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
-      MINIO_USE_SSL: false
-      LOG_LEVEL: debug
-    volumes:
-      - ./data/milvus:/var/lib/milvus:rw,Z
-      - ./volumes/milvus/milvus.yml:/milvus/configs/milvus.yml:ro,Z
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:9091/healthz']
-      interval: 5s
-      timeout: 10s
-      retries: 10
-      start_period: 10s
-    ports:
-      - '19530:19530'
-      - '9091:9091'
-    depends_on:
-      etcd:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-      minio-setup:
-        condition: service_completed_successfully
-      elasticsearch-setup:
-        condition: service_completed_successfully
-      mysql-setup-init-sql:
-        condition: service_completed_successfully
-    networks:
-      - coze-network
   elasticsearch-setup:
     image: alpine/curl:8.12.1
     container_name: coze-elasticsearch-setup
@@ -203,8 +117,6 @@ services:
       # - ../backend/static:/app/resources/static
     depends_on:
       minio:
-        condition: service_healthy
-      milvus:
         condition: service_healthy
       minio-setup:
         condition: service_completed_successfully

@@ -53,7 +53,6 @@ export const MocksetEditor = forwardRef(
       className,
       ...rest
     } = props;
-    // const editorRef = useRef<EditorActions>(null);
     const editorsRef = useRef<(EditorActions | null)[]>([]);
 
     const [currentEditConfig, setCurrentEditConfig] = useState<EditDataConfig>({

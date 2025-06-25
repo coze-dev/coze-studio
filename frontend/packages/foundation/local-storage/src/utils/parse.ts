@@ -41,7 +41,6 @@ export const paseLocalStorageValue = (value: string | null) => {
     const raw = JSON.parse(value);
     return isValidCacheData(raw) ? raw : ({} satisfies LocalStorageCacheData);
   } catch (e) {
-    // TODO dwh report error
     return {} satisfies LocalStorageCacheData;
   }
 };

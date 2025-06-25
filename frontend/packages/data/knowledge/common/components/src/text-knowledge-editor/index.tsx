@@ -4,6 +4,7 @@ export { DocumentPreview } from './features/preview';
 export { useSaveChunk } from './hooks/use-case/use-save-chunk';
 export { useInitEditor } from './hooks/use-case/use-init-editor';
 export { EditorToolbar } from './features/editor-toolbar';
+export { getInitEditorContent } from './services/use-case/get-init-editor-content';
 export {
   LevelTextKnowledgeEditor,
   type LevelDocumentChunk,

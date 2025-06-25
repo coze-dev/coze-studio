@@ -12,7 +12,6 @@ export const AGENT_SKILL_KEY_MAP = {
   [AgentSkillKey.PLUGIN]: 'pluginApis',
 };
 
-// TODO: 这里应该让业务不感知
 export const TOOL_KEY_TO_API_STATUS_KEY_MAP: {
   [key in ToolKey]: keyof TabDisplayItems;
 } = {

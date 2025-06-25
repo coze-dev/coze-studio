@@ -25,7 +25,6 @@ export const BatchMode = ({
 }: ComponentProps<string>) => {
   const node = useEntityFromContext() as FlowNodeEntity;
 
-  // TODO DELETE schemaGray 临时字段，后端灰度刷数据标记，全量后删除
   const playground = usePlayground();
   const { isBatchV2 } = playground.context.schemaGray;
   const form = useForm();

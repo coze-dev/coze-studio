@@ -220,7 +220,7 @@ func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
 		}
 
 		var embConfig *ssvikingdb.VikingEmbeddingConfig
-		if modelName == "" {
+		if modelName != "" {
 			embName := ssvikingdb.VikingEmbeddingModelName(modelName)
 			if embName.Dimensions() == 0 {
 				return nil, fmt.Errorf("embedding model not support, model_name=%s", modelName)

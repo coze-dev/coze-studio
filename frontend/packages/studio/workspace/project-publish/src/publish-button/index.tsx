@@ -1,15 +1,16 @@
+/* eslint-disable complexity */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useNavigate } from 'react-router-dom';
 import React, { type ReactNode, useCallback } from 'react';
 
-import { IntelligenceType } from '@coze-arch/idl/intelligence_api';
-import { I18n } from '@coze-arch/i18n';
-import { useFlags } from '@coze-arch/bot-flags';
+import { useIsPublishRecordReady } from '@coze-studio/publish-manage-hooks';
 import {
   useProjectAuth,
   EProjectPermission,
   useProjectRole,
 } from '@coze-common/auth';
-import { useIsPublishRecordReady } from '@coze-studio/publish-manage-hooks';
+import { IntelligenceType } from '@coze-arch/idl/intelligence_api';
+import { I18n } from '@coze-arch/i18n';
 import {
   IconCozAnalytics,
   IconCozArrowDown,
@@ -26,6 +27,7 @@ import {
   Popover,
   Tooltip,
 } from '@coze-arch/coze-design';
+import { useFlags } from '@coze-arch/bot-flags';
 
 import { usePublishStatus } from '../hooks/use-publish-status';
 import { useBizConnectorAnchor } from '../hooks/use-biz-connector-anchor';
@@ -74,10 +76,12 @@ export const PublishButton = ({
     spaceId,
     enable: !!(
       // 社区版暂不支持该功能
-      FLAGS['bot.studio.publish_management'] &&
-      hasPublished &&
-      projectRoles.length &&
-      !IS_OPEN_SOURCE
+      (
+        FLAGS['bot.studio.publish_management'] &&
+        hasPublished &&
+        projectRoles.length &&
+        !IS_OPEN_SOURCE
+      )
     ),
   });
 
@@ -126,7 +130,11 @@ export const PublishButton = ({
 
   if (!hasPublished) {
     return (
-      <Button onClick={handlePublish} disabled={isLocalDevMode()}>
+      <Button
+        onClick={handlePublish}
+        disabled={isLocalDevMode()}
+        data-testid="project.goto.publish-button"
+      >
         {I18n.t('project_ide_frame_publish')}
       </Button>
     );
@@ -208,6 +216,7 @@ export const PublishButton = ({
                 className="w-full"
                 onClick={handlePublish}
                 disabled={isLocalDevMode()}
+                data-testid="project.goto.publish-button"
               >
                 {I18n.t('app_ide_publish_modal_publish_button')}
               </Button>

@@ -52,7 +52,6 @@ export const Batch = ({ batchModeName, name }: BatchProps) => {
   const readonly = useReadonly();
 
   const form = useForm();
-  // TODO DELETE schemaGray 临时字段，后端灰度刷数据标记，全量后删除
   const playground = usePlayground();
   const { isBatchV2 } = playground.context.schemaGray;
 

@@ -18,7 +18,6 @@ const getDefaultState = (): DraftBotPluginStoreState => ({
   pluginsMap: {},
 });
 
-// 为了感知 bot/agent 使用 plugin 的封禁状态，同时避免 multi-agent 模式下大量并发/重复请求，这里集中管理 plugin 信息
 export const createDraftBotPluginsStore = () =>
   create<DraftBotPluginStoreState & DraftBotPluginStoreAction>()(
     devtools(

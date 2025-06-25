@@ -527,7 +527,6 @@ import { ReactComponent as SvgBrandCnBlackRow } from './assets/brand-cn-black-ro
 import { ReactComponent as SvgBrandCnBlackColumn } from './assets/brand-cn-black-column.svg';
 import { ReactComponent as SvgBotIcon } from './assets/bot-icon.svg';
 
-// TODO 后续替换成iconbox @zhangyingdong
 export const IconApiPlayground = IconFactory(<SvtPlaygroundIcon />);
 export const IconApiPlaygroundFill = IconFactory(<SvtPlaygroundIconFill />);
 export const IconUserGuide = IconFactory(<SvtUserGuideIcon />);

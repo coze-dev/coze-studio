@@ -1,5 +1,3 @@
-// TODO: hzf header耦合dev模式多人协作等逻辑，dev后续不维护了，后续可以抽离，不应该耦合逻辑
-
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { type ReactNode, useEffect, useRef } from 'react';

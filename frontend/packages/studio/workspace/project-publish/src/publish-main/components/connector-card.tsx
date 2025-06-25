@@ -13,9 +13,9 @@ import {
   type PublishConnectorInfo,
 } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
+import { Checkbox, Tooltip, Typography } from '@coze-arch/coze-design';
 import { typeSafeJSONParse } from '@coze-arch/bot-utils';
 import { type TextProps } from '@coze-arch/bot-semi/Typography';
-import { Checkbox, Tooltip, Typography } from '@coze-arch/coze-design';
 
 import { TEMPLATE_CONNECTOR_ID } from '@/utils/constants';
 import { useProjectPublishStore } from '@/store';
@@ -179,6 +179,7 @@ export function ConnectorCard({
           onCheckedChange(!checked);
         }
       }}
+      data-testid="project.publish.select.connector"
       disabled={Boolean(disabledConfig)}
     />
   );
@@ -269,7 +270,6 @@ export function ConnectorCard({
                   </Typography.Paragraph>
                 ),
                 a: props => {
-                  // TODO 没选择 chatflow 时链接置灰
                   const textProps: TextProps =
                     props.href === 'coze://web-sdk-guide'
                       ? {

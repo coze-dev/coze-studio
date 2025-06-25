@@ -198,9 +198,8 @@ const WorkflowContainer = forwardRef<
   } else {
     const Sidebar = props.sidebar;
 
-    // The community version does not support workflow templates, for future expansion
-    // When the workflow is binded to Douyin Account，the template preview is not displayed too
-    const showTemplatePreview = !isBindDouyin && !IS_OPEN_SOURCE;
+    // When the workflow is binded to Douyin Account，the template preview is not displayed
+    const showTemplatePreview = !isBindDouyin;
     playgroundContent = (
       <QueryClientProvider client={workflowQueryClient}>
         <div className="flex flex-1 h-full">

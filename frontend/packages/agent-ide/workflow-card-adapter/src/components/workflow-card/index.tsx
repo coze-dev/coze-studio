@@ -133,7 +133,6 @@ export const WorkflowCard: React.FC<IWorkflowCardProps> = ({
               removeWorkFlow={index => {
                 updateSkillWorkflows(
                   () =>
-                    // todo: 需检查此处闭包更新是否会引发故障，本次 commit 未改动历史逻辑
                     workflows.filter(
                       (_, i) => i !== index,
                     ) as WorkFlowItemType[],

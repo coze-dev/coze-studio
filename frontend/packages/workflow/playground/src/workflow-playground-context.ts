@@ -195,7 +195,7 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
   }
 
   /**
-   * 这种通过 context 透传的方式不太好，后面需要重新改造下 @lvxinsheng
+   * 这种通过 context 透传的方式不太好，后面需要重新改造下
    */
   get spaceId(): string | undefined {
     return this.globalState?.spaceId;
@@ -206,7 +206,7 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
   }
 
   getTemplateList(types: StandardNodeType[] = []): NodeTemplate[] {
-    // TODO: 传入的 type 的类型是 string，然后后端返回的模板实际是 number
+    // HACK: 传入的 type 的类型是 string，然后后端返回的模板实际是 number
     return (
       types
         .sort(
@@ -320,13 +320,12 @@ export class WorkflowPlaygroundContext implements PlaygroundContext {
     );
   }
 
-  // TODO DELETE schemaGray 临时字段，后端灰度刷数据标记，全量后删除
   get schemaGray(): {
     isBatchV2: boolean;
   } {
     // const { schemaGray } = this.globalState?.config ?? {};
     return {
-      isBatchV2: false, // TODO 后端灰度策略调整，交互优化part3之后再放开，暂时写死
+      isBatchV2: false,
     };
   }
 }
