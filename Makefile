@@ -20,7 +20,11 @@ fe:
 
 ve: python
 	@echo "Building on VolcEngine..."
-	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile '*' up -d
+	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile volcano --profile volcano-server up -d --wait
+
+debug_ve: python
+	@echo "Building on VolcEngine..."
+	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile volcano up -d
 	@echo "Building and start server..."
 	@bash $(BUILD_SERVER_SCRIPT) -start
 

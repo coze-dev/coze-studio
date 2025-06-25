@@ -2,7 +2,6 @@ package storage
 
 import "context"
 
-//
 //go:generate  mockgen -destination ../../../internal/mock/infra/contract/storage/storage_mock.go -package mock -source storage.go Factory
 type Storage interface {
 	PutObject(ctx context.Context, objectKey string, content []byte, opts ...PutOptFn) error
