@@ -131,10 +131,7 @@ export function upLoadFile({
 
         const bytedUploader: BytedUploader = initUploader(
           {
-            // TODO: 这里是一个函数，不是组件，不能使用 hooks 获取用户信息
             useFileExtension: true,
-            // TODO 外层传入
-            // 解决报错问题：
             userId: userStoreService.getUserInfo()?.user_id_str || '',
             appId: APP_ID,
             // cp-disable-next-line

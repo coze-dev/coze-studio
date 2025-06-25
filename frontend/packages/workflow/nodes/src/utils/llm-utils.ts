@@ -82,8 +82,6 @@ export const getDefaultLLMParams = (
 export const reviseLLMParamPair = (d: InputValueDTO): [string, unknown] => {
   let k = d?.name || '';
 
-  // TODO 前端不依赖这个字段，确认后端无依赖后，可删除
-  // 兼容一个历史悠久的拼写错误
   if (k === 'modleName') {
     k = 'modelName';
   }

@@ -96,7 +96,6 @@ export const handleTreeNodeMove = (
   segments: ILevelSegment[] | null;
   errMsg: string | null;
 } => {
-  // TODO: 调整后最多不能超过 3 个层级
   if (positions.parentID === null) {
     return {
       segments: null,

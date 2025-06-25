@@ -90,7 +90,6 @@ export const useMarkdownEditor = ({
     disableDrag: Boolean(uploadState),
     disablePaste: Boolean(uploadState),
     fileLimit: 1,
-    // TODO: 待确认
     maxFileSize: MAX_FILE_SIZE,
     isFileFormatValid: getIsFileFormatValid,
     getExistingFileCount: () => 0,

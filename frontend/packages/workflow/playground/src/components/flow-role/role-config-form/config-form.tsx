@@ -119,7 +119,6 @@ const schema = {
       'x-decorator-props': {
         title: I18n.t('review_agent_suggestreplyinfo'),
         collapsible: true,
-        // todo zxh 当前使用内场模型，改造为开启后让用户自己选已配置模型，以及自定义Prompt
         action: <RoleSuggestionSwitch />,
       },
     },

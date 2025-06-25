@@ -33,7 +33,6 @@ export const withValidationField =
       validationService.validatedNodeMap[node.id] ? true : false,
     );
 
-    // TODO： 这里耦合了外部的状态，实际上应该由表单统一管理一才对
     // 监听画布表单提交时，显示错误信息
     useEffect(() => {
       if (flowNodeEntity) {

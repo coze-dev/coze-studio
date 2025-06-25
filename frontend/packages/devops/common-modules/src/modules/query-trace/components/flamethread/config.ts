@@ -10,12 +10,9 @@ export const defaultRectStyle: RectStyle = {
     fill: '#F7F7FA',
     stroke: '#1D1C2314',
     lineWidth: 1,
-    // lineDash: [4, 2],
     lineDash: [],
   },
   hover: {
-    // fill: "#6690F2",
-    // stroke: "#000",
     lineWidth: 1,
     lineDash: [],
   },
@@ -28,18 +25,6 @@ export const defaultRectStyle: RectStyle = {
 export const defaultGlobalStyle: GlobalStyle = {
   height: '100%',
   width: '100%',
-  // padding: {
-  //   top: 50,
-  //   right: 60,
-  //   bottom: 80,
-  //   left: 60,
-  // },
-  // padding: {
-  //   top: 30,
-  //   right: 0,
-  //   bottom: 0,
-  //   left: 0,
-  // },
   padding: {
     top: 0,
     right: 24,

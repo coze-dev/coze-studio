@@ -41,7 +41,6 @@ export const getFixedSingleAgentSchema = (schema: ISchema): ISchema => {
       'x-decorator': ModelFormComponent.ModelFormItem,
       'x-component-props': componentProps,
       'x-decorator-props': decoratorProps,
-      // 放到最前面
       'x-index': 0,
     };
     Object.assign(voidField.properties, {

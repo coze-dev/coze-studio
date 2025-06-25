@@ -66,14 +66,6 @@ export const PluginContent: FC<PluginContentProps> = ({
     state => state.updateSkillPluginApis,
   );
 
-  // const { bindButtonMap, cardBindModal, cardIconMap } = useCardBindButton({
-  //   botId,
-  //   pluginApis,
-  //   plugins,
-  //   getBizType: () => BizType.Plugin,
-  //   isCozeDesign: true,
-  // });
-
   const pluginData: PluginData[] = useMemo(
     () =>
       pluginApis.map(api => {

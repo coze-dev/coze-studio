@@ -144,7 +144,6 @@ const useMouseEvent = ({
   };
 
   const stopDrag = () => {
-    // TODO @chengjiawei
     setDraggingError('');
     handleDrag(false);
   };

@@ -42,7 +42,6 @@ export type EnabledPluginApi = Omit<DefaultPluginApi, 'debug_example'>;
 export interface BotDetailSkill {
   // region Bot 和 Agent 维度共有 skills
   /** 已选的 plugin api */
-  // TODO 讨论一下
   pluginApis: EnabledPluginApi[];
   /** 已选 workflow */
   workflows: WorkFlowItemType[];

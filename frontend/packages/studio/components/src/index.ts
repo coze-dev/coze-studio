@@ -1,6 +1,3 @@
-// todo 这个 pkg 应该进一步拆分为 无副作用组件 和 有副作用组件
-//  有副作用组件可以考虑放进 @coze-common/biz-components？
-
 export { AvatarBackgroundNoticeDot } from './avatar-background-notice-dot';
 
 export { ImageList, type ImageItem, type ImageListProps } from './image-list';

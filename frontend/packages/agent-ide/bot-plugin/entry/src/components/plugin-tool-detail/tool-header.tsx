@@ -1,6 +1,5 @@
 import { useMemo, type FC } from 'react';
 
-// import { UIBreadcrumb } from '@coze-studio/components';
 import { I18n } from '@coze-arch/i18n';
 import { useFlags } from '@coze-arch/bot-flags';
 import {

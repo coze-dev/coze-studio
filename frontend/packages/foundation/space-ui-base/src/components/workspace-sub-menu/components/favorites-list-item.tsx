@@ -8,6 +8,14 @@ import {
   IntelligenceType,
 } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
+import { IconCozMore } from '@coze-arch/coze-design/icons';
+import {
+  Space,
+  Avatar,
+  Typography,
+  Popover,
+  Button,
+} from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { CustomError } from '@coze-arch/bot-error';
 import {
@@ -15,8 +23,6 @@ import {
   type FavoriteProductResponse,
 } from '@coze-arch/bot-api/product_api';
 import { ProductApi } from '@coze-arch/bot-api';
-import { IconCozMore } from '@coze-arch/coze-design/icons';
-import { Space, Avatar, Typography, Popover, Button } from '@coze-arch/coze-design';
 
 const getSubPath = (type: IntelligenceType | undefined) => {
   if (type === IntelligenceType.Project) {
@@ -46,7 +52,10 @@ export const FavoritesListItem: FC<IntelligenceData> = ({
     try {
       const res: FavoriteProductResponse =
         await ProductApi.PublicFavoriteProduct({
-          entity_type: ProductEntityType.Bot,
+          entity_type:
+            type === IntelligenceType.Project
+              ? ProductEntityType.Project
+              : ProductEntityType.Bot,
           is_cancel: true,
           entity_id: id,
         });

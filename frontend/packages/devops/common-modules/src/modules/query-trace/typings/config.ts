@@ -1,8 +1,3 @@
-// import {
-//   type SpanType,
-//   type SpanCategory,
-// } from '@coze-arch/bot-api/ob_query_api';
-
 interface SpanTypeConfig {
   label?: string;
 }

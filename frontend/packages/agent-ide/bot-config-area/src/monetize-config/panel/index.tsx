@@ -14,11 +14,8 @@ import {
 } from '@coze-arch/idl/benefit';
 import { benefitApi } from '@coze-arch/bot-api';
 
-// 该组件已有通用版本：
-// packages/studio/components/src/monetize/monetize-config-panel/index.tsx
 export function MonetizeConfigPanel() {
   const botId = useBotInfoStore(store => store.botId);
-  // 这里使用了 store 的全部字段，没必要传 selector 了
   const {
     isOn,
     freeCount,

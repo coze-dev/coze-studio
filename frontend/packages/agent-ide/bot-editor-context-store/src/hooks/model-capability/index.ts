@@ -15,7 +15,6 @@ import { useBotEditor } from '../../context/bot-editor-context';
 const getModelCapabilityConfigMap: Record<BotMode, TGetModelCapabilityConfig> =
   {
     [BotMode.SingleMode]: getSingleAgentModelCapabilityConfig,
-    // workflow 不涉及到模型，按全部支持处理
     [BotMode.WorkflowMode]: () => defaultModelCapConfig,
     [BotMode.MultiMode]: getMultiAgentModelCapabilityConfig,
   };

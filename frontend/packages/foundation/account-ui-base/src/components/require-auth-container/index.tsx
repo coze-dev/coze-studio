@@ -53,7 +53,6 @@ const LoginCheckMask: FC<{ needLogin: boolean; loginOptional: boolean }> = ({
   return null;
 };
 
-// TODO 定位 & 组件名需要调整
 export const RequireAuthContainer: FC<
   PropsWithChildren<{ needLogin: boolean; loginOptional: boolean }>
 > = ({ children, needLogin, loginOptional }) => (

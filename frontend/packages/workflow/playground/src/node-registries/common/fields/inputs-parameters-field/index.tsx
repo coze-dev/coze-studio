@@ -61,5 +61,6 @@ export const InputsParametersField = ({
       literalDisabled={literalDisabled}
       nameProps={nameProps}
       customReadonly={customReadonly}
+      testId={testId}
     />
   );

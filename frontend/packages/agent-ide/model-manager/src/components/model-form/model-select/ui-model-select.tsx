@@ -64,7 +64,6 @@ export const UIModelSelect: React.FC<UIModelSelectProps> = ({
         )
         .map(item => ({
           label: item.tag_name,
-          // 本期先写死
           color: 'yellow',
         }))}
     />

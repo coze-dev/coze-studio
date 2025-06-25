@@ -304,7 +304,6 @@ const useNeedBot = () => {
         /** 资源库中的 workflow，全流程运行，需要遍历全流程，包括子流程 */
         isNeedBotEnv = await isNeedBot();
         // workflow 下，全流程试运行禁用 conversation
-        // TODO: 这里逻辑是 workflow 特化，后续有 videoFlow 的时候还需要额外兼容逻辑
         isNeedBotEnv.needConversation = false;
       }
     }

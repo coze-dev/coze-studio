@@ -1,6 +1,5 @@
 import { type PropsWithChildren, useRef, useCallback } from 'react';
 
-// import { I18n } from '@coze-arch/i18n';
 import { get } from 'lodash-es';
 import cls from 'classnames';
 import { type PopoverProps } from '@coze-arch/bot-semi/Popover';

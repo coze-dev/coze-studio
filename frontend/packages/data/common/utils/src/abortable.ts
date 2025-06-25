@@ -48,7 +48,6 @@ export function abortable<T extends (...args: any[]) => any | Promise<any>>(
       return result;
     } catch (e) {
       console.log(e);
-      // TODO: error handling
     }
   };
 }

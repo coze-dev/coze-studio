@@ -12,7 +12,6 @@ export const useDatasetAutoChangeConfirm = () => {
   } = useBotEditor();
   return async (auto: boolean, modelId: string) => {
     const model = useModelStore.getState().getModelById(modelId);
-    // 提前防御获取不到 model 的情况（火山账号允许迁移后 bot 不带 model 配置）
     if (!model) {
       return true;
     }

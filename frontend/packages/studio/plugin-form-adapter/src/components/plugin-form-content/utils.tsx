@@ -115,7 +115,6 @@ export const findAuthTypeItemV2 = (
   authType?: number[],
   subAuthType?: number,
 ) => {
-  // 无能为力 👐
   if (authType?.[0] === 0) {
     return opts.find(item => item.value === 0);
   } else if (authType?.[0] === 1) {
@@ -124,9 +123,6 @@ export const findAuthTypeItemV2 = (
       (item: AuthOption) => item.value === subAuthType,
     );
   } else if (authType?.[0] === 3) {
-    // 这里是一个很古老的 hack 逻辑
-    // authType 的取值为：[0],[1],[3,4]
-    // 古老 hack 逻辑可能不存在了
     const optsItem = opts.find(item => item.value === 3);
 
     return optsItem?.children.find(

@@ -41,12 +41,6 @@ export const defaultProps: DefaultProps = {
       strokeWidth: 2,
     },
   },
-  // globalStyle: {
-  //   // indent: 40,
-  //   // verticalInterval: 16,
-  //   // nodeBoxHeight: 16,
-  //   // offsetX: 8,
-  // },
 };
 
 type SpanCategoryConfig = Record<

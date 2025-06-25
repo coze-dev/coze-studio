@@ -24,11 +24,9 @@ import {
   Tooltip,
   Typography,
 } from '@coze-arch/bot-semi';
-// import { SceneType, usePageJumpService } from '@coze-arch/bot-hooks';
 import {
   type PluginAPIInfo,
   SpaceType,
-  // type GetPluginInfoResponse,
 } from '@coze-arch/bot-api/developer_api';
 import {
   ComponentType,
@@ -64,8 +62,6 @@ const PLUGIN_NOT_FOUND_CODE = '600303107';
 const TOOL_NOT_FOUND_CODE = '600303108';
 
 const MockSetList: FC<{ toolID: string }> = ({ toolID }) => {
-  // const { jump } = usePageJumpService();
-
   const resourceNavigate = usePluginNavigate();
 
   // user信息
@@ -201,16 +197,6 @@ const MockSetList: FC<{ toolID: string }> = ({ toolID }) => {
           },
         },
       );
-      // jump(SceneType.PLUGIN_MOCK_SET__TO__PLUGIN_MOCK_DATA, {
-      //   spaceId: spaceID,
-      //   pluginId: pluginID,
-      //   pluginName: pluginInfo?.meta_info?.name,
-      //   toolId: toolID,
-      //   toolName: apiInfo?.name,
-      //   mockSetId: String(id),
-      //   mockSetName: record?.name,
-      //   generationMode: autoGenerateConfig?.generateMode,
-      // });
     }
   };
 

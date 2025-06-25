@@ -257,7 +257,6 @@ export const EditFormSection: React.FC<EditFormSectionProps> = ({
             return false;
           }
           // 对话组件只会在应用内存在
-          // TODO: @chenjiawei 智能体内也不能存在
           if (!isBotSelectProject && i.type === FormItemSchemaType.CHAT) {
             return false;
           }

@@ -90,8 +90,6 @@ export const AgentPublishPage = () => {
   );
   useReportTti({ isLive: !loading });
   const goBack = () => {
-    // 抖音分身逻辑
-
     navigate(`/space/${params.space_id}/bot/${params.bot_id}`);
   };
 

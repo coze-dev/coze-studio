@@ -49,7 +49,6 @@ export function MonetizeConfig() {
 
   return (
     <Popover
-      // 我服了，trigger 动态更新不生效，原因不明。必须依靠 key 重新挂载
       key={loading || !data?.data ? 'custom' : 'click'}
       trigger={loading || !data?.data ? 'custom' : 'click'}
       autoAdjustOverflow={true}

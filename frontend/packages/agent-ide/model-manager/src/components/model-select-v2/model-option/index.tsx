@@ -229,8 +229,6 @@ export function ModelOption({
                   }
                   const success = onClick();
                   if (success) {
-                    // 产品临时要求未选中的模型也能展示配置入口，导致原有方案不适配，不得不改成点击后先切换成该模型，再打开详细配置界面
-                    // setTimeout 的原因是等待外层组件切换模型
                     setTimeout(() => props.onConfigClick());
                   }
                 }}

@@ -19,15 +19,14 @@ import {
   type WorkflowNodeEntity,
   type WorkflowNodeMeta,
 } from '@flowgram-adapter/free-layout-editor';
+import { WorkflowNodeData, type NodeData } from '@coze-workflow/nodes';
 import {
   ENCAPSULATE_SHORTCUTS,
   EncapsulateService,
 } from '@coze-workflow/feature-encapsulate';
-import { WorkflowNodeData, type NodeData } from '@coze-workflow/nodes';
 import { StandardNodeType } from '@coze-workflow/base/types';
 import { useNodeTestId } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
-import { PluginType } from '@coze-arch/bot-api/developer_api';
 import {
   IconCozMore,
   IconCozTrigger,
@@ -41,6 +40,7 @@ import {
   Tag,
   Divider,
 } from '@coze-arch/coze-design';
+import { PluginType } from '@coze-arch/bot-api/developer_api';
 
 import { useNodeSideSheetStore } from '@/hooks/use-node-side-sheet-store';
 
@@ -198,7 +198,6 @@ export const NodeHeader: React.FC<NodeHeaderProps> = ({
     // const newTitle = event.target.value;
     setEditableTitle(newTitle);
 
-    // TODO@jiwangjian 找一个更合适的地方处理nodeData更新
     // 将title更新到nodeDataEntity上，便于其他地方消费
     nodeDataEntity.updateNodeData<keyof NodeData>({
       title: newTitle,

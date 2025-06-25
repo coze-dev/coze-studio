@@ -3,9 +3,6 @@ import { logger as globalLogger, type Logger } from '@coze-arch/logger';
 
 import { type EventNames } from './events';
 
-// TODO: 这个文件迁移自 apps/bot/src/utils/report-event.ts，未做代码改动，后续需要统一合并到 logger 中
-// cc @liukaizhan
-
 /** 描述用于计算 duration 的点位 */
 export interface DurationPoint {
   /** 点位名，一般是某个行为 */
@@ -57,7 +54,7 @@ export interface ReportEvent {
   getMeta: () => Record<string, unknown>;
 }
 
-// 
+//
 
 /**
  * 创建一个标准的上报事件

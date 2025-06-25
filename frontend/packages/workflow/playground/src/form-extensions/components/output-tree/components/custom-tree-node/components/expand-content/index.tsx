@@ -34,13 +34,7 @@ export const ExpandContent: FC<ExpandContentProps> = props => {
     withDefaultValue = false,
     className,
   } = props;
-  // const debounceDescChange = debounce(onDescChange, 300);
-  // const handleDefaultValueChange = debounce(
-  //   (defaultValue: DefaultValueType | null) => {
-  //     onDefaultValueChange?.(defaultValue);
-  //   },
-  //   300,
-  // );
+
   const disabledDesc = disabled || data.isPreset;
   const descInput = (
     <TextArea
@@ -49,8 +43,6 @@ export const ExpandContent: FC<ExpandContentProps> = props => {
       disabled={disabledDesc}
       defaultValue={data.description}
       maxLength={disabledDesc ? undefined : 1000}
-      // FIXME: @zhangchaoyang.805 onChange 后犹豫触发器表单同步会重新创建节点表单，使展开的面板折叠
-      // onChange={debounceDescChange}
       onBlur={e => {
         onDescChange(e.target.value);
       }}
@@ -85,8 +77,6 @@ export const ExpandContent: FC<ExpandContentProps> = props => {
                   }}
                   onChange={val => {
                     options.onChange();
-                    // FIXME: @zhangchaoyang.805 onChange 后犹豫触发器表单同步会重新创建节点表单，使展开的面板折叠
-                    // handleDefaultValueChange(val);
                   }}
                   inputType={defaultValueInputType}
                   onInputTypeChange={onDefaultValueInputTypeChange}

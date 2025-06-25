@@ -105,9 +105,6 @@ export const useWorkflowPublishedModel = ({
         onCancel: () => jumpResponse.clearScene(true),
         onOk: async () => {
           try {
-            // 查询 plugin 及组装 workflow 详情的逻辑复刻自:
-            // apps/bot/src/routes/space/[space_id]/bot/[bot_id]/components/agent/
-            // skills-modal/workflow-modal/content/card/index.tsx:191
             const plugin = (
               await PluginDevelopApi.GetPlaygroundPluginList({
                 space_id: useSpaceStore.getState().getSpaceId(),

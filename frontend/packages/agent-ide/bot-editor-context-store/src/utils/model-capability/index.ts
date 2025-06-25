@@ -5,7 +5,6 @@ import {
 } from '@coze-arch/bot-api/developer_api';
 
 export type ModelCapabilityConfig = {
-  // 方便 multi-agent 场景下识别到底是哪个 model 能力不支持
   [key in ModelFuncConfigType]: [
     configStatus: ModelFuncConfigStatus,
     modelName: string,

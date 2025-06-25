@@ -96,7 +96,7 @@ export const useCropperImg = ({
       });
     }
 
-    // UX产品需求： 左右拖动不能超过 固定“对话气泡容器” left or right 80%
+    // 产品需求： 左右拖动不能超过 固定“对话气泡容器” left or right 80%
     const maxRightOffset = floor(
       (size.width - centerWidth) / 2 + centerWidth * 0.4,
       2,

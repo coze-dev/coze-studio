@@ -15,8 +15,6 @@ export interface UISearchProps extends InputProps {
 export const UISearch = forwardRef<HTMLInputElement, UISearchProps>(
   (props, ref) => {
     const {
-      // @TODO 本次只迁移代码位置，遗留的loading一直未实现，本次暂不实现。可以在二期UI改版中去实现
-
       loading,
       onSearch,
       onChange,

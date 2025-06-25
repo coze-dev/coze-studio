@@ -39,7 +39,6 @@ export function Sticky({
 
   useEffect(() => {
     if (!stickyDetectRef.current) {
-      // 理论上不会存在，此处为了类型收窄
       return;
     }
 
@@ -52,9 +51,6 @@ export function Sticky({
       { rootMargin: `-${stickyTop}px 0px 0px` },
     );
     intersectionObserver.observe(stickyDetectRef.current);
-
-    // todo 还可以进一步兼容网页大小变化。目前到达 stickyContainer 底部后，向下增加屏幕高度，会导致 stickyContainer 位置跳变
-    // const resizeObserver = new ResizeObserver();
 
     return () => {
       intersectionObserver.disconnect();

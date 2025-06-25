@@ -184,7 +184,6 @@ const FormCard: React.FC<PropsWithChildren<FormCardProps>> & {
               // Q: 为什么不直接在 操作按钮 stopPropagation？
               // A：为了不阻碍顶层捕获卡片点击事件，用以给卡片置顶
               let el = e.target as HTMLElement;
-              // 严查祖上8代（理论上可以无限追溯父节点以使代码更优雅，但为了实用性，设置8代的上限）
               // eslint-disable-next-line @typescript-eslint/no-magic-numbers
               for (let i = 0; i <= 8; i++) {
                 if (el.classList.contains(CUSTOM_ACTION_BUTTON_CLASS)) {

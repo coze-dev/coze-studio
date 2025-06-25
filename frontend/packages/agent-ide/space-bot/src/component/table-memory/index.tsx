@@ -48,8 +48,6 @@ const BaseTableMemory: FC<TableMemoryProps> = ({
   const setToolValidData = useToolValidData();
   const [createDatabaseVisible, setCreateDatabaseVisible] =
     useState<boolean>(false);
-  // const [editDatabaseVisible, setEditDatabaseVisible] =
-  //   useState<boolean>(false);
 
   const { botId } = useBotInfoStore(
     useShallow(detail => ({
@@ -173,7 +171,6 @@ const BaseTableMemory: FC<TableMemoryProps> = ({
                   fontWeight: 400,
                 }}
                 link={{
-                  // caolu.123@bytedance.com & zhangyuanxi@bytedance.com 反馈文档地址变更
                   href: '/open/docs/guides/database',
                   target: '_blank',
                 }}

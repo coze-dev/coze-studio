@@ -27,7 +27,6 @@ export interface IParams {
   agentID?: string;
   actionType?: ActionType;
   initialTab?: 'structure' | 'draft' | 'online';
-  // TODO: 通过biz区分
   /** 作用是跳转上传页时能在 url 里带上抖音标记，以在上传页做视图区分 */
   isDouyinBot?: boolean;
   pageMode?: 'modal' | 'normal';
@@ -37,7 +36,6 @@ export interface IParams {
 }
 
 export interface IParamsStore {
-  // TODO: 细化 params 类型
   params: IParams;
 }
 

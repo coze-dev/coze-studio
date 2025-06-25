@@ -5,14 +5,12 @@ export interface ITableDetail {
   tableName: string | null;
   caption: string | null;
   text: string | null;
-  // TODO: 可能不是 string
   cells: string | null;
 }
 
 export interface IImageDetail {
   base64: string | null;
   caption: string | null;
-  // TODO: 可能不是 string
   links: string | null;
   token: string | null;
   name: string | null;
@@ -46,11 +44,9 @@ export interface ILevelSegment {
   text: string;
   label: string;
   html_text: string;
-  // TODO: 可能不是 string
   positions: string | null;
   table_detail: ITableDetail;
   image_detail: IImageDetail;
-  // TODO: 可能不是 string
   file_detail: string | null;
 }
 

@@ -353,7 +353,6 @@ export class ApplicationShell extends Widget {
     const uri = PANEL_CLASS_NAME_MAP[LayoutPanelType.BOTTOM_PANEL];
     dockPanel.id = uri.displayName;
     dockPanel.node.addEventListener('p-dragenter', event => {
-      // TODO: vscode 表现是拖拽到下方的时候禁止
       event.preventDefault();
       event.stopPropagation();
       // Make sure that the main panel hides its overlay when the bottom panel is expanded

@@ -321,7 +321,7 @@ export const Flamethread: FC<FlamethreadProps> = props => {
             },
             encode: {
               update: {
-                pickable: false, // vgrammer库的类型写的不严谨，实际是可用的
+                pickable: false, // vgrammer库的类型写的不严谨
                 text: labelText ?? defaultLabelText,
                 fill: (datum, element, params) => datum?.labelStyle.fill,
               },

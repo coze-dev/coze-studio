@@ -20,7 +20,6 @@ export const UploadTooltipsContent = () => {
     if (isReadonly) {
       return;
     }
-    // TODO：图片处理tag上线后修改为对应type
     emitEvent(OpenModalEvent.PLUGIN_API_MODAL_OPEN, { type: 1 });
   };
 

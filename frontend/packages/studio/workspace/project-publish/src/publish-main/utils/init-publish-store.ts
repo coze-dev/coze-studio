@@ -41,7 +41,6 @@ export async function initPublishStore(
       last_publish_info = {},
       connector_union_info_map = {},
     } = publishResp.data ?? {};
-    // TODO 将上次发布信息与本次发布状态分开，把上次发布信息作为本次发布状态的初始值
     const { connector_ids = [], connector_publish_config = {} } =
       last_publish_info;
 

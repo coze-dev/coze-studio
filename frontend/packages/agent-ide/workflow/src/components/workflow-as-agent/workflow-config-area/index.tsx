@@ -60,15 +60,6 @@ export const WorkflowConfigArea: FC = () => {
     flowMode,
     addedWorkflows: workflow ? [workflow] : [],
     onOk: val => {
-      /* Workflow as agent 支持添加带自定义入参的对话流，取消拦截 */
-      // if (
-      //   val.parameters.length > 0 &&
-      //   // 兼容未来 BOT_USER_INPUT 作为参数返回的情况
-      //   val.parameters.some(item => !isPresetStartParams(item.name))
-      // ) {
-      //   Toast.error(I18n.t('wf_chatflow_134'));
-      //   return false;
-      // }
       onChange(val);
     },
   });

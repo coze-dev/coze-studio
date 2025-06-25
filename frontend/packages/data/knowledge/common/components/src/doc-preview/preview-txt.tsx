@@ -33,7 +33,6 @@ export const PreviewTxt = (props: IPreviewTxtProps) => {
           i++
         ) {
           await wait(10);
-          // 从线上告警看 ref.current 有可能在循环过程中变成 null
           if (ref.current) {
             ref.current.textContent += txtContent.slice(
               i * 50_000,
@@ -41,7 +40,6 @@ export const PreviewTxt = (props: IPreviewTxtProps) => {
             );
           }
         }
-        // 从线上告警看 ref.current 有可能在循环过程中变成 null(有点迷，应该是用户操作的边界 case)，这里兜底一下
         if (ref.current) {
           ref.current.textContent = txtContent;
         }

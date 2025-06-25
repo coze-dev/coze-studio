@@ -35,6 +35,7 @@ interface InputsFieldProps extends FieldProps<InputValueVO[]> {
   nameProps?: Partial<NodeInputNameProps>;
   inputProps?: ValueExpressionInputProps;
   customReadonly?: boolean;
+  testId?: string;
 }
 
 export const InputsField = ({
@@ -53,6 +54,7 @@ export const InputsField = ({
   nameProps = {},
   inputProps = {},
   customReadonly,
+  testId,
 }: InputsFieldProps) => {
   const formReadonly = useReadonly();
   const readonly = formReadonly || customReadonly;
@@ -71,6 +73,7 @@ export const InputsField = ({
               !readonly
                 ? [
                     <AddButton
+                      dataTestId={`${testId}.add-button`}
                       onClick={() => {
                         const newValue = (onAppend?.() ?? {
                           name: '',

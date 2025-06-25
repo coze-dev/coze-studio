@@ -184,7 +184,6 @@ export default function useImageUploader(
     if (uploadResult.isSuccess) {
       Toast.success(I18n.t('file_upload_success'));
       setUri(uploadResult.uri);
-      // FIXME: @zhanglinling.quan 预期用 uri 进行缓存, 但是 Imageflow 初期只存储了 url, 临时使用 url
       fileNameCache[uploadResult.url] = uploaderRef.current.file.name;
     } else {
       Toast.error(uploadResult.msg);

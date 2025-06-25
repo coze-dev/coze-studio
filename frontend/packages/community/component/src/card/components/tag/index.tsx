@@ -27,7 +27,6 @@ const TYPE_ICON_MAP: Partial<Record<ProductEntityType, TagConfig>> = {
     icon: <IconCozWorkflow />,
     i18nKey: 'template_workflow',
   },
-  // imageflow 已下线并入 workflow，但历史数据依然有该类枚举
   [ProductEntityType.ImageflowTemplateV2]: {
     icon: <IconCozWorkflow />,
     i18nKey: 'template_workflow',

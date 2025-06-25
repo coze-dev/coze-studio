@@ -30,6 +30,7 @@ export const BasePublishButton: React.FC<BasePublishButtonProps> = ({
       className={className}
       loading={publishing}
       onClick={handleClick}
+      data-testid="workflow-base-publish-button"
     >
       {I18n.t('workflow_detail_title_publish')}
     </Button>

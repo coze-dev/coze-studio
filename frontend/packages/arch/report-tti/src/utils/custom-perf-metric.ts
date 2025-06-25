@@ -98,7 +98,6 @@ const executeSendTti = (value: number, extra?: Record<string, string>) => {
     /** 性能指标类型， perf => 传统性能, spa => SPA 性能, mf => 微前端性能 */
     type: 'perf',
     extra: {
-      // TODO 公共参数
       ...extra,
     },
   });
@@ -116,7 +115,6 @@ const executeSendTtiHot = (value: number, extra?: Record<string, string>) => {
     /** 性能指标类型， perf => 传统性能, spa => SPA 性能, mf => 微前端性能 */
     type: 'perf',
     extra: {
-      // TODO 公共参数
       ...extra,
     },
   });

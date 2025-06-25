@@ -24,7 +24,6 @@ export const enum LogLevel {
    * 故障
    */
   FATAL = 'fatal',
-  // DEBUG = 'debug', 暂时去掉，目前和 info 重合，后面按需加
 }
 /**
  * 日志动作，描述消费日志的行为

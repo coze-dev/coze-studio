@@ -30,7 +30,6 @@ export const AgentSkillModal: FC<AgentSkillModalProps> = ({
       tabs={{
         tabsProps: {
           lazyRender: true,
-          // 这里onChange没给泛型，就凑合用叭 as 一个string而已
           onChange: activityKey =>
             emitTabChangeEvent(activityKey as AgentModalTabKey),
         },
