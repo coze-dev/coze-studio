@@ -67,6 +67,8 @@ services:
         condition: service_completed_successfully
       elasticsearch-setup:
         condition: service_completed_successfully
+      mysql-setup-schema:
+        condition: service_completed_successfully
       mysql-setup-init-sql:
         condition: service_completed_successfully
     healthcheck:
