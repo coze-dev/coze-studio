@@ -393,7 +393,7 @@ services:
   elasticsearch-setup:
     image: alpine/curl:8.12.1
     container_name: coze-elasticsearch-setup
-    profiles: ['middleware', 'volcano']
+    profiles: ['middleware', 'volcano-setup']
     env_file: *env_file
     volumes:
       - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh
@@ -467,7 +467,7 @@ services:
   mysql-setup-init-sql:
     image: mysql:8.4.5
     container_name: coze-mysql-setup-init-sql
-    profiles: ['middleware', 'mysql-setup', 'run-server', 'volcano']
+    profiles: ['middleware', 'mysql-setup', 'run-server', 'volcano-setup']
     env_file: *env_file
     command:
       - /bin/sh
@@ -498,14 +498,14 @@ services:
   tos-setup:
     image: alpine/curl:8.12.1
     container_name: coze-tos-setup
-    profiles: ['volcano']
+    profiles: ['volcano-setup']
     env_file: *env_file
     volumes:
       - ./volumes/minio/default_icon/:/default_icon
-      - ./volumes/minio/tosutil/:/tosutil
+      - ./volumes/minio/tosutil:/tosutil
     entrypoint: >
       /bin/sh -c  "
-        (env && \
+        (/tosutil version && \
         /tosutil config -i ${TOS_ACCESS_KEY} -k ${TOS_SECRET_KEY} -e ${TOS_ENDPOINT} -re ${TOS_REGION} && \
         /tosutil cp /default_icon tos://${STORAGE_BUCKET} -r && \
         echo 'upload files to tos complete: Files uploaded to ${STORAGE_BUCKET} bucket.') || exit 1; \
@@ -518,7 +518,7 @@ services:
     # build:
     #   c6ntext: ../
     #   dockerfile: backend/Dockerfile
-    image: fanlv/opencoze:0.1.0
+    image: fanlv/opencoze:0.1.1
     container_name: coze-server
     profiles: ['run-server']
     env_file: *env_file
@@ -563,8 +563,8 @@ services:
           cpus: '2'
           memory: 4G
   coze-server-on-volcano:
-    image: fanlv/opencoze:0.1.0
-    container_name: coze-server
+    image: fanlv/opencoze:0.1.1
+    container_name: coze-server-on-volcano
     profiles: ['volcano-server']
     env_file: *env_file
     environment:
