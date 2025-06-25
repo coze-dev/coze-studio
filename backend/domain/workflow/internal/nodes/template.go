@@ -2,14 +2,15 @@ package nodes
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/bytedance/sonic"
-
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"github.com/bytedance/sonic/ast"
 )
 
 type TemplatePart struct {
@@ -18,6 +19,8 @@ type TemplatePart struct {
 	Root                string
 	SubPathsBeforeSlice []string
 	JsonPath            []any
+
+	literal string
 }
 
 var re = regexp.MustCompile(`{{\s*([^}]+)\s*}}`)
@@ -104,6 +107,8 @@ loop:
 			Root:                removeSlice(segments[0]),
 			SubPathsBeforeSlice: subPaths,
 			JsonPath:            jsonPath,
+
+			literal: "{{" + val + "}}",
 		})
 
 		lastEnd = end
@@ -144,6 +149,25 @@ var renderConfig = sonic.Config{
 	SortMapKeys: true,
 }.Froze()
 
+func joinJsonPath(p []any) string {
+	var sb strings.Builder
+	for i := range p {
+		field, ok := p[i].(string)
+		if ok {
+			if i > 0 {
+				_, ok := p[i-1].(string)
+				if ok {
+					sb.WriteString(".")
+				}
+			}
+			sb.WriteString(field)
+		} else {
+			sb.WriteString(fmt.Sprintf("[%d]", p[i]))
+		}
+	}
+	return sb.String()
+}
+
 func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 	options := &renderOptions{
 		type2CustomRenderer: make(map[reflect.Type]func(any) (string, error)),
@@ -154,12 +178,50 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 
 	n, err := sonic.Get(m, tp.JsonPath...)
 	if err != nil {
-		return tp.Value, nil
+		notExist := errors.Is(err, ast.ErrNotExist)
+		var syntaxErr ast.SyntaxError
+		if notExist || errors.As(err, &syntaxErr) {
+			// get each path segments one by one until the first not found error
+			var segParent, current ast.Node
+			for i := range tp.JsonPath {
+				current, err = sonic.Get(m, tp.JsonPath[:i+1]...)
+				if err != nil {
+					if errors.Is(err, ast.ErrNotExist) { // first not found segment
+						segmentI, ok := tp.JsonPath[i].(int)
+						if ok {
+							if !segParent.Exists() {
+								panic("impossible")
+							} else {
+								segArr, err := segParent.Array()
+								if err != nil { // not taking elements from array
+									return tp.literal, nil
+								}
+
+								return "", fmt.Errorf("Array类型的变量 %s 只有 %d 长度，无法提取下标 %d的值",
+									joinJsonPath(tp.JsonPath[:i]), len(segArr), segmentI)
+							}
+						}
+						return tp.literal, nil // not array element not found, but object field, just print
+					} else if errors.As(err, &syntaxErr) {
+						segmentI, ok := tp.JsonPath[i].(int)
+						if ok {
+							return "", fmt.Errorf("Array类型的变量 %s 为空，无法提取下标 %d的值",
+								joinJsonPath(tp.JsonPath[:i]), segmentI)
+						}
+						return tp.literal, nil // not array element not found, but object field, just print
+					}
+					return tp.literal, nil // not ErrNotExist, just print
+				} else {
+					segParent = current
+				}
+			}
+		}
+		return tp.literal, nil
 	}
 
 	i, err := n.Interface()
 	if err != nil {
-		return tp.Value, nil
+		return tp.literal, nil
 	}
 
 	if i == nil {
@@ -267,15 +329,13 @@ func Render(ctx context.Context, tpl string, input map[string]any, sources map[s
 		}
 
 		if invalid {
-			sb.WriteString("{{" + part.Value + "}}")
+			sb.WriteString(part.literal)
 			continue
 		}
 
 		i, err := part.Render(mi, opts...)
 		if err != nil {
-			logs.CtxErrorf(ctx, "failed to render template part %v from %v: %v", part, string(mi), err)
-			sb.WriteString("{{" + part.Value + "}}")
-			continue
+			return "", err
 		}
 
 		sb.WriteString(i)

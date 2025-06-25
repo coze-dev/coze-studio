@@ -250,6 +250,9 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			}
 
 			if needPop {
+				// the current resuming node emits an interrupt event again
+				// need to remove the previous interrupt event because the node is not 'END', but 'Error',
+				// so it didn't remove the previous interrupt OnEnd
 				deletedEvent, deleted, err := repo.PopFirstInterruptEvent(ctx, exeID)
 				if err != nil {
 					return noTerminate, err

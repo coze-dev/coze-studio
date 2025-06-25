@@ -233,6 +233,9 @@ func (nc *nodeRunConfig[O]) invoke() func(ctx context.Context, input map[string]
 				if hasErrOutput {
 					output = errOutput
 					err = nil
+					if output, err = runner.postProcess(ctx, output); err != nil {
+						logs.CtxErrorf(ctx, "postProcess failed after returning error output: %v", err)
+					}
 				}
 			}
 		}()

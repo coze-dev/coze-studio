@@ -63,7 +63,7 @@ type ErrorLevel string
 
 const (
 	LevelWarn   ErrorLevel = "warn"
-	LevelError  ErrorLevel = "error"
+	LevelError  ErrorLevel = "Error"
 	LevelCancel ErrorLevel = "pending" // TODO: this 'pending' will be changed to 'cancel' or similar in the near future
 )
 

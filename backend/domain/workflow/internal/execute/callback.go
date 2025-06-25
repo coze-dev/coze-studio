@@ -154,11 +154,9 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 			resumePath := w.resumeEvent.NodePath
 
 			c := GetExeCtx(ctx)
-
 			if c == nil {
 				panic("nil execute context")
 			}
-
 			if c.NodeCtx == nil {
 				panic("sub workflow exe ctx must under a parent node ctx")
 			}
@@ -584,6 +582,15 @@ func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (con
 			return ctx, resume
 		}
 	} else {
+		// even if this node is not on the resume path, it could still restore from checkpoint,
+		// for example:
+		// this workflow has parallel interrupts, this node is one of them(or along the path of one of them),
+		// but not resumed this time
+		restoredCtx, restored := tryRestoreNodeCtx(ctx, n.nodeKey)
+		if restored {
+			return restoredCtx, true
+		}
+
 		newCtx, err = PrepareNodeExeCtx(ctx, n.nodeKey, n.nodeName, typ, n.terminatePlan)
 		if err != nil {
 			logs.Errorf("failed to prepare node execute context: %v", err)
