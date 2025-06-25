@@ -38,10 +38,9 @@ export const BaseKnowledgeTableIDE = (props: BaseKnowledgeTableIDEProps) => (
       )}
       renderContent={({ dataActions, statusInfo }) => (
         <TableKnowledgeWorkspace
-          progressMap={statusInfo.progressMap}
           reload={dataActions.refreshData}
           onChangeDocList={dataActions.updateDocumentList}
-          isDocumentLoading={statusInfo.isDocumentLoading}
+          isReloading={statusInfo.isReloading}
           {...props.contentProps}
         />
       )}
