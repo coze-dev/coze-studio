@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { type DatabaseField } from '@coze-workflow/base';
+import { useNodeTestId, type DatabaseField } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { useToggle } from '@coze-arch/hooks';
 import { Dropdown, Tooltip } from '@coze-arch/coze-design';
@@ -14,6 +14,7 @@ interface SelectFieldsButtonProps {
   fields?: DatabaseField[];
   filterSystemFields?: boolean;
   readonly?: boolean;
+  testName?: string;
 }
 
 const MenuItem = ({
@@ -50,8 +51,13 @@ export function SelectFieldsButton({
   fields = [],
   filterSystemFields = true,
   readonly = false,
+  testName,
 }: SelectFieldsButtonProps) {
   const { state: visible, toggle } = useToggle(false);
+  const { getNodeSetterId } = useNodeTestId();
+  const addButtonTestId = getNodeSetterId(
+    testName || 'select-fileds-add-button',
+  );
 
   fields = fields?.filter(
     ({ isSystemField, id }) =>
@@ -93,7 +99,7 @@ export function SelectFieldsButton({
       onClickOutSide={() => toggle()}
     >
       <div onClick={() => toggle()}>
-        <AddButton />
+        <AddButton dataTestId={addButtonTestId} />
       </div>
     </Dropdown>
   );

@@ -225,11 +225,7 @@ const Indicator = forwardRef<IndicatorMethods, IndicatorProps>(
     }));
 
     return !state.done ? (
-      <div
-        ref={indicatorRef}
-        className={styles.indicator}
-        // style={{ display: state.done ? 'none' : 'flex' }}
-      >
+      <div ref={indicatorRef} className={styles.indicator}>
         {!state.done && <IconSpin className={styles['indicator-loading']} />}
         <span>{state.done ? '' : i18n.t('loading')}</span>
       </div>

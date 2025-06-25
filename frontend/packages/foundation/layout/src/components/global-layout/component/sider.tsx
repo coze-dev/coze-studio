@@ -9,7 +9,6 @@ import { type LayoutProps } from '../types';
 import { SubMenu } from './sub-menu';
 import { GLobalLayoutMenuItem } from './menu-item';
 import { GlobalLayoutActionBtn } from './action-btn';
-// import { GlobalLayoutAccountDropdown } from './account-dropdown';
 
 const siderStyle = classNames(
   'relative',

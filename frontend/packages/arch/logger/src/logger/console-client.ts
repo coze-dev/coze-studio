@@ -60,7 +60,6 @@ export class ConsoleLogClient implements LoggerReportClient {
       : eventName
         ? `Event: ${eventName}`
         : undefined;
-    // console.log('======', action, resolvedMsg);
     if (!action?.includes(LogAction.CONSOLE) || !resolvedMsg) {
       return;
     }

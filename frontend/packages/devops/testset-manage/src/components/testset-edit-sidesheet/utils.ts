@@ -237,7 +237,6 @@ export function getSubFieldName(
   return `${itemSchema.name}_${formSchema.component_id}`;
 }
 
-// 下面同步于 apps/bot/src/routes/work_flow/components/test-run/hooks/use-get-json-schema.ts
 enum VariableTypeDTO {
   object = 'object',
   list = 'list',

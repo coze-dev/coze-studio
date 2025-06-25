@@ -311,6 +311,11 @@ func (k *knowledgeSVC) checkRequest(request *CreateDocumentRequest) error {
 				return errors.New("auto caption type is not supported")
 			}
 		}
+		if request.Documents[i].ChunkingStrategy != nil {
+			if request.Documents[i].ChunkingStrategy.ChunkType == parser.ChunkTypeDefault {
+				request.Documents[i].ChunkingStrategy = getDefaultChunkStrategy()
+			}
+		}
 	}
 	return nil
 }
@@ -569,6 +574,11 @@ func (k *knowledgeSVC) getProgressFromCache(ctx context.Context, documentProgres
 func (k *knowledgeSVC) ResegmentDocument(ctx context.Context, request *ResegmentDocumentRequest) (response *ResegmentDocumentResponse, err error) {
 	if request == nil {
 		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	if request.ChunkingStrategy != nil {
+		if request.ChunkingStrategy.ChunkType == parser.ChunkTypeDefault {
+			request.ChunkingStrategy = getDefaultChunkStrategy()
+		}
 	}
 	doc, err := k.documentRepo.GetByID(ctx, request.DocumentID)
 	if err != nil {
@@ -924,9 +934,24 @@ func (k *knowledgeSVC) GetSlice(ctx context.Context, request *GetSliceRequest) (
 	}, nil
 }
 
+func getDefaultChunkStrategy() *entity.ChunkingStrategy {
+	return &entity.ChunkingStrategy{
+		ChunkType:       parser.ChunkTypeDefault,
+		ChunkSize:       consts.DefaultChunkSize,
+		Separator:       consts.DefaultSeparator,
+		Overlap:         consts.DefaultOverlap,
+		TrimSpace:       consts.DefaultTrimSpace,
+		TrimURLAndEmail: consts.DefaultTrimURLAndEmail,
+	}
+}
 func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *CreateDocumentReviewRequest) (response *CreateDocumentReviewResponse, err error) {
 	if request == nil {
 		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	if request.ChunkStrategy != nil {
+		if request.ChunkStrategy.ChunkType == parser.ChunkTypeDefault {
+			request.ChunkStrategy = getDefaultChunkStrategy()
+		}
 	}
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
@@ -1386,6 +1411,7 @@ func (k *knowledgeSVC) ExtractPhotoCaption(ctx context.Context, request *Extract
 	if err != nil {
 		return nil, err
 	}
+	docEntity.ParsingStrategy.CaptionType = ptr.Of(parser.ImageAnnotationTypeModel)
 	parser, err := k.parseManager.GetParser(convert.DocumentToParseConfig(docEntity))
 	if err != nil {
 		return nil, errorx.New(errno.ErrKnowledgeGetParserFailCode, errorx.KV("msg", err.Error()))

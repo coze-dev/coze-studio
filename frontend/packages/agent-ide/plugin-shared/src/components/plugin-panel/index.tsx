@@ -27,10 +27,6 @@ import {
   UIButton,
 } from '@coze-arch/bot-semi';
 import { IconViewinchatOutlined } from '@coze-arch/bot-icons';
-// import {
-//   type PluginApi,
-//   type PluginInfoForPlayground,
-// } from '@coze-arch/bot-api/developer_api';
 import { ConnectorList, OfficialLabel } from '@coze-community/components';
 import { I18n } from '@coze-arch/i18n';
 import {

@@ -2,7 +2,12 @@ package consts
 
 const (
 	// RDBFieldID primary key id
-	RDBFieldID    = "_knowledge_document_slice_id"
-	KnowledgeName = "knowledge_name"
-	DocumentURL   = "document_url"
+	RDBFieldID             = "_knowledge_document_slice_id"
+	KnowledgeName          = "knowledge_name"
+	DocumentURL            = "document_url"
+	DefaultChunkSize       = 800
+	DefaultSeparator       = "\n"
+	DefaultOverlap         = 10
+	DefaultTrimSpace       = false
+	DefaultTrimURLAndEmail = false
 )

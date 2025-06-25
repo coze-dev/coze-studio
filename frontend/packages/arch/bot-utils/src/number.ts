@@ -3,7 +3,6 @@ import { ceil } from 'lodash-es';
 export const simpleformatNumber = (num: number | string) =>
   new Intl.NumberFormat('en-US').format(parseInt(String(num)));
 
-// TODO: 下面的代码应该都可以用一些开源框架实现，后续需要优化
 export const formatBytes = (bytes: number, decimals = 2) => {
   if (!bytes) {
     return '0 Byte';

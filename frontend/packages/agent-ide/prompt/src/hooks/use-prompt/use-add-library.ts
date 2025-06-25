@@ -6,8 +6,6 @@ import { WorkflowMode } from '@coze-arch/idl/developer_api';
 import { useDatasetStore } from '@coze-data/knowledge-data-set-for-agent';
 import { type ILibraryItem } from '@coze-common/editor-plugins/library-insert';
 
-// TOOD: hzf后端要把资源的信息一起返回
-
 const useAddPluginLibrary = () => {
   const { pluginApis, updateSkillPluginApis } = useBotSkillStore(
     useShallow(store => ({

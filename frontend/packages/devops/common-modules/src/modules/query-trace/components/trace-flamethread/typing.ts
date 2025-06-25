@@ -17,7 +17,6 @@ export type TraceFlamethreadProps = {
   | 'globalStyle'
   | 'rowHeight'
   | 'visibleColumnCount'
-  // | 'valuePerColumn'
   | 'datazoomDecimals'
   | 'axisLabelSuffix'
   | 'disableViewScroll'

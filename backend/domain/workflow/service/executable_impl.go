@@ -16,6 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
@@ -402,19 +403,30 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 
 	nodeGroups := make(map[string]map[int]*entity.NodeExecution)
 	nodeGroupMaxIndex := make(map[string]int)
+	var nodeIDSet map[string]struct{}
 	for i := range nodeExecs {
 		nodeExec := nodeExecs[i]
 		if nodeExec.ParentNodeID != nil {
-			if _, ok := nodeGroups[nodeExec.NodeID]; !ok {
-				nodeGroups[nodeExec.NodeID] = make(map[int]*entity.NodeExecution)
+			if nodeIDSet == nil {
+				nodeIDSet = slices.ToMap(nodeExecs, func(e *entity.NodeExecution) (string, struct{}) {
+					return e.NodeID, struct{}{}
+				})
 			}
-			nodeGroups[nodeExec.NodeID][nodeExec.Index] = nodeExecs[i]
-			if nodeExec.Index > nodeGroupMaxIndex[nodeExec.NodeID] {
-				nodeGroupMaxIndex[nodeExec.NodeID] = nodeExec.Index
+
+			if _, ok := nodeIDSet[*nodeExec.ParentNodeID]; ok {
+				if _, ok := nodeGroups[nodeExec.NodeID]; !ok {
+					nodeGroups[nodeExec.NodeID] = make(map[int]*entity.NodeExecution)
+				}
+				nodeGroups[nodeExec.NodeID][nodeExec.Index] = nodeExecs[i]
+				if nodeExec.Index > nodeGroupMaxIndex[nodeExec.NodeID] {
+					nodeGroupMaxIndex[nodeExec.NodeID] = nodeExec.Index
+				}
+
+				continue
 			}
-		} else {
-			wfExeEntity.NodeExecutions = append(wfExeEntity.NodeExecutions, nodeExec)
 		}
+
+		wfExeEntity.NodeExecutions = append(wfExeEntity.NodeExecutions, nodeExec)
 	}
 
 	for nodeID, nodeExes := range nodeGroups {

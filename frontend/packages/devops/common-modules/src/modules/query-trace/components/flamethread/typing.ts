@@ -55,7 +55,6 @@ export interface FlamethreadProps {
   rectStyle?: RectStyle;
   labelStyle?: LabelStyle;
   labelText?: LabelText;
-  // 结构太复杂，直接暴漏即可
   tooltip?: Tooltip;
   globalStyle?: GlobalStyle;
   rowHeight?: number;

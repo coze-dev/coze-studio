@@ -8,7 +8,7 @@ import (
 	"github.com/bytedance/sonic"
 
 	"code.byted.org/flow/opencoze/backend/domain/search/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
+	"code.byted.org/flow/opencoze/backend/infra/contract/es"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -17,12 +17,12 @@ import (
 const resourceIndexName = "coze_resource"
 
 type resourceHandlerImpl struct {
-	esClient *es8.Client
+	esClient es.Client
 }
 
 var defaultResourceHandler *resourceHandlerImpl
 
-func NewResourceHandler(ctx context.Context, e *es8.Client) ConsumerHandler {
+func NewResourceHandler(ctx context.Context, e es.Client) ConsumerHandler {
 	defaultResourceHandler = &resourceHandlerImpl{
 		esClient: e,
 	}
@@ -61,17 +61,11 @@ func (s *resourceHandlerImpl) indexResources(ctx context.Context, ev *entity.Res
 func (s *resourceHandlerImpl) indexResource(ctx context.Context, opType entity.OpType, r *entity.ResourceDocument) error {
 	switch opType {
 	case entity.Created:
-		_, err := s.esClient.Index(resourceIndexName).Id(conv.Int64ToStr(r.ResID)).
-			Document(r).Do(ctx)
-		return err
+		return s.esClient.Create(ctx, resourceIndexName, conv.Int64ToStr(r.ResID), r)
 	case entity.Updated:
-		_, err := s.esClient.Update(resourceIndexName, conv.Int64ToStr(r.ResID)).
-			Doc(r).Do(ctx)
-		return err
+		return s.esClient.Update(ctx, resourceIndexName, conv.Int64ToStr(r.ResID), r)
 	case entity.Deleted:
-		_, err := s.esClient.Delete(resourceIndexName, conv.Int64ToStr(r.ResID)).
-			Do(ctx)
-		return err
+		return s.esClient.Delete(ctx, resourceIndexName, conv.Int64ToStr(r.ResID))
 	}
 
 	return fmt.Errorf("unexpected op type: %v", opType)

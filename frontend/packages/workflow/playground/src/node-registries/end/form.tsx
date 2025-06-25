@@ -1,4 +1,4 @@
-import { type InputValueVO } from '@coze-workflow/base';
+import { useNodeTestId, type InputValueVO } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 
 import { withNodeConfigForm } from '@/node-registries/common/hocs';
@@ -17,6 +17,9 @@ import { TerminatePlanField } from './components/terminate-plan-field';
 export const FormRender = withNodeConfigForm(() => {
   const terminatePlan = useWatch<TerminatePlan>(TERMINATE_PLAN_PATH);
   const inputParameters = useWatch<InputValueVO[]>(INPUT_PATH);
+
+  const { getNodeSetterId } = useNodeTestId();
+  const setterTestId = getNodeSetterId('');
   return (
     <>
       <TerminatePlanField />
@@ -25,6 +28,7 @@ export const FormRender = withNodeConfigForm(() => {
         title={I18n.t('workflow_detail_end_output')}
         tooltip={I18n.t('workflow_detail_end_output_tooltip')}
         isTree={true}
+        testId={setterTestId}
       />
       {terminatePlan === TerminatePlan.UseAnswerContent ? (
         <AnswerContentField

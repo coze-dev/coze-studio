@@ -3,7 +3,21 @@ package entity
 import (
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	resource "code.byted.org/flow/opencoze/backend/api/model/resource/common"
-	"code.byted.org/flow/opencoze/backend/domain/search/consts"
+)
+
+const (
+	FieldOfCreateTime       = "create_time"
+	FieldOfUpdateTime       = "update_time"
+	FieldOfPublishTime      = "publish_time"
+	FieldOfFavTime          = "fav_time"
+	FieldOfRecentlyOpenTime = "recently_open_time"
+
+	// resource index fields
+	FieldOfResType       = "res_type"
+	FieldOfPublishStatus = "publish_status"
+	FieldOfResSubType    = "res_sub_type"
+	FieldOfBizStatus     = "biz_status"
+	FieldOfScores        = "scores"
 )
 
 type SearchProjectsRequest struct {
@@ -17,8 +31,8 @@ type SearchProjectsRequest struct {
 	IsPublished    bool
 	IsFav          bool
 	IsRecentlyOpen bool
-	OrderBy        consts.OrderByType
-	Order          common.OrderByType
+	OrderFiledName string
+	OrderAsc       bool
 
 	Cursor string
 	Limit  int32
@@ -37,8 +51,8 @@ type SearchResourcesRequest struct {
 	Name    string
 	APPID   int64
 
-	OrderBy             consts.OrderByType
-	Order               common.OrderByType
+	OrderFiledName      string
+	OrderAsc            bool
 	ResTypeFilter       []resource.ResType
 	PublishStatusFilter resource.PublishStatus
 	SearchKeys          []string

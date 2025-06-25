@@ -31,11 +31,6 @@ export type Expand<T extends Obj> = T extends infer U
  *  desc?: string
  * }
  * type Result = PartialRequired<Agent, 'id' | 'name'>;
- * // Result: {
- * //  id: string;
- * //  name: string;
- * //  desc?: string
- * // };
  */
 export type PartialRequired<T extends Obj, K extends keyof T> = Expand<
   {

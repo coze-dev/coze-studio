@@ -60,10 +60,6 @@ export const DatabaseList: React.FC<DatabaseItemProps> = ({ handleEdit }) => {
 
     let resp: BindDatabaseToBotResponse | undefined;
     try {
-      // resp = await MemoryApi.DeleteBotTable({
-      //   table_id: tableId,
-      //   related_id: botId,
-      // });
       resp = await MemoryApi.UnBindDatabase({
         database_id: tableId,
         bot_id: botId,

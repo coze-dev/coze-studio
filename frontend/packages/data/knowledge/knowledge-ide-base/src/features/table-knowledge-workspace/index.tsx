@@ -83,7 +83,6 @@ export const TableKnowledgeWorkspace = ({
   const processFinished = curDocId
     ? progressMap[curDocId]?.status === DocumentStatus.Enable
     : false;
-  // TODO: hzf biz的分化在Scene层维护
   const knowledgeIDEBiz = useKnowledgeParamsStore(state => state.params.biz);
   const curFormatType: FormatType | undefined = dataSetDetail?.format_type;
   const isTableFormat = curFormatType === FormatType.Table;

@@ -76,9 +76,9 @@ const generateInput = (logs: Log[], result: NodeResult) => {
         const operatorData = isFunction(operatorFn) ? operatorFn() : operator;
         const leftData = left?.key ? { [left?.key]: left?.value } : left?.value;
         const rightData =
-          right.type === ConditionRightType.Ref && right.key
-            ? { [right.key]: right.value }
-            : right.value;
+          right?.type === ConditionRightType.Ref && right?.key
+            ? { [right?.key]: right?.value }
+            : right?.value;
         return {
           ...condition,
           operatorData,

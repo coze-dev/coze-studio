@@ -148,8 +148,6 @@ export interface WorkflowGlobalState {
   bindBizType?: number;
   /** 节点侧栏床是否打开 */
   nodeSideSheetVisible?: boolean;
-
-  // TODO DELETE schemaGray 临时字段，后端灰度刷数据标记，全量后删除
   schemaGray?: {
     loop?: string;
     batch?: string;
@@ -252,7 +250,6 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
       bindBizID: workflowInfo?.bind_biz_id,
       bindBizType: workflowInfo?.bind_biz_type,
       historyStatus: undefined,
-      // TODO DELETE schemaGray 临时字段，后端灰度刷数据标记，全量后删除
       schemaGray: (
         workflowJSON as WorkflowJSON & {
           versions: {
@@ -356,7 +353,6 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
       bindBizID: bind_biz_id,
       bindBizType: bind_biz_type,
       historyStatus: operateType,
-      // TODO DELETE schemaGray 临时字段，后端灰度刷数据标记，全量后删除
       schemaGray: (
         workflowJSON as WorkflowJSON & {
           versions: {

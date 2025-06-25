@@ -87,7 +87,6 @@ export const KnowledgeIDENavBar = ({
     !dataSetDetail?.processing_file_id_list?.length &&
     !isImageFormat;
 
-  // FIXME: 此处需要提取到外面
   const documentInfo = documentList?.[0];
   const unitType = useMemo(() => {
     if (documentInfo) {
@@ -118,11 +117,6 @@ export const KnowledgeIDENavBar = ({
     navigate(`/space/${params.spaceID}/library`);
   };
 
-  // const onDebounceSearch = debounce(v => {
-  //   setSearch(v);
-  // }, 500);
-
-  // TODO: hzf biz的分化在Scene层维护
   const fromProject = params.biz === 'project';
 
   return (

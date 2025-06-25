@@ -1424,3 +1424,13 @@ func _getexampleworkflowlistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _bot0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getbotonlineinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

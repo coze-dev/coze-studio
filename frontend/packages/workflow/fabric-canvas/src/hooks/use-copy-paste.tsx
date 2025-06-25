@@ -220,7 +220,6 @@ export const useCopyPaste = ({
       };
       if (cloneObj.isType('activeselection')) {
         (cloneObj as ActiveSelection).getObjects().forEach(o => {
-          // 很恶心，如果是框选，元素坐标是相对于选框的，需要加上框选框的坐标
           o.set({
             left: o.left + originXY.left,
             top: o.top + originXY.top,

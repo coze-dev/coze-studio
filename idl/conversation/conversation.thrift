@@ -47,7 +47,7 @@ struct CreateConversationRequest {
 struct CreateConversationResponse {
     1: i64    code
     2: string msg
-    3: optional ConversationData ConversationData (agw.key = "data")
+    3: optional ConversationData ConversationData (api.body = "data")
 }
 
 struct ClearConversationApiRequest {

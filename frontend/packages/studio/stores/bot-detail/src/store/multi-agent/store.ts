@@ -219,8 +219,6 @@ export const useMultiAgentStore = create<MultiAgentStore & MultiAgentAction>()(
                 item => item.intent_id === portId,
               );
               if (targetIntent && agentId) {
-                // 如果此时targetIntent已经有了next_agent_id，表明已经有连线了。
-                // @TODO 此时需要确定是更新next_agent_id；还是给个Toast，不允许更新next_agent_id。先按照更新next_agent_id实现
                 targetIntent.next_agent_id = agentId;
               }
             }
@@ -254,7 +252,7 @@ export const useMultiAgentStore = create<MultiAgentStore & MultiAgentAction>()(
               return;
             }
             const newIntent = {
-              intent_id: nanoid(), // todo: 待旧版 update agent 方式完全替换成 update_agent 接口后，前端不用再生成 nanoid
+              intent_id: nanoid(),
               next_agent_id: targetAgentId,
             };
             switch (sourceAgent.agent_type) {
@@ -287,7 +285,6 @@ export const useMultiAgentStore = create<MultiAgentStore & MultiAgentAction>()(
                 if (sourceAgent.intents?.[0]) {
                   sourceAgent.intents[0].next_agent_id = undefined;
                 } else {
-                  // todo: 待旧版 update agent 方式完全替换成 update_agent 接口后，前端不用再生成 nanoid
                   sourceAgent.intents = [{ intent_id: nanoid() }];
                 }
                 break;

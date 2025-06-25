@@ -21,7 +21,6 @@ func GeneratedRegister(r *server.Hertz) {
 	coze.Register(r)
 	staticFileRegister(r)
 
-
 	// TODO: remove me later
 	// 不需要的接口，但是阻塞了测试，开源场景后续要下掉。
 
@@ -36,7 +35,6 @@ func GeneratedRegister(r *server.Hertz) {
 	})
 }
 
-
 // staticFileRegister registers web page router.
 func staticFileRegister(r *server.Hertz) {
 	cwd, err := os.Getwd()
@@ -47,10 +45,10 @@ func staticFileRegister(r *server.Hertz) {
 
 	staticFile := path.Join(cwd, "resources/static/index.html")
 
-	r.Static("/static",path.Join(cwd,"/resources/static"))
-	r.StaticFile("/favicon.png","./resources/static/favicon.png")
-	r.StaticFile("/",staticFile)
-	r.StaticFile("/sign",staticFile)
+	r.Static("/static", path.Join(cwd, "/resources/static"))
+	r.StaticFile("/favicon.png", "./resources/static/favicon.png")
+	r.StaticFile("/", staticFile)
+	r.StaticFile("/sign", staticFile)
 
 	type data struct {
 		Code int32  `json:"code"`
@@ -59,9 +57,9 @@ func staticFileRegister(r *server.Hertz) {
 
 	r.NoRoute(func(c context.Context, ctx *app.RequestContext) {
 		path := string(ctx.GetRequest().URI().Path())
-		if strings.HasPrefix(path, "/api/")||
-		strings.HasPrefix(path, "/v1/")||
-		strings.HasPrefix(path, "/v3/") { 
+		if strings.HasPrefix(path, "/api/") ||
+			strings.HasPrefix(path, "/v1/") ||
+			strings.HasPrefix(path, "/v3/") {
 			ctx.JSON(404, data{
 				Code: 404,
 				Msg:  "not found",

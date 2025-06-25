@@ -1,11 +1,10 @@
 import { type MutableRefObject, useEffect, useState, Fragment } from 'react';
 
-import {
-  useAgentPersistence,
-  useAgentFormManagement,
-  AgentInfoForm,
-} from '@coze-agent-ide/space-bot/hook';
 import { useBotInfoStore } from '@coze-studio/bot-detail-store/bot-info'; // Keep if botId is needed directly
+import {
+  PictureUpload,
+  type UploadValue,
+} from '@coze-common/biz-components/picture-upload';
 import { I18n } from '@coze-arch/i18n';
 import { Modal } from '@coze-arch/coze-design';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
@@ -15,9 +14,10 @@ import {
   type DraftBot,
 } from '@coze-arch/bot-api/developer_api';
 import {
-  PictureUpload,
-  type UploadValue,
-} from '@coze-common/biz-components/picture-upload';
+  useAgentPersistence,
+  useAgentFormManagement,
+  AgentInfoForm,
+} from '@coze-agent-ide/space-bot/hook';
 export interface CreateAgentEntityProps {
   onBefore?: () => void;
   onError?: () => void;
@@ -132,7 +132,9 @@ export const useCreateOrUpdateAgent = ({
     }
   }, [visible]);
 
-  // TODO gyh 接口与内部版对齐
+  /**
+   * @param _ 开源版本暂不支持此参数
+   */
   const startEdit = (_?: boolean) => {
     setVisible(true);
   };

@@ -2,112 +2,12 @@ x-env-file: &env_file
   - .env
 
 services:
-  rocketmq-namesrv:
-    image: apache/rocketmq:5.3.2
-    container_name: coze-rocketmq-namesrv
-    privileged: true
-    user: root
-    env_file: *env_file
-    ports:
-      - '9876:9876'
-    volumes:
-      - ./data/rocketmq/namesrv/logs:/home/rocketmq/logs:rw,Z
-      - ./data/rocketmq/namesrv/store:/home/rocketmq/store:rw,Z
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-    command: >
-      bash -c "
-        # Set proper permissions for data directories
-        mkdir -p /home/rocketmq/logs /home/rocketmq/store
-        mkdir -p /home/rocketmq/logs/rocketmqlogs
-        touch /home/rocketmq/logs/rocketmqlogs/tools.log
-        touch /home/rocketmq/logs/rocketmqlogs/tools_default.log
-
-        chown -R rocketmq:rocketmq /home/rocketmq/logs /home/rocketmq/store
-        chmod g+s /home/rocketmq/logs /home/rocketmq/store
-
-        echo 'Starting RocketMQ NameServer...'
-        sh mqnamesrv
-      "
-    healthcheck:
-      test: ['CMD', 'sh', 'mqadmin', 'clusterList', '-n', 'localhost:9876']
-      interval: 5s
-      timeout: 10s
-      retries: 10
-      start_period: 10s
-    networks:
-      - coze-network
-  rocketmq-broker:
-    image: apache/rocketmq:5.3.2
-    container_name: coze-rocketmq-broker
-    privileged: true
-    user: root
-    env_file: *env_file
-    ports:
-      - '10909:10909'
-      - '10911:10911'
-      - '10912:10912'
-    volumes:
-      - ./data/rocketmq/broker/logs:/home/rocketmq/logs:rw,Z
-      - ./data/rocketmq/broker/store:/home/rocketmq/store:rw,Z
-      - ./volumes/rocketmq/broker.conf:/home/rocketmq/conf/broker.conf:rw,Z
-    networks:
-      - coze-network
-    command: >
-      bash -c '
-        # Set proper permissions
-        mkdir -p /home/rocketmq/logs/rocketmqlogs /home/rocketmq/store
-        touch /home/rocketmq/logs/rocketmqlogs/tools.log \
-              /home/rocketmq/logs/rocketmqlogs/tools_default.log
-        chown -R rocketmq:rocketmq /home/rocketmq/logs /home/rocketmq/store
-        chmod g+s /home/rocketmq/logs /home/rocketmq/store
-
-        echo "Starting RocketMQ Broker..."
-        sh mqbroker -n rocketmq-namesrv:9876 -c /home/rocketmq/conf/broker.conf &
-
-        echo "Waiting for Broker registration..."
-        broker_ready=false
-        for i in {1..60}; do
-          if sh mqadmin clusterList -n rocketmq-namesrv:9876 \
-             | grep -q "DefaultCluster.*broker-a"; then
-            echo "Registered."
-            broker_ready=true
-            break
-          fi
-          echo "Not ready, retry $$i/60..."
-          sleep 1
-        done
-
-        if [ "$$broker_ready" = false ]; then
-          echo "ERROR: registration timed out."
-          exit 1
-        fi
-
-        echo "Creating topics..."
-        for t in opencoze_knowledge opencoze_search_app opencoze_search_resource \
-                  %RETRY%cg_knowledge %RETRY%cg_search_app %RETRY%cg_search_resource; do
-          sh mqadmin updateTopic -n rocketmq-namesrv:9876 \
-            -c DefaultCluster -t "$$t"
-        done
-
-        touch /tmp/rocketmq_ready
-        echo "Broker started successfully."
-        wait
-      '
-    depends_on:
-      - rocketmq-namesrv
-    healthcheck:
-      test: ['CMD-SHELL', '[ -f /tmp/rocketmq_ready ]']
-      interval: 10s
-      timeout: 10s
-      retries: 10
-      start_period: 10s
-
   minio:
     image: minio/minio:latest
     container_name: coze-minio
     user: root
     privileged: true
+    profiles: ['middleware']
     env_file: *env_file
     ports:
       - '9000:9000'
@@ -128,88 +28,11 @@ services:
     networks:
       - coze-network
 
-  etcd:
-    image: bitnami/etcd:3.5
-    container_name: coze-etcd
-    user: root
-    privileged: true
-    env_file: *env_file
-    environment:
-      - ETCD_AUTO_COMPACTION_MODE=revision
-      - ETCD_AUTO_COMPACTION_RETENTION=1000
-      - ETCD_QUOTA_BACKEND_BYTES=4294967296
-      - ALLOW_NONE_AUTHENTICATION=yes
-    ports:
-      - 2379:2379
-      - 2380:2380
-    volumes:
-      - ./data/bitnami/etcd:/bitnami/etcd:rw,Z
-      - ./volumes/etcd/etcd.conf.yml:/opt/bitnami/etcd/conf/etcd.conf.yml:ro,Z
-    command: >
-      bash -c "
-        /opt/bitnami/scripts/etcd/setup.sh
-        # Set proper permissions for data and config directories
-        chown -R etcd:etcd /bitnami/etcd
-        chmod g+s /bitnami/etcd
-
-        exec /opt/bitnami/scripts/etcd/entrypoint.sh /opt/bitnami/scripts/etcd/run.sh
-      "
-    healthcheck:
-      test: ['CMD', 'etcdctl', 'endpoint', 'health']
-      interval: 5s
-      timeout: 10s
-      retries: 10
-      start_period: 10s
-    networks:
-      - coze-network
-
-  milvus:
-    container_name: coze-milvus
-    image: milvusdb/milvus:v2.5.10
-    user: root
-    privileged: true
-    env_file: *env_file
-    command: >
-      bash -c "
-        # Set proper permissions for data directories
-        chown -R root:root /var/lib/milvus
-        chmod g+s /var/lib/milvus
-
-        exec milvus run standalone
-      "
-    security_opt:
-      - seccomp:unconfined
-    environment:
-      ETCD_ENDPOINTS: coze-etcd:2379
-      MINIO_ADDRESS: coze-minio:9000
-      MINIO_BUCKET_NAME: ${MINIO_BUCKET:-milvus}
-      MINIO_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
-      MINIO_USE_SSL: false
-      LOG_LEVEL: debug
-    volumes:
-      - ./data/milvus:/var/lib/milvus:rw,Z
-      - ./volumes/milvus/milvus.yml:/milvus/configs/milvus.yml:ro,Z
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:9091/healthz']
-      interval: 5s
-      timeout: 10s
-      retries: 10
-      start_period: 10s
-    ports:
-      - '19530:19530'
-      - '9091:9091'
-    depends_on:
-      etcd:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-    networks:
-      - coze-network
   elasticsearch-setup:
     image: alpine/curl:8.12.1
     container_name: coze-elasticsearch-setup
     env_file: *env_file
+    profiles: ['middleware']
     volumes:
       - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh
       - ./volumes/elasticsearch/es_index_schema:/es_index_schema
@@ -227,6 +50,7 @@ services:
     image: minio/mc
     container_name: coze-minio-setup
     env_file: *env_file
+    profiles: ['middleware']
     depends_on:
       minio:
         condition: service_healthy
@@ -246,6 +70,7 @@ services:
     image: mysql:8.4.5
     container_name: coze-mysql-setup-init-sql
     env_file: *env_file
+    profiles: ['middleware']
     command:
       - /bin/sh
       - -c
@@ -278,6 +103,7 @@ services:
     #   dockerfile: backend/Dockerfile
     image: fanlv/opencoze:0.1.0
     container_name: coze-server
+    profiles: ['run-server']
     env_file: *env_file
     environment:
       LISTEN_ADDR: 0.0.0.0:8888
@@ -290,13 +116,7 @@ services:
       - ../backend/conf:/app/resources/conf
       # - ../backend/static:/app/resources/static
     depends_on:
-      rocketmq-namesrv:
-        condition: service_healthy
-      rocketmq-broker:
-        condition: service_healthy
       minio:
-        condition: service_healthy
-      milvus:
         condition: service_healthy
       minio-setup:
         condition: service_completed_successfully

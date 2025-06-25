@@ -66,20 +66,6 @@ const GET_MENU_SPACE_APP = (): Array<MenuItem> => [
     invisible: !getFlags()['bot.builder.bot.builder.widget'],
   },
   {
-    // 暂时先留着，以防设计又要改回去
-    // label: active => (
-    //   <div
-    //     className={classNames(s['tag-container'], {
-    //       [s.item]: true,
-    //       [s.active]: active,
-    //     })}
-    //   >
-    //     <span className={s.label}>{I18n.t('scene_resource_name')}</span>
-    //     <Tag prefixIcon={null} className={s.tag}>
-    //       {I18n.t('scene_beta_sign')}
-    //     </Tag>
-    //   </div>
-    // ),
     label: 'scene_resource_name',
     badge: 'scene_beta_sign',
     app: SpaceAppEnum.SOCIAL_SCENE,

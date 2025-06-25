@@ -8,7 +8,7 @@ replace google.golang.org/grpc => google.golang.org/grpc v1.68.0
 
 require (
 	github.com/IBM/sarama v1.45.1
-	github.com/apache/rocketmq-client-go/v2 v2.1.2
+	github.com/apache/rocketmq-client-go/v2 v2.1.3-0.20250427084711-67ec50b93040
 	github.com/apache/thrift v0.21.0
 	github.com/bytedance/mockey v1.2.14
 	github.com/bytedance/sonic v1.13.2
@@ -36,7 +36,7 @@ require (
 	github.com/spf13/cast v1.7.1
 	github.com/stretchr/testify v1.10.0
 	github.com/tealeg/xlsx/v3 v3.3.13
-	github.com/volcengine/volc-sdk-golang v1.0.203
+	github.com/volcengine/volc-sdk-golang v1.0.211
 	github.com/xuri/excelize/v2 v2.9.0
 	go.uber.org/mock v0.5.1
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394
@@ -55,12 +55,15 @@ replace parse-curl => github.com/killlowkey/parse-curl v1.0.0
 require github.com/alicebob/miniredis/v2 v2.34.0
 
 require (
+	github.com/apache/rocketmq-clients/golang/v5 v5.1.2
 	github.com/cloudwego/eino-ext/components/embedding/ark v0.0.0-20250522060253-ddb617598b09
 	github.com/cloudwego/eino-ext/components/embedding/openai v0.0.0-20250522060253-ddb617598b09
 	github.com/cloudwego/eino-ext/components/model/ollama v0.0.0-20250610035057-2c4e7c8488a5
 	github.com/cloudwego/eino-ext/components/model/qwen v0.0.0-20250612061754-5a3deb091dc5
 	github.com/dimchansky/utfbom v1.1.1
+	github.com/elastic/go-elasticsearch/v7 v7.17.10
 	github.com/extrame/xls v0.0.1
+	github.com/hertz-contrib/cors v0.1.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/ollama/ollama v0.5.12
@@ -70,17 +73,31 @@ require (
 )
 
 require (
+	contrib.go.opencensus.io/exporter/ocagent v0.6.0 // indirect
 	github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302 // indirect
+	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cloudwego/gopkg v0.1.4 // indirect
+	github.com/dchest/siphash v1.2.3 // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/extrame/ole2 v0.0.0-20160812065207-d69429661ad7 // indirect
 	github.com/frankban/quicktest v1.14.6 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.20.0 // indirect
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/btree v1.1.2 // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/meguminnnnnnnnn/go-openai v0.0.0-20250523041550-e202cd57070c // indirect
+	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/peterbourgon/diskv/v3 v3.0.1 // indirect
+	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/rogpeppe/fastuuid v1.2.0 // indirect
 	github.com/shabbyrobe/xmlwriter v0.0.0-20200208144257-9fca06d00ffa // indirect
+	github.com/valyala/fastrand v1.1.0 // indirect
 	github.com/yuin/gopher-lua v1.1.1 // indirect
+	go.opencensus.io v0.24.0 // indirect
+	google.golang.org/api v0.189.0 // indirect
 )
 
 require (
@@ -130,7 +147,7 @@ require (
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.7.0 // indirect
-	github.com/emirpasic/gods v1.12.0 // indirect
+	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/fumiama/imgsz v0.0.2 // indirect
@@ -260,7 +277,7 @@ require (
 	golang.org/x/arch v0.15.0 // indirect
 	golang.org/x/crypto v0.37.0
 	golang.org/x/net v0.39.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.24.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 	golang.org/x/tools v0.31.0 // indirect

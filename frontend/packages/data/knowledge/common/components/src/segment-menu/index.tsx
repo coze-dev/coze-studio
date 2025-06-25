@@ -21,7 +21,6 @@ interface IMenuItem {
   tosUrl?: string;
 }
 
-// 理论上应该拆俩组件的
 interface ISegmentMenuProps {
   list: IMenuItem[];
   onClick?: (id: string) => void;
@@ -29,8 +28,6 @@ interface ISegmentMenuProps {
   isSearchable?: boolean;
   treeVisible?: boolean;
   treeDisabled?: boolean;
-
-  // 我也不想传这么深，但是真的没有办法
   levelSegments?: ILevelSegment[];
   setLevelSegments?: (segments: ILevelSegment[]) => void;
   setSelectionIDs?: (ids: string[]) => void;

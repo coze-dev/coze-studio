@@ -69,7 +69,6 @@ export const getInputDefaultValue = (
     // File
   } else if (input.type === VariableTypeDTO.string && input.assistType) {
     return getFileDefaultValue(input);
-    // FIXME: array、object 类型暂时不支持回显 json 字符串作为默认值 @zhangchaoyang.805
   } else if (
     input.type === VariableTypeDTO.list ||
     input.type === VariableTypeDTO.object

@@ -726,7 +726,7 @@ func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (ma
 	}
 
 	if query.Name != nil {
-		conditions = append(conditions, r.query.WorkflowMeta.Name.Like(*query.Name))
+		conditions = append(conditions, r.query.WorkflowMeta.Name.Like(`%%`+*query.Name+`%%`))
 	}
 
 	if query.SpaceID != nil {
@@ -865,7 +865,7 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 	name := fmt.Sprintf("ts_%s_%s", wfEntity.Name, wfEntity.Name)
 	desc := wfEntity.Desc
 
-	params := make(map[string]*schema.ParameterInfo)
+	var params map[string]*schema.ParameterInfo
 
 	for _, tInfo := range namedTypeInfoList {
 		if p, ok := inputParamsConfigMap[tInfo.Name]; ok && p.LocalDisable {
@@ -876,6 +876,9 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 			return nil, err
 		}
 
+		if params == nil {
+			params = make(map[string]*schema.ParameterInfo)
+		}
 		params[tInfo.Name] = param
 	}
 

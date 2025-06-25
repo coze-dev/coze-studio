@@ -41,6 +41,9 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, request *RetrieveRequest) (
 	if request == nil {
 		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is nil"))
 	}
+	if len(request.Query) == 0 {
+		return &knowledgeModel.RetrieveResponse{}, nil
+	}
 	retrieveContext, err := k.newRetrieveContext(ctx, request)
 	if err != nil {
 		return nil, err
@@ -271,6 +274,7 @@ func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *RetrieveContex
 			continue
 		}
 		opts := []retriever.Option{
+			searchstore.WithRetrieverPartitionKey(fieldNameDocumentID),
 			searchstore.WithPartitions(partitions),
 			retriever.WithDSLInfo(dsl.DSL()),
 		}

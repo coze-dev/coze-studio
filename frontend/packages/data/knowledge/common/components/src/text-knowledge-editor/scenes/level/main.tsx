@@ -224,14 +224,12 @@ const RenderContent = ({
                   editor={editor}
                   editorContextMenuItemsRegistry={editorContextActionRegistry}
                   onBlur={newContent => {
-                    if (newContent) {
-                      saveChunk?.(
-                        updateChunkContent(
-                          levelDocumentTree,
-                          newContent,
-                        ) as unknown as LevelDocumentChunk,
-                      );
-                    }
+                    saveChunk?.(
+                      updateChunkContent(
+                        levelDocumentTree,
+                        newContent,
+                      ) as unknown as LevelDocumentChunk,
+                    );
                   }}
                 />
               );

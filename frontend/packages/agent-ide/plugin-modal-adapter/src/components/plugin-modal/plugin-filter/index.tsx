@@ -13,7 +13,6 @@ import {
 import s from './plugin-filter.module.less';
 
 export interface PluginFilterProps {
-  // 有个交互，当search的时候取消sider的选中态
   isSearching: boolean;
   type: Int64;
   onChange: (type: Int64) => void;

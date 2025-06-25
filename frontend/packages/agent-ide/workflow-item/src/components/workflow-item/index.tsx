@@ -30,8 +30,6 @@ export interface WorkflowItemProps {
   removeWorkFlow: (index: number) => void;
   isReadonly?: boolean;
   pageFrom?: BotPageFromEnum;
-  // bindButtonMap: Record<string, ReactNode>;
-  // cardIconMap: Record<string, ReactNode>;
   size?: 'default' | 'large';
   sceneType?: SceneType;
   renderToolItemIcon?: (parameters: RenderSlotParameters) => ReactNode;

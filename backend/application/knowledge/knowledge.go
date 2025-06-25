@@ -165,7 +165,7 @@ func (k *KnowledgeApplicationService) ListKnowledge(ctx context.Context, req *da
 	request.OrderType = &orderType
 	if req.Filter != nil {
 		if req.GetFilter().GetName() != "" {
-			request.Name = req.GetFilter().Name
+			request.Query = req.GetFilter().Name
 		}
 		if len(req.GetFilter().DatasetIds) > 0 {
 			request.IDs, err = slices.TransformWithErrorCheck(req.GetFilter().GetDatasetIds(), func(s string) (int64, error) {

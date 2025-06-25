@@ -19,6 +19,7 @@ import (
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
+	"github.com/volcengine/volc-sdk-golang/service/vikingdb"
 	"github.com/volcengine/volc-sdk-golang/service/visual"
 	"gorm.io/gorm"
 
@@ -30,7 +31,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/embedding"
-	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
+	"code.byted.org/flow/opencoze/backend/infra/contract/es"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/messages2query"
@@ -43,6 +44,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/impl/document/rerank/rrf"
 	sses "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/elasticsearch"
 	ssmilvus "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/milvus"
+	ssvikingdb "code.byted.org/flow/opencoze/backend/infra/impl/document/searchstore/vikingdb"
 	"code.byted.org/flow/opencoze/backend/infra/impl/embedding/wrap"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	builtinM2Q "code.byted.org/flow/opencoze/backend/infra/impl/messages2query/builtin"
@@ -57,24 +59,17 @@ type ServiceComponents struct {
 	Storage  storage.Storage
 	RDB      rdb.RDB
 	ImageX   imagex.ImageX
-	ES       *es8.Client
+	ES       es.Client
 	EventBus search.ResourceEventBus
 	CacheCli cache.Cmdable
 }
 
 func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
-	var (
-		milvusAddr = os.Getenv("MILVUS_ADDR")
-
-		embeddingType = os.Getenv("EMBEDDING_TYPE")
-		ocrType       = os.Getenv("OCR_TYPE")
-	)
-
 	ctx := context.Background()
 
-	nameServer := os.Getenv(consts.RocketMQServer)
+	nameServer := os.Getenv(consts.RMQServer)
 
-	knowledgeProducer, err := rmq.NewProducer(nameServer, "opencoze_knowledge", "cg_knowledge", 2)
+	knowledgeProducer, err := rmq.NewProducer(nameServer, consts.RMQTopicKnowledge, consts.RMQTopicKnowledgeSearch, 2)
 	if err != nil {
 		return nil, fmt.Errorf("init knowledge producer failed, err=%w", err)
 	}
@@ -84,84 +79,15 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	// es full text search
 	sManagers = append(sManagers, sses.NewManager(&sses.ManagerConfig{Client: c.ES}))
 
-	// milvus vector search
-	cctx, cancel := context.WithTimeout(ctx, time.Second*5)
-	defer cancel()
-	mc, err := milvusclient.New(cctx, &milvusclient.ClientConfig{Address: milvusAddr})
+	// vector search
+	mgr, err := getVectorStore(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("init milvus client failed, err=%w", err)
+		return nil, fmt.Errorf("init vector store failed, err=%w", err)
 	}
-
-	var emb embedding.Embedder
-	switch embeddingType {
-	case "openai":
-		var (
-			openAIEmbeddingBaseURL    = os.Getenv("OPENAI_EMBEDDING_BASE_URL")
-			openAIEmbeddingModel      = os.Getenv("OPENAI_EMBEDDING_MODEL")
-			openAIEmbeddingApiKey     = os.Getenv("OPENAI_EMBEDDING_API_KEY")
-			openAIEmbeddingByAzure    = os.Getenv("OPENAI_EMBEDDING_BY_AZURE")
-			openAIEmbeddingApiVersion = os.Getenv("OPENAI_EMBEDDING_API_VERSION")
-			openAIEmbeddingDims       = os.Getenv("OPENAI_EMBEDDING_DIMS")
-		)
-
-		byAzure, err := strconv.ParseBool(openAIEmbeddingByAzure)
-		if err != nil {
-			return nil, fmt.Errorf("init openai embedding by_azure failed, err=%w", err)
-		}
-
-		dims, err := strconv.ParseInt(openAIEmbeddingDims, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("init openai embedding dims failed, err=%w", err)
-		}
-
-		emb, err = wrap.NewOpenAIEmbedder(ctx, &openai.EmbeddingConfig{
-			APIKey:     openAIEmbeddingApiKey,
-			ByAzure:    byAzure,
-			BaseURL:    openAIEmbeddingBaseURL,
-			APIVersion: openAIEmbeddingApiVersion,
-			Model:      openAIEmbeddingModel,
-			Dimensions: ptr.Of(int(dims)),
-		}, dims)
-		if err != nil {
-			return nil, fmt.Errorf("init openai embedding failed, err=%w", err)
-		}
-
-	case "ark":
-		var (
-			arkEmbeddingModel = os.Getenv("ARK_EMBEDDING_MODEL")
-			arkEmbeddingAK    = os.Getenv("ARK_EMBEDDING_AK")
-			arkEmbeddingDims  = os.Getenv("ARK_EMBEDDING_DIMS")
-		)
-
-		dims, err := strconv.ParseInt(arkEmbeddingDims, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("init ark embedding dims failed, err=%w", err)
-		}
-
-		emb, err = wrap.NewArkEmbedder(ctx, &ark.EmbeddingConfig{
-			APIKey: arkEmbeddingAK,
-			Model:  arkEmbeddingModel,
-		}, dims)
-		if err != nil {
-			return nil, fmt.Errorf("init ark embedding client failed, err=%w", err)
-		}
-	default:
-		return nil, fmt.Errorf("init knowledge embedding failed, type not configured")
-	}
-
-	mgr, err := ssmilvus.NewManager(&ssmilvus.ManagerConfig{
-		Client:       mc,
-		Embedding:    emb,
-		EnableHybrid: ptr.Of(true),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("init milvus vector store failed, err=%w", err)
-	}
-
 	sManagers = append(sManagers, mgr)
 
 	var ocrImpl ocr.OCR
-	switch ocrType {
+	switch os.Getenv("OCR_TYPE") {
 	case "ve":
 		ocrAK := os.Getenv("VE_OCR_AK")
 		ocrSK := os.Getenv("VE_OCR_SK")
@@ -240,6 +166,162 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	KnowledgeSVC.eventBus = c.EventBus
 	KnowledgeSVC.storage = c.Storage
 	return KnowledgeSVC, nil
+}
+
+func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
+	vsType := os.Getenv("VECTOR_STORE_TYPE")
+
+	switch vsType {
+	case "milvus":
+		cctx, cancel := context.WithTimeout(ctx, time.Second*5)
+		defer cancel()
+
+		milvusAddr := os.Getenv("MILVUS_ADDR")
+		mc, err := milvusclient.New(cctx, &milvusclient.ClientConfig{Address: milvusAddr})
+		if err != nil {
+			return nil, fmt.Errorf("init milvus client failed, err=%w", err)
+		}
+
+		emb, err := getEmbedding(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("init milvus embedding failed, err=%w", err)
+		}
+
+		mgr, err := ssmilvus.NewManager(&ssmilvus.ManagerConfig{
+			Client:       mc,
+			Embedding:    emb,
+			EnableHybrid: ptr.Of(true),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("init milvus vector store failed, err=%w", err)
+		}
+
+		return mgr, nil
+	case "vikingdb":
+		var (
+			host      = os.Getenv("VIKING_DB_HOST")
+			region    = os.Getenv("VIKING_DB_REGION")
+			ak        = os.Getenv("VIKING_DB_AK")
+			sk        = os.Getenv("VIKING_DB_SK")
+			scheme    = os.Getenv("VIKING_DB_SCHEME")
+			modelName = os.Getenv("VIKING_DB_MODEL_NAME")
+		)
+		if ak == "" || sk == "" {
+			return nil, fmt.Errorf("invalid vikingdb ak / sk")
+		}
+		if host == "" {
+			host = "api-vikingdb.volces.com"
+		}
+		if region == "" {
+			region = "cn-beijing"
+		}
+		if scheme == "" {
+			scheme = "https"
+		}
+
+		var embConfig *ssvikingdb.VikingEmbeddingConfig
+		if modelName != "" {
+			embName := ssvikingdb.VikingEmbeddingModelName(modelName)
+			if embName.Dimensions() == 0 {
+				return nil, fmt.Errorf("embedding model not support, model_name=%s", modelName)
+			}
+			embConfig = &ssvikingdb.VikingEmbeddingConfig{
+				UseVikingEmbedding: true,
+				EnableHybrid:       embName.SupportStatus() == embedding.SupportDenseAndSparse,
+				ModelName:          embName,
+				ModelVersion:       embName.ModelVersion(),
+				DenseWeight:        ptr.Of(0.2),
+				BuiltinEmbedding:   nil,
+			}
+		} else {
+			builtinEmbedding, err := getEmbedding(ctx)
+			if err != nil {
+				return nil, fmt.Errorf("builtint embedding init failed, err=%w", err)
+			}
+
+			embConfig = &ssvikingdb.VikingEmbeddingConfig{
+				UseVikingEmbedding: false,
+				EnableHybrid:       false,
+				BuiltinEmbedding:   builtinEmbedding,
+			}
+		}
+		svc := vikingdb.NewVikingDBService(host, region, ak, sk, scheme)
+		mgr, err := ssvikingdb.NewManager(&ssvikingdb.ManagerConfig{
+			Service:         svc,
+			IndexingConfig:  nil, // use default config
+			EmbeddingConfig: embConfig,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("init vikingdb manager failed, err=%w", err)
+		}
+
+		return mgr, nil
+
+	default:
+		return nil, fmt.Errorf("unexpected vector store type, type=%s", vsType)
+	}
+}
+
+func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
+	var emb embedding.Embedder
+
+	switch os.Getenv("EMBEDDING_TYPE") {
+	case "openai":
+		var (
+			openAIEmbeddingBaseURL    = os.Getenv("OPENAI_EMBEDDING_BASE_URL")
+			openAIEmbeddingModel      = os.Getenv("OPENAI_EMBEDDING_MODEL")
+			openAIEmbeddingApiKey     = os.Getenv("OPENAI_EMBEDDING_API_KEY")
+			openAIEmbeddingByAzure    = os.Getenv("OPENAI_EMBEDDING_BY_AZURE")
+			openAIEmbeddingApiVersion = os.Getenv("OPENAI_EMBEDDING_API_VERSION")
+			openAIEmbeddingDims       = os.Getenv("OPENAI_EMBEDDING_DIMS")
+		)
+
+		byAzure, err := strconv.ParseBool(openAIEmbeddingByAzure)
+		if err != nil {
+			return nil, fmt.Errorf("init openai embedding by_azure failed, err=%w", err)
+		}
+
+		dims, err := strconv.ParseInt(openAIEmbeddingDims, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("init openai embedding dims failed, err=%w", err)
+		}
+
+		emb, err = wrap.NewOpenAIEmbedder(ctx, &openai.EmbeddingConfig{
+			APIKey:     openAIEmbeddingApiKey,
+			ByAzure:    byAzure,
+			BaseURL:    openAIEmbeddingBaseURL,
+			APIVersion: openAIEmbeddingApiVersion,
+			Model:      openAIEmbeddingModel,
+			Dimensions: ptr.Of(int(dims)),
+		}, dims)
+		if err != nil {
+			return nil, fmt.Errorf("init openai embedding failed, err=%w", err)
+		}
+
+	case "ark":
+		var (
+			arkEmbeddingModel = os.Getenv("ARK_EMBEDDING_MODEL")
+			arkEmbeddingAK    = os.Getenv("ARK_EMBEDDING_AK")
+			arkEmbeddingDims  = os.Getenv("ARK_EMBEDDING_DIMS")
+		)
+
+		dims, err := strconv.ParseInt(arkEmbeddingDims, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("init ark embedding dims failed, err=%w", err)
+		}
+
+		emb, err = wrap.NewArkEmbedder(ctx, &ark.EmbeddingConfig{
+			APIKey: arkEmbeddingAK,
+			Model:  arkEmbeddingModel,
+		}, dims)
+		if err != nil {
+			return nil, fmt.Errorf("init ark embedding client failed, err=%w", err)
+		}
+	default:
+		return nil, fmt.Errorf("init knowledge embedding failed, type not configured")
+	}
+
+	return emb, nil
 }
 
 func getBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.BaseChatModel, configured bool, err error) {

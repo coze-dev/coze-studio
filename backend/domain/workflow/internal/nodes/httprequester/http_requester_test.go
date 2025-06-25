@@ -50,7 +50,7 @@ func TestInvoke(t *testing.T) {
 		result, err := hg.Invoke(context.Background(), m)
 		assert.NoError(t, err)
 		assert.Equal(t, `{"message":"success"}`, result["body"])
-		assert.Equal(t, 200, result["statusCode"])
+		assert.Equal(t, int64(200), result["statusCode"])
 	})
 
 	t.Run("post method multipart/form-data", func(t *testing.T) {
@@ -123,7 +123,7 @@ func TestInvoke(t *testing.T) {
 		result, err := hg.Invoke(context.Background(), m)
 		assert.NoError(t, err)
 		assert.Equal(t, `{"message":"success"}`, result["body"])
-		assert.Equal(t, 200, result["statusCode"])
+		assert.Equal(t, int64(200), result["statusCode"])
 
 	})
 
@@ -177,7 +177,7 @@ func TestInvoke(t *testing.T) {
 		result, err := hg.Invoke(context.Background(), m)
 		assert.NoError(t, err)
 		assert.Equal(t, `{"message":"success"}`, result["body"])
-		assert.Equal(t, 200, result["statusCode"])
+		assert.Equal(t, int64(200), result["statusCode"])
 
 	})
 
@@ -234,7 +234,7 @@ func TestInvoke(t *testing.T) {
 		result, err := hg.Invoke(context.Background(), m)
 		assert.NoError(t, err)
 		assert.Equal(t, `{"message":"success"}`, result["body"])
-		assert.Equal(t, 200, result["statusCode"])
+		assert.Equal(t, int64(200), result["statusCode"])
 
 	})
 
@@ -294,7 +294,7 @@ func TestInvoke(t *testing.T) {
 		result, err := hg.Invoke(context.Background(), m)
 		assert.NoError(t, err)
 		assert.Equal(t, `{"message":"success"}`, result["body"])
-		assert.Equal(t, 200, result["statusCode"])
+		assert.Equal(t, int64(200), result["statusCode"])
 
 	})
 

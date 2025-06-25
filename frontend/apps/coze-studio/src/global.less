@@ -19,7 +19,6 @@ body {
   // @flowpd/card-web-runtime 依赖 arco design
   // arco-design 的 reset css, 搞了 body line-height 1.5
   // 没设置 line-height 的元素可能会因为按需加载 arco 产生瞬时抖动
-  // 先下手为强
   line-height: 1.5;
 }
 
@@ -35,7 +34,6 @@ p {
 * {
   box-sizing: border-box;
   font-family: 'PingFang SC', 'Noto Sans SC', sans-serif;
-
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -58,7 +56,6 @@ div:focus-visible {
 }
 
 // TODO: 底层库依赖了这个 class，暂时不移除
-// 后续需要 fanchen 帮忙修复
 .operation-admin-base-header {
   display: flex;
   align-items: flex-end;

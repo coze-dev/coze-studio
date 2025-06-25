@@ -1154,7 +1154,7 @@ func TestValidateTree(t *testing.T) {
 				return item.Message
 			})
 			assert.Contains(t, msgs, `it only allow include number or alphabet and begin with alphabet, but it's "123"`)
-			assert.Contains(t, msgs, `ref block 'output' format error, not found [blockID]`)
+			assert.Contains(t, msgs, `ref block error, not found [blockID]`)
 		})
 
 	})

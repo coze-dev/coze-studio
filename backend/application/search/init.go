@@ -17,7 +17,7 @@ import (
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
-	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
+	"code.byted.org/flow/opencoze/backend/infra/contract/es"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
@@ -30,7 +30,7 @@ type ServiceComponents struct {
 	DB                   *gorm.DB
 	Cache                *redis.Client
 	TOS                  storage.Storage
-	ESClient             *es8.Client
+	ESClient             es.Client
 	ProjectEventBus      ProjectEventBus
 	ResourceEventBus     ResourceEventBus
 	SingleAgentDomainSVC singleagent.SingleAgent
@@ -54,7 +54,7 @@ func InitService(ctx context.Context, s *ServiceComponents) (*SearchApplicationS
 	searchConsumer := search.NewProjectHandler(ctx, s.ESClient)
 
 	logs.Infof("start search domain consumer...")
-	nameServer := os.Getenv(consts.RocketMQServer)
+	nameServer := os.Getenv(consts.RMQServer)
 
 	err := rmq.RegisterConsumer(nameServer, "opencoze_search_app", "cg_search_app", searchConsumer)
 	if err != nil {

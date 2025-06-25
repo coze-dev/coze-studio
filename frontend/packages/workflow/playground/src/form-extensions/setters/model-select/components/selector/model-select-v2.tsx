@@ -32,7 +32,8 @@ export const ModelSelectV2: React.FC<ModelSelectV2Props> = ({
   const { spaceId, projectId, isBindDouyin } = useGlobalState();
   return (
     <ModelSelect
-      enableJumpDetail={isBindDouyin ? false : { spaceId }}
+      // The community version does not currently support to view model detail, for future expansion
+      enableJumpDetail={isBindDouyin || IS_OPEN_SOURCE ? false : { spaceId }}
       className={classNames(styles.select, className)}
       popoverClassName={classNames(
         styles['selector-popover'],

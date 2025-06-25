@@ -153,23 +153,7 @@ export class FlowDockPanel extends DockPanel {
     if (this._options?.disabledSplitScreen) {
       return;
     }
-    // 最大分屏数限制逻辑，注释保留暂存
-    // // 访问 DockLayout 中的 private 属性 _edges、_items，临时使用 any 类型
-    // // TODO：lumino 迁移本地可以改属性形态
-    // if (['lm-dragenter', 'lm-dragover'].includes(event.type)) {
-    //   const { clientX, clientY } = event as DragEvent;
-    //   const { zone } = findDropTarget(this, clientX, clientY, (this as any)._edges);
-    //   const items = (this.layout as any)?._items || {};
-    //   const visibleSize = Array.from(items).filter(([key]: any) => key?.isVisible)?.length;
-    //   if (
-    //     this._options?.maxScreens &&
-    //     zone !== 'widget-tab' &&
-    //     // tab + content widget size * 2
-    //     visibleSize >= this._options?.maxScreens * 2
-    //   ) {
-    //     return;
-    //   }
-    // }
+
     super.handleEvent(event);
   }
 

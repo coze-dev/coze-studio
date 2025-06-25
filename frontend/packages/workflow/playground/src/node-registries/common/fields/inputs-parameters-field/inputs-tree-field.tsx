@@ -12,6 +12,7 @@ import { useField, withField, type FieldProps } from '@/form';
 interface InputsTreeFieldProps extends FieldProps<InputValueVO[]> {
   title?: string;
   customReadonly?: boolean;
+  testId?: string;
 }
 
 const InputTreeWithValidation = withValidation(
@@ -19,7 +20,7 @@ const InputTreeWithValidation = withValidation(
 );
 
 export const InputsTreeField = withField(
-  ({ title, tooltip, customReadonly }: InputsTreeFieldProps) => {
+  ({ title, tooltip, customReadonly, testId }: InputsTreeFieldProps) => {
     const { value, onChange, errors } = useField<InputValueVO[]>();
     const formReadonly = useReadonly();
     const readonly = formReadonly || customReadonly;
@@ -31,6 +32,7 @@ export const InputsTreeField = withField(
         readonly={readonly}
         onChange={onChange}
         errors={errors}
+        testId={testId}
       />
     );
   },

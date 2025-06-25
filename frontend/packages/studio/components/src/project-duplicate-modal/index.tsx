@@ -114,7 +114,6 @@ export const useProjectTemplateCopyModal = (props: {
     },
     {
       manual: true,
-      // todo onError 上报
       onSuccess: (data, [inputParam]) => {
         onModalClose();
         sendTeaEvent(EVENT_NAMES.template_action_front, {

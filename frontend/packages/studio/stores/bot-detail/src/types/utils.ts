@@ -1,4 +1,3 @@
-// 去掉 ?
 export type RemoveOptional<T> = {
   [K in keyof T]-?: T[K];
 };

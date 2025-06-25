@@ -5,7 +5,6 @@ import { SocialApi } from '@coze-arch/bot-api';
 
 import { SpeakerMessageSetArray } from './speaker-message-set-array';
 
-// TODO 由于底层类型上validator不支持异步函数，所以这里先写死any
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const speakerMessageSetArray: any = {
   key: 'SpeakerMessageSetArray',

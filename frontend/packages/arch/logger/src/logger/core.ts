@@ -170,11 +170,4 @@ export class Logger extends BaseLogger {
     },
   });
 
-  // createEvent(eventName: string, logOptions?: CommonLogOptions) {
-  //   return new EventLogger({
-  //     eventName,
-  //     logOptions,
-  //     persistLogger: this,
-  //   });
-  // }
 }

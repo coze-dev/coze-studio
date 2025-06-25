@@ -140,6 +140,10 @@ func WithCustomRender(rType reflect.Type, fn func(any) (string, error)) RenderOp
 	}
 }
 
+var renderConfig = sonic.Config{
+	SortMapKeys: true,
+}.Froze()
+
 func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 	options := &renderOptions{
 		type2CustomRenderer: make(map[reflect.Type]func(any) (string, error)),
@@ -179,7 +183,7 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 	case bool:
 		return strconv.FormatBool(i.(bool)), nil
 	default:
-		ms, err := sonic.ConfigStd.MarshalToString(i) // keep order of the map keys
+		ms, err := renderConfig.MarshalToString(i) // keep order of the map keys
 		if err != nil {
 			return "", err
 		}

@@ -1801,7 +1801,7 @@ func (p *CreateConversationRequest) String() string {
 type CreateConversationResponse struct {
 	Code             int64             `thrift:"code,1" form:"code" json:"code" query:"code"`
 	Msg              string            `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
-	ConversationData *ConversationData `thrift:"ConversationData,3,optional" form:"ConversationData" json:"ConversationData,omitempty" query:"ConversationData"`
+	ConversationData *ConversationData `thrift:"ConversationData,3,optional" form:"data" json:"data,omitempty"`
 }
 
 func NewCreateConversationResponse() *CreateConversationResponse {

@@ -346,6 +346,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("get search store failed, err: %v", err)))
 		}
 		if _, err = ss.Store(ctx, ssDocs,
+			searchstore.WithIndexerPartitionKey(fieldNameDocumentID),
 			searchstore.WithPartition(strconv.FormatInt(doc.ID, 10)),
 			searchstore.WithIndexingFields(indexingFields),
 			searchstore.WithProgressBar(progressbar),
@@ -473,6 +474,7 @@ func (k *knowledgeSVC) indexSlice(ctx context.Context, event *entity.Event) (err
 		}
 
 		if _, err = ss.Store(ctx, []*schema.Document{doc},
+			searchstore.WithIndexerPartitionKey(fieldNameDocumentID),
 			searchstore.WithPartition(strconv.FormatInt(event.Document.ID, 10)),
 			searchstore.WithIndexingFields(indexingFields),
 		); err != nil {

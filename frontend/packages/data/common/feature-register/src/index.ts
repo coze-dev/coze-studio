@@ -41,11 +41,7 @@ export interface FeatureTypeInternalThisType<Type> {
 
 export type Disposer = () => void;
 
-export class FeatureRegistry<
-  Type,
-  Module,
-  Context = undefined,
-> extends ExternalStore<{
+export class FeatureRegistry<Type, Module, Context = undefined> extends ExternalStore<{
   featureMap: Map<string, FeatureConfig<Type, Module>>;
 }> {
   protected name: string;
@@ -92,8 +88,6 @@ export class FeatureRegistry<
   }
 
   private getFeatureKey(type: Type | string) {
-    // return `${type}`;
-    // TODO 感觉这个 getFeatureKey 没什么用
     return `feature_${this.name}_${type}`;
   }
 

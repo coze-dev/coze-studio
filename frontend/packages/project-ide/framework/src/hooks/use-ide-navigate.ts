@@ -31,7 +31,6 @@ export const useIDENavigate = () => {
         // 如果没有要打开的 widget，就只打开主面板
         view.openPanel(isUIBuilder ? 'ui-builder' : 'dev');
       }
-      // TODO: 有了 syncURL 之后这一步有点重复考虑去掉，暂时没想到有什么 badcase
       navigate(addPreservedSearchParams(url), options);
     },
     [spaceId, projectId, view, navigate],

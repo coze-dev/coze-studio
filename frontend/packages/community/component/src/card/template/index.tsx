@@ -108,7 +108,7 @@ const DuplicateModal: FC<{
             product_id: productId,
             entity_type: entityType,
             space_id: spaceId,
-            name: defaultTitle,
+            name: title,
           });
           Toast.success(I18n.t('copy_success'));
           hide();

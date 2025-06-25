@@ -146,7 +146,6 @@ export const addGlobalRequestInterceptor: AddRequestInterceptorShape = (
 ) => {
   // PS: 这里不期望直接暴露 axios 实例到上层，因为不知道会被怎么修改使用
   // 因此，这里需要暴露若干方法，将行为与副作用限制在可控范围内
-  // TODO: 后续需要对 onFulfilled 做一次封装，规避报错
   const id = axiosInstance.interceptors.request.use(onFulfilled, onRejected);
   return id;
 };

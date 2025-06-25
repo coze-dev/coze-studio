@@ -46,7 +46,6 @@ export const ProjectIDEClient: React.FC<
       // 兼容 mnt e2e 环境，在 e2e 环境下，高度会被坍缩成 0
       // 因此需要额外的样式兼容
       // className={(window as any)._mnt_e2e_testing_ ? 'e2e-flow-container' : ''}
-      // TODO: 等待@zengdeping 添加环境变量后重置
       className="e2e-flow-container"
     >
       {children}

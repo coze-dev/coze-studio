@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	shortcutCmd "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/service"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 
 	"github.com/bytedance/sonic"
@@ -23,6 +25,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	singleagent "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/service"
 	variableEntity "code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
+	shortcutEntity "code.byted.org/flow/opencoze/backend/domain/shortcutcmd/entity"
 
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
@@ -33,14 +36,16 @@ import (
 )
 
 type SingleAgentApplicationService struct {
-	appContext *ServiceComponents
-	DomainSVC  singleagent.SingleAgent
+	appContext     *ServiceComponents
+	DomainSVC      singleagent.SingleAgent
+	ShortcutCMDSVC shortcutCmd.ShortcutCmd
 }
 
 func newApplicationService(s *ServiceComponents, domain singleagent.SingleAgent) *SingleAgentApplicationService {
 	return &SingleAgentApplicationService{
-		appContext: s,
-		DomainSVC:  domain,
+		appContext:     s,
+		DomainSVC:      domain,
+		ShortcutCMDSVC: s.ShortcutCMDDomainSVC,
 	}
 }
 
@@ -496,7 +501,7 @@ func (s *SingleAgentApplicationService) ValidateAgentDraftAccess(ctx context.Con
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		uid = ptr.Of(int64(888))
-		//return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "session uid not found"))
+		// return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "session uid not found"))
 	}
 
 	do, err := s.DomainSVC.GetSingleAgentDraft(ctx, agentID)
@@ -606,4 +611,100 @@ func (s *SingleAgentApplicationService) ReportUserBehavior(ctx context.Context, 
 	}
 
 	return &playground.ReportUserBehaviorResponse{}, nil
+}
+
+func (s *SingleAgentApplicationService) GetAgentOnlineInfo(ctx context.Context, req *playground.GetBotOnlineInfoReq) (*bot_common.OpenAPIBotInfo, error) {
+
+	uid := ctxutil.MustGetUIDFromApiAuthCtx(ctx)
+
+	connectorID, err := conv.StrToInt64(ptr.From(req.ConnectorID))
+	if err != nil {
+		return nil, err
+	}
+	if connectorID == 0 {
+		connectorID = ctxutil.GetApiAuthFromCtx(ctx).ConnectorID
+	}
+	agentInfo, err := s.DomainSVC.ObtainAgentByIdentity(ctx, &entity.AgentIdentity{
+		AgentID:     req.BotID,
+		ConnectorID: connectorID,
+		Version:     ptr.From(req.Version),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if agentInfo == nil {
+		logs.CtxErrorf(ctx, "agent(%d) is not exist", req.BotID)
+		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "agent not exist"))
+	}
+	if agentInfo.CreatorID != uid {
+		return nil, errorx.New(errno.ErrPromptPermissionCode, errorx.KV("msg", "agent not own"))
+	}
+	combineInfo := &bot_common.OpenAPIBotInfo{
+		BotID:            agentInfo.AgentID,
+		Name:             agentInfo.Name,
+		Description:      agentInfo.Desc,
+		IconURL:          agentInfo.IconURI,
+		Version:          agentInfo.Version,
+		BotMode:          bot_common.BotMode_SingleMode,
+		PromptInfo:       agentInfo.Prompt,
+		OnboardingInfo:   agentInfo.OnboardingInfo,
+		ModelInfo:        agentInfo.ModelInfo,
+		WorkflowInfoList: agentInfo.Workflow,
+		PluginInfoList:   agentInfo.Plugin,
+	}
+
+	if agentInfo.IconURI != "" {
+		url, err := s.appContext.TosClient.GetObjectUrl(ctx, agentInfo.IconURI)
+		if err != nil {
+			return nil, err
+		}
+		combineInfo.IconURL = url
+	}
+
+	if len(agentInfo.ShortcutCommand) > 0 {
+		shortcutInfos, err := s.ShortcutCMDSVC.ListCMD(ctx, &shortcutEntity.ListMeta{
+			ObjectID: agentInfo.AgentID,
+			IsOnline: 1,
+			CommandIDs: slices.Transform(agentInfo.ShortcutCommand, func(s string) int64 {
+				i, _ := conv.StrToInt64(s)
+				return i
+			}),
+		})
+		if err != nil {
+			return nil, err
+		}
+		combineInfo.ShortcutCommands = make([]*bot_common.ShortcutCommandInfo, 0, len(shortcutInfos))
+		combineInfo.ShortcutCommands = slices.Transform(shortcutInfos, func(si *shortcutEntity.ShortcutCmd) *bot_common.ShortcutCommandInfo {
+			url := ""
+			if si.ShortcutIcon != nil && si.ShortcutIcon.URI != "" {
+				getUrl, e := s.appContext.TosClient.GetObjectUrl(ctx, si.ShortcutIcon.URI)
+				if e == nil {
+					url = getUrl
+				}
+			}
+
+			return &bot_common.ShortcutCommandInfo{
+				ID:            si.CommandID,
+				Name:          si.CommandName,
+				Description:   si.Description,
+				IconURL:       url,
+				QueryTemplate: si.TemplateQuery,
+				AgentID:       ptr.Of(si.ObjectID),
+				Command:       si.ShortcutCommand,
+				Components: slices.Transform(si.Components, func(i *playground.Components) *bot_common.ShortcutCommandComponent {
+					return &bot_common.ShortcutCommandComponent{
+						Name:          i.Name,
+						Description:   i.Description,
+						Type:          i.InputType.String(),
+						ToolParameter: ptr.Of(i.Parameter),
+						Options:       i.Options,
+						DefaultValue:  ptr.Of(i.DefaultValue.Value),
+						IsHide:        i.Hide,
+					}
+				}),
+			}
+		})
+
+	}
+	return combineInfo, nil
 }

@@ -39,7 +39,6 @@ const getKvBindStatus = (record: PublishConnectorInfo): ConfigStatusUI => {
     [ConfigStatus.NotConfigured]: I18n.t(
       'bot_publish_columns_status_not_configured',
     ),
-    // 配置的case暂时不会出现这个status，理论上这个case不会走到
     [ConfigStatus.Configuring]: '',
   };
 
@@ -97,7 +96,6 @@ const getDefaultStatus = (record: PublishConnectorInfo): ConfigStatusUI => {
     [ConfigStatus.NotConfigured]: I18n.t(
       'bot_publish_columns_status_unauthorized',
     ),
-    // 授权中
     [ConfigStatus.Configuring]: I18n.t('publish_douyin_config_ing'),
   };
 

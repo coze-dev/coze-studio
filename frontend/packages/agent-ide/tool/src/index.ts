@@ -18,10 +18,8 @@ export { openBlockEventToToolKey } from './constants/tool-content-block';
 
 export { useToolContentBlockDefaultExpand } from './hooks/public/collapse/use-tool-content-block-default-expand';
 export { useAgentSkillModal } from './hooks/agent-skill-modal/use-agent-skill-modal';
-// export { useHasAgentSkill } from './hooks/public/agent/use-has-agent-skill';
 export { useToolToggleCollapse } from './hooks/public/collapse/use-tool-toggle-collapse';
 export { useInit } from './hooks/public/init/use-init';
-// export { useAgentSkillModalCallbacks } from './hooks/public/modal/use-agent-modal-callbacks';
 export { useRegisteredToolKeyConfigList } from './hooks/builtin/use-register-tool-key';
 export { useIsAllToolHidden } from './hooks/public/container/use-tool-all-hidden';
 export { useToolValidData } from './hooks/public/container/use-tool-valid-data';

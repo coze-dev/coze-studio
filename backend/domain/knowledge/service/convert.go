@@ -17,6 +17,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
 
+const fieldNameDocumentID = "document_id"
+
 type fieldMappingFn func(doc *entity.Document, enableCompactTable bool) []*searchstore.Field
 
 type slice2DocumentFn func(ctx context.Context, slice *entity.Slice, columns []*entity.TableColumn, enableCompactTable bool) (*schema.Document, error)
@@ -36,7 +38,7 @@ var fMapping = map[knowledge.DocumentType]fieldMappingFn{
 				Type: searchstore.FieldTypeInt64,
 			},
 			{
-				Name: "document_id",
+				Name: fieldNameDocumentID,
 				Type: searchstore.FieldTypeInt64,
 			},
 			{
@@ -59,7 +61,7 @@ var fMapping = map[knowledge.DocumentType]fieldMappingFn{
 				Type: searchstore.FieldTypeInt64,
 			},
 			{
-				Name: "document_id",
+				Name: fieldNameDocumentID,
 				Type: searchstore.FieldTypeInt64,
 			},
 		}
@@ -96,7 +98,7 @@ var fMapping = map[knowledge.DocumentType]fieldMappingFn{
 				Type: searchstore.FieldTypeInt64,
 			},
 			{
-				Name: "document_id",
+				Name: fieldNameDocumentID,
 				Type: searchstore.FieldTypeInt64,
 			},
 			{
@@ -117,7 +119,7 @@ var s2dMapping = map[knowledge.DocumentType]slice2DocumentFn{
 			MetaData: map[string]any{
 				document.MetaDataKeyCreatorID: slice.CreatorID,
 				document.MetaDataKeyExternalStorage: map[string]any{
-					"document_id": slice.DocumentID,
+					fieldNameDocumentID: slice.DocumentID,
 				},
 			},
 		}
@@ -126,7 +128,7 @@ var s2dMapping = map[knowledge.DocumentType]slice2DocumentFn{
 	},
 	knowledge.DocumentTypeTable: func(ctx context.Context, slice *entity.Slice, columns []*entity.TableColumn, enableCompactTable bool) (doc *schema.Document, err error) {
 		ext := map[string]any{
-			"document_id": slice.DocumentID,
+			fieldNameDocumentID: slice.DocumentID,
 		}
 
 		doc = &schema.Document{
@@ -178,7 +180,7 @@ var s2dMapping = map[knowledge.DocumentType]slice2DocumentFn{
 			MetaData: map[string]any{
 				document.MetaDataKeyCreatorID: slice.CreatorID,
 				document.MetaDataKeyExternalStorage: map[string]any{
-					"document_id": slice.DocumentID,
+					fieldNameDocumentID: slice.DocumentID,
 				},
 			},
 		}
@@ -221,7 +223,7 @@ var d2sMapping = map[knowledge.DocumentType]document2SliceFn{
 		}
 
 		if ext, err := document.GetDocumentExternalStorage(doc); err == nil {
-			if documentID, ok := ext["document_id"].(int64); ok {
+			if documentID, ok := ext[fieldNameDocumentID].(int64); ok {
 				slice.DocumentID = documentID
 			}
 		}
@@ -256,7 +258,7 @@ var d2sMapping = map[knowledge.DocumentType]document2SliceFn{
 		}
 
 		if ext, err := document.GetDocumentExternalStorage(doc); err == nil {
-			if documentID, ok := ext["document_id"].(int64); ok {
+			if documentID, ok := ext[fieldNameDocumentID].(int64); ok {
 				slice.DocumentID = documentID
 			}
 		}
@@ -303,7 +305,7 @@ var d2sMapping = map[knowledge.DocumentType]document2SliceFn{
 		}
 
 		if ext, err := document.GetDocumentExternalStorage(doc); err == nil {
-			if documentID, ok := ext["document_id"].(int64); ok {
+			if documentID, ok := ext[fieldNameDocumentID].(int64); ok {
 				slice.DocumentID = documentID
 			}
 		}

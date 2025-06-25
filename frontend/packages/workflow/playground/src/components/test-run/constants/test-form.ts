@@ -61,7 +61,6 @@ export const DEFAULT_FIELD_TEMPLATE = {
 /** node 节点的基本模版 */
 export const NODE_FIELD_TEMPLATE = {
   type: 'FormObject',
-  /** TODO: 目前是单个节点所以是固定值，未来支持多节点时改为节点 id @jiangxujin */
   name: FieldName.Node,
   component: {
     type: 'FieldGroup',

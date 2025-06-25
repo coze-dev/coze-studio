@@ -375,3 +375,23 @@ func UploadFileOpen(ctx context.Context, c *app.RequestContext) {
 	}
 	c.JSON(consts.StatusOK, resp)
 }
+
+// GetBotOnlineInfo .
+// @router /v1/bot/get_online_info [GET]
+func GetBotOnlineInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req playground.GetBotOnlineInfoReq
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := singleagent.SingleAgentSVC.GetAgentOnlineInfo(ctx, &req)
+
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}

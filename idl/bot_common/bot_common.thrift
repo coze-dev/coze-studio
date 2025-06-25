@@ -460,6 +460,65 @@ struct BotInfo {
     35: BusinessType       BusinessType     (api.body="business_type")
 }
 
+
+struct CommonKnowledge {
+    1:  list<KnowledgeInfo> knowledge_infos   , // 知识库信息
+}
+
+struct ShortcutCommandComponent { // panel参数
+    1 : string name  //参数名字
+    2 : string description //参数描述
+    3 : string type // 输入类型 text、select、file
+    4 : optional string tool_parameter  // 请求工具时，参数的key 对应tool的参数名称，没有则为不返回
+    5 : optional list<string> options // type为select时的可选项列表 or type为file时，支持哪些类型 image、doc、table、audio、video、zip、code、txt、ppt
+    6 : optional string default_value // 默认值 没配置时不返回
+    7 : bool is_hide // 是否隐藏不展示 线上bot tool类型的快捷指令不返回hide=true的component
+}
+
+struct ShortcutCommandToolInfo {
+    1: string name //
+    2: string type // tool类型 workflow plugin
+}
+
+struct ShortcutCommandInfo {
+    1: i64 id (api.js_conv="true") // 快捷指令id
+    2: string name // 快捷指令按钮名称
+    3: string command // 快捷指令
+    4: string description // 快捷指令描述
+    5: string query_template // 指令query模版
+    6: string icon_url // 快捷指令icon
+    7: optional list<ShortcutCommandComponent> components // 组件列表（参数列表）
+    8: optional ShortcutCommandToolInfo tool // tool信息
+    9: optional i64 agent_id (api.js_conv="true") //multi的指令时，该指令由哪个节点执行 没配置不返回
+}
+
+
+struct OpenAPIBotInfo {
+    1 : i64 bot_id  (api.js_conv="true")  ,                                // bot id
+    2 : string name,                                  // bot名称
+    3 : string description,                           // bot描述
+    4 : string icon_url,                              // bot图像url
+    5 : i64 create_time,                              // 创建时间
+    6 : i64 update_time,                              // 更新时间
+    7 : string version,                               // 版本
+    8 : PromptInfo prompt_info,                       // prompt 信息
+    9 : OnboardingInfo onboarding_info,             // 开场白
+    10: BotMode bot_mode,                  // bot 类型，single agent or multi agent
+//    11: optional list<VoiceData> voice_data_list,     // 选择的语音信息
+    12: optional ModelInfo model_info,                // 模型信息
+    13: list<PluginInfo> plugin_info_list,            // 插件信息列表
+    14: optional CommonKnowledge knowledge            // 知识库信息
+    15: list<WorkflowInfo> workflow_info_list,        // workflow信息列表
+    16: list<ShortcutCommandInfo> shortcut_commands,  // 快捷指令信息列表
+//    17: list<Voice> voice_info_list,                  // 音色配置
+    18: string default_user_input_type,               // 默认用户输入类型
+    19: SuggestReplyInfo suggest_reply_info,          // 用户问题建议
+    20: BackgroundImageInfo background_image_info,    // 背景图片
+    21: list<Variable> variables,                // 变量列表
+}
+
+
+
 struct LayoutInfo {
     1: string       WorkflowId               (api.body="workflow_id")                                        , // workflowId
     2: string       PluginId                 (api.body="plugin_id")                                          , // PluginId

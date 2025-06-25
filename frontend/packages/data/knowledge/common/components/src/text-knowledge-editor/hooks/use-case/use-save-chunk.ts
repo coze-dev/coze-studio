@@ -1,14 +1,9 @@
 import { type Chunk } from '@/text-knowledge-editor/types/chunk';
-import { isEditorContentChange } from '@/text-knowledge-editor/services/use-case/is-editor-content-change';
-import {
-  deleteLocalChunk,
-  deleteRemoteChunk,
-  updateChunks,
-  updateLocalChunk,
-} from '@/text-knowledge-editor/services/inner/chunk-op.service';
-import { useUpdateChunk } from '@/text-knowledge-editor/hooks/inner/use-update-chunk';
-import { useDeleteChunk } from '@/text-knowledge-editor/hooks/inner/use-delete-chunk';
-import { useCreateChunk } from '@/text-knowledge-editor/hooks/inner/use-create-chunk';
+
+import { useUpdateRemoteChunk } from './use-update-remote-chunk';
+import { useDeleteRemoteChunk } from './use-delete-remote-chunk';
+import { useDeleteLocalChunk } from './use-delete-local-chunk';
+import { useCreateLocalChunk } from './use-create-local-chunk';
 
 export interface UseSaveChunkProps {
   chunks: Chunk[];
@@ -27,82 +22,39 @@ export const useSaveChunk = ({
   onChunksChange,
   onDeleteChunk,
 }: UseSaveChunkProps) => {
-  const { createChunk } = useCreateChunk({
+  const { createLocalChunk } = useCreateLocalChunk({
+    chunks,
     documentId,
+    onChunksChange,
+    onAddChunk,
   });
-  const { deleteSlice } = useDeleteChunk();
-  const { updateSlice } = useUpdateChunk();
 
-  /**
-   * 处理远程分片的删除操作
-   */
-  const handleRemoteChunkDelete = async (chunk: Chunk) => {
-    if (!chunk.slice_id) {
-      return;
-    }
-    await deleteSlice(chunk.slice_id);
-    const newChunks = deleteRemoteChunk(chunks, chunk.slice_id);
-    onChunksChange?.(newChunks);
-    onDeleteChunk?.(chunk);
-  };
+  const { updateRemoteChunk } = useUpdateRemoteChunk({
+    chunks,
+    onChunksChange,
+    onUpdateChunk,
+  });
 
-  /**
-   * 处理远程分片的更新操作
-   */
-  const handleRemoteChunkUpdate = async (chunk: Chunk) => {
-    if (!chunk.slice_id) {
-      return;
-    }
-    if (!isEditorContentChange(chunks, chunk)) {
-      onChunksChange?.(chunks);
-      return;
-    }
-    await updateSlice(chunk.slice_id, chunk.content ?? '');
-    const newChunks = updateChunks(chunks, chunk);
-    onUpdateChunk?.(chunk);
-    onChunksChange?.(newChunks);
-  };
+  const { deleteLocalChunk } = useDeleteLocalChunk({
+    chunks,
+    onChunksChange,
+  });
 
-  /**
-   * 处理本地分片的删除操作
-   */
-  const handleLocalChunkDelete = (chunk: Chunk) => {
-    if (!chunk.local_slice_id) {
-      return;
-    }
-    const newChunks = deleteLocalChunk(chunks, chunk.local_slice_id);
-    onChunksChange?.(newChunks);
-  };
-
-  /**
-   * 处理本地分片的创建操作
-   */
-  const handleLocalChunkCreate = async (chunk: Chunk) => {
-    if (!chunk.local_slice_id) {
-      return;
-    }
-    const newChunk = await createChunk({
-      content: chunk.content ?? '',
-      sequence: chunk.sequence ?? '1',
-    });
-    const newChunks = updateLocalChunk({
-      chunks,
-      localChunkSliceId: chunk.local_slice_id,
-      newChunk,
-    });
-    onAddChunk?.(newChunk);
-    onChunksChange?.(newChunks);
-  };
+  const { deleteRemoteChunk } = useDeleteRemoteChunk({
+    chunks,
+    onChunksChange,
+    onDeleteChunk,
+  });
 
   /**
    * 处理远程分片的保存逻辑
    */
   const saveRemoteChunk = async (chunk: Chunk) => {
     if (chunk.content === '') {
-      await handleRemoteChunkDelete(chunk);
+      await deleteRemoteChunk(chunk);
       return;
     }
-    await handleRemoteChunkUpdate(chunk);
+    await updateRemoteChunk(chunk);
   };
 
   /**
@@ -110,9 +62,9 @@ export const useSaveChunk = ({
    */
   const saveLocalChunk = async (chunk: Chunk) => {
     if (chunk.content === '') {
-      handleLocalChunkDelete(chunk);
+      deleteLocalChunk(chunk);
     } else {
-      await handleLocalChunkCreate(chunk);
+      await createLocalChunk(chunk);
     }
   };
 
