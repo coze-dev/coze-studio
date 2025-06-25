@@ -12,10 +12,15 @@ const (
 	VeImageXTemplate   = "VE_IMAGEX_TEMPLATE"
 	VeImageXUploadHost = "VE_IMAGEX_UPLOAD_HOST"
 
+	StorageType   = "STORAGE_TYPE"
 	MinIOAK       = "MINIO_AK"
 	MinIOSK       = "MINIO_SK"
 	MinIOEndpoint = "MINIO_ENDPOINT"
-	MinIOBucket   = "MINIO_BUCKET"
+	StorageBucket = "STORAGE_BUCKET"
+	TOSAccessKey  = "TOS_ACCESS_KEY"
+	TOSSecretKey  = "TOS_SECRET_KEY"
+	TOSRegion     = "TOS_REGION"
+	TOSEndpoint   = "TOS_ENDPOINT"
 
 	RMQServer               = "RMQ_NAME_SERVER"
 	RMQSecretKey            = "RMQ_SECRET_KEY"

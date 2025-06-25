@@ -9,14 +9,13 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
 	"code.byted.org/flow/opencoze/backend/infra/impl/es"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/imagex/veimagex"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
-	"code.byted.org/flow/opencoze/backend/infra/impl/storage/minio"
+	"code.byted.org/flow/opencoze/backend/infra/impl/storage"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
@@ -87,14 +86,7 @@ func initImageX() (imagex.ImageX, error) {
 }
 
 func initTOS(ctx context.Context) (storage.Storage, error) {
-	return minio.New(
-		ctx,
-		os.Getenv(consts.MinIOEndpoint),
-		os.Getenv(consts.MinIOAK),
-		os.Getenv(consts.MinIOSK),
-		os.Getenv(consts.MinIOBucket),
-		false,
-	)
+	return storage.New(ctx)
 }
 
 func initResourceEventBusProducer() (eventbus.Producer, error) {
