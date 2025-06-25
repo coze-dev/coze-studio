@@ -1,8 +1,8 @@
-id: 2002 # 模型 entity id, 同 id 数据不会覆盖
-name: Doubao-1.5-Pro-32k
-description: 支持工具调用
+id: 2003 # 模型 entity id, 同 id 数据不会覆盖
+name: Doubao-1.5-vision-pro
+description: 支持图片理解
 meta:
-  id: 102
+  id: 103
 default_parameters:
   -
     name: temperature
