@@ -49,7 +49,7 @@ func urlencodedBodyEncoder(body map[string]any) ([]byte, error) {
 	objectStr := ""
 	res := url.Values{}
 	sm := &openapi3.SerializationMethod{
-		Style:   "form",
+		Style:   openapi3.SerializationForm,
 		Explode: true,
 	}
 
@@ -110,13 +110,13 @@ func encodeParameter(param *openapi3.Parameter, value any) (string, error) {
 func encodePrimitiveParam(sm *openapi3.SerializationMethod, paramName string, val any) (string, error) {
 	var prefix string
 	switch sm.Style {
-	case "simple":
+	case openapi3.SerializationSimple:
 		// A prefix is empty for style "simple".
-	case "label":
+	case openapi3.SerializationLabel:
 		prefix = "."
-	case "matrix":
+	case openapi3.SerializationMatrix:
 		prefix = ";" + url.QueryEscape(paramName) + "="
-	case "form":
+	case openapi3.SerializationForm:
 		result := url.QueryEscape(paramName) + "=" + url.QueryEscape(mustString(val))
 		return result, nil
 	default:
@@ -131,29 +131,29 @@ func encodePrimitiveParam(sm *openapi3.SerializationMethod, paramName string, va
 func encodeArrayParam(sm *openapi3.SerializationMethod, paramName string, arrVal []any) (string, error) {
 	var prefix, delim string
 	switch {
-	case sm.Style == "matrix" && !sm.Explode:
+	case sm.Style == openapi3.SerializationMatrix && !sm.Explode:
 		prefix = ";" + paramName + "="
 		delim = ","
-	case sm.Style == "matrix" && sm.Explode:
+	case sm.Style == openapi3.SerializationMatrix && sm.Explode:
 		prefix = ";" + paramName + "="
 		delim = ";" + paramName + "="
-	case sm.Style == "label" && !sm.Explode:
+	case sm.Style == openapi3.SerializationLabel && !sm.Explode:
 		prefix = "."
 		delim = ","
-	case sm.Style == "label" && sm.Explode:
+	case sm.Style == openapi3.SerializationLabel && sm.Explode:
 		prefix = "."
 		delim = "."
-	case sm.Style == "form" && sm.Explode:
+	case sm.Style == openapi3.SerializationForm && sm.Explode:
 		prefix = paramName + "="
 		delim = "&" + paramName + "="
-	case sm.Style == "form" && !sm.Explode:
+	case sm.Style == openapi3.SerializationForm && !sm.Explode:
 		prefix = paramName + "="
 		delim = ","
-	case sm.Style == "simple":
+	case sm.Style == openapi3.SerializationSimple:
 		delim = ","
-	case sm.Style == "spaceDelimited" && !sm.Explode:
+	case sm.Style == openapi3.SerializationSpaceDelimited && !sm.Explode:
 		delim = ","
-	case sm.Style == "pipeDelimited" && !sm.Explode:
+	case sm.Style == openapi3.SerializationPipeDelimited && !sm.Explode:
 		delim = "|"
 	default:
 		return "", fmt.Errorf("invalid serialization method: style=%q, explode=%v", sm.Style, sm.Explode)
@@ -177,42 +177,42 @@ func encodeObjectParam(sm *openapi3.SerializationMethod, paramName string, mapVa
 	var prefix, propsDelim, valueDelim string
 
 	switch {
-	case sm.Style == "simple" && !sm.Explode:
+	case sm.Style == openapi3.SerializationSimple && !sm.Explode:
 		propsDelim = ","
 		valueDelim = ","
-	case sm.Style == "simple" && sm.Explode:
+	case sm.Style == openapi3.SerializationSimple && sm.Explode:
 		propsDelim = ","
 		valueDelim = "="
-	case sm.Style == "label" && !sm.Explode:
+	case sm.Style == openapi3.SerializationLabel && !sm.Explode:
 		prefix = "."
 		propsDelim = "."
 		valueDelim = "."
-	case sm.Style == "label" && sm.Explode:
+	case sm.Style == openapi3.SerializationLabel && sm.Explode:
 		prefix = "."
 		propsDelim = "."
 		valueDelim = "="
-	case sm.Style == "matrix" && !sm.Explode:
+	case sm.Style == openapi3.SerializationMatrix && !sm.Explode:
 		prefix = ";" + paramName + "="
 		propsDelim = ","
 		valueDelim = ","
-	case sm.Style == "matrix" && sm.Explode:
+	case sm.Style == openapi3.SerializationMatrix && sm.Explode:
 		prefix = ";"
 		propsDelim = ";"
 		valueDelim = "="
-	case sm.Style == "form" && !sm.Explode:
+	case sm.Style == openapi3.SerializationForm && !sm.Explode:
 		prefix = paramName + "="
 		propsDelim = ","
 		valueDelim = ","
-	case sm.Style == "form" && sm.Explode:
+	case sm.Style == openapi3.SerializationForm && sm.Explode:
 		propsDelim = "&"
 		valueDelim = "="
-	case sm.Style == "spaceDelimited" && !sm.Explode:
+	case sm.Style == openapi3.SerializationSpaceDelimited && !sm.Explode:
 		propsDelim = " "
 		valueDelim = " "
-	case sm.Style == "pipeDelimited" && !sm.Explode:
+	case sm.Style == openapi3.SerializationPipeDelimited && !sm.Explode:
 		propsDelim = "|"
 		valueDelim = "|"
-	case sm.Style == "deepObject" && sm.Explode:
+	case sm.Style == openapi3.SerializationDeepObject && sm.Explode:
 		prefix = paramName + "["
 		propsDelim = "&color["
 		valueDelim = "]="
@@ -241,11 +241,6 @@ func mustString(value any) string {
 	switch val := value.(type) {
 	case string:
 		return val
-	case int64:
-		return strconv.FormatInt(val, 10)
-	case float64:
-		d := decimal.NewFromFloat(val)
-		return d.String()
 	default:
 		b, _ := json.Marshal(val)
 		return string(b)
@@ -257,7 +252,6 @@ func tryFixValueType(paramName string, schemaRef *openapi3.SchemaRef, value any)
 		return "", fmt.Errorf("value of '%s' is nil", paramName)
 	}
 
-	// TODO(@maronghong): 在 tool.Extra 中增加 try 失败信息
 	switch schemaRef.Value.Type {
 	case openapi3.TypeString:
 		return tryString(value)

@@ -171,8 +171,9 @@ func (t *executorImpl) preprocessArgumentsInJson(ctx context.Context, argumentsI
 
 		scVal := paramVal.Schema.Value
 		typ := scVal.Type
-		if typ == openapi3.TypeObject || typ == openapi3.TypeArray {
-			return nil, fmt.Errorf("the '%s' parameter '%s' does not support object or array type", paramVal.In, paramVal.Name)
+
+		if typ == openapi3.TypeObject {
+			return nil, fmt.Errorf("the type of parameter '%s' in '%s' cannot be 'object'", paramVal.In, paramVal.Name)
 		}
 
 		argValue, ok := args[paramVal.Name]
@@ -180,9 +181,19 @@ func (t *executorImpl) preprocessArgumentsInJson(ctx context.Context, argumentsI
 			continue
 		}
 
-		argValue, err := t.convertURItoURL(ctx, argValue, scVal)
-		if err != nil {
-			return nil, err
+		if arr, ok := argValue.([]any); ok {
+			for i, e := range arr {
+				e, err = t.convertURItoURL(ctx, e, scVal)
+				if err != nil {
+					return nil, err
+				}
+				arr[i] = e
+			}
+		} else {
+			argValue, err = t.convertURItoURL(ctx, argValue, scVal)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		args[paramVal.Name] = argValue
@@ -209,9 +220,19 @@ func (t *executorImpl) preprocessArgumentsInJson(ctx context.Context, argumentsI
 			continue
 		}
 
-		argValue, err := t.convertURItoURL(ctx, argValue, prop.Value)
-		if err != nil {
-			return nil, err
+		if arr, ok := argValue.([]any); ok {
+			for i, e := range arr {
+				e, err = t.convertURItoURL(ctx, e, prop.Value)
+				if err != nil {
+					return nil, err
+				}
+				arr[i] = e
+			}
+		} else {
+			argValue, err = t.convertURItoURL(ctx, argValue, prop.Value)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		args[paramName] = argValue
@@ -318,8 +339,8 @@ func (t *executorImpl) getLocationArguments(ctx context.Context, args map[string
 
 		scVal := paramVal.Schema.Value
 		typ := scVal.Type
-		if typ == openapi3.TypeObject || typ == openapi3.TypeArray {
-			return nil, fmt.Errorf("the '%s' parameter '%s' does not support object or array type", paramVal.In, paramVal.Name)
+		if typ == openapi3.TypeObject {
+			return nil, fmt.Errorf("the type of '%s' parameter '%s' cannot be 'object'", paramVal.In, paramVal.Name)
 		}
 
 		argValue, ok := args[paramVal.Name]
@@ -335,11 +356,6 @@ func (t *executorImpl) getLocationArguments(ctx context.Context, args map[string
 				}
 				return nil, fmt.Errorf("the '%s' parameter '%s' is required", paramVal.In, paramVal.Name)
 			}
-		}
-
-		argValue, err := t.convertURItoURL(ctx, argValue, scVal)
-		if err != nil {
-			return nil, err
 		}
 
 		v := valueWithSchema{
@@ -370,9 +386,12 @@ func (t *executorImpl) convertURItoURL(ctx context.Context, arg any, scVal *open
 	if t.execScene != model.ExecSceneOfToolDebug {
 		return arg, nil
 	}
+	if scVal.Type != openapi3.TypeString {
+		return arg, nil
+	}
 
-	at, ok := scVal.Extensions[plugin.APISchemaExtendAssistType]
-	if !ok || at == nil {
+	at := scVal.Extensions[plugin.APISchemaExtendAssistType]
+	if at == nil {
 		return arg, nil
 	}
 
@@ -753,28 +772,21 @@ func (l *locationArguments) buildHTTPRequestURL(_ context.Context, rawURL string
 		}
 	}
 
-	encodeQueryStr := ""
+	encodeQuery := ""
 	if len(l.query) > 0 {
-		queryStr := ""
-		for _, v := range l.query {
-			vStr, err := encodeParameter(v.paramSchema, v.argValue)
-			if err != nil {
-				return nil, err
-			}
-
-			if len(queryStr) > 0 {
-				queryStr += "&" + vStr
-			} else {
-				queryStr += vStr
+		query := url.Values{}
+		for k, val := range l.query {
+			switch v := val.argValue.(type) {
+			case []any:
+				for _, _v := range v {
+					query.Add(k, mustString(_v))
+				}
+			default:
+				query.Add(k, mustString(v))
 			}
 		}
 
-		queryValues, err := url.ParseQuery(queryStr)
-		if err != nil {
-			return nil, err
-		}
-
-		encodeQueryStr = queryValues.Encode()
+		encodeQuery = query.Encode()
 	}
 
 	reqURL, err = url.Parse(rawURL)
@@ -782,10 +794,10 @@ func (l *locationArguments) buildHTTPRequestURL(_ context.Context, rawURL string
 		return nil, err
 	}
 
-	if len(reqURL.RawQuery) > 0 && len(encodeQueryStr) > 0 {
-		reqURL.RawQuery += "&" + encodeQueryStr
-	} else if len(encodeQueryStr) > 0 {
-		reqURL.RawQuery = encodeQueryStr
+	if len(reqURL.RawQuery) > 0 && len(encodeQuery) > 0 {
+		reqURL.RawQuery += "&" + encodeQuery
+	} else if len(encodeQuery) > 0 {
+		reqURL.RawQuery = encodeQuery
 	}
 
 	return reqURL, nil
@@ -795,12 +807,14 @@ func (l *locationArguments) buildHTTPRequestHeader(_ context.Context) (http.Head
 	header := http.Header{}
 	if len(l.header) > 0 {
 		for k, v := range l.header {
-			vStr, err := encodeParameter(v.paramSchema, v.argValue)
-			if err != nil {
-				return nil, err
+			switch vv := v.argValue.(type) {
+			case []any:
+				for _, _v := range vv {
+					header.Add(k, mustString(_v))
+				}
+			default:
+				header.Add(k, mustString(vv))
 			}
-
-			header.Set(k, vStr)
 		}
 	}
 
@@ -877,13 +891,7 @@ func (t *executorImpl) injectRequestBodyDefaultValue(ctx context.Context, sc *op
 		}
 
 		if val := vals[paramName]; val != nil {
-			val, err = t.convertURItoURL(ctx, val, paramSchema)
-			if err != nil {
-				return nil, err
-			}
-
 			newVals[paramName] = val
-
 			continue
 		}
 

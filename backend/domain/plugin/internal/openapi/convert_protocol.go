@@ -99,7 +99,7 @@ type curlRequest struct {
 	dataToQuery bool
 }
 
-func parseCURL(ctx context.Context, rawCURL string) (req *curlRequest, err error) {
+func parseCURL(_ context.Context, rawCURL string) (req *curlRequest, err error) {
 	lines, err := shellwords.Parse(rawCURL)
 	if err != nil {
 		return nil, err
@@ -258,12 +258,13 @@ func (c *curlRequest) parseCURLData(curIdx int, lines []string) (nxtIdx int, err
 	}
 
 	var mediaType string
-	ct, ok := c.Header["Content-Type"]
-	if !ok || len(ct) == 0 {
+	ct := c.Header["Content-Type"]
+	if len(ct) > 0 {
+		mediaType = ct[0]
+	} else {
 		mediaType = model.MediaTypeFormURLEncoded
 		c.Header["Content-Type"] = append(c.Header["Content-Type"], mediaType)
 	}
-	mediaType = ct[0]
 
 	data := lines[curIdx+1]
 
@@ -380,92 +381,129 @@ func (c *curlRequest) decodeFormUrlEncodedDataBody(data string) error {
 	return nil
 }
 
-func curlHeaderToOpenAPI(ctx context.Context, header http.Header, op *openapi3.Operation) (newOP *openapi3.Operation, err error) {
-	for k := range header {
+func curlHeaderToOpenAPI(_ context.Context, header http.Header, op *openapi3.Operation) (newOP *openapi3.Operation, err error) {
+	for k, v := range header {
 		if k == "Content-Type" {
 			continue
 		}
 
-		op.Parameters = append(op.Parameters, &openapi3.ParameterRef{
-			Value: &openapi3.Parameter{
-				In:       openapi3.ParameterInHeader,
-				Name:     k,
-				Required: true,
-				Schema: &openapi3.SchemaRef{
-					Value: &openapi3.Schema{
-						Type: openapi3.TypeString,
+		paramSchema := &openapi3.Parameter{
+			In:          openapi3.ParameterInHeader,
+			Name:        k,
+			Description: k,
+			Required:    true,
+		}
+
+		if len(v) > 1 {
+			paramSchema.Schema = &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type: openapi3.TypeArray,
+					Items: &openapi3.SchemaRef{
+						Value: &openapi3.Schema{
+							Type:        openapi3.TypeString,
+							Description: k,
+						},
 					},
 				},
-			},
+			}
+		} else {
+			paramSchema.Schema = &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type:        openapi3.TypeString,
+					Description: k,
+				},
+			}
+		}
+
+		op.Parameters = append(op.Parameters, &openapi3.ParameterRef{
+			Value: paramSchema,
 		})
 	}
 
 	return op, nil
 }
 
-func curlQueryToOpenAPI(ctx context.Context, queryParams url.Values, op *openapi3.Operation) (newOP *openapi3.Operation, err error) {
+func curlQueryToOpenAPI(_ context.Context, queryParams url.Values, op *openapi3.Operation) (newOP *openapi3.Operation, err error) {
 	for k, v := range queryParams {
 		if v == nil {
 			continue
 		}
 
-		typ := openapi3.TypeString
+		paramSchema := &openapi3.Parameter{
+			In:          openapi3.ParameterInQuery,
+			Name:        k,
+			Description: k,
+			Required:    true,
+		}
+
 		if len(v) > 1 {
-			typ = openapi3.TypeArray
+			paramSchema.Schema = &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type: openapi3.TypeArray,
+					Items: &openapi3.SchemaRef{
+						Value: &openapi3.Schema{
+							Type:        openapi3.TypeString,
+							Description: k,
+						},
+					},
+				},
+			}
+		} else {
+			paramSchema.Schema = &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type:        openapi3.TypeString,
+					Description: k,
+				},
+			}
 		}
 
 		op.Parameters = append(op.Parameters, &openapi3.ParameterRef{
-			Value: &openapi3.Parameter{
-				In:       openapi3.ParameterInQuery,
-				Name:     k,
-				Required: true,
-				Schema: &openapi3.SchemaRef{
-					Value: &openapi3.Schema{
-						Type: typ,
-					},
-				},
-			},
+			Value: paramSchema,
 		})
 	}
 
 	return op, nil
 }
 
-func buildRequestBodySchema(ctx context.Context, value any) (*openapi3.Schema, error) {
+func buildRequestBodySchema(ctx context.Context, desc string, value any) (*openapi3.Schema, error) {
 	switch val := value.(type) {
 	case string:
 		return &openapi3.Schema{
-			Type: openapi3.TypeString,
+			Type:        openapi3.TypeString,
+			Description: desc,
 		}, nil
 
 	case bool:
 		return &openapi3.Schema{
-			Type: openapi3.TypeBoolean,
+			Type:        openapi3.TypeBoolean,
+			Description: desc,
 		}, nil
 
 	case float64:
 		return &openapi3.Schema{
-			Type: openapi3.TypeNumber,
+			Type:        openapi3.TypeNumber,
+			Description: desc,
 		}, nil
 
 	case json.Number:
 		return &openapi3.Schema{
-			Type: openapi3.TypeInteger,
+			Type:        openapi3.TypeInteger,
+			Description: desc,
 		}, nil
 
 	case map[string]any:
 		properties := map[string]*openapi3.SchemaRef{}
 		required := make([]string, 0, len(val))
-		for k, subVal := range val {
-			sc, err := buildRequestBodySchema(ctx, subVal)
+		for subKey, subVal := range val {
+			sc, err := buildRequestBodySchema(ctx, subKey, subVal)
 			if err != nil {
 				return nil, err
 			}
 			if sc == nil {
 				continue
 			}
-			required = append(required, k)
-			properties[k] = &openapi3.SchemaRef{
+			required = append(required, subKey)
+			properties[subKey] = &openapi3.SchemaRef{
 				Value: sc,
 			}
 		}
@@ -480,13 +518,14 @@ func buildRequestBodySchema(ctx context.Context, value any) (*openapi3.Schema, e
 		if len(val) == 0 {
 			return nil, nil
 		}
-		sc, err := buildRequestBodySchema(ctx, val[0])
+		sc, err := buildRequestBodySchema(ctx, desc, val[0])
 		if err != nil {
 			return nil, err
 		}
 
 		return &openapi3.Schema{
-			Type: openapi3.TypeArray,
+			Type:        openapi3.TypeArray,
+			Description: desc,
 			Items: &openapi3.SchemaRef{
 				Value: sc,
 			},
@@ -505,7 +544,7 @@ func curlBodyToOpenAPI(ctx context.Context, mediaType string, bodyValue any, op 
 			"request body only supports 'object' type"))
 	}
 
-	bodySchema, err := buildRequestBodySchema(ctx, bodyValue)
+	bodySchema, err := buildRequestBodySchema(ctx, "", bodyValue)
 	if err != nil {
 		return nil, err
 	}
@@ -631,7 +670,7 @@ func PostmanToOpenapi3Doc(ctx context.Context, rawPostman string) (doc *model.Op
 	return doc, mf, nil
 }
 
-func postmanHeaderToOpenAPI(ctx context.Context, headers []*postman.Header, op *openapi3.Operation) (newOP *openapi3.Operation, mediaType string, err error) {
+func postmanHeaderToOpenAPI(_ context.Context, headers []*postman.Header, op *openapi3.Operation) (newOP *openapi3.Operation, mediaType string, err error) {
 	for _, header := range headers {
 		if header == nil {
 			continue
@@ -639,6 +678,11 @@ func postmanHeaderToOpenAPI(ctx context.Context, headers []*postman.Header, op *
 
 		if header.Key == "Content-Type" {
 			mediaType = header.Value
+		}
+
+		desc := header.Description
+		if desc == "" {
+			desc = header.Key
 		}
 
 		op.Parameters = append(op.Parameters, &openapi3.ParameterRef{
@@ -649,7 +693,8 @@ func postmanHeaderToOpenAPI(ctx context.Context, headers []*postman.Header, op *
 				Required:    true,
 				Schema: &openapi3.SchemaRef{
 					Value: &openapi3.Schema{
-						Type: openapi3.TypeString,
+						Description: desc,
+						Type:        openapi3.TypeString,
 					},
 				},
 			},
@@ -659,21 +704,27 @@ func postmanHeaderToOpenAPI(ctx context.Context, headers []*postman.Header, op *
 	return op, mediaType, nil
 }
 
-func postmanQueryToOpenAPI(ctx context.Context, queryParams []*postman.QueryParam, op *openapi3.Operation) (newOP *openapi3.Operation, err error) {
+func postmanQueryToOpenAPI(_ context.Context, queryParams []*postman.QueryParam, op *openapi3.Operation) (newOP *openapi3.Operation, err error) {
 	for _, queryParam := range queryParams {
 		if queryParam == nil {
 			continue
+		}
+
+		desc := ptr.FromOrDefault(queryParam.Description, "")
+		if desc == "" {
+			desc = queryParam.Key
 		}
 
 		op.Parameters = append(op.Parameters, &openapi3.ParameterRef{
 			Value: &openapi3.Parameter{
 				In:          openapi3.ParameterInQuery,
 				Name:        queryParam.Key,
-				Description: ptr.FromOrDefault(queryParam.Description, ""),
+				Description: desc,
 				Required:    true,
 				Schema: &openapi3.SchemaRef{
 					Value: &openapi3.Schema{
-						Type: openapi3.TypeString,
+						Type:        openapi3.TypeString,
+						Description: desc,
 					},
 				},
 			},
@@ -737,7 +788,7 @@ func postmanBodyToOpenAPI(ctx context.Context, mediaType string, body *postman.B
 		return op, nil
 	}
 
-	bodySchema, err := buildRequestBodySchema(ctx, valMap)
+	bodySchema, err := buildRequestBodySchema(ctx, "", valMap)
 	if err != nil {
 		return nil, err
 	}
@@ -826,7 +877,7 @@ func decodePostmanRequestFormURLEncodedBody(rawBody any) (body map[string]any, e
 	return body, nil
 }
 
-func SwaggerToOpenapi3Doc(ctx context.Context, rawSwagger string) (doc *model.Openapi3T, mf *entity.PluginManifest, err error) {
+func SwaggerToOpenapi3Doc(_ context.Context, rawSwagger string) (doc *model.Openapi3T, mf *entity.PluginManifest, err error) {
 	doc2 := &openapi2.T{}
 	if err = json.Unmarshal([]byte(rawSwagger), doc2); err != nil {
 		err = yaml.Unmarshal([]byte(rawSwagger), doc2)
@@ -850,7 +901,7 @@ func SwaggerToOpenapi3Doc(ctx context.Context, rawSwagger string) (doc *model.Op
 	return doc, mf, nil
 }
 
-func ToOpenapi3Doc(ctx context.Context, rawOpenAPI string) (doc *model.Openapi3T, mf *entity.PluginManifest, err error) {
+func ToOpenapi3Doc(_ context.Context, rawOpenAPI string) (doc *model.Openapi3T, mf *entity.PluginManifest, err error) {
 	loader := openapi3.NewLoader()
 	doc3, err := loader.LoadFromData([]byte(rawOpenAPI))
 	if err != nil {
