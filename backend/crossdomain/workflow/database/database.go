@@ -14,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	nodedatabase "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 )
 
@@ -60,6 +61,11 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 	response, err := d.client.ExecuteSQL(ctx, req)
 	if err != nil {
 		return nil, err
+	}
+
+	// if rows affected is nil use 0 instead
+	if response.RowsAffected == nil {
+		response.RowsAffected = ptr.Of(int64(0))
 	}
 	return toNodeDateBaseResponse(response), nil
 }

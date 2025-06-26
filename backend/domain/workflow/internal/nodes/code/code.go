@@ -3,6 +3,8 @@ package code
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -81,33 +83,41 @@ func (c *CodeRunner) ToCallbackOutput(ctx context.Context, output map[string]any
 		return nil, errors.New("raw output config is required")
 	}
 
-	//TODO(zhuangjie) need to get the warn error info information from ctx and return it
-	//_, _ = ctxcache.Get[string](ctx, coderRunnerWarnErrorLevelCtxKey)
-
+	var errInfo *vo.ErrorInfo
+	if warnings, ok := ctxcache.Get[[]string](ctx, coderRunnerWarnErrorLevelCtxKey); ok {
+		errInfo = &vo.ErrorInfo{
+			Err:   fmt.Errorf("赋值异常: %s", strings.Join(warnings, ", ")),
+			Level: vo.LevelWarn,
+		}
+	}
 	return &nodes.StructuredCallbackOutput{
-		Output:    output,
-		RawOutput: rawOutput,
-	}, nil
+			Output:    output,
+			RawOutput: rawOutput,
+			Error:     errInfo,
+		},
+		nil
+
 }
 
 func formatOutput(ctx context.Context, inInfo map[string]*vo.TypeInfo, in map[string]any) (map[string]any, error) {
 	ret := make(map[string]any, len(inInfo))
-	var warnError = &WarnError{errs: make([]error, 0, len(inInfo))}
+	warnings := make([]string, 0, len(inInfo))
 	for k, info := range inInfo {
 		if _, ok := in[k]; !ok {
 			ret[k] = nil
 			continue
 		}
-
-		vv, wError := codeResponseFormatted(k, in[k], info)
-		if wError != nil && len(wError.errs) != 0 {
-			warnError.errs = append(warnError.errs, wError.errs...)
+		vv, err := nodes.Convert(ctx, in[k], k, info)
+		if err != nil {
+			warnings = append(warnings, err.Error())
+		} else {
+			ret[k] = vv
 		}
-		ret[k] = vv
+
 	}
 
-	if len(warnError.errs) != 0 {
-		ctxcache.Store(ctx, coderRunnerWarnErrorLevelCtxKey, warnError.Error())
+	if len(warnings) > 0 {
+		ctxcache.Store(ctx, coderRunnerWarnErrorLevelCtxKey, warnings)
 	}
 
 	return ret, nil

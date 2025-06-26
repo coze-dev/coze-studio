@@ -3,9 +3,10 @@ package coderunner
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"os/exec"
+
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/pkg/goutil"
@@ -35,7 +36,7 @@ func (r *Runner) Run(ctx context.Context, request *code.RunRequest) (*code.RunRe
 }
 
 func (r *Runner) pythonCmdRun(_ context.Context, code string, params map[string]any) (map[string]any, error) {
-	bs, _ := json.Marshal(params)
+	bs, _ := sonic.Marshal(params)
 	cmd := exec.Command(goutil.GetPython3Path(), goutil.GetPythonFilePath("python_script.py"), code, string(bs))
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
@@ -51,7 +52,7 @@ func (r *Runner) pythonCmdRun(_ context.Context, code string, params map[string]
 		return nil, fmt.Errorf("failed to run python script err: %s", stderr.String())
 	}
 	ret := make(map[string]any)
-	err = json.Unmarshal(stdout.Bytes(), &ret)
+	err = sonic.Unmarshal(stdout.Bytes(), &ret)
 	if err != nil {
 		return nil, err
 	}
