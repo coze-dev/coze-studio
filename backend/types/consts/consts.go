@@ -62,5 +62,5 @@ const (
 )
 
 const (
-	TemplateSpaceID = int64(1) // special space id for template
+	TemplateSpaceID = int64(999999) // special space id for template
 )
