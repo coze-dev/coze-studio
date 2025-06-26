@@ -231,8 +231,10 @@ func (w *ApplicationService) BatchDeleteWorkflow(ctx context.Context, req *workf
 }
 
 func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.GetCanvasInfoRequest) (*workflow.GetCanvasInfoResponse, error) {
-	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
-		return nil, err
+	if req.GetSpaceID() != strconv.FormatInt(consts.TemplateSpaceID, 10) {
+		if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+			return nil, err
+		}
 	}
 
 	wf, err := GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
@@ -1405,10 +1407,11 @@ func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.Val
 }
 
 func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *workflow.GetWorkflowReferencesRequest) (*workflow.GetWorkflowReferencesResponse, error) {
-	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
-		return nil, err
+	if req.GetSpaceID() != strconv.FormatInt(consts.TemplateSpaceID, 10) {
+		if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+			return nil, err
+		}
 	}
-
 	workflows, err := GetWorkflowDomainSVC().GetWorkflowReference(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
 		return nil, err
