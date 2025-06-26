@@ -1062,8 +1062,9 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, pol
 		}
 
 		wfDraft.ID = copiedID
+		// copy workflow are treated as modified and not tested run
 		wfDraft.TestRunSuccess = false
-		wfDraft.Modified = false
+		wfDraft.Modified = true
 		wfDraft.UpdatedAt = 0
 		wfDraft.CommitID = strconv.FormatInt(commitID, 10)
 		if policy.ModifiedCanvasSchema != nil {
