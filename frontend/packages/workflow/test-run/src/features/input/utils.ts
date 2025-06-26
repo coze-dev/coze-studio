@@ -59,6 +59,7 @@ const translateFileField = (temp: any, viewVariableType: ViewVariableType) => ({
   'x-component-props': {
     multiple: ViewVariableType.isArrayType(viewVariableType),
     accept: getAccept(viewVariableType),
+    'data-testid': `workflow.testrun.form.component.${temp.name}`,
     fileType: [ViewVariableType.Image, ViewVariableType.ArrayImage].includes(
       viewVariableType,
     )
@@ -74,7 +75,9 @@ const translateVoiceField = (
   ...translateCommonField(temp, viewVariableType),
   type: 'string',
   'x-component': 'VoiceSelect',
-  'x-component-props': {},
+  'x-component-props': {
+    'data-testid': `workflow.testrun.form.component.${temp.name}`,
+  },
 });
 
 const translateBooleanField = (
@@ -84,6 +87,9 @@ const translateBooleanField = (
   ...translateCommonField(temp, viewVariableType),
   type: 'boolean',
   'x-component': 'Switch',
+  'x-component-props': {
+    'data-testid': `workflow.testrun.form.component.${temp.name}`,
+  },
   default: true,
 });
 
@@ -97,6 +103,9 @@ const translateNumberField = (
     viewVariableType === ViewVariableType.Integer
       ? 'InputInteger'
       : 'InputNumber',
+  'x-component-props': {
+    'data-testid': `workflow.testrun.form.component.${temp.name}`,
+  },
 });
 
 const translateField = (temp: any) => {
@@ -137,6 +146,9 @@ const translateField = (temp: any) => {
     'x-component': 'Input',
     'x-decorator': 'FormItem',
     required: temp.required,
+    'x-component-props': {
+      'data-testid': `workflow.testrun.form.component.${temp.name}`,
+    },
     'x-validator': {
       required: true,
       message: I18n.t('workflow_testset_required_tip', {
@@ -165,4 +177,7 @@ const translateTimeField = (temp: any, viewVariableType: ViewVariableType) => ({
   ...translateCommonField(temp, viewVariableType),
   type: 'string',
   'x-component': 'InputTime',
+  'x-component-props': {
+    'data-testid': `workflow.testrun.form.component.${temp.name}`,
+  },
 });
