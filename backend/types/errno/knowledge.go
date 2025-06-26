@@ -42,6 +42,7 @@ const (
 	ErrKnowledgeParseResultEmptyCode           = 105000035
 	ErrKnowledgeCacheClientSetFailCode         = 105000036
 	ErrKnowledgeCheckTableSliceValidCode       = 105000037
+	ErrKnowledgeCrawlWebUrlFailCode            = 105000038
 )
 
 func init() {
@@ -66,7 +67,7 @@ func init() {
 	code.Register(
 		ErrKnowledgeDBCode,
 		"MySQL operation failed: {msg}",
-		code.WithAffectStability(false),
+		code.WithAffectStability(true),
 	)
 
 	code.Register(
@@ -256,6 +257,12 @@ func init() {
 	code.Register(
 		ErrKnowledgeCheckTableSliceValidCode,
 		"slice content validation failed, please check if the input is correct:{msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrKnowledgeCrawlWebUrlFailCode,
+		"crawl web url failed: {msg}",
 		code.WithAffectStability(false),
 	)
 }

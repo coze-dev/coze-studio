@@ -46,6 +46,7 @@ func newKnowledgeDocument(db *gorm.DB, opts ...gen.DOOption) knowledgeDocument {
 	_knowledgeDocument.FailReason = field.NewString(tableName, "fail_reason")
 	_knowledgeDocument.ParseRule = field.NewField(tableName, "parse_rule")
 	_knowledgeDocument.TableInfo = field.NewField(tableName, "table_info")
+	_knowledgeDocument.SourceFileID = field.NewInt64(tableName, "source_file_id")
 
 	_knowledgeDocument.fillFieldMap()
 
@@ -76,6 +77,7 @@ type knowledgeDocument struct {
 	FailReason    field.String // 失败原因
 	ParseRule     field.Field  // 解析+切片规则
 	TableInfo     field.Field  // 表格信息
+	SourceFileID  field.Int64  // 三方数据源id
 
 	fieldMap map[string]field.Expr
 }
@@ -111,6 +113,7 @@ func (k *knowledgeDocument) updateTableName(table string) *knowledgeDocument {
 	k.FailReason = field.NewString(table, "fail_reason")
 	k.ParseRule = field.NewField(table, "parse_rule")
 	k.TableInfo = field.NewField(table, "table_info")
+	k.SourceFileID = field.NewInt64(table, "source_file_id")
 
 	k.fillFieldMap()
 
@@ -127,7 +130,7 @@ func (k *knowledgeDocument) GetFieldByName(fieldName string) (field.OrderExpr, b
 }
 
 func (k *knowledgeDocument) fillFieldMap() {
-	k.fieldMap = make(map[string]field.Expr, 19)
+	k.fieldMap = make(map[string]field.Expr, 20)
 	k.fieldMap["id"] = k.ID
 	k.fieldMap["knowledge_id"] = k.KnowledgeID
 	k.fieldMap["name"] = k.Name
@@ -147,6 +150,7 @@ func (k *knowledgeDocument) fillFieldMap() {
 	k.fieldMap["fail_reason"] = k.FailReason
 	k.fieldMap["parse_rule"] = k.ParseRule
 	k.fieldMap["table_info"] = k.TableInfo
+	k.fieldMap["source_file_id"] = k.SourceFileID
 }
 
 func (k knowledgeDocument) clone(db *gorm.DB) knowledgeDocument {

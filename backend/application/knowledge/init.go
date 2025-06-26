@@ -38,6 +38,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	chatmodelImpl "code.byted.org/flow/opencoze/backend/infra/impl/chatmodel"
+	"code.byted.org/flow/opencoze/backend/infra/impl/document/crawl/crawl4ai"
 	builtinNL2SQL "code.byted.org/flow/opencoze/backend/infra/impl/document/nl2sql/builtin"
 	"code.byted.org/flow/opencoze/backend/infra/impl/document/ocr/veocr"
 	builtinParser "code.byted.org/flow/opencoze/backend/infra/impl/document/parser/builtin"
@@ -149,6 +150,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		ParseManager:              builtinParser.NewManager(c.Storage, ocrImpl, imageAnnoChatModel), // default builtin
 		Storage:                   c.Storage,
 		ImageX:                    c.ImageX,
+		Crawler:                   crawl4ai.NewCrawl4ai(),
 		Rewriter:                  rewriter,
 		Reranker:                  rrf.NewRRFReranker(0), // default rrf
 		NL2Sql:                    n2s,

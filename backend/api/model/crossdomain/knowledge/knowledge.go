@@ -171,8 +171,8 @@ func (s *Slice) GetSliceContent() string {
 			continue
 		}
 		if item.Type == SliceContentTypeTable {
-			var contentMap map[string]string
-			for _, column := range s.RawContent[0].Table.Columns {
+			contentMap := map[string]string{}
+			for _, column := range item.Table.Columns {
 				contentMap[column.ColumnName] = column.GetStringValue()
 			}
 			byteData, err := sonic.Marshal(contentMap)

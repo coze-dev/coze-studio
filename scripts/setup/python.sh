@@ -30,7 +30,6 @@ pip install --upgrade pip
 # If you want to use other third-party libraries, you can install them here.
 pip install urllib3==1.26.16
 pip install pillow pdfplumber python-docx numpy git+https://gitcode.com/gh_mirrors/re/requests-async.git@master
-
 if [ $? -ne 0 ]; then
     echo "Failed to install Python packages - aborting startup"
     deactivate

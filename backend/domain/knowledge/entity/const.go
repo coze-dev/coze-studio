@@ -39,6 +39,17 @@ func (s DocumentStatus) String() string {
 type DocumentSource int64
 
 const (
-	DocumentSourceLocal  DocumentSource = 0 // 本地文件上传
-	DocumentSourceCustom DocumentSource = 2 // 自定义文本
+	DocumentSourceLocal     DocumentSource = 0   // 本地文件上传
+	DocumentSourceWeb       DocumentSource = 1   // url
+	DocumentSourceCustom    DocumentSource = 2   // 自定义文本
+	DocumentSourceFeishuWeb DocumentSource = 103 // 飞书文档
+)
+
+type WebCrawlTaskStatus int64
+
+const (
+	WebContentStatusInit    WebCrawlTaskStatus = 0
+	WebContentStatusSuccess WebCrawlTaskStatus = 1
+	WebContentStatusFailed  WebCrawlTaskStatus = 2
+	WebContentStatusAborted WebCrawlTaskStatus = 3
 )

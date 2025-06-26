@@ -529,6 +529,6 @@ func (k *knowledgeSVC) MoveKnowledgeToLibrary(ctx context.Context, request *Move
 		return errors.New("knowledge not found")
 	}
 	kn.AppID = 0
-	err = k.knowledgeRepo.Update(ctx, kn)
+	err = k.knowledgeRepo.Upsert(ctx, kn)
 	return err
 }

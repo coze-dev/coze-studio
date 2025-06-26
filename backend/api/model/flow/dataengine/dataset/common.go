@@ -278,16 +278,24 @@ type DocumentSource int64
 const (
 	// 本地文件上传
 	DocumentSource_Document DocumentSource = 0
+	// url
+	DocumentSource_Web DocumentSource = 1
 	// 自定义类型
 	DocumentSource_Custom DocumentSource = 2
+	// 飞书文档
+	DocumentSource_FeishuWeb DocumentSource = 103
 )
 
 func (p DocumentSource) String() string {
 	switch p {
 	case DocumentSource_Document:
 		return "Document"
+	case DocumentSource_Web:
+		return "Web"
 	case DocumentSource_Custom:
 		return "Custom"
+	case DocumentSource_FeishuWeb:
+		return "FeishuWeb"
 	}
 	return "<UNSET>"
 }
@@ -296,8 +304,12 @@ func DocumentSourceFromString(s string) (DocumentSource, error) {
 	switch s {
 	case "Document":
 		return DocumentSource_Document, nil
+	case "Web":
+		return DocumentSource_Web, nil
 	case "Custom":
 		return DocumentSource_Custom, nil
+	case "FeishuWeb":
+		return DocumentSource_FeishuWeb, nil
 	}
 	return DocumentSource(0), fmt.Errorf("not a valid DocumentSource string")
 }
@@ -497,6 +509,99 @@ func (p *ReviewStatus) Scan(value interface{}) (err error) {
 }
 
 func (p *ReviewStatus) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
+// 更新类型
+type UpdateType int64
+
+const (
+	UpdateType_NoUpdate UpdateType = 0
+	UpdateType_Cover    UpdateType = 1
+)
+
+func (p UpdateType) String() string {
+	switch p {
+	case UpdateType_NoUpdate:
+		return "NoUpdate"
+	case UpdateType_Cover:
+		return "Cover"
+	}
+	return "<UNSET>"
+}
+
+func UpdateTypeFromString(s string) (UpdateType, error) {
+	switch s {
+	case "NoUpdate":
+		return UpdateType_NoUpdate, nil
+	case "Cover":
+		return UpdateType_Cover, nil
+	}
+	return UpdateType(0), fmt.Errorf("not a valid UpdateType string")
+}
+
+func UpdateTypePtr(v UpdateType) *UpdateType { return &v }
+func (p *UpdateType) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = UpdateType(result.Int64)
+	return
+}
+
+func (p *UpdateType) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
+type WebStatus int64
+
+const (
+	// 处理中
+	WebStatus_Handling WebStatus = 0
+	// 已完成
+	WebStatus_Finish WebStatus = 1
+	// 失败
+	WebStatus_Failed WebStatus = 2
+)
+
+func (p WebStatus) String() string {
+	switch p {
+	case WebStatus_Handling:
+		return "Handling"
+	case WebStatus_Finish:
+		return "Finish"
+	case WebStatus_Failed:
+		return "Failed"
+	}
+	return "<UNSET>"
+}
+
+func WebStatusFromString(s string) (WebStatus, error) {
+	switch s {
+	case "Handling":
+		return WebStatus_Handling, nil
+	case "Finish":
+		return WebStatus_Finish, nil
+	case "Failed":
+		return WebStatus_Failed, nil
+	}
+	return WebStatus(0), fmt.Errorf("not a valid WebStatus string")
+}
+
+func WebStatusPtr(v WebStatus) *WebStatus { return &v }
+func (p *WebStatus) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = WebStatus(result.Int64)
+	return
+}
+
+func (p *WebStatus) Value() (driver.Value, error) {
 	if p == nil {
 		return nil, nil
 	}

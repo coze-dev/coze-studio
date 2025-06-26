@@ -33,6 +33,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
 	"code.byted.org/flow/opencoze/backend/infra/contract/cache"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/crawl"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
@@ -57,10 +58,12 @@ import (
 
 func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHandler) {
 	svc := &knowledgeSVC{
-		knowledgeRepo:             repository.NewKnowledgeDAO(config.DB),
-		documentRepo:              repository.NewKnowledgeDocumentDAO(config.DB),
-		sliceRepo:                 repository.NewKnowledgeDocumentSliceDAO(config.DB),
-		reviewRepo:                repository.NewKnowledgeDocumentReviewDAO(config.DB),
+		knowledgeRepo:    repository.NewKnowledgeDAO(config.DB),
+		documentRepo:     repository.NewKnowledgeDocumentDAO(config.DB),
+		sliceRepo:        repository.NewKnowledgeDocumentSliceDAO(config.DB),
+		reviewRepo:       repository.NewKnowledgeDocumentReviewDAO(config.DB),
+		webCrawlTaskRepo: repository.NewWebContentTaskDAO(config.DB),
+
 		idgen:                     config.IDGen,
 		rdb:                       config.RDB,
 		producer:                  config.Producer,
@@ -69,6 +72,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHa
 		storage:                   config.Storage,
 		imageX:                    config.ImageX,
 		reranker:                  config.Reranker,
+		crawler:                   config.Crawler,
 		rewriter:                  config.Rewriter,
 		nl2Sql:                    config.NL2Sql,
 		enableCompactTable:        ptr.FromOrDefault(config.EnableCompactTable, true),
@@ -101,16 +105,19 @@ type KnowledgeSVCConfig struct {
 	NL2Sql                    nl2sql.NL2SQL                  // optional: 未配置时默认不支持
 	EnableCompactTable        *bool                          // optional: 表格数据压缩，默认 true
 	OCR                       ocr.OCR                        // optional: ocr, 未提供时 ocr 功能不可用
+	Crawler                   crawl.Crawler                  // required: 网页内容获取
 	CacheCli                  cache.Cmdable                  // optional: 缓存实现
 	IsAutoAnnotationSupported bool                           // 是否支持了图片自动标注
 }
 
 type knowledgeSVC struct {
-	knowledgeRepo repository.KnowledgeRepo
-	documentRepo  repository.KnowledgeDocumentRepo
-	sliceRepo     repository.KnowledgeDocumentSliceRepo
-	reviewRepo    repository.KnowledgeDocumentReviewRepo
-	modelFactory  chatmodel.Factory
+	knowledgeRepo    repository.KnowledgeRepo
+	documentRepo     repository.KnowledgeDocumentRepo
+	sliceRepo        repository.KnowledgeDocumentSliceRepo
+	reviewRepo       repository.KnowledgeDocumentReviewRepo
+	webCrawlTaskRepo repository.WebCrawlTaskRepo
+	modelFactory     chatmodel.Factory
+	crawler          crawl.Crawler
 
 	idgen                     idgen.IDGenerator
 	rdb                       rdb.RDB
@@ -332,18 +339,19 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *CreateDocume
 	spaceID := request.Documents[0].SpaceID
 	documentSource := request.Documents[0].Source
 	docProcessor := impl.NewDocProcessor(ctx, &impl.DocProcessorConfig{
-		UserID:         userID,
-		SpaceID:        spaceID,
-		DocumentSource: documentSource,
-		Documents:      request.Documents,
-		KnowledgeRepo:  k.knowledgeRepo,
-		DocumentRepo:   k.documentRepo,
-		SliceRepo:      k.sliceRepo,
-		Idgen:          k.idgen,
-		Producer:       k.producer,
-		ParseManager:   k.parseManager,
-		Storage:        k.storage,
-		Rdb:            k.rdb,
+		UserID:           userID,
+		SpaceID:          spaceID,
+		DocumentSource:   documentSource,
+		Documents:        request.Documents,
+		KnowledgeRepo:    k.knowledgeRepo,
+		DocumentRepo:     k.documentRepo,
+		SliceRepo:        k.sliceRepo,
+		WebCrawlTaskRepo: k.webCrawlTaskRepo,
+		Idgen:            k.idgen,
+		Producer:         k.producer,
+		ParseManager:     k.parseManager,
+		Storage:          k.storage,
+		Rdb:              k.rdb,
 	})
 	// 1. 前置的动作，上传 tos 等
 	err = docProcessor.BeforeCreate()
@@ -1480,4 +1488,12 @@ func (k *knowledgeSVC) genMultiIDs(ctx context.Context, counts int) ([]int64, er
 		allIDs = append(allIDs, ids...)
 	}
 	return allIDs, nil
+}
+
+func (k *knowledgeSVC) SubmitWebUrlTask(ctx context.Context, request *SubmitWebUrlTaskRequest) (*SubmitWebUrlTaskResponse, error) {
+	return nil, nil
+}
+
+func (k *knowledgeSVC) GetWebUrlInfo(ctx context.Context, request *GetWebUrlInfoRequest) (*GetWebUrlInfoResponse, error) {
+	return nil, nil
 }

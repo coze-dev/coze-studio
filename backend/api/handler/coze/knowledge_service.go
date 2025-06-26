@@ -9,6 +9,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	dataset "code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
+	web_crawl "code.byted.org/flow/opencoze/backend/api/model/web_crawl"
 	application "code.byted.org/flow/opencoze/backend/application/knowledge"
 	"code.byted.org/flow/opencoze/backend/application/upload"
 )
@@ -508,5 +509,133 @@ func ExtractPhotoCaption(ctx context.Context, c *app.RequestContext) {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// SubmitWebUrl .
+// @router /api/knowledge/web_url/submit [POST]
+func SubmitWebUrl(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.SubmitWebUrlRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.SubmitWebUrlResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// BatchSubmitWebUrl .
+// @router /api/knowledge/web_url/batch_submit [POST]
+func BatchSubmitWebUrl(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.BatchSubmitWebUrlRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.BatchSubmitWebUrlResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetWebInfo .
+// @router /api/knowledge/web_url/get [POST]
+func GetWebInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.GetWebInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.GetWebInfoResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// FetchWebUrl .
+// @router /api/knowledge/document/batch_fetch [POST]
+func FetchWebUrl(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.FetchWebUrlRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.FetchWebUrlResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// BatchUpdateDocument .
+// @router /api/knowledge/document/batch_update [POST]
+func BatchUpdateDocument(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.BatchUpdateDocumentRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.BatchUpdateDocumentResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// CreateSubLinkDiscoveryTask .
+// @router /api/memory/knowledge/create_sub_link_discovery_task [POST]
+func CreateSubLinkDiscoveryTask(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req web_crawl.CreateSubLinkDiscoveryTaskRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(web_crawl.CreateSubLinkDiscoveryTaskResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetSubLinkDiscoveryTask .
+// @router /api/memory/knowledge/get_sub_link_discovery_task [GET]
+func GetSubLinkDiscoveryTask(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req web_crawl.GetSubLinkDiscoveryTaskRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(web_crawl.GetSubLinkDiscoveryTaskResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// AbortSubLinkDiscoveryTask .
+// @router /api/memory/knowledge/abort_sub_link_discovery_task [POST]
+func AbortSubLinkDiscoveryTask(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req web_crawl.AbortSubLinkDiscoveryTaskRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(web_crawl.AbortSubLinkDiscoveryTaskResponse)
+
 	c.JSON(consts.StatusOK, resp)
 }

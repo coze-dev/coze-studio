@@ -56,7 +56,6 @@ COPY --from=builder /app/proxy_app /app/proxy
 COPY backend/infra/impl/document/parser/builtin/parse_pdf.py /app/parse_pdf.py
 COPY backend/infra/impl/document/parser/builtin/parse_docx.py /app/parse_docx.py
 
-
 # Copy static resources
 COPY backend/static /app/resources/static/
 COPY backend/conf /app/resources/conf/

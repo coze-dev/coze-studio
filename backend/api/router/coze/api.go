@@ -90,6 +90,8 @@ func Register(r *server.Hertz) {
 			_knowledge.POST("/update", append(_updatedatasetMw(), coze.UpdateDataset)...)
 			{
 				_document := _knowledge.Group("/document", _documentMw()...)
+				_document.POST("/batch_fetch", append(_fetchweburlMw(), coze.FetchWebUrl)...)
+				_document.POST("/batch_update", append(_batchupdatedocumentMw(), coze.BatchUpdateDocument)...)
 				_document.POST("/create", append(_createdocumentMw(), coze.CreateDocument)...)
 				_document.POST("/delete", append(_deletedocumentMw(), coze.DeleteDocument)...)
 				_document.POST("/list", append(_listdocumentMw(), coze.ListDocument)...)
@@ -129,6 +131,12 @@ func Register(r *server.Hertz) {
 				_table_schema.POST("/get", append(_gettableschemaMw(), coze.GetTableSchema)...)
 				_table_schema.POST("/validate", append(_validatetableschemaMw(), coze.ValidateTableSchema)...)
 			}
+			{
+				_web_url := _knowledge.Group("/web_url", _web_urlMw()...)
+				_web_url.POST("/batch_submit", append(_batchsubmitweburlMw(), coze.BatchSubmitWebUrl)...)
+				_web_url.POST("/get", append(_getwebinfoMw(), coze.GetWebInfo)...)
+				_web_url.POST("/submit", append(_submitweburlMw(), coze.SubmitWebUrl)...)
+			}
 		}
 		{
 			_marketplace := _api.Group("/marketplace", _marketplaceMw()...)
@@ -167,6 +175,12 @@ func Register(r *server.Hertz) {
 					_table.POST("/list_new", append(_getbotdatabaseMw(), coze.GetBotDatabase)...)
 					_table.POST("/reset", append(_resetbottableMw(), coze.ResetBotTable)...)
 				}
+			}
+			{
+				_knowledge0 := _memory.Group("/knowledge", _knowledge0Mw()...)
+				_knowledge0.POST("/abort_sub_link_discovery_task", append(_abortsublinkdiscoverytaskMw(), coze.AbortSubLinkDiscoveryTask)...)
+				_knowledge0.POST("/create_sub_link_discovery_task", append(_createsublinkdiscoverytaskMw(), coze.CreateSubLinkDiscoveryTask)...)
+				_knowledge0.GET("/get_sub_link_discovery_task", append(_getsublinkdiscoverytaskMw(), coze.GetSubLinkDiscoveryTask)...)
 			}
 			{
 				_project := _memory.Group("/project", _projectMw()...)

@@ -290,8 +290,12 @@ func convertDocumentSource2Entity(sourceType dataset.DocumentSource) entity.Docu
 	switch sourceType {
 	case dataset.DocumentSource_Custom:
 		return entity.DocumentSourceCustom
+	case dataset.DocumentSource_Web:
+		return entity.DocumentSourceWeb
 	case dataset.DocumentSource_Document:
 		return entity.DocumentSourceLocal
+	case dataset.DocumentSource_FeishuWeb:
+		return entity.DocumentSourceFeishuWeb
 	default:
 		return entity.DocumentSourceLocal
 	}
@@ -763,4 +767,40 @@ func convertFormatType2Entity(tp dataset.FormatType) model.DocumentType {
 	default:
 		return model.DocumentTypeUnknown
 	}
+}
+
+func convertUpdateRule2Entity(rule *dataset.UpdateRule) *entity.UpdateRule {
+	if rule == nil {
+		return nil
+	}
+	res := &entity.UpdateRule{
+		UpdateInterval: rule.UpdateInterval,
+	}
+	switch rule.UpdateType {
+	case dataset.UpdateType_NoUpdate:
+		res.UpdateType = entity.UpdateType_NoUpdate
+	case dataset.UpdateType_Cover:
+		res.UpdateType = entity.UpdateType_Cover
+	default:
+		res.UpdateType = entity.UpdateType_NoUpdate
+	}
+	return res
+}
+
+func convertUpdateRule2Model(rule *entity.UpdateRule) *dataset.UpdateRule {
+	if rule == nil {
+		return nil
+	}
+	res := &dataset.UpdateRule{
+		UpdateInterval: rule.UpdateInterval,
+	}
+	switch rule.UpdateType {
+	case entity.UpdateType_NoUpdate:
+		res.UpdateType = dataset.UpdateType_NoUpdate
+	case entity.UpdateType_Cover:
+		res.UpdateType = dataset.UpdateType_Cover
+	default:
+		res.UpdateType = dataset.UpdateType_NoUpdate
+	}
+	return res
 }

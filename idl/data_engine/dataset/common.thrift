@@ -48,7 +48,9 @@ enum DocumentStatus {
 
 enum DocumentSource {
     Document = 0 // 本地文件上传
+    Web      = 1 // url
     Custom   = 2 // 自定义类型
+    FeishuWeb = 103 // 飞书文档
 }
 
 
@@ -95,4 +97,16 @@ enum ReviewStatus {
     Enable   = 1 // 已完成
     Failed   = 2 // 失败
     ForceStop   = 3 // 失败
+}
+
+// 更新类型
+enum UpdateType {
+    NoUpdate = 0
+    Cover    = 1
+}
+
+enum WebStatus {
+    Handling = 0 // 处理中
+    Finish   = 1 // 已完成
+    Failed   = 2 // 失败
 }

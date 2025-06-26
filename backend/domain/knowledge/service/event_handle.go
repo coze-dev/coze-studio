@@ -11,6 +11,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
+	"github.com/jinzhu/copier"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -25,6 +26,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/document/progressbar"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -580,4 +582,51 @@ func (k *knowledgeSVC) slice2Document(ctx context.Context, src *entity.Document,
 		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", fmt.Sprintf("document type invalid, type=%d", src.Type)))
 	}
 	return fn(ctx, slice, src.TableInfo.Columns, k.enableCompactTable)
+}
+
+// func (k *knowledgeSVC) crawlWebUrl(ctx context.Context, url string) (contentUri string, SubLinkUrls []string, err error) {
+
+// }
+
+type RefreshDocumentCtx struct {
+	DocumentID     int64
+	UpdateConfigID int64
+}
+
+func (k *knowledgeSVC) refreshDocument(ctx context.Context, refreshCtx *RefreshDocumentCtx) (err error) {
+	// step 1: lock
+
+	// step 2: fetch old doc
+	oldDoc, err := k.documentRepo.GetByID(ctx, refreshCtx.DocumentID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "get document by id failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("get document by id failed, err: %v", err)))
+	}
+	if oldDoc == nil || oldDoc.ID == 0 {
+		logs.CtxErrorf(ctx, "document not found, id: %d", refreshCtx.DocumentID)
+		return errorx.New(errno.ErrKnowledgeDocumentNotExistCode, errorx.KV("msg", fmt.Sprintf("document not found, id: %d", refreshCtx.DocumentID)))
+	}
+	if oldDoc.SourceType == int32(entity.DocumentSourceLocal) || oldDoc.SourceType == int32(entity.DocumentSourceCustom) {
+		logs.CtxWarnf(ctx, "document source type not support refresh, id: %d", refreshCtx.DocumentID)
+		return nil
+	}
+	newDoc := &model.KnowledgeDocument{}
+	err = copier.CopyWithOption(newDoc, oldDoc, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	if err != nil {
+		logs.CtxErrorf(ctx, "copy document failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", fmt.Sprintf("copy document failed, err: %v", err)))
+	}
+	// step 3: fetch
+	fetcher := k.newFetchFunc(ptr.Of(entity.DocumentSource(oldDoc.SourceType)))
+
+	fetchReq, err := k.newFetchRequest(ctx, ptr.Of(entity.DocumentSource(oldDoc.SourceType)), oldDoc.SourceFileID)
+	if err != nil {
+		return err
+	}
+	fetchResp, err := fetcher(ctx, fetchReq)
+	if err != nil {
+		return err
+	}
+
+	// strp n: unlock
 }

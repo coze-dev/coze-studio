@@ -283,10 +283,6 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 		if req.GetDocumentBases()[i] == nil {
 			continue
 		}
-		docSource := entity.DocumentSourceCustom
-		if req.GetDocumentBases()[i].GetSourceInfo().GetTosURI() != "" {
-			docSource = entity.DocumentSourceLocal
-		}
 		var captionType *dataset.CaptionType
 		if req.GetChunkStrategy() != nil {
 			captionType = req.GetChunkStrategy().CaptionType
@@ -302,11 +298,14 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 			Type:             convertDocumentTypeDataset2Entity(req.GetFormatType()),
 			RawContent:       req.GetDocumentBases()[i].GetSourceInfo().GetCustomContent(),
 			URI:              req.GetDocumentBases()[i].GetSourceInfo().GetTosURI(),
+			WebURL:           req.GetDocumentBases()[i].GetSourceInfo().GetWebURL(),
+			SourceFileID:     req.GetDocumentBases()[i].GetSourceInfo().GetWebID(),
 			FileExtension:    parser.FileExtension(GetExtension(req.GetDocumentBases()[i].GetSourceInfo().GetTosURI())),
-			Source:           docSource,
+			Source:           convertDocumentSource2Entity(ptr.From(req.GetDocumentBases()[i].SourceInfo.DocumentSource)),
 			IsAppend:         req.GetIsAppend(),
 			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet, captionType, req.GetDocumentBases()[i].FilterStrategy),
 			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
+			UpdateRule:       convertUpdateRule2Entity(req.GetDocumentBases()[i].UpdateRule),
 			TableInfo: entity.TableInfo{
 				Columns: convertTableColumns2Entity(req.GetDocumentBases()[i].GetTableMeta()),
 			},

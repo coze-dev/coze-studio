@@ -94,7 +94,9 @@ struct UpdateDocumentRequest{
     // 需要更新就传, 更新名称
     3: optional string     document_name
 
-
+    // web 类型
+    4: optional UpdateRule update_rule            // web 类型更新配置
+    
     // 更新表结构
     5: optional list<TableColumn> table_meta      // 表格元数据
 
@@ -216,6 +218,7 @@ struct CreateDocumentResponse {
 struct DocumentBase{
     1: string name // 文档名称
     2: SourceInfo source_info
+    3: optional UpdateRule update_rule   // api 类型更新配置, 其他类型不需要传
      // 以下参数表格类型需要传递
     4: optional list<TableColumn> table_meta          // 表格元数据
     5: optional TableSheet        table_sheet         // 表格解析信息
@@ -226,7 +229,7 @@ struct DocumentBase{
 // 支持多种数据源
 struct SourceInfo {
     1: optional string tos_uri (api.body="tos_uri"); // 本地上传返回的 uri
-
+    2: optional i64 web_id (api.js_conv="true",api.body="web_id") 
     4: optional common.DocumentSource document_source (api.body="document_source");
 
     // document_source 自定义原始内容: 表格型知识库需要符合的格式：json list<map<string, string>>
@@ -235,7 +238,7 @@ struct SourceInfo {
     // document_source 本地: 如果不传 tos 地址, 则需要传文件 base64, 类型
     7: optional string file_base64 // 文件经过 base64 后的字符串
     8: optional string file_type // 文件类型, 比如 pdf
-
+    9: optional string web_url
     // imagex_uri, 和 tos_uri 二选一, imagex_uri 优先，需要通过 imagex 的方法获取数据和签发 url
     10: optional string imagex_uri
 }
@@ -334,4 +337,91 @@ struct ExtractPhotoCaptionResponse {
     253: required i64 code
     254: required string msg
     255: required base.BaseResp BaseResp(api.none="true")
+}
+struct UpdateRule {
+    1: common.UpdateType update_type     // 更新类型
+    2: i32 update_interval               // 更新间隔，单位(天)
+}
+
+struct SubmitWebUrlRequest {
+    1: string web_url                         // 网页url
+    2: i32    subpages_count                  // 0 不包换子页面
+    3: optional common.FormatType format_type // 文件格式类型
+    4: optional string title                  // 网页标题 url 类型必传
+    255: optional base.Base Base
+}
+
+struct SubmitWebUrlResponse {
+    1: i64 web_id (agw.js_conv="str")
+
+    253: required i64 code
+    254: required string msg
+    255: optional base.BaseResp BaseResp
+}
+
+struct BatchSubmitWebUrlRequest {
+    1: list<string> web_urls
+    255: optional base.Base Base
+}
+
+struct BatchSubmitWebUrlResponse {
+    1: list<string> web_ids
+    253: required i64 code
+    254: required string msg
+    255: optional base.BaseResp BaseResp
+}
+
+struct GetWebInfoRequest {
+    1: list<string> web_ids
+    2: bool      include_content // 是否包含内容
+
+    255: optional base.Base Base
+}
+
+struct GetWebInfoResponse {
+    1: map<string,RootWebData> data
+
+    253: required i64 code
+    254: required string msg
+    255: optional base.BaseResp BaseResp
+}
+
+struct RootWebData {
+    1: i32                  progress
+    2: WebInfo              web_info
+    3: common.WebStatus     status
+    4: string               status_descript
+}
+
+struct WebInfo {
+    1: i64           id (agw.js_conv="str")
+    2: string        url
+    3: string        content
+    4: string        title
+    5: list<WebInfo> subpages
+    6: i32           subpages_count
+    7: common.WebStatus status
+}
+
+struct FetchWebUrlRequest {
+    1: optional list<string> document_ids
+    255: optional base.Base Base
+}
+
+struct FetchWebUrlResponse {
+    253: required i64 code
+    254: required string msg
+    255: optional base.BaseResp BaseResp
+}
+
+struct BatchUpdateDocumentRequest{
+    1: list<string>         document_ids
+    2: optional UpdateRule  update_rule
+    255: optional base.Base Base
+}
+
+struct BatchUpdateDocumentResponse {
+    253: optional i64 code
+    254: optional string msg
+    255: optional base.BaseResp BaseResp
 }
