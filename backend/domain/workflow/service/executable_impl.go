@@ -16,15 +16,19 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type executableImpl struct {
 	repo workflow.Repository
 }
+
+const DebugURLExtraKey = "debug_url_extra_key"
 
 func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*entity.WorkflowExecution, vo.TerminatePlan, error) {
 	var (
@@ -71,10 +75,10 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
 		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) {
+		if errors.As(err, &warnings) && !config.InputFailFast {
 			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
 		} else {
-			return nil, "", fmt.Errorf("failed to convert inputs: %w", err)
+			return nil, "", errorx.WrapByCode(err, errno.ErrInvalidParameter)
 		}
 	}
 
@@ -94,7 +98,13 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 	out, err := wf.SyncRun(cancelCtx, convertedInput, opts...)
 	if err != nil {
 		if _, ok := einoCompose.ExtractInterruptInfo(err); !ok {
-			return nil, "", err
+			debugURL := fmt.Sprintf(vo.DebugURLTpl, executeID, wfEntity.SpaceID, wfEntity.ID)
+			var statusError errorx.StatusError
+			if errors.As(err, &statusError) {
+				return nil, "", errorx.New(statusError.Code(), errorx.Extra(DebugURLExtraKey, debugURL))
+			} else {
+				return nil, "", errorx.New(errno.ErrWorkflowExecuteFail, errorx.Extra(DebugURLExtraKey, debugURL))
+			}
 		}
 	}
 
@@ -203,10 +213,10 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
 		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) {
+		if errors.As(err, &warnings) && !config.InputFailFast {
 			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
 		} else {
-			return 0, fmt.Errorf("failed to convert inputs: %w", err)
+			return 0, errorx.WrapByCode(err, errno.ErrInvalidParameter)
 		}
 	}
 
@@ -266,10 +276,10 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
 		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) {
+		if errors.As(err, &warnings) && !config.InputFailFast {
 			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
 		} else {
-			return 0, fmt.Errorf("failed to convert inputs: %w", err)
+			return 0, errorx.WrapByCode(err, errno.ErrInvalidParameter)
 		}
 	}
 
@@ -350,10 +360,10 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 	input, err = nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
 		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) {
+		if errors.As(err, &warnings) && !config.InputFailFast {
 			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
 		} else {
-			return nil, fmt.Errorf("failed to convert inputs: %w", err)
+			return nil, errorx.WrapByCode(err, errno.ErrInvalidParameter)
 		}
 	}
 

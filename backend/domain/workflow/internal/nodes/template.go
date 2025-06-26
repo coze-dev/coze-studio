@@ -11,6 +11,10 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/bytedance/sonic/ast"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type TemplatePart struct {
@@ -197,8 +201,10 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 									return tp.literal, nil
 								}
 
-								return "", fmt.Errorf("Array类型的变量 %s 只有 %d 长度，无法提取下标 %d的值",
-									joinJsonPath(tp.JsonPath[:i]), len(segArr), segmentI)
+								return "", errorx.WrapByCode(
+									vo.NewErrorInfo(fmt.Errorf("Array类型的变量 %s 只有 %d 长度，无法提取下标 %d的值",
+										joinJsonPath(tp.JsonPath[:i]), len(segArr), segmentI), vo.LevelError),
+									errno.ErrArrIndexOutOfRange)
 							}
 						}
 						return tp.literal, nil // not array element not found, but object field, just print

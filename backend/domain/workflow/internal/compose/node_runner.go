@@ -15,6 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
@@ -618,27 +619,63 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		return nil, false
 	}
 
+	var (
+		sErr errorx.StatusError
+		code = -1
+		msg  = err.Error()
+	)
+	if errors.As(err, &sErr) {
+		code = int(sErr.Code())
+		msg = sErr.Msg()
+	}
+
 	switch r.errProcessType {
 	case vo.ErrorProcessTypeDefault:
 		d := r.dataOnErr(ctx)
 		d["errorBody"] = map[string]any{
-			"errorMessage": err.Error(),
-			"errorCode":    -1,
+			"errorMessage": msg,
+			"errorCode":    code,
 		}
 		d["isSuccess"] = false
 		if r.callbackEnabled {
-			_ = callbacks.OnEnd(ctx, d)
+			var errInfo *vo.ErrorInfo
+			if !errors.As(err, &errInfo) {
+				errInfo = &vo.ErrorInfo{
+					Err:   err,
+					Level: vo.LevelWarn,
+				}
+			}
+
+			sOutput := &nodes.StructuredCallbackOutput{
+				Output:    d,
+				RawOutput: d,
+				Error:     errInfo,
+			}
+			_ = callbacks.OnEnd(ctx, sOutput)
 		}
 		return d, true
 	case vo.ErrorProcessTypeExceptionBranch:
 		s := make(map[string]any)
 		s["errorBody"] = map[string]any{
-			"errorMessage": err.Error(),
-			"errorCode":    -1,
+			"errorMessage": msg,
+			"errorCode":    code,
 		}
 		s["isSuccess"] = false
 		if r.callbackEnabled {
-			_ = callbacks.OnEnd(ctx, s)
+			var errInfo *vo.ErrorInfo
+			if !errors.As(err, &errInfo) {
+				errInfo = &vo.ErrorInfo{
+					Err:   err,
+					Level: vo.LevelWarn,
+				}
+			}
+
+			sOutput := &nodes.StructuredCallbackOutput{
+				Output:    s,
+				RawOutput: s,
+				Error:     errInfo,
+			}
+			_ = callbacks.OnEnd(ctx, sOutput)
 		}
 		return s, true
 	default:

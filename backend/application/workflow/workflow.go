@@ -33,6 +33,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/maps"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -40,6 +41,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 	"code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type ApplicationService struct {
@@ -1092,7 +1094,7 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 	if req.Parameters != nil {
 		err := sonic.UnmarshalString(*req.Parameters, &parameters)
 		if err != nil {
-			return nil, err
+			return nil, errorx.WrapByCode(err, errno.ErrInvalidParameter)
 		}
 	}
 
@@ -1105,7 +1107,7 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 	}
 
 	if meta.LatestPublishedVersion == nil {
-		return nil, errors.New("workflow has not been published")
+		return nil, errorx.New(errno.ErrWorkflowNotPublished)
 	}
 
 	if err = checkUserSpace(ctx, userID, meta.SpaceID); err != nil {
@@ -1130,17 +1132,18 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 	}
 
 	exeCfg := vo.ExecuteConfig{
-		ID:           meta.ID,
-		From:         vo.FromSpecificVersion,
-		Version:      *meta.LatestPublishedVersion,
-		Operator:     userID,
-		Mode:         vo.ExecuteModeRelease,
-		AppID:        appID,
-		AgentID:      agentID,
-		ConnectorID:  connectorID,
-		ConnectorUID: strconv.FormatInt(userID, 10),
-		TaskType:     vo.TaskTypeForeground,
-		SyncPattern:  vo.SyncPatternStream,
+		ID:            meta.ID,
+		From:          vo.FromSpecificVersion,
+		Version:       *meta.LatestPublishedVersion,
+		Operator:      userID,
+		Mode:          vo.ExecuteModeRelease,
+		AppID:         appID,
+		AgentID:       agentID,
+		ConnectorID:   connectorID,
+		ConnectorUID:  strconv.FormatInt(userID, 10),
+		TaskType:      vo.TaskTypeForeground,
+		SyncPattern:   vo.SyncPatternStream,
+		InputFailFast: true,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -1211,7 +1214,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	if req.Parameters != nil {
 		err := sonic.UnmarshalString(*req.Parameters, &parameters)
 		if err != nil {
-			return nil, err
+			return nil, errorx.WrapByCode(err, errno.ErrInvalidParameter)
 		}
 	}
 
@@ -1224,7 +1227,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	}
 
 	if meta.LatestPublishedVersion == nil {
-		return nil, errors.New("workflow has not been published")
+		return nil, errorx.New(errno.ErrWorkflowNotPublished)
 	}
 
 	if err = checkUserSpace(ctx, userID, meta.SpaceID); err != nil {
@@ -1249,16 +1252,17 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	}
 
 	exeCfg := vo.ExecuteConfig{
-		ID:           meta.ID,
-		From:         vo.FromSpecificVersion,
-		Version:      *meta.LatestPublishedVersion,
-		Operator:     userID,
-		Mode:         vo.ExecuteModeRelease,
-		AppID:        appID,
-		AgentID:      agentID,
-		ConnectorID:  connectorID,
-		ConnectorUID: strconv.FormatInt(userID, 10),
-		TaskType:     vo.TaskTypeForeground,
+		ID:            meta.ID,
+		From:          vo.FromSpecificVersion,
+		Version:       *meta.LatestPublishedVersion,
+		Operator:      userID,
+		Mode:          vo.ExecuteModeRelease,
+		AppID:         appID,
+		AgentID:       agentID,
+		ConnectorID:   connectorID,
+		ConnectorUID:  strconv.FormatInt(userID, 10),
+		TaskType:      vo.TaskTypeForeground,
+		InputFailFast: true,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -1285,7 +1289,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	}
 
 	if wfExe.Status == entity.WorkflowInterrupted {
-		return nil, errors.New("sync run workflow does not support interrupt/resume")
+		return nil, errorx.New(errno.ErrInterruptNotSupported)
 	}
 
 	var data *string

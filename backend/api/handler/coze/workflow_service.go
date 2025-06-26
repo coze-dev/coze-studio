@@ -14,8 +14,12 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	appworkflow "code.byted.org/flow/opencoze/backend/application/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/service"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 // CreateWorkflow .
@@ -791,6 +795,21 @@ func OpenAPIRunFlow(ctx context.Context, c *app.RequestContext) {
 
 	resp, err := appworkflow.SVC.OpenAPIRun(ctx, &req)
 	if err != nil {
+		var se errorx.StatusError
+		if errors.As(err, &se) {
+			resp = new(workflow.OpenAPIRunFlowResponse)
+			resp.Code = int64(errno.CodeForOpenAPI(se))
+			resp.Msg = ptr.Of(se.Msg())
+			extra := se.Extra()
+			if extra != nil {
+				if debugURL, ok := extra[service.DebugURLExtraKey]; ok {
+					resp.DebugUrl = &debugURL
+				}
+			}
+			c.JSON(consts.StatusOK, resp)
+			return
+		}
+
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
 	}
@@ -963,6 +982,15 @@ func OpenAPIGetWorkflowRunHistory(ctx context.Context, c *app.RequestContext) {
 
 	resp, err := appworkflow.SVC.OpenAPIGetWorkflowRunHistory(ctx, &req)
 	if err != nil {
+		var se errorx.StatusError
+		if errors.As(err, &se) {
+			resp = new(workflow.GetWorkflowRunHistoryResponse)
+			resp.Code = ptr.Of(int64(errno.CodeForOpenAPI(se)))
+			resp.Msg = ptr.Of(se.Msg())
+			c.JSON(consts.StatusOK, resp)
+			return
+		}
+
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
 	}

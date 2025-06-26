@@ -390,10 +390,16 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 		Type:     WorkflowFailed,
 		Context:  c,
 		Duration: time.Since(time.UnixMilli(c.StartTime)),
-		Err: &vo.ErrorInfo{
+	}
+
+	var errInfo *vo.ErrorInfo
+	if errors.As(err, &errInfo) {
+		e.Err = errInfo
+	} else {
+		e.Err = &vo.ErrorInfo{
 			Level: vo.LevelError,
 			Err:   err,
-		},
+		}
 	}
 
 	if c.TokenCollector != nil {
@@ -796,10 +802,16 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 		Type:     NodeError,
 		Context:  c,
 		Duration: time.Since(time.UnixMilli(c.StartTime)),
-		Err: &vo.ErrorInfo{
-			Level: vo.LevelError, // TODO: handle warn level errors
+	}
+
+	var errInfo *vo.ErrorInfo
+	if errors.As(err, &errInfo) {
+		e.Err = errInfo
+	} else {
+		e.Err = &vo.ErrorInfo{
+			Level: vo.LevelError,
 			Err:   err,
-		},
+		}
 	}
 
 	if c.TokenCollector != nil {

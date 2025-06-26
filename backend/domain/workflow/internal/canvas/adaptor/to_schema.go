@@ -1738,11 +1738,14 @@ func toQASchema(n *vo.Node) (*compose.NodeSchema, error) {
 	}
 	ns.SetConfigKV("AnswerType", answerType)
 
-	choiceType, err := qaOptionTypeToChoiceType(qaConf.OptionType)
-	if err != nil {
-		return nil, err
+	var choiceType qa.ChoiceType
+	if len(qaConf.OptionType) > 0 {
+		choiceType, err = qaOptionTypeToChoiceType(qaConf.OptionType)
+		if err != nil {
+			return nil, err
+		}
+		ns.SetConfigKV("ChoiceType", choiceType)
 	}
-	ns.SetConfigKV("ChoiceType", choiceType)
 
 	if answerType == qa.AnswerByChoices && choiceType == qa.FixedChoices {
 		var options []string

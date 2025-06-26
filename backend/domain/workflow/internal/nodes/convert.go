@@ -7,8 +7,10 @@ import (
 	"strings"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type ConversionWarning struct {
@@ -36,6 +38,11 @@ func (e ConversionWarnings) Error() string {
 
 func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.TypeInfo) (map[string]any, error) {
 	if len(in) == 0 {
+		for _, t := range tInfo {
+			if t.Required {
+				return nil, errorx.New(errno.ErrMissingRequiredParam)
+			}
+		}
 		return in, nil
 	}
 
@@ -59,6 +66,14 @@ func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.
 			}
 		}
 		out[k] = converted
+	}
+
+	for k, t := range tInfo {
+		if _, ok := out[k]; !ok {
+			if t.Required {
+				return nil, errorx.New(errno.ErrMissingRequiredParam)
+			}
+		}
 	}
 
 	if len(warnings) == 0 {

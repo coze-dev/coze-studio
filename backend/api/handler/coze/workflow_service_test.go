@@ -82,6 +82,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 	"code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type wfTestRunner struct {
@@ -1261,8 +1262,8 @@ func TestTestResumeWithInputNode(t *testing.T) {
 				IsAsync: ptr.Of(false),
 			}
 
-			errStr := r.postWithError(syncRunReq)
-			assert.Equal(t, "sync run workflow does not support interrupt/resume", errStr)
+			resp := post[workflow.OpenAPIRunFlowResponse](r, syncRunReq)
+			assert.Equal(t, int64(errno.ErrOpenAPIInterruptNotSupported), resp.Code)
 		})
 	})
 }

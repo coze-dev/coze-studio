@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/schema"
@@ -13,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -184,8 +186,23 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				InputTokens:  event.GetInputTokens(),
 				OutputTokens: event.GetOutputTokens(),
 			},
-			ErrorCode:  ptr.Of(event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]), // TODO: where can I get the error codes?
-			FailReason: ptr.Of(event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]),
+		}
+
+		var (
+			errInfo   *vo.ErrorInfo
+			statusErr errorx.StatusError
+		)
+		if errors.As(err, &errInfo) {
+			wfExec.FailReason = ptr.Of(errInfo.Err.Error())
+		}
+		if errors.As(err, &statusErr) {
+			wfExec.ErrorCode = ptr.Of(strconv.FormatInt(int64(statusErr.Code()), 10))
+			if wfExec.FailReason == nil {
+				wfExec.FailReason = ptr.Of(statusErr.Msg())
+			}
+		}
+		if wfExec.FailReason == nil {
+			wfExec.FailReason = ptr.Of(event.Err.Err.Error()[:min(1000, len(event.Err.Err.Error()))])
 		}
 
 		var (
@@ -413,7 +430,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 		if event.Err != nil {
 			var errorInfo, errorLevel string
-			errorInfo = event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]
+			errorInfo = event.Err.Err.Error()[:min(1000, len(event.Err.Err.Error()))]
 			errorLevel = string(event.Err.Level)
 			nodeExec.ErrorInfo = ptr.Of(errorInfo)
 			nodeExec.ErrorLevel = ptr.Of(errorLevel)
@@ -649,11 +666,11 @@ type fcInfo struct {
 }
 
 func HandleExecuteEvent(ctx context.Context,
-	eventChan <-chan *Event, // workflow execution event emitted by workflow handler and node handlers
-	cancelFn context.CancelFunc, // func to cancel the context given to running workflow
-	timeoutFn context.CancelFunc, // func to timeout the context
+	eventChan <-chan *Event,                // workflow execution event emitted by workflow handler and node handlers
+	cancelFn context.CancelFunc,            // func to cancel the context given to running workflow
+	timeoutFn context.CancelFunc,           // func to timeout the context
 	cancelSignalChan <-chan *redis.Message, // channel to receive workflow cancel signal from redis
-	clearFn func(), // func to clear the cancel signal subscription
+	clearFn func(),                         // func to clear the cancel signal subscription
 	repo workflow.Repository,
 	sw *schema.StreamWriter[*entity.Message], // stream writer for emitting entity.Message
 	exeCfg vo.ExecuteConfig,
@@ -725,7 +742,7 @@ func HandleExecuteEvent(ctx context.Context,
 
 func mustMarshalToString[T any](m map[string]T) string {
 	if len(m) == 0 {
-		return ""
+		return "{}"
 	}
 
 	b, err := sonic.ConfigStd.MarshalToString(m) // keep the order of the keys

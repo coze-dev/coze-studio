@@ -258,6 +258,9 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		terminalPlan := mustGetKey[vo.TerminatePlan]("TerminalPlan", s.Configs)
 		if terminalPlan == vo.ReturnVariables {
 			i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+				if in == nil {
+					return map[string]any{}, nil
+				}
 				return in, nil
 			}
 			return invokableNode(s, i), nil

@@ -50,7 +50,7 @@ type NamedTypeInfo struct {
 type ErrorLevel string
 
 const (
-	LevelWarn   ErrorLevel = "warn"
+	LevelWarn   ErrorLevel = "Warn"
 	LevelError  ErrorLevel = "Error"
 	LevelCancel ErrorLevel = "pending" // TODO: this 'pending' will be changed to 'cancel' or similar in the near future
 )
@@ -58,6 +58,17 @@ const (
 type ErrorInfo struct {
 	Err   error
 	Level ErrorLevel
+}
+
+func (e *ErrorInfo) Error() string {
+	return e.Err.Error()
+}
+
+func NewErrorInfo(err error, level ErrorLevel) *ErrorInfo {
+	return &ErrorInfo{
+		Err:   err,
+		Level: level,
+	}
 }
 
 type DataType string
