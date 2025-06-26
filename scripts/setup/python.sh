@@ -27,7 +27,7 @@ fi
 echo "Installing required Python packages"
 source "$VENV_DIR/bin/activate"
 pip install --upgrade pip
-pip install pillow pdfplumber RestrictedPython python-docx
+pip install pillow pdfplumber python-docx
 
 if [ $? -ne 0 ]; then
     echo "Failed to install Python packages - aborting startup"
@@ -56,14 +56,7 @@ else
     exit 1
 fi
 
-RUN_PYTHON_SCRIPT="$BACKEND_DIR/infra/impl/coderunner/script/python_script.py"
 
-if [ -f "$RUN_PYTHON_SCRIPT" ]; then
-    cp "$RUN_PYTHON_SCRIPT" "$BIN_DIR/python_script.py"
-else
-    echo "❌ RUN_PYTHON_SCRIPT file not found"
-    exit 1
-fi
 
 
 
