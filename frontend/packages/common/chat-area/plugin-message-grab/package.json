@@ -8,7 +8,6 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "exit 0",
-    "dev": "storybook dev -p 6006",
     "lint": "eslint ./ --cache",
     "lint:type": "tsc -p tsconfig.json --noEmit",
     "test": "vitest --run --passWithNoTests",

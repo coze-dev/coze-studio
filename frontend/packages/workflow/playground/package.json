@@ -28,7 +28,6 @@
   "scripts": {
     "build": "exit 0",
     "create:node": "plop --plopfile ./scripts/create-node/plopfile.js",
-    "dev": "storybook dev -p 6006",
     "lint": "eslint ./ --cache",
     "test": "vitest --run --passWithNoTests",
     "test:cov": "npm run test -- --coverage"

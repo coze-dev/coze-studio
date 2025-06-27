@@ -38,6 +38,10 @@ export function PopoverModelListView({
   enableJumpDetail?: boolean;
 }) {
   const { modelGroups } = useMemo(() => {
+    /** 开源版本不进行分类 平铺展示 */
+    if (IS_OPEN_SOURCE) {
+      return { modelGroups: [modelList] };
+    }
     const modelSeriesGroups = groupBy(
       modelList,
       model => model.model_series?.series_name,
@@ -48,6 +52,26 @@ export function PopoverModelListView({
       ),
     };
   }, [modelList]);
+
+  const renderModelOption = (model: Model) => (
+    <ModelOption
+      key={model.model_type}
+      model={model}
+      disabled={disabled}
+      selected={String(model.model_type) === selectedModelId}
+      onClick={() => onModelClick(model)}
+      enableJumpDetail={enableJumpDetail}
+      onDetailClick={onDetailClick}
+      enableConfig={
+        enableConfig &&
+        // 在 disabled 状态下，只能查看选中模型的详细配置
+        (!disabled || String(model.model_type) === selectedModelId)
+      }
+      onConfigClick={() => {
+        onConfigClick(model);
+      }}
+    />
+  );
 
   return (
     <div
@@ -80,38 +104,27 @@ export function PopoverModelListView({
         </section>
       ) : null}
 
-      {modelGroups.map((group, idx) => (
-        <ModelOptionGroup
-          key={group[0]?.model_series?.series_name ?? idx}
-          type={group[0]?.model_status_details?.is_new_model ? 'new' : 'normal'}
-          icon={group[0]?.model_series?.icon_url || ''}
-          name={group[0]?.model_series?.series_name || ''}
-          desc={I18n.t('model_list_model_company', {
-            company: group[0]?.model_series?.model_vendor || '',
-          })}
-          tips={group[0]?.model_series?.model_tips || ''}
-        >
-          {group.map(m => (
-            <ModelOption
-              key={m.model_type}
-              model={m}
-              disabled={disabled}
-              selected={String(m.model_type) === selectedModelId}
-              onClick={() => onModelClick(m)}
-              enableJumpDetail={enableJumpDetail}
-              onDetailClick={onDetailClick}
-              enableConfig={
-                enableConfig &&
-                // 在 disabled 状态下，只能查看选中模型的详细配置
-                (!disabled || String(m.model_type) === selectedModelId)
-              }
-              onConfigClick={() => {
-                onConfigClick(m);
-              }}
-            />
-          ))}
-        </ModelOptionGroup>
-      ))}
+      {modelGroups.map((group, idx) => {
+        if (IS_OPEN_SOURCE) {
+          return group.map(renderModelOption);
+        }
+        return (
+          <ModelOptionGroup
+            key={group[0]?.model_series?.series_name ?? idx}
+            type={
+              group[0]?.model_status_details?.is_new_model ? 'new' : 'normal'
+            }
+            icon={group[0]?.model_series?.icon_url || ''}
+            name={group[0]?.model_series?.series_name || ''}
+            desc={I18n.t('model_list_model_company', {
+              company: group[0]?.model_series?.model_vendor || '',
+            })}
+            tips={group[0]?.model_series?.model_tips || ''}
+          >
+            {group.map(renderModelOption)}
+          </ModelOptionGroup>
+        );
+      })}
     </div>
   );
 }
