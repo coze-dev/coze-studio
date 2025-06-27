@@ -3785,8 +3785,8 @@ func TestLLMException(t *testing.T) {
 				"age":       int64(3),
 				"isSuccess": false,
 				"errorBody": map[string]any{
-					"errorMessage": "[GraphRunError]\ncontext has been canceled: context deadline exceeded",
-					"errorCode":    int64(-1),
+					"errorMessage": "node timeout",
+					"errorCode":    int64(errno.ErrNodeTimeout),
 				},
 			}, mustUnmarshalToMap(t, e.output))
 		})

@@ -33,7 +33,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/maps"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -999,12 +998,16 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 					DebugUrl: ptr.Of(fmt.Sprintf(vo.DebugURLTpl, executeID, spaceID, workflowID)),
 				}, nil
 			case entity.WorkflowFailed, entity.WorkflowCancel:
+				var wfe vo.WorkflowError
+				if !errors.As(msg.StateMessage.LastError, &wfe) {
+					panic("stream run last error is not a WorkflowError")
+				}
 				return &workflow.OpenAPIStreamRunFlowResponse{
 					ID:           strconv.Itoa(messageID),
 					Event:        string(ErrEvent),
 					DebugUrl:     ptr.Of(fmt.Sprintf(vo.DebugURLTpl, executeID, spaceID, workflowID)),
-					ErrorCode:    ptr.Of(int64(msg.StateMessage.LastError.Code)),
-					ErrorMessage: ptr.Of(msg.StateMessage.LastError.Msg),
+					ErrorCode:    ptr.Of(int64(wfe.Code())),
+					ErrorMessage: ptr.Of(wfe.Msg()),
 				}, nil
 			case entity.WorkflowInterrupted:
 				if msg.InterruptEvent.ToolInterruptEvent == nil {
@@ -1096,7 +1099,7 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 	if req.Parameters != nil {
 		err := sonic.UnmarshalString(*req.Parameters, &parameters)
 		if err != nil {
-			return nil, errorx.WrapByCode(err, errno.ErrInvalidParameter)
+			return nil, vo.WrapError(errno.ErrInvalidParameter, err)
 		}
 	}
 
@@ -1109,7 +1112,7 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 	}
 
 	if meta.LatestPublishedVersion == nil {
-		return nil, errorx.New(errno.ErrWorkflowNotPublished)
+		return nil, vo.NewError(errno.ErrWorkflowNotPublished)
 	}
 
 	if err = checkUserSpace(ctx, userID, meta.SpaceID); err != nil {
@@ -1190,7 +1193,10 @@ func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workf
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
 
-	connectorID := mustParseInt64(req.GetConnectorID())
+	var connectorID int64
+	if req.IsSetConnectorID() {
+		connectorID = mustParseInt64(req.GetConnectorID())
+	}
 
 	sr, err := GetWorkflowDomainSVC().StreamResume(ctx, resumeReq, vo.ExecuteConfig{
 		Operator:     userID,
@@ -1216,7 +1222,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	if req.Parameters != nil {
 		err := sonic.UnmarshalString(*req.Parameters, &parameters)
 		if err != nil {
-			return nil, errorx.WrapByCode(err, errno.ErrInvalidParameter)
+			return nil, vo.WrapError(errno.ErrInvalidParameter, err)
 		}
 	}
 
@@ -1229,7 +1235,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	}
 
 	if meta.LatestPublishedVersion == nil {
-		return nil, errorx.New(errno.ErrWorkflowNotPublished)
+		return nil, vo.NewError(errno.ErrWorkflowNotPublished)
 	}
 
 	if err = checkUserSpace(ctx, userID, meta.SpaceID); err != nil {
@@ -1291,7 +1297,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	}
 
 	if wfExe.Status == entity.WorkflowInterrupted {
-		return nil, errorx.New(errno.ErrInterruptNotSupported)
+		return nil, vo.NewError(errno.ErrInterruptNotSupported)
 	}
 
 	var data *string

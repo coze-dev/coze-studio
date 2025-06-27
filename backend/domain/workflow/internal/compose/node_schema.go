@@ -3,6 +3,7 @@ package compose
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 
 	"github.com/cloudwego/eino/compose"
 
@@ -30,6 +31,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 )
@@ -81,7 +83,13 @@ type Node struct {
 }
 
 func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]any, map[string]any],
-	sc *WorkflowSchema) (*Node, error) {
+	sc *WorkflowSchema) (_ *Node, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+	}()
+
 	if m := entity.NodeMetaByNodeType(s.Type); m != nil && m.InputSourceAware {
 		if err := s.SetFullSources(sc.GetAllNodes()); err != nil {
 			return nil, err
@@ -362,7 +370,10 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		return invokableNode(s, r.RunCode, withCallbackOutputConverter(r.ToCallbackOutput)), nil
+		initFn := func(ctx context.Context) (context.Context, error) {
+			return ctxcache.Init(ctx), nil
+		}
+		return invokableNode(s, r.RunCode, withCallbackOutputConverter(r.ToCallbackOutput), withInit(initFn)), nil
 	case entity.NodeTypePlugin:
 		conf, err := s.ToPluginConfig()
 		if err != nil {

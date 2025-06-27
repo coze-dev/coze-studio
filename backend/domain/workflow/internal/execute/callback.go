@@ -390,16 +390,7 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 		Type:     WorkflowFailed,
 		Context:  c,
 		Duration: time.Since(time.UnixMilli(c.StartTime)),
-	}
-
-	var errInfo *vo.ErrorInfo
-	if errors.As(err, &errInfo) {
-		e.Err = errInfo
-	} else {
-		e.Err = &vo.ErrorInfo{
-			Level: vo.LevelError,
-			Err:   err,
-		}
+		Err:      err,
 	}
 
 	if c.TokenCollector != nil {
@@ -649,7 +640,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 
 	var (
 		outputMap, rawOutputMap, customExtra map[string]any
-		errInfo                              *vo.ErrorInfo
+		errInfo                              vo.WorkflowError
 		ok                                   bool
 	)
 
@@ -780,10 +771,7 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 			Type:     NodeError,
 			Context:  c,
 			Duration: time.Since(time.UnixMilli(c.StartTime)),
-			Err: &vo.ErrorInfo{
-				Level: vo.LevelCancel,
-				Err:   err,
-			},
+			Err:      err,
 		}
 
 		if c.TokenCollector != nil {
@@ -802,16 +790,7 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 		Type:     NodeError,
 		Context:  c,
 		Duration: time.Since(time.UnixMilli(c.StartTime)),
-	}
-
-	var errInfo *vo.ErrorInfo
-	if errors.As(err, &errInfo) {
-		e.Err = errInfo
-	} else {
-		e.Err = &vo.ErrorInfo{
-			Level: vo.LevelError,
-			Err:   err,
-		}
+		Err:      err,
 	}
 
 	if c.TokenCollector != nil {
@@ -1366,10 +1345,7 @@ func (t *ToolHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 			FunctionInfo: t.info,
 			CallID:       compose.GetToolCallID(ctx),
 		},
-		Err: &vo.ErrorInfo{
-			Level: vo.LevelError, // TODO: handle warn level errors
-			Err:   err,
-		},
+		Err: err,
 	}
 	return ctx
 }

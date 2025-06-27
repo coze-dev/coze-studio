@@ -1,13 +1,16 @@
 package vo
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type NodeKey string
@@ -55,20 +58,133 @@ const (
 	LevelCancel ErrorLevel = "pending" // TODO: this 'pending' will be changed to 'cancel' or similar in the near future
 )
 
-type ErrorInfo struct {
-	Err   error
-	Level ErrorLevel
+type WorkflowError interface {
+	errorx.StatusError
+	DebugURL() string
+	Level() ErrorLevel
+	OpenAPICode() int
 }
 
-func (e *ErrorInfo) Error() string {
-	return e.Err.Error()
+type wfErr struct {
+	errorx.StatusError
 }
 
-func NewErrorInfo(err error, level ErrorLevel) *ErrorInfo {
-	return &ErrorInfo{
-		Err:   err,
-		Level: level,
+func (w *wfErr) DebugURL() string {
+	if w.StatusError.Extra() == nil {
+		return ""
 	}
+
+	debugURL, ok := w.StatusError.Extra()["debug_url"]
+	if ok {
+		return debugURL
+	}
+
+	return ""
+}
+
+func (w *wfErr) Level() ErrorLevel {
+	if w.StatusError.Extra() == nil {
+		return LevelError
+	}
+
+	level, ok := w.StatusError.Extra()["level"]
+	if ok {
+		return ErrorLevel(level)
+	}
+
+	return LevelError
+}
+
+func (w *wfErr) OpenAPICode() int {
+	return errno.CodeForOpenAPI(w)
+}
+
+func NewError(code int, opts ...errorx.Option) WorkflowError {
+	opts = append(opts, errorx.Extra("level", string(LevelError)))
+	e := errorx.New(int32(code), opts...)
+	var sErr errorx.StatusError
+	_ = errors.As(e, &sErr)
+	wfe := &wfErr{
+		StatusError: sErr,
+	}
+
+	return wfe
+}
+
+func WrapError(code int, err error, opts ...errorx.Option) WorkflowError {
+	opts = append(opts, errorx.Extra("level", string(LevelError)))
+	e := errorx.WrapByCode(err, int32(code), opts...)
+	var sErr errorx.StatusError
+	_ = errors.As(e, &sErr)
+	wfe := &wfErr{
+		StatusError: sErr,
+	}
+	return wfe
+}
+
+func NewErrorWithDebug(code int, exeID, spaceID, workflowID int64, opts ...errorx.Option) WorkflowError {
+	debugURL := fmt.Sprintf(DebugURLTpl, exeID, spaceID, workflowID)
+	opts = append(opts, errorx.Extra("debug_url", debugURL))
+	return NewError(code, opts...)
+}
+
+func NewWarn(code int, opts ...errorx.Option) WorkflowError {
+	opts = append(opts, errorx.Extra("level", string(LevelWarn)))
+	e := errorx.New(int32(code), opts...)
+	var sErr errorx.StatusError
+	_ = errors.As(e, &sErr)
+	wfe := &wfErr{
+		StatusError: sErr,
+	}
+
+	return wfe
+}
+
+func WrapWarn(code int, err error, opts ...errorx.Option) WorkflowError {
+	opts = append(opts, errorx.Extra("level", string(LevelWarn)))
+	e := errorx.WrapByCode(err, int32(code), opts...)
+	var sErr errorx.StatusError
+	_ = errors.As(e, &sErr)
+	wfe := &wfErr{
+		StatusError: sErr,
+	}
+	return wfe
+}
+
+var CancelErr = newCancel()
+
+func newCancel() WorkflowError {
+	e := errorx.New(errno.ErrWorkflowCanceledByUser, errorx.Extra("level", string(LevelCancel)))
+	var sErr errorx.StatusError
+	_ = errors.As(e, &sErr)
+	wfe := &wfErr{
+		StatusError: sErr,
+	}
+	return wfe
+}
+
+var NodeTimeoutErr = newNodeTimeout()
+
+func newNodeTimeout() WorkflowError {
+	e := errorx.New(errno.ErrNodeTimeout, errorx.Extra("level", string(LevelError)))
+	var sErr errorx.StatusError
+	_ = errors.As(e, &sErr)
+	wfe := &wfErr{
+		StatusError: sErr,
+	}
+	return wfe
+}
+
+var WorkflowTimeoutErr = newWorkflowTimeout()
+
+func newWorkflowTimeout() WorkflowError {
+	e := errorx.New(errno.ErrWorkflowTimeout, errorx.Extra("level", string(LevelError)))
+	var sErr errorx.StatusError
+	_ = errors.As(e, &sErr)
+	wfe := &wfErr{
+		StatusError: sErr,
+	}
+	return wfe
 }
 
 type DataType string

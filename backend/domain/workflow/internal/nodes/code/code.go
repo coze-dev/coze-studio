@@ -10,7 +10,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -63,7 +62,7 @@ func NewCodeRunner(ctx context.Context, cfg *Config) (*CodeRunner, error) {
 func (c *CodeRunner) RunCode(ctx context.Context, input map[string]any) (ret map[string]any, err error) {
 	response, err := c.config.Runner.Run(ctx, &code.RunRequest{Code: c.config.Code, Language: c.config.Language, Params: input})
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrCodeExecuteFail)
+		return nil, vo.WrapError(errno.ErrCodeExecuteFail, err)
 	}
 
 	result := response.Result

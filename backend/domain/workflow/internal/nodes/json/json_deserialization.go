@@ -2,13 +2,14 @@ package json
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"strings"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 const (
@@ -41,16 +42,6 @@ func NewJsonDeserializer(_ context.Context, cfg *DeserializationConfig) (*JsonDe
 		config:   cfg,
 		typeInfo: typeInfo,
 	}, nil
-}
-
-func (jd *JsonDeserializer) addWarning(ctx context.Context, err error) {
-	if err == nil {
-		return
-	}
-	var warnings []string
-	warnings, _ = ctxcache.Get[[]string](ctx, warningsKey)
-	warnings = append(warnings, err.Error())
-	ctxcache.Store(ctx, warningsKey, warnings)
 }
 
 func (jd *JsonDeserializer) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
@@ -90,23 +81,26 @@ func (jd *JsonDeserializer) Invoke(ctx context.Context, input map[string]any) (m
 	}
 
 	convertedValue, err := nodes.Convert(ctx, rawValue, OutputKeyDeserialization, typeInfo)
-	jd.addWarning(ctx, err)
+	if err != nil {
+		var convertWarnings nodes.ConversionWarnings
+		if errors.As(err, &convertWarnings) {
+			ctxcache.Store(ctx, warningsKey, convertWarnings)
+		} else {
+			return nil, err
+		}
+	}
 
 	return map[string]any{OutputKeyDeserialization: convertedValue}, nil
 }
 
 func (jd *JsonDeserializer) ToCallbackOutput(ctx context.Context, out map[string]any) (*nodes.StructuredCallbackOutput, error) {
-	var errInfo *vo.ErrorInfo
-	if warnings, ok := ctxcache.Get[[]string](ctx, warningsKey); ok && len(warnings) > 0 {
-		errInfo = &vo.ErrorInfo{
-			Err:   fmt.Errorf("赋值异常: %s", strings.Join(warnings, ", ")),
-			Level: vo.LevelWarn,
-		}
+	var wfe vo.WorkflowError
+	if warnings, ok := ctxcache.Get[nodes.ConversionWarnings](ctx, warningsKey); ok {
+		wfe = vo.WrapWarn(errno.ErrNodeOutputParseFail, warnings)
 	}
 	return &nodes.StructuredCallbackOutput{
-			Output:    out,
-			RawOutput: out,
-			Error:     errInfo,
-		},
-		nil
+		Output:    out,
+		RawOutput: out,
+		Error:     wfe,
+	}, nil
 }

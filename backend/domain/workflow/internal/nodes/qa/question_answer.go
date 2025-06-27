@@ -19,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type QuestionAnswer struct {
@@ -253,14 +254,14 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (out ma
 			}
 		case DynamicChoices:
 			dynamicChoices, ok := nodes.TakeMapValue(in, compose.FieldPath{DynamicChoicesKey})
-			if !ok {
-				return nil, fmt.Errorf("dynamic choices not found")
+			if !ok || len(dynamicChoices.([]any)) == 0 {
+				return nil, vo.NewError(errno.ErrQuestionOptionsEmpty)
 			}
 
 			const maxDynamicChoices = 26
 			for i, choice := range dynamicChoices.([]any) {
 				if i >= maxDynamicChoices {
-					return nil, fmt.Errorf("dynamic choice with index %d is out of range", i)
+					break // take first 26 choices, discard the others
 				}
 				c := choice.(string)
 				formattedChoices = append(formattedChoices, c)

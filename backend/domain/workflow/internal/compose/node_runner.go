@@ -15,10 +15,10 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type nodeRunConfig[O any] struct {
@@ -619,15 +619,19 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		return nil, false
 	}
 
-	var (
-		sErr errorx.StatusError
-		code = -1
-		msg  = err.Error()
-	)
-	if errors.As(err, &sErr) {
-		code = int(sErr.Code())
-		msg = sErr.Msg()
+	var sErr vo.WorkflowError
+	if !errors.As(err, &sErr) {
+		if errors.Is(err, context.DeadlineExceeded) {
+			sErr = vo.NodeTimeoutErr
+		} else if errors.Is(err, context.Canceled) {
+			sErr = vo.CancelErr
+		} else {
+			sErr = vo.WrapError(errno.ErrWorkflowExecuteFail, err)
+		}
 	}
+
+	code := int(sErr.Code())
+	msg := sErr.Msg()
 
 	switch r.errProcessType {
 	case vo.ErrorProcessTypeDefault:
@@ -638,18 +642,10 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		}
 		d["isSuccess"] = false
 		if r.callbackEnabled {
-			var errInfo *vo.ErrorInfo
-			if !errors.As(err, &errInfo) {
-				errInfo = &vo.ErrorInfo{
-					Err:   err,
-					Level: vo.LevelWarn,
-				}
-			}
-
 			sOutput := &nodes.StructuredCallbackOutput{
 				Output:    d,
 				RawOutput: d,
-				Error:     errInfo,
+				Error:     sErr,
 			}
 			_ = callbacks.OnEnd(ctx, sOutput)
 		}
@@ -662,25 +658,17 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		}
 		s["isSuccess"] = false
 		if r.callbackEnabled {
-			var errInfo *vo.ErrorInfo
-			if !errors.As(err, &errInfo) {
-				errInfo = &vo.ErrorInfo{
-					Err:   err,
-					Level: vo.LevelWarn,
-				}
-			}
-
 			sOutput := &nodes.StructuredCallbackOutput{
 				Output:    s,
 				RawOutput: s,
-				Error:     errInfo,
+				Error:     sErr,
 			}
 			_ = callbacks.OnEnd(ctx, sOutput)
 		}
 		return s, true
 	default:
 		if r.callbackEnabled {
-			_ = callbacks.OnError(ctx, err)
+			_ = callbacks.OnError(ctx, sErr)
 		}
 		return nil, false
 	}

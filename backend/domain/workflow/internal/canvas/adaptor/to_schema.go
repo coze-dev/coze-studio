@@ -1709,28 +1709,31 @@ func toQASchema(n *vo.Node) (*compose.NodeSchema, error) {
 		Name: n.Data.Meta.Title,
 	}
 
-	llmParamBytes, err := sonic.Marshal(n.Data.Inputs.LLMParam)
-	if err != nil {
-		return nil, err
-	}
-	var qaLLMParams vo.QALLMParam
-	err = sonic.Unmarshal(llmParamBytes, &qaLLMParams)
-	if err != nil {
-		return nil, err
-	}
-
-	llmParams, err := qaLLMParamsToLLMParams(qaLLMParams)
-	if err != nil {
-		return nil, err
-	}
-
 	qaConf := n.Data.Inputs.QA
 	if qaConf == nil {
 		return nil, fmt.Errorf("qa config is nil")
 	}
-
-	ns.SetConfigKV("LLMParams", llmParams)
 	ns.SetConfigKV("QuestionTpl", qaConf.Question)
+
+	var llmParams *model.LLMParams
+	if n.Data.Inputs.LLMParam != nil {
+		llmParamBytes, err := sonic.Marshal(n.Data.Inputs.LLMParam)
+		if err != nil {
+			return nil, err
+		}
+		var qaLLMParams vo.QALLMParam
+		err = sonic.Unmarshal(llmParamBytes, &qaLLMParams)
+		if err != nil {
+			return nil, err
+		}
+
+		llmParams, err = qaLLMParamsToLLMParams(qaLLMParams)
+		if err != nil {
+			return nil, err
+		}
+
+		ns.SetConfigKV("LLMParams", llmParams)
+	}
 
 	answerType, err := qaAnswerTypeToAnswerType(qaConf.AnswerType)
 	if err != nil {
@@ -1747,27 +1750,35 @@ func toQASchema(n *vo.Node) (*compose.NodeSchema, error) {
 		ns.SetConfigKV("ChoiceType", choiceType)
 	}
 
-	if answerType == qa.AnswerByChoices && choiceType == qa.FixedChoices {
-		var options []string
-		for _, option := range qaConf.Options {
-			options = append(options, option.Name)
-		}
-		ns.SetConfigKV("FixedChoices", options)
-	} else if answerType == qa.AnswerByChoices && choiceType == qa.DynamicChoices {
-		inputSources, err := CanvasBlockInputToFieldInfo(qaConf.DynamicOption, einoCompose.FieldPath{qa.DynamicChoicesKey}, n.Parent())
-		if err != nil {
-			return nil, err
-		}
-		ns.AddInputSource(inputSources...)
+	if answerType == qa.AnswerByChoices {
+		switch choiceType {
+		case qa.FixedChoices:
+			var options []string
+			for _, option := range qaConf.Options {
+				options = append(options, option.Name)
+			}
+			ns.SetConfigKV("FixedChoices", options)
+		case qa.DynamicChoices:
+			inputSources, err := CanvasBlockInputToFieldInfo(qaConf.DynamicOption, einoCompose.FieldPath{qa.DynamicChoicesKey}, n.Parent())
+			if err != nil {
+				return nil, err
+			}
+			ns.AddInputSource(inputSources...)
 
-		inputTypes, err := CanvasBlockInputToTypeInfo(qaConf.DynamicOption)
-		if err != nil {
-			return nil, err
+			inputTypes, err := CanvasBlockInputToTypeInfo(qaConf.DynamicOption)
+			if err != nil {
+				return nil, err
+			}
+			ns.SetInputType(qa.DynamicChoicesKey, inputTypes)
+		default:
+			return nil, fmt.Errorf("qa node is answer by options, but option type not provided")
 		}
-		ns.SetInputType(qa.DynamicChoicesKey, inputTypes)
 	} else if answerType == qa.AnswerDirectly {
 		ns.SetConfigKV("ExtractFromAnswer", qaConf.ExtractOutput)
 		if qaConf.ExtractOutput {
+			if llmParams == nil {
+				return nil, fmt.Errorf("qa node needs to extract from answer, but LLMParams not provided")
+			}
 			ns.SetConfigKV("AdditionalSystemPromptTpl", llmParams.SystemPrompt)
 			ns.SetConfigKV("MaxAnswerCount", qaConf.Limit)
 			if err = SetOutputTypesForNodeSchema(n, ns); err != nil {

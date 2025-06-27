@@ -78,7 +78,7 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 		if errors.As(err, &warnings) && !config.InputFailFast {
 			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
 		} else {
-			return nil, "", errorx.WrapByCode(err, errno.ErrInvalidParameter)
+			return nil, "", vo.WrapError(errno.ErrInvalidParameter, err)
 		}
 	}
 
@@ -136,7 +136,7 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 
 	var failReason *string
 	if lastEvent.Err != nil {
-		failReason = ptr.Of(lastEvent.Err.Err.Error())
+		failReason = ptr.Of(lastEvent.Err.Error())
 	}
 
 	return &entity.WorkflowExecution{

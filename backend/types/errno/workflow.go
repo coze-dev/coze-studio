@@ -6,19 +6,25 @@ import (
 )
 
 const (
-	ErrWorkflowNotPublished  = 720702011
-	ErrMissingRequiredParam  = 720702002
-	ErrInterruptNotSupported = 720702078
-	ErrInvalidParameter      = 720702001
-	ErrArrIndexOutOfRange    = 720712014
-	ErrWorkflowExecuteFail   = 720701013
-	ErrCodeExecuteFail       = 305000002
+	ErrWorkflowNotPublished   = 720702011
+	ErrMissingRequiredParam   = 720702002
+	ErrInterruptNotSupported  = 720702078
+	ErrInvalidParameter       = 720702001
+	ErrArrIndexOutOfRange     = 720712014
+	ErrWorkflowExecuteFail    = 720701013
+	ErrCodeExecuteFail        = 305000002
+	ErrQuestionOptionsEmpty   = 720712049
+	ErrNodeOutputParseFail    = 720712023
+	ErrWorkflowCanceledByUser = 777777777
+	ErrNodeTimeout            = 777777776
+	ErrWorkflowTimeout        = 720702085
 )
 
 const (
 	ErrOpenAPIWorkflowNotPublished  = 6031
 	ErrOpenAPIBadRequest            = 4000
 	ErrOpenAPIInterruptNotSupported = 6039
+	ErrOpenAPIWorkflowTimeout       = 6023
 )
 
 func init() {
@@ -63,6 +69,36 @@ func init() {
 		"code node execute fail",
 		code.WithAffectStability(false),
 	)
+
+	code.Register(
+		ErrQuestionOptionsEmpty,
+		"question option is empty",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrNodeOutputParseFail,
+		"node output parse fail",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrWorkflowCanceledByUser,
+		"workflow cancel by user",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrNodeTimeout,
+		"node timeout",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrWorkflowTimeout,
+		"Workflow execution timed out. Please check for long-running operations, optimize if possible, or retry later.",
+		code.WithAffectStability(false),
+	)
 }
 
 var errnoMap = map[int]int{
@@ -71,6 +107,7 @@ var errnoMap = map[int]int{
 	ErrInterruptNotSupported: ErrOpenAPIInterruptNotSupported,
 	ErrInvalidParameter:      ErrOpenAPIBadRequest,
 	ErrArrIndexOutOfRange:    ErrOpenAPIBadRequest,
+	ErrWorkflowTimeout:       ErrWorkflowTimeout,
 }
 
 func CodeForOpenAPI(err errorx.StatusError) int {

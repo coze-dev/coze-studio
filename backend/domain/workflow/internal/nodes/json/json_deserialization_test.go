@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
@@ -336,7 +337,7 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 			}
 
 			// Verify the number of warnings
-			warnings, _ := ctxcache.Get[[]string](ctxWithCache, warningsKey)
+			warnings, _ := ctxcache.Get[nodes.ConversionWarnings](ctxWithCache, warningsKey)
 			assert.Equal(t, tt.expectWarnings, len(warnings))
 		})
 	}
