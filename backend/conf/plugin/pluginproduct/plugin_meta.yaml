@@ -17,10 +17,9 @@
       key: Authorization
       sub_type: token/api_key
       payload: '{"key": "Authorization", "service_token": "***", "location": "Header"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_ai_ppt.jpeg
     api:
       type: openapi
-
     common_params:
       query: [ ]
       body: [ ]
@@ -47,7 +46,7 @@
     description_for_human: 根据文库文档标题关键字，搜索豆柴文库内容和网页 URL
     auth:
       type: none
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_library_search.png
     api:
       type: openapi
     common_params:
@@ -81,7 +80,7 @@
       key: Authorization
       sub_type: token/api_key
       payload: '{"key": "Authorization", "service_token": "***", "location": "Header"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_bocha_search.jpeg
     api:
       type: openapi
     common_params:
@@ -113,7 +112,7 @@
       key: appid
       sub_type: token/api_key
       payload: '{"key": "appid", "service_token": "***", "location": "Query"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_wolfram_alpha.png
     api:
       type: openapi
     common_params:
@@ -144,7 +143,7 @@
     description_for_human: 输入设计需求，即刻生成精美设计图；涵盖手机海报、宣传图、电商图、店铺广告、日签、社交媒体配图等多样场景。
     auth:
       type: none
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_maker_smart_design.png
     api:
       type: openapi
     common_params:
@@ -173,7 +172,7 @@
     description_for_human: 帮助用户获取搜狐网上的每日热闻
     auth:
       type: none
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_sohu_hot_news.png
     api:
       type: openapi
     common_params:
@@ -205,7 +204,7 @@
       key: Authorization
       sub_type: token/api_key
       payload: '{"key": "Authorization", "service_token": "***", "location": "Header"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_chat_ppt.png
     api:
       type: openapi
     common_params:
@@ -248,7 +247,7 @@
       5.当需要查询周公解梦的时候，用户必须输入梦境描述（梦见xxxxx）去查询周公解梦，当用户给的信息不完善的时候，给用户返回固定的话术：如果想知道梦境解析，需要给我的信息是：梦见xxxx'
     auth:
       type: none
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_constellation.png
     api:
       type: openapi
     common_params:
@@ -296,7 +295,7 @@
       key: Authorization
       sub_type: token/api_key
       payload: '{"key": "Authorization", "service_token": "***", "location": "Header"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_image_compression.jpeg
     api:
       type: openapi
     common_params: { }
@@ -322,7 +321,7 @@
       key: token
       sub_type: token/api_key
       payload: '{"key": "token", "service_token": "***", "location": "Query"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_worth_buying.jpeg
     api:
       type: openapi
     common_params:
@@ -341,7 +340,7 @@
   product_id: 7358789295274049572
   deprecated: false
   version: v1.0.0
-  openapi_doc_file: chestnut_sign.yaml.yaml
+  openapi_doc_file: chestnut_sign.yaml
   plugin_type: 1
   manifest:
     schema_version: v1
@@ -351,7 +350,7 @@
     description_for_human: 任务拆解
     auth:
       type: none
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_chestnut_sign.png
     api:
       type: openapi
     common_params:
@@ -383,7 +382,7 @@
       key: Authorization
       sub_type: token/api_key
       payload: '{"key": "Authorization", "service_token": "***", "location": "Header"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_sky_eye_check.jpeg
     api:
       type: openapi
     common_params:
@@ -431,7 +430,7 @@
       key: Authorization
       sub_type: token/api_key
       payload: '{"key": "Authorization", "service_token": "***", "location": "Header"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_liepin.png
     api:
       type: openapi
     common_params:
@@ -460,7 +459,7 @@
     description_for_human: 飞书认证及授权
     auth:
       type: none
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_lark_authentication_authorization.png
     api:
       type: openapi
     common_params:
@@ -510,7 +509,7 @@
       sub_type: client_credentials
       payload: '{"client_id": "********", "client_secret": "********",
        "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_lark_message.png
     api:
       type: openapi
     common_params:
@@ -592,7 +591,7 @@
       sub_type: client_credentials
       payload: '{"client_id": "********", "client_secret": "********",
        "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_lark_base.png
     api:
       type: openapi
     common_params:
@@ -708,7 +707,7 @@
       sub_type: client_credentials
       payload: '{"client_id": "********", "client_secret": "********",
        "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_lark_sheet.png
     api:
       type: openapi
     common_params:
@@ -796,7 +795,7 @@
       sub_type: client_credentials
       payload: '{"client_id": "********", "client_secret": "********",
        "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_lark_task.png
     api:
       type: openapi
     common_params:
@@ -870,7 +869,7 @@
       sub_type: client_credentials
       payload: '{"client_id": "********", "client_secret": "********",
        "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_lark_docx.png
     api:
       type: openapi
     common_params:
@@ -934,7 +933,7 @@
       sub_type: client_credentials
       payload: '{"client_id": "********", "client_secret": "********",
        "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_lark_wiki.png
     api:
       type: openapi
     common_params:
@@ -966,7 +965,7 @@
       sub_type: client_credentials
       payload: '{"client_id": "********", "client_secret": "********",
        "token_url": "https://open.larkoffice.com/open-apis/auth/v3/tenant_access_token/internal"}'
-    logo_url: default_icon/plugin_default_icon.png
+    logo_url: official_plugin_icon/plugin_lark_calendar.png
     api:
       type: openapi
     common_params:
