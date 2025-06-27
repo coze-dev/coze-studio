@@ -15,6 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
@@ -626,7 +627,7 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		} else if errors.Is(err, context.Canceled) {
 			sErr = vo.CancelErr
 		} else {
-			sErr = vo.WrapError(errno.ErrWorkflowExecuteFail, err)
+			sErr = vo.WrapError(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
 		}
 	}
 
@@ -642,6 +643,7 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		}
 		d["isSuccess"] = false
 		if r.callbackEnabled {
+			sErr = sErr.ChangeErrLevel(vo.LevelWarn)
 			sOutput := &nodes.StructuredCallbackOutput{
 				Output:    d,
 				RawOutput: d,
@@ -658,6 +660,7 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		}
 		s["isSuccess"] = false
 		if r.callbackEnabled {
+			sErr = sErr.ChangeErrLevel(vo.LevelWarn)
 			sOutput := &nodes.StructuredCallbackOutput{
 				Output:    s,
 				RawOutput: s,

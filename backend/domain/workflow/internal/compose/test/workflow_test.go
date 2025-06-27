@@ -25,12 +25,12 @@ import (
 func TestAddSelector(t *testing.T) {
 	// start -> selector, selector.condition1 -> lambda1 -> end, selector.condition2 -> [lambda2, lambda3] -> end, selector default -> end
 	entry := &compose2.NodeSchema{
-		Key:  compose2.EntryNodeKey,
+		Key:  entity.EntryNodeKey,
 		Type: entity.NodeTypeEntry,
 	}
 
 	exit := &compose2.NodeSchema{
-		Key:  compose2.ExitNodeKey,
+		Key:  entity.ExitNodeKey,
 		Type: entity.NodeTypeExit,
 		Configs: map[string]any{
 			"TerminalPlan": vo.ReturnVariables,
@@ -292,12 +292,12 @@ func TestAddSelector(t *testing.T) {
 
 func TestVariableAggregator(t *testing.T) {
 	entry := &compose2.NodeSchema{
-		Key:  compose2.EntryNodeKey,
+		Key:  entity.EntryNodeKey,
 		Type: entity.NodeTypeEntry,
 	}
 
 	exit := &compose2.NodeSchema{
-		Key:  compose2.ExitNodeKey,
+		Key:  entity.ExitNodeKey,
 		Type: entity.NodeTypeExit,
 		Configs: map[string]any{
 			"TerminalPlan": vo.ReturnVariables,
@@ -434,12 +434,12 @@ func TestVariableAggregator(t *testing.T) {
 func TestTextProcessor(t *testing.T) {
 	t.Run("split", func(t *testing.T) {
 		entry := &compose2.NodeSchema{
-			Key:  compose2.EntryNodeKey,
+			Key:  entity.EntryNodeKey,
 			Type: entity.NodeTypeEntry,
 		}
 
 		exit := &compose2.NodeSchema{
-			Key:  compose2.ExitNodeKey,
+			Key:  entity.ExitNodeKey,
 			Type: entity.NodeTypeExit,
 			Configs: map[string]any{
 				"TerminalPlan": vo.ReturnVariables,
@@ -510,12 +510,12 @@ func TestTextProcessor(t *testing.T) {
 
 	t.Run("concat", func(t *testing.T) {
 		entry := &compose2.NodeSchema{
-			Key:  compose2.EntryNodeKey,
+			Key:  entity.EntryNodeKey,
 			Type: entity.NodeTypeEntry,
 		}
 
 		exit := &compose2.NodeSchema{
-			Key:  compose2.ExitNodeKey,
+			Key:  entity.ExitNodeKey,
 			Type: entity.NodeTypeExit,
 			Configs: map[string]any{
 				"TerminalPlan": vo.ReturnVariables,
@@ -636,12 +636,12 @@ func TestHTTPRequester(t *testing.T) {
 		urlTpl := ts.URL + "/{{block_output_start.post_text_plain}}"
 
 		entry := &compose2.NodeSchema{
-			Key:  compose2.EntryNodeKey,
+			Key:  entity.EntryNodeKey,
 			Type: entity.NodeTypeEntry,
 		}
 
 		exit := &compose2.NodeSchema{
-			Key:  compose2.ExitNodeKey,
+			Key:  entity.ExitNodeKey,
 			Type: entity.NodeTypeExit,
 			Configs: map[string]any{
 				"TerminalPlan": vo.ReturnVariables,

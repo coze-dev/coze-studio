@@ -95,3 +95,8 @@ const (
 	NodeTypeJsonSerialization          NodeType = "JsonSerialization"
 	NodeTypeJsonDeserialization        NodeType = "JsonDeserialization"
 )
+
+const (
+	EntryNodeKey = "100001"
+	ExitNodeKey  = "900001"
+)

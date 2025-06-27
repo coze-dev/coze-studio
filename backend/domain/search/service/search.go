@@ -239,6 +239,9 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 			es.NewEqualQuery(fieldOfSpaceID, conv.Int64ToStr(req.SpaceID)))
 		searchReq.Query.Bool.Should = append(searchReq.Query.Bool.Should,
 			es.NewNotExistsQuery(fieldOfAPPID))
+		searchReq.Query.Bool.Should = append(searchReq.Query.Bool.Should,
+			es.NewEqualQuery(fieldOfAPPID, "0"))
+
 		searchReq.Query.Bool.MinimumShouldMatch = ptr.Of(1)
 	}
 

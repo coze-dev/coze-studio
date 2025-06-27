@@ -28,8 +28,6 @@ type executableImpl struct {
 	repo workflow.Repository
 }
 
-const DebugURLExtraKey = "debug_url_extra_key"
-
 func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*entity.WorkflowExecution, vo.TerminatePlan, error) {
 	var (
 		err      error
@@ -98,12 +96,11 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 	out, err := wf.SyncRun(cancelCtx, convertedInput, opts...)
 	if err != nil {
 		if _, ok := einoCompose.ExtractInterruptInfo(err); !ok {
-			debugURL := fmt.Sprintf(vo.DebugURLTpl, executeID, wfEntity.SpaceID, wfEntity.ID)
-			var statusError errorx.StatusError
-			if errors.As(err, &statusError) {
-				return nil, "", errorx.New(statusError.Code(), errorx.Extra(DebugURLExtraKey, debugURL))
+			var wfe vo.WorkflowError
+			if errors.As(err, &wfe) {
+				return nil, "", wfe.AppendDebug(executeID, wfEntity.SpaceID, wfEntity.ID)
 			} else {
-				return nil, "", errorx.New(errno.ErrWorkflowExecuteFail, errorx.Extra(DebugURLExtraKey, debugURL))
+				return nil, "", vo.WrapWithDebug(errno.ErrWorkflowExecuteFail, err, executeID, wfEntity.SpaceID, wfEntity.ID, errorx.KV("cause", err.Error()))
 			}
 		}
 	}
@@ -534,7 +531,7 @@ func (i *impl) GetLatestTestRunInput(ctx context.Context, wfID int64, userID int
 		return nil, false, nil
 	}
 
-	nodeExe, _, err := i.GetNodeExecution(ctx, exeID, compose.EntryNodeKey)
+	nodeExe, _, err := i.GetNodeExecution(ctx, exeID, entity.EntryNodeKey)
 	if err != nil {
 		return nil, false, err
 	}
