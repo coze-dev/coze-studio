@@ -52,7 +52,7 @@ COPY --from=builder /app/proxy_app /app/proxy
 # Copy Python application scripts
 COPY backend/infra/impl/document/parser/builtin/parse_pdf.py /app/parse_pdf.py
 COPY backend/infra/impl/document/parser/builtin/parse_docx.py /app/parse_docx.py
-COPY backend/infra/impl/coderunner/script/python_script.py /app/python_script.py
+
 
 # Copy static resources
 COPY backend/static /app/resources/static/
@@ -62,7 +62,7 @@ ENV PATH="/app/.venv/bin:${PATH}"
 # ENV LD_LIBRARY_PATH="/usr/lib:${LD_LIBRARY_PATH}" # Keep commented for now
 
 # Ensure python scripts and venv executables are executable
-RUN chmod +x /app/parse_pdf.py /app/parse_docx.py /app/python_script.py && \
+RUN chmod +x /app/parse_pdf.py /app/parse_docx.py  && \
     find /app/.venv/bin -type f -exec chmod +x {} \;
 
 # Ensure Go binaries are executable

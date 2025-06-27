@@ -605,7 +605,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		} else {
 			msg = wfe.Msg()
 		}
-		errorInfo = msg[:min(100, len(msg))]
+		errorInfo = msg[:min(1000, len(msg))]
 		errorLevel = string(wfe.Level())
 
 		if event.Context == nil || event.Context.NodeCtx == nil {
@@ -684,11 +684,11 @@ type fcInfo struct {
 }
 
 func HandleExecuteEvent(ctx context.Context,
-	eventChan <-chan *Event, // workflow execution event emitted by workflow handler and node handlers
-	cancelFn context.CancelFunc, // func to cancel the context given to running workflow
-	timeoutFn context.CancelFunc, // func to timeout the context
+	eventChan <-chan *Event,                // workflow execution event emitted by workflow handler and node handlers
+	cancelFn context.CancelFunc,            // func to cancel the context given to running workflow
+	timeoutFn context.CancelFunc,           // func to timeout the context
 	cancelSignalChan <-chan *redis.Message, // channel to receive workflow cancel signal from redis
-	clearFn func(), // func to clear the cancel signal subscription
+	clearFn func(),                         // func to clear the cancel signal subscription
 	repo workflow.Repository,
 	sw *schema.StreamWriter[*entity.Message], // stream writer for emitting entity.Message
 	exeCfg vo.ExecuteConfig,
