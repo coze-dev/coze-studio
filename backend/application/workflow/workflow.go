@@ -1678,7 +1678,7 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 			SpaceID:          ptr.Of(strconv.FormatInt(w.SpaceID, 10)),
 			PluginID: func() string {
 				if status == workflow.WorkFlowListStatus_UnPublished {
-					return ""
+					return "0"
 				}
 				return strconv.FormatInt(w.ID, 10)
 			}(),
@@ -1728,6 +1728,7 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 		}
 	}
 	response.Data.WorkflowList = workflowList
+	response.Data.Total = int64(len(workflowList))
 
 	return response, nil
 }

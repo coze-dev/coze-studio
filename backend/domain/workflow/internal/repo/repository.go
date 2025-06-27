@@ -29,6 +29,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
@@ -1090,7 +1091,7 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, pol
 			CreatorID: wfMeta.CreatorID,
 			IconURI:   wfMeta.IconURI,
 			Desc:      wfMeta.Description,
-			AppID:     ptr.Of(wfMeta.AppID),
+			AppID:     ternary.IFElse(wfMeta.AppID == 0, (*int64)(nil), ptr.Of(wfMeta.AppID)),
 		},
 		CanvasInfoV2: &vo.CanvasInfoV2{
 			Canvas:          wfDraft.Canvas,
