@@ -33,7 +33,7 @@ func (dao *KnowledgeDocumentSliceDAO) Create(ctx context.Context, slice *model.K
 func (dao *KnowledgeDocumentSliceDAO) Update(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
 	s := dao.Query.KnowledgeDocumentSlice
 	slice.UpdatedAt = time.Now().UnixMilli()
-	_, err := s.WithContext(ctx).Updates(slice)
+	err := s.WithContext(ctx).Save(slice)
 	return err
 }
 

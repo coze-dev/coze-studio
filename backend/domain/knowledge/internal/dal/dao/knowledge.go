@@ -28,7 +28,7 @@ func (dao *KnowledgeDAO) Upsert(ctx context.Context, knowledge *model.Knowledge)
 func (dao *KnowledgeDAO) Update(ctx context.Context, knowledge *model.Knowledge) error {
 	k := dao.Query.Knowledge
 	knowledge.UpdatedAt = time.Now().UnixMilli()
-	_, err := k.WithContext(ctx).Where(k.ID.Eq(knowledge.ID)).Updates(knowledge)
+	err := k.WithContext(ctx).Where(k.ID.Eq(knowledge.ID)).Save(knowledge)
 	return err
 }
 
