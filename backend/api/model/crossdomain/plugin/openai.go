@@ -233,8 +233,12 @@ func (op Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map[
 }
 
 func validateOpenapi3RequestBody(bodyRef *openapi3.RequestBodyRef) (err error) {
-	if bodyRef == nil || bodyRef.Value == nil || len(bodyRef.Value.Content) == 0 {
+	if bodyRef == nil {
 		return nil
+	}
+	if bodyRef.Value == nil || len(bodyRef.Value.Content) == 0 {
+		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
+			"request body is required"))
 	}
 
 	body := bodyRef.Value
@@ -285,27 +289,29 @@ func validateOpenapi3Parameters(params openapi3.Parameters) (err error) {
 				"parameter schema is required"))
 		}
 
-		if param.Value.In == "" {
+		paramVal := param.Value
+
+		if paramVal.In == "" {
 			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
 				"parameter location is required"))
 		}
-		loc := strings.ToLower(param.Value.In)
-		if loc == string(ParamInBody) {
+		if paramVal.In == string(ParamInBody) {
 			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
-				"the location of parameter '%s' cannot be 'body'", param.Value.Name))
+				"the location of parameter '%s' cannot be 'body'", paramVal.Name))
 		}
 
-		sc := param.Value.Schema.Value
-		if sc.Type == "" {
+		paramSchema := paramVal.Schema.Value
+		if paramSchema.Type == "" {
 			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
-				"the type of  parameter '%s' is required", param.Value.Name))
+				"the type of  parameter '%s' is required", paramVal.Name))
 		}
-		if sc.Type != openapi3.TypeString &&
-			sc.Type != openapi3.TypeInteger &&
-			sc.Type != openapi3.TypeNumber &&
-			sc.Type != openapi3.TypeBoolean { //TODO:(@maronghong): 支持 array
+		if paramSchema.Type == openapi3.TypeObject {
 			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
-				"the type of parameter '%s' cannot be 'array' or 'object'", param.Value.Name))
+				"the type of parameter '%s' cannot be 'object'", paramVal.Name))
+		}
+		if paramVal.In == openapi3.ParameterInPath && paramSchema.Type == openapi3.TypeArray {
+			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
+				"the type of parameter '%s' cannot be 'array'", paramVal.Name))
 		}
 	}
 

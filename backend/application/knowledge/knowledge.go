@@ -73,15 +73,17 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 	err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 		OpType: resourceEntity.Created,
 		Resource: &resourceEntity.ResourceDocument{
-			ResType:      resource.ResType_Knowledge,
-			ResID:        domainResp.KnowledgeID,
-			Name:         ptr.Of(req.Name),
-			ResSubType:   ptr.Of(int32(req.FormatType)),
-			SpaceID:      ptr.Of(req.SpaceID),
-			APPID:        ptrAppID,
-			OwnerID:      ptr.Of(*uid),
-			CreateTimeMS: ptr.Of(domainResp.CreatedAtMs),
-			UpdateTimeMS: ptr.Of(domainResp.CreatedAtMs),
+			ResType:       resource.ResType_Knowledge,
+			ResID:         domainResp.KnowledgeID,
+			Name:          ptr.Of(req.Name),
+			ResSubType:    ptr.Of(int32(req.FormatType)),
+			SpaceID:       ptr.Of(req.SpaceID),
+			APPID:         ptrAppID,
+			OwnerID:       ptr.Of(*uid),
+			PublishStatus: ptr.Of(resource.PublishStatus_Published),
+			PublishTimeMS: ptr.Of(domainResp.CreatedAtMs),
+			CreateTimeMS:  ptr.Of(domainResp.CreatedAtMs),
+			UpdateTimeMS:  ptr.Of(domainResp.CreatedAtMs),
 		},
 	})
 	if err != nil {
@@ -914,15 +916,16 @@ func (k *KnowledgeApplicationService) CopyKnowledge(ctx context.Context, req *mo
 		err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 			OpType: resourceEntity.Created,
 			Resource: &resourceEntity.ResourceDocument{
-				ResID:        resp.TargetKnowledgeID,
-				ResType:      resource.ResType_Knowledge,
-				ResSubType:   ptr.Of(int32(getResp.Knowledge.Type)),
-				Name:         ptr.Of(getResp.Knowledge.Name),
-				OwnerID:      ptr.Of(getResp.Knowledge.CreatorID),
-				SpaceID:      ptr.Of(getResp.Knowledge.SpaceID),
-				APPID:        appIDPtr,
-				CreateTimeMS: ptr.Of(getResp.Knowledge.CreatedAtMs),
-				UpdateTimeMS: ptr.Of(getResp.Knowledge.CreatedAtMs),
+				ResID:         resp.TargetKnowledgeID,
+				ResType:       resource.ResType_Knowledge,
+				ResSubType:    ptr.Of(int32(getResp.Knowledge.Type)),
+				Name:          ptr.Of(getResp.Knowledge.Name),
+				OwnerID:       ptr.Of(getResp.Knowledge.CreatorID),
+				SpaceID:       ptr.Of(getResp.Knowledge.SpaceID),
+				APPID:         appIDPtr,
+				PublishStatus: ptr.Of(resource.PublishStatus_Published),
+				CreateTimeMS:  ptr.Of(getResp.Knowledge.CreatedAtMs),
+				UpdateTimeMS:  ptr.Of(getResp.Knowledge.CreatedAtMs),
 			},
 		})
 		if err != nil {

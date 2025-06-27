@@ -1115,7 +1115,7 @@ func (p *PluginApplicationService) UnlockPluginEdit(ctx context.Context, req *pl
 	return resp, nil
 }
 
-func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, _ *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
+func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
 	res, err := p.DomainSVC.ListPluginProducts(ctx, &service.ListPluginProductsRequest{})
 	if err != nil {
 		return nil, errorx.Wrapf(err, "ListPluginProducts failed")
@@ -1134,6 +1134,16 @@ func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, _ *
 		}
 
 		products = append(products, pi)
+	}
+
+	if req.GetKeyword() != "" {
+		filterProducts := make([]*productAPI.ProductInfo, 0, len(products))
+		for _, _p := range products {
+			if strings.Contains(strings.ToLower(_p.MetaInfo.Name), strings.ToLower(req.GetKeyword())) {
+				filterProducts = append(filterProducts, _p)
+			}
+		}
+		products = filterProducts
 	}
 
 	resp = &productAPI.GetProductListResponse{

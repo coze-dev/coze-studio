@@ -575,7 +575,7 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 	}
 
 	if req.RequestBody == nil {
-		op.RequestBody = nil
+		op.RequestBody = draftTool.Operation.RequestBody
 	} else {
 		mType, ok := req.RequestBody.Value.Content[model.MediaTypeJson]
 		if !ok {
@@ -592,7 +592,7 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 	}
 
 	if req.Responses == nil {
-		op.Responses = entity.DefaultOpenapi3Responses()
+		op.Responses = draftTool.Operation.Responses
 	} else {
 		newRespRef, ok := req.Responses[strconv.Itoa(http.StatusOK)]
 		if !ok {

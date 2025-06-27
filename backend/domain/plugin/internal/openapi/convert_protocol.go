@@ -689,7 +689,7 @@ func postmanHeaderToOpenAPI(_ context.Context, headers []*postman.Header, op *op
 			Value: &openapi3.Parameter{
 				In:          openapi3.ParameterInHeader,
 				Name:        header.Key,
-				Description: header.Description,
+				Description: desc,
 				Required:    true,
 				Schema: &openapi3.SchemaRef{
 					Value: &openapi3.Schema{

@@ -129,14 +129,15 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 	err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Created,
 		Resource: &searchEntity.ResourceDocument{
-			ResType:      resCommon.ResType_Database,
-			ResID:        databaseRes.ID,
-			Name:         &databaseRes.TableName,
-			APPID:        ptrAppID,
-			SpaceID:      &databaseRes.SpaceID,
-			OwnerID:      &databaseRes.CreatorID,
-			CreateTimeMS: ptr.Of(databaseRes.CreatedAtMs),
-			UpdateTimeMS: ptr.Of(databaseRes.UpdatedAtMs),
+			ResType:       resCommon.ResType_Database,
+			ResID:         databaseRes.ID,
+			Name:          &databaseRes.TableName,
+			APPID:         ptrAppID,
+			SpaceID:       &databaseRes.SpaceID,
+			OwnerID:       &databaseRes.CreatorID,
+			PublishStatus: ptr.Of(resCommon.PublishStatus_Published),
+			CreateTimeMS:  ptr.Of(databaseRes.CreatedAtMs),
+			UpdateTimeMS:  ptr.Of(databaseRes.UpdatedAtMs),
 		},
 	})
 	if err != nil {
@@ -847,14 +848,15 @@ func (d *DatabaseApplicationService) CopyDatabase(ctx context.Context, req *Copy
 		err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 			OpType: searchEntity.Created,
 			Resource: &searchEntity.ResourceDocument{
-				ResType:      resCommon.ResType_Database,
-				ResID:        onlineDatabase.ID,
-				Name:         &onlineDatabase.TableName,
-				APPID:        &onlineDatabase.AppID,
-				SpaceID:      &onlineDatabase.SpaceID,
-				OwnerID:      &onlineDatabase.CreatorID,
-				CreateTimeMS: ptr.Of(onlineDatabase.CreatedAtMs),
-				UpdateTimeMS: ptr.Of(onlineDatabase.UpdatedAtMs),
+				ResType:       resCommon.ResType_Database,
+				ResID:         onlineDatabase.ID,
+				Name:          &onlineDatabase.TableName,
+				APPID:         &onlineDatabase.AppID,
+				SpaceID:       &onlineDatabase.SpaceID,
+				OwnerID:       &onlineDatabase.CreatorID,
+				PublishStatus: ptr.Of(resCommon.PublishStatus_Published),
+				CreateTimeMS:  ptr.Of(onlineDatabase.CreatedAtMs),
+				UpdateTimeMS:  ptr.Of(onlineDatabase.UpdatedAtMs),
 			},
 		})
 		if err != nil {
