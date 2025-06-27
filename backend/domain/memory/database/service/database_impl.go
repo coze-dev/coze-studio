@@ -1048,17 +1048,39 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 		return nil, fmt.Errorf("parse sql failed: %v", err)
 	}
 
-	if req.SQLType == database.SQLType_Raw && operation == sqlparsercontract.OperationTypeInsert {
+	if operation == sqlparsercontract.OperationTypeInsert {
 		cid := consts.CozeConnectorID
 		if req.ConnectorID != nil {
 			cid = *req.ConnectorID
 		}
-		parsedSQL, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, map[string]interface{}{
-			database.DefaultCidColName: cid,
-			database.DefaultUidColName: req.UserID,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("add columns to insert sql failed: %v", err)
+		if req.SQLType == database.SQLType_Raw {
+			parsedSQL, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColVal{
+				{
+					ColName: database.DefaultCidColName,
+					Value:   cid,
+				},
+				{
+					ColName: database.DefaultUidColName,
+					Value:   req.UserID,
+				},
+			}, false)
+			if err != nil {
+				return nil, fmt.Errorf("add columns to insert sql failed: %v", err)
+			}
+		} else if req.SQLType == database.SQLType_Parameterized {
+			parsedSQL, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColVal{
+				{
+					ColName: database.DefaultCidColName,
+				},
+				{
+					ColName: database.DefaultUidColName,
+				},
+			}, true)
+			if err != nil {
+				return nil, fmt.Errorf("add columns to insert sql failed: %v", err)
+			}
+
+			params = append(params, cid, req.UserID)
 		}
 	}
 

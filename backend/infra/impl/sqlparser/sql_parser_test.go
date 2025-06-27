@@ -317,39 +317,75 @@ func TestImpl_AddColumnsToInsertSQL(t *testing.T) {
 	tests := []struct {
 		name    string
 		origSQL string
-		addCols map[string]interface{}
+		addCols []sqlparser.ColVal
 		wantSQL string
+		isParam bool
 	}{
 		{
 			name:    "add new columns to single row insert",
 			origSQL: "INSERT INTO users (id, name) VALUES (1, 'name')",
-			addCols: map[string]interface{}{"age": 18},
+			addCols: []sqlparser.ColVal{
+				{
+					ColName: "age",
+					Value:   18,
+				},
+			},
 			wantSQL: "INSERT INTO users (id,name,age) VALUES (1, 'name',18)",
 		},
 		{
 			name:    "add new columns to multi-row insert",
 			origSQL: "INSERT INTO users (id, name) VALUES (1, 'name'), (1, 'name')",
-			addCols: map[string]interface{}{"age": 18},
+			addCols: []sqlparser.ColVal{
+				{
+					ColName: "age",
+					Value:   18,
+				},
+			},
 			wantSQL: "INSERT INTO users (id,name,age) VALUES (1, 'name',18), (1, 'name',18)",
 		},
 		{
 			name:    "addCols is empty, no change",
 			origSQL: "INSERT INTO users (id, name) VALUES (1, 'name')",
-			addCols: map[string]interface{}{},
+			addCols: []sqlparser.ColVal{},
 			wantSQL: "INSERT INTO users (id, name) VALUES (1, 'name')",
 		},
 		{
 			name:    "column already exists, do not add",
 			origSQL: "INSERT INTO users (id, name) VALUES (1, 'name')",
-			addCols: map[string]interface{}{"name": "abc"},
+			addCols: []sqlparser.ColVal{{
+				ColName: "name",
+				Value:   "abc",
+			}},
 			wantSQL: "INSERT INTO users (id, name) VALUES (1, 'name')",
+		},
+		{
+			name:    "add new columns to single row insert",
+			origSQL: "INSERT INTO users (id, name) VALUES (? ,?)",
+			addCols: []sqlparser.ColVal{
+				{
+					ColName: "age",
+				},
+			},
+			wantSQL: "INSERT INTO users (id,name,age) VALUES (?, ?, ?)",
+			isParam: true,
+		},
+		{
+			name:    "add new columns to single row insert",
+			origSQL: "INSERT INTO users (id, name) VALUES (? ,?), (?, ?)",
+			addCols: []sqlparser.ColVal{
+				{
+					ColName: "age",
+				},
+			},
+			wantSQL: "INSERT INTO users (id,name,age) VALUES (?, ?, ?), (?, ?, ?)",
+			isParam: true,
 		},
 	}
 
 	parser := NewSQLParser()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parser.AddColumnsToInsertSQL(tt.origSQL, tt.addCols)
+			got, err := parser.AddColumnsToInsertSQL(tt.origSQL, tt.addCols, tt.isParam)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}

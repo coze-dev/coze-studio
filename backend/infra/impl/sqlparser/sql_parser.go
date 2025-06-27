@@ -234,8 +234,9 @@ func (p *Impl) GetSQLOperation(sql string) (sqlparser.OperationType, error) {
 }
 
 // AddColumnsToInsertSQL takes an original insert SQL and columns to add (with values), returns the modified SQL.
-// addCols: key is column name, value is the value to be inserted for every row.
-func (p *Impl) AddColumnsToInsertSQL(origSQL string, addCols map[string]interface{}) (string, error) {
+// addCols: a slice of ColVal, where each element represents a column and its value to be inserted for every row.
+// If isParam is true, placeholders (?) will be added as values, otherwise the actual values from addCols will be used.
+func (p *Impl) AddColumnsToInsertSQL(origSQL string, addCols []sqlparser.ColVal, isParam bool) (string, error) {
 	if len(addCols) == 0 {
 		return origSQL, nil
 	}
@@ -249,15 +250,15 @@ func (p *Impl) AddColumnsToInsertSQL(origSQL string, addCols map[string]interfac
 		return "", fmt.Errorf("not an INSERT statement")
 	}
 
-	existingCols := map[string]bool{}
+	existingCols := make(map[string]bool)
 	for _, col := range insertStmt.Columns {
 		existingCols[col.Name.O] = true
 	}
 
-	colsToAdd := make([]string, 0, len(addCols))
-	for col := range addCols {
-		if !existingCols[col] {
-			colsToAdd = append(colsToAdd, col)
+	colsToAdd := make([]sqlparser.ColVal, 0, len(addCols))
+	for _, colVal := range addCols {
+		if !existingCols[colVal.ColName] {
+			colsToAdd = append(colsToAdd, colVal)
 		}
 	}
 	if len(colsToAdd) == 0 {
@@ -269,14 +270,20 @@ func (p *Impl) AddColumnsToInsertSQL(origSQL string, addCols map[string]interfac
 		rowCount = 1
 	}
 
-	for _, colName := range colsToAdd {
-		insertStmt.Columns = append(insertStmt.Columns, &ast.ColumnName{Name: ast.NewCIStr(colName)})
+	for _, colVal := range colsToAdd {
+		insertStmt.Columns = append(insertStmt.Columns, &ast.ColumnName{Name: ast.NewCIStr(colVal.ColName)})
 	}
 
 	for i := 0; i < rowCount; i++ {
-		for _, col := range colsToAdd {
-			val := addCols[col]
-			insertStmt.Lists[i] = append(insertStmt.Lists[i], ast.NewValueExpr(val, "", ""))
+		paramCount := 0
+		for _, colVal := range colsToAdd {
+			if isParam {
+				valExpr := ast.NewParamMarkerExpr(paramCount)
+				insertStmt.Lists[i] = append(insertStmt.Lists[i], valExpr)
+				paramCount++
+			} else {
+				insertStmt.Lists[i] = append(insertStmt.Lists[i], ast.NewValueExpr(colVal.Value, "", ""))
+			}
 		}
 	}
 

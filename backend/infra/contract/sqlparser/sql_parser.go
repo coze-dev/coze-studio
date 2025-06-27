@@ -6,6 +6,11 @@ type TableColumn struct {
 	ColumnMap    map[string]string // Column name mapping: key is original column name, value is new column name
 }
 
+type ColVal struct {
+	ColName string
+	Value   interface{}
+}
+
 // OperationType represents the type of SQL operation
 type OperationType string
 
@@ -30,7 +35,7 @@ type SQLParser interface {
 	// GetSQLOperation identifies the operation type in the SQL statement
 	GetSQLOperation(sql string) (OperationType, error)
 
-	AddColumnsToInsertSQL(origSQL string, addCols map[string]interface{}) (string, error)
+	AddColumnsToInsertSQL(origSQL string, colVals []ColVal, isParam bool) (string, error)
 
 	// GetTableName extracts the table name from a SQL statement. Only supports single-table select/insert/update/delete. If it has multiple tables, return first table name.
 	GetTableName(sql string) (string, error)
