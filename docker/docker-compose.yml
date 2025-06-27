@@ -67,6 +67,8 @@ services:
         condition: service_completed_successfully
       elasticsearch-setup:
         condition: service_completed_successfully
+      mysql-setup-schema:
+        condition: service_completed_successfully
       mysql-setup-init-sql:
         condition: service_completed_successfully
     healthcheck:
@@ -391,11 +393,8 @@ services:
   elasticsearch-setup:
     image: alpine/curl:8.12.1
     container_name: coze-elasticsearch-setup
-    profiles: ['middleware']
+    profiles: ['middleware', 'volcano-setup']
     env_file: *env_file
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
     volumes:
       - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh
       - ./volumes/elasticsearch/es_index_schema:/es_index_schema
@@ -421,10 +420,10 @@ services:
       - ./volumes/minio/default_icon/:/default_icon
     entrypoint: >
       /bin/sh -c  "
-        (/usr/bin/mc alias set localminio http://coze-minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin123} && \
-        /usr/bin/mc mb --ignore-existing localminio/opencoze && \
-        /usr/bin/mc cp --recursive /default_icon/ localminio/opencoze/default_icon/ && \
-        echo 'MinIO setup complete: Files uploaded to opencoze bucket.') || exit 1; \
+        (/usr/bin/mc alias set localminio http://coze-minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} && \
+        /usr/bin/mc mb --ignore-existing localminio/${STORAGE_BUCKET} && \
+        /usr/bin/mc cp --recursive /default_icon/ localminio/${STORAGE_BUCKET}/default_icon/ && \
+        echo 'upload files to minio complete: Files uploaded to ${STORAGE_BUCKET} bucket.') || exit 1; \
       "
     networks:
       - coze-network
@@ -435,9 +434,6 @@ services:
     container_name: coze-mysql-setup-schema
     profiles: ['middleware', 'mysql-setup', 'run-server']
     env_file: *env_file
-    depends_on:
-      mysql:
-        condition: service_healthy
     volumes:
       - ./atlas/opencoze_latest_schema.hcl:/opencoze_latest_schema.hcl
     entrypoint:
@@ -471,13 +467,8 @@ services:
   mysql-setup-init-sql:
     image: mysql:8.4.5
     container_name: coze-mysql-setup-init-sql
-    profiles: ['middleware', 'mysql-setup', 'run-server']
+    profiles: ['middleware', 'mysql-setup', 'run-server', 'volcano-setup']
     env_file: *env_file
-    depends_on:
-      mysql:
-        condition: service_healthy
-      mysql-setup-schema:
-        condition: service_completed_successfully
     command:
       - /bin/sh
       - -c
@@ -504,12 +495,30 @@ services:
     networks:
       - coze-network
     restart: 'no'
+  tos-setup:
+    image: alpine/curl:8.12.1
+    container_name: coze-tos-setup
+    profiles: ['volcano-setup']
+    env_file: *env_file
+    volumes:
+      - ./volumes/minio/default_icon/:/default_icon
+      - ./volumes/minio/tosutil:/tosutil
+    entrypoint: >
+      /bin/sh -c  "
+        (/tosutil version && \
+        /tosutil config -i ${TOS_ACCESS_KEY} -k ${TOS_SECRET_KEY} -e ${TOS_ENDPOINT} -re ${TOS_REGION} && \
+        /tosutil cp /default_icon tos://${STORAGE_BUCKET} -r && \
+        echo 'upload files to tos complete: Files uploaded to ${STORAGE_BUCKET} bucket.') || exit 1; \
+      "
+    networks:
+      - coze-network
+    restart: 'no'
 
   coze-server:
     # build:
     #   c6ntext: ../
     #   dockerfile: backend/Dockerfile
-    image: fanlv/opencoze:0.1.0
+    image: fanlv/opencoze:0.1.1
     container_name: coze-server
     profiles: ['run-server']
     env_file: *env_file
@@ -539,6 +548,36 @@ services:
       milvus:
         condition: service_healthy
       minio-setup:
+        condition: service_completed_successfully
+      elasticsearch-setup:
+        condition: service_completed_successfully
+      mysql-setup-init-sql:
+        condition: service_completed_successfully
+    command: ['/app/bootstrap.sh']
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 16G
+        reservations:
+          cpus: '2'
+          memory: 4G
+  coze-server-on-volcano:
+    image: fanlv/opencoze:0.1.1
+    container_name: coze-server-on-volcano
+    profiles: ['volcano-server']
+    env_file: *env_file
+    environment:
+      LISTEN_ADDR: 0.0.0.0:80
+    networks:
+      - coze-network
+    ports:
+      - '80:80'
+    volumes:
+      - ../docker/.env:/app/.env
+      - ../backend/conf:/app/resources/conf
+    depends_on:
+      tos-setup:
         condition: service_completed_successfully
       elasticsearch-setup:
         condition: service_completed_successfully

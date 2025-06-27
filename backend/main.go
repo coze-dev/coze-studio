@@ -51,6 +51,7 @@ func main() {
 	// cors option
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
+	config.AllowHeaders = []string{"*"}
 	corsHandler := cors.New(config)
 	s.Use(corsHandler)
 	s.Use(middleware.SetLogIDMW())

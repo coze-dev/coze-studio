@@ -9,11 +9,13 @@ import (
 	"sync"
 
 	"github.com/cloudwego/eino/compose"
+	"golang.org/x/exp/maps"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 )
 
@@ -255,6 +257,8 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 		ithOpts = append(ithOpts, options.GetOptsForIndexed(i)...)
 		mu.Unlock()
 		if subCheckpointID != "" {
+			logs.CtxInfof(ctx, "[testInterrupt] prepare %d th run for batch node %s, subCheckPointID %s",
+				i, b.config.BatchNodeKey, subCheckpointID)
 			ithOpts = append(ithOpts, compose.WithCheckPointID(subCheckpointID))
 		}
 
@@ -372,7 +376,22 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 		return nil, compose.InterruptAndRerun
 	} else {
 		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.NestedWorkflowAware) error {
-			return setter.SaveNestedWorkflowState(b.config.BatchNodeKey, compState)
+			if e := setter.SaveNestedWorkflowState(b.config.BatchNodeKey, compState); e != nil {
+				return e
+			}
+
+			if existingCState == nil {
+				return nil
+			}
+
+			// althrough this invocation does not have new interruptions,
+			// this batch node previously have interrupts yet to be resumed.
+			// we overrite the interrupt events, keeping only the interrupts yet to be resumed.
+			return setter.SetInterruptEvent(b.config.BatchNodeKey, &entity.InterruptEvent{
+				NodeKey:             b.config.BatchNodeKey,
+				NodeType:            entity.NodeTypeBatch,
+				NestedInterruptInfo: existingCState.Index2InterruptInfo,
+			})
 		})
 		if err != nil {
 			return nil, err
@@ -382,7 +401,8 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 	}
 
 	if existingCState != nil && len(existingCState.Index2InterruptInfo) > 0 {
-		fmt.Println("no interrupt thrown this round, but has historical interrupt events yet to be resumed: ", existingCState.Index2InterruptInfo)
+		logs.CtxInfof(ctx, "no interrupt thrown this round, but has historical interrupt events yet to be resumed, "+
+			"nodeKey: %v. indexes: %v", b.config.BatchNodeKey, maps.Keys(existingCState.Index2InterruptInfo))
 		return nil, compose.InterruptAndRerun // interrupt again to wait for resuming of previously interrupted index runs
 	}
 

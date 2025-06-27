@@ -170,13 +170,16 @@ func (ll *defaultLogger) logf(lv Level, format *string, v ...interface{}) {
 		os.Exit(1)
 	}
 }
+
 func (ll *defaultLogger) logfCtx(ctx context.Context, lv Level, format *string, v ...interface{}) {
 	if ll.level > lv {
 		return
 	}
 	msg := lv.toString()
-	logID := ctx.Value("coze-log-id")
-	msg += fmt.Sprintf("[coze-log-id: %v] ", logID)
+	logID := ctx.Value("log-id")
+	if logID != nil {
+		msg += fmt.Sprintf("[log-id: %v] ", logID)
+	}
 	if format != nil {
 		msg += fmt.Sprintf(*format, v...)
 	} else {

@@ -12,7 +12,6 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/repo/dal/query"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -301,7 +300,7 @@ func (e *executeHistoryStoreImpl) CancelAllRunningNodes(ctx context.Context, wfE
 			e.query.NodeExecution.Status.In(int32(entity.NodeRunning))).
 		Updates(map[string]interface{}{
 			"error_info":  "workflow cancel by user",
-			"error_level": execute.LevelCancel,
+			"error_level": vo.LevelCancel,
 			"status":      int32(entity.NodeFailed),
 		})
 	if err != nil {

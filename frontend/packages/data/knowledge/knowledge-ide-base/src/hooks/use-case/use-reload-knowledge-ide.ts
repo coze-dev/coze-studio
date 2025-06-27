@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
-import { useKnowledgeParams, useKnowledgeStore } from '@coze-data/knowledge-stores';
+import {
+  useKnowledgeParams,
+  useKnowledgeStore,
+} from '@coze-data/knowledge-stores';
 
 import { useListDocumentReq } from '@/service/document';
 import { useDataSetDetailReq } from '@/service/dataset';

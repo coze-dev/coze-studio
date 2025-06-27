@@ -574,18 +574,26 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		op.Parameters = req.Parameters
 	}
 
-	if req.RequestBody != nil {
+	if req.RequestBody == nil {
+		op.RequestBody = nil
+	} else {
 		mType, ok := req.RequestBody.Value.Content[model.MediaTypeJson]
 		if !ok {
 			return fmt.Errorf("the '%s' media type is not defined in request body", model.MediaTypeJson)
 		}
-		if op.RequestBody.Value.Content == nil {
-			op.RequestBody.Value.Content = map[string]*openapi3.MediaType{}
+		if op.RequestBody == nil || op.RequestBody.Value == nil || op.RequestBody.Value.Content == nil {
+			op.RequestBody = &openapi3.RequestBodyRef{
+				Value: &openapi3.RequestBody{
+					Content: map[string]*openapi3.MediaType{},
+				},
+			}
 		}
 		op.RequestBody.Value.Content[model.MediaTypeJson] = mType
 	}
 
-	if req.Responses != nil {
+	if req.Responses == nil {
+		op.Responses = entity.DefaultOpenapi3Responses()
+	} else {
 		newRespRef, ok := req.Responses[strconv.Itoa(http.StatusOK)]
 		if !ok {
 			return fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
@@ -753,7 +761,7 @@ func getConvertFunc(ctx context.Context, rawInput string) (convertFunc, common.P
 func validateConvertResult(ctx context.Context, req *ConvertToOpenapi3DocRequest, doc *model.Openapi3T, mf *entity.PluginManifest) error {
 	if req.PluginServerURL != nil {
 		if doc.Servers[0].URL != *req.PluginServerURL {
-			return fmt.Errorf("inconsistent API URL prefix")
+			return errorx.New(errno.ErrPluginConvertProtocolFailed, errorx.KV(errno.PluginMsgKey, "inconsistent API URL prefix"))
 		}
 	}
 

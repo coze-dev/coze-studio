@@ -8,6 +8,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 const (
@@ -59,7 +60,7 @@ func NewCodeRunner(ctx context.Context, cfg *Config) (*CodeRunner, error) {
 func (c *CodeRunner) RunCode(ctx context.Context, input map[string]any) (ret map[string]any, err error) {
 	response, err := c.config.Runner.Run(ctx, &code.RunRequest{Code: c.config.Code, Language: c.config.Language, Params: input})
 	if err != nil {
-		return nil, err
+		return nil, vo.WrapError(errno.ErrCodeExecuteFail, err)
 	}
 
 	result := response.Result
@@ -79,33 +80,44 @@ func (c *CodeRunner) ToCallbackOutput(ctx context.Context, output map[string]any
 		return nil, errors.New("raw output config is required")
 	}
 
-	//TODO(zhuangjie) need to get the warn error info information from ctx and return it
-	//_, _ = ctxcache.Get[string](ctx, coderRunnerWarnErrorLevelCtxKey)
-
+	var wfe vo.WorkflowError
+	if warnings, ok := ctxcache.Get[nodes.ConversionWarnings](ctx, coderRunnerWarnErrorLevelCtxKey); ok {
+		wfe = vo.WrapWarn(errno.ErrNodeOutputParseFail, warnings)
+	}
 	return &nodes.StructuredCallbackOutput{
-		Output:    output,
-		RawOutput: rawOutput,
-	}, nil
+			Output:    output,
+			RawOutput: rawOutput,
+			Error:     wfe,
+		},
+		nil
+
 }
 
 func formatOutput(ctx context.Context, inInfo map[string]*vo.TypeInfo, in map[string]any) (map[string]any, error) {
 	ret := make(map[string]any, len(inInfo))
-	var warnError = &WarnError{errs: make([]error, 0, len(inInfo))}
+	var warnings nodes.ConversionWarnings
 	for k, info := range inInfo {
 		if _, ok := in[k]; !ok {
 			ret[k] = nil
 			continue
 		}
-
-		vv, wError := codeResponseFormatted(k, in[k], info)
-		if wError != nil && len(wError.errs) != 0 {
-			warnError.errs = append(warnError.errs, wError.errs...)
+		vv, err := nodes.Convert(ctx, in[k], k, info)
+		if err != nil {
+			var subWarnings nodes.ConversionWarnings
+			if errors.As(err, &subWarnings) {
+				warnings = subWarnings.Merge(warnings)
+				ret[k] = nil
+			} else {
+				return nil, err
+			}
+		} else {
+			ret[k] = vv
 		}
-		ret[k] = vv
+
 	}
 
-	if len(warnError.errs) != 0 {
-		ctxcache.Store(ctx, coderRunnerWarnErrorLevelCtxKey, warnError.Error())
+	if len(warnings) > 0 {
+		ctxcache.Store(ctx, coderRunnerWarnErrorLevelCtxKey, warnings)
 	}
 
 	return ret, nil

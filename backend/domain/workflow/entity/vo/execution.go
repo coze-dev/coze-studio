@@ -1,18 +1,19 @@
 package vo
 
 type ExecuteConfig struct {
-	ID           int64
-	From         Locator
-	Version      string
-	CommitID     string
-	Operator     int64
-	Mode         ExecuteMode
-	AppID        *int64
-	AgentID      *int64
-	ConnectorID  int64
-	ConnectorUID string
-	TaskType     TaskType
-	SyncPattern  SyncPattern
+	ID            int64
+	From          Locator
+	Version       string
+	CommitID      string
+	Operator      int64
+	Mode          ExecuteMode
+	AppID         *int64
+	AgentID       *int64
+	ConnectorID   int64
+	ConnectorUID  string
+	TaskType      TaskType
+	SyncPattern   SyncPattern
+	InputFailFast bool // whether to fail fast if input conversion has warnings
 }
 
 type ExecuteMode string

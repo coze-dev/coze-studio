@@ -92,4 +92,6 @@ const (
 	NodeTypeSelector                   NodeType = "Selector"
 	NodeTypeBatch                      NodeType = "Batch"
 	NodeTypeSubWorkflow                NodeType = "SubWorkflow"
+	NodeTypeJsonSerialization          NodeType = "JsonSerialization"
+	NodeTypeJsonDeserialization        NodeType = "JsonDeserialization"
 )

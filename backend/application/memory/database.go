@@ -147,7 +147,7 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 }
 
 func (d *DatabaseApplicationService) UpdateDatabase(ctx context.Context, req *table.UpdateDatabaseRequest) (*table.SingleDatabaseResponse, error) {
-	err := d.ValidateAccess(ctx, req.ID)
+	err := d.ValidateAccess(ctx, req.ID, table.TableType_OnlineTable)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +175,7 @@ func (d *DatabaseApplicationService) UpdateDatabase(ctx context.Context, req *ta
 }
 
 func (d *DatabaseApplicationService) DeleteDatabase(ctx context.Context, req *table.DeleteDatabaseRequest) (*table.DeleteDatabaseResponse, error) {
-	err := d.ValidateAccess(ctx, req.ID)
+	err := d.ValidateAccess(ctx, req.ID, table.TableType_OnlineTable)
 	if err != nil {
 		return nil, err
 	}
@@ -206,14 +206,21 @@ func (d *DatabaseApplicationService) DeleteDatabase(ctx context.Context, req *ta
 }
 
 func (d *DatabaseApplicationService) ListDatabaseRecords(ctx context.Context, req *table.ListDatabaseRecordsRequest) (*table.ListDatabaseRecordsResponse, error) {
-	err := d.ValidateAccess(ctx, req.DatabaseID)
+	tableType := table.TableType_OnlineTable
+	if req.GetBotID() > 0 {
+		tableType = table.TableType_DraftTable
+	}
+	err := d.ValidateAccess(ctx, req.DatabaseID, tableType)
 	if err != nil {
 		return nil, err
 	}
 
-	databaseID, err := getDatabaseID(ctx, req.TableType, req.DatabaseID)
-	if err != nil {
-		return nil, err
+	databaseID := req.DatabaseID
+	if req.GetBotID() == 0 {
+		databaseID, err = getDatabaseID(ctx, req.TableType, req.DatabaseID)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	uid := ctxutil.GetUIDFromCtx(ctx)
@@ -244,7 +251,7 @@ func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, 
 		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	err := d.ValidateAccess(ctx, req.DatabaseID)
+	err := d.ValidateAccess(ctx, req.DatabaseID, table.TableType_OnlineTable)
 	if err != nil {
 		return nil, err
 	}
@@ -341,14 +348,21 @@ func (d *DatabaseApplicationService) ResetBotTable(ctx context.Context, req *tab
 		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
 	}
 
-	err := d.ValidateAccess(ctx, req.GetDatabaseInfoID())
+	tableType := table.TableType_OnlineTable
+	if req.GetBotID() > 0 {
+		tableType = table.TableType_DraftTable
+	}
+	err := d.ValidateAccess(ctx, req.GetDatabaseInfoID(), tableType)
 	if err != nil {
 		return nil, err
 	}
 
-	databaseID, err := getDatabaseID(ctx, req.TableType, req.GetDatabaseInfoID())
-	if err != nil {
-		return nil, err
+	databaseID := req.GetDatabaseInfoID()
+	if req.GetBotID() == 0 {
+		databaseID, err = getDatabaseID(ctx, req.TableType, req.GetDatabaseInfoID())
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	executeDeleteReq := &database.ExecuteSQLRequest{
@@ -397,7 +411,7 @@ func (d *DatabaseApplicationService) GetDatabaseTemplate(ctx context.Context, re
 		return nil, err
 	}
 
-	err = d.ValidateAccess(ctx, req.DatabaseID)
+	err = d.ValidateAccess(ctx, req.DatabaseID, table.TableType_OnlineTable)
 	if err != nil {
 		return nil, err
 	}
@@ -538,7 +552,7 @@ func (d *DatabaseApplicationService) ValidateDatabaseTableSchema(ctx context.Con
 		return nil, err
 	}
 
-	err = d.ValidateAccess(ctx, req.DatabaseID)
+	err = d.ValidateAccess(ctx, req.DatabaseID, table.TableType_OnlineTable)
 	if err != nil {
 		return nil, err
 	}
@@ -635,7 +649,7 @@ func (d *DatabaseApplicationService) SubmitDatabaseInsertTask(ctx context.Contex
 		return nil, err
 	}
 
-	err = d.ValidateAccess(ctx, req.DatabaseID)
+	err = d.ValidateAccess(ctx, req.DatabaseID, table.TableType_OnlineTable)
 	if err != nil {
 		return nil, err
 	}
@@ -718,7 +732,7 @@ func getDatabaseID(ctx context.Context, tableType table.TableType, onlineID int6
 	return online.Databases[0].GetDraftID(), nil
 }
 
-func (d *DatabaseApplicationService) ValidateAccess(ctx context.Context, onlineDatabaseID int64) error {
+func (d *DatabaseApplicationService) ValidateAccess(ctx context.Context, databaseID int64, tableType table.TableType) error {
 	uid := ctxutil.GetUIDFromCtx(ctx)
 	if uid == nil {
 		return errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session uid not found"))
@@ -727,8 +741,8 @@ func (d *DatabaseApplicationService) ValidateAccess(ctx context.Context, onlineD
 	do, err := d.DomainSVC.MGetDatabase(ctx, &database.MGetDatabaseRequest{
 		Basics: []*model.DatabaseBasic{
 			{
-				ID:        onlineDatabaseID,
-				TableType: table.TableType_OnlineTable,
+				ID:        databaseID,
+				TableType: tableType,
 			},
 		},
 	})
@@ -736,11 +750,11 @@ func (d *DatabaseApplicationService) ValidateAccess(ctx context.Context, onlineD
 		return err
 	}
 	if len(do.Databases) == 0 {
-		return errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "online database not found"))
+		return errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "database not found"))
 	}
 
 	if do.Databases[0].CreatorID != *uid {
-		logs.CtxErrorf(ctx, "user(%d) is not the creator(%d) of the database(%d)", *uid, do.Databases[0].CreatorID, onlineDatabaseID)
+		logs.CtxErrorf(ctx, "user(%d) is not the creator(%d) of the database(%d)", *uid, do.Databases[0].CreatorID, databaseID)
 		return errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("detail", "you are not the creator of the database"))
 	}
 

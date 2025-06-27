@@ -116,7 +116,7 @@ func TestCreateDatabase(t *testing.T) {
 			TableName: "test_db_create",
 			FieldList: []*database.FieldItem{
 				{
-					Name:         "id",
+					Name:         "id_custom",
 					Type:         table.FieldItemType_Number,
 					MustRequired: true,
 				},
@@ -258,7 +258,7 @@ func createDatabase(dbService Database) (*CreateDatabaseResponse, error) {
 			TableName: "test_db_table_01",
 			FieldList: []*database.FieldItem{
 				{
-					Name:         "id",
+					Name:         "id_custom",
 					Type:         table.FieldItemType_Number,
 					MustRequired: true,
 				},
@@ -296,13 +296,13 @@ func TestCRUDDatabaseRecord(t *testing.T) {
 		UserID:     1001,
 		Records: []map[string]string{
 			{
-				"id":    "1",
-				"name":  "John Doe",
-				"score": "80.5",
-				"date":  "2025-01-01 00:00:00",
+				"id_custom": "1",
+				"name":      "John Doe",
+				"score":     "80.5",
+				"date":      "2025-01-01 00:00:00",
 			},
 			{
-				"id":         "2",
+				"id_custom":  "2",
 				"name":       "Jane Smith",
 				"score":      "90.5",
 				"date":       "2025-01-01 01:00:00",
@@ -419,7 +419,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		{
 			Records: []*database.Record{
 				{
-					FieldId:    strconv.FormatInt(fieldMap["id"].AlterID, 10),
+					FieldId:    strconv.FormatInt(fieldMap["id_custom"].AlterID, 10),
 					FieldValue: "?",
 				},
 				{
@@ -435,7 +435,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		{
 			Records: []*database.Record{
 				{
-					FieldId:    strconv.FormatInt(fieldMap["id"].AlterID, 10),
+					FieldId:    strconv.FormatInt(fieldMap["id_custom"].AlterID, 10),
 					FieldValue: "?",
 				},
 				{
@@ -502,7 +502,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		SpaceID: 1,
 		OrderByList: []database.OrderBy{
 			{
-				Field:     "id",
+				Field:     "id_custom",
 				Direction: table.SortDirection_Desc,
 			},
 		},
@@ -528,7 +528,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		SpaceID:         1,
 		OrderByList: []database.OrderBy{
 			{
-				Field:     "id",
+				Field:     "id_custom",
 				Direction: table.SortDirection_Desc,
 			},
 		},
@@ -560,7 +560,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		SpaceID:         1,
 		OrderByList: []database.OrderBy{
 			{
-				Field:     "id",
+				Field:     "id_custom",
 				Direction: table.SortDirection_Desc,
 			},
 		},
@@ -590,7 +590,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		SpaceID:         1,
 		OrderByList: []database.OrderBy{
 			{
-				Field:     "id",
+				Field:     "id_custom",
 				Direction: table.SortDirection_Desc,
 			},
 		},
@@ -622,7 +622,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		{
 			Records: []*database.Record{
 				{
-					FieldId:    strconv.FormatInt(fieldMap["id"].AlterID, 10),
+					FieldId:    strconv.FormatInt(fieldMap["id_custom"].AlterID, 10),
 					FieldValue: "?",
 				},
 				{
@@ -662,7 +662,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		Condition: &database.ComplexCondition{
 			Conditions: []*database.Condition{
 				{
-					Left:      "id",
+					Left:      "id_custom",
 					Operation: database.Operation_EQUAL,
 					Right:     "?",
 				},
@@ -691,7 +691,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		Condition: &database.ComplexCondition{
 			Conditions: []*database.Condition{
 				{
-					Left:      "id",
+					Left:      "id_custom",
 					Operation: database.Operation_EQUAL,
 					Right:     "?",
 				},
@@ -733,7 +733,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		OperateType: database.OperateType_Custom,
 		UserID:      "1001",
 		SpaceID:     1,
-		SQL:         ptr.Of(fmt.Sprintf("UPDATE %s SET name = 'Bob Updated' WHERE id = ?", "test_db_table_01")),
+		SQL:         ptr.Of(fmt.Sprintf("UPDATE %s SET name = 'Bob Updated' WHERE id_custom = ?", "test_db_table_01")),
 		SQLParams: []*database.SQLParamVal{
 			{
 				Value: ptr.Of("112"),
@@ -754,7 +754,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 		OperateType: database.OperateType_Custom,
 		UserID:      "1001",
 		SpaceID:     1,
-		SQL:         ptr.Of(fmt.Sprintf("DELETE FROM %s WHERE id = ?", "test_db_table_01")),
+		SQL:         ptr.Of(fmt.Sprintf("DELETE FROM %s WHERE id_custom = ?", "test_db_table_01")),
 		SQLParams: []*database.SQLParamVal{
 			{
 				Value: ptr.Of("112"),
@@ -789,7 +789,7 @@ func TestDeleteDatabaseByAppID(t *testing.T) {
 				TableName: dbName,
 				FieldList: []*database.FieldItem{
 					{
-						Name:         "id",
+						Name:         "id_custom",
 						Type:         table.FieldItemType_Number,
 						MustRequired: true,
 					},

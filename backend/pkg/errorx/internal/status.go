@@ -105,6 +105,18 @@ func Param(k, v string) Option {
 	}
 }
 
+func Extra(k, v string) Option {
+	return func(ws *withStatus) {
+		if ws == nil || ws.status == nil {
+			return
+		}
+		if ws.status.ext.Extra == nil {
+			ws.status.ext.Extra = make(map[string]string)
+		}
+		ws.status.ext.Extra[k] = v
+	}
+}
+
 func NewByCode(code int32, options ...Option) error {
 	ws := &withStatus{
 		status: getStatusByCode(code),

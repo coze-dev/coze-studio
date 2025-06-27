@@ -2,6 +2,7 @@ package compose
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -107,7 +108,12 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 		}
 		in, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
 		if err != nil {
-			return "", err
+			var warnings nodes.ConversionWarnings
+			if errors.As(err, &warnings) {
+				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+			} else {
+				return "", err
+			}
 		}
 	}
 
@@ -253,7 +259,12 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 		}
 		in, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
 		if err != nil {
-			return nil, err
+			var warnings nodes.ConversionWarnings
+			if errors.As(err, &warnings) {
+				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+			} else {
+				return nil, err
+			}
 		}
 	}
 

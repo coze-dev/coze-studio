@@ -82,6 +82,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 	"code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type wfTestRunner struct {
@@ -1261,8 +1262,8 @@ func TestTestResumeWithInputNode(t *testing.T) {
 				IsAsync: ptr.Of(false),
 			}
 
-			errStr := r.postWithError(syncRunReq)
-			assert.Equal(t, "sync run workflow does not support interrupt/resume", errStr)
+			resp := post[workflow.OpenAPIRunFlowResponse](r, syncRunReq)
+			assert.Equal(t, int64(errno.ErrOpenAPIInterruptNotSupported), resp.Code)
 		})
 	})
 }
@@ -3784,8 +3785,8 @@ func TestLLMException(t *testing.T) {
 				"age":       int64(3),
 				"isSuccess": false,
 				"errorBody": map[string]any{
-					"errorMessage": "[GraphRunError]\ncontext has been canceled: context deadline exceeded",
-					"errorCode":    int64(-1),
+					"errorMessage": "node timeout",
+					"errorCode":    int64(errno.ErrNodeTimeout),
 				},
 			}, mustUnmarshalToMap(t, e.output))
 		})
@@ -4379,6 +4380,87 @@ func TestMismatchedTypeConvert(t *testing.T) {
 		})
 		e := r.getProcess(id, exeID)
 		e.assertSuccess()
-		assert.Equal(t, "false  {\"s\":[2,false]} [{\"a\":1}] 3 0 {\"b\":true}\nI don't know.", e.output)
+		assert.Equal(t, "false  {\"s\":[2,false]} [{\"a\":1}] 3 0 {\"b\":true}\nI don't know. {\"a\":1} false", e.output)
+	})
+}
+
+func TestJsonSerializationDeserialization(t *testing.T) {
+	mockey.PatchConvey("test JSON serialization and deserialization workflow", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		idStr := r.load("json/json_test.json")
+
+		mockey.PatchConvey("no type conversion", func() {
+			testInput := map[string]string{
+				"person": `{"int":123,"string":"hello","bool":true}`,
+			}
+
+			exeID := r.testRun(idStr, testInput)
+			e := r.getProcess(idStr, exeID)
+			output := e.output
+			t.Logf("JSON deserialization result (no conversion): %s", output)
+
+			var result map[string]any
+			err := sonic.Unmarshal([]byte(output), &result)
+			assert.NoError(t, err, "Failed to unmarshal output JSON")
+
+			outputData, ok := result["output"].(map[string]any)
+			assert.True(t, ok, "output field is not a map[string]any")
+
+			assert.Equal(t, int64(123), outputData["int"], "int field mismatch")
+			assert.Equal(t, "hello", outputData["string"], "string field mismatch")
+			assert.Equal(t, true, outputData["bool"], "bool field mismatch")
+		})
+
+		mockey.PatchConvey("legal type conversion", func() {
+			testInput := map[string]string{
+				"person": `{"int":"123","string":456,"bool":"true"}`,
+			}
+
+			exeID := r.testRun(idStr, testInput)
+			e := r.getProcess(idStr, exeID)
+			output := e.output
+			t.Logf("JSON deserialization result (legal conversion): %s", output)
+
+			var result map[string]any
+			err := sonic.Unmarshal([]byte(output), &result)
+			assert.NoError(t, err, "Failed to unmarshal output JSON")
+
+			outputData, ok := result["output"].(map[string]any)
+			assert.True(t, ok, "output field is not a map[string]any")
+
+			assert.Equal(t, int64(123), outputData["int"], "int field mismatch")
+			assert.Equal(t, "456", outputData["string"], "string field mismatch")
+			assert.Equal(t, true, outputData["bool"], "bool field mismatch")
+		})
+	})
+}
+
+func TestJsonSerializationDeserializationWithWarning(t *testing.T) {
+	mockey.PatchConvey("test JSON serialization and deserialization with warning", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		idStr := r.load("json/json_test_warning.json")
+		testInput := map[string]string{
+			"person": `{"int":1,"string":"abc","bool":true}`,
+		}
+
+		exeID := r.testRun(idStr, testInput)
+		e := r.getProcess(idStr, exeID)
+		output := e.output
+		t.Logf("JSON deserialization result (legal conversion): %s", output)
+
+		var result map[string]any
+		err := sonic.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err, "Failed to unmarshal output JSON")
+
+		outputData, ok := result["output"].(map[string]any)
+		assert.True(t, ok, "output field is not a map[string]any")
+
+		assert.Equal(t, false, outputData["int"], "int field mismatch")
+		assert.Equal(t, "abc", outputData["string"], "string field mismatch")
+		assert.Equal(t, true, outputData["bool"], "bool field mismatch")
 	})
 }

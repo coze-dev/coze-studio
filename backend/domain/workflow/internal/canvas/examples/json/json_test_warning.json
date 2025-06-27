@@ -1,0 +1,233 @@
+{
+	"nodes": [{
+		"blocks": [],
+		"data": {
+			"nodeMeta": {
+				"description": "工作流的起始节点，用于设定启动工作流需要的信息",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+				"subTitle": "",
+				"title": "开始"
+			},
+			"outputs": [{
+				"name": "person",
+				"required": true,
+				"schema": [{
+					"name": "int",
+					"required": false,
+					"type": "integer"
+				}, {
+					"name": "string",
+					"required": false,
+					"type": "string"
+				}, {
+					"name": "bool",
+					"required": false,
+					"type": "boolean"
+				}],
+				"type": "object"
+			}],
+			"trigger_parameters": [{
+				"name": "person",
+				"required": true,
+				"schema": [{
+					"name": "int",
+					"required": false,
+					"type": "integer"
+				}, {
+					"name": "string",
+					"required": false,
+					"type": "string"
+				}, {
+					"name": "bool",
+					"required": false,
+					"type": "boolean"
+				}],
+				"type": "object"
+			}]
+		},
+		"edges": null,
+		"id": "100001",
+		"meta": {
+			"position": {
+				"x": 0,
+				"y": 0
+			}
+		},
+		"type": "1"
+	}, {
+		"blocks": [],
+		"data": {
+			"inputs": {
+				"inputParameters": [{
+					"input": {
+						"schema": [{
+							"name": "int",
+							"type": "boolean"
+						}, {
+							"name": "string",
+							"type": "string"
+						}, {
+							"name": "bool",
+							"type": "boolean"
+						}],
+						"type": "object",
+						"value": {
+							"content": {
+								"blockID": "179566",
+								"name": "output",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 6
+							},
+							"type": "ref"
+						}
+					},
+					"name": "output"
+				}],
+				"terminatePlan": "returnVariables"
+			},
+			"nodeMeta": {
+				"description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+				"subTitle": "",
+				"title": "结束"
+			}
+		},
+		"edges": null,
+		"id": "900001",
+		"meta": {
+			"position": {
+				"x": 1000,
+				"y": 0
+			}
+		},
+		"type": "2"
+	}, {
+		"blocks": [],
+		"data": {
+			"inputs": {
+				"inputParameters": [{
+					"input": {
+						"schema": [{
+							"name": "int",
+							"required": false,
+							"type": "integer"
+						}, {
+							"name": "string",
+							"required": false,
+							"type": "string"
+						}, {
+							"name": "bool",
+							"required": false,
+							"type": "boolean"
+						}],
+						"type": "object",
+						"value": {
+							"content": {
+								"blockID": "100001",
+								"name": "person",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 6
+							},
+							"type": "ref"
+						}
+					},
+					"name": "input"
+				}]
+			},
+			"nodeMeta": {
+				"description": "用于把变量转化为JSON字符串",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-to_json.png",
+				"mainColor": "#F2B600",
+				"subTitle": "JSON 序列化",
+				"title": "JSON 序列化"
+			},
+			"outputs": [{
+				"name": "output",
+				"type": "string"
+			}]
+		},
+		"edges": null,
+		"id": "112049",
+		"meta": {
+			"position": {
+				"x": 467,
+				"y": -132
+			}
+		},
+		"type": "58"
+	}, {
+		"blocks": [],
+		"data": {
+			"inputs": {
+				"inputParameters": [{
+					"input": {
+						"type": "string",
+						"value": {
+							"content": {
+								"blockID": "112049",
+								"name": "output",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 1
+							},
+							"type": "ref"
+						}
+					},
+					"name": "input"
+				}]
+			},
+			"nodeMeta": {
+				"description": "用于把JSON字符串转化为变量",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-from_json.png",
+				"mainColor": "#F2B600",
+				"subTitle": "JSON 反序列化",
+				"title": "JSON 反序列化"
+			},
+			"outputs": [{
+				"name": "output",
+				"schema": [{
+					"name": "int",
+					"type": "boolean"
+				}, {
+					"name": "string",
+					"type": "string"
+				}, {
+					"name": "bool",
+					"type": "boolean"
+				}],
+				"type": "object"
+			}]
+		},
+		"edges": null,
+		"id": "179566",
+		"meta": {
+			"position": {
+				"x": 547,
+				"y": 104
+			}
+		},
+		"type": "59"
+	}],
+	"edges": [{
+		"sourceNodeID": "100001",
+		"targetNodeID": "112049",
+		"sourcePortID": ""
+	}, {
+		"sourceNodeID": "179566",
+		"targetNodeID": "900001",
+		"sourcePortID": ""
+	}, {
+		"sourceNodeID": "112049",
+		"targetNodeID": "179566",
+		"sourcePortID": ""
+	}],
+	"versions": {
+		"loop": "v2",
+		"batch": "v2"
+	}
+}

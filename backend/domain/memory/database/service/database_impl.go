@@ -932,6 +932,9 @@ func (d databaseService) ExecuteSQL(ctx context.Context, req *ExecuteSQLRequest)
 			physicalToFieldType[physicalName] = field.Type
 		}
 	}
+	fieldNameToPhysical[database.DefaultIDDisplayColName] = database.DefaultIDColName
+	fieldNameToPhysical[database.DefaultUidDisplayColName] = database.DefaultUidColName
+	fieldNameToPhysical[database.DefaultCreateTimeDisplayColName] = database.DefaultCreateTimeColName
 
 	var resultSet *entity3.ResultSet
 	var rowsAffected int64

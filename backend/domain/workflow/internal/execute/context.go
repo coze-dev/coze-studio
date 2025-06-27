@@ -141,6 +141,37 @@ func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey, resumeEvent *entity
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil
 }
 
+func tryRestoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey) (context.Context, bool) {
+	var storedCtx *Context
+	err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
+		if state == nil {
+			return errors.New("state is nil")
+		}
+		var e error
+		storedCtx, _, e = state.GetNodeCtx(nodeKey)
+		if e != nil {
+			return e
+		}
+		return nil
+	})
+	if err != nil || storedCtx == nil {
+		return ctx, false
+	}
+
+	storedCtx.NodeCtx.ResumingEvent = nil
+
+	// restore the parent-child relationship between token collectors
+	if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil {
+		currentC := GetExeCtx(ctx)
+		currentTokenCollector := currentC.TokenCollector
+		storedCtx.TokenCollector.Parent = currentTokenCollector
+	}
+
+	storedCtx.NodeCtx.CurrentRetryCount = 0
+
+	return context.WithValue(ctx, contextKey{}, storedCtx), true
+}
+
 func PrepareRootExeCtx(ctx context.Context, h *WorkflowHandler) (context.Context, error) {
 	var parentTokenCollector *TokenCollector
 	if currentC := GetExeCtx(ctx); currentC != nil {
@@ -196,7 +227,7 @@ func PrepareSubExeCtx(ctx context.Context, wb *entity.WorkflowBasic, requireChec
 
 	var newCheckpointID string
 	if len(c.CheckPointID) > 0 {
-		newCheckpointID = c.CheckPointID + "_0"
+		newCheckpointID = c.CheckPointID + "_" + strconv.FormatInt(subExecuteID, 10)
 	}
 
 	newC := &Context{
@@ -284,7 +315,7 @@ func InheritExeCtxWithBatchInfo(ctx context.Context, index int, items map[string
 		if c.SubWorkflowCtx != nil {
 			newCheckpointID += "_" + strconv.Itoa(int(c.SubWorkflowCtx.SubExecuteID))
 		}
-		newCheckpointID += "_" + strconv.Itoa(int(c.NodeCtx.NodeExecuteID))
+		newCheckpointID += "_" + string(c.NodeCtx.NodeKey)
 		newCheckpointID += "_" + strconv.Itoa(index)
 	}
 	return context.WithValue(ctx, contextKey{}, &Context{

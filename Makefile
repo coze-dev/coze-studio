@@ -18,14 +18,18 @@ fe:
 	@echo "Building frontend..."
 	@bash $(BUILD_FE_SCRIPT)
 
-ve: python
-	@echo "Building on VolcEngine..."
-	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile '*' up -d
-	@echo "Building and start server..."
+ve: 
+	@echo "Run opencoze on VolcEngine..."
+	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile volcano-setup --profile volcano-server up -d --wait
+
+debug_ve: python
+	@echo "Debug opencoze on VolcEngine..."
+	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile volcano-setup up -d
+	@echo "Building and run server..."
 	@bash $(BUILD_SERVER_SCRIPT) -start
 
 server:
-	@echo "Building and start server..."
+	@echo "Building and run server..."
 	@bash $(BUILD_SERVER_SCRIPT) -start
 
 build_server:

@@ -31,6 +31,10 @@ func KVf(k, v string, a ...any) Option {
 	return internal.Param(k, formatValue)
 }
 
+func Extra(k, v string) Option {
+	return internal.Extra(k, v)
+}
+
 // New get an error predefined in the configuration file by statusCode
 // with a stack trace at the point New is called.
 func New(code int32, options ...Option) error {

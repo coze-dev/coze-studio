@@ -2,6 +2,7 @@ package compose
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"runtime/debug"
 	"time"
@@ -17,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type nodeRunConfig[O any] struct {
@@ -233,6 +235,9 @@ func (nc *nodeRunConfig[O]) invoke() func(ctx context.Context, input map[string]
 				if hasErrOutput {
 					output = errOutput
 					err = nil
+					if output, err = runner.postProcess(ctx, output); err != nil {
+						logs.CtxErrorf(ctx, "postProcess failed after returning error output: %v", err)
+					}
 				}
 			}
 		}()
@@ -614,32 +619,56 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		return nil, false
 	}
 
+	var sErr vo.WorkflowError
+	if !errors.As(err, &sErr) {
+		if errors.Is(err, context.DeadlineExceeded) {
+			sErr = vo.NodeTimeoutErr
+		} else if errors.Is(err, context.Canceled) {
+			sErr = vo.CancelErr
+		} else {
+			sErr = vo.WrapError(errno.ErrWorkflowExecuteFail, err)
+		}
+	}
+
+	code := int(sErr.Code())
+	msg := sErr.Msg()
+
 	switch r.errProcessType {
 	case vo.ErrorProcessTypeDefault:
 		d := r.dataOnErr(ctx)
 		d["errorBody"] = map[string]any{
-			"errorMessage": err.Error(),
-			"errorCode":    -1,
+			"errorMessage": msg,
+			"errorCode":    code,
 		}
 		d["isSuccess"] = false
 		if r.callbackEnabled {
-			_ = callbacks.OnEnd(ctx, d)
+			sOutput := &nodes.StructuredCallbackOutput{
+				Output:    d,
+				RawOutput: d,
+				Error:     sErr,
+			}
+			_ = callbacks.OnEnd(ctx, sOutput)
 		}
 		return d, true
 	case vo.ErrorProcessTypeExceptionBranch:
 		s := make(map[string]any)
 		s["errorBody"] = map[string]any{
-			"errorMessage": err.Error(),
-			"errorCode":    -1,
+			"errorMessage": msg,
+			"errorCode":    code,
 		}
 		s["isSuccess"] = false
 		if r.callbackEnabled {
-			_ = callbacks.OnEnd(ctx, s)
+			sOutput := &nodes.StructuredCallbackOutput{
+				Output:    s,
+				RawOutput: s,
+				Error:     sErr,
+			}
+			_ = callbacks.OnEnd(ctx, sOutput)
 		}
 		return s, true
 	default:
 		if r.callbackEnabled {
-			_ = callbacks.OnError(ctx, err)
+			_ = callbacks.OnError(ctx, sErr)
 		}
 		return nil, false
 	}
@@ -655,10 +684,17 @@ func parseDefaultOutput(ctx context.Context, data string, schema_ map[string]*vo
 
 	for k, v := range result {
 		if s, ok := schema_[k]; ok {
-			if val, err := nodes.Convert(ctx, v, s); err == nil {
-				result[k] = val
+			val, err := nodes.Convert(ctx, v, k, s)
+			if err != nil {
+				var warnings nodes.ConversionWarnings
+				if errors.As(err, &warnings) {
+					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+					result[k] = val
+				} else {
+					return nil, fmt.Errorf("invalid type: %v, %v", k, err)
+				}
 			} else {
-				return nil, fmt.Errorf("invalid type: %v, %v", k, err)
+				result[k] = val
 			}
 		}
 	}
@@ -685,6 +721,15 @@ func parseDefaultOutputOrFallback(ctx context.Context, data string, schema_ map[
 func preTypeConverter(inTypes map[string]*vo.TypeInfo) func(ctx context.Context, in map[string]any) (map[string]any, error) {
 	return func(ctx context.Context, in map[string]any) (map[string]any, error) {
 		out, err := nodes.ConvertInputs(ctx, in, inTypes)
+		if err != nil {
+			var warnings nodes.ConversionWarnings
+			if errors.As(err, &warnings) {
+				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+				return out, nil
+			} else {
+				return out, err
+			}
+		}
 		return out, err
 	}
 }

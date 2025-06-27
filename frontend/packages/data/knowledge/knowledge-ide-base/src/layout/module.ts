@@ -27,8 +27,8 @@ export interface KnowledgeDataActions {
  * 知识库状态信息
  */
 export interface KnowledgeStatusInfo {
-  /** 文档列表是否正在加载 */
-  isDocumentLoading: boolean;
+  /** 知识库是否正在加载 */
+  isReloading: boolean;
   /** 文件处理进度信息 */
   progressMap: ProgressMap;
 }

@@ -10,6 +10,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 )
@@ -41,18 +42,20 @@ async def main(args:Args)->Output:
     return ret
 `
 		ret := map[string]any{
-			"key0": 11231123,
+			"key0": int64(11231123),
 			"key1": []any{"hello", "world"},
-			"key2": []interface{}{123, "345"},
-			"key3": map[string]interface{}{"key31": "hi", "key32": "hello", "key33": []any{"123", "456"}, "key34": map[string]interface{}{"key341": "123", "key342": 456}},
+			"key2": []interface{}{int64(123), "345"},
+			"key3": map[string]interface{}{"key31": "hi", "key32": "hello", "key33": []any{"123", "456"}, "key34": map[string]interface{}{"key341": "123", "key342": int64(456)}},
 			"key4": []any{
 				map[string]any{"key41": "41"},
 				map[string]any{"key42": "42"},
 			},
 		}
+
 		response := &code.RunResponse{
 			Result: ret,
 		}
+
 		mockRunner.EXPECT().Run(gomock.Any(), gomock.Any()).Return(response, nil)
 		ctx := t.Context()
 		c := &CodeRunner{
@@ -113,9 +116,9 @@ async def main(args:Args)->Output:
 `
 
 		ret := map[string]any{
-			"key0": 11231123,
+			"key0": int64(11231123),
 			"key1": []any{"hello", "world"},
-			"key2": []interface{}{123, "345"},
+			"key2": []interface{}{int64(123), "345"},
 			"key3": map[string]interface{}{"key31": "hi", "key32": "hello", "key34": map[string]interface{}{"key341": "123"}},
 		}
 
@@ -189,9 +192,9 @@ async def main(args:Args)->Output:
 		ctx := t.Context()
 		ctx = ctxcache.Init(ctx)
 		ret := map[string]any{
-			"key0": 11231123,
+			"key0": int64(11231123),
 			"key1": []any{"hello", "world"},
-			"key2": []interface{}{123, "345"},
+			"key2": []interface{}{int64(123), "345"},
 			"key3": map[string]interface{}{"key31": "hi", "key32": "hello", "key34": map[string]interface{}{"key341": "123", "key343": []any{"hello", "world"}}},
 		}
 		response := &code.RunResponse{
@@ -231,12 +234,13 @@ async def main(args:Args)->Output:
 		assert.Equal(t, int64(11231123), ret["key0"])
 		assert.Equal(t, []any{float64(123), float64(345)}, ret["key2"])
 
-		s, ok := ctxcache.Get[string](ctx, coderRunnerWarnErrorLevelCtxKey)
+		warnings, ok := ctxcache.Get[nodes.ConversionWarnings](ctx, coderRunnerWarnErrorLevelCtxKey)
 		assert.True(t, ok)
-		assert.Contains(t, s, "field key3.key34.key343.0 is not a number")
-		assert.Contains(t, s, "field key3.key34.key343.1 is not a number")
-		assert.Contains(t, s, "field key1.0 is not a number")
-		assert.Contains(t, s, "field key1.1 is not a number")
+		s := warnings.Error()
+		assert.Contains(t, s, "field key3.key34.key343.0 is not number")
+		assert.Contains(t, s, "field key3.key34.key343.1 is not number")
+		assert.Contains(t, s, "field key1.0 is not number")
+		assert.Contains(t, s, "field key1.1 is not number")
 
 	})
 }

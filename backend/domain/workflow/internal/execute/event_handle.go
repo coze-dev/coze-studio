@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/schema"
@@ -16,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func setRootWorkflowSuccess(ctx context.Context, event *Event, repo workflow.Repository,
@@ -184,9 +186,28 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				InputTokens:  event.GetInputTokens(),
 				OutputTokens: event.GetOutputTokens(),
 			},
-			ErrorCode:  ptr.Of(event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]), // TODO: where can I get the error codes?
-			FailReason: ptr.Of(event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]),
 		}
+
+		var wfe vo.WorkflowError
+		if !errors.As(event.Err, &wfe) {
+			if errors.Is(event.Err, context.DeadlineExceeded) {
+				wfe = vo.WorkflowTimeoutErr
+			} else if errors.Is(event.Err, context.Canceled) {
+				wfe = vo.CancelErr
+			} else {
+				wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err)
+			}
+		}
+
+		var msg string
+		if cause := errors.Unwrap(event.Err); cause != nil {
+			msg = cause.Error()
+		} else {
+			msg = wfe.Msg()
+		}
+		errMsg := msg[:min(1000, len(msg))]
+		wfExec.ErrorCode = ptr.Of(strconv.Itoa(int(wfe.Code())))
+		wfExec.FailReason = ptr.Of(errMsg)
 
 		var (
 			updatedRows   int64
@@ -206,10 +227,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 						EventID:   event.GetResumedEventID(),
 						Status:    entity.WorkflowFailed,
 						Usage:     wfExec.TokenInfo,
-						LastError: &entity.ErrorInfo{
-							Code: 4200,                  // TODO: the error codes
-							Msg:  event.Err.Err.Error(), // TODO: do I need to consider the error level here?
-						},
+						LastError: wfe,
 					},
 				}, nil)
 			}
@@ -250,6 +268,9 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			}
 
 			if needPop {
+				// the current resuming node emits an interrupt event again
+				// need to remove the previous interrupt event because the node is not 'END', but 'Error',
+				// so it didn't remove the previous interrupt OnEnd
 				deletedEvent, deleted, err := repo.PopFirstInterruptEvent(ctx, exeID)
 				if err != nil {
 					return noTerminate, err
@@ -347,10 +368,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 						EventID:   event.GetResumedEventID(),
 						Status:    entity.WorkflowCancel,
 						Usage:     wfExec.TokenInfo,
-						LastError: &entity.ErrorInfo{
-							Code: 4200,                      // TODO: the error codes
-							Msg:  "workflow cancel by user", // TODO: do I need to consider the error level here?
-						},
+						LastError: vo.CancelErr,
 					},
 				}, nil)
 			}
@@ -406,6 +424,22 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				OutputTokens: event.GetOutputTokens(),
 			},
 			Extra: event.extra,
+		}
+
+		if event.Err != nil {
+			var wfe vo.WorkflowError
+			if !errors.As(event.Err, &wfe) {
+				panic("node end: event.Err is not a WorkflowError")
+			}
+
+			var msg string
+			if cause := errors.Unwrap(event.Err); cause != nil {
+				msg = cause.Error()
+			} else {
+				msg = wfe.Msg()
+			}
+			nodeExec.ErrorInfo = ptr.Of(msg)
+			nodeExec.ErrorLevel = ptr.Of(string(wfe.Level()))
 		}
 
 		if event.outputExtractor != nil {
@@ -554,12 +588,28 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 	case NodeError:
 		var errorInfo, errorLevel string
-		if errors.Is(event.Err.Err, context.Canceled) {
+		if errors.Is(event.Err, context.Canceled) {
 			errorInfo = "workflow cancel by user"
-			errorLevel = string(LevelCancel)
+			errorLevel = string(vo.LevelCancel)
 		} else {
-			errorInfo = event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]
-			errorLevel = string(LevelError)
+			var wfe vo.WorkflowError
+			if !errors.As(event.Err, &wfe) {
+				if errors.Is(event.Err, context.DeadlineExceeded) {
+					wfe = vo.NodeTimeoutErr
+				} else if errors.Is(event.Err, context.Canceled) {
+					wfe = vo.CancelErr
+				} else {
+					wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err)
+				}
+			}
+			var msg string
+			if cause := errors.Unwrap(event.Err); cause != nil {
+				msg = cause.Error()
+			} else {
+				msg = wfe.Msg()
+			}
+			errorInfo = msg[:min(100, len(msg))]
+			errorLevel = string(wfe.Level())
 		}
 
 		if event.Context == nil || event.Context.NodeCtx == nil {
@@ -714,7 +764,7 @@ func HandleExecuteEvent(ctx context.Context,
 
 func mustMarshalToString[T any](m map[string]T) string {
 	if len(m) == 0 {
-		return ""
+		return "{}"
 	}
 
 	b, err := sonic.ConfigStd.MarshalToString(m) // keep the order of the keys

@@ -42,7 +42,6 @@
   "typings": "./src/full/index.ts",
   "scripts": {
     "build": "exit 0",
-    "dev": "storybook dev -p 6006",
     "lint": "eslint ./ --cache",
     "test": "vitest --run --passWithNoTests",
     "test:cov": "npm run test -- --coverage"

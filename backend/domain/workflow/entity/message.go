@@ -19,13 +19,8 @@ type StateMessage struct {
 	SpaceID        int64
 	Status         WorkflowExecuteStatus
 	Usage          *TokenUsage
-	LastError      *ErrorInfo
+	LastError      vo.WorkflowError
 	InterruptEvent *InterruptEvent
-}
-
-type ErrorInfo struct {
-	Code int
-	Msg  string
 }
 
 // DataMessage represents a full or chunked message during a run that should go into message history.

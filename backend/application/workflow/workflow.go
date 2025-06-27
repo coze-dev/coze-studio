@@ -40,6 +40,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 	"code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type ApplicationService struct {
@@ -229,8 +230,10 @@ func (w *ApplicationService) BatchDeleteWorkflow(ctx context.Context, req *workf
 }
 
 func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.GetCanvasInfoRequest) (*workflow.GetCanvasInfoResponse, error) {
-	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
-		return nil, err
+	if req.GetSpaceID() != strconv.FormatInt(consts.TemplateSpaceID, 10) {
+		if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+			return nil, err
+		}
 	}
 
 	wf, err := GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
@@ -995,12 +998,16 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 					DebugUrl: ptr.Of(fmt.Sprintf(vo.DebugURLTpl, executeID, spaceID, workflowID)),
 				}, nil
 			case entity.WorkflowFailed, entity.WorkflowCancel:
+				var wfe vo.WorkflowError
+				if !errors.As(msg.StateMessage.LastError, &wfe) {
+					panic("stream run last error is not a WorkflowError")
+				}
 				return &workflow.OpenAPIStreamRunFlowResponse{
 					ID:           strconv.Itoa(messageID),
 					Event:        string(ErrEvent),
 					DebugUrl:     ptr.Of(fmt.Sprintf(vo.DebugURLTpl, executeID, spaceID, workflowID)),
-					ErrorCode:    ptr.Of(int64(msg.StateMessage.LastError.Code)),
-					ErrorMessage: ptr.Of(msg.StateMessage.LastError.Msg),
+					ErrorCode:    ptr.Of(int64(wfe.Code())),
+					ErrorMessage: ptr.Of(wfe.Msg()),
 				}, nil
 			case entity.WorkflowInterrupted:
 				if msg.InterruptEvent.ToolInterruptEvent == nil {
@@ -1092,7 +1099,7 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 	if req.Parameters != nil {
 		err := sonic.UnmarshalString(*req.Parameters, &parameters)
 		if err != nil {
-			return nil, err
+			return nil, vo.WrapError(errno.ErrInvalidParameter, err)
 		}
 	}
 
@@ -1105,7 +1112,7 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 	}
 
 	if meta.LatestPublishedVersion == nil {
-		return nil, errors.New("workflow has not been published")
+		return nil, vo.NewError(errno.ErrWorkflowNotPublished)
 	}
 
 	if err = checkUserSpace(ctx, userID, meta.SpaceID); err != nil {
@@ -1130,17 +1137,18 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 	}
 
 	exeCfg := vo.ExecuteConfig{
-		ID:           meta.ID,
-		From:         vo.FromSpecificVersion,
-		Version:      *meta.LatestPublishedVersion,
-		Operator:     userID,
-		Mode:         vo.ExecuteModeRelease,
-		AppID:        appID,
-		AgentID:      agentID,
-		ConnectorID:  connectorID,
-		ConnectorUID: strconv.FormatInt(userID, 10),
-		TaskType:     vo.TaskTypeForeground,
-		SyncPattern:  vo.SyncPatternStream,
+		ID:            meta.ID,
+		From:          vo.FromSpecificVersion,
+		Version:       *meta.LatestPublishedVersion,
+		Operator:      userID,
+		Mode:          vo.ExecuteModeRelease,
+		AppID:         appID,
+		AgentID:       agentID,
+		ConnectorID:   connectorID,
+		ConnectorUID:  strconv.FormatInt(userID, 10),
+		TaskType:      vo.TaskTypeForeground,
+		SyncPattern:   vo.SyncPatternStream,
+		InputFailFast: true,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -1185,7 +1193,10 @@ func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workf
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
 
-	connectorID := mustParseInt64(req.GetConnectorID())
+	var connectorID int64
+	if req.IsSetConnectorID() {
+		connectorID = mustParseInt64(req.GetConnectorID())
+	}
 
 	sr, err := GetWorkflowDomainSVC().StreamResume(ctx, resumeReq, vo.ExecuteConfig{
 		Operator:     userID,
@@ -1211,7 +1222,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	if req.Parameters != nil {
 		err := sonic.UnmarshalString(*req.Parameters, &parameters)
 		if err != nil {
-			return nil, err
+			return nil, vo.WrapError(errno.ErrInvalidParameter, err)
 		}
 	}
 
@@ -1224,7 +1235,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	}
 
 	if meta.LatestPublishedVersion == nil {
-		return nil, errors.New("workflow has not been published")
+		return nil, vo.NewError(errno.ErrWorkflowNotPublished)
 	}
 
 	if err = checkUserSpace(ctx, userID, meta.SpaceID); err != nil {
@@ -1249,16 +1260,17 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	}
 
 	exeCfg := vo.ExecuteConfig{
-		ID:           meta.ID,
-		From:         vo.FromSpecificVersion,
-		Version:      *meta.LatestPublishedVersion,
-		Operator:     userID,
-		Mode:         vo.ExecuteModeRelease,
-		AppID:        appID,
-		AgentID:      agentID,
-		ConnectorID:  connectorID,
-		ConnectorUID: strconv.FormatInt(userID, 10),
-		TaskType:     vo.TaskTypeForeground,
+		ID:            meta.ID,
+		From:          vo.FromSpecificVersion,
+		Version:       *meta.LatestPublishedVersion,
+		Operator:      userID,
+		Mode:          vo.ExecuteModeRelease,
+		AppID:         appID,
+		AgentID:       agentID,
+		ConnectorID:   connectorID,
+		ConnectorUID:  strconv.FormatInt(userID, 10),
+		TaskType:      vo.TaskTypeForeground,
+		InputFailFast: true,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -1285,7 +1297,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	}
 
 	if wfExe.Status == entity.WorkflowInterrupted {
-		return nil, errors.New("sync run workflow does not support interrupt/resume")
+		return nil, vo.NewError(errno.ErrInterruptNotSupported)
 	}
 
 	var data *string
@@ -1401,10 +1413,11 @@ func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.Val
 }
 
 func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *workflow.GetWorkflowReferencesRequest) (*workflow.GetWorkflowReferencesResponse, error) {
-	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
-		return nil, err
+	if req.GetSpaceID() != strconv.FormatInt(consts.TemplateSpaceID, 10) {
+		if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
+			return nil, err
+		}
 	}
-
 	workflows, err := GetWorkflowDomainSVC().GetWorkflowReference(ctx, mustParseInt64(req.GetWorkflowID()))
 	if err != nil {
 		return nil, err
@@ -1665,7 +1678,7 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 			SpaceID:          ptr.Of(strconv.FormatInt(w.SpaceID, 10)),
 			PluginID: func() string {
 				if status == workflow.WorkFlowListStatus_UnPublished {
-					return ""
+					return "0"
 				}
 				return strconv.FormatInt(w.ID, 10)
 			}(),
@@ -1715,6 +1728,7 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 		}
 	}
 	response.Data.WorkflowList = workflowList
+	response.Data.Total = int64(len(workflowList))
 
 	return response, nil
 }
@@ -2792,6 +2806,10 @@ func nodeType2EntityNodeType(t string) (entity.NodeType, error) {
 		return entity.NodeTypeHTTPRequester, nil
 	case 46:
 		return entity.NodeTypeDatabaseInsert, nil
+	case 58:
+		return entity.NodeTypeJsonSerialization, nil
+	case 59:
+		return entity.NodeTypeJsonDeserialization, nil
 	default:
 		// Handle all unknown or unsupported types here
 		return "", fmt.Errorf("unsupported or unknown node type ID: %d", i)
@@ -2877,6 +2895,10 @@ func entityNodeTypeToAPINodeTemplateType(nodeType entity.NodeType) (workflow.Nod
 		// Maps to DatabaseInsert (ID 41) in the API model, despite entity ID being 46.
 		// return workflow.NodeTemplateType_DatabaseInsert, nil
 		return workflow.NodeTemplateType(46), nil
+	case entity.NodeTypeJsonSerialization:
+		return workflow.NodeTemplateType_JsonSerialization, nil
+	case entity.NodeTypeJsonDeserialization:
+		return workflow.NodeTemplateType_JsonDeserialization, nil
 	case entity.NodeTypeLambda:
 		return 0, nil
 	default:

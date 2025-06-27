@@ -3,10 +3,11 @@
 package workflow
 
 import (
-	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+
+	"code.byted.org/flow/opencoze/backend/api/model/base"
 	"github.com/apache/thrift/lib/go/thrift"
 )
 
@@ -447,33 +448,35 @@ func (p *Tag) Value() (driver.Value, error) {
 type NodeType int64
 
 const (
-	NodeType_Start           NodeType = 1
-	NodeType_End             NodeType = 2
-	NodeType_LLM             NodeType = 3
-	NodeType_Api             NodeType = 4
-	NodeType_Code            NodeType = 5
-	NodeType_Dataset         NodeType = 6
-	NodeType_If              NodeType = 8
-	NodeType_SubWorkflow     NodeType = 9
-	NodeType_Variable        NodeType = 11
-	NodeType_Database        NodeType = 12
-	NodeType_Message         NodeType = 13
-	NodeType_Text            NodeType = 15
-	NodeType_ImageGenerate   NodeType = 16
-	NodeType_ImageReference  NodeType = 17
-	NodeType_Question        NodeType = 18
-	NodeType_Break           NodeType = 19
-	NodeType_LoopSetVariable NodeType = 20
-	NodeType_Loop            NodeType = 21
-	NodeType_Intent          NodeType = 22
-	NodeType_DrawingBoard    NodeType = 23
-	NodeType_SceneVariable   NodeType = 24
-	NodeType_SceneChat       NodeType = 25
-	NodeType_DatasetWrite    NodeType = 27
-	NodeType_Input           NodeType = 30
-	NodeType_Batch           NodeType = 28
-	NodeType_Continue        NodeType = 29
-	NodeType_AssignVariable  NodeType = 40
+	NodeType_Start               NodeType = 1
+	NodeType_End                 NodeType = 2
+	NodeType_LLM                 NodeType = 3
+	NodeType_Api                 NodeType = 4
+	NodeType_Code                NodeType = 5
+	NodeType_Dataset             NodeType = 6
+	NodeType_If                  NodeType = 8
+	NodeType_SubWorkflow         NodeType = 9
+	NodeType_Variable            NodeType = 11
+	NodeType_Database            NodeType = 12
+	NodeType_Message             NodeType = 13
+	NodeType_Text                NodeType = 15
+	NodeType_ImageGenerate       NodeType = 16
+	NodeType_ImageReference      NodeType = 17
+	NodeType_Question            NodeType = 18
+	NodeType_Break               NodeType = 19
+	NodeType_LoopSetVariable     NodeType = 20
+	NodeType_Loop                NodeType = 21
+	NodeType_Intent              NodeType = 22
+	NodeType_DrawingBoard        NodeType = 23
+	NodeType_SceneVariable       NodeType = 24
+	NodeType_SceneChat           NodeType = 25
+	NodeType_DatasetWrite        NodeType = 27
+	NodeType_Input               NodeType = 30
+	NodeType_Batch               NodeType = 28
+	NodeType_Continue            NodeType = 29
+	NodeType_AssignVariable      NodeType = 40
+	NodeType_JsonSerialization   NodeType = 58
+	NodeType_JsonDeserialization NodeType = 59
 )
 
 func (p NodeType) String() string {
@@ -532,6 +535,10 @@ func (p NodeType) String() string {
 		return "Continue"
 	case NodeType_AssignVariable:
 		return "AssignVariable"
+	case NodeType_JsonSerialization:
+		return "JsonSerialization"
+	case NodeType_JsonDeserialization:
+		return "JsonDeserialization"
 	}
 	return "<UNSET>"
 }
@@ -592,6 +599,10 @@ func NodeTypeFromString(s string) (NodeType, error) {
 		return NodeType_Continue, nil
 	case "AssignVariable":
 		return NodeType_AssignVariable, nil
+	case "JsonSerialization":
+		return NodeType_JsonSerialization, nil
+	case "JsonDeserialization":
+		return NodeType_JsonDeserialization, nil
 	}
 	return NodeType(0), fmt.Errorf("not a valid NodeType string")
 }
@@ -615,38 +626,40 @@ func (p *NodeType) Value() (driver.Value, error) {
 type NodeTemplateType int64
 
 const (
-	NodeTemplateType_Start           NodeTemplateType = 1
-	NodeTemplateType_End             NodeTemplateType = 2
-	NodeTemplateType_LLM             NodeTemplateType = 3
-	NodeTemplateType_Api             NodeTemplateType = 4
-	NodeTemplateType_Code            NodeTemplateType = 5
-	NodeTemplateType_Dataset         NodeTemplateType = 6
-	NodeTemplateType_If              NodeTemplateType = 8
-	NodeTemplateType_SubWorkflow     NodeTemplateType = 9
-	NodeTemplateType_Variable        NodeTemplateType = 11
-	NodeTemplateType_Database        NodeTemplateType = 12
-	NodeTemplateType_Message         NodeTemplateType = 13
-	NodeTemplateType_Imageflow       NodeTemplateType = 14
-	NodeTemplateType_Text            NodeTemplateType = 15
-	NodeTemplateType_ImageGenerate   NodeTemplateType = 16
-	NodeTemplateType_ImageReference  NodeTemplateType = 17
-	NodeTemplateType_Question        NodeTemplateType = 18
-	NodeTemplateType_Break           NodeTemplateType = 19
-	NodeTemplateType_LoopSetVariable NodeTemplateType = 20
-	NodeTemplateType_Loop            NodeTemplateType = 21
-	NodeTemplateType_Intent          NodeTemplateType = 22
-	NodeTemplateType_DrawingBoard    NodeTemplateType = 23
-	NodeTemplateType_SceneVariable   NodeTemplateType = 24
-	NodeTemplateType_SceneChat       NodeTemplateType = 25
-	NodeTemplateType_DatasetWrite    NodeTemplateType = 27
-	NodeTemplateType_Input           NodeTemplateType = 30
-	NodeTemplateType_Batch           NodeTemplateType = 28
-	NodeTemplateType_Continue        NodeTemplateType = 29
-	NodeTemplateType_AssignVariable  NodeTemplateType = 40
-	NodeTemplateType_DatabaseInsert  NodeTemplateType = 41
-	NodeTemplateType_DatabaseUpdate  NodeTemplateType = 42
-	NodeTemplateType_DatabasesELECT  NodeTemplateType = 43
-	NodeTemplateType_DatabaseDelete  NodeTemplateType = 44
+	NodeTemplateType_Start               NodeTemplateType = 1
+	NodeTemplateType_End                 NodeTemplateType = 2
+	NodeTemplateType_LLM                 NodeTemplateType = 3
+	NodeTemplateType_Api                 NodeTemplateType = 4
+	NodeTemplateType_Code                NodeTemplateType = 5
+	NodeTemplateType_Dataset             NodeTemplateType = 6
+	NodeTemplateType_If                  NodeTemplateType = 8
+	NodeTemplateType_SubWorkflow         NodeTemplateType = 9
+	NodeTemplateType_Variable            NodeTemplateType = 11
+	NodeTemplateType_Database            NodeTemplateType = 12
+	NodeTemplateType_Message             NodeTemplateType = 13
+	NodeTemplateType_Imageflow           NodeTemplateType = 14
+	NodeTemplateType_Text                NodeTemplateType = 15
+	NodeTemplateType_ImageGenerate       NodeTemplateType = 16
+	NodeTemplateType_ImageReference      NodeTemplateType = 17
+	NodeTemplateType_Question            NodeTemplateType = 18
+	NodeTemplateType_Break               NodeTemplateType = 19
+	NodeTemplateType_LoopSetVariable     NodeTemplateType = 20
+	NodeTemplateType_Loop                NodeTemplateType = 21
+	NodeTemplateType_Intent              NodeTemplateType = 22
+	NodeTemplateType_DrawingBoard        NodeTemplateType = 23
+	NodeTemplateType_SceneVariable       NodeTemplateType = 24
+	NodeTemplateType_SceneChat           NodeTemplateType = 25
+	NodeTemplateType_DatasetWrite        NodeTemplateType = 27
+	NodeTemplateType_Input               NodeTemplateType = 30
+	NodeTemplateType_Batch               NodeTemplateType = 28
+	NodeTemplateType_Continue            NodeTemplateType = 29
+	NodeTemplateType_AssignVariable      NodeTemplateType = 40
+	NodeTemplateType_DatabaseInsert      NodeTemplateType = 41
+	NodeTemplateType_DatabaseUpdate      NodeTemplateType = 42
+	NodeTemplateType_DatabasesELECT      NodeTemplateType = 43
+	NodeTemplateType_DatabaseDelete      NodeTemplateType = 44
+	NodeTemplateType_JsonSerialization   NodeTemplateType = 58
+	NodeTemplateType_JsonDeserialization NodeTemplateType = 59
 )
 
 func (p NodeTemplateType) String() string {
@@ -715,6 +728,10 @@ func (p NodeTemplateType) String() string {
 		return "DatabasesELECT"
 	case NodeTemplateType_DatabaseDelete:
 		return "DatabaseDelete"
+	case NodeTemplateType_JsonSerialization:
+		return "JsonSerialization"
+	case NodeTemplateType_JsonDeserialization:
+		return "JsonDeserialization"
 	}
 	return "<UNSET>"
 }
@@ -785,6 +802,10 @@ func NodeTemplateTypeFromString(s string) (NodeTemplateType, error) {
 		return NodeTemplateType_DatabasesELECT, nil
 	case "DatabaseDelete":
 		return NodeTemplateType_DatabaseDelete, nil
+	case "JsonSerialization":
+		return NodeTemplateType_JsonSerialization, nil
+	case "JsonDeserialization":
+		return NodeTemplateType_JsonDeserialization, nil
 	}
 	return NodeTemplateType(0), fmt.Errorf("not a valid NodeTemplateType string")
 }
