@@ -3,8 +3,6 @@ package code
 import (
 	"context"
 	"errors"
-	"fmt"
-	"strings"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -82,17 +80,14 @@ func (c *CodeRunner) ToCallbackOutput(ctx context.Context, output map[string]any
 		return nil, errors.New("raw output config is required")
 	}
 
-	var errInfo *vo.ErrorInfo
-	if warnings, ok := ctxcache.Get[[]string](ctx, coderRunnerWarnErrorLevelCtxKey); ok {
-		errInfo = &vo.ErrorInfo{
-			Err:   fmt.Errorf("赋值异常: %s", strings.Join(warnings, ", ")),
-			Level: vo.LevelWarn,
-		}
+	var wfe vo.WorkflowError
+	if warnings, ok := ctxcache.Get[nodes.ConversionWarnings](ctx, coderRunnerWarnErrorLevelCtxKey); ok {
+		wfe = vo.WrapWarn(errno.ErrNodeOutputParseFail, warnings)
 	}
 	return &nodes.StructuredCallbackOutput{
 			Output:    output,
 			RawOutput: rawOutput,
-			Error:     errInfo,
+			Error:     wfe,
 		},
 		nil
 
@@ -100,7 +95,7 @@ func (c *CodeRunner) ToCallbackOutput(ctx context.Context, output map[string]any
 
 func formatOutput(ctx context.Context, inInfo map[string]*vo.TypeInfo, in map[string]any) (map[string]any, error) {
 	ret := make(map[string]any, len(inInfo))
-	warnings := make([]string, 0, len(inInfo))
+	var warnings nodes.ConversionWarnings
 	for k, info := range inInfo {
 		if _, ok := in[k]; !ok {
 			ret[k] = nil
@@ -108,7 +103,13 @@ func formatOutput(ctx context.Context, inInfo map[string]*vo.TypeInfo, in map[st
 		}
 		vv, err := nodes.Convert(ctx, in[k], k, info)
 		if err != nil {
-			warnings = append(warnings, err.Error())
+			var subWarnings nodes.ConversionWarnings
+			if errors.As(err, &subWarnings) {
+				warnings = subWarnings.Merge(warnings)
+				ret[k] = nil
+			} else {
+				return nil, err
+			}
 		} else {
 			ret[k] = vv
 		}

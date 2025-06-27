@@ -24,6 +24,10 @@ func (e *ConversionWarning) Error() string {
 
 type ConversionWarnings []*ConversionWarning
 
+func (e ConversionWarnings) Merge(e1 ConversionWarnings) ConversionWarnings {
+	return append(e, e1...)
+}
+
 func (e ConversionWarnings) Error() string {
 	if len(e) == 0 {
 		return ""

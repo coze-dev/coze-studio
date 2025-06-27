@@ -3,7 +3,6 @@ package code
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,6 +10,7 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	mockcode "code.byted.org/flow/opencoze/backend/internal/mock/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 )
@@ -234,10 +234,9 @@ async def main(args:Args)->Output:
 		assert.Equal(t, int64(11231123), ret["key0"])
 		assert.Equal(t, []any{float64(123), float64(345)}, ret["key2"])
 
-		warnings, ok := ctxcache.Get[[]string](ctx, coderRunnerWarnErrorLevelCtxKey)
+		warnings, ok := ctxcache.Get[nodes.ConversionWarnings](ctx, coderRunnerWarnErrorLevelCtxKey)
 		assert.True(t, ok)
-		s := strings.Join(warnings, ", ")
-		fmt.Println(strings.Join(warnings, ", "))
+		s := warnings.Error()
 		assert.Contains(t, s, "field key3.key34.key343.0 is not number")
 		assert.Contains(t, s, "field key3.key34.key343.1 is not number")
 		assert.Contains(t, s, "field key1.0 is not number")
