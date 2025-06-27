@@ -3,6 +3,8 @@ package plugin
 type ExecuteToolOption struct {
 	ProjectInfo *ProjectInfo
 
+	AutoGenRespSchema bool
+
 	ToolVersion                string
 	Operation                  *Openapi3Operation
 	InvalidRespProcessStrategy InvalidResponseProcessStrategy
@@ -39,5 +41,11 @@ func WithOpenapiOperation(op *Openapi3Operation) ExecuteToolOpt {
 func WithInvalidRespProcessStrategy(strategy InvalidResponseProcessStrategy) ExecuteToolOpt {
 	return func(o *ExecuteToolOption) {
 		o.InvalidRespProcessStrategy = strategy
+	}
+}
+
+func WithAutoGenRespSchema() ExecuteToolOpt {
+	return func(o *ExecuteToolOption) {
+		o.AutoGenRespSchema = true
 	}
 }

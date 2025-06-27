@@ -296,10 +296,8 @@ func (c *curlRequest) parseCURLData(curIdx int, lines []string) (nxtIdx int, err
 }
 
 func (c *curlRequest) decodeJsonDataBody(data string) error {
-	decoder := json.NewDecoder(bytes.NewBufferString(data))
-	decoder.UseNumber()
 	valMap := map[string]any{}
-	err := decoder.Decode(&valMap)
+	err := json.Unmarshal([]byte(data), &valMap)
 	if err != nil {
 		return errorx.New(errno.ErrPluginConvertProtocolFailed, errorx.KVf(errno.PluginMsgKey,
 			"request body only supports 'object' type, err=%s", err))
@@ -320,9 +318,8 @@ func (c *curlRequest) decodeJsonDataBody(data string) error {
 }
 
 func (c *curlRequest) decodeYamlDataBody(data string) error {
-	decoder := yaml.NewDecoder(bytes.NewBufferString(data))
 	valMap := map[string]any{}
-	err := decoder.Decode(&valMap)
+	err := yaml.Unmarshal([]byte(data), &valMap)
 	if err != nil {
 		return errorx.New(errno.ErrPluginConvertProtocolFailed, errorx.KVf(errno.PluginMsgKey,
 			"request body only supports 'object' type, err=%s", err))
@@ -465,69 +462,77 @@ func curlQueryToOpenAPI(_ context.Context, queryParams url.Values, op *openapi3.
 	return op, nil
 }
 
-func buildRequestBodySchema(ctx context.Context, desc string, value any) (*openapi3.Schema, error) {
+func parseRequestToBodySchemaRef(ctx context.Context, desc string, value any) (*openapi3.SchemaRef, error) {
 	switch val := value.(type) {
 	case string:
-		return &openapi3.Schema{
-			Type:        openapi3.TypeString,
-			Description: desc,
+		return &openapi3.SchemaRef{
+			Value: &openapi3.Schema{
+				Type:        openapi3.TypeString,
+				Description: desc,
+			},
 		}, nil
 
 	case bool:
-		return &openapi3.Schema{
-			Type:        openapi3.TypeBoolean,
-			Description: desc,
+		return &openapi3.SchemaRef{
+			Value: &openapi3.Schema{
+				Type:        openapi3.TypeBoolean,
+				Description: desc,
+			},
 		}, nil
 
-	case float64:
-		return &openapi3.Schema{
-			Type:        openapi3.TypeNumber,
-			Description: desc,
-		}, nil
-
-	case json.Number:
-		return &openapi3.Schema{
-			Type:        openapi3.TypeInteger,
-			Description: desc,
+	case float64: // in most cases, it's integer
+		return &openapi3.SchemaRef{
+			Value: &openapi3.Schema{
+				Type:        openapi3.TypeInteger,
+				Description: desc,
+			},
 		}, nil
 
 	case map[string]any:
 		properties := map[string]*openapi3.SchemaRef{}
 		required := make([]string, 0, len(val))
-		for subKey, subVal := range val {
-			sc, err := buildRequestBodySchema(ctx, subKey, subVal)
+		for k, subVal := range val {
+			sc, err := parseRequestToBodySchemaRef(ctx, k, subVal)
 			if err != nil {
 				return nil, err
 			}
 			if sc == nil {
 				continue
 			}
-			required = append(required, subKey)
-			properties[subKey] = &openapi3.SchemaRef{
-				Value: sc,
-			}
+			required = append(required, k)
+			properties[k] = sc
 		}
 
-		return &openapi3.Schema{
-			Type:       openapi3.TypeObject,
-			Properties: properties,
-			Required:   required,
+		if len(properties) == 0 {
+			return nil, nil
+		}
+
+		return &openapi3.SchemaRef{
+			Value: &openapi3.Schema{
+				Type:       openapi3.TypeObject,
+				Properties: properties,
+				Required:   required,
+			},
 		}, nil
 
 	case []any:
 		if len(val) == 0 {
 			return nil, nil
 		}
-		sc, err := buildRequestBodySchema(ctx, desc, val[0])
+
+		item, err := parseRequestToBodySchemaRef(ctx, desc, val[0])
 		if err != nil {
 			return nil, err
 		}
+		if item == nil {
+			return nil, nil
+		}
 
-		return &openapi3.Schema{
-			Type:        openapi3.TypeArray,
-			Description: desc,
-			Items: &openapi3.SchemaRef{
-				Value: sc,
+		return &openapi3.SchemaRef{
+			Value: &openapi3.Schema{
+				Type:        openapi3.TypeArray,
+				Description: desc,
+				Items:       item,
 			},
 		}, nil
 
@@ -544,7 +549,7 @@ func curlBodyToOpenAPI(ctx context.Context, mediaType string, bodyValue any, op 
 			"request body only supports 'object' type"))
 	}
 
-	bodySchema, err := buildRequestBodySchema(ctx, "", bodyValue)
+	bodySchema, err := parseRequestToBodySchemaRef(ctx, "", bodyValue)
 	if err != nil {
 		return nil, err
 	}
@@ -560,9 +565,7 @@ func curlBodyToOpenAPI(ctx context.Context, mediaType string, bodyValue any, op 
 		Value: &openapi3.RequestBody{
 			Content: map[string]*openapi3.MediaType{
 				mediaType: {
-					Schema: &openapi3.SchemaRef{
-						Value: bodySchema,
-					},
+					Schema: bodySchema,
 				},
 			},
 		},
@@ -788,7 +791,7 @@ func postmanBodyToOpenAPI(ctx context.Context, mediaType string, body *postman.B
 		return op, nil
 	}
 
-	bodySchema, err := buildRequestBodySchema(ctx, "", valMap)
+	bodySchema, err := parseRequestToBodySchemaRef(ctx, "", valMap)
 	if err != nil {
 		return nil, err
 	}
@@ -800,9 +803,7 @@ func postmanBodyToOpenAPI(ctx context.Context, mediaType string, body *postman.B
 		Value: &openapi3.RequestBody{
 			Content: map[string]*openapi3.MediaType{
 				mediaType: {
-					Schema: &openapi3.SchemaRef{
-						Value: bodySchema,
-					},
+					Schema: bodySchema,
 				},
 			},
 		},
@@ -812,10 +813,8 @@ func postmanBodyToOpenAPI(ctx context.Context, mediaType string, body *postman.B
 }
 
 func decodeRequestJsonBody(rawBody string) (body map[string]any, err error) {
-	decoder := json.NewDecoder(bytes.NewBufferString(rawBody))
-	decoder.UseNumber()
 	valMap := map[string]any{}
-	err = decoder.Decode(&valMap)
+	err = json.Unmarshal([]byte(rawBody), &valMap)
 	if err != nil {
 		return nil, errorx.New(errno.ErrPluginConvertProtocolFailed, errorx.KVf(errno.PluginMsgKey,
 			"request body only supports 'object' type, err=%s", err))
@@ -825,9 +824,8 @@ func decodeRequestJsonBody(rawBody string) (body map[string]any, err error) {
 }
 
 func decodeRequestYamlBody(rawBody string) (body map[string]any, err error) {
-	decoder := yaml.NewDecoder(bytes.NewBufferString(rawBody))
 	valMap := map[string]any{}
-	err = decoder.Decode(&valMap)
+	err = yaml.Unmarshal([]byte(rawBody), &valMap)
 	if err != nil {
 		return nil, errorx.New(errno.ErrPluginConvertProtocolFailed, errorx.KVf(errno.PluginMsgKey,
 			"request body only supports 'object' type, err=%s", err))

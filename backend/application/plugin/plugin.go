@@ -1074,7 +1074,7 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 		ExecScene:       model.ExecSceneOfToolDebug,
 		ExecDraftTool:   true,
 		ArgumentsInJson: req.Parameters,
-	})
+	}, model.WithAutoGenRespSchema())
 	if err != nil {
 		var e errorx.StatusError
 		if errors.As(err, &e) {
@@ -1094,6 +1094,10 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 		RawReq:         res.Request,
 		RawResp:        res.RawResp,
 		ResponseParams: []*common.APIParameter{},
+	}
+
+	if req.Operation == common.DebugOperation_Parse {
+		res.Tool.Operation.Responses = res.RespSchema
 	}
 
 	respParams, err := res.Tool.ToRespAPIParameter()

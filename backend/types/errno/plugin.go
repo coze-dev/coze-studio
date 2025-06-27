@@ -20,6 +20,7 @@ const (
 	ErrPluginExecuteToolFailed            = 109000009
 	ErrPluginConvertProtocolFailed        = 109000010
 	ErrPluginToolsCheckFailed             = 109000011
+	ErrPluginParseToolRespFailed          = 109000012
 )
 
 const (
@@ -90,6 +91,12 @@ func init() {
 	code.Register(
 		ErrPluginToolsCheckFailed,
 		fmt.Sprintf("tools check failed : {%s}", PluginMsgKey),
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrPluginParseToolRespFailed,
+		fmt.Sprintf("parse tool response failed : {%s}", PluginMsgKey),
 		code.WithAffectStability(false),
 	)
 }
