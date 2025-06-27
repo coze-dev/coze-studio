@@ -87,7 +87,7 @@ var pythonBuiltinBlacklist = map[string]struct{}{
 // pythonThirdPartyWhitelist is the whitelist of python third-party modules,
 // see: https://www.coze.cn/open/docs/guides/code_node#7f41f073
 // If you want to use other third-party libraries, you can add them to this whitelist.
-// And you also need to install them in `/scripts/setup/python.sh` via `pip install`.
+// And you also need to install them in `/scripts/setup/python.sh` and `/backend/Dockerfile` via `pip install`.
 var pythonThirdPartyWhitelist = map[string]struct{}{
 	"requests_async": {},
 	"numpy":          {},

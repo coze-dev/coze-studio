@@ -39,7 +39,9 @@ RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip && \
     python3 -m venv --copies --upgrade-deps /app/.venv && \
     # Activate venv and install packages
     . /app/.venv/bin/activate && \
-    pip install --no-cache-dir pillow pdfplumber RestrictedPython python-docx && \
+    # If you want to use other third-party libraries, you can install them here.
+    pip install urllib3==1.26.16 \
+    pip install --no-cache-dir pillow pdfplumber python-docx numpy git+https://gitcode.com/gh_mirrors/re/requests-async.git@master && \
     # Deactivate (optional, as RUN is a new shell)
     # deactivate && \
     # Remove build dependencies
