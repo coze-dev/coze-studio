@@ -834,7 +834,7 @@ func (w *ApplicationService) CheckWorkflowsExistByAppID(ctx context.Context, app
 		}
 	}()
 
-	wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+	wfs, _, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
 		MetaQuery: vo.MetaQuery{
 			AppID: &appID,
 			Page: &vo.Page{
@@ -1949,7 +1949,8 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 	}
 
 	option := vo.MetaQuery{
-		Page: page,
+		Page:            page,
+		NeedTotalNumber: true,
 	}
 
 	if req.ProjectID != nil {
@@ -1983,10 +1984,9 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 	if err != nil {
 		return nil, fmt.Errorf("space id is invalid, parse to int64 failed, err: %w", err)
 	}
-
 	option.SpaceID = ptr.Of(spaceID)
 
-	wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+	wfs, total, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
 		MetaQuery: option,
 		QType:     vo.FromDraft,
 		MetaOnly:  false,
@@ -2070,8 +2070,9 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 			w.Creator.AvatarURL = u.UserAvatar
 		}
 	}
+
 	response.Data.WorkflowList = workflowList
-	response.Data.Total = int64(len(workflowList))
+	response.Data.Total = total
 
 	return response, nil
 }
@@ -2108,7 +2109,7 @@ func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflo
 		return &vo.WorkflowDetailDataList{}, nil
 	}
 
-	wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+	wfs, _, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
 		MetaQuery: vo.MetaQuery{
 			IDs: ids,
 		},
@@ -2210,7 +2211,7 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 		return &vo.WorkflowDetailInfoDataList{}, nil
 	}
 
-	wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+	wfs, _, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
 		MetaQuery: vo.MetaQuery{
 			IDs: ids,
 		},
@@ -2554,7 +2555,7 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 			}
 		}
 
-		wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+		wfs, _, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
 			MetaQuery: vo.MetaQuery{
 				IDs: ids,
 			},
@@ -2769,7 +2770,7 @@ func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *p
 			return nil, err
 		}
 
-		wfs, err = GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+		wfs, _, err = GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
 			MetaQuery: vo.MetaQuery{
 				IDs:           toolIDs,
 				SpaceID:       ptr.Of(req.GetSpaceID()),
@@ -2778,7 +2779,7 @@ func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *p
 			QType: vo.FromLatestVersion,
 		})
 	} else if req.GetPage() > 0 && req.GetSize() > 0 {
-		wfs, err = GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+		wfs, _, err = GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
 			MetaQuery: vo.MetaQuery{
 				Page: &vo.Page{
 					Size: req.GetSize(),
@@ -2981,7 +2982,7 @@ func (w *ApplicationService) GetExampleWorkFlowList(ctx context.Context, req *wo
 		option.Name = req.Name
 	}
 
-	wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+	wfs, _, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
 		MetaQuery: option,
 		QType:     vo.FromDraft,
 		MetaOnly:  false,

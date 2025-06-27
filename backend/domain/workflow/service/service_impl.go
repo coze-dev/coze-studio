@@ -233,7 +233,7 @@ func (i *impl) Delete(ctx context.Context, policy *vo.DeletePolicy) (err error) 
 
 	ids := policy.IDs
 	if policy.AppID != nil {
-		metas, err := i.repo.MGetMetas(ctx, &vo.MetaQuery{
+		metas, _, err := i.repo.MGetMetas(ctx, &vo.MetaQuery{
 			AppID: policy.AppID,
 		})
 		if err != nil {
@@ -281,10 +281,14 @@ func (i *impl) GetWorkflowReference(ctx context.Context, id int64) (map[int64]*v
 	for _, ref := range parent {
 		wfIDs[ref.ReferringID] = struct{}{}
 	}
-
-	return i.repo.MGetMetas(ctx, &vo.MetaQuery{
+	ret, _, err := i.repo.MGetMetas(ctx, &vo.MetaQuery{
 		IDs: maps.Keys(wfIDs),
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.ValidateTreeConfig) ([]*cloudworkflow.ValidateTreeInfo, error) {
@@ -322,7 +326,7 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 		if len(ids) == 0 {
 			return wfValidateInfos, nil
 		}
-		workflows, err := i.MGet(ctx, &vo.MGetPolicy{
+		workflows, _, err := i.MGet(ctx, &vo.MGetPolicy{
 			MetaQuery: vo.MetaQuery{
 				IDs: ids,
 			},
@@ -638,7 +642,7 @@ func (i *impl) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.Cop
 }
 
 func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error) {
-	wfs, err := i.MGet(ctx, &vo.MGetPolicy{
+	wfs, _, err := i.MGet(ctx, &vo.MGetPolicy{
 		MetaQuery: vo.MetaQuery{
 			AppID: &appID,
 		},
@@ -1355,17 +1359,17 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 
 }
 
-func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, error) {
-	metas, err := i.repo.MGetMetas(ctx, &policy.MetaQuery)
+func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, int64, error) {
+	metas, total, err := i.repo.MGetMetas(ctx, &policy.MetaQuery)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	result := make([]*entity.Workflow, len(metas))
 	var index int
 
 	if len(metas) == 0 {
-		return result, nil
+		return result, 0, nil
 	} else if policy.MetaOnly {
 		for id := range metas {
 			wf := &entity.Workflow{
@@ -1375,7 +1379,7 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 			result[index] = wf
 			index++
 		}
-		return result, nil
+		return result, total, nil
 	}
 
 	ioF := func(inputParam, outputParam string) (input []*vo.NamedTypeInfo, output []*vo.NamedTypeInfo, err error) {
@@ -1400,13 +1404,13 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 	case vo.FromDraft:
 		draftInfos, err := i.repo.MGetDrafts(ctx, maps.Keys(metas))
 		if err != nil {
-			return nil, err
+			return nil, total, err
 		}
 
 		for id := range metas {
 			inputs, outputs, err := ioF(draftInfos[id].InputParamsStr, draftInfos[id].OutputParamsStr)
 			if err != nil {
-				return nil, err
+				return nil, total, err
 			}
 
 			wf := &entity.Workflow{
@@ -1426,21 +1430,21 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 			index++
 		}
 
-		return result, nil
+		return result, total, nil
 	case vo.FromSpecificVersion:
 		for id := range metas {
 			version, ok := policy.Versions[id]
 			if !ok {
-				return nil, fmt.Errorf("version not found for workflow %v", id)
+				return nil, total, fmt.Errorf("version not found for workflow %v", id)
 			}
 			v, err := i.repo.GetVersion(ctx, id, version)
 			if err != nil {
-				return nil, err
+				return nil, total, err
 			}
 
 			inputs, outputs, err := ioF(v.InputParamsStr, v.OutputParamsStr)
 			if err != nil {
-				return nil, err
+				return nil, total, err
 			}
 
 			wf := &entity.Workflow{
@@ -1463,12 +1467,12 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 		for id := range metas {
 			v, err := i.repo.GetLatestVersion(ctx, id)
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 
 			inputs, outputs, err := ioF(v.InputParamsStr, v.OutputParamsStr)
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 
 			wf := &entity.Workflow{
@@ -1491,7 +1495,7 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 		panic("not implemented")
 	}
 
-	return result, nil
+	return result, total, nil
 }
 
 func (i *impl) calculateTestRunSuccess(ctx context.Context, c *vo.Canvas, wid int64) (bool, error) {

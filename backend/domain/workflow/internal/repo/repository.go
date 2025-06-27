@@ -716,9 +716,9 @@ func (r *RepositoryImpl) MGetReferences(ctx context.Context, policy *vo.MGetRefe
 	return result, nil
 }
 
-func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (map[int64]*vo.Meta, error) {
+func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (map[int64]*vo.Meta, int64, error) {
 	if len(query.IDs) == 0 && query.Page == nil && query.Name == nil && query.AppID == nil {
-		return nil, fmt.Errorf("insufficient query parameters for workflow meta: %+v", query)
+		return nil, 0, fmt.Errorf("insufficient query parameters for workflow meta: %+v", query)
 	}
 
 	var conditions []gen.Condition
@@ -757,31 +757,38 @@ func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (ma
 
 	workflowMetaDo := r.query.WorkflowMeta.WithContext(ctx).Debug().Where(conditions...).Order(r.query.WorkflowMeta.CreatedAt.Desc())
 
+	var total int64
+	if query.NeedTotalNumber {
+		total, err = workflowMetaDo.Count()
+		if err != nil {
+			return nil, 0, err
+		}
+	}
+
 	if query.Page != nil {
 		result, _, err = workflowMetaDo.FindByPage(query.Page.Offset(), query.Page.Limit())
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 	} else {
 		if len(conditions) == 0 {
-			return nil, errors.New("no conditions provided")
+			return nil, 0, errors.New("no conditions provided")
 		}
 		result, err = workflowMetaDo.Find()
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
-
 	}
 
 	wfMap := make(map[int64]*vo.Meta, len(result))
 	for _, meta := range result {
 		converted, err := r.convertMeta(ctx, meta)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		wfMap[meta.ID] = converted
 	}
-	return wfMap, nil
+	return wfMap, total, nil
 }
 
 func (r *RepositoryImpl) GetLatestVersion(ctx context.Context, id int64) (*vo.VersionInfo, error) {

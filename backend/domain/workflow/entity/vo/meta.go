@@ -55,11 +55,12 @@ type MetaUpdate struct {
 }
 
 type MetaQuery struct {
-	IDs           []int64
-	SpaceID       *int64
-	Page          *Page
-	Name          *string
-	PublishStatus *PublishStatus
-	AppID         *int64
-	LibOnly       bool
+	IDs             []int64
+	SpaceID         *int64
+	Page            *Page
+	Name            *string
+	PublishStatus   *PublishStatus
+	AppID           *int64
+	LibOnly         bool
+	NeedTotalNumber bool
 }

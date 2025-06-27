@@ -17,7 +17,7 @@ type Service interface {
 	Create(ctx context.Context, meta *vo.MetaCreate) (int64, error)
 	Save(ctx context.Context, id int64, schema string) error
 	Get(ctx context.Context, policy *vo.GetPolicy) (*entity.Workflow, error)
-	MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, error)
+	MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, int64, error)
 	Delete(ctx context.Context, policy *vo.DeletePolicy) (err error)
 	Publish(ctx context.Context, policy *vo.PublishPolicy) (err error)
 	UpdateMeta(ctx context.Context, id int64, metaUpdate *vo.MetaUpdate) (err error)
@@ -58,9 +58,8 @@ type Repository interface {
 
 	MGetReferences(ctx context.Context, policy *vo.MGetReferencePolicy) (
 		[]*entity.WorkflowReference, error)
-	MGetMetas(ctx context.Context, query *vo.MetaQuery) (map[int64]*vo.Meta, error)
+	MGetMetas(ctx context.Context, query *vo.MetaQuery) (map[int64]*vo.Meta, int64, error)
 	MGetDrafts(ctx context.Context, ids []int64) (map[int64]*vo.DraftInfo, error)
-
 	CreateSnapshotIfNeeded(ctx context.Context, id int64, commitID string) error
 
 	InterruptEventStore
