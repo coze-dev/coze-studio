@@ -136,10 +136,10 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...WorkflowOption
 	}
 	wf.Runner = r
 
-	wf.input = sc.GetNode(EntryNodeKey).OutputTypes
+	wf.input = sc.GetNode(entity.EntryNodeKey).OutputTypes
 
 	// even if the terminate plan is use answer content, this still will be 'input types' of exit node
-	wf.output = sc.GetNode(ExitNodeKey).InputTypes
+	wf.output = sc.GetNode(entity.ExitNodeKey).InputTypes
 
 	return wf, nil
 }
@@ -316,7 +316,7 @@ func (w *Workflow) Compile(ctx context.Context, opts ...compose.GraphCompileOpti
 		}
 
 		w.entry.AddInput(compose.START)
-		w.End().AddInput(ExitNodeKey)
+		w.End().AddInput(entity.ExitNodeKey)
 	}
 
 	return w.workflow.Compile(ctx, opts...)

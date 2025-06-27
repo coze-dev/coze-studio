@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
@@ -33,11 +34,13 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/maps"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -54,7 +57,18 @@ func GetWorkflowDomainSVC() domainWorkflow.Service {
 	return SVC.DomainSVC
 }
 
-func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workflow.NodeTemplateListRequest) (*workflow.NodeTemplateListResponse, error) {
+func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workflow.NodeTemplateListRequest) (
+	_ *workflow.NodeTemplateListResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	toQueryTypes := make(map[entity.NodeType]bool)
 	for _, t := range req.NodeTypes {
 		entityType, err := nodeType2EntityNodeType(t)
@@ -122,7 +136,18 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 	return resp, nil
 }
 
-func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.CreateWorkflowRequest) (*workflow.CreateWorkflowResponse, error) {
+func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.CreateWorkflowRequest) (
+	_ *workflow.CreateWorkflowResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	uID := ctxutil.MustGetUIDFromCtx(ctx)
 	spaceID := mustParseInt64(req.GetSpaceID())
 	if err := checkUserSpace(ctx, uID, spaceID); err != nil {
@@ -152,7 +177,18 @@ func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.C
 	}, nil
 }
 
-func (w *ApplicationService) SaveWorkflow(ctx context.Context, req *workflow.SaveWorkflowRequest) (*workflow.SaveWorkflowResponse, error) {
+func (w *ApplicationService) SaveWorkflow(ctx context.Context, req *workflow.SaveWorkflowRequest) (
+	_ *workflow.SaveWorkflowResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
@@ -166,12 +202,23 @@ func (w *ApplicationService) SaveWorkflow(ctx context.Context, req *workflow.Sav
 	}, nil
 }
 
-func (w *ApplicationService) UpdateWorkflowMeta(ctx context.Context, req *workflow.UpdateWorkflowMetaRequest) (*workflow.UpdateWorkflowMetaResponse, error) {
+func (w *ApplicationService) UpdateWorkflowMeta(ctx context.Context, req *workflow.UpdateWorkflowMetaRequest) (
+	_ *workflow.UpdateWorkflowMetaResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
 
-	err := GetWorkflowDomainSVC().UpdateMeta(ctx, mustParseInt64(req.GetWorkflowID()), &vo.MetaUpdate{
+	err = GetWorkflowDomainSVC().UpdateMeta(ctx, mustParseInt64(req.GetWorkflowID()), &vo.MetaUpdate{
 		Name:    req.Name,
 		Desc:    req.Desc,
 		IconURI: req.IconURI,
@@ -182,12 +229,23 @@ func (w *ApplicationService) UpdateWorkflowMeta(ctx context.Context, req *workfl
 	return &workflow.UpdateWorkflowMetaResponse{}, nil
 }
 
-func (w *ApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.DeleteWorkflowRequest) (*workflow.DeleteWorkflowResponse, error) {
+func (w *ApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.DeleteWorkflowRequest) (
+	_ *workflow.DeleteWorkflowResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
 
-	err := GetWorkflowDomainSVC().Delete(ctx, &vo.DeletePolicy{ID: ptr.Of(mustParseInt64(req.GetWorkflowID()))})
+	err = GetWorkflowDomainSVC().Delete(ctx, &vo.DeletePolicy{ID: ptr.Of(mustParseInt64(req.GetWorkflowID()))})
 	if err != nil {
 		return &workflow.DeleteWorkflowResponse{
 			Data: &workflow.DeleteWorkflowData{
@@ -203,7 +261,18 @@ func (w *ApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.D
 	}, nil
 }
 
-func (w *ApplicationService) BatchDeleteWorkflow(ctx context.Context, req *workflow.BatchDeleteWorkflowRequest) (*workflow.BatchDeleteWorkflowResponse, error) {
+func (w *ApplicationService) BatchDeleteWorkflow(ctx context.Context, req *workflow.BatchDeleteWorkflowRequest) (
+	_ *workflow.BatchDeleteWorkflowResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
@@ -229,7 +298,18 @@ func (w *ApplicationService) BatchDeleteWorkflow(ctx context.Context, req *workf
 	}, nil
 }
 
-func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.GetCanvasInfoRequest) (*workflow.GetCanvasInfoResponse, error) {
+func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.GetCanvasInfoRequest) (
+	_ *workflow.GetCanvasInfoResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if req.GetSpaceID() != strconv.FormatInt(consts.TemplateSpaceID, 10) {
 		if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 			return nil, err
@@ -309,7 +389,17 @@ func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.Ge
 	}, nil
 }
 
-func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlowTestRunRequest) (*workflow.WorkFlowTestRunResponse, error) {
+func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlowTestRunRequest) (_ *workflow.WorkFlowTestRunResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	uID := ctxutil.MustGetUIDFromCtx(ctx)
 
 	if err := checkUserSpace(ctx, uID, mustParseInt64(req.GetSpaceID())); err != nil {
@@ -355,7 +445,18 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 	}, nil
 }
 
-func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.WorkflowNodeDebugV2Request) (*workflow.WorkflowNodeDebugV2Response, error) {
+func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.WorkflowNodeDebugV2Request) (
+	_ *workflow.WorkflowNodeDebugV2Response, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	uID := ctxutil.MustGetUIDFromCtx(ctx)
 
 	if err := checkUserSpace(ctx, uID, mustParseInt64(req.GetSpaceID())); err != nil {
@@ -413,7 +514,18 @@ func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.Workfl
 	}, nil
 }
 
-func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWorkflowProcessRequest) (*workflow.GetWorkflowProcessResponse, error) {
+func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWorkflowProcessRequest) (
+	_ *workflow.GetWorkflowProcessResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
@@ -432,7 +544,7 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 		}
 	}
 
-	wfExeEntity, err := GetWorkflowDomainSVC().GetExecution(ctx, wfExeEntity, true)
+	wfExeEntity, err = GetWorkflowDomainSVC().GetExecution(ctx, wfExeEntity, true)
 	if err != nil {
 		return nil, err
 	}
@@ -466,13 +578,27 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 		resp.Data.ProjectId = fmt.Sprintf("%d", *wfExeEntity.AppID)
 	}
 
+	var (
+		hasNodeErr   bool
+		workflowFail = status == entity.WorkflowFailed
+		endNodeExe   *workflow.NodeResult
+	)
+
 	batchNodeID2NodeResult := make(map[string]*workflow.NodeResult)
 	batchNodeID2InnerNodeResult := make(map[string]*workflow.NodeResult)
 	successNum := 0
 	for _, nodeExe := range wfExeEntity.NodeExecutions {
+		if nodeExe.Status == entity.NodeFailed && nodeExe.ErrorInfo != nil {
+			hasNodeErr = true
+		}
+
 		nr, err := convertNodeExecution(nodeExe)
 		if err != nil {
 			return nil, err
+		}
+
+		if nodeExe.NodeType == entity.NodeTypeExit {
+			endNodeExe = nr
 		}
 
 		if nodeExe.NodeType == entity.NodeTypeBatch {
@@ -501,6 +627,34 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 		}
 
 		resp.Data.NodeResults = append(resp.Data.NodeResults, nr)
+	}
+
+	if workflowFail && !hasNodeErr {
+		var failReason string
+		if wfExeEntity.FailReason != nil {
+			failReason = *wfExeEntity.FailReason
+			if endNodeExe != nil {
+				endNodeExe.ErrorInfo = failReason
+				endNodeExe.ErrorLevel = string(vo.LevelError)
+			} else {
+				if len(resp.Data.NodeResults) == 1 &&
+					(resp.Data.NodeResults)[0].NodeType != workflow.NodeTemplateType_Start.String() {
+					// this is single node debug
+					resp.Data.NodeResults[0].ErrorInfo = failReason
+					resp.Data.NodeResults[0].ErrorLevel = string(vo.LevelError)
+				} else {
+					endNodeExe = &workflow.NodeResult{
+						NodeId:     entity.ExitNodeKey,
+						NodeType:   workflow.NodeTemplateType_End.String(),
+						NodeStatus: workflow.NodeExeStatus_Fail,
+						ErrorInfo:  failReason,
+						ErrorLevel: string(vo.LevelError),
+					}
+					resp.Data.NodeResults = append(resp.Data.NodeResults, endNodeExe)
+				}
+
+			}
+		}
 	}
 
 	for id := range batchNodeID2NodeResult {
@@ -543,7 +697,17 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 }
 
 func (w *ApplicationService) GetNodeExecuteHistory(ctx context.Context, req *workflow.GetNodeExecuteHistoryRequest) (
-	*workflow.GetNodeExecuteHistoryResponse, error) {
+	_ *workflow.GetNodeExecuteHistoryResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
@@ -643,13 +807,33 @@ func (w *ApplicationService) GetNodeExecuteHistory(ctx context.Context, req *wor
 	}
 }
 
-func (w *ApplicationService) DeleteWorkflowsByAppID(ctx context.Context, appID int64) error {
+func (w *ApplicationService) DeleteWorkflowsByAppID(ctx context.Context, appID int64) (err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	return GetWorkflowDomainSVC().Delete(ctx, &vo.DeletePolicy{
 		AppID: ptr.Of(appID),
 	})
 }
 
-func (w *ApplicationService) CheckWorkflowsExistByAppID(ctx context.Context, appID int64) (bool, error) {
+func (w *ApplicationService) CheckWorkflowsExistByAppID(ctx context.Context, appID int64) (_ bool, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	wfs, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
 		MetaQuery: vo.MetaQuery{
 			AppID: &appID,
@@ -665,7 +849,18 @@ func (w *ApplicationService) CheckWorkflowsExistByAppID(ctx context.Context, app
 	return len(wfs) > 0, err
 }
 
-func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, appID int64) (int64, []*vo.ValidateIssue, error) {
+func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, appID int64) (
+	_ int64, _ []*vo.ValidateIssue, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	ds, err := GetWorkflowDomainSVC().GetWorkflowDependenceResource(ctx, workflowID)
 	if err != nil {
 		return 0, nil, err
@@ -759,7 +954,17 @@ type ExternalResource struct {
 	DatabaseMap   map[int64]int64
 }
 
-func (w *ApplicationService) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targetAppID int64, externalResource ExternalResource) error {
+func (w *ApplicationService) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targetAppID int64, externalResource ExternalResource) (err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	pluginMap := make(map[int64]*vo.PluginEntity)
 	for o, n := range externalResource.PluginMap {
 		pluginMap[o] = &vo.PluginEntity{
@@ -777,7 +982,18 @@ func (w *ApplicationService) DuplicateWorkflowsByAppID(ctx context.Context, sour
 
 }
 
-func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, workflowID int64, appID int64) (int64, error) {
+func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, workflowID int64, appID int64) (
+	_ int64, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	wf, err := GetWorkflowDomainSVC().CopyWorkflow(ctx, workflowID, vo.CopyWorkflowPolicy{
 		TargetAppID: &appID,
 	})
@@ -788,7 +1004,17 @@ func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, w
 	return wf.ID, nil
 }
 
-func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, appID int64) ([]*vo.ValidateIssue, error) {
+func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, appID int64) (_ []*vo.ValidateIssue, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	ds, err := GetWorkflowDomainSVC().GetWorkflowDependenceResource(ctx, workflowID)
 	if err != nil {
 		return nil, err
@@ -1091,7 +1317,17 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 }
 
 func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow.OpenAPIRunFlowRequest) (
-	*schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], error) {
+	_ *schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
 
@@ -1166,7 +1402,17 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 }
 
 func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workflow.OpenAPIStreamResumeFlowRequest) (
-	*schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], error) {
+	_ *schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	idStr := req.EventID
 	idSegments := strings.Split(idStr, "/")
 	if len(idSegments) != 2 {
@@ -1214,7 +1460,17 @@ func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workf
 }
 
 func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenAPIRunFlowRequest) (
-	*workflow.OpenAPIRunFlowResponse, error) {
+	_ *workflow.OpenAPIRunFlowResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
 
@@ -1328,7 +1584,17 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 }
 
 func (w *ApplicationService) OpenAPIGetWorkflowRunHistory(ctx context.Context, req *workflow.GetWorkflowRunHistoryRequest) (
-	*workflow.GetWorkflowRunHistoryResponse, error) {
+	_ *workflow.GetWorkflowRunHistoryResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
 
@@ -1385,7 +1651,18 @@ func (w *ApplicationService) OpenAPIGetWorkflowRunHistory(ctx context.Context, r
 	return res, nil
 }
 
-func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.ValidateTreeRequest) (*workflow.ValidateTreeResponse, error) {
+func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.ValidateTreeRequest) (
+	_ *workflow.ValidateTreeResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	canvasSchema := req.GetSchema()
 	if len(canvasSchema) == 0 {
 		return nil, errors.New("validate tree schema is required")
@@ -1412,7 +1689,18 @@ func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.Val
 	return response, nil
 }
 
-func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *workflow.GetWorkflowReferencesRequest) (*workflow.GetWorkflowReferencesResponse, error) {
+func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *workflow.GetWorkflowReferencesRequest) (
+	_ *workflow.GetWorkflowReferencesResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if req.GetSpaceID() != strconv.FormatInt(consts.TemplateSpaceID, 10) {
 		if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 			return nil, err
@@ -1459,7 +1747,18 @@ func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *wor
 	return response, nil
 }
 
-func (w *ApplicationService) TestResume(ctx context.Context, req *workflow.WorkflowTestResumeRequest) (*workflow.WorkflowTestResumeResponse, error) {
+func (w *ApplicationService) TestResume(ctx context.Context, req *workflow.WorkflowTestResumeRequest) (
+	_ *workflow.WorkflowTestResumeResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
@@ -1469,7 +1768,7 @@ func (w *ApplicationService) TestResume(ctx context.Context, req *workflow.Workf
 		EventID:    mustParseInt64(req.GetEventID()),
 		ResumeData: req.GetData(),
 	}
-	err := GetWorkflowDomainSVC().AsyncResume(ctx, resumeReq, vo.ExecuteConfig{
+	err = GetWorkflowDomainSVC().AsyncResume(ctx, resumeReq, vo.ExecuteConfig{
 		Operator: ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0),
 		Mode:     vo.ExecuteModeDebug, // at this stage it could be debug or node debug, we will decide it within AsyncResume
 	})
@@ -1480,12 +1779,23 @@ func (w *ApplicationService) TestResume(ctx context.Context, req *workflow.Workf
 	return &workflow.WorkflowTestResumeResponse{}, nil
 }
 
-func (w *ApplicationService) Cancel(ctx context.Context, req *workflow.CancelWorkFlowRequest) (*workflow.CancelWorkFlowResponse, error) {
+func (w *ApplicationService) Cancel(ctx context.Context, req *workflow.CancelWorkFlowRequest) (
+	_ *workflow.CancelWorkFlowResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
 
-	err := GetWorkflowDomainSVC().Cancel(ctx, mustParseInt64(req.GetExecuteID()),
+	err = GetWorkflowDomainSVC().Cancel(ctx, mustParseInt64(req.GetExecuteID()),
 		mustParseInt64(req.GetWorkflowID()), mustParseInt64(req.GetSpaceID()))
 	if err != nil {
 		return nil, err
@@ -1494,7 +1804,18 @@ func (w *ApplicationService) Cancel(ctx context.Context, req *workflow.CancelWor
 	return &workflow.CancelWorkFlowResponse{}, nil
 }
 
-func (w *ApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *workflow.QueryWorkflowNodeTypeRequest) (*workflow.QueryWorkflowNodeTypeResponse, error) {
+func (w *ApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *workflow.QueryWorkflowNodeTypeRequest) (
+	_ *workflow.QueryWorkflowNodeTypeResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
@@ -1559,7 +1880,18 @@ func (w *ApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *wo
 	return response, nil
 }
 
-func (w *ApplicationService) PublishWorkflow(ctx context.Context, req *workflow.PublishWorkflowRequest) (*workflow.PublishWorkflowResponse, error) {
+func (w *ApplicationService) PublishWorkflow(ctx context.Context, req *workflow.PublishWorkflowRequest) (
+	_ *workflow.PublishWorkflowResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	userID := ctxutil.MustGetUIDFromCtx(ctx)
 	if err := checkUserSpace(ctx, userID, mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
@@ -1574,7 +1906,7 @@ func (w *ApplicationService) PublishWorkflow(ctx context.Context, req *workflow.
 		Force:              req.GetForce(),
 	}
 
-	err := GetWorkflowDomainSVC().Publish(ctx, info)
+	err = GetWorkflowDomainSVC().Publish(ctx, info)
 	if err != nil {
 		return nil, err
 	}
@@ -1587,7 +1919,18 @@ func (w *ApplicationService) PublishWorkflow(ctx context.Context, req *workflow.
 	}, nil
 }
 
-func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.GetWorkFlowListRequest) (*workflow.GetWorkFlowListResponse, error) {
+func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.GetWorkFlowListRequest) (
+	_ *workflow.GetWorkFlowListResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if req.GetSpaceID() == "" {
 		return nil, errors.New("space id is required")
 	}
@@ -1733,7 +2076,18 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 	return response, nil
 }
 
-func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflow.GetWorkflowDetailRequest) (*vo.WorkflowDetailDataList, error) {
+func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflow.GetWorkflowDetailRequest) (
+	_ *vo.WorkflowDetailDataList, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
@@ -1818,7 +2172,18 @@ func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflo
 	return workflowDetailDataList, nil
 }
 
-func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *workflow.GetWorkflowDetailInfoRequest) (*vo.WorkflowDetailInfoDataList, error) {
+func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *workflow.GetWorkflowDetailInfoRequest) (
+	_ *vo.WorkflowDetailInfoDataList, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
@@ -1931,7 +2296,18 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 	return workflowDetailInfoDataList, nil
 }
 
-func (w *ApplicationService) GetWorkflowUploadAuthToken(ctx context.Context, req *workflow.GetUploadAuthTokenRequest) (*workflow.GetUploadAuthTokenResponse, error) {
+func (w *ApplicationService) GetWorkflowUploadAuthToken(ctx context.Context, req *workflow.GetUploadAuthTokenRequest) (
+	_ *workflow.GetUploadAuthTokenResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	var (
 		sceneToUploadPrefixMap = map[string]string{
 			"imageflow": "imageflow-",
@@ -1966,7 +2342,18 @@ func (w *ApplicationService) GetWorkflowUploadAuthToken(ctx context.Context, req
 
 }
 
-func (w *ApplicationService) SignImageURL(ctx context.Context, req *workflow.SignImageURLRequest) (*workflow.SignImageURLResponse, error) {
+func (w *ApplicationService) SignImageURL(ctx context.Context, req *workflow.SignImageURLRequest) (
+	_ *workflow.SignImageURLResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	url, err := w.ImageX.GetResourceURL(ctx, req.GetURI())
 	if err != nil {
 		return nil, err
@@ -1978,7 +2365,18 @@ func (w *ApplicationService) SignImageURL(ctx context.Context, req *workflow.Sig
 
 }
 
-func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.GetApiDetailRequest) (*vo.ToolDetailInfo, error) {
+func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.GetApiDetailRequest) (
+	_ *vo.ToolDetailInfo, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
@@ -2042,7 +2440,18 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 
 }
 
-func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req *workflow.GetLLMNodeFCSettingDetailRequest) (*GetLLMNodeFCSettingDetailResponse, error) {
+func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req *workflow.GetLLMNodeFCSettingDetailRequest) (
+	_ *GetLLMNodeFCSettingDetailResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
@@ -2216,7 +2625,18 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 	}, nil
 }
 
-func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req *workflow.GetLLMNodeFCSettingsMergedRequest) (*workflow.GetLLMNodeFCSettingsMergedResponse, error) {
+func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req *workflow.GetLLMNodeFCSettingsMergedRequest) (
+	_ *workflow.GetLLMNodeFCSettingsMergedResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
 	}
@@ -2322,6 +2742,16 @@ func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req
 
 func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (
 	resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	currentUser := ctxutil.MustGetUIDFromCtx(ctx)
 	if err = checkUserSpace(ctx, currentUser, req.GetSpaceID()); err != nil {
 		return nil, err
@@ -2405,7 +2835,18 @@ func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *p
 	}, nil
 }
 
-func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.CopyWorkflowRequest) (resp *workflow.CopyWorkflowResponse, err error) {
+func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.CopyWorkflowRequest) (
+	resp *workflow.CopyWorkflowResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	spaceID, err := strconv.ParseInt(req.GetSpaceID(), 10, 64)
 	if err != nil {
 		return nil, err
@@ -2434,7 +2875,18 @@ func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.Cop
 	}, err
 }
 
-func (w *ApplicationService) GetHistorySchema(ctx context.Context, req *workflow.GetHistorySchemaRequest) (resp *workflow.GetHistorySchemaResponse, err error) {
+func (w *ApplicationService) GetHistorySchema(ctx context.Context, req *workflow.GetHistorySchemaRequest) (
+	resp *workflow.GetHistorySchemaResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	spaceID := mustParseInt64(req.GetSpaceID())
 	if err = checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), mustParseInt64(req.GetSpaceID())); err != nil {
 		return nil, err
@@ -2500,7 +2952,18 @@ func (w *ApplicationService) GetHistorySchema(ctx context.Context, req *workflow
 	}, nil
 }
 
-func (w *ApplicationService) GetExampleWorkFlowList(ctx context.Context, req *workflow.GetExampleWorkFlowListRequest) (resp *workflow.GetExampleWorkFlowListResponse, err error) {
+func (w *ApplicationService) GetExampleWorkFlowList(ctx context.Context, req *workflow.GetExampleWorkFlowListRequest) (
+	resp *workflow.GetExampleWorkFlowListResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	page := &vo.Page{}
 	if req.GetPage() > 0 {
 		page.Page = req.GetPage()
@@ -2576,7 +3039,17 @@ func (w *ApplicationService) GetExampleWorkFlowList(ctx context.Context, req *wo
 	return response, nil
 }
 
-func (w *ApplicationService) CopyWkTemplateApi(ctx context.Context, req *workflow.CopyWkTemplateApiRequest) (resp *workflow.CopyWkTemplateApiResponse, err error) {
+func (w *ApplicationService) CopyWkTemplateApi(ctx context.Context, req *workflow.CopyWkTemplateApiRequest) (
+	resp *workflow.CopyWkTemplateApiResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+		}
+	}()
 
 	if err = checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), req.GetTargetSpaceID()); err != nil {
 		return nil, err
@@ -2641,7 +3114,7 @@ func (w *ApplicationService) CopyWkTemplateApi(ctx context.Context, req *workflo
 				return nil, err
 			}
 			endNode = &workflow.Node{
-				NodeID:    "900001",
+				NodeID:    entity.ExitNodeKey,
 				NodeName:  "end-node",
 				NodeParam: &workflow.NodeParam{InputParameters: make([]*workflow.Parameter, 0, len(outputs))},
 			}

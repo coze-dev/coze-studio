@@ -45,7 +45,7 @@ func TestLoop(t *testing.T) {
 		}
 
 		entry := &compose2.NodeSchema{
-			Key:  compose2.EntryNodeKey,
+			Key:  entity.EntryNodeKey,
 			Type: entity.NodeTypeEntry,
 		}
 
@@ -80,7 +80,7 @@ func TestLoop(t *testing.T) {
 		}
 
 		exit := &compose2.NodeSchema{
-			Key:  compose2.ExitNodeKey,
+			Key:  entity.ExitNodeKey,
 			Type: entity.NodeTypeExit,
 			Configs: map[string]any{
 				"TerminalPlan": vo.ReturnVariables,
@@ -176,7 +176,7 @@ func TestLoop(t *testing.T) {
 		}
 
 		entry := &compose2.NodeSchema{
-			Key:  compose2.EntryNodeKey,
+			Key:  entity.EntryNodeKey,
 			Type: entity.NodeTypeEntry,
 		}
 
@@ -200,7 +200,7 @@ func TestLoop(t *testing.T) {
 		}
 
 		exit := &compose2.NodeSchema{
-			Key:  compose2.ExitNodeKey,
+			Key:  entity.ExitNodeKey,
 			Type: entity.NodeTypeExit,
 			Configs: map[string]any{
 				"TerminalPlan": vo.ReturnVariables,
@@ -335,12 +335,12 @@ func TestLoop(t *testing.T) {
 		}
 
 		entry := &compose2.NodeSchema{
-			Key:  compose2.EntryNodeKey,
+			Key:  entity.EntryNodeKey,
 			Type: entity.NodeTypeEntry,
 		}
 
 		exit := &compose2.NodeSchema{
-			Key:  compose2.ExitNodeKey,
+			Key:  entity.ExitNodeKey,
 			Type: entity.NodeTypeExit,
 			Configs: map[string]any{
 				"TerminalPlan": vo.ReturnVariables,

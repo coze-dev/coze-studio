@@ -63,15 +63,21 @@ type WorkflowError interface {
 	DebugURL() string
 	Level() ErrorLevel
 	OpenAPICode() int
+	AppendDebug(exeID, spaceID, workflowID int64) WorkflowError
+	ChangeErrLevel(newLevel ErrorLevel) WorkflowError
 }
 
 type wfErr struct {
 	errorx.StatusError
+	exeID      int64
+	spaceID    int64
+	workflowID int64
+	cause      error
 }
 
 func (w *wfErr) DebugURL() string {
 	if w.StatusError.Extra() == nil {
-		return ""
+		return fmt.Sprintf(DebugURLTpl, w.exeID, w.spaceID, w.workflowID)
 	}
 
 	debugURL, ok := w.StatusError.Extra()["debug_url"]
@@ -79,7 +85,7 @@ func (w *wfErr) DebugURL() string {
 		return debugURL
 	}
 
-	return ""
+	return fmt.Sprintf(DebugURLTpl, w.exeID, w.spaceID, w.workflowID)
 }
 
 func (w *wfErr) Level() ErrorLevel {
@@ -97,6 +103,22 @@ func (w *wfErr) Level() ErrorLevel {
 
 func (w *wfErr) OpenAPICode() int {
 	return errno.CodeForOpenAPI(w)
+}
+
+func (w *wfErr) AppendDebug(exeID, spaceID, workflowID int64) WorkflowError {
+	w.exeID = exeID
+	w.spaceID = spaceID
+	w.workflowID = workflowID
+	return w
+}
+
+func (w *wfErr) Unwrap() error {
+	return w.cause
+}
+
+func (w *wfErr) ChangeErrLevel(newLevel ErrorLevel) WorkflowError {
+	w.StatusError.Extra()["level"] = string(newLevel)
+	return w
 }
 
 func NewError(code int, opts ...errorx.Option) WorkflowError {
@@ -118,14 +140,15 @@ func WrapError(code int, err error, opts ...errorx.Option) WorkflowError {
 	_ = errors.As(e, &sErr)
 	wfe := &wfErr{
 		StatusError: sErr,
+		cause:       err,
 	}
 	return wfe
 }
 
-func NewErrorWithDebug(code int, exeID, spaceID, workflowID int64, opts ...errorx.Option) WorkflowError {
+func WrapWithDebug(code int, err error, exeID, spaceID, workflowID int64, opts ...errorx.Option) WorkflowError {
 	debugURL := fmt.Sprintf(DebugURLTpl, exeID, spaceID, workflowID)
 	opts = append(opts, errorx.Extra("debug_url", debugURL))
-	return NewError(code, opts...)
+	return WrapError(code, err, opts...)
 }
 
 func NewWarn(code int, opts ...errorx.Option) WorkflowError {
@@ -147,8 +170,17 @@ func WrapWarn(code int, err error, opts ...errorx.Option) WorkflowError {
 	_ = errors.As(e, &sErr)
 	wfe := &wfErr{
 		StatusError: sErr,
+		cause:       err,
 	}
 	return wfe
+}
+
+func WrapIfNeeded(code int, err error, opts ...errorx.Option) WorkflowError {
+	var wfe WorkflowError
+	if errors.As(err, &wfe) {
+		return wfe
+	}
+	return WrapError(code, err, opts...)
 }
 
 var CancelErr = newCancel()

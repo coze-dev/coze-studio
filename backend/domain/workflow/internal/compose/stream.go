@@ -101,7 +101,7 @@ func (s *NodeSchema) IsStreamingField(path compose.FieldPath, allNS map[vo.NodeK
 		return nodes.FieldNotStream, nil
 	} else if s.Type == entity.NodeTypeSubWorkflow { // TODO: why not use sub workflow's Mode configuration directly?
 		subSC := s.SubWorkflowSchema
-		subExit := subSC.GetNode(ExitNodeKey)
+		subExit := subSC.GetNode(entity.ExitNodeKey)
 		subStreamType, err := subExit.IsStreamingField(path, nil)
 		if err != nil {
 			return nodes.FieldNotStream, err

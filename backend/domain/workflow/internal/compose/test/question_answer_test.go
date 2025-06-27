@@ -91,7 +91,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 		t.Run("answer directly, no structured output", func(t *testing.T) {
 			entry := &compose2.NodeSchema{
-				Key:  compose2.EntryNodeKey,
+				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
 			}
 
@@ -116,7 +116,7 @@ func TestQuestionAnswer(t *testing.T) {
 			}
 
 			exit := &compose2.NodeSchema{
-				Key:  compose2.ExitNodeKey,
+				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
 				Configs: map[string]any{
 					"TerminalPlan": vo.ReturnVariables,
@@ -193,7 +193,7 @@ func TestQuestionAnswer(t *testing.T) {
 			}
 
 			entry := &compose2.NodeSchema{
-				Key:  compose2.EntryNodeKey,
+				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
 			}
 
@@ -239,7 +239,7 @@ func TestQuestionAnswer(t *testing.T) {
 			}
 
 			exit := &compose2.NodeSchema{
-				Key:  compose2.ExitNodeKey,
+				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
 				Configs: map[string]any{
 					"TerminalPlan": vo.ReturnVariables,
@@ -342,7 +342,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 		t.Run("answer with dynamic choices", func(t *testing.T) {
 			entry := &compose2.NodeSchema{
-				Key:  compose2.EntryNodeKey,
+				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
 			}
 
@@ -377,7 +377,7 @@ func TestQuestionAnswer(t *testing.T) {
 			}
 
 			exit := &compose2.NodeSchema{
-				Key:  compose2.ExitNodeKey,
+				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
 				Configs: map[string]any{
 					"TerminalPlan": vo.ReturnVariables,
@@ -499,7 +499,7 @@ func TestQuestionAnswer(t *testing.T) {
 			}
 
 			entry := &compose2.NodeSchema{
-				Key:  compose2.EntryNodeKey,
+				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
 			}
 
@@ -547,7 +547,7 @@ func TestQuestionAnswer(t *testing.T) {
 			}
 
 			exit := &compose2.NodeSchema{
-				Key:  compose2.ExitNodeKey,
+				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
 				Configs: map[string]any{
 					"TerminalPlan": vo.ReturnVariables,

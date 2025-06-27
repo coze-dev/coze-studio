@@ -27,14 +27,14 @@ func CreateWorkflow(ctx context.Context, c *app.RequestContext) {
 	var req workflow.CreateWorkflowRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	appworkflow.SetLocale(ctx, string(c.GetHeader("x-locale")))
 	resp, err := appworkflow.SVC.CreateWorkflow(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -48,13 +48,13 @@ func GetCanvasInfo(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetCanvasInfoRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.GetCanvasInfo(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -68,13 +68,13 @@ func SaveWorkflow(ctx context.Context, c *app.RequestContext) {
 	var req workflow.SaveWorkflowRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.SaveWorkflow(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -88,13 +88,13 @@ func UpdateWorkflowMeta(ctx context.Context, c *app.RequestContext) {
 	var req workflow.UpdateWorkflowMetaRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 	resp, err := appworkflow.SVC.UpdateWorkflowMeta(ctx, &req)
 
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -108,13 +108,13 @@ func DeleteWorkflow(ctx context.Context, c *app.RequestContext) {
 	var req workflow.DeleteWorkflowRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.DeleteWorkflow(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -128,13 +128,13 @@ func BatchDeleteWorkflow(ctx context.Context, c *app.RequestContext) {
 	var req workflow.BatchDeleteWorkflowRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.BatchDeleteWorkflow(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -148,7 +148,7 @@ func GetDeleteStrategy(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetDeleteStrategyRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -164,12 +164,12 @@ func PublishWorkflow(ctx context.Context, c *app.RequestContext) {
 	var req workflow.PublishWorkflowRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 	resp, err := appworkflow.SVC.PublishWorkflow(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -183,12 +183,12 @@ func CopyWorkflow(ctx context.Context, c *app.RequestContext) {
 	var req workflow.CopyWorkflowRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 	resp, err := appworkflow.SVC.CopyWorkflow(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -202,12 +202,12 @@ func CopyWkTemplateApi(ctx context.Context, c *app.RequestContext) {
 	var req workflow.CopyWkTemplateApiRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 	resp, err := appworkflow.SVC.CopyWkTemplateApi(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 	c.JSON(consts.StatusOK, resp)
@@ -220,7 +220,7 @@ func GetReleasedWorkflows(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetReleasedWorkflowsRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -236,12 +236,12 @@ func GetWorkflowReferences(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetWorkflowReferencesRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 	resp, err := appworkflow.SVC.GetWorkflowReferences(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -255,12 +255,12 @@ func GetWorkFlowList(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetWorkFlowListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 	resp, err := appworkflow.SVC.ListWorkflow(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -274,12 +274,12 @@ func QueryWorkflowNodeTypes(ctx context.Context, c *app.RequestContext) {
 	var req workflow.QueryWorkflowNodeTypeRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 	resp, err := appworkflow.SVC.QueryWorkflowNodeTypes(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -293,13 +293,13 @@ func NodeTemplateList(ctx context.Context, c *app.RequestContext) {
 	var req workflow.NodeTemplateListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 	appworkflow.SetLocale(ctx, string(c.GetHeader("x-locale")))
 	resp, err := appworkflow.SVC.GetNodeTemplateList(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -313,7 +313,7 @@ func NodePanelSearch(ctx context.Context, c *app.RequestContext) {
 	var req workflow.NodePanelSearchRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -329,13 +329,13 @@ func GetLLMNodeFCSettingsMerged(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetLLMNodeFCSettingsMergedRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.GetLLMNodeFCSettingsMerged(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -349,13 +349,13 @@ func GetLLMNodeFCSettingDetail(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetLLMNodeFCSettingDetailRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.GetLLMNodeFCSettingDetail(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -369,13 +369,13 @@ func WorkFlowTestRun(ctx context.Context, c *app.RequestContext) {
 	var req workflow.WorkFlowTestRunRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.TestRun(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -389,13 +389,13 @@ func WorkFlowTestResume(ctx context.Context, c *app.RequestContext) {
 	var req workflow.WorkflowTestResumeRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.TestResume(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -409,13 +409,13 @@ func CancelWorkFlow(ctx context.Context, c *app.RequestContext) {
 	var req workflow.CancelWorkFlowRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.Cancel(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -429,13 +429,13 @@ func GetWorkFlowProcess(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetWorkflowProcessRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.GetProcess(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -449,13 +449,13 @@ func GetNodeExecuteHistory(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetNodeExecuteHistoryRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.GetNodeExecuteHistory(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -469,13 +469,13 @@ func GetApiDetail(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetApiDetailRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	toolDetailInfo, err := appworkflow.SVC.GetApiDetail(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -495,13 +495,13 @@ func WorkflowNodeDebugV2(ctx context.Context, c *app.RequestContext) {
 	var req workflow.WorkflowNodeDebugV2Request
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.NodeDebug(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -515,13 +515,13 @@ func SignImageURL(ctx context.Context, c *app.RequestContext) {
 	var req workflow.SignImageURLRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.SignImageURL(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -535,7 +535,7 @@ func CreateProjectConversationDef(ctx context.Context, c *app.RequestContext) {
 	var req workflow.CreateProjectConversationDefRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -551,7 +551,7 @@ func UpdateProjectConversationDef(ctx context.Context, c *app.RequestContext) {
 	var req workflow.UpdateProjectConversationDefRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -567,7 +567,7 @@ func DeleteProjectConversationDef(ctx context.Context, c *app.RequestContext) {
 	var req workflow.DeleteProjectConversationDefRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -583,7 +583,7 @@ func ListProjectConversationDef(ctx context.Context, c *app.RequestContext) {
 	var req workflow.ListProjectConversationRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -599,7 +599,7 @@ func ListRootSpans(ctx context.Context, c *app.RequestContext) {
 	var req workflow.ListRootSpansRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -615,7 +615,7 @@ func GetTraceSDK(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetTraceSDKRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -631,13 +631,13 @@ func GetWorkflowDetail(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetWorkflowDetailRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	workflowDetailDataList, err := appworkflow.SVC.GetWorkflowDetail(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -657,13 +657,13 @@ func GetWorkflowDetailInfo(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetWorkflowDetailInfoRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	workflowDetailInfoDataList, err := appworkflow.SVC.GetWorkflowDetailInfo(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -683,13 +683,13 @@ func ValidateTree(ctx context.Context, c *app.RequestContext) {
 	var req workflow.ValidateTreeRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.ValidateTree(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -703,7 +703,7 @@ func GetChatFlowRole(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetChatFlowRoleRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -719,7 +719,7 @@ func CreateChatFlowRole(ctx context.Context, c *app.RequestContext) {
 	var req workflow.CreateChatFlowRoleRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -735,7 +735,7 @@ func DeleteChatFlowRole(ctx context.Context, c *app.RequestContext) {
 	var req workflow.DeleteChatFlowRoleRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -751,7 +751,7 @@ func ListPublishWorkflow(ctx context.Context, c *app.RequestContext) {
 	var req workflow.ListPublishWorkflowRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -767,13 +767,13 @@ func GetWorkflowUploadAuthToken(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetUploadAuthTokenRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.GetWorkflowUploadAuthToken(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -787,7 +787,7 @@ func OpenAPIRunFlow(ctx context.Context, c *app.RequestContext) {
 	var req workflow.OpenAPIRunFlowRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -806,7 +806,7 @@ func OpenAPIRunFlow(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -918,7 +918,7 @@ func OpenAPIStreamRunFlow(ctx context.Context, c *app.RequestContext) {
 	var req workflow.OpenAPIRunFlowRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -931,7 +931,7 @@ func OpenAPIStreamRunFlow(ctx context.Context, c *app.RequestContext) {
 
 	sr, err := appworkflow.SVC.OpenAPIStreamRun(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -945,7 +945,7 @@ func OpenAPIStreamResumeFlow(ctx context.Context, c *app.RequestContext) {
 	var req workflow.OpenAPIStreamResumeFlowRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -958,7 +958,7 @@ func OpenAPIStreamResumeFlow(ctx context.Context, c *app.RequestContext) {
 
 	sr, err := appworkflow.SVC.OpenAPIStreamResume(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -972,7 +972,7 @@ func OpenAPIGetWorkflowRunHistory(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetWorkflowRunHistoryRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -987,7 +987,7 @@ func OpenAPIGetWorkflowRunHistory(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -1001,7 +1001,7 @@ func OpenAPIChatFlowRun(ctx context.Context, c *app.RequestContext) {
 	var req workflow.ChatFlowRunRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -1017,7 +1017,7 @@ func OpenAPIGetWorkflowInfo(ctx context.Context, c *app.RequestContext) {
 	var req workflow.OpenAPIGetWorkflowInfoRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -1033,13 +1033,13 @@ func GetHistorySchema(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetHistorySchemaRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.GetHistorySchema(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
@@ -1053,13 +1053,13 @@ func GetExampleWorkFlowList(ctx context.Context, c *app.RequestContext) {
 	var req workflow.GetExampleWorkFlowListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
 	resp, err := appworkflow.SVC.GetExampleWorkFlowList(ctx, &req)
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
+		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 

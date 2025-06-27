@@ -40,11 +40,6 @@ func (c *Connection) ID() string {
 	return fmt.Sprintf("%v:%v", c.FromNode, c.ToNode)
 }
 
-const (
-	EntryNodeKey = "100001"
-	ExitNodeKey  = "900001"
-)
-
 type CompositeNode struct {
 	Parent   *NodeSchema
 	Children []*NodeSchema

@@ -60,7 +60,7 @@ func init() {
 
 	code.Register(
 		ErrWorkflowExecuteFail,
-		"We're currently experiencing server issues. Please try your request again after a short delay. If the problem persists, contact our support team.",
+		"Workflow execution failure: {cause}",
 		code.WithAffectStability(false),
 	)
 

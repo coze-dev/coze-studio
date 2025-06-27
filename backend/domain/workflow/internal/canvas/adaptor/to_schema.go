@@ -317,12 +317,12 @@ func toEntryNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 		return nil, fmt.Errorf("entry node cannot have parent: %s", n.Parent().ID)
 	}
 
-	if n.ID != compose.EntryNodeKey {
-		return nil, fmt.Errorf("entry node id must be %s, got %s", compose.EntryNodeKey, n.ID)
+	if n.ID != entity.EntryNodeKey {
+		return nil, fmt.Errorf("entry node id must be %s, got %s", entity.EntryNodeKey, n.ID)
 	}
 
 	ns := &compose.NodeSchema{
-		Key:  compose.EntryNodeKey,
+		Key:  entity.EntryNodeKey,
 		Type: entity.NodeTypeEntry,
 		Name: n.Data.Meta.Title,
 	}
@@ -339,12 +339,12 @@ func toExitNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 		return nil, fmt.Errorf("exit node cannot have parent: %s", n.Parent().ID)
 	}
 
-	if n.ID != compose.ExitNodeKey {
-		return nil, fmt.Errorf("exit node id must be %s, got %s", compose.ExitNodeKey, n.ID)
+	if n.ID != entity.ExitNodeKey {
+		return nil, fmt.Errorf("exit node id must be %s, got %s", entity.ExitNodeKey, n.ID)
 	}
 
 	ns := &compose.NodeSchema{
-		Key:  compose.ExitNodeKey,
+		Key:  entity.ExitNodeKey,
 		Type: entity.NodeTypeExit,
 		Name: n.Data.Meta.Title,
 	}
@@ -1873,8 +1873,8 @@ func PruneIsolatedNodes(nodes []*vo.Node, edges []*vo.Edge, parentNode *vo.Node)
 		nodeDependencyCount[node.ID] = 0
 	}
 
-	nodeDependencyCount[compose.EntryNodeKey] = 1 // entry node is considered to be 1
-	nodeDependencyCount[compose.ExitNodeKey] = 1  // exit node is considered to be 1
+	nodeDependencyCount[entity.EntryNodeKey] = 1 // entry node is considered to be 1
+	nodeDependencyCount[entity.ExitNodeKey] = 1  // exit node is considered to be 1
 	for _, edge := range edges {
 		if _, ok := nodeDependencyCount[edge.TargetNodeID]; ok {
 			nodeDependencyCount[edge.TargetNodeID]++

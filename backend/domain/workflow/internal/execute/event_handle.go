@@ -14,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -195,7 +196,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			} else if errors.Is(event.Err, context.Canceled) {
 				wfe = vo.CancelErr
 			} else {
-				wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err)
+				wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err, errorx.KV("cause", event.Err.Error()))
 			}
 		}
 
@@ -588,29 +589,24 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 	case NodeError:
 		var errorInfo, errorLevel string
-		if errors.Is(event.Err, context.Canceled) {
-			errorInfo = "workflow cancel by user"
-			errorLevel = string(vo.LevelCancel)
-		} else {
-			var wfe vo.WorkflowError
-			if !errors.As(event.Err, &wfe) {
-				if errors.Is(event.Err, context.DeadlineExceeded) {
-					wfe = vo.NodeTimeoutErr
-				} else if errors.Is(event.Err, context.Canceled) {
-					wfe = vo.CancelErr
-				} else {
-					wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err)
-				}
-			}
-			var msg string
-			if cause := errors.Unwrap(event.Err); cause != nil {
-				msg = cause.Error()
+		var wfe vo.WorkflowError
+		if !errors.As(event.Err, &wfe) {
+			if errors.Is(event.Err, context.DeadlineExceeded) {
+				wfe = vo.NodeTimeoutErr
+			} else if errors.Is(event.Err, context.Canceled) {
+				wfe = vo.CancelErr
 			} else {
-				msg = wfe.Msg()
+				wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err, errorx.KV("cause", event.Err.Error()))
 			}
-			errorInfo = msg[:min(100, len(msg))]
-			errorLevel = string(wfe.Level())
 		}
+		var msg string
+		if cause := errors.Unwrap(event.Err); cause != nil {
+			msg = cause.Error()
+		} else {
+			msg = wfe.Msg()
+		}
+		errorInfo = msg[:min(100, len(msg))]
+		errorLevel = string(wfe.Level())
 
 		if event.Context == nil || event.Context.NodeCtx == nil {
 			return noTerminate, fmt.Errorf("nil event context")
