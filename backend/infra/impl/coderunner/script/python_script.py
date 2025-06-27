@@ -3,7 +3,7 @@ import sys
 import os
 import asyncio
 import time
-
+import random
 try:
     from RestrictedPython import safe_builtins, limited_builtins, utility_builtins
 except ModuleNotFoundError:
@@ -16,6 +16,7 @@ custom_builtins['__import__'] = __import__
 custom_builtins['asyncio'] = asyncio
 custom_builtins['json'] = json
 custom_builtins['time'] = time
+custom_builtins['random'] = random
 
 restricted_globals = {
     '__builtins__': custom_builtins,

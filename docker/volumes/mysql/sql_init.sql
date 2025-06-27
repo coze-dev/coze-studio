@@ -171,7 +171,7 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
     },
     "canvasPosition": {
      "x": 1480,
-     "y": 319.4
+     "y": 343.4
     }
    },
    "data": {
@@ -208,7 +208,7 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
     "nodeMeta": {
      "description": "用于通过设定循环次数和逻辑，重复执行一系列任务",
      "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Loop-v2.jpg",
-     "subTitle": "循环",
+     "subTitle": "Loop",
      "title": "循环"
     },
     "outputs": [],
@@ -228,7 +228,7 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
       "nodeMeta": {
        "description": "连接多个下游分支，若设定的条件成立则仅运行对应的分支，若均不成立则只运行“否则”分支",
        "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Condition-v2.jpg",
-       "subTitle": "选择器",
+       "subTitle": "Condition",
        "title": "选择器"
       },
       "inputs": {
@@ -254,10 +254,13 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
             },
             "right": {
              "input": {
-              "type": "string",
+              "type": "integer",
               "value": {
                "type": "literal",
-               "content": "0"
+               "content": 0,
+               "rawMeta": {
+                "type": 2
+               }
               }
              }
             }
@@ -283,7 +286,7 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
        "title": "代码_1",
        "description": "编写代码，处理输入变量来生成返回值",
        "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
-       "subTitle": "代码"
+       "subTitle": "Code"
       },
       "inputs": {
        "inputParameters": [
@@ -297,6 +300,9 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
             "source": "block-output",
             "blockID": "193248",
             "name": "input"
+           },
+           "rawMeta": {
+            "type": 1
            }
           }
          }
@@ -325,8 +331,8 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
      "type": "31",
      "meta": {
       "position": {
-       "x": 640,
-       "y": 221.39999999999998
+       "x": 656.9,
+       "y": 248.21666666666664
       }
      },
      "data": {
@@ -380,7 +386,7 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
        "description": "节点从“消息”更名为“输出”，支持中间过程的消息输出，支持流式和非流式两种方式",
        "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Output-v2.jpg",
        "mainColor": "#5C62FF",
-       "subTitle": "输出",
+       "subTitle": "Output",
        "title": "输出"
       }
      }
@@ -419,7 +425,7 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
    "type": "5",
    "meta": {
     "position": {
-     "x": 1138.7291666666667,
+     "x": 1100,
      "y": 13
     }
    },
@@ -428,7 +434,7 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
      "title": "代码",
      "description": "编写代码，处理输入变量来生成返回值",
      "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
-     "subTitle": "代码"
+     "subTitle": "Code"
     },
     "inputs": {
      "inputParameters": [
@@ -489,7 +495,7 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
     "nodeMeta": {
      "description": "用于处理多个字符串类型变量的格式",
      "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
-     "subTitle": "文本处理",
+     "subTitle": "Text Processing",
      "title": "文本处理"
     },
     "inputs": {
@@ -609,7 +615,7 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
    "meta": {
     "position": {
      "x": 1100,
-     "y": 221.39999999999998
+     "y": 245.39999999999998
     }
    },
    "data": {
@@ -629,7 +635,7 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
    "meta": {
     "position": {
      "x": 640,
-     "y": 221.39999999999998
+     "y": 245.39999999999998
     }
    },
    "data": {
@@ -649,7 +655,7 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
    "meta": {
     "position": {
      "x": 180,
-     "y": 207.7
+     "y": 231.7
     }
    },
    "data": {
@@ -687,6 +693,7 @@ INSERT INTO opencoze.workflow_draft (id, canvas, input_params, output_params, te
   "loop": "v2"
  }
 }', '[{"name":"input","type":"string","required":true}]', '[{"name":"output","type":"string"}]', 1, 0, null, null, '1')
-ON DUPLICATE KEY UPDATE
+    ON DUPLICATE KEY UPDATE
     id = VALUES(id);
+
 
