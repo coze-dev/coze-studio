@@ -18,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
+	appApplication "code.byted.org/flow/opencoze/backend/application/app"
 	"code.byted.org/flow/opencoze/backend/application/plugin"
 	"code.byted.org/flow/opencoze/backend/application/search"
 	"code.byted.org/flow/opencoze/backend/application/singleagent"
@@ -100,7 +101,7 @@ func PublicFavoriteProduct(ctx context.Context, c *app.RequestContext) {
 	if req.GetEntityType() == product_common.ProductEntityType_Bot {
 		_, err = singleagent.SingleAgentSVC.ValidateAgentDraftAccess(ctx, req.GetEntityID())
 	} else if req.GetEntityType() == product_common.ProductEntityType_Project {
-		// TODO(mrh): fix me
+		_, err = appApplication.APPApplicationSVC.ValidateDraftAPPAccess(ctx, req.GetEntityID())
 	}
 
 	if err != nil {
