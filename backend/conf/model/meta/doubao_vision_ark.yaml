@@ -9,7 +9,7 @@ icon_uri: doubao_v2.png
 description: 支持图片理解 # 模型默认描述
 protocol: ark # 模型连接协议
 capability: # 模型基础能力
-  function_call: true # 模型是否支持 function call
+  function_call: false # 模型是否支持 function call
   input_modal: # 模型输入支持模态
     - text
     - image

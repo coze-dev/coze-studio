@@ -109,10 +109,12 @@ func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, a
 	if err != nil {
 		return nil, err
 	}
+	displayContent := a.buildDisplayContent(ctx, ar)
 	arm := &entity.AgentRunMeta{
 		ConversationID:   ptr.From(ar.ConversationID),
 		AgentID:          ar.BotID,
 		Content:          multiContent,
+		DisplayContent:   displayContent,
 		SpaceID:          spaceID,
 		UserID:           ar.User,
 		SectionID:        conversationData.SectionID,
@@ -152,6 +154,15 @@ func (a *OpenapiAgentRunApplication) buildTools(ctx context.Context, shortcmd *r
 	}
 
 	return ts, nil
+}
+
+func (a *OpenapiAgentRunApplication) buildDisplayContent(_ context.Context, ar *run.ChatV3Request) string {
+	for _, item := range ar.AdditionalMessages {
+		if item.ContentType == run.ContentTypeMixApi {
+			return item.Content
+		}
+	}
+	return ""
 }
 
 func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *run.ChatV3Request) ([]*message.InputMetaData, message.ContentType, error) {

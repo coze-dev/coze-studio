@@ -455,7 +455,7 @@ struct UploadFileOpenRequest {
 
 
 struct UploadFileOpenResponse {
-    1: optional File File (agw.key = "data")
+    1: optional File File (api.body = "data")
     253: required i64 code
     254: required string msg
     255: base.BaseResp BaseResp
