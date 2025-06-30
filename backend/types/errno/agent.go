@@ -17,6 +17,7 @@ const (
 	ErrAgentSetDraftBotDisplayInfo         = 100000008
 	ErrAgentGetDraftBotDisplayInfoNotFound = 100000009
 	ErrAgentPublishSingleAgentCode         = 100000010
+	ErrAgentAlreadyBindDatabaseCode        = 100000011
 )
 
 func init() {
@@ -82,6 +83,12 @@ func init() {
 	code.Register(
 		ErrAgentInvalidParamCode,
 		"invalid parameter : {msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrAgentAlreadyBindDatabaseCode,
+		"already bind database : {msg}",
 		code.WithAffectStability(false),
 	)
 }
