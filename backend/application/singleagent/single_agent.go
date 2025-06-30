@@ -222,6 +222,13 @@ func (s *SingleAgentApplicationService) BindDatabase(ctx context.Context, req *t
 		return nil, err
 	}
 
+	dbMap := slices.ToMap(draft.Database, func(d *bot_common.Database) (string, *bot_common.Database) {
+		return d.GetTableId(), d
+	})
+	if _, ok := dbMap[conv.Int64ToStr(req.GetDatabaseID())]; ok {
+		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KVf("msg", "database %d already bound to agent %d", req.GetDatabaseID(), agentID))
+	}
+
 	basics := []*database.DatabaseBasic{
 		{
 			ID:        req.DatabaseID,

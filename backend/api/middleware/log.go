@@ -12,6 +12,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/google/uuid"
 
+	"code.byted.org/flow/opencoze/backend/pkg/i18n"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
@@ -33,8 +34,8 @@ func AccessLogMW() app.HandlerFunc {
 		}
 
 		requestType := ctx.GetInt32(RequestAuthTypeStr)
-		baseLog := fmt.Sprintf("| %s | %d | %v | %s | %s | %v | %s | %d",
-			ctx.Host(), status, latency, clientIP, method, path, handleName, requestType)
+		baseLog := fmt.Sprintf("| %s | %d | %v | %s | %s | %v | %s | %d ｜ %s",
+			ctx.Host(), status, latency, clientIP, method, path, handleName, requestType, i18n.GetLocale(c))
 
 		switch {
 		case status >= http.StatusInternalServerError:

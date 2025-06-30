@@ -45,19 +45,22 @@ else
     exit 1
 fi
 
+if [ -f "$DOCKER_DIR/cert.pem" ]; then
+    cp "$DOCKER_DIR/cert.pem" "$BIN_DIR/cert.pem"
+fi
+
+if [ -f "$DOCKER_DIR/key.pem" ]; then
+    cp "$DOCKER_DIR/key.pem" "$BIN_DIR/key.pem"
+fi
+
 echo "📑 Cleaning configuration files..."
 rm -rf "$CONFIG_DIR"
 mkdir -p "$CONFIG_DIR"
 
 echo "📑 Copying plugin configuration files..."
-mkdir -p "$CONFIG_DIR/plugin/pluginproduct"
-mkdir -p "$CONFIG_DIR/plugin/common"
-mkdir -p "$CONFIG_DIR/prompt"
-cp "$BACKEND_DIR/conf/plugin/pluginproduct/"* "$CONFIG_DIR/plugin/pluginproduct"
-cp "$BACKEND_DIR/conf/plugin/common/"* "$CONFIG_DIR/plugin/common"
-cp "$BACKEND_DIR/conf/prompt/"* "$CONFIG_DIR/prompt"
+
+cp -r "$BACKEND_DIR/conf" "$RESOURCES_DIR"
 cp -r "$BACKEND_DIR/static" "$RESOURCES_DIR"
-cp -r "$BACKEND_DIR/conf/model" "$CONFIG_DIR"
 
 for arg in "$@"; do
     if [[ "$arg" == "-start" ]]; then

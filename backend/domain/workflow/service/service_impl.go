@@ -1370,7 +1370,7 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 		var index int
 
 		if len(metas) == 0 {
-			return result,0, nil
+			return result, 0, nil
 		}
 
 		for id := range metas {
@@ -1407,7 +1407,7 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 		return i.repo.MGetDrafts(ctx, policy)
 	case vo.FromSpecificVersion:
 		if len(policy.IDs) == 0 || len(policy.Versions) != len(policy.IDs) {
-			return nil, 0,  fmt.Errorf("ids and versions are required when MGet from specific versions")
+			return nil, 0, fmt.Errorf("ids and versions are required when MGet from specific versions")
 		}
 
 		metas, total, err := i.repo.MGetMetas(ctx, &policy.MetaQuery)

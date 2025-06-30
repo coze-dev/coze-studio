@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	saEntity "code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
@@ -23,11 +24,6 @@ import (
 )
 
 func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, ar *run.ChatV3Request) (*schema.StreamReader[*entity.AgentRunResponse], error) {
-	agentInfo, caErr := a.checkAgent(ctx, ar)
-	if caErr != nil {
-		logs.CtxErrorf(ctx, "checkAgent err:%v", caErr)
-		return nil, caErr
-	}
 
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	creatorID := apiKeyInfo.UserID
@@ -36,6 +32,12 @@ func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, ar *ru
 	if ptr.From(ar.ConnectorID) == consts.WebSDKConnectorID {
 		connectorID = ptr.From(ar.ConnectorID)
 	}
+	agentInfo, caErr := a.checkAgent(ctx, ar, connectorID)
+	if caErr != nil {
+		logs.CtxErrorf(ctx, "checkAgent err:%v", caErr)
+		return nil, caErr
+	}
+
 	conversationData, ccErr := a.checkConversation(ctx, ar, creatorID, connectorID)
 	if ccErr != nil {
 		logs.CtxErrorf(ctx, "checkConversation err:%v", ccErr)
@@ -87,8 +89,12 @@ func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *
 	return conversationData, nil
 }
 
-func (a *OpenapiAgentRunApplication) checkAgent(ctx context.Context, ar *run.ChatV3Request) (*saEntity.SingleAgent, error) {
-	agentInfo, err := ConversationSVC.appContext.SingleAgentDomainSVC.GetSingleAgent(ctx, ar.BotID, "")
+func (a *OpenapiAgentRunApplication) checkAgent(ctx context.Context, ar *run.ChatV3Request, connectorID int64) (*saEntity.SingleAgent, error) {
+	agentInfo, err := ConversationSVC.appContext.SingleAgentDomainSVC.ObtainAgentByIdentity(ctx, &singleagent.AgentIdentity{
+		AgentID:     ar.BotID,
+		IsDraft:     false,
+		ConnectorID: connectorID,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +125,7 @@ func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, a
 		UserID:           ar.User,
 		SectionID:        conversationData.SectionID,
 		PreRetrieveTools: shortcutCMDData,
-		IsDraft:          true,
+		IsDraft:          false,
 		ConnectorID:      connectorID,
 		ContentType:      contentType,
 		Ext:              ar.ExtraParams,

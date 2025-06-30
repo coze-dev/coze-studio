@@ -4,12 +4,15 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"fmt"
 	"log"
 	"os"
 	"runtime/debug"
 	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/hertz-contrib/cors"
 	"github.com/joho/godotenv"
 
@@ -41,23 +44,39 @@ func main() {
 	maxRequestBodySize := os.Getenv("MAX_REQUEST_BODY_SIZE")
 	maxSize := conv.StrToInt64D(maxRequestBodySize, 1024*1024*200)
 
-	s := server.Default(server.WithHostPorts(addr),
-		server.WithMaxRequestBodySize(int(maxSize)))
+	opts := []config.Option{
+		server.WithHostPorts(addr),
+		server.WithMaxRequestBodySize(int(maxSize)),
+	}
 
-	// ContextCacheMW -> RequestInspectorMW -> AccessLogMW -> OtherMiddleware
-	s.Use(middleware.ContextCacheMW())
-	s.Use(middleware.RequestInspectorMW())
+	if os.Getenv("USE_SSL") == "1" {
+		cfg := &tls.Config{}
+		cert, err := tls.LoadX509KeyPair("cert.pem", "key.pem")
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		cfg.Certificates = append(cfg.Certificates, cert)
+		opts = append(opts, server.WithTLS(cfg))
+		logs.Infof("Use SSL")
+	}
+
+	s := server.Default(opts...)
 
 	// cors option
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	config.AllowHeaders = []string{"*"}
 	corsHandler := cors.New(config)
-	s.Use(corsHandler)
+
+	// Middleware order matters
+	s.Use(middleware.ContextCacheMW())     // must be first
+	s.Use(middleware.RequestInspectorMW()) // must be second
 	s.Use(middleware.SetLogIDMW())
+	s.Use(corsHandler)
 	s.Use(middleware.AccessLogMW())
 	s.Use(middleware.OpenapiAuthMW())
 	s.Use(middleware.SessionAuthMW())
+	s.Use(middleware.I18nMW()) // must after SessionAuthMW
 	router.GeneratedRegister(s)
 	s.Spin()
 }

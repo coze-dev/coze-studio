@@ -35,13 +35,14 @@ WORKDIR /app
 RUN apk add --no-cache pax-utils python3 python3-dev bind-tools file
 
 # Install Python build dependencies, create venv, install packages, then remove build deps
-RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip && \
+RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip git && \
     python3 -m venv --copies --upgrade-deps /app/.venv && \
     # Activate venv and install packages
     . /app/.venv/bin/activate && \
     # If you want to use other third-party libraries, you can install them here.
-    pip install urllib3==1.26.16 \
-    pip install --no-cache-dir pillow pdfplumber python-docx numpy git+https://gitcode.com/gh_mirrors/re/requests-async.git@master && \
+    pip install git+https://gitcode.com/gh_mirrors/re/requests-async.git@master && \
+    pip install urllib3==1.26.16 && \
+    pip install --no-cache-dir pillow pdfplumber python-docx numpy && \
     # Deactivate (optional, as RUN is a new shell)
     # deactivate && \
     # Remove build dependencies
@@ -58,6 +59,8 @@ COPY backend/infra/impl/document/parser/builtin/parse_docx.py /app/parse_docx.py
 
 # Copy static resources
 COPY backend/static /app/resources/static/
+COPY backend/conf /app/resources/conf/
+COPY docker/.env /app/.env
 
 # Set PATH to prioritize venv's binaries
 ENV PATH="/app/.venv/bin:${PATH}"
