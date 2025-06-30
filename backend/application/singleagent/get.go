@@ -98,6 +98,11 @@ func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req
 }
 
 func (s *SingleAgentApplicationService) fetchShortcutCMD(ctx context.Context, agentInfo *entity.SingleAgent) ([]*playground.ShortcutCommand, error) {
+	var cmdVOs []*playground.ShortcutCommand
+	if len(agentInfo.ShortcutCommand) == 0 {
+		return cmdVOs, nil
+	}
+
 	cmdDOs, err := s.appContext.ShortcutCMDDomainSVC.ListCMD(ctx, &shortcutCMDEntity.ListMeta{
 		SpaceID:  agentInfo.SpaceID,
 		ObjectID: agentInfo.AgentID,
@@ -111,7 +116,7 @@ func (s *SingleAgentApplicationService) fetchShortcutCMD(ctx context.Context, ag
 	if err != nil {
 		return nil, err
 	}
-	cmdVOs := s.shortcutCMDDo2Vo(cmdDOs)
+	cmdVOs = s.shortcutCMDDo2Vo(cmdDOs)
 	return cmdVOs, nil
 }
 

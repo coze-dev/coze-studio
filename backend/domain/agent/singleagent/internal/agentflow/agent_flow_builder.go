@@ -33,6 +33,7 @@ const (
 	keyOfPromptVariables        = "prompt_variables"
 	keyOfPromptTemplate         = "prompt_template"
 	keyOfReActAgent             = "react_agent"
+	keyOfReActAgentToolsNode    = "agent_tool"
 	keyOfLLM                    = "llm"
 	keyOfToolsPreRetriever      = "tools_pre_retriever"
 )
@@ -154,6 +155,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 				Tools: agentTools,
 			},
 			ToolReturnDirectly: toolsReturnDirectly,
+			ToolsNodeName:      keyOfReActAgentToolsNode,
 		})
 		if err != nil {
 			return nil, err

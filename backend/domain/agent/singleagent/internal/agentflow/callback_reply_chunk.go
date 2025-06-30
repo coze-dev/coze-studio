@@ -91,6 +91,9 @@ func (r *replyChunkCallback) OnStart(ctx context.Context, info *callbacks.RunInf
 
 	switch info.Component {
 	case compose.ComponentOfToolsNode:
+		if info.Name != keyOfReActAgentToolsNode {
+			return ctx
+		}
 		ae := &entity.AgentEvent{
 			EventType: singleagent.EventTypeOfFuncCall,
 			FuncCall:  convToolsNodeCallbackInput(input),
