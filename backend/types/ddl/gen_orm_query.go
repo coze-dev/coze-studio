@@ -130,6 +130,17 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"workflow_execution": {},
 		"node_execution":     {},
 		"workflow_snapshot":  {},
+
+		"chat_flow_role_config": {},
+
+		"app_conversion_template_draft":  {},
+		"app_conversion_template_online": {},
+
+		"app_user_connector_conversion_draft":  {},
+		"app_user_connector_conversion_online": {},
+
+		"app_dynamic_conversion_draft":  {},
+		"app_dynamic_conversion_online": {},
 	},
 
 	"domain/openauth/openapiauth/internal/dal/query": {
