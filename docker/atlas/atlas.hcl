@@ -1,7 +1,7 @@
 
 env "local" {
-  url = "mysql://coze:coze123@localhost:3306/opencoze?charset=utf8mb4&parseTime=True"
-  dev = "docker://mysql/8"
+  url = "mysql://root:1234@localhost:3306/opencoze?charset=utf8mb4&parseTime=True"
+  dev = "mysql://root:1234@localhost:3306/devdb"
 
 
   migration {

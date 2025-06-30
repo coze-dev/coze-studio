@@ -83,7 +83,7 @@ func main() {
 
 func loadEnv() (err error) {
 	env := os.Getenv("APP_ENV")
-	logs.Infof("APP_ENV: %s", env)
+	//logs.Infof("APP_ENV: %s", env)
 
 	if env == "" {
 		err = godotenv.Load()

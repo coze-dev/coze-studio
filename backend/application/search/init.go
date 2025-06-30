@@ -2,8 +2,6 @@ package search
 
 import (
 	"context"
-	"fmt"
-	"os"
 
 	"gorm.io/gorm"
 
@@ -21,9 +19,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
-	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
-	"code.byted.org/flow/opencoze/backend/pkg/logs"
-	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
 type ServiceComponents struct {
@@ -51,22 +46,22 @@ func InitService(ctx context.Context, s *ServiceComponents) (*SearchApplicationS
 	SearchSVC.ServiceComponents = s
 
 	// setup consumer
-	searchConsumer := search.NewProjectHandler(ctx, s.ESClient)
-
-	logs.Infof("start search domain consumer...")
-	nameServer := os.Getenv(consts.RMQServer)
-
-	err := rmq.RegisterConsumer(nameServer, "opencoze_search_app", "cg_search_app", searchConsumer)
-	if err != nil {
-		return nil, fmt.Errorf("register search consumer failed, err=%w", err)
-	}
-
-	searchResourceConsumer := search.NewResourceHandler(ctx, s.ESClient)
-
-	err = rmq.RegisterConsumer(nameServer, "opencoze_search_resource", "cg_search_resource", searchResourceConsumer)
-	if err != nil {
-		return nil, fmt.Errorf("register search consumer failed, err=%w", err)
-	}
+	//searchConsumer := search.NewProjectHandler(ctx, s.ESClient)
+	//
+	//logs.Infof("start search domain consumer...")
+	//nameServer := os.Getenv(consts.RMQServer)
+	//
+	//err := rmq.RegisterConsumer(nameServer, "opencoze_search_app", "cg_search_app", searchConsumer)
+	//if err != nil {
+	//	return nil, fmt.Errorf("register search consumer failed, err=%w", err)
+	//}
+	//
+	//searchResourceConsumer := search.NewResourceHandler(ctx, s.ESClient)
+	//
+	//err = rmq.RegisterConsumer(nameServer, "opencoze_search_resource", "cg_search_resource", searchResourceConsumer)
+	//if err != nil {
+	//	return nil, fmt.Errorf("register search consumer failed, err=%w", err)
+	//}
 
 	return SearchSVC, nil
 }

@@ -46,30 +46,30 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		return nil, err
 	}
 
-	deps.ESClient, err = es.New()
-	if err != nil {
-		return nil, err
-	}
-
-	deps.ImageXClient, err = initImageX()
-	if err != nil {
-		return nil, err
-	}
-
-	deps.TOSClient, err = initTOS(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	deps.ResourceEventProducer, err = initResourceEventBusProducer()
-	if err != nil {
-		return nil, err
-	}
-
-	deps.AppEventProducer, err = initAppEventProducer()
-	if err != nil {
-		return nil, err
-	}
+	//deps.ESClient, err = es.New()
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//deps.ImageXClient, err = initImageX()
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//deps.TOSClient, err = initTOS(ctx)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//deps.ResourceEventProducer, err = initResourceEventBusProducer()
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//deps.AppEventProducer, err = initAppEventProducer()
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	return deps, nil
 }
