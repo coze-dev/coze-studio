@@ -378,6 +378,7 @@ func (u *userImpl) ValidateSession(ctx context.Context, sessionKey string) (
 
 	return &userEntity.Session{
 		UserID:    userModel.ID,
+		Locale:    userModel.Locale,
 		CreatedAt: sessionModel.CreatedAt,
 		ExpiresAt: sessionModel.ExpiresAt,
 	}, true, nil

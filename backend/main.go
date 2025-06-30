@@ -72,11 +72,11 @@ func main() {
 	s.Use(middleware.ContextCacheMW())     // must be first
 	s.Use(middleware.RequestInspectorMW()) // must be second
 	s.Use(middleware.SetLogIDMW())
-	s.Use(middleware.I18nMW())
 	s.Use(corsHandler)
 	s.Use(middleware.AccessLogMW())
 	s.Use(middleware.OpenapiAuthMW())
 	s.Use(middleware.SessionAuthMW())
+	s.Use(middleware.I18nMW()) // must after SessionAuthMW
 	router.GeneratedRegister(s)
 	s.Spin()
 }
