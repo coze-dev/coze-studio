@@ -528,7 +528,7 @@ func (k *knowledgeSVC) documentReviewEventHandler(ctx context.Context, event *en
 	if err != nil {
 		return errorx.New(errno.ErrKnowledgeParserParseFailCode, errorx.KV("msg", fmt.Sprintf("parse document failed, err: %v", err)))
 	}
-	ids, err := k.idgen.GenMultiIDs(ctx, len(result))
+	ids, err := k.genMultiIDs(ctx, len(result))
 	if err != nil {
 		return errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("GenMultiIDs failed, err: %v", err)))
 	}

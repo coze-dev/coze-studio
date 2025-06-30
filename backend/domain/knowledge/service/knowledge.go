@@ -984,7 +984,7 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *Create
 		reviews = append(reviews, review)
 	}
 	// STEP 1. 生成ID
-	reviewIDs, err := k.idgen.GenMultiIDs(ctx, len(request.Reviews))
+	reviewIDs, err := k.genMultiIDs(ctx, len(request.Reviews))
 	if err != nil {
 		return nil, errorx.New(errno.ErrKnowledgeIDGenCode)
 	}
@@ -1458,4 +1458,18 @@ func (k *knowledgeSVC) getObjectURL(ctx context.Context, uri string) (string, er
 
 	url := cmd.Val()
 	return url, nil
+}
+
+func (k *knowledgeSVC) genMultiIDs(ctx context.Context, counts int) ([]int64, error) {
+	allIDs := make([]int64, 0)
+	for l := 0; l < counts; l += 100 {
+		r := min(l+100, counts)
+		batchSize := r - l
+		ids, err := k.idgen.GenMultiIDs(ctx, batchSize)
+		if err != nil {
+			return nil, errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("GenMultiIDs failed, err: %v", err)))
+		}
+		allIDs = append(allIDs, ids...)
+	}
+	return allIDs, nil
 }
