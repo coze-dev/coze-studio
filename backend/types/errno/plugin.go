@@ -21,6 +21,7 @@ const (
 	ErrPluginConvertProtocolFailed        = 109000010
 	ErrPluginToolsCheckFailed             = 109000011
 	ErrPluginParseToolRespFailed          = 109000012
+	ErrPluginOAuthFailed                  = 109000013
 )
 
 const (
@@ -97,6 +98,12 @@ func init() {
 	code.Register(
 		ErrPluginParseToolRespFailed,
 		fmt.Sprintf("parse tool response failed : {%s}", PluginMsgKey),
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrPluginOAuthFailed,
+		fmt.Sprintf("oauth failed : {%s}", PluginMsgKey),
 		code.WithAffectStability(false),
 	)
 }

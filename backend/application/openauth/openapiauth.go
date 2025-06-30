@@ -10,7 +10,6 @@ import (
 
 	openapimodel "code.byted.org/flow/opencoze/backend/api/model/permission/openapiauth"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	oauth "code.byted.org/flow/opencoze/backend/domain/openauth/oauth/service"
 	openapi "code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth"
 	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -20,7 +19,6 @@ import (
 
 type OpenAuthApplicationService struct {
 	OpenAPIDomainSVC openapi.APIAuth
-	OAuthDomainSVC   oauth.OAuthService
 }
 
 var OpenAuthApplication = &OpenAuthApplicationService{}

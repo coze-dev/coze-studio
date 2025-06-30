@@ -195,6 +195,10 @@ func Register(r *server.Hertz) {
 			}
 		}
 		{
+			_oauth := _api.Group("/oauth", _oauthMw()...)
+			_oauth.GET("/authorization_code", append(_oauthauthorizationcodeMw(), coze.OauthAuthorizationCode)...)
+		}
+		{
 			_passport := _api.Group("/passport", _passportMw()...)
 			{
 				_account := _passport.Group("/account", _accountMw()...)

@@ -22,6 +22,6 @@ func InitDomainService(c oauth.OAuthService) crossopenauth.OAuthService {
 	return defaultSVC
 }
 
-func (i impl) GetAccessToken(ctx context.Context, req *model.GetAccessTokenRequest) (accessToken string, err error) {
-	return i.DomainSVC.GetAccessToken(ctx, req)
+func (i impl) GetPluginAccessToken(ctx context.Context, req *model.GetPluginAccessTokenRequest) (accessToken string, err error) {
+	return i.DomainSVC.GetPluginAccessToken(ctx, req)
 }

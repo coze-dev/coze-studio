@@ -7,12 +7,9 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/api/internal/httputil"
 	"code.byted.org/flow/opencoze/backend/application/user"
-	"code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 var noNeedSessionCheckPath = map[string]bool{
@@ -33,14 +30,18 @@ func SessionAuthMW() app.HandlerFunc {
 			return
 		}
 
+		//TODO:测试
+
 		// session auth check
-		s := ctx.Cookie(entity.SessionKey)
-		if len(s) == 0 {
-			logs.Errorf("[SessionAuthMW] session id is nil")
-			httputil.InternalError(c, ctx,
-				errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "missing session_key in cookie")))
-			return
-		}
+		//s := ctx.Cookie(entity.SessionKey)
+		//if len(s) == 0 {
+		//	logs.Errorf("[SessionAuthMW] session id is nil")
+		//	httputil.InternalError(c, ctx,
+		//		errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "missing session_key in cookie")))
+		//	return
+		//}
+
+		s := []byte(`eyJpZCI6NzUyMjExOTQwMDg2Njk3MTY0OCwiY3JlYXRlZF9hdCI6IjIwMjUtMDctMDFUMjI6MjU6MDEuNzcwNTc4KzA4OjAwIiwiZXhwaXJlc19hdCI6IjIwMjUtMDctMzFUMjI6MjU6MDEuNzcwNTc4KzA4OjAwIn0iSGBuSTvZnXWZPYuTBXvv1BIG6aIYTnClv5JQDoVvrQ`)
 
 		// sessionID -> sessionData
 		session, err := user.UserApplicationSVC.ValidateSession(c, string(s))

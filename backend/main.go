@@ -11,10 +11,11 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/hertz-contrib/cors"
 	"github.com/joho/godotenv"
+
+	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/cloudwego/hertz/pkg/common/config"
 
 	"code.byted.org/flow/opencoze/backend/api/middleware"
 	"code.byted.org/flow/opencoze/backend/api/router"

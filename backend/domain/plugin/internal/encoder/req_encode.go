@@ -1,4 +1,4 @@
-package tool_executor
+package encoder
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 )
 
-func encodeBodyWithContentType(contentType string, body map[string]any) ([]byte, error) {
+func EncodeBodyWithContentType(contentType string, body map[string]any) ([]byte, error) {
 	switch contentType {
 	case plugin.MediaTypeJson, plugin.MediaTypeProblemJson:
 		return jsonBodyEncoder(body)
@@ -23,7 +23,7 @@ func encodeBodyWithContentType(contentType string, body map[string]any) ([]byte,
 	case plugin.MediaTypeYaml, plugin.MediaTypeXYaml:
 		return yamlBodyEncoder(body)
 	default:
-		return nil, fmt.Errorf("[encodeBodyWithContentType] unsupported contentType=%s", contentType)
+		return nil, fmt.Errorf("[EncodeBodyWithContentType] unsupported contentType=%s", contentType)
 	}
 }
 
@@ -80,7 +80,7 @@ func urlencodedBodyEncoder(body map[string]any) ([]byte, error) {
 		case string:
 			res.Add(k, val)
 		default:
-			res.Add(k, mustString(val))
+			res.Add(k, MustString(val))
 		}
 	}
 
@@ -91,7 +91,7 @@ func urlencodedBodyEncoder(body map[string]any) ([]byte, error) {
 	return []byte(res.Encode()), nil
 }
 
-func encodeParameter(param *openapi3.Parameter, value any) (string, error) {
+func EncodeParameter(param *openapi3.Parameter, value any) (string, error) {
 	sm, err := param.SerializationMethod()
 	if err != nil {
 		return "", err
@@ -117,13 +117,13 @@ func encodePrimitiveParam(sm *openapi3.SerializationMethod, paramName string, va
 	case openapi3.SerializationMatrix:
 		prefix = ";" + url.QueryEscape(paramName) + "="
 	case openapi3.SerializationForm:
-		result := url.QueryEscape(paramName) + "=" + url.QueryEscape(mustString(val))
+		result := url.QueryEscape(paramName) + "=" + url.QueryEscape(MustString(val))
 		return result, nil
 	default:
 		return "", fmt.Errorf("invalid serialization method: style=%q, explode=%v", sm.Style, sm.Explode)
 	}
 
-	raw := mustString(val)
+	raw := MustString(val)
 
 	return prefix + raw, nil
 }
@@ -162,7 +162,7 @@ func encodeArrayParam(sm *openapi3.SerializationMethod, paramName string, arrVal
 	res := prefix
 
 	for i, val := range arrVal {
-		vStr := mustString(val)
+		vStr := MustString(val)
 		res += vStr
 
 		if i != len(arrVal)-1 {
@@ -222,7 +222,7 @@ func encodeObjectParam(sm *openapi3.SerializationMethod, paramName string, mapVa
 
 	res := prefix
 	for k, val := range mapVal {
-		vStr := mustString(val)
+		vStr := MustString(val)
 		res += k + valueDelim + vStr + propsDelim
 	}
 
@@ -233,7 +233,7 @@ func encodeObjectParam(sm *openapi3.SerializationMethod, paramName string, mapVa
 	return res, nil
 }
 
-func mustString(value any) string {
+func MustString(value any) string {
 	if value == nil {
 		return ""
 	}
@@ -247,7 +247,7 @@ func mustString(value any) string {
 	}
 }
 
-func tryFixValueType(paramName string, schemaRef *openapi3.SchemaRef, value any) (any, error) {
+func TryFixValueType(paramName string, schemaRef *openapi3.SchemaRef, value any) (any, error) {
 	if value == nil {
 		return "", fmt.Errorf("value of '%s' is nil", paramName)
 	}
@@ -264,11 +264,11 @@ func tryFixValueType(paramName string, schemaRef *openapi3.SchemaRef, value any)
 	case openapi3.TypeArray:
 		arrVal, ok := value.([]any)
 		if !ok {
-			return nil, fmt.Errorf("[tryFixValueType] value '%s' is not array", paramName)
+			return nil, fmt.Errorf("[TryFixValueType] value '%s' is not array", paramName)
 		}
 
 		for i, v := range arrVal {
-			_v, err := tryFixValueType(paramName, schemaRef.Value.Items, v)
+			_v, err := TryFixValueType(paramName, schemaRef.Value.Items, v)
 			if err != nil {
 				return nil, err
 			}
@@ -280,7 +280,7 @@ func tryFixValueType(paramName string, schemaRef *openapi3.SchemaRef, value any)
 	case openapi3.TypeObject:
 		mapVal, ok := value.(map[string]any)
 		if !ok {
-			return nil, fmt.Errorf("[tryFixValueType] value '%s' is not object", paramName)
+			return nil, fmt.Errorf("[TryFixValueType] value '%s' is not object", paramName)
 		}
 
 		for k, v := range mapVal {
@@ -289,7 +289,7 @@ func tryFixValueType(paramName string, schemaRef *openapi3.SchemaRef, value any)
 				continue
 			}
 
-			_v, err := tryFixValueType(k, p, v)
+			_v, err := TryFixValueType(k, p, v)
 			if err != nil {
 				return nil, err
 			}
@@ -299,7 +299,7 @@ func tryFixValueType(paramName string, schemaRef *openapi3.SchemaRef, value any)
 
 		return mapVal, nil
 	default:
-		return nil, fmt.Errorf("[tryFixValueType] unsupported schema type '%s'", schemaRef.Value.Type)
+		return nil, fmt.Errorf("[TryFixValueType] unsupported schema type '%s'", schemaRef.Value.Type)
 	}
 }
 

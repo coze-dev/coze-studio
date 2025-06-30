@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -13,12 +14,14 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 	gonanoid "github.com/matoous/go-nanoid"
+	"golang.org/x/oauth2"
 	"gopkg.in/yaml.v3"
 
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	searchModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/search"
 	productCommon "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_common"
 	productAPI "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
+	botOpenAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_open_api"
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
@@ -26,7 +29,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/pluginutil"
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crosssearch"
-	oauth "code.byted.org/flow/opencoze/backend/domain/openauth/oauth/service"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
@@ -46,11 +48,11 @@ import (
 var PluginApplicationSVC = &PluginApplicationService{}
 
 type PluginApplicationService struct {
-	DomainSVC  service.PluginService
-	eventbus   search.ResourceEventBus
-	oss        storage.Storage
-	userSVC    user.User
-	oauthSVC   oauth.OAuthService
+	DomainSVC service.PluginService
+	eventbus  search.ResourceEventBus
+	oss       storage.Storage
+	userSVC   user.User
+
 	toolRepo   repository.ToolRepository
 	pluginRepo repository.PluginRepository
 }
@@ -714,7 +716,12 @@ func (p *PluginApplicationService) GetUserAuthority(ctx context.Context, req *pl
 }
 
 func (p *PluginApplicationService) GetOAuthStatus(ctx context.Context, req *pluginAPI.GetOAuthStatusRequest) (resp *pluginAPI.GetOAuthStatusResponse, err error) {
-	res, err := p.DomainSVC.GetOAuthStatus(ctx, req.PluginID)
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrSearchPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	}
+
+	res, err := p.DomainSVC.GetOAuthStatus(ctx, *userID, req.PluginID)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "GetOAuthStatus failed, pluginID=%d", req.PluginID)
 	}
@@ -1629,4 +1636,76 @@ func (p *PluginApplicationService) validateDraftPluginAccess(ctx context.Context
 	}
 
 	return plugin, nil
+}
+
+func (p *PluginApplicationService) OauthAuthorizationCode(ctx context.Context, req *botOpenAPI.OauthAuthorizationCodeReq) (resp *botOpenAPI.OauthAuthorizationCodeResp, err error) {
+	stateStr, err := url.QueryUnescape(req.State)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
+	}
+
+	state, err := entity.DecryptState(stateStr)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
+	}
+
+	var plugin *entity.PluginInfo
+	if state.IsDraft {
+		plugin, err = p.DomainSVC.GetDraftPlugin(ctx, state.PluginID)
+	} else {
+		plugin, err = p.DomainSVC.GetOnlinePlugin(ctx, state.PluginID)
+	}
+	if err != nil {
+		return nil, errorx.Wrapf(err, "GetPlugin failed, pluginID=%d", state.PluginID)
+	}
+
+	authInfo := plugin.GetAuthInfo()
+	if authInfo.SubType != model.AuthzSubTypeOfOAuthAuthorizationCode {
+		return nil, errorx.New(errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "plugin auth type is not oauth authorization code"))
+	}
+	if authInfo.AuthOfOAuthAuthorizationCode == nil {
+		return nil, errorx.New(errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "plugin auth info is nil"))
+	}
+
+	config := &oauth2.Config{
+		ClientID:     authInfo.AuthOfOAuthAuthorizationCode.ClientID,
+		ClientSecret: authInfo.AuthOfOAuthAuthorizationCode.ClientSecret,
+		Scopes:       authInfo.AuthOfOAuthAuthorizationCode.Scopes,
+		Endpoint: oauth2.Endpoint{
+			TokenURL: authInfo.AuthOfOAuthAuthorizationCode.AuthorizationURL,
+		},
+	}
+	token, err := config.Exchange(ctx, req.Code)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "exchange token failed"))
+	}
+
+	meta := &entity.AuthorizationCodeMeta{
+		UserID:   state.UserID,
+		PluginID: state.PluginID,
+		IsDraft:  state.IsDraft,
+	}
+
+	var expiredAtMS int64
+	if token.Expiry.After(time.Now()) {
+		expiredAtMS = token.Expiry.UnixMilli()
+	}
+
+	err = p.DomainSVC.SaveAccessToken(ctx, &entity.OAuthInfo{
+		OAuthMode: model.AuthzSubTypeOfOAuthAuthorizationCode,
+		AuthorizationCode: &entity.AuthorizationCodeInfo{
+			Meta:             meta,
+			Config:           authInfo.AuthOfOAuthAuthorizationCode,
+			AccessToken:      token.AccessToken,
+			RefreshToken:     token.RefreshToken,
+			TokenExpiredAtMS: expiredAtMS,
+		},
+	})
+	if err != nil {
+		return nil, errorx.Wrapf(err, "SaveAccessToken failed, pluginID=%d", state.PluginID)
+	}
+
+	resp = &botOpenAPI.OauthAuthorizationCodeResp{}
+
+	return resp, nil
 }

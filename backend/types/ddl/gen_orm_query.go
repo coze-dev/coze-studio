@@ -86,6 +86,9 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"tool_version": {
 			"operation": &plugin.Openapi3Operation{},
 		},
+		"plugin_oauth_auth": {
+			"oauth_config": &plugin.OAuthAuthorizationCodeConfig{},
+		},
 	},
 	"domain/conversation/agentrun/internal/dal/query": {
 		"run_record": {},

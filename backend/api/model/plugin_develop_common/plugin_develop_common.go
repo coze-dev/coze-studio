@@ -1097,15 +1097,15 @@ type ServiceAuthSubType int64
 const (
 	ServiceAuthSubType_ApiKey ServiceAuthSubType = 0
 	// for opencoze
-	ServiceAuthSubType_OAuthClientCredentials ServiceAuthSubType = 10
+	ServiceAuthSubType_OAuthAuthorizationCode ServiceAuthSubType = 4
 )
 
 func (p ServiceAuthSubType) String() string {
 	switch p {
 	case ServiceAuthSubType_ApiKey:
 		return "ApiKey"
-	case ServiceAuthSubType_OAuthClientCredentials:
-		return "OAuthClientCredentials"
+	case ServiceAuthSubType_OAuthAuthorizationCode:
+		return "OAuthAuthorizationCode"
 	}
 	return "<UNSET>"
 }
@@ -1114,8 +1114,8 @@ func ServiceAuthSubTypeFromString(s string) (ServiceAuthSubType, error) {
 	switch s {
 	case "ApiKey":
 		return ServiceAuthSubType_ApiKey, nil
-	case "OAuthClientCredentials":
-		return ServiceAuthSubType_OAuthClientCredentials, nil
+	case "OAuthAuthorizationCode":
+		return ServiceAuthSubType_OAuthAuthorizationCode, nil
 	}
 	return ServiceAuthSubType(0), fmt.Errorf("not a valid ServiceAuthSubType string")
 }

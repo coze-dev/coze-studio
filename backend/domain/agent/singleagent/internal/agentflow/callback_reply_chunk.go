@@ -203,8 +203,8 @@ func convInterruptInfo(ctx context.Context, interruptInfo *compose.InterruptInfo
 		extra = output.RerunNodesExtra[i]
 		break
 	}
-	toolsNodeExtra, err := extra.(*compose.ToolsInterruptAndRerunExtra)
-	logs.CtxInfof(ctx, "toolsNodeExtra=%v, err=%v", toolsNodeExtra, err)
+	toolsNodeExtra, ok := extra.(*compose.ToolsInterruptAndRerunExtra)
+	logs.CtxInfof(ctx, "toolsNodeExtra=%v, err=%v", toolsNodeExtra, ok)
 
 	var toolCallID string
 	for _, toolCall := range toolsNodeExtra.ToolCalls {

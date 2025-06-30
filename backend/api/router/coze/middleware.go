@@ -1434,3 +1434,13 @@ func _getbotonlineinfoMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _oauthMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _oauthauthorizationcodeMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

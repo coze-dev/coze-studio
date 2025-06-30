@@ -68,7 +68,9 @@ type PluginService interface {
 	ListPluginProducts(ctx context.Context, req *ListPluginProductsRequest) (resp *ListPluginProductsResponse, err error)
 	GetPluginProductAllTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
 
-	GetOAuthStatus(ctx context.Context, pluginID int64) (resp *GetOAuthStatusResponse, err error)
+	GetOAuthStatus(ctx context.Context, userID, pluginID int64) (resp *GetOAuthStatusResponse, err error)
+	SaveAccessToken(ctx context.Context, oa *entity.OAuthInfo) (err error)
+	GetAccessToken(ctx context.Context, oa *entity.OAuthInfo) (accessToken string, err error)
 }
 
 type CreateDraftPluginRequest struct {
@@ -193,11 +195,10 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 	}
 
 	if *p.AuthzSubType == model.AuthzSubTypeOfOAuthClientCredentials {
-		_oauthInfo := &model.AuthOfOAuthClientCredentials{
+		_oauthInfo := &model.OAuthClientCredentialsConfig{
 			ClientID:     oauthInfo["client_id"],
 			ClientSecret: oauthInfo["client_secret"],
 			TokenURL:     oauthInfo["token_url"],
-			Scopes:       strings.Split(oauthInfo["scope"], " "),
 		}
 
 		str, err := sonic.MarshalString(_oauthInfo)
@@ -220,7 +221,7 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 				"the type '%s' of authorization content is invalid", contentType))
 		}
 
-		_oauthInfo := &model.AuthOfOAuthAuthorizationCode{
+		_oauthInfo := &model.OAuthAuthorizationCodeConfig{
 			ClientID:                 oauthInfo["client_id"],
 			ClientSecret:             oauthInfo["client_secret"],
 			ClientURL:                oauthInfo["client_url"],
@@ -363,4 +364,11 @@ type CopyPluginResponse struct {
 
 type MoveAPPPluginToLibRequest struct {
 	PluginID int64
+}
+
+type GetAccessTokenRequest struct {
+	UserID    string
+	PluginID  *int64
+	Mode      model.AuthzSubType
+	OAuthInfo *entity.OAuthInfo
 }
