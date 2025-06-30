@@ -488,8 +488,12 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *AddDatabase
 	})
 
 	convertedRecords := make([]map[string]interface{}, 0, len(req.Records))
+	ids, err := d.generator.GenMultiIDs(ctx, len(req.Records))
+	if err != nil {
+		return err
+	}
 
-	for _, recordMap := range req.Records {
+	for index, recordMap := range req.Records {
 		convertedRecord := make(map[string]interface{})
 
 		cid := consts.CozeConnectorID
@@ -499,6 +503,7 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *AddDatabase
 		convertedRecord[database.DefaultUidColName] = req.UserID
 		convertedRecord[database.DefaultCidColName] = cid
 		convertedRecord[database.DefaultCreateTimeColName] = time.Now()
+		convertedRecord[database.DefaultIDColName] = ids[index]
 
 		if _, ok := recordMap[database.DefaultIDColName]; ok {
 			delete(recordMap, database.DefaultIDColName)
@@ -1048,13 +1053,35 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 		return nil, fmt.Errorf("parse sql failed: %v", err)
 	}
 
+	insertResult := make([]map[string]interface{}, 0)
 	if operation == sqlparsercontract.OperationTypeInsert {
 		cid := consts.CozeConnectorID
 		if req.ConnectorID != nil {
 			cid = *req.ConnectorID
 		}
+		nums, err := sqlparser.NewSQLParser().GetInsertDataNums(parsedSQL)
+		if err != nil {
+			return nil, err
+		}
+
+		ids, err := d.generator.GenMultiIDs(ctx, nums)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, id := range ids {
+			insertResult = append(insertResult, map[string]interface{}{
+				database.DefaultIDColName: id,
+			})
+		}
+
+		existingCols := make(map[string]bool)
 		if req.SQLType == database.SQLType_Raw {
-			parsedSQL, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColVal{
+			iIDs := make([]interface{}, len(ids))
+			for i, id := range ids {
+				iIDs[i] = id
+			}
+			parsedSQL, _, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColumnValue{
 				{
 					ColName: database.DefaultCidColName,
 					Value:   cid,
@@ -1063,24 +1090,43 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 					ColName: database.DefaultUidColName,
 					Value:   req.UserID,
 				},
-			}, false)
+			}, &sqlparsercontract.PrimaryKeyValue{ColName: database.DefaultIDColName, Values: iIDs}, false)
 			if err != nil {
 				return nil, fmt.Errorf("add columns to insert sql failed: %v", err)
 			}
 		} else if req.SQLType == database.SQLType_Parameterized {
-			parsedSQL, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColVal{
+			parsedSQL, existingCols, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColumnValue{
 				{
 					ColName: database.DefaultCidColName,
 				},
 				{
 					ColName: database.DefaultUidColName,
 				},
-			}, true)
+			}, &sqlparsercontract.PrimaryKeyValue{ColName: database.DefaultIDColName}, true)
 			if err != nil {
 				return nil, fmt.Errorf("add columns to insert sql failed: %v", err)
 			}
 
-			params = append(params, cid, req.UserID)
+			if nums > 0 {
+				if len(params)%nums != 0 {
+					return nil, fmt.Errorf("number of params is not a multiple of number of rows")
+				}
+				paramsPerRow := len(params) / nums
+				newParams := make([]interface{}, 0)
+				for i := 0; i < nums; i++ {
+					newParams = append(newParams, params[i*paramsPerRow:(i+1)*paramsPerRow]...)
+					if !existingCols[database.DefaultCidColName] {
+						newParams = append(newParams, cid)
+					}
+					if !existingCols[database.DefaultUidColName] {
+						newParams = append(newParams, req.UserID)
+					}
+					if !existingCols[database.DefaultIDColName] {
+						newParams = append(newParams, ids[i])
+					}
+				}
+				params = newParams
+			}
 		}
 	}
 
@@ -1094,6 +1140,15 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 		return nil, fmt.Errorf("execute SQL failed: %v", err)
 	}
 
+	if operation == sqlparsercontract.OperationTypeInsert {
+		if execResp.ResultSet == nil {
+			execResp.ResultSet = &entity3.ResultSet{
+				Rows: insertResult,
+			}
+		} else {
+			execResp.ResultSet.Rows = insertResult
+		}
+	}
 	return execResp.ResultSet, nil
 }
 

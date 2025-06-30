@@ -234,20 +234,21 @@ func (p *Impl) GetSQLOperation(sql string) (sqlparser.OperationType, error) {
 }
 
 // AddColumnsToInsertSQL takes an original insert SQL and columns to add (with values), returns the modified SQL.
-// addCols: a slice of ColVal, where each element represents a column and its value to be inserted for every row.
+// addCols: a slice of ColumnValue, where each element represents a column and its value to be inserted for every row.
+// primaryKeyValue: a PrimaryKeyValue struct that contains the primary key column name and its values for every row, only supported for single primary key.
 // If isParam is true, placeholders (?) will be added as values, otherwise the actual values from addCols will be used.
-func (p *Impl) AddColumnsToInsertSQL(origSQL string, addCols []sqlparser.ColVal, isParam bool) (string, error) {
+func (p *Impl) AddColumnsToInsertSQL(origSQL string, addCols []sqlparser.ColumnValue, primaryKeyValue *sqlparser.PrimaryKeyValue, isParam bool) (string, map[string]bool, error) {
 	if len(addCols) == 0 {
-		return origSQL, nil
+		return origSQL, nil, nil
 	}
 
 	stmt, err := parser.New().ParseOneStmt(origSQL, mysql.UTF8MB4Charset, mysql.UTF8MB4GeneralCICollation)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse SQL: %v", err)
+		return "", nil, fmt.Errorf("failed to parse SQL: %v", err)
 	}
 	insertStmt, ok := stmt.(*ast.InsertStmt)
 	if !ok {
-		return "", fmt.Errorf("not an INSERT statement")
+		return "", nil, fmt.Errorf("not an INSERT statement")
 	}
 
 	existingCols := make(map[string]bool)
@@ -255,14 +256,14 @@ func (p *Impl) AddColumnsToInsertSQL(origSQL string, addCols []sqlparser.ColVal,
 		existingCols[col.Name.O] = true
 	}
 
-	colsToAdd := make([]sqlparser.ColVal, 0, len(addCols))
+	colsToAdd := make([]sqlparser.ColumnValue, 0, len(addCols))
 	for _, colVal := range addCols {
 		if !existingCols[colVal.ColName] {
 			colsToAdd = append(colsToAdd, colVal)
 		}
 	}
 	if len(colsToAdd) == 0 {
-		return origSQL, nil
+		return origSQL, existingCols, nil
 	}
 
 	rowCount := len(insertStmt.Lists)
@@ -274,8 +275,13 @@ func (p *Impl) AddColumnsToInsertSQL(origSQL string, addCols []sqlparser.ColVal,
 		insertStmt.Columns = append(insertStmt.Columns, &ast.ColumnName{Name: ast.NewCIStr(colVal.ColName)})
 	}
 
+	if primaryKeyValue != nil && !existingCols[primaryKeyValue.ColName] {
+		insertStmt.Columns = append(insertStmt.Columns, &ast.ColumnName{Name: ast.NewCIStr(primaryKeyValue.ColName)})
+	}
+
 	for i := 0; i < rowCount; i++ {
 		paramCount := 0
+
 		for _, colVal := range colsToAdd {
 			if isParam {
 				valExpr := ast.NewParamMarkerExpr(paramCount)
@@ -285,6 +291,16 @@ func (p *Impl) AddColumnsToInsertSQL(origSQL string, addCols []sqlparser.ColVal,
 				insertStmt.Lists[i] = append(insertStmt.Lists[i], ast.NewValueExpr(colVal.Value, "", ""))
 			}
 		}
+
+		if primaryKeyValue != nil && !existingCols[primaryKeyValue.ColName] {
+			if isParam {
+				valExpr := ast.NewParamMarkerExpr(paramCount)
+				insertStmt.Lists[i] = append(insertStmt.Lists[i], valExpr)
+				paramCount++
+			} else {
+				insertStmt.Lists[i] = append(insertStmt.Lists[i], ast.NewValueExpr(primaryKeyValue.Values[i], "", ""))
+			}
+		}
 	}
 
 	var sb strings.Builder
@@ -292,10 +308,10 @@ func (p *Impl) AddColumnsToInsertSQL(origSQL string, addCols []sqlparser.ColVal,
 	restoreCtx := format.NewRestoreCtx(flags, &sb)
 	err = insertStmt.Restore(restoreCtx)
 	if err != nil {
-		return "", fmt.Errorf("failed to restore modified INSERT SQL: %v", err)
+		return "", nil, fmt.Errorf("failed to restore modified INSERT SQL: %v", err)
 	}
 
-	return sb.String(), nil
+	return sb.String(), existingCols, nil
 }
 
 // GetTableName extracts the table name from a SQL statement. Only supports single-table select/insert/update/delete.
@@ -364,4 +380,18 @@ func (p *Impl) GetTableName(sql string) (string, error) {
 	default:
 		return "", fmt.Errorf("unsupported SQL statement type for table name extraction")
 	}
+}
+
+func (p *Impl) GetInsertDataNums(sql string) (int, error) {
+	stmt, err := p.parser.ParseOneStmt(sql, mysql.UTF8MB4Charset, mysql.UTF8MB4GeneralCICollation)
+	if err != nil {
+		return 0, err
+	}
+
+	insert, ok := stmt.(*ast.InsertStmt)
+	if !ok {
+		return 0, fmt.Errorf("not an insert statement")
+	}
+
+	return len(insert.Lists), nil
 }

@@ -315,16 +315,17 @@ func TestSQLParser_GetSQLOperation(t *testing.T) {
 
 func TestImpl_AddColumnsToInsertSQL(t *testing.T) {
 	tests := []struct {
-		name    string
-		origSQL string
-		addCols []sqlparser.ColVal
-		wantSQL string
-		isParam bool
+		name            string
+		origSQL         string
+		addCols         []sqlparser.ColumnValue
+		wantSQL         string
+		isParam         bool
+		primaryKeyValue *sqlparser.PrimaryKeyValue
 	}{
 		{
 			name:    "add new columns to single row insert",
 			origSQL: "INSERT INTO users (id, name) VALUES (1, 'name')",
-			addCols: []sqlparser.ColVal{
+			addCols: []sqlparser.ColumnValue{
 				{
 					ColName: "age",
 					Value:   18,
@@ -335,24 +336,28 @@ func TestImpl_AddColumnsToInsertSQL(t *testing.T) {
 		{
 			name:    "add new columns to multi-row insert",
 			origSQL: "INSERT INTO users (id, name) VALUES (1, 'name'), (1, 'name')",
-			addCols: []sqlparser.ColVal{
+			addCols: []sqlparser.ColumnValue{
 				{
 					ColName: "age",
 					Value:   18,
 				},
 			},
-			wantSQL: "INSERT INTO users (id,name,age) VALUES (1, 'name',18), (1, 'name',18)",
+			primaryKeyValue: &sqlparser.PrimaryKeyValue{
+				ColName: "pri_id",
+				Values:  []interface{}{1, 2},
+			},
+			wantSQL: "INSERT INTO users (id,name,age,pri_id) VALUES (1, 'name',18,1), (1, 'name',18,2)",
 		},
 		{
 			name:    "addCols is empty, no change",
 			origSQL: "INSERT INTO users (id, name) VALUES (1, 'name')",
-			addCols: []sqlparser.ColVal{},
+			addCols: []sqlparser.ColumnValue{},
 			wantSQL: "INSERT INTO users (id, name) VALUES (1, 'name')",
 		},
 		{
 			name:    "column already exists, do not add",
 			origSQL: "INSERT INTO users (id, name) VALUES (1, 'name')",
-			addCols: []sqlparser.ColVal{{
+			addCols: []sqlparser.ColumnValue{{
 				ColName: "name",
 				Value:   "abc",
 			}},
@@ -361,7 +366,7 @@ func TestImpl_AddColumnsToInsertSQL(t *testing.T) {
 		{
 			name:    "add new columns to single row insert",
 			origSQL: "INSERT INTO users (id, name) VALUES (? ,?)",
-			addCols: []sqlparser.ColVal{
+			addCols: []sqlparser.ColumnValue{
 				{
 					ColName: "age",
 				},
@@ -372,7 +377,7 @@ func TestImpl_AddColumnsToInsertSQL(t *testing.T) {
 		{
 			name:    "add new columns to single row insert",
 			origSQL: "INSERT INTO users (id, name) VALUES (? ,?), (?, ?)",
-			addCols: []sqlparser.ColVal{
+			addCols: []sqlparser.ColumnValue{
 				{
 					ColName: "age",
 				},
@@ -385,7 +390,7 @@ func TestImpl_AddColumnsToInsertSQL(t *testing.T) {
 	parser := NewSQLParser()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parser.AddColumnsToInsertSQL(tt.origSQL, tt.addCols, tt.isParam)
+			got, _, err := parser.AddColumnsToInsertSQL(tt.origSQL, tt.addCols, tt.primaryKeyValue, tt.isParam)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -464,6 +469,55 @@ func TestImpl_GetTableName(t *testing.T) {
 				if tbl != tt.want {
 					t.Errorf("got table: %s, want: %s", tbl, tt.want)
 				}
+			}
+		})
+	}
+}
+
+func TestGetInsertDataNums(t *testing.T) {
+	parser := NewSQLParser().(*Impl)
+
+	tests := []struct {
+		name    string
+		sql     string
+		want    int
+		wantErr bool
+	}{
+		{
+			name: "single row insert",
+			sql:  "INSERT INTO users (name, age) VALUES ('Alice', 25);",
+			want: 1,
+		},
+		{
+			name: "multi-row insert",
+			sql:  "INSERT INTO users (name, age) VALUES ('Alice', 25), ('Bob', 30);",
+			want: 2,
+		},
+		{
+			name: "multi-row insert",
+			sql:  "INSERT INTO users (name, age) VALUES (?, ?), (?, ?), (?, ?), (?, ?);",
+			want: 4,
+		},
+		{
+			name:    "not an insert statement",
+			sql:     "SELECT * FROM users;",
+			wantErr: true,
+		},
+		{
+			name:    "invalid sql",
+			sql:     "INSERTT INTO users (name, age) VALUES ('Alice', 25);",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := parser.GetInsertDataNums(tt.sql)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, got)
 			}
 		})
 	}

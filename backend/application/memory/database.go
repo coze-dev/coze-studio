@@ -68,7 +68,21 @@ func (d *DatabaseApplicationService) ListDatabase(ctx context.Context, req *tabl
 		return nil, err
 	}
 
-	return convertListDatabaseRes(res), nil
+	bindDatabases := make([]*databaseEntity.Database, 0)
+	if req.GetBotID() != 0 {
+		resp, err := d.DomainSVC.MGetDatabaseByAgentID(ctx, &database.MGetDatabaseByAgentIDRequest{
+			AgentID:       req.GetBotID(),
+			TableType:     req.GetTableType(),
+			NeedSysFields: false,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		bindDatabases = resp.Databases
+	}
+
+	return convertListDatabaseRes(res, bindDatabases), nil
 }
 
 func (d *DatabaseApplicationService) GetDatabaseByID(ctx context.Context, req *table.SingleDatabaseRequest) (*table.SingleDatabaseResponse, error) {
