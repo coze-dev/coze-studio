@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	search2 "code.byted.org/flow/opencoze/backend/api/model/crossdomain/search"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/marketplace_common"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_common"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
@@ -180,7 +181,7 @@ func (s *SearchApplicationService) searchFavProjects(ctx context.Context, userID
 		OwnerID:        userID,
 		Types:          types,
 		IsFav:          true,
-		OrderFiledName: searchEntity.FieldOfFavTime,
+		OrderFiledName: search2.FieldOfFavTime,
 		OrderAsc:       false,
 		Limit:          req.PageSize,
 		Cursor:         req.GetCursorID(),
@@ -275,7 +276,7 @@ func (s *SearchApplicationService) GetUserRecentlyEditIntelligence(ctx context.C
 		OwnerID:        *userID,
 		Types:          req.Types,
 		IsRecentlyOpen: true,
-		OrderFiledName: searchEntity.FieldOfRecentlyOpenTime,
+		OrderFiledName: search2.FieldOfRecentlyOpenTime,
 		OrderAsc:       false,
 		Limit:          req.Size,
 	})
@@ -378,13 +379,13 @@ func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceList
 	orderBy := func() string {
 		switch req.GetOrderBy() {
 		case intelligence.OrderBy_PublishTime:
-			return searchEntity.FieldOfPublishTime
+			return search2.FieldOfPublishTime
 		case intelligence.OrderBy_UpdateTime:
-			return searchEntity.FieldOfUpdateTime
+			return search2.FieldOfUpdateTime
 		case intelligence.OrderBy_CreateTime:
-			return searchEntity.FieldOfCreateTime
+			return search2.FieldOfCreateTime
 		default:
-			return searchEntity.FieldOfUpdateTime
+			return search2.FieldOfUpdateTime
 		}
 	}()
 

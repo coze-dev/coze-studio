@@ -6,6 +6,7 @@ import (
 
 	"github.com/bytedance/sonic"
 
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/search"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/es"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
@@ -103,7 +104,7 @@ func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.Searc
 	searchReq.Size = &realLimit
 
 	if req.OrderFiledName == "" {
-		req.OrderFiledName = searchEntity.FieldOfUpdateTime
+		req.OrderFiledName = model.FieldOfUpdateTime
 	}
 
 	searchReq.Sort = []es.SortFiled{
@@ -175,11 +176,11 @@ func hit2AppDocument(hit es.Hit) (*searchEntity.ProjectDocument, error) {
 
 func fieldValueCaster(fieldName, cursor string) any {
 	switch fieldName {
-	case searchEntity.FieldOfCreateTime,
-		searchEntity.FieldOfUpdateTime,
-		searchEntity.FieldOfPublishTime,
-		searchEntity.FieldOfFavTime,
-		searchEntity.FieldOfRecentlyOpenTime:
+	case model.FieldOfCreateTime,
+		model.FieldOfUpdateTime,
+		model.FieldOfPublishTime,
+		model.FieldOfFavTime,
+		model.FieldOfRecentlyOpenTime:
 		cursorInt, err := strconv.ParseInt(cursor, 10, 64)
 		if err != nil {
 			cursorInt = 0
@@ -193,11 +194,11 @@ func fieldValueCaster(fieldName, cursor string) any {
 
 func formatProjectNextCursor(ob string, val *searchEntity.ProjectDocument) string {
 	fieldName2Cursor := map[string]string{
-		searchEntity.FieldOfCreateTime:       conv.Int64ToStr(val.GetCreateTime()),
-		searchEntity.FieldOfUpdateTime:       conv.Int64ToStr(val.GetUpdateTime()),
-		searchEntity.FieldOfPublishTime:      conv.Int64ToStr(val.GetPublishTime()),
-		searchEntity.FieldOfFavTime:          conv.Int64ToStr(val.GetFavTime()),
-		searchEntity.FieldOfRecentlyOpenTime: conv.Int64ToStr(val.GetRecentlyOpenTime()),
+		model.FieldOfCreateTime:       conv.Int64ToStr(val.GetCreateTime()),
+		model.FieldOfUpdateTime:       conv.Int64ToStr(val.GetUpdateTime()),
+		model.FieldOfPublishTime:      conv.Int64ToStr(val.GetPublishTime()),
+		model.FieldOfFavTime:          conv.Int64ToStr(val.GetFavTime()),
+		model.FieldOfRecentlyOpenTime: conv.Int64ToStr(val.GetRecentlyOpenTime()),
 	}
 
 	res, ok := fieldName2Cursor[ob]
@@ -210,9 +211,9 @@ func formatProjectNextCursor(ob string, val *searchEntity.ProjectDocument) strin
 
 func formatResourceNextCursor(ob string, val *searchEntity.ResourceDocument) string {
 	fieldName2Cursor := map[string]string{
-		searchEntity.FieldOfCreateTime:  conv.Int64ToStr(val.GetCreateTime()),
-		searchEntity.FieldOfUpdateTime:  conv.Int64ToStr(val.GetUpdateTime()),
-		searchEntity.FieldOfPublishTime: conv.Int64ToStr(val.GetPublishTime()),
+		model.FieldOfCreateTime:  conv.Int64ToStr(val.GetCreateTime()),
+		model.FieldOfUpdateTime:  conv.Int64ToStr(val.GetUpdateTime()),
+		model.FieldOfPublishTime: conv.Int64ToStr(val.GetPublishTime()),
 	}
 
 	res, ok := fieldName2Cursor[ob]
@@ -278,15 +279,8 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 			es.NewEqualQuery(searchEntity.FieldOfPublishStatus, req.PublishStatusFilter))
 	}
 
-	reqLimit := 100
-	if req.Limit > 0 {
-		reqLimit = int(req.Limit)
-	}
-	realLimit := reqLimit + 1
-	searchReq.Size = &realLimit
-
 	if req.OrderFiledName == "" {
-		req.OrderFiledName = searchEntity.FieldOfUpdateTime
+		req.OrderFiledName = model.FieldOfUpdateTime
 	}
 
 	searchReq.Sort = []es.SortFiled{
@@ -296,7 +290,20 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 		},
 	}
 
-	if req.Cursor != "" && req.Cursor != "0" {
+	reqLimit := 100
+	if req.Limit > 0 {
+		reqLimit = int(req.Limit)
+	}
+	realLimit := reqLimit + 1
+	searchReq.Size = &realLimit
+
+	if req.Page != nil {
+		page := *req.Page
+		if page <= 0 {
+			page = 1
+		}
+		searchReq.From = ptr.Of(int(page-1) * reqLimit)
+	} else if req.Cursor != "" && req.Cursor != "0" {
 		searchReq.SearchAfter = []any{
 			req.Cursor,
 		}
@@ -338,8 +345,14 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 		hasMore = false
 	}
 
+	var total *int64
+	if result.Hits.Total != nil {
+		total = ptr.Of(result.Hits.Total.Value)
+	}
+
 	resp = &searchEntity.SearchResourcesResponse{
 		Data:       docs,
+		TotalHits:  total,
 		HasMore:    hasMore,
 		NextCursor: nextCursor,
 	}

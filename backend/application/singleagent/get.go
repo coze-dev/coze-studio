@@ -403,6 +403,10 @@ func parametersDo2Vo(op *plugin.Openapi3Operation) []*playground.PluginParameter
 		})
 	}
 
+	if op.RequestBody == nil || op.RequestBody.Value == nil || len(op.RequestBody.Value.Content) == 0 {
+		return params
+	}
+
 	for _, mType := range op.RequestBody.Value.Content {
 		schemaVal := mType.Schema.Value
 		if len(schemaVal.Properties) == 0 {

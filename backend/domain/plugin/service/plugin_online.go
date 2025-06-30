@@ -6,13 +6,17 @@ import (
 	"sort"
 
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	searchModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/search"
 	pluginCommon "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crosssearch"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -115,6 +119,55 @@ func (p *pluginServiceImpl) MGetVersionPlugins(ctx context.Context, versionPlugi
 	}
 
 	return plugins, nil
+}
+
+func (p *pluginServiceImpl) ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
+	if pageInfo.Name == nil || *pageInfo.Name == "" {
+		plugins, total, err = p.pluginRepo.ListCustomOnlinePlugins(ctx, spaceID, pageInfo)
+		if err != nil {
+			return nil, 0, errorx.Wrapf(err, "ListCustomOnlinePlugins failed, spaceID=%d", spaceID)
+		}
+		return plugins, total, nil
+	}
+
+	res, err := crosssearch.DefaultSVC().SearchResources(ctx, &searchModel.SearchResourcesRequest{
+		SpaceID:  spaceID,
+		Name:     *pageInfo.Name,
+		OrderAsc: false,
+		ResTypeFilter: []resCommon.ResType{
+			resCommon.ResType_Plugin,
+		},
+		OrderFiledName: func() string {
+			if pageInfo.SortBy == nil || *pageInfo.SortBy != entity.SortByCreatedAt {
+				return searchModel.FieldOfUpdateTime
+			}
+			return searchModel.FieldOfCreateTime
+		}(),
+		Page:  ptr.Of(int32(pageInfo.Page)),
+		Limit: int32(pageInfo.Size),
+	})
+	if err != nil {
+		return nil, 0, errorx.Wrapf(err, "SearchResources failed, spaceID=%d", spaceID)
+	}
+
+	plugins = make([]*entity.PluginInfo, 0, len(res.Data))
+	for _, pl := range res.Data {
+		draftPlugin, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, pl.ResID)
+		if err != nil {
+			return nil, 0, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", pl.ResID)
+		}
+		if !exist {
+			logs.CtxWarnf(ctx, "online plugin not exist, pluginID=%d", pl.ResID)
+			continue
+		}
+		plugins = append(plugins, draftPlugin)
+	}
+
+	if res.TotalHits != nil {
+		total = *res.TotalHits
+	}
+
+	return plugins, total, nil
 }
 
 func (p *pluginServiceImpl) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *MGetPluginLatestVersionResponse, err error) {

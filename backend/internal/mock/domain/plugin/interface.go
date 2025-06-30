@@ -326,6 +326,22 @@ func (mr *MockPluginServiceMockRecorder) GetPluginProductAllTools(ctx, pluginID 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginProductAllTools", reflect.TypeOf((*MockPluginService)(nil).GetPluginProductAllTools), ctx, pluginID)
 }
 
+// ListCustomOnlinePlugins mocks base method.
+func (m *MockPluginService) ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) ([]*entity.PluginInfo, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListCustomOnlinePlugins", ctx, spaceID, pageInfo)
+	ret0, _ := ret[0].([]*entity.PluginInfo)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ListCustomOnlinePlugins indicates an expected call of ListCustomOnlinePlugins.
+func (mr *MockPluginServiceMockRecorder) ListCustomOnlinePlugins(ctx, spaceID, pageInfo any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCustomOnlinePlugins", reflect.TypeOf((*MockPluginService)(nil).ListCustomOnlinePlugins), ctx, spaceID, pageInfo)
+}
+
 // ListDraftPlugins mocks base method.
 func (m *MockPluginService) ListDraftPlugins(ctx context.Context, req *service.ListDraftPluginsRequest) (*service.ListDraftPluginsResponse, error) {
 	m.ctrl.T.Helper()

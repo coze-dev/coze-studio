@@ -7,6 +7,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/openauth"
 	"code.byted.org/flow/opencoze/backend/application/template"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossopenauth"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crosssearch"
 
 	"code.byted.org/flow/opencoze/backend/application/app"
 	"code.byted.org/flow/opencoze/backend/application/base/appinfra"
@@ -47,6 +48,7 @@ import (
 	modelmgrImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/modelmgr"
 	openauthImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/openauth"
 	pluginImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/plugin"
+	searchImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/search"
 	singleagentImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/singleagent"
 	variablesImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/variables"
 	workflowImpl "code.byted.org/flow/opencoze/backend/crossdomain/impl/workflow"
@@ -125,6 +127,7 @@ func Init(ctx context.Context) (err error) {
 	crossuser.SetDefaultSVC(crossuserImpl.InitDomainService(basicServices.userSVC.DomainSVC))
 	crossdatacopy.SetDefaultSVC(dataCopyImpl.InitDomainService(basicServices.infra))
 	crossopenauth.SetDefaultOAuthSVC(openauthImpl.InitDomainService(basicServices.openAuthSVC.OAuthDomainSVC))
+	crosssearch.SetDefaultSVC(searchImpl.InitDomainService(complexServices.searchSVC.DomainSVC))
 
 	return nil
 }

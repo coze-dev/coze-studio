@@ -16,6 +16,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	searchModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/search"
 	productCommon "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_common"
 	productAPI "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
@@ -24,6 +25,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	"code.byted.org/flow/opencoze/backend/application/base/pluginutil"
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crosssearch"
 	oauth "code.byted.org/flow/opencoze/backend/domain/openauth/oauth/service"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
@@ -61,46 +63,17 @@ func (p *PluginApplicationService) GetOAuthSchema(ctx context.Context, req *plug
 
 func (p *PluginApplicationService) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
 	var (
-		onlinePlugins []*entity.PluginInfo
-		total         int64
+		plugins []*entity.PluginInfo
+		total   int64
 	)
 	if len(req.PluginIds) > 0 {
-		pluginIDs := make([]int64, 0, len(req.PluginIds))
-		for _, id := range req.PluginIds {
-			pluginID, err := strconv.ParseInt(id, 10, 64)
-			if err != nil {
-				return nil, fmt.Errorf("invalid pluginID '%s'", id)
-			}
-			pluginIDs = append(pluginIDs, pluginID)
-		}
-
-		onlinePlugins, err = p.pluginRepo.MGetOnlinePlugins(ctx, pluginIDs)
-		if err != nil {
-			return nil, errorx.Wrapf(err, "MGetOnlinePlugins failed, pluginIDs=%v", pluginIDs)
-		}
-
-		total = int64(len(onlinePlugins))
-
+		plugins, total, err = p.getPlaygroundPluginListByIDs(ctx, req.PluginIds)
 	} else {
-		pageInfo := entity.PageInfo{
-			Page: int(req.GetPage()),
-			Size: int(req.GetSize()),
-			SortBy: func() *entity.SortField {
-				if req.GetOrderBy() == 0 {
-					return ptr.Of(entity.SortByUpdatedAt)
-				}
-				return ptr.Of(entity.SortByCreatedAt)
-			}(),
-			OrderByACS: ptr.Of(false),
-		}
-		onlinePlugins, total, err = p.pluginRepo.ListCustomOnlinePlugins(ctx, req.GetSpaceID(), pageInfo)
-		if err != nil {
-			return nil, errorx.Wrapf(err, "ListCustomOnlinePlugins failed, spaceID=%d", req.GetSpaceID())
-		}
+		plugins, total, err = p.getPlaygroundPluginList(ctx, req)
 	}
 
-	pluginLists := make([]*common.PluginInfoForPlayground, 0, len(onlinePlugins))
-	for _, pl := range onlinePlugins {
+	pluginList := make([]*common.PluginInfoForPlayground, 0, len(plugins))
+	for _, pl := range plugins {
 		tools, err := p.toolRepo.GetPluginAllOnlineTools(ctx, pl.ID)
 		if err != nil {
 			return nil, errorx.Wrapf(err, "GetPluginAllOnlineTools failed, pluginID=%d", pl.ID)
@@ -111,17 +84,58 @@ func (p *PluginApplicationService) GetPlaygroundPluginList(ctx context.Context, 
 			return nil, err
 		}
 
-		pluginLists = append(pluginLists, pluginInfo)
+		pluginList = append(pluginList, pluginInfo)
 	}
 
 	resp = &pluginAPI.GetPlaygroundPluginListResponse{
 		Data: &common.GetPlaygroundPluginListData{
 			Total:      int32(total),
-			PluginList: pluginLists,
+			PluginList: pluginList,
 		},
 	}
 
 	return resp, nil
+}
+
+func (p *PluginApplicationService) getPlaygroundPluginListByIDs(ctx context.Context, pluginIDs []string) (plugins []*entity.PluginInfo, total int64, err error) {
+	ids := make([]int64, 0, len(pluginIDs))
+	for _, id := range pluginIDs {
+		pluginID, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			return nil, 0, fmt.Errorf("invalid pluginID '%s'", id)
+		}
+		ids = append(ids, pluginID)
+	}
+
+	plugins, err = p.pluginRepo.MGetOnlinePlugins(ctx, ids)
+	if err != nil {
+		return nil, 0, errorx.Wrapf(err, "MGetOnlinePlugins failed, pluginIDs=%v", pluginIDs)
+	}
+
+	total = int64(len(plugins))
+
+	return plugins, total, nil
+}
+
+func (p *PluginApplicationService) getPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (plugins []*entity.PluginInfo, total int64, err error) {
+	pageInfo := entity.PageInfo{
+		Name: req.Name,
+		Page: int(req.GetPage()),
+		Size: int(req.GetSize()),
+		SortBy: func() *entity.SortField {
+			if req.GetOrderBy() == 0 {
+				return ptr.Of(entity.SortByUpdatedAt)
+			}
+			return ptr.Of(entity.SortByCreatedAt)
+		}(),
+		OrderByACS: ptr.Of(false),
+	}
+	plugins, total, err = p.DomainSVC.ListCustomOnlinePlugins(ctx, req.GetSpaceID(), pageInfo)
+	if err != nil {
+		return nil, 0, errorx.Wrapf(err, "ListCustomOnlinePlugins failed, spaceID=%d", req.GetSpaceID())
+	}
+
+	return plugins, total, nil
 }
 
 func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context, pl *entity.PluginInfo, tools []*entity.ToolInfo) (*common.PluginInfoForPlayground, error) {
@@ -1329,6 +1343,7 @@ func (p *PluginApplicationService) GetPluginNextVersion(ctx context.Context, req
 
 func (p *PluginApplicationService) GetDevPluginList(ctx context.Context, req *pluginAPI.GetDevPluginListRequest) (resp *pluginAPI.GetDevPluginListResponse, err error) {
 	pageInfo := entity.PageInfo{
+		Name:       req.Name,
 		Page:       int(req.GetPage()),
 		Size:       int(req.GetSize()),
 		OrderByACS: ptr.Of(false),
@@ -1348,7 +1363,7 @@ func (p *PluginApplicationService) GetDevPluginList(ctx context.Context, req *pl
 		return nil, errorx.Wrapf(err, "ListDraftPlugins failed, spaceID=%d, appID=%d", req.SpaceID, req.ProjectID)
 	}
 
-	pluginLists := make([]*common.PluginInfoForPlayground, 0, len(res.Plugins))
+	pluginList := make([]*common.PluginInfoForPlayground, 0, len(res.Plugins))
 	for _, pl := range res.Plugins {
 		tools, err := p.toolRepo.GetPluginAllDraftTools(ctx, pl.ID)
 		if err != nil {
@@ -1361,15 +1376,68 @@ func (p *PluginApplicationService) GetDevPluginList(ctx context.Context, req *pl
 		}
 
 		pluginInfo.VersionTs = "0" // when you get the plugin information in the project, version ts is set to 0 by default
-		pluginLists = append(pluginLists, pluginInfo)
+		pluginList = append(pluginList, pluginInfo)
 	}
 
 	resp = &pluginAPI.GetDevPluginListResponse{
-		PluginList: pluginLists,
+		PluginList: pluginList,
 		Total:      res.Total,
 	}
 
 	return resp, nil
+}
+
+func (p *PluginApplicationService) getDevPluginListByName(ctx context.Context, req *pluginAPI.GetDevPluginListRequest) (pluginList []*common.PluginInfoForPlayground, total int64, err error) {
+	limit := req.GetSize()
+	if limit == 0 {
+		limit = 10
+	}
+
+	res, err := crosssearch.DefaultSVC().SearchResources(ctx, &searchModel.SearchResourcesRequest{
+		SpaceID:  req.SpaceID,
+		APPID:    req.ProjectID,
+		Name:     req.GetName(),
+		OrderAsc: false,
+		ResTypeFilter: []resCommon.ResType{
+			resCommon.ResType_Plugin,
+		},
+		Page:  req.Page,
+		Limit: limit,
+	})
+	if err != nil {
+		return nil, 0, errorx.Wrapf(err, "SearchResources failed, spaceID=%d, appID=%d", req.SpaceID, req.ProjectID)
+	}
+
+	pluginList = make([]*common.PluginInfoForPlayground, 0, len(res.Data))
+	for _, pl := range res.Data {
+		draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, pl.ResID)
+		if err != nil {
+			return nil, 0, errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", pl.ResID)
+		}
+		if !exist {
+			logs.CtxWarnf(ctx, "plugin not exist, pluginID=%d", pl.ResID)
+			continue
+		}
+
+		tools, err := p.toolRepo.GetPluginAllDraftTools(ctx, draftPlugin.ID)
+		if err != nil {
+			return nil, 0, errorx.Wrapf(err, "GetPluginAllDraftTools failed, pluginID=%d", draftPlugin.ID)
+		}
+
+		pluginInfo, err := p.toPluginInfoForPlayground(ctx, draftPlugin, tools)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		pluginInfo.VersionTs = "0" // when you get the plugin information in the project, version ts is set to 0 by default
+		pluginList = append(pluginList, pluginInfo)
+	}
+
+	if res.TotalHits != nil {
+		total = *res.TotalHits
+	}
+
+	return pluginList, total, nil
 }
 
 func (p *PluginApplicationService) DeleteAPPAllPlugins(ctx context.Context, appID int64) (err error) {
@@ -1459,6 +1527,10 @@ func (p *PluginApplicationService) BatchCreateAPI(ctx context.Context, req *plug
 
 	resp = &pluginAPI.BatchCreateAPIResponse{
 		PathsDuplicated: duplicated,
+	}
+
+	if len(duplicated) > 0 {
+		resp.Code = errno.ErrPluginDuplicatedTool
 	}
 
 	return resp, nil

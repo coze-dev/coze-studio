@@ -185,8 +185,12 @@ func (c *es8Client) Search(ctx context.Context, index string, req *Request) (*Re
 		}))
 	}
 
-	for _, v := range req.SearchAfter {
-		esReq.SearchAfter = append(esReq.SearchAfter, types.FieldValue(v))
+	if req.From != nil {
+		esReq.From = req.From
+	} else {
+		for _, v := range req.SearchAfter {
+			esReq.SearchAfter = append(esReq.SearchAfter, types.FieldValue(v))
+		}
 	}
 
 	logs.CtxDebugf(ctx, "Elasticsearch Request: %s\n", conv.DebugJsonToStr(esReq))

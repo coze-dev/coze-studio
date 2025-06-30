@@ -13,8 +13,11 @@ import (
 	"gopkg.in/yaml.v3"
 
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	searchModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/search"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crosssearch"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/openapi"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
@@ -107,18 +110,64 @@ func (p *pluginServiceImpl) MGetDraftPlugins(ctx context.Context, pluginIDs []in
 }
 
 func (p *pluginServiceImpl) ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error) {
-	res, err := p.pluginRepo.ListDraftPlugins(ctx, &repository.ListDraftPluginsRequest{
+	if req.PageInfo.Name == nil || *req.PageInfo.Name == "" {
+		res, err := p.pluginRepo.ListDraftPlugins(ctx, &repository.ListDraftPluginsRequest{
+			SpaceID:  req.SpaceID,
+			APPID:    req.APPID,
+			PageInfo: req.PageInfo,
+		})
+		if err != nil {
+			return nil, errorx.Wrapf(err, "ListDraftPlugins failed, spaceID=%d, appID=%d", req.SpaceID, req.APPID)
+		}
+
+		return &ListDraftPluginsResponse{
+			Plugins: res.Plugins,
+			Total:   res.Total,
+		}, nil
+	}
+
+	res, err := crosssearch.DefaultSVC().SearchResources(ctx, &searchModel.SearchResourcesRequest{
 		SpaceID:  req.SpaceID,
 		APPID:    req.APPID,
-		PageInfo: req.PageInfo,
+		Name:     *req.PageInfo.Name,
+		OrderAsc: false,
+		ResTypeFilter: []resCommon.ResType{
+			resCommon.ResType_Plugin,
+		},
+		OrderFiledName: func() string {
+			if req.PageInfo.SortBy == nil || *req.PageInfo.SortBy != entity.SortByCreatedAt {
+				return searchModel.FieldOfUpdateTime
+			}
+			return searchModel.FieldOfCreateTime
+		}(),
+		Page:  ptr.Of(int32(req.PageInfo.Page)),
+		Limit: int32(req.PageInfo.Size),
 	})
 	if err != nil {
-		return nil, errorx.Wrapf(err, "ListDraftPlugins failed, spaceID=%d, appID=%d", req.SpaceID, req.APPID)
+		return nil, errorx.Wrapf(err, "SearchResources failed, spaceID=%d, appID=%d", req.SpaceID, req.APPID)
+	}
+
+	plugins := make([]*entity.PluginInfo, 0, len(res.Data))
+	for _, pl := range res.Data {
+		draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, pl.ResID)
+		if err != nil {
+			return nil, errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", pl.ResID)
+		}
+		if !exist {
+			logs.CtxWarnf(ctx, "draft plugin not exist, pluginID=%d", pl.ResID)
+			continue
+		}
+		plugins = append(plugins, draftPlugin)
+	}
+
+	total := int64(0)
+	if res.TotalHits != nil {
+		total = *res.TotalHits
 	}
 
 	return &ListDraftPluginsResponse{
-		Plugins: res.Plugins,
-		Total:   res.Total,
+		Plugins: plugins,
+		Total:   total,
 	}, nil
 }
 

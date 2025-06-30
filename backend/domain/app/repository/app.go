@@ -27,9 +27,9 @@ type AppRepository interface {
 }
 
 type GetPublishRecordRequest struct {
-	APPID    int64
-	RecordID *int64
-	Oldest   bool // Get the oldest record if Oldest is true and RecordID is nil; otherwise, get the latest record
+	APPID         int64
+	RecordID      *int64
+	OldestSuccess bool // Get the oldest success record if OldestSuccess is true and RecordID is nil; otherwise, get the latest record
 }
 
 type UpdateAPPPublishStatusRequest struct {

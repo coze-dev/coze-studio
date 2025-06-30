@@ -724,6 +724,10 @@ func GetDevPluginList(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "size is invalid")
 		return
 	}
+	if req.GetSize() > 50 {
+		invalidParamRequestResponse(c, "size is too large")
+		return
+	}
 
 	resp, err := plugin.PluginApplicationSVC.GetDevPluginList(ctx, &req)
 	if err != nil {
