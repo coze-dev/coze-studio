@@ -63,5 +63,5 @@ type MetaQuery struct {
 	AppID           *int64
 	LibOnly         bool
 	NeedTotalNumber bool
-	DescByUpdate  bool
+	DescByUpdate    bool
 }

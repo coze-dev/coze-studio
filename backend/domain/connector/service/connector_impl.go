@@ -7,6 +7,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/connector/entity"
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/i18n"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -22,8 +23,16 @@ func NewService(tos storage.Storage) Connector {
 	}
 }
 
-func (c *connectorImpl) AllConnectorInfo() []*entity.Connector {
-	return []*entity.Connector{
+var i18n2ConnectorDesc = map[i18n.Locale]map[int64]string{
+	i18n.LocaleEN: {
+		consts.WebSDKConnectorID: "Deploy the bot as a Web SDK",
+		consts.APIConnectorID:    "Supports OAuth 2.0 and personal access tokens",
+		consts.CozeConnectorID:   "Coze",
+	},
+}
+
+func (c *connectorImpl) AllConnectorInfo(ctx context.Context) []*entity.Connector {
+	connectors := []*entity.Connector{
 		{
 			Connector: &connector.Connector{
 				ID:   consts.WebSDKConnectorID,
@@ -45,14 +54,24 @@ func (c *connectorImpl) AllConnectorInfo() []*entity.Connector {
 				ID:   consts.CozeConnectorID,
 				Name: "coze",
 				URI:  "default_icon/connector-coze.png",
-				Desc: "coze",
+				Desc: "Coze",
 			},
 		},
 	}
+
+	locale := i18n.GetLocale(ctx)
+	for _, connector := range connectors {
+		i18nDesc, ok := i18n2ConnectorDesc[locale][connector.ID]
+		if ok {
+			connector.Desc = i18nDesc
+		}
+	}
+
+	return connectors
 }
 
 func (c *connectorImpl) List(ctx context.Context) ([]*entity.Connector, error) {
-	allConnectors := c.AllConnectorInfo()
+	allConnectors := c.AllConnectorInfo(ctx)
 	res := make([]*entity.Connector, 0, len(allConnectors))
 
 	for _, connector := range allConnectors {
@@ -83,7 +102,7 @@ func (c *connectorImpl) GetByID(ctx context.Context, id int64) (*entity.Connecto
 
 func (c *connectorImpl) GetByIDs(ctx context.Context, ids []int64) (map[int64]*entity.Connector, error) {
 	connectorsMap := make(map[int64]*entity.Connector, len(ids))
-	allConnectors := c.AllConnectorInfo()
+	allConnectors := c.AllConnectorInfo(ctx)
 
 	for _, connector := range allConnectors {
 		connectorsMap[connector.ID] = connector

@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/repository"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/i18n"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -32,6 +33,23 @@ var sysVariableConf []*kvmemory.VariableInfo = []*kvmemory.VariableInfo{
 	},
 }
 
+var sysVariableConfEN []*kvmemory.VariableInfo = []*kvmemory.VariableInfo{
+	{
+		Key:                  "sys_uuid",
+		Description:          "User uniq ID",
+		DefaultValue:         "",
+		Example:              "",
+		ExtDesc:              "",
+		GroupDesc:            "Data automatically retrieved by the system after user request or authorization.",
+		GroupExtDesc:         "",
+		GroupName:            "User information",
+		Sensitive:            "false",
+		CanWrite:             "false",
+		MustNotUseInPrompt:   "false",
+		EffectiveChannelList: []string{"All publication channels"},
+	},
+}
+
 type variablesImpl struct {
 	Repo repository.VariableRepository
 }
@@ -42,7 +60,10 @@ func NewService(repo repository.VariableRepository) Variables {
 	}
 }
 
-func (v *variablesImpl) GetSysVariableConf(_ context.Context) entity.SysConfVariables {
+func (v *variablesImpl) GetSysVariableConf(ctx context.Context) entity.SysConfVariables {
+	if i18n.GetLocale(ctx) == i18n.LocaleEN {
+		return sysVariableConfEN
+	}
 	return sysVariableConf
 }
 

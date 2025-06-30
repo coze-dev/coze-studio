@@ -62,17 +62,18 @@ func main() {
 
 	s := server.Default(opts...)
 
-	// ContextCacheMW -> RequestInspectorMW -> AccessLogMW -> OtherMiddleware
-	s.Use(middleware.ContextCacheMW())
-	s.Use(middleware.RequestInspectorMW())
-
 	// cors option
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	config.AllowHeaders = []string{"*"}
 	corsHandler := cors.New(config)
-	s.Use(corsHandler)
+
+	// Middleware order matters
+	s.Use(middleware.ContextCacheMW())     // must be first
+	s.Use(middleware.RequestInspectorMW()) // must be second
 	s.Use(middleware.SetLogIDMW())
+	s.Use(middleware.I18nMW())
+	s.Use(corsHandler)
 	s.Use(middleware.AccessLogMW())
 	s.Use(middleware.OpenapiAuthMW())
 	s.Use(middleware.SessionAuthMW())
