@@ -389,7 +389,7 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 		logs.CtxErrorf(ctx, "[insertDataToTable] insert data failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KVf("msg", "insert data failed, err: %v", err))
 	}
-	if resp.AffectedRows != int64(len(slices)) {
+	if resp.AffectedRows+resp.UnchangedRows != int64(len(slices)) {
 		logs.CtxErrorf(ctx, "[insertDataToTable] insert data failed, affected rows: %d, expect: %d", resp.AffectedRows, len(slices))
 		return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KVf("msg", "insert data failed, affected rows: %d, expect: %d", resp.AffectedRows, len(slices)))
 	}
