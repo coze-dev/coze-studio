@@ -2626,10 +2626,10 @@ func TestInputComplex(t *testing.T) {
 			"output_list": []any{
 				map[string]any{
 					"name": "user_1",
-					"age":  int64(0), // TODO: this is different to online behavior which is nil
+					"age":  nil,
 				},
 				map[string]any{
-					"name": "", // TODO: this is different to online behavior which is nil
+					"name": nil,
 					"age":  int64(2),
 				},
 			},
@@ -3183,7 +3183,7 @@ func TestStreamResume(t *testing.T) {
 					NodeTitle:    ptr.Of("结束"),
 					NodeSeqID:    ptr.Of("0"),
 					NodeIsFinish: ptr.Of(true),
-					Content:      ptr.Of("{\"output\":{\"age\":1,\"name\":\"eino\"},\"output_list\":[{\"age\":0,\"name\":\"user_1\"},{\"age\":2,\"name\":\"\"}]}"),
+					Content:      ptr.Of("{\"output\":{\"age\":1,\"name\":\"eino\"},\"output_list\":[{\"age\":null,\"name\":\"user_1\"},{\"age\":2,\"name\":null}]}"),
 					ContentType:  ptr.Of("text"),
 					// Token:        ptr.Of(int64(0)), TODO: verify if we need to uncomment this
 				},
@@ -4461,7 +4461,7 @@ func TestJsonSerializationDeserializationWithWarning(t *testing.T) {
 		outputData, ok := result["output"].(map[string]any)
 		assert.True(t, ok, "output field is not a map[string]any")
 
-		assert.Equal(t, false, outputData["int"], "int field mismatch")
+		assert.Equal(t, nil, outputData["int"], "int field mismatch")
 		assert.Equal(t, "abc", outputData["string"], "string field mismatch")
 		assert.Equal(t, true, outputData["bool"], "bool field mismatch")
 	})

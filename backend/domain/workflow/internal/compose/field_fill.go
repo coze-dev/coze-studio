@@ -28,7 +28,7 @@ func (s *NodeSchema) outputValueFiller() func(ctx context.Context, output map[st
 		}
 
 		for k, tInfo := range s.OutputTypes {
-			if err := FillIfNotRequired(tInfo, newOutput, k, FillNil); err != nil {
+			if err := FillIfNotRequired(tInfo, newOutput, k, FillNil, false); err != nil {
 				return nil, err
 			}
 		}
@@ -53,7 +53,7 @@ func (s *NodeSchema) inputValueFiller() func(ctx context.Context, input map[stri
 		}
 
 		for k, tInfo := range s.InputTypes {
-			if err := FillIfNotRequired(tInfo, newInput, k, FillZero); err != nil {
+			if err := FillIfNotRequired(tInfo, newInput, k, FillZero, false); err != nil {
 				return nil, err
 			}
 		}
@@ -93,11 +93,14 @@ const (
 	FillNil  FillStrategy = "nil"
 )
 
-func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, strategy FillStrategy) error {
+func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, strategy FillStrategy, isInsideObject bool) error {
 	v, ok := container[k]
 	if ok {
 		if len(tInfo.Properties) == 0 {
 			if v == nil && strategy == FillZero {
+				if isInsideObject {
+					return nil
+				}
 				v = tInfo.Zero()
 				container[k] = v
 				return nil
@@ -137,7 +140,7 @@ func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 						newSubContainer := maps.Clone(subContainer)
 
 						for subK, subL := range elemTInfo.Properties {
-							if err := FillIfNotRequired(subL, newSubContainer, subK, strategy); err != nil {
+							if err := FillIfNotRequired(subL, newSubContainer, subK, strategy, true); err != nil {
 								return err
 							}
 						}
@@ -171,7 +174,7 @@ func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 				newSubContainer = make(map[string]any)
 			}
 			for subK, subT := range tInfo.Properties {
-				if err := FillIfNotRequired(subT, newSubContainer, subK, strategy); err != nil {
+				if err := FillIfNotRequired(subT, newSubContainer, subK, strategy, true); err != nil {
 					return err
 				}
 			}
@@ -184,7 +187,9 @@ func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 		} else {
 			var z any
 			if strategy == FillZero {
-				z = tInfo.Zero()
+				if !isInsideObject {
+					z = tInfo.Zero()
+				}
 			}
 
 			container[k] = z
@@ -194,7 +199,7 @@ func FillIfNotRequired(tInfo *vo.TypeInfo, container map[string]any, k string, s
 				container[k] = z
 				subContainer := z.(map[string]any)
 				for subK, subL := range tInfo.Properties {
-					if err := FillIfNotRequired(subL, subContainer, subK, strategy); err != nil {
+					if err := FillIfNotRequired(subL, subContainer, subK, strategy, true); err != nil {
 						return err
 					}
 				}

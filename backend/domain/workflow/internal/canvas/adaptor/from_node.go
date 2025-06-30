@@ -177,7 +177,7 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 		}
 
 		for k, tInfo := range startOutputTypes {
-			if err := compose.FillIfNotRequired(tInfo, newOutput, k, compose.FillNil); err != nil {
+			if err := compose.FillIfNotRequired(tInfo, newOutput, k, compose.FillNil, false); err != nil {
 				return nil, err
 			}
 		}
