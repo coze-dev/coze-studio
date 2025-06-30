@@ -6,8 +6,8 @@ import { BrowserUpgradeWrap } from '@coze-foundation/browser-upgrade-banner';
 import { I18nProvider } from '@coze-arch/i18n/i18n-provider';
 import { I18n } from '@coze-arch/i18n';
 import { useUserInfo } from '@coze-arch/foundation-sdk';
-import { LocaleProvider } from '@coze-arch/bot-semi';
 import { ThemeProvider, enUS, zhCN } from '@coze-arch/coze-design';
+import { LocaleProvider } from '@coze-arch/bot-semi';
 
 import { GlobalLayoutComposed } from '@/components/global-layout-composed';
 
@@ -22,6 +22,7 @@ export const GlobalLayout: FC = () => {
 
   useEffect(() => {
     if (userInfo && I18n.language !== transformedCurrentLocale) {
+      localStorage.setItem('i18next', transformedCurrentLocale);
       I18n.setLang(transformedCurrentLocale);
       // 强制更新，否则切换语言不生效
       update();

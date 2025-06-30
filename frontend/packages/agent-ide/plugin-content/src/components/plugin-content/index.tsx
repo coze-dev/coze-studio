@@ -1,15 +1,6 @@
 import { type ReactNode, type FC, useMemo } from 'react';
 
 import copy from 'copy-to-clipboard';
-import {
-  ToolItem,
-  ToolItemActionCopy,
-  ToolItemActionDelete,
-  ToolItemIconInfo,
-  ToolItemIconPeople,
-  ToolItemList,
-  useToolItemContext,
-} from '@coze-agent-ide/tool';
 import { ParametersPopover } from '@coze-studio/components/parameters-popover';
 import { type EnabledPluginApi } from '@coze-studio/bot-detail-store/skill-types';
 import { useBotSkillStore } from '@coze-studio/bot-detail-store/bot-skill';
@@ -25,12 +16,19 @@ import { CustomError } from '@coze-arch/bot-error';
 import {
   PluginStatus,
   PluginType,
-  ProductStatus,
   type PluginApi,
   type PluginInfoForPlayground,
 } from '@coze-arch/bot-api/plugin_develop';
 import { ComponentType, TrafficScene } from '@coze-arch/bot-api/debugger_api';
 import { PluginDevelopApi } from '@coze-arch/bot-api';
+import {
+  ToolItem,
+  ToolItemActionCopy,
+  ToolItemActionDelete,
+  ToolItemIconInfo,
+  ToolItemList,
+  useToolItemContext,
+} from '@coze-agent-ide/tool';
 import { getPluginApiKey, getApiUniqueId } from '@coze-agent-ide/plugin-shared';
 import { PluginSettingEnter } from '@coze-agent-ide/plugin-setting-adapter';
 
@@ -146,14 +144,7 @@ export const PluginContent: FC<PluginContentProps> = ({
                   </div>
                 )
               }
-              icons={
-                <>
-                  {/* Icon - 素材 */}
-                  {plugin.info?.plugin_product_status ===
-                    ProductStatus.NeverListed && <ToolItemIconPeople />}
-                  {renderPluginItemIconSlot?.(renderSlotParams)}
-                </>
-              }
+              icons={renderPluginItemIconSlot?.(renderSlotParams)}
               actions={
                 !isBanned && (
                   <Actions
