@@ -10,14 +10,80 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 )
 
-func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema) error {
-	if len(s.InputSources) == 0 {
-		return nil
+// SetFullSources calculates REAL input sources for a node.
+// It may be different from a NodeSchema's InputSources because of the following reasons:
+//  1. a inner node under composite node may refer to a field from a node in its parent workflow,
+//     this is instead routed to and sourced from the inner workflow's start node.
+//  2. at the same time, the composite node needs to delegate the input source to the inner workflow.
+//  3. also, some node may have implicit input sources not defined in its NodeSchema's InputSources.
+func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema, dep *dependencyInfo) error {
+	fullSource := make(map[string]*nodes.SourceInfo)
+	var fieldInfos []vo.FieldInfo
+	for _, s := range dep.staticValues {
+		fieldInfos = append(fieldInfos, vo.FieldInfo{
+			Path:   s.path,
+			Source: vo.FieldSource{Val: s.val},
+		})
 	}
 
-	fullSource := make(map[string]*nodes.SourceInfo)
-	for i := range s.InputSources {
-		fInfo := s.InputSources[i]
+	for _, v := range dep.variableInfos {
+		fieldInfos = append(fieldInfos, vo.FieldInfo{
+			Path: v.toPath,
+			Source: vo.FieldSource{
+				Ref: &vo.Reference{
+					VariableType: &v.varType,
+					FromPath:     v.fromPath[1:],
+				},
+			},
+		})
+	}
+
+	for f := range dep.inputsFull {
+		fieldInfos = append(fieldInfos, vo.FieldInfo{
+			Path: []string{""},
+			Source: vo.FieldSource{Ref: &vo.Reference{
+				FromNodeKey: f,
+				FromPath:    []string{""},
+			}},
+		})
+	}
+
+	for f, ms := range dep.inputs {
+		for _, m := range ms {
+			fieldInfos = append(fieldInfos, vo.FieldInfo{
+				Path: m.ToPath(),
+				Source: vo.FieldSource{Ref: &vo.Reference{
+					FromNodeKey: f,
+					FromPath:    m.FromPath(),
+				}},
+			})
+		}
+	}
+
+	for f := range dep.inputsNoDirectDependencyFull {
+		fieldInfos = append(fieldInfos, vo.FieldInfo{
+			Path: []string{""},
+			Source: vo.FieldSource{Ref: &vo.Reference{
+				FromNodeKey: f,
+				FromPath:    []string{""},
+			}},
+		})
+	}
+
+	for f, ms := range dep.inputsNoDirectDependency {
+		for _, m := range ms {
+			fieldInfos = append(fieldInfos, vo.FieldInfo{
+				Path: m.ToPath(),
+				Source: vo.FieldSource{Ref: &vo.Reference{
+					FromNodeKey: f,
+					FromPath:    m.FromPath(),
+				}},
+			})
+		}
+	}
+
+	for i := range fieldInfos {
+		fInfo := fieldInfos[i]
 		path := fInfo.Path
 		currentSource := fullSource
 		var (
@@ -67,13 +133,17 @@ func (s *NodeSchema) SetFullSources(allNS map[vo.NodeKey]*NodeSchema) error {
 			err        error
 		)
 		if len(fromNodeKey) > 0 {
-			fromNode, ok := allNS[fromNodeKey]
-			if !ok {
-				return fmt.Errorf("node %s not found", fromNodeKey)
-			}
-			streamType, err = fromNode.IsStreamingField(fInfo.Source.Ref.FromPath, allNS)
-			if err != nil {
-				return err
+			if fromNodeKey == compose.START {
+				streamType = nodes.FieldNotStream // TODO: set start node to not stream for now until composite node supports transform
+			} else {
+				fromNode, ok := allNS[fromNodeKey]
+				if !ok {
+					return fmt.Errorf("node %s not found", fromNodeKey)
+				}
+				streamType, err = fromNode.IsStreamingField(fInfo.Source.Ref.FromPath, allNS)
+				if err != nil {
+					return err
+				}
 			}
 		}
 

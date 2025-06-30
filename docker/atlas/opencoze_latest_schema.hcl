@@ -1313,6 +1313,12 @@ table "message" {
   primary_key {
     columns = [column.id]
   }
+  index "idx_conversation_id" {
+    columns = [column.conversation_id]
+  }
+  index "idx_run_id" {
+    columns = [column.run_id]
+  }
 }
 table "model_entity" {
   schema  = schema.opencoze
@@ -2160,6 +2166,9 @@ table "run_record" {
   }
   primary_key {
     columns = [column.id]
+  }
+  index "idx_c_s" {
+    columns = [column.conversation_id, column.section_id]
   }
 }
 table "shortcut_command" {
@@ -3394,6 +3403,12 @@ table "workflow_draft" {
   primary_key {
     columns = [column.id]
   }
+  index "idx_updated_at" {
+    on {
+      desc   = true
+      column = column.updated_at
+    }
+  }
 }
 table "workflow_execution" {
   schema = schema.opencoze
@@ -3662,23 +3677,26 @@ table "workflow_meta" {
     type    = varchar(50)
     comment = "the version of the most recent publish"
   }
+  column "latest_version_ts" {
+    null     = true
+    type     = bigint
+    unsigned = true
+    comment  = "create time of latest version"
+  }
   primary_key {
     columns = [column.id]
   }
   index "idx_app_id" {
     columns = [column.app_id]
   }
-  index "idx_creator_id" {
-    columns = [column.creator_id]
+  index "idx_latest_version_ts" {
+    on {
+      desc   = true
+      column = column.latest_version_ts
+    }
   }
-  index "idx_published_time" {
-    columns = [column.status]
-  }
-  index "idx_source_id" {
-    columns = [column.source_id]
-  }
-  index "idx_space_id_app_id_mode_content_type" {
-    columns = [column.space_id, column.app_id, column.mode, column.content_type]
+  index "idx_space_id_app_id_status_latest_version_ts" {
+    columns = [column.space_id, column.app_id, column.status, column.latest_version_ts]
   }
 }
 table "workflow_reference" {
@@ -3688,12 +3706,6 @@ table "workflow_reference" {
     type     = bigint
     unsigned = true
     comment  = "workflow id"
-  }
-  column "referred_id" {
-    null     = false
-    type     = bigint
-    unsigned = true
-    comment  = "the id of the workflow that is referred by other entities"
   }
   column "referring_id" {
     null     = false
@@ -3719,15 +3731,21 @@ table "workflow_reference" {
     unsigned = true
     comment  = "create time in millisecond"
   }
+  column "deleted_at" {
+    null = true
+    type = datetime(3)
+  }
+  column "referred_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "the id of the workflow that is referred by other entities"
+  }
   column "status" {
     null     = false
     type     = tinyint
     unsigned = true
     comment  = "whether this reference currently takes effect. 0: disabled 1: enabled"
-  }
-  column "deleted_at" {
-    null = true
-    type = datetime(3)
   }
   primary_key {
     columns = [column.id]

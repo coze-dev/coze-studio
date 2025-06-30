@@ -9,6 +9,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
@@ -63,11 +64,10 @@ func NewLoop(_ context.Context, conf *Config) (*Loop, error) {
 		}
 
 		k := info.Path[0]
-
-		fromNodeKey := info.Source.Ref.FromNodeKey
 		fromPath := info.Source.Ref.FromPath
 
-		if fromNodeKey == conf.LoopNodeKey {
+		if info.Source.Ref != nil && info.Source.Ref.VariableType != nil &&
+			*info.Source.Ref.VariableType == variable.ParentIntermediate {
 			if len(fromPath) > 1 {
 				return nil, fmt.Errorf("loop output refers to intermediate variable, but path length > 1: %v", fromPath)
 			}
@@ -88,7 +88,7 @@ func NewLoop(_ context.Context, conf *Config) (*Loop, error) {
 }
 
 const (
-	Count = "LoopCount"
+	Count = "loopCount"
 )
 
 func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (out map[string]any, err error) {

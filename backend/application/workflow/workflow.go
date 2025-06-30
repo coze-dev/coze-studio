@@ -65,7 +65,7 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -144,7 +144,7 @@ func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.C
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -185,7 +185,7 @@ func (w *ApplicationService) SaveWorkflow(ctx context.Context, req *workflow.Sav
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -210,7 +210,7 @@ func (w *ApplicationService) UpdateWorkflowMeta(ctx context.Context, req *workfl
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -237,7 +237,7 @@ func (w *ApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.D
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -269,7 +269,7 @@ func (w *ApplicationService) BatchDeleteWorkflow(ctx context.Context, req *workf
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -306,7 +306,7 @@ func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.Ge
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -522,7 +522,7 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -704,7 +704,7 @@ func (w *ApplicationService) GetNodeExecuteHistory(ctx context.Context, req *wor
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -814,7 +814,7 @@ func (w *ApplicationService) DeleteWorkflowsByAppID(ctx context.Context, appID i
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -830,7 +830,7 @@ func (w *ApplicationService) CheckWorkflowsExistByAppID(ctx context.Context, app
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -857,7 +857,7 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -961,7 +961,7 @@ func (w *ApplicationService) DuplicateWorkflowsByAppID(ctx context.Context, sour
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -990,7 +990,7 @@ func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, w
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -1011,7 +1011,7 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -1595,7 +1595,7 @@ func (w *ApplicationService) OpenAPIGetWorkflowRunHistory(ctx context.Context, r
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -1663,7 +1663,7 @@ func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.Val
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -1701,7 +1701,7 @@ func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *wor
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -1816,7 +1816,7 @@ func (w *ApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *wo
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -1892,7 +1892,7 @@ func (w *ApplicationService) PublishWorkflow(ctx context.Context, req *workflow.
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -1931,7 +1931,7 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -1964,10 +1964,13 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 	}
 
 	status := req.GetStatus()
+	var qType vo.Locator
 	if status == workflow.WorkFlowListStatus_UnPublished {
 		option.PublishStatus = ptr.Of(vo.UnPublished)
+		qType = vo.FromDraft
 	} else if status == workflow.WorkFlowListStatus_HadPublished {
 		option.PublishStatus = ptr.Of(vo.HasPublished)
+		qType = vo.FromLatestVersion
 	}
 
 	if len(req.GetName()) > 0 {
@@ -1989,10 +1992,11 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 		return nil, fmt.Errorf("space id is invalid, parse to int64 failed, err: %w", err)
 	}
 	option.SpaceID = ptr.Of(spaceID)
+	option.DescByUpdate = true
 
 	wfs, total, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
 		MetaQuery: option,
-		QType:     vo.FromDraft,
+		QType:     qType,
 		MetaOnly:  false,
 	})
 	if err != nil {
@@ -2034,7 +2038,12 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 				Self: ternary.IFElse[bool](w.CreatorID == ptr.From(ctxutil.GetUIDFromCtx(ctx)), true, false),
 			},
 		}
-		if w.UpdatedAt != nil {
+
+		if qType == vo.FromDraft {
+			ww.UpdateTime = w.DraftMeta.Timestamp.Unix()
+		} else if qType == vo.FromLatestVersion || qType == vo.FromSpecificVersion {
+			ww.UpdateTime = w.VersionMeta.VersionCreatedAt.Unix()
+		} else if w.UpdatedAt != nil {
 			ww.UpdateTime = w.UpdatedAt.Unix()
 		}
 
@@ -2089,7 +2098,7 @@ func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflo
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -2185,7 +2194,7 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -2194,9 +2203,9 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 	}
 
 	var (
-		ids        []int64
+		draftIDs   []int64
+		versionIDs []int64
 		id2Version = make(map[int64]string)
-		locator    = vo.FromDraft
 	)
 
 	for _, wf := range req.GetWorkflowFilterList() {
@@ -2204,27 +2213,45 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 		if err != nil {
 			return nil, err
 		}
-		ids = append(ids, id)
-		if wf.WorkflowVersion != nil {
-			locator = vo.FromSpecificVersion
+		if wf.WorkflowVersion == nil || len(*wf.WorkflowVersion) == 0 {
+			draftIDs = append(draftIDs, id)
+		} else {
+			versionIDs = append(versionIDs, id)
 			id2Version[id] = *wf.WorkflowVersion
 		}
 	}
 
-	if len(ids) == 0 {
+	if len(draftIDs)+len(versionIDs) == 0 {
 		return &vo.WorkflowDetailInfoDataList{}, nil
 	}
 
-	wfs, _, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
-		MetaQuery: vo.MetaQuery{
-			IDs: ids,
-		},
-		QType:    locator,
-		MetaOnly: false,
-		Versions: id2Version,
-	})
-	if err != nil {
-		return nil, err
+	var wfs []*entity.Workflow
+	if len(draftIDs) > 0 {
+		wfs, _, err = GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+			MetaQuery: vo.MetaQuery{
+				IDs: draftIDs,
+			},
+			QType:    vo.FromDraft,
+			MetaOnly: false,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if len(versionIDs) > 0 {
+		versionWfs, _, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+			MetaQuery: vo.MetaQuery{
+				IDs: versionIDs,
+			},
+			QType:    vo.FromSpecificVersion,
+			MetaOnly: false,
+			Versions: id2Version,
+		})
+		if err != nil {
+			return nil, err
+		}
+		wfs = append(wfs, versionWfs...)
 	}
 
 	workflowDetailInfoDataList := &vo.WorkflowDetailInfoDataList{
@@ -2248,8 +2275,7 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 				Self: ternary.IFElse[bool](wf.CreatorID == ptr.From(ctxutil.GetUIDFromCtx(ctx)), true, false),
 			},
 
-			LatestFlowVersion:     wf.GetLatestVersion(),
-			LatestFlowVersionDesc: "", // TODO: is this really needed?
+			LatestFlowVersion: wf.GetLatestVersion(),
 		}
 
 		if wf.VersionMeta != nil {
@@ -2268,7 +2294,11 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 			return nil, err
 		}
 
-		if wf.UpdatedAt != nil {
+		if wf.DraftMeta != nil {
+			wd.UpdateTime = wf.DraftMeta.Timestamp.Unix()
+		} else if wf.VersionMeta != nil {
+			wd.UpdateTime = wf.VersionMeta.VersionCreatedAt.Unix()
+		} else if wf.UpdatedAt != nil {
 			wd.UpdateTime = wf.UpdatedAt.Unix()
 		}
 
@@ -2309,7 +2339,7 @@ func (w *ApplicationService) GetWorkflowUploadAuthToken(ctx context.Context, req
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -2355,7 +2385,7 @@ func (w *ApplicationService) SignImageURL(ctx context.Context, req *workflow.Sig
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -2378,7 +2408,7 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -2453,7 +2483,7 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -2542,9 +2572,9 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 
 	if len(req.GetWorkflowList()) > 0 {
 		var (
-			ids        []int64
+			draftIDs   []int64
+			versionIDs []int64
 			id2Version = make(map[int64]string)
-			locator    = vo.FromDraft
 		)
 
 		for _, wf := range req.GetWorkflowList() {
@@ -2552,24 +2582,44 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 			if err != nil {
 				return nil, err
 			}
-			ids = append(ids, id)
-			if wf.WorkflowVersion != nil {
-				locator = vo.FromSpecificVersion
+
+			if wf.WorkflowVersion == nil || len(*wf.WorkflowVersion) == 0 {
+				draftIDs = append(draftIDs, id)
+			} else {
+				versionIDs = append(versionIDs, id)
 				id2Version[id] = *wf.WorkflowVersion
 			}
 		}
 
-		wfs, _, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
-			MetaQuery: vo.MetaQuery{
-				IDs: ids,
-			},
-			QType:    locator,
-			MetaOnly: false,
-			Versions: id2Version,
-		})
-		if err != nil {
-			return nil, err
+		var wfs []*entity.Workflow
+		if len(draftIDs) > 0 {
+			wfs, _, err = GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+				MetaQuery: vo.MetaQuery{
+					IDs: draftIDs,
+				},
+				QType:    vo.FromDraft,
+				MetaOnly: false,
+			})
+			if err != nil {
+				return nil, err
+			}
 		}
+
+		if len(id2Version) > 0 {
+			wfs2, _, err := GetWorkflowDomainSVC().MGet(ctx, &vo.MGetPolicy{
+				MetaQuery: vo.MetaQuery{
+					IDs: versionIDs,
+				},
+				QType:    vo.FromSpecificVersion,
+				MetaOnly: false,
+				Versions: id2Version,
+			})
+			if err != nil {
+				return nil, err
+			}
+			wfs = append(wfs, wfs2...)
+		}
+
 		for _, wf := range wfs {
 			wfIDStr := strconv.FormatInt(wf.ID, 10)
 			workflowParameters, err := slices.TransformWithErrorCheck(wf.InputParams, toWorkflowAPIParameter)
@@ -2638,7 +2688,7 @@ func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -2753,7 +2803,7 @@ func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *p
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -2848,7 +2898,7 @@ func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.Cop
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -2888,7 +2938,7 @@ func (w *ApplicationService) GetHistorySchema(ctx context.Context, req *workflow
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -2965,7 +3015,7 @@ func (w *ApplicationService) GetExampleWorkFlowList(ctx context.Context, req *wo
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 
@@ -3009,14 +3059,12 @@ func (w *ApplicationService) GetExampleWorkFlowList(ctx context.Context, req *wo
 			IconURI:          w.IconURI,
 			URL:              w.IconURL,
 			CreateTime:       w.CreatedAt.Unix(),
+			UpdateTime:       ternary.IFElse(w.DraftMeta.Timestamp.Unix() == 0, w.CreatedAt.Unix(), w.DraftMeta.Timestamp.Unix()),
 			Type:             w.ContentType,
 			SchemaType:       workflow.SchemaType_FDL,
 			Tag:              w.Tag,
 			TemplateAuthorID: ptr.Of(strconv.FormatInt(w.AuthorID, 10)),
 			SpaceID:          ptr.Of(strconv.FormatInt(w.SpaceID, 10)),
-		}
-		if w.UpdatedAt != nil {
-			ww.UpdateTime = w.UpdatedAt.Unix()
 		}
 
 		startNode := &workflow.Node{
@@ -3052,7 +3100,7 @@ func (w *ApplicationService) CopyWkTemplateApi(ctx context.Context, req *workflo
 		}
 
 		if err != nil {
-			err = vo.WrapIfNeeded(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", err.Error()))
 		}
 	}()
 

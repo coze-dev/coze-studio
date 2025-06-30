@@ -61,7 +61,7 @@ func TestQuestionAnswer(t *testing.T) {
 			})
 			assert.NoError(t, err)
 
-			mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+			mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 		}
 
 		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
@@ -189,7 +189,7 @@ func TestQuestionAnswer(t *testing.T) {
 						}, nil
 					},
 				}
-				mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(oneChatModel, nil).Times(1)
+				mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(oneChatModel, nil, nil).Times(1)
 			}
 
 			entry := &compose2.NodeSchema{
@@ -495,7 +495,7 @@ func TestQuestionAnswer(t *testing.T) {
 						return nil, errors.New("not found")
 					},
 				}
-				mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).Times(1)
+				mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).Times(1)
 			}
 
 			entry := &compose2.NodeSchema{

@@ -10,6 +10,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
@@ -235,7 +236,7 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 		innerWorkflow = inner.inner
 	}
 
-	ins, err := ns.New(ctx, innerWorkflow, w.schema)
+	ins, err := ns.New(ctx, innerWorkflow, w.schema, deps)
 	if err != nil {
 		return nil, err
 	}
@@ -369,7 +370,7 @@ func (w *Workflow) getInnerWorkflow(ctx context.Context, cNode *CompositeNode) (
 			for _, fm := range fieldMappings {
 				duplicate := false
 				for _, existing := range carryOvers[fromNodeKey] {
-					if *fm == *existing {
+					if fm.Equals(existing) {
 						duplicate = true
 						break
 					}
@@ -436,6 +437,7 @@ type dependencyInfo struct {
 	inputsNoDirectDependency     map[vo.NodeKey][]*compose.FieldMapping
 	inputsNoDirectDependencyFull map[vo.NodeKey]struct{}
 	staticValues                 []*staticValue
+	variableInfos                []*variableInfo
 	inputsForParent              map[vo.NodeKey][]*compose.FieldMapping
 }
 
@@ -454,7 +456,7 @@ func (d *dependencyInfo) merge(mappings map[vo.NodeKey][]*compose.FieldMapping) 
 				fm := fms[i]
 				duplicate := false
 				for _, currentFM := range currentFMS {
-					if *fm == *currentFM {
+					if fm.Equals(currentFM) {
 						duplicate = true
 					}
 				}
@@ -468,7 +470,7 @@ func (d *dependencyInfo) merge(mappings map[vo.NodeKey][]*compose.FieldMapping) 
 				fm := fms[i]
 				duplicate := false
 				for _, currentFM := range currentFMS {
-					if *fm == *currentFM {
+					if fm.Equals(currentFM) {
 						duplicate = true
 					}
 				}
@@ -501,6 +503,12 @@ func (d *dependencyInfo) merge(mappings map[vo.NodeKey][]*compose.FieldMapping) 
 type staticValue struct {
 	val  any
 	path compose.FieldPath
+}
+
+type variableInfo struct {
+	varType  variable.Type
+	fromPath compose.FieldPath
+	toPath   compose.FieldPath
 }
 
 func (w *Workflow) resolveBranch(n vo.NodeKey, portCount int) (*BranchMapping, error) {
@@ -560,6 +568,7 @@ func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.Field
 		inputsNoDirectDependency     = make(map[vo.NodeKey][]*compose.FieldMapping)
 		inputsNoDirectDependencyFull map[vo.NodeKey]struct{}
 		staticValues                 []*staticValue
+		variableInfos                []*variableInfo
 
 		// inputsForParent contains all the field mappings from any nodes of the parent workflow
 		inputsForParent = make(map[vo.NodeKey][]*compose.FieldMapping)
@@ -583,8 +592,18 @@ func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.Field
 		} else if swp.Source.Ref != nil {
 			fromNode := swp.Source.Ref.FromNodeKey
 
-			if len(fromNode) == 0 || fromNode == n {
-				// skip all variables, they are handled in state pre handler. Also skip reference to self
+			if fromNode == n {
+				return nil, fmt.Errorf("node %s cannot refer to itself, fromPath: %v, toPath: %v", n,
+					swp.Source.Ref.FromPath, swp.Path)
+			}
+
+			if swp.Source.Ref.VariableType != nil {
+				// skip all variables, they are handled in state pre handler
+				variableInfos = append(variableInfos, &variableInfo{
+					varType:  *swp.Source.Ref.VariableType,
+					fromPath: swp.Source.Ref.FromPath,
+					toPath:   swp.Path,
+				})
 				continue
 			}
 
@@ -682,15 +701,24 @@ func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.Field
 		inputsNoDirectDependency:     inputsNoDirectDependency,
 		inputsNoDirectDependencyFull: inputsNoDirectDependencyFull,
 		staticValues:                 staticValues,
+		variableInfos:                variableInfos,
 		inputsForParent:              inputsForParent,
 	}, nil
 }
 
 func (w *Workflow) resolveDependenciesAsParent(n vo.NodeKey, sourceWithPaths []*vo.FieldInfo) (*dependencyInfo, error) {
 	var (
+		// inputsFull and inputsNoDirectDependencyFull are NEVER used in this case,
+		// because a composite node MUST use explicit field mappings from inner nodes as its output.
 		inputs                   = make(map[vo.NodeKey][]*compose.FieldMapping)
 		dependencies             []vo.NodeKey
 		inputsNoDirectDependency = make(map[vo.NodeKey][]*compose.FieldMapping)
+		// although staticValues are not used for current composite nodes,
+		// they may be used in the future, so we calculate them none the less.
+		staticValues []*staticValue
+		// variableInfos are normally handled in state pre handler, but in the case of composite node's output,
+		// we need to handle them within composite node's state post handler,
+		variableInfos []*variableInfo
 	)
 
 	connMap := make(map[vo.NodeKey]Connection) // whether nodeKey is branch
@@ -707,11 +735,25 @@ func (w *Workflow) resolveDependenciesAsParent(n vo.NodeKey, sourceWithPaths []*
 	}
 
 	for _, swp := range sourceWithPaths {
-		if swp.Source.Ref != nil {
-			fromNode := swp.Source.Ref.FromNodeKey
-
-			if len(fromNode) == 0 { // skip all variables, they are handled in state pre handler
+		if swp.Source.Ref == nil {
+			staticValues = append(staticValues, &staticValue{
+				val:  swp.Source.Val,
+				path: swp.Path,
+			})
+		} else if swp.Source.Ref != nil {
+			if swp.Source.Ref.VariableType != nil {
+				variableInfos = append(variableInfos, &variableInfo{
+					varType:  *swp.Source.Ref.VariableType,
+					fromPath: swp.Source.Ref.FromPath,
+					toPath:   swp.Path,
+				})
 				continue
+			}
+
+			fromNode := swp.Source.Ref.FromNodeKey
+			if fromNode == n {
+				return nil, fmt.Errorf("node %s cannot refer to itself, fromPath= %v, toPath= %v", n,
+					swp.Source.Ref.FromPath, swp.Path)
 			}
 
 			if ok := isParentOf(w.hierarchy, n, fromNode); ok {
@@ -721,6 +763,8 @@ func (w *Workflow) resolveDependenciesAsParent(n vo.NodeKey, sourceWithPaths []*
 					inputsNoDirectDependency[fromNode] = append(inputsNoDirectDependency[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...)))
 				}
 			}
+		} else {
+			return nil, fmt.Errorf("composite node's output field's Val and Ref are both nil. path= %v", swp.Path)
 		}
 	}
 
@@ -740,5 +784,7 @@ func (w *Workflow) resolveDependenciesAsParent(n vo.NodeKey, sourceWithPaths []*
 		inputs:                   inputs,
 		dependencies:             dependencies,
 		inputsNoDirectDependency: inputsNoDirectDependency,
+		staticValues:             staticValues,
+		variableInfos:            variableInfos,
 	}, nil
 }

@@ -138,13 +138,28 @@ func removeSlice(s string) string {
 
 type renderOptions struct {
 	type2CustomRenderer map[reflect.Type]func(any) (string, error)
+	reservedKey         map[string]struct{}
 }
 
 type RenderOption func(options *renderOptions)
 
 func WithCustomRender(rType reflect.Type, fn func(any) (string, error)) RenderOption {
 	return func(opts *renderOptions) {
+		if opts.type2CustomRenderer == nil {
+			opts.type2CustomRenderer = make(map[reflect.Type]func(any) (string, error))
+		}
 		opts.type2CustomRenderer[rType] = fn
+	}
+}
+
+func WithReservedKey(keys ...string) RenderOption {
+	return func(opts *renderOptions) {
+		if opts.reservedKey == nil {
+			opts.reservedKey = make(map[string]struct{})
+		}
+		for _, key := range keys {
+			opts.reservedKey[key] = struct{}{}
+		}
 	}
 }
 
@@ -308,6 +323,28 @@ func (tp TemplatePart) Skipped(resolvedSources map[string]*SourceInfo) (skipped 
 	return checkSourceSkipped(matchingSource), false
 }
 
+func (tp TemplatePart) TypeInfo(types map[string]*vo.TypeInfo) *vo.TypeInfo {
+	if len(tp.SubPathsBeforeSlice) == 0 {
+		return types[tp.Root]
+	}
+	rootType, ok := types[tp.Root]
+	if !ok {
+		return nil
+	}
+	currentType := rootType
+	for _, subPath := range tp.SubPathsBeforeSlice {
+		if len(currentType.Properties) == 0 {
+			return nil
+		}
+		subType, ok := currentType.Properties[subPath]
+		if !ok {
+			return nil
+		}
+		currentType = subType
+	}
+	return currentType
+}
+
 func Render(ctx context.Context, tpl string, input map[string]any, sources map[string]*SourceInfo, opts ...RenderOption) (string, error) {
 	mi, err := sonic.Marshal(input)
 	if err != nil {
@@ -319,12 +356,29 @@ func Render(ctx context.Context, tpl string, input map[string]any, sources map[s
 		return "", err
 	}
 
+	options := &renderOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
 	var sb strings.Builder
 	parts := ParseTemplate(tpl)
 	for _, part := range parts {
 		if !part.IsVariable {
 			sb.WriteString(part.Value)
 			continue
+		}
+
+		if options.reservedKey != nil {
+			if _, ok := options.reservedKey[part.Root]; ok {
+				i, err := part.Render(mi, opts...)
+				if err != nil {
+					return "", err
+				}
+
+				sb.WriteString(i)
+				continue
+			}
 		}
 
 		skipped, invalid := part.Skipped(resolvedSources)

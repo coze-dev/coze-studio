@@ -29,7 +29,6 @@ type State struct {
 	InterruptEvents      map[vo.NodeKey]*entity.InterruptEvent     `json:"interrupt_events,omitempty"`
 	NestedWorkflowStates map[vo.NodeKey]*nodes.NestedWorkflowState `json:"nested_workflow_states,omitempty"`
 
-	// TODO: also needs to record parent workflow's executed nodes if this workflow is inner workflow under composite nodes
 	ExecutedNodes map[vo.NodeKey]bool                         `json:"executed_nodes,omitempty"`
 	SourceInfos   map[vo.NodeKey]map[string]*nodes.SourceInfo `json:"source_infos,omitempty"`
 	GroupChoices  map[vo.NodeKey]map[string]int               `json:"group_choices,omitempty"`
@@ -244,6 +243,9 @@ func (s *State) ResumeToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID strin
 }
 
 func (s *State) NodeExecuted(key vo.NodeKey) bool {
+	if key == compose.START {
+		return true
+	}
 	_, ok := s.ExecutedNodes[key]
 	return ok
 }
@@ -669,19 +671,205 @@ func (s *NodeSchema) streamStatePreHandlerForStreamSources() compose.StreamState
 }
 
 func (s *NodeSchema) StatePostHandler(stream bool) compose.GraphAddNodeOpt {
+	var (
+		handlers       []compose.StatePostHandler[map[string]any, *State]
+		streamHandlers []compose.StreamStatePostHandler[map[string]any, *State]
+	)
+
 	if stream {
-		handler := func(ctx context.Context, out *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
+		streamHandlers = append(streamHandlers, func(ctx context.Context, out *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
 			state.ExecutedNodes[s.Key] = true
 			return out, nil
+		})
+
+		forVars := s.streamStatePostHandlerForVars()
+		if forVars != nil {
+			streamHandlers = append(streamHandlers, forVars)
 		}
-		return compose.WithStreamStatePostHandler(handler)
+
+		streamHandler := func(ctx context.Context, in *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
+			var err error
+			for _, h := range streamHandlers {
+				in, err = h(ctx, in, state)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return in, nil
+		}
+		return compose.WithStreamStatePostHandler(streamHandler)
 	}
 
-	handler := func(ctx context.Context, out map[string]any, state *State) (map[string]any, error) {
+	handlers = append(handlers, func(ctx context.Context, out map[string]any, state *State) (map[string]any, error) {
 		state.ExecutedNodes[s.Key] = true
 		return out, nil
+	})
+
+	forVars := s.statePostHandlerForVars()
+	if forVars != nil {
+		handlers = append(handlers, forVars)
 	}
+
+	handler := func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
+		var err error
+		for _, h := range handlers {
+			in, err = h(ctx, in, state)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return in, nil
+	}
+
 	return compose.WithStatePostHandler(handler)
+}
+
+func (s *NodeSchema) statePostHandlerForVars() compose.StatePostHandler[map[string]any, *State] {
+	// checkout the node's output sources, if it has any variable,
+	// use the state's variableHandler to get the variables and set them to the output
+	var vars []*vo.FieldInfo
+	for _, output := range s.OutputSources {
+		if output.Source.Ref != nil && output.Source.Ref.VariableType != nil {
+			// intermediate vars are handled within nodes themselves
+			if *output.Source.Ref.VariableType == variable.ParentIntermediate {
+				continue
+			}
+			vars = append(vars, output)
+		}
+	}
+
+	if len(vars) == 0 {
+		return nil
+	}
+
+	varStoreHandler := variable.GetVariableHandler()
+
+	return func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
+		opts := make([]variable.OptionFn, 0, 1)
+
+		if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
+			exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
+			cUID, err := strconv.ParseInt(exeCfg.ConnectorUID, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
+				AgentID:      exeCfg.AgentID,
+				AppID:        exeCfg.AppID,
+				ConnectorID:  exeCfg.ConnectorID,
+				ConnectorUID: cUID,
+			}))
+		}
+		out := make(map[string]any)
+		for k, v := range in {
+			out[k] = v
+		}
+		for _, input := range vars {
+			if input == nil {
+				continue
+			}
+			var v any
+			var err error
+			switch *input.Source.Ref.VariableType {
+			case variable.GlobalSystem, variable.GlobalUser:
+				v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
+			case variable.GlobalAPP:
+				var ok bool
+				path := strings.Join(input.Source.Ref.FromPath, ".")
+				if v, ok = state.GetAppVariableValue(path); !ok {
+					v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
+					if err != nil {
+						return nil, err
+					}
+
+					state.SetAppVariableValue(path, v)
+				}
+			default:
+				return nil, fmt.Errorf("invalid variable type: %v", *input.Source.Ref.VariableType)
+			}
+			if err != nil {
+				return nil, err
+			}
+
+			nodes.SetMapValue(out, input.Path, v)
+		}
+
+		return out, nil
+	}
+}
+
+func (s *NodeSchema) streamStatePostHandlerForVars() compose.StreamStatePostHandler[map[string]any, *State] {
+	// checkout the node's output sources, if it has any variables, get the variables and merge them with the output
+	var vars []*vo.FieldInfo
+	for _, output := range s.OutputSources {
+		if output.Source.Ref != nil && output.Source.Ref.VariableType != nil {
+			// intermediate vars are handled within nodes themselves
+			if *output.Source.Ref.VariableType == variable.ParentIntermediate {
+				continue
+			}
+			vars = append(vars, output)
+		}
+	}
+
+	if len(vars) == 0 {
+		return nil
+	}
+
+	varStoreHandler := variable.GetVariableHandler()
+	return func(ctx context.Context, in *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
+		var (
+			variables = make(map[string]any)
+			opts      = make([]variable.OptionFn, 0, 1)
+		)
+
+		if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
+			exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
+			cUID, err := strconv.ParseInt(exeCfg.ConnectorUID, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
+				AgentID:      exeCfg.AgentID,
+				AppID:        exeCfg.AppID,
+				ConnectorID:  exeCfg.ConnectorID,
+				ConnectorUID: cUID,
+			}))
+		}
+
+		for _, input := range vars {
+			if input == nil {
+				continue
+			}
+			var v any
+			var err error
+			switch *input.Source.Ref.VariableType {
+			case variable.GlobalSystem, variable.GlobalUser:
+				v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
+			case variable.GlobalAPP:
+				var ok bool
+				path := strings.Join(input.Source.Ref.FromPath, ".")
+				if v, ok = state.GetAppVariableValue(path); !ok {
+					v, err = varStoreHandler.Get(ctx, *input.Source.Ref.VariableType, input.Source.Ref.FromPath, opts...)
+					if err != nil {
+						return nil, err
+					}
+
+					state.SetAppVariableValue(path, v)
+				}
+			default:
+				return nil, fmt.Errorf("invalid variable type: %v", *input.Source.Ref.VariableType)
+			}
+			if err != nil {
+				return nil, err
+			}
+			nodes.SetMapValue(variables, input.Path, v)
+		}
+
+		variablesStream := schema.StreamReaderFromArray([]map[string]any{variables})
+
+		return schema.MergeStreamReaders([]*schema.StreamReader[map[string]any]{in, variablesStream}), nil
+	}
 }
 
 func GenStateModifierByEventType(e entity.InterruptEventType,

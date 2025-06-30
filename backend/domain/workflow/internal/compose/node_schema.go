@@ -83,7 +83,7 @@ type Node struct {
 }
 
 func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]any, map[string]any],
-	sc *WorkflowSchema) (_ *Node, err error) {
+	sc *WorkflowSchema, deps *dependencyInfo) (_ *Node, err error) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -91,7 +91,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 	}()
 
 	if m := entity.NodeMetaByNodeType(s.Type); m != nil && m.InputSourceAware {
-		if err := s.SetFullSources(sc.GetAllNodes()); err != nil {
+		if err := s.SetFullSources(sc.GetAllNodes(), deps); err != nil {
 			return nil, err
 		}
 	}

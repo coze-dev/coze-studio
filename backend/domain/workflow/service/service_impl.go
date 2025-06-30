@@ -1360,17 +1360,19 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 }
 
 func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, int64, error) {
-	metas, total, err := i.repo.MGetMetas(ctx, &policy.MetaQuery)
-	if err != nil {
-		return nil, 0, err
-	}
+	if policy.MetaOnly {
+		metas, total, err := i.repo.MGetMetas(ctx, &policy.MetaQuery)
+		if err != nil {
+			return nil, 0, err
+		}
 
-	result := make([]*entity.Workflow, len(metas))
-	var index int
+		result := make([]*entity.Workflow, len(metas))
+		var index int
 
-	if len(metas) == 0 {
-		return result, 0, nil
-	} else if policy.MetaOnly {
+		if len(metas) == 0 {
+			return result,0, nil
+		}
+
 		for id := range metas {
 			wf := &entity.Workflow{
 				ID:   id,
@@ -1402,41 +1404,21 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 
 	switch policy.QType {
 	case vo.FromDraft:
-		draftInfos, err := i.repo.MGetDrafts(ctx, maps.Keys(metas))
+		return i.repo.MGetDrafts(ctx, policy)
+	case vo.FromSpecificVersion:
+		if len(policy.IDs) == 0 || len(policy.Versions) != len(policy.IDs) {
+			return nil, 0,  fmt.Errorf("ids and versions are required when MGet from specific versions")
+		}
+
+		metas, total, err := i.repo.MGetMetas(ctx, &policy.MetaQuery)
 		if err != nil {
 			return nil, total, err
 		}
 
-		for id := range metas {
-			inputs, outputs, err := ioF(draftInfos[id].InputParamsStr, draftInfos[id].OutputParamsStr)
-			if err != nil {
-				return nil, total, err
-			}
+		result := make([]*entity.Workflow, len(metas))
+		index := 0
 
-			wf := &entity.Workflow{
-				ID:       id,
-				Meta:     metas[id],
-				CommitID: draftInfos[id].CommitID,
-				CanvasInfoV2: &vo.CanvasInfoV2{
-					Canvas:          draftInfos[id].Canvas,
-					InputParams:     inputs,
-					OutputParams:    outputs,
-					InputParamsStr:  draftInfos[id].InputParamsStr,
-					OutputParamsStr: draftInfos[id].OutputParamsStr,
-				},
-				DraftMeta: draftInfos[id].DraftMeta,
-			}
-			result[index] = wf
-			index++
-		}
-
-		return result, total, nil
-	case vo.FromSpecificVersion:
-		for id := range metas {
-			version, ok := policy.Versions[id]
-			if !ok {
-				return nil, total, fmt.Errorf("version not found for workflow %v", id)
-			}
+		for id, version := range policy.Versions {
 			v, err := i.repo.GetVersion(ctx, id, version)
 			if err != nil {
 				return nil, total, err
@@ -1451,7 +1433,7 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 				ID:       id,
 				Meta:     metas[id],
 				CommitID: v.CommitID,
-				CanvasInfoV2: &vo.CanvasInfoV2{
+				CanvasInfo: &vo.CanvasInfo{
 					Canvas:          v.Canvas,
 					InputParams:     inputs,
 					OutputParams:    outputs,
@@ -1463,39 +1445,13 @@ func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workf
 			result[index] = wf
 			index++
 		}
+
+		return result, total, nil
 	case vo.FromLatestVersion:
-		for id := range metas {
-			v, err := i.repo.GetLatestVersion(ctx, id)
-			if err != nil {
-				return nil, 0, err
-			}
-
-			inputs, outputs, err := ioF(v.InputParamsStr, v.OutputParamsStr)
-			if err != nil {
-				return nil, 0, err
-			}
-
-			wf := &entity.Workflow{
-				ID:       id,
-				Meta:     metas[id],
-				CommitID: v.CommitID,
-				CanvasInfoV2: &vo.CanvasInfoV2{
-					Canvas:          v.Canvas,
-					InputParams:     inputs,
-					OutputParams:    outputs,
-					InputParamsStr:  v.InputParamsStr,
-					OutputParamsStr: v.OutputParamsStr,
-				},
-				VersionMeta: v.VersionMeta,
-			}
-			result[index] = wf
-			index++
-		}
+		return i.repo.MGetLatestVersion(ctx, policy)
 	default:
 		panic("not implemented")
 	}
-
-	return result, total, nil
 }
 
 func (i *impl) calculateTestRunSuccess(ctx context.Context, c *vo.Canvas, wid int64) (bool, error) {

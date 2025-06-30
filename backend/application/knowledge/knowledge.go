@@ -490,7 +490,7 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 		err = packTableSliceColumnData(ctx, sliceEntity, req.GetRawText(), listResp.Documents[0])
 		if err != nil {
 			logs.CtxErrorf(ctx, "pack table slice column data failed, err: %v", err)
-			return dataset.NewCreateSliceResponse(), err
+			return dataset.NewCreateSliceResponse(), errorx.New(errno.ErrKnowledgeCheckTableSliceValidCode, errorx.KV("msg", err.Error()))
 		}
 	} else {
 		sliceEntity.RawContent = []*model.SliceContent{
@@ -567,7 +567,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 		err = packTableSliceColumnData(ctx, sliceEntity, req.GetRawText(), listResp.Documents[0])
 		if err != nil {
 			logs.CtxErrorf(ctx, "pack table slice column data failed, err: %v", err)
-			return dataset.NewUpdateSliceResponse(), err
+			return dataset.NewUpdateSliceResponse(), errorx.New(errno.ErrKnowledgeCheckTableSliceValidCode, errorx.KV("msg", err.Error()))
 		}
 	} else {
 		sliceEntity.RawContent = []*model.SliceContent{
