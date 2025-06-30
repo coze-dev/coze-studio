@@ -1,6 +1,10 @@
 package vo
 
-import "time"
+import (
+	"time"
+
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+)
 
 type DraftInfo struct {
 	*DraftMeta
@@ -14,16 +18,32 @@ type DraftInfo struct {
 
 type CanvasInfo struct {
 	Canvas          string
-	InputParamsStr  string
-	OutputParamsStr string
-}
-
-type CanvasInfoV2 struct {
-	Canvas          string
 	InputParams     []*NamedTypeInfo
 	OutputParams    []*NamedTypeInfo
 	InputParamsStr  string
 	OutputParamsStr string
+}
+
+func (c *CanvasInfo) Unmarshal() error {
+	if c.InputParamsStr != "" && len(c.InputParams) == 0 {
+		var input []*NamedTypeInfo
+		err := sonic.UnmarshalString(c.InputParamsStr, &input)
+		if err != nil {
+			return err
+		}
+		c.InputParams = input
+	}
+
+	if c.OutputParamsStr != "" && len(c.OutputParams) == 0 {
+		var output []*NamedTypeInfo
+		err := sonic.UnmarshalString(c.OutputParamsStr, &output)
+		if err != nil {
+			return err
+		}
+		c.OutputParams = output
+	}
+
+	return nil
 }
 
 type DraftMeta struct {

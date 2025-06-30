@@ -6,6 +6,7 @@ import (
 
 	model2 "github.com/cloudwego/eino/components/model"
 
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
@@ -28,30 +29,33 @@ func NewModelManager(m modelmgr.Manager, f chatmodel.Factory) *ModelManager {
 	}
 }
 
-func (m *ModelManager) GetModel(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+func (m *ModelManager) GetModel(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 	modelID := params.ModelType
-	models, err := m.modelMgr.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
+	models, err := crossmodelmgr.DefaultSVC().MGetModelByID(ctx, &modelmgr.MGetModelRequest{
 		IDs: []int64{modelID},
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	var config *chatmodel.Config
 	var protocol chatmodel.Protocol
-	for _, m := range models {
-		if m.ID == modelID {
-			protocol = m.Meta.Protocol
-			config = m.Meta.ConnConfig
+	var mdl *crossmodelmgr.Model
+	for i := range models {
+		md := models[i]
+		if md.ID == modelID {
+			protocol = md.Meta.Protocol
+			config = md.Meta.ConnConfig
+			mdl = md
 			break
 		}
 	}
 
 	if config == nil {
-		return nil, fmt.Errorf("model type %v ,not found config ", modelID)
+		return nil, nil, fmt.Errorf("model type %v ,not found config ", modelID)
 	}
 
 	if len(protocol) == 0 {
-		return nil, fmt.Errorf("model type %v ,not found protocol ", modelID)
+		return nil, nil, fmt.Errorf("model type %v ,not found protocol ", modelID)
 	}
 
 	if params.TopP != nil {
@@ -74,8 +78,8 @@ func (m *ModelManager) GetModel(ctx context.Context, params *model.LLMParams) (m
 
 	cm, err := m.factory.CreateChatModel(ctx, protocol, config)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return cm, nil
+	return cm, mdl, nil
 }

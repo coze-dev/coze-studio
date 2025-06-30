@@ -56,6 +56,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 			PreFillZero:        true,
 			PostFillNil:        true,
 			CallbackEnabled:    true,
+			InputSourceAware:   true,
 			MayUseChatModel:    true,
 			StreamingParadigms: map[StreamingParadigm]bool{Invoke: true, Stream: true},
 		},

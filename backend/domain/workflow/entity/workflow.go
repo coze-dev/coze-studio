@@ -14,7 +14,7 @@ type Workflow struct {
 	CommitID string
 
 	*vo.Meta
-	*vo.CanvasInfoV2
+	*vo.CanvasInfo
 	*vo.DraftMeta
 	*vo.VersionMeta
 }

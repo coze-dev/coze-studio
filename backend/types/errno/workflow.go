@@ -12,6 +12,7 @@ const (
 	ErrInvalidParameter       = 720702001
 	ErrArrIndexOutOfRange     = 720712014
 	ErrWorkflowExecuteFail    = 720701013
+	ErrWorkflowOperationFail  = 777777775
 	ErrCodeExecuteFail        = 305000002
 	ErrQuestionOptionsEmpty   = 720712049
 	ErrNodeOutputParseFail    = 720712023
@@ -61,6 +62,12 @@ func init() {
 	code.Register(
 		ErrWorkflowExecuteFail,
 		"Workflow execution failure: {cause}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrWorkflowOperationFail,
+		"Workflow operation failure: {cause}",
 		code.WithAffectStability(false),
 	)
 

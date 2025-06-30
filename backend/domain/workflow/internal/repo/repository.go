@@ -267,6 +267,7 @@ func (r *RepositoryImpl) CreateVersion(ctx context.Context, id int64, info *vo.V
 		UpdateColumnSimple(
 			r.query.WorkflowMeta.Status.Value(1),
 			r.query.WorkflowMeta.LatestVersion.Value(info.Version),
+			r.query.WorkflowMeta.LatestVersionTs.Value(time.Now().UnixMilli()),
 		)
 	if err != nil {
 		logs.CtxWarnf(ctx, "update workflow meta when publish failed: %v", err)
@@ -364,7 +365,7 @@ func (r *RepositoryImpl) MDelete(ctx context.Context, ids []int64) error {
 }
 
 func (r *RepositoryImpl) GetMeta(ctx context.Context, id int64) (*vo.Meta, error) {
-	meta, err := r.query.WorkflowMeta.WithContext(ctx).Where(r.query.WorkflowMeta.ID.Eq(id)).First()
+	meta, err := r.query.WorkflowMeta.WithContext(ctx).Debug().Where(r.query.WorkflowMeta.ID.Eq(id)).First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("workflow meta not found for ID %d: %w", id, err)
@@ -529,7 +530,7 @@ func (r *RepositoryImpl) GetEntity(ctx context.Context, policy *vo.GetPolicy) (*
 		ID:       policy.ID,
 		CommitID: commitID,
 		Meta:     meta,
-		CanvasInfoV2: &vo.CanvasInfoV2{
+		CanvasInfo: &vo.CanvasInfo{
 			Canvas:          canvas,
 			InputParams:     inputs,
 			OutputParams:    outputs,
@@ -626,32 +627,312 @@ func (r *RepositoryImpl) DraftV2(ctx context.Context, id int64, commitID string)
 	}, nil
 }
 
-func (r *RepositoryImpl) MGetDrafts(ctx context.Context, ids []int64) (map[int64]*vo.DraftInfo, error) {
-	drafts, err := r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.In(ids...)).Find()
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return map[int64]*vo.DraftInfo{}, nil
-		}
-		return nil, fmt.Errorf("failed to get workflow draft for IDs %v: %w", ids, err)
+func (r *RepositoryImpl) MGetDrafts(ctx context.Context, policy *vo.MGetPolicy) (_ []*entity.Workflow, totalCount int64, err error) {
+	q := policy.MetaQuery
+	if len(q.IDs) == 0 && q.Page == nil && q.Name == nil && q.AppID == nil {
+		return nil, 0, fmt.Errorf("insufficient query parameters for workflow draft: %+v", q)
 	}
 
-	result := make(map[int64]*vo.DraftInfo, len(drafts))
-	for _, draft := range drafts {
-		result[draft.ID] = &vo.DraftInfo{
+	var (
+		conditions []gen.Condition
+	)
+	if len(q.IDs) > 0 {
+		conditions = append(conditions, r.query.WorkflowDraft.ID.In(q.IDs...))
+	}
+
+	if q.Name != nil {
+		conditions = append(conditions, r.query.WorkflowMeta.Name.Like(`%%`+*q.Name+`%%`))
+	}
+
+	if q.SpaceID != nil {
+		conditions = append(conditions, r.query.WorkflowMeta.SpaceID.Eq(*q.SpaceID))
+	}
+
+	if q.PublishStatus != nil {
+		if *q.PublishStatus == vo.HasPublished {
+			conditions = append(conditions, r.query.WorkflowMeta.Status.Eq(1))
+		} else {
+			conditions = append(conditions, r.query.WorkflowMeta.Status.Eq(0))
+		}
+	}
+
+	if q.AppID != nil {
+		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(*q.AppID))
+	}
+
+	if q.LibOnly {
+		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(0))
+	}
+
+	type combinedDraft struct {
+		model.WorkflowDraft
+		Name          string `gorm:"column:name"`
+		Description   string `gorm:"column:description"`
+		AppID         int64  `gorm:"column:app_id"`
+		Status        int32  `gorm:"column:status"`
+		SpaceID       int64  `gorm:"column:space_id"`
+		IconURI       string `gorm:"column:icon_uri"`
+		ContentType   int32  `gorm:"column:content_type"`
+		Mode          int32  `gorm:"column:mode"`
+		CreatedAt     int64  `gorm:"column:created_at"`
+		CreatorID     int64  `gorm:"column:creator_id"`
+		Tag           int32  `gorm:"column:tag"`
+		LatestVersion string `gorm:"column:latest_version"`
+	}
+
+	selectColumns := r.query.WorkflowDraft.Columns(r.query.WorkflowDraft.ALL)
+	selectColumns = append(selectColumns, r.query.WorkflowMeta.Name.As("name"),
+		r.query.WorkflowMeta.Description.As("description"),
+		r.query.WorkflowMeta.AppID.As("app_id"),
+		r.query.WorkflowMeta.Status.As("status"),
+		r.query.WorkflowMeta.SpaceID.As("space_id"),
+		r.query.WorkflowMeta.IconURI.As("icon_uri"),
+		r.query.WorkflowMeta.ContentType.As("content_type"),
+		r.query.WorkflowMeta.Mode.As("mode"),
+		r.query.WorkflowMeta.CreatedAt.As("created_at"),
+		r.query.WorkflowMeta.CreatorID.As("creator_id"),
+		r.query.WorkflowMeta.Tag.As("tag"),
+		r.query.WorkflowMeta.LatestVersion.As("latest_version"),
+	)
+
+	d := r.query.WorkflowDraft.Debug().WithContext(ctx).
+		Join(r.query.WorkflowMeta, r.query.WorkflowDraft.ID.EqCol(r.query.WorkflowMeta.ID)).
+		Select(selectColumns...).
+		Where(conditions...)
+
+	if q.NeedTotalNumber {
+		totalCount, err = d.Count()
+		if err != nil {
+			return nil, 0, fmt.Errorf("failed to get workflow draft count for policy %+v: %w", policy, err)
+		}
+	}
+
+	if q.DescByUpdate {
+		d = d.Order(r.query.WorkflowDraft.UpdatedAt.Desc())
+	} else {
+		d = d.Order(r.query.WorkflowMeta.CreatedAt.Desc())
+	}
+
+	var combinedDrafts []combinedDraft
+	if q.Page != nil {
+		_, err = d.ScanByPage(&combinedDrafts, q.Page.Offset(), q.Page.Limit())
+	} else {
+		err = d.Scan(&combinedDrafts)
+	}
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, 0, nil
+		}
+		return nil, 0, fmt.Errorf("failed to get workflow draft for policy %+v: %w", policy, err)
+	}
+
+	result := make([]*entity.Workflow, len(combinedDrafts))
+	for i, draft := range combinedDrafts {
+		url, err := r.tos.GetObjectUrl(ctx, draft.IconURI)
+		if err != nil {
+			logs.Warnf("failed to get url for workflow meta %v", err)
+		}
+
+		canvasInfo := &vo.CanvasInfo{
+			Canvas:          draft.Canvas,
+			InputParamsStr:  draft.InputParams,
+			OutputParamsStr: draft.OutputParams,
+		}
+		if err = canvasInfo.Unmarshal(); err != nil {
+			return nil, 0, err
+		}
+
+		wf := &entity.Workflow{
+			ID:       draft.ID,
+			CommitID: draft.CommitID,
+			Meta: &vo.Meta{
+				SpaceID:     draft.SpaceID,
+				CreatorID:   draft.CreatorID,
+				CreatedAt:   time.UnixMilli(draft.CreatedAt),
+				ContentType: entity.ContentType(draft.ContentType),
+				Name:        draft.Name,
+				Desc:        draft.Description,
+				IconURI:     draft.IconURI,
+				IconURL:     url,
+				Mode:        entity.Mode(draft.Mode),
+			},
 			DraftMeta: &vo.DraftMeta{
 				TestRunSuccess: draft.TestRunSuccess,
 				Modified:       draft.Modified,
 				Timestamp:      time.UnixMilli(draft.UpdatedAt),
 				IsSnapshot:     false,
 			},
+			CanvasInfo: canvasInfo,
+		}
 
-			Canvas:          draft.Canvas,
-			InputParamsStr:  draft.InputParams,
-			OutputParamsStr: draft.OutputParams,
-			CommitID:        draft.CommitID,
+		if draft.Tag != 0 {
+			wf.Meta.Tag = ptr.Of(entity.Tag(draft.Tag))
+		}
+		if draft.AppID != 0 {
+			wf.Meta.AppID = &draft.AppID
+		}
+		if draft.Status > 0 {
+			wf.Meta.HasPublished = true
+		}
+		if draft.LatestVersion != "" {
+			wf.Meta.LatestPublishedVersion = &draft.LatestVersion
+		}
+
+		result[i] = wf
+	}
+
+	return result, totalCount, nil
+}
+
+func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetPolicy) (
+	_ []*entity.Workflow, totalCount int64, err error) {
+	q := policy.MetaQuery
+	if len(q.IDs) == 0 && q.Page == nil && q.Name == nil && q.AppID == nil {
+		return nil, 0, fmt.Errorf("insufficient query parameters for workflow latest versions: %+v", q)
+	}
+
+	var (
+		conditions []gen.Condition
+	)
+	if len(q.IDs) > 0 {
+		conditions = append(conditions, r.query.WorkflowVersion.ID.In(q.IDs...))
+	}
+
+	if q.Name != nil {
+		conditions = append(conditions, r.query.WorkflowMeta.Name.Like(`%%`+*q.Name+`%%`))
+	}
+
+	if q.SpaceID != nil {
+		conditions = append(conditions, r.query.WorkflowMeta.SpaceID.Eq(*q.SpaceID))
+	}
+
+	if q.PublishStatus != nil {
+		if *q.PublishStatus == vo.HasPublished {
+			conditions = append(conditions, r.query.WorkflowMeta.Status.Eq(1))
+		} else {
+			conditions = append(conditions, r.query.WorkflowMeta.Status.Eq(0))
 		}
 	}
-	return result, nil
+
+	if q.AppID != nil {
+		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(*q.AppID))
+	}
+
+	if q.LibOnly {
+		conditions = append(conditions, r.query.WorkflowMeta.AppID.Eq(0))
+	}
+
+	type combinedVersion struct {
+		model.WorkflowMeta
+		Version            string `gorm:"column:version"`             // 发布版本
+		VersionDescription string `gorm:"column:version_description"` // 版本描述
+		Canvas             string `gorm:"column:canvas"`              // 前端 schema
+		InputParams        string `gorm:"column:input_params"`
+		OutputParams       string `gorm:"column:output_params"`
+		VersionCreatorID   int64  `gorm:"column:version_creator_id"` // 发布用户 ID
+		VersionCreatedAt   int64  `gorm:"column:version_created_at"` // 创建时间毫秒时间戳
+		CommitID           string `gorm:"column:commit_id"`          // the commit id corresponding to this version
+	}
+
+	selectColumns := r.query.WorkflowMeta.Columns(r.query.WorkflowMeta.ALL)
+	selectColumns = append(selectColumns, r.query.WorkflowVersion.Version.As("version"),
+		r.query.WorkflowVersion.VersionDescription.As("version_description"),
+		r.query.WorkflowVersion.Canvas.As("canvas"),
+		r.query.WorkflowVersion.InputParams.As("input_params"),
+		r.query.WorkflowVersion.OutputParams.As("output_params"),
+		r.query.WorkflowVersion.CreatorID.As("version_creator_id"),
+		r.query.WorkflowVersion.CreatedAt.As("version_created_at"),
+		r.query.WorkflowVersion.CommitID.As("commit_id"),
+	)
+
+	d := r.query.WorkflowMeta.Debug().WithContext(ctx).
+		Join(r.query.WorkflowVersion, r.query.WorkflowVersion.ID.EqCol(r.query.WorkflowMeta.ID),
+			r.query.WorkflowVersion.Version.EqCol(r.query.WorkflowMeta.LatestVersion)).
+		Select(selectColumns...).
+		Where(conditions...)
+
+	if q.NeedTotalNumber {
+		totalCount, err = d.Count()
+		if err != nil {
+			return nil, 0, fmt.Errorf("failed to get workflow latest versions count for policy %+v: %w", policy, err)
+		}
+	}
+
+	if q.DescByUpdate {
+		d = d.Order(r.query.WorkflowMeta.LatestVersionTs.Desc())
+	} else {
+		d = d.Order(r.query.WorkflowMeta.LatestVersionTs.Asc())
+	}
+
+	var combinedVersions []combinedVersion
+	if q.Page != nil {
+		_, err = d.ScanByPage(&combinedVersions, q.Page.Offset(), q.Page.Limit())
+	} else {
+		err = d.Scan(&combinedVersions)
+	}
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, 0, nil
+		}
+		return nil, 0, fmt.Errorf("failed to get workflow latest versions for policy %+v: %w", policy, err)
+	}
+
+	result := make([]*entity.Workflow, len(combinedVersions))
+	for i, version := range combinedVersions {
+		url, err := r.tos.GetObjectUrl(ctx, version.IconURI)
+		if err != nil {
+			logs.Warnf("failed to get url for workflow meta %v", err)
+		}
+
+		canvasInfo := &vo.CanvasInfo{
+			Canvas:          version.Canvas,
+			InputParamsStr:  version.InputParams,
+			OutputParamsStr: version.OutputParams,
+		}
+		if err = canvasInfo.Unmarshal(); err != nil {
+			return nil, 0, err
+		}
+
+		wf := &entity.Workflow{
+			ID:       version.ID,
+			CommitID: version.CommitID,
+			Meta: &vo.Meta{
+				SpaceID:     version.SpaceID,
+				CreatorID:   version.CreatorID,
+				CreatedAt:   time.UnixMilli(version.CreatedAt),
+				ContentType: entity.ContentType(version.ContentType),
+				Name:        version.Name,
+				Desc:        version.Description,
+				IconURI:     version.IconURI,
+				IconURL:     url,
+				Mode:        entity.Mode(version.Mode),
+			},
+			VersionMeta: &vo.VersionMeta{
+				Version:            version.Version,
+				VersionDescription: version.VersionDescription,
+				VersionCreatedAt:   time.UnixMilli(version.VersionCreatedAt),
+				VersionCreatorID:   version.VersionCreatorID,
+			},
+			CanvasInfo: canvasInfo,
+		}
+
+		if version.Tag != 0 {
+			wf.Meta.Tag = ptr.Of(entity.Tag(version.Tag))
+		}
+		if version.AppID != 0 {
+			wf.Meta.AppID = &version.AppID
+		}
+		if version.Status > 0 {
+			wf.Meta.HasPublished = true
+		}
+		if version.LatestVersion != "" {
+			wf.Meta.LatestPublishedVersion = &version.LatestVersion
+		}
+
+		result[i] = wf
+	}
+
+	return result, totalCount, nil
 }
 
 func (r *RepositoryImpl) MGetReferences(ctx context.Context, policy *vo.MGetReferencePolicy) (
@@ -755,14 +1036,20 @@ func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (ma
 		err    error
 	)
 
-	workflowMetaDo := r.query.WorkflowMeta.WithContext(ctx).Debug().Where(conditions...).Order(r.query.WorkflowMeta.CreatedAt.Desc())
+	workflowMetaDo := r.query.WorkflowMeta.WithContext(ctx).Debug().Where(conditions...)
 
 	var total int64
-	if query.NeedTotalNumber {
+	if query.NeedTotalNumber { // this is the total count
 		total, err = workflowMetaDo.Count()
 		if err != nil {
 			return nil, 0, err
 		}
+	}
+
+	if query.DescByUpdate {
+		workflowMetaDo = workflowMetaDo.Order(r.query.WorkflowMeta.UpdatedAt.Desc())
+	} else {
+		workflowMetaDo = workflowMetaDo.Order(r.query.WorkflowMeta.CreatedAt.Desc())
 	}
 
 	if query.Page != nil {
@@ -855,7 +1142,6 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 		canvas               vo.Canvas
 		inputParamsCfg       = wfToolConfig.InputParametersConfig
 		outputParamsCfg      = wfToolConfig.OutputParametersConfig
-		namedTypeInfoList    = make([]*vo.NamedTypeInfo, 0)
 		inputParamsConfigMap = slices.ToMap(inputParamsCfg, func(w *workflow3.APIParameter) (string, *workflow3.APIParameter) {
 			return w.Name, w
 		})
@@ -875,7 +1161,7 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 
 	var params map[string]*schema.ParameterInfo
 
-	for _, tInfo := range namedTypeInfoList {
+	for _, tInfo := range wfEntity.InputParams {
 		if p, ok := inputParamsConfigMap[tInfo.Name]; ok && p.LocalDisable {
 			continue
 		}
@@ -1100,7 +1386,7 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, pol
 			Desc:      wfMeta.Description,
 			AppID:     ternary.IFElse(wfMeta.AppID == 0, (*int64)(nil), ptr.Of(wfMeta.AppID)),
 		},
-		CanvasInfoV2: &vo.CanvasInfoV2{
+		CanvasInfo: &vo.CanvasInfo{
 			Canvas:          wfDraft.Canvas,
 			InputParamsStr:  wfDraft.InputParams,
 			OutputParamsStr: wfDraft.OutputParams,

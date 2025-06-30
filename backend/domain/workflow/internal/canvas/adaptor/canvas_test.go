@@ -79,7 +79,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 				}, nil
 			},
 		}
-		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 
 		mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
 		n := int64(2)

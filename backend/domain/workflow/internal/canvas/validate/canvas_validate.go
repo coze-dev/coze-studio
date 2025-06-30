@@ -354,18 +354,22 @@ func (cv *CanvasValidator) CheckSubWorkFlowTerminatePlanType(ctx context.Context
 	wfID2Canvas := make(map[int64]*vo.Canvas)
 
 	if len(draftIDs) > 0 {
-		draftWFs, err := workflow.GetRepository().MGetDrafts(ctx, draftIDs)
+		wfs, _, err := workflow.GetRepository().MGetDrafts(ctx, &vo.MGetPolicy{
+			MetaQuery: vo.MetaQuery{
+				IDs: draftIDs,
+			},
+		})
 		if err != nil {
 			return nil, err
 		}
 
-		for id, draft := range draftWFs {
+		for _, draft := range wfs {
 			var canvas vo.Canvas
 			if err = sonic.UnmarshalString(draft.Canvas, &canvas); err != nil {
 				return nil, err
 			}
 
-			wfID2Canvas[id] = &canvas
+			wfID2Canvas[draft.ID] = &canvas
 		}
 	}
 

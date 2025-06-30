@@ -2,6 +2,7 @@ package nodes
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -85,9 +86,26 @@ func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.
 	return out, warnings
 }
 
-func Convert(ctx context.Context, in any, path string, t *vo.TypeInfo) (any, error) {
+type convertOptions struct {
+	skipUnknownFields bool
+}
+
+type ConvertOption func(*convertOptions)
+
+func SkipUnknownFields() ConvertOption {
+	return func(o *convertOptions) {
+		o.skipUnknownFields = true
+	}
+}
+
+func Convert(ctx context.Context, in any, path string, t *vo.TypeInfo, opts ...ConvertOption) (any, error) {
 	if in == nil {
 		return nil, nil
+	}
+
+	options := &convertOptions{}
+	for _, opt := range opts {
+		opt(options)
 	}
 
 	switch t.Type {
@@ -100,9 +118,9 @@ func Convert(ctx context.Context, in any, path string, t *vo.TypeInfo) (any, err
 	case vo.DataTypeBoolean:
 		return convertToBool(ctx, in, path)
 	case vo.DataTypeObject:
-		return convertToObject(ctx, in, path, t)
+		return convertToObject(ctx, in, path, t, opts...)
 	case vo.DataTypeArray:
-		return convertToArray(ctx, in, path, t)
+		return convertToArray(ctx, in, path, t, opts...)
 	default:
 		logs.CtxErrorf(ctx, "unknown input type %s for path %s", t.Type, path)
 		return in, nil
@@ -179,7 +197,7 @@ func convertToBool(_ context.Context, in any, path string) (bool, error) {
 	}
 }
 
-func convertToObject(ctx context.Context, in any, path string, t *vo.TypeInfo) (map[string]any, error) {
+func convertToObject(ctx context.Context, in any, path string, t *vo.TypeInfo, opts ...ConvertOption) (map[string]any, error) {
 	var m map[string]any
 	switch in.(type) {
 	case map[string]any:
@@ -197,6 +215,11 @@ func convertToObject(ctx context.Context, in any, path string, t *vo.TypeInfo) (
 		return nil, nil
 	}
 
+	options := &convertOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
 	out := make(map[string]any, len(m))
 	var warnings ConversionWarnings
 	for k, v := range m {
@@ -204,15 +227,18 @@ func convertToObject(ctx context.Context, in any, path string, t *vo.TypeInfo) (
 		if !ok {
 			// for input fields not explicitly defined, just pass the value through
 			logs.CtxWarnf(ctx, "input %s.%s not found in type info", path, k)
-			out[k] = v
+			if !options.skipUnknownFields {
+				out[k] = v
+			}
 			continue
 		}
 
 		propPath := fmt.Sprintf("%s.%s", path, k)
 		newV, err := Convert(ctx, v, propPath, propType)
 		if err != nil {
-			if w, ok := err.(ConversionWarnings); ok {
-				warnings = append(warnings, w...)
+			var we ConversionWarnings
+			if errors.As(err, &we) {
+				warnings = append(warnings, we...)
 			}
 			out[k] = nil
 		} else {
@@ -226,7 +252,7 @@ func convertToObject(ctx context.Context, in any, path string, t *vo.TypeInfo) (
 	return out, nil
 }
 
-func convertToArray(ctx context.Context, in any, path string, t *vo.TypeInfo) ([]any, error) {
+func convertToArray(ctx context.Context, in any, path string, t *vo.TypeInfo, opts ...ConvertOption) ([]any, error) {
 	var a []any
 	switch v := in.(type) {
 	case []any:
@@ -249,10 +275,11 @@ func convertToArray(ctx context.Context, in any, path string, t *vo.TypeInfo) ([
 	elemType := t.ElemTypeInfo
 	for i, v := range a {
 		elemPath := fmt.Sprintf("%s.%d", path, i)
-		newV, err := Convert(ctx, v, elemPath, elemType)
+		newV, err := Convert(ctx, v, elemPath, elemType, opts...)
 		if err != nil {
-			if w, ok := err.(ConversionWarnings); ok {
-				warnings = append(warnings, w...)
+			var we ConversionWarnings
+			if errors.As(err, &we) {
+				warnings = append(warnings, we...)
 			}
 			continue
 		}

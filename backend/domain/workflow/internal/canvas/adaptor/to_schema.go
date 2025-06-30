@@ -852,6 +852,16 @@ func toLoopNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, m
 		return nil, nil, err
 	}
 
+	for _, fieldInfo := range ns.OutputSources {
+		if fieldInfo.Source.Ref != nil {
+			if len(fieldInfo.Source.Ref.FromPath) == 1 {
+				if _, ok := intermediateVars[fieldInfo.Source.Ref.FromPath[0]]; ok {
+					fieldInfo.Source.Ref.VariableType = ptr.Of(variable.ParentIntermediate)
+				}
+			}
+		}
+	}
+
 	loopCount := n.Data.Inputs.LoopCount
 	if loopCount != nil {
 		typeInfo, err := CanvasBlockInputToTypeInfo(loopCount)
@@ -1871,6 +1881,11 @@ func PruneIsolatedNodes(nodes []*vo.Node, edges []*vo.Edge, parentNode *vo.Node)
 			node.Blocks, node.Edges = PruneIsolatedNodes(node.Blocks, node.Edges, node)
 		}
 		nodeDependencyCount[node.ID] = 0
+		if node.Type == vo.BlockTypeBotContinue || node.Type == vo.BlockTypeBotBreak {
+			if parentNode != nil {
+				nodeDependencyCount[parentNode.ID]++
+			}
+		}
 	}
 
 	nodeDependencyCount[entity.EntryNodeKey] = 1 // entry node is considered to be 1

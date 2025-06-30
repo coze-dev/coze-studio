@@ -101,6 +101,14 @@ func (w *wfErr) Level() ErrorLevel {
 	return LevelError
 }
 
+func (w *wfErr) Error() string {
+	if w.cause == nil {
+		return w.StatusError.Error()
+	}
+
+	return fmt.Sprintf("%s, cause: %s", w.StatusError.Error(), w.cause.Error())
+}
+
 func (w *wfErr) OpenAPICode() int {
 	return errno.CodeForOpenAPI(w)
 }

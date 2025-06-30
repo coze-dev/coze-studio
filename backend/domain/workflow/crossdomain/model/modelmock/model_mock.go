@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	crossmodelmgr "code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
 	model "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	model0 "github.com/cloudwego/eino/components/model"
 	gomock "go.uber.org/mock/gomock"
@@ -22,6 +23,7 @@ import (
 type MockManager struct {
 	ctrl     *gomock.Controller
 	recorder *MockManagerMockRecorder
+	isgomock struct{}
 }
 
 // MockManagerMockRecorder is the mock recorder for MockManager.
@@ -42,12 +44,13 @@ func (m *MockManager) EXPECT() *MockManagerMockRecorder {
 }
 
 // GetModel mocks base method.
-func (m *MockManager) GetModel(ctx context.Context, params *model.LLMParams) (model0.BaseChatModel, error) {
+func (m *MockManager) GetModel(ctx context.Context, params *model.LLMParams) (model0.BaseChatModel, *crossmodelmgr.Model, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetModel", ctx, params)
 	ret0, _ := ret[0].(model0.BaseChatModel)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(*crossmodelmgr.Model)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetModel indicates an expected call of GetModel.

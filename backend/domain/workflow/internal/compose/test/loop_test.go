@@ -410,8 +410,8 @@ func TestLoop(t *testing.T) {
 					Path: compose.FieldPath{"output"},
 					Source: vo.FieldSource{
 						Ref: &vo.Reference{
-							FromNodeKey: "loop_node_key",
-							FromPath:    compose.FieldPath{"count"},
+							FromPath:     compose.FieldPath{"count"},
+							VariableType: ptr.Of(variable.ParentIntermediate),
 						},
 					},
 				},

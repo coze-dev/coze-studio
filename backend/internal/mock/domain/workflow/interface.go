@@ -979,18 +979,33 @@ func (mr *MockRepositoryMockRecorder) MDelete(ctx, ids any) *gomock.Call {
 }
 
 // MGetDrafts mocks base method.
-func (m *MockRepository) MGetDrafts(ctx context.Context, ids []int64) (map[int64]*vo.DraftInfo, error) {
+func (m *MockRepository) MGetDrafts(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MGetDrafts", ctx, ids)
-	ret0, _ := ret[0].(map[int64]*vo.DraftInfo)
+	ret := m.ctrl.Call(m, "MGetDrafts", ctx, policy)
+	ret0, _ := ret[0].([]*entity.Workflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // MGetDrafts indicates an expected call of MGetDrafts.
-func (mr *MockRepositoryMockRecorder) MGetDrafts(ctx, ids any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) MGetDrafts(ctx, policy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetDrafts", reflect.TypeOf((*MockRepository)(nil).MGetDrafts), ctx, ids)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetDrafts", reflect.TypeOf((*MockRepository)(nil).MGetDrafts), ctx, policy)
+}
+
+// MGetLatestVersion mocks base method.
+func (m *MockRepository) MGetLatestVersion(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MGetLatestVersion", ctx, policy)
+	ret0, _ := ret[0].([]*entity.Workflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetLatestVersion indicates an expected call of MGetLatestVersion.
+func (mr *MockRepositoryMockRecorder) MGetLatestVersion(ctx, policy any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetLatestVersion", reflect.TypeOf((*MockRepository)(nil).MGetLatestVersion), ctx, policy)
 }
 
 // MGetMetas mocks base method.
