@@ -28,7 +28,6 @@ interface TemplateBindProps {
   onClick: MouseEventHandler;
 }
 
-// TODO Template From 表单信息存入 store ，并且作为是否能勾选模板渠道的依据
 export function TemplateBind({
   record,
   onClick: inputOnClick,

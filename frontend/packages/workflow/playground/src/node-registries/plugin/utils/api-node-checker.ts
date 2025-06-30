@@ -94,7 +94,7 @@ export function checkPluginUpdated({
   // API 定义的参数名
   const newParamNames = (apiNodeDetail.inputs || [])?.map(v => v.name);
 
-  // FIXME: 入参检测目前只检测删除参数场景，增量场景暂时不好检测
+  // 入参检测目前只检测删除参数场景，增量场景暂时不好检测
   const isInputParamsChanged = !oldParamNames.every(paramName =>
     newParamNames.includes(paramName || ''),
   );

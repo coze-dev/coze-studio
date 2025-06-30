@@ -93,7 +93,6 @@ export const SkillModal: FC<SkillModalProps> = props => {
 
   const sourceTitle = I18n.t('workflow_241119_01');
   const workflowModalParts = useWorkflowModalParts({
-    // TODO
     from: projectId
       ? WorkflowModalFrom.ProjectWorkflowAddNode
       : WorkflowModalFrom.WorkflowAddNode,
@@ -109,9 +108,6 @@ export const SkillModal: FC<SkillModalProps> = props => {
       }),
     ),
     onWorkFlowListChange: () => null,
-    // TODO 跳转到workflow详情
-    // onItemClick: (val, modalStatus) => {},
-    // TODO
     onAdd: async (val, config) => {
       if (!val) {
         return;
@@ -135,7 +131,6 @@ export const SkillModal: FC<SkillModalProps> = props => {
         },
       ]);
     },
-    // TODO
     onRemove: val => {
       onSkillsChange(
         SkillType.Workflow,

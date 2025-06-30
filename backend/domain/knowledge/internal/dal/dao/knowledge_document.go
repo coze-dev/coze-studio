@@ -25,7 +25,7 @@ func (dao *KnowledgeDocumentDAO) Create(ctx context.Context, document *model.Kno
 
 func (dao *KnowledgeDocumentDAO) Update(ctx context.Context, document *model.KnowledgeDocument) error {
 	document.UpdatedAt = time.Now().UnixMilli()
-	_, err := dao.Query.KnowledgeDocument.WithContext(ctx).Updates(document)
+	err := dao.Query.KnowledgeDocument.WithContext(ctx).Save(document)
 	return err
 }
 

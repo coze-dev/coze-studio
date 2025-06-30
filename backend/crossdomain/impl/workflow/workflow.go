@@ -53,7 +53,7 @@ func (i *impl) SyncExecuteWorkflow(ctx context.Context, config vo.ExecuteConfig,
 }
 
 func (i *impl) GetWorkflowIDsByAppID(ctx context.Context, appID int64) ([]int64, error) {
-	metas, err := i.DomainSVC.MGet(ctx, &vo.MGetPolicy{
+	metas, _, err := i.DomainSVC.MGet(ctx, &vo.MGetPolicy{
 		MetaQuery: vo.MetaQuery{
 			AppID: ptr.Of(appID),
 		},

@@ -89,6 +89,7 @@ func (s *NodeSchema) GetBranch(bMapping *BranchMapping) (*compose.GraphBranch, e
 	case entity.NodeTypeQuestionAnswer:
 		conf := s.Configs.(map[string]any)
 		if mustGetKey[qa.AnswerType]("AnswerType", conf) == qa.AnswerByChoices {
+			choiceType := mustGetKey[qa.ChoiceType]("ChoiceType", conf)
 			condition := func(ctx context.Context, in map[string]any) (map[string]bool, error) {
 				optionID, ok := nodes.TakeMapValue(in, compose.FieldPath{qa.OptionIDKey})
 				if !ok {
@@ -99,12 +100,16 @@ func (s *NodeSchema) GetBranch(bMapping *BranchMapping) (*compose.GraphBranch, e
 					return (bMapping.Normal)[len(bMapping.Normal)-1], nil
 				}
 
+				if choiceType == qa.DynamicChoices { // all dynamic choices maps to branch 0
+					return (bMapping.Normal)[0], nil
+				}
+
 				optionIDInt, ok := qa.AlphabetToInt(optionID.(string))
 				if !ok {
 					return nil, fmt.Errorf("failed to convert option id from input map: %v", optionID)
 				}
 
-				if optionIDInt < 0 || optionIDInt >= len(bMapping.Normal)-1 {
+				if optionIDInt < 0 || optionIDInt >= len(bMapping.Normal) {
 					return nil, fmt.Errorf("failed to take option id from input map: %v", in)
 				}
 

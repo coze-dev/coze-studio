@@ -178,6 +178,9 @@ func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin 
 	}
 
 	updateMap := map[string]any{}
+	if plugin.APPID != nil {
+		updateMap[table.AppID.ColumnName().String()] = *plugin.APPID
+	}
 	if plugin.IconURI != nil {
 		updateMap[table.IconURI.ColumnName().String()] = *plugin.IconURI
 	}

@@ -2,6 +2,7 @@ import DOMPurify from 'dompurify';
 import classNames from 'classnames';
 
 import { type Chunk } from '@/text-knowledge-editor/types/chunk';
+import { getRenderHtmlContent } from '@/text-knowledge-editor/services/use-case/get-render-editor-content';
 import { getEditorWordsCls } from '@/text-knowledge-editor/services/inner/get-editor-words-cls';
 import { getEditorTableClassname } from '@/text-knowledge-editor/services/inner/get-editor-table-cls';
 import { getEditorImgClassname } from '@/text-knowledge-editor/services/inner/get-editor-img-cls';
@@ -39,7 +40,7 @@ export const DocumentChunkPreview = ({
       // eslint-disable-next-line risxss/catch-potential-xss-react
       dangerouslySetInnerHTML={{
         __html:
-          DOMPurify.sanitize(chunk.content ?? '', {
+          DOMPurify.sanitize(getRenderHtmlContent(chunk.content ?? ''), {
             /**
              * 1. 防止CSS注入攻击
              * 2. 防止用户误写入style标签，导致全局样式被修改，页面展示异常

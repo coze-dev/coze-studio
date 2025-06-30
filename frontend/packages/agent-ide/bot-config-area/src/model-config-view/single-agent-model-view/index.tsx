@@ -39,10 +39,7 @@ export function SingleAgentModelView(props: SingleAgentModelViewProps) {
       getModelPreset: state.getModelPreset,
     })),
   );
-  // 不知为何 save-manager 没有 debounce，切换模型及其产生的初始配置更新会触发两次保存请求
-  // 这里通过在业务侧维护一个 state，切换模型时只临时修改 state，不直接修改 store，来规避首次保存请求
-  // ！！不能用 modelSaveManager.handleWithoutAutosave
-  // 因为如果第一次就在 store 中修改了 modelId，则第二次修改 store 可能会没有 diff 被 auto-save 拦截，导致两次保存都不触发请求
+
   const [currentModelIdState, setCurrentModelIdState] = useState<
     string | undefined
   >(currentModelId);

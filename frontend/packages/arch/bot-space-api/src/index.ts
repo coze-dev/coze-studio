@@ -70,7 +70,6 @@ type ExportFunctions =
 type ExportService = {
   [K in ExportFunctions]: (
     // 这里主要是为了 omit 掉 space_id 这个参数，而做的二次封装
-    // FIXME：似乎没办法继承 bam 原始函数里面的 comment，会影响用户体验
     params: SpaceRequest<Parameters<D[K]>[0]>,
     options?: Parameters<D[K]>[1],
   ) => ReturnType<D[K]>;
@@ -102,11 +101,9 @@ const spaceApiService = new Proxy(Object.create(null), {
         );
         break;
       }
-      // TODO: 这里应该直接调用 WorkflowListV2 ，后续请各业务方调整
       case 'WorkFlowList':
         funcName = 'WorkflowListV2';
         break;
-      // TODO: 这里应该直接调用 CreateWorkflowV2 ，后续请各业务方调整
       case 'CreateWorkFlow':
         funcName = 'CreateWorkflowV2';
         break;

@@ -2,20 +2,56 @@ package nodes
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
+
+type ConversionWarning struct {
+	Path string
+	Type vo.DataType
+	Err  error
+}
+
+func (e *ConversionWarning) Error() string {
+	return fmt.Sprintf("field %s is not %s", e.Path, e.Type)
+}
+
+type ConversionWarnings []*ConversionWarning
+
+func (e ConversionWarnings) Merge(e1 ConversionWarnings) ConversionWarnings {
+	return append(e, e1...)
+}
+
+func (e ConversionWarnings) Error() string {
+	if len(e) == 0 {
+		return ""
+	}
+	var errs []string
+	for _, err := range e {
+		errs = append(errs, err.Error())
+	}
+	return strings.Join(errs, ", ")
+}
 
 func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.TypeInfo) (map[string]any, error) {
 	if len(in) == 0 {
+		for _, t := range tInfo {
+			if t.Required {
+				return nil, vo.NewError(errno.ErrMissingRequiredParam)
+			}
+		}
 		return in, nil
 	}
 
 	out := make(map[string]any)
+	var warnings ConversionWarnings
 	for k, v := range in {
 		t, ok := tInfo[k]
 		if !ok {
@@ -25,49 +61,73 @@ func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.
 			continue
 		}
 
-		converted, err := Convert(ctx, v, t)
+		converted, err := Convert(ctx, v, k, t)
 		if err != nil {
-			return nil, err
+			if w, ok := err.(ConversionWarnings); ok {
+				warnings = append(warnings, w...)
+			} else {
+				logs.CtxErrorf(ctx, "unexpected error type during conversion for %s: %v", k, err)
+			}
 		}
 		out[k] = converted
 	}
 
-	return out, nil
+	for k, t := range tInfo {
+		if _, ok := out[k]; !ok {
+			if t.Required {
+				return nil, vo.NewError(errno.ErrMissingRequiredParam)
+			}
+		}
+	}
+
+	if len(warnings) == 0 {
+		return out, nil
+	}
+	return out, warnings
 }
 
-func Convert(ctx context.Context, in any, t *vo.TypeInfo) (any, error) {
+type convertOptions struct {
+	skipUnknownFields bool
+}
+
+type ConvertOption func(*convertOptions)
+
+func SkipUnknownFields() ConvertOption {
+	return func(o *convertOptions) {
+		o.skipUnknownFields = true
+	}
+}
+
+func Convert(ctx context.Context, in any, path string, t *vo.TypeInfo, opts ...ConvertOption) (any, error) {
 	if in == nil {
-		return in, nil
+		return nil, nil
+	}
+
+	options := &convertOptions{}
+	for _, opt := range opts {
+		opt(options)
 	}
 
 	switch t.Type {
 	case vo.DataTypeString, vo.DataTypeFile, vo.DataTypeTime:
-		return convertToString(ctx, in)
+		return convertToString(ctx, in, path)
 	case vo.DataTypeInteger:
-		return convertToInt64(ctx, in)
+		return convertToInt64(ctx, in, path)
 	case vo.DataTypeNumber:
-		return convertToFloat64(ctx, in)
+		return convertToFloat64(ctx, in, path)
 	case vo.DataTypeBoolean:
-		return convertToBool(ctx, in)
+		return convertToBool(ctx, in, path)
 	case vo.DataTypeObject:
-		return convertToObject(ctx, in, t)
+		return convertToObject(ctx, in, path, t, opts...)
 	case vo.DataTypeArray:
-		return convertToArray(ctx, in, t)
+		return convertToArray(ctx, in, path, t, opts...)
 	default:
-		return nil, fmt.Errorf("unknown input type %s", t.Type)
+		logs.CtxErrorf(ctx, "unknown input type %s for path %s", t.Type, path)
+		return in, nil
 	}
 }
 
-func convertToString(ctx context.Context, in any) (out string, err error) {
-	defer func() {
-		if err != nil {
-			logs.CtxErrorf(ctx, "failed to convert input %v to string: %v, fallback to empty string", in, err)
-			err = nil
-			out = ""
-		}
-	}()
-
-	// also used as convertToTime, convertToFile, because under the hood time and file are both strings
+func convertToString(_ context.Context, in any, path string) (string, error) {
 	switch in.(type) {
 	case string:
 		return in.(string), nil
@@ -78,82 +138,66 @@ func convertToString(ctx context.Context, in any) (out string, err error) {
 	case bool:
 		return strconv.FormatBool(in.(bool)), nil
 	case []any, map[string]any:
-		return sonic.MarshalString(in)
+		s, err := sonic.MarshalString(in)
+		if err != nil {
+			return "", ConversionWarnings{{Path: path, Type: vo.DataTypeString, Err: err}}
+		}
+		return s, nil
 	default:
-		return "", fmt.Errorf("cannot convert type %T to string", in)
+		return "", ConversionWarnings{{Path: path, Type: vo.DataTypeString}}
 	}
 }
 
-func convertToInt64(ctx context.Context, in any) (out int64, err error) {
-	defer func() {
-		if err != nil {
-			logs.CtxErrorf(ctx, "failed to convert input %v to int64: %v, fallback to 0", in, err)
-			err = nil
-			out = 0
-		}
-	}()
-
+func convertToInt64(_ context.Context, in any, path string) (int64, error) {
 	switch in.(type) {
 	case int64:
 		return in.(int64), nil
 	case float64:
 		return int64(in.(float64)), nil
 	case string:
-		return strconv.ParseInt(in.(string), 10, 64)
+		i, err := strconv.ParseInt(in.(string), 10, 64)
+		if err != nil {
+			return 0, ConversionWarnings{{Path: path, Type: vo.DataTypeInteger, Err: err}}
+		}
+		return i, nil
 	default:
-		return 0, fmt.Errorf("cannot convert type %T to integer", in)
+		return 0, ConversionWarnings{{Path: path, Type: vo.DataTypeInteger}}
 	}
 }
 
-func convertToFloat64(ctx context.Context, in any) (out float64, err error) {
-	defer func() {
-		if err != nil {
-			logs.CtxErrorf(ctx, "failed to convert input %v to float64: %v, fallback to 0", in, err)
-			err = nil
-			out = 0
-		}
-	}()
-
+func convertToFloat64(_ context.Context, in any, path string) (float64, error) {
 	switch in.(type) {
 	case int64:
 		return float64(in.(int64)), nil
 	case float64:
 		return in.(float64), nil
 	case string:
-		return strconv.ParseFloat(in.(string), 64)
+		f, err := strconv.ParseFloat(in.(string), 64)
+		if err != nil {
+			return 0, ConversionWarnings{{Path: path, Type: vo.DataTypeNumber, Err: err}}
+		}
+		return f, nil
 	default:
-		return 0, fmt.Errorf("cannot convert type %T to float", in)
+		return 0, ConversionWarnings{{Path: path, Type: vo.DataTypeNumber}}
 	}
 }
 
-func convertToBool(ctx context.Context, in any) (out bool, err error) {
-	defer func() {
-		if err != nil {
-			logs.CtxErrorf(ctx, "failed to convert input %v to bool: %v, fallback to false", in, err)
-			err = nil
-			out = false
-		}
-	}()
-
+func convertToBool(_ context.Context, in any, path string) (bool, error) {
 	switch in.(type) {
 	case bool:
 		return in.(bool), nil
 	case string:
-		return strconv.ParseBool(in.(string))
+		b, err := strconv.ParseBool(in.(string))
+		if err != nil {
+			return false, ConversionWarnings{{Path: path, Type: vo.DataTypeBoolean, Err: err}}
+		}
+		return b, nil
 	default:
-		return false, fmt.Errorf("cannot convert type %T to bool", in)
+		return false, ConversionWarnings{{Path: path, Type: vo.DataTypeBoolean}}
 	}
 }
 
-func convertToObject(ctx context.Context, in any, t *vo.TypeInfo) (out map[string]any, err error) {
-	defer func() {
-		if err != nil {
-			logs.CtxErrorf(ctx, "failed to convert input %v to object: %v, fallback to nil", in, err)
-			err = nil
-			out = nil
-		}
-	}()
-
+func convertToObject(ctx context.Context, in any, path string, t *vo.TypeInfo, opts ...ConvertOption) (map[string]any, error) {
 	var m map[string]any
 	switch in.(type) {
 	case map[string]any:
@@ -161,66 +205,89 @@ func convertToObject(ctx context.Context, in any, t *vo.TypeInfo) (out map[strin
 	case string:
 		err := sonic.UnmarshalString(in.(string), &m)
 		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal input as object: %w", err)
+			return nil, ConversionWarnings{{Path: path, Type: vo.DataTypeObject, Err: err}}
 		}
 	default:
-		return nil, fmt.Errorf("cannot convert type %T to object", in)
+		return nil, ConversionWarnings{{Path: path, Type: vo.DataTypeObject}}
 	}
 
+	if m == nil {
+		return nil, nil
+	}
+
+	options := &convertOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	out := make(map[string]any, len(m))
+	var warnings ConversionWarnings
 	for k, v := range m {
-		t, ok := t.Properties[k]
+		propType, ok := t.Properties[k]
 		if !ok {
-			// for input fields not explicitly defined, just pass the string value through
-			logs.CtxWarnf(ctx, "input %s not found in type info", k)
+			// for input fields not explicitly defined, just pass the value through
+			logs.CtxWarnf(ctx, "input %s.%s not found in type info", path, k)
+			if !options.skipUnknownFields {
+				out[k] = v
+			}
 			continue
 		}
 
-		newV, err := Convert(ctx, v, t)
+		propPath := fmt.Sprintf("%s.%s", path, k)
+		newV, err := Convert(ctx, v, propPath, propType)
 		if err != nil {
-			return nil, err
+			var we ConversionWarnings
+			if errors.As(err, &we) {
+				warnings = append(warnings, we...)
+			}
+			out[k] = nil
+		} else {
+			out[k] = newV
 		}
-
-		m[k] = newV
 	}
 
-	return m, nil
+	if len(warnings) > 0 {
+		return out, warnings
+	}
+	return out, nil
 }
 
-func convertToArray(ctx context.Context, in any, t *vo.TypeInfo) (out []any, err error) {
-	defer func() {
-		if err != nil {
-			logs.CtxErrorf(ctx, "failed to convert input %v to array: %v, fallback to nil", in, err)
-			err = nil
-			out = nil
-		}
-	}()
-
+func convertToArray(ctx context.Context, in any, path string, t *vo.TypeInfo, opts ...ConvertOption) ([]any, error) {
 	var a []any
-	switch in.(type) {
+	switch v := in.(type) {
 	case []any:
-		a = in.([]any)
+		a = v
 	case string:
-		err = sonic.UnmarshalString(in.(string), &a)
+		err := sonic.UnmarshalString(v, &a)
 		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal input as array: %w", err)
+			return nil, ConversionWarnings{{Path: path, Type: vo.DataTypeArray, Err: err}}
 		}
 	default:
-		return nil, fmt.Errorf("cannot convert type %T to array", in)
+		return nil, ConversionWarnings{{Path: path, Type: vo.DataTypeArray}}
 	}
 
 	if len(a) == 0 {
 		return a, nil
 	}
 
+	out := make([]any, 0, len(a))
+	var warnings ConversionWarnings
 	elemType := t.ElemTypeInfo
-	for i := range a {
-		newV, err := Convert(ctx, a[i], elemType)
+	for i, v := range a {
+		elemPath := fmt.Sprintf("%s.%d", path, i)
+		newV, err := Convert(ctx, v, elemPath, elemType, opts...)
 		if err != nil {
-			logs.CtxErrorf(ctx, "failed to convert %dth element of array to type %v: %v", i, elemType.Type, err)
+			var we ConversionWarnings
+			if errors.As(err, &we) {
+				warnings = append(warnings, we...)
+			}
+			continue
 		}
-
 		out = append(out, newV)
 	}
 
+	if len(warnings) > 0 {
+		return out, warnings
+	}
 	return out, nil
 }

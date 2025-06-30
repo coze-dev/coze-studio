@@ -18,6 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model"
 	mockmodel "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/model/modelmock"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
@@ -26,6 +27,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/internal/testutil"
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 )
 
 func TestLLM(t *testing.T) {
@@ -63,15 +65,17 @@ func TestLLM(t *testing.T) {
 			assert.NoError(t, err)
 		}
 
-		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelName == modelName {
-				return openaiModel, nil
+				return openaiModel, nil, nil
 			} else if params.ModelName == deepSeekModelName {
-				return deepSeekModel, nil
+				return deepSeekModel, nil, nil
 			} else {
-				return nil, fmt.Errorf("invalid model name: %s", params.ModelName)
+				return nil, nil, fmt.Errorf("invalid model name: %s", params.ModelName)
 			}
 		}).AnyTimes()
+
+		ctx := ctxcache.Init(context.Background())
 
 		t.Run("plain text output, non-streaming mode", func(t *testing.T) {
 			if openaiModel == nil {
@@ -89,7 +93,7 @@ func TestLLM(t *testing.T) {
 			}
 
 			entry := &compose2.NodeSchema{
-				Key:  compose2.EntryNodeKey,
+				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
 			}
 
@@ -124,6 +128,14 @@ func TestLLM(t *testing.T) {
 						},
 					},
 				},
+				InputTypes: map[string]*vo.TypeInfo{
+					"sys_prompt": {
+						Type: vo.DataTypeString,
+					},
+					"query": {
+						Type: vo.DataTypeString,
+					},
+				},
 				OutputTypes: map[string]*vo.TypeInfo{
 					"output": {
 						Type: vo.DataTypeString,
@@ -132,7 +144,7 @@ func TestLLM(t *testing.T) {
 			}
 
 			exit := &compose2.NodeSchema{
-				Key:  compose2.ExitNodeKey,
+				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
 				Configs: map[string]any{
 					"TerminalPlan": vo.ReturnVariables,
@@ -170,7 +182,6 @@ func TestLLM(t *testing.T) {
 
 			ws.Init()
 
-			ctx := context.Background()
 			wf, err := compose2.NewWorkflow(ctx, ws)
 			assert.NoError(t, err)
 
@@ -199,7 +210,7 @@ func TestLLM(t *testing.T) {
 			}
 
 			entry := &compose2.NodeSchema{
-				Key:  compose2.EntryNodeKey,
+				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
 			}
 
@@ -232,7 +243,7 @@ func TestLLM(t *testing.T) {
 			}
 
 			exit := &compose2.NodeSchema{
-				Key:  compose2.ExitNodeKey,
+				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
 				Configs: map[string]any{
 					"TerminalPlan": vo.ReturnVariables,
@@ -279,7 +290,6 @@ func TestLLM(t *testing.T) {
 
 			ws.Init()
 
-			ctx := context.Background()
 			wf, err := compose2.NewWorkflow(ctx, ws)
 			assert.NoError(t, err)
 
@@ -306,7 +316,7 @@ func TestLLM(t *testing.T) {
 			}
 
 			entry := &compose2.NodeSchema{
-				Key:  compose2.EntryNodeKey,
+				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
 			}
 
@@ -329,7 +339,7 @@ func TestLLM(t *testing.T) {
 			}
 
 			exit := &compose2.NodeSchema{
-				Key:  compose2.ExitNodeKey,
+				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
 				Configs: map[string]any{
 					"TerminalPlan": vo.ReturnVariables,
@@ -367,7 +377,6 @@ func TestLLM(t *testing.T) {
 
 			ws.Init()
 
-			ctx := context.Background()
 			wf, err := compose2.NewWorkflow(ctx, ws)
 			assert.NoError(t, err)
 
@@ -423,7 +432,7 @@ func TestLLM(t *testing.T) {
 			}
 
 			entry := &compose2.NodeSchema{
-				Key:  compose2.EntryNodeKey,
+				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
 			}
 
@@ -523,7 +532,7 @@ func TestLLM(t *testing.T) {
 			}
 
 			exit := &compose2.NodeSchema{
-				Key:  compose2.ExitNodeKey,
+				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
 				Configs: map[string]any{
 					"TerminalPlan": vo.UseAnswerContent,
@@ -593,7 +602,6 @@ func TestLLM(t *testing.T) {
 
 			ws.Init()
 
-			ctx := context.Background()
 			wf, err := compose2.NewWorkflow(ctx, ws)
 			if err != nil {
 				t.Fatal(err)

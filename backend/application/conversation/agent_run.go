@@ -75,6 +75,11 @@ func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentR
 	return c.AgentRunDomainSVC.AgentRun(ctx, arr)
 }
 
+func (c *ConversationApplicationService) GenID(ctx context.Context) (int64, error) {
+	id, err := c.appContext.IDGen.GenID(ctx)
+	return id, err
+}
+
 func (c *ConversationApplicationService) checkConversation(ctx context.Context, ar *run.AgentRunRequest, userID int64) (*convEntity.Conversation, error) {
 	var conversationData *convEntity.Conversation
 	if ar.ConversationID > 0 {

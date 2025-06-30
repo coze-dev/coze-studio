@@ -12,7 +12,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
-	searchConsts "code.byted.org/flow/opencoze/backend/domain/search/consts"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
@@ -178,13 +177,13 @@ func (s *SearchApplicationService) searchFavProjects(ctx context.Context, userID
 	}
 
 	res, err := SearchSVC.DomainSVC.SearchProjects(ctx, &searchEntity.SearchProjectsRequest{
-		OwnerID: userID,
-		Types:   types,
-		IsFav:   true,
-		OrderBy: searchConsts.OrderByFavTime,
-		Order:   common.OrderByType_Desc,
-		Limit:   req.PageSize,
-		Cursor:  req.GetCursorID(),
+		OwnerID:        userID,
+		Types:          types,
+		IsFav:          true,
+		OrderFiledName: searchEntity.FieldOfFavTime,
+		OrderAsc:       false,
+		Limit:          req.PageSize,
+		Cursor:         req.GetCursorID(),
 	})
 	if err != nil {
 		return nil, err
@@ -276,8 +275,8 @@ func (s *SearchApplicationService) GetUserRecentlyEditIntelligence(ctx context.C
 		OwnerID:        *userID,
 		Types:          req.Types,
 		IsRecentlyOpen: true,
-		OrderBy:        searchConsts.OrderByRecentlyOpenTime,
-		Order:          common.OrderByType_Desc,
+		OrderFiledName: searchEntity.FieldOfRecentlyOpenTime,
+		OrderAsc:       false,
 		Limit:          req.Size,
 	})
 	if err != nil {
@@ -376,16 +375,16 @@ func (s *SearchApplicationService) buildProjectOtherInfo(doc *searchEntity.Proje
 }
 
 func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceListRequest) *searchEntity.SearchProjectsRequest {
-	orderBy := func() searchConsts.OrderByType {
+	orderBy := func() string {
 		switch req.GetOrderBy() {
 		case intelligence.OrderBy_PublishTime:
-			return searchConsts.OrderByPublishTime
+			return searchEntity.FieldOfPublishTime
 		case intelligence.OrderBy_UpdateTime:
-			return searchConsts.OrderByUpdateTime
+			return searchEntity.FieldOfUpdateTime
 		case intelligence.OrderBy_CreateTime:
-			return searchConsts.OrderByCreateTime
+			return searchEntity.FieldOfCreateTime
 		default:
-			return searchConsts.OrderByUpdateTime
+			return searchEntity.FieldOfUpdateTime
 		}
 	}()
 
@@ -395,8 +394,8 @@ func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceList
 		OwnerID:        0,
 		Limit:          req.GetSize(),
 		Cursor:         req.GetCursorID(),
-		OrderBy:        orderBy,
-		Order:          common.OrderByType_Desc,
+		OrderFiledName: orderBy,
+		OrderAsc:       false,
 		Types:          req.GetTypes(),
 		Status:         req.GetStatus(),
 		IsFav:          req.GetIsFav(),

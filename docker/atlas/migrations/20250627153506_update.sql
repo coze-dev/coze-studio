@@ -1,0 +1,2 @@
+-- Modify "workflow_meta" table
+ALTER TABLE `opencoze`.`workflow_meta` ADD COLUMN `latest_version_ts` bigint unsigned NULL COMMENT "create time of latest version", DROP INDEX `idx_app_id`, DROP INDEX `idx_creator_id`, DROP INDEX `idx_published_time`, DROP INDEX `idx_source_id`, DROP INDEX `idx_space_id_app_id_mode_content_type`, ADD INDEX `idx_space_id_app_id_status_latest_version_ts` (`space_id`, `app_id`, `status`, `latest_version_ts`);

@@ -1,3 +1,5 @@
+import { Toast } from '@coze-arch/coze-design';
+
 import { type Chunk } from '@/text-knowledge-editor/types/chunk';
 import { isEditorContentChange } from '@/text-knowledge-editor/services/use-case/is-editor-content-change';
 import { updateChunks } from '@/text-knowledge-editor/services/inner/chunk-op.service';
@@ -21,6 +23,7 @@ export const useUpdateRemoteChunk = ({
    */
   const updateRemoteChunk = async (chunk: Chunk) => {
     if (!chunk.slice_id) {
+      Toast.error('The slice ID does not exist. Please refresh the page');
       return;
     }
     if (!isEditorContentChange(chunks, chunk)) {

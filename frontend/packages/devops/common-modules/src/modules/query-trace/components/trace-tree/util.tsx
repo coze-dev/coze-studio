@@ -42,7 +42,6 @@ const genTitleRender = ({
 }) => {
   const titleRender = (nodeData: TreeNodeExtra): ReactNode => {
     const { selected, unindented, hover, key } = nodeData;
-    // todo
     const { span } = nodeData?.extra as { span: CSpan };
     const { status, latency, category = SpanCategory.Unknown } = span;
     const title = getSpanTitle(span, spanTypeConfigMap);

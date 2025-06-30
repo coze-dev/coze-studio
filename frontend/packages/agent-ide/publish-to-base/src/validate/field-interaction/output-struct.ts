@@ -99,7 +99,6 @@ const mutateOnlyPositiveField = ({
   }
 
   const notValid = !verify(onlyField);
-  // 这里再次判断是废话，但是起到强调作用，是一种修辞手法
   if (notValid && getter(onlyField)) {
     setter(onlyField, false);
   }
@@ -136,8 +135,6 @@ const mutatePositiveFieldsMoreThanOne = ({
     return;
   }
 
-  // 没清理干净，则只留最后一个
-  // 可能没有清理干净，但是没清理干净不太可能
   leftMatchedFields.forEach((field, idx) => {
     const targetVal = idx === leftMatchedFields.length - 1;
     if (getter(field) !== targetVal) {

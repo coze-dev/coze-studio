@@ -11,6 +11,7 @@ import {
   DocumentEditor,
   useInitEditor,
   EditorToolbar,
+  type Chunk,
 } from '@coze-data/knowledge-common-components/text-knowledge-editor';
 import { KnowledgeE2e } from '@coze-data/e2e';
 import { I18n } from '@coze-arch/i18n';
@@ -50,16 +51,17 @@ export const TextUpload = <T extends UploadTextCustomAddUpdateStore>(
   const handleClickNext = () => {
     setCurrentStep(TextCustomAddUpdateStep.SEGMENT_CLEANER);
   };
-  const chunk = useMemo(
+
+  const initChunk = useMemo<Chunk>(
     () => ({
       text_knowledge_editor_chunk_uuid: nanoid(),
-      content: docContent,
+      content: '',
     }),
-    [docContent],
+    [],
   );
 
   const { editor } = useInitEditor({
-    chunk,
+    chunk: initChunk,
     editorProps: {
       attributes: {
         class: 'h-[360px] overflow-y-auto',

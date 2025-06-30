@@ -52,7 +52,6 @@ class LocalStorageService extends EventEmitter {
 
   #setUserRelated(key: LocalStorageCacheKey, value?: string) {
     if (!this.#userId) {
-      // TODO 理论上没有这种场景 & 上报 slardar event
       return;
     }
     if (value) {
@@ -80,7 +79,6 @@ class LocalStorageService extends EventEmitter {
           '需要确保在 userId 初始化后再调用此方法 或者使用 getValueSync',
         );
       }
-      // TODO 上报 slardar log
       return undefined;
     }
     return this.#state.userRelated?.[this.#userId]?.[key];

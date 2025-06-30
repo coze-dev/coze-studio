@@ -11,12 +11,14 @@ import (
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type UTChatModel struct {
 	InvokeResultProvider func(index int, in []*schema.Message) (*schema.Message, error)
 	StreamResultProvider func(index int, in []*schema.Message) (*schema.StreamReader[*schema.Message], error)
+	Modals               []modelmgr.Modal
 	Index                int
 	ModelType            string
 	mu                   sync.Mutex
@@ -115,4 +117,23 @@ func (q *UTChatModel) IsCallbacksEnabled() bool {
 
 func (q *UTChatModel) Reset() {
 	q.Index = 0
+}
+
+func (q *UTChatModel) Info(_ context.Context) *modelmgr.Model {
+	if len(q.Modals) == 0 {
+		return &modelmgr.Model{
+			Meta: modelmgr.ModelMeta{
+				Capability: &modelmgr.Capability{
+					InputModal: []modelmgr.Modal{modelmgr.ModalText},
+				},
+			},
+		}
+	}
+	return &modelmgr.Model{
+		Meta: modelmgr.ModelMeta{
+			Capability: &modelmgr.Capability{
+				InputModal: q.Modals,
+			},
+		},
+	}
 }

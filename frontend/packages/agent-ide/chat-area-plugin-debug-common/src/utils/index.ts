@@ -55,8 +55,6 @@ export const sendTeaEventOnBeforeSendMessage = (params: {
     'from'
   > = {
     is_user_owned: isSelf ? 'true' : 'false',
-    // 原有逻辑便是在 send message 成功前就上报 tea 了 这时候肯定没有真实的 message_id
-    // 原有逻辑也是上报的前端生成的 id 如果后续有问题再改
     message_id: message.extra_info.local_message_id,
     bot_id: botId,
   };
@@ -88,7 +86,6 @@ export const handleBotStateBeforeSendMessage = (
   const { message, options } = params;
   const { mode } = useBotInfoStore.getState();
 
-  // TODO：修改条件这里应该看一下哈～ BOT STORE && SINGLE 不继续
   if (scene !== Scene.Playground && mode !== BotMode.MultiMode) {
     return;
   }
@@ -147,7 +144,6 @@ export const reportReceiveEvent = (message: Message<ContentType>) => {
   messageReportEvent.receiveMessageEvent.receiveMessage(message);
   if (message.type === 'answer' && message.is_finish) {
     messageReportEvent.receiveMessageEvent.finish(message);
-    // TODO: 无法判断是否要等待 suggest
     messageReportEvent.receiveMessageEvent.start();
   }
 };

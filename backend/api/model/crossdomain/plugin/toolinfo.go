@@ -145,12 +145,31 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 			return nil, fmt.Errorf("parameter schema is required")
 		}
 
-		schemaVal := param.Value.Schema.Value
+		paramVal := param.Value
+		schemaVal := paramVal.Schema.Value
+
+		if schemaVal.Type == openapi3.TypeObject {
+			return nil, fmt.Errorf("the type of parameter '%s' cannot be 'object'", paramVal.Name)
+		}
+
+		if schemaVal.Type == openapi3.TypeArray {
+			if paramVal.In == openapi3.ParameterInPath {
+				return nil, fmt.Errorf("the type of field '%s' cannot be 'array'", paramVal.Name)
+			}
+			if schemaVal.Items == nil || schemaVal.Items.Value == nil {
+				return nil, fmt.Errorf("the item schema of field '%s' is required", paramVal.Name)
+			}
+			item := schemaVal.Items.Value
+			if item.Type == openapi3.TypeObject || item.Type == openapi3.TypeArray {
+				return nil, fmt.Errorf("the item type of parameter '%s' cannot be 'object' or 'array'", paramVal.Name)
+			}
+		}
+
 		paramMeta := paramMetaInfo{
-			name:     param.Value.Name,
-			desc:     param.Value.Description,
-			location: param.Value.In,
-			required: param.Value.Required,
+			name:     paramVal.Name,
+			desc:     paramVal.Description,
+			location: paramVal.In,
+			required: paramVal.Required,
 		}
 		apiParam, err := toAPIParameter(paramMeta, schemaVal)
 		if err != nil {
@@ -331,11 +350,28 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 
 		paramVal := prop.Value
 		schemaVal := paramVal.Schema.Value
-		if schemaVal.Type == openapi3.TypeObject || schemaVal.Type == openapi3.TypeArray {
-			continue
+
+		if schemaVal.Type == openapi3.TypeObject {
+			return nil, fmt.Errorf("the type of parameter '%s' cannot be 'object'", paramVal.Name)
 		}
 
-		if disabledParam(prop.Value.Schema.Value) {
+		var arrayItemType string
+		if schemaVal.Type == openapi3.TypeArray {
+			if paramVal.In == openapi3.ParameterInPath {
+				return nil, fmt.Errorf("the type of field '%s' cannot be 'array'", paramVal.Name)
+			}
+			if schemaVal.Items == nil || schemaVal.Items.Value == nil {
+				return nil, fmt.Errorf("the item schema of field '%s' is required", paramVal.Name)
+			}
+			item := schemaVal.Items.Value
+			if item.Type == openapi3.TypeObject || item.Type == openapi3.TypeArray {
+				return nil, fmt.Errorf("the item type of parameter '%s' cannot be 'object' or 'array'", paramVal.Name)
+			}
+
+			arrayItemType = item.Type
+		}
+
+		if disabledParam(schemaVal) {
 			continue
 		}
 
@@ -357,6 +393,7 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 			Desc:          paramVal.Description,
 			Required:      paramVal.Required,
 			Type:          schemaVal.Type,
+			SubType:       arrayItemType,
 			Format:        assistType,
 			SubParameters: []*common.PluginParameter{},
 		})

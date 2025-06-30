@@ -64,7 +64,7 @@ export class ProjectInfoService {
     const res = await intelligenceApi.DraftProjectInnerTaskList({
       project_id: this.optionsService.projectId,
     });
-    // 和后端 @dongzhenyu 确认，默认 task_list 长度为 1.
+    // 和后端确认，默认 task_list 长度为 1.
     // 如果有长度为 2 没有都住的场景，用户刷新后也可以获取到下一个。
     const { task_list } = res.data || {};
     const taskId = task_list?.[0]?.task_id;

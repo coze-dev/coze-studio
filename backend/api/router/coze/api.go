@@ -396,6 +396,10 @@ func Register(r *server.Hertz) {
 		_v1 := root.Group("/v1", _v1Mw()...)
 		_v1.GET("/conversations", append(_listconversationsapiMw(), coze.ListConversationsApi)...)
 		{
+			_bot0 := _v1.Group("/bot", _bot0Mw()...)
+			_bot0.GET("/get_online_info", append(_getbotonlineinfoMw(), coze.GetBotOnlineInfo)...)
+		}
+		{
 			_conversation0 := _v1.Group("/conversation", _conversation0Mw()...)
 			_conversation0.POST("/create", append(_createconversationMw(), coze.CreateConversation)...)
 			{

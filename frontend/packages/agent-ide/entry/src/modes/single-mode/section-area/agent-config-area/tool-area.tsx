@@ -47,7 +47,6 @@ export const ToolArea: React.FC<ToolAreaProps> = props => {
   } = props;
   const { node: DataSetArea, initRef: DataSetAreaRef } = useDataSetArea();
   const modelId = useModelStore(state => state.config.model);
-  // const { grayState } = useVoiceGrayState();
   return (
     <LayoutContext value={{ placement: PlacementEnum.CENTER }}>
       <div

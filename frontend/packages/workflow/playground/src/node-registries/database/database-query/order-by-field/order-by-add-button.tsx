@@ -22,6 +22,7 @@ export function OrderByAddButton({ afterAppend }: OrderByAddButtonProps) {
       fields={queryFields}
       filterSystemFields={false}
       readonly={readonly}
+      testName="order-fileds-add-button"
     />
   );
 }

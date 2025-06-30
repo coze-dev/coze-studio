@@ -61,7 +61,7 @@ func TestQuestionAnswer(t *testing.T) {
 			})
 			assert.NoError(t, err)
 
-			mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+			mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 		}
 
 		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
@@ -91,7 +91,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 		t.Run("answer directly, no structured output", func(t *testing.T) {
 			entry := &compose2.NodeSchema{
-				Key:  compose2.EntryNodeKey,
+				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
 			}
 
@@ -116,7 +116,7 @@ func TestQuestionAnswer(t *testing.T) {
 			}
 
 			exit := &compose2.NodeSchema{
-				Key:  compose2.ExitNodeKey,
+				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
 				Configs: map[string]any{
 					"TerminalPlan": vo.ReturnVariables,
@@ -189,11 +189,11 @@ func TestQuestionAnswer(t *testing.T) {
 						}, nil
 					},
 				}
-				mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(oneChatModel, nil).Times(1)
+				mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(oneChatModel, nil, nil).Times(1)
 			}
 
 			entry := &compose2.NodeSchema{
-				Key:  compose2.EntryNodeKey,
+				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
 			}
 
@@ -239,7 +239,7 @@ func TestQuestionAnswer(t *testing.T) {
 			}
 
 			exit := &compose2.NodeSchema{
-				Key:  compose2.ExitNodeKey,
+				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
 				Configs: map[string]any{
 					"TerminalPlan": vo.ReturnVariables,
@@ -342,7 +342,7 @@ func TestQuestionAnswer(t *testing.T) {
 
 		t.Run("answer with dynamic choices", func(t *testing.T) {
 			entry := &compose2.NodeSchema{
-				Key:  compose2.EntryNodeKey,
+				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
 			}
 
@@ -377,7 +377,7 @@ func TestQuestionAnswer(t *testing.T) {
 			}
 
 			exit := &compose2.NodeSchema{
-				Key:  compose2.ExitNodeKey,
+				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
 				Configs: map[string]any{
 					"TerminalPlan": vo.ReturnVariables,
@@ -495,11 +495,11 @@ func TestQuestionAnswer(t *testing.T) {
 						return nil, errors.New("not found")
 					},
 				}
-				mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).Times(1)
+				mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).Times(1)
 			}
 
 			entry := &compose2.NodeSchema{
-				Key:  compose2.EntryNodeKey,
+				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
 			}
 
@@ -547,7 +547,7 @@ func TestQuestionAnswer(t *testing.T) {
 			}
 
 			exit := &compose2.NodeSchema{
-				Key:  compose2.ExitNodeKey,
+				Key:  entity.ExitNodeKey,
 				Type: entity.NodeTypeExit,
 				Configs: map[string]any{
 					"TerminalPlan": vo.ReturnVariables,

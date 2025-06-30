@@ -10,8 +10,9 @@ import Table from '@tiptap/extension-table';
 import Image from '@tiptap/extension-image';
 
 import { type Chunk } from '@/text-knowledge-editor/types/chunk';
-import { getInitEditorContent } from '@/text-knowledge-editor/services/use-case/get-init-editor-content';
+import { getRenderHtmlContent } from '@/text-knowledge-editor/services/use-case/get-render-editor-content';
 import { getEditorContent } from '@/text-knowledge-editor/services/use-case/get-editor-content';
+
 interface UseDocumentEditorProps {
   chunk: Chunk | null;
   editorProps?: EditorProps;
@@ -29,7 +30,13 @@ export const useInitEditor = ({
       StarterKit.configure({
         hardBreak: {
           // 强制换行
-          keepMarks: true,
+          keepMarks: false,
+        },
+        paragraph: {
+          // 配置段落，避免生成多余的空段落
+          HTMLAttributes: {
+            class: 'editor-paragraph',
+          },
         },
       }),
       Table.configure({
@@ -43,7 +50,7 @@ export const useInitEditor = ({
         allowBase64: true,
       }),
     ],
-    content: getInitEditorContent(chunk?.content || ''),
+    content: getRenderHtmlContent(chunk?.content || ''),
     parseOptions: {
       preserveWhitespace: 'full',
     },
@@ -69,7 +76,7 @@ export const useInitEditor = ({
         if (text?.includes('\n')) {
           event.preventDefault(); // 阻止默认粘贴行为
 
-          const html = getInitEditorContent(text);
+          const html = getRenderHtmlContent(text);
 
           // 将转换后的 HTML 插入编辑器
           editor.chain().focus().insertContent(html).run();
@@ -87,7 +94,7 @@ export const useInitEditor = ({
     if (!editor || !chunk) {
       return;
     }
-    const htmlContent = getInitEditorContent(chunk.content || '');
+    const htmlContent = getRenderHtmlContent(chunk.content || '');
     // 设置内容，保留换行符
     editor.commands.setContent(htmlContent || '', false, {
       preserveWhitespace: 'full',

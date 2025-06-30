@@ -29,7 +29,6 @@ const mutateFieldsInteraction = (
   config: FeishuBaseConfigFe | null,
   preConfig: FeishuBaseConfigFe | null,
 ) => {
-  // console.log('call mutateFieldsInteraction');
   if (!config) {
     return;
   }

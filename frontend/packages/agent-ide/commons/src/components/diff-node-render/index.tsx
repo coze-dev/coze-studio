@@ -8,7 +8,6 @@ import {
   DiffStyle,
   type DiffDisplayNode,
 } from '@coze-arch/bot-api/dp_manage_api';
-// import { useParams } from 'react-router-dom';
 
 import { transTimestampText } from '../../utils';
 import { useSendDiffEvent } from '../../hooks/use-send-diff-event';
@@ -82,7 +81,6 @@ export const TextDiffView: React.FC<DiffNodeRenderProps> = ({
   type = 'diff',
 }) => {
   const isDiffView = type === 'diff';
-  // const params = useParams();
   const [visible, setVisible] = useState(false);
   const { sendViewDiffEvent } = useSendDiffEvent();
   const originText = safeJSONParse(

@@ -88,7 +88,6 @@ export const SelectSpaceModal: React.FC<
           await form.current?.formApi.validate();
           setLoading(true);
           const params = form.current?.formApi.getValues();
-          // 因为 rules 里有 required ，理论上这里一定会有值
           await onConfirm?.(params?.spaceId ?? '', params?.name);
         } catch {
           // 审核不通过会走到这个逻辑，调用接口处会上报自定义异常

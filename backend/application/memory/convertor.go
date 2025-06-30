@@ -10,6 +10,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	database "code.byted.org/flow/opencoze/backend/domain/memory/database/service"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 )
 
 func convertAddDatabase(req *table.AddDatabaseRequest) *database.CreateDatabaseRequest {
@@ -159,10 +161,17 @@ func convertListDatabase(req *table.ListDatabaseRequest) *database.ListDatabaseR
 }
 
 // convertListDatabaseRes converts the domain list response to API response
-func convertListDatabaseRes(res *database.ListDatabaseResponse) *table.ListDatabaseResponse {
+func convertListDatabaseRes(res *database.ListDatabaseResponse, bindDatabases []*entity.Database) *table.ListDatabaseResponse {
 	databaseInfos := make([]*table.DatabaseInfo, 0, len(res.Databases))
+	dbMap := slices.ToMap(bindDatabases, func(e *entity.Database) (int64, *entity.Database) {
+		return e.ID, e
+	})
 	for _, db := range res.Databases {
-		databaseInfos = append(databaseInfos, convertDatabaseRes(db))
+		databaseInfo := convertDatabaseRes(db)
+		if _, ok := dbMap[db.ID]; ok {
+			databaseInfo.IsAddedToBot = ptr.Of(true)
+		}
+		databaseInfos = append(databaseInfos, databaseInfo)
 	}
 
 	return &table.ListDatabaseResponse{

@@ -186,7 +186,6 @@ export class WorkflowJSONFormat implements WorkflowJSONFormatContribution {
     if (!isClone) {
       return json;
     }
-    // TODO 后续可优化这个声明周期
     this.formatOutputVariables(json, doc);
     this.formatInputVariables(json, doc);
     return json;

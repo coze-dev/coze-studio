@@ -1,3 +1,4 @@
+/* eslint-disable @coze-arch/max-line-per-function */
 import { useEffect, useRef, useState } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
@@ -60,7 +61,6 @@ const getHarmonizedOnboardingHeight = ({
   onboardingHeight?: number;
   status: HarmonizeOnboardingRender;
 }) => {
-  // by ui
   const emptyOnboardingHeight = 56;
   const contentOnboardingHeight = 118;
   switch (status) {
@@ -121,6 +121,7 @@ export const OnboardingMessagePop: ComponentTypesMap['onboarding'] = ({
   const renderVariable = useRenderVariable({
     [OnboardingVariable.USER_NAME]: userInfo?.name ?? '',
   });
+
   // TTI
   useReportTti({
     isLive: mode === BotMode.SingleMode,

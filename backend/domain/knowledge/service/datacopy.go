@@ -439,6 +439,7 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 			}
 
 			if _, err = ss.Store(ctx, ssDocs,
+				searchstore.WithIndexerPartitionKey(fieldNameDocumentID),
 				searchstore.WithPartition(strconv.FormatInt(newDoc.ID, 10)),
 				searchstore.WithIndexingFields(indexingFields),
 			); err != nil {

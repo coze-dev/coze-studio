@@ -122,100 +122,78 @@ func (cv *CanvasValidator) CheckRefVariable(ctx context.Context) (issues []*Issu
 			}
 		}
 
+		var inputBlockVerify func(node *vo.Node, ref *vo.BlockInput) error
+		inputBlockVerify = func(node *vo.Node, inputBlock *vo.BlockInput) error {
+			if inputBlock.Value.Type != vo.BlockInputValueTypeRef {
+				return nil
+			}
+			ref, err := parseBlockInputRef(inputBlock.Value.Content)
+			if err != nil {
+				return err
+			}
+
+			if ref.Source == vo.RefSourceTypeGlobalApp || ref.Source == vo.RefSourceTypeGlobalSystem || ref.Source == vo.RefSourceTypeGlobalUser {
+				return nil
+			}
+
+			if ref.Source == vo.RefSourceTypeBlockOutput && ref.BlockID == "" {
+				issues = append(issues, &Issue{
+					NodeErr: &NodeErr{
+						NodeID:   node.ID,
+						NodeName: node.Data.Meta.Title,
+					},
+					Message: `ref block error, not found [blockID]`,
+				})
+				return nil
+			}
+
+			if _, exists := combinedReachable[ref.BlockID]; !exists {
+				issues = append(issues, &Issue{
+					NodeErr: &NodeErr{
+						NodeID:   node.ID,
+						NodeName: node.Data.Meta.Title,
+					},
+					Message: fmt.Sprintf(`the node id "%v" on which node id "%v" depends does not exist`, node.ID, ref.BlockID),
+				})
+			}
+			return nil
+		}
+
 		for nodeID, node := range reachability.reachableNodes {
 			if node.Data != nil && node.Data.Inputs != nil && node.Data.Inputs.InputParameters != nil { // only validate InputParameters
 				parameters := node.Data.Inputs.InputParameters
-
 				for _, p := range parameters {
-					valid := validateInputParameterName(p.Name)
-					if !valid {
-						issues = append(issues, &Issue{
-							NodeErr: &NodeErr{
-								NodeID:   nodeID,
-								NodeName: node.Data.Meta.Title,
-							},
-							Message: fmt.Sprintf(`it only allow include number or alphabet and begin with alphabet, but it's "%v"`, p.Name),
-						})
-					}
-
 					if p.Input != nil {
-						if p.Input.Value.Type != vo.BlockInputValueTypeRef {
-							continue
+						valid := validateInputParameterName(p.Name)
+						if !valid {
+							issues = append(issues, &Issue{
+								NodeErr: &NodeErr{
+									NodeID:   nodeID,
+									NodeName: node.Data.Meta.Title,
+								},
+								Message: fmt.Sprintf(`it only allow include number or alphabet and begin with alphabet, but it's "%v"`, p.Name),
+							})
 						}
-						ref, err := parseBlockInputRef(p.Input.Value.Content)
+						err = inputBlockVerify(node, p.Input)
 						if err != nil {
 							return err
 						}
 
-						if ref.Source == vo.RefSourceTypeBlockOutput && ref.BlockID == "" {
-							issues = append(issues, &Issue{
-								NodeErr: &NodeErr{
-									NodeID:   nodeID,
-									NodeName: node.Data.Meta.Title,
-								},
-								Message: fmt.Sprintf(`ref block '%v' format error, not found [blockID]`, p.Name),
-							})
-							continue
-						}
-
-						if ref.Source == vo.RefSourceTypeGlobalApp || ref.Source == vo.RefSourceTypeGlobalSystem || ref.Source == vo.RefSourceTypeGlobalUser {
-							continue
-						}
-
-						if _, exists := combinedReachable[ref.BlockID]; !exists {
-							issues = append(issues, &Issue{
-								NodeErr: &NodeErr{
-									NodeID:   nodeID,
-									NodeName: node.Data.Meta.Title,
-								},
-								Message: fmt.Sprintf(`the node id "%v" on which node id "%v" depends does not exist`, nodeID, ref.BlockID),
-							})
-						}
-
 					}
+
 					if p.Left != nil {
-						if p.Left.Value.Type != vo.BlockInputValueTypeRef {
-							continue
-						}
-						ref, err := parseBlockInputRef(p.Left.Value.Content)
+						err = inputBlockVerify(node, p.Left)
 						if err != nil {
 							return err
-						}
-						if ref.BlockID == "" {
-							continue
-						}
-						if _, exists := combinedReachable[ref.BlockID]; !exists {
-							issues = append(issues, &Issue{
-								NodeErr: &NodeErr{
-									NodeID:   nodeID,
-									NodeName: node.Data.Meta.Title,
-								},
-								Message: fmt.Sprintf(`the node id "%v" on which node id "%v" depends does not exist`, nodeID, ref.BlockID),
-							})
 						}
 
 					}
+
 					if p.Right != nil {
-						if p.Right.Value.Type != vo.BlockInputValueTypeRef {
-							continue
-						}
-						ref, err := parseBlockInputRef(p.Right.Value.Content)
+						err = inputBlockVerify(node, p.Right)
 						if err != nil {
 							return err
 						}
-						if ref.BlockID == "" {
-							continue
-						}
-						if _, exists := combinedReachable[ref.BlockID]; !exists {
-							issues = append(issues, &Issue{
-								NodeErr: &NodeErr{
-									NodeID:   nodeID,
-									NodeName: node.Data.Meta.Title,
-								},
-								Message: fmt.Sprintf(`the node id "%v" on which node id "%v" depends does not exist`, nodeID, ref.BlockID),
-							})
-						}
-
 					}
 
 				}
@@ -376,18 +354,22 @@ func (cv *CanvasValidator) CheckSubWorkFlowTerminatePlanType(ctx context.Context
 	wfID2Canvas := make(map[int64]*vo.Canvas)
 
 	if len(draftIDs) > 0 {
-		draftWFs, err := workflow.GetRepository().MGetDrafts(ctx, draftIDs)
+		wfs, _, err := workflow.GetRepository().MGetDrafts(ctx, &vo.MGetPolicy{
+			MetaQuery: vo.MetaQuery{
+				IDs: draftIDs,
+			},
+		})
 		if err != nil {
 			return nil, err
 		}
 
-		for id, draft := range draftWFs {
+		for _, draft := range wfs {
 			var canvas vo.Canvas
 			if err = sonic.UnmarshalString(draft.Canvas, &canvas); err != nil {
 				return nil, err
 			}
 
-			wfID2Canvas[id] = &canvas
+			wfID2Canvas[draft.ID] = &canvas
 		}
 	}
 

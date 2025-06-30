@@ -7,11 +7,11 @@ export type ISliceInfo = SliceInfo & { addId?: string; id?: string };
 export interface TranSliceListParams {
   sliceList: ISliceInfo[];
   metaData?: DocTableColumn[];
-  handleEdit: (record, index: number) => void;
-  handleDelete: (indexs: number[]) => void;
-  update: (record: TableViewRecord, index: number, value?: string) => void;
   canEdit: boolean;
   tableKey: string;
+  onEdit?: (record, index: number) => void;
+  onDelete?: (indexs: number[]) => void;
+  onUpdate?: (record: TableViewRecord, index: number, value?: string) => void;
 }
 
 /** 切片插入的位置 */

@@ -1,13 +1,16 @@
 package vo
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type NodeKey string
@@ -45,6 +48,183 @@ type NamedTypeInfo struct {
 	Required     bool             `json:"required,omitempty"`
 	Desc         string           `json:"desc,omitempty"`
 	Properties   []*NamedTypeInfo `json:"properties,omitempty"`
+}
+
+type ErrorLevel string
+
+const (
+	LevelWarn   ErrorLevel = "Warn"
+	LevelError  ErrorLevel = "Error"
+	LevelCancel ErrorLevel = "pending" // TODO: this 'pending' will be changed to 'cancel' or similar in the near future
+)
+
+type WorkflowError interface {
+	errorx.StatusError
+	DebugURL() string
+	Level() ErrorLevel
+	OpenAPICode() int
+	AppendDebug(exeID, spaceID, workflowID int64) WorkflowError
+	ChangeErrLevel(newLevel ErrorLevel) WorkflowError
+}
+
+type wfErr struct {
+	errorx.StatusError
+	exeID      int64
+	spaceID    int64
+	workflowID int64
+	cause      error
+}
+
+func (w *wfErr) DebugURL() string {
+	if w.StatusError.Extra() == nil {
+		return fmt.Sprintf(DebugURLTpl, w.exeID, w.spaceID, w.workflowID)
+	}
+
+	debugURL, ok := w.StatusError.Extra()["debug_url"]
+	if ok {
+		return debugURL
+	}
+
+	return fmt.Sprintf(DebugURLTpl, w.exeID, w.spaceID, w.workflowID)
+}
+
+func (w *wfErr) Level() ErrorLevel {
+	if w.StatusError.Extra() == nil {
+		return LevelError
+	}
+
+	level, ok := w.StatusError.Extra()["level"]
+	if ok {
+		return ErrorLevel(level)
+	}
+
+	return LevelError
+}
+
+func (w *wfErr) Error() string {
+	if w.cause == nil {
+		return w.StatusError.Error()
+	}
+
+	return fmt.Sprintf("%s, cause: %s", w.StatusError.Error(), w.cause.Error())
+}
+
+func (w *wfErr) OpenAPICode() int {
+	return errno.CodeForOpenAPI(w)
+}
+
+func (w *wfErr) AppendDebug(exeID, spaceID, workflowID int64) WorkflowError {
+	w.exeID = exeID
+	w.spaceID = spaceID
+	w.workflowID = workflowID
+	return w
+}
+
+func (w *wfErr) Unwrap() error {
+	return w.cause
+}
+
+func (w *wfErr) ChangeErrLevel(newLevel ErrorLevel) WorkflowError {
+	w.StatusError.Extra()["level"] = string(newLevel)
+	return w
+}
+
+func NewError(code int, opts ...errorx.Option) WorkflowError {
+	opts = append(opts, errorx.Extra("level", string(LevelError)))
+	e := errorx.New(int32(code), opts...)
+	var sErr errorx.StatusError
+	_ = errors.As(e, &sErr)
+	wfe := &wfErr{
+		StatusError: sErr,
+	}
+
+	return wfe
+}
+
+func WrapError(code int, err error, opts ...errorx.Option) WorkflowError {
+	opts = append(opts, errorx.Extra("level", string(LevelError)))
+	e := errorx.WrapByCode(err, int32(code), opts...)
+	var sErr errorx.StatusError
+	_ = errors.As(e, &sErr)
+	wfe := &wfErr{
+		StatusError: sErr,
+		cause:       err,
+	}
+	return wfe
+}
+
+func WrapWithDebug(code int, err error, exeID, spaceID, workflowID int64, opts ...errorx.Option) WorkflowError {
+	debugURL := fmt.Sprintf(DebugURLTpl, exeID, spaceID, workflowID)
+	opts = append(opts, errorx.Extra("debug_url", debugURL))
+	return WrapError(code, err, opts...)
+}
+
+func NewWarn(code int, opts ...errorx.Option) WorkflowError {
+	opts = append(opts, errorx.Extra("level", string(LevelWarn)))
+	e := errorx.New(int32(code), opts...)
+	var sErr errorx.StatusError
+	_ = errors.As(e, &sErr)
+	wfe := &wfErr{
+		StatusError: sErr,
+	}
+
+	return wfe
+}
+
+func WrapWarn(code int, err error, opts ...errorx.Option) WorkflowError {
+	opts = append(opts, errorx.Extra("level", string(LevelWarn)))
+	e := errorx.WrapByCode(err, int32(code), opts...)
+	var sErr errorx.StatusError
+	_ = errors.As(e, &sErr)
+	wfe := &wfErr{
+		StatusError: sErr,
+		cause:       err,
+	}
+	return wfe
+}
+
+func WrapIfNeeded(code int, err error, opts ...errorx.Option) WorkflowError {
+	var wfe WorkflowError
+	if errors.As(err, &wfe) {
+		return wfe
+	}
+	return WrapError(code, err, opts...)
+}
+
+var CancelErr = newCancel()
+
+func newCancel() WorkflowError {
+	e := errorx.New(errno.ErrWorkflowCanceledByUser, errorx.Extra("level", string(LevelCancel)))
+	var sErr errorx.StatusError
+	_ = errors.As(e, &sErr)
+	wfe := &wfErr{
+		StatusError: sErr,
+	}
+	return wfe
+}
+
+var NodeTimeoutErr = newNodeTimeout()
+
+func newNodeTimeout() WorkflowError {
+	e := errorx.New(errno.ErrNodeTimeout, errorx.Extra("level", string(LevelError)))
+	var sErr errorx.StatusError
+	_ = errors.As(e, &sErr)
+	wfe := &wfErr{
+		StatusError: sErr,
+	}
+	return wfe
+}
+
+var WorkflowTimeoutErr = newWorkflowTimeout()
+
+func newWorkflowTimeout() WorkflowError {
+	e := errorx.New(errno.ErrWorkflowTimeout, errorx.Extra("level", string(LevelError)))
+	var sErr errorx.StatusError
+	_ = errors.As(e, &sErr)
+	wfe := &wfErr{
+		StatusError: sErr,
+	}
+	return wfe
 }
 
 type DataType string

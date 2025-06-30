@@ -333,12 +333,9 @@ func (p *PluginApplicationService) RegisterPlugin(ctx context.Context, req *plug
 }
 
 func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *pluginAPI.GetPluginAPIsRequest) (resp *pluginAPI.GetPluginAPIsResponse, err error) {
-	pl, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
+	pl, err := p.validateDraftPluginAccess(ctx, req.PluginID)
 	if err != nil {
-		return nil, errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", req.PluginID)
-	}
-	if !exist {
-		return nil, errorx.New(errno.ErrPluginRecordNotFound)
+		return nil, errorx.Wrapf(err, "validateGetPluginAPIsRequest failed")
 	}
 
 	var (
@@ -460,12 +457,9 @@ func (p *PluginApplicationService) getToolOnlineStatus(ctx context.Context, tool
 }
 
 func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *pluginAPI.GetPluginInfoRequest) (resp *pluginAPI.GetPluginInfoResponse, err error) {
-	draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
+	draftPlugin, err := p.validateDraftPluginAccess(ctx, req.PluginID)
 	if err != nil {
-		return nil, errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", req.PluginID)
-	}
-	if !exist {
-		return nil, errorx.New(errno.ErrPluginRecordNotFound)
+		return nil, errorx.Wrapf(err, "validateGetPluginInfoRequest failed")
 	}
 
 	metaInfo, err := p.getPluginMetaInfo(ctx, draftPlugin)
@@ -478,7 +472,7 @@ func (p *PluginApplicationService) GetPluginInfo(ctx context.Context, req *plugi
 		return nil, err
 	}
 
-	_, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID, repository.WithPluginID())
+	_, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID, repository.WithPluginID())
 	if err != nil {
 		return nil, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
 	}
@@ -618,6 +612,11 @@ func (p *PluginApplicationService) fillAuthInfoInMetaInfo(ctx context.Context, d
 }
 
 func (p *PluginApplicationService) GetUpdatedAPIs(ctx context.Context, req *pluginAPI.GetUpdatedAPIsRequest) (resp *pluginAPI.GetUpdatedAPIsResponse, err error) {
+	_, err = p.validateDraftPluginAccess(ctx, req.PluginID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "validateGetUpdatedAPIsRequest failed")
+	}
+
 	draftTools, err := p.toolRepo.GetPluginAllDraftTools(ctx, req.PluginID)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "GetPluginAllDraftTools failed, pluginID=%d", req.PluginID)
@@ -725,6 +724,11 @@ func (p *PluginApplicationService) CheckAndLockPluginEdit(ctx context.Context, r
 }
 
 func (p *PluginApplicationService) CreateAPI(ctx context.Context, req *pluginAPI.CreateAPIRequest) (resp *pluginAPI.CreateAPIResponse, err error) {
+	_, err = p.validateDraftPluginAccess(ctx, req.PluginID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "validateCreateAPIRequest failed")
+	}
+
 	defaultSubURL := gonanoid.MustID(6)
 
 	tool := &entity.ToolInfo{
@@ -756,6 +760,11 @@ func (p *PluginApplicationService) CreateAPI(ctx context.Context, req *pluginAPI
 }
 
 func (p *PluginApplicationService) UpdateAPI(ctx context.Context, req *pluginAPI.UpdateAPIRequest) (resp *pluginAPI.UpdateAPIResponse, err error) {
+	_, err = p.validateDraftPluginAccess(ctx, req.PluginID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "validateUpdateAPIRequest failed")
+	}
+
 	op, err := pluginutil.APIParamsToOpenapiOperation(req.RequestParams, req.ResponseParams)
 	if err != nil {
 		return nil, err
@@ -803,10 +812,12 @@ func (p *PluginApplicationService) UpdateAPI(ctx context.Context, req *pluginAPI
 }
 
 func (p *PluginApplicationService) UpdatePlugin(ctx context.Context, req *pluginAPI.UpdatePluginRequest) (resp *pluginAPI.UpdatePluginResponse, err error) {
-	userID := ctxutil.GetUIDFromCtx(ctx)
-	if userID == nil {
-		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	_, err = p.validateDraftPluginAccess(ctx, req.PluginID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "validateUpdatePluginRequest failed")
 	}
+
+	userID := ctxutil.GetUIDFromCtx(ctx)
 
 	loader := openapi3.NewLoader()
 	_doc, err := loader.LoadFromData([]byte(req.Openapi))
@@ -855,6 +866,11 @@ func (p *PluginApplicationService) UpdatePlugin(ctx context.Context, req *plugin
 }
 
 func (p *PluginApplicationService) DeleteAPI(ctx context.Context, req *pluginAPI.DeleteAPIRequest) (resp *pluginAPI.DeleteAPIResponse, err error) {
+	_, err = p.validateDraftPluginAccess(ctx, req.PluginID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "validateDeleteAPIRequest failed")
+	}
+
 	err = p.toolRepo.DeleteDraftTool(ctx, req.APIID)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "DeleteDraftTool failed, toolID=%d", req.APIID)
@@ -866,6 +882,11 @@ func (p *PluginApplicationService) DeleteAPI(ctx context.Context, req *pluginAPI
 }
 
 func (p *PluginApplicationService) DelPlugin(ctx context.Context, req *pluginAPI.DelPluginRequest) (resp *pluginAPI.DelPluginResponse, err error) {
+	_, err = p.validateDraftPluginAccess(ctx, req.PluginID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "validateDelPluginRequest failed")
+	}
+
 	err = p.DomainSVC.DeleteDraftPlugin(ctx, req.PluginID)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "DeleteDraftPlugin failed, pluginID=%d", req.PluginID)
@@ -889,6 +910,11 @@ func (p *PluginApplicationService) DelPlugin(ctx context.Context, req *pluginAPI
 }
 
 func (p *PluginApplicationService) PublishPlugin(ctx context.Context, req *pluginAPI.PublishPluginRequest) (resp *pluginAPI.PublishPluginResponse, err error) {
+	_, err = p.validateDraftPluginAccess(ctx, req.PluginID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "validatePublishPluginRequest failed")
+	}
+
 	err = p.DomainSVC.PublishPlugin(ctx, &service.PublishPluginRequest{
 		PluginID:    req.PluginID,
 		Version:     req.VersionName,
@@ -917,6 +943,11 @@ func (p *PluginApplicationService) PublishPlugin(ctx context.Context, req *plugi
 }
 
 func (p *PluginApplicationService) UpdatePluginMeta(ctx context.Context, req *pluginAPI.UpdatePluginMetaRequest) (resp *pluginAPI.UpdatePluginMetaResponse, err error) {
+	_, err = p.validateDraftPluginAccess(ctx, req.PluginID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "validateUpdatePluginMetaRequest failed")
+	}
+
 	authInfo, err := getUpdateAuthInfo(ctx, req)
 	if err != nil {
 		return nil, err
@@ -1053,6 +1084,11 @@ func (p *PluginApplicationService) UpdateBotDefaultParams(ctx context.Context, r
 }
 
 func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.DebugAPIRequest) (resp *pluginAPI.DebugAPIResponse, err error) {
+	_, err = p.validateDraftPluginAccess(ctx, req.PluginID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "validateDebugAPIRequest failed")
+	}
+
 	const defaultErrReason = "internal server error"
 
 	userID := ctxutil.GetUIDFromCtx(ctx)
@@ -1074,7 +1110,7 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 		ExecScene:       model.ExecSceneOfToolDebug,
 		ExecDraftTool:   true,
 		ArgumentsInJson: req.Parameters,
-	})
+	}, model.WithAutoGenRespSchema())
 	if err != nil {
 		var e errorx.StatusError
 		if errors.As(err, &e) {
@@ -1096,6 +1132,10 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 		ResponseParams: []*common.APIParameter{},
 	}
 
+	if req.Operation == common.DebugOperation_Parse {
+		res.Tool.Operation.Responses = res.RespSchema
+	}
+
 	respParams, err := res.Tool.ToRespAPIParameter()
 	if err != nil {
 		logs.CtxErrorf(ctx, "ToRespAPIParameter failed, err=%v", err)
@@ -1115,7 +1155,7 @@ func (p *PluginApplicationService) UnlockPluginEdit(ctx context.Context, req *pl
 	return resp, nil
 }
 
-func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, _ *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
+func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
 	res, err := p.DomainSVC.ListPluginProducts(ctx, &service.ListPluginProductsRequest{})
 	if err != nil {
 		return nil, errorx.Wrapf(err, "ListPluginProducts failed")
@@ -1134,6 +1174,16 @@ func (p *PluginApplicationService) PublicGetProductList(ctx context.Context, _ *
 		}
 
 		products = append(products, pi)
+	}
+
+	if req.GetKeyword() != "" {
+		filterProducts := make([]*productAPI.ProductInfo, 0, len(products))
+		for _, _p := range products {
+			if strings.Contains(strings.ToLower(_p.MetaInfo.Name), strings.ToLower(req.GetKeyword())) {
+				filterProducts = append(filterProducts, _p)
+			}
+		}
+		products = filterProducts
 	}
 
 	resp = &productAPI.GetProductListResponse{
@@ -1262,6 +1312,11 @@ func (p *PluginApplicationService) PublicGetProductDetail(ctx context.Context, r
 }
 
 func (p *PluginApplicationService) GetPluginNextVersion(ctx context.Context, req *pluginAPI.GetPluginNextVersionRequest) (resp *pluginAPI.GetPluginNextVersionResponse, err error) {
+	_, err = p.validateDraftPluginAccess(ctx, req.PluginID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "validateGetPluginNextVersionRequest failed")
+	}
+
 	nextVersion, err := p.DomainSVC.GetPluginNextVersion(ctx, req.PluginID)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "GetPluginNextVersion failed, pluginID=%d", req.PluginID)
@@ -1374,6 +1429,11 @@ func (p *PluginApplicationService) Convert2OpenAPI(ctx context.Context, req *plu
 }
 
 func (p *PluginApplicationService) BatchCreateAPI(ctx context.Context, req *pluginAPI.BatchCreateAPIRequest) (resp *pluginAPI.BatchCreateAPIResponse, err error) {
+	_, err = p.validateDraftPluginAccess(ctx, req.PluginID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "validateBatchCreateAPIRequest failed")
+	}
+
 	loader := openapi3.NewLoader()
 	doc, err := loader.LoadFromData([]byte(req.Openapi))
 	if err != nil {
@@ -1476,6 +1536,24 @@ func (p *PluginApplicationService) MoveAPPPluginToLibrary(ctx context.Context, p
 	})
 	if err != nil {
 		return nil, errorx.Wrapf(err, "publish resource '%d' failed", pluginID)
+	}
+
+	return plugin, nil
+}
+
+func (p *PluginApplicationService) validateDraftPluginAccess(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	}
+
+	plugin, err = p.DomainSVC.GetDraftPlugin(ctx, pluginID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", pluginID)
+	}
+
+	if plugin.DeveloperID != *uid {
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "you are not the plugin owner"))
 	}
 
 	return plugin, nil

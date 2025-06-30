@@ -215,8 +215,11 @@ func (s *SingleAgentApplicationService) fetchWorkflowDetails(ctx context.Context
 		},
 		QType: vo.FromLatestVersion,
 	}
-
-	return s.appContext.WorkflowDomainSVC.MGet(ctx, policy)
+	ret, _, err := s.appContext.WorkflowDomainSVC.MGet(ctx, policy)
+	if err != nil {
+		return nil, fmt.Errorf("fetch workflow details failed: %v", err)
+	}
+	return ret, nil
 }
 
 func modelInfoDo2Vo(modelInfos []*modelEntity.Model) map[int64]*playground.ModelDetail {

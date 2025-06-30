@@ -33,7 +33,7 @@ func (dao *KnowledgeDocumentSliceDAO) Create(ctx context.Context, slice *model.K
 func (dao *KnowledgeDocumentSliceDAO) Update(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
 	s := dao.Query.KnowledgeDocumentSlice
 	slice.UpdatedAt = time.Now().UnixMilli()
-	_, err := s.WithContext(ctx).Updates(slice)
+	err := s.WithContext(ctx).Save(slice)
 	return err
 }
 
@@ -45,6 +45,9 @@ func (dao *KnowledgeDocumentSliceDAO) BatchSetStatus(ctx context.Context, ids []
 	s := dao.Query.KnowledgeDocumentSlice
 	updates := map[string]any{s.Status.ColumnName().String(): status}
 	if reason != "" {
+		if len(reason) > 255 { // TODO: tinytext 换成 text ?
+			reason = reason[:255]
+		}
 		updates[s.FailReason.ColumnName().String()] = reason
 	}
 	updates[s.UpdatedAt.ColumnName().String()] = time.Now().UnixMilli()
@@ -132,7 +135,7 @@ func (dao *KnowledgeDocumentSliceDAO) listDo(ctx context.Context, knowledgeID in
 		do = do.Where(s.KnowledgeID.Eq(knowledgeID))
 	}
 	if cursor != nil {
-		//todo，因sequence逻辑更新，这里逻辑可能要改动下
+		// todo，因sequence逻辑更新，这里逻辑可能要改动下
 	}
 
 	return do, nil

@@ -30,9 +30,6 @@ export const RelatedBotsList = (props: RelatedBotsListProps) => {
       return resq.ref_bots;
     },
     {
-      // onSuccess: () => {
-      //   onfinish?.();
-      // },
       onError: error => {
         dataReporter.errorEvent(DataNamespace.KNOWLEDGE, {
           eventName: REPORT_EVENTS.KnowledgeGetDatasetRefDetail,

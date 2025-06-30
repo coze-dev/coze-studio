@@ -12,11 +12,25 @@ const (
 	VeImageXTemplate   = "VE_IMAGEX_TEMPLATE"
 	VeImageXUploadHost = "VE_IMAGEX_UPLOAD_HOST"
 
-	MinIOAK        = "MINIO_AK"
-	MinIOSK        = "MINIO_SK"
-	MinIOEndpoint  = "MINIO_ENDPOINT"
-	MinIOBucket    = "MINIO_BUCKET"
-	RocketMQServer = "RMQ_NAME_SERVER"
+	StorageType   = "STORAGE_TYPE"
+	MinIOAK       = "MINIO_AK"
+	MinIOSK       = "MINIO_SK"
+	MinIOEndpoint = "MINIO_ENDPOINT"
+	StorageBucket = "STORAGE_BUCKET"
+	TOSAccessKey  = "TOS_ACCESS_KEY"
+	TOSSecretKey  = "TOS_SECRET_KEY"
+	TOSRegion     = "TOS_REGION"
+	TOSEndpoint   = "TOS_ENDPOINT"
+
+	RMQServer               = "RMQ_NAME_SERVER"
+	RMQSecretKey            = "RMQ_SECRET_KEY"
+	RMQAccessKey            = "RMQ_ACCESS_KEY"
+	RMQTopicApp             = "opencoze_search_app"
+	RMQTopicResource        = "opencoze_search_resource"
+	RMQTopicKnowledge       = "opencoze_knowledge"
+	RMQTopicSearchResource  = "cg_search_resource"
+	RMQTopicSearchApp       = "cg_search_app"
+	RMQTopicKnowledgeSearch = "cg_knowledge"
 
 	CozeConnectorID   = int64(10000010)
 	WebSDKConnectorID = int64(999)
@@ -48,5 +62,5 @@ const (
 )
 
 const (
-	TemplateSpaceID = int64(1) // special space id for template
+	TemplateSpaceID = int64(999999) // special space id for template
 )

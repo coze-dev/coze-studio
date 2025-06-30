@@ -5,14 +5,9 @@ import (
 	"strconv"
 
 	"github.com/bytedance/sonic"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/core/search"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/sortorder"
 
-	"code.byted.org/flow/opencoze/backend/api/model/intelligence/common"
-	"code.byted.org/flow/opencoze/backend/domain/search/consts"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
-	"code.byted.org/flow/opencoze/backend/infra/contract/es8"
+	"code.byted.org/flow/opencoze/backend/infra/contract/es"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -20,14 +15,14 @@ import (
 
 var searchInstance *searchImpl
 
-func NewDomainService(ctx context.Context, e *es8.Client) Search {
+func NewDomainService(ctx context.Context, e es.Client) Search {
 	return &searchImpl{
 		esClient: e,
 	}
 }
 
 type searchImpl struct {
-	esClient *es8.Client
+	esClient es.Client
 }
 
 type fieldName string
@@ -45,174 +40,88 @@ const (
 	fieldOfIsFav          = "is_fav"
 	fieldOfIsRecentlyOpen = "is_recently_open"
 
-	// resource index fields
-	fieldOfResType       = "res_type"
-	fieldOfPublishStatus = "publish_status"
-	fieldOfResSubType    = "res_sub_type"
-	fieldOfBizStatus     = "biz_status"
-	fieldOfScores        = "scores"
-
-	fieldOfCreateTime       = "create_time"
-	fieldOfUpdateTime       = "update_time"
-	fieldOfPublishTime      = "publish_time"
-	fieldOfFavTime          = "fav_time"
-	fieldOfRecentlyOpenTime = "recently_open_time"
-
 	resTypeSearchAll = -1
 )
 
 func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.SearchProjectsRequest) (resp *searchEntity.SearchProjectsResponse, err error) {
-	sr := s.esClient.Search()
-
-	mustQueries := make([]types.Query, 0, 10)
-
-	if req.ProjectID != 0 { // 精确搜索
-		mustQueries = append(mustQueries,
-			types.Query{
-				Term: map[string]types.TermQuery{
-					fieldOfID: {Value: conv.Int64ToStr(req.ProjectID)},
-				},
-			},
-		)
-	} else {
-		mustQueries = append(mustQueries,
-			types.Query{Term: map[string]types.TermQuery{
-				fieldOfSpaceID: {Value: conv.Int64ToStr(req.SpaceID)},
-			}},
-		)
-	}
-
 	logs.CtxDebugf(ctx, "[SearchProjects] search : %s", conv.DebugJsonToStr(req))
-
-	if req.Name != "" {
-		mustQueries = append(mustQueries,
-			types.Query{
-				Wildcard: map[string]types.WildcardQuery{
-					fieldOfNameRaw: {
-						Value:           ptr.Of("*" + req.Name + "*"),
-						CaseInsensitive: ptr.Of(true), // 忽略大小写
-					},
-				},
-			},
-		)
-	}
-
-	if req.IsPublished {
-		mustQueries = append(mustQueries,
-			types.Query{
-				Term: map[string]types.TermQuery{
-					fieldOfHasPublished: {Value: conv.BoolToInt(req.IsPublished)},
-				},
-			})
-	}
-
-	if req.IsFav {
-		mustQueries = append(mustQueries,
-			types.Query{
-				Term: map[string]types.TermQuery{
-					fieldOfIsFav: {Value: conv.BoolToInt(req.IsFav)},
-				},
-			})
-	}
-
-	if req.IsRecentlyOpen {
-		mustQueries = append(mustQueries,
-			types.Query{
-				Term: map[string]types.TermQuery{
-					fieldOfIsRecentlyOpen: {Value: conv.BoolToInt(req.IsRecentlyOpen)},
-				},
-			})
-	}
-
-	if req.OwnerID > 0 {
-		mustQueries = append(mustQueries,
-			types.Query{
-				Term: map[string]types.TermQuery{
-					fieldOfOwnerID: {Value: conv.Int64ToStr(req.OwnerID)},
-				},
-			})
-	}
-
-	if len(req.Status) > 0 {
-		mustQueries = append(mustQueries,
-			types.Query{
-				Terms: &types.TermsQuery{
-					TermsQuery: map[string]types.TermsQueryField{
-						fieldOfStatus: req.Status,
-					},
-				},
-			})
-	}
-
-	if len(req.Types) > 0 {
-		mustQueries = append(mustQueries,
-			types.Query{
-				Terms: &types.TermsQuery{
-					TermsQuery: map[string]types.TermsQueryField{
-						fieldOfType: req.Types,
-					},
-				},
-			})
-	}
-
-	searchReq := &search.Request{
-		Query: &types.Query{
-			Bool: &types.BoolQuery{
-				Must:   mustQueries,
-				Filter: make([]types.Query, 0),
-			},
+	searchReq := &es.Request{
+		Query: &es.Query{
+			Bool: &es.BoolQuery{},
 		},
 	}
 
-	sr = sr.Request(searchReq)
-	sr.Index(projectIndexName)
+	if req.ProjectID != 0 { // 精确搜索
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewEqualQuery(fieldOfID, conv.Int64ToStr(req.ProjectID)))
+	} else {
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewEqualQuery(fieldOfSpaceID, conv.Int64ToStr(req.SpaceID)))
+	}
+
+	if req.Name != "" {
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewContainsQuery(fieldOfNameRaw, req.Name))
+	}
+
+	if req.IsPublished {
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewEqualQuery(fieldOfHasPublished, conv.BoolToInt(req.IsPublished)))
+	}
+
+	if req.IsFav {
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewEqualQuery(fieldOfIsFav, conv.BoolToInt(req.IsFav)))
+	}
+
+	if req.IsRecentlyOpen {
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewEqualQuery(fieldOfIsRecentlyOpen, conv.BoolToInt(req.IsRecentlyOpen)))
+	}
+
+	if req.OwnerID > 0 {
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewEqualQuery(fieldOfOwnerID, conv.Int64ToStr(req.OwnerID)))
+	}
+
+	if len(req.Status) > 0 {
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewInQuery(fieldOfStatus, req.Status))
+	}
+
+	if len(req.Types) > 0 {
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewInQuery(fieldOfType, req.Types))
+	}
 
 	reqLimit := 100
 	if req.Limit > 0 {
 		reqLimit = int(req.Limit)
 	}
+
 	realLimit := reqLimit + 1
-	orderBy := func() fieldName {
-		switch req.OrderBy {
-		case consts.OrderByUpdateTime:
-			return fieldOfUpdateTime
-		case consts.OrderByCreateTime:
-			return fieldOfCreateTime
-		case consts.OrderByPublishTime:
-			return fieldOfPublishTime
-		case consts.OrderByFavTime:
-			return fieldOfFavTime
-		case consts.OrderByRecentlyOpenTime:
-			return fieldOfRecentlyOpenTime
-		default:
-			return fieldOfUpdateTime
-		}
-	}()
-	order := common.OrderByType_Desc
+	searchReq.Size = &realLimit
 
-	sr.Sort(&sortOptions{
-		OrderBy: orderBy,
-		Order: func() sortorder.SortOrder {
-			if order == common.OrderByType_Asc {
-				return sortorder.Asc
-			}
-			return sortorder.Desc
-		}(),
-	})
-
-	sr.Size(realLimit)
-
-	if req.Cursor != "" && req.Cursor != "0" {
-		sr.SearchAfter(&searchCursor{
-			orderBy: orderBy,
-			cursor:  req.Cursor,
-		})
+	if req.OrderFiledName == "" {
+		req.OrderFiledName = searchEntity.FieldOfUpdateTime
 	}
 
-	logs.CtxDebugf(ctx, "Elasticsearch Request: %s\n", conv.DebugJsonToStr(searchReq))
+	searchReq.Sort = []es.SortFiled{
+		{
+			Field: req.OrderFiledName,
+			Asc:   req.OrderAsc,
+		},
+	}
 
-	result, err := sr.Do(ctx)
+	if req.Cursor != "" && req.Cursor != "0" {
+		searchReq.SearchAfter = []any{
+			fieldValueCaster(req.OrderFiledName, req.Cursor),
+		}
+	}
+
+	result, err := s.esClient.Search(ctx, projectIndexName, searchReq)
 	if err != nil {
+		logs.CtxDebugf(ctx, "[Serarch.DO] err : %v", err)
 		return nil, err
 	}
 
@@ -240,7 +149,7 @@ func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.Searc
 
 	nextCursor := ""
 	if len(docs) > 0 {
-		nextCursor = formatProjectNextCursor(orderBy, docs[len(docs)-1])
+		nextCursor = formatProjectNextCursor(req.OrderFiledName, docs[len(docs)-1])
 	}
 	if nextCursor == "" {
 		hasMore = false
@@ -255,7 +164,7 @@ func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.Searc
 	return resp, nil
 }
 
-func hit2AppDocument(hit types.Hit) (*searchEntity.ProjectDocument, error) {
+func hit2AppDocument(hit es.Hit) (*searchEntity.ProjectDocument, error) {
 	doc := &searchEntity.ProjectDocument{}
 
 	if err := sonic.Unmarshal(hit.Source_, doc); err != nil {
@@ -264,49 +173,31 @@ func hit2AppDocument(hit types.Hit) (*searchEntity.ProjectDocument, error) {
 	return doc, nil
 }
 
-type sortOptions struct {
-	OrderBy fieldName
-	Order   sortorder.SortOrder
-}
-
-func (s *sortOptions) SortCombinationsCaster() *types.SortCombinations {
-	so := types.SortCombinations(types.SortOptions{
-		SortOptions: map[string]types.FieldSort{
-			string(s.OrderBy): {
-				Order: ptr.Of(s.Order),
-			},
-		},
-	})
-
-	return ptr.Of(so)
-}
-
-type searchCursor struct {
-	orderBy fieldName
-	cursor  string
-}
-
-func (s *searchCursor) FieldValueCaster() *types.FieldValue {
-	switch s.orderBy {
-	case fieldOfCreateTime, fieldOfUpdateTime, fieldOfPublishTime, fieldOfFavTime, fieldOfRecentlyOpenTime:
-		cursor, err := strconv.ParseInt(s.cursor, 10, 64)
+func fieldValueCaster(fieldName, cursor string) any {
+	switch fieldName {
+	case searchEntity.FieldOfCreateTime,
+		searchEntity.FieldOfUpdateTime,
+		searchEntity.FieldOfPublishTime,
+		searchEntity.FieldOfFavTime,
+		searchEntity.FieldOfRecentlyOpenTime:
+		cursorInt, err := strconv.ParseInt(cursor, 10, 64)
 		if err != nil {
-			cursor = 0
+			cursorInt = 0
 		}
 
-		return ptr.Of(types.FieldValue(cursor))
+		return cursorInt
 	default:
-		return ptr.Of(types.FieldValue(s.cursor))
+		return cursor
 	}
 }
 
-func formatProjectNextCursor(ob fieldName, val *searchEntity.ProjectDocument) string {
-	fieldName2Cursor := map[fieldName]string{
-		fieldOfCreateTime:       conv.Int64ToStr(val.GetCreateTime()),
-		fieldOfUpdateTime:       conv.Int64ToStr(val.GetUpdateTime()),
-		fieldOfPublishTime:      conv.Int64ToStr(val.GetPublishTime()),
-		fieldOfFavTime:          conv.Int64ToStr(val.GetFavTime()),
-		fieldOfRecentlyOpenTime: conv.Int64ToStr(val.GetRecentlyOpenTime()),
+func formatProjectNextCursor(ob string, val *searchEntity.ProjectDocument) string {
+	fieldName2Cursor := map[string]string{
+		searchEntity.FieldOfCreateTime:       conv.Int64ToStr(val.GetCreateTime()),
+		searchEntity.FieldOfUpdateTime:       conv.Int64ToStr(val.GetUpdateTime()),
+		searchEntity.FieldOfPublishTime:      conv.Int64ToStr(val.GetPublishTime()),
+		searchEntity.FieldOfFavTime:          conv.Int64ToStr(val.GetFavTime()),
+		searchEntity.FieldOfRecentlyOpenTime: conv.Int64ToStr(val.GetRecentlyOpenTime()),
 	}
 
 	res, ok := fieldName2Cursor[ob]
@@ -317,11 +208,11 @@ func formatProjectNextCursor(ob fieldName, val *searchEntity.ProjectDocument) st
 	return res
 }
 
-func formatResourceNextCursor(ob fieldName, val *searchEntity.ResourceDocument) string {
-	fieldName2Cursor := map[fieldName]string{
-		fieldOfCreateTime:  conv.Int64ToStr(val.GetCreateTime()),
-		fieldOfUpdateTime:  conv.Int64ToStr(val.GetUpdateTime()),
-		fieldOfPublishTime: conv.Int64ToStr(val.GetPublishTime()),
+func formatResourceNextCursor(ob string, val *searchEntity.ResourceDocument) string {
+	fieldName2Cursor := map[string]string{
+		searchEntity.FieldOfCreateTime:  conv.Int64ToStr(val.GetCreateTime()),
+		searchEntity.FieldOfUpdateTime:  conv.Int64ToStr(val.GetUpdateTime()),
+		searchEntity.FieldOfPublishTime: conv.Int64ToStr(val.GetPublishTime()),
 	}
 
 	res, ok := fieldName2Cursor[ob]
@@ -333,155 +224,85 @@ func formatResourceNextCursor(ob fieldName, val *searchEntity.ResourceDocument) 
 }
 
 func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.SearchResourcesRequest) (resp *searchEntity.SearchResourcesResponse, err error) {
-	sr := s.esClient.Search()
-
-	mustQueries := make([]types.Query, 0, 10)
-	shouldQueries := make([]types.Query, 0, 10)
+	logs.CtxDebugf(ctx, "[SearchResources] search : %s", conv.DebugJsonToStr(req))
+	searchReq := &es.Request{
+		Query: &es.Query{
+			Bool: &es.BoolQuery{},
+		},
+	}
 
 	if req.APPID > 0 {
-		mustQueries = append(mustQueries,
-			types.Query{
-				Term: map[string]types.TermQuery{fieldOfAPPID: {Value: conv.Int64ToStr(req.APPID)}},
-			})
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewEqualQuery(fieldOfAPPID, conv.Int64ToStr(req.APPID)))
 	} else {
-		mustQueries = append(mustQueries,
-			types.Query{Term: map[string]types.TermQuery{
-				fieldOfSpaceID: {Value: conv.Int64ToStr(req.SpaceID)},
-			}},
-		)
-		shouldQueries = append(shouldQueries,
-			types.Query{
-				Bool: &types.BoolQuery{
-					MustNot: []types.Query{{Exists: &types.ExistsQuery{Field: fieldOfAPPID}}},
-				},
-			},
-			types.Query{
-				Term: map[string]types.TermQuery{fieldOfAPPID: {Value: "0"}},
-			})
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewEqualQuery(fieldOfSpaceID, conv.Int64ToStr(req.SpaceID)))
+		searchReq.Query.Bool.Should = append(searchReq.Query.Bool.Should,
+			es.NewNotExistsQuery(fieldOfAPPID))
+		searchReq.Query.Bool.Should = append(searchReq.Query.Bool.Should,
+			es.NewEqualQuery(fieldOfAPPID, "0"))
+
+		searchReq.Query.Bool.MinimumShouldMatch = ptr.Of(1)
 	}
 
 	if req.Name != "" {
-		mustQueries = append(mustQueries,
-			types.Query{
-				Wildcard: map[string]types.WildcardQuery{
-					fieldOfNameRaw: {
-						Value:           ptr.Of("*" + req.Name + "*"),
-						CaseInsensitive: ptr.Of(true), // 忽略大小写
-					},
-				},
-			},
-		)
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewContainsQuery(fieldOfNameRaw, req.Name))
 	}
 
 	if req.OwnerID > 0 {
-		mustQueries = append(mustQueries,
-			types.Query{
-				Term: map[string]types.TermQuery{
-					fieldOfOwnerID: {Value: conv.Int64ToStr(req.OwnerID)},
-				},
-			})
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewEqualQuery(fieldOfOwnerID, conv.Int64ToStr(req.OwnerID)))
 	}
 
 	if len(req.ResTypeFilter) == 1 && int(req.ResTypeFilter[0]) != resTypeSearchAll {
-		mustQueries = append(mustQueries,
-			types.Query{
-				Term: map[string]types.TermQuery{
-					fieldOfResType: {Value: req.ResTypeFilter[0]},
-				},
-			},
-		)
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewEqualQuery(searchEntity.FieldOfResType, req.ResTypeFilter[0]))
 	}
 
 	if len(req.ResTypeFilter) == 2 {
 		resType := req.ResTypeFilter[0]
 		resSubType := int(req.ResTypeFilter[1])
-		mustQueries = append(mustQueries, types.Query{
-			Term: map[string]types.TermQuery{
-				fieldOfResType: {Value: resType},
-			},
-		})
+
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewEqualQuery(searchEntity.FieldOfResType, resType))
+
 		if resSubType != resTypeSearchAll {
-			mustQueries = append(mustQueries, types.Query{
-				Term: map[string]types.TermQuery{
-					fieldOfResSubType: {Value: int(resSubType)},
-				},
-			})
+			searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+				es.NewEqualQuery(searchEntity.FieldOfResSubType, int(resSubType)))
 		}
 	}
 
 	if req.PublishStatusFilter != 0 {
-		mustQueries = append(mustQueries,
-			types.Query{
-				Term: map[string]types.TermQuery{
-					fieldOfPublishStatus: {Value: req.PublishStatusFilter},
-				},
-			})
+		searchReq.Query.Bool.Must = append(searchReq.Query.Bool.Must,
+			es.NewEqualQuery(searchEntity.FieldOfPublishStatus, req.PublishStatusFilter))
 	}
-
-	var searchReq *search.Request
-	if len(shouldQueries) > 0 {
-		searchReq = &search.Request{
-			Query: &types.Query{
-				Bool: &types.BoolQuery{
-					Should:             shouldQueries,
-					MinimumShouldMatch: 1,
-					Must:               mustQueries,
-				},
-			},
-		}
-	} else {
-		searchReq = &search.Request{
-			Query: &types.Query{
-				Bool: &types.BoolQuery{
-					Must: mustQueries,
-				},
-			},
-		}
-	}
-
-	sr = sr.Request(searchReq)
-	sr.Index(resourceIndexName)
 
 	reqLimit := 100
 	if req.Limit > 0 {
 		reqLimit = int(req.Limit)
 	}
 	realLimit := reqLimit + 1
+	searchReq.Size = &realLimit
 
-	orderBy := func() fieldName {
-		switch req.OrderBy {
-		case consts.OrderByUpdateTime:
-			return fieldOfUpdateTime
-		case consts.OrderByCreateTime:
-			return fieldOfCreateTime
-		case consts.OrderByPublishTime:
-			return fieldOfPublishTime
-		default:
-			return fieldOfUpdateTime
-		}
-	}()
-	order := common.OrderByType_Desc
-
-	sr.Sort(&sortOptions{
-		OrderBy: orderBy,
-		Order: func() sortorder.SortOrder {
-			if order == common.OrderByType_Asc {
-				return sortorder.Asc
-			}
-			return sortorder.Desc
-		}(),
-	})
-
-	sr.Size(realLimit)
-
-	if req.Cursor != "" && req.Cursor != "0" {
-		sr.SearchAfter(&searchCursor{
-			orderBy: orderBy,
-			cursor:  req.Cursor,
-		})
+	if req.OrderFiledName == "" {
+		req.OrderFiledName = searchEntity.FieldOfUpdateTime
 	}
 
-	result, err := sr.Do(ctx)
+	searchReq.Sort = []es.SortFiled{
+		{
+			Field: req.OrderFiledName,
+			Asc:   req.OrderAsc,
+		},
+	}
+
+	if req.Cursor != "" && req.Cursor != "0" {
+		searchReq.SearchAfter = []any{
+			req.Cursor,
+		}
+	}
+
+	result, err := s.esClient.Search(ctx, resourceIndexName, searchReq)
 	if err != nil {
 		return nil, err
 	}
@@ -511,7 +332,7 @@ func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.Sear
 
 	nextCursor := ""
 	if len(docs) > 0 {
-		nextCursor = formatResourceNextCursor(orderBy, docs[len(docs)-1])
+		nextCursor = formatResourceNextCursor(req.OrderFiledName, docs[len(docs)-1])
 	}
 	if nextCursor == "" {
 		hasMore = false

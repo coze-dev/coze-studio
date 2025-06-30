@@ -455,7 +455,7 @@ struct UploadFileOpenRequest {
 
 
 struct UploadFileOpenResponse {
-    1: optional File File (agw.key = "data")
+    1: optional File File (api.body = "data")
     253: required i64 code
     254: required string msg
     255: base.BaseResp BaseResp
@@ -467,6 +467,19 @@ struct File{
     3: i64 CreatedAt (agw.key = "created_at"),        // 上传时间戳，单位s
     4: string FileName (api.body = "file_name"),     // 文件名
     5: string URL (api.body = "url")
+}
+
+struct GetBotOnlineInfoReq {
+    1 : required i64 bot_id  (api.js_conv="true")           // botId
+    2:  optional string connector_id // 先保留，不暴露且不使用该字段
+    3 : optional string version        // bot版本，不传则获取最新版本
+}
+
+// resp
+struct GetBotOnlineInfoResp {
+    1: required i32 code
+    2: required string msg
+    3: required bot_common.OpenAPIBotInfo data
 }
 
 service PlaygroundService {
@@ -493,6 +506,9 @@ service PlaygroundService {
 
     GetSpaceListV2Response GetSpaceListV2(1:GetSpaceListV2Request request)(api.post='/api/playground_api/space/list', api.category="space",agw.preserve_base="true")
     MGetUserBasicInfoResponse MGetUserBasicInfo(1: MGetUserBasicInfoRequest request) (api.post='/api/playground_api/mget_user_info', api.category="playground_api",agw.preserve_base="true")
+
+    //openapi
+    GetBotOnlineInfoResp GetBotOnlineInfo(1: GetBotOnlineInfoReq request)(api.get='/v1/bot/get_online_info', api.category="bot", api.tag="openapi", api.gen_path="personal_api")
 
     // File 相关 OpenAPI
     UploadFileOpenResponse UploadFileOpen(1: UploadFileOpenRequest request)(api.post = "/v1/files/upload", api.category="file", api.tag="openapi", agw.preserve_base="true")

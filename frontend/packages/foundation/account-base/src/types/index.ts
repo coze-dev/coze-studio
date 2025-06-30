@@ -74,14 +74,13 @@ export interface UserInfo {
   };
   need_check_bind_status: boolean;
   bui_audit_info?: {
-    // TODO 这里的类型定义需要再明确一点更好
     audit_info: {
       user_unique_name?: string;
       avatar_url?: string;
       name?: string;
       [key: string]: unknown;
     }; // Record<string, unknown>;
-    // int值。1审核中，2审核通过，3审核不通过 
+    // int值。1审核中，2审核通过，3审核不通过
     audit_status: 1 | 2 | 3;
     details: Record<string, unknown>;
     is_auditing: boolean;

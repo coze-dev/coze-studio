@@ -7,10 +7,8 @@ export const getEditorContent = (editor: Editor | null) => {
   if (!editor) {
     return '';
   }
-  const rawContent = editor.isEmpty ? '' : editor.getHTML();
-  // 处理编辑器输出内容，移除不必要的<p>标签
-  const newContent = removeEditorWrapperParagraph(rawContent);
-  return newContent;
+  const content = editor.isEmpty ? '' : editor.getHTML();
+  return content;
 };
 
 /**

@@ -9,14 +9,13 @@ import (
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
-	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/cache/redis"
-	"code.byted.org/flow/opencoze/backend/infra/impl/es8"
+	"code.byted.org/flow/opencoze/backend/infra/impl/es"
 	"code.byted.org/flow/opencoze/backend/infra/impl/eventbus/rmq"
 	"code.byted.org/flow/opencoze/backend/infra/impl/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/impl/imagex/veimagex"
 	"code.byted.org/flow/opencoze/backend/infra/impl/mysql"
-	"code.byted.org/flow/opencoze/backend/infra/impl/storage/minio"
+	"code.byted.org/flow/opencoze/backend/infra/impl/storage"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 )
 
@@ -24,7 +23,7 @@ type AppDependencies struct {
 	DB                    *gorm.DB
 	CacheCli              *redis.Client
 	IDGenSVC              idgen.IDGenerator
-	ESClient              *es8.Client
+	ESClient              es.Client
 	ImageXClient          imagex.ImageX
 	TOSClient             storage.Storage
 	ResourceEventProducer eventbus.Producer
@@ -47,7 +46,7 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		return nil, err
 	}
 
-	deps.ESClient, err = es8.New()
+	deps.ESClient, err = es.New()
 	if err != nil {
 		return nil, err
 	}
@@ -87,20 +86,13 @@ func initImageX() (imagex.ImageX, error) {
 }
 
 func initTOS(ctx context.Context) (storage.Storage, error) {
-	return minio.New(
-		ctx,
-		os.Getenv(consts.MinIOEndpoint),
-		os.Getenv(consts.MinIOAK),
-		os.Getenv(consts.MinIOSK),
-		os.Getenv(consts.MinIOBucket),
-		false,
-	)
+	return storage.New(ctx)
 }
 
 func initResourceEventBusProducer() (eventbus.Producer, error) {
-	nameServer := os.Getenv(consts.RocketMQServer)
+	nameServer := os.Getenv(consts.RMQServer)
 	resourceEventBusProducer, err := rmq.NewProducer(nameServer,
-		"opencoze_search_resource", "cg_search_resource", 1)
+		consts.RMQTopicSearchResource, consts.RMQTopicSearchResource, 1)
 	if err != nil {
 		return nil, fmt.Errorf("init resource producer failed, err=%w", err)
 	}
@@ -109,8 +101,8 @@ func initResourceEventBusProducer() (eventbus.Producer, error) {
 }
 
 func initAppEventProducer() (eventbus.Producer, error) {
-	nameServer := os.Getenv(consts.RocketMQServer)
-	appEventProducer, err := rmq.NewProducer(nameServer, "opencoze_search_app", "cg_search_app", 1)
+	nameServer := os.Getenv(consts.RMQServer)
+	appEventProducer, err := rmq.NewProducer(nameServer, consts.RMQTopicSearchApp, consts.RMQTopicSearchApp, 1)
 	if err != nil {
 		return nil, fmt.Errorf("init search producer failed, err=%w", err)
 	}

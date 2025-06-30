@@ -3,6 +3,7 @@ package compose
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 
 	"github.com/cloudwego/eino/compose"
 
@@ -17,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/emitter"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/httprequester"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/intentdetector"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/json"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/llm"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/loop"
@@ -28,6 +30,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/textprocessor"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 )
@@ -79,9 +83,15 @@ type Node struct {
 }
 
 func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]any, map[string]any],
-	sc *WorkflowSchema) (*Node, error) {
+	sc *WorkflowSchema, deps *dependencyInfo) (_ *Node, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+	}()
+
 	if m := entity.NodeMetaByNodeType(s.Type); m != nil && m.InputSourceAware {
-		if err := s.SetFullSources(sc.GetAllNodes()); err != nil {
+		if err := s.SetFullSources(sc.GetAllNodes(), deps); err != nil {
 			return nil, err
 		}
 	}
@@ -256,6 +266,9 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		terminalPlan := mustGetKey[vo.TerminatePlan]("TerminalPlan", s.Configs)
 		if terminalPlan == vo.ReturnVariables {
 			i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
+				if in == nil {
+					return map[string]any{}, nil
+				}
 				return in, nil
 			}
 			return invokableNode(s, i), nil
@@ -357,7 +370,10 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		return invokableNode(s, r.RunCode, withCallbackOutputConverter(r.ToCallbackOutput)), nil
+		initFn := func(ctx context.Context) (context.Context, error) {
+			return ctxcache.Init(ctx), nil
+		}
+		return invokableNode(s, r.RunCode, withCallbackOutputConverter(r.ToCallbackOutput), withInit(initFn)), nil
 	case entity.NodeTypePlugin:
 		conf, err := s.ToPluginConfig()
 		if err != nil {
@@ -419,6 +435,29 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		return invokableStreamableNodeWO(s, r.Invoke, r.Stream), nil
+	case entity.NodeTypeJsonSerialization:
+		conf, err := s.ToJsonSerializationConfig()
+		if err != nil {
+			return nil, err
+		}
+		js, err := json.NewJsonSerializer(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return invokableNode(s, js.Invoke), nil
+	case entity.NodeTypeJsonDeserialization:
+		conf, err := s.ToJsonDeserializationConfig()
+		if err != nil {
+			return nil, err
+		}
+		jd, err := json.NewJsonDeserializer(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		initFn := func(ctx context.Context) (context.Context, error) {
+			return ctxcache.Init(ctx), nil
+		}
+		return invokableNode(s, jd.Invoke, withCallbackOutputConverter(jd.ToCallbackOutput), withInit(initFn)), nil
 	default:
 		panic("not implemented")
 	}

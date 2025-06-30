@@ -9,8 +9,9 @@ VENV_DIR="$BIN_DIR/.venv"
 
 echo "Checking for Python virtual environment under $BIN_DIR"
 
-if [ ! -d "$VENV_DIR" ]; then
-    echo "No virtual environment found. Creating virtual environment"
+if [ ! -f "$VENV_DIR/bin/activate" ]; then
+    echo "Virtual environment not found or incomplete. Re-creating..."
+    rm -rf "$VENV_DIR"
     python3 -m venv "$VENV_DIR"
 
     if [ $? -ne 0 ]; then
@@ -26,12 +27,13 @@ fi
 echo "Installing required Python packages"
 source "$VENV_DIR/bin/activate"
 pip install --upgrade pip
-pip install pillow pdfplumber RestrictedPython python-docx
+# If you want to use other third-party libraries, you can install them here.
+pip install urllib3==1.26.16
+pip install pillow pdfplumber python-docx numpy git+https://gitcode.com/gh_mirrors/re/requests-async.git@master
 
 if [ $? -ne 0 ]; then
     echo "Failed to install Python packages - aborting startup"
     deactivate
-    rm -rf "$VENV_DIR"
     exit 1
 fi
 
@@ -56,14 +58,7 @@ else
     exit 1
 fi
 
-RUN_PYTHON_SCRIPT="$BACKEND_DIR/infra/impl/coderunner/script/python_script.py"
 
-if [ -f "$RUN_PYTHON_SCRIPT" ]; then
-    cp "$RUN_PYTHON_SCRIPT" "$BIN_DIR/python_script.py"
-else
-    echo "❌ RUN_PYTHON_SCRIPT file not found"
-    exit 1
-fi
 
 
 

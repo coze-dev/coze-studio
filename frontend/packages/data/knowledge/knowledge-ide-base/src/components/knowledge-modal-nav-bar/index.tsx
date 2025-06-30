@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 
-// import { debounce } from 'lodash-es';
-// import { useDebounceFn } from 'ahooks';
-// import { logger } from '@coze-arch/logger';
 import classNames from 'classnames';
-import { useKnowledgeParams, useKnowledgeStore } from '@coze-data/knowledge-stores';
+import {
+  useKnowledgeParams,
+  useKnowledgeStore,
+} from '@coze-data/knowledge-stores';
 import { UnitType } from '@coze-data/knowledge-resource-processor-core';
 import { KnowledgeE2e } from '@coze-data/e2e';
 import {
@@ -13,12 +13,7 @@ import {
   type DocumentInfo,
 } from '@coze-arch/bot-api/knowledge';
 import { IconCozCross } from '@coze-arch/coze-design/icons';
-import {
-  IconButton,
-  Avatar,
-  Space,
-  // Search,
-} from '@coze-arch/coze-design';
+import { IconButton, Avatar, Space } from '@coze-arch/coze-design';
 
 import { getFormatTypeFromUnitType } from '@/utils';
 import { RenderDocumentIcon } from '@/components/render-document-icon';
@@ -50,16 +45,8 @@ export const KnowledgeModalNavBar: React.FC<KnowledgeModalNavBarProps> = ({
   const dataSetDetail = useKnowledgeStore(state => state.dataSetDetail);
   const canEdit = useKnowledgeStore(state => state.canEdit);
 
-  // const [search, setSearch] = useState('');
   const params = useKnowledgeParams();
-  // const debounceSetSearch = useDebounceFn(
-  //   (v?: string) => {
-  //     setSearchValue(v || '');
-  //   },
-  //   {
-  //     wait: 300,
-  //   },
-  // );
+
   useEffect(
     () => () => {
       setSearchValue('');
@@ -68,10 +55,6 @@ export const KnowledgeModalNavBar: React.FC<KnowledgeModalNavBarProps> = ({
   );
 
   const isImageFormat = dataSetDetail?.format_type === FormatType.Image;
-
-  // const onDebounceSearch = debounce(v => {
-  //   setSearch(v);
-  // }, 500);
 
   return (
     <div
@@ -112,18 +95,6 @@ export const KnowledgeModalNavBar: React.FC<KnowledgeModalNavBarProps> = ({
       <div className={styles.toolbar}>
         <Space spacing={12}>
           {isImageFormat ? <PhotoFilter /> : null}
-          {/* <Search
-            value={search}
-            placeholder={I18n.t('datasets_placeholder_search')}
-            onChange={onDebounceSearch}
-            onSearch={v => {
-              logger.info({
-                message: 'onSearch',
-                meta: { v },
-              });
-              debounceSetSearch.run(v);
-            }}
-          /> */}
           {/* 导入按钮 */}
           {canEdit ? importKnowledgeSourceButton : null}
           {actionButtons}

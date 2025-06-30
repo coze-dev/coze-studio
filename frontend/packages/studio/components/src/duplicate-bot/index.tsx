@@ -231,8 +231,6 @@ export const DuplicateBot: FC<DuplicateBotProps> = ({
       });
       setShowSpaceModal(true);
     } else if (pageFromFromStore === BotPageFromEnum.Explore) {
-      // 这里需要添加新的埋点，数据稳定后把老的埋点下掉
-      //
       sendTeaEvent(EVENT_NAMES.bot_duplicate_click_front, {
         bot_type: 'store_bot',
         bot_id: botNameFromStore,
@@ -260,7 +258,6 @@ export const DuplicateBot: FC<DuplicateBotProps> = ({
         setShowSpaceModal(true);
       }
     } else {
-      // 这里也补一下埋点，看起来是来自同 team 下的 bot 调试页
       sendTeaEvent(EVENT_NAMES.bot_duplicate_click_front, {
         bot_type: 'team_bot',
         bot_id: botIdFromStore,

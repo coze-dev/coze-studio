@@ -12,7 +12,6 @@ export const findFirstAgent = (
     agent => agent.agent_type === AgentType.Start_Agent,
   );
   if (!startNode) {
-    // fixme 就离谱
     Toast.error({
       content: withSlardarIdButton(I18n.t('chatflow_error_miss_start')),
     });

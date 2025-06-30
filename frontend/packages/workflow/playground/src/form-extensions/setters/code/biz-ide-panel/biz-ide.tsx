@@ -95,7 +95,6 @@ export const BizIDE: FC<{
         width="100%"
         input={parsedInput}
         output={parsedOutput}
-        // Bad Case: 因为历史数据里代码的 language 是 javascript
         defaultLanguage={
           LANG_CODE_NAME_MAP.get(value?.language) ?? 'typescript'
         }

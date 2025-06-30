@@ -33,7 +33,6 @@ export function withValidation<T extends ValidationProps>(
       <ValidationProvider
         errors={errors}
         onTestRunValidate={callback => {
-          // todo: 用 新formMode 的validate
           const { dispose } = formModel.onValidate(callback);
           return dispose;
         }}

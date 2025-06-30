@@ -219,7 +219,6 @@ function getPluginFromMinOrTeam(
   // @ts-expect-error -- linter-disable-autofix
   commParams,
 ): Promise<RequestServiceResp<PluginContentListItem> | undefined> {
-  // @TODO 这块需要和后端重新设计id + count的请求形式，代替page + size
   const { isMine, isTeam, isCreatorMine, isTemplate, nextPage } = commParams;
   const pluginTypes = [PluginType.PLUGIN, PluginType.APP, PluginType.LOCAL];
 

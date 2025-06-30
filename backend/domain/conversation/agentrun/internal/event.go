@@ -27,13 +27,10 @@ func (e *Event) buildRunEvent(runEvent entity.RunEvent, chunkRunItem *entity.Chu
 	}
 }
 
-func (e *Event) buildErrEvent(runEvent entity.RunEvent, code int64, msg string) *entity.AgentRunResponse {
+func (e *Event) buildErrEvent(runEvent entity.RunEvent, err *entity.RunError) *entity.AgentRunResponse {
 	return &entity.AgentRunResponse{
 		Event: runEvent,
-		Error: &entity.RunError{
-			Code: code,
-			Msg:  msg,
-		},
+		Error: err,
 	}
 }
 
@@ -54,8 +51,8 @@ func (e *Event) SendMsgEvent(runEvent entity.RunEvent, messageItem *entity.Chunk
 	sw.Send(resp, nil)
 }
 
-func (e *Event) SendErrEvent(runEvent entity.RunEvent, code int64, msg string, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
-	resp := e.buildErrEvent(runEvent, code, msg)
+func (e *Event) SendErrEvent(runEvent entity.RunEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], err *entity.RunError) {
+	resp := e.buildErrEvent(runEvent, err)
 	sw.Send(resp, nil)
 }
 

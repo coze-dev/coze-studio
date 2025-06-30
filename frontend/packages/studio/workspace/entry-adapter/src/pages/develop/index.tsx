@@ -296,8 +296,6 @@ export const Develop: FC<DevelopProps> = ({ spaceId }) => {
               >
                 {data.list.map((project, index) => (
                   <BotCard
-                    // 只使用 project id 作为 key 会出现个诡异的列表数量异常的问题
-                    // 目前还不知道原因，但补充 index 信息后，上述异常问题得到解决
                     key={`${project.basic_info?.id}-${index}`}
                     intelligenceInfo={project}
                     onRetryCopy={cardActions.onRetryCopy}

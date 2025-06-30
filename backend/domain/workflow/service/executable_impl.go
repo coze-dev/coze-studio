@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -15,10 +16,12 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/compose"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type executableImpl struct {
@@ -69,7 +72,12 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 
 	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to convert inputs: %w", err)
+		var warnings nodes.ConversionWarnings
+		if errors.As(err, &warnings) && !config.InputFailFast {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+		} else {
+			return nil, "", vo.WrapError(errno.ErrInvalidParameter, err)
+		}
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -88,7 +96,12 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 	out, err := wf.SyncRun(cancelCtx, convertedInput, opts...)
 	if err != nil {
 		if _, ok := einoCompose.ExtractInterruptInfo(err); !ok {
-			return nil, "", err
+			var wfe vo.WorkflowError
+			if errors.As(err, &wfe) {
+				return nil, "", wfe.AppendDebug(executeID, wfEntity.SpaceID, wfEntity.ID)
+			} else {
+				return nil, "", vo.WrapWithDebug(errno.ErrWorkflowExecuteFail, err, executeID, wfEntity.SpaceID, wfEntity.ID, errorx.KV("cause", err.Error()))
+			}
 		}
 	}
 
@@ -120,7 +133,7 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 
 	var failReason *string
 	if lastEvent.Err != nil {
-		failReason = ptr.Of(lastEvent.Err.Err.Error())
+		failReason = ptr.Of(lastEvent.Err.Error())
 	}
 
 	return &entity.WorkflowExecution{
@@ -196,7 +209,12 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 
 	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
-		return 0, fmt.Errorf("failed to convert inputs: %w", err)
+		var warnings nodes.ConversionWarnings
+		if errors.As(err, &warnings) && !config.InputFailFast {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+		} else {
+			return 0, errorx.WrapByCode(err, errno.ErrInvalidParameter)
+		}
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -254,7 +272,12 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 
 	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
-		return 0, fmt.Errorf("failed to convert inputs: %w", err)
+		var warnings nodes.ConversionWarnings
+		if errors.As(err, &warnings) && !config.InputFailFast {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+		} else {
+			return 0, errorx.WrapByCode(err, errno.ErrInvalidParameter)
+		}
 	}
 
 	if wfEntity.AppID != nil && config.AppID == nil {
@@ -333,7 +356,12 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 
 	input, err = nodes.ConvertInputs(ctx, input, wf.Inputs())
 	if err != nil {
-		return nil, fmt.Errorf("failed to convert inputs: %w", err)
+		var warnings nodes.ConversionWarnings
+		if errors.As(err, &warnings) && !config.InputFailFast {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+		} else {
+			return nil, errorx.WrapByCode(err, errno.ErrInvalidParameter)
+		}
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -503,7 +531,7 @@ func (i *impl) GetLatestTestRunInput(ctx context.Context, wfID int64, userID int
 		return nil, false, nil
 	}
 
-	nodeExe, _, err := i.GetNodeExecution(ctx, exeID, compose.EntryNodeKey)
+	nodeExe, _, err := i.GetNodeExecution(ctx, exeID, entity.EntryNodeKey)
 	if err != nil {
 		return nil, false, err
 	}

@@ -168,7 +168,11 @@ export function PublishTitleBar() {
           </span>
         </div>
 
-        <Button onClick={handlePublishProject} loading={publishing}>
+        <Button
+          onClick={handlePublishProject}
+          loading={publishing}
+          data-testid="project.publish"
+        >
           {showPublishResult
             ? I18n.t('bot_publish_success_back')
             : I18n.t('Publish')}

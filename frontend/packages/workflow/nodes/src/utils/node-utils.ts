@@ -124,7 +124,6 @@ export namespace nodeUtils {
     };
   }
 
-  // TODO  后面统一到一处
   /**
    * @deprecated 使用 variableUtils.valueExpressionToDTO)
    * @param value
@@ -269,7 +268,6 @@ export namespace nodeUtils {
             collapsible: false,
           },
         },
-        // TODO DELETE schemaGray 临时字段，后端灰度刷数据标记，全量后删除
         {
           type: 'visibility',
           options: {
@@ -281,7 +279,6 @@ export namespace nodeUtils {
   }
 
   // formValueToDto & dtoToFormValue 只迁移了api-node中对inputParameters、batch的适配
-  // TODO: 统一节点数据转换
   export function formValueToDto(value: any, context) {
     const inputParams = get(value, INPUT_PARAMS_PATH);
     const formattedInputParams = inputParams

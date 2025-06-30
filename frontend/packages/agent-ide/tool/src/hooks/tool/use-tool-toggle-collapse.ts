@@ -9,7 +9,6 @@ import { type IToggleContentBlockEventParams } from '../../typings/event';
  * @returns
  */
 
-// TODO: @liushuoyan 这里兼容
 export const useRegisterCollapse = () => {
   const { on } = useEvent();
 

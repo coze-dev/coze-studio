@@ -62,7 +62,7 @@ export const transformDto2Vo = {
       description: data?.description || DEFAULT_AGENT_DESCRIPTION(),
       // 默认的业务状态bizInfo
       bizInfo: DEFAULT_AGENT_BIZ_INFO(),
-      system_info_all: [], // 旧接口返回的字段，待全量后删除，这里默认空
+      system_info_all: [],
       skills: {
         pluginApis,
         workflows,

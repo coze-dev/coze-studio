@@ -14,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/memory/variables/entity"
 	variables "code.byted.org/flow/opencoze/backend/domain/memory/variables/service"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/i18n"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
@@ -25,6 +26,23 @@ type VariableApplicationService struct {
 }
 
 var VariableApplicationSVC = VariableApplicationService{}
+
+var i18nLocal2GroupVariableInfo = map[i18n.Locale]map[project_memory.VariableChannel]project_memory.GroupVariableInfo{
+	i18n.LocaleEN: {
+		project_memory.VariableChannel_APP: {
+			GroupName: "App variable",
+			GroupDesc: "Configures data accessed across multiple development scenarios in the app. It is initialized to a default value each time a new request is sent.",
+		},
+		project_memory.VariableChannel_Custom: {
+			GroupName: "User variable",
+			GroupDesc: "Persistently stores and reads project date for users, such as the preferred language and custom settings.",
+		},
+		project_memory.VariableChannel_System: {
+			GroupName: "System variable",
+			GroupDesc: "Displays the data that you enabled as needed, which can be used to identify users via IDs or handle channel-specific features. The data is automatically generated and is read-only.",
+		},
+	},
+}
 
 var channel2GroupVariableInfo = map[project_memory.VariableChannel]project_memory.GroupVariableInfo{
 	project_memory.VariableChannel_APP: {
@@ -90,12 +108,20 @@ func (v *VariableApplicationService) GetProjectVariablesMeta(ctx context.Context
 	}, nil
 }
 
-func (v *VariableApplicationService) getGroupVariableConf(channel project_memory.VariableChannel) project_memory.GroupVariableInfo {
+func (v *VariableApplicationService) getGroupVariableConf(ctx context.Context, channel project_memory.VariableChannel) project_memory.GroupVariableInfo {
 	groupConf, ok := channel2GroupVariableInfo[channel]
-	if ok {
-		return groupConf
+	if !ok {
+		return project_memory.GroupVariableInfo{}
 	}
-	return project_memory.GroupVariableInfo{}
+
+	local := i18n.GetLocale(ctx)
+	i18nConf, ok := i18nLocal2GroupVariableInfo[local][channel]
+	if ok {
+		groupConf.GroupName = i18nConf.GroupName
+		groupConf.GroupDesc = i18nConf.GroupDesc
+	}
+
+	return groupConf
 }
 
 func (v *VariableApplicationService) toGroupVariableInfo(ctx context.Context, meta *entity.VariablesMeta) ([]*project_memory.GroupVariableInfo, error) {
@@ -111,7 +137,7 @@ func (v *VariableApplicationService) toGroupVariableInfo(ctx context.Context, me
 	for _, channel := range showChannels {
 		ch := channel
 		vars := channel2Vars[ch]
-		groupConf := v.getGroupVariableConf(ch)
+		groupConf := v.getGroupVariableConf(ctx, ch)
 		groupConf.DefaultChannel = &ch
 		if channel != project_memory.VariableChannel_System {
 			groupConf.VarInfoList = vars

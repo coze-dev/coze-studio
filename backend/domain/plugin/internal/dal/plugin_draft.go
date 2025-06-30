@@ -2,6 +2,7 @@ package dal
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -254,24 +255,36 @@ func (p *PluginDraftDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, pl
 }
 
 func (p *PluginDraftDAO) UpdateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
-	m := &model.PluginDraft{
-		Manifest:   plugin.Manifest,
-		OpenapiDoc: plugin.OpenapiDoc,
+	table := tx.PluginDraft
+
+	updateMap := map[string]any{}
+	if plugin.Manifest != nil {
+		mf, err := json.Marshal(plugin.Manifest)
+		if err != nil {
+			return err
+		}
+		updateMap[table.Manifest.ColumnName().String()] = mf
+	}
+	if plugin.OpenapiDoc != nil {
+		doc, err := json.Marshal(plugin.OpenapiDoc)
+		if err != nil {
+			return err
+		}
+		updateMap[table.OpenapiDoc.ColumnName().String()] = doc
 	}
 	if plugin.IconURI != nil {
-		m.IconURI = *plugin.IconURI
+		updateMap[table.IconURI.ColumnName().String()] = *plugin.IconURI
 	}
 	if plugin.ServerURL != nil {
-		m.ServerURL = *plugin.ServerURL
+		updateMap[table.ServerURL.ColumnName().String()] = *plugin.ServerURL
 	}
 	if plugin.APPID != nil {
-		m.AppID = *plugin.APPID
+		updateMap[table.AppID.ColumnName().String()] = *plugin.APPID
 	}
 
-	table := tx.PluginDraft
 	_, err = table.WithContext(ctx).
 		Where(table.ID.Eq(plugin.ID)).
-		Updates(m)
+		UpdateColumns(updateMap)
 	if err != nil {
 		return err
 	}

@@ -53,7 +53,6 @@ export const useBeforeKnowledgeIDEClose = ({
     jump(SceneType.KNOWLEDGE__BACK__BOT, {
       spaceID: spaceId,
       botID: botId,
-      // TODO: hzf拆分到scene
       mode:
         dataSetDetail?.storage_location === StorageLocation.Douyin
           ? 'douyin'

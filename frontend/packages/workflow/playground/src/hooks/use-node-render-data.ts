@@ -10,7 +10,6 @@ const pickSimpleNodeRenderData = (data: FlowNodeRenderData) =>
 
 /**
  * @deprecated
- * TODO @liuyangxing 全局清理这个函数，Coze V2 没有节点折叠
  * 获取当前节点的渲染数据，包括expanded等渲染相关的状态
  */
 export const useNodeRenderData = () => {

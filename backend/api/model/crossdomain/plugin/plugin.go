@@ -1,6 +1,8 @@
 package plugin
 
 import (
+	"github.com/getkin/kin-openapi/openapi3"
+
 	api "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 )
 
@@ -112,6 +114,8 @@ type ExecuteToolResponse struct {
 	Request     string
 	TrimmedResp string
 	RawResp     string
+
+	RespSchema openapi3.Responses
 }
 
 type PublishPluginRequest struct {

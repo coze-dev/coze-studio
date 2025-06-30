@@ -3,6 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strconv"
+
+	"github.com/getkin/kin-openapi/openapi3"
 
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
@@ -11,6 +15,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -40,11 +45,20 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 		}
 	}
 
+	var respSchema openapi3.Responses
+	if execOpt.AutoGenRespSchema {
+		respSchema, err = p.genToolResponseSchema(ctx, result.RawResp)
+		if err != nil {
+			return nil, errorx.Wrapf(err, "genToolResponseSchema failed")
+		}
+	}
+
 	resp = &ExecuteToolResponse{
 		Tool:        config.Tool,
 		Request:     result.Request,
 		RawResp:     result.RawResp,
 		TrimmedResp: result.TrimmedResp,
+		RespSchema:  respSchema,
 	}
 
 	return resp, nil
@@ -314,4 +328,95 @@ func (p *pluginServiceImpl) getToolDebugPluginInfo(ctx context.Context, req *Exe
 	}
 
 	return pl, tl, nil
+}
+
+func (p *pluginServiceImpl) genToolResponseSchema(ctx context.Context, rawResp string) (openapi3.Responses, error) {
+	valMap := map[string]any{}
+	err := sonic.UnmarshalString(rawResp, &valMap)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginParseToolRespFailed, errorx.KV(errno.PluginMsgKey,
+			"the type of response only supports json map"))
+	}
+
+	resp := entity.DefaultOpenapi3Responses()
+
+	respSchema := parseResponseToBodySchemaRef(ctx, valMap)
+	if respSchema == nil {
+		return resp, nil
+	}
+
+	resp[strconv.Itoa(http.StatusOK)].Value.Content[model.MediaTypeJson].Schema = respSchema
+
+	return resp, nil
+}
+
+func parseResponseToBodySchemaRef(ctx context.Context, value any) *openapi3.SchemaRef {
+	switch val := value.(type) {
+	case map[string]any:
+		if len(val) == 0 {
+			return nil
+		}
+
+		properties := make(map[string]*openapi3.SchemaRef, len(val))
+		for k, subVal := range val {
+			prop := parseResponseToBodySchemaRef(ctx, subVal)
+			if prop == nil {
+				continue
+			}
+			properties[k] = prop
+		}
+
+		if len(properties) == 0 {
+			return nil
+		}
+
+		return &openapi3.SchemaRef{
+			Value: &openapi3.Schema{
+				Type:       openapi3.TypeObject,
+				Properties: properties,
+			},
+		}
+
+	case []any:
+		if len(val) == 0 {
+			return nil
+		}
+
+		item := parseResponseToBodySchemaRef(ctx, val[0])
+		if item == nil {
+			return nil
+		}
+
+		return &openapi3.SchemaRef{
+			Value: &openapi3.Schema{
+				Type:  openapi3.TypeArray,
+				Items: item,
+			},
+		}
+
+	case string:
+		return &openapi3.SchemaRef{
+			Value: &openapi3.Schema{
+				Type: openapi3.TypeString,
+			},
+		}
+
+	case float64: // in most cases, it's integer
+		return &openapi3.SchemaRef{
+			Value: &openapi3.Schema{
+				Type: openapi3.TypeInteger,
+			},
+		}
+
+	case bool:
+		return &openapi3.SchemaRef{
+			Value: &openapi3.Schema{
+				Type: openapi3.TypeBoolean,
+			},
+		}
+
+	default:
+		logs.CtxWarnf(ctx, "unsupported type: %T", val)
+		return nil
+	}
 }

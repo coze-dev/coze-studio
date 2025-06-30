@@ -1,5 +1,5 @@
 /**
- * TODO: 这个 hooks 暂时用来获取当前节点的 inputsParameters 以及每个变量对应的类型，后续由 @zhuxiaowei 统一
+ * TODO: 这个 hooks 暂时用来获取当前节点的 inputsParameters 以及每个变量对应的类型
  */
 
 import { useState, useEffect } from 'react';

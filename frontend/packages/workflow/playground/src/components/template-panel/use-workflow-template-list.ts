@@ -30,8 +30,7 @@ export const useWorkflowTemplateList = ({
     setWorkflowList(workflowProductList?.data?.workflow_list ?? []);
   };
   useEffect(() => {
-    // The community version does not currently support workflow template, just for future expansion
-    if (!isInitWorkflow || IS_OPEN_SOURCE) {
+    if (!isInitWorkflow) {
       return;
     }
 

@@ -41,6 +41,7 @@ const (
 	ErrKnowledgeCopyFailCode                   = 105000034
 	ErrKnowledgeParseResultEmptyCode           = 105000035
 	ErrKnowledgeCacheClientSetFailCode         = 105000036
+	ErrKnowledgeCheckTableSliceValidCode       = 105000037
 )
 
 func init() {
@@ -249,6 +250,12 @@ func init() {
 	code.Register(
 		ErrKnowledgeCacheClientSetFailCode,
 		"缓存设置失败:{msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrKnowledgeCheckTableSliceValidCode,
+		"校验分片内容失败，请检查输入是否正确，错误信息:{msg}",
 		code.WithAffectStability(false),
 	)
 }

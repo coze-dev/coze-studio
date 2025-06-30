@@ -569,9 +569,10 @@ func (m *mysqlService) UpsertData(ctx context.Context, req *rdb.UpsertDataReques
 	}
 
 	return &rdb.UpsertDataResponse{
-		AffectedRows: totalAffected,
-		InsertedRows: totalInserted,
-		UpdatedRows:  totalUpdated,
+		AffectedRows:  totalAffected,
+		InsertedRows:  totalInserted,
+		UpdatedRows:   totalUpdated,
+		UnchangedRows: int64(len(req.Data)) - totalAffected,
 	}, nil
 }
 

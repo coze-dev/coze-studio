@@ -235,18 +235,17 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 	}
 
 	modelContentObj := &schema.Message{
-		Role:    msgDO.Role,
-		Name:    msgDO.Name,
-		Content: msgDO.Content,
+		Role: msgDO.Role,
+		Name: msgDO.Name,
 	}
 
 	var multiContent []schema.ChatMessagePart
 	for _, contentData := range msgDO.MultiContent {
+		if contentData.Type == message.InputTypeText {
+			continue
+		}
 		one := schema.ChatMessagePart{}
 		switch contentData.Type {
-		case message.InputTypeText:
-			one.Type = schema.ChatMessagePartTypeText
-			one.Text = contentData.Text
 		case message.InputTypeImage:
 			one.Type = schema.ChatMessagePartTypeImageURL
 			one.ImageURL = &schema.ChatMessageImageURL{
@@ -269,6 +268,14 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 			}
 		}
 		multiContent = append(multiContent, one)
+	}
+	if len(multiContent) > 0 {
+		multiContent = append(multiContent, schema.ChatMessagePart{
+			Type: schema.ChatMessagePartTypeText,
+			Text: msgDO.Content,
+		})
+	} else {
+		modelContentObj.Content = msgDO.Content
 	}
 
 	modelContentObj.MultiContent = multiContent

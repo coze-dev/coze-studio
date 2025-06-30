@@ -154,11 +154,9 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 			resumePath := w.resumeEvent.NodePath
 
 			c := GetExeCtx(ctx)
-
 			if c == nil {
 				panic("nil execute context")
 			}
-
 			if c.NodeCtx == nil {
 				panic("sub workflow exe ctx must under a parent node ctx")
 			}
@@ -392,10 +390,7 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 		Type:     WorkflowFailed,
 		Context:  c,
 		Duration: time.Since(time.UnixMilli(c.StartTime)),
-		Err: &ErrorInfo{
-			Level: LevelError,
-			Err:   err,
-		},
+		Err:      err,
 	}
 
 	if c.TokenCollector != nil {
@@ -584,6 +579,15 @@ func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (con
 			return ctx, resume
 		}
 	} else {
+		// even if this node is not on the resume path, it could still restore from checkpoint,
+		// for example:
+		// this workflow has parallel interrupts, this node is one of them(or along the path of one of them),
+		// but not resumed this time
+		restoredCtx, restored := tryRestoreNodeCtx(ctx, n.nodeKey)
+		if restored {
+			return restoredCtx, true
+		}
+
 		newCtx, err = PrepareNodeExeCtx(ctx, n.nodeKey, n.nodeName, typ, n.terminatePlan)
 		if err != nil {
 			logs.Errorf("failed to prepare node execute context: %v", err)
@@ -636,6 +640,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 
 	var (
 		outputMap, rawOutputMap, customExtra map[string]any
+		errInfo                              vo.WorkflowError
 		ok                                   bool
 	)
 
@@ -650,6 +655,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		outputMap = structuredOutput.Output
 		rawOutputMap = structuredOutput.RawOutput
 		customExtra = structuredOutput.Extra
+		errInfo = structuredOutput.Error
 	}
 
 	c := GetExeCtx(ctx)
@@ -662,6 +668,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 		Duration:  time.Since(time.UnixMilli(c.StartTime)),
 		Output:    outputMap,
 		RawOutput: rawOutputMap,
+		Err:       errInfo,
 		extra:     &entity.NodeExtra{},
 	}
 
@@ -764,10 +771,7 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 			Type:     NodeError,
 			Context:  c,
 			Duration: time.Since(time.UnixMilli(c.StartTime)),
-			Err: &ErrorInfo{
-				Level: LevelCancel,
-				Err:   err,
-			},
+			Err:      err,
 		}
 
 		if c.TokenCollector != nil {
@@ -786,10 +790,7 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 		Type:     NodeError,
 		Context:  c,
 		Duration: time.Since(time.UnixMilli(c.StartTime)),
-		Err: &ErrorInfo{
-			Level: LevelError, // TODO: handle warn level errors
-			Err:   err,
-		},
+		Err:      err,
 	}
 
 	if c.TokenCollector != nil {
@@ -1344,10 +1345,7 @@ func (t *ToolHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 			FunctionInfo: t.info,
 			CallID:       compose.GetToolCallID(ctx),
 		},
-		Err: &ErrorInfo{
-			Level: LevelError, // TODO: handle warn level errors
-			Err:   err,
-		},
+		Err: err,
 	}
 	return ctx
 }

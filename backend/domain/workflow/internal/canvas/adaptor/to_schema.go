@@ -184,30 +184,32 @@ func normalizePorts(connections []*compose.Connection, nodeMap map[string]*vo.No
 }
 
 var blockTypeToNodeSchema = map[vo.BlockType]func(*vo.Node) (*compose.NodeSchema, error){
-	vo.BlockTypeBotStart:           toEntryNodeSchema,
-	vo.BlockTypeBotEnd:             toExitNodeSchema,
-	vo.BlockTypeBotLLM:             toLLMNodeSchema,
-	vo.BlockTypeBotLoopSetVariable: toLoopSetVariableNodeSchema,
-	vo.BlockTypeBotBreak:           toBreakNodeSchema,
-	vo.BlockTypeBotContinue:        toContinueNodeSchema,
-	vo.BlockTypeCondition:          toSelectorNodeSchema,
-	vo.BlockTypeBotText:            toTextProcessorNodeSchema,
-	vo.BlockTypeBotIntent:          toIntentDetectorSchema,
-	vo.BlockTypeDatabase:           toDatabaseCustomSQLSchema,
-	vo.BlockTypeDatabaseSelect:     toDatabaseQuerySchema,
-	vo.BlockTypeDatabaseInsert:     toDatabaseInsertSchema,
-	vo.BlockTypeDatabaseDelete:     toDatabaseDeleteSchema,
-	vo.BlockTypeDatabaseUpdate:     toDatabaseUpdateSchema,
-	vo.BlockTypeBotHttp:            toHttpRequesterSchema,
-	vo.BlockTypeBotDatasetWrite:    toKnowledgeIndexerSchema,
-	vo.BlockTypeBotDataset:         toKnowledgeRetrieverSchema,
-	vo.BlockTypeBotAssignVariable:  toVariableAssignerSchema,
-	vo.BlockTypeBotCode:            toCodeRunnerSchema,
-	vo.BlockTypeBotAPI:             toPluginSchema,
-	vo.BlockTypeBotVariableMerge:   toVariableAggregatorSchema,
-	vo.BlockTypeBotInput:           toInputReceiverSchema,
-	vo.BlockTypeBotMessage:         toOutputEmitterNodeSchema,
-	vo.BlockTypeQuestion:           toQASchema,
+	vo.BlockTypeBotStart:            toEntryNodeSchema,
+	vo.BlockTypeBotEnd:              toExitNodeSchema,
+	vo.BlockTypeBotLLM:              toLLMNodeSchema,
+	vo.BlockTypeBotLoopSetVariable:  toLoopSetVariableNodeSchema,
+	vo.BlockTypeBotBreak:            toBreakNodeSchema,
+	vo.BlockTypeBotContinue:         toContinueNodeSchema,
+	vo.BlockTypeCondition:           toSelectorNodeSchema,
+	vo.BlockTypeBotText:             toTextProcessorNodeSchema,
+	vo.BlockTypeBotIntent:           toIntentDetectorSchema,
+	vo.BlockTypeDatabase:            toDatabaseCustomSQLSchema,
+	vo.BlockTypeDatabaseSelect:      toDatabaseQuerySchema,
+	vo.BlockTypeDatabaseInsert:      toDatabaseInsertSchema,
+	vo.BlockTypeDatabaseDelete:      toDatabaseDeleteSchema,
+	vo.BlockTypeDatabaseUpdate:      toDatabaseUpdateSchema,
+	vo.BlockTypeBotHttp:             toHttpRequesterSchema,
+	vo.BlockTypeBotDatasetWrite:     toKnowledgeIndexerSchema,
+	vo.BlockTypeBotDataset:          toKnowledgeRetrieverSchema,
+	vo.BlockTypeBotAssignVariable:   toVariableAssignerSchema,
+	vo.BlockTypeBotCode:             toCodeRunnerSchema,
+	vo.BlockTypeBotAPI:              toPluginSchema,
+	vo.BlockTypeBotVariableMerge:    toVariableAggregatorSchema,
+	vo.BlockTypeBotInput:            toInputReceiverSchema,
+	vo.BlockTypeBotMessage:          toOutputEmitterNodeSchema,
+	vo.BlockTypeQuestion:            toQASchema,
+	vo.BlockTypeJsonSerialization:   toJSONSerializeSchema,
+	vo.BlockTypeJsonDeserialization: toJSONDeserializeSchema,
 }
 
 var blockTypeToSkip = map[vo.BlockType]bool{
@@ -315,12 +317,12 @@ func toEntryNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 		return nil, fmt.Errorf("entry node cannot have parent: %s", n.Parent().ID)
 	}
 
-	if n.ID != compose.EntryNodeKey {
-		return nil, fmt.Errorf("entry node id must be %s, got %s", compose.EntryNodeKey, n.ID)
+	if n.ID != entity.EntryNodeKey {
+		return nil, fmt.Errorf("entry node id must be %s, got %s", entity.EntryNodeKey, n.ID)
 	}
 
 	ns := &compose.NodeSchema{
-		Key:  compose.EntryNodeKey,
+		Key:  entity.EntryNodeKey,
 		Type: entity.NodeTypeEntry,
 		Name: n.Data.Meta.Title,
 	}
@@ -337,12 +339,12 @@ func toExitNodeSchema(n *vo.Node) (*compose.NodeSchema, error) {
 		return nil, fmt.Errorf("exit node cannot have parent: %s", n.Parent().ID)
 	}
 
-	if n.ID != compose.ExitNodeKey {
-		return nil, fmt.Errorf("exit node id must be %s, got %s", compose.ExitNodeKey, n.ID)
+	if n.ID != entity.ExitNodeKey {
+		return nil, fmt.Errorf("exit node id must be %s, got %s", entity.ExitNodeKey, n.ID)
 	}
 
 	ns := &compose.NodeSchema{
-		Key:  compose.ExitNodeKey,
+		Key:  entity.ExitNodeKey,
 		Type: entity.NodeTypeExit,
 		Name: n.Data.Meta.Title,
 	}
@@ -848,6 +850,16 @@ func toLoopNodeSchema(ctx context.Context, n *vo.Node) ([]*compose.NodeSchema, m
 
 	if err := SetOutputsForNodeSchema(n, ns); err != nil {
 		return nil, nil, err
+	}
+
+	for _, fieldInfo := range ns.OutputSources {
+		if fieldInfo.Source.Ref != nil {
+			if len(fieldInfo.Source.Ref.FromPath) == 1 {
+				if _, ok := intermediateVars[fieldInfo.Source.Ref.FromPath[0]]; ok {
+					fieldInfo.Source.Ref.VariableType = ptr.Of(variable.ParentIntermediate)
+				}
+			}
+		}
 	}
 
 	loopCount := n.Data.Inputs.LoopCount
@@ -1707,28 +1719,31 @@ func toQASchema(n *vo.Node) (*compose.NodeSchema, error) {
 		Name: n.Data.Meta.Title,
 	}
 
-	llmParamBytes, err := sonic.Marshal(n.Data.Inputs.LLMParam)
-	if err != nil {
-		return nil, err
-	}
-	var qaLLMParams vo.QALLMParam
-	err = sonic.Unmarshal(llmParamBytes, &qaLLMParams)
-	if err != nil {
-		return nil, err
-	}
-
-	llmParams, err := qaLLMParamsToLLMParams(qaLLMParams)
-	if err != nil {
-		return nil, err
-	}
-
 	qaConf := n.Data.Inputs.QA
 	if qaConf == nil {
 		return nil, fmt.Errorf("qa config is nil")
 	}
-
-	ns.SetConfigKV("LLMParams", llmParams)
 	ns.SetConfigKV("QuestionTpl", qaConf.Question)
+
+	var llmParams *model.LLMParams
+	if n.Data.Inputs.LLMParam != nil {
+		llmParamBytes, err := sonic.Marshal(n.Data.Inputs.LLMParam)
+		if err != nil {
+			return nil, err
+		}
+		var qaLLMParams vo.QALLMParam
+		err = sonic.Unmarshal(llmParamBytes, &qaLLMParams)
+		if err != nil {
+			return nil, err
+		}
+
+		llmParams, err = qaLLMParamsToLLMParams(qaLLMParams)
+		if err != nil {
+			return nil, err
+		}
+
+		ns.SetConfigKV("LLMParams", llmParams)
+	}
 
 	answerType, err := qaAnswerTypeToAnswerType(qaConf.AnswerType)
 	if err != nil {
@@ -1736,33 +1751,44 @@ func toQASchema(n *vo.Node) (*compose.NodeSchema, error) {
 	}
 	ns.SetConfigKV("AnswerType", answerType)
 
-	choiceType, err := qaOptionTypeToChoiceType(qaConf.OptionType)
-	if err != nil {
-		return nil, err
+	var choiceType qa.ChoiceType
+	if len(qaConf.OptionType) > 0 {
+		choiceType, err = qaOptionTypeToChoiceType(qaConf.OptionType)
+		if err != nil {
+			return nil, err
+		}
+		ns.SetConfigKV("ChoiceType", choiceType)
 	}
-	ns.SetConfigKV("ChoiceType", choiceType)
 
-	if answerType == qa.AnswerByChoices && choiceType == qa.FixedChoices {
-		var options []string
-		for _, option := range qaConf.Options {
-			options = append(options, option.Name)
-		}
-		ns.SetConfigKV("FixedChoices", options)
-	} else if answerType == qa.AnswerByChoices && choiceType == qa.DynamicChoices {
-		inputSources, err := CanvasBlockInputToFieldInfo(qaConf.DynamicOption, einoCompose.FieldPath{qa.DynamicChoicesKey}, n.Parent())
-		if err != nil {
-			return nil, err
-		}
-		ns.AddInputSource(inputSources...)
+	if answerType == qa.AnswerByChoices {
+		switch choiceType {
+		case qa.FixedChoices:
+			var options []string
+			for _, option := range qaConf.Options {
+				options = append(options, option.Name)
+			}
+			ns.SetConfigKV("FixedChoices", options)
+		case qa.DynamicChoices:
+			inputSources, err := CanvasBlockInputToFieldInfo(qaConf.DynamicOption, einoCompose.FieldPath{qa.DynamicChoicesKey}, n.Parent())
+			if err != nil {
+				return nil, err
+			}
+			ns.AddInputSource(inputSources...)
 
-		inputTypes, err := CanvasBlockInputToTypeInfo(qaConf.DynamicOption)
-		if err != nil {
-			return nil, err
+			inputTypes, err := CanvasBlockInputToTypeInfo(qaConf.DynamicOption)
+			if err != nil {
+				return nil, err
+			}
+			ns.SetInputType(qa.DynamicChoicesKey, inputTypes)
+		default:
+			return nil, fmt.Errorf("qa node is answer by options, but option type not provided")
 		}
-		ns.SetInputType(qa.DynamicChoicesKey, inputTypes)
 	} else if answerType == qa.AnswerDirectly {
 		ns.SetConfigKV("ExtractFromAnswer", qaConf.ExtractOutput)
 		if qaConf.ExtractOutput {
+			if llmParams == nil {
+				return nil, fmt.Errorf("qa node needs to extract from answer, but LLMParams not provided")
+			}
 			ns.SetConfigKV("AdditionalSystemPromptTpl", llmParams.SystemPrompt)
 			ns.SetConfigKV("MaxAnswerCount", qaConf.Limit)
 			if err = SetOutputTypesForNodeSchema(n, ns); err != nil {
@@ -1772,6 +1798,42 @@ func toQASchema(n *vo.Node) (*compose.NodeSchema, error) {
 	}
 
 	if err = SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toJSONSerializeSchema(n *vo.Node) (*compose.NodeSchema, error) {
+	ns := &compose.NodeSchema{
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeJsonSerialization,
+		Name: n.Data.Meta.Title,
+	}
+
+	if err := SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toJSONDeserializeSchema(n *vo.Node) (*compose.NodeSchema, error) {
+	ns := &compose.NodeSchema{
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeJsonDeserialization,
+		Name: n.Data.Meta.Title,
+	}
+
+	if err := SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
 
@@ -1819,10 +1881,15 @@ func PruneIsolatedNodes(nodes []*vo.Node, edges []*vo.Edge, parentNode *vo.Node)
 			node.Blocks, node.Edges = PruneIsolatedNodes(node.Blocks, node.Edges, node)
 		}
 		nodeDependencyCount[node.ID] = 0
+		if node.Type == vo.BlockTypeBotContinue || node.Type == vo.BlockTypeBotBreak {
+			if parentNode != nil {
+				nodeDependencyCount[parentNode.ID]++
+			}
+		}
 	}
 
-	nodeDependencyCount[compose.EntryNodeKey] = 1 // entry node is considered to be 1
-	nodeDependencyCount[compose.ExitNodeKey] = 1  // exit node is considered to be 1
+	nodeDependencyCount[entity.EntryNodeKey] = 1 // entry node is considered to be 1
+	nodeDependencyCount[entity.ExitNodeKey] = 1  // exit node is considered to be 1
 	for _, edge := range edges {
 		if _, ok := nodeDependencyCount[edge.TargetNodeID]; ok {
 			nodeDependencyCount[edge.TargetNodeID]++

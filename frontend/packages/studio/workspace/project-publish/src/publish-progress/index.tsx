@@ -190,15 +190,6 @@ function toAuditStepProps(record: PublishRecordDetail): StepProps {
             color="red"
           />
         ),
-        // "publish_status_msg" 字段已弃用，本期不展示审核失败原因
-        // description: (
-        //   <Typography.Paragraph
-        //     className="coz-fg-secondary"
-        //     ellipsis={{ rows: 2, showTooltip: true }}
-        //   >
-        //     {record.publish_status_msg ?? ''}
-        //   </Typography.Paragraph>
-        // ),
       };
     }
     default: {

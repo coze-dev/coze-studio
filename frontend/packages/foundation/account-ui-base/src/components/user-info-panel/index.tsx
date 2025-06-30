@@ -195,6 +195,7 @@ export const UserInfoPanel = () => {
       await passportApi.updateUserProfile({
         locale: newLang,
       });
+      localStorage.setItem('i18next', newLang === 'en-US' ? 'en' : newLang);
       updateProfileEvent.success();
       // 更新语言设置需要刷新页面才能生效
       setTimeout(() => {

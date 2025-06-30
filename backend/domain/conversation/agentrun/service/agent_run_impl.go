@@ -94,7 +94,7 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 		srRecord := c.buildSendRunRecord(ctx, runRecord, entity.RunStatusCompleted)
 		if err != nil {
 			srRecord.Error = &entity.RunError{
-				Code: 10000,
+				Code: errno.ErrConversationAgentRunError,
 				Msg:  err.Error(),
 			}
 			c.runProcess.StepToFailed(ctx, srRecord, sw)
@@ -153,7 +153,7 @@ func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWri
 
 	streamer, err := crossagent.DefaultSVC().StreamExecute(ctx, historyMsg, input, ar)
 	if err != nil {
-		return err
+		return errors.New(errorx.ErrorWithoutStack(err))
 	}
 
 	var wg sync.WaitGroup
@@ -618,7 +618,7 @@ func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespE
 	return nil
 }
 
-func (c *runImpl) parseInterruptData(ctx context.Context, interruptData *singleagent.InterruptInfo) (string, message.ContentType, error) {
+func (c *runImpl) parseInterruptData(_ context.Context, interruptData *singleagent.InterruptInfo) (string, message.ContentType, error) {
 	defaultContentType := message.ContentTypeText
 	switch entity.EventType(interruptData.AllToolInterruptData[interruptData.ToolCallID].EventType) {
 	case entity.EventType_Question:
@@ -668,7 +668,10 @@ func (c *runImpl) handlerUsage(meta *schema.ResponseMeta) *msgEntity.UsageExt {
 }
 
 func (c *runImpl) handlerErr(_ context.Context, err error, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
-	c.runEvent.SendErrEvent(entity.RunEventError, 10000, err.Error(), sw)
+	c.runEvent.SendErrEvent(entity.RunEventError, sw, &entity.RunError{
+		Code: errno.ErrConversationAgentRunError,
+		Msg:  errorx.ErrorWithoutStack(err),
+	})
 }
 
 func (c *runImpl) handlerPreAnswer(ctx context.Context) (*msgEntity.Message, error) {

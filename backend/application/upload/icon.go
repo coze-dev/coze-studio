@@ -20,7 +20,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -127,14 +126,10 @@ func parseMultipartFormData(ctx context.Context, req *playground.UploadFileOpenR
 	return form, nil
 }
 
-func genObjName(contentType, name string, uid string, id string) string {
-	if len(uid) == 0 {
-		uid = "default"
-	}
-	return fmt.Sprintf("%s/%s/%s/%s/%s",
+func genObjName(name string, id string) string {
+
+	return fmt.Sprintf("%s/%s/%s",
 		"bot_files",
-		uid,
-		contentType,
 		id,
 		name,
 	)
@@ -143,8 +138,8 @@ func genObjName(contentType, name string, uid string, id string) string {
 func (u *UploadService) UploadFileOpen(ctx context.Context, req *playground.UploadFileOpenRequest) (*playground.UploadFileOpenResponse, error) {
 	resp := playground.UploadFileOpenResponse{}
 	resp.File = new(playground.File)
-	uid := ctxutil.GetUIDFromCtx(ctx)
-	if uid == nil {
+	uid := ctxutil.MustGetUIDFromApiAuthCtx(ctx)
+	if uid == 0 {
 		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
 	form, err := parseMultipartFormData(ctx, req)
@@ -171,7 +166,7 @@ func (u *UploadService) UploadFileOpen(ctx context.Context, req *playground.Uplo
 	}
 	resp.File.Bytes = int64(len(data))
 	randID := uuid.NewString()
-	objName := genObjName(req.ContentType, fileHeader.Filename, fmt.Sprintf("%d", ptr.From(uid)), randID)
+	objName := genObjName(fileHeader.Filename, randID)
 	resp.File.FileName = fileHeader.Filename
 	resp.File.URI = objName
 	err = u.oss.PutObject(ctx, objName, data)

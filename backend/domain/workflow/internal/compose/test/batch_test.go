@@ -119,7 +119,7 @@ func TestBatch(t *testing.T) {
 	}
 
 	entry := &compose2.NodeSchema{
-		Key:  compose2.EntryNodeKey,
+		Key:  entity.EntryNodeKey,
 		Type: entity.NodeTypeEntry,
 	}
 
@@ -195,7 +195,7 @@ func TestBatch(t *testing.T) {
 	}
 
 	exit := &compose2.NodeSchema{
-		Key:  compose2.ExitNodeKey,
+		Key:  entity.ExitNodeKey,
 		Type: entity.NodeTypeExit,
 		Configs: map[string]any{
 			"TerminalPlan": vo.ReturnVariables,
@@ -249,7 +249,7 @@ func TestBatch(t *testing.T) {
 		},
 		Connections: []*compose2.Connection{
 			{
-				FromNode: compose2.EntryNodeKey,
+				FromNode: entity.EntryNodeKey,
 				ToNode:   "parent_predecessor_1",
 			},
 			{
@@ -278,7 +278,7 @@ func TestBatch(t *testing.T) {
 			},
 			{
 				FromNode: "batch_node_key",
-				ToNode:   compose2.ExitNodeKey,
+				ToNode:   entity.ExitNodeKey,
 			},
 		},
 	}

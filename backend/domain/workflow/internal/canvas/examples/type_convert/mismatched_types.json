@@ -109,7 +109,7 @@
           "content": {
             "type": "string",
             "value": {
-              "content": "{{int_a}} {{input}} {{obj_str}} {{arr_str}} {{num_a}} {{bool_a}} {{obj}}\n{{output1}}",
+              "content": "{{int_a}} {{input}} {{obj_str}} {{arr_str}} {{num_a}} {{bool_a}} {{obj}}\n{{output1}} {{arr_str[0]}} {{obj_str.s[1]}}",
               "type": "literal"
             }
           },

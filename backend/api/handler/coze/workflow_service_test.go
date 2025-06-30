@@ -33,6 +33,7 @@ import (
 	"gorm.io/gorm"
 
 	modelknowledge "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
+	crossmodelmgr "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	plugin2 "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	pluginmodel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
@@ -82,6 +83,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 	"code.byted.org/flow/opencoze/backend/types/consts"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type wfTestRunner struct {
@@ -254,7 +256,7 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	knowledge.SetKnowledgeOperator(mockKwOperator)
 
 	mockModelManage := mockmodel.NewMockManager(ctrl)
-	mockModelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockModelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(nil, nil, nil).AnyTimes()
 	m3 := mockey.Mock(model.GetManager).Return(mockModelManage).Build()
 
 	m := mockey.Mock(crossuser.DefaultSVC).Return(mockCU).Build()
@@ -1132,7 +1134,7 @@ func TestValidateTree(t *testing.T) {
 			_ = r.load("validate/workflow_has_no_connected_nodes.json", withID(7498321598097768457))
 
 			errs := r.validateTree("validate/sub_workflow_terminate_plan_type.json")
-			assert.Equal(t, len(errs), 2)
+			require.Equal(t, 2, len(errs))
 			assert.Equal(t, errs[0][0].Message, `node name 变量赋值,param [app_list_v2] is updated, please update the param`)
 
 			for _, i := range errs[1] {
@@ -1154,7 +1156,7 @@ func TestValidateTree(t *testing.T) {
 				return item.Message
 			})
 			assert.Contains(t, msgs, `it only allow include number or alphabet and begin with alphabet, but it's "123"`)
-			assert.Contains(t, msgs, `ref block 'output' format error, not found [blockID]`)
+			assert.Contains(t, msgs, `ref block error, not found [blockID]`)
 		})
 
 	})
@@ -1261,8 +1263,8 @@ func TestTestResumeWithInputNode(t *testing.T) {
 				IsAsync: ptr.Of(false),
 			}
 
-			errStr := r.postWithError(syncRunReq)
-			assert.Equal(t, "sync run workflow does not support interrupt/resume", errStr)
+			resp := post[workflow.OpenAPIRunFlowResponse](r, syncRunReq)
+			assert.Equal(t, int64(errno.ErrOpenAPIInterruptNotSupported), resp.Code)
 		})
 	})
 }
@@ -1402,7 +1404,7 @@ func TestResumeWithQANode(t *testing.T) {
 				return nil, errors.New("not found")
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 
 		id := r.load("qa_with_structured_output.json")
 
@@ -1493,11 +1495,11 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
-				return chatModel1, nil
+				return chatModel1, nil, nil
 			} else {
-				return chatModel2, nil
+				return chatModel2, nil, nil
 			}
 		}).AnyTimes()
 
@@ -1839,7 +1841,7 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 				}
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 
 		id := r.load("function_call/llm_with_workflow_as_tool.json")
 		defer func() {
@@ -1962,13 +1964,13 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 			if params.ModelType == 1706077826 {
 				innerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
-				return innerModel, nil
+				return innerModel, nil, nil
 			} else {
 				outerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
-				return outerModel, nil
+				return outerModel, nil, nil
 			}
 		}).AnyTimes()
 
@@ -2034,7 +2036,7 @@ func TestSimpleInterruptibleTool(t *testing.T) {
 				}
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 
 		id := r.load("function_call/llm_with_workflow_as_tool_1.json")
 
@@ -2151,13 +2153,13 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 			if params.ModelType == 1706077827 {
 				outerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
-				return outerModel, nil
+				return outerModel, nil, nil
 			} else {
 				innerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
-				return innerModel, nil
+				return innerModel, nil, nil
 			}
 		}).AnyTimes()
 
@@ -2223,7 +2225,7 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 				}
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 
 		id := r.load("batch/node_batches.json")
 
@@ -2368,13 +2370,13 @@ func TestAggregateStreamVariables(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
 				cm1.ModelType = strconv.FormatInt(params.ModelType, 10)
-				return cm1, nil
+				return cm1, nil, nil
 			} else {
 				cm2.ModelType = strconv.FormatInt(params.ModelType, 10)
-				return cm2, nil
+				return cm2, nil, nil
 			}
 		}).AnyTimes()
 
@@ -2511,11 +2513,11 @@ func TestParallelInterrupts(t *testing.T) {
 				}
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
-				return chatModel1, nil
+				return chatModel1, nil, nil
 			} else {
-				return chatModel2, nil
+				return chatModel2, nil, nil
 			}
 		}).AnyTimes()
 
@@ -2683,7 +2685,7 @@ func TestLLMWithSkills(t *testing.T) {
 				return nil, fmt.Errorf("unexpected index: %d", index)
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil, nil).AnyTimes()
 
 		r.plugin.EXPECT().ExecuteTool(gomock.Any(), gomock.Any(), gomock.Any()).Return(&plugin2.ExecuteToolResponse{
 			TrimmedResp: `{"data":"ok","err_msg":"error","data_structural":{"content":"ok","title":"title","weburl":"weburl"}}`,
@@ -2839,7 +2841,7 @@ func TestLLMWithSkills(t *testing.T) {
 				return nil, fmt.Errorf("unexpected index: %d", index)
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil, nil).AnyTimes()
 
 		t.Run("llm with workflow tool", func(t *testing.T) {
 			r.load("llm_node_with_skills/llm_workflow_as_tool.json", withID(7509120431183544356), withPublish("v0.0.1"))
@@ -2892,7 +2894,7 @@ func TestLLMWithSkills(t *testing.T) {
 				return nil, fmt.Errorf("unexpected index: %d", index)
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil, nil).AnyTimes()
 
 		r.knowledge.EXPECT().ListKnowledgeDetail(gomock.Any(), gomock.Any()).Return(&knowledge.ListKnowledgeDetailResponse{
 			KnowledgeDetails: []*knowledge.KnowledgeDetail{
@@ -2940,7 +2942,7 @@ func TestStreamRun(t *testing.T) {
 				return sr, nil
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel1, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel1, nil, nil).AnyTimes()
 
 		id := r.load("sse/llm_emitter.json")
 
@@ -3748,11 +3750,11 @@ func TestLLMException(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
-				return mainChatModel, nil
+				return mainChatModel, nil, nil
 			} else {
-				return fallbackChatModel, nil
+				return fallbackChatModel, nil, nil
 			}
 		}).AnyTimes()
 
@@ -3784,8 +3786,8 @@ func TestLLMException(t *testing.T) {
 				"age":       int64(3),
 				"isSuccess": false,
 				"errorBody": map[string]any{
-					"errorMessage": "[GraphRunError]\ncontext has been canceled: context deadline exceeded",
-					"errorCode":    int64(-1),
+					"errorMessage": "node timeout",
+					"errorCode":    int64(errno.ErrNodeTimeout),
 				},
 			}, mustUnmarshalToMap(t, e.output))
 		})
@@ -3815,11 +3817,11 @@ func TestLLMExceptionThenThrow(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
-				return mainChatModel, nil
+				return mainChatModel, nil, nil
 			} else {
-				return fallbackChatModel, nil
+				return fallbackChatModel, nil, nil
 			}
 		}).AnyTimes()
 
@@ -4188,10 +4190,11 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 
 			mId, err := strconv.ParseInt(mIdStr, 10, 64)
 
-			vs, err := appworkflow.SVC.MoveWorkflowFromAppToLibrary(ctx, mId, 123, appIDInt64)
+			id, vs, err := appworkflow.SVC.MoveWorkflowFromAppToLibrary(ctx, mId, 123, appIDInt64)
 			assert.NoError(t, err)
-			assert.Equal(t, 0, len(vs))
 
+			assert.Equal(t, 0, len(vs))
+			assert.Equal(t, id, old2newID[mId])
 			_, err = getCanvas(ctx, mIdStr)
 
 			assert.NotNil(t, err)
@@ -4363,7 +4366,7 @@ func TestMismatchedTypeConvert(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 
 		id := r.load("type_convert/mismatched_types.json")
 		exeID := r.testRun(id, map[string]string{
@@ -4379,6 +4382,87 @@ func TestMismatchedTypeConvert(t *testing.T) {
 		})
 		e := r.getProcess(id, exeID)
 		e.assertSuccess()
-		assert.Equal(t, "false  {\"s\":[2,false]} [{\"a\":1}] 3 0 {\"b\":true}\nI don't know.", e.output)
+		assert.Equal(t, "false  {\"s\":[2,false]} [{\"a\":1}] 3 0 {\"b\":true}\nI don't know. {\"a\":1} false", e.output)
+	})
+}
+
+func TestJsonSerializationDeserialization(t *testing.T) {
+	mockey.PatchConvey("test JSON serialization and deserialization workflow", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		idStr := r.load("json/json_test.json")
+
+		mockey.PatchConvey("no type conversion", func() {
+			testInput := map[string]string{
+				"person": `{"int":123,"string":"hello","bool":true}`,
+			}
+
+			exeID := r.testRun(idStr, testInput)
+			e := r.getProcess(idStr, exeID)
+			output := e.output
+			t.Logf("JSON deserialization result (no conversion): %s", output)
+
+			var result map[string]any
+			err := sonic.Unmarshal([]byte(output), &result)
+			assert.NoError(t, err, "Failed to unmarshal output JSON")
+
+			outputData, ok := result["output"].(map[string]any)
+			assert.True(t, ok, "output field is not a map[string]any")
+
+			assert.Equal(t, int64(123), outputData["int"], "int field mismatch")
+			assert.Equal(t, "hello", outputData["string"], "string field mismatch")
+			assert.Equal(t, true, outputData["bool"], "bool field mismatch")
+		})
+
+		mockey.PatchConvey("legal type conversion", func() {
+			testInput := map[string]string{
+				"person": `{"int":"123","string":456,"bool":"true"}`,
+			}
+
+			exeID := r.testRun(idStr, testInput)
+			e := r.getProcess(idStr, exeID)
+			output := e.output
+			t.Logf("JSON deserialization result (legal conversion): %s", output)
+
+			var result map[string]any
+			err := sonic.Unmarshal([]byte(output), &result)
+			assert.NoError(t, err, "Failed to unmarshal output JSON")
+
+			outputData, ok := result["output"].(map[string]any)
+			assert.True(t, ok, "output field is not a map[string]any")
+
+			assert.Equal(t, int64(123), outputData["int"], "int field mismatch")
+			assert.Equal(t, "456", outputData["string"], "string field mismatch")
+			assert.Equal(t, true, outputData["bool"], "bool field mismatch")
+		})
+	})
+}
+
+func TestJsonSerializationDeserializationWithWarning(t *testing.T) {
+	mockey.PatchConvey("test JSON serialization and deserialization with warning", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		idStr := r.load("json/json_test_warning.json")
+		testInput := map[string]string{
+			"person": `{"int":1,"string":"abc","bool":true}`,
+		}
+
+		exeID := r.testRun(idStr, testInput)
+		e := r.getProcess(idStr, exeID)
+		output := e.output
+		t.Logf("JSON deserialization result (legal conversion): %s", output)
+
+		var result map[string]any
+		err := sonic.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err, "Failed to unmarshal output JSON")
+
+		outputData, ok := result["output"].(map[string]any)
+		assert.True(t, ok, "output field is not a map[string]any")
+
+		assert.Equal(t, false, outputData["int"], "int field mismatch")
+		assert.Equal(t, "abc", outputData["string"], "string field mismatch")
+		assert.Equal(t, true, outputData["bool"], "bool field mismatch")
 	})
 }

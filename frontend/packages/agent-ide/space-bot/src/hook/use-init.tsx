@@ -234,7 +234,6 @@ const useInit = (props: AgentInitProps = { initCallback: {} }) => {
         // 页面卸载时，将上一个botId改为当前的botId
         previousBotID: botId,
       });
-      // 这里很僵硬，需要搞一下。autoSave + sendManager？
 
       autosaveManager.close();
       setPageRuntimeBotInfo({

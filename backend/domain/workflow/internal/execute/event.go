@@ -43,7 +43,7 @@ type Event struct {
 
 	RawOutput map[string]any
 
-	Err   *ErrorInfo
+	Err   error
 	Token *TokenInfo
 
 	InterruptEvents []*entity.InterruptEvent
@@ -57,19 +57,6 @@ type Event struct {
 	done chan struct{}
 
 	nodeCount int32
-}
-
-type ErrorLevel string
-
-const (
-	LevelWarn   ErrorLevel = "warn"
-	LevelError  ErrorLevel = "error"
-	LevelCancel ErrorLevel = "pending" // TODO: this 'pending' will be changed to 'cancel' or similar in the near future
-)
-
-type ErrorInfo struct {
-	Err   error
-	Level ErrorLevel
 }
 
 type TokenInfo struct {

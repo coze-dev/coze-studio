@@ -346,6 +346,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("get search store failed, err: %v", err)))
 		}
 		if _, err = ss.Store(ctx, ssDocs,
+			searchstore.WithIndexerPartitionKey(fieldNameDocumentID),
 			searchstore.WithPartition(strconv.FormatInt(doc.ID, 10)),
 			searchstore.WithIndexingFields(indexingFields),
 			searchstore.WithProgressBar(progressbar),
@@ -388,7 +389,7 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 		logs.CtxErrorf(ctx, "[insertDataToTable] insert data failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KVf("msg", "insert data failed, err: %v", err))
 	}
-	if resp.AffectedRows != int64(len(slices)) {
+	if resp.AffectedRows+resp.UnchangedRows != int64(len(slices)) {
 		logs.CtxErrorf(ctx, "[insertDataToTable] insert data failed, affected rows: %d, expect: %d", resp.AffectedRows, len(slices))
 		return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KVf("msg", "insert data failed, affected rows: %d, expect: %d", resp.AffectedRows, len(slices)))
 	}
@@ -473,6 +474,7 @@ func (k *knowledgeSVC) indexSlice(ctx context.Context, event *entity.Event) (err
 		}
 
 		if _, err = ss.Store(ctx, []*schema.Document{doc},
+			searchstore.WithIndexerPartitionKey(fieldNameDocumentID),
 			searchstore.WithPartition(strconv.FormatInt(event.Document.ID, 10)),
 			searchstore.WithIndexingFields(indexingFields),
 		); err != nil {

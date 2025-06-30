@@ -11,6 +11,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	sonic2 "code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
@@ -111,7 +112,14 @@ func jsonParseRelaxed(ctx context.Context, data string, schema_ map[string]*vo.T
 
 	for k, v := range result {
 		if s, ok := schema_[k]; ok {
-			if val, err := nodes.Convert(ctx, v, s); err == nil {
+			val, err := nodes.Convert(ctx, v, k, s, nodes.SkipUnknownFields())
+			if err != nil {
+				var warnings nodes.ConversionWarnings
+				if errors.As(err, &warnings) {
+					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+					result[k] = val
+				}
+			} else {
 				result[k] = val
 			}
 		}

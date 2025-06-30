@@ -19,7 +19,6 @@ export const useRenderVariable =
         };
       }
       primitiveExhaustiveCheck(variable);
-      // 不应该走到这里
       return {
         ...item,
         render: () => <></>,

@@ -24,6 +24,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
@@ -138,14 +139,16 @@ type KnowledgeRecallConfig struct {
 }
 
 type Config struct {
-	ChatModel             model.BaseChatModel
+	ChatModel             ModelWithInfo
 	Tools                 []tool.BaseTool
 	SystemPrompt          string
 	UserPrompt            string
 	OutputFormat          Format
+	InputFields           map[string]*vo.TypeInfo
 	OutputFields          map[string]*vo.TypeInfo
 	ToolsReturnDirectly   map[string]bool
 	KnowledgeRecallConfig *KnowledgeRecallConfig
+	FullSources           map[string]*nodes.SourceInfo
 }
 
 type LLM struct {
@@ -154,6 +157,7 @@ type LLM struct {
 	outputFields      map[string]*vo.TypeInfo
 	canStream         bool
 	requireCheckpoint bool
+	fullSources       map[string]*nodes.SourceInfo
 }
 
 func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo) (map[string]any, error) {
@@ -168,10 +172,17 @@ func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo
 
 	for k, v := range result {
 		if s, ok := schema_[k]; ok {
-			if val, err := nodes.Convert(ctx, v, s); err == nil {
-				result[k] = val
+			val, err := nodes.Convert(ctx, v, k, s)
+			if err != nil {
+				var warnings nodes.ConversionWarnings
+				if errors.As(err, &warnings) {
+					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+					result[k] = val
+				} else {
+					return nil, fmt.Errorf("invalid type: %v, %v", k, err)
+				}
 			} else {
-				return nil, fmt.Errorf("invalid type: %v, %v", k, err)
+				result[k] = val
 			}
 		}
 	}
@@ -267,10 +278,14 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 		}
 		userPrompt = fmt.Sprintf("{{%s}}%s", knowledgeUserPromptTemplateKey, userPrompt)
 
-		template := prompt.FromMessages(schema.Jinja2,
-			schema.SystemMessage(cfg.SystemPrompt),
-			schema.UserMessage(userPrompt),
-		)
+		inputs := maps.Clone(cfg.InputFields)
+		inputs[knowledgeUserPromptTemplateKey] = &vo.TypeInfo{
+			Type: vo.DataTypeString,
+		}
+		sp := newPromptTpl(schema.System, cfg.SystemPrompt, inputs, nil)
+		up := newPromptTpl(schema.User, userPrompt, inputs, []string{knowledgeUserPromptTemplateKey})
+		template := newPrompts(sp, up, cfg.ChatModel)
+
 		_ = g.AddChatTemplateNode(templateNodeKey, template,
 			compose.WithStatePreHandler(func(ctx context.Context, in map[string]any, state llmState) (map[string]any, error) {
 				for k, v := range state {
@@ -281,10 +296,9 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 		_ = g.AddEdge(knowledgeLambdaKey, templateNodeKey)
 
 	} else {
-		template := prompt.FromMessages(schema.Jinja2,
-			schema.SystemMessage(cfg.SystemPrompt),
-			schema.UserMessage(userPrompt),
-		)
+		sp := newPromptTpl(schema.System, cfg.SystemPrompt, cfg.InputFields, nil)
+		up := newPromptTpl(schema.User, userPrompt, cfg.InputFields, nil)
+		template := newPrompts(sp, up, cfg.ChatModel)
 		_ = g.AddChatTemplateNode(templateNodeKey, template)
 
 		_ = g.AddEdge(compose.START, templateNodeKey)
@@ -430,6 +444,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 		outputFormat:      format,
 		canStream:         canStream,
 		requireCheckpoint: requireCheckpoint,
+		fullSources:       cfg.FullSources,
 	}
 
 	return llm, nil
@@ -537,6 +552,17 @@ func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...Option) (co
 			}
 		})
 	}
+
+	resolvedSources, err := nodes.ResolveStreamSources(ctx, l.fullSources)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var nodeKey vo.NodeKey
+	if c != nil && c.NodeCtx != nil {
+		nodeKey = c.NodeCtx.NodeKey
+	}
+	ctxcache.Store(ctx, fmt.Sprintf(sourceKey, nodeKey), resolvedSources)
 
 	return composeOpts, resumingEvent, nil
 }

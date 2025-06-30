@@ -842,5 +842,34 @@ func TestUpsertData(t *testing.T) {
 		assert.NotNil(t, resp)
 		assert.Equal(t, int64(2), resp.InsertedRows)
 		assert.Equal(t, int64(1), resp.UpdatedRows)
+		req = &rdb.UpsertDataRequest{
+			TableName: "test_upsert_table",
+			Data: []map[string]interface{}{
+				{
+					"id":     1,
+					"name":   "John Doe Updated",
+					"age":    30,
+					"status": "primary key updated",
+				},
+				{
+					"id":     3,
+					"name":   "New Person",
+					"age":    40,
+					"status": "active",
+				},
+				{
+					"id":     4,
+					"name":   "New Person 2",
+					"age":    45,
+					"status": "active update",
+				},
+			},
+		}
+
+		resp, err = svc.UpsertData(context.Background(), req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, int64(2), resp.AffectedRows)
+		assert.Equal(t, int64(1), resp.UnchangedRows)
 	})
 }
