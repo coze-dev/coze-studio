@@ -4189,10 +4189,11 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 
 			mId, err := strconv.ParseInt(mIdStr, 10, 64)
 
-			vs, err := appworkflow.SVC.MoveWorkflowFromAppToLibrary(ctx, mId, 123, appIDInt64)
+			id, vs, err := appworkflow.SVC.MoveWorkflowFromAppToLibrary(ctx, mId, 123, appIDInt64)
 			assert.NoError(t, err)
-			assert.Equal(t, 0, len(vs))
 
+			assert.Equal(t, 0, len(vs))
+			assert.Equal(t, id, old2newID[mId])
 			_, err = getCanvas(ctx, mIdStr)
 
 			assert.NotNil(t, err)

@@ -908,11 +908,11 @@ func workflowCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, re
 		return copyWorkflow(ctx, metaInfo, res)
 
 	case resourceCommon.ResourceCopyScene_MoveResourceToLibrary:
-		err = moveAPPWorkflow(ctx, metaInfo, res)
+		newWfId, err := moveAPPWorkflow(ctx, metaInfo, res)
 		if err != nil {
 			return 0, err
 		}
-		return res.ResID, nil
+		return newWfId, nil
 
 	default:
 		return 0, fmt.Errorf("unsupported copy scene '%s'", metaInfo.scene)
@@ -958,16 +958,16 @@ func copyWorkflow(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resou
 	}
 }
 
-func moveAPPWorkflow(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resource) (err error) {
-	issues, err := workflow.SVC.MoveWorkflowFromAppToLibrary(ctx, res.ResID, metaInfo.appSpaceID, metaInfo.fromAppID)
+func moveAPPWorkflow(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resource) (wid int64, err error) {
+	newWfId, issues, err := workflow.SVC.MoveWorkflowFromAppToLibrary(ctx, res.ResID, metaInfo.appSpaceID, metaInfo.fromAppID)
 	if err != nil {
-		return errorx.Wrapf(err, "MoveWorkflowFromAppToLibrary failed, workflowID=%d", res.ResID)
+		return 0, errorx.Wrapf(err, "MoveWorkflowFromAppToLibrary failed, workflowID=%d", res.ResID)
 	}
 	if len(issues) > 0 {
-		return errorx.New(errno.ErrAppInvalidParamCode, errorx.KVf(errno.APPMsgKey, "workflow validate failed"))
+		return 0, errorx.New(errno.ErrAppInvalidParamCode, errorx.KVf(errno.APPMsgKey, "workflow validate failed"))
 	}
 
-	return nil
+	return newWfId, nil
 }
 
 func (a *APPApplicationService) ResourceCopyDetail(ctx context.Context, req *resourceAPI.ResourceCopyDetailRequest) (resp *resourceAPI.ResourceCopyDetailResponse, err error) {

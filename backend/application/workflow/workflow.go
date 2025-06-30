@@ -1004,7 +1004,7 @@ func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, w
 	return wf.ID, nil
 }
 
-func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, appID int64) (_ []*vo.ValidateIssue, err error) {
+func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, appID int64) (_ int64, _ []*vo.ValidateIssue, err error) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -1017,7 +1017,7 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 
 	ds, err := GetWorkflowDomainSVC().GetWorkflowDependenceResource(ctx, workflowID)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
 	pluginMap := make(map[int64]*vo.PluginEntity)
@@ -1026,7 +1026,7 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 			id := ds.PluginIDs[idx]
 			pInfo, err := appplugin.PluginApplicationSVC.MoveAPPPluginToLibrary(ctx, id)
 			if err != nil {
-				return nil, err
+				return 0, nil, err
 			}
 			pluginMap[id] = &vo.PluginEntity{
 				PluginID:      pInfo.ID,
@@ -1044,7 +1044,7 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 				KnowledgeID: id,
 			})
 			if err != nil {
-				return nil, err
+				return 0, nil, err
 			}
 		}
 
@@ -1055,7 +1055,7 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 			DatabaseIDs: ds.DatabaseIDs,
 		})
 		if err != nil {
-			return nil, err
+			return 0, nil, err
 		}
 	}
 
@@ -1064,10 +1064,10 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 	})
 
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	if len(vIssues) > 0 {
-		return vIssues, nil
+		return 0, vIssues, nil
 	}
 
 	err = GetWorkflowDomainSVC().SyncRelatedWorkflowResources(ctx, appID, relatedWorkflows, vo.ExternalResourceRelated{
@@ -1075,7 +1075,7 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 	})
 
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
 	deleteWorkflowIDs := xmaps.Keys(relatedWorkflows)
@@ -1083,10 +1083,14 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 		IDs: deleteWorkflowIDs,
 	})
 	if err != nil {
-		return nil, err
+		return 0, nil, err
+	}
+	copiedWf, ok := relatedWorkflows[workflowID]
+	if !ok {
+		return 0, nil, fmt.Errorf("failed to get copy workflow id, workflow id=%d", workflowID)
 	}
 
-	return nil, nil
+	return copiedWf.ID, nil, nil
 }
 
 func convertNodeExecution(nodeExe *entity.NodeExecution) (*workflow.NodeResult, error) {
