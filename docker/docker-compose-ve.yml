@@ -1,0 +1,103 @@
+x-env-file: &env_file
+  - .env
+
+services:
+  elasticsearch-setup:
+    image: alpine/curl:8.12.1
+    container_name: coze-elasticsearch-setup
+    env_file: *env_file
+    volumes:
+      - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh
+      - ./volumes/elasticsearch/es_index_schema:/es_index_schema
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -ex
+        /setup_es.sh
+        echo 'Elasticsearch setup complete.'
+    networks:
+      - coze-network
+    restart: 'no'
+  mysql-setup-init-sql:
+    image: mysql:8.4.5
+    container_name: coze-mysql-setup-init-sql
+    env_file: *env_file
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -ex
+        for i in $(seq 1 60); do
+          DB_HOST="$${MYSQL_HOST}"
+          if [ "$${MYSQL_HOST}" = "localhost" ] || [ "$${MYSQL_HOST}" = "127.0.0.1" ]; then
+            DB_HOST="mysql"
+          fi
+          if mysql -h "$${DB_HOST}" -P"$${MYSQL_PORT}" -u"$${MYSQL_USER}" -p"$${MYSQL_PASSWORD}" "$${MYSQL_DATABASE}" < /schema.sql && \
+             mysql -h "$${DB_HOST}" -P"$${MYSQL_PORT}" -u"$${MYSQL_USER}" -p"$${MYSQL_PASSWORD}" "$${MYSQL_DATABASE}" < /sql_init.sql; then
+            echo 'MySQL init success.'
+            exit 0
+          fi
+          echo "Retrying to connect to mysql... ($$i/60)"
+          sleep 1
+        done
+        echo 'Failed to init mysql db.'
+        exit 1
+    volumes:
+      - ./volumes/mysql/sql_init.sql:/sql_init.sql
+      - ./volumes/mysql/schema.sql:/schema.sql
+    networks:
+      - coze-network
+    restart: 'no'
+  tos-setup:
+    image: alpine/curl:8.12.1
+    container_name: coze-tos-setup
+    env_file: *env_file
+    volumes:
+      - ./volumes/minio/default_icon/:/default_icon
+      - ./volumes/minio/official_plugin_icon/:/official_plugin_icon
+      - ./volumes/minio/tosutil:/tosutil
+    entrypoint: >
+      /bin/sh -c  "
+        (/tosutil version && \
+        /tosutil config -i ${TOS_ACCESS_KEY} -k ${TOS_SECRET_KEY} -e ${TOS_ENDPOINT} -re ${TOS_REGION} && \
+        /tosutil cp /default_icon tos://${STORAGE_BUCKET} -r && \
+        /tosutil cp /official_plugin_icon tos://${STORAGE_BUCKET} -r && \
+        echo 'upload files to tos complete: Files uploaded to ${STORAGE_BUCKET} bucket.') || exit 1; \
+      "
+    networks:
+      - coze-network
+    restart: 'no'
+
+  coze-server-on-volcano:
+    image: opencoze-cn-beijing.cr.volces.com/opencoze/server:0.0.1
+    container_name: coze-server-on-volcano
+    env_file: *env_file
+    environment:
+      LISTEN_ADDR: 0.0.0.0:80
+    networks:
+      - coze-network
+    ports:
+      - '80:80'
+    volumes:
+      - ../docker/.env.ve:/app/.env
+    #   - ../backend/conf:/app/resources/conf
+    depends_on:
+      tos-setup:
+        condition: service_completed_successfully
+      elasticsearch-setup:
+        condition: service_completed_successfully
+      mysql-setup-init-sql:
+        condition: service_completed_successfully
+    command: ['/app/bootstrap.sh']
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 16G
+        reservations:
+          cpus: '2'
+          memory: 4G
+networks:
+  coze-network:
+    driver: bridge

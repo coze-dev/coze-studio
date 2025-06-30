@@ -318,8 +318,8 @@ func (v *variablesImpl) GetVariableChannelInstance(ctx context.Context, e *entit
 			resMemory = append(resMemory, &kvmemory.KVItem{
 				Keyword:        vv.Keyword,
 				Value:          vv.Content,
-				CreateTime:     vv.CreatedAt,
-				UpdateTime:     vv.UpdatedAt,
+				CreateTime:     vv.CreatedAt / 1000,
+				UpdateTime:     vv.UpdatedAt / 1000,
 				Schema:         meta.Schema,
 				IsSystem:       meta.IsSystem(),
 				PromptDisabled: meta.PromptDisabled,
