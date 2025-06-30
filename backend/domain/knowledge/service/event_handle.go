@@ -233,7 +233,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		batchSize := r - l
 		ids, err := k.idgen.GenMultiIDs(ctx, batchSize)
 		if err != nil {
-			return errorx.New(errno.ErrKnowledgeIDGenCode)
+			return errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("GenMultiIDs failed, err: %v", err)))
 		}
 		allIDs = append(allIDs, ids...)
 		for i := 0; i < batchSize; i++ {
@@ -530,7 +530,7 @@ func (k *knowledgeSVC) documentReviewEventHandler(ctx context.Context, event *en
 	}
 	ids, err := k.idgen.GenMultiIDs(ctx, len(result))
 	if err != nil {
-		return errorx.New(errno.ErrKnowledgeIDGenCode)
+		return errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("GenMultiIDs failed, err: %v", err)))
 	}
 	fn, ok := d2sMapping[event.Document.Type]
 	if !ok {

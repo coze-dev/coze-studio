@@ -92,7 +92,7 @@ func init() {
 
 	code.Register(
 		ErrKnowledgeIDGenCode,
-		"ID生成失败",
+		"ID生成失败: {msg}",
 		code.WithAffectStability(false),
 	)
 
