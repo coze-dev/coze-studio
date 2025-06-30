@@ -214,8 +214,8 @@ struct ListDatabaseRecordsResponse{
 struct UpdateDatabaseRecordsRequest{
     1: required i64 database_id (api.js_conv="str") // database_id
     2: optional list<map<string,string>> record_data_add // 新增的，新增的字段格式为：{"<对应字段的key>":"<要新增的value>"}
-    3: optional list<map<string,string>> record_data_alter // 修改的，修改的字段格式为：{"bstudio_id":"n（一个整数，代表原本字段的bstudio_id）","<对应字段的key>":"<要修改成的value>"}
-    4: optional list<map<string,string>> record_data_delete // 删除的，删除的字段格式为：{"bstudio_id":"n（一个整数，代表原本字段的bstudio_id）"}
+    3: optional list<map<string,string>> record_data_alter // 修改的，修改的字段格式为：{"bstudio_id":"n（一个整数，代表原本字段的bstudio_id，需要从ListDatabaseRecords去查询）","<对应字段的key>":"<要修改成的value>"}
+    4: optional list<map<string,string>> record_data_delete // 删除的，删除的字段格式为：{"bstudio_id":"n（一个整数，代表原本字段的bstudio_id，需要从ListDatabaseRecords去查询）"}
     5: optional TableType table_type    // 要更新的的是草稿态还是线上态
     6: optional string    ori_connector_id // 更新时需穿入connector id
     255: optional base.Base  Base
