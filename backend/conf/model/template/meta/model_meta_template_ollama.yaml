@@ -2,7 +2,9 @@ id: 103 # 模型 id, 同 id 数据不会覆盖
 name: Gemma-3 # 模型 meta 名称
 icon_uri: ollama.png # 模型展示图片 uri
 icon_url: '' # 模型展示图片 url
-description: The current, most capable model that runs on a single GPU. # 模型默认描述
+description:
+  zh: ollama 模型简介
+  en: ollama model description
 protocol: ollama # 模型连接协议, see: backend/infra/contract/chatmodel/protocol.go
 capability: # 模型基础能力
   function_call: true # 模型是否支持 function call

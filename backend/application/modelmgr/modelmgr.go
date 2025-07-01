@@ -7,6 +7,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/domain/modelmgr"
 	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/i18n"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -32,9 +33,10 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, req *deve
 		return nil, err
 	}
 
+	locale := i18n.GetLocale(ctx)
 	modelList, err := slices.TransformWithErrorCheck(modelResp.ModelList, func(m *modelEntity.Model) (*developer_api.Model, error) {
 		logs.CtxInfof(ctx, "ChatModel DefaultParameters: %v", m.DefaultParameters)
-		return modelDo2To(m)
+		return modelDo2To(m, locale)
 	})
 	if err != nil {
 		return nil, err
@@ -49,12 +51,12 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, req *deve
 	}, nil
 }
 
-func modelDo2To(model *modelEntity.Model) (*developer_api.Model, error) {
+func modelDo2To(model *modelEntity.Model, locale i18n.Locale) (*developer_api.Model, error) {
 	mm := model.Meta
 
 	mps := slices.Transform(model.DefaultParameters,
 		func(param *modelmgrEntity.Parameter) *developer_api.ModelParameter {
-			return parameterDo2To(param)
+			return parameterDo2To(param, locale)
 		},
 	)
 
@@ -68,13 +70,13 @@ func modelDo2To(model *modelEntity.Model) (*developer_api.Model, error) {
 		ModelQuota: &developer_api.ModelQuota{
 			TokenLimit: int32(mm.Capability.MaxTokens),
 			TokenResp:  int32(mm.Capability.OutputTokens),
-			//TokenSystem:       0,
-			//TokenUserIn:       0,
-			//TokenToolsIn:      0,
-			//TokenToolsOut:     0,
-			//TokenData:         0,
-			//TokenHistory:      0,
-			//TokenCutSwitch:    false,
+			// TokenSystem:       0,
+			// TokenUserIn:       0,
+			// TokenToolsIn:      0,
+			// TokenToolsOut:     0,
+			// TokenData:         0,
+			// TokenHistory:      0,
+			// TokenCutSwitch:    false,
 			PriceIn:           0,
 			PriceOut:          0,
 			SystemPromptLimit: nil,
@@ -93,7 +95,7 @@ func modelDo2To(model *modelEntity.Model) (*developer_api.Model, error) {
 		EndpointName:   nil,
 		ModelTagList:   nil,
 		IsUpRequired:   nil,
-		ModelBriefDesc: mm.Description,
+		ModelBriefDesc: mm.Description.Read(locale),
 		ModelSeries: &developer_api.ModelSeriesInfo{ // TODO: 替换为真实配置
 			SeriesName: "热门模型",
 		},
@@ -124,7 +126,7 @@ func supportVideoModal(ms []modelmgrEntity.Modal) bool {
 	return false
 }
 
-func parameterDo2To(param *modelmgrEntity.Parameter) *developer_api.ModelParameter {
+func parameterDo2To(param *modelmgrEntity.Parameter, locale i18n.Locale) *developer_api.ModelParameter {
 	if param == nil {
 		return nil
 	}
@@ -157,8 +159,8 @@ func parameterDo2To(param *modelmgrEntity.Parameter) *developer_api.ModelParamet
 
 	return &developer_api.ModelParameter{
 		Name:  string(param.Name),
-		Label: param.Label,
-		Desc:  param.Desc,
+		Label: param.Label.Read(locale),
+		Desc:  param.Desc.Read(locale),
 		Type: func() developer_api.ModelParamType {
 			switch param.Type {
 			case modelmgrEntity.ValueTypeBoolean:
@@ -192,7 +194,7 @@ func parameterDo2To(param *modelmgrEntity.Parameter) *developer_api.ModelParamet
 					return 0
 				}
 			}(),
-			Label: param.Style.Label,
+			Label: param.Style.Label.Read(locale),
 		},
 	}
 }

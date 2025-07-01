@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -49,6 +50,11 @@ func (m *modelManager) CreateModelMeta(ctx context.Context, meta *entity.ModelMe
 		}
 	}
 
+	desc, err := json.Marshal(meta.Description)
+	if err != nil {
+		return nil, err
+	}
+
 	now := time.Now().UnixMilli()
 	if err = m.modelMetaRepo.Create(ctx, &dmodel.ModelMeta{
 		ID:          id,
@@ -59,7 +65,7 @@ func (m *modelManager) CreateModelMeta(ctx context.Context, meta *entity.ModelMe
 		Capability:  meta.Capability,
 		ConnConfig:  meta.ConnConfig,
 		Status:      meta.Status,
-		Description: meta.Description,
+		Description: string(desc),
 		CreatedAt:   now,
 		UpdatedAt:   now,
 		DeletedAt:   gorm.DeletedAt{},
@@ -257,13 +263,18 @@ func (m *modelManager) fromModelMetaPOs(ctx context.Context, pos []*dmodel.Model
 		uris[uri] = url
 	}
 
-	dos := slices.Transform(pos, func(po *dmodel.ModelMeta) *entity.ModelMeta {
+	dos, err := slices.TransformWithErrorCheck(pos, func(po *dmodel.ModelMeta) (*entity.ModelMeta, error) {
 		if po == nil {
-			return nil
+			return nil, nil
 		}
 		url := po.IconURL
 		if url == "" {
 			url = uris[po.IconURI]
+		}
+
+		desc := &modelmgrModel.MultilingualText{}
+		if unmarshalErr := json.Unmarshal([]byte(po.Description), desc); unmarshalErr != nil {
+			return nil, unmarshalErr
 		}
 
 		return &entity.ModelMeta{
@@ -272,7 +283,7 @@ func (m *modelManager) fromModelMetaPOs(ctx context.Context, pos []*dmodel.Model
 			IconURI: po.IconURI,
 			IconURL: url,
 
-			Description: po.Description,
+			Description: desc,
 			CreatedAtMs: po.CreatedAt,
 			UpdatedAtMs: po.UpdatedAt,
 			DeletedAtMs: po.DeletedAt.Time.UnixMilli(),
@@ -281,8 +292,11 @@ func (m *modelManager) fromModelMetaPOs(ctx context.Context, pos []*dmodel.Model
 			Capability: po.Capability,
 			ConnConfig: po.ConnConfig,
 			Status:     po.Status,
-		}
+		}, nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return dos, nil
 }

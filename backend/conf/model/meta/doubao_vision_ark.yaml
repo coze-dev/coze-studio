@@ -6,7 +6,9 @@
 id: 103 # 模型 id, 同 id 数据不会覆盖
 name: Doubao-1.5-vision-pro # 模型 meta 名称
 icon_uri: doubao_v2.png
-description: 支持图片理解 # 模型默认描述
+description:
+  zh: 支持图片理解 # 模型默认描述
+  en: support image understanding
 protocol: ark # 模型连接协议
 capability: # 模型基础能力
   function_call: false # 模型是否支持 function call
