@@ -238,12 +238,25 @@ func convertSliceStatus2Model(status knowledgeModel.SliceStatus) dataset.SliceSt
 		return dataset.SliceStatus_PendingVectoring
 	}
 }
-
+func convertFilterStrategy2Model(strategy *entity.ParsingStrategy) *dataset.FilterStrategy {
+	if strategy == nil {
+		return nil
+	}
+	if len(strategy.FilterPages) != 0 {
+		return &dataset.FilterStrategy{
+			FilterPage: slices.Transform(strategy.FilterPages, func(page int) int32 {
+				return int32(page)
+			}),
+		}
+	}
+	return nil
+}
 func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInfo {
 	if documentEntity == nil {
 		return nil
 	}
 	chunkStrategy := convertChunkingStrategy2Model(documentEntity.ChunkingStrategy)
+	filterStrategy := convertFilterStrategy2Model(documentEntity.ParsingStrategy)
 	parseStrategy, _ := convertParsingStrategy2Model(documentEntity.ParsingStrategy)
 	docInfo := &dataset.DocumentInfo{
 		Name:                  documentEntity.Name,
@@ -265,6 +278,7 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 		StatusDescript:        &documentEntity.StatusMsg,
 		SpaceID:               ptr.Of(documentEntity.SpaceID),
 		EditableAppendContent: nil,
+		FilterStrategy:        filterStrategy,
 		PreviewTosURL:         &documentEntity.URL,
 		ChunkStrategy:         chunkStrategy,
 		ParsingStrategy:       parseStrategy,
@@ -401,7 +415,7 @@ func convertColumnType2Entity(columnType dataset.ColumnType) document.TableColum
 	}
 }
 
-func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dataset.TableSheet, captionType *dataset.CaptionType) *entity.ParsingStrategy {
+func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dataset.TableSheet, captionType *dataset.CaptionType, filterStrategy *dataset.FilterStrategy) *entity.ParsingStrategy {
 	if strategy == nil && sheet == nil && captionType == nil {
 		return nil
 	}
@@ -421,6 +435,9 @@ func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dat
 		res.SheetID = sheet.GetSheetID()
 		res.HeaderLine = int(sheet.GetHeaderLineIdx())
 		res.DataStartLine = int(sheet.GetStartLineIdx())
+	}
+	if filterStrategy != nil {
+		res.FilterPages = slices.Transform(filterStrategy.GetFilterPage(), func(page int32) int { return int(page) })
 	}
 	res.CaptionType = convertCaptionType2Entity(captionType)
 
@@ -690,7 +707,7 @@ func convertCreateDocReviewReq(req *dataset.CreateDocumentReviewRequest) *servic
 	}
 	resp := &service.CreateDocumentReviewRequest{
 		ChunkStrategy:   convertChunkingStrategy2Entity(req.ChunkStrategy),
-		ParsingStrategy: convertParsingStrategy2Entity(req.ParsingStrategy, nil, captionType),
+		ParsingStrategy: convertParsingStrategy2Entity(req.ParsingStrategy, nil, captionType, nil),
 	}
 	resp.KnowledgeID = req.GetDatasetID()
 	resp.Reviews = slices.Transform(req.GetReviews(), func(r *dataset.ReviewInput) *service.ReviewInput {

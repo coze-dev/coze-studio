@@ -49,6 +49,7 @@ struct DocumentInfo {
     28: optional string     imagex_uri      // imagex 存储的文件链接
     29: optional string     doc_outline     // 层级分段文档树Json (未使用)
     30: optional common.ParsingStrategy     parsing_strategy // 解析策略
+    32: optional common.FilterStrategy      filter_strategy // 过滤策略
     33: optional string     doc_tree_tos_url // 层级分段文档树 tos_url
     34: optional string     preview_tos_url  // 预览用的原文档 tos_url
     35: optional i64        review_id  // 预览用的原文档 tos_url
@@ -176,7 +177,7 @@ struct ResegmentRequest {
     2: list<string> document_ids // 要重新分段的文档
     3: common.ChunkStrategy   chunk_strategy             // 分段策略
     5: optional common.ParsingStrategy     parsing_strategy // 解析策略
-
+    7: optional common.FilterStrategy      filter_strategy; // 过滤策略
     255: optional base.Base Base
 }
 
@@ -218,6 +219,7 @@ struct DocumentBase{
      // 以下参数表格类型需要传递
     4: optional list<TableColumn> table_meta          // 表格元数据
     5: optional TableSheet        table_sheet         // 表格解析信息
+    6: optional common.FilterStrategy      filter_strategy  // 过滤策略
     7: optional string caption                        // 图片类型知识库，人工标注时的图片描述
 }
 

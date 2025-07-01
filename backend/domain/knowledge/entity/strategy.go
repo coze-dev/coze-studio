@@ -11,9 +11,10 @@ type RetrievalStrategy = knowledge.RetrievalStrategy
 type ParsingStrategy struct {
 	ParsingType ParsingType `json:"parsing_type"` // 解析类型
 	// Doc
-	ExtractImage bool `json:"extract_image"` // 提取图片元素
-	ExtractTable bool `json:"extract_table"` // 提取表格元素
-	ImageOCR     bool `json:"image_ocr"`     // 图片 ocr
+	ExtractImage bool  `json:"extract_image"` // 提取图片元素
+	ExtractTable bool  `json:"extract_table"` // 提取表格元素
+	ImageOCR     bool  `json:"image_ocr"`     // 图片 ocr
+	FilterPages  []int `json:"filter_pages"`  // 过滤页数
 
 	// Sheet
 	SheetID       int64 `json:"sheet_id"`        // xlsx sheet id

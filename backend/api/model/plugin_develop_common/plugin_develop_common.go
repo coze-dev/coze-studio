@@ -1690,9 +1690,9 @@ func (p *ResponseStyle) String() string {
 }
 
 type CodeInfo struct {
-	// json
+	// plugin manifest in json string
 	PluginDesc string `thrift:"plugin_desc,1" form:"plugin_desc" json:"plugin_desc" query:"plugin_desc"`
-	// yaml
+	// plugin openapi3 document in yaml string
 	OpenapiDesc  string `thrift:"openapi_desc,2" form:"openapi_desc" json:"openapi_desc" query:"openapi_desc"`
 	ClientID     string `thrift:"client_id,3" form:"client_id" json:"client_id" query:"client_id"`
 	ClientSecret string `thrift:"client_secret,4" form:"client_secret" json:"client_secret" query:"client_secret"`
@@ -2514,23 +2514,31 @@ func (p *UserLabel) String() string {
 }
 
 type PluginMetaInfo struct {
-	Name     string              `thrift:"name,1" form:"name" json:"name" query:"name"`
-	Desc     string              `thrift:"desc,2" form:"desc" json:"desc" query:"desc"`
-	URL      string              `thrift:"url,3" form:"url" json:"url" query:"url"`
-	Icon     *PluginIcon         `thrift:"icon,4" form:"icon" json:"icon" query:"icon"`
+	// 插件名
+	Name string `thrift:"name,1" form:"name" json:"name" query:"name"`
+	// 插件描述
+	Desc string `thrift:"desc,2" form:"desc" json:"desc" query:"desc"`
+	// 插件服务地址前缀
+	URL string `thrift:"url,3" form:"url" json:"url" query:"url"`
+	// 插件图标
+	Icon *PluginIcon `thrift:"icon,4" form:"icon" json:"icon" query:"icon"`
+	// 插件授权类型，0：无授权，1：service，3：oauth
 	AuthType []AuthorizationType `thrift:"auth_type,5" form:"auth_type" json:"auth_type" query:"auth_type"`
-	// service
+	// 子授权类型为api/token时，token参数位置
 	Location *AuthorizationServiceLocation `thrift:"location,6,optional" form:"location" json:"location,omitempty" query:"location"`
-	// service
+	// 子授权类型为api/token时，token参数key
 	Key *string `thrift:"key,7,optional" form:"key" json:"key,omitempty" query:"key"`
-	// service
+	// 子授权类型为api/token时，token参数值
 	ServiceToken *string `thrift:"service_token,8,optional" form:"service_token" json:"service_token,omitempty" query:"service_token"`
-	// json序列化
-	OauthInfo    *string                                    `thrift:"oauth_info,9,optional" form:"oauth_info" json:"oauth_info,omitempty" query:"oauth_info"`
+	// 子授权类型为oauth时，oauth信息
+	OauthInfo *string `thrift:"oauth_info,9,optional" form:"oauth_info" json:"oauth_info,omitempty" query:"oauth_info"`
+	// 插件公共参数，key为参数位置，value为参数列表
 	CommonParams map[ParameterLocation][]*CommonParamSchema `thrift:"common_params,10,optional" form:"common_params" json:"common_params,omitempty" query:"common_params"`
-	SubAuthType  *int32                                     `thrift:"sub_auth_type,11,optional" form:"sub_auth_type" json:"sub_auth_type,omitempty" query:"sub_auth_type"`
-	AuthPayload  *string                                    `thrift:"auth_payload,12,optional" form:"auth_payload" json:"auth_payload,omitempty" query:"auth_payload"`
-	// 是否固定出口ip
+	// 子授权类型，0: api/token of service, 10: client credentials of oauth
+	SubAuthType *int32 `thrift:"sub_auth_type,11,optional" form:"sub_auth_type" json:"sub_auth_type,omitempty" query:"sub_auth_type"`
+	// 可忽略
+	AuthPayload *string `thrift:"auth_payload,12,optional" form:"auth_payload" json:"auth_payload,omitempty" query:"auth_payload"`
+	// 可忽略
 	FixedExportIP bool `thrift:"fixed_export_ip,13" form:"fixed_export_ip" json:"fixed_export_ip" query:"fixed_export_ip"`
 }
 
@@ -6988,28 +6996,32 @@ func (p *PluginParameter) String() string {
 }
 
 type PluginAPIInfo struct {
-	PluginID       string               `thrift:"plugin_id,1" form:"plugin_id" json:"plugin_id" query:"plugin_id"`
-	APIID          string               `thrift:"api_id,2" form:"api_id" json:"api_id" query:"api_id"`
-	Name           string               `thrift:"name,3" form:"name" json:"name" query:"name"`
-	Desc           string               `thrift:"desc,4" form:"desc" json:"desc" query:"desc"`
-	Path           string               `thrift:"path,5" form:"path" json:"path" query:"path"`
-	Method         APIMethod            `thrift:"method,6" form:"method" json:"method" query:"method"`
-	RequestParams  []*APIParameter      `thrift:"request_params,7" form:"request_params" json:"request_params" query:"request_params"`
-	ResponseParams []*APIParameter      `thrift:"response_params,8" form:"response_params" json:"response_params" query:"response_params"`
-	CreateTime     string               `thrift:"create_time,9" form:"create_time" json:"create_time" query:"create_time"`
-	DebugStatus    APIDebugStatus       `thrift:"debug_status,10" form:"debug_status" json:"debug_status" query:"debug_status"`
-	Disabled       bool                 `thrift:"disabled,11" form:"disabled" json:"disabled" query:"disabled"`
-	StatisticData  *PluginStatisticData `thrift:"statistic_data,12" form:"statistic_data" json:"statistic_data" query:"statistic_data"`
-	// ide创建插件展示tool的在线状态
+	PluginID       string          `thrift:"plugin_id,1" form:"plugin_id" json:"plugin_id" query:"plugin_id"`
+	APIID          string          `thrift:"api_id,2" form:"api_id" json:"api_id" query:"api_id"`
+	Name           string          `thrift:"name,3" form:"name" json:"name" query:"name"`
+	Desc           string          `thrift:"desc,4" form:"desc" json:"desc" query:"desc"`
+	Path           string          `thrift:"path,5" form:"path" json:"path" query:"path"`
+	Method         APIMethod       `thrift:"method,6" form:"method" json:"method" query:"method"`
+	RequestParams  []*APIParameter `thrift:"request_params,7" form:"request_params" json:"request_params" query:"request_params"`
+	ResponseParams []*APIParameter `thrift:"response_params,8" form:"response_params" json:"response_params" query:"response_params"`
+	CreateTime     string          `thrift:"create_time,9" form:"create_time" json:"create_time" query:"create_time"`
+	DebugStatus    APIDebugStatus  `thrift:"debug_status,10" form:"debug_status" json:"debug_status" query:"debug_status"`
+	// ignore
+	Disabled bool `thrift:"disabled,11" form:"disabled" json:"disabled" query:"disabled"`
+	// ignore
+	StatisticData *PluginStatisticData `thrift:"statistic_data,12" form:"statistic_data" json:"statistic_data" query:"statistic_data"`
+	// if tool has been published, online_status is Online
 	OnlineStatus OnlineStatus `thrift:"online_status,13" form:"online_status" json:"online_status" query:"online_status"`
-	APIExtend    *APIExtend   `thrift:"api_extend,14" form:"api_extend" json:"api_extend" query:"api_extend"`
-	// 卡片绑定信息，未绑定则为nil
+	// ignore
+	APIExtend *APIExtend `thrift:"api_extend,14" form:"api_extend" json:"api_extend" query:"api_extend"`
+	// ignore
 	CardBindingInfo *PresetCardBindingInfo `thrift:"card_binding_info,15,optional" form:"card_binding_info" json:"card_binding_info,omitempty" query:"card_binding_info"`
 	// 调试示例
 	DebugExample *DebugExample `thrift:"debug_example,16,optional" form:"debug_example" json:"debug_example,omitempty" query:"debug_example"`
 	// 调试示例状态
 	DebugExampleStatus DebugExampleStatus `thrift:"debug_example_status,17" form:"debug_example_status" json:"debug_example_status" query:"debug_example_status"`
-	FunctionName       string             `thrift:"function_name,18" form:"function_name" json:"function_name" query:"function_name"`
+	// ignore
+	FunctionName string `thrift:"function_name,18" form:"function_name" json:"function_name" query:"function_name"`
 }
 
 func NewPluginAPIInfo() *PluginAPIInfo {
@@ -7965,23 +7977,35 @@ func (p *PluginAPIInfo) String() string {
 
 type APIParameter struct {
 	// for前端，无实际意义
-	ID            string            `thrift:"id,1" form:"id" json:"id" query:"id"`
-	Name          string            `thrift:"name,2" form:"name" json:"name" query:"name"`
-	Desc          string            `thrift:"desc,3" form:"desc" json:"desc" query:"desc"`
-	Type          ParameterType     `thrift:"type,4" form:"type" json:"type" query:"type"`
-	SubType       *ParameterType    `thrift:"sub_type,5,optional" form:"sub_type" json:"sub_type,omitempty" query:"sub_type"`
-	Location      ParameterLocation `thrift:"location,6" form:"location" json:"location" query:"location"`
-	IsRequired    bool              `thrift:"is_required,7" form:"is_required" json:"is_required" query:"is_required"`
-	SubParameters []*APIParameter   `thrift:"sub_parameters,8" form:"sub_parameters" json:"sub_parameters" query:"sub_parameters"`
-	GlobalDefault *string           `thrift:"global_default,9,optional" form:"global_default" json:"global_default,omitempty" query:"global_default"`
-	GlobalDisable bool              `thrift:"global_disable,10" form:"global_disable" json:"global_disable" query:"global_disable"`
-	LocalDefault  *string           `thrift:"local_default,11,optional" form:"local_default" json:"local_default,omitempty" query:"local_default"`
-	LocalDisable  bool              `thrift:"local_disable,12" form:"local_disable" json:"local_disable" query:"local_disable"`
-	// 默认入参的设置来源
+	ID string `thrift:"id,1" form:"id" json:"id" query:"id"`
+	// parameter name
+	Name string `thrift:"name,2" form:"name" json:"name" query:"name"`
+	// parameter desc
+	Desc string `thrift:"desc,3" form:"desc" json:"desc" query:"desc"`
+	// parameter type
+	Type ParameterType `thrift:"type,4" form:"type" json:"type" query:"type"`
+	// 可忽略
+	SubType *ParameterType `thrift:"sub_type,5,optional" form:"sub_type" json:"sub_type,omitempty" query:"sub_type"`
+	// 参数位置
+	Location ParameterLocation `thrift:"location,6" form:"location" json:"location" query:"location"`
+	// 是否必填
+	IsRequired bool `thrift:"is_required,7" form:"is_required" json:"is_required" query:"is_required"`
+	// 子参数
+	SubParameters []*APIParameter `thrift:"sub_parameters,8" form:"sub_parameters" json:"sub_parameters" query:"sub_parameters"`
+	// 全局默认值
+	GlobalDefault *string `thrift:"global_default,9,optional" form:"global_default" json:"global_default,omitempty" query:"global_default"`
+	// 全局是否启用
+	GlobalDisable bool `thrift:"global_disable,10" form:"global_disable" json:"global_disable" query:"global_disable"`
+	// 智能体内设置的默认值
+	LocalDefault *string `thrift:"local_default,11,optional" form:"local_default" json:"local_default,omitempty" query:"local_default"`
+	// 智能体内是否启用
+	LocalDisable bool `thrift:"local_disable,12" form:"local_disable" json:"local_disable" query:"local_disable"`
+	// 可忽略
 	DefaultParamSource *DefaultParamSource `thrift:"default_param_source,13,optional" form:"default_param_source" json:"default_param_source,omitempty" query:"default_param_source"`
 	// 引用variable的key
-	VariableRef *string              `thrift:"variable_ref,14,optional" form:"variable_ref" json:"variable_ref,omitempty" query:"variable_ref"`
-	AssistType  *AssistParameterType `thrift:"assist_type,15,optional" form:"assist_type" json:"assist_type,omitempty" query:"assist_type"`
+	VariableRef *string `thrift:"variable_ref,14,optional" form:"variable_ref" json:"variable_ref,omitempty" query:"variable_ref"`
+	// 多模态辅助参数类型
+	AssistType *AssistParameterType `thrift:"assist_type,15,optional" form:"assist_type" json:"assist_type,omitempty" query:"assist_type"`
 }
 
 func NewAPIParameter() *APIParameter {
@@ -9392,7 +9416,9 @@ func (p *PresetCardBindingInfo) String() string {
 }
 
 type DebugExample struct {
-	ReqExample  string `thrift:"req_example,1" form:"req_example" json:"req_example" query:"req_example"`
+	// request example in json
+	ReqExample string `thrift:"req_example,1" form:"req_example" json:"req_example" query:"req_example"`
+	// response example in json
 	RespExample string `thrift:"resp_example,2" form:"resp_example" json:"resp_example" query:"resp_example"`
 }
 
@@ -10640,8 +10666,9 @@ func (p *PluginPublishInfo) String() string {
 }
 
 type RegisterPluginData struct {
-	PluginID int64  `thrift:"plugin_id,1" form:"plugin_id" json:"plugin_id,string" query:"plugin_id"`
-	Openapi  string `thrift:"openapi,2" form:"openapi" json:"openapi" query:"openapi"`
+	PluginID int64 `thrift:"plugin_id,1" form:"plugin_id" json:"plugin_id,string" query:"plugin_id"`
+	// the same as the request 'openapi'
+	Openapi string `thrift:"openapi,2" form:"openapi" json:"openapi" query:"openapi"`
 }
 
 func NewRegisterPluginData() *RegisterPluginData {

@@ -305,7 +305,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 			FileExtension:    parser.FileExtension(GetExtension(req.GetDocumentBases()[i].GetSourceInfo().GetTosURI())),
 			Source:           docSource,
 			IsAppend:         req.GetIsAppend(),
-			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet, captionType),
+			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet, captionType, req.GetDocumentBases()[i].FilterStrategy),
 			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
 			TableInfo: entity.TableInfo{
 				Columns: convertTableColumns2Entity(req.GetDocumentBases()[i].GetTableMeta()),
@@ -449,7 +449,7 @@ func (k *KnowledgeApplicationService) Resegment(ctx context.Context, req *datase
 		resegmentResp, err := k.DomainSVC.ResegmentDocument(ctx, &service.ResegmentDocumentRequest{
 			DocumentID:       docID,
 			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
-			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), nil, captionType),
+			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), nil, captionType, req.FilterStrategy),
 		})
 		if err != nil {
 			logs.CtxErrorf(ctx, "resegment document failed, err: %v", err)

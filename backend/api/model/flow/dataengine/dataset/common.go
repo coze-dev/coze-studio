@@ -1704,8 +1704,6 @@ func (p *IndexStrategy) String() string {
 type FilterStrategy struct {
 	//过滤页数
 	FilterPage []int32 `thrift:"filter_page,1,optional" form:"filter_page" json:"filter_page,omitempty" query:"filter_page"`
-	//过滤框位置
-	FilterBoxPosition []float64 `thrift:"filter_box_position,2,optional" form:"filter_box_position" json:"filter_box_position,omitempty" query:"filter_box_position"`
 }
 
 func NewFilterStrategy() *FilterStrategy {
@@ -1724,26 +1722,12 @@ func (p *FilterStrategy) GetFilterPage() (v []int32) {
 	return p.FilterPage
 }
 
-var FilterStrategy_FilterBoxPosition_DEFAULT []float64
-
-func (p *FilterStrategy) GetFilterBoxPosition() (v []float64) {
-	if !p.IsSetFilterBoxPosition() {
-		return FilterStrategy_FilterBoxPosition_DEFAULT
-	}
-	return p.FilterBoxPosition
-}
-
 var fieldIDToName_FilterStrategy = map[int16]string{
 	1: "filter_page",
-	2: "filter_box_position",
 }
 
 func (p *FilterStrategy) IsSetFilterPage() bool {
 	return p.FilterPage != nil
-}
-
-func (p *FilterStrategy) IsSetFilterBoxPosition() bool {
-	return p.FilterBoxPosition != nil
 }
 
 func (p *FilterStrategy) Read(iprot thrift.TProtocol) (err error) {
@@ -1767,14 +1751,6 @@ func (p *FilterStrategy) Read(iprot thrift.TProtocol) (err error) {
 		case 1:
 			if fieldTypeId == thrift.LIST {
 				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.LIST {
-				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1832,29 +1808,6 @@ func (p *FilterStrategy) ReadField1(iprot thrift.TProtocol) error {
 	p.FilterPage = _field
 	return nil
 }
-func (p *FilterStrategy) ReadField2(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return err
-	}
-	_field := make([]float64, 0, size)
-	for i := 0; i < size; i++ {
-
-		var _elem float64
-		if v, err := iprot.ReadDouble(); err != nil {
-			return err
-		} else {
-			_elem = v
-		}
-
-		_field = append(_field, _elem)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
-		return err
-	}
-	p.FilterBoxPosition = _field
-	return nil
-}
 
 func (p *FilterStrategy) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -1864,10 +1817,6 @@ func (p *FilterStrategy) Write(oprot thrift.TProtocol) (err error) {
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
 			goto WriteFieldError
 		}
 	}
@@ -1913,32 +1862,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-func (p *FilterStrategy) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetFilterBoxPosition() {
-		if err = oprot.WriteFieldBegin("filter_box_position", thrift.LIST, 2); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteListBegin(thrift.DOUBLE, len(p.FilterBoxPosition)); err != nil {
-			return err
-		}
-		for _, v := range p.FilterBoxPosition {
-			if err := oprot.WriteDouble(v); err != nil {
-				return err
-			}
-		}
-		if err := oprot.WriteListEnd(); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 
 func (p *FilterStrategy) String() string {
