@@ -111,7 +111,10 @@ func OpenapiAuthMW() app.HandlerFunc {
 		apiKeyInfo.ConnectorID = consts.APIConnectorID
 		logs.CtxInfof(ctx, "OpenapiAuthMW: apiKeyInfo=%v", conv.DebugJsonToStr(apiKeyInfo))
 		ctxcache.Store(ctx, consts.OpenapiAuthKeyInCtx, apiKeyInfo)
-
+		err = openauth.OpenAuthApplication.UpdateLastUsedAt(ctx, apiKeyInfo.ID, apiKeyInfo.UserID)
+		if err != nil {
+			logs.CtxErrorf(ctx, "OpenAuthApplication.UpdateLastUsedAt failed, err=%v", err)
+		}
 		c.Next(ctx)
 	}
 }

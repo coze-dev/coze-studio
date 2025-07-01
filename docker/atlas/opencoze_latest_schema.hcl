@@ -265,6 +265,12 @@ table "api_key" {
     unsigned = true
     comment  = "Update Time in Milliseconds"
   }
+  column "last_used_at" {
+    null    = false
+    type    = bigint
+    default = 0
+    comment = "Used Time in Milliseconds"
+  }
   primary_key {
     columns = [column.id]
   }

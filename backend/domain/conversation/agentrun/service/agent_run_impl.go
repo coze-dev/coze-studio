@@ -36,9 +36,8 @@ import (
 type runImpl struct {
 	Components
 
-	runProcess   *internal.RunProcess
-	runEvent     *internal.Event
-	rtDependence runtimeDependence
+	runProcess *internal.RunProcess
+	runEvent   *internal.Event
 }
 
 type runtimeDependence struct {
@@ -71,25 +70,26 @@ func (c *runImpl) AgentRun(ctx context.Context, arm *entity.AgentRunMeta) (*sche
 		}
 	}()
 
-	c.rtDependence = runtimeDependence{
+	rtDependence := &runtimeDependence{
 		runMeta:   arm,
 		startTime: time.Now(),
 	}
 
 	safego.Go(ctx, func() {
 		defer sw.Close()
-		_ = c.run(ctx, sw)
+		_ = c.run(ctx, sw, rtDependence)
 	})
 
 	return sr, nil
 }
 
-func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse]) (err error) {
-	runRecord, err := c.createRunRecord(ctx, sw)
+func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) (err error) {
+	runRecord, err := c.createRunRecord(ctx, sw, rtDependence)
+
 	if err != nil {
 		return
 	}
-
+	rtDependence.runID = runRecord.ID
 	defer func() {
 		srRecord := c.buildSendRunRecord(ctx, runRecord, entity.RunStatusCompleted)
 		if err != nil {
@@ -103,34 +103,33 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 		c.runProcess.StepToComplete(ctx, srRecord, sw)
 	}()
 
-	agentInfo, err := c.handlerAgent(ctx, c.rtDependence.runMeta.AgentID)
+	agentInfo, err := c.handlerAgent(ctx, rtDependence)
 	if err != nil {
 		return
 	}
 
-	c.rtDependence.runID = runRecord.ID
-	c.rtDependence.agentInfo = agentInfo
+	rtDependence.agentInfo = agentInfo
 
-	history, err := c.handlerHistory(ctx)
+	history, err := c.handlerHistory(ctx, rtDependence)
 	if err != nil {
 		return
 	}
 
-	input, err := c.handlerInput(ctx, sw)
+	input, err := c.handlerInput(ctx, sw, rtDependence)
 	if err != nil {
 		return
 	}
 
-	c.rtDependence.questionMsgID = input.ID
+	rtDependence.questionMsgID = input.ID
 
-	err = c.handlerStreamExecute(ctx, sw, history, input, runRecord)
+	err = c.handlerStreamExecute(ctx, sw, history, input, rtDependence)
 	return
 }
 
-func (c *runImpl) handlerAgent(ctx context.Context, agentID int64) (*singleagent.SingleAgent, error) {
+func (c *runImpl) handlerAgent(ctx context.Context, rtDependence *runtimeDependence) (*singleagent.SingleAgent, error) {
 	agentInfo, err := crossagent.DefaultSVC().ObtainAgentByIdentity(ctx, &singleagent.AgentIdentity{
-		AgentID: agentID,
-		IsDraft: c.rtDependence.runMeta.IsDraft,
+		AgentID: rtDependence.runMeta.AgentID,
+		IsDraft: rtDependence.runMeta.IsDraft,
 	})
 	if err != nil {
 		return nil, err
@@ -139,16 +138,16 @@ func (c *runImpl) handlerAgent(ctx context.Context, agentID int64) (*singleagent
 	return agentInfo, nil
 }
 
-func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], historyMsg []*msgEntity.Message, input *msgEntity.Message, runRecord *entity.RunRecordMeta) (err error) {
+func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], historyMsg []*msgEntity.Message, input *msgEntity.Message, rtDependence *runtimeDependence) (err error) {
 	mainChan := make(chan *entity.AgentRespEvent, 100)
 	faChan := make(chan *entity.FinalAnswerEvent, 100)
 
 	ar := &singleagent.AgentRuntime{
-		AgentVersion:     c.rtDependence.runMeta.Version,
-		SpaceID:          c.rtDependence.runMeta.SpaceID,
-		IsDraft:          c.rtDependence.runMeta.IsDraft,
-		ConnectorID:      c.rtDependence.runMeta.ConnectorID,
-		PreRetrieveTools: c.rtDependence.runMeta.PreRetrieveTools,
+		AgentVersion:     rtDependence.runMeta.Version,
+		SpaceID:          rtDependence.runMeta.SpaceID,
+		IsDraft:          rtDependence.runMeta.IsDraft,
+		ConnectorID:      rtDependence.runMeta.ConnectorID,
+		PreRetrieveTools: rtDependence.runMeta.PreRetrieveTools,
 	}
 
 	streamer, err := crossagent.DefaultSVC().StreamExecute(ctx, historyMsg, input, ar)
@@ -165,7 +164,7 @@ func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWri
 
 	safego.Go(ctx, func() {
 		defer wg.Done()
-		c.push(ctx, mainChan, faChan, sw)
+		c.push(ctx, mainChan, faChan, sw, rtDependence)
 	})
 
 	wg.Wait()
@@ -192,11 +191,11 @@ func transformEventMap(eventType singleagent.EventType) (message.MessageType, er
 	return eType, errorx.New(errno.ErrReplyUnknowEventType)
 }
 
-func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.AgentRespEvent, messageType message.MessageType) *message.Message {
-	arm := c.rtDependence.runMeta
+func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.AgentRespEvent, messageType message.MessageType, rtDependence *runtimeDependence) *message.Message {
+	arm := rtDependence.runMeta
 	msg := &msgEntity.Message{
 		ConversationID: arm.ConversationID,
-		RunID:          c.rtDependence.runID,
+		RunID:          rtDependence.runID,
 		AgentID:        arm.AgentID,
 		SectionID:      arm.SectionID,
 		UserID:         arm.UserID,
@@ -204,7 +203,7 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 	}
 	buildExt := map[string]string{}
 
-	timeCost := fmt.Sprintf("%.1f", float64(time.Since(c.rtDependence.startTime).Milliseconds())/1000.00)
+	timeCost := fmt.Sprintf("%.1f", float64(time.Since(rtDependence.startTime).Milliseconds())/1000.00)
 
 	switch messageType {
 	case message.MessageTypeQuestion:
@@ -336,15 +335,15 @@ func (c *runImpl) buildAgentMessage2Create(ctx context.Context, chunk *entity.Ag
 	return msg
 }
 
-func (c *runImpl) handlerHistory(ctx context.Context) ([]*msgEntity.Message, error) {
+func (c *runImpl) handlerHistory(ctx context.Context, rtDependence *runtimeDependence) ([]*msgEntity.Message, error) {
 
 	conversationTurns := entity.ConversationTurnsDefault
 
-	if c.rtDependence.agentInfo != nil && c.rtDependence.agentInfo.ModelInfo != nil && c.rtDependence.agentInfo.ModelInfo.ShortMemoryPolicy != nil && ptr.From(c.rtDependence.agentInfo.ModelInfo.ShortMemoryPolicy.HistoryRound) > 0 {
-		conversationTurns = ptr.From(c.rtDependence.agentInfo.ModelInfo.ShortMemoryPolicy.HistoryRound)
+	if rtDependence.agentInfo != nil && rtDependence.agentInfo.ModelInfo != nil && rtDependence.agentInfo.ModelInfo.ShortMemoryPolicy != nil && ptr.From(rtDependence.agentInfo.ModelInfo.ShortMemoryPolicy.HistoryRound) > 0 {
+		conversationTurns = ptr.From(rtDependence.agentInfo.ModelInfo.ShortMemoryPolicy.HistoryRound)
 	}
 
-	runRecordList, err := c.RunRecordRepo.List(ctx, c.rtDependence.runMeta.ConversationID, c.rtDependence.runMeta.SectionID, conversationTurns)
+	runRecordList, err := c.RunRecordRepo.List(ctx, rtDependence.runMeta.ConversationID, rtDependence.runMeta.SectionID, conversationTurns)
 	if err != nil {
 		return nil, err
 	}
@@ -355,7 +354,7 @@ func (c *runImpl) handlerHistory(ctx context.Context) ([]*msgEntity.Message, err
 
 	runIDS := c.getRunID(runRecordList)
 
-	history, err := crossmessage.DefaultSVC().GetByRunIDs(ctx, c.rtDependence.runMeta.ConversationID, runIDS)
+	history, err := crossmessage.DefaultSVC().GetByRunIDs(ctx, rtDependence.runMeta.ConversationID, runIDS)
 	if err != nil {
 		return nil, err
 	}
@@ -372,14 +371,12 @@ func (c *runImpl) getRunID(rr []*model.RunRecord) []int64 {
 	return ids
 }
 
-func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse]) (*entity.RunRecordMeta, error) {
-	runPoData, err := c.RunRecordRepo.Create(ctx, c.rtDependence.runMeta)
+func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) (*entity.RunRecordMeta, error) {
+	runPoData, err := c.RunRecordRepo.Create(ctx, rtDependence.runMeta)
 	if err != nil {
 		logs.CtxErrorf(ctx, "RunRecordRepo.Create error: %v", err)
 		return nil, err
 	}
-
-	c.rtDependence.runID = runPoData.ID
 
 	srRecord := c.buildSendRunRecord(ctx, runPoData, entity.RunStatusCreated)
 
@@ -394,8 +391,8 @@ func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*
 	return runPoData, nil
 }
 
-func (c *runImpl) handlerInput(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse]) (*msgEntity.Message, error) {
-	msgMeta := c.buildAgentMessage2Create(ctx, nil, message.MessageTypeQuestion)
+func (c *runImpl) handlerInput(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) (*msgEntity.Message, error) {
+	msgMeta := c.buildAgentMessage2Create(ctx, nil, message.MessageTypeQuestion, rtDependence)
 
 	cm, err := crossmessage.DefaultSVC().Create(ctx, msgMeta)
 	if err != nil {
@@ -463,7 +460,7 @@ func (c *runImpl) pull(_ context.Context, mainChan chan *entity.AgentRespEvent, 
 	}
 }
 
-func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent, faChan chan *entity.FinalAnswerEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
+func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent, faChan chan *entity.FinalAnswerEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) {
 
 	var err error
 	defer func() {
@@ -489,24 +486,24 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 
 		switch chunk.EventType {
 		case message.MessageTypeFunctionCall:
-			err = c.handlerFunctionCall(ctx, chunk, sw)
+			err = c.handlerFunctionCall(ctx, chunk, sw, rtDependence)
 			if err != nil {
 				return
 			}
 		case message.MessageTypeToolResponse:
-			err = c.handlerTooResponse(ctx, chunk, sw)
+			err = c.handlerTooResponse(ctx, chunk, sw, rtDependence)
 			if err != nil {
 				return
 			}
 		case message.MessageTypeKnowledge:
-			err = c.handlerKnowledge(ctx, chunk, sw)
+			err = c.handlerKnowledge(ctx, chunk, sw, rtDependence)
 			if err != nil {
 				return
 			}
 		case message.MessageTypeAnswer:
 			fullContent := bytes.NewBuffer([]byte{})
 			reasoningContent := bytes.NewBuffer([]byte{})
-			preMsg, pErr := c.handlerPreAnswer(ctx)
+			preMsg, pErr := c.handlerPreAnswer(ctx, rtDependence)
 			if pErr != nil {
 				err = pErr
 				return
@@ -518,19 +515,19 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 					break
 				}
 
-				sendMsg := c.buildSendMsg(ctx, preMsg, false)
+				sendMsg := c.buildSendMsg(ctx, preMsg, false, rtDependence)
 				if answerEvent.Err != nil {
 					if errors.Is(answerEvent.Err, io.EOF) {
 						finalAnswer := sendMsg
 						finalAnswer.Content = fullContent.String()
 						finalAnswer.ReasoningContent = ptr.Of(reasoningContent.String())
-						hfErr := c.handlerFinalAnswer(ctx, finalAnswer, sw, usage)
+						hfErr := c.handlerFinalAnswer(ctx, finalAnswer, sw, usage, rtDependence)
 						if hfErr != nil {
 							err = hfErr
 							return
 						}
 
-						finishErr := c.handlerFinalAnswerFinish(ctx, sw)
+						finishErr := c.handlerFinalAnswerFinish(ctx, sw, rtDependence)
 						if finishErr != nil {
 							err = finishErr
 							return
@@ -553,13 +550,13 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 			}
 
 		case message.MessageTypeFlowUp:
-			err = c.handlerSuggest(ctx, chunk, sw)
+			err = c.handlerSuggest(ctx, chunk, sw, rtDependence)
 			if err != nil {
 				return
 			}
 
 		case message.MessageTypeInterrupt:
-			err = c.handlerInterrupt(ctx, chunk, sw)
+			err = c.handlerInterrupt(ctx, chunk, sw, rtDependence)
 			if err != nil {
 				return
 			}
@@ -574,12 +571,12 @@ func (c *runImpl) parseReasoningContent(ctx context.Context, chunk *entity.Final
 	return ""
 }
 
-func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
+func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) error {
 	interruptData, cType, err := c.parseInterruptData(ctx, chunk.Interrupt)
 	if err != nil {
 		return err
 	}
-	preMsg, err := c.handlerPreAnswer(ctx)
+	preMsg, err := c.handlerPreAnswer(ctx, rtDependence)
 	if err != nil {
 		return err
 	}
@@ -601,17 +598,17 @@ func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespE
 	c.runEvent.SendMsgEvent(entity.RunEventMessageDelta, deltaAnswer, sw)
 	finalAnswer := deepcopy.Copy(deltaAnswer).(*entity.ChunkMessageItem)
 
-	err = c.handlerFinalAnswer(ctx, finalAnswer, sw, nil)
+	err = c.handlerFinalAnswer(ctx, finalAnswer, sw, nil, rtDependence)
 	if err != nil {
 		return err
 	}
 
-	err = c.handlerInterruptVerbose(ctx, chunk, sw)
+	err = c.handlerInterruptVerbose(ctx, chunk, sw, rtDependence)
 	if err != nil {
 		return err
 	}
 
-	err = c.handlerFinalAnswerFinish(ctx, sw)
+	err = c.handlerFinalAnswerFinish(ctx, sw, rtDependence)
 	if err != nil {
 		return err
 	}
@@ -674,11 +671,11 @@ func (c *runImpl) handlerErr(_ context.Context, err error, sw *schema.StreamWrit
 	})
 }
 
-func (c *runImpl) handlerPreAnswer(ctx context.Context) (*msgEntity.Message, error) {
-	arm := c.rtDependence.runMeta
+func (c *runImpl) handlerPreAnswer(ctx context.Context, rtDependence *runtimeDependence) (*msgEntity.Message, error) {
+	arm := rtDependence.runMeta
 	msgMeta := &msgEntity.Message{
 		ConversationID: arm.ConversationID,
-		RunID:          c.rtDependence.runID,
+		RunID:          rtDependence.runID,
 		AgentID:        arm.AgentID,
 		SectionID:      arm.SectionID,
 		UserID:         arm.UserID,
@@ -706,7 +703,7 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context) (*msgEntity.Message, err
 	return crossmessage.DefaultSVC().Create(ctx, msgMeta)
 }
 
-func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt) error {
+func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt, rtDependence *runtimeDependence) error {
 	msg.IsFinish = true
 
 	if msg.Ext == nil {
@@ -719,7 +716,7 @@ func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessa
 	}
 
 	if _, ok := msg.Ext[string(msgEntity.MessageExtKeyTimeCost)]; !ok {
-		msg.Ext[string(msgEntity.MessageExtKeyTimeCost)] = fmt.Sprintf("%.1f", float64(time.Since(c.rtDependence.startTime).Milliseconds())/1000.00)
+		msg.Ext[string(msgEntity.MessageExtKeyTimeCost)] = fmt.Sprintf("%.1f", float64(time.Since(rtDependence.startTime).Milliseconds())/1000.00)
 	}
 
 	buildModelContent := &schema.Message{
@@ -760,15 +757,15 @@ func (c *runImpl) buildBotStateExt(arm *entity.AgentRunMeta) *msgEntity.BotState
 	return botStateExt
 }
 
-func (c *runImpl) handlerFunctionCall(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeFunctionCall)
+func (c *runImpl) handlerFunctionCall(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) error {
+	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeFunctionCall, rtDependence)
 
 	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
 
-	sendMsg := c.buildSendMsg(ctx, cmData, true)
+	sendMsg := c.buildSendMsg(ctx, cmData, true, rtDependence)
 
 	c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
 	return nil
@@ -793,43 +790,43 @@ func (c *runImpl) handlerAckMessage(_ context.Context, input *msgEntity.Message,
 	return nil
 }
 
-func (c *runImpl) handlerTooResponse(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeToolResponse)
+func (c *runImpl) handlerTooResponse(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) error {
+	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeToolResponse, rtDependence)
 	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
 
-	sendMsg := c.buildSendMsg(ctx, cmData, true)
+	sendMsg := c.buildSendMsg(ctx, cmData, true, rtDependence)
 
 	c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
 
 	return nil
 }
 
-func (c *runImpl) handlerSuggest(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeFlowUp)
+func (c *runImpl) handlerSuggest(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) error {
+	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeFlowUp, rtDependence)
 
 	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
 
-	sendMsg := c.buildSendMsg(ctx, cmData, true)
+	sendMsg := c.buildSendMsg(ctx, cmData, true, rtDependence)
 
 	c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
 
 	return nil
 }
 
-func (c *runImpl) handlerKnowledge(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeKnowledge)
+func (c *runImpl) handlerKnowledge(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) error {
+	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeKnowledge, rtDependence)
 	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
 
-	sendMsg := c.buildSendMsg(ctx, cmData, true)
+	sendMsg := c.buildSendMsg(ctx, cmData, true, rtDependence)
 
 	c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
 	return nil
@@ -870,33 +867,33 @@ func (c *runImpl) buildKnowledge(_ context.Context, arm *entity.AgentRunMeta, ch
 	return knowledgeInfo
 }
 
-func (c *runImpl) handlerFinalAnswerFinish(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-	cm := c.buildAgentMessage2Create(ctx, nil, message.MessageTypeVerbose)
+func (c *runImpl) handlerFinalAnswerFinish(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) error {
+	cm := c.buildAgentMessage2Create(ctx, nil, message.MessageTypeVerbose, rtDependence)
 	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
 
-	sendMsg := c.buildSendMsg(ctx, cmData, true)
+	sendMsg := c.buildSendMsg(ctx, cmData, true, rtDependence)
 
 	c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
 	return nil
 }
 
-func (c *runImpl) handlerInterruptVerbose(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse]) error {
-	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeInterrupt)
+func (c *runImpl) handlerInterruptVerbose(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) error {
+	cm := c.buildAgentMessage2Create(ctx, chunk, message.MessageTypeInterrupt, rtDependence)
 	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
 		return err
 	}
 
-	sendMsg := c.buildSendMsg(ctx, cmData, true)
+	sendMsg := c.buildSendMsg(ctx, cmData, true, rtDependence)
 
 	c.runEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, sw)
 	return nil
 }
 
-func (c *runImpl) buildSendMsg(_ context.Context, msg *msgEntity.Message, isFinish bool) *entity.ChunkMessageItem {
+func (c *runImpl) buildSendMsg(_ context.Context, msg *msgEntity.Message, isFinish bool, rtDependence *runtimeDependence) *entity.ChunkMessageItem {
 
 	copyMap := make(map[string]string)
 	for k, v := range msg.Ext {
@@ -912,7 +909,7 @@ func (c *runImpl) buildSendMsg(_ context.Context, msg *msgEntity.Message, isFini
 		Role:             entity.RoleTypeAssistant,
 		ContentType:      msg.ContentType,
 		MessageType:      msg.MessageType,
-		ReplyID:          c.rtDependence.questionMsgID,
+		ReplyID:          rtDependence.questionMsgID,
 		Type:             msg.MessageType,
 		CreatedAt:        msg.CreatedAt,
 		UpdatedAt:        msg.UpdatedAt,

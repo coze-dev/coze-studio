@@ -13,6 +13,7 @@ import (
 	oauth "code.byted.org/flow/opencoze/backend/domain/openauth/oauth/service"
 	openapi "code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth"
 	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -118,12 +119,17 @@ func (s *OpenAuthApplicationService) ListPersonalAccessTokens(ctx context.Contex
 	listData := &openapimodel.ListPersonalAccessTokensResponseData{}
 
 	listData.PersonalAccessTokens = slices.Transform(apiKeyResp.ApiKeys, func(a *entity.ApiKey) *openapimodel.PersonalAccessTokenWithCreatorInfo {
+		lastUsedAt := a.LastUsedAt
+		if lastUsedAt == 0 {
+			lastUsedAt = -1
+		}
 		return &openapimodel.PersonalAccessTokenWithCreatorInfo{
-			ID:        strconv.FormatInt(a.ID, 10),
-			Name:      a.Name,
-			ExpireAt:  a.ExpiredAt,
-			CreatedAt: a.CreatedAt,
-			UpdatedAt: a.UpdatedAt,
+			ID:         strconv.FormatInt(a.ID, 10),
+			Name:       a.Name,
+			ExpireAt:   a.ExpiredAt,
+			CreatedAt:  a.CreatedAt,
+			UpdatedAt:  a.UpdatedAt,
+			LastUsedAt: lastUsedAt,
 		}
 	})
 	listData.HasMore = apiKeyResp.HasMore
@@ -154,10 +160,19 @@ func (s *OpenAuthApplicationService) UpdatePersonalAccessTokenAndPermission(ctx 
 
 	upErr := openapiAuthDomainSVC.Save(ctx, &entity.SaveMeta{
 		ID:     req.ID,
-		Name:   req.Name,
+		Name:   ptr.Of(req.Name),
 		UserID: *userID,
 	})
 
+	return upErr
+}
+
+func (s *OpenAuthApplicationService) UpdateLastUsedAt(ctx context.Context, apiID int64, userID int64) error {
+	upErr := openapiAuthDomainSVC.Save(ctx, &entity.SaveMeta{
+		ID:         apiID,
+		LastUsedAt: ptr.Of(time.Now().Unix()),
+		UserID:     userID,
+	})
 	return upErr
 }
 

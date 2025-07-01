@@ -35,6 +35,7 @@ func newAPIKey(db *gorm.DB, opts ...gen.DOOption) aPIKey {
 	_aPIKey.ExpiredAt = field.NewInt64(tableName, "expired_at")
 	_aPIKey.CreatedAt = field.NewInt64(tableName, "created_at")
 	_aPIKey.UpdatedAt = field.NewInt64(tableName, "updated_at")
+	_aPIKey.LastUsedAt = field.NewInt64(tableName, "last_used_at")
 
 	_aPIKey.fillFieldMap()
 
@@ -45,15 +46,16 @@ func newAPIKey(db *gorm.DB, opts ...gen.DOOption) aPIKey {
 type aPIKey struct {
 	aPIKeyDo
 
-	ALL       field.Asterisk
-	ID        field.Int64  // Primary Key ID
-	Key       field.String // API Key hash
-	Name      field.String // API Key Name
-	Status    field.Int32  // 0 normal, 1 deleted
-	UserID    field.Int64  // API Key Owner
-	ExpiredAt field.Int64  // API Key Expired Time
-	CreatedAt field.Int64  // Create Time in Milliseconds
-	UpdatedAt field.Int64  // Update Time in Milliseconds
+	ALL        field.Asterisk
+	ID         field.Int64  // Primary Key ID
+	Key        field.String // API Key hash
+	Name       field.String // API Key Name
+	Status     field.Int32  // 0 normal, 1 deleted
+	UserID     field.Int64  // API Key Owner
+	ExpiredAt  field.Int64  // API Key Expired Time
+	CreatedAt  field.Int64  // Create Time in Milliseconds
+	UpdatedAt  field.Int64  // Update Time in Milliseconds
+	LastUsedAt field.Int64  // Used Time in Milliseconds
 
 	fieldMap map[string]field.Expr
 }
@@ -78,6 +80,7 @@ func (a *aPIKey) updateTableName(table string) *aPIKey {
 	a.ExpiredAt = field.NewInt64(table, "expired_at")
 	a.CreatedAt = field.NewInt64(table, "created_at")
 	a.UpdatedAt = field.NewInt64(table, "updated_at")
+	a.LastUsedAt = field.NewInt64(table, "last_used_at")
 
 	a.fillFieldMap()
 
@@ -94,7 +97,7 @@ func (a *aPIKey) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (a *aPIKey) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 8)
+	a.fieldMap = make(map[string]field.Expr, 9)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["key"] = a.Key
 	a.fieldMap["name"] = a.Name
@@ -103,6 +106,7 @@ func (a *aPIKey) fillFieldMap() {
 	a.fieldMap["expired_at"] = a.ExpiredAt
 	a.fieldMap["created_at"] = a.CreatedAt
 	a.fieldMap["updated_at"] = a.UpdatedAt
+	a.fieldMap["last_used_at"] = a.LastUsedAt
 }
 
 func (a aPIKey) clone(db *gorm.DB) aPIKey {

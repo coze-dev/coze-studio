@@ -79,12 +79,13 @@ func (a *apiAuthImpl) buildPoData2ApiKey(apiKey []*model.APIKey) []*entity.ApiKe
 
 	apiKeyData := slices.Transform(apiKey, func(a *model.APIKey) *entity.ApiKey {
 		return &entity.ApiKey{
-			ID:        a.ID,
-			Name:      a.Name,
-			ApiKey:    a.Key,
-			UserID:    a.UserID,
-			ExpiredAt: a.ExpiredAt,
-			CreatedAt: a.CreatedAt,
+			ID:         a.ID,
+			Name:       a.Name,
+			ApiKey:     a.Key,
+			UserID:     a.UserID,
+			ExpiredAt:  a.ExpiredAt,
+			CreatedAt:  a.CreatedAt,
+			LastUsedAt: a.LastUsedAt,
 		}
 	})
 
@@ -127,7 +128,12 @@ func (a *apiAuthImpl) CheckPermission(ctx context.Context, req *entity.CheckPerm
 func (a *apiAuthImpl) Save(ctx context.Context, sm *entity.SaveMeta) error {
 
 	updateColumn := make(map[string]any)
-	updateColumn["name"] = sm.Name
+	if sm.Name != nil {
+		updateColumn["name"] = sm.Name
+	}
+	if sm.LastUsedAt != nil {
+		updateColumn["last_used_at"] = sm.LastUsedAt
+	}
 	updateColumn["updated_at"] = time.Now().Unix()
 	err := a.dao.Update(ctx, sm.ID, sm.UserID, updateColumn)
 
