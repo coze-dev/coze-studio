@@ -100,7 +100,8 @@ func modelDo2To(model *modelEntity.Model, locale i18n.Locale) (*developer_api.Mo
 		IsUpRequired:   nil,
 		ModelBriefDesc: mm.Description.Read(locale),
 		ModelSeries: &developer_api.ModelSeriesInfo{ // TODO: 替换为真实配置
-			SeriesName: "热门模型",
+			SeriesName:  string(mm.Protocol),
+			ModelVendor: string(mm.Protocol),
 		},
 		ModelStatusDetails: nil,
 		ModelAbility: &developer_api.ModelAbility{
