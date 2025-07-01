@@ -140,6 +140,7 @@ enum NodeType{
     AssignVariable  = 40,
     JsonSerialization   = 58,
     JsonDeserialization = 59,
+    DatasetDelete       = 60,
 }
 
 //节点模版类型，与NodeType基本保持一致，copy一份是因为新增了一个Imageflow类型，避免影响原来NodeType的业务语意
@@ -178,6 +179,7 @@ enum NodeTemplateType{
     DatabaseDelete = 44,
     JsonSerialization   = 58,
     JsonDeserialization = 59,
+    DatasetDelete       = 60,
 }
 
 enum IfConditionRelation {

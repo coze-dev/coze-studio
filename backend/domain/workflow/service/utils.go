@@ -321,6 +321,8 @@ func entityNodeTypeToBlockType(nodeType entity.NodeType) (vo.BlockType, error) {
 		return vo.BlockTypeJsonSerialization, nil
 	case entity.NodeTypeJsonDeserialization:
 		return vo.BlockTypeJsonDeserialization, nil
+	case entity.NodeTypeKnowledgeDeleter:
+		return vo.BlockTypeBotDatasetDelete, nil
 
 	default:
 		return "", fmt.Errorf("cannot map entity node type '%s' to a workflow.NodeTemplateType", nodeType)

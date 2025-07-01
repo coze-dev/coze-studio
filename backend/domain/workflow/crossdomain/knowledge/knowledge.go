@@ -110,9 +110,18 @@ type ListKnowledgeDetailResponse struct {
 	KnowledgeDetails []*KnowledgeDetail
 }
 
+type DeleteDocumentRequest struct {
+	DocumentID string
+}
+
+type DeleteDocumentResponse struct {
+	IsSuccess bool
+}
+
 //go:generate  mockgen -destination knowledgemock/knowledge_mock.go --package knowledgemock -source knowledge.go
 type KnowledgeOperator interface {
 	Store(ctx context.Context, document *CreateDocumentRequest) (*CreateDocumentResponse, error)
 	Retrieve(context.Context, *RetrieveRequest) (*RetrieveResponse, error)
+	Delete(context.Context, *DeleteDocumentRequest) (*DeleteDocumentResponse, error)
 	ListKnowledgeDetail(context.Context, *ListKnowledgeDetailRequest) (*ListKnowledgeDetailResponse, error)
 }

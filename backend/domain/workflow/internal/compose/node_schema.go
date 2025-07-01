@@ -361,6 +361,16 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		return invokableNode(s, r.Retrieve), nil
+	case entity.NodeTypeKnowledgeDeleter:
+		conf, err := s.ToKnowledgeDeleterConfig()
+		if err != nil {
+			return nil, err
+		}
+		r, err := knowledge.NewKnowledgeDeleter(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return invokableNode(s, r.Delete), nil
 	case entity.NodeTypeCodeRunner:
 		conf, err := s.ToCodeRunnerConfig()
 		if err != nil {

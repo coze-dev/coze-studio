@@ -200,6 +200,7 @@ var blockTypeToNodeSchema = map[vo.BlockType]func(*vo.Node) (*compose.NodeSchema
 	vo.BlockTypeDatabaseUpdate:      toDatabaseUpdateSchema,
 	vo.BlockTypeBotHttp:             toHttpRequesterSchema,
 	vo.BlockTypeBotDatasetWrite:     toKnowledgeIndexerSchema,
+	vo.BlockTypeBotDatasetDelete:    toKnowledgeDeleterSchema,
 	vo.BlockTypeBotDataset:          toKnowledgeRetrieverSchema,
 	vo.BlockTypeBotAssignVariable:   toVariableAssignerSchema,
 	vo.BlockTypeBotCode:             toCodeRunnerSchema,
@@ -1508,6 +1509,37 @@ func toKnowledgeRetrieverSchema(n *vo.Node) (*compose.NodeSchema, error) {
 	}
 
 	ns.SetConfigKV("RetrievalStrategy", retrievalStrategy)
+
+	if err := SetInputsForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
+		return nil, err
+	}
+
+	return ns, nil
+}
+
+func toKnowledgeDeleterSchema(n *vo.Node) (*compose.NodeSchema, error) {
+	ns := &compose.NodeSchema{
+		Key:  vo.NodeKey(n.ID),
+		Type: entity.NodeTypeKnowledgeDeleter,
+		Name: n.Data.Meta.Title,
+	}
+
+	inputs := n.Data.Inputs
+	datasetListInfoParam := inputs.DatasetParam[0]
+	datasetIDs := datasetListInfoParam.Input.Value.Content.([]any)
+	if len(datasetIDs) == 0 {
+		return nil, fmt.Errorf("dataset ids is required")
+	}
+	knowledgeID, err := cast.ToInt64E(datasetIDs[0])
+	if err != nil {
+		return nil, err
+	}
+
+	ns.SetConfigKV("KnowledgeID", knowledgeID)
 
 	if err := SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err

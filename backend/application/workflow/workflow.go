@@ -3337,6 +3337,8 @@ func nodeType2EntityNodeType(t string) (entity.NodeType, error) {
 		return entity.NodeTypeJsonSerialization, nil
 	case 59:
 		return entity.NodeTypeJsonDeserialization, nil
+	case 60:
+		return entity.NodeTypeKnowledgeDeleter, nil
 	default:
 		// Handle all unknown or unsupported types here
 		return "", fmt.Errorf("unsupported or unknown node type ID: %d", i)

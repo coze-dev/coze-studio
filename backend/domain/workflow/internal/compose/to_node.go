@@ -550,6 +550,13 @@ func (s *NodeSchema) ToKnowledgeRetrieveConfig() (*knowledge.RetrieveConfig, err
 	}, nil
 }
 
+func (s *NodeSchema) ToKnowledgeDeleterConfig() (*knowledge.DeleterConfig, error) {
+	return &knowledge.DeleterConfig{
+		KnowledgeID:      mustGetKey[int64]("KnowledgeID", s.Configs),
+		KnowledgeDeleter: crossknowledge.GetKnowledgeOperator(),
+	}, nil
+}
+
 func (s *NodeSchema) ToPluginConfig() (*plugin.Config, error) {
 	return &plugin.Config{
 		PluginID:      mustGetKey[int64]("PluginID", s.Configs),

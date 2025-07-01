@@ -80,6 +80,7 @@ const (
 	NodeTypeDatabaseUpdate             NodeType = "DatabaseUpdate"
 	NodeTypeKnowledgeIndexer           NodeType = "KnowledgeIndexer"
 	NodeTypeKnowledgeRetriever         NodeType = "KnowledgeRetriever"
+	NodeTypeKnowledgeDeleter           NodeType = "KnowledgeDeleter"
 	NodeTypeEntry                      NodeType = "Entry"
 	NodeTypeExit                       NodeType = "Exit"
 	NodeTypeCodeRunner                 NodeType = "CodeRunner"

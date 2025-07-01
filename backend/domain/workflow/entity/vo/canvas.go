@@ -478,6 +478,7 @@ const (
 
 	BlockTypeJsonSerialization   BlockType = "58"
 	BlockTypeJsonDeserialization BlockType = "59"
+	BlockTypeBotDatasetDelete    BlockType = "60"
 )
 
 type VariableType string
