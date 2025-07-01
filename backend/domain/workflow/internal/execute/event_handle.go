@@ -95,6 +95,9 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 		if parentNodeID != nil { // root workflow execution has already been created
+			var logID string
+			logID, _ = ctx.Value("log-id").(string)
+
 			wfExec := &entity.WorkflowExecution{
 				ID:                  exeID,
 				WorkflowID:          wb.ID,
@@ -108,6 +111,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				ParentNodeExecuteID: parentNodeExecuteID,
 				NodeCount:           event.nodeCount,
 				CommitID:            wb.CommitID,
+				LogID:               logID,
 			}
 
 			if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {

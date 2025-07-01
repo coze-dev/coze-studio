@@ -219,6 +219,9 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 	}
 
 	if interruptEvent == nil {
+		var logID string
+		logID, _ = ctx.Value("log-id").(string)
+
 		wfExec := &entity.WorkflowExecution{
 			ID:                     executeID,
 			WorkflowID:             wb.ID,
@@ -231,6 +234,7 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 			NodeCount:              sc.NodeCount(),
 			CurrentResumingEventID: ptr.Of(int64(0)),
 			CommitID:               wb.CommitID,
+			LogID:                  logID,
 		}
 
 		if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {

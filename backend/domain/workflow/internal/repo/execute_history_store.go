@@ -65,6 +65,7 @@ func (e *executeHistoryStoreImpl) CreateWorkflowExecution(ctx context.Context, e
 		NodeCount:       execution.NodeCount,
 		SyncPattern:     syncPattern,
 		CommitID:        execution.CommitID,
+		LogID:           execution.LogID,
 	}
 
 	if execution.ParentNodeID == nil {

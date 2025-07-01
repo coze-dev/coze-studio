@@ -562,6 +562,7 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 			ExeHistoryStatus: workflow.WorkflowExeHistoryStatus_HasHistory,
 			WorkflowExeCost:  fmt.Sprintf("%.3fs", wfExeEntity.Duration.Seconds()),
 			Reason:           wfExeEntity.FailReason,
+			LogID:            wfExeEntity.LogID,
 			NodeEvents:       make([]*workflow.NodeEvent, 0),
 		},
 	}
