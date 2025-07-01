@@ -30,6 +30,7 @@ const (
 	ErrMemoryDatabaseSheetRowCountExceed = 106000023
 	ErrMemoryDatabaseSheetIndexExceed    = 106000024
 	ErrMemoryDatabaseNoSheetFound        = 106000025
+	ErrMemoryDatabaseNameInvalid         = 106000026
 )
 
 func init() {
@@ -185,6 +186,12 @@ func init() {
 	code.Register(
 		ErrMemoryDatabaseNoSheetFound,
 		"database no sheet found",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrMemoryDatabaseNameInvalid,
+		"database name invalid",
 		code.WithAffectStability(false),
 	)
 }

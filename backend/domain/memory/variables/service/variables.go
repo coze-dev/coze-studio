@@ -24,4 +24,6 @@ type Variables interface {
 	GetVariableChannelInstance(ctx context.Context, e *entity.UserVariableMeta, keywords []string, varChannel *project_memory.VariableChannel) ([]*kvmemory.KVItem, error)
 	DeleteVariableInstance(ctx context.Context, e *entity.UserVariableMeta, keywords []string) error
 	DeleteAllVariable(ctx context.Context, bizType project_memory.VariableConnector, bizID string) (err error)
+
+	DecryptSysUUIDKey(ctx context.Context, encryptSysUUIDKey string) *entity.VariableInstance
 }

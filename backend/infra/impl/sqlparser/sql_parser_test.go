@@ -210,6 +210,16 @@ func TestSQLParser_ParseAndModifySQL(t *testing.T) {
 			want:    "",
 			wantErr: true,
 		},
+		{
+			name: "alias error",
+			sql:  "INSERT INTO database (name, age) VALUES ('Nick', 25);",
+			mappings: map[string]sqlparser.TableColumn{
+				"database": {
+					NewTableName: ptr.Of("database_new"),
+				},
+			},
+			wantErr: true,
+		},
 	}
 
 	parser := NewSQLParser()

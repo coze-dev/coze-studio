@@ -19,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossvariables"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
@@ -1180,7 +1181,7 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *ExecuteSQLRe
 	var complexCond *rdb.ComplexCondition
 	var err error
 	if req.Condition != nil {
-		complexCond, err = convertCondition(req.Condition, fieldNameToPhysical, req.SQLParams)
+		complexCond, err = convertCondition(ctx, req.Condition, fieldNameToPhysical, req.SQLParams)
 		if err != nil {
 			return nil, fmt.Errorf("convert condition failed: %v", err)
 		}
@@ -1342,7 +1343,7 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 	}
 
 	condParams := req.SQLParams[index:]
-	complexCond, err := convertCondition(req.Condition, fieldNameToPhysical, condParams)
+	complexCond, err := convertCondition(ctx, req.Condition, fieldNameToPhysical, condParams)
 	if err != nil {
 		return -1, fmt.Errorf("convert condition failed: %v", err)
 	}
@@ -1382,7 +1383,7 @@ func (d databaseService) executeDeleteSQL(ctx context.Context, req *ExecuteSQLRe
 		return -1, fmt.Errorf("missing delete condition")
 	}
 
-	complexCond, err := convertCondition(req.Condition, fieldNameToPhysical, req.SQLParams)
+	complexCond, err := convertCondition(ctx, req.Condition, fieldNameToPhysical, req.SQLParams)
 	if err != nil {
 		return -1, fmt.Errorf("convert condition failed: %v", err)
 	}
@@ -1432,7 +1433,7 @@ func convertSortDirection(direction table.SortDirection) entity3.SortDirection {
 	return entity3.SortDirectionAsc
 }
 
-func convertCondition(cond *database.ComplexCondition, fieldMap map[string]string, params []*database.SQLParamVal) (*rdb.ComplexCondition, error) {
+func convertCondition(ctx context.Context, cond *database.ComplexCondition, fieldMap map[string]string, params []*database.SQLParamVal) (*rdb.ComplexCondition, error) {
 	if cond == nil {
 		return nil, nil
 	}
@@ -1478,7 +1479,7 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 						index++
 						continue
 					}
-					vals = append(vals, *params[index].Value)
+					vals = append(vals, decryptSysUUIDKey(ctx, leftField, *params[index].Value))
 					index++
 				}
 				conditions = append(conditions, &rdb.Condition{
@@ -1497,7 +1498,7 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 			conditions = append(conditions, &rdb.Condition{
 				Field:    leftField,
 				Operator: convertor.ConvertOperator(c.Operation),
-				Value:    *params[index].Value,
+				Value:    decryptSysUUIDKey(ctx, leftField, *params[index].Value),
 			})
 			index++
 		}
@@ -1512,6 +1513,17 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 	// }
 
 	return result, nil
+}
+
+func decryptSysUUIDKey(ctx context.Context, leftField, value string) string {
+	if leftField == database.DefaultUidDisplayColName || leftField == database.DefaultUidColName {
+		decryptVal := crossvariables.DefaultSVC().DecryptSysUUIDKey(ctx, value)
+		if decryptVal != nil {
+			value = decryptVal.ConnectorUID
+		}
+	}
+
+	return value
 }
 
 func (d databaseService) BindDatabase(ctx context.Context, req *BindDatabaseToAgentRequest) error {

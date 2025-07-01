@@ -122,6 +122,10 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "creator id is invalid"))
 	}
 
+	if req.GetTableName() == "database" {
+		return nil, errorx.New(errno.ErrMemoryDatabaseNameInvalid)
+	}
+
 	spaces, err := crossuser.DefaultSVC().GetUserSpaceList(ctx, *uid)
 	if err != nil {
 		return nil, err

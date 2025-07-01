@@ -520,3 +520,8 @@ func (v *variablesImpl) PublishMeta(ctx context.Context, variableMetaID int64, v
 	e.Version = version
 	return v.Repo.CreateVariableMeta(ctx, e, project_memory.VariableConnector(e.BizType))
 }
+
+func (v *variablesImpl) DecryptSysUUIDKey(ctx context.Context, encryptSysUUIDKey string) *entity.VariableInstance {
+	meta := &entity.UserVariableMeta{}
+	return meta.DecryptSysUUIDKey(ctx, encryptSysUUIDKey)
+}
