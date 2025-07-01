@@ -61,6 +61,9 @@ COPY backend/infra/impl/document/parser/builtin/parse_docx.py /app/parse_docx.py
 COPY backend/static /app/resources/static/
 COPY backend/conf /app/resources/conf/
 COPY docker/.env /app/.env
+# COPY docker/.env.ve /app/.env
+# COPY docker/cert.pem /app/cert.pem
+# COPY docker/key.pem /app/key.pem
 
 # Set PATH to prioritize venv's binaries
 ENV PATH="/app/.venv/bin:${PATH}"

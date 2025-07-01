@@ -12,6 +12,7 @@ COMPOSE_FILE := docker/docker-compose.yml
 COMPOSE_FILE_VE := docker/docker-compose-ve.yml
 MYSQL_SCHEMA := ./docker/volumes/mysql/schema.sql
 ENV_FILE := ./docker/.env
+ENV_FILE_VE := ./docker/.env.ve
 
 debug: middleware python server
 
@@ -21,11 +22,11 @@ fe:
 
 ve: 
 	@echo "Run opencoze on VolcEngine..."
-	@docker compose -f $(COMPOSE_FILE_VE) --env-file $(ENV_FILE)  up -d --wait
+	@docker compose -f $(COMPOSE_FILE_VE) --env-file $(ENV_FILE_VE)  up -d --wait
 
 debug_ve: python
 	@echo "Debug opencoze on VolcEngine..."
-	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile volcano-setup up -d
+	@docker compose -f $(COMPOSE_FILE_VE) --env-file $(ENV_FILE_VE) --profile volcano-setup up -d
 	@echo "Building and run server..."
 	@bash $(BUILD_SERVER_SCRIPT) -start
 

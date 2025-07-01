@@ -70,17 +70,15 @@ services:
     restart: 'no'
 
   coze-server-on-volcano:
-    image: opencoze-cn-beijing.cr.volces.com/opencoze/server:0.0.1
+    image: opencoze-cn-beijing.cr.volces.com/opencoze/server:0.0.2
     container_name: coze-server-on-volcano
     env_file: *env_file
-    environment:
-      LISTEN_ADDR: 0.0.0.0:80
     networks:
       - coze-network
     ports:
-      - '80:80'
-    volumes:
-      - ../docker/.env.ve:/app/.env
+      - '443:443'
+    # volumes:
+    #   - ../docker/.env.ve:/app/.env
     #   - ../backend/conf:/app/resources/conf
     depends_on:
       tos-setup:
