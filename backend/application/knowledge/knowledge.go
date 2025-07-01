@@ -418,7 +418,6 @@ func (k *KnowledgeApplicationService) GetDocumentProgress(ctx context.Context, r
 	resp := dataset.NewGetDocumentProgressResponse()
 	resp.Data = make([]*dataset.DocumentProgress, 0)
 	for i := range domainResp.ProgressList {
-		url := "" // todo，图片型知识库需要
 		resp.Data = append(resp.Data, &dataset.DocumentProgress{
 			DocumentID:     domainResp.ProgressList[i].ID,
 			Progress:       int32(domainResp.ProgressList[i].Progress),
@@ -428,7 +427,7 @@ func (k *KnowledgeApplicationService) GetDocumentProgress(ctx context.Context, r
 			RemainingTime:  &domainResp.ProgressList[i].RemainingSec,
 			Size:           &domainResp.ProgressList[i].Size,
 			Type:           &domainResp.ProgressList[i].FileExtension,
-			URL:            &url,
+			URL:            ptr.Of(domainResp.ProgressList[i].URL),
 		})
 	}
 	return resp, nil

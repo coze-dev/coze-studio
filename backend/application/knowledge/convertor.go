@@ -637,7 +637,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*m
 			IconURI:              k.IconURI,
 			IconURL:              k.IconURL,
 			Description:          k.Description,
-			CanEdit:              true, // todo，判断user id是否等于creator id
+			CanEdit:              true,
 			CreateTime:           int32(k.CreatedAtMs / 1000),
 			CreatorID:            k.CreatorID,
 			SpaceID:              k.SpaceID,

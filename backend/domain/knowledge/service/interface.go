@@ -156,6 +156,7 @@ type DocumentProgress struct {
 	Status        entity.DocumentStatus
 	StatusMsg     string
 	RemainingSec  int64
+	URL           string
 }
 
 type ResegmentDocumentRequest struct {
