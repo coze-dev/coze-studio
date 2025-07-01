@@ -307,9 +307,6 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 
 		if strings.HasSuffix(contentStr, nodes.KeyIsFinished) {
 			contentStr = strings.TrimSuffix(contentStr, nodes.KeyIsFinished)
-			if len(contentStr) == 0 {
-				return "", schema.ErrNoValue
-			}
 		}
 
 		return contentStr, nil

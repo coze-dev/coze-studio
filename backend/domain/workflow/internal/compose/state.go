@@ -395,15 +395,11 @@ func (s *NodeSchema) statePreHandlerForVars() compose.StatePreHandler[map[string
 
 		if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
 			exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
-			cUID, err := strconv.ParseInt(exeCfg.ConnectorUID, 10, 64)
-			if err != nil {
-				return nil, err
-			}
 			opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
 				AgentID:      exeCfg.AgentID,
 				AppID:        exeCfg.AppID,
 				ConnectorID:  exeCfg.ConnectorID,
-				ConnectorUID: cUID,
+				ConnectorUID: exeCfg.ConnectorUID,
 			}))
 		}
 		out := make(map[string]any)
@@ -470,10 +466,10 @@ func (s *NodeSchema) streamStatePreHandlerForVars() compose.StreamStatePreHandle
 		)
 
 		opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
-			AgentID:     exeCfg.AgentID,
-			AppID:       exeCfg.AppID,
-			ConnectorID: exeCfg.ConnectorID,
-			//ConnectorUID:
+			AgentID:      exeCfg.AgentID,
+			AppID:        exeCfg.AppID,
+			ConnectorID:  exeCfg.ConnectorID,
+			ConnectorUID: exeCfg.ConnectorUID,
 		}))
 
 		for _, input := range vars {
@@ -750,15 +746,11 @@ func (s *NodeSchema) statePostHandlerForVars() compose.StatePostHandler[map[stri
 
 		if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
 			exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
-			cUID, err := strconv.ParseInt(exeCfg.ConnectorUID, 10, 64)
-			if err != nil {
-				return nil, err
-			}
 			opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
 				AgentID:      exeCfg.AgentID,
 				AppID:        exeCfg.AppID,
 				ConnectorID:  exeCfg.ConnectorID,
-				ConnectorUID: cUID,
+				ConnectorUID: exeCfg.ConnectorUID,
 			}))
 		}
 		out := make(map[string]any)
@@ -825,15 +817,11 @@ func (s *NodeSchema) streamStatePostHandlerForVars() compose.StreamStatePostHand
 
 		if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
 			exeCfg := execute.GetExeCtx(ctx).RootCtx.ExeCfg
-			cUID, err := strconv.ParseInt(exeCfg.ConnectorUID, 10, 64)
-			if err != nil {
-				return nil, err
-			}
 			opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
 				AgentID:      exeCfg.AgentID,
 				AppID:        exeCfg.AppID,
 				ConnectorID:  exeCfg.ConnectorID,
-				ConnectorUID: cUID,
+				ConnectorUID: exeCfg.ConnectorUID,
 			}))
 		}
 

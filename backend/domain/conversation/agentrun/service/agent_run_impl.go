@@ -616,15 +616,17 @@ func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespE
 }
 
 func (c *runImpl) parseInterruptData(_ context.Context, interruptData *singleagent.InterruptInfo) (string, message.ContentType, error) {
+
+	type msg struct {
+		Type        string `json:"type,omitempty"`
+		ContentType string `json:"content_type"`
+		Content     any    `json:"content"` // either optionContent or string
+		ID          string `json:"id,omitempty"`
+	}
+
 	defaultContentType := message.ContentTypeText
 	switch entity.EventType(interruptData.AllToolInterruptData[interruptData.ToolCallID].EventType) {
 	case entity.EventType_Question:
-		type msg struct {
-			Type        string `json:"type,omitempty"`
-			ContentType string `json:"content_type"`
-			Content     any    `json:"content"` // either optionContent or string
-			ID          string `json:"id,omitempty"`
-		}
 		var iData map[string][]*msg
 		err := json.Unmarshal([]byte(interruptData.AllToolInterruptData[interruptData.ToolCallID].InterruptData), &iData)
 		if err != nil {
@@ -648,6 +650,35 @@ func (c *runImpl) parseInterruptData(_ context.Context, interruptData *singleage
 		data := interruptData.AllToolInterruptData[interruptData.ToolCallID].InterruptData
 
 		return data, message.ContentTypeCard, nil
+	case entity.EventType_WorkflowLLM:
+		toolInterruptEvent := interruptData.AllToolInterruptData[interruptData.ToolCallID].ToolInterruptEvent
+		data := toolInterruptEvent.InterruptData
+		if entity.EventType(toolInterruptEvent.EventType) == entity.EventType_InputNode {
+			return data, message.ContentTypeCard, nil
+		}
+		if entity.EventType(toolInterruptEvent.EventType) == entity.EventType_Question {
+			var iData map[string][]*msg
+			err := json.Unmarshal([]byte(data), &iData)
+			if err != nil {
+				return "", defaultContentType, err
+			}
+			if len(iData["messages"]) == 0 {
+				return "", defaultContentType, errorx.New(errno.ErrInterruptDataEmpty)
+			}
+			interruptMsg := iData["messages"][0]
+
+			if interruptMsg.ContentType == "text" {
+				return interruptMsg.Content.(string), defaultContentType, nil
+			} else if interruptMsg.ContentType == "option" || interruptMsg.ContentType == "form_schema" {
+				iMarshalData, err := json.Marshal(interruptMsg)
+				if err != nil {
+					return "", defaultContentType, err
+				}
+				return string(iMarshalData), message.ContentTypeCard, nil
+			}
+		}
+		return "", defaultContentType, errorx.New(errno.ErrUnknowInterruptType)
+
 	}
 	return "", defaultContentType, errorx.New(errno.ErrUnknowInterruptType)
 }

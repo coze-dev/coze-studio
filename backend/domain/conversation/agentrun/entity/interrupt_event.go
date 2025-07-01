@@ -9,4 +9,5 @@ const (
 	EventType_SceneChat           EventType = 4
 	EventType_InputNode           EventType = 5
 	EventType_WorkflowLocalPlugin EventType = 6
+	EventType_WorkflowLLM         EventType = 100
 )

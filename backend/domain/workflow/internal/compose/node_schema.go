@@ -114,7 +114,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		return invokableStreamableNodeWO(s, l.Chat, l.ChatStream), nil
+		return invokableStreamableNodeWO(s, l.Chat, l.ChatStream, withCallbackOutputConverter(l.ToCallbackOutput)), nil
 	case entity.NodeTypeSelector:
 		conf := s.ToSelectorConfig()
 

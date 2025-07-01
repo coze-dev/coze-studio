@@ -1200,34 +1200,33 @@ func (r *RepositoryImpl) WorkflowAsTool(ctx context.Context, policy vo.GetPolicy
 
 	type streamFunc func(ctx context.Context, in map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error)
 
-	convertStream := func(stream streamFunc) streamFunc {
-		return func(ctx context.Context, in map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error) {
-			if len(inputParamsConfigMap) == 0 {
-				return stream(ctx, in, opts...)
-			}
-			input := make(map[string]any, len(in))
-			for k, v := range in {
-				if p, ok := inputParamsConfigMap[k]; ok {
-					if p.LocalDisable {
-						if p.LocalDefault != nil {
-							input[k], err = transformDefaultValue(*p.LocalDefault, p)
-							if err != nil {
-								return nil, err
+	if wf.StreamRun() {
+		convertStream := func(stream streamFunc) streamFunc {
+			return func(ctx context.Context, in map[string]any, opts ...einoCompose.Option) (*schema.StreamReader[map[string]any], error) {
+				if len(inputParamsConfigMap) == 0 {
+					return stream(ctx, in, opts...)
+				}
+				input := make(map[string]any, len(in))
+				for k, v := range in {
+					if p, ok := inputParamsConfigMap[k]; ok {
+						if p.LocalDisable {
+							if p.LocalDefault != nil {
+								input[k], err = transformDefaultValue(*p.LocalDefault, p)
+								if err != nil {
+									return nil, err
+								}
 							}
+						} else {
+							input[k] = v
 						}
+
 					} else {
 						input[k] = v
 					}
-
-				} else {
-					input[k] = v
 				}
+				return stream(ctx, input, opts...)
 			}
-			return stream(ctx, input, opts...)
 		}
-	}
-
-	if wf.StreamRun() {
 		return compose.NewStreamableWorkflow(
 			toolInfo,
 			convertStream(wf.Runner.Stream),

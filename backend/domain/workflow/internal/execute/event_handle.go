@@ -472,18 +472,25 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 		if event.NodeCtx.ResumingEvent != nil {
-			deletedEvent, deleted, err := repo.PopFirstInterruptEvent(ctx, event.RootCtx.RootExecuteID)
+			firstIE, found, err := repo.GetFirstInterruptEvent(ctx, event.RootCtx.RootExecuteID)
 			if err != nil {
 				return noTerminate, err
 			}
 
-			if !deleted {
-				return noTerminate, fmt.Errorf("node end: interrupt events does not exist, wfExeID: %d", event.RootCtx.RootExecuteID)
-			}
+			if found && firstIE.ID == event.NodeCtx.ResumingEvent.ID {
+				deletedEvent, deleted, err := repo.PopFirstInterruptEvent(ctx, event.RootCtx.RootExecuteID)
+				if err != nil {
+					return noTerminate, err
+				}
 
-			if deletedEvent.ID != event.NodeCtx.ResumingEvent.ID {
-				return noTerminate, fmt.Errorf("interrupt event id mismatch when deleting, expect: %d, actual: %d",
-					event.RootCtx.ResumeEvent.ID, deletedEvent.ID)
+				if !deleted {
+					return noTerminate, fmt.Errorf("node end: interrupt events does not exist, wfExeID: %d", event.RootCtx.RootExecuteID)
+				}
+
+				if deletedEvent.ID != event.NodeCtx.ResumingEvent.ID {
+					return noTerminate, fmt.Errorf("interrupt event id mismatch when deleting, expect: %d, actual: %d",
+						event.RootCtx.ResumeEvent.ID, deletedEvent.ID)
+				}
 			}
 		}
 

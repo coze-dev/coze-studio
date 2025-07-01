@@ -19,6 +19,7 @@ const (
 	ErrWorkflowCanceledByUser = 777777777
 	ErrNodeTimeout            = 777777776
 	ErrWorkflowTimeout        = 720702085
+	ErrDeserializationFail    = 720701011
 )
 
 const (
@@ -104,6 +105,12 @@ func init() {
 	code.Register(
 		ErrWorkflowTimeout,
 		"Workflow execution timed out. Please check for long-running operations, optimize if possible, or retry later.",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrDeserializationFail,
+		"Deserialization failed: {cause}",
 		code.WithAffectStability(false),
 	)
 }

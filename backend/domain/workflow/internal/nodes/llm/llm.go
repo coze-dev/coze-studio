@@ -10,12 +10,14 @@ import (
 
 	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
+	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
+	callbacks2 "github.com/cloudwego/eino/utils/callbacks"
 	"golang.org/x/exp/maps"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
@@ -29,6 +31,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type Format int
@@ -160,6 +163,11 @@ type LLM struct {
 	fullSources       map[string]*nodes.SourceInfo
 }
 
+const (
+	rawOutputKey = "llm_raw_output_%s"
+	warningKey   = "llm_warning_%s"
+)
+
 func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo) (map[string]any, error) {
 	data = nodes.ExtractJSONString(data)
 
@@ -167,6 +175,16 @@ func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo
 
 	err := sonic.UnmarshalString(data, &result)
 	if err != nil {
+		c := execute.GetExeCtx(ctx)
+		if c != nil {
+			logs.CtxErrorf(ctx, "failed to parse json: %v, data: %s", err, data)
+			rawOutputK := fmt.Sprintf(rawOutputKey, c.NodeCtx.NodeKey)
+			warningK := fmt.Sprintf(warningKey, c.NodeCtx.NodeKey)
+			ctxcache.Store(ctx, rawOutputK, data)
+			ctxcache.Store(ctx, warningK, vo.WrapWarn(errno.ErrDeserializationFail, err))
+			return map[string]any{}, nil
+		}
+
 		return nil, err
 	}
 
@@ -224,6 +242,8 @@ func WithToolWorkflowMessageWriter(sw *schema.StreamWriter[*entity.Message]) Opt
 }
 
 type llmState = map[string]any
+
+const agentModelName = "agent_model"
 
 func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	g := compose.NewGraph[map[string]any, map[string]any](compose.WithGenLocalState(func(ctx context.Context) (state llmState) {
@@ -312,6 +332,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 		reactConfig := react.AgentConfig{
 			ToolCallingModel: m,
 			ToolsConfig:      compose.ToolsNodeConfig{Tools: cfg.Tools},
+			ModelNodeName:    agentModelName,
 		}
 
 		if len(cfg.ToolsReturnDirectly) > 0 {
@@ -327,6 +348,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 		}
 
 		agentNode, opts := reactAgent.ExportGraph()
+		opts = append(opts, compose.WithNodeName("workflow_llm_react_agent"))
 		_ = g.AddGraphNode(llmNodeKey, agentNode, opts...)
 	} else {
 		_ = g.AddChatModelNode(llmNodeKey, cfg.ChatModel)
@@ -433,6 +455,7 @@ func New(ctx context.Context, cfg *Config) (*LLM, error) {
 	if requireCheckpoint {
 		opts = append(opts, compose.WithCheckPointStore(workflow.GetRepository()))
 	}
+	opts = append(opts, compose.WithGraphName("workflow_llm_node_graph"))
 
 	r, err := g.Compile(ctx, opts...)
 	if err != nil {
@@ -523,6 +546,37 @@ func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...Option) (co
 					EventID:    resumingEvent.ToolInterruptEvent.ID,
 					ResumeData: resumeData,
 				}, allIEs))))
+
+		chatModelHandler := callbacks2.NewHandlerHelper().ChatModel(&callbacks2.ModelCallbackHandler{
+			OnStart: func(ctx context.Context, runInfo *callbacks.RunInfo, input *model.CallbackInput) context.Context {
+				if runInfo.Name != agentModelName {
+					return ctx
+				}
+
+				// react agent loops back to chat model after resuming,
+				// pop the previous interrupt event immediately
+				ie, deleted, e := workflow.GetRepository().PopFirstInterruptEvent(ctx, c.RootExecuteID)
+				if e != nil {
+					logs.CtxErrorf(ctx, "failed to pop first interrupt event on react agent chatmodel start: %v", err)
+					return ctx
+				}
+
+				if !deleted {
+					logs.CtxErrorf(ctx, "failed to pop first interrupt event on react agent chatmodel start: not deleted")
+					return ctx
+				}
+
+				if ie.ID != resumingEvent.ID {
+					logs.CtxErrorf(ctx, "failed to pop first interrupt event on react agent chatmodel start, "+
+						"deleted ID: %d, resumingEvent ID: %d", ie.ID, resumingEvent.ID)
+					return ctx
+				}
+
+				return ctx
+			},
+		}).Handler()
+
+		composeOpts = append(composeOpts, compose.WithCallbacks(chatModelHandler))
 	}
 
 	if c != nil {
@@ -744,4 +798,37 @@ type ToolInterruptEventStore interface {
 	SetToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string, ie *entity.ToolInterruptEvent) error
 	GetToolInterruptEvents(llmNodeKey vo.NodeKey) (map[string]*entity.ToolInterruptEvent, error)
 	ResumeToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string) (string, error)
+}
+
+func (l *LLM) ToCallbackOutput(ctx context.Context, output map[string]any) (*nodes.StructuredCallbackOutput, error) {
+	c := execute.GetExeCtx(ctx)
+	if c == nil {
+		return &nodes.StructuredCallbackOutput{
+			Output:    output,
+			RawOutput: output,
+		}, nil
+	}
+	rawOutputK := fmt.Sprintf(rawOutputKey, c.NodeKey)
+	warningK := fmt.Sprintf(warningKey, c.NodeKey)
+	rawOutput, found := ctxcache.Get[string](ctx, rawOutputK)
+	if !found {
+		return &nodes.StructuredCallbackOutput{
+			Output:    output,
+			RawOutput: output,
+		}, nil
+	}
+
+	warning, found := ctxcache.Get[vo.WorkflowError](ctx, warningK)
+	if !found {
+		return &nodes.StructuredCallbackOutput{
+			Output:    output,
+			RawOutput: map[string]any{"output": rawOutput},
+		}, nil
+	}
+
+	return &nodes.StructuredCallbackOutput{
+		Output:    output,
+		RawOutput: map[string]any{"output": rawOutput},
+		Error:     warning,
+	}, nil
 }

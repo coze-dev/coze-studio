@@ -257,16 +257,14 @@ func (p *prompts) Format(ctx context.Context, vs map[string]any, _ ...prompt.Opt
 		}
 	}
 
-	if systemMsg == nil && userMsg == nil {
-		return []*schema.Message{}, nil
+	if userMsg == nil {
+		// give it a default empty message.
+		// Some model may fail on empty message such as this one.
+		userMsg = schema.UserMessage("")
 	}
 
 	if systemMsg == nil {
 		return []*schema.Message{userMsg}, nil
-	}
-
-	if userMsg == nil {
-		return []*schema.Message{systemMsg}, nil
 	}
 
 	return []*schema.Message{systemMsg, userMsg}, nil
