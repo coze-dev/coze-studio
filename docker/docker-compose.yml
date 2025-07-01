@@ -502,7 +502,7 @@ services:
     # build:
     #   context: ../
     #   dockerfile: backend/Dockerfile
-    image: fanlv/opencoze:0.1.3
+    image: fanlv/opencoze:latest
     container_name: coze-server
     profiles: ['run-server']
     env_file: *env_file
@@ -512,10 +512,10 @@ services:
       - coze-network
     ports:
       - '8888:8888'
-    # volumes:
-    #   - ../docker/.env:/app/.env
-    #   - ../backend/conf:/app/resources/conf
-    # - ../backend/static:/app/resources/static
+    volumes:
+      - ../docker/.env:/app/.env
+      - ../backend/conf:/app/resources/conf
+      - ../backend/static:/app/resources/static
     depends_on:
       mysql:
         condition: service_healthy
