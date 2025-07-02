@@ -7,7 +7,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
 )
 
-func ConvertResultSet(resultSet *entity.ResultSet, physicalToFieldName map[string]string, physicalToFieldType map[string]table.FieldItemType) []map[string]string {
+func ConvertResultSetToString(resultSet *entity.ResultSet, physicalToFieldName map[string]string, physicalToFieldType map[string]table.FieldItemType) []map[string]string {
 	records := make([]map[string]string, 0, len(resultSet.Rows))
 
 	for _, row := range resultSet.Rows {
@@ -32,6 +32,25 @@ func ConvertResultSet(resultSet *entity.ResultSet, physicalToFieldName map[strin
 				} else {
 					record[physicalName] = ConvertSystemFieldToString(physicalName, value)
 				}
+			}
+		}
+		records = append(records, record)
+	}
+
+	return records
+}
+
+func ConvertResultSet(resultSet *entity.ResultSet, physicalToFieldName map[string]string, physicalToFieldType map[string]table.FieldItemType) []map[string]any {
+	records := make([]map[string]any, 0, len(resultSet.Rows))
+
+	for _, row := range resultSet.Rows {
+		record := make(map[string]any)
+
+		for physicalName, value := range row {
+			if logicalName, exists := physicalToFieldName[physicalName]; exists {
+				record[logicalName] = value
+			} else {
+				record[physicalName] = value
 			}
 		}
 		records = append(records, record)

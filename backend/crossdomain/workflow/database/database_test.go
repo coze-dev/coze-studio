@@ -24,7 +24,7 @@ func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *service.Exe
 			}
 			assert.Equal(t, rs, []string{"1", "2"})
 			return &service.ExecuteSQLResponse{
-				Records: []map[string]string{
+				Records: []map[string]any{
 					{"v1": "1", "v2": "2"},
 				},
 			}, nil
@@ -40,7 +40,7 @@ func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *service.Exe
 			assert.Equal(t, "%sv4%s", *request.SQLParams[3].Value)
 			rowsAffected := int64(10)
 			return &service.ExecuteSQLResponse{
-				Records: []map[string]string{
+				Records: []map[string]any{
 					{"v1": "1", "v2": "2", "v3": "3", "v4": "4"},
 				},
 				RowsAffected: &rowsAffected,
@@ -56,7 +56,7 @@ func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *service.Exe
 			assert.Equal(t, "%sv4%s", *request.SQLParams[3].Value)
 			rowsAffected := int64(10)
 			return &service.ExecuteSQLResponse{
-				Records: []map[string]string{
+				Records: []map[string]any{
 					{"v1": "1", "v2": "2", "v3": "3", "v4": "4"},
 				},
 				RowsAffected: &rowsAffected,

@@ -416,7 +416,7 @@ func toLogic(relation nodedatabase.ClauseRelation) (database.Logic, error) {
 func toNodeDateBaseResponse(response *service.ExecuteSQLResponse) *nodedatabase.Response {
 	objects := make([]nodedatabase.Object, 0, len(response.Records))
 	for i := range response.Records {
-		objects = append(objects, toMapStringAny(response.Records[i]))
+		objects = append(objects, response.Records[i])
 	}
 	return &nodedatabase.Response{
 		Objects:   objects,

@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
@@ -19,6 +20,11 @@ import (
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossdatabase"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/service"
 	"code.byted.org/flow/opencoze/backend/infra/impl/sqlparser"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
+)
+
+const (
+	TimeFormat = "2006-01-02 15:04:05"
 )
 
 type databaseConfig struct {
@@ -203,6 +209,9 @@ func formatDatabaseResult(result *service.ExecuteSQLResponse) string {
 	}
 	sb.WriteString("\n")
 
+	fieldMap := slices.ToMap(result.FieldList, func(f *database.FieldItem) (string, *database.FieldItem) {
+		return f.Name, f
+	})
 	for _, record := range result.Records {
 		sb.WriteString("| ")
 		for _, header := range headers {
@@ -210,7 +219,12 @@ func formatDatabaseResult(result *service.ExecuteSQLResponse) string {
 			if !exists {
 				value = ""
 			}
-			sb.WriteString(value + " | ")
+			fieldType := table.FieldItemType_Text
+			fValue, fExists := fieldMap[header]
+			if fExists {
+				fieldType = fValue.Type
+			}
+			sb.WriteString(convertDBValueToString(value, fieldType) + " | ")
 		}
 		sb.WriteString("\n")
 	}
@@ -220,4 +234,53 @@ func formatDatabaseResult(result *service.ExecuteSQLResponse) string {
 	}
 
 	return sb.String()
+}
+
+func convertDBValueToString(value interface{}, fieldType table.FieldItemType) string {
+	switch fieldType {
+	case table.FieldItemType_Text:
+		if byteArray, ok := value.([]uint8); ok {
+			return string(byteArray)
+		}
+
+	case table.FieldItemType_Number:
+		switch v := value.(type) {
+		case int64:
+			return strconv.FormatInt(v, 10)
+		case []uint8:
+			return string(v)
+		}
+
+	case table.FieldItemType_Float:
+		switch v := value.(type) {
+		case float64:
+			return strconv.FormatFloat(v, 'f', -1, 64)
+		case []uint8:
+			return string(v)
+		}
+
+	case table.FieldItemType_Boolean:
+		switch v := value.(type) {
+		case bool:
+			return strconv.FormatBool(v)
+		case int64:
+			return strconv.FormatBool(v != 0)
+		case []uint8:
+			boolStr := string(v)
+			if boolStr == "1" || boolStr == "true" {
+				return "true"
+			}
+			return "false"
+		}
+
+	case table.FieldItemType_Date:
+		switch v := value.(type) {
+		case time.Time:
+			return v.Format(TimeFormat)
+		case []uint8:
+			return string(v)
+		}
+	}
+
+	return fmt.Sprintf("%v", value)
 }
