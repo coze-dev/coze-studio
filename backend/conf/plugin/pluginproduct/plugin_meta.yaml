@@ -449,7 +449,7 @@
   product_id: 7395041877151514662
   deprecated: false
   version: v1.0.0
-  openapi_doc_file: lark_authentication_authorization.yaml
+  # openapi_doc_file: lark_authentication_authorization.yaml
   plugin_type: 1
   manifest:
     schema_version: v1
@@ -478,7 +478,7 @@
   product_id: 7395041302766944275
   deprecated: false
   version: v1.0.0
-  openapi_doc_file: lark_message.yaml
+  # openapi_doc_file: lark_message.yaml
   plugin_type: 1
   manifest:
     schema_version: v1
@@ -540,7 +540,7 @@
   product_id: 7395043460165779483
   deprecated: false
   version: v1.0.0
-  openapi_doc_file: lark_base.yaml
+  # openapi_doc_file: lark_base.yaml
   plugin_type: 1
   manifest:
     schema_version: v1
@@ -666,7 +666,7 @@
   product_id: 7395040352337559578
   deprecated: false
   version: v1.0.0
-  openapi_doc_file: lark_sheet.yaml
+  # openapi_doc_file: lark_sheet.yaml
   plugin_type: 1
   manifest:
     schema_version: v1
@@ -766,7 +766,7 @@
   product_id: 7395041172152156186
   deprecated: false
   version: v1.0.0
-  openapi_doc_file: lark_task.yaml
+  # openapi_doc_file: lark_task.yaml
   plugin_type: 1
   manifest:
     schema_version: v1
@@ -826,7 +826,7 @@
   product_id: 7395041536909574154
   deprecated: false
   version: v1.0.0
-  openapi_doc_file: lark_docx.yaml
+  # openapi_doc_file: lark_docx.yaml
   plugin_type: 1
   manifest:
     schema_version: v1
@@ -920,7 +920,7 @@
   product_id: 7408195262340104230
   deprecated: false
   version: v1.0.0
-  openapi_doc_file: lark_wiki.yaml
+  # openapi_doc_file: lark_wiki.yaml
   plugin_type: 1
   manifest:
     schema_version: v1
@@ -952,7 +952,7 @@
   product_id: 7395041856574423075
   deprecated: false
   version: v1.0.0
-  openapi_doc_file: lark_calendar.yaml
+  # openapi_doc_file: lark_calendar.yaml
   plugin_type: 1
   manifest:
     schema_version: v1
