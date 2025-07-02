@@ -20,6 +20,7 @@ import (
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	"code.byted.org/flow/opencoze/backend/api/model/table"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	appknowledge "code.byted.org/flow/opencoze/backend/application/knowledge"
 	appmemory "code.byted.org/flow/opencoze/backend/application/memory"
@@ -32,6 +33,7 @@ import (
 	crossplugin "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
@@ -47,8 +49,9 @@ import (
 )
 
 type ApplicationService struct {
-	DomainSVC workflowDomain.Service
-	ImageX    imagex.ImageX // we set Imagex here, because Imagex is used as a proxy to get auth token, there is no actual correlation with the workflow domain.
+	DomainSVC   workflowDomain.Service
+	ImageX      imagex.ImageX // we set Imagex here, because Imagex is used as a proxy to get auth token, there is no actual correlation with the workflow domain.
+	IDGenerator idgen.IDGenerator
 }
 
 var SVC = &ApplicationService{}
@@ -892,15 +895,21 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 
 		}
 	}
+
 	relatedKnowledgeMap := make(map[int64]int64, len(ds.KnowledgeIDs))
 	if len(ds.KnowledgeIDs) > 0 {
+		taskUniqIDs, err := w.IDGenerator.GenMultiIDs(ctx, len(ds.KnowledgeIDs))
+		if err != nil {
+			return 0, nil, err
+		}
+
 		for idx := range ds.KnowledgeIDs {
 			id := ds.KnowledgeIDs[idx]
 			response, err := appknowledge.KnowledgeSVC.CopyKnowledge(ctx, &model.CopyKnowledgeRequest{
 				KnowledgeID:   id,
-				TargetAppID:   appID,
 				TargetSpaceID: spaceID,
 				TargetUserID:  ctxutil.MustGetUIDFromCtx(ctx),
+				TaskUniqKey:   strconv.FormatInt(taskUniqIDs[idx], 10),
 			})
 			if err != nil {
 				return 0, nil, err
@@ -916,6 +925,8 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 	if len(ds.DatabaseIDs) > 0 {
 		response, err := appmemory.DatabaseApplicationSVC.CopyDatabase(ctx, &appmemory.CopyDatabaseRequest{
 			DatabaseIDs: ds.DatabaseIDs,
+			TableType:   table.TableType_OnlineTable,
+			CreatorID:   ctxutil.MustGetUIDFromCtx(ctx),
 		})
 		if err != nil {
 			return 0, nil, err

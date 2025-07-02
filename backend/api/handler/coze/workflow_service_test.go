@@ -3885,6 +3885,7 @@ func TestCodeExceptionBranch(t *testing.T) {
 
 func TestCopyWorkflowAppToLibrary(t *testing.T) {
 	r := newWfTestRunner(t)
+	appworkflow.SVC.IDGenerator = r.idGen
 	defer r.closeFn()
 
 	vars := []*variable.VarMeta{
@@ -3911,7 +3912,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 
 	r.varGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
 
-	mockey.PatchConvey("copy only with subworkflow", t, func() {
+	mockey.PatchConvey("copy with subworkflow, subworkflow with external resource ", t, func() {
 		var copiedIDs = make([]int64, 0)
 		var mockPublishWorkflowResource func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error
 		var ignoreIDs = map[int64]bool{
@@ -3939,24 +3940,81 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 			copiedIDMap := slices.ToMap(copiedIDs, func(e int64) (string, bool) {
 				return strconv.FormatInt(e, 10), true
 			})
+
 			var validateSubWorkflowIDs func(nodes []*vo.Node)
 			validateSubWorkflowIDs = func(nodes []*vo.Node) {
 				for _, node := range nodes {
-					if node.Type == vo.BlockTypeBotSubWorkflow {
+					switch node.Type {
+					case vo.BlockTypeBotAPI:
+						apiParams := slices.ToMap(node.Data.Inputs.APIParams, func(e *vo.Param) (string, *vo.Param) {
+							return e.Name, e
+						})
+						pluginIDParam, ok := apiParams["pluginID"]
+						assert.True(t, ok)
+						pID, err := strconv.ParseInt(pluginIDParam.Input.Value.Content.(string), 10, 64)
+						assert.NoError(t, err)
+
+						pluginVersionParam, ok := apiParams["pluginVersion"]
+						assert.True(t, ok)
+
+						pVersion := pluginVersionParam.Input.Value.Content.(string)
+
+						if pVersion == "0" {
+							assert.Equal(t, "100100", pID)
+						}
+
+					case vo.BlockTypeBotSubWorkflow:
 						assert.True(t, copiedIDMap[node.Data.Inputs.WorkflowID])
-					}
-					if node.Type == vo.BlockTypeBotLLM {
+						wfId, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+						assert.NoError(t, err)
+
+						subWf, err := appworkflow.GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
+							ID:    wfId,
+							QType: vo.FromLatestVersion,
+						})
+						assert.NoError(t, err)
+						subworkflowCanvas := &vo.Canvas{}
+						err = sonic.UnmarshalString(subWf.Canvas, subworkflowCanvas)
+						assert.NoError(t, err)
+						validateSubWorkflowIDs(subworkflowCanvas.Nodes)
+					case vo.BlockTypeBotLLM:
 						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
 							for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 								assert.True(t, copiedIDMap[w.WorkflowID])
 							}
 						}
+
+						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.PluginFCParam != nil {
+							for _, p := range node.Data.Inputs.FCParam.PluginFCParam.PluginList {
+								if p.PluginVersion == "0" {
+									assert.Equal(t, "100100", p.PluginID)
+								}
+							}
+						}
+
+						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.KnowledgeFCParam != nil {
+							for _, k := range node.Data.Inputs.FCParam.KnowledgeFCParam.KnowledgeList {
+								assert.Equal(t, "100100", k.ID)
+							}
+						}
+					case vo.BlockTypeBotDataset, vo.BlockTypeBotDatasetWrite:
+						datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
+						knowledgeIDs := datasetListInfoParam.Input.Value.Content.([]any)
+						for idx := range knowledgeIDs {
+							assert.Equal(t, "100100", knowledgeIDs[idx].(string))
+						}
+					case vo.BlockTypeDatabase, vo.BlockTypeDatabaseSelect, vo.BlockTypeDatabaseInsert, vo.BlockTypeDatabaseDelete, vo.BlockTypeDatabaseUpdate:
+						for _, d := range node.Data.Inputs.DatabaseInfoList {
+							assert.Equal(t, "100100", d.DatabaseInfoID)
+						}
+
 					}
 
 				}
 			}
 
 			validateSubWorkflowIDs(canvas.Nodes)
+
 			return nil
 
 		}
@@ -3971,6 +4029,31 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 		r.load("copy_to_app/child_2.json", withID(7515027182796668928), withProjectID(appIDInt64))
 		r.load("copy_to_app/child_1.json", withID(7515027150387281920), withProjectID(appIDInt64))
 		r.load("copy_to_app/main.json", withID(7515027091302121472), withProjectID(appIDInt64))
+
+		defer mockey.Mock((*appknowledge.KnowledgeApplicationService).CopyKnowledge).Return(&modelknowledge.CopyKnowledgeResponse{
+			TargetKnowledgeID: 100100,
+		}, nil).Build().UnPatch()
+
+		mockCopyDatabase := func(ctx context.Context, req *appmemory.CopyDatabaseRequest) (*appmemory.CopyDatabaseResponse, error) {
+			es := make(map[int64]*entity4.Database)
+			for _, id := range req.DatabaseIDs {
+				es[id] = &entity4.Database{ID: 100100}
+			}
+			return &appmemory.CopyDatabaseResponse{
+				Databases: es,
+			}, nil
+		}
+
+		defer mockey.Mock((*appmemory.DatabaseApplicationService).CopyDatabase).To(mockCopyDatabase).Build().UnPatch()
+
+		defer mockey.Mock((*appplugin.PluginApplicationService).CopyPlugin).Return(&appplugin.CopyPluginResponse{
+			Plugin: &entity5.PluginInfo{
+				PluginInfo: &pluginmodel.PluginInfo{
+					ID:      100100,
+					Version: ptr.Of("v0.0.1"),
+				},
+			},
+		}, nil).Build().UnPatch()
 
 		_, is, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(t.Context(), 7515027091302121472, appIDInt64, appIDInt64)
 		assert.NoError(t, err)

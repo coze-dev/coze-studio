@@ -1298,7 +1298,17 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 				if err != nil {
 					return err
 				}
-				ds.PluginIDs = append(ds.PluginIDs, pID)
+
+				pluginVersionParam, ok := apiParams["pluginVersion"]
+				if !ok {
+					return fmt.Errorf("plugin version param is not found")
+				}
+
+				pVersion := pluginVersionParam.Input.Value.Content.(string)
+				if pVersion == "0" { // version = 0 to represent the plug-in in the app
+					ds.PluginIDs = append(ds.PluginIDs, pID)
+				}
+
 			case vo.BlockTypeBotDatasetWrite, vo.BlockTypeBotDataset:
 				datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
 				datasetIDs := datasetListInfoParam.Input.Value.Content.([]any)
@@ -1329,7 +1339,10 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 						if err != nil {
 							return err
 						}
-						ds.PluginIDs = append(ds.PluginIDs, pluginID)
+
+						if pl.PluginVersion == "0" {
+							ds.PluginIDs = append(ds.PluginIDs, pluginID)
+						}
 
 					}
 				}
@@ -1343,6 +1356,31 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 						ds.KnowledgeIDs = append(ds.KnowledgeIDs, kid)
 
 					}
+				}
+
+			case vo.BlockTypeBotSubWorkflow:
+				wfID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+				if err != nil {
+					return err
+				}
+
+				subWorkflow, err := i.repo.GetEntity(ctx, &vo.GetPolicy{
+					ID:    wfID,
+					QType: vo.FromDraft,
+				})
+				if err != nil {
+					return err
+				}
+
+				subCanvas := &vo.Canvas{}
+				err = sonic.UnmarshalString(subWorkflow.Canvas, subCanvas)
+				if err != nil {
+					return err
+				}
+
+				err = collectDependence(subCanvas.Nodes)
+				if err != nil {
+					return err
 				}
 
 			}
