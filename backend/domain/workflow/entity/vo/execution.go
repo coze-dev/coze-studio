@@ -14,6 +14,7 @@ type ExecuteConfig struct {
 	TaskType      TaskType
 	SyncPattern   SyncPattern
 	InputFailFast bool // whether to fail fast if input conversion has warnings
+	BizType       BizType
 }
 
 type ExecuteMode string
@@ -40,3 +41,10 @@ const (
 )
 
 var DebugURLTpl = "http://127.0.0.1:3000/work_flow?execute_id=%d&space_id=%d&workflow_id=%d&execute_mode=2"
+
+type BizType string
+
+const (
+	BizTypeAgent    BizType = "agent"
+	BizTypeWorkflow BizType = "workflow"
+)

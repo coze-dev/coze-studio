@@ -138,7 +138,7 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 	if interruptEvent != nil {
 		var stateOpt einoCompose.Option
 		stateModifier := GenStateModifierByEventType(interruptEvent.EventType,
-			interruptEvent.NodeKey, resumeReq.ResumeData)
+			interruptEvent.NodeKey, resumeReq.ResumeData, r.config)
 
 		if len(interruptEvent.NodePath) == 1 {
 			// this interrupt event is within the top level workflow

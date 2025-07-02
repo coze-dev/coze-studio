@@ -1110,6 +1110,7 @@ enum EventType {
     SceneChat    = 4
     InputNode    = 5
     WorkflowLocalPlugin = 6
+    WorkflowOauthPlugin = 7
 }
 
 struct NodeEvent{

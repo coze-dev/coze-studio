@@ -52,6 +52,7 @@ func TestCustomSQL_Execute(t *testing.T) {
 			ExeCfg: vo.ExecuteConfig{
 				Mode:     vo.ExecuteModeDebug,
 				Operator: 123,
+				BizType:  vo.BizTypeWorkflow,
 			},
 		},
 	}).Build().UnPatch()

@@ -429,6 +429,7 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 		ConnectorUID: strconv.FormatInt(uID, 10),
 		TaskType:     vo.TaskTypeForeground,
 		SyncPattern:  vo.SyncPatternAsync,
+		BizType:      vo.BizTypeWorkflow,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -497,6 +498,7 @@ func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.Workfl
 		ConnectorUID: strconv.FormatInt(uID, 10),
 		TaskType:     vo.TaskTypeForeground,
 		SyncPattern:  vo.SyncPatternAsync,
+		BizType:      vo.BizTypeWorkflow,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -1401,6 +1403,7 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 		TaskType:      vo.TaskTypeForeground,
 		SyncPattern:   vo.SyncPatternStream,
 		InputFailFast: true,
+		BizType:       vo.BizTypeWorkflow,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -1465,6 +1468,7 @@ func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workf
 		Mode:         vo.ExecuteModeRelease,
 		ConnectorID:  connectorID,
 		ConnectorUID: strconv.FormatInt(userID, 10),
+		BizType:      vo.BizTypeWorkflow,
 	})
 	if err != nil {
 		return nil, err
@@ -1543,6 +1547,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 		ConnectorUID:  strconv.FormatInt(userID, 10),
 		TaskType:      vo.TaskTypeForeground,
 		InputFailFast: true,
+		BizType:       vo.BizTypeWorkflow,
 	}
 
 	if exeCfg.AppID != nil && exeCfg.AgentID != nil {
@@ -1787,6 +1792,7 @@ func (w *ApplicationService) TestResume(ctx context.Context, req *workflow.Workf
 	err = GetWorkflowDomainSVC().AsyncResume(ctx, resumeReq, vo.ExecuteConfig{
 		Operator: ptr.FromOrDefault(ctxutil.GetUIDFromCtx(ctx), 0),
 		Mode:     vo.ExecuteModeDebug, // at this stage it could be debug or node debug, we will decide it within AsyncResume
+		BizType:  vo.BizTypeWorkflow,
 	})
 	if err != nil {
 		return nil, err

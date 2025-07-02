@@ -57,6 +57,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 				ExeCfg: vo.ExecuteConfig{
 					Mode:     vo.ExecuteModeDebug,
 					Operator: 123,
+					BizType:  vo.BizTypeWorkflow,
 				},
 			},
 		}).Build()
@@ -216,6 +217,7 @@ func TestDatabaseCURD(t *testing.T) {
 				ExeCfg: vo.ExecuteConfig{
 					Mode:     vo.ExecuteModeDebug,
 					Operator: 123,
+					BizType:  vo.BizTypeWorkflow,
 				},
 			},
 		}).Build()

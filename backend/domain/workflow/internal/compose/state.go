@@ -18,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/qa"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/receiver"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 type State struct {
@@ -66,6 +67,7 @@ func init() {
 	_ = compose.RegisterSerializableType[vo.TaskType]("task_type")
 	_ = compose.RegisterSerializableType[vo.SyncPattern]("sync_pattern")
 	_ = compose.RegisterSerializableType[vo.Locator]("wf_locator")
+	_ = compose.RegisterSerializableType[vo.BizType]("biz_type")
 }
 
 func (s *State) SetAppVariableValue(key string, value any) {
@@ -862,11 +864,27 @@ func (s *NodeSchema) streamStatePostHandlerForVars() compose.StreamStatePostHand
 
 func GenStateModifierByEventType(e entity.InterruptEventType,
 	nodeKey vo.NodeKey,
-	resumeData string) (stateModifier compose.StateModifier) {
+	resumeData string,
+	exeCfg vo.ExecuteConfig) (stateModifier compose.StateModifier) {
 	// TODO: can we unify them all to a map[NodeKey]resumeData?
 	switch e {
 	case entity.InterruptEventInput:
-		stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
+		stateModifier = func(ctx context.Context, path compose.NodePath, state any) (err error) {
+			if exeCfg.BizType == vo.BizTypeAgent {
+				m := make(map[string]any)
+				sList := strings.Split(resumeData, "\n")
+				for _, s := range sList {
+					firstColon := strings.Index(s, ":")
+					k := s[:firstColon]
+					v := s[firstColon+1:]
+					m[k] = v
+				}
+				resumeData, err = sonic.MarshalString(m)
+				if err != nil {
+					return err
+				}
+			}
+
 			input := map[string]any{
 				receiver.ReceivedDataKey: resumeData,
 			}

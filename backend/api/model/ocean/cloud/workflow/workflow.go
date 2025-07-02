@@ -1986,6 +1986,7 @@ const (
 	EventType_SceneChat           EventType = 4
 	EventType_InputNode           EventType = 5
 	EventType_WorkflowLocalPlugin EventType = 6
+	EventType_WorkflowOauthPlugin EventType = 7
 )
 
 func (p EventType) String() string {
@@ -2002,6 +2003,8 @@ func (p EventType) String() string {
 		return "InputNode"
 	case EventType_WorkflowLocalPlugin:
 		return "WorkflowLocalPlugin"
+	case EventType_WorkflowOauthPlugin:
+		return "WorkflowOauthPlugin"
 	}
 	return "<UNSET>"
 }
@@ -2020,6 +2023,8 @@ func EventTypeFromString(s string) (EventType, error) {
 		return EventType_InputNode, nil
 	case "WorkflowLocalPlugin":
 		return EventType_WorkflowLocalPlugin, nil
+	case "WorkflowOauthPlugin":
+		return EventType_WorkflowOauthPlugin, nil
 	}
 	return EventType(0), fmt.Errorf("not a valid EventType string")
 }
