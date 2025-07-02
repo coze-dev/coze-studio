@@ -19,3 +19,8 @@ func (s Set[T]) ToSlice() []T {
 	}
 	return sl
 }
+
+func (s Set[T]) Contains(elem T) bool {
+	_, ok := s[elem]
+	return ok
+}

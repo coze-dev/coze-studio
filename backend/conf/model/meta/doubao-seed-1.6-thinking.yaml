@@ -1,26 +1,28 @@
-id: 102 # 模型 id, 同 id 数据不会覆盖
-name: Doubao-1.5-pro-32k # 模型 meta 名称
+id: 104 # 模型 id, 同 id 数据不会覆盖
+name: Doubao-seed-1.6-thinking # 模型 meta 名称
 icon_uri: doubao_v2.png
 description:
-  zh: 支持工具调用 # 模型默认描述
-  en: support tool calling
+  zh: 支持推理 # 模型默认描述
+  en: support reasoning
 protocol: ark # 模型连接协议, see: backend/infra/contract/chatmodel/protocol.go
 capability: # 模型基础能力
   function_call: true # 模型是否支持 function call
   input_modal: # 模型输入支持模态
     - text
-  input_tokens: 128000 # 输入 token 上限
+    - image
+    - video
+  input_tokens: 224000 # 输入 token 上限
   output_modal: # 模型输出支持模态
     - text
-  output_tokens: 16384 # 输出 token 上限
-  max_tokens: 128000 # 最大 token 数量
+  output_tokens: 16000 # 输出 token 上限
+  max_tokens: 256000 # 最大 token 数量
   json_mode: false # 是否支持 json mode
   prefix_caching: false # 是否支持 prefix caching
-  reasoning: false # 是否支持 reasoning
-  prefill_response: false # 是否支持续写
+  reasoning: true # 是否支持 reasoning
+  prefill_response: true # 是否支持续写
 conn_config: # 模型连接参数
   api_key: 1ea0e64a-cef2-4f29-b96b-effaf97667ba
-  model: ep-20250623194625-rszwf # 模型名称
+  model: ep-20250702142211-7tz8c # 模型名称
   temperature: 0.1 # 默认 temperature
   frequency_penalty: 0 # 默认 frequency_penalty
   presence_penalty: 0 # 默认 presence_penalty

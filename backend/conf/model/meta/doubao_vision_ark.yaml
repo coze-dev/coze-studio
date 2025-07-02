@@ -23,6 +23,7 @@ capability: # 模型基础能力
   json_mode: false # 是否支持 json mode
   prefix_caching: false # 是否支持 prefix caching
   reasoning: false # 是否支持 reasoning
+  prefill_response: false # 是否支持续写
 conn_config: # 模型连接参数
   api_key: 1ea0e64a-cef2-4f29-b96b-effaf97667ba   # REQUIRED: api_key
   model: ep-20250619193232-k6bbc     # REQUIRED: model name

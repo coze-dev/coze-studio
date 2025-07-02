@@ -147,6 +147,8 @@ type Capability struct {
 	PrefixCaching bool `json:"prefix_caching" yaml:"prefix_caching" mapstructure:"prefix_caching"`
 	// Model supports reasoning
 	Reasoning bool `json:"reasoning" yaml:"reasoning" mapstructure:"reasoning"`
+	// Model supports prefill response
+	PrefillResponse bool `json:"prefill_response" yaml:"prefill_response" mapstructure:"prefill_response"`
 }
 
 type MultilingualText struct {

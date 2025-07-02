@@ -9,6 +9,7 @@ import (
 	modelEntity "code.byted.org/flow/opencoze/backend/domain/modelmgr/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/i18n"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/sets"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -60,6 +61,8 @@ func modelDo2To(model *modelEntity.Model, locale i18n.Locale) (*developer_api.Mo
 		},
 	)
 
+	modalSet := sets.FromSlice(mm.Capability.InputModal)
+
 	return &developer_api.Model{
 		Name:             model.Name,
 		ModelType:        model.ID,
@@ -101,29 +104,15 @@ func modelDo2To(model *modelEntity.Model, locale i18n.Locale) (*developer_api.Mo
 		},
 		ModelStatusDetails: nil,
 		ModelAbility: &developer_api.ModelAbility{
+			CotDisplay:         ptr.Of(mm.Capability.Reasoning),
 			FunctionCall:       ptr.Of(mm.Capability.FunctionCall),
-			ImageUnderstanding: ptr.Of(supportImageModal(mm.Capability.InputModal)),
-			VideoUnderstanding: ptr.Of(supportVideoModal(mm.Capability.InputModal)),
+			ImageUnderstanding: ptr.Of(modalSet.Contains(modelmgrEntity.ModalImage)),
+			VideoUnderstanding: ptr.Of(modalSet.Contains(modelmgrEntity.ModalVideo)),
+			AudioUnderstanding: ptr.Of(modalSet.Contains(modelmgrEntity.ModalAudio)),
+			SupportMultiModal:  ptr.Of(len(modalSet) > 1),
+			PrefillResp:        ptr.Of(mm.Capability.PrefillResponse),
 		},
 	}, nil
-}
-
-func supportImageModal(ms []modelmgrEntity.Modal) bool {
-	for _, m := range ms {
-		if m == modelmgrEntity.ModalImage {
-			return true
-		}
-	}
-	return false
-}
-
-func supportVideoModal(ms []modelmgrEntity.Modal) bool {
-	for _, m := range ms {
-		if m == modelmgrEntity.ModalVideo {
-			return true
-		}
-	}
-	return false
 }
 
 func parameterDo2To(param *modelmgrEntity.Parameter, locale i18n.Locale) *developer_api.ModelParameter {

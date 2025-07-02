@@ -19,6 +19,7 @@ capability: # 模型基础能力
   json_mode: false # 是否支持 json mode
   prefix_caching: false # 是否支持 prefix caching
   reasoning: false # 是否支持 reasoning
+  prefill_response: false # 是否支持续写
 conn_config: # 模型连接参数
   base_url: https://search.bytedance.net/gpt/openapi/online/v2/crawl
   api_key: Kf03Hzesjg20yBr48qKEoPN41xQYs1rs

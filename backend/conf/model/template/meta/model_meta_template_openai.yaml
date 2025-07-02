@@ -19,6 +19,7 @@ capability: # 模型基础能力
   json_mode: false # 是否支持 json mode
   prefix_caching: false # 是否支持 prefix caching
   reasoning: false # 是否支持 reasoning
+  prefill_response: false # 是否支持续写
 conn_config: # 模型连接参数
   base_url: ''  # REQUIRED: base_url
   api_key: ''   # REQUIRED: api_key

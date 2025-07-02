@@ -652,6 +652,9 @@ struct ModelAbility {
     2: optional bool function_call // 是否支持function call
     3: optional bool image_understanding // 是否支持图片理解
     4: optional bool video_understanding // 是否支持视频理解
+    5: optional bool audio_understanding // 是否支持音频理解
+    6: optional bool support_multi_modal // 是否支持多模态
+    7: optional bool prefill_resp // 是否支持续写
 }
 
 struct Model {
