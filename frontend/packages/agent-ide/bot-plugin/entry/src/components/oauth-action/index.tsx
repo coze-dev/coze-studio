@@ -50,7 +50,7 @@ const OauthHeaderAction = () => {
     return <></>;
   }
 
-  const isEnableCancelAuthorization = needAuth && isHasAuth && !IS_OPEN_SOURCE;
+  const isEnableCancelAuthorization = needAuth && isHasAuth;
   const isEnableAuthorization = needAuth && !isHasAuth;
 
   return (
