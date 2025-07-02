@@ -2,133 +2,63 @@ package database
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"reflect"
-
-	"github.com/cloudwego/eino/compose"
-	"github.com/spf13/cast"
+	"strconv"
+	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"github.com/cloudwego/eino/compose"
 )
 
 const rowNum = "rowNum"
 const outputList = "outputList"
 
-// formatted convert the interface type according to the datatype type.
-// notice: object is currently not supported by database, and ignore it.
-func formatted(in any, ty *vo.TypeInfo) (any, error) {
-	switch ty.Type {
-	case vo.DataTypeString:
-		r, err := cast.ToStringE(in)
-		if err != nil {
-			return nil, err
-		}
-		return r, nil
-	case vo.DataTypeNumber:
-		r, err := cast.ToFloat64E(in)
-		if err != nil {
-			return nil, err
-		}
-		return r, nil
-	case vo.DataTypeInteger:
-		r, err := cast.ToInt64E(in)
-		if err != nil {
-			return nil, err
-		}
-		return r, nil
-	case vo.DataTypeBoolean:
-		r, err := cast.ToBoolE(in)
-		if err != nil {
-			return nil, err
-		}
-		return r, nil
-	case vo.DataTypeTime:
-		r, err := cast.ToStringE(in)
-		if err != nil {
-			return nil, err
-		}
-		return r, nil
-	case vo.DataTypeArray:
-		arrayIn := make([]any, 0)
-		err := json.Unmarshal([]byte(cast.ToString(in)), &arrayIn)
-		if err != nil {
-			return nil, err
-		}
-		switch ty.ElemTypeInfo.Type {
-		case vo.DataTypeTime:
-			r, err := cast.ToStringSliceE(arrayIn)
-			if err != nil {
-				return nil, err
-			}
-			return r, nil
-		case vo.DataTypeString:
-			r, err := cast.ToStringSliceE(arrayIn)
-			if err != nil {
-				return nil, err
-			}
-			return r, nil
-		case vo.DataTypeInteger:
-			r, err := toInt64SliceE(arrayIn)
-			if err != nil {
-				return nil, err
-			}
-			return r, nil
-		case vo.DataTypeBoolean:
-			r, err := cast.ToBoolSliceE(arrayIn)
-			if err != nil {
-				return nil, err
-			}
-			return r, nil
-
-		case vo.DataTypeNumber:
-			r, err := toFloat64SliceE(arrayIn)
-			if err != nil {
-				return nil, err
-			}
-			return r, nil
-		}
-	}
-	return nil, fmt.Errorf("unknown data type %v", ty.Type)
-
-}
-
-func objectFormatted(props map[string]*vo.TypeInfo, object database.Object) (map[string]any, error) {
+func objectFormatted(ctx context.Context, props map[string]*vo.TypeInfo, object database.Object) map[string]any {
 	ret := make(map[string]any)
+	const TimeFormat = "2006-01-02 15:04:05 -0700 MST"
 
 	// if config is nil, it agrees to convert to string type as the default value
 	if len(props) == 0 {
 		for k, v := range object {
-			ret[k] = cast.ToString(v)
-		}
-		return ret, nil
-	}
-
-	for k, v := range props {
-		if r, ok := object[k]; ok {
-			formattedValue, err := formatted(r, v)
-			if err != nil {
-				return nil, err
+			switch v.(type) {
+			case []byte:
+				ret[k] = string(v.([]byte))
+			case float64:
+				ret[k] = strconv.FormatFloat(v.(float64), 'f', -1, 64)
+			case bool:
+				ret[k] = strconv.FormatBool(v.(bool))
+			case time.Time:
+				ret[k] = v.(time.Time).Format(TimeFormat)
 			}
-			ret[k] = formattedValue
+		}
+		return ret
+	}
+
+	for path, info := range props {
+		if val, ok := object[path]; !ok {
+			ret[path] = nil
 		} else {
-			// if key not existed, assign nil
-			ret[k] = nil
+			var err error
+			value, err := nodes.Convert(ctx, val, path, info)
+			if err != nil {
+				logs.Warnf("failed to convert value for path %s: %v", path, err.Error())
+			}
+			ret[path] = value
 		}
 	}
 
-	return ret, nil
+	return ret
 }
 
 // responseFormatted convert the object list returned by "response" into the field mapping of the "config output" configuration,
 // If the conversion fail, set the output list to null. If there are missing fields, set the missing fields to null.
-func responseFormatted(configOutput map[string]*vo.TypeInfo, response *database.Response) (map[string]any, error) {
+func responseFormatted(ctx context.Context, configOutput map[string]*vo.TypeInfo, response *database.Response) (map[string]any, error) {
 	ret := make(map[string]any)
 	list := make([]any, 0, len(configOutput))
-	formattedFailed := false
 
 	outputListTypeInfo, ok := configOutput["outputList"]
 	if !ok {
@@ -147,18 +77,12 @@ func responseFormatted(configOutput map[string]*vo.TypeInfo, response *database.
 	props := outputListTypeInfo.ElemTypeInfo.Properties
 
 	for _, object := range response.Objects {
-		formattedObject, err := objectFormatted(props, object)
-		if err != nil {
-			formattedFailed = true
-			break
-		}
-		list = append(list, formattedObject)
+
+		list = append(list, objectFormatted(ctx, props, object))
 	}
-	if formattedFailed {
-		ret[outputList] = nil
-	} else {
-		ret[outputList] = list
-	}
+
+	ret[outputList] = list
+
 	if response.RowNumber != nil {
 		ret[rowNum] = *response.RowNumber
 	} else {
@@ -241,58 +165,6 @@ func ConvertClauseGroupToUpdateInventory(ctx context.Context, clauseGroup *datab
 		Fields:         fields,
 	}
 	return inventory, nil
-}
-
-func toInt64SliceE(i interface{}) ([]int64, error) {
-	if i == nil {
-		return []int64{}, fmt.Errorf("unable to cast %#v of type %T to []int", i, i)
-	}
-	switch v := i.(type) {
-	case []int64:
-		return v, nil
-	}
-	kind := reflect.TypeOf(i).Kind()
-	switch kind {
-	case reflect.Slice, reflect.Array:
-		s := reflect.ValueOf(i)
-		a := make([]int64, s.Len())
-		for j := 0; j < s.Len(); j++ {
-			val, err := cast.ToInt64E(s.Index(j).Interface())
-			if err != nil {
-				return []int64{}, fmt.Errorf("unable to cast %#v of type %T to []int", i, i)
-			}
-			a[j] = val
-		}
-		return a, nil
-	default:
-		return []int64{}, fmt.Errorf("unable to cast %#v of type %T to []int", i, i)
-	}
-}
-
-func toFloat64SliceE(i interface{}) ([]float64, error) {
-	if i == nil {
-		return []float64{}, fmt.Errorf("unable to cast %#v of type %T to []int", i, i)
-	}
-	switch v := i.(type) {
-	case []float64:
-		return v, nil
-	}
-	kind := reflect.TypeOf(i).Kind()
-	switch kind {
-	case reflect.Slice, reflect.Array:
-		s := reflect.ValueOf(i)
-		a := make([]float64, s.Len())
-		for j := 0; j < s.Len(); j++ {
-			val, err := cast.ToFloat64E(s.Index(j).Interface())
-			if err != nil {
-				return []float64{}, fmt.Errorf("unable to cast %#v of type %T to []int", i, i)
-			}
-			a[j] = val
-		}
-		return a, nil
-	default:
-		return []float64{}, fmt.Errorf("unable to cast %#v of type %T to []int", i, i)
-	}
 }
 
 func isDebugExecute(ctx context.Context) bool {

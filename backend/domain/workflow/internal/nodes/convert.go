@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -89,7 +90,8 @@ func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.
 }
 
 type convertOptions struct {
-	skipUnknownFields bool
+	skipUnknownFields  bool
+	returnDefaultValue bool
 }
 
 type ConvertOption func(*convertOptions)
@@ -97,6 +99,11 @@ type ConvertOption func(*convertOptions)
 func SkipUnknownFields() ConvertOption {
 	return func(o *convertOptions) {
 		o.skipUnknownFields = true
+	}
+}
+func UseReturnDefaultValue() ConvertOption {
+	return func(o *convertOptions) {
+		o.returnDefaultValue = true
 	}
 }
 
@@ -120,14 +127,30 @@ func Convert(ctx context.Context, in any, path string, t *vo.TypeInfo, opts ...C
 	case vo.DataTypeBoolean:
 		return convertToBool(ctx, in, path)
 	case vo.DataTypeObject:
-		return convertToObject(ctx, in, path, t, opts...)
+		value, err := convertToObject(ctx, in, path, t, opts...)
+		if err != nil {
+			if options.returnDefaultValue {
+				return map[string]any{}, err
+			}
+			return nil, err
+		}
+		return value, nil
 	case vo.DataTypeArray:
-		return convertToArray(ctx, in, path, t, opts...)
+		value, err := convertToArray(ctx, in, path, t, opts...)
+		if err != nil {
+			if options.returnDefaultValue {
+				return []any{}, err
+			}
+			return nil, err
+		}
+		return value, nil
 	default:
 		logs.CtxErrorf(ctx, "unknown input type %s for path %s", t.Type, path)
 		return in, nil
 	}
 }
+
+const TimeFormat = "2006-01-02 15:04:05 -0700 MST"
 
 func convertToString(_ context.Context, in any, path string) (string, error) {
 	switch in.(type) {
@@ -145,6 +168,11 @@ func convertToString(_ context.Context, in any, path string) (string, error) {
 			return "", ConversionWarnings{{Path: path, Type: vo.DataTypeString, Err: err}}
 		}
 		return s, nil
+	case []byte:
+		return string(in.([]byte)), nil
+	case time.Time:
+		return in.(time.Time).Format(TimeFormat), nil
+
 	default:
 		return "", ConversionWarnings{{Path: path, Type: vo.DataTypeString}}
 	}
@@ -201,6 +229,7 @@ func convertToBool(_ context.Context, in any, path string) (bool, error) {
 
 func convertToObject(ctx context.Context, in any, path string, t *vo.TypeInfo, opts ...ConvertOption) (map[string]any, error) {
 	var m map[string]any
+
 	switch in.(type) {
 	case map[string]any:
 		m = in.(map[string]any)

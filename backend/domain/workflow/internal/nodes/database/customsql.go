@@ -96,7 +96,7 @@ func (c *CustomSQL) Execute(ctx context.Context, input map[string]any) (map[stri
 		return nil, err
 	}
 
-	ret, err := responseFormatted(c.config.OutputConfig, response)
+	ret, err := responseFormatted(ctx, c.config.OutputConfig, response)
 	if err != nil {
 		return nil, err
 	}

@@ -62,7 +62,7 @@ func (is *Insert) Insert(ctx context.Context, input map[string]any) (map[string]
 		return nil, err
 	}
 
-	ret, err := responseFormatted(is.config.OutputConfig, response)
+	ret, err := responseFormatted(ctx, is.config.OutputConfig, response)
 	if err != nil {
 		return nil, err
 	}

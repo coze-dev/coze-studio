@@ -69,7 +69,7 @@ func (u *Update) Update(ctx context.Context, in map[string]any) (map[string]any,
 		return nil, err
 	}
 
-	ret, err := responseFormatted(u.config.OutputConfig, response)
+	ret, err := responseFormatted(ctx, u.config.OutputConfig, response)
 	if err != nil {
 		return nil, err
 	}

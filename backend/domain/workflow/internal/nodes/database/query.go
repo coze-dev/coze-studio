@@ -65,7 +65,7 @@ func (ds *Query) Query(ctx context.Context, in map[string]any) (map[string]any, 
 		return nil, err
 	}
 
-	ret, err := responseFormatted(ds.config.OutputConfig, response)
+	ret, err := responseFormatted(ctx, ds.config.OutputConfig, response)
 	if err != nil {
 		return nil, err
 	}

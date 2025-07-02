@@ -58,7 +58,7 @@ func (d *Delete) Delete(ctx context.Context, in map[string]any) (map[string]any,
 		return nil, err
 	}
 
-	ret, err := responseFormatted(d.config.OutputConfig, response)
+	ret, err := responseFormatted(ctx, d.config.OutputConfig, response)
 	if err != nil {
 		return nil, err
 	}
