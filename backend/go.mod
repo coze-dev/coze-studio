@@ -19,9 +19,7 @@ require (
 	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250522023626-7bc321639a70
 	github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250526061219-600837d0bdf3
 	github.com/cloudwego/hertz v0.10.0
-	github.com/dslipak/pdf v0.0.2
 	github.com/elastic/go-elasticsearch/v8 v8.18.0
-	github.com/fumiama/go-docx v0.0.0-20241231153056-9f8f327c74a5
 	github.com/getkin/kin-openapi v0.118.0
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/hertz-contrib/sse v0.1.0
@@ -136,7 +134,6 @@ require (
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
-	github.com/fumiama/imgsz v0.0.2 // indirect
 	github.com/getsentry/sentry-go v0.12.0 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	"unicode/utf8"
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -189,4 +190,8 @@ func transformColumnType(src, dst document.TableColumnType) document.TableColumn
 		return dst
 	}
 	return document.TableColumnTypeString
+}
+
+func charCount(text string) int64 {
+	return int64(utf8.RuneCountInString(text))
 }

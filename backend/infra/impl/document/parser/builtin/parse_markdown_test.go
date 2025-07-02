@@ -2,10 +2,12 @@ package builtin
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/cloudwego/eino/components/document/parser"
+	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -46,4 +48,12 @@ func TestParseMarkdown(t *testing.T) {
 	for _, doc := range docs {
 		assertDoc(t, doc)
 	}
+}
+
+func assertDoc(t *testing.T, doc *schema.Document) {
+	assert.NotZero(t, doc.Content)
+	fmt.Println(doc.Content)
+	assert.NotNil(t, doc.MetaData)
+	assert.Equal(t, int64(123), doc.MetaData["document_id"].(int64))
+	assert.Equal(t, int64(456), doc.MetaData["knowledge_id"].(int64))
 }
