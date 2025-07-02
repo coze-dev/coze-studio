@@ -30,6 +30,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type impl struct {
@@ -116,7 +117,7 @@ func (i *impl) Create(ctx context.Context, meta *vo.MetaCreate) (int64, error) {
 		CreatedAt:     ptr.Of(time.Now().UnixMilli()),
 	})
 	if err != nil {
-		return 0, err
+		return 0, vo.WrapError(errno.ErrNotifyWorkflowResourceChangeErr, err)
 	}
 	return id, nil
 }
@@ -124,17 +125,17 @@ func (i *impl) Create(ctx context.Context, meta *vo.MetaCreate) (int64, error) {
 func (i *impl) Save(ctx context.Context, id int64, schema string) (err error) {
 	var draft vo.Canvas
 	if err = sonic.UnmarshalString(schema, &draft); err != nil {
-		return err
+		return vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	var inputParams, outputParams string
 	inputs, outputs := extractInputsAndOutputsNamedInfoList(&draft)
 	if inputParams, err = sonic.MarshalString(inputs); err != nil {
-		return err
+		return vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	if outputParams, err = sonic.MarshalString(outputs); err != nil {
-		return err
+		return vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	testRunSuccess, err := i.calculateTestRunSuccess(ctx, &draft, id)
@@ -144,7 +145,7 @@ func (i *impl) Save(ctx context.Context, id int64, schema string) (err error) {
 
 	commitID, err := i.repo.GenID(ctx) // generate a new commit ID for this draft version
 	if err != nil {
-		return err
+		return vo.WrapError(errno.ErrIDGenError, err)
 	}
 
 	return i.repo.CreateOrUpdateDraft(ctx, id, &vo.DraftInfo{
@@ -226,9 +227,13 @@ func (i *impl) Delete(ctx context.Context, policy *vo.DeletePolicy) (err error) 
 			return err
 		}
 
-		return search.GetNotifier().PublishWorkflowResource(ctx, search.Deleted, &search.Resource{
+		if err = search.GetNotifier().PublishWorkflowResource(ctx, search.Deleted, &search.Resource{
 			WorkflowID: id,
-		})
+		}); err != nil {
+			return vo.WrapError(errno.ErrNotifyWorkflowResourceChangeErr, err)
+		}
+
+		return nil
 	}
 
 	ids := policy.IDs
@@ -256,7 +261,11 @@ func (i *impl) Delete(ctx context.Context, policy *vo.DeletePolicy) (err error) 
 		})
 	}
 
-	return g.Wait()
+	if err = g.Wait(); err != nil {
+		return vo.WrapError(errno.ErrNotifyWorkflowResourceChangeErr, err)
+	}
+
+	return nil
 }
 
 func (i *impl) Get(ctx context.Context, policy *vo.GetPolicy) (*entity.Workflow, error) {
@@ -301,7 +310,6 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 	if len(issues) > 0 {
 		wfValidateInfos = append(wfValidateInfos, &cloudworkflow.ValidateTreeInfo{
 			WorkflowID: strconv.FormatInt(id, 10),
-			Name:       "", // TODO front doesn't seem to care about this workflow name
 			Errors:     toValidateErrorData(issues),
 		})
 	}
@@ -309,7 +317,8 @@ func (i *impl) ValidateTree(ctx context.Context, id int64, validateConfig vo.Val
 	c := &vo.Canvas{}
 	err = sonic.UnmarshalString(validateConfig.CanvasSchema, &c)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal canvas schema: %w", err)
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail,
+			fmt.Errorf("failed to unmarshal canvas schema: %w", err))
 	}
 
 	subWorkflowIdentities := c.GetAllSubWorkflowIdentities()
@@ -372,7 +381,7 @@ func (i *impl) QueryNodeProperties(ctx context.Context, wfID int64) (map[string]
 	mainCanvas := &vo.Canvas{}
 	err = sonic.UnmarshalString(canvasSchema, mainCanvas)
 	if err != nil {
-		return nil, err
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	mainCanvas.Nodes, mainCanvas.Edges = adaptor.PruneIsolatedNodes(mainCanvas.Nodes, mainCanvas.Edges, nil)
@@ -419,7 +428,7 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 			nodePropertyMap[string(nodeSchema.Key)] = prop
 			wid, err := strconv.ParseInt(n.Data.Inputs.WorkflowID, 10, 64)
 			if err != nil {
-				return nil, err
+				return nil, vo.WrapError(errno.ErrSchemaConversionFail, err)
 			}
 
 			var canvasSchema string
@@ -444,7 +453,7 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 			c := &vo.Canvas{}
 			err = sonic.UnmarshalString(canvasSchema, c)
 			if err != nil {
-				return nil, err
+				return nil, vo.WrapError(errno.ErrSchemaConversionFail, err)
 			}
 			ret, err := i.collectNodePropertyMap(ctx, c)
 			if err != nil {
@@ -478,7 +487,7 @@ func (i *impl) collectNodePropertyMap(ctx context.Context, canvas *vo.Canvas) (m
 func canvasToRefs(referringID int64, canvasStr string) (map[entity.WorkflowReferenceKey]struct{}, error) {
 	var canvas vo.Canvas
 	if err := sonic.UnmarshalString(canvasStr, &canvas); err != nil {
-		return nil, err
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
 
 	wfRefs := map[entity.WorkflowReferenceKey]struct{}{}
@@ -488,7 +497,7 @@ func canvasToRefs(referringID int64, canvasStr string) (map[entity.WorkflowRefer
 			if node.Type == vo.BlockTypeBotSubWorkflow {
 				referredID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
 				if err != nil {
-					return err
+					return vo.WrapError(errno.ErrSchemaConversionFail, err)
 				}
 				wfRefs[entity.WorkflowReferenceKey{
 					ReferredID:       referredID,
@@ -501,7 +510,7 @@ func canvasToRefs(referringID int64, canvasStr string) (map[entity.WorkflowRefer
 					for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 						referredID, err := strconv.ParseInt(w.WorkflowID, 10, 64)
 						if err != nil {
-							return err
+							return vo.WrapError(errno.ErrSchemaConversionFail, err)
 						}
 						wfRefs[entity.WorkflowReferenceKey{
 							ReferredID:       referredID,
@@ -589,7 +598,7 @@ func (i *impl) Publish(ctx context.Context, policy *vo.PublishPolicy) (err error
 		UpdatedAt:     ptr.Of(now),
 		PublishedAt:   ptr.Of(now),
 	}); err != nil {
-		return err
+		return vo.WrapError(errno.ErrNotifyWorkflowResourceChangeErr, err)
 	}
 
 	return nil

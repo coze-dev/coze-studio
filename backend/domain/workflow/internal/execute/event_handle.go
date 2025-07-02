@@ -177,8 +177,10 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		return workflowSuccess, nil
 	case WorkflowFailed:
 		exeID := event.RootCtx.RootExecuteID
+		wfID := event.RootCtx.RootWorkflowBasic.ID
 		if event.SubWorkflowCtx != nil {
 			exeID = event.SubExecuteID
+			wfID = event.SubWorkflowBasic.ID
 		}
 
 		logs.CtxErrorf(ctx, "workflow execution failed: %v", event.Err)
@@ -200,17 +202,19 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			} else if errors.Is(event.Err, context.Canceled) {
 				wfe = vo.CancelErr
 			} else {
-				wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err, errorx.KV("cause", event.Err.Error()))
+				wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err, errorx.KV("cause", vo.UnwrapRootErr(event.Err).Error()))
 			}
 		}
 
-		var msg string
 		if cause := errors.Unwrap(event.Err); cause != nil {
-			msg = cause.Error()
+			logs.CtxErrorf(ctx, "workflow %d for exeID %d returns err: %v, cause: %v",
+				wfID, exeID, event.Err, cause)
 		} else {
-			msg = wfe.Msg()
+			logs.CtxErrorf(ctx, "workflow %d for exeID %d returns err: %v",
+				wfID, exeID, event.Err)
 		}
-		errMsg := msg[:min(1000, len(msg))]
+
+		errMsg := wfe.Msg()[:min(1000, len(wfe.Msg()))]
 		wfExec.ErrorCode = ptr.Of(strconv.Itoa(int(wfe.Code())))
 		wfExec.FailReason = ptr.Of(errMsg)
 
@@ -437,13 +441,14 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				panic("node end: event.Err is not a WorkflowError")
 			}
 
-			var msg string
 			if cause := errors.Unwrap(event.Err); cause != nil {
-				msg = cause.Error()
+				logs.CtxWarnf(ctx, "node %s for exeID %d end with warning: %v, cause: %v",
+					event.NodeKey, event.NodeExecuteID, event.Err, cause)
 			} else {
-				msg = wfe.Msg()
+				logs.CtxWarnf(ctx, "node %s for exeID %d end with warning: %v",
+					event.NodeKey, event.NodeExecuteID, event.Err)
 			}
-			nodeExec.ErrorInfo = ptr.Of(msg)
+			nodeExec.ErrorInfo = ptr.Of(wfe.Msg())
 			nodeExec.ErrorLevel = ptr.Of(string(wfe.Level()))
 		}
 
@@ -607,16 +612,19 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			} else if errors.Is(event.Err, context.Canceled) {
 				wfe = vo.CancelErr
 			} else {
-				wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err, errorx.KV("cause", event.Err.Error()))
+				wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err, errorx.KV("cause", vo.UnwrapRootErr(event.Err).Error()))
 			}
 		}
-		var msg string
+
 		if cause := errors.Unwrap(event.Err); cause != nil {
-			msg = cause.Error()
+			logs.CtxErrorf(ctx, "node %s for exeID %d returns err: %v, cause: %v",
+				event.NodeKey, event.NodeExecuteID, event.Err, cause)
 		} else {
-			msg = wfe.Msg()
+			logs.CtxErrorf(ctx, "node %s for exeID %d returns err: %v",
+				event.NodeKey, event.NodeExecuteID, event.Err)
 		}
-		errorInfo = msg[:min(1000, len(msg))]
+
+		errorInfo = wfe.Msg()[:min(1000, len(wfe.Msg()))]
 		errorLevel = string(wfe.Level())
 
 		if event.Context == nil || event.Context.NodeCtx == nil {

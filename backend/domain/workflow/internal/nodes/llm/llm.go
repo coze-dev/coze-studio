@@ -181,7 +181,7 @@ func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo
 			rawOutputK := fmt.Sprintf(rawOutputKey, c.NodeCtx.NodeKey)
 			warningK := fmt.Sprintf(warningKey, c.NodeCtx.NodeKey)
 			ctxcache.Store(ctx, rawOutputK, data)
-			ctxcache.Store(ctx, warningK, vo.WrapWarn(errno.ErrDeserializationFail, err))
+			ctxcache.Store(ctx, warningK, vo.WrapWarn(errno.ErrLLMStructuredOutputParseFail, err))
 			return map[string]any{}, nil
 		}
 
@@ -197,7 +197,7 @@ func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo
 					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
 					result[k] = val
 				} else {
-					return nil, fmt.Errorf("invalid type: %v, %v", k, err)
+					return nil, vo.WrapError(errno.ErrLLMStructuredOutputParseFail, err)
 				}
 			} else {
 				result[k] = val

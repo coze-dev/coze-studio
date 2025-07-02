@@ -12,7 +12,7 @@ require (
 	github.com/apache/thrift v0.21.0
 	github.com/bytedance/mockey v1.2.14
 	github.com/bytedance/sonic v1.13.2
-	github.com/cloudwego/eino v0.3.46-0.20250628234116-648983832871
+	github.com/cloudwego/eino v0.3.48-0.20250702090629-2cebaec8a3ac
 	github.com/cloudwego/eino-ext/components/model/ark v0.1.9
 	github.com/cloudwego/eino-ext/components/model/claude v0.0.0-20250522060253-ddb617598b09
 	github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250522060253-ddb617598b09

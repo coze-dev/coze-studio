@@ -63,10 +63,12 @@ func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.
 
 		converted, err := Convert(ctx, v, k, t)
 		if err != nil {
-			if w, ok := err.(ConversionWarnings); ok {
-				warnings = append(warnings, w...)
+			var ws ConversionWarnings
+			if errors.As(err, &ws) {
+				warnings = append(warnings, ws...)
 			} else {
 				logs.CtxErrorf(ctx, "unexpected error type during conversion for %s: %v", k, err)
+				return nil, vo.WrapError(errno.ErrInvalidParameter, err)
 			}
 		}
 		out[k] = converted

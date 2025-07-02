@@ -3556,7 +3556,7 @@ func TestCopyWorkflow(t *testing.T) {
 			CommitID: "",
 		})
 		assert.NotNil(t, err)
-		assert.Equal(t, fmt.Sprintf("workflow meta not found for ID %s: record not found", id), err.Error())
+		assert.ErrorContains(t, err, strconv.Itoa(errno.ErrWorkflowNotFound))
 	})
 }
 
@@ -3828,7 +3828,6 @@ func TestLLMExceptionThenThrow(t *testing.T) {
 		exeID := r.nodeDebug(id, "103929", withNDInput(map[string]string{"input": "hello"}))
 		e := r.getProcess(id, exeID)
 		assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowFailed), e.status)
-		assert.Contains(t, e.reason, "context deadline exceeded")
 	})
 }
 

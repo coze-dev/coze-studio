@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"runtime/debug"
+	"strings"
 	"time"
 
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	"golang.org/x/exp/maps"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -71,6 +73,7 @@ func newNodeRunConfig[O any](ns *NodeSchema,
 
 	preProcessors := []func(ctx context.Context, input map[string]any) (map[string]any, error){
 		preTypeConverter(ns.InputTypes),
+		keyFinishedMarkerTrimmer(),
 	}
 	if meta.PreFillZero {
 		preProcessors = append(preProcessors, ns.inputValueFiller())
@@ -627,7 +630,7 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		} else if errors.Is(err, context.Canceled) {
 			sErr = vo.CancelErr
 		} else {
-			sErr = vo.WrapError(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", err.Error()))
+			sErr = vo.WrapError(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
 	}
 
@@ -733,6 +736,50 @@ func preTypeConverter(inTypes map[string]*vo.TypeInfo) func(ctx context.Context,
 				return out, err
 			}
 		}
+		return out, err
+	}
+}
+
+func trimKeyFinishedMarker(ctx context.Context, in map[string]any) (map[string]any, bool, error) {
+	var (
+		newIn   map[string]any
+		trimmed bool
+	)
+	for k, v := range in {
+		if vStr, ok := v.(string); ok {
+			if strings.HasSuffix(vStr, nodes.KeyIsFinished) {
+				if newIn == nil {
+					newIn = maps.Clone(in)
+				}
+				vStr = strings.TrimSuffix(vStr, nodes.KeyIsFinished)
+				newIn[k] = vStr
+				trimmed = true
+			}
+		} else if vMap, ok := v.(map[string]any); ok {
+			newMap, subTrimmed, err := trimKeyFinishedMarker(ctx, vMap)
+			if err != nil {
+				return nil, false, err
+			}
+			if subTrimmed {
+				if newIn == nil {
+					newIn = maps.Clone(in)
+				}
+				newIn[k] = newMap
+				trimmed = true
+			}
+		}
+	}
+
+	if trimmed {
+		return newIn, true, nil
+	}
+
+	return in, false, nil
+}
+
+func keyFinishedMarkerTrimmer() func(ctx context.Context, in map[string]any) (map[string]any, error) {
+	return func(ctx context.Context, in map[string]any) (map[string]any, error) {
+		out, _, err := trimKeyFinishedMarker(ctx, in)
 		return out, err
 	}
 }

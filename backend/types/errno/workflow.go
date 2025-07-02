@@ -6,20 +6,40 @@ import (
 )
 
 const (
-	ErrWorkflowNotPublished   = 720702011
-	ErrMissingRequiredParam   = 720702002
-	ErrInterruptNotSupported  = 720702078
-	ErrInvalidParameter       = 720702001
-	ErrArrIndexOutOfRange     = 720712014
-	ErrWorkflowExecuteFail    = 720701013
-	ErrWorkflowOperationFail  = 777777775
-	ErrCodeExecuteFail        = 305000002
-	ErrQuestionOptionsEmpty   = 720712049
-	ErrNodeOutputParseFail    = 720712023
-	ErrWorkflowCanceledByUser = 777777777
-	ErrNodeTimeout            = 777777776
-	ErrWorkflowTimeout        = 720702085
-	ErrDeserializationFail    = 720701011
+	ErrWorkflowNotPublished             = 720702011
+	ErrMissingRequiredParam             = 720702002
+	ErrInterruptNotSupported            = 720702078
+	ErrInvalidParameter                 = 720702001
+	ErrArrIndexOutOfRange               = 720712014
+	ErrWorkflowExecuteFail              = 720701013
+	ErrCodeExecuteFail                  = 305000002
+	ErrQuestionOptionsEmpty             = 720712049
+	ErrNodeOutputParseFail              = 720712023
+	ErrWorkflowTimeout                  = 720702085
+	ErrWorkflowNotFound                 = 720702004
+	ErrSerializationDeserializationFail = 720701011
+	ErrInternalBadRequest               = 720701007
+	ErrSchemaConversionFail             = 720702089
+	ErrWorkflowCompileFail              = 720701003
+)
+
+const (
+	ErrWorkflowCanceledByUser          = 777777777
+	ErrNodeTimeout                     = 777777776
+	ErrWorkflowOperationFail           = 777777775
+	ErrIndexingNilArray                = 777777774
+	ErrLLMStructuredOutputParseFail    = 777777773
+	ErrCreateNodeFail                  = 777777772
+	ErrWorkflowSnapshotNotFound        = 777777771
+	ErrNotifyWorkflowResourceChangeErr = 777777770
+	ErrInvalidVersionName              = 777777769
+)
+
+// stability problems
+const (
+	ErrDatabaseError = 720700801
+	ErrRedisError    = 720700803
+	ErrIDGenError    = 720700808
 )
 
 const (
@@ -56,7 +76,13 @@ func init() {
 
 	code.Register(
 		ErrArrIndexOutOfRange,
-		"Array index out of bounds: The requested index exceeds the array's length. Please ensure the index is within the valid range of the array. You can refer to debug_url for more details.",
+		"Array {arr_name} index out of bounds: The requested index {req_index} exceeds the array's length {arr_len}. Please ensure the index is within the valid range of the array. You can refer to debug_url for more details.",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrIndexingNilArray,
+		"Array {arr_name} is nil: The requested index {req_index} cannot be extracted.",
 		code.WithAffectStability(false),
 	)
 
@@ -74,7 +100,7 @@ func init() {
 
 	code.Register(
 		ErrCodeExecuteFail,
-		"code node execute fail",
+		"Function execution failed, please check the code of the function. Detail: {detail}",
 		code.WithAffectStability(false),
 	)
 
@@ -86,7 +112,7 @@ func init() {
 
 	code.Register(
 		ErrNodeOutputParseFail,
-		"node output parse fail",
+		"node output parse fail: {warnings}",
 		code.WithAffectStability(false),
 	)
 
@@ -109,8 +135,78 @@ func init() {
 	)
 
 	code.Register(
-		ErrDeserializationFail,
-		"Deserialization failed: {cause}",
+		ErrLLMStructuredOutputParseFail,
+		"parse LLM structured output failed, please refer to LLM's raw output for detail.",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrCreateNodeFail,
+		"create node {node_name} failed: {cause}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrDatabaseError,
+		"database operation failed",
+		code.WithAffectStability(true),
+	)
+	code.Register(
+		ErrRedisError,
+		"redis operation failed",
+		code.WithAffectStability(true),
+	)
+	code.Register(
+		ErrIDGenError,
+		"id generator failed",
+		code.WithAffectStability(true),
+	)
+
+	code.Register(
+		ErrWorkflowNotFound,
+		"workflow {id} not found, please check if the workflow exists and not deleted",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrSerializationDeserializationFail,
+		"data serialization/deserialization fail, please contact support team",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrWorkflowSnapshotNotFound,
+		"workflow {id} snapshot {commit_id} not found, please contact support team",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrInternalBadRequest,
+		"one of the request parameters for {scene} is invalid, please contact support team",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrSchemaConversionFail,
+		"schema conversion failed, please contact support team",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrWorkflowCompileFail,
+		"workflow compile failed, please contact support team",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrNotifyWorkflowResourceChangeErr,
+		"notify workflow resource change failed, please try again later",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrInvalidVersionName,
+		"workflow version name is invalid",
 		code.WithAffectStability(false),
 	)
 }
@@ -121,7 +217,7 @@ var errnoMap = map[int]int{
 	ErrInterruptNotSupported: ErrOpenAPIInterruptNotSupported,
 	ErrInvalidParameter:      ErrOpenAPIBadRequest,
 	ErrArrIndexOutOfRange:    ErrOpenAPIBadRequest,
-	ErrWorkflowTimeout:       ErrWorkflowTimeout,
+	ErrWorkflowTimeout:       ErrOpenAPIWorkflowTimeout,
 }
 
 func CodeForOpenAPI(err errorx.StatusError) int {

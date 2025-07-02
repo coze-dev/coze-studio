@@ -31,7 +31,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 )
@@ -88,10 +90,14 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
 		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrCreateNodeFail, err, errorx.KV("node_name", s.Name), errorx.KV("cause", err.Error()))
+		}
 	}()
 
 	if m := entity.NodeMetaByNodeType(s.Type); m != nil && m.InputSourceAware {
-		if err := s.SetFullSources(sc.GetAllNodes(), deps); err != nil {
+		if err = s.SetFullSources(sc.GetAllNodes(), deps); err != nil {
 			return nil, err
 		}
 	}

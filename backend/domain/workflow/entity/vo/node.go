@@ -227,6 +227,22 @@ func newWorkflowTimeout() WorkflowError {
 	return wfe
 }
 
+func UnwrapRootErr(err error) error {
+	var (
+		rootE    = err
+		currentE error
+	)
+	for {
+		currentE = errors.Unwrap(rootE)
+		if currentE == nil {
+			break
+		}
+		rootE = currentE
+	}
+
+	return rootE
+}
+
 type DataType string
 
 const (

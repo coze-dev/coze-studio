@@ -8,6 +8,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
@@ -96,7 +97,7 @@ func (jd *JsonDeserializer) Invoke(ctx context.Context, input map[string]any) (m
 func (jd *JsonDeserializer) ToCallbackOutput(ctx context.Context, out map[string]any) (*nodes.StructuredCallbackOutput, error) {
 	var wfe vo.WorkflowError
 	if warnings, ok := ctxcache.Get[nodes.ConversionWarnings](ctx, warningsKey); ok {
-		wfe = vo.WrapWarn(errno.ErrNodeOutputParseFail, warnings)
+		wfe = vo.WrapWarn(errno.ErrNodeOutputParseFail, warnings, errorx.KV("warnings", warnings.Error()))
 	}
 	return &nodes.StructuredCallbackOutput{
 		Output:    out,

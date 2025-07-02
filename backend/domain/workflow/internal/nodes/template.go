@@ -13,6 +13,7 @@ import (
 	"github.com/bytedance/sonic/ast"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -215,17 +216,19 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 									return tp.literal, nil
 								}
 
-								return "", vo.WrapError(errno.ErrArrIndexOutOfRange,
-									fmt.Errorf("Array类型的变量 %s 只有 %d 长度，无法提取下标 %d的值",
-										joinJsonPath(tp.JsonPath[:i]), len(segArr), segmentI))
+								return "", vo.NewError(errno.ErrArrIndexOutOfRange,
+									errorx.KV("arr_name", joinJsonPath(tp.JsonPath[:i])),
+									errorx.KV("req_index", strconv.Itoa(segmentI)),
+									errorx.KV("arr_len", strconv.Itoa(len(segArr))))
 							}
 						}
 						return tp.literal, nil // not array element not found, but object field, just print
 					} else if errors.As(err, &syntaxErr) {
 						segmentI, ok := tp.JsonPath[i].(int)
 						if ok {
-							return "", fmt.Errorf("Array类型的变量 %s 为空，无法提取下标 %d的值",
-								joinJsonPath(tp.JsonPath[:i]), segmentI)
+							return "", vo.NewError(errno.ErrIndexingNilArray,
+								errorx.KV("arr_name", joinJsonPath(tp.JsonPath[:i])),
+								errorx.KV("req_index", strconv.Itoa(segmentI)))
 						}
 						return tp.literal, nil // not array element not found, but object field, just print
 					}
