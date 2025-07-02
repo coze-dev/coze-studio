@@ -4,10 +4,14 @@ import (
 	"context"
 )
 
+type SQLParam struct {
+	Value  string
+	IsNull bool
+}
 type CustomSQLRequest struct {
 	DatabaseInfoID int64
 	SQL            string
-	Params         []string
+	Params         []SQLParam
 	IsDebugRun     bool
 	UserID         int64
 }

@@ -3,12 +3,14 @@ package database
 import (
 	"context"
 	"errors"
+	"reflect"
 	"regexp"
 	"strings"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
 
 var regexStringParams = regexp.MustCompile("`\\{\\{([a-zA-Z_][a-zA-Z0-9_]*(?:\\.\\w+|\\[\\d+\\])*)+\\}\\}`|'\\{\\{([a-zA-Z_][a-zA-Z0-9_]*(?:\\.\\w+|\\[\\d+\\])*)+\\}\\}'")
@@ -49,29 +51,46 @@ func (c *CustomSQL) Execute(ctx context.Context, input map[string]any) (map[stri
 		IsDebugRun:     isDebugExecute(ctx),
 		UserID:         getExecUserID(ctx),
 	}
-	templateSQL := c.config.SQLTemplate
 
-	sqlParams := regexStringParams.FindAllString(templateSQL, -1)
-
-	if len(sqlParams) > 0 {
-		ps := make([]string, 0, len(sqlParams))
-		for _, p := range sqlParams {
-			val, err := nodes.Jinja2TemplateRender(p, input)
-			if err != nil {
-				return nil, err
-			}
-			ps = append(ps, val[1:len(val)-1]) // what is rendered is `xxx` or `yyy` and you need to remove `` or ''
-			templateSQL = strings.Replace(templateSQL, p, "?", 1)
-		}
-		req.Params = ps
-	}
-
-	sql, err := nodes.Jinja2TemplateRender(templateSQL, input)
+	inputBytes, err := sonic.Marshal(input)
 	if err != nil {
 		return nil, err
 	}
-	req.SQL = sql
 
+	templateSQL := ""
+	templateParts := nodes.ParseTemplate(c.config.SQLTemplate)
+	sqlParams := make([]database.SQLParam, 0, len(templateParts))
+	var nilError = errors.New("field is nil")
+	for _, templatePart := range templateParts {
+		if !templatePart.IsVariable {
+			templateSQL += templatePart.Value
+			continue
+		}
+		templateSQL += "?"
+
+		val, err := templatePart.Render(inputBytes, nodes.WithCustomRender(reflect.Type(nil), func(a any) (string, error) {
+			return "", nilError
+		}))
+
+		if err != nil {
+			if !errors.Is(err, nilError) {
+				return nil, err
+			}
+			sqlParams = append(sqlParams, database.SQLParam{
+				IsNull: true,
+			})
+		} else {
+			sqlParams = append(sqlParams, database.SQLParam{
+				Value:  val,
+				IsNull: false,
+			})
+		}
+
+	}
+
+	// replace sql template '?' to ?
+	req.SQL = strings.Replace(templateSQL, "'?'", "?", -1)
+	req.Params = sqlParams
 	response, err := c.config.CustomSQLExecutor.Execute(ctx, req)
 	if err != nil {
 		return nil, err

@@ -2,6 +2,7 @@ package nodes
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -241,13 +242,9 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 		return tp.literal, nil
 	}
 
-	i, err := n.Interface()
+	i, err := n.InterfaceUseNumber()
 	if err != nil {
 		return tp.literal, nil
-	}
-
-	if i == nil {
-		return "", nil
 	}
 
 	if len(options.type2CustomRenderer) > 0 {
@@ -255,6 +252,10 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 		if fn, ok := options.type2CustomRenderer[rType]; ok {
 			return fn(i)
 		}
+	}
+
+	if i == nil {
+		return "", nil
 	}
 
 	switch i.(type) {
@@ -266,6 +267,8 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 		return strconv.FormatFloat(i.(float64), 'f', -1, 64), nil
 	case bool:
 		return strconv.FormatBool(i.(bool)), nil
+	case json.Number:
+		return i.(json.Number).String(), nil
 	default:
 		ms, err := renderConfig.MarshalToString(i) // keep order of the map keys
 		if err != nil {
@@ -273,6 +276,7 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 		}
 		return ms, nil
 	}
+
 }
 
 func (tp TemplatePart) Skipped(resolvedSources map[string]*SourceInfo) (skipped bool, invalid bool) {
