@@ -485,7 +485,7 @@ func (i *impl) GetNodeExecution(ctx context.Context, exeID int64, nodeID string)
 	}
 
 	if !found {
-		return nil, nil, fmt.Errorf("try getting node exe for exeID : %d, nodeID : %s, but not found", exeID, nodeID)
+		return nil, nil, fmt.Errorf("try getting workflow exe for exeID : %d, but not found", exeID)
 	}
 
 	if wfExe.Mode != vo.ExecuteModeNodeDebug {
@@ -524,7 +524,8 @@ func (i *impl) GetNodeExecution(ctx context.Context, exeID int64, nodeID string)
 func (i *impl) GetLatestTestRunInput(ctx context.Context, wfID int64, userID int64) (*entity.NodeExecution, bool, error) {
 	exeID, err := i.repo.GetTestRunLatestExeID(ctx, wfID, userID)
 	if err != nil {
-		return nil, false, err
+		logs.CtxErrorf(ctx, "[GetLatestTestRunInput] failed to get node execution from redis, wfID: %d, err: %v", wfID, err)
+		return nil, false, nil
 	}
 
 	if exeID == 0 {
@@ -533,7 +534,8 @@ func (i *impl) GetLatestTestRunInput(ctx context.Context, wfID int64, userID int
 
 	nodeExe, _, err := i.GetNodeExecution(ctx, exeID, entity.EntryNodeKey)
 	if err != nil {
-		return nil, false, err
+		logs.CtxErrorf(ctx, "[GetLatestTestRunInput] failed to get node execution, exeID: %d, err: %v", exeID, err)
+		return nil, false, nil
 	}
 
 	return nodeExe, true, nil
@@ -543,7 +545,9 @@ func (i *impl) GetLatestNodeDebugInput(ctx context.Context, wfID int64, nodeID s
 	*entity.NodeExecution, *entity.NodeExecution, bool, error) {
 	exeID, err := i.repo.GetNodeDebugLatestExeID(ctx, wfID, nodeID, userID)
 	if err != nil {
-		return nil, nil, false, err
+		logs.CtxErrorf(ctx, "[GetLatestNodeDebugInput] failed to get node execution from redis, wfID: %d, nodeID: %s, err: %v",
+			wfID, nodeID, err)
+		return nil, nil, false, nil
 	}
 
 	if exeID == 0 {
@@ -552,7 +556,9 @@ func (i *impl) GetLatestNodeDebugInput(ctx context.Context, wfID int64, nodeID s
 
 	nodeExe, innerExe, err := i.GetNodeExecution(ctx, exeID, nodeID)
 	if err != nil {
-		return nil, nil, false, err
+		logs.CtxErrorf(ctx, "[GetLatestNodeDebugInput] failed to get node execution, exeID: %d, nodeID: %s, err: %v",
+			exeID, nodeID, err)
+		return nil, nil, false, nil
 	}
 
 	return nodeExe, innerExe, true, nil
