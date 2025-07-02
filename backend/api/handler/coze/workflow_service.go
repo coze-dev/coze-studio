@@ -5,6 +5,7 @@ package coze
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/cloudwego/eino/schema"
@@ -780,10 +781,51 @@ func GetWorkflowUploadAuthToken(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, resp)
 }
 
+func preprocessWorkflowRequestBody(_ context.Context, c *app.RequestContext) error {
+	// Read the raw request body
+	rawData, err := c.Request.BodyE()
+	if err != nil {
+		return fmt.Errorf("failed to read request body: %w", err)
+	}
+
+	// Unmarshal into a temporary map
+	var bodyData map[string]interface{}
+	if err = sonic.Unmarshal(rawData, &bodyData); err != nil {
+		return fmt.Errorf("failed to unmarshal request body: %w", err)
+	}
+
+	// Process 'parameters' field
+	if parameters, ok := bodyData["parameters"]; ok {
+		if _, isString := parameters.(string); !isString {
+			// It's not a string, needs modification.
+			paramsBytes, marshalErr := sonic.Marshal(parameters)
+			if marshalErr != nil {
+				return fmt.Errorf("failed to marshal parameters: %w", marshalErr)
+			}
+			bodyData["parameters"] = string(paramsBytes)
+
+			newRawData, err := sonic.Marshal(bodyData)
+			if err != nil {
+				return fmt.Errorf("failed to marshal modified body: %w", err)
+			}
+			c.Request.SetBodyRaw(newRawData)
+			return nil
+		}
+	}
+
+	return nil
+}
+
 // OpenAPIRunFlow .
 // @router /v1/workflow/run [POST]
 func OpenAPIRunFlow(ctx context.Context, c *app.RequestContext) {
 	var err error
+
+	if err = preprocessWorkflowRequestBody(ctx, c); err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
 	var req workflow.OpenAPIRunFlowRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
@@ -915,6 +957,12 @@ func sendStreamRunSSE(ctx context.Context, w *sse.Writer, sr *schema.StreamReade
 // @router /v1/workflow/stream_run [POST]
 func OpenAPIStreamRunFlow(ctx context.Context, c *app.RequestContext) {
 	var err error
+
+	if err = preprocessWorkflowRequestBody(ctx, c); err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
 	var req workflow.OpenAPIRunFlowRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
