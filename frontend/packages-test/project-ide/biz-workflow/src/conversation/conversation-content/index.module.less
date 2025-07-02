@@ -1,0 +1,134 @@
+.page-container {
+  display: flex;
+
+  width: 100%;
+  height: calc(100% - 54px);
+
+  background: var(--coz-bg-plus);
+  border-radius: 0 0 8px 8px;
+
+  .chat-list-container {
+    position: relative;
+
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+
+    width: 260px;
+    height: 100%;
+
+    border-right: 1px solid var(--coz-stroke-primary);
+
+    .test-run-title-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      margin-bottom: 12px;
+      padding-left: 8px;
+    }
+
+    .title {
+      margin-bottom: 4px;
+      padding: 12px 12px 0;
+
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+      color: var(--coz-fg-plus);
+    }
+
+    .description {
+      margin-bottom: 12px;
+      padding: 0 12px;
+
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--coz-fg-secondary);
+    }
+
+    .new-chat-button {
+      margin-bottom: 12px;
+    }
+
+    .chat-item {
+      cursor: pointer;
+
+      overflow: hidden;
+      display: flex;
+      flex-shrink: 0;
+      column-gap: 4px;
+      align-items: center;
+
+      width: 100%;
+      height: 28px;
+      margin-bottom: 2px;
+      padding: 4px 8px;
+
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 16px;
+      color: var(--coz-fg-secondary);
+
+      border-radius: 6px;
+
+      .icons {
+        display: none;
+        flex-grow: 1;
+        column-gap: 4px;
+        align-items: center;
+        justify-content: flex-end;
+
+        width: 0;
+      }
+
+      &:hover {
+        background-color: var(--coz-mg-primary);
+
+        .icons {
+          display: flex;
+        }
+      }
+    }
+
+    .chat-item-activate {
+      background-color: var(--coz-mg-primary);
+    }
+
+    .chat-item-editing {
+      padding: 2px;
+    }
+  }
+
+  .chat-area {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+  }
+}
+
+
+// ui 特殊兼容样式，白底 @maijinning.888
+// 设计稿地址：https://www.figma.com/design/e4X3MThLYyo1Fhjcg8uhpr/Workflow-%26-Imageflow?node-id=7133-217329&node-type=instance&m=dev
+.input {
+  /* stylelint-disable-next-line declaration-no-important */
+  background-color: #FFF !important;
+
+  :global {
+    .semi-input {
+      padding: 0 4px;
+    }
+  }
+}
+
+
+.new-list {
+  overflow-y: auto;
+  flex-grow: 1;
+  height: 0;
+}

@@ -1,0 +1,22 @@
+.container {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px;
+
+  :global {
+    .semi-tag {
+      color: var(--Light-usage-text---color-text-1, rgba(29, 28, 35, 0.80));
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 16px;
+      letter-spacing: 0em;
+      text-align: left;
+      border-radius: 6px;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
+}

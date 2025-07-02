@@ -1,0 +1,89 @@
+.image-uploader {
+  &:global(.semi-input-wrapper) {
+    &:hover {
+      background-color: var(--semi-color-white);
+    }
+  }
+
+  &.can-action:global(.semi-input-wrapper) {
+    transition: all 0.1s;
+
+    &:hover {
+      background: rgba(46, 46, 56, 8%);
+    }
+
+    &:active {
+      background: rgba(46, 46, 56, 12%);
+    }
+  }
+
+  .action {
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 20px;
+    height: 20px;
+
+    font-size: 12px;
+    color: rgba(29, 28, 35, 60%);
+
+    border-radius: 4px;
+
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: rgba(46, 46, 56, 8%);
+    }
+
+    &:active {
+      background-color: rgba(46, 46, 56, 12%);
+    }
+
+    &.disabled {
+      cursor: not-allowed;
+      background-color: rgba(46, 46, 56, 8%);
+    }
+  }
+
+  .input-img-thumb {
+    overflow: hidden;
+    display: inline-flex;
+    flex-grow: 0;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+
+    width: 20px;
+    height: 20px;
+
+    border-radius: 0.125rem;
+
+    img {
+      max-width: 100%;
+      max-height: 100%;
+
+      object-fit: contain;
+      object-position: center;
+      border-radius: 0.125rem;
+    }
+
+    :global {
+      .semi-image-status {
+        background: none;
+
+        svg {
+          width: 17px;
+          color: rgba(6, 7, 9, 30%);
+        }
+      }
+
+    }
+  }
+}
+
+.img-popover-content {
+  padding: 8px;
+}

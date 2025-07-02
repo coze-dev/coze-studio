@@ -1,0 +1,112 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`encapsulate-nodes-service > should decapsulateLayout 1`] = `
+{
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "154702",
+    },
+    {
+      "sourceNodeID": "102906",
+      "targetNodeID": "900001",
+    },
+    {
+      "sourceNodeID": "177547",
+      "targetNodeID": "154702",
+    },
+    {
+      "sourceNodeID": "154702",
+      "targetNodeID": "102906",
+    },
+    {
+      "sourceNodeID": "177547",
+      "targetNodeID": "109408",
+    },
+  ],
+  "nodes": [
+    {
+      "data": undefined,
+      "id": "100001",
+      "meta": {
+        "position": {
+          "x": 180,
+          "y": 26.700000000000017,
+        },
+      },
+      "type": "1",
+    },
+    {
+      "data": undefined,
+      "id": "900001",
+      "meta": {
+        "position": {
+          "x": 1743.609729023942,
+          "y": 176.16991217034956,
+        },
+      },
+      "type": "2",
+    },
+    {
+      "data": undefined,
+      "id": "154702",
+      "meta": {
+        "position": {
+          "x": 987.7405729256998,
+          "y": 245.06502111375198,
+        },
+      },
+      "type": "3",
+    },
+    {
+      "data": {
+        "inputs": {
+          "spaceId": "test_space_id",
+          "workflowId": "test_workflow_id",
+        },
+      },
+      "id": "102906",
+      "meta": {
+        "position": {
+          "x": 848.7417419605051,
+          "y": -297.0809682834506,
+        },
+      },
+      "type": "9",
+    },
+    {
+      "data": undefined,
+      "id": "177547",
+      "meta": {
+        "position": {
+          "x": -125.93331336641754,
+          "y": 357.10168132837816,
+        },
+      },
+      "type": "3",
+    },
+    {
+      "data": undefined,
+      "id": "109408",
+      "meta": {
+        "position": {
+          "x": 1141.6692827086551,
+          "y": 537.1820787709282,
+        },
+      },
+      "type": "3",
+    },
+    {
+      "data": undefined,
+      "id": "156471",
+      "meta": {
+        "position": {
+          "x": 984.2265002815602,
+          "y": 712.1169030826604,
+        },
+      },
+      "type": "3",
+    },
+  ],
+}
+`;

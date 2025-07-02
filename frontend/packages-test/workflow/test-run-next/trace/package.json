@@ -1,0 +1,47 @@
+{
+  "name": "@coze-workflow/test-run-trace",
+  "version": "0.0.1",
+  "description": "Workflow TestRun Form",
+  "author": "jiangxujin@bytedance.com",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "main": "./src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "exit 0",
+    "test:cov": "exit 0"
+  },
+  "dependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-workflow/base": "workspace:*",
+    "@coze-workflow/test-run-shared": "workspace:*",
+    "@textea/json-viewer": "^3.0.0",
+    "@visactor/vgrammar": "0.12.5-alpha.4",
+    "ahooks": "^3.7.8",
+    "clsx": "^1.2.1",
+    "copy-to-clipboard": "^3.3.3",
+    "dayjs": "^1.11.7",
+    "json-bigint": "~1.0.0",
+    "lodash-es": "^4.17.21",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@emotion/react": "11.11.1",
+    "@emotion/styled": "11.11.0",
+    "@mui/material": "^5",
+    "@types/lodash-es": "^4.17.10",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "typescript": "~5.8.2"
+  }
+}
+

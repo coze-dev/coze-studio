@@ -1,0 +1,14 @@
+// semi 和 coze 都不支持小尺寸的 textarea 需要业务实现
+.input-string.small {
+  font-size: 12px;
+  line-height: 20px;
+  padding: 1px 3px;
+  border-radius: 6px;
+  :global textarea {
+    font-size: 12px;
+    line-height: 20px;
+  }
+  :global .semi-input-clearbtn {
+    height: 22px;
+  }
+}

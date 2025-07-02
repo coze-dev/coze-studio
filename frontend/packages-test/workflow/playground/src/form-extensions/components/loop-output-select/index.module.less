@@ -1,0 +1,49 @@
+.loop-output-select {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  align-items: center;
+
+  width: 100%;
+
+  .variable-select {
+    flex: 1;
+  }
+
+  .variable-type {
+    display: flex;
+    flex: 0 0 90px;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+
+    height: 16px;
+    padding: 1px 3px;
+
+    border-radius: var(--coze-4);
+
+    p {
+      overflow: hidden;
+
+      font-size: 10px;
+      font-weight: 500;
+      font-style: normal;
+      line-height: 14px;
+      color: var(--coz-fg-secondary, rgba(6, 7, 9, 80%));
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    &-content {
+      color: var(--coz-fg-primary, rgba(6, 7, 9, 80%));
+    }
+
+    &-placeholder {
+      color: var(--coz-fg-secondary, #06070980);
+    }
+  }
+
+  .variable-type-bg {
+    background: var(--coz-mg-plus, rgba(6, 7, 9, 4%));
+  }
+}

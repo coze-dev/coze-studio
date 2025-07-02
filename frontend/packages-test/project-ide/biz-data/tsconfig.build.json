@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "types": [],
+    "isolatedModules": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": false,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "./dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../arch/bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../biz-components/tsconfig.build.json"
+    },
+    {
+      "path": "../../components/bot-semi/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/common/utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/knowledge/common/stores/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/knowledge/knowledge-ide-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/knowledge/knowledge-ide-base/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/knowledge/knowledge-modal-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/knowledge/knowledge-modal-base/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/knowledge/knowledge-resource-processor-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/knowledge/knowledge-resource-processor-base/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/knowledge/knowledge-resource-processor-core/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/memory/database-v2-main/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/memory/variables/tsconfig.build.json"
+    },
+    {
+      "path": "../framework/tsconfig.build.json"
+    }
+  ]
+}

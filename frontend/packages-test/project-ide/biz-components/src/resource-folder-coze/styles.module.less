@@ -1,0 +1,159 @@
+.resource-list {
+  width: 100%;
+  height: 100%;
+}
+
+.resource-folder-coze {
+  :global {
+    .resource-list-wrapper .resource-list-drag-and-drop-wrapper {
+      .item-is-selected {
+        background-color: var(--coz-mg-primary);
+
+        &:hover {
+          background-color: var(--coz-mg-secondary-hovered);
+        }
+      }
+
+      .item-is-temp-selected {
+        &.item-is-selected {
+          background-color: var(--coz-mg-primary);
+        }
+      }
+
+      .base-item-hover-class:hover {
+        background-color: var(--coz-mg-secondary-hovered);
+      }
+
+    }
+  }
+}
+
+.shortcut {
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--coz-fg-dim);
+}
+
+.file-list-wrapper {
+  overflow: auto;
+
+  max-height: 124px;
+  margin-top: 4px;
+
+  border: 1px solid var(--coz-stroke-primary);
+  border-radius: var(--coze-8);
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 10px;
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar:hover {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 6px 0;
+
+
+  .file-item {
+    overflow: hidden;
+
+    width: 100%;
+    height: 22px;
+    padding: 0 8px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    .file-icon {
+      position: relative;
+      top: 2px;
+      margin-right: 4px;
+      color: var(--coz-fg-secondary);
+    }
+
+    .file-name {
+      font-size: 14px;
+      color: var(--coz-fg-primary);
+    }
+  }
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+
+  width: 232px;
+  height: 80px;
+  margin: 0 auto;
+
+  .empty-card {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    align-items: center;
+    justify-content: flex-start;
+
+    padding: 4.5px;
+
+    background-color: var(--coz-bg-max);
+    border: 0.5px solid rgb(240, 240, 240);
+    border-radius: var(--coze-4);
+
+  }
+
+  .empty-icon {
+    width: 15px;
+    height: 15px;
+    background-color: var(--coz-mg-primary);
+    border-radius: var(--coze-3);
+  }
+
+  .empty-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5px;
+    align-items: flex-start;
+
+    opacity: 0.12;
+
+    span {
+      height: 4.5px;
+      background-color: var(--coz-fg-secondary);
+      border-radius: var(--coze-2);
+      
+      &:first-child {
+        width: 20px;
+      }
+
+      &:last-child {
+        width: 33px;
+      }
+    }
+  }
+  
+  .empty-title {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    color: var(--coz-fg-dim);
+  }
+}

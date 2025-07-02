@@ -1,0 +1,44 @@
+{
+  "name": "@coze-project-ide/framework",
+  "version": "0.0.1",
+  "author": "jiangxujin@bytedance.com",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache --quiet"
+  },
+  "dependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-project-ide/base-adapter": "workspace:*",
+    "@coze-project-ide/base-interface": "workspace:*",
+    "@coze-project-ide/client": "workspace:*",
+    "ahooks": "^3.7.8",
+    "inversify": "^6.0.1",
+    "lodash-es": "^4.17.21",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@rsbuild/core": "1.1.13",
+    "@types/lodash-es": "^4.17.10",
+    "@types/node": "18.18.9",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "react-is": ">= 16.8.0",
+    "react-router-dom": "^6.22.0",
+    "styled-components": ">= 2",
+    "typescript": "~5.8.2",
+    "webpack": "~5.91.0"
+  }
+}
+

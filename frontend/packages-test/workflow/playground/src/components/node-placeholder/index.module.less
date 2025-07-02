@@ -1,0 +1,60 @@
+.placeholder {
+  width: 100%;
+  padding: 4px;
+
+  :global {
+    .semi-skeleton-avatar,
+    .semi-skeleton-title,
+    li {
+      background: #EAEAEA;
+      border-radius: 3px;
+    }
+
+    li {
+      height: 12px;
+    }
+
+    .semi-skeleton-paragraph li {
+      margin-bottom: 8px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+.hd {
+  margin-bottom: 16px;
+}
+
+.line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.avatar {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+.title {
+  width: 99px;
+  height: 12px;
+}
+
+.paragraph {
+  height: 96px;
+  margin-bottom: 12px;
+  padding: 12px;
+
+  background: rgba(46, 46, 56, 4%);
+  border-radius: 8px;
+}
+
+.last-paragraph {
+  height: 56px;
+}

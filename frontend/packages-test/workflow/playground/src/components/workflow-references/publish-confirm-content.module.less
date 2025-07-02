@@ -1,0 +1,16 @@
+.referenceTable {
+  margin-bottom: 16px;
+
+  :global(.semi-table-wrapper) {
+    border: 1px solid var(--semi-color-border);
+    border-radius: 8px;
+
+    :global(.semi-table-row-cell) {
+      border-radius: 8px;
+    }
+  }
+
+  :global(.semi-table-tbody tr:last-child > td) {
+    border-bottom: none;
+  }
+}

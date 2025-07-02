@@ -1,0 +1,36 @@
+/* stylelint-disable selector-class-pattern */
+.auto-generate-select {
+  :global {
+    .semi-radioGroup-horizontal {
+      width: 100%;
+    }
+
+    .semi-radio-cardRadioGroup {
+      flex-basis: 0;
+      flex-grow: 1;
+      border: 1px solid var(--semi-color-border);
+    }
+
+    .semi-radio-checked.semi-radio-cardRadioGroup {
+      border: 1px solid var(--semi-color-primary);
+    }
+
+    .semi-input-number {
+      width: 100%;
+    }
+  }
+}
+
+.auto-generate-radio {
+  :global {
+    .semi-radio-content {
+      min-width: 0;
+      overflow-wrap: break-word;
+    }
+  }
+}
+
+.auto-generate-label {
+  margin: 16px 0 8px;
+  color: var(--semi-color-text-1);
+}

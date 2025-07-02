@@ -1,0 +1,45 @@
+.side-sheet {
+  :global {
+    .semi-sidesheet-inner {
+      width: fit-content;
+      background-color: transparent;
+    }
+
+    .semi-sidesheet-header {
+      display: none;
+    }
+
+    .semi-sidesheet-body {
+      width: fit-content;
+      padding: 0;
+    }
+  }
+}
+
+.sub-menu-resize {
+  cursor: col-resize;
+
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+
+  width: 12px;
+  height: 100%;
+  margin-right: -6px;
+
+  .sub-menu-resize-line {
+    position: absolute;
+    top: 12px;
+    left: 6px;
+
+    width: 1px;
+    height: calc(100% - 24px);
+  }
+
+  &:hover {
+    .sub-menu-resize-line {
+      background-color: var(--coz-stroke-plus);
+    }
+  }
+}

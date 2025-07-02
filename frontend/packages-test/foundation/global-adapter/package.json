@@ -1,0 +1,77 @@
+{
+  "name": "@coze-foundation/global-adapter",
+  "version": "0.0.1",
+  "description": "应用的全局初始化逻辑",
+  "license": "Apache-2.0",
+  "author": "sunzhiyuan.evan@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.tsx",
+    "./account-settings": "./src/components/account-dropdown/account-settings/index.tsx"
+  },
+  "main": "src/index.tsx",
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./src/index.tsx"
+      ],
+      "account-settings": [
+        "./src/components/account-dropdown/account-settings/index.tsx"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-agent-ide/space-bot": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
+    "@coze-arch/bot-hooks": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/bot-studio-store": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/foundation-sdk": "workspace:*",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/idl": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-foundation/account-adapter": "workspace:*",
+    "@coze-foundation/account-ui-adapter": "workspace:*",
+    "@coze-foundation/account-ui-base": "workspace:*",
+    "@coze-foundation/browser-upgrade-banner": "workspace:*",
+    "@coze-foundation/global": "workspace:*",
+    "@coze-foundation/global-store": "workspace:*",
+    "@coze-foundation/layout": "workspace:*",
+    "@coze-studio/default-slardar": "workspace:*",
+    "@coze-studio/open-auth": "workspace:*",
+    "@coze-studio/user-store": "workspace:*",
+    "ahooks": "^3.7.8"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "react-router-dom": "^6.22.0",
+    "stylelint": "^15.11.0",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  }
+}
+

@@ -1,0 +1,46 @@
+
+.input-string {
+  padding: 0 6px;
+
+  :global {
+    .semi-input.semi-input-small::placeholder {
+      color: var(--coz-fg-dim);
+    }
+  }
+}
+
+.input-number {
+  :global {
+    .semi-input.semi-input-small {
+      padding-left: 5px;
+
+      &::placeholder {
+        color: var(--coz-fg-dim);
+      }
+    }
+  }
+}
+
+.input-boolean-wrapper {
+  width: 100%;
+
+  :global {
+    .semi-select-small:is(.coz-select,.coz-select-tag-popover.semi-popover-wrapper) .semi-select-selection {
+      margin-left: 6px;
+
+      &.semi-select-selection-placeholder {
+        color: var(--coz-fg-dim);
+      }
+    }
+  }
+}
+
+.input-time {
+  border-radius: var(--coze-8);
+
+  :global {
+    .semi-select-small:is(.coz-select,.coz-select-tag-popover.semi-popover-wrapper) .semi-select-selection {
+      margin-left: 6px;
+    }
+  }
+}

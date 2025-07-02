@@ -1,0 +1,59 @@
+body {
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .title {
+    overflow: hidden;
+    color: var(--Light-usage-text---color-text-0, #1C1F23);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 24px;
+  }
+
+  .close {
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  .form {
+    :global {
+      .semi-form-field {
+        margin-bottom: 16px;
+      }
+
+      .semi-form-field-label {
+        color: var(--Light-usage-text---color-text-0, #1D1C23);
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 22px;
+        margin-bottom: 12px;
+      }
+
+      .semi-form-field-main {}
+
+      label {
+        padding-right: 0;
+      }
+    }
+  }
+
+  .text-label {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .footer {
+    padding-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+  }
+}

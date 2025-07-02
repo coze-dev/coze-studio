@@ -1,0 +1,25 @@
+/* stylelint-disable selector-class-pattern */
+.workflow-node-setter-radio {
+  &:global(.semi-radioGroup) {
+    display: flex;
+  }
+
+  :global(.semi-radio) {
+    flex: 1;
+  }
+
+  :global(.semi-radio-content) {
+    width: 100%;
+  }
+
+  :global {
+    .semi-radio-cardRadioGroup {
+      padding: 8px 12px;
+
+      .semi-radio-addon {
+        font-size: 12px;
+        font-weight: normal;
+      }
+    }
+  }
+}

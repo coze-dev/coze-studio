@@ -1,0 +1,17 @@
+/* stylelint-disable declaration-no-important */
+// 覆盖 MonacoEditor tooltip 样式，解决 MonacoEditor tooltip 位置不准的问题。预期：固定在底部
+.json-editor {
+  :global {
+
+    /* stylelint-disable-next-line selector-class-pattern */
+    .overflowingContentWidgets {
+      position: relative;
+    }
+  }
+
+  div[widgetid='editor.contrib.resizableContentHoverWidget'] {
+    position: absolute !important;
+    top: 0 !important; // 调整上方距离
+    left: 0 !important; // 调整左方距离
+  }
+}

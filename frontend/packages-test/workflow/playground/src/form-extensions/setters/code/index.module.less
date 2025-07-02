@@ -1,0 +1,53 @@
+/* stylelint-disable selector-class-pattern */
+@import '../../../assets/styles/common.less';
+
+.text {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.container {
+  position: relative;
+  margin-top: 8px;
+}
+
+.code-content {
+  position: relative;
+
+  :global {
+    .ace_editor {
+      border-radius: 3px;
+    }
+
+    .semi-form-field-error-message,
+    .semi-form-field-help-text {
+      font-size: 10px;
+    }
+
+    .monaco-hover {
+      position: fixed;
+    }
+
+    // 滚动条不能超过单节点调试的z-index
+    .monaco-editor .scrollbar {
+      z-index: 9;
+    }
+  }
+}
+
+.fullscreen-title {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  height: 35px;
+  padding-right: 8px;
+
+  background: #25282c;
+
+  .fullscreen-title-icon {
+    .common-svg-icon(14px, #fff);
+
+    cursor: pointer;
+  }
+}

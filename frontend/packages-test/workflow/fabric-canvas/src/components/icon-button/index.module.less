@@ -1,0 +1,11 @@
+.icon-button.coz-fg-secondary {
+  @apply !coz-fg-primary;
+
+  &:disabled{
+    :global{
+      .semi-button-content{
+        @apply coz-fg-dim;
+      }
+    }
+  }
+}

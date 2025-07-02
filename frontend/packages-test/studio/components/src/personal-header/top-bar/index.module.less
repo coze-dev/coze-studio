@@ -1,0 +1,38 @@
+.topBar {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+
+  .des {
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    margin: 0;
+  }
+
+  .tabs {
+    width: 100%;
+    text-align: left;
+  }
+
+  .name {
+    max-width: calc(100% - 28px);
+    word-break: break-word;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 28px;
+    height: 28px;
+    @apply coz-fg-plus;
+  }
+
+  .split {
+    width: 1px;
+    height: 20px;
+    margin: 0 4px;
+    border-bottom: none;
+    background-color: var(--coz-stroke-primary);
+  }
+}

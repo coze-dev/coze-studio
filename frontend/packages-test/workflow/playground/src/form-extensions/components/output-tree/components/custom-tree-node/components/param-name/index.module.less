@@ -1,0 +1,38 @@
+.container {
+  position: relative;
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-self: stretch;
+
+  min-width: 0;
+
+  :global {
+    .coz-input.semi-input-wrapper {
+      background-color: #FFF;
+
+      &:not(.semi-input-wrapper-focus, .semi-input-wrapper-disabled) {
+        &:hover {
+          background-color: rgba(var(--coze-bg-5),var(--coze-bg-5-alpha));
+        }
+
+        &:active {
+          background-color: rgba(var(--coze-bg-6), var(--coze-bg-6-alpha));
+        }
+      }
+    }
+  }
+
+  .name {
+    display: flex;
+    align-items: flex-start;
+    align-self: stretch;
+    width: 100%;
+    // flex: 1;
+
+    &>div:first-child {
+      flex: 1;
+    }
+  }
+}

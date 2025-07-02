@@ -1,0 +1,24 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`EncapsulateValidateResult > should add different source error 1`] = `
+[
+  {
+    "code": "1001",
+    "message": "test",
+  },
+  {
+    "code": "1001",
+    "message": "test",
+    "source": "1",
+  },
+]
+`;
+
+exports[`EncapsulateValidateResult > should get errors 1`] = `
+[
+  {
+    "code": "1001",
+    "message": "test",
+  },
+]
+`;

@@ -1,0 +1,56 @@
+// 修改后禁用 stylelint
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable declaration-no-important */
+.table {
+  :global {
+    table {
+      border: 1px solid rgba(46, 46, 56, 8%);
+      border-radius: 8px;
+
+
+      thead {
+        th {
+          font-weight: 600 !important;
+          color: var(--Light-usage-text---color-text-1, rgba(29, 28, 35, 80%)) !important;
+          border-bottom: 1px solid rgba(46, 47, 56, 9%) !important;
+        }
+      }
+
+
+      th,
+      td {
+        overflow: hidden;
+
+        font-size: 12px;
+        font-weight: 600;
+        font-style: normal;
+        line-height: 16px;
+        color: var(--Light-usage-text---color-text-1, rgba(29, 28, 35, 80%));
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      td {
+        border-bottom: 0 !important;
+
+        &:first-child {
+          width: 114px;
+        }
+      }
+    }
+
+    .semi-table-tbody>.semi-table-row>.semi-table-row-cell,
+    .semi-table-thead>.semi-table-row>.semi-table-row-head {
+      padding: 8px 0;
+
+      &:first-child {
+        padding-right: 20px;
+        padding-left: 20px;
+      }
+
+      &:last-child {
+        padding-right: 14px;
+      }
+    }
+  }
+}

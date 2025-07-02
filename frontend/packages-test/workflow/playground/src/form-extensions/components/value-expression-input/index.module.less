@@ -1,0 +1,144 @@
+/* stylelint-disable declaration-no-important */
+.value-expression-input {
+  overflow: hidden;
+  //flex: 1;
+
+  :global(.semi-input-group) {
+    flex-wrap: nowrap;
+    width: 100%;
+
+    :global(.semi-select) {
+      flex: 0 0 auto;
+      width: 80px;
+    }
+  }
+
+  .type {
+    width: 115px
+  }
+
+  .input {
+    width: 100px;
+  }
+
+
+}
+
+.pointer-events-none {
+  pointer-events: none;
+}
+
+.value-expression-input-wrap {
+  overflow: hidden;
+
+  :global(.semi-input-wrapper) {
+    border: none !important;
+  }
+
+  :global(.semi-input-wrapper:hover) {
+    background: transparent !important;
+  }
+}
+
+.value-expression-input-wrap-new {
+  overflow: hidden;
+  border-radius: 0 var(--coze-6) var(--coze-6) 0;
+
+  :global(.semi-input-wrapper) {
+    border: none !important;
+  }
+
+  :global(.semi-input-wrapper:hover) {
+    background: transparent !important;
+  }
+}
+
+.input-wrapper {
+  @apply flex-1 flex items-center overflow-hidden;
+
+  .literal-value-input {
+    width: 100%;
+    border: none;
+
+    :global {
+      .semi-select:is(.coz-select,.coz-select-tag-popover.semi-popover-wrapper) {
+        border: none;
+      }
+
+      .semi-select-prefix {
+        display: none;
+      }
+    }
+  }
+
+  :global {
+    .semi-select:is(.coz-select,.coz-select-tag-popover.semi-popover-wrapper):hover,
+    .semi-select:is(.coz-select,.coz-select-tag-popover.semi-popover-wrapper):active {
+      background-color: transparent;
+    }
+
+    .semi-input-small {
+      @apply truncate;
+    }
+
+    .cm-placeholder {
+      @apply truncate;
+
+      width: calc(100% - 18px);
+      height: auto !important;
+    }
+  }
+}
+
+.setting-button-wrap {
+  flex: 0;
+  align-self: center;
+  margin-right: 1px;
+
+  &.pos-absolute {
+    position: absolute;
+    right: 0;
+    bottom: 1px;
+  }
+
+  &.self-end {
+    align-self: flex-end;
+  }
+
+  :global(.coz-button.coz-btn-small) {
+    width: 20px;
+    min-width: 20px;
+    height: 20px;
+    padding: 2px;
+  }
+
+}
+
+.variable-type-selector-wrapper {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+
+  border: 1px solid var(--coz-stroke-plus);
+  border-right: none;
+  border-radius: var(--coze-6) 0 0 var(--coze-6);
+}
+
+.undefined-ref-tag {
+  :global {
+    .semi-tag-close {
+      visibility: hidden;
+
+      .semi-icon.semi-icon-close {
+        color: var(--coz-fg-hglt-yellow);
+      }
+    }
+  }
+
+  &:hover {
+    :global(.semi-tag-close){
+      visibility: visible;
+    }
+  }
+}
+

@@ -1,0 +1,106 @@
+.selector-wrapper-dropdown {
+  margin-top: 0;
+
+  :global {
+    .coz-select-option-item-icon-multiple-unselected {
+      border-style: solid;
+    }
+
+    .custom-option-render {
+      display: flex;
+      font-size: 14px;
+      line-height: 20px;
+      word-break: break-word;
+      padding-left: 4px;
+      padding-right: 8px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      color: var(--semi-color-text-0);
+      position: relative;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      box-sizing: border-box;
+
+      .option-right {
+        margin-left: 8px;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      &:active {
+        // background-color: var(--semi-color-fill-1);
+        @apply coz-mg-secondary-pressed;
+      }
+
+      &-focused {
+        // background-color: var(--semi-color-fill-0);
+        @apply coz-mg-secondary-hovered;
+      }
+
+      &-selected {
+        font-weight: 600;
+      }
+
+      &-disabled {
+        color: var(--semi-color-disabled-text);
+        cursor: not-allowed;
+      }
+
+      &:first-of-type {
+        margin-top: 0px;
+      }
+
+      &:last-of-type {
+        margin-bottom: 4px;
+      }
+    }
+  }
+
+  .action-main-button {
+    width: 54px;
+    height: 24px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+
+  .action-cancel-button {
+    .action-main-button;
+    margin-right: 4px;
+  }
+}
+
+.customise-button {
+  padding: 4px 8px;
+
+  display: flex;
+  align-items: center;
+
+  font-size: 12px;
+  color: var(--Light-usage-primary---color-primary, #4D53E8);
+  cursor: pointer;
+
+  :global {
+    .icon-icon:focus {
+      outline: none;
+    }
+
+    .semi-typography {
+      margin-left: 8px;
+      color: var(--Light-usage-primary---color-primary, #4D53E8);
+    }
+  }
+
+  &:hover {
+    @apply coz-mg-secondary-hovered;
+  }
+
+  &:active {
+    @apply coz-mg-secondary-pressed;
+  }
+}
+
+.delimiter-description {
+  margin-left: 4px;
+  color: var(--Light-usage-text---color-text-3, rgba(29, 28, 35, 0.35));
+}

@@ -1,0 +1,573 @@
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable custom-property-pattern */
+// 解决和 workflow 页面 editor 主题冲突的问题
+.light {
+  :global {
+
+    /* stylelint-disable-next-line rule-empty-line-before */
+    .monaco-editor,
+    .monaco-diff-editor {
+      --vscode-foreground: #616161;
+      --vscode-disabledForeground: rgb(97 97 97 / 50%);
+      --vscode-errorForeground: #a1260d;
+      --vscode-descriptionForeground: #717171;
+      --vscode-icon-foreground: #424242;
+      --vscode-focusBorder: #0090f1;
+      --vscode-textSeparator-foreground: rgb(0 0 0 / 18%);
+      --vscode-textLink-foreground: #006ab1;
+      --vscode-textLink-activeForeground: #006ab1;
+      --vscode-textPreformat-foreground: #a31515;
+      --vscode-textBlockQuote-background: rgb(127 127 127 / 10%);
+      --vscode-textBlockQuote-border: rgb(0 122 204 / 50%);
+      --vscode-textCodeBlock-background: rgb(220 220 220 / 40%);
+      --vscode-widget-shadow: rgb(0 0 0 / 16%);
+      --vscode-input-background: #fff;
+      --vscode-input-foreground: #616161;
+      --vscode-inputOption-activeBorder: #007acc;
+      --vscode-inputOption-hoverBackground: rgb(184 184 184 / 31%);
+      --vscode-inputOption-activeBackground: rgb(0 144 241 / 20%);
+      --vscode-inputOption-activeForeground: #000;
+      --vscode-input-placeholderForeground: rgb(97 97 97 / 50%);
+      --vscode-inputValidation-infoBackground: #d6ecf2;
+      --vscode-inputValidation-infoBorder: #007acc;
+      --vscode-inputValidation-warningBackground: #f6f5d2;
+      --vscode-inputValidation-warningBorder: #b89500;
+      --vscode-inputValidation-errorBackground: #f2dede;
+      --vscode-inputValidation-errorBorder: #be1100;
+      --vscode-dropdown-background: #fff;
+      --vscode-dropdown-foreground: #616161;
+      --vscode-dropdown-border: #cecece;
+      --vscode-button-foreground: #fff;
+      --vscode-button-separator: rgb(255 255 255 / 40%);
+      --vscode-button-background: #007acc;
+      --vscode-button-hoverBackground: #0062a3;
+      --vscode-button-secondaryForeground: #fff;
+      --vscode-button-secondaryBackground: #5f6a79;
+      --vscode-button-secondaryHoverBackground: #4c5561;
+      --vscode-badge-background: #c4c4c4;
+      --vscode-badge-foreground: #333;
+      --vscode-scrollbar-shadow: #ddd;
+      --vscode-scrollbarSlider-background: rgb(100 100 100 / 40%);
+      --vscode-scrollbarSlider-hoverBackground: rgb(100 100 100 / 70%);
+      --vscode-scrollbarSlider-activeBackground: rgb(0 0 0 / 60%);
+      --vscode-progressBar-background: #0e70c0;
+      --vscode-editorError-foreground: #e51400;
+      --vscode-editorWarning-foreground: #bf8803;
+      --vscode-editorInfo-foreground: #1a85ff;
+      --vscode-editorHint-foreground: #6c6c6c;
+      --vscode-sash-hoverBorder: #0090f1;
+      --vscode-editor-background: #fffffe;
+      --vscode-editor-foreground: #000;
+      --vscode-editorStickyScroll-background: #fffffe;
+      --vscode-editorStickyScrollHover-background: #f0f0f0;
+      --vscode-editorWidget-background: #f3f3f3;
+      --vscode-editorWidget-foreground: #616161;
+      --vscode-editorWidget-border: #c8c8c8;
+      --vscode-quickInput-background: #f3f3f3;
+      --vscode-quickInput-foreground: #616161;
+      --vscode-quickInputTitle-background: rgb(0 0 0 / 6%);
+      --vscode-pickerGroup-foreground: #0066bf;
+      --vscode-pickerGroup-border: #cccedb;
+      --vscode-keybindingLabel-background: rgb(221 221 221 / 40%);
+      --vscode-keybindingLabel-foreground: #555;
+      --vscode-keybindingLabel-border: rgb(204 204 204 / 40%);
+      --vscode-keybindingLabel-bottomBorder: rgb(187 187 187 / 40%);
+      --vscode-editor-selectionBackground: #add6ff;
+      --vscode-editor-inactiveSelectionBackground: #e5ebf1;
+      --vscode-editor-selectionHighlightBackground: rgb(173 214 255 / 30%);
+      --vscode-editor-findMatchBackground: #a8ac94;
+      --vscode-editor-findMatchHighlightBackground: rgb(234 92 0 / 33%);
+      --vscode-editor-findRangeHighlightBackground: rgb(180 180 180 / 30%);
+      --vscode-searchEditor-findMatchBackground: rgb(234 92 0 / 22%);
+      --vscode-search-resultsInfoForeground: #616161;
+      --vscode-editor-hoverHighlightBackground: rgb(173 214 255 / 15%);
+      --vscode-editorHoverWidget-background: #f3f3f3;
+      --vscode-editorHoverWidget-foreground: #616161;
+      --vscode-editorHoverWidget-border: #c8c8c8;
+      --vscode-editorHoverWidget-statusBarBackground: #e7e7e7;
+      --vscode-editorLink-activeForeground: #00f;
+      --vscode-editorInlayHint-foreground: #969696;
+      --vscode-editorInlayHint-background: rgb(196 196 196 / 10%);
+      --vscode-editorInlayHint-typeForeground: #969696;
+      --vscode-editorInlayHint-typeBackground: rgb(196 196 196 / 10%);
+      --vscode-editorInlayHint-parameterForeground: #969696;
+      --vscode-editorInlayHint-parameterBackground: rgb(196 196 196 / 10%);
+      --vscode-editorLightBulb-foreground: #ddb100;
+      --vscode-editorLightBulbAutoFix-foreground: #007acc;
+      --vscode-diffEditor-insertedTextBackground: rgb(156 204 44 / 25%);
+      --vscode-diffEditor-removedTextBackground: rgb(255 0 0 / 20%);
+      --vscode-diffEditor-insertedLineBackground: rgb(155 185 85 / 20%);
+      --vscode-diffEditor-removedLineBackground: rgb(255 0 0 / 20%);
+      --vscode-diffEditor-diagonalFill: rgb(34 34 34 / 20%);
+      --vscode-diffEditor-unchangedRegionBackground: #e4e4e4;
+      --vscode-diffEditor-unchangedRegionForeground: #4d4c4c;
+      --vscode-diffEditor-unchangedCodeBackground: rgb(184 184 184 / 16%);
+      --vscode-list-focusOutline: #0090f1;
+      --vscode-list-activeSelectionBackground: #0060c0;
+      --vscode-list-activeSelectionForeground: #fff;
+      --vscode-list-inactiveSelectionBackground: #e4e6f1;
+      --vscode-list-hoverBackground: #f0f0f0;
+      --vscode-list-dropBackground: #d6ebff;
+      --vscode-list-highlightForeground: #0066bf;
+      --vscode-list-focusHighlightForeground: #bbe7ff;
+      --vscode-list-invalidItemForeground: #b89500;
+      --vscode-list-errorForeground: #b01011;
+      --vscode-list-warningForeground: #855f00;
+      --vscode-listFilterWidget-background: #f3f3f3;
+      --vscode-listFilterWidget-outline: rgb(0 0 0 / 0%);
+      --vscode-listFilterWidget-noMatchesOutline: #be1100;
+      --vscode-listFilterWidget-shadow: rgb(0 0 0 / 16%);
+      --vscode-list-filterMatchBackground: rgb(234 92 0 / 33%);
+      --vscode-tree-indentGuidesStroke: #a9a9a9;
+      --vscode-tree-inactiveIndentGuidesStroke: rgb(169 169 169 / 40%);
+      --vscode-tree-tableColumnsBorder: rgb(97 97 97 / 13%);
+      --vscode-tree-tableOddRowsBackground: rgb(97 97 97 / 4%);
+      --vscode-list-deemphasizedForeground: #8e8e90;
+      --vscode-checkbox-background: #fff;
+      --vscode-checkbox-selectBackground: #f3f3f3;
+      --vscode-checkbox-foreground: #616161;
+      --vscode-checkbox-border: #cecece;
+      --vscode-checkbox-selectBorder: #424242;
+      --vscode-quickInputList-focusForeground: #fff;
+      --vscode-quickInputList-focusBackground: #0060c0;
+      --vscode-menu-foreground: #616161;
+      --vscode-menu-background: #fff;
+      --vscode-menu-selectionForeground: #fff;
+      --vscode-menu-selectionBackground: #0060c0;
+      --vscode-menu-separatorBackground: #d4d4d4;
+      --vscode-toolbar-hoverBackground: rgb(184 184 184 / 31%);
+      --vscode-toolbar-activeBackground: rgb(166 166 166 / 31%);
+      --vscode-editor-snippetTabstopHighlightBackground: rgb(10 50 100 / 20%);
+      --vscode-editor-snippetFinalTabstopHighlightBorder: rgb(10 50 100 / 50%);
+      --vscode-breadcrumb-foreground: rgb(97 97 97 / 80%);
+      --vscode-breadcrumb-background: #fffffe;
+      --vscode-breadcrumb-focusForeground: #4e4e4e;
+      --vscode-breadcrumb-activeSelectionForeground: #4e4e4e;
+      --vscode-breadcrumbPicker-background: #f3f3f3;
+      --vscode-merge-currentHeaderBackground: rgb(64 200 174 / 50%);
+      --vscode-merge-currentContentBackground: rgb(64 200 174 / 20%);
+      --vscode-merge-incomingHeaderBackground: rgb(64 166 255 / 50%);
+      --vscode-merge-incomingContentBackground: rgb(64 166 255 / 20%);
+      --vscode-merge-commonHeaderBackground: rgb(96 96 96 / 40%);
+      --vscode-merge-commonContentBackground: rgb(96 96 96 / 16%);
+      --vscode-editorOverviewRuler-currentContentForeground: rgb(64 200 174 / 50%);
+      --vscode-editorOverviewRuler-incomingContentForeground: rgb(64 166 255 / 50%);
+      --vscode-editorOverviewRuler-commonContentForeground: rgb(96 96 96 / 40%);
+      --vscode-editorOverviewRuler-findMatchForeground: rgb(209 134 22 / 49%);
+      --vscode-editorOverviewRuler-selectionHighlightForeground: rgb(160 160 160 / 80%);
+      --vscode-minimap-findMatchHighlight: #d18616;
+      --vscode-minimap-selectionOccurrenceHighlight: #c9c9c9;
+      --vscode-minimap-selectionHighlight: #add6ff;
+      --vscode-minimap-errorHighlight: rgb(255 18 18 / 70%);
+      --vscode-minimap-warningHighlight: #bf8803;
+      --vscode-minimap-foregroundOpacity: #000;
+      --vscode-minimapSlider-background: rgb(100 100 100 / 20%);
+      --vscode-minimapSlider-hoverBackground: rgb(100 100 100 / 35%);
+      --vscode-minimapSlider-activeBackground: rgb(0 0 0 / 30%);
+      --vscode-problemsErrorIcon-foreground: #e51400;
+      --vscode-problemsWarningIcon-foreground: #bf8803;
+      --vscode-problemsInfoIcon-foreground: #1a85ff;
+      --vscode-charts-foreground: #616161;
+      --vscode-charts-lines: rgb(97 97 97 / 50%);
+      --vscode-charts-red: #e51400;
+      --vscode-charts-blue: #1a85ff;
+      --vscode-charts-yellow: #bf8803;
+      --vscode-charts-orange: #d18616;
+      --vscode-charts-green: #388a34;
+      --vscode-charts-purple: #652d90;
+      --vscode-diffEditor-move-border: rgb(139 139 139 / 61%);
+      --vscode-diffEditor-moveActive-border: #ffa500;
+      --vscode-symbolIcon-arrayForeground: #616161;
+      --vscode-symbolIcon-booleanForeground: #616161;
+      --vscode-symbolIcon-classForeground: #d67e00;
+      --vscode-symbolIcon-colorForeground: #616161;
+      --vscode-symbolIcon-constantForeground: #616161;
+      --vscode-symbolIcon-constructorForeground: #652d90;
+      --vscode-symbolIcon-enumeratorForeground: #d67e00;
+      --vscode-symbolIcon-enumeratorMemberForeground: #007acc;
+      --vscode-symbolIcon-eventForeground: #d67e00;
+      --vscode-symbolIcon-fieldForeground: #007acc;
+      --vscode-symbolIcon-fileForeground: #616161;
+      --vscode-symbolIcon-folderForeground: #616161;
+      --vscode-symbolIcon-functionForeground: #652d90;
+      --vscode-symbolIcon-interfaceForeground: #007acc;
+      --vscode-symbolIcon-keyForeground: #616161;
+      --vscode-symbolIcon-keywordForeground: #616161;
+      --vscode-symbolIcon-methodForeground: #652d90;
+      --vscode-symbolIcon-moduleForeground: #616161;
+      --vscode-symbolIcon-namespaceForeground: #616161;
+      --vscode-symbolIcon-nullForeground: #616161;
+      --vscode-symbolIcon-numberForeground: #616161;
+      --vscode-symbolIcon-objectForeground: #616161;
+      --vscode-symbolIcon-operatorForeground: #616161;
+      --vscode-symbolIcon-packageForeground: #616161;
+      --vscode-symbolIcon-propertyForeground: #616161;
+      --vscode-symbolIcon-referenceForeground: #616161;
+      --vscode-symbolIcon-snippetForeground: #616161;
+      --vscode-symbolIcon-stringForeground: #616161;
+      --vscode-symbolIcon-structForeground: #616161;
+      --vscode-symbolIcon-textForeground: #616161;
+      --vscode-symbolIcon-typeParameterForeground: #616161;
+      --vscode-symbolIcon-unitForeground: #616161;
+      --vscode-symbolIcon-variableForeground: #007acc;
+      --vscode-actionBar-toggledBackground: rgb(0 144 241 / 20%);
+      --vscode-editor-lineHighlightBorder: #eee;
+      --vscode-editor-rangeHighlightBackground: rgb(253 255 0 / 20%);
+      --vscode-editor-symbolHighlightBackground: rgb(234 92 0 / 33%);
+      --vscode-editorCursor-foreground: #000;
+      --vscode-editorWhitespace-foreground: rgb(51 51 51 / 20%);
+      --vscode-editorLineNumber-foreground: #237893;
+      --vscode-editorIndentGuide-background: rgb(51 51 51 / 20%);
+      --vscode-editorIndentGuide-activeBackground: rgb(51 51 51 / 20%);
+      --vscode-editorIndentGuide-background1: #d3d3d3;
+      --vscode-editorIndentGuide-background2: rgb(0 0 0 / 0%);
+      --vscode-editorIndentGuide-background3: rgb(0 0 0 / 0%);
+      --vscode-editorIndentGuide-background4: rgb(0 0 0 / 0%);
+      --vscode-editorIndentGuide-background5: rgb(0 0 0 / 0%);
+      --vscode-editorIndentGuide-background6: rgb(0 0 0 / 0%);
+      --vscode-editorIndentGuide-activeBackground1: #939393;
+      --vscode-editorIndentGuide-activeBackground2: rgb(0 0 0 / 0%);
+      --vscode-editorIndentGuide-activeBackground3: rgb(0 0 0 / 0%);
+      --vscode-editorIndentGuide-activeBackground4: rgb(0 0 0 / 0%);
+      --vscode-editorIndentGuide-activeBackground5: rgb(0 0 0 / 0%);
+      --vscode-editorIndentGuide-activeBackground6: rgb(0 0 0 / 0%);
+      --vscode-editorActiveLineNumber-foreground: #0b216f;
+      --vscode-editorLineNumber-activeForeground: #0b216f;
+      --vscode-editorRuler-foreground: #d3d3d3;
+      --vscode-editorCodeLens-foreground: #919191;
+      --vscode-editorBracketMatch-background: rgb(0 100 0 / 10%);
+      --vscode-editorBracketMatch-border: #b9b9b9;
+      --vscode-editorOverviewRuler-border: rgb(127 127 127 / 30%);
+      --vscode-editorGutter-background: #fffffe;
+      --vscode-editorUnnecessaryCode-opacity: rgb(0 0 0 / 47%);
+      --vscode-editorGhostText-foreground: rgb(0 0 0 / 47%);
+      --vscode-editorOverviewRuler-rangeHighlightForeground: rgb(0 122 204 / 60%);
+      --vscode-editorOverviewRuler-errorForeground: rgb(255 18 18 / 70%);
+      --vscode-editorOverviewRuler-warningForeground: #bf8803;
+      --vscode-editorOverviewRuler-infoForeground: #1a85ff;
+      --vscode-editorBracketHighlight-foreground1: #0431fa;
+      --vscode-editorBracketHighlight-foreground2: #319331;
+      --vscode-editorBracketHighlight-foreground3: #7b3814;
+      --vscode-editorBracketHighlight-foreground4: rgb(0 0 0 / 0%);
+      --vscode-editorBracketHighlight-foreground5: rgb(0 0 0 / 0%);
+      --vscode-editorBracketHighlight-foreground6: rgb(0 0 0 / 0%);
+      --vscode-editorBracketHighlight-unexpectedBracket-foreground: rgb(255 18 18 / 80%);
+      --vscode-editorBracketPairGuide-background1: rgb(0 0 0 / 0%);
+      --vscode-editorBracketPairGuide-background2: rgb(0 0 0 / 0%);
+      --vscode-editorBracketPairGuide-background3: rgb(0 0 0 / 0%);
+      --vscode-editorBracketPairGuide-background4: rgb(0 0 0 / 0%);
+      --vscode-editorBracketPairGuide-background5: rgb(0 0 0 / 0%);
+      --vscode-editorBracketPairGuide-background6: rgb(0 0 0 / 0%);
+      --vscode-editorBracketPairGuide-activeBackground1: rgb(0 0 0 / 0%);
+      --vscode-editorBracketPairGuide-activeBackground2: rgb(0 0 0 / 0%);
+      --vscode-editorBracketPairGuide-activeBackground3: rgb(0 0 0 / 0%);
+      --vscode-editorBracketPairGuide-activeBackground4: rgb(0 0 0 / 0%);
+      --vscode-editorBracketPairGuide-activeBackground5: rgb(0 0 0 / 0%);
+      --vscode-editorBracketPairGuide-activeBackground6: rgb(0 0 0 / 0%);
+      --vscode-editorUnicodeHighlight-border: #cea33d;
+      --vscode-editorUnicodeHighlight-background: rgb(206 163 61 / 8%);
+      --vscode-editorOverviewRuler-bracketMatchForeground: #a0a0a0;
+      --vscode-editor-linkedEditingBackground: rgb(255 0 0 / 30%);
+      --vscode-editor-wordHighlightBackground: rgb(87 87 87 / 25%);
+      --vscode-editor-wordHighlightStrongBackground: rgb(14 99 156 / 25%);
+      --vscode-editor-wordHighlightTextBackground: rgb(87 87 87 / 25%);
+      --vscode-editorOverviewRuler-wordHighlightForeground: rgb(160 160 160 / 80%);
+      --vscode-editorOverviewRuler-wordHighlightStrongForeground: rgb(192 160 192 / 80%);
+      --vscode-editorOverviewRuler-wordHighlightTextForeground: rgb(160 160 160 / 80%);
+      --vscode-peekViewTitle-background: #f3f3f3;
+      --vscode-peekViewTitleLabel-foreground: #000;
+      --vscode-peekViewTitleDescription-foreground: #616161;
+      --vscode-peekView-border: #1a85ff;
+      --vscode-peekViewResult-background: #f3f3f3;
+      --vscode-peekViewResult-lineForeground: #646465;
+      --vscode-peekViewResult-fileForeground: #1e1e1e;
+      --vscode-peekViewResult-selectionBackground: rgb(51 153 255 / 20%);
+      --vscode-peekViewResult-selectionForeground: #6c6c6c;
+      --vscode-peekViewEditor-background: #f2f8fc;
+      --vscode-peekViewEditorGutter-background: #f2f8fc;
+      --vscode-peekViewEditorStickyScroll-background: #f2f8fc;
+      --vscode-peekViewResult-matchHighlightBackground: rgb(234 92 0 / 30%);
+      --vscode-peekViewEditor-matchHighlightBackground: rgb(245 216 2 / 87%);
+      --vscode-editorMarkerNavigationError-background: #e51400;
+      --vscode-editorMarkerNavigationError-headerBackground: rgb(229 20 0 / 10%);
+      --vscode-editorMarkerNavigationWarning-background: #bf8803;
+      --vscode-editorMarkerNavigationWarning-headerBackground: rgb(191 136 3 / 10%);
+      --vscode-editorMarkerNavigationInfo-background: #1a85ff;
+      --vscode-editorMarkerNavigationInfo-headerBackground: rgb(26 133 255 / 10%);
+      --vscode-editorMarkerNavigation-background: #fffffe;
+      --vscode-editorHoverWidget-highlightForeground: #0066bf;
+      --vscode-editorSuggestWidget-background: #f3f3f3;
+      --vscode-editorSuggestWidget-border: #c8c8c8;
+      --vscode-editorSuggestWidget-foreground: #000;
+      --vscode-editorSuggestWidget-selectedForeground: #fff;
+      --vscode-editorSuggestWidget-selectedBackground: #0060c0;
+      --vscode-editorSuggestWidget-highlightForeground: #0066bf;
+      --vscode-editorSuggestWidget-focusHighlightForeground: #bbe7ff;
+      --vscode-editorSuggestWidgetStatus-foreground: rgb(0 0 0 / 50%);
+      --vscode-editor-foldBackground: rgb(173 214 255 / 30%);
+      --vscode-editorGutter-foldingControlForeground: #424242;
+
+      .mtk1,
+      .mtk9 {
+        color: #000;
+      }
+
+      .mtk2 {
+        color: #fffffe;
+      }
+
+      .mtk3 {
+        color: #808080;
+      }
+
+      .mtk4,
+      .mtk20 {
+        color: #a31515;
+      }
+
+      .mtk5 {
+        color: #0451a5;
+      }
+
+      .mtk6,
+      .mtk7 {
+        color: #098658;
+      }
+
+      .mtk8 {
+        color: #008000;
+      }
+
+      .mtk10 {
+        color: #383838;
+      }
+
+      .mtk11 {
+        color: #cd3131;
+      }
+
+      .mtk12 {
+        color: #863b00;
+      }
+
+      .mtk13 {
+        color: #af00db;
+      }
+
+      .mtk14 {
+        color: #800000;
+      }
+
+      .mtk15 {
+        color: #e00000;
+      }
+
+      .mtk16 {
+        color: #3030c0;
+      }
+
+      .mtk17 {
+        color: #666;
+      }
+
+      .mtk18 {
+        color: #789;
+      }
+
+      .mtk19 {
+        color: #c700c7;
+      }
+
+      .mtk21 {
+        color: #4f76ac;
+      }
+
+      .mtk22 {
+        color: #008080;
+      }
+
+      .mtk23 {
+        color: #018;
+      }
+
+      .mtk24 {
+        color: #4864aa;
+      }
+
+      .inputarea.ime-input {
+        color: #000 !important;
+        background-color: #fffffe !important;
+      }
+
+      .view-overlays .current-line {
+        border: 2px solid #eee;
+      }
+
+      .margin-view-overlays .current-line-margin {
+        border: 2px solid #eee;
+      }
+
+      .bracket-indent-guide.lvl-0,
+      .bracket-indent-guide.lvl-3,
+      .bracket-indent-guide.lvl-6,
+      .bracket-indent-guide.lvl-9 {
+        --guide-color: rgb(4 49 250 / 30%);
+        --guide-color-active: #0431fa;
+      }
+
+      .bracket-indent-guide.lvl-1,
+      .bracket-indent-guide.lvl-4,
+      .bracket-indent-guide.lvl-7,
+      .bracket-indent-guide.lvl-10 {
+        --guide-color: rgb(49 147 49 / 30%);
+        --guide-color-active: #319331;
+      }
+
+      .bracket-indent-guide.lvl-2,
+      .bracket-indent-guide.lvl-5,
+      .bracket-indent-guide.lvl-8,
+      .bracket-indent-guide.lvl-11 {
+        --guide-color: rgb(123 56 20 / 30%);
+        --guide-color-active: #7b3814;
+      }
+
+      .lines-content .core-guide.core-guide-indent[class*="lvl-"] {
+        --indent-color: #d3d3d3;
+        --indent-color-active: #939393;
+      }
+
+      .lines-content .core-guide-indent {
+        box-shadow: 1px 0 0 0 var(--indent-color) inset;
+      }
+
+      .lines-content .core-guide-indent.indent-active {
+        box-shadow: 1px 0 0 0 var(--indent-color-active) inset;
+      }
+
+      .line-numbers.dimmed-line-number {
+        color: rgb(35 120 147 / 40%);
+      }
+
+      .cursors-layer .cursor {
+        color: #fff;
+        background-color: #000;
+        border-color: #000;
+      }
+
+      .bracket-highlighting-0,
+      .bracket-highlighting-3,
+      .bracket-highlighting-6,
+      .bracket-highlighting-9,
+      .bracket-highlighting-12 {
+        color: #0431fa;
+      }
+
+      .bracket-highlighting-1,
+      .bracket-highlighting-4,
+      .bracket-highlighting-7,
+      .bracket-highlighting-10,
+      .bracket-highlighting-13 {
+        color: #319331;
+      }
+
+      .bracket-highlighting-2,
+      .bracket-highlighting-5,
+      .bracket-highlighting-8,
+      .bracket-highlighting-11,
+      .bracket-highlighting-14 {
+        color: #7b3814;
+      }
+
+      .squiggly-error {
+        background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%206%203'%20enable-background%3D'new%200%200%206%203'%20height%3D'3'%20width%3D'6'%3E%3Cg%20fill%3D'%23e51400'%3E%3Cpolygon%20points%3D'5.5%2C0%202.5%2C3%201.1%2C3%204.1%2C0'%2F%3E%3Cpolygon%20points%3D'4%2C0%206%2C2%206%2C0.6%205.4%2C0'%2F%3E%3Cpolygon%20points%3D'0%2C2%201%2C3%202.4%2C3%200%2C0.6'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") repeat-x bottom left;
+      }
+
+      .squiggly-warning {
+        background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%206%203'%20enable-background%3D'new%200%200%206%203'%20height%3D'3'%20width%3D'6'%3E%3Cg%20fill%3D'%23bf8803'%3E%3Cpolygon%20points%3D'5.5%2C0%202.5%2C3%201.1%2C3%204.1%2C0'%2F%3E%3Cpolygon%20points%3D'4%2C0%206%2C2%206%2C0.6%205.4%2C0'%2F%3E%3Cpolygon%20points%3D'0%2C2%201%2C3%202.4%2C3%200%2C0.6'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") repeat-x bottom left;
+      }
+
+      .squiggly-info {
+        background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%206%203'%20enable-background%3D'new%200%200%206%203'%20height%3D'3'%20width%3D'6'%3E%3Cg%20fill%3D'%231a85ff'%3E%3Cpolygon%20points%3D'5.5%2C0%202.5%2C3%201.1%2C3%204.1%2C0'%2F%3E%3Cpolygon%20points%3D'4%2C0%206%2C2%206%2C0.6%205.4%2C0'%2F%3E%3Cpolygon%20points%3D'0%2C2%201%2C3%202.4%2C3%200%2C0.6'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") repeat-x bottom left;
+      }
+
+      .squiggly-hint {
+        background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20height%3D%223%22%20width%3D%2212%22%3E%3Cg%20fill%3D%22%236c6c6c%22%3E%3Ccircle%20cx%3D%221%22%20cy%3D%221%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%225%22%20cy%3D%221%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%229%22%20cy%3D%221%22%20r%3D%221%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") no-repeat bottom left;
+      }
+
+      .showUnused .squiggly-inline-unnecessary {
+        opacity: 0.467;
+      }
+
+      .selectionHighlight {
+        background-color: rgb(173 214 255 / 15%);
+      }
+
+      .diagonal-fill {
+        background-image: linear-gradient(-45deg,
+            rgb(34 34 34 / 20%) 12.5%,
+            #0000 12.5%, #0000 50%,
+            rgb(34 34 34 / 20%) 50%, rgb(34 34 34 / 20%) 62.5%,
+            #0000 62.5%, #0000 100%);
+        background-size: 8px 8px;
+      }
+
+      .findMatch {
+        background-color: rgb(234 92 0 / 33%);
+      }
+
+      .currentFindMatch {
+        background-color: #a8ac94;
+      }
+
+      .findScope {
+        background-color: rgb(180 180 180 / 30%);
+      }
+
+      .find-widget {
+        color: #616161;
+        background-color: #f3f3f3;
+        border: none;
+        box-shadow: 0 0 8px 2px rgb(0 0 0 / 16%);
+      }
+
+      .find-widget.no-results .matchesCount {
+        color: #a1260d;
+      }
+
+      .find-widget .monaco-sash {
+        background-color: #c8c8c8;
+      }
+
+      .find-widget .button:not(.disabled):hover,
+      .find-widget .codicon-find-selection:hover {
+        background-color: rgb(184 184 184 / 31%) !important;
+      }
+
+      .find-widget .monaco-inputbox.synthetic-focus {
+        outline-color: #0090f1;
+      }
+
+      .monaco-hover .hover-row:not(:first-child, :empty) {
+        border-top: 1px solid rgb(200 200 200 / 50%);
+      }
+
+      .monaco-hover hr {
+        border-top: 1px solid rgb(200 200 200 / 50%);
+        border-bottom: 0 solid rgb(200 200 200 / 50%);
+      }
+
+      .marker-widget {
+        background-color: rgb(255 255 254) !important;
+      }
+
+      .peekview-title .filename {
+        color: rgb(0 0 0) !important;
+      }
+
+      .peekview-title .dirname {
+        color: rgb(97 97 97) !important;
+      }
+    }
+  }
+}

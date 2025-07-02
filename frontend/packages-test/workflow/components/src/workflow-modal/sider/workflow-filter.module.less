@@ -1,0 +1,83 @@
+@import '@coze-common/assets/style/common.less';
+@import '@coze-common/assets/style/mixins.less';
+
+.tool-tag-list {
+  overflow: auto;
+  flex: 1;
+  flex-shrink: 0;
+
+  padding-top: 16px;
+
+  white-space: nowrap;
+
+  &-label {
+    height: 40px;
+    margin-bottom: 8px;
+    padding: 0 12px;
+
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 40px;
+    color: var(--light-usage-text-color-text-3, rgba(28, 29, 35, 35%));
+  }
+
+  &-cell {
+    cursor: pointer;
+
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    height: 32px;
+    margin-bottom: 4px;
+    padding: 0 10px 0 12px;
+
+    font-size: 14px;
+    line-height: 32px;
+    color: #1d1c23;
+
+    border-radius: 3px;
+
+    &-icon {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+
+      margin-right: 8px;
+      .common-svg-icon(20px, #1d1c23);
+
+      >img {
+        width: 24px;
+        height: 24px;
+        padding: 4px;
+      }
+    }
+
+    &-divider {
+      width: calc(100% - 24px);
+      margin: 12px;
+      background: rgba(28, 29, 35, 12%);
+    }
+
+    &:hover {
+      color: var(--light-usage-text-color-text-0, #1c1f23);
+      background: var(--light-usage-fill-color-fill-0, rgba(46, 50, 56, 5%));
+      border-radius: 8px;
+    }
+
+    &.active {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--light-usage-text-color-text-0, #1c1d23);
+
+      background: var(--light-usage-fill-color-fill-0, rgba(46, 47, 56, 5%));
+      border-radius: 8px;
+
+      .tool-tag-list-cell-icon {
+        .common-svg-icon(20px, #4d53e8);
+      }
+    }
+  }
+}

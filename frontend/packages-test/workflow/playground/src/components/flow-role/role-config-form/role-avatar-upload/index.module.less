@@ -1,0 +1,66 @@
+.upload {
+  overflow: hidden;
+  width: fit-content;
+  height: 36px;
+  margin: 0;
+
+  .circle {
+    :global {
+      .semi-upload-picture-file-card-uploading::before {
+        border-radius: 50%;
+      }
+
+      img {
+        border-radius: 50%;
+      }
+    }
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+.avatar-wrap {
+  cursor: pointer;
+  position: relative;
+  width: 36px;
+  height: 36px;
+
+  .mask {
+    cursor: pointer;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    color: rgba(255, 255, 255, 0%);
+
+    visibility: hidden;
+    background-color: rgba(22, 22, 26, 0%);
+    border-radius: var(--coze-8);
+
+    transition: all 0.1s;
+  }
+
+  &:hover {
+    .mask {
+      color: #fff;
+      visibility: visible;
+      background-color: var(--coz-mg-mask);
+    }
+  }
+}
+
+.upload-with-auto-generate {
+  display: flex;
+  align-items: flex-end;
+}

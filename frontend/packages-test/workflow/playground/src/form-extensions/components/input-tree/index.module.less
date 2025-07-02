@@ -1,0 +1,80 @@
+/* stylelint-disable selector-class-pattern, no-descending-specificity */
+
+.container {
+  position: relative;
+
+  .content {
+    overflow-x: auto;
+
+    &.readonly {
+      overflow: visible;
+
+      :global {
+        .semi-tree-option-list-block .semi-tree-option:hover {
+          background-color: inherit;
+        }
+      }
+    }
+
+    .add-hot-area {
+      cursor: pointer;
+      height: 16px;
+    }
+
+    .empty-placeholder {
+      font-size: 16px;
+      font-weight: 400;
+      font-style: normal;
+      line-height: 44px;
+      color: var(--light-usage-text-color-text-2, rgba(29, 28, 35, 60%))
+    }
+
+    :global {
+      .semi-tree-option-list {
+        overflow: initial;
+        padding: 0 0 8px;
+
+        & > div:first-child {
+          margin-top: 0;
+        }
+      }
+    }
+  }
+
+  :global {
+    .semi-tree-option-list {
+      .semi-tree-option {
+        padding-left: 8px;
+      }
+    }
+  }
+
+  &.not-readonly {
+    :global {
+      .semi-tree-option-list {
+        overflow: inherit;
+
+        .semi-tree-option {
+          padding-left: 8px;
+        }
+      }
+
+      .semi-tree-option-list-block .semi-tree-option {
+        cursor: default;
+
+        &:hover,
+        &:active {
+          background: transparent;
+        }
+      }
+    }
+
+    &:not(.could-collapse) {
+      :global {
+        .semi-tree-option.semi-tree-option-fullLabel-level-1 {
+          padding-left: 0;
+        }
+      }
+    }
+  }
+}

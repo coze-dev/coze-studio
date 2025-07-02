@@ -1,0 +1,41 @@
+import { I18n } from '@coze-arch/i18n';
+
+import { useCurrentDatabaseID, useCurrentDatabaseQuery } from '@/hooks';
+import { useOpenDatabaseDetail } from '@/components/database-detail-modal';
+
+import { Field, OverflowTagList } from '../../fields';
+
+export function Database() {
+  const databaseID = useCurrentDatabaseID();
+  const { data: database } = useCurrentDatabaseQuery();
+  const { openDatabaseDetail } = useOpenDatabaseDetail();
+
+  const list = database
+    ? [
+        {
+          icon: (
+            <img
+              src={database.iconUrl}
+              className="w-[16px] h-[16px] rounded-mini"
+            />
+          ),
+          // 运维平台直接展示 ID 即可，因为运维平台无法拉取到实际的数据库信息
+          label: IS_BOT_OP ? databaseID : database.tableName,
+        },
+      ]
+    : [];
+
+  return (
+    <Field
+      label={I18n.t('workflow_database_node_database_table_title')}
+      isEmpty={!database}
+    >
+      <div
+        className="inline-flex cursor-pointer"
+        onClick={() => openDatabaseDetail()}
+      >
+        <OverflowTagList value={list} />
+      </div>
+    </Field>
+  );
+}

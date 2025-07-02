@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "types": ["react", "react-dom"],
+    "jsx": "react",
+    "isolatedModules": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": false,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "rootDir": "./src",
+    "outDir": "./lib-ts",
+    "tsBuildInfoFile": "./lib-ts/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["./src", "./src/**/*.json"],
+  "references": [
+    {
+      "path": "../../arch/bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-flags/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../base-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../base-interface/tsconfig.build.json"
+    },
+    {
+      "path": "../client/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    }
+  ]
+}

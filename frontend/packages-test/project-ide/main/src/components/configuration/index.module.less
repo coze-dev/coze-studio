@@ -1,0 +1,55 @@
+.config-container {
+  overflow: hidden;
+
+  width: 100%;
+  height: 100%;
+
+  background: var(--coz-bg-max);
+  border: 1px solid var(--coz-stroke-primary);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+
+  .primary-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+    padding: 0 14px;
+
+    font-size: 14px;
+    line-height: 20px;
+
+    .title {
+      font-weight: 500;
+      color: var(--coz-fg-plus);
+    }
+  }
+
+  .item {
+    display: flex;
+    align-items: center;
+
+
+    margin: 0 8px;
+    padding: 4px 8px 4px 20px;
+
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--coz-fg-primary);
+
+    border-radius: 8px;
+
+    &:hover {
+      cursor: pointer;
+      color: var(--coz-fg-plus);
+      background-color: var(--coz-mg-primary);
+    }
+
+    &.activate {
+      cursor: pointer;
+      color: var(--coz-fg-plus);
+      background-color: var(--coz-mg-primary);
+    }
+  }
+}

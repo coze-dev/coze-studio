@@ -1,0 +1,100 @@
+import { inject, injectable } from 'inversify';
+import {
+  CommandRegistry,
+  Emitter,
+  type CustomTitleType,
+  type Event,
+} from '@coze-project-ide/client';
+
+import { ProjectIDEWidget } from '@/widgets/project-ide-widget';
+import { type WidgetTitleRender } from '@/types/client';
+import { type WidgetRegistry, type WidgetUIState } from '@/types';
+@injectable()
+export class WidgetService {
+  @inject(ProjectIDEWidget) public widget: ProjectIDEWidget;
+
+  @inject(CommandRegistry) private commandRegistry: CommandRegistry;
+
+  private _uiState: WidgetUIState = 'loading';
+
+  private _title: string;
+
+  private _iconType: string;
+
+  private _widgetTitleRender: WidgetTitleRender;
+
+  private registry: WidgetRegistry;
+
+  readonly onFocusEmitter = new Emitter<void>();
+
+  readonly onFocus: Event<void> = this.onFocusEmitter.event;
+
+  readonly onTitleChangedEmitter = new Emitter<string>();
+
+  readonly onTitleChanged: Event<string> = this.onTitleChangedEmitter.event;
+
+  readonly onIconTypeChangeEmitter = new Emitter<string>();
+
+  readonly onIconTypeChanged: Event<string> =
+    this.onIconTypeChangeEmitter.event;
+
+  init(factory: WidgetRegistry, widgetTitleRender: WidgetTitleRender) {
+    this.registry = factory;
+    this._widgetTitleRender = widgetTitleRender;
+    this.setTitle(this._title);
+  }
+
+  /** 触发重渲染 */
+  update() {
+    (this.widget.title as CustomTitleType).iconLabel = this._widgetTitleRender({
+      commandRegistry: this.commandRegistry,
+      registry: this.registry,
+      uiState: this._uiState,
+      title: this._title,
+      widget: this.widget,
+    }) as any;
+    (this.widget.title as CustomTitleType).saving = this._uiState === 'saving';
+  }
+
+  setTitle(title: string, uiState?: WidgetUIState) {
+    if (this._title !== title) {
+      this.onTitleChangedEmitter.fire(title);
+    }
+    this._title = title;
+    if (uiState) {
+      this._uiState = uiState;
+    }
+    this.update();
+  }
+
+  getTitle() {
+    return this._title;
+  }
+
+  getUIState() {
+    return this._uiState;
+  }
+
+  setUIState(uiState: WidgetUIState) {
+    if (this._uiState !== uiState) {
+      this._uiState = uiState;
+      this.update();
+    }
+  }
+
+  getIconType(): string {
+    return this._iconType;
+  }
+
+  setIconType(iconType: string) {
+    if (this._iconType !== iconType) {
+      this.onIconTypeChangeEmitter.fire(iconType);
+    }
+    this._iconType = iconType;
+    this.update();
+  }
+
+  close() {
+    this.widget.close();
+  }
+}

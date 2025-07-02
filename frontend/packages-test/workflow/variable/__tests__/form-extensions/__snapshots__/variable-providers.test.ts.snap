@@ -1,0 +1,2640 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`test variable providers > test variable provider: 'provide-loop-input-variables' '' 1`] = `
+[
+  {
+    "key": "12345.locals",
+    "kind": "VariableDeclaration",
+    "type": {
+      "kind": "Object",
+      "properties": [
+        {
+          "initializer": {
+            "enumerateFor": {
+              "keyPath": [
+                "start",
+                "String",
+              ],
+              "kind": "KeyPathExpression",
+              "rawMeta": undefined,
+            },
+            "kind": "EnumerateExpression",
+          },
+          "key": "start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+          "kind": "Property",
+          "meta": {
+            "label": "item (in start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__)",
+          },
+        },
+        {
+          "key": "index",
+          "kind": "Property",
+          "type": {
+            "kind": "Integer",
+          },
+        },
+      ],
+    },
+  },
+]
+`;
+
+exports[`test variable providers > test variable provider: 'provide-loop-output-variables' '' 1`] = `
+[
+  {
+    "key": "12345.outputs",
+    "kind": "VariableDeclaration",
+    "type": {
+      "kind": "Object",
+      "properties": [
+        {
+          "initializer": {
+            "keyPath": [
+              "start",
+              "String",
+            ],
+            "kind": "WrapArrayExpression",
+            "rawMeta": undefined,
+          },
+          "key": "start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+          "kind": "Property",
+        },
+      ],
+    },
+  },
+]
+`;
+
+exports[`test variable providers > test variable provider: 'provide-merge-group-variables' '' 1`] = `
+[
+  {
+    "key": "12345.outputs",
+    "kind": "VariableDeclaration",
+    "type": {
+      "kind": "Object",
+      "properties": [
+        {
+          "initializer": {
+            "expressions": [
+              {
+                "keyPath": [],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "start",
+                  "Object",
+                  "Undefined",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "llm_0",
+                  "Array<String>",
+                  "Number",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "start",
+                  "Array<Object>",
+                  "Number",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "llm_0",
+                  "Array<String>",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "start",
+                  "Array<Code>",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "llm_0",
+                  "Object",
+                  "Number",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "start",
+                  "Object",
+                  "Image",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "llm_0",
+                  "Object",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "start",
+                  "String",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+            ],
+            "kind": "MergeGroupExpression",
+            "mergeStrategy": "FirstNotEmpty",
+          },
+          "key": "test_group_1",
+          "kind": "Property",
+        },
+        {
+          "initializer": {
+            "expressions": [
+              {
+                "keyPath": [],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "start",
+                  "Object",
+                  "Undefined",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "llm_0",
+                  "Array<String>",
+                  "Number",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "start",
+                  "Array<Object>",
+                  "Number",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "llm_0",
+                  "Array<String>",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "start",
+                  "Array<Code>",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "llm_0",
+                  "Object",
+                  "Number",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "start",
+                  "Object",
+                  "Image",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "llm_0",
+                  "Object",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+              {
+                "keyPath": [
+                  "start",
+                  "String",
+                ],
+                "kind": "KeyPathExpression",
+                "rawMeta": undefined,
+              },
+            ],
+            "kind": "MergeGroupExpression",
+            "mergeStrategy": "FirstNotEmpty",
+          },
+          "key": "test_group_2",
+          "kind": "Property",
+        },
+      ],
+    },
+  },
+]
+`;
+
+exports[`test variable providers > test variable provider: 'provide-node-batch-variables' '' 1`] = `
+[
+  {
+    "key": "123456.locals",
+    "kind": "VariableDeclaration",
+    "type": {
+      "kind": "Object",
+      "properties": [
+        {
+          "initializer": {
+            "enumerateFor": {
+              "keyPath": [
+                "start",
+                "String",
+              ],
+              "kind": "KeyPathExpression",
+              "rawMeta": undefined,
+            },
+            "kind": "EnumerateExpression",
+          },
+          "key": "start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+          "kind": "Property",
+        },
+      ],
+    },
+  },
+]
+`;
+
+exports[`test variable providers > test variable provider: 'provide-node-batch-variables' 'batchMode in /inputs/batchMode' 1`] = `
+[
+  {
+    "key": "123456.locals",
+    "kind": "VariableDeclaration",
+    "type": {
+      "kind": "Object",
+      "properties": [
+        {
+          "initializer": {
+            "enumerateFor": {
+              "keyPath": [
+                "start",
+                "String",
+              ],
+              "kind": "KeyPathExpression",
+              "rawMeta": undefined,
+            },
+            "kind": "EnumerateExpression",
+          },
+          "key": "start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+          "kind": "Property",
+        },
+      ],
+    },
+  },
+]
+`;
+
+exports[`test variable providers > test variable provider: 'provide-node-batch-variables' 'shouldn\\'t provide batch variables' 1`] = `[]`;
+
+exports[`test variable providers > test variable provider: 'provide-node-output-variables' '' 1`] = `
+[
+  {
+    "key": "12345.outputs",
+    "kind": "VariableDeclaration",
+    "type": {
+      "kind": "Object",
+      "properties": [
+        {
+          "key": "String",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "String",
+            "name": "String",
+            "required": true,
+            "type": 1,
+          },
+          "type": {
+            "kind": "String",
+          },
+        },
+        {
+          "key": "Integer",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Integer",
+            "name": "Integer",
+            "required": true,
+            "type": 2,
+          },
+          "type": {
+            "kind": "Integer",
+          },
+        },
+        {
+          "key": "Boolean",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Boolean",
+            "name": "Boolean",
+            "required": true,
+            "type": 3,
+          },
+          "type": {
+            "kind": "Boolean",
+          },
+        },
+        {
+          "key": "Number",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Number",
+            "name": "Number",
+            "required": true,
+            "type": 4,
+          },
+          "type": {
+            "kind": "Number",
+          },
+        },
+        {
+          "key": "Object",
+          "kind": "Property",
+          "meta": {
+            "children": [
+              {
+                "description": "test_child_description",
+                "key": "String",
+                "name": "String",
+                "required": true,
+                "type": 1,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Integer",
+                "name": "Integer",
+                "required": true,
+                "type": 2,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Boolean",
+                "name": "Boolean",
+                "required": true,
+                "type": 3,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Number",
+                "name": "Number",
+                "required": true,
+                "type": 4,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Object",
+                "name": "Object",
+                "required": true,
+                "type": 6,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Image",
+                "name": "Image",
+                "required": true,
+                "type": 7,
+              },
+              {
+                "description": "test_child_description",
+                "key": "File",
+                "name": "File",
+                "required": true,
+                "type": 8,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Doc",
+                "name": "Doc",
+                "required": true,
+                "type": 9,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Code",
+                "name": "Code",
+                "required": true,
+                "type": 10,
+              },
+              {
+                "description": "test_child_description",
+                "key": "PPT",
+                "name": "PPT",
+                "required": true,
+                "type": 11,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Txt",
+                "name": "Txt",
+                "required": true,
+                "type": 12,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Excel",
+                "name": "Excel",
+                "required": true,
+                "type": 13,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Audio",
+                "name": "Audio",
+                "required": true,
+                "type": 14,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Zip",
+                "name": "Zip",
+                "required": true,
+                "type": 15,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Video",
+                "name": "Video",
+                "required": true,
+                "type": 16,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Svg",
+                "name": "Svg",
+                "required": true,
+                "type": 17,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Voice",
+                "name": "Voice",
+                "required": true,
+                "type": 18,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Time",
+                "name": "Time",
+                "required": true,
+                "type": 19,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<String>",
+                "name": "Array<String>",
+                "required": true,
+                "type": 99,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Integer>",
+                "name": "Array<Integer>",
+                "required": true,
+                "type": 100,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Boolean>",
+                "name": "Array<Boolean>",
+                "required": true,
+                "type": 101,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Number>",
+                "name": "Array<Number>",
+                "required": true,
+                "type": 102,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Object>",
+                "name": "Array<Object>",
+                "required": true,
+                "type": 103,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Image>",
+                "name": "Array<Image>",
+                "required": true,
+                "type": 104,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<File>",
+                "name": "Array<File>",
+                "required": true,
+                "type": 105,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Doc>",
+                "name": "Array<Doc>",
+                "required": true,
+                "type": 106,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Code>",
+                "name": "Array<Code>",
+                "required": true,
+                "type": 107,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<PPT>",
+                "name": "Array<PPT>",
+                "required": true,
+                "type": 108,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Txt>",
+                "name": "Array<Txt>",
+                "required": true,
+                "type": 109,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Excel>",
+                "name": "Array<Excel>",
+                "required": true,
+                "type": 110,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Audio>",
+                "name": "Array<Audio>",
+                "required": true,
+                "type": 111,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Zip>",
+                "name": "Array<Zip>",
+                "required": true,
+                "type": 112,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Video>",
+                "name": "Array<Video>",
+                "required": true,
+                "type": 113,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Svg>",
+                "name": "Array<Svg>",
+                "required": true,
+                "type": 114,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Voice>",
+                "name": "Array<Voice>",
+                "required": true,
+                "type": 115,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Time>",
+                "name": "Array<Time>",
+                "required": true,
+                "type": 116,
+              },
+            ],
+            "description": "test_description",
+            "key": "Object",
+            "name": "Object",
+            "required": true,
+            "type": 6,
+          },
+          "type": {
+            "kind": "Object",
+            "properties": [
+              {
+                "key": "String",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "String",
+                  "name": "String",
+                  "required": true,
+                  "type": 1,
+                },
+                "type": {
+                  "kind": "String",
+                },
+              },
+              {
+                "key": "Integer",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Integer",
+                  "name": "Integer",
+                  "required": true,
+                  "type": 2,
+                },
+                "type": {
+                  "kind": "Integer",
+                },
+              },
+              {
+                "key": "Boolean",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Boolean",
+                  "name": "Boolean",
+                  "required": true,
+                  "type": 3,
+                },
+                "type": {
+                  "kind": "Boolean",
+                },
+              },
+              {
+                "key": "Number",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Number",
+                  "name": "Number",
+                  "required": true,
+                  "type": 4,
+                },
+                "type": {
+                  "kind": "Number",
+                },
+              },
+              {
+                "key": "Object",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Object",
+                  "name": "Object",
+                  "required": true,
+                  "type": 6,
+                },
+                "type": {
+                  "kind": "Object",
+                  "properties": [],
+                },
+              },
+              {
+                "key": "Image",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Image",
+                  "name": "Image",
+                  "required": true,
+                  "type": 7,
+                },
+                "type": {
+                  "kind": "ExtendBaseType",
+                  "type": 7,
+                },
+              },
+              {
+                "key": "File",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "File",
+                  "name": "File",
+                  "required": true,
+                  "type": 8,
+                },
+                "type": {
+                  "kind": "ExtendBaseType",
+                  "type": 8,
+                },
+              },
+              {
+                "key": "Doc",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Doc",
+                  "name": "Doc",
+                  "required": true,
+                  "type": 9,
+                },
+                "type": {
+                  "kind": "ExtendBaseType",
+                  "type": 9,
+                },
+              },
+              {
+                "key": "Code",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Code",
+                  "name": "Code",
+                  "required": true,
+                  "type": 10,
+                },
+                "type": {
+                  "kind": "ExtendBaseType",
+                  "type": 10,
+                },
+              },
+              {
+                "key": "PPT",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "PPT",
+                  "name": "PPT",
+                  "required": true,
+                  "type": 11,
+                },
+                "type": {
+                  "kind": "ExtendBaseType",
+                  "type": 11,
+                },
+              },
+              {
+                "key": "Txt",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Txt",
+                  "name": "Txt",
+                  "required": true,
+                  "type": 12,
+                },
+                "type": {
+                  "kind": "ExtendBaseType",
+                  "type": 12,
+                },
+              },
+              {
+                "key": "Excel",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Excel",
+                  "name": "Excel",
+                  "required": true,
+                  "type": 13,
+                },
+                "type": {
+                  "kind": "ExtendBaseType",
+                  "type": 13,
+                },
+              },
+              {
+                "key": "Audio",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Audio",
+                  "name": "Audio",
+                  "required": true,
+                  "type": 14,
+                },
+                "type": {
+                  "kind": "ExtendBaseType",
+                  "type": 14,
+                },
+              },
+              {
+                "key": "Zip",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Zip",
+                  "name": "Zip",
+                  "required": true,
+                  "type": 15,
+                },
+                "type": {
+                  "kind": "ExtendBaseType",
+                  "type": 15,
+                },
+              },
+              {
+                "key": "Video",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Video",
+                  "name": "Video",
+                  "required": true,
+                  "type": 16,
+                },
+                "type": {
+                  "kind": "ExtendBaseType",
+                  "type": 16,
+                },
+              },
+              {
+                "key": "Svg",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Svg",
+                  "name": "Svg",
+                  "required": true,
+                  "type": 17,
+                },
+                "type": {
+                  "kind": "ExtendBaseType",
+                  "type": 17,
+                },
+              },
+              {
+                "key": "Voice",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Voice",
+                  "name": "Voice",
+                  "required": true,
+                  "type": 18,
+                },
+                "type": {
+                  "kind": "ExtendBaseType",
+                  "type": 18,
+                },
+              },
+              {
+                "key": "Time",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Time",
+                  "name": "Time",
+                  "required": true,
+                  "type": 19,
+                },
+                "type": {
+                  "kind": "ExtendBaseType",
+                  "type": 19,
+                },
+              },
+              {
+                "key": "Array<String>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<String>",
+                  "name": "Array<String>",
+                  "required": true,
+                  "type": 99,
+                },
+                "type": {
+                  "items": {
+                    "kind": "String",
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Integer>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Integer>",
+                  "name": "Array<Integer>",
+                  "required": true,
+                  "type": 100,
+                },
+                "type": {
+                  "items": {
+                    "kind": "Integer",
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Boolean>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Boolean>",
+                  "name": "Array<Boolean>",
+                  "required": true,
+                  "type": 101,
+                },
+                "type": {
+                  "items": {
+                    "kind": "Boolean",
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Number>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Number>",
+                  "name": "Array<Number>",
+                  "required": true,
+                  "type": 102,
+                },
+                "type": {
+                  "items": {
+                    "kind": "Number",
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Object>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Object>",
+                  "name": "Array<Object>",
+                  "required": true,
+                  "type": 103,
+                },
+                "type": {
+                  "items": {
+                    "kind": "Object",
+                    "properties": [],
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Image>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Image>",
+                  "name": "Array<Image>",
+                  "required": true,
+                  "type": 104,
+                },
+                "type": {
+                  "items": {
+                    "kind": "ExtendBaseType",
+                    "type": 7,
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<File>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<File>",
+                  "name": "Array<File>",
+                  "required": true,
+                  "type": 105,
+                },
+                "type": {
+                  "items": {
+                    "kind": "ExtendBaseType",
+                    "type": 8,
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Doc>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Doc>",
+                  "name": "Array<Doc>",
+                  "required": true,
+                  "type": 106,
+                },
+                "type": {
+                  "items": {
+                    "kind": "ExtendBaseType",
+                    "type": 9,
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Code>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Code>",
+                  "name": "Array<Code>",
+                  "required": true,
+                  "type": 107,
+                },
+                "type": {
+                  "items": {
+                    "kind": "ExtendBaseType",
+                    "type": 10,
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<PPT>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<PPT>",
+                  "name": "Array<PPT>",
+                  "required": true,
+                  "type": 108,
+                },
+                "type": {
+                  "items": {
+                    "kind": "ExtendBaseType",
+                    "type": 11,
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Txt>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Txt>",
+                  "name": "Array<Txt>",
+                  "required": true,
+                  "type": 109,
+                },
+                "type": {
+                  "items": {
+                    "kind": "ExtendBaseType",
+                    "type": 12,
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Excel>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Excel>",
+                  "name": "Array<Excel>",
+                  "required": true,
+                  "type": 110,
+                },
+                "type": {
+                  "items": {
+                    "kind": "ExtendBaseType",
+                    "type": 13,
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Audio>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Audio>",
+                  "name": "Array<Audio>",
+                  "required": true,
+                  "type": 111,
+                },
+                "type": {
+                  "items": {
+                    "kind": "ExtendBaseType",
+                    "type": 14,
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Zip>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Zip>",
+                  "name": "Array<Zip>",
+                  "required": true,
+                  "type": 112,
+                },
+                "type": {
+                  "items": {
+                    "kind": "ExtendBaseType",
+                    "type": 15,
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Video>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Video>",
+                  "name": "Array<Video>",
+                  "required": true,
+                  "type": 113,
+                },
+                "type": {
+                  "items": {
+                    "kind": "ExtendBaseType",
+                    "type": 16,
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Svg>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Svg>",
+                  "name": "Array<Svg>",
+                  "required": true,
+                  "type": 114,
+                },
+                "type": {
+                  "items": {
+                    "kind": "ExtendBaseType",
+                    "type": 17,
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Voice>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Voice>",
+                  "name": "Array<Voice>",
+                  "required": true,
+                  "type": 115,
+                },
+                "type": {
+                  "items": {
+                    "kind": "ExtendBaseType",
+                    "type": 18,
+                  },
+                  "kind": "Array",
+                },
+              },
+              {
+                "key": "Array<Time>",
+                "kind": "Property",
+                "meta": {
+                  "description": "test_child_description",
+                  "key": "Array<Time>",
+                  "name": "Array<Time>",
+                  "required": true,
+                  "type": 116,
+                },
+                "type": {
+                  "items": {
+                    "kind": "ExtendBaseType",
+                    "type": 19,
+                  },
+                  "kind": "Array",
+                },
+              },
+            ],
+          },
+        },
+        {
+          "key": "Image",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Image",
+            "name": "Image",
+            "required": true,
+            "type": 7,
+          },
+          "type": {
+            "kind": "ExtendBaseType",
+            "type": 7,
+          },
+        },
+        {
+          "key": "File",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "File",
+            "name": "File",
+            "required": true,
+            "type": 8,
+          },
+          "type": {
+            "kind": "ExtendBaseType",
+            "type": 8,
+          },
+        },
+        {
+          "key": "Doc",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Doc",
+            "name": "Doc",
+            "required": true,
+            "type": 9,
+          },
+          "type": {
+            "kind": "ExtendBaseType",
+            "type": 9,
+          },
+        },
+        {
+          "key": "Code",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Code",
+            "name": "Code",
+            "required": true,
+            "type": 10,
+          },
+          "type": {
+            "kind": "ExtendBaseType",
+            "type": 10,
+          },
+        },
+        {
+          "key": "PPT",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "PPT",
+            "name": "PPT",
+            "required": true,
+            "type": 11,
+          },
+          "type": {
+            "kind": "ExtendBaseType",
+            "type": 11,
+          },
+        },
+        {
+          "key": "Txt",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Txt",
+            "name": "Txt",
+            "required": true,
+            "type": 12,
+          },
+          "type": {
+            "kind": "ExtendBaseType",
+            "type": 12,
+          },
+        },
+        {
+          "key": "Excel",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Excel",
+            "name": "Excel",
+            "required": true,
+            "type": 13,
+          },
+          "type": {
+            "kind": "ExtendBaseType",
+            "type": 13,
+          },
+        },
+        {
+          "key": "Audio",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Audio",
+            "name": "Audio",
+            "required": true,
+            "type": 14,
+          },
+          "type": {
+            "kind": "ExtendBaseType",
+            "type": 14,
+          },
+        },
+        {
+          "key": "Zip",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Zip",
+            "name": "Zip",
+            "required": true,
+            "type": 15,
+          },
+          "type": {
+            "kind": "ExtendBaseType",
+            "type": 15,
+          },
+        },
+        {
+          "key": "Video",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Video",
+            "name": "Video",
+            "required": true,
+            "type": 16,
+          },
+          "type": {
+            "kind": "ExtendBaseType",
+            "type": 16,
+          },
+        },
+        {
+          "key": "Svg",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Svg",
+            "name": "Svg",
+            "required": true,
+            "type": 17,
+          },
+          "type": {
+            "kind": "ExtendBaseType",
+            "type": 17,
+          },
+        },
+        {
+          "key": "Voice",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Voice",
+            "name": "Voice",
+            "required": true,
+            "type": 18,
+          },
+          "type": {
+            "kind": "ExtendBaseType",
+            "type": 18,
+          },
+        },
+        {
+          "key": "Time",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Time",
+            "name": "Time",
+            "required": true,
+            "type": 19,
+          },
+          "type": {
+            "kind": "ExtendBaseType",
+            "type": 19,
+          },
+        },
+        {
+          "key": "Array<String>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<String>",
+            "name": "Array<String>",
+            "required": true,
+            "type": 99,
+          },
+          "type": {
+            "items": {
+              "kind": "String",
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Integer>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<Integer>",
+            "name": "Array<Integer>",
+            "required": true,
+            "type": 100,
+          },
+          "type": {
+            "items": {
+              "kind": "Integer",
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Boolean>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<Boolean>",
+            "name": "Array<Boolean>",
+            "required": true,
+            "type": 101,
+          },
+          "type": {
+            "items": {
+              "kind": "Boolean",
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Number>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<Number>",
+            "name": "Array<Number>",
+            "required": true,
+            "type": 102,
+          },
+          "type": {
+            "items": {
+              "kind": "Number",
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Object>",
+          "kind": "Property",
+          "meta": {
+            "children": [
+              {
+                "description": "test_child_description",
+                "key": "String",
+                "name": "String",
+                "required": true,
+                "type": 1,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Integer",
+                "name": "Integer",
+                "required": true,
+                "type": 2,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Boolean",
+                "name": "Boolean",
+                "required": true,
+                "type": 3,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Number",
+                "name": "Number",
+                "required": true,
+                "type": 4,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Object",
+                "name": "Object",
+                "required": true,
+                "type": 6,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Image",
+                "name": "Image",
+                "required": true,
+                "type": 7,
+              },
+              {
+                "description": "test_child_description",
+                "key": "File",
+                "name": "File",
+                "required": true,
+                "type": 8,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Doc",
+                "name": "Doc",
+                "required": true,
+                "type": 9,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Code",
+                "name": "Code",
+                "required": true,
+                "type": 10,
+              },
+              {
+                "description": "test_child_description",
+                "key": "PPT",
+                "name": "PPT",
+                "required": true,
+                "type": 11,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Txt",
+                "name": "Txt",
+                "required": true,
+                "type": 12,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Excel",
+                "name": "Excel",
+                "required": true,
+                "type": 13,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Audio",
+                "name": "Audio",
+                "required": true,
+                "type": 14,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Zip",
+                "name": "Zip",
+                "required": true,
+                "type": 15,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Video",
+                "name": "Video",
+                "required": true,
+                "type": 16,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Svg",
+                "name": "Svg",
+                "required": true,
+                "type": 17,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Voice",
+                "name": "Voice",
+                "required": true,
+                "type": 18,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Time",
+                "name": "Time",
+                "required": true,
+                "type": 19,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<String>",
+                "name": "Array<String>",
+                "required": true,
+                "type": 99,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Integer>",
+                "name": "Array<Integer>",
+                "required": true,
+                "type": 100,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Boolean>",
+                "name": "Array<Boolean>",
+                "required": true,
+                "type": 101,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Number>",
+                "name": "Array<Number>",
+                "required": true,
+                "type": 102,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Object>",
+                "name": "Array<Object>",
+                "required": true,
+                "type": 103,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Image>",
+                "name": "Array<Image>",
+                "required": true,
+                "type": 104,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<File>",
+                "name": "Array<File>",
+                "required": true,
+                "type": 105,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Doc>",
+                "name": "Array<Doc>",
+                "required": true,
+                "type": 106,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Code>",
+                "name": "Array<Code>",
+                "required": true,
+                "type": 107,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<PPT>",
+                "name": "Array<PPT>",
+                "required": true,
+                "type": 108,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Txt>",
+                "name": "Array<Txt>",
+                "required": true,
+                "type": 109,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Excel>",
+                "name": "Array<Excel>",
+                "required": true,
+                "type": 110,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Audio>",
+                "name": "Array<Audio>",
+                "required": true,
+                "type": 111,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Zip>",
+                "name": "Array<Zip>",
+                "required": true,
+                "type": 112,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Video>",
+                "name": "Array<Video>",
+                "required": true,
+                "type": 113,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Svg>",
+                "name": "Array<Svg>",
+                "required": true,
+                "type": 114,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Voice>",
+                "name": "Array<Voice>",
+                "required": true,
+                "type": 115,
+              },
+              {
+                "description": "test_child_description",
+                "key": "Array<Time>",
+                "name": "Array<Time>",
+                "required": true,
+                "type": 116,
+              },
+            ],
+            "description": "test_description",
+            "key": "Array<Object>",
+            "name": "Array<Object>",
+            "required": true,
+            "type": 103,
+          },
+          "type": {
+            "items": {
+              "kind": "Object",
+              "properties": [
+                {
+                  "key": "String",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "String",
+                    "name": "String",
+                    "required": true,
+                    "type": 1,
+                  },
+                  "type": {
+                    "kind": "String",
+                  },
+                },
+                {
+                  "key": "Integer",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Integer",
+                    "name": "Integer",
+                    "required": true,
+                    "type": 2,
+                  },
+                  "type": {
+                    "kind": "Integer",
+                  },
+                },
+                {
+                  "key": "Boolean",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Boolean",
+                    "name": "Boolean",
+                    "required": true,
+                    "type": 3,
+                  },
+                  "type": {
+                    "kind": "Boolean",
+                  },
+                },
+                {
+                  "key": "Number",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Number",
+                    "name": "Number",
+                    "required": true,
+                    "type": 4,
+                  },
+                  "type": {
+                    "kind": "Number",
+                  },
+                },
+                {
+                  "key": "Object",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Object",
+                    "name": "Object",
+                    "required": true,
+                    "type": 6,
+                  },
+                  "type": {
+                    "kind": "Object",
+                    "properties": [],
+                  },
+                },
+                {
+                  "key": "Image",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Image",
+                    "name": "Image",
+                    "required": true,
+                    "type": 7,
+                  },
+                  "type": {
+                    "kind": "ExtendBaseType",
+                    "type": 7,
+                  },
+                },
+                {
+                  "key": "File",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "File",
+                    "name": "File",
+                    "required": true,
+                    "type": 8,
+                  },
+                  "type": {
+                    "kind": "ExtendBaseType",
+                    "type": 8,
+                  },
+                },
+                {
+                  "key": "Doc",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Doc",
+                    "name": "Doc",
+                    "required": true,
+                    "type": 9,
+                  },
+                  "type": {
+                    "kind": "ExtendBaseType",
+                    "type": 9,
+                  },
+                },
+                {
+                  "key": "Code",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Code",
+                    "name": "Code",
+                    "required": true,
+                    "type": 10,
+                  },
+                  "type": {
+                    "kind": "ExtendBaseType",
+                    "type": 10,
+                  },
+                },
+                {
+                  "key": "PPT",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "PPT",
+                    "name": "PPT",
+                    "required": true,
+                    "type": 11,
+                  },
+                  "type": {
+                    "kind": "ExtendBaseType",
+                    "type": 11,
+                  },
+                },
+                {
+                  "key": "Txt",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Txt",
+                    "name": "Txt",
+                    "required": true,
+                    "type": 12,
+                  },
+                  "type": {
+                    "kind": "ExtendBaseType",
+                    "type": 12,
+                  },
+                },
+                {
+                  "key": "Excel",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Excel",
+                    "name": "Excel",
+                    "required": true,
+                    "type": 13,
+                  },
+                  "type": {
+                    "kind": "ExtendBaseType",
+                    "type": 13,
+                  },
+                },
+                {
+                  "key": "Audio",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Audio",
+                    "name": "Audio",
+                    "required": true,
+                    "type": 14,
+                  },
+                  "type": {
+                    "kind": "ExtendBaseType",
+                    "type": 14,
+                  },
+                },
+                {
+                  "key": "Zip",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Zip",
+                    "name": "Zip",
+                    "required": true,
+                    "type": 15,
+                  },
+                  "type": {
+                    "kind": "ExtendBaseType",
+                    "type": 15,
+                  },
+                },
+                {
+                  "key": "Video",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Video",
+                    "name": "Video",
+                    "required": true,
+                    "type": 16,
+                  },
+                  "type": {
+                    "kind": "ExtendBaseType",
+                    "type": 16,
+                  },
+                },
+                {
+                  "key": "Svg",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Svg",
+                    "name": "Svg",
+                    "required": true,
+                    "type": 17,
+                  },
+                  "type": {
+                    "kind": "ExtendBaseType",
+                    "type": 17,
+                  },
+                },
+                {
+                  "key": "Voice",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Voice",
+                    "name": "Voice",
+                    "required": true,
+                    "type": 18,
+                  },
+                  "type": {
+                    "kind": "ExtendBaseType",
+                    "type": 18,
+                  },
+                },
+                {
+                  "key": "Time",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Time",
+                    "name": "Time",
+                    "required": true,
+                    "type": 19,
+                  },
+                  "type": {
+                    "kind": "ExtendBaseType",
+                    "type": 19,
+                  },
+                },
+                {
+                  "key": "Array<String>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<String>",
+                    "name": "Array<String>",
+                    "required": true,
+                    "type": 99,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "String",
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Integer>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Integer>",
+                    "name": "Array<Integer>",
+                    "required": true,
+                    "type": 100,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "Integer",
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Boolean>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Boolean>",
+                    "name": "Array<Boolean>",
+                    "required": true,
+                    "type": 101,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "Boolean",
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Number>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Number>",
+                    "name": "Array<Number>",
+                    "required": true,
+                    "type": 102,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "Number",
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Object>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Object>",
+                    "name": "Array<Object>",
+                    "required": true,
+                    "type": 103,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "Object",
+                      "properties": [],
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Image>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Image>",
+                    "name": "Array<Image>",
+                    "required": true,
+                    "type": 104,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "ExtendBaseType",
+                      "type": 7,
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<File>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<File>",
+                    "name": "Array<File>",
+                    "required": true,
+                    "type": 105,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "ExtendBaseType",
+                      "type": 8,
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Doc>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Doc>",
+                    "name": "Array<Doc>",
+                    "required": true,
+                    "type": 106,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "ExtendBaseType",
+                      "type": 9,
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Code>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Code>",
+                    "name": "Array<Code>",
+                    "required": true,
+                    "type": 107,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "ExtendBaseType",
+                      "type": 10,
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<PPT>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<PPT>",
+                    "name": "Array<PPT>",
+                    "required": true,
+                    "type": 108,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "ExtendBaseType",
+                      "type": 11,
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Txt>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Txt>",
+                    "name": "Array<Txt>",
+                    "required": true,
+                    "type": 109,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "ExtendBaseType",
+                      "type": 12,
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Excel>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Excel>",
+                    "name": "Array<Excel>",
+                    "required": true,
+                    "type": 110,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "ExtendBaseType",
+                      "type": 13,
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Audio>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Audio>",
+                    "name": "Array<Audio>",
+                    "required": true,
+                    "type": 111,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "ExtendBaseType",
+                      "type": 14,
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Zip>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Zip>",
+                    "name": "Array<Zip>",
+                    "required": true,
+                    "type": 112,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "ExtendBaseType",
+                      "type": 15,
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Video>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Video>",
+                    "name": "Array<Video>",
+                    "required": true,
+                    "type": 113,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "ExtendBaseType",
+                      "type": 16,
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Svg>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Svg>",
+                    "name": "Array<Svg>",
+                    "required": true,
+                    "type": 114,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "ExtendBaseType",
+                      "type": 17,
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Voice>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Voice>",
+                    "name": "Array<Voice>",
+                    "required": true,
+                    "type": 115,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "ExtendBaseType",
+                      "type": 18,
+                    },
+                    "kind": "Array",
+                  },
+                },
+                {
+                  "key": "Array<Time>",
+                  "kind": "Property",
+                  "meta": {
+                    "description": "test_child_description",
+                    "key": "Array<Time>",
+                    "name": "Array<Time>",
+                    "required": true,
+                    "type": 116,
+                  },
+                  "type": {
+                    "items": {
+                      "kind": "ExtendBaseType",
+                      "type": 19,
+                    },
+                    "kind": "Array",
+                  },
+                },
+              ],
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Image>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<Image>",
+            "name": "Array<Image>",
+            "required": true,
+            "type": 104,
+          },
+          "type": {
+            "items": {
+              "kind": "ExtendBaseType",
+              "type": 7,
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<File>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<File>",
+            "name": "Array<File>",
+            "required": true,
+            "type": 105,
+          },
+          "type": {
+            "items": {
+              "kind": "ExtendBaseType",
+              "type": 8,
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Doc>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<Doc>",
+            "name": "Array<Doc>",
+            "required": true,
+            "type": 106,
+          },
+          "type": {
+            "items": {
+              "kind": "ExtendBaseType",
+              "type": 9,
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Code>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<Code>",
+            "name": "Array<Code>",
+            "required": true,
+            "type": 107,
+          },
+          "type": {
+            "items": {
+              "kind": "ExtendBaseType",
+              "type": 10,
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<PPT>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<PPT>",
+            "name": "Array<PPT>",
+            "required": true,
+            "type": 108,
+          },
+          "type": {
+            "items": {
+              "kind": "ExtendBaseType",
+              "type": 11,
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Txt>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<Txt>",
+            "name": "Array<Txt>",
+            "required": true,
+            "type": 109,
+          },
+          "type": {
+            "items": {
+              "kind": "ExtendBaseType",
+              "type": 12,
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Excel>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<Excel>",
+            "name": "Array<Excel>",
+            "required": true,
+            "type": 110,
+          },
+          "type": {
+            "items": {
+              "kind": "ExtendBaseType",
+              "type": 13,
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Audio>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<Audio>",
+            "name": "Array<Audio>",
+            "required": true,
+            "type": 111,
+          },
+          "type": {
+            "items": {
+              "kind": "ExtendBaseType",
+              "type": 14,
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Zip>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<Zip>",
+            "name": "Array<Zip>",
+            "required": true,
+            "type": 112,
+          },
+          "type": {
+            "items": {
+              "kind": "ExtendBaseType",
+              "type": 15,
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Video>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<Video>",
+            "name": "Array<Video>",
+            "required": true,
+            "type": 113,
+          },
+          "type": {
+            "items": {
+              "kind": "ExtendBaseType",
+              "type": 16,
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Svg>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<Svg>",
+            "name": "Array<Svg>",
+            "required": true,
+            "type": 114,
+          },
+          "type": {
+            "items": {
+              "kind": "ExtendBaseType",
+              "type": 17,
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Voice>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<Voice>",
+            "name": "Array<Voice>",
+            "required": true,
+            "type": 115,
+          },
+          "type": {
+            "items": {
+              "kind": "ExtendBaseType",
+              "type": 18,
+            },
+            "kind": "Array",
+          },
+        },
+        {
+          "key": "Array<Time>",
+          "kind": "Property",
+          "meta": {
+            "children": [],
+            "description": "test_description",
+            "key": "Array<Time>",
+            "name": "Array<Time>",
+            "required": true,
+            "type": 116,
+          },
+          "type": {
+            "items": {
+              "kind": "ExtendBaseType",
+              "type": 19,
+            },
+            "kind": "Array",
+          },
+        },
+      ],
+    },
+  },
+]
+`;

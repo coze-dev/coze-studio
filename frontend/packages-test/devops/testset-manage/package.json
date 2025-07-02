@@ -1,0 +1,57 @@
+{
+  "name": "@coze-devops/testset-manage",
+  "version": "1.0.0",
+  "description": "Testset manage for coze",
+  "license": "Apache-2.0",
+  "author": "qihai@bytedance.com",
+  "sideEffects": [
+    "**/*.less",
+    "**/*.svg"
+  ],
+  "main": "src/index.ts",
+  "typings": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./"
+  },
+  "dependencies": {
+    "immer": "^10.0.3"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/bot-icons": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@douyinfe/semi-illustrations": "^2.36.0",
+    "@types/json-schema": "~7.0.15",
+    "@types/lodash-es": "^4.17.10",
+    "@types/react": "18.2.37",
+    "ahooks": "^3.7.8",
+    "ajv": "~8.12.0",
+    "classnames": "^2.3.2",
+    "dayjs": "^1.11.7",
+    "lodash-es": "^4.17.21",
+    "react": "~18.2.0",
+    "stylelint": "^15.11.0",
+    "zustand": "^4.4.7"
+  },
+  "peerDependencies": {
+    "@douyinfe/semi-illustrations": "^2.36.0",
+    "ahooks": "^3.7.8",
+    "ajv": "~8.12.0",
+    "classnames": "^2.3.2",
+    "dayjs": "^1.11.7",
+    "lodash-es": "^4.17.21",
+    "react": "~18.2.0",
+    "zustand": "^4.4.7"
+  },
+  "// deps": "immer@^10.0.3 为脚本自动补齐，请勿改动"
+}

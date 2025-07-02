@@ -1,0 +1,44 @@
+.edit-form-section {
+  :global .semi-form-section-text {
+    border-bottom: unset;
+  }
+}
+
+.form-section-title {
+  display: flex;
+  align-items: center;
+
+  font-size: 14px;
+  font-weight: 600;
+  font-style: normal;
+  line-height: 22px;
+  column-gap: 8px;
+}
+
+.form-item-label {
+  font-size: 12px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 16px;
+  margin-bottom: 4px;
+  margin-top: 4px;
+  .label-text {
+    display: inline-block;
+    font-weight: 600;
+    &.required::after {
+      content: "*";
+      font-weight: 600;
+      color: var(--coz-fg-hglt-red);
+    }
+  }
+  .label-type {
+    display: inline-block;
+    margin-left: 8px;
+    color: var(--coz-fg-secondary);
+  }
+}
+
+.form-item-select {
+  width: 100%;
+}
+

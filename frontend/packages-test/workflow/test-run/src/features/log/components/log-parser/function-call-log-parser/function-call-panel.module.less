@@ -1,0 +1,43 @@
+.item {
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--coz-stroke-primary);
+  }
+}
+
+.header {
+  padding: 6px;
+}
+
+
+.empty {
+  border: 1px solid var(--coz-stroke-primary);
+}
+
+.content {
+  max-height: 272px;
+  min-height: 28px;
+  overflow-y: auto;
+  user-select: text;
+  width: 100%;
+  border-top: 1px solid var(--coz-stroke-primary);
+
+}
+
+.json-viewer {
+  border: none;
+  padding: 0;
+}
+
+.group-name {
+  @apply coz-fg-primary;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 0.5px solid var(--coz-stroke-plus);
+}

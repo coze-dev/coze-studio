@@ -1,0 +1,159 @@
+.resource-list-wrapper {
+  height: 100%;
+  width: 100%;
+  user-select: none;
+
+  :global{
+    .resource-list-custom-event-wrapper {
+      height: 100%;
+      width: 100%;
+    }
+
+    .resource-list-scroll-container {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .resource-list-drag-and-drop-wrapper {
+      height: 100%;
+
+      .item-wrapper {
+        position: relative;
+        border-radius: 4px;
+
+        .item-wrapper-indent-line {
+          position: absolute;
+          border-left-width: 1px;
+          border-left-style: solid;
+          transition: all 0.2s ease-in-out;
+        }
+      }
+
+      .base-item-hover-class {
+        &:hover {
+          background-color: rgba(6, 7, 9, 0.08);
+        }
+      }
+
+      .item-is-temp-selected {
+        background-color: rgba(6, 7, 9, 0.04);
+        border-radius: 0px;
+      }
+      .item-is-in-edit {
+        background-color: rgba(6, 7, 9, 0.04);
+      }
+      .item-is-selected {
+        background-color: rgba(6, 7, 9, 0.14);
+      }
+
+      .dragging-hover-class {
+        background-color: rgba(148, 152, 247, 0.44);
+        border-radius: 0px;
+      }
+
+      .file-item-wrapper {
+      }
+
+      .base-item {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        padding-right: 8px;
+        transition: all 0.1s ease-in-out;
+
+        .base-item-icon {
+          display: flex;
+          align-items: center;
+          margin-right: 4px;
+        }
+
+        .base-item-name-input {
+          width: 100%;
+          position: relative;
+          display: flex;
+          align-items: center;
+
+          .semi-input-wrapper {
+            height: 20px;
+            line-height: 20px;
+            border-radius: 6px;
+          }
+          .semi-input-wrapper-focus {
+            background-color: white;
+          }
+          [class~='semi-input'] {
+            padding: 0 4px;
+            height: 20px;
+            line-height: 20px;
+          }
+
+          .base-item-name-input-error-msg-absolute {
+            z-index: 999;
+            position: absolute;
+            width: 100%;
+            top: 26px;
+            background-color: rgba(255, 241, 242, 1);
+            border-width: 1px;
+            border-color: rgba(242, 36, 53, 1);
+            border-radius: 6px;
+            border-style: solid;
+            color: rgba(6, 7, 9, 0.5);
+            display: flex;
+            align-items: center;
+            padding: 2px 4px;
+            font-size: 12px;
+            line-height: 16px;
+            font-weight: 700;
+          }
+        }
+
+        .base-item-name-input-error {
+          [class~='semi-input-wrapper'] {
+            border-color: rgba(242, 36, 53, 1);
+          }
+        }
+
+        .base-item-more-hover-display-class {
+          display: none;
+        }
+        &:hover {
+          .base-item-more-hover-display-class {
+            display: flex;
+          }
+        }
+      }
+
+      .base-item-more-btn {
+        // 用于覆盖 coze-design 二次封装被固化的样式。。。
+        min-width: 16px;
+        padding-left: 0;
+        padding-right: 0;
+        background-color: transparent;
+        color: rgba(6, 7, 9, 0.96);
+        &:hover {
+          background-color: rgba(6, 7, 9, 0.14);
+        }
+
+        width: 16px;
+        height: 16px;
+        align-items: center;
+        justify-content: center;
+        svg {
+          width: 12px;
+          height: 12px;
+        }
+      }
+
+      .base-radius-class-first {
+        border-radius: 4px 4px 0 0;
+      }
+      .base-radius-class-last {
+        border-radius: 0 0 4px 4px;
+      }
+      .base-radius-class-single {
+        border-radius: 4px;
+      }
+    }
+  }
+}

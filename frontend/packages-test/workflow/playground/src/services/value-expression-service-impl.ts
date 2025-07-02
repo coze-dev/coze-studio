@@ -1,0 +1,98 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { injectable, inject } from 'inversify';
+import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
+import {
+  type ValueExpression,
+  type ValueExpressionDTO,
+  type RefExpression,
+  ValueExpressionType,
+  WorkflowVariableService,
+  variableUtils,
+} from '@coze-workflow/variable';
+import { ValueExpression as ValueExpressionUtils } from '@coze-workflow/base';
+
+import { type ValueExpressionService } from './value-expression-service';
+
+@injectable()
+export class ValueExpressionServiceImpl implements ValueExpressionService {
+  @inject(WorkflowVariableService)
+  private readonly variableService: WorkflowVariableService;
+
+  public isValueExpression(value: unknown): boolean {
+    if (value === undefined || value === null) {
+      return false;
+    }
+
+    return ValueExpressionUtils.isExpression(value as ValueExpression);
+  }
+
+  public isValueExpressionDTO(value: unknown): boolean {
+    return (
+      (typeof value === 'object' &&
+        value !== null &&
+        (value as any).value?.type === ValueExpressionType.REF) ||
+      (value as any).value?.type === ValueExpressionType.LITERAL
+    );
+  }
+
+  public isRefExpression(value: unknown): boolean {
+    if (value === undefined || value === null) {
+      return false;
+    }
+
+    return ValueExpressionUtils.isRef(value as ValueExpression);
+  }
+
+  public isLiteralExpression(value: unknown): boolean {
+    if (value === undefined || value === null) {
+      return false;
+    }
+
+    return ValueExpressionUtils.isLiteral(value as ValueExpression);
+  }
+
+  // 将 ValueExpression 转换为 ValueExpressionDTO
+  public toDTO(
+    valueExpression?: ValueExpression,
+    currentNode?: FlowNodeEntity,
+  ): ValueExpressionDTO | undefined {
+    if (!valueExpression) {
+      return undefined;
+    }
+
+    const dto = variableUtils.valueExpressionToDTO(
+      valueExpression,
+      this.variableService,
+      { node: currentNode },
+    );
+
+    return dto;
+  }
+
+  // 从 ValueExpressionDTO 生成 ValueExpression
+  public toVO(dto?: ValueExpressionDTO): ValueExpression | undefined {
+    if (!dto) {
+      return undefined;
+    }
+
+    const vo = variableUtils.valueExpressionToVO(dto, this.variableService);
+
+    return vo;
+  }
+
+  public isRefExpressionVariableExists(
+    value: RefExpression,
+    node: FlowNodeEntity,
+  ): boolean {
+    const variable = this.variableService.getViewVariableByKeyPath(
+      value?.content?.keyPath,
+      {
+        node,
+      },
+    );
+
+    const isValidVariable = variable !== null && variable !== undefined;
+
+    return isValidVariable;
+  }
+}

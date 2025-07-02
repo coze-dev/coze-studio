@@ -1,0 +1,28 @@
+{
+  "name": "@coze-workflow/test-run-next",
+  "version": "0.0.1",
+  "description": "Workflow TestRun 入口包",
+  "author": "jiangxujin@bytedance.com",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "main": "./src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "exit 0",
+    "test:cov": "exit 0"
+  },
+  "dependencies": {
+    "@coze-workflow/test-run-form": "workspace:*",
+    "@coze-workflow/test-run-shared": "workspace:*",
+    "@coze-workflow/test-run-trace": "workspace:*"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "typescript": "~5.8.2"
+  }
+}
+

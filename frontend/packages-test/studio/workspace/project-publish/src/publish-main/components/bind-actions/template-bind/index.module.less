@@ -1,0 +1,55 @@
+.template-form {
+  .editor-container {
+    border: 1px solid rgba(var(--coze-stroke-6), var(--coze-stroke-6-alpha));
+
+    &:focus-within {
+      border-color: var(--semi-color-focus-border);
+    }
+  }
+
+  :global {
+    .semi-form-field {
+      padding-top: 0;
+    }
+
+    .semi-upload-picture {
+      .semi-upload-picture-add {
+        background-color: transparent;
+        border: 1px solid rgba(var(--coze-stroke-6), var(--coze-stroke-6-alpha));
+      }
+
+      // 上传失败的图片，红色 outline 会超出边距
+      .semi-upload-picture-file-card-error {
+        outline-offset: -1px;
+      }
+    }
+
+    .coz-single-select {
+      .semi-radio {
+        margin-top: 3px;
+        margin-bottom: 3px;
+
+        // stylelint-disable-next-line selector-class-pattern -- 覆盖 semi 样式
+        .semi-radio-addon-buttonRadio {
+          border-radius: 6px;
+        }
+      }
+    }
+
+    .coz-input-number.semi-input-number {
+      .semi-input-wrapper {
+        border-color: rgba(var(--coze-stroke-6), var(--coze-stroke-6-alpha));
+      }
+
+      .semi-input-wrapper-focus {
+        border-color: var(--semi-color-focus-border);
+      }
+
+      .semi-input-suffix {
+        margin-right: 30px;
+        font-size: 12px;
+        font-weight: 400;
+      }
+    }
+  }
+}

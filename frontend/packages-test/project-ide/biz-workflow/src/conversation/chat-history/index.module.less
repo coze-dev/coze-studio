@@ -1,0 +1,49 @@
+.skeleton-container {
+  display: flex;
+  flex-direction: column;
+  row-gap: 16px;
+  align-items: center;
+
+  width: 100%;
+  height: 100%;
+  padding: 28px 97px;
+
+  .skeleton-item {
+    display: flex;
+    column-gap: 12px;
+    width: 100%;
+
+    .skeleton-column {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      row-gap: 8px;
+    }
+
+    .skeleton-avatar {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+    }
+
+    .skeleton-name {
+      width: 64px;
+      height: 13px;
+      border-radius: 12px;
+    }
+
+    .skeleton-content {
+      flex-shrink: 0;
+      width: 100%;
+      height: 102px;
+      border-radius: 12px;
+    }
+
+    .skeleton-content-mini {
+      flex-shrink: 0;
+      width: 50%;
+      height: 60px;
+      border-radius: 12px;
+    }
+  }
+}

@@ -1,0 +1,46 @@
+/* stylelint-disable declaration-no-important */
+.tools {
+  pointer-events: none;
+
+  position: absolute;
+  bottom: 16px;
+
+  display: flex;
+  justify-content: center;
+
+  width: 100%;
+  min-width: 360px;
+  padding: 0 8px;
+
+  :global .minimap-panel {
+    border: 1px solid var(--coz-stroke-plus) !important;
+    box-shadow: var(--coz-shadow-small) !important;
+  }
+}
+
+.tools-wrap {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  gap: 8px;
+  align-items: center;
+}
+
+.tools-section {
+  pointer-events: auto;
+
+  display: flex;
+  column-gap: 2px;
+  align-items: center;
+
+  height: 40px;
+  padding: 0 4px;
+
+  background-color: var(--coz-bg-max);
+  border: 1px solid var(--coz-stroke-plus);
+  border-radius: 10px;
+  box-shadow: var(--coz-shadow-small);
+
+  &.test-run {
+    column-gap: 4px;
+  }
+}

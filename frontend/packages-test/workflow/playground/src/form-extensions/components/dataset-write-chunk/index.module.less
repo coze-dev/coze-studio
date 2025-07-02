@@ -1,0 +1,53 @@
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+
+  :global {
+    .semi-tag-grey-light {
+      background: var(--light-color-brand-brand-1, #d9dcfa);
+    }
+  }
+}
+
+.separator-select {
+  border-radius: 6px;
+
+  :global {
+    .semi-select-selection .semi-select-content-wrapper .semi-select-selection-text {
+      font-size: 12px;
+    }
+  }
+}
+
+.custom-input{
+  :global {
+    .coz-input{
+      display: flex;
+      align-items: center;
+
+      width: 160px;
+      height: 24px;
+
+      border-radius: 6px;
+
+      .semi-input{
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+.parser-radio-group {
+  :global {
+    .semi-radio-content .semi-radio-addon{
+      font-size: 12px;
+      font-weight: 400;
+    }
+  }
+}

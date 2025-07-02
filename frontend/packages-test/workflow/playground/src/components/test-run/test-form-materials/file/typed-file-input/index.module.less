@@ -1,0 +1,23 @@
+.file-input-type-select {
+  :global {
+    .semi-select-selection .semi-select-content-wrapper .semi-select-selection-text {
+      @apply coz-fg-primary;
+
+      font-size: 12px;
+    }
+  }
+}
+
+.file-input-type-select-dropdown {
+  :global {
+    .semi-select-option-list .coz-select-option-item .option-text-wrapper {
+      height: 22px;
+      min-height: 22px;
+      font-size: 12px;
+    }
+
+    .semi-select-small:is(.coz-select,.coz-select-tag-popover.semi-popover-wrapper) .semi-select-selection {
+      margin-left: 5px;
+    }
+  }
+}

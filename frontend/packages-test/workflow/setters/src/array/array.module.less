@@ -1,0 +1,43 @@
+.array {
+  position: relative;
+
+  .add-button {
+    margin-top: 8px;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .array-item {
+    display: flex;
+
+    .child {
+      display: flex;
+      flex: 1;
+      gap: 4px;
+      align-items: start;
+
+      min-width: 0;
+
+      >* {
+        &:last-child {
+          flex: 1;
+        }
+      }
+    }
+
+    .minus {
+      position: relative;
+      top: 5px;
+      padding: 4px;
+      color: var(--light-usage-text-color-text-3, rgba(28, 29, 35, 35%));
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
+}

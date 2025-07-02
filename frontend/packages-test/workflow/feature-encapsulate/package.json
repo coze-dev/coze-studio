@@ -1,0 +1,56 @@
+{
+  "name": "@coze-workflow/feature-encapsulate",
+  "version": "0.0.1",
+  "description": "封装解封逻辑",
+  "license": "Apache-2.0",
+  "author": "maoyiwei.ebay@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage",
+    "test:update": "vitest --update"
+  },
+  "dependencies": {
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-workflow/base": "workspace:*",
+    "@coze-workflow/nodes": "workspace:*",
+    "@coze-workflow/render": "workspace:*",
+    "@coze-workflow/variable": "workspace:*",
+    "@flowgram-adapter/common": "workspace:*",
+    "@flowgram-adapter/free-layout-editor": "workspace:*",
+    "ahooks": "^3.7.8",
+    "classnames": "^2.3.2",
+    "immer": "^10.0.3",
+    "inversify": "^6.0.1",
+    "lodash-es": "^4.17.21",
+    "nanoid": "^4.0.2",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "reflect-metadata": "^0.1.13"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/lodash-es": "^4.17.10",
+    "@types/node": "^18",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "less": "^3.13.1",
+    "react-is": ">= 16.8.0",
+    "scheduler": ">=0.19.0",
+    "styled-components": ">=4",
+    "sucrase": "^3.32.0",
+    "typescript": "~5.8.2",
+    "vitest": "~3.0.5"
+  }
+}
+

@@ -1,0 +1,65 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  // coze 2.0 css
+  height: 64px;
+  padding: 0 16px;
+
+  background: var(--coz-bg-primary);
+  border-bottom: 1px solid var(--coz-stroke-primary);
+
+  .left {
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+    column-gap: 4px;
+    align-items: center;
+  }
+
+
+  .right {
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+    column-gap: 12px;
+    align-items: center;
+
+    .spin-container {
+      display: flex;
+
+      svg {
+        margin-top: 0;
+      }
+
+      :global {
+        .semi-spin-wrapper {
+          top: 76%;
+          display: flex;
+        }
+      }
+    }
+
+    .icon-copy {
+      padding: 6px 7px;
+      color: #6B6B75;
+    }
+
+    .show-info {
+      display: inline-flex;
+      align-items: center;
+
+      font-size: 12px;
+      font-weight: 500;
+      font-style: normal;
+      line-height: 16px;
+    }
+
+    .last-run-btn {
+      color: #1D1C2399;
+    }
+  }
+}
+

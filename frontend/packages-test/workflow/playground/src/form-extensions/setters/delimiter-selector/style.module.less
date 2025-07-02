@@ -1,0 +1,16 @@
+.delimiter-selector {
+  :global {
+    .semi-select.coz-select:not(.does-not-exist) {
+      background-color: #fff;
+      width: 100%;
+    }
+
+    .coz-select:not(.does-not-exist) .semi-select-selection .semi-select-selection-placeholder {
+      color: var(--semi-color-text-2);
+    }
+
+    .coz-select:not(.does-not-exist) .semi-select-arrow {
+      padding-right: 8px;
+    }
+  }
+}

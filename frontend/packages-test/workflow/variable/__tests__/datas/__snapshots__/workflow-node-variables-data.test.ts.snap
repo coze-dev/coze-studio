@@ -1,0 +1,1168 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`test workflow node variables entity data > test batchUpdateRefs 1`] = `
+{
+  "inputParameters.0.input": [
+    "start",
+    "String",
+  ],
+  "inputParameters.1.input": [
+    "llm_test",
+    "Object",
+  ],
+  "inputParameters.10.input": [
+    "merge_0",
+    "test_group_1",
+  ],
+  "inputParameters.11.input": [
+    "merge_0",
+    "test_group_2",
+  ],
+  "inputParameters.12.input": [
+    "loop_0",
+    "loop_output_var_string",
+  ],
+  "inputParameters.13.input": [
+    "loop_0",
+    "loop_output_string",
+  ],
+  "inputParameters.14.input": [
+    "loop_0",
+    "loop_output_image",
+  ],
+  "inputParameters.2.input": [
+    "start",
+    "Drilldown",
+    "Object",
+    "Image",
+  ],
+  "inputParameters.3.input": [
+    "llm_test",
+    "Object",
+    "Number",
+  ],
+  "inputParameters.4.input": [
+    "start",
+    "Array<Code>",
+  ],
+  "inputParameters.5.input": [
+    "llm_test",
+    "Array<String>",
+  ],
+  "inputParameters.6.input": [
+    "start",
+    "Array<Object>",
+    "Number",
+  ],
+  "inputParameters.7.input": [
+    "llm_test",
+    "Array<String>",
+    "Number",
+  ],
+  "inputParameters.8.input": [
+    "start",
+    "Drilldown",
+    "Object",
+    "Undefined",
+  ],
+}
+`;
+
+exports[`test workflow node variables entity data > test workflow-node-input-variables-data 1`] = `
+[
+  [
+    "start",
+    [],
+    [],
+  ],
+  [
+    "end",
+    [
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "String",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "start__String",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "llm_0",
+              "Object",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "llm_0__Object",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "Object",
+              "Image",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "start__Object__Image",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "llm_0",
+              "Object",
+              "Number",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "llm_0__Object__Number",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "Array<Code>",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "start__Array<Code>",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "llm_0",
+              "Array<String>",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "llm_0__Array<String>",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "Array<Object>",
+              "Number",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "start__Array<Object>__Number",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "llm_0",
+              "Array<String>",
+              "Number",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "llm_0__Array<String>__Number",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "Object",
+              "Undefined",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "start__Object__Undefined",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [],
+          },
+          "type": "ref",
+        },
+        "name": "",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "merge_0",
+              "test_group_1",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "merge_0__test_group_1",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "merge_0",
+              "test_group_2",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "merge_0__test_group_2",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "loop_0",
+              "loop_output_var_string",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "loop_0__loop_output_var_string",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "loop_0",
+              "loop_output_string",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "loop_0__loop_output_string",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "loop_0",
+              "loop_output_image",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "loop_0__loop_output_image",
+      },
+    ],
+    [
+      1,
+      6,
+      7,
+      4,
+      107,
+      99,
+      4,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      99,
+      104,
+    ],
+  ],
+  [
+    "llm_0",
+    [
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "String",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "llm_0",
+              "Object",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "Object",
+              "Image",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "llm_0",
+              "Object",
+              "Number",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "Array<Code>",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "llm_0",
+              "Array<String>",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "Array<Object>",
+              "Number",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "llm_0",
+              "Array<String>",
+              "Number",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "Object",
+              "Undefined",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [],
+          },
+          "type": "ref",
+        },
+        "name": "start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+    ],
+    [
+      1,
+      undefined,
+      7,
+      undefined,
+      107,
+      undefined,
+      4,
+      undefined,
+      undefined,
+      undefined,
+    ],
+  ],
+  [
+    "merge_0",
+    [],
+    [],
+  ],
+  [
+    "llm_2",
+    [],
+    [],
+  ],
+  [
+    "llm_3",
+    [],
+    [],
+  ],
+  [
+    "156471",
+    [],
+    [],
+  ],
+  [
+    "loop_0",
+    [
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "String",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "loop_batch_start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "llm_0",
+              "Object",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "loop_batch_start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "Object",
+              "Image",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "loop_batch_start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "llm_0",
+              "Object",
+              "Number",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "loop_batch_start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "Array<Code>",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "loop_batch_start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "llm_0",
+              "Array<String>",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "loop_batch_start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "Array<Object>",
+              "Number",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "loop_batch_start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "llm_0",
+              "Array<String>",
+              "Number",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "loop_batch_start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [
+              "start",
+              "Object",
+              "Undefined",
+            ],
+          },
+          "type": "ref",
+        },
+        "name": "loop_batch_start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+      {
+        "input": {
+          "content": {
+            "keyPath": [],
+          },
+          "type": "ref",
+        },
+        "name": "loop_batch_start,String__llm_0,Object__start,Object,Image__llm_0,Object,Number__start,Array<Code>__llm_0,Array<String>__start,Array<Object>,Number__llm_0,Array<String>,Number__start,Object,Undefined__",
+      },
+    ],
+    [
+      1,
+      6,
+      7,
+      4,
+      107,
+      99,
+      4,
+      undefined,
+      undefined,
+      undefined,
+    ],
+  ],
+  [
+    "llm_in_loop_0",
+    [],
+    [],
+  ],
+  [
+    "llm_in_loop_1",
+    [],
+    [],
+  ],
+]
+`;
+
+exports[`test workflow node variables entity data > test workflow-node-output-variables-data 1`] = `
+[
+  [
+    "start",
+    [
+      1,
+      2,
+      3,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+    ],
+  ],
+  [
+    "end",
+    [],
+  ],
+  [
+    "llm_0",
+    [
+      1,
+      2,
+      3,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+    ],
+  ],
+  [
+    "merge_0",
+    [
+      undefined,
+      undefined,
+    ],
+  ],
+  [
+    "llm_2",
+    [],
+  ],
+  [
+    "llm_3",
+    [],
+  ],
+  [
+    "156471",
+    [],
+  ],
+  [
+    "loop_0",
+    [
+      undefined,
+      99,
+      104,
+    ],
+  ],
+  [
+    "llm_in_loop_0",
+    [
+      1,
+      2,
+      3,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+    ],
+  ],
+  [
+    "llm_in_loop_1",
+    [],
+  ],
+]
+`;
+
+exports[`test workflow node variables entity data > test workflow-node-ref-variables-data 1`] = `
+[
+  [
+    "start",
+    {},
+    [],
+    false,
+  ],
+  [
+    "end",
+    {
+      "inputParameters.0.input": [
+        "start",
+        "String",
+      ],
+      "inputParameters.1.input": [
+        "llm_0",
+        "Object",
+      ],
+      "inputParameters.10.input": [
+        "merge_0",
+        "test_group_1",
+      ],
+      "inputParameters.11.input": [
+        "merge_0",
+        "test_group_2",
+      ],
+      "inputParameters.12.input": [
+        "loop_0",
+        "loop_output_var_string",
+      ],
+      "inputParameters.13.input": [
+        "loop_0",
+        "loop_output_string",
+      ],
+      "inputParameters.14.input": [
+        "loop_0",
+        "loop_output_image",
+      ],
+      "inputParameters.2.input": [
+        "start",
+        "Object",
+        "Image",
+      ],
+      "inputParameters.3.input": [
+        "llm_0",
+        "Object",
+        "Number",
+      ],
+      "inputParameters.4.input": [
+        "start",
+        "Array<Code>",
+      ],
+      "inputParameters.5.input": [
+        "llm_0",
+        "Array<String>",
+      ],
+      "inputParameters.6.input": [
+        "start",
+        "Array<Object>",
+        "Number",
+      ],
+      "inputParameters.7.input": [
+        "llm_0",
+        "Array<String>",
+        "Number",
+      ],
+      "inputParameters.8.input": [
+        "start",
+        "Object",
+        "Undefined",
+      ],
+    },
+    [
+      1,
+      6,
+      7,
+      4,
+      107,
+      99,
+      4,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      99,
+      104,
+    ],
+    false,
+  ],
+  [
+    "llm_0",
+    {
+      "inputParameters.0.input": [
+        "start",
+        "String",
+      ],
+      "inputParameters.1.input": [
+        "llm_0",
+        "Object",
+      ],
+      "inputParameters.2.input": [
+        "start",
+        "Object",
+        "Image",
+      ],
+      "inputParameters.3.input": [
+        "llm_0",
+        "Object",
+        "Number",
+      ],
+      "inputParameters.4.input": [
+        "start",
+        "Array<Code>",
+      ],
+      "inputParameters.5.input": [
+        "llm_0",
+        "Array<String>",
+      ],
+      "inputParameters.6.input": [
+        "start",
+        "Array<Object>",
+        "Number",
+      ],
+      "inputParameters.7.input": [
+        "llm_0",
+        "Array<String>",
+        "Number",
+      ],
+      "inputParameters.8.input": [
+        "start",
+        "Object",
+        "Undefined",
+      ],
+    },
+    [
+      1,
+      undefined,
+      7,
+      undefined,
+      107,
+      undefined,
+      4,
+      undefined,
+      undefined,
+    ],
+    false,
+  ],
+  [
+    "merge_0",
+    {
+      "groups.0.variables.1": [
+        "start",
+        "Object",
+        "Undefined",
+      ],
+      "groups.0.variables.2": [
+        "llm_0",
+        "Array<String>",
+        "Number",
+      ],
+      "groups.0.variables.3": [
+        "start",
+        "Array<Object>",
+        "Number",
+      ],
+      "groups.0.variables.4": [
+        "llm_0",
+        "Array<String>",
+      ],
+      "groups.0.variables.5": [
+        "start",
+        "Array<Code>",
+      ],
+      "groups.0.variables.6": [
+        "llm_0",
+        "Object",
+        "Number",
+      ],
+      "groups.0.variables.7": [
+        "start",
+        "Object",
+        "Image",
+      ],
+      "groups.0.variables.8": [
+        "llm_0",
+        "Object",
+      ],
+      "groups.0.variables.9": [
+        "start",
+        "String",
+      ],
+      "groups.1.variables.1": [
+        "start",
+        "Object",
+        "Undefined",
+      ],
+      "groups.1.variables.2": [
+        "llm_0",
+        "Array<String>",
+        "Number",
+      ],
+      "groups.1.variables.3": [
+        "start",
+        "Array<Object>",
+        "Number",
+      ],
+      "groups.1.variables.4": [
+        "llm_0",
+        "Array<String>",
+      ],
+      "groups.1.variables.5": [
+        "start",
+        "Array<Code>",
+      ],
+      "groups.1.variables.6": [
+        "llm_0",
+        "Object",
+        "Number",
+      ],
+      "groups.1.variables.7": [
+        "start",
+        "Object",
+        "Image",
+      ],
+      "groups.1.variables.8": [
+        "llm_0",
+        "Object",
+      ],
+      "groups.1.variables.9": [
+        "start",
+        "String",
+      ],
+    },
+    [
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ],
+    false,
+  ],
+  [
+    "llm_2",
+    {},
+    [],
+    false,
+  ],
+  [
+    "llm_3",
+    {},
+    [],
+    false,
+  ],
+  [
+    "156471",
+    {},
+    [],
+    false,
+  ],
+  [
+    "loop_0",
+    {
+      "inputs.inputParameters.0.input": [
+        "start",
+        "String",
+      ],
+      "inputs.inputParameters.1.input": [
+        "llm_0",
+        "Object",
+      ],
+      "inputs.inputParameters.2.input": [
+        "start",
+        "Object",
+        "Image",
+      ],
+      "inputs.inputParameters.3.input": [
+        "llm_0",
+        "Object",
+        "Number",
+      ],
+      "inputs.inputParameters.4.input": [
+        "start",
+        "Array<Code>",
+      ],
+      "inputs.inputParameters.5.input": [
+        "llm_0",
+        "Array<String>",
+      ],
+      "inputs.inputParameters.6.input": [
+        "start",
+        "Array<Object>",
+        "Number",
+      ],
+      "inputs.inputParameters.7.input": [
+        "llm_0",
+        "Array<String>",
+        "Number",
+      ],
+      "inputs.inputParameters.8.input": [
+        "start",
+        "Object",
+        "Undefined",
+      ],
+      "inputs.variableParameters.0.input": [
+        "start",
+        "String",
+      ],
+      "inputs.variableParameters.1.input": [
+        "llm_0",
+        "Object",
+      ],
+      "inputs.variableParameters.2.input": [
+        "start",
+        "Object",
+        "Image",
+      ],
+      "inputs.variableParameters.3.input": [
+        "llm_0",
+        "Object",
+        "Number",
+      ],
+      "inputs.variableParameters.4.input": [
+        "start",
+        "Array<Code>",
+      ],
+      "inputs.variableParameters.5.input": [
+        "llm_0",
+        "Array<String>",
+      ],
+      "inputs.variableParameters.6.input": [
+        "start",
+        "Array<Object>",
+        "Number",
+      ],
+      "inputs.variableParameters.7.input": [
+        "llm_0",
+        "Array<String>",
+        "Number",
+      ],
+      "inputs.variableParameters.8.input": [
+        "start",
+        "Object",
+        "Undefined",
+      ],
+      "outputs.0.input": [
+        "loop_0",
+        "loop_var_llm_0__Object",
+      ],
+      "outputs.1.input": [
+        "llm_in_loop_0",
+        "String",
+      ],
+      "outputs.2.input": [
+        "llm_in_loop_0",
+        "Object",
+        "Image",
+      ],
+    },
+    [
+      1,
+      6,
+      7,
+      4,
+      107,
+      99,
+      4,
+      undefined,
+      undefined,
+      1,
+      6,
+      7,
+      4,
+      107,
+      99,
+      4,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ],
+    false,
+  ],
+  [
+    "llm_in_loop_0",
+    {},
+    [],
+    false,
+  ],
+  [
+    "llm_in_loop_1",
+    {},
+    [],
+    false,
+  ],
+]
+`;

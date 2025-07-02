@@ -1,0 +1,52 @@
+.table {
+  :global {
+    table {
+      border-radius: 8px;
+      border: 1px solid rgba(46, 46, 56, 0.08);
+
+
+      thead {
+        th {
+          border-bottom: 1px solid rgba(46, 47, 56, 0.09) !important;
+          color: var(--Light-usage-text---color-text-1, rgba(29, 28, 35, 0.80)) !important;
+          font-weight: 600 !important;
+        }
+      }
+
+
+      th,
+      td {
+        overflow: hidden;
+        color: var(--Light-usage-text---color-text-1, rgba(29, 28, 35, 0.80));
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 16px;
+      }
+
+      td {
+        border-bottom: 0 !important;
+
+        &:first-child {
+          width: 114px;
+        }
+      }
+    }
+
+    .semi-table-tbody>.semi-table-row>.semi-table-row-cell,
+    .semi-table-thead>.semi-table-row>.semi-table-row-head {
+      padding: 8px 0;
+
+      &:first-child {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      &:last-child {
+        padding-right: 14px;
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+.md-box-viewer :global(.flow-markdown-body ) {
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    color: var(--coz-fg-primary);
+  }
+  h1 {
+    font-size: 22px;
+  }
+  h2 {
+    font-size: 20px;
+  }
+  h3 {
+    font-size: 18px;
+  }
+  h4 {
+    font-size: 16px;
+  }
+  h5, h6 {
+    font-size: 14px;
+  }
+  :global(.paragraph-element) {
+    color: var(--coz-fg-primary);
+  }
+  blockquote {
+    h1, h2, h3, h4, h5, h6, :global(.paragraph-element) {
+      color: var(--coz-fg-secondary);
+    }
+  }
+}

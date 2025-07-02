@@ -1,0 +1,33 @@
+.sub-canvas-border {
+  pointer-events: none;
+
+  position: absolute;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  height: 100%;
+
+  background-color: transparent;
+  border: 1px solid var(--coz-stroke-plus, rgba(6, 7, 9, 15%));
+  border-color: var(--coz-bg-plus, rgb(249, 249, 249));
+  border-style: solid;
+  border-width: 48px 8px 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 4%), 0 4px 12px 0 rgba(0, 0, 0, 2%);
+
+  &::before {
+    content: '';
+
+    position: absolute;
+    z-index: 0;
+    inset: -4px;
+
+    background-color: transparent;
+    border-color: var(--coz-bg-plus, rgb(249, 249, 249));
+    border-style: solid;
+    border-width: 4px;
+    border-radius: 8px;
+  }
+}

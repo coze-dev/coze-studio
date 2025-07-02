@@ -1,0 +1,162 @@
+/*
+ * Container style
+ */
+ .ide-ps {
+  overflow: hidden !important;
+  overflow-anchor: none;
+  -ms-overflow-style: none;
+  touch-action: auto;
+  -ms-touch-action: auto;
+}
+
+/*
+ * Scrollbar rail styles
+ */
+.ide-ps__rail-x {
+  display: none;
+  opacity: 0;
+  transition: background-color .2s linear, opacity .2s linear;
+  -webkit-transition: background-color .2s linear, opacity .2s linear;
+  height: 15px;
+  /* there must be 'bottom' or 'top' for ide-ps__rail-x */
+  bottom: 0px;
+  /* please don't change 'position' */
+  position: absolute;
+}
+
+.ide-ps__rail-y {
+  display: none;
+  opacity: 0;
+  transition: background-color .2s linear, opacity .2s linear;
+  -webkit-transition: background-color .2s linear, opacity .2s linear;
+  width: 15px;
+  /* there must be 'right' or 'left' for ide-ps__rail-y */
+  right: 0;
+  /* please don't change 'position' */
+  position: absolute;
+}
+
+.ide-ps--active-x > .ide-ps__rail-x,
+.ide-ps--active-y > .ide-ps__rail-y {
+  display: block;
+  background-color: transparent;
+}
+
+.ide-ps:hover > .ide-ps__rail-x,
+.ide-ps:hover > .ide-ps__rail-y,
+.ide-ps--focus > .ide-ps__rail-x,
+.ide-ps--focus > .ide-ps__rail-y,
+.ide-ps--scrolling-x > .ide-ps__rail-x,
+.ide-ps--scrolling-y > .ide-ps__rail-y {
+  opacity: 0.6;
+}
+
+.ide-ps .ide-ps__rail-x:hover,
+.ide-ps .ide-ps__rail-y:hover,
+.ide-ps .ide-ps__rail-x:focus,
+.ide-ps .ide-ps__rail-y:focus,
+.ide-ps .ide-ps__rail-x.ide-ps--clicking,
+.ide-ps .ide-ps__rail-y.ide-ps--clicking {
+  opacity: 0.9;
+}
+
+/*
+ * Scrollbar thumb styles
+ */
+.ide-ps__thumb-x {
+  background-color: #aaa;
+  border-radius: 6px;
+  transition: background-color .2s linear, height .2s ease-in-out;
+  -webkit-transition: background-color .2s linear, height .2s ease-in-out;
+  height: 6px;
+  /* there must be 'bottom' for ide-ps__thumb-x */
+  bottom: 2px;
+  /* please don't change 'position' */
+  position: absolute;
+}
+
+.ide-ps__thumb-y {
+  background-color: #aaa;
+  border-radius: 6px;
+  transition: background-color .2s linear, width .2s ease-in-out;
+  -webkit-transition: background-color .2s linear, width .2s ease-in-out;
+  width: 6px;
+  /* there must be 'right' for ide-ps__thumb-y */
+  right: 2px;
+  /* please don't change 'position' */
+  position: absolute;
+}
+
+.ide-ps__rail-x:hover > .ide-ps__thumb-x,
+.ide-ps__rail-x:focus > .ide-ps__thumb-x,
+.ide-ps__rail-x.ide-ps--clicking .ide-ps__thumb-x {
+  background-color: #999;
+  height: 11px;
+}
+
+.ide-ps__rail-y:hover > .ide-ps__thumb-y,
+.ide-ps__rail-y:focus > .ide-ps__thumb-y,
+.ide-ps__rail-y.ide-ps--clicking .ide-ps__thumb-y {
+  background-color: #999;
+  width: 11px;
+}
+
+/* MS supports */
+@supports (-ms-overflow-style: none) .ide-ps {
+  overflow: auto !important;
+}
+
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) .ide-ps {
+  overflow: auto !important;
+}
+
+
+.lm-Widget::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+  background: transparent;
+}
+
+.lm-Widget::-webkit-scrollbar:hover {
+  background: transparent;
+}
+
+.lm-Widget::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.lm-Widget::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.lm-cursor-backdrop {
+  top: 0px;
+  left: 0px;
+  position: fixed;
+  width: 200px;
+  height: 200px;
+  margin-top: -100px;
+  margin-left: -100px;
+  will-change: transform;
+  z-index: 100;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overflow: scroll;
+}
+
+.lm-cursor-backdrop::after {
+  content: '';
+  height: 1200px;
+  width: 1200px;
+  display: block;
+}
+
+.lm-cursor-backdrop::-webkit-scrollbar {
+  display: none;
+}
+
+.lm-mod-drag-image {
+  top: 0px;
+  left: 0px;
+  will-change: transform;
+}

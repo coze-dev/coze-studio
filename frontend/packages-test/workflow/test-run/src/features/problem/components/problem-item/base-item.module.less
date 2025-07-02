@@ -1,0 +1,40 @@
+.base-item {
+  display: flex;
+  column-gap: 12px;
+  padding: 4px 10px;
+}
+.text-item {
+  padding: 8px 10px;
+  display: flex;
+}
+
+.item-icon {
+  padding-top: 6px;
+}
+
+.item-title {
+  display: flex;
+  font-size: 16px;
+  align-items: center;
+  column-gap: 8px;
+}
+.item-popover {
+  font-size: 12px;
+  color: var(--coz-fg-secondary);
+}
+.item-info {
+  line-height: 20px;
+}
+
+.base-item-wrap {
+  border: 0.5px solid var(--coz-stroke-primary);
+  border-radius: 8px;
+  box-shadow: var(--coz-shadow-small);
+  cursor: pointer;
+  &:hover {
+    background: rgba(77, 77, 77, 0.05);
+  }
+  &:active {
+    background: rgba(77, 77, 77, 0.15);
+  }
+}

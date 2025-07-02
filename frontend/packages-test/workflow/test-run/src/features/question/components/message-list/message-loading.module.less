@@ -1,0 +1,64 @@
+@keyframes chat-uikit-animation-thinking-placeholder {
+  0% {
+    background-color: #000000;
+  }
+
+  50% {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+  100% {
+    background-color: #000000;
+  }
+}
+
+.loading-container {
+  width: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 44px;
+  border: 1px solid rgba(10, 17, 61, 0.06);
+  border-radius: 16px;
+  padding: 12px;
+  background-color: #F4F4F6;
+}
+
+.loading {
+  position: relative;
+  width: 4px;
+  height: 4px;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.1);
+  animation: chat-uikit-animation-thinking-placeholder 0.8s infinite alternate;
+  animation-timing-function: ease;
+  animation-delay: -0.2s;
+  margin: 0px 8px;
+  overflow: visible !important;
+
+  &::before,
+  &::after {
+    content: '';
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    width: 4px;
+    height: 4px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.1);
+    animation: chat-uikit-animation-thinking-placeholder 0.8s infinite alternate;
+    animation-timing-function: ease;
+  }
+
+  &::before {
+    left: -8px;
+    animation-delay: -0.4s;
+  }
+
+  &::after {
+    left: 8px;
+    animation-delay: 0s;
+  }
+}

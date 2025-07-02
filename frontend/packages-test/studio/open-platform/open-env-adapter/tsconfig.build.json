@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "types": [],
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "rootDir": "./src",
+    "preserveSymlinks": false,
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src", "src/**/*.json"],
+  "exclude": ["./src/**/*.test.ts", "src/**/__tests__/**", "src/test/setup.ts"],
+  "references": [
+    {
+      "path": "../../../arch/bot-env/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/postcss-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/tailwind-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../infra/plugins/pkg-root-webpack-plugin/tsconfig.build.json"
+    }
+  ]
+}

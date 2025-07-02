@@ -1,0 +1,37 @@
+/* stylelint-disable declaration-no-important */
+.guide-modal {
+  :global(.semi-modal-content) {
+    padding-right: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 0 !important;
+  }
+
+  :global(.semi-modal-header) {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+
+  :global(.semi-modal-footer) {
+    display: none;
+  }
+}
+
+.guide-button {
+  box-shadow: -8px -18px 30px 0 #DAE6F7 inset;
+}
+
+.guide-button-hover {
+  &:hover {
+    .guide-img-bg {
+      background: linear-gradient(29deg, rgba(79, 62, 255, 17%) 15.59%, rgba(242, 146, 255, 14%) 42.22%, rgba(242, 146, 255, 0%) 72.41%), var(--coz-bg-primary, #F8F8FC);
+    }
+
+    .guide-desc-hover {
+      opacity: 0;
+    }
+
+    .create-button-hover {
+      opacity: 1;
+    }
+  }
+}

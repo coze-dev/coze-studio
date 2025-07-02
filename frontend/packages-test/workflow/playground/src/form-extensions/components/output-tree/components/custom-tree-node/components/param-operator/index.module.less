@@ -1,0 +1,51 @@
+/* stylelint-disable selector-class-pattern */
+.container {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  align-self: stretch;
+  justify-content: flex-start;
+
+  height: 24px;
+
+  .icon-no {
+    display: flex;
+    align-items: center;
+
+    .icon {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+      color: #888D92;
+
+      &.disabled {
+        cursor: not-allowed;
+      }
+
+      &>svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  .add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 24px;
+
+    font-size: 14px;
+    font-weight: 600;
+    font-style: normal;
+    line-height: 16px;
+    color: #4D53E8;
+  }
+
+  :global {
+    .icon-icon-coz_add_node {
+      font-size: 14px;
+    }
+  }
+}

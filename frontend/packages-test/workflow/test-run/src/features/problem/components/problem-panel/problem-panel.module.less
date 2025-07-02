@@ -1,0 +1,32 @@
+.problem-list {
+  height: 100%;
+  overflow-y: auto;
+
+  padding: 12px;
+
+  display: flex;
+  flex-direction: column;
+  row-gap: 8px;
+}
+
+.base-panel {
+  min-width: 300px;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  column-gap: 16px;
+
+  .checking {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: var(--coz-fg-secondary);
+    column-gap: 2px;
+
+    :global(.semi-spin-wrapper) {
+      line-height: 14px;
+    }
+  }
+}

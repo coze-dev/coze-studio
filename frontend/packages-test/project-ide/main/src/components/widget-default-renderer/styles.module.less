@@ -1,0 +1,126 @@
+.default-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0, 0, 0, 3%);
+
+  img {
+    pointer-events: none;
+  }
+
+  .title {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 36px;
+  }
+
+  .sub-title {
+    margin-bottom: 40px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--coz-fg-secondary, rgba(6, 7, 9, 50%));
+  }
+
+  .gallery {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    width: 100%;
+
+    .gallery-block {
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      width: 320px;
+
+      .gallery-image {
+        flex-shrink: 0;
+        border: 1px solid var(--coz-stroke-primary);
+        border-radius: 12px;
+      }
+
+      .gallery-title {
+        margin: 12px 0 8px;
+        font-size: 16px;
+        font-weight: 500;
+        font-weight: 22px;
+      }
+
+      .gallery-description {
+        font-size: 14px;
+        font-weight: 20px;
+        color: var(--coz-fg-secondary, rgba(6, 7, 9, 5%));
+      }
+
+      .doc-search {
+        margin-top: 12px;
+        visibility: hidden;
+      }
+    }
+  }
+
+  .gallery-block:hover > .doc-search {
+    visibility: visible;
+  }
+
+  .item {
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 320px;
+    height: 48px;
+    margin-bottom: 16px;
+    padding: 8px 12px 8px 8px;
+
+    background-color: var(--coz-bg-max);
+    border: 1px solid var(--coz-stroke-primary);
+    border-radius: 8px;
+
+    &:hover {
+      background-color: var(--coz-bg-6);
+    }
+
+    &:active {
+      background-color: var(--coz-bg-8);
+    }
+
+    .item-pre {
+      display: flex;
+      align-items: center;
+    }
+
+    .item-text {
+      margin-left: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+    }
+  }
+
+  .icon-expand {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+  }
+
+  .full-screen {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+  }
+
+  .shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    width: 320px;
+    margin-top: 48px;
+  }
+}

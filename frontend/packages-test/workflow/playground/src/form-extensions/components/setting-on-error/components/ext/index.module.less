@@ -1,0 +1,78 @@
+.model-select {
+  >span {
+    flex: 1;
+  }
+
+  &-clearable {
+    .model-select-clear-icon {
+      @apply hidden;
+
+      width: 20px;
+      height: 20px;
+      padding: 0;
+
+      line-height: 0;
+
+      border-radius: 5px;
+    }
+
+    .model-select-down-icon {
+      @apply block;
+    }
+
+    &:hover {
+      .model-select-clear-icon {
+        @apply flex;
+      }
+
+      .model-select-down-icon {
+        @apply hidden;
+      }
+
+      :global {
+        .semi-icon-default {
+          @apply hidden;
+        }
+      }
+    }
+  }
+}
+
+/* stylelint-disable declaration-no-important */
+.trigger {
+  padding: 3px;
+  border-color: rgba(var(--coze-stroke-6), var(--coze-stroke-6-alpha));
+  border-radius: 6px;
+
+  &:global(.coz-stroke-hglt) {
+    border-color: rgba(var(--coze-brand-5),1);
+  }
+
+  :global(.semi-avatar-extra-extra-small) {
+    width: 16px;
+    height: 16px;
+  }
+
+  &>div {
+    padding: 0 4px 0 0;
+  }
+
+  &>div span {
+    font-size: 12px !important;
+    line-height: 16px !important;
+  }
+
+  :global(.semi-icon) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 16px;
+    height: 16px;
+
+    svg {
+      width: 8px;
+      height: 8px;
+    }
+  }
+}

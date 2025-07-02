@@ -1,0 +1,34 @@
+.raw-editor-container {
+  position: relative;
+
+  display: inline-block;
+
+  box-sizing: border-box;
+  width: 100%;
+
+  word-break: break-all;
+  vertical-align: bottom;
+
+  background-color: var(--semi-color-white);
+  border-radius: 8px;
+
+  transition:
+    background-color var(--semi-transition_duration-none)
+      var(--semi-transition_function-easeIn) var(--semi-transition_delay-none),
+    border var(--semi-transition_duration-none)
+      var(--semi-transition_function-easeIn) var(--semi-transition_delay-none);
+
+  .editor-render {
+    padding: 0 4px;
+    background-color: rgba(var(--coze-bg-2),var(--coze-bg-2-alpha));
+    border-radius: 8px;
+  }
+}
+
+.raw-editor-error {
+  border: 1px var(--semi-color-danger) solid;
+}
+
+.raw-editor-focused {
+  border: 1px var(--semi-color-primary) solid;
+}

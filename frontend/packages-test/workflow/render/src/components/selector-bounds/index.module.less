@@ -1,0 +1,17 @@
+.selector-bounds-background {
+  cursor: move;
+  display: none;
+  // background: rgba(255, 255, 255, 0);
+}
+.selector-bounds-forground {
+  cursor: move;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  outline: 1px solid var(--g-playground-selectBox-outline);
+  // 在节点的上边
+  z-index: 33;
+  background-color: var(--g-playground-selectBox-background);
+}

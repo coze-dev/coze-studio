@@ -1,0 +1,30 @@
+.question-form {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: calc(100% - 48px);
+  width: 100%;
+  background: var(--coz-bg-max);
+}
+
+.form-notice {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  column-gap: 8px;
+  height: 32px;
+  background: var(--coz-mg-hglt);
+  >span {
+    font-size: 14px;
+  }
+  // semi bug，行内元素导致高度有问题，不居中
+  :global .semi-spin-wrapper{
+    line-height: 0px;
+  }
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 32px);
+}

@@ -1,0 +1,55 @@
+.drag-tooltip-container {
+  --tw-shadow: 0 4px 12px 0px rgba(var(--coze-shadow-0),0.08), 0px 8px 24px 0px rgba(var(--coze-shadow-0),0.04);
+  --tw-shadow-colored: 0 4px 12px 0px var(--tw-shadow-color), 0px 8px 24px 0px var(--tw-shadow-color);
+
+  position: absolute;
+  z-index: 9999;
+
+  display: block;
+
+  min-width: 150px;
+  min-height: 50px;
+  padding: var(--coze-16);
+
+  background-color: rgba(var(--coze-bg-3), 1);
+  border-color: rgba(var(--coze-stroke-5), var(--coze-stroke-5-alpha));
+  border-width: var(--coze-1);
+  border-radius: 12px;
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+
+  .drag-tooltip-main {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+
+    .drag-tooltip-icon {
+      display: flex;
+      align-items: center;
+      width: 24px;
+      height: 24px;
+
+      .warning-icon {
+        color: var(--coz-fg-hglt-yellow)
+      }
+
+      .success-icon {
+        color: var(--coz-fg-hglt-green)
+      }
+
+    }
+
+    .drag-tooltip-content {
+      display: flex;
+      white-space: nowrap;
+    }
+  }
+
+
+  .drag-tooltip-arrow {
+    position: absolute;
+    bottom: -8px;
+    left: calc(50% - 13px);
+  }
+}
+
+

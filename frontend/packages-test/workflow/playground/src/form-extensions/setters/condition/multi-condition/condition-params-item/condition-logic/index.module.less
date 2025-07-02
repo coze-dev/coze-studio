@@ -1,0 +1,19 @@
+.font-normal {
+  color: var(--light-usage-text-color-text-2, rgba(29, 28, 35, 0.60));
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.container {
+  width: 100%;
+  &.only_label {
+    display: flex;
+    padding: 6px 16px;
+    .label {
+      .font-normal();
+      text-align: left;
+    }
+  }
+}

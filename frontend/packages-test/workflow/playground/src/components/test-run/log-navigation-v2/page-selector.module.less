@@ -1,0 +1,49 @@
+.flow-test-run-log-pagination {
+  display: flex;
+  column-gap: 12px;
+  margin-right: 2px;
+}
+
+.flow-test-run-log-pagination-item {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: #fff;
+  border: 1px solid rgba(29, 28, 35, 0.08);
+  color: #1D1C23;
+  font-weight: 600;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  position: relative;
+
+  &:hover {
+    background: rgba(46, 46, 56, 0.08);
+  }
+
+  &.active {
+    border-color: #4d53e8;
+    font-weight: 500;
+    background: transparent;
+  }
+
+  .pagination-item-error {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background-color: #fff;
+    font-size: 12px;
+    color: #FF441E;
+    border-radius: 6px;
+  }
+}
+
+.paginate-item-disabled {
+  color: rgba(29, 28, 35, 0.20);
+  background-color: rgba(46, 46, 56, 0.04) !important;
+  cursor: not-allowed;
+  border-width: 0px;
+}

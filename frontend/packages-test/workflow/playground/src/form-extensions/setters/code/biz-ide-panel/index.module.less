@@ -1,0 +1,129 @@
+/* stylelint-disable selector-class-pattern */
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  :global {
+    div[class*="editorLeftContainer"] {
+      padding: 0;
+    }
+
+    div[class*="editorIframe"] {
+      border-radius: 0;
+    }
+
+
+    div[class*="editorHeader_"] {
+      gap: 12px;
+
+      min-width: 214px;
+      height: 48px;
+      margin-bottom: 0;
+      padding: 12px;
+    }
+
+
+    div[class*="editorHeaderLefter"] {
+      flex: 1;
+      padding: 0;
+
+      // 代码图标
+      .semi-icon {
+        width: 24px;
+        height: 24px;
+
+        svg {
+          position: relative;
+          top: 4px;
+          transform: scale(1.3333);
+        }
+      }
+    }
+
+    div[class*="editorHeaderRighter"] {
+      flex-grow: 0;
+      flex-shrink: 0;
+      padding: 0;
+    }
+
+    .coze_wf_plugin_editor_title {
+      max-width: calc(100% - 160px);
+
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--coz-fg-primary);
+      white-space: nowrap;
+
+      // 语言select框
+      &+div {
+        margin-left: 8px;
+        font-weight: 400;
+        border: 1px solid var(--coz-stroke-plus);
+        border-radius: 6px;
+      }
+    }
+
+    div.coze_wf_plugin_editor_language_selector {
+      gap: 2px;
+
+      height: 24px;
+      padding: 2px 4px;
+
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--coz-fg-primary);
+
+      div[class*="triggerPrefix"] {
+        font-size: 12px;
+        color: var(--coz-fg-secondary);
+      }
+    }
+
+    .coze_wf_plugin_test_btn {
+      @apply coz-mg-hglt coz-fg-hglt h-small  text-base border-0 min-w-small;
+
+      padding:  4px 8px;
+
+      .icon-icon {
+        font-size: 14px;
+      }
+
+      .semi-button-content-right {
+        margin-left: 2px;
+      }
+
+      &.coze_wf_plugin_test_btn_slim_mode {
+        padding: 5px;
+
+        .semi-button-content-right {
+          margin-left: 0;
+        }
+      }
+
+      &.semi-button {
+        border-radius: 5px;
+      }
+
+      &.semi-button-with-icon-only {
+        @apply w-small;
+      }
+
+      &.semi-button-borderless:not(.semi-button-disabled) {
+        &:hover {
+          @apply coz-mg-hglt-hovered;
+        }
+
+        &:active {
+          @apply coz-mg-hglt-pressed;
+        }
+      }
+
+      & +.semi-button {
+        padding: 5px;
+        font-size: 14px;
+        border-radius: 5px;
+      }
+    }
+  }
+}

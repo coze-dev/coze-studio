@@ -1,0 +1,31 @@
+.setting-popover {
+  &:global(.coz-popover.semi-popover-wrapper) {
+    padding: 0;
+  }
+}
+
+/* stylelint-disable declaration-no-important */
+.setting-form {
+  width: 480px;
+  padding: 24px;
+
+  background: rgba(247, 247, 250, 100%);
+  border-radius: 12px;
+  box-shadow: 0 0 1px 0 rgba(0, 0, 0, 30%);
+
+  :global {
+    .semi-form-field-label-required .semi-form-field-label-text::after {
+      margin-top: 1px;
+    }
+  }
+}
+
+.setting-form-title {
+  padding-bottom: 4px;
+  font-size: 18px !important;
+  line-height: 24px !important;
+}
+
+.setting-form-desc {
+  padding-bottom: 24px;
+}

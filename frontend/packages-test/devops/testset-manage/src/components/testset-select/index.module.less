@@ -1,0 +1,72 @@
+// override bad semi-select style
+/* stylelint-disable-next-line plugin/disallow-first-level-global */
+:global(.semi-popover-wrapper) {
+  &:has(.dropdown) {
+    border-radius: 6px;
+  }
+}
+
+.select {
+  width: 154px;
+  padding: 0 12px;
+
+  &:hover {
+    background-color: var(--light-usage-fill-color-fill-0, rgb(46 46 56 / 4%));
+    border-color: var(--light-usage-primary-color-primary, #4D53E8);
+  }
+
+  :global {
+    .semi-select-option {
+      padding: 8px 16px;
+    }
+  }
+}
+
+.incompatible-option {
+  cursor: not-allowed;
+  color: var(--semi-color-disabled-text);
+}
+
+.prefix {
+  margin-right: 8px;
+}
+
+.dropdown {
+  overflow: hidden;
+  width: 280px;
+  padding: 4px;
+
+  :global {
+    .semi-select-option-selected .semi-select-option-icon {
+      color: #4D53E8;
+    }
+
+    .semi-select-option-list {
+      /* stylelint-disable-next-line declaration-no-important -- semi-select-option-list的max-height写在了style上，所以要important覆盖 */
+      max-height: 208px !important;
+
+      &::-webkit-scrollbar-track {
+        background-color: transparent;
+        border: none;
+        border-radius: 10px;
+      }
+
+      &::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+        border-radius: 10px;
+      }
+
+      .semi-select-option {
+        padding: 7px 16px;
+      }
+
+      &:hover::-webkit-scrollbar-thumb {
+        background-color: rgb(0 0 0 / 40%);
+      }
+    }
+  }
+}

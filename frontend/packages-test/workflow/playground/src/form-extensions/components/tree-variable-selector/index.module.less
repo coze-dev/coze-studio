@@ -1,0 +1,292 @@
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable max-nesting-depth */
+.tree-select {
+  background-color: var(--semi-color-white);
+  border: 1px solid var(--semi-color-border);
+
+  &:global(.semi-tree-select-focus) {
+    border: 1px solid var(--semi-color-focus-border);
+  }
+
+  &:global(.semi-tree-select-error) {
+    background-color: var(--semi-color-danger-light-default);
+    border-color: var(--semi-color-danger-light-default);
+  }
+
+  :global {
+    .semi-tree-select-selection-TriggerSearchItem {
+      cursor: text;
+      max-width: calc(100% - 8px);
+      white-space: nowrap;
+    }
+
+    // 为 tooltip + search 做妥协
+    // 当选择框上支持搜索的时候，搜索 Input 会覆盖在选中值元素上面，导致 hover tooltip 不出现
+    // 而直接将选中值元素层级升高，又会在画布中和其他节点有层级问题
+    // 因此这里做一个特殊处理，当鼠标悬浮在搜索 Input 上 / 选中值元素上时，保持选中值元素层级，以展示 tooltip
+    .semi-tree-select-selection-TriggerSearchItem:hover {
+      z-index: 1;
+    }
+
+    .semi-tree-select-selection-TriggerSearchItem:has(+ .semi-tree-select-triggerSingleSearch-wrapper:hover) {
+      z-index: 1;
+    }
+  }
+
+  .select-selection {
+    display: inline-block;
+    max-width: 100%;
+
+    div {
+      display: inline-flex;
+      gap: 4px;
+      max-width: 100%;
+
+      span {
+        display: inline-block;
+
+        max-width: 100%;
+
+        font-size: 14px;
+        font-weight: 400;
+        font-style: normal;
+        line-height: 20px;
+        white-space: nowrap;
+      }
+
+      .label-prefix {
+        font-weight: 600;
+        color: var(--light-usage-text-color-text-2, rgba(29, 28, 35, 60%));
+      }
+
+      .label-content {
+        overflow: hidden;
+        font-weight: 400;
+        color: var(--light-usage-text-color-text-0, #1D1C23);
+        text-overflow: ellipsis;
+      }
+    }
+  }
+}
+
+.tree-select-dropdown {
+  overflow: auto;
+  // max-width: 400px;
+  max-height: 380px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgb(29 28 35 / 30%);
+    border-radius: 6px;
+    // border-top: 3px solid transparent;
+    // border-left: 3px solid transparent;
+    // background-clip: padding-box;
+
+    &:hover {
+      background: rgb(29 28 35 / 60%);
+    }
+  }
+
+  &::-webkit-scrollbar-corner {
+    display: none;
+  }
+
+  .search-text {
+    color: var(--light-usage-warning-color-warning, #FF9600)
+  }
+
+  :global {
+    .semi-tree-wrapper {
+      // width: fit-content;
+
+      .semi-tree-option-list {
+        width: fit-content;
+        min-width: 100%;
+        padding: 4px;
+        padding-left: 0;
+
+        li {
+          height: 32px;
+        }
+
+        .semi-tree-option {
+          pointer-events: none;
+          background-color: transparent;
+        }
+
+        .semi-tree-option-label {
+          pointer-events: auto;
+
+          height: 24px;
+          margin-right: 4px;
+          padding: 0 4px;
+
+          border-radius: 4px;
+
+          &:hover {
+            background: var(--light-usage-fill-color-fill-1, rgb(46 46 56 / 8%));
+          }
+
+          &:active {
+            background: var(--light-usage-fill-color-fill-2, rgb(46 46 56 / 12%));
+          }
+
+          img {
+            width: 16px;
+            height: 16px;
+            margin: 0 4px;
+          }
+
+          .semi-tree-option-label-text {
+            display: inline-block;
+            width: fit-content;
+            white-space: nowrap;
+          }
+
+          .semi-tree-option-label-text span {
+            display: inline-block;
+            width: fit-content;
+            white-space: nowrap;
+            // padding-right: 16px;
+          }
+        }
+
+        .semi-tree-option-selected {
+          font-weight: 600;
+          color: var(--light-usage-primary-color-primary, #4D53E8);
+        }
+
+        .semi-tree-option-disabled {
+          .semi-tree-option-label {
+            cursor: not-allowed;
+            background: transparent;
+          }
+
+          .semi-icon+.semi-tree-option-label {
+            color: var(--light-usage-text-color-text-0, #1D1C23);
+          }
+        }
+      }
+
+      .semi-tree-option-empty-icon {
+        width: 16px;
+      }
+
+      .semi-tree-option-expand-icon {
+        pointer-events: auto;
+
+        width: 16px;
+        height: 16px;
+        margin-right: 0;
+        padding: 4px;
+
+        border-radius: 4px;
+
+        &:hover {
+          background: var(--light-usage-fill-color-fill-1, rgb(46 46 56 / 8%));
+        }
+
+        &:active {
+          background: var(--light-usage-fill-color-fill-2, rgb(46 46 56 / 12%));
+        }
+
+        svg {
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+  }
+}
+
+.select-wrapper {
+  width: 100%;
+}
+
+.popover-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: center;
+
+  min-width: 160px;
+  max-width: 360px;
+  min-height: 22px;
+  /* stylelint-disable-next-line declaration-no-important */
+  padding: 16px !important;
+
+  background: var(--light-color-white-white, #FFF);
+  border-radius: 12px;
+
+  .popover {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: flex-start;
+
+    .header {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      align-self: stretch;
+
+      .logo {
+        width: 16px;
+        height: 16px;
+        border-radius: 2.667px;
+      }
+
+      .title {
+        font-size: 16px;
+        font-weight: 600;
+        font-style: normal;
+        line-height: 22px;
+        color: var(--light-usage-text-color-text-0, #1D1C23);
+      }
+    }
+
+    .content {
+      p {
+        font-size: 14px;
+        font-weight: 400;
+        font-style: normal;
+        line-height: 20px;
+        color: var(--light-usage-text-color-text-0, #1D1C23);
+        word-break: break-word;
+      }
+    }
+  }
+}
+
+.option-icon-wrapper {
+  line-height: 0;
+
+  img {
+    border-radius: 4px;;
+  }
+}
+
+.bot-select-node-variable-tree {
+  max-height: 352px;
+
+  :global {
+    .semi-tree-option-expand-icon {
+      margin-left: 4px;
+    }
+
+    .semi-tree-option-empty-icon {
+      margin-left: 4px;
+    }
+
+    .semi-tree-option-empty {
+      pointer-events: none;
+    }
+  }
+}

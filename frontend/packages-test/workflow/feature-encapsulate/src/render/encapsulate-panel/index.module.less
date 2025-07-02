@@ -1,0 +1,43 @@
+
+
+@keyframes encapsulate-panel-show {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.encapsulate-panel {
+  position: absolute;
+  width: 100%;
+  top: 16px;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  display: flex;
+  opacity: 0;
+
+  &-show {
+    opacity: 1;
+  }
+
+  .encapsulate-panel-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    padding: 0 4px 0 8px;
+    background-color: var(--coz-bg-max);
+    border: 1px solid var(--coz-stroke-plus);
+    border-radius: 10px;
+    color: var(--coz-fg-primary);
+    font-weight: 500;
+    box-shadow: var(--coz-shadow-small);
+    gap: 16px;
+    font-size: 14px;
+  }
+}

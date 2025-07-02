@@ -1,0 +1,35 @@
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  .label {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+  }
+
+  .keybinding {
+    display: flex;
+
+    .keybinding-block {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      min-width: 20px;
+      height: 20px;
+      margin-left: 6px;
+
+      font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--coz-fg-secondary);
+
+      background: var(--coz-mg-primary);
+      border: 0.5px solid var(--coz-stroke-primary);
+      border-radius: 4px;
+    }
+  }
+}

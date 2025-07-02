@@ -1,0 +1,37 @@
+.parameters-title {
+  width: calc(100% - 12px);
+}
+
+.parameters-title-readonly {
+  width: calc(100% - 32px);
+}
+
+.parameters-wrapper {
+  background: var(--Bg-COZ-bg-max, #FFF);
+  border: 1px solid var(--Stroke-COZ-stroke-plus, rgba(84, 97, 156, 27%));
+  border-radius: var(--small, 6px);
+
+  :global {
+    .semi-radio-content{
+      width: 100%;
+    }
+  }
+}
+
+.answer-editor{
+  :global{
+    .cm-editor .cm-scroller{
+      scrollbar-width: none;
+    }
+  }
+}
+
+.option-radio-group {
+  width: 50%;
+
+  :global{
+    .semi-radio-content span{
+      color: var(--Fg-COZ-fg-primary, rgba(15, 21, 40, 82%));
+    }
+  }
+}

@@ -1,0 +1,70 @@
+import {
+  type GlobalStyle,
+  type RectStyle,
+  type LabelStyle,
+  type LabelText,
+} from './typing';
+
+export const defaultRectStyle: RectStyle = {
+  normal: {
+    fill: '#F7F7FA',
+    stroke: '#1D1C2314',
+    lineWidth: 1,
+    // lineDash: [4, 2],
+    lineDash: [],
+  },
+  hover: {
+    // fill: "#6690F2",
+    // stroke: "#000",
+    lineWidth: 1,
+    lineDash: [],
+  },
+  select: {
+    lineWidth: 1,
+    lineDash: [],
+  },
+};
+
+export const defaultGlobalStyle: GlobalStyle = {
+  height: '100%',
+  width: '100%',
+  // padding: {
+  //   top: 50,
+  //   right: 60,
+  //   bottom: 80,
+  //   left: 60,
+  // },
+  // padding: {
+  //   top: 30,
+  //   right: 0,
+  //   bottom: 0,
+  //   left: 0,
+  // },
+  padding: {
+    top: 0,
+    right: 24,
+    bottom: 24,
+    left: 0,
+  },
+};
+
+export const defaultDatazoomDecimals = 1;
+
+export const defaultVisibleRowCount = 6;
+export const defaultRowHeight = 42;
+export const defaultVisibleColumnCount = 6; // 13 // 8
+
+export const defaultLabelStyle: LabelStyle = {
+  position: 'inside-left',
+  fontSize: 12,
+  fill: '#212629',
+};
+
+export const defaultLabelText: LabelText = (datum, element, params) =>
+  `${datum.start}-${datum.end}`;
+
+// xScale的padding(解决hover后rect边框被截断问题)
+export const scrollbarMargin = 10;
+export const datazoomHeight = 20;
+export const datazoomDecimals = 0;
+export const datazoomPaddingBottom = 18;

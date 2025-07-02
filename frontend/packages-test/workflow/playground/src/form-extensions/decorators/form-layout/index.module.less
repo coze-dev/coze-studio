@@ -1,0 +1,33 @@
+.form-layout {
+  :global(.semi-row-flex) :global(.semi-col) {
+    border-right: 1px solid var(--semi-color-border);
+  }
+
+  &-title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 22px;
+    color: var(--coz-fg-primary);
+  }
+
+  &-item {
+    display: block;
+
+    padding-bottom: 8px;
+
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--coz-fg-secondary);
+  }
+}
+
+.icon-arrow-column {
+  cursor: pointer;
+  transform: rotate3d(0, 0, 1, -90deg);
+  transition: transform .2s linear 0s;
+}
+
+.icon-arrow-row {
+  cursor: pointer;
+  transform: rotate3d(0, 0, 0, 0);
+}

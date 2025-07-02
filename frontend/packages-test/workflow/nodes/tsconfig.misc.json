@@ -1,0 +1,22 @@
+{
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "include": ["vitest.config.ts"],
+  "exclude": ["**/node_modules", "./dist"],
+  "references": [
+    {
+      "path": "./tsconfig.build.json"
+    }
+  ],
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {},
+    "types": ["react", "react-dom"],
+    "jsx": "react",
+    "isolatedModules": true,
+    "preserveSymlinks": false,
+    "strictPropertyInitialization": false,
+    "rootDir": "./",
+    "outDir": "./dist"
+  }
+}

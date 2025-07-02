@@ -1,0 +1,20 @@
+[
+  {
+    "nodeId": "172934",
+    "nodeType": "5",
+    "properties": {
+      "title": "代码",
+    },
+  },
+  {
+    "nodeId": "126762",
+    "nodeType": "3",
+    "properties": {
+      "llmParam": {
+        "prompt": "{{input}}",
+        "systemPrompt": "",
+      },
+      "title": "大模型",
+    },
+  },
+]

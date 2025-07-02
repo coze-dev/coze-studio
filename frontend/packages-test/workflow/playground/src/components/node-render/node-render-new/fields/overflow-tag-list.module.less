@@ -1,0 +1,47 @@
+
+.overflow-tag-list {
+  position: relative;
+  overflow: hidden;
+
+  .overlay {
+    pointer-events: none;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    display: flex;
+    align-items: center;
+
+    .overlay-mask {
+      width: 93px;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0%) 0%, var(--coz-bg-plus) 78%);
+    }
+  }
+}
+
+.tag-item {
+  @apply flex items-center coz-fg-primary;
+
+
+  .tag-item-icon {
+    @apply flex grow shrink-0;
+  }
+
+  .tag-item-label {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  &.limit-width {
+    max-width: 100%;
+
+    .tag-item-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}

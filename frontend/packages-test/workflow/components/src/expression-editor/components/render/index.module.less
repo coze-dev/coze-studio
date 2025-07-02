@@ -1,0 +1,11 @@
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable property-no-vendor-prefix */
+
+.slate-editable {
+  // WARNING: 别删，有人在全局加了 user-select: none 删了会在低版本 safari 浏览器上出现无法输入文本
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  -o-user-select: text !important;
+}

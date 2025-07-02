@@ -1,0 +1,20 @@
+.readonly {
+  pointer-events: none;
+}
+
+.slider {
+  position: relative;
+
+  :global {
+
+    // semi-slider放到flex布局会无法拖动 这里样式可以修复这个问题
+    .semi-slider {
+      position: relative;
+      width: 100%;
+
+      .semi-slider-wrapper {
+        width: 100%;
+      }
+    }
+  }
+}

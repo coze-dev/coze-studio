@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "types": ["react", "react-dom"],
+    "jsx": "react",
+    "isolatedModules": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": false,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "rootDir": "./src",
+    "outDir": "./lib-ts",
+    "tsBuildInfoFile": "./lib-ts/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["./src", "./src/**/*.json"],
+  "references": [
+    {
+      "path": "../../arch/bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-error/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-flags/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/report-events/tsconfig.build.json"
+    },
+    {
+      "path": "../biz-components/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/auth/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../framework/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/open-platform/open-chat/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/user-store/tsconfig.build.json"
+    },
+    {
+      "path": "../../workflow/base/tsconfig.build.json"
+    },
+    {
+      "path": "../../workflow/components/tsconfig.build.json"
+    },
+    {
+      "path": "../../workflow/playground/tsconfig.build.json"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+/* stylelint-disable declaration-no-important */
+.input-wrapper {
+  width: 100%;
+
+  span {
+    width: 100%;
+  }
+}
+
+.error-wrapper {
+  :global {
+    .semi-input-wrapper {
+      border: 1px solid @error-red;
+    }
+  }
+}
+
+.error-content {
+  height: 20px;
+}
+
+.error-float {
+  position: absolute;
+  width: 100%;
+}
+
+.error-text {
+  position: absolute;
+
+  padding-top: 2px;
+  padding-left: 12px;
+
+  font-size: 12px;
+  color: @error-red;
+}
+
+.textarea-pd {
+  padding-bottom: 0;
+}
+
+.inputting {
+  textarea {
+    .textarea-pd;
+  }
+}
+
+.input-blur {
+  textarea {
+    .textarea-pd;
+
+    overflow: hidden;
+    display: -webkit-box;
+
+    text-overflow: ellipsis;
+
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+.text-input-placeholder {
+  padding-top: 0;
+  padding-bottom: 0;
+
+  textarea {
+    padding-top: 4px !important;
+  }
+}

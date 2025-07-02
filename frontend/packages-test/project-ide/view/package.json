@@ -1,0 +1,50 @@
+{
+  "name": "@coze-project-ide/view",
+  "version": "0.0.1",
+  "author": "chenjiawei.inizio@bytedance.com",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "build:fast": "tsup src/index.ts --format cjs,esm --sourcemap --legacy-output --tsconfig tsconfig.build.json",
+    "build:watch": "npm run build:fast -- --dts-resolve",
+    "clean": "rimraf dist",
+    "lint": "eslint ./ --cache --quiet",
+    "test": "exit",
+    "test:cov": "exit",
+    "ts-check": "tsc --noEmit",
+    "watch": "npm run build:fast -- --dts-resolve --watch --ignore-watch dist"
+  },
+  "dependencies": {
+    "@coze-project-ide/core": "workspace:*",
+    "@flowgram-adapter/common": "workspace:*",
+    "@vscode/codicons": "*",
+    "clsx": "^1.2.1",
+    "fast-json-stable-stringify": "^2.1.0",
+    "inversify": "^6.0.1",
+    "lodash": "^4.17.21",
+    "nanoid": "^4.0.2",
+    "react-error-boundary": "^4.0.9"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@types/lodash": "^4.14.137",
+    "@types/node": "18.18.9",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "esbuild-sass-plugin": "^3.2.0",
+    "eslint": "~9.12.0",
+    "jsdom": "^22.1.0",
+    "reflect-metadata": "^0.1.13",
+    "tsup": "^8.0.1",
+    "typescript": "~5.8.2",
+    "vitest": "~3.0.5"
+  },
+  "peerDependencies": {
+    "react": ">=17",
+    "react-dom": ">=17"
+  }
+}
+

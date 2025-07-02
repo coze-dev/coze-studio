@@ -1,0 +1,44 @@
+{
+  "name": "@coze-studio/user-store",
+  "version": "0.0.1",
+  "description": "登录 &amp; 用户相关全局 store",
+  "license": "Apache-2.0",
+  "author": "duwenhan@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/foundation-sdk": "workspace:*",
+    "@coze-arch/idl": "workspace:*"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@vitest/coverage-v8": "~3.0.5",
+    "immer": "^10.0.3",
+    "stylelint": "^15.11.0",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5",
+    "zustand": "^4.4.7"
+  },
+  "peerDependencies": {
+    "axios": "^1.4.0",
+    "eventemitter3": "^5.0.1",
+    "immer": "^10.0.3",
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0",
+    "zustand": "^4.4.7"
+  }
+}
+

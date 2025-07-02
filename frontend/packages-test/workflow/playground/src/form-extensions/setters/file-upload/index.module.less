@@ -1,0 +1,39 @@
+/* stylelint-disable no-descending-specificity */
+.container {
+  &.hide-upload-area {
+    :global {
+      .semi-upload-drag-area {
+        display: none;
+      }
+    }
+  }
+
+  :global {
+    .semi-upload-drag-area {
+      padding: 29px 45px;
+
+      .semi-upload-drag-area-sub-text {
+        word-break: break-all;
+
+      }
+    }
+
+    .semi-upload-file-card-preview-placeholder {
+      background-color: unset;
+    }
+
+    .semi-upload.has-error .semi-upload-drag-area {
+      border: 1px solid var(--Light-usage-danger---color-danger, #FF441E);
+    }
+
+    .semi-upload-file-card-info-main {
+      max-height: 100%;
+    }
+
+  }
+
+  .upload-error-text {
+    color: var(--Light-usage-danger---color-danger, #FF441E);
+  }
+
+}

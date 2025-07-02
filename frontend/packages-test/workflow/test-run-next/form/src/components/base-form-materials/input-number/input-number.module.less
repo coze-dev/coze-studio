@@ -1,0 +1,27 @@
+.buttons {
+  display: flex;
+  flex-direction: column;
+  width: 20px;
+  position: relative;
+  right: -7px;
+}
+
+.button {
+  font-size: 10px;
+  color: var(--coz-fg-primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  &:hover {
+    background-color: rgba(var(--coze-bg-5), var(--coze-bg-5-alpha));
+  }
+  &.up {
+    border-top-left-radius: var(--coze-5);
+    border-top-right-radius: var(--coze-5);
+  }
+  &.down {
+    border-bottom-left-radius: var(--coze-5);
+    border-bottom-right-radius: var(--coze-5);
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "name": "@coze-studio/file-kit",
+  "version": "0.0.1",
+  "description": "file kit ",
+  "license": "Apache-2.0",
+  "author": "liuyuhang.0@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    "./config": "./src/exports/config.ts",
+    "./logic": "./src/exports/logic.ts"
+  },
+  "typesVersions": {
+    "*": {
+      "logic": [
+        "./src/exports/logic.ts"
+      ],
+      "config": [
+        "./src/exports/config.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/i18n": "workspace:*"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "stylelint": "^15.11.0",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5"
+  }
+}
+

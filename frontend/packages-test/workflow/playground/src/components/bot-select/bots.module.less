@@ -1,0 +1,58 @@
+.select-wrapper {
+  position: relative;
+
+  :global {
+
+    // 修复bot-select在画布中因为缩放导致尺寸不正常
+    .semi-portal-inner {
+      width: 100%;
+    }
+  }
+}
+
+.dropdown {
+  min-height: 50px;
+  width: 100%;
+
+  :global {
+    .semi-select-option-list {
+      &::-webkit-scrollbar {
+        height: 0;
+        background: transparent;
+        min-height: 42px;
+      }
+
+      .semi-select-loading-wrapper {
+        text-align: center;
+        min-height: 40px;
+      }
+
+      .semi-select-option-selected {
+        .semi-icon-tick {
+          color: var(--light-usage-primary-color-primary, #4d53e8);
+        }
+      }
+    }
+  }
+}
+
+.bot-foot-loading {
+  color: #4D53E8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+}
+
+.bot-option {
+  display: flex;
+  padding-left: 24px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.loading-tag {
+  font-size: 12px;
+  display: flex;
+  align-items: end;
+}
