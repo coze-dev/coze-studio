@@ -1038,7 +1038,11 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 	if req.SQLParams != nil {
 		params = make([]interface{}, 0, len(req.SQLParams))
 		for _, param := range req.SQLParams {
-			params = append(params, param.Value)
+			value := param.Value
+			if param.ISNull {
+				value = nil
+			}
+			params = append(params, value)
 		}
 	}
 
@@ -1275,6 +1279,7 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 
 			fieldVal := sqlParams[i].Value
 			if sqlParams[i].ISNull || fieldVal == nil {
+				rowData[field.PhysicalName] = nil
 				i++
 				continue
 			}
@@ -1327,9 +1332,11 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 			return -1, errorx.New(errno.ErrMemoryDatabaseFieldNotFoundCode)
 		}
 
-		fieldVal := req.SQLParams[index].Value
+		param := req.SQLParams[index]
+		fieldVal := param.Value
 		index++
-		if fieldVal == nil {
+		if param.ISNull || fieldVal == nil {
+			updateData[field.PhysicalName] = nil
 			continue
 		}
 
