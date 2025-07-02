@@ -3,7 +3,20 @@
  */
 
 // 默认允许的HTML标签白名单
-const DEFAULT_ALLOWED_TAGS = ['img', 'table', 'tr', 'td', 'th', 'br', 'p'];
+const DEFAULT_ALLOWED_TAGS = [
+  'img',
+  'table',
+  'colgroup',
+  'col',
+  'tbody',
+  'thead',
+  'tfoot',
+  'tr',
+  'td',
+  'th',
+  'br',
+  'p',
+];
 
 /**
  * 转义HTML，只允许白名单中的标签

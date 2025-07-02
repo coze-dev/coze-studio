@@ -84,7 +84,15 @@ export const useBaseMore = ({
       function_name: baseInfo.function_name,
       auth_mode: baseInfo.api_extend?.auth_mode || PluginToolAuthType.Required,
     });
-  }, [baseInfo, showModal, disabled, pluginMeta]);
+  }, [
+    baseInfo.path,
+    showModal,
+    disabled,
+    pluginMeta,
+    baseInfo.method,
+    baseInfo.function_name,
+    baseInfo.api_extend?.auth_mode,
+  ]);
 
   // 提交基础信息
   const submitBaseInfo = async () => {

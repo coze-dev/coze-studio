@@ -143,7 +143,11 @@ export const GuideModal: React.FC<GuideModalProps> = ({
             <Badge count="Beta" type="alt" />
           </span>
         }
-        description={I18n.t('creat_project_describe')}
+        description={
+          IS_OPEN_SOURCE
+            ? I18n.t('creat_project_describe_open')
+            : I18n.t('creat_project_describe')
+        }
       />
       {extraButtonConfigs.map(({ onClick, ...config }, index) => (
         <GuideButton

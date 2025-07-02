@@ -92,7 +92,7 @@ export const LoginPage: FC = () => {
             <div className="mt-[12px] flex justify-center">
               <a
                 data-testid="login.link.terms"
-                href=""
+                href="https://spdx.org/licenses/Apache-2.0.html"
                 target="_blank"
                 className="no-underline coz-fg-hglt"
               >

@@ -22,6 +22,17 @@ import { useReportTti } from '@coze-arch/report-tti';
 import { REPORT_EVENTS } from '@coze-arch/report-events';
 import { useErrorHandler } from '@coze-arch/logger';
 import { I18n } from '@coze-arch/i18n';
+import {
+  IconButton,
+  Button,
+  Table,
+  type TableMethods,
+  Layout,
+  Typography,
+  Tooltip,
+  Banner,
+  Popconfirm,
+} from '@coze-arch/coze-design';
 import { renderHtmlTitle } from '@coze-arch/bot-utils';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { UIEmpty } from '@coze-arch/bot-semi';
@@ -37,17 +48,6 @@ import {
 } from '@coze-arch/bot-api/plugin_develop';
 import { PluginDevelopApi } from '@coze-arch/bot-api';
 import { useEditExample } from '@coze-agent-ide/bot-plugin-tools';
-import {
-  IconButton,
-  Button,
-  Table,
-  type TableMethods,
-  Layout,
-  Typography,
-  Tooltip,
-  Banner,
-  Popconfirm,
-} from '@coze-arch/coze-design';
 
 import PluginHeader from '@/components/plugin-header';
 
@@ -102,6 +102,7 @@ const PluginDetailPage = ({
     initSuccessed,
     pluginID,
     version,
+    updatePluginInfoByImmer,
   } = usePluginStore(
     useShallow(store => ({
       wrapWithCheckLock: store.wrapWithCheckLock,
@@ -114,6 +115,7 @@ const PluginDetailPage = ({
       initSuccessed: store.initSuccessed,
       pluginID: store.pluginId,
       version: store.version,
+      updatePluginInfoByImmer: store.updatePluginInfoByImmer,
     })),
   );
   const isCloudIDEPlugin = pluginInfo?.creation_method === CreationMethod.IDE;
@@ -377,6 +379,12 @@ const PluginDetailPage = ({
   const handlePublishSuccess = () => {
     pluginHistoryController.current?.reload();
     setPublishPopShow(false);
+    updatePluginInfoByImmer(draft => {
+      if (!draft) {
+        return;
+      }
+      draft.published = true;
+    });
   };
 
   const isRenderCodePluginButton = !isCloudIDEPlugin;

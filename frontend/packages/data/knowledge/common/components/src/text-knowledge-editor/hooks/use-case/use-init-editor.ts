@@ -35,7 +35,7 @@ export const useInitEditor = ({
         paragraph: {
           // 配置段落，避免生成多余的空段落
           HTMLAttributes: {
-            class: 'editor-paragraph',
+            class: 'text-knowledge-tiptap-editor-paragraph',
           },
         },
       }),

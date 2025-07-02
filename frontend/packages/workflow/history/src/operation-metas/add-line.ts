@@ -1,32 +1,36 @@
-import { cloneDeep } from 'lodash-es';
 import {
-  type AddOrDeleteWorkflowNodeOperationValue,
+  type AddOrDeleteLineOperationValue,
   FreeOperationType,
   WorkflowDocument,
-  type WorkflowNodeJSON,
+  WorkflowLinesManager,
 } from '@flowgram-adapter/free-layout-editor';
 import { type PluginContext } from '@flowgram-adapter/free-layout-editor';
 import { type OperationMeta } from '@flowgram-adapter/free-layout-editor';
 
 import { shouldMerge } from '../utils/should-merge';
 
-export const addNodeOperationMeta: OperationMeta<
-  AddOrDeleteWorkflowNodeOperationValue,
+export const addLineOperationMeta: OperationMeta<
+  AddOrDeleteLineOperationValue,
   PluginContext,
   void
 > = {
-  type: FreeOperationType.addNode,
+  type: FreeOperationType.addLine,
   inverse: op => ({
     ...op,
-    type: FreeOperationType.deleteNode,
+    type: FreeOperationType.deleteLine,
   }),
   apply: (operation, ctx: PluginContext) => {
+    const linesManager = ctx.get<WorkflowLinesManager>(WorkflowLinesManager);
     const document = ctx.get<WorkflowDocument>(WorkflowDocument);
-    document.createWorkflowNode(
-      cloneDeep(operation.value.node) as WorkflowNodeJSON,
-      true,
-      operation.value.parentID,
-    );
+
+    if (!operation.value.to || !document.getNode(operation.value.to)) {
+      return;
+    }
+
+    linesManager.createLine({
+      ...operation.value,
+      key: operation.value.id,
+    });
   },
   shouldMerge,
 };
