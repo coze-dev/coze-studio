@@ -1,1 +1,0 @@
-export const ONBOARDING_PREVIEW_DELAY = 500;

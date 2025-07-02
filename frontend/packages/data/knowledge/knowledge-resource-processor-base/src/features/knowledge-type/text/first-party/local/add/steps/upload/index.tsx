@@ -1,1 +1,0 @@
-export { TextUpload } from './upload';

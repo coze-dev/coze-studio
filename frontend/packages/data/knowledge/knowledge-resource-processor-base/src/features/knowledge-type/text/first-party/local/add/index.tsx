@@ -1,1 +1,0 @@
-export { TextLocalAddUpdateConfig } from './config';

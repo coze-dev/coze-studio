@@ -1,5 +1,0 @@
-{
-  "dupCheck": {
-    "ignoreGlobPatterns": ["src/**/*"]
-  }
-}

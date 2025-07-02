@@ -1,1 +1,0 @@
-export { TableUpload } from './upload';

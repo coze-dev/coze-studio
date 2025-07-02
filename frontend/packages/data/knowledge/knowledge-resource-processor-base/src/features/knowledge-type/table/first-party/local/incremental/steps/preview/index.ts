@@ -1,1 +1,0 @@
-export { TablePreview } from './preview';

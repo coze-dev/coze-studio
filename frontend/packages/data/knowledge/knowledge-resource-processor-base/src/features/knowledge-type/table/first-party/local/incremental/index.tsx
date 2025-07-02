@@ -1,1 +1,0 @@
-export { TableLocalIncrementalConfig } from './config';

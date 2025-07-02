@@ -1,1 +1,0 @@
-export { InsertInputSlotAction } from './component';

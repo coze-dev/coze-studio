@@ -1,1 +1,0 @@
-export { useFetchSliceModal } from './hooks';

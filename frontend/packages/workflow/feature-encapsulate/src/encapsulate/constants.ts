@@ -1,1 +1,0 @@
-export const ENCAPSULATE_START_END_PAD = 60;

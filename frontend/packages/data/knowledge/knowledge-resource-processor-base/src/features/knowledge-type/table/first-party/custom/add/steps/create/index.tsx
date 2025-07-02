@@ -1,1 +1,0 @@
-export { TableCustomCreate } from './create';

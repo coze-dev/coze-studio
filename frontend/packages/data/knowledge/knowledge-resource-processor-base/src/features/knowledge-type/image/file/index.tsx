@@ -1,1 +1,0 @@
-export { ImageFileAddConfig } from './config';

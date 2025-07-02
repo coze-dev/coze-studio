@@ -1,3 +1,0 @@
-interface Navigator {
-  standalone: boolean;
-}
