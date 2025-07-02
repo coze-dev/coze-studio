@@ -14,6 +14,8 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
+	einoCompose "github.com/cloudwego/eino/compose"
+
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/variables"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
@@ -27,7 +29,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
-	einoCompose "github.com/cloudwego/eino/compose"
 )
 
 func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolRequest, opts ...entity.ExecuteToolOpt) (resp *ExecuteToolResponse, err error) {

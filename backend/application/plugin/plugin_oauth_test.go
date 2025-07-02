@@ -93,7 +93,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 	resp := map[string]interface{}{
 		"access_token":  token,
 		"refresh_token": token,
-		"expires_in":    3,
+		"expires_in":    36000,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)

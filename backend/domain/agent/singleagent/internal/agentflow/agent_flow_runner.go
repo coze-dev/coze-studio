@@ -2,8 +2,7 @@ package agentflow
 
 import (
 	"context"
-	"fmt"
-	"runtime/debug"
+	"errors"
 	"slices"
 
 	"github.com/google/uuid"
@@ -17,6 +16,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossmodelmgr"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
 
 type AgentState struct {
@@ -55,8 +55,9 @@ func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
 	go func() {
 		defer func() {
 			if pe := recover(); pe != nil {
-				sw.Send(nil, fmt.Errorf("panic occurred in AgentFlow: %v \nstack=%s",
-					pe, string(debug.Stack())))
+				logs.CtxErrorf(ctx, "[AgentRunner] StreamExecute recover, err: %v", pe)
+
+				sw.Send(nil, errors.New("internal server error"))
 			}
 			sw.Close()
 		}()
@@ -67,10 +68,14 @@ func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
 		if r.requireCheckpoint {
 			if req.ResumeInfo != nil {
 				composeOpts = append(composeOpts, compose.WithCheckPointID(req.ResumeInfo.InterruptID))
-
 				resumeInfo := req.ResumeInfo
-				opts := crossworkflow.DefaultSVC().WithResumeToolWorkflow(resumeInfo.AllToolInterruptData[resumeInfo.ToolCallID], req.Input.Content, resumeInfo.AllToolInterruptData)
-				composeOpts = append(composeOpts, opts)
+				composeOpts = append(composeOpts, compose.WithCheckPointID(req.ResumeInfo.InterruptID))
+
+				if resumeInfo.InterruptType != singleagent.InterruptEventType_OauthPlugin {
+					opts := crossworkflow.DefaultSVC().WithResumeToolWorkflow(resumeInfo.AllWfInterruptData[resumeInfo.ToolCallID], req.Input.Content, resumeInfo.AllWfInterruptData)
+					composeOpts = append(composeOpts, opts)
+				}
+
 			} else {
 				composeOpts = append(composeOpts, compose.WithCheckPointID(executeID.String()))
 			}

@@ -5,9 +5,10 @@ package coze
 import (
 	"context"
 
-	"code.byted.org/flow/opencoze/backend/application/plugin"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+
+	"code.byted.org/flow/opencoze/backend/application/plugin"
 
 	bot_open_api "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_open_api"
 )

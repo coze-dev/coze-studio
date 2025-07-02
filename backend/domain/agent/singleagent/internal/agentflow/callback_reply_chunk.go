@@ -14,6 +14,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
@@ -212,16 +213,42 @@ func convInterruptInfo(ctx context.Context, interruptInfo *compose.InterruptInfo
 		break
 	}
 
-	resumeData := make(map[string]*crossworkflow.ToolInterruptEvent)
+	wfResumeData := make(map[string]*crossworkflow.ToolInterruptEvent)
+	toolResultData := make(map[string]*plugin.ToolInterruptEvent)
+	var interruptEventType singleagent.InterruptEventType
 	for k, v := range toolsNodeExtra.RerunExtraMap {
-		resumeData[k] = v.(*crossworkflow.ToolInterruptEvent)
+
+		interruptEventType = convInterruptEventType(v)
+
+		if interruptEventType == singleagent.InterruptEventType_OauthPlugin {
+			toolResultData[k] = v.(*plugin.ToolInterruptEvent)
+		} else {
+			wfResumeData[k] = v.(*crossworkflow.ToolInterruptEvent)
+		}
+		continue
 	}
 
 	interrupt := &singleagent.InterruptInfo{
-		AllToolInterruptData: resumeData,
+		AllToolInterruptData: toolResultData,
+		AllWfInterruptData:   wfResumeData,
 		ToolCallID:           toolCallID,
+		InterruptType:        interruptEventType,
 	}
 	return interrupt
+}
+
+func convInterruptEventType(interruptEvent any) singleagent.InterruptEventType {
+	var interruptEventType singleagent.InterruptEventType
+
+	switch t := interruptEvent.(type) {
+	case *crossworkflow.ToolInterruptEvent:
+		interruptEventType = singleagent.InterruptEventType(int64(t.EventType))
+	case *plugin.ToolInterruptEvent:
+		if t.Event == plugin.InterruptEventTypeOfToolNeedOAuth {
+			interruptEventType = singleagent.InterruptEventType_OauthPlugin
+		}
+	}
+	return interruptEventType
 }
 
 func concatToolsNodeOutput(ctx context.Context, output *schema.StreamReader[callbacks.CallbackOutput]) ([]*schema.Message, error) {
