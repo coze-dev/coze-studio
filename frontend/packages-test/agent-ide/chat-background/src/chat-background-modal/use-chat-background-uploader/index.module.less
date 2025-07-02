@@ -1,0 +1,39 @@
+.background-config-modal {
+  :global {
+    .semi-modal-content {
+      padding: 0;
+      background: var(--coz-bg-primary, #F4F4F6);
+
+      .semi-modal-header {
+        padding: 0 24px;
+      }
+
+      .semi-modal-body {
+        padding: 0;
+      }
+
+      .semi-modal-footer {
+        @apply mt-0;
+      }
+    }
+
+    @media screen and (max-height: 840px) {
+      .semi-modal-content {
+        max-height: calc(100vh - 80px);
+      }
+    }
+  }
+}
+
+
+.error-message {
+  @apply text-left;
+  @apply coz-bg-max;
+
+  margin-bottom: 24px;
+  color: rgb(255, 68, 30);
+
+  .link {
+    color: #4d53e8;
+  }
+}

@@ -1,0 +1,35 @@
+.panel-header {
+  display: flex;
+  align-items: center;
+
+  height: 56px;
+  padding: 16px 24px;
+
+  background-color: var(--light-color-grey-grey-0, #f7f7fa);
+  border-bottom: 1px solid var(--light-usage-border-color-border, rgb(29 28 35 / 8%));
+
+  .panel-header-title {
+    flex-shrink: 0;
+
+    margin-right: 24px;
+
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 24px;
+    color: var(--light-usage-text-color-text-0, #1c1d23);
+  }
+
+  .panel-header-option {
+    display: flex;
+    flex: 1;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+
+    width: 0;
+
+    .panel-header-option-icon {
+      color: var(--light-usage-text-color-text-2, rgb(29 28 35 / 60%));
+    }
+  }
+}

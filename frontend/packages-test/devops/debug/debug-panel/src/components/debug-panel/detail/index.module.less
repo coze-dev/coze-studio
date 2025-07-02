@@ -1,0 +1,89 @@
+@import '../common/common.module.less';
+
+.detail-container {
+  .detail-title-container {
+    padding: 24px 0 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #000;
+  }
+
+  .detail-border-box {
+    .webkit-scrollbar_mixin();
+
+    overflow: auto;
+
+    max-height: 340px;
+    padding: 8px 4px;
+
+    font-family: Menlo;
+
+    border: 1px solid #1D1C2314;
+    border-radius: 8px;
+  }
+
+  .detail-border-box_error {
+    border: 1px solid #FF441E;
+  }
+
+  .detail-text {
+    font-size: 12px;
+    color: #1D1C23;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+
+  .detail-pagination {
+    margin-bottom: 10px;
+
+    :global(.semi-page-prev),
+    :global(.semi-page-next) {
+      display: none;
+    }
+
+    :global(.semi-page-item) {
+      background: transparent;
+      border: 1px solid rgb(29 28 35 / 8%);
+      border-radius: 8px;
+
+      &:global(.semi-page-item-active),
+      &:global(:hover) {
+        font-weight: 600;
+        color: #4D53E8;
+
+        background: #F1F2FD;
+        border: none;
+        border-radius: 8px;
+      }
+    }
+  }
+
+  .react-json-container {
+    :global(.string-value) {
+      word-break: break-word;
+    }
+  }
+
+  .topology-flow {
+    width: 100%;
+    height: 300px;
+    padding: 24px 0;
+
+    .topology-flow-header {
+      display: flex;
+      align-items: center;
+
+      width: 100%;
+      height: 20px;
+      margin-bottom: 16px;
+
+      .topology-flow-header-title {
+        margin-right: 4px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1D1C23;
+      }
+    }
+  }
+
+}

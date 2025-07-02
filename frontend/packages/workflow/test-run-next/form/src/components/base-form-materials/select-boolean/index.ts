@@ -1,1 +1,0 @@
-export { SelectBoolean } from './select';

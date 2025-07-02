@@ -1,0 +1,21 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+  <g clip-path="url(#clip0_1267_212569)">
+    <rect x="4" y="4" width="8" height="8" fill="currentColor" fill-opacity="0.01" stroke="currentColor"
+      stroke-opacity="0.3" stroke-width="0.0333333" />
+    <circle cx="8.00065" cy="7.9987" r="4.66667" fill="currentColor" fill-opacity="0.01" stroke="currentColor"
+      stroke-opacity="0.3" stroke-width="0.0333333" />
+  </g>
+  <path d="M2.66602 14L13.3327 14" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" />
+  <path
+    d="M3.65104 8.34766C3.65104 5.94579 5.59814 3.9987 8 3.9987C10.4019 3.9987 12.349 5.94579 12.349 8.34766V11.5987C12.349 11.8196 12.1699 11.9987 11.949 11.9987H4.05104C3.83013 11.9987 3.65104 11.8196 3.65104 11.5987V8.34766Z"
+    stroke="currentColor" stroke-width="1.33333" />
+  <path d="M8 1.33203V1.9987" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" />
+  <path d="M6.00391 8.55469L6.00391 9.70329" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" />
+  <path d="M12.709 3.26953L12.2376 3.74094" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" />
+  <path d="M3.27148 3.28516L3.74289 3.75656" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" />
+  <defs>
+    <clipPath id="clip0_1267_212569">
+      <rect width="16" height="16" fill="currentColor" />
+    </clipPath>
+  </defs>
+</svg>

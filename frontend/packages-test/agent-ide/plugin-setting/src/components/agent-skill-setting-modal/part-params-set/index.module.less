@@ -1,0 +1,137 @@
+.icon-button-16 {
+  cursor: pointer;
+
+  &:hover {
+    border-radius: 4px;
+  }
+
+  :global {
+    .semi-button {
+      &.semi-button-size-small {
+        height: 16px;
+        /* stylelint-disable declaration-no-important */
+        padding: 1px !important;
+
+      }
+    }
+  }
+
+  &.icon-disabled {
+    cursor: default;
+    opacity: 0.2;
+  }
+}
+
+.params-modal {
+  .name-wrap {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .name {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    color: #1D1C24;
+    text-align: left;
+  }
+
+  .desc {
+    font-size: 12px;
+    line-height: 16px;
+    color: rgba(29, 28, 36, 60%);
+    text-align: left;
+  }
+
+  :global {
+
+    /* stylelint-disable-next-line selector-class-pattern */
+    .semi-radioGroup {
+      margin-bottom: 24px;
+    }
+
+    /* stylelint-disable-next-line selector-class-pattern */
+    .semi-radio-addon-buttonRadio {
+      border-radius: 4px;
+    }
+
+    .semi-radio-content {
+      flex: 1;
+    }
+
+    .semi-modal-body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .semi-modal-content {
+      min-height: 400px;
+    }
+
+    .semi-table-row {
+      &:has(.disable) {
+        display: none;
+      }
+    }
+
+    .semi-table-thead>.semi-table-row>.semi-table-row-head {
+      box-sizing: border-box;
+      height: 16px;
+      padding: 12px;
+
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 16px;
+      color: rgba(29, 28, 36, 80%);
+
+      border-bottom-width: 1px;
+
+      // &:first-child {
+      //   padding-left: 32px;
+      // }
+
+      &:last-child {
+        padding-right: 0;
+      }
+    }
+
+    .semi-table-body {
+      margin-top: 16px;
+      // min-height: 400px;
+    }
+
+    .semi-table-tbody>.semi-table-row>.semi-table-row-cell {
+      overflow: hidden;
+
+      padding: 13px 0;
+      padding-left: 12px;
+
+      text-overflow: ellipsis;
+      white-space: nowrap;
+
+      background-image: none;
+      border-bottom: none;
+
+      .semi-switch {
+        left: 0 !important;
+      }
+
+      &:first-child {
+        padding-right: 12px;
+      }
+    }
+
+    .semi-table-tbody>.semi-table-row:hover>.semi-table-row-cell {
+      background-color: transparent;
+    }
+
+    .semi-table-expand-icon {
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    .semi-table-placeholder {
+      border-bottom: 0;
+    }
+  }
+}

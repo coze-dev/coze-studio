@@ -1,0 +1,29 @@
+{
+  "name": "@coze-arch/foundation-sdk",
+  "version": "0.0.1",
+  "description": "SDK for interaction between the foundation and the business.",
+  "license": "Apache-2.0",
+  "author": "sunzhiyuan.evan@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "devDependencies": {
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/idl": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/node": "^18",
+    "@types/react": "18.2.37",
+    "@vitest/coverage-v8": "~3.0.5",
+    "sucrase": "^3.32.0",
+    "vitest": "~3.0.5",
+    "zustand": "^4.4.7"
+  }
+}
+

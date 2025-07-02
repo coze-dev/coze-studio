@@ -1,0 +1,41 @@
+.container {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: stretch;
+  width: 24px;
+  height: 24px;
+  margin-left: 8px;
+
+  .icon-no {
+    display: flex;
+    align-items: center;
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      color: #888D92;
+
+      &.disabled {
+        cursor: not-allowed;
+      }
+
+      &>svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .add {
+    margin-left: 8px;
+    color: #4D53E8;
+    cursor: pointer;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 16px;
+  }
+}

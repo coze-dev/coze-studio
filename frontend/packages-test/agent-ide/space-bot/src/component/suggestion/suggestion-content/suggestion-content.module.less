@@ -1,0 +1,31 @@
+@import '../../../assets/styles/index.module.less';
+
+.suggestion-content {
+  .description {
+    .tip-text;
+
+    margin-bottom: 12px;
+  }
+
+  .prompt-text {
+    /* stylelint-disable-next-line custom-property-pattern -- 设计命名如此 */
+    color: var(--Light-usage-text---color-text-0, #1D1C23);
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+  }
+
+  .custom-prompt-checkbox :global(.semi-checkbox-addon) {
+    /* stylelint-disable-next-line custom-property-pattern -- 设计命名如此 */
+    color: var(--Light-usage-text---color-text-2, rgba(28, 29, 35, 60%));
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .prompt-input {
+    margin-top: 12px;
+  }
+}

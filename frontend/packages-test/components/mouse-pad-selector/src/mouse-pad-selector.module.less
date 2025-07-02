@@ -1,0 +1,112 @@
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable selector-class-pattern */
+.ui-mouse-pad-selector {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  box-sizing: border-box;
+  width: 68px;
+  height: 32px;
+  padding: 8px 12px;
+
+  border: 1px solid rgba(29, 28, 35, 8%);
+  border-radius: 8px;
+
+  &-icon {
+    height: 20px;
+    margin-right: 12px;
+  }
+
+  &-arrow {
+    height: 16px;
+    font-size: 12px;
+  }
+
+  &-popover {
+    padding: 16px;
+
+    &-options {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .mouse-pad-option {
+      box-sizing: border-box;
+      width: 220px;
+      padding-bottom: 20px;
+
+      text-align: center;
+
+      background: var(--coz-mg-card, #FFF);
+      border: 1px solid var(--coz-stroke-plus, rgba(6, 7, 9, 15%));
+      border-radius: var(--default, 8px);
+
+      &-icon {
+        padding-top: 26px;
+      }
+
+      &-title {
+        padding-top: 8px;
+      }
+
+      &-subTitle {
+        padding: 4px 12px 0;
+      }
+
+      &-icon-selected {
+        color: rgb(19 0 221);
+      }
+
+      &-title-selected {
+        color: var(--coz-fg-hglt, #4E40E5);
+      }
+
+      &-subTitle-selected {
+        color: var(--coz-fg-hglt, #4E40E5);
+      }
+
+      &-selected {
+        cursor: pointer;
+        background-color: var(--coz-mg-hglt, rgba(186, 192, 255, 20%));
+        border: 1px solid var(--coz-stroke-hglt, #4E40E5);
+        border-radius: var(--default, 8px);
+      }
+
+      &:hover:not(&-selected) {
+        cursor: pointer;
+
+        background-color: var(--coz-mg-card-hovered, #FFF);
+        border: 1px solid var(--coz-stroke-plus, rgba(6, 7, 9, 15%));
+        border-radius: var(--default, 8px);
+        box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 16%), 0 16px 48px 0 rgba(0, 0, 0, 8%);
+      }
+
+      &:active:not(&-selected) {
+        background-color: rgba(46, 46, 56, 12%);
+      }
+
+      &:last-of-type {
+        padding-top: 13px;
+      }
+    }
+  }
+
+  &:hover {
+    cursor: pointer;
+    background-color: rgba(46, 46, 56, 8%);
+    border-color: rgba(77, 83, 232, 100%);
+  }
+
+  &:active,
+  &:focus {
+    background-color: rgba(46, 46, 56, 12%);
+    border-color: rgba(77, 83, 232, 100%);
+  }
+
+  &-active {
+    border-color: rgba(77, 83, 232, 100%);
+  }
+}

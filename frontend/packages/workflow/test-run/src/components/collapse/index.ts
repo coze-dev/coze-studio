@@ -1,1 +1,0 @@
-export { Collapse } from './collapse';

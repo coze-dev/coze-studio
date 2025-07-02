@@ -1,0 +1,41 @@
+.control-bar {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+
+  height: 48px;
+  min-height: 48px;
+  max-height: 48px;
+  padding: 8px;
+
+  background: var(--coz-bg-max, #FFF);
+  border: 1px solid var(--coz-stroke-primary, rgba(6, 7, 9, 10%));
+  border-radius: 12px;
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 8%), 0 8px 24px 0 rgba(0, 0, 0, 4%);
+
+  .page-number {
+    margin: 0 4px;
+
+    /* COZText16Regular */
+    font-size: 16px;
+    font-weight: 400;
+    font-style: normal;
+    line-height: 22px; /* 137.5% */
+    color: var(--coz-fg-plus, rgba(6, 7, 9, 96%));
+  }
+}
+
+.pdf-title {
+  margin-left: 8px;
+
+  font-size: 16px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 22px; /* 137.5% */
+  color: var(--coz-fg-plus, rgba(6, 7, 9, 96%));
+}

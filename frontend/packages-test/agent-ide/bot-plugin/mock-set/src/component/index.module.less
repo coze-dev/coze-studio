@@ -1,0 +1,157 @@
+.layout-header {
+  padding: 16px 24px 24px;
+}
+
+
+.content-title {
+  max-width: 1160px;
+  margin: 0 auto 16px;
+
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 32px;
+  color: var(--semi-color-text-0);
+}
+
+.list-container_scroll {
+  width: 100%;
+  max-width: 1160px;
+  margin-right: auto;
+  margin-left: auto;
+  padding-bottom: 10px;
+}
+
+.list-container_flexible,
+.list-container-no-header_flexible {
+  width: 100%;
+  max-width: 1160px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.list-container_flexible {
+  height: calc(100% - 72px);
+}
+
+.list-container-no-header_flexible {
+  height: calc(100%);
+}
+
+/** mock-set-intro */
+
+.mock-set-intro-title {
+  width: 100%;
+  margin-top: 2px;
+  margin-bottom: 4px;
+
+  &.mock-set-intro-title_full {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .mock-set-intro-name {
+    overflow: hidden;
+
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 32px;
+    color: var(--semi-color-text-0);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mock-set-intro-name_full {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .mock-set-intro-edit {
+    width: 16px;
+    height: 16px;
+    color: var(--semi-color-text-2)
+  }
+
+  .mock-set-intro-edit_full,
+  .mock-set-intro-edit_full svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.mock-set-intro-desc_priority.mock-set-intro-desc {
+  overflow: hidden;
+
+  width: 100%;
+
+  font-size: 12px;
+  line-height: 22px;
+  color: var(--semi-color-text-1);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mock-set-intro-desc_priority.mock-set-intro-desc_full {
+  line-height: 16px;
+}
+
+/** 创建框 **/
+.mock-creation-modal {
+  :global {
+    .semi-modal-content .semi-modal-body {
+      /** 保证内部 tooltip 不被遮盖 **/
+      overflow: unset
+    }
+
+    .semi-modal-footer .semi-button{
+      margin-left: 8px;
+    }
+  }
+}
+
+
+.mock-creation-card {
+  height: calc(100% - 24px);
+}
+
+div.mock-creation-modal-editor {
+  /** 兼容 modal 在小窗口下 body 高度不生效的问题 */
+  height: calc(100vh - 316px);
+  max-height: 500px;
+}
+
+.mock-creation-card-editor {
+  height: calc(100% - 40px - 32px - 48px);
+  margin-bottom: 40px;
+}
+
+.mock-creation-card-operation {
+  text-align: right;
+}
+
+/** mock-data-list **/
+.skeleton {
+  :global {
+    .semi-skeleton-image {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 12px;
+    }
+  }
+}
+
+.empty {
+  justify-content: center;
+  height: calc(100% - 68px);
+  padding-bottom: 10%;
+
+  :global {
+    .semi-empty-image svg {
+      width: 140px;
+      height: 140px;
+    }
+
+    .semi-empty-description {
+      font-weight: 600;
+    }
+  }
+}

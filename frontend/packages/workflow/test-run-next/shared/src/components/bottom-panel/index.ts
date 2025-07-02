@@ -1,1 +1,0 @@
-export { BottomPanel } from './panel';

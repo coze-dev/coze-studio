@@ -1,0 +1,1 @@
+export { KnowledgeIDEBaseLayoutProps } from './module';

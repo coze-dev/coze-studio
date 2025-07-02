@@ -1,0 +1,79 @@
+/* eslint-disable */
+/* tslint:disable */
+// @ts-nocheck
+
+import * as benefit_common from './benefit_common';
+
+export type Int64 = string | number;
+
+export enum BotMonetizationMode {
+  Unknown = 0,
+  Draft = 1,
+  Released = 2,
+}
+
+export enum BotMonetizationRefreshPeriod {
+  Unknown = 0,
+  Never = 1,
+  Day = 2,
+  Week = 3,
+  Month = 4,
+}
+
+export interface BotMonetizationConfig {
+  IsEnabled?: boolean;
+  FreeChatAllowanceCount?: number;
+}
+
+export interface BotMonetizationConfigData {
+  is_enable?: boolean;
+  free_chat_allowance_count?: number;
+  refresh_period?: BotMonetizationRefreshPeriod;
+}
+
+export interface BotOpenMonetizationConfData {
+  is_enable?: boolean;
+}
+
+export interface PublicGetBotMonetizationConfigRequest {
+  bot_id?: string;
+  /** bot 收费配置是草稿还是正式的 */
+  bot_monetization_mode?: BotMonetizationMode;
+  /** 是否回退，如 mode 指定为 Draft 时，如果无配置，是否取 Released 中的值 */
+  is_fallback?: boolean;
+  entity_id?: string;
+  entity_type?: benefit_common.MonetizationEntityType;
+}
+
+export interface PublicGetBotMonetizationConfigResponse {
+  code?: number;
+  message?: string;
+  data?: BotMonetizationConfigData;
+}
+
+export interface PublicGetBotOpenMonetizationConfRequest {
+  bot_id?: string;
+  entity_id?: string;
+  entity_type?: benefit_common.MonetizationEntityType;
+}
+
+export interface PublicGetBotOpenMonetizationConfResponse {
+  code?: number;
+  message?: string;
+  data?: BotOpenMonetizationConfData;
+}
+
+export interface PublicSaveBotDraftMonetizationConfigRequest {
+  bot_id?: string;
+  is_enable?: boolean;
+  free_chat_allowance_count?: number;
+  refresh_period?: BotMonetizationRefreshPeriod;
+  entity_id?: string;
+  entity_type?: benefit_common.MonetizationEntityType;
+}
+
+export interface PublicSaveBotDraftMonetizationConfigResponse {
+  code?: number;
+  message?: string;
+}
+/* eslint-enable */

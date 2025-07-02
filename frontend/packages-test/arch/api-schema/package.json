@@ -1,0 +1,41 @@
+{
+  "name": "@coze-studio/api-schema",
+  "version": "0.0.1",
+  "description": "api scheme for open source",
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.ts",
+    "./passport": "./src/idl/passport/passport.ts"
+  },
+  "main": "src/index.ts",
+  "typesVersions": {
+    "*": {
+      "passport": [
+        "./src/idl/passport/passport.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage",
+    "update": "idl2ts gen ./"
+  },
+  "dependencies": {
+    "@coze-arch/bot-http": "workspace:*",
+    "@coze-arch/idl2ts-runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/idl2ts-cli": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/node": "^18",
+    "@vitest/coverage-v8": "~3.0.5",
+    "sucrase": "^3.32.0",
+    "vitest": "~3.0.5"
+  }
+}

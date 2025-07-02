@@ -1,0 +1,19 @@
+
+    .model-option {
+        &:last-of-type,
+        &.model-option_selected,
+        &:hover,
+        &:has(+ &.model-option_selected),
+        &:has(+ &:hover) {
+            .model-info-border {
+                border-color: transparent;
+            }
+        }
+
+        // UI 要改 coze design 默认样式，无奈
+        :global(.coz-tag.coz-tag-mini) {
+            padding-right: 3px;
+            padding-left: 3px;
+            font-weight: 500;
+        }
+    }

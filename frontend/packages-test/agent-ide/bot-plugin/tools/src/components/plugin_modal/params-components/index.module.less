@@ -1,0 +1,36 @@
+/* stylelint-disable declaration-no-important */
+.modal-wrapper {
+  .arr-edit-btn {
+    background-color: #f7f7fa !important;
+    border-color: rgba(29, 28, 37, 12%) !important;
+
+    svg {
+      path:first-child {
+        stroke: #4D53E8;
+        stroke-opacity: 1;
+      }
+
+      path:last-child {
+        fill: #4D53E8;
+        fill-opacity: 1;
+      }
+    }
+  }
+
+  :global {
+    .semi-button-disabled {
+      color: rgba(56, 55, 67, 20%) !important;
+      background-color: rgba(75, 74, 88, 4%) !important;
+
+      svg {
+        path:first-child {
+          stroke: rgba(56, 55, 67, 20%);
+        }
+
+        path:last-child {
+          fill: rgba(56, 55, 67, 20%);
+        }
+      }
+    }
+  }
+}

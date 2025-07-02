@@ -1,0 +1,36 @@
+/* eslint-disable */
+/* tslint:disable */
+// @ts-nocheck
+
+export type Int64 = string | number;
+
+export interface BaseInfo {
+  created_by?: UserInfo;
+  updated_by?: UserInfo;
+  /** 创建时间,ms timestamp */
+  created_at?: Int64;
+  /** 更新时间,ms timestamp */
+  updated_at?: Int64;
+}
+
+export interface UserInfo {
+  /** 姓名 */
+  name?: string;
+  /** 英文名称 */
+  en_name?: string;
+  /** 用户头像url */
+  avatar_url?: string;
+  /** 72 * 72 头像 */
+  avatar_thumb?: string;
+  /** 用户应用内唯一标识 */
+  open_id?: string;
+  /** 用户应用开发商内唯一标识 */
+  union_id?: string;
+  /** 企业标识 */
+  tenant_key?: string;
+  /** 用户在租户内的唯一标识 */
+  user_id?: string;
+  /** 用户邮箱 */
+  email?: string;
+}
+/* eslint-enable */

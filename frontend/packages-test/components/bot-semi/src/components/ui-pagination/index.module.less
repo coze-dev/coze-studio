@@ -1,0 +1,56 @@
+.ui-pagination {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding-right: 150px;
+
+  .change-button {
+    color: var(--light-usage-text-color-text-2, rgba(28, 29, 35, 0.6));
+    font-size: 12px;
+    line-height: 16px;
+    padding: 6px;
+  }
+  .page-text {
+    position: absolute;
+    width: 150px;
+    right: -26px;
+    color: var(--light-usage-text-color-text-2, rgba(28, 29, 35, 0.6));
+    font-size: 12px;
+    line-height: 16px;
+    .size-info {
+      display: flex;
+      align-items: center;
+    }
+  }
+  :global {
+    .semi-page-item {
+      color: var(--light-usage-text-color-text-2, rgba(28, 29, 35, 0.6));
+      font-size: 12px;
+      line-height: 16px;
+    }
+    .semi-page-item-active,
+    .semi-page-item-active:hover {
+      color: var(--light-usage-text-color-text-0, #1c1d23);
+      background-color: #fff;
+      border-radius: 4px;
+      border: 0.5px solid rgba(28, 31, 35, 0.16);
+    }
+    .semi-page-item-disabled {
+      .semi-icon {
+        color: rgba(28, 31, 35, 0.2);
+      }
+    }
+
+    .semi-page-item:hover {
+      border-radius: 4px;
+      border: 1px solid var(--light-usage-focus-color-focus-border, #4062ff) !important;
+    }
+    .semi-page-prev:hover,
+    .semi-page-next:hover {
+      border-color: transparent !important;
+      background-color: rgba(102, 204, 255, 0);
+    }
+  }
+}

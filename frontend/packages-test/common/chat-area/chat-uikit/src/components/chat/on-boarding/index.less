@@ -1,0 +1,63 @@
+.chat-uikit-on-boarding {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  width: 100%;
+  // max-width: 576px;
+  height: 100%;
+  padding: 0 10px;
+
+  &__bot {
+    display: flex;
+    flex-direction: column;
+    column-gap: 20px;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+
+    &.chat-uikit-on-boarding__bot__with__onboarding {
+      row-gap: 12px;
+      // justify-content: flex-start;
+    }
+  }
+
+  &__prologue-sug {
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  &__prologue {
+    user-select: text;
+
+    width: fit-content;
+    max-width: 100%;
+    margin-top: 16px;
+
+
+    font-style: normal;
+    word-break: break-word;
+
+  }
+
+  &__suggestions {
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
+    max-width: 100%;
+  }
+}
+
+// pc store页面开场白视觉与输入框对齐，整体左偏差
+.chat-uikit-on-boarding-pc {
+  .chat-uikit-on-boarding__bot {
+    padding-right: 14px;
+    padding-left: 58px;
+  }
+
+  .chat-uikit-on-boarding__prologue-sug {
+    padding-right: 14px;
+    padding-left: 58px;
+  }
+}

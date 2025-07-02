@@ -1,0 +1,28 @@
+.table-structure-wrapper {
+  overflow: auto;
+  height: 100%;
+
+  :global {
+    .coz-table-spin {
+      text-align: center;
+    }
+
+    .semi-table-container .semi-table-row {
+      .semi-table-row-head,
+      .semi-table-row-cell {
+        padding: 6px 8px;
+      }
+
+      .semi-table-row-head {
+        border-bottom-width: 1px;
+      }
+
+      .semi-table-row-cell {
+        height: 56px;
+        font-weight: 500;
+        background: none;
+        border-bottom: 0;
+      }
+    }
+  }
+}

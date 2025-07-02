@@ -1,0 +1,71 @@
+.wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+}
+
+.border {
+  position: relative;
+
+  display: flex;
+  flex-direction: row;
+
+  width: 100%;
+  padding: 8px 0;
+
+  border: 1px solid transparent;
+
+  >div {
+    &:first-child {
+      margin-bottom: 0;
+    }
+  }
+
+}
+
+.border-only-user-message {
+  padding: 8px 0 0;
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column-reverse;
+  align-self: flex-start;
+
+  max-width: 100%;
+}
+
+
+.checkbox {
+  margin-top: 10px;
+  margin-right: 12px;
+}
+
+.background-mode-checkbox {
+  :global {
+    .semi-checkbox-inner-display {
+      box-shadow: inset 0 0 0 1px white;
+    }
+  }
+}
+
+.remove-button {
+  cursor: pointer;
+
+  position: absolute;
+  top: -7px;
+  right: -7px;
+
+  flex-shrink: 0;
+
+  color: rgb(255 68 30 / 100%);
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}

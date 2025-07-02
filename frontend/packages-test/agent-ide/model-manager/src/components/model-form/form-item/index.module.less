@@ -1,0 +1,55 @@
+.form-item {
+  margin-bottom: 18px;
+
+  .field-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .label-content {
+    display: flex;
+    flex-shrink: 0;
+    column-gap: 4px;
+    align-items: center;
+
+
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    /* stylelint-disable-next-line custom-property-pattern */
+    color: var(--Fg-Primary-COZ_fg_secondary, rgba(6, 7, 9, 50%));
+
+    .label {
+      flex-shrink: 0;
+    }
+
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+  .field-main {
+    width: 280px;
+
+    :global(.semi-select) {
+      width: 100%;
+    }
+  }
+
+  .icon {
+    color: #6B6D75;
+  }
+
+  .field-feedback {
+    margin-top: 12px;
+    font-size: 12px;
+
+    @apply coz-fg-secondary;
+  }
+}

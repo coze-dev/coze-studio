@@ -1,0 +1,30 @@
+.rc-slider-wrapper {
+  :global {
+    .rc-slider {
+      padding: 13px 0;
+
+      &-track,
+      &-tracks {
+        height: 4px;
+        background-color: rgba(77, 83, 232, 1);
+      }
+
+      &-handle {
+        height: 24px;
+        width: 24px;
+        border: none;
+        opacity: 1;
+        margin-top: -11px;
+      }
+
+      &-handle,
+      &-handle:focus,
+      &-handle:focus-visible,
+      &-handle:active,
+      .rc-slider-handle-dragging.rc-slider-handle-dragging.rc-slider-handle-dragging {
+        box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.3);
+        box-shadow: 0px 4px 6px 0px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+}

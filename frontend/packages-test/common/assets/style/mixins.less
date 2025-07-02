@@ -1,0 +1,67 @@
+.border-line(@radius: 8px, @color: #eceef0) {
+  &::after {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    border-width: 1px;
+    border-style: solid;
+    transform: scale(0.5, 0.5);
+    box-sizing: border-box;
+    pointer-events: none;
+    color: @color;
+    border-color: @color;
+    border-radius: @radius;
+  }
+}
+
+.base-border-line(@color: #eceef0) {
+  content: '';
+  display: inline-block;
+  position: absolute;
+  background: @color;
+}
+
+.border-left-line(@color: #eceef0) {
+  &::after {
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 1px;
+    transform: scaleX(0.5);
+    .base-border-line(@color);
+  }
+}
+.border-right-line(@color: #eceef0) {
+  &::after {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 1px;
+    transform: scaleX(0.5);
+    .base-border-line(@color);
+  }
+}
+.border-top-line(@color: #eceef0) {
+  &::after {
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 1px;
+    transform: scaleY(0.5);
+    .base-border-line(@color);
+  }
+}
+.border-bottom-line(@color: #eceef0) {
+  &::after {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    transform: scaleY(0.5);
+    .base-border-line(@color);
+  }
+}

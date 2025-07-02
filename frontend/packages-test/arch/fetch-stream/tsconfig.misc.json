@@ -1,0 +1,21 @@
+{
+  "extends": "@coze-arch/ts-config/tsconfig.node.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "include": ["__tests__", "__tests__/**/*.json", "vitest.config.ts"],
+  "exclude": ["./dist"],
+  "references": [
+    {
+      "path": "./tsconfig.build.json"
+    }
+  ],
+  "compilerOptions": {
+    "rootDir": "./",
+    "outDir": "./dist",
+    "types": ["vitest/globals"],
+    "moduleResolution": "Node10",
+    "module": "CommonJS",
+    "lib": ["ES2022", "DOM"],
+    "strictNullChecks": true,
+    "noImplicitAny": true
+  }
+}

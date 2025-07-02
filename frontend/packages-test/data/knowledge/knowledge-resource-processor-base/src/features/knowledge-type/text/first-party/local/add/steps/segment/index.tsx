@@ -1,0 +1,1 @@
+export { TextSegment } from './segment';

@@ -1,0 +1,54 @@
+.wrapper {
+  padding-bottom: 24px;
+
+  &.left {
+    .header {
+      padding: 0 28px 6px;
+    }
+  }
+
+  &.center {
+    .header {
+      height: 22px;
+      padding: 0 8px 6px;
+
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 22px;
+    }
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    border: none;
+
+    .title {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 20px;
+    }
+
+    .action-nodes {}
+  }
+
+  :global {
+    .collapse-panel-hide-underline > div {
+      border-bottom: 1px solid transparent;
+    }
+  }
+}
+
+.display-none {
+  display: none;
+}
+
+// // 第一个容器不加顶边
+:nth-child(1 of.wrapper) {
+  .header {
+    margin-top: 0;
+    border-top: none;
+    border-bottom: none;
+  }
+}

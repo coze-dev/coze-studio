@@ -1,0 +1,54 @@
+.select-wrapper {
+  width: 100%;
+
+  // semi 原有的 disable 样式不满足需求，需要更明显的文字颜色
+  :global {
+    .semi-select-disabled .semi-select-selection {
+      color: rgba(29, 28, 35, 100%);
+    }
+
+    .semi-select-disabled .semi-select-arrow {
+      color: rgba(29, 28, 35, 60%);
+    }
+  }
+
+  span {
+    width: 100%;
+  }
+
+}
+
+.error-wrapper {
+  :global {
+    .semi-select {
+      border: 1px solid @error-red;
+    }
+  }
+}
+
+.error-content {
+  height: 20px;
+}
+
+.error-float {
+  position: absolute;
+  width: 100%;
+}
+
+.error-text {
+  position: absolute;
+  padding-top: 2px;
+  font-size: 12px;
+  color: @error-red;
+}
+
+
+.selected-option {
+  :global {
+    .semi-select-option-selected {
+      .semi-select-option-icon {
+        color: #4D53E8
+      }
+    }
+  }
+}

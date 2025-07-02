@@ -1,0 +1,40 @@
+.avatar-wrap {
+  position: relative;
+
+  .avatar {
+    cursor: default;
+    width: 80px;
+    height: 80px;
+  }
+
+  .mask {
+    cursor: pointer;
+
+    position: absolute;
+    top: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 0;
+    height: 100%;
+
+    visibility: hidden;
+    border-radius: 100%;
+
+    &:hover {
+      visibility: visible;
+      background-color: rgba(22, 22, 26, 60%);
+    }
+  }
+
+  &:hover {
+    .mask {
+      color: #fff;
+      visibility: visible;
+      background-color: rgba(22, 22, 26, 60%);
+    }
+  }
+}

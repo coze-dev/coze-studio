@@ -1,0 +1,11 @@
+.hover-show-scrollbar {
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+
+  &:hover {
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(6, 7, 9, 20%);
+    }
+  }
+}

@@ -1,1 +1,0 @@
-export { style } from './style';

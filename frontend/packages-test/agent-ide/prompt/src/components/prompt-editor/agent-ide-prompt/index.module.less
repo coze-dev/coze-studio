@@ -1,0 +1,20 @@
+/* stylelint-disable declaration-no-important */
+.agent-ide-prompt-editor {
+  overflow-x: hidden;
+  box-sizing: content-box;
+  padding: 12px 8px 0;
+
+  > div:first-child {
+    height: 100%;
+  }
+
+  :global {
+    .cm-editor {
+      height: 100%;
+    }
+
+    .cm-placeholder {
+      height: 100% !important;
+    }
+  }
+}

@@ -1,0 +1,71 @@
+.ui-tabs-modal {
+  :global {
+    .semi-modal-content {
+      padding: 0;
+      .semi-modal-body {
+        padding: 0;
+        height: 100%;
+      }
+      button.semi-modal-close {
+        position: absolute;
+        top: 28px;
+        right: 20px;
+      }
+    }
+    .semi-tabs-bar.semi-tabs-bar-line.semi-tabs-bar-top {
+      padding: 0;
+      .semi-tabs-tab.semi-tabs-tab-line {
+        padding: 28px 24px 20px;
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 24px; /* 133.333% */
+        border-bottom: none;
+        &.semi-tabs-tab-active {
+          border-bottom: none;
+          color: var(--light-usage-primary-color-primary, #4d53e8);
+        }
+        &:not(:first-child)::before {
+          background-color: var(
+            --light-usage-border-color-border,
+            rgba(28, 29, 35, 0.12)
+          );
+          content: '';
+          height: 24px;
+          top: 28px;
+          left: 0;
+          position: absolute;
+          width: 1px;
+        }
+      }
+      .semi-tabs-bar-extra {
+        height: 72px;
+        line-height: 72px;
+      }
+    }
+    .semi-tabs-pane-motion-overlay {
+      height: 100%;
+    }
+    .semi-spin-children {
+      height: 100%;
+    }
+  }
+  .tabs {
+    height: 100%;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    overflow-y: hidden;
+  }
+  .tab-pane {
+    height: 100%;
+    overflow-y: hidden;
+  }
+}
+.close-btn {
+  position: absolute;
+  z-index: 1;
+  top: 28px;
+  right: 25px;
+}

@@ -1,0 +1,129 @@
+/* stylelint-disable */
+.info-title {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.info-subtitle {
+  margin-top: 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.container {
+  width: 100%;
+  height: 100%;
+}
+
+.diff-table {
+  margin-bottom: 24px;
+
+  :global {
+    .semi-table-row-head {
+      padding: 4px 8px !important;
+      font-size: 12px;
+      background-color: #2e2e380a !important;
+      border-bottom: 1px solid var(--semi-color-border);
+    }
+
+    .semi-table-row-cell {
+      padding: 10px 8px !important;
+      font-size: 12px;
+    }
+  }
+}
+
+.cell-span {
+  font-size: 12px !important;
+  font-weight: 400;
+  word-break: break-word;
+}
+
+.property-tooltip {
+  word-break: break-word;
+}
+
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  height: 100%;
+  min-height: 200px;
+}
+
+.empty-info {
+  margin-top: 4px;
+}
+
+// .leftNode
+
+
+
+.list {
+  background-color: white !important;
+  border: 1px solid var(--Stroke-COZ-stroke-plus, rgba(6, 7, 9, 15%)) !important;
+  border-radius: 8px;
+
+  :global {
+    .semi-list-item {
+      border-bottom: 1px solid
+        var(--Stroke-COZ-stroke-plus, rgba(6, 7, 9, 15%)) !important;
+    }
+
+    .semi-list-item:last-child {
+      border-bottom: none !important;
+    }
+  }
+}
+
+.list-item {
+  display: grid;
+  grid-template-columns: 280px 120px 1fr;
+  align-items: center;
+}
+
+.tag-1 {
+  color: #3ec254;
+  background-color: #d2f3d5;
+}
+
+.tag-2 {
+  color: #ff441e;
+  background-color: #ffe0d2;
+}
+
+.tag-4 {
+  color: #ff441e;
+  background-color: #ffe0d2;
+}
+
+.tag-3 {
+  color: #ff9600;
+  background-color: #fff1cc;
+}
+
+.property-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--Fg-COZ-fg-primary, rgba(6, 7, 9, 80%));
+}
+
+.info-block&:not(:first-child){
+  margin-top: 24px;
+}
+
+.mask{
+  pointer-events: none;
+
+  position: absolute;
+  bottom: 80px;
+
+  width: 100%;
+  height: 32px;
+
+  background: linear-gradient(to top, rgba(var(--coze-bg-2), 1) 0, rgba(var(--coze-bg-2), 0) 100%);
+}

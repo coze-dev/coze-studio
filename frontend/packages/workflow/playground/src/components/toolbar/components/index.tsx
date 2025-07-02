@@ -1,1 +1,0 @@
-export { ToolbarContainer } from './container';

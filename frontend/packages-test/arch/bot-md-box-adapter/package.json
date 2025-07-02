@@ -1,0 +1,75 @@
+{
+  "name": "@coze-arch/bot-md-box-adapter",
+  "version": "0.0.1",
+  "description": "md-box for coze",
+  "license": "Apache-2.0",
+  "author": "gaoyuanhan.duty@bytedance.com",
+  "maintainers": [
+    "houtao.zzj@bytedance.com",
+    "fanwenjie.fe@bytedance.com"
+  ],
+  "exports": {
+    ".": "./src/full/index.ts",
+    "./lazy": "./src/lazy/index.ts",
+    "./light": "./src/light/index.ts",
+    "./full": "./src/full/index.ts",
+    "./slots": "./src/slots/index.ts",
+    "./style": "./src/style.ts"
+  },
+  "main": "./src/full/index.ts",
+  "typesVersions": {
+    ">=4.2": {
+      "*": [
+        "src/full/index.ts"
+      ],
+      "style": [
+        "./src/style.ts"
+      ],
+      "lazy": [
+        "src/lazy/index.ts"
+      ],
+      "light": [
+        "src/light/index.ts"
+      ],
+      "full": [
+        "src/full/index.ts"
+      ],
+      "slots": [
+        "src/slots/index.ts"
+      ]
+    }
+  },
+  "typings": "./src/full/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@bytedance/calypso": "0.1.0-beta.8"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "stylelint": "^15.11.0",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  }
+}
+

@@ -1,0 +1,25 @@
+{
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "include": [
+    "__tests__",
+    "stories",
+    "vitest.config.ts",
+    "tailwind.config.ts",
+    "../chat-area-plugin-grab-plugins/chat-area-plugin-grab-quote/src/components/message-inner-top-slot"
+  ],
+  "exclude": ["./dist"],
+  "references": [
+    {
+      "path": "./tsconfig.build.json"
+    }
+  ],
+  "compilerOptions": {
+    "rootDir": "./",
+    "outDir": "./dist",
+    "types": ["vitest/globals"],
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "jsx": "react-jsx"
+  }
+}

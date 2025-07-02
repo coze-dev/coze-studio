@@ -1,0 +1,62 @@
+@keyframes chat-uikit-thinking-placeholder-animation {
+  0% {
+    background-color: var(--coz-fg-plus);
+  }
+
+  50% {
+    background-color: var(--coz-fg-dim);
+  }
+
+  100% {
+    background-color: var(--coz-fg-plus);
+  }
+}
+
+.chat-uikit-coz-thinking-placeholder {
+  position: relative;
+
+  overflow: visible;
+
+  width: 6px;
+  height: 6px;
+  margin: 0 10px;
+
+  @apply coz-fg-dim;
+
+  background-color: var(--coz-fg-dim);
+  border-radius: 100%;
+
+  animation: chat-uikit-thinking-placeholder-animation 0.8s infinite alternate;
+  animation-timing-function: ease;
+  animation-delay: -0.2s;
+
+  &::before,
+  &::after {
+    content: '';
+
+    position: absolute;
+    top: 0;
+
+    display: inline-block;
+
+    width: 6px;
+    height: 6px;
+
+
+    background-color: var(--coz-fg-dim);
+    border-radius: 100%;
+
+    animation: chat-uikit-thinking-placeholder-animation 0.8s infinite alternate;
+    animation-timing-function: ease;
+  }
+
+  &::before {
+    left: -10px;
+    animation-delay: -0.4s;
+  }
+
+  &::after {
+    left: 10px;
+    animation-delay: 0s;
+  }
+}

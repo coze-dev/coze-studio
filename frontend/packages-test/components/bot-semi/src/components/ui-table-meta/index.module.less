@@ -1,0 +1,57 @@
+.ui-table-meta {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  .table-name {
+    flex: 1;
+    margin-left: 16px;
+  }
+
+  .meta-avatar {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    margin-right: 16px;
+    border-radius: 6px;
+  }
+
+  .meta-right {
+    width: 100%;
+  }
+
+  .meta-right-width {
+    width: calc(100% - 32px);
+  }
+
+  .meta-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    color: var(--light-usage-text-color-text-0, #1c1d23);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 22px;
+  }
+
+  .meta-description {
+    margin-top: 2px;
+    word-break: break-word;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+
+    color: var(--light-usage-text-color-text-1, rgba(28, 29, 35, 0.8));
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  .meta-suffix {
+    margin-top: 2px;
+  }
+}

@@ -1,0 +1,66 @@
+/* stylelint-disable selector-class-pattern */
+.batch-checkbox-doc {
+  &-title {
+    height: 20px;
+    margin-bottom: 8px;
+
+    font-weight: 600;
+    line-height: 20px;
+    color: var(--coz-fg-primary);
+
+    :global {
+      .semi-checkbox {
+        column-gap: 12px
+      }
+    }
+
+  }
+
+  .checked-all-title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    color: var(--coz-fg-primary);
+
+
+  }
+
+  &-list {
+    overflow-y: auto;
+
+    max-height: 180px;
+    padding: 8px 12px;
+
+    border: 1px solid var(--coz-stroke-primary);
+    border-radius: 6px;
+
+    :global {
+      .semi-checkboxGroup-vertical {
+        row-gap: 8px;
+      }
+
+      .semi-checkbox {
+        column-gap: 12px
+      }
+    }
+
+    &-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      width: 100%;
+      height: 32px;
+
+      &-left {
+        display: flex;
+        align-items: center;
+        color: var(--coz-fg-primary);
+      }
+
+      &-left-label {
+        color: var(--coz-fg-primary);
+      }
+    }
+  }
+}

@@ -1,0 +1,47 @@
+.common-node {
+  width: auto;
+  height: 24px;
+
+  .common-node-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+    width: 100%;
+    height: 100%;
+    height: 24px;
+    padding: 2px 4px;
+
+
+    font-size: 14px;
+    color: rgb(29 28 35 / 80%);
+
+    border-radius: 4px;
+
+    .common-node-container-text {
+      max-width: 200px;
+      font-size: inherit;
+      font-weight: inherit;
+      color: inherit;
+    }
+  }
+
+  .common-node-container_static {
+    background: none;
+  }
+
+  .common-node-container_dynamic {
+    background: #EDF9EE;
+  }
+
+  .common-node-container_error {
+    font-weight: 600;
+    color: #FF441E;
+    background: #FFF3EE;
+  }
+
+
+  :global(.react-flow__handle) {
+    visibility: hidden;
+  }
+}

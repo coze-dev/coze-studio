@@ -1,0 +1,1 @@
+export { isMobile } from './env';

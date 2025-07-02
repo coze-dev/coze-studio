@@ -1,0 +1,104 @@
+.description-container {
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+
+  .description-container-box {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    width: 0;
+
+    .description-container-item {
+      display: flex;
+      align-items: center;
+
+      width: 100%;
+
+      font-size: 12px;
+      line-height: 22px;
+      text-align: left;
+
+      .description-container-item-key {
+        flex-shrink: 0;
+        color: var(--Light-usage-text---color-text-3, rgb(29 28 35 / 35%));
+      }
+
+      .description-container-item-value {
+        display: flex;
+        flex: 1;
+        width: 0;
+        color: var(--Light-usage-text---color-text-1, rgb(29 28 35 / 80%));
+      }
+    }
+  }
+}
+
+.node-detail-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  height: 20px;
+  margin: 20px 0 17px;
+
+  .node-detail-title-left {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--Light-color-black---black, #000);
+  }
+
+  .node-detail-title-right {
+    font-size: 12px;
+    color: var(--Light-usage-text---color-text-2, rgb(29 28 35 / 60%));
+  }
+}
+
+.common-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  :global(.semi-typography-action-copied) {
+    vertical-align: middle;
+  }
+
+  svg {
+    transform: translateY(-1px);
+  }
+}
+
+.common-text-content {
+  max-width: 400px;
+}
+
+.copy-icon {
+  color: #6b6b75;
+}
+
+.description-container-with-full-line {
+  .description-container-with-full-line-item {
+    display: flex;
+    align-items: center;
+
+    font-size: 12px;
+    line-height: 22px;
+    text-align: left;
+
+    &:nth-child(2) {
+      min-width: 182px;
+    }
+
+    .description-container-with-full-line-item-key {
+      flex-shrink: 0;
+      color: var(--Light-usage-text---color-text-3, rgb(29 28 35 / 35%));
+    }
+
+    .description-container-with-full-line-item-value {
+      display: flex;
+      flex: 1;
+      width: 0;
+      color: var(--Light-usage-text---color-text-1, rgb(29 28 35 / 80%));
+    }
+  }
+}

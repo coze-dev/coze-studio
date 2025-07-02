@@ -1,0 +1,138 @@
+@import '../../assets/styles/common.less';
+@import '../../assets/styles/mixins.less';
+
+.text {
+  margin-bottom: 8px;
+
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--light-usage-text-color-text-1, rgba(28, 29, 35, 80%));
+}
+
+
+.onboarding-message-blur {
+  textarea {
+    display: -webkit-box;
+
+    max-height: 98px;
+
+    text-overflow: ellipsis;
+
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+  }
+}
+
+.onboarding-message-title {
+  .text;
+
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  &.mt-20 {
+    margin-top: 20px;
+  }
+}
+
+.suggestion-message-item {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  margin-bottom: 8px;
+
+  .apis-no-icon {
+    position: absolute;
+    right: 16px;
+
+    @apply coz-fg-hglt-purple;
+  }
+
+  :global {
+    .semi-input-textarea-wrapper {
+      padding-right: 48px;
+    }
+  }
+}
+
+.add-button-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.add-icon {
+  display: flex;
+
+  >img {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.onboarding-add-icon,
+.msg-replace-icon {
+  // cursor: pointer;
+}
+
+.msg-replace-icon:hover {
+  background-color: var(--semi-color-fill-0);
+}
+
+.text-readonly {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--light-color-grey-grey-8, #2e3238);
+  white-space: pre-wrap;
+
+  &.mb-8 {
+    margin-bottom: 8px;
+  }
+}
+
+.text-none {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--light-color-grey-grey-3, #a7abb0);
+}
+
+@keyframes suggestion-highlight {
+  0% {
+    background-color: rgb(255, 248, 234);
+  }
+
+  100% {
+    background-color: rgb(244, 244, 245);
+  }
+}
+
+.suggestion-item-highlight {
+  animation: suggestion-highlight 0.8s infinite alternate;
+  animation-timing-function: ease;
+}
+
+.markdown-editor-btn {
+  margin-right: 8px;
+  padding: 0;
+
+  .markdown-editor-btn-text {
+    font-weight: 400;
+
+    @apply coz-fg-secondary;
+  }
+}
+
+.editor-expend-modal {
+  :global {
+    .semi-modal-header .semi-button-with-icon-only {
+      width: 32px;
+      height: 32px;
+    }
+  }
+}

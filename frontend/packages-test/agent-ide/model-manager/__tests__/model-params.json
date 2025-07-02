@@ -1,0 +1,125 @@
+[
+  {
+    "name": "temperature",
+    "label": "回复随机性",
+    "desc": "即 Temperature，较高的 Temperature 会让模型生成更多样和创新的文本，反之生成内容会更加保守且类似于训练数据。",
+    "type": 1,
+    "min": "0",
+    "max": "2",
+    "precision": 2,
+    "default_val": {
+      "default_val": "1",
+      "creative": "0.8",
+      "balance": "0.5",
+      "precise": "0.1"
+    },
+    "options": [],
+    "param_class": {
+      "class_id": 1,
+      "label": "生成多样性"
+    }
+  },
+  {
+    "name": "top_p",
+    "label": "Top P",
+    "desc": "设定Top p概率阈值，模型在生成文本时只从概率超过阈值的词汇中选择，从而控制文本的多样性",
+    "type": 1,
+    "min": "0",
+    "max": "1",
+    "precision": 2,
+    "default_val": {
+      "default_val": "1",
+      "creative": "1",
+      "balance": "1",
+      "precise": "1"
+    },
+    "options": [],
+    "param_class": {
+      "class_id": 1,
+      "label": "生成多样性"
+    }
+  },
+  {
+    "name": "frequency_penalty",
+    "label": "重复词汇惩罚",
+    "desc": "当该值为正时，它会降低已出现词汇的重复率，进而提高模型输出词汇的多样性",
+    "type": 1,
+    "min": "-2",
+    "max": "2",
+    "precision": 2,
+    "default_val": {
+      "default_val": "0",
+      "creative": "0",
+      "balance": "0",
+      "precise": "0"
+    },
+    "options": [],
+    "param_class": {
+      "class_id": 1,
+      "label": "生成多样性"
+    }
+  },
+  {
+    "name": "presence_penalty",
+    "label": "存在惩罚",
+    "desc": "减少已提及内容的重复，增加新主题和概念的引入，促进内容的多元化。",
+    "type": 1,
+    "min": "-2",
+    "max": "2",
+    "precision": 2,
+    "default_val": {
+      "default_val": "0",
+      "creative": "0",
+      "balance": "0",
+      "precise": "0"
+    },
+    "options": [],
+    "param_class": {
+      "class_id": 1,
+      "label": "生成多样性"
+    }
+  },
+  {
+    "name": "max_tokens",
+    "label": "最大回复长度",
+    "desc": "可控制模型回复的最多 Token 数量，以满足不同场景和需求。通常 100 Tokens 约等于 60 个中文汉字。",
+    "type": 2,
+    "min": "1",
+    "max": "16384",
+    "precision": 0,
+    "default_val": {
+      "default_val": "2048"
+    },
+    "options": [],
+    "param_class": {
+      "class_id": 2,
+      "label": "输入及输出长度"
+    }
+  },
+  {
+    "name": "response_format",
+    "label": "输出格式",
+    "desc": "文本: 使用普通文本格式回复Markdown: 将强制模型使用Markdown格式输出回复\nJSON: 将强制模型使用 JSON 格式输出回复",
+    "type": 2,
+    "min": "",
+    "max": "",
+    "precision": 0,
+    "default_val": {
+      "default_val": "0"
+    },
+    "options": [
+      {
+        "label": "文本",
+        "value": "0"
+      },
+      {
+        "label": "Markdown",
+        "value": "1"
+      }
+    ],
+    "param_class": {
+      "class_id": 2,
+      "label": "输入及输出长度"
+    }
+  }
+]

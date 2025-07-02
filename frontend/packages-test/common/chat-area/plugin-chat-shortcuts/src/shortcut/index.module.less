@@ -1,0 +1,93 @@
+.shortcut-command {
+  margin-right: 10px;
+}
+
+.shortcut-button {
+  box-sizing: border-box;
+  /* stylelint-disable declaration-no-important */
+  min-width: unset !important;
+  height: 32px;
+  padding: 4px 12px;
+
+  font-size: 14px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 16px;
+
+  border-radius: 99px;
+
+  :global {
+    .semi-button-content-left {
+      margin-right: 0;
+    }
+  }
+}
+
+.shortcut-white {
+  .shortcut-button {
+    color: rgba(6, 7, 9, 80%) !important;
+    background-color: rgba(6, 7, 9, 4%);
+    backdrop-filter: blur(3.45px);
+    border: 1px solid var(--coz-stroke-primary);
+
+    &:hover {
+      background: linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 6%) 0%,
+        rgba(0, 0, 0, 6%) 100%
+      ),
+        var(--coz-bg-primary);
+      border: 1px solid var(--coz-stroke-primary);
+    }
+  }
+}
+
+.shortcut-blur {
+  .shortcut-button {
+    color: var(--coze-fg-image-bots, rgba(6, 7, 9, 80%));
+
+    background-color: var(--coze-bg-image-bots, rgba(249, 249, 249, 80%));
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--coze-stroke-image-bots, rgba(6, 7, 9, 10%));
+    border-radius: 12px;
+
+    &:hover {
+      background: rgba(224, 224, 224, 60%);
+      border: 1px solid var(--coze-stroke-image-bots, rgba(6, 7, 9, 10%));
+    }
+
+    :global {
+      .semi-typography {
+        color: rgba(255, 255, 255, 79%);
+      }
+    }
+  }
+}
+
+.load-more-shortcut-wrapper {
+  position: relative;
+
+  .load-more-button {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+
+    height: 32px;
+    padding: 4px 12px;
+
+    border-radius: 12px;
+  }
+}
+
+.load-more-list {
+  &::-webkit-scrollbar-thumb {
+    background: rgb(29 28 35 / 30%);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    background: transparent;
+  }
+}

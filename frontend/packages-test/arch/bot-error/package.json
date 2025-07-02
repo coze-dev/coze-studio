@@ -1,0 +1,38 @@
+{
+  "name": "@coze-arch/bot-error",
+  "version": "0.0.1",
+  "description": "bot error",
+  "license": "Apache-2.0",
+  "author": "haozhenfei@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/bot-http": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "axios": "^1.4.0"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "debug": "^4.3.4",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "vitest": "~3.0.5"
+  },
+  "// deps": "debug@^4.3.4 为脚本自动补齐，请勿改动"
+}
+

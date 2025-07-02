@@ -1,0 +1,6 @@
+export const MARKDOWN_TOOLTIP_WIDTH = 340;
+export const MARKDOWN_TOOLTIP_CONTENT_MAX_WIDTH = 300;
+
+export const ERROR_LINE_HEIGHT = 14;
+
+export const INPUT_CONFIG_TEXT_MAX_CHAR = 2000;

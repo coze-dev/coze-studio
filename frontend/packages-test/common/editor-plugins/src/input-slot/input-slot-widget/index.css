@@ -1,0 +1,34 @@
+
+.cm-content {
+  .slot-content {
+    color: #4E40E5;
+    word-break: break-all;
+    background-color: rgba(186, 192, 255, 20%);
+
+    /* padding: 2px 0; */
+  }
+
+  .slot-side-left {
+    /* padding: 2px 0 2px 5px; */
+    padding-left: 5px;
+    background-color: rgba(186, 192, 255, 20%);
+    border-radius: 4px 0 0 4px;
+  }
+
+  .slot-side-right {
+    margin-right: 4px;
+
+    /* padding: 2px 5px 2px 0; */
+    padding-right: 5px;
+    background-color: rgba(186, 192, 255, 20%);
+    border-radius: 0 5px 5px 0;
+  }
+
+  .slot-placeholder {
+    color: rgba(148, 152, 247, 70%);
+    word-break: break-all;
+    background-color: rgba(186, 192, 255, 20%);
+
+    /* padding: 2px 0; */
+  }
+}

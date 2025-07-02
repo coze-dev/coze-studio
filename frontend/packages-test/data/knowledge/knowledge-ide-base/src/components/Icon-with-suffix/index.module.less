@@ -1,0 +1,36 @@
+.icon-with-suffix {
+  position: relative;
+  margin-right: 12px;
+
+  :global {
+    .icon-with-suffix-common {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon {
+      top: 0;
+      left: 0;
+
+      width: 24px;
+      height: 24px;
+
+      border-radius: 4px;
+    }
+
+    .suffix {
+      position: absolute;
+      z-index: 1;
+      top: 16px;
+      left: 16px;
+
+      width: 12px;
+      height: 12px;
+
+      border-radius: 2.667px;
+
+    }
+  }
+}

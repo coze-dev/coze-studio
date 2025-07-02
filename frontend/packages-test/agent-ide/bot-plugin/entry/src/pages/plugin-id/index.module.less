@@ -1,0 +1,143 @@
+/* stylelint-disable declaration-no-important */
+.tool-wrapper {
+  height: 100%;
+  color: #1c1d23;
+
+  .layout-header {
+    padding: 24px 24px 12px;
+  }
+
+  .plugin-detail-info {
+    position: relative;
+    margin-bottom: 36px;
+    padding-bottom: 12px;
+
+    &::after {
+      content: '';
+
+      position: absolute;
+      bottom: 0;
+      left: -24px;
+
+      width: calc(100% + 48px);
+      height: 1px;
+
+      background-color: rgb(29 28 35 / 8%);
+    }
+
+    .plugin-detail-title {
+      max-width: 300px;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 24px;
+    }
+
+    .plugin-detail-published {
+      font-size: 12px;
+      line-height: 16px;
+      color: rgb(28 29 35 / 60%);
+
+    }
+
+    .plugin-detail-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+    }
+
+    .plugin-detail-desc {
+      max-width: 300px;
+      line-height: 16px;
+      color: rgb(28 29 35 / 80%);
+    }
+  }
+
+  .banner {
+    margin-bottom: 24px;
+    box-shadow: 0 4px 14px 0 rgb(0 0 0 / 10%),
+      0 0 1px 0 rgb(0 0 0 / 30%);
+  }
+
+  .notips {
+    cursor: pointer;
+    margin-left: 12px;
+    font-weight: 600;
+    color: #4062ff;
+  }
+
+  .min-width-200 {
+    min-width: 200px;
+  }
+
+  .tool-table-desc {
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .icon-delete-disabled {
+    path {
+      fill: currentcolor
+    }
+  }
+
+  .icon-btn-disable {
+    color: var(--light-usage-text-color-text-2, rgb(28 29 35 / 20%));
+
+  }
+
+  .debug-btn-disable {
+    color: #1D1C23;
+
+    path {
+      fill: currentcolor;
+      fill-opacity: 0.2;
+    }
+  }
+
+  .icon-more {
+    color: #1D1C2399;
+
+
+    path {
+      fill: currentcolor
+    }
+
+  }
+
+  .grey-light {
+    height: 16px;
+    background-color: #f0f0f5;
+    border-radius: 4px;
+  }
+
+  .edit-plugin-btn {
+    padding: 0 8px;
+
+    &.edit {
+      :global {
+        .semi-button-content-right {
+          display: none;
+        }
+      }
+    }
+  }
+
+  .circle-point{
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .plugin-method-tag{
+    height: 16px;
+    color: var(--Light-color-violet---violet-6, #6430BF);
+    background: var(--Light-color-violet---violet-1, #E9D6F9);
+    border-radius: 4px;
+  }
+
+  .icon-example-disabled {
+    path {
+      fill: currentcolor!important;
+    }
+  }
+}

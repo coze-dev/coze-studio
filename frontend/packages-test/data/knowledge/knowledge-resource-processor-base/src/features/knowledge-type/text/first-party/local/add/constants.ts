@@ -1,0 +1,6 @@
+export enum TextLocalAddUpdateStep {
+  UPLOAD_FILE,
+  SEGMENT_CLEANER,
+  SEGMENT_PREVIEW,
+  EMBED_PROGRESS,
+}

@@ -1,0 +1,29 @@
+.container {
+  width: 100%;
+
+  span {
+    width: 100%;
+  }
+
+  .ellipse {
+    &>textarea {
+      cursor: pointer;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: inherit;
+    }
+  }
+
+  .auto-size {
+    background-color: var(--semi-color-white);
+
+    &>textarea {
+      border-radius: 8px;
+      overflow-y: var(--chatflow-custom-textarea-overflow-y, hidden);
+      max-height: var(--chatflow-custom-textarea-focused-max-height, unset);
+      color: var(--semi-color-text-0, rgb(56, 55, 67));
+    }
+  }
+}

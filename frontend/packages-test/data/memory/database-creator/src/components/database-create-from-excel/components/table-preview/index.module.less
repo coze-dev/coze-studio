@@ -1,0 +1,42 @@
+/* stylelint-disable declaration-no-important */
+.table-preview-table-wrapper {
+  min-height: 500px;
+}
+
+.table-preview-table {
+  overflow: hidden;
+  flex: none;
+  background: var(--light-color-white-white, #FFF);
+
+  :global {
+    .semi-table-body {
+      max-height: 460px !important;
+    }
+
+    .semi-table-colgroup .semi-table-col {
+      min-width: 200px;
+    }
+
+    .semi-table-header {
+      overflow-y: hidden !important;
+    }
+
+    .semi-table-tbody>.semi-table-row>.semi-table-row-cell {
+      min-height: 40px;
+      padding: 9px 16px !important;
+      font-size: 14px;
+    }
+
+  }
+}
+
+.table-preview-tips {
+  margin-top: 16px;
+
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #1C1D2399;
+  text-align: left;
+  letter-spacing: 0;
+}

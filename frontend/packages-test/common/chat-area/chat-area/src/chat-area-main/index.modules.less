@@ -1,0 +1,26 @@
+.chat-area-main {
+  user-select: none;
+
+  position: relative; // 很重要
+
+  display: flex;
+  flex-direction: column;
+
+  height: 100%;
+}
+
+.chat-area-main-pc {
+  width: 100%;
+}
+
+.chat-area-main-mobile {
+  width: 100vw;
+}
+
+.forbidden-children-pointer-events * {
+  pointer-events: none;
+}
+
+.header-node {
+  z-index: var(--chat-z-index-header, 50);
+}

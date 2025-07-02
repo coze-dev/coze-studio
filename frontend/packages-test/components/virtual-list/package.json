@@ -1,0 +1,27 @@
+{
+  "name": "@coze-common/virtual-list",
+  "version": "1.0.0",
+  "description": "Virtual list components for Bots",
+  "license": "Apache-2.0",
+  "author": "zhangyangning@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./",
+    "test": "exit 0"
+  },
+  "dependencies": {
+    "react-virtualized-auto-sizer": "^1.0.7",
+    "react-window": "^1.8.10"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/react-virtualized-auto-sizer": "^1.0.4",
+    "@types/react-window": "^1.8.8",
+    "vitest": "~3.0.5"
+  }
+}
+

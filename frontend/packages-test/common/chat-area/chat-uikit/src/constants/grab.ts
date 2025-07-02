@@ -1,0 +1,1 @@
+export const NO_MESSAGE_ID_MARK = 'NO_MESSAGE_ID';

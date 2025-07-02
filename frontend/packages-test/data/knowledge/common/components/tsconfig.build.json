@@ -1,0 +1,69 @@
+{
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "jsx": "react-jsx",
+    "lib": ["DOM", "ESNext"],
+    "module": "ESNext",
+    "target": "ES2020",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    {
+      "path": "../../../../arch/bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../arch/bot-error/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../arch/bot-md-box-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../arch/report-events/tsconfig.build.json"
+    },
+    {
+      "path": "../../../common/e2e/tsconfig.build.json"
+    },
+    {
+      "path": "../../../common/feature-register/tsconfig.build.json"
+    },
+    {
+      "path": "../../../common/reporter/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../components/bot-semi/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../components/virtual-list/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
+      "path": "../stores/tsconfig.build.json"
+    }
+  ]
+}

@@ -1,0 +1,152 @@
+/* stylelint-disable declaration-no-important */
+
+
+.upload-form {
+  .upload-field {
+    padding-top: 0;
+
+    :global {
+      .semi-form-field-help-text {
+        justify-content: center;
+      }
+    }
+  }
+
+  .textarea-single-line {
+    :global {
+      .semi-input-textarea-counter {
+        position: absolute;
+        top: 6px;
+        right: 0;
+      }
+    }
+  }
+
+  .textarea-multi-line {
+    margin-bottom: 16px;
+
+    :global {
+      .semi-input-textarea-counter {
+        position: absolute;
+        right: 0;
+        bottom: -20px;
+
+        min-height: 0;
+        padding: 0;
+      }
+    }
+  }
+
+  .footer-draft {
+    align-items: flex-start;
+
+    padding-top: 16px;
+
+    font-size: 14px;
+    line-height: 22px;
+    color: #000;
+
+    .link {
+      font-weight: 400;
+      color: #4D53E8;
+    }
+
+    :global {
+      .semi-icon {
+        margin-top: 2px;
+      }
+    }
+  }
+
+  :global {
+    input::-webkit-contacts-auto-fill-button {
+      pointer-events: none;
+
+      position: absolute;
+      right: 0;
+
+      display: none !important;
+
+      visibility: hidden;
+    }
+  }
+}
+
+
+.upload-avatar {
+  flex-shrink: 0;
+
+  width: 80px !important;
+  height: 80px !important;
+
+  background: #fff !important;
+  border-radius: var(--spacing-tight, 8px) !important;
+}
+
+.header-list {
+  :global {
+    .semi-form-field-label-with-extra {
+      padding-right: 0;
+    }
+
+    .semi-form-field-label-extra {
+      flex: 1;
+    }
+
+  }
+
+  .header-list-extra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .herder-list-box {
+    overflow: auto;
+
+    max-height: 348px;
+    padding: 0 16px;
+
+    border: 1px solid rgb(29 28 35 / 12%);
+    border-radius: 8px;
+
+    .herder-list-cotent {
+      padding: 12px 0;
+    }
+
+    .header-row {
+      border-bottom: 1px solid rgb(29 28 35 / 12%);
+    }
+
+    .header-col-content {
+      padding: 12px 0;
+      line-height: 16px;
+    }
+
+    .col-content {
+      padding: 12px 0;
+      text-align: center;
+    }
+  }
+}
+
+.error-msg-box {
+  position: relative;
+  top: -24px;
+
+  .error-msg {
+    display: block;
+
+    padding: 8px 16px;
+
+    line-height: 16px;
+    color: #F93920;
+    text-align: left;
+
+    .link {
+      font-weight: 400;
+      color: #4D53E8;
+    }
+  }
+}

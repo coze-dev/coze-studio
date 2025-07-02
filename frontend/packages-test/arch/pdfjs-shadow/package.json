@@ -1,0 +1,39 @@
+{
+  "name": "@coze-arch/pdfjs-shadow",
+  "version": "0.0.1",
+  "description": "shadow copy of pdfjs-dist",
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.ts",
+  "unpkg": "./lib",
+  "types": "./src/index.ts",
+  "files": [
+    "lib",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json && node -r sucrase/register scripts/build.ts",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/node": "^18",
+    "@vitest/coverage-v8": "~3.0.5",
+    "core-js": "^3.37.1",
+    "esbuild": "^0.15.18",
+    "pdfjs-dist": "4.3.136",
+    "sucrase": "^3.32.0",
+    "vitest": "~3.0.5"
+  },
+  "// deps": "@types/react-dom@^18.2.7 为脚本自动补齐，请勿改动",
+  "botPublishConfig": {
+    "main": "lib/worker.js"
+  }
+}
+

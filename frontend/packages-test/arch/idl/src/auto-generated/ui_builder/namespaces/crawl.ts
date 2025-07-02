@@ -1,0 +1,62 @@
+/* eslint-disable */
+/* tslint:disable */
+// @ts-nocheck
+
+export type Int64 = string | number;
+
+export enum ScreenMode {
+  /** 根据坐标和宽高截图 */
+  ScreenshotModePosition = 0,
+  /** 根据选择器对元素进行截图 */
+  ScreenshotModeElement = 1,
+}
+
+export interface Device {
+  /** 模拟设备的宽 */
+  width: Int64;
+  /** 模拟设备的高 */
+  height: Int64;
+  /** 模拟设备的 device scale factor 参数 */
+  scale_factor: number;
+  /** 是否模拟手机 */
+  mobile: boolean;
+  /** Scale to apply to resulting view image. */
+  scale?: number;
+  /** Overriding screen width value in pixels (minimum 0, maximum 10000000). */
+  screen_width?: Int64;
+  /** Overriding screen height value in pixels (minimum 0, maximum 10000000). */
+  screen_height?: Int64;
+  /** Overriding view X position on screen in pixels (minimum 0, maximum 10000000). */
+  position_x?: Int64;
+  /** Overriding view Y position on screen in pixels (minimum 0, maximum 10000000). */
+  position_y?: Int64;
+  /** Do not set visible view size, rely upon explicit setVisibleSize call. */
+  dont_set_visible_size?: boolean;
+  viewport?: Viewport;
+}
+
+export interface ScreenshotOption {
+  mode: ScreenMode;
+  /** Mode为ScreenshotModePosition时填, 默认值{0,0,720,2400,1} */
+  viewport?: Viewport;
+  /** Mode为ScreenshotModeElement时必填 */
+  selector?: string;
+  /** jpeg, webp, png */
+  format?: string;
+  /** [0..100] (jpeg only) */
+  quality?: number;
+  /** 最大宽度，Mode为ScreenshotModePosition生效 */
+  max_width?: number;
+  /** 最大高度，Mode为ScreenshotModePosition生效 */
+  max_height?: number;
+}
+
+export interface Viewport {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  /** > 0 */
+  scale?: number;
+}
+/* eslint-enable */

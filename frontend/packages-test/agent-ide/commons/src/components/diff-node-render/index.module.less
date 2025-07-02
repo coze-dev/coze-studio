@@ -1,0 +1,178 @@
+/* stylelint-disable */
+.multiline-text {
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+.multiline-container {
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 100px 36px 100px;
+  flex: 1;
+}
+
+.editor-container {
+  overflow: hidden;
+
+  min-height: 400px;
+  margin-top: 20px;
+
+  border: 1px solid var(--Stroke-COZ-stroke-primary, rgba(6, 7, 9, 10%));
+  border-radius: 8px;
+}
+
+.editor-header{
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid var(--Stroke-COZ-stroke-primary, rgba(6, 7, 9, 10%));
+}
+
+.editor-title {
+  overflow: hidden;
+  flex: 1;
+
+  padding: 12px;
+
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--Fg-COZ-fg-primary, rgba(6, 7, 9, 80%));
+}
+
+.editor-divider {
+  width: 1px;
+  height: 46px;
+  color: var(--Stroke-COZ-stroke-primary, rgba(6, 7, 9, 10%));
+}
+
+.editor {
+  min-height: 400px;
+  max-height: 600px;
+  background-color: transparent;
+  // pointer-events: none;
+  :global {
+    .monaco-editor-background {
+      background-color: #f9f9f9 !important;
+    }
+
+    .monaco-editor .vertical{
+      box-shadow: 0 0 0 0 var(--guide-color) inset !important;
+    }
+
+    .margin {
+      background-color: #f9f9f9 !important;
+      // border-right: 1px solid
+      //   var(--Stroke-COZ-stroke-primary, rgba(6, 7, 9, 0.1));
+    }
+
+    .monaco-diff-editor.side-by-side .editor.modified{
+      border-left: 1px solid var(--Stroke-COZ-stroke-primary, rgba(6, 7, 9, 10%));
+      box-shadow: none !important;
+    }
+
+
+    .mtk1{
+      color: var(--Fg-COZ-fg-dim, rgba(6, 7, 9, 60%));
+    }
+
+    .margin-view-overlays .line-numbers {
+      width: 24px !important;
+      color: var(--Fg-COZ-fg-dim, rgba(6, 7, 9, 30%));
+    }
+
+    .monaco-editor .diagonal-fill{
+      background-image: linear-gradient(-45deg, rgba(34, 34, 34, 10%) 12.5%, #0000 12.5%, #0000 50%, rgba(34, 34, 34, 10%) 50%, rgba(34, 34, 34, 10%) 62.5%, #0000 62.5%, #0000 100%) !important;
+      background-size: 8px 8px;
+    }
+
+    .margin-view-overlays::after{
+      pointer-events: none;
+      content: ' ' !important;
+
+      position: absolute;
+      top: 0;
+      right: 3px;
+      bottom: 0;
+
+      width: 1px;
+
+      background: var(--Stroke-COZ-stroke-primary, rgba(6, 7, 9, 10%));
+    }
+
+    .line-numbers.active-line-number {
+      color: var(--Fg-COZ-fg-primary, rgba(6, 7, 9, 80%)) !important;
+    }
+
+    .monaco-editor .delete-sign,.monaco-editor .insert-sign {
+      left: 29px !important;
+      font-size: 8px !important;
+      font-weight: 900 !important;
+      color: var(--Fg-COZ-fg-dim, rgba(6, 7, 9, 30%)) !important;
+    }
+
+    .monaco-editor .view-overlays .current-line{
+      border: 0 !important;
+    }
+
+    .monaco-editor .wordHighlightText{
+
+    }
+
+    .monaco-scrollable-element>.scrollbar>.slider{
+      width: 8px !important;
+      background: var(--Fg-COZ-fg-dim, rgba(6, 7, 9, 30%));
+      border-radius: 3px;
+    }
+
+    .decorationsOverviewRuler{
+      display: none !important;
+    }
+
+    .modified {
+      .slider{
+        left: 6px !important;
+      }
+
+      .presentation{
+        right: -4px !important;
+        width: 12px !important;
+      }
+    }
+
+    .original {
+      .slider{
+        left: 6px !important;
+      }
+
+      .presentation{
+        left: 3px !important;
+        width: 12px !important;
+      }
+    }
+
+    .gutter-insert{
+      // background-color: #E7F0E5  !important;
+      background-color: var(--vscode-diffEditor-insertedLineBackground, var(--vscode-diffEditor-insertedTextBackground)) !important;
+    }
+
+    .gutter-delete{
+      background-color: var(--vscode-diffEditor-removedLineBackground, var(--vscode-diffEditor-removedTextBackground)) !important;
+    }
+    // .line-insert{
+    //   background-color: #E7F0E5 !important;
+    // }
+    // .char-insert{
+    //   background: #C7DDC2 !important;
+    // }
+    // .line-delete{
+    //   background: #F6E4E5 !important;
+    // }
+    // .char-delete{
+    //   background: #F3CDD0  !important;
+    // }
+
+
+    // .decorationsOverviewRuler{
+    //   display: none !important;
+    // }
+  }
+}

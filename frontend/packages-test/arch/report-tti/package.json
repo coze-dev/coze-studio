@@ -1,0 +1,49 @@
+{
+  "name": "@coze-arch/report-tti",
+  "version": "0.0.1",
+  "author": "tanjizhen@bytedance.com",
+  "maintainers": [
+    "duwenhan@bytedance.com"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./custom-perf-metric": "./src/utils/custom-perf-metric"
+  },
+  "main": "./src/index.ts",
+  "typesVersions": {
+    "*": {
+      "custom-perf-metric": [
+        "./src/utils/custom-perf-metric"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --fix",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/logger": "workspace:*",
+    "react": "~18.2.0"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@rsbuild/core": "1.1.13",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/node": "18.18.9",
+    "@types/react": "18.2.37",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react-dom": "~18.2.0",
+    "react-is": ">= 16.8.0",
+    "styled-components": ">= 2",
+    "typescript": "~5.8.2",
+    "vitest": "~3.0.5",
+    "webpack": "~5.91.0"
+  }
+}
+

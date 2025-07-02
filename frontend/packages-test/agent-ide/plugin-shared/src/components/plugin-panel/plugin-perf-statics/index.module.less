@@ -1,0 +1,24 @@
+.plugin-perf-statics {
+  display: flex;
+  gap: 8px;
+
+  .statics-metrics {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+
+    &:not(:last-child)::after {
+      content: '';
+
+      display: block;
+
+      width: 1px;
+      height: 8px;
+      margin-right: 6px;
+      margin-left: 8px;
+
+      background-color: currentcolor;
+    }
+  }
+}
+

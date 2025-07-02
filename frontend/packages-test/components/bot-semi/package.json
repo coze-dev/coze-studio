@@ -1,0 +1,323 @@
+{
+  "name": "@coze-arch/bot-semi",
+  "version": "0.0.1",
+  "description": "Wrapper components for semi",
+  "license": "Apache-2.0",
+  "author": "liukaizhan@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.ts",
+    "./Anchor": "./src/semi/anchor.ts",
+    "./AutoComplete": "./src/semi/auto-complete.ts",
+    "./Avatar": "./src/semi/avatar.ts",
+    "./Backtop": "./src/semi/backtop.ts",
+    "./Badge": "./src/semi/badge.ts",
+    "./Banner": "./src/semi/banner.ts",
+    "./Breadcrumb": "./src/semi/breadcrumb.ts",
+    "./Button": "./src/semi/button.ts",
+    "./Calendar": "./src/semi/calendar.ts",
+    "./Card": "./src/semi/card.ts",
+    "./Carousel": "./src/semi/carousel.ts",
+    "./Cascader": "./src/semi/cascader.ts",
+    "./Checkbox": "./src/semi/checkbox.ts",
+    "./Collapse": "./src/semi/collapse.ts",
+    "./Collapsible": "./src/semi/collapsible.ts",
+    "./ConfigProvider": "./src/semi/config-provider.ts",
+    "./DatePicker": "./src/semi/date-picker.ts",
+    "./Descriptions": "./src/semi/descriptions.ts",
+    "./Divider": "./src/semi/divider.ts",
+    "./Dropdown": "./src/semi/dropdown.ts",
+    "./Empty": "./src/semi/empty.ts",
+    "./Form": "./src/semi/form.ts",
+    "./Grid": "./src/semi/grid.ts",
+    "./Highlight": "./src/semi/highlight.ts",
+    "./IconButton": "./src/semi/icon-button.ts",
+    "./Icons": "./src/semi/icons.ts",
+    "./Image": "./src/semi/image.ts",
+    "./Input": "./src/semi/input.ts",
+    "./InputNumber": "./src/semi/input-number.ts",
+    "./Layout": "./src/semi/layout.ts",
+    "./List": "./src/semi/list.ts",
+    "./Modal": "./src/semi/modal.ts",
+    "./Navigation": "./src/semi/navigation.ts",
+    "./Notification": "./src/semi/notification.ts",
+    "./OverflowList": "./src/semi/overflow-list.ts",
+    "./Pagination": "./src/semi/pagination.ts",
+    "./Popconfirm": "./src/semi/popconfirm.ts",
+    "./Popover": "./src/semi/popover.ts",
+    "./Progress": "./src/semi/progress.ts",
+    "./Radio": "./src/semi/radio.ts",
+    "./Rating": "./src/semi/rating.ts",
+    "./ResizeObserver": "./src/semi/resize-observer.ts",
+    "./ScrollList": "./src/semi/scroll-list.ts",
+    "./Select": "./src/semi/select.ts",
+    "./SideSheet": "./src/semi/side-sheet.ts",
+    "./Skeleton": "./src/semi/skeleton.ts",
+    "./Slider": "./src/semi/slider.ts",
+    "./Space": "./src/semi/space.ts",
+    "./Spin": "./src/semi/spin.ts",
+    "./Steps": "./src/semi/steps.ts",
+    "./Switch": "./src/semi/switch.ts",
+    "./Table": "./src/semi/table.ts",
+    "./Tabs": "./src/semi/tabs.ts",
+    "./Tag": "./src/semi/tag.ts",
+    "./TagInput": "./src/semi/tag-input.ts",
+    "./TimePicker": "./src/semi/time-picker.ts",
+    "./Timeline": "./src/semi/timeline.ts",
+    "./Toast": "./src/semi/toast.ts",
+    "./Tooltip": "./src/semi/tooltip.ts",
+    "./Transfer": "./src/semi/transfer.ts",
+    "./Tree": "./src/semi/tree.ts",
+    "./TreeSelect": "./src/semi/tree-select.ts",
+    "./Trigger": "./src/semi/trigger.ts",
+    "./Typography": "./src/semi/typography.ts",
+    "./Upload": "./src/semi/upload.ts"
+  },
+  "main": "src/index.ts",
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./src/index.ts"
+      ],
+      "Anchor": [
+        "./src/semi/anchor.ts"
+      ],
+      "AutoComplete": [
+        "./src/semi/auto-complete.ts"
+      ],
+      "Avatar": [
+        "./src/semi/avatar.ts"
+      ],
+      "Backtop": [
+        "./src/semi/backtop.ts"
+      ],
+      "Badge": [
+        "./src/semi/badge.ts"
+      ],
+      "Banner": [
+        "./src/semi/banner.ts"
+      ],
+      "Breadcrumb": [
+        "./src/semi/breadcrumb.ts"
+      ],
+      "Button": [
+        "./src/semi/button.ts"
+      ],
+      "Calendar": [
+        "./src/semi/calendar.ts"
+      ],
+      "Card": [
+        "./src/semi/card.ts"
+      ],
+      "Carousel": [
+        "./src/semi/carousel.ts"
+      ],
+      "Cascader": [
+        "./src/semi/cascader.ts"
+      ],
+      "Checkbox": [
+        "./src/semi/checkbox.ts"
+      ],
+      "Collapse": [
+        "./src/semi/collapse.ts"
+      ],
+      "Collapsible": [
+        "./src/semi/collapsible.ts"
+      ],
+      "ConfigProvider": [
+        "./src/semi/config-provider.ts"
+      ],
+      "DatePicker": [
+        "./src/semi/date-picker.ts"
+      ],
+      "Descriptions": [
+        "./src/semi/descriptions.ts"
+      ],
+      "Divider": [
+        "./src/semi/divider.ts"
+      ],
+      "Dropdown": [
+        "./src/semi/dropdown.ts"
+      ],
+      "Empty": [
+        "./src/semi/empty.ts"
+      ],
+      "Form": [
+        "./src/semi/form.ts"
+      ],
+      "Grid": [
+        "./src/semi/grid.ts"
+      ],
+      "Highlight": [
+        "./src/semi/highlight.ts"
+      ],
+      "IconButton": [
+        "./src/semi/icon-button.ts"
+      ],
+      "Icons": [
+        "./src/semi/icons.ts"
+      ],
+      "Image": [
+        "./src/semi/image.ts"
+      ],
+      "Input": [
+        "./src/semi/input.ts"
+      ],
+      "InputNumber": [
+        "./src/semi/input-number.ts"
+      ],
+      "Layout": [
+        "./src/semi/layout.ts"
+      ],
+      "List": [
+        "./src/semi/list.ts"
+      ],
+      "Modal": [
+        "./src/semi/modal.ts"
+      ],
+      "Navigation": [
+        "./src/semi/navigation.ts"
+      ],
+      "Notification": [
+        "./src/semi/notification.ts"
+      ],
+      "OverflowList": [
+        "./src/semi/overflow-list.ts"
+      ],
+      "Pagination": [
+        "./src/semi/pagination.ts"
+      ],
+      "Popconfirm": [
+        "./src/semi/popconfirm.ts"
+      ],
+      "Popover": [
+        "./src/semi/popover.ts"
+      ],
+      "Progress": [
+        "./src/semi/progress.ts"
+      ],
+      "Radio": [
+        "./src/semi/radio.ts"
+      ],
+      "Rating": [
+        "./src/semi/rating.ts"
+      ],
+      "ResizeObserver": [
+        "./src/semi/resize-observer.ts"
+      ],
+      "ScrollList": [
+        "./src/semi/scroll-list.ts"
+      ],
+      "Select": [
+        "./src/semi/select.ts"
+      ],
+      "SideSheet": [
+        "./src/semi/side-sheet.ts"
+      ],
+      "Skeleton": [
+        "./src/semi/skeleton.ts"
+      ],
+      "Slider": [
+        "./src/semi/slider.ts"
+      ],
+      "Space": [
+        "./src/semi/space.ts"
+      ],
+      "Spin": [
+        "./src/semi/spin.ts"
+      ],
+      "Steps": [
+        "./src/semi/steps.ts"
+      ],
+      "Switch": [
+        "./src/semi/switch.ts"
+      ],
+      "Table": [
+        "./src/semi/table.ts"
+      ],
+      "Tabs": [
+        "./src/semi/tabs.ts"
+      ],
+      "Tag": [
+        "./src/semi/tag.ts"
+      ],
+      "TagInput": [
+        "./src/semi/tag-input.ts"
+      ],
+      "TimePicker": [
+        "./src/semi/time-picker.ts"
+      ],
+      "Timeline": [
+        "./src/semi/timeline.ts"
+      ],
+      "Toast": [
+        "./src/semi/toast.ts"
+      ],
+      "Tooltip": [
+        "./src/semi/tooltip.ts"
+      ],
+      "Transfer": [
+        "./src/semi/transfer.ts"
+      ],
+      "Tree": [
+        "./src/semi/tree.ts"
+      ],
+      "TreeSelect": [
+        "./src/semi/tree-select.ts"
+      ],
+      "Trigger": [
+        "./src/semi/trigger.ts"
+      ],
+      "Typography": [
+        "./src/semi/typography.ts"
+      ],
+      "Upload": [
+        "./src/semi/upload.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/bot-icons": "workspace:*",
+    "@douyinfe/semi-icons": "^2.36.0",
+    "@douyinfe/semi-illustrations": "^2.36.0",
+    "@douyinfe/semi-ui": "~2.72.3",
+    "@coze-arch/i18n": "workspace:*",
+    "ahooks": "^3.7.8",
+    "classnames": "^2.3.2",
+    "lodash-es": "^4.17.21",
+    "nanoid": "^4.0.2",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "react-flip-move": "^3.0.5",
+    "react-markdown": "^8.0.3"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@rsbuild/core": "1.1.13",
+    "@types/lodash-es": "^4.17.10",
+    "@types/node": "18.18.9",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@types/react-helmet": "^6.1.11",
+    "@vitest/coverage-v8": "~3.0.5",
+    "acorn": "^8.12.1",
+    "react-helmet": "^6.1.0",
+    "react-is": ">= 16.8.0",
+    "styled-components": ">= 2",
+    "typescript": "~5.8.2",
+    "utility-types": "^3.10.0",
+    "vitest": "~3.0.5",
+    "webpack": "~5.91.0"
+  }
+}
+

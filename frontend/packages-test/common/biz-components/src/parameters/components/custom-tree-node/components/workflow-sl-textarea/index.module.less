@@ -1,0 +1,61 @@
+// todo: 这里需要修复为正确的值
+@error-red: #ddd;
+
+.input-wrapper {
+  width: 100%;
+
+  span {
+    width: 100%;
+  }
+}
+
+.error-wrapper {
+  :global {
+    .semi-input-wrapper {
+      border: 1px solid @error-red;
+    }
+  }
+}
+
+.error-content {
+  height: 20px;
+}
+
+.error-float {
+  position: absolute;
+  width: 100%;
+}
+
+.error-text {
+  position: absolute;
+
+  padding-top: 2px;
+  padding-left: 12px;
+
+  font-size: 12px;
+  color: @error-red;
+}
+
+.textarea-pd {
+  padding-bottom: 0;
+}
+
+.inputting {
+  textarea {
+    .textarea-pd;
+  }
+}
+
+.input-blur {
+  textarea {
+    .textarea-pd;
+
+    overflow: hidden;
+    display: -webkit-box;
+
+    text-overflow: ellipsis;
+
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}

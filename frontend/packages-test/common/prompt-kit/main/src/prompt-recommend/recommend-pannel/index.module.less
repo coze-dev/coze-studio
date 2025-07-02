@@ -1,0 +1,59 @@
+/* stylelint-disable declaration-no-important */
+.recommend-pannel {
+  .semi-tabs-tab-button.semi-tabs-tab {
+    cursor: pointer;
+
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: rgba(6, 7, 9, 80%);
+  }
+
+  :global {
+    .semi-tabs-tab-button {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      justify-content: center;
+
+
+      height: 32px;
+      padding: 6px 8px;
+
+      font-weight: 500;
+      color: rgba(6, 7, 9, 80%);
+    }
+
+    .semi-tabs-tab-button.semi-tabs-tab-active {
+      color: #4E40E5 !important;
+      background: rgba(186, 192, 255, 20%);
+      border-radius: 8px;
+    }
+
+    .semi-tabs-tab-button.semi-tabs-tab:hover:not(.semi-tabs-tab-active) {
+      background: rgba(6, 7, 9, 8%);
+      border-radius: 8px;
+    }
+
+
+
+    .semi-tabs-content {
+      padding: 0;
+    }
+
+    .semi-tabs-bar {
+      margin-bottom: 8px;
+    }
+
+    .semi-tabs-pane-motion-overlay {
+      box-sizing: content-box;
+      height: 100%;
+    }
+    
+    .semi-tabs-bar-extra {
+      position: absolute;
+      right: 0;
+    }
+
+  }
+}

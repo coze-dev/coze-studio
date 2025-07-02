@@ -1,0 +1,19 @@
+div.field {
+  /* stylelint-disable-next-line declaration-no-important */
+  padding-bottom: 24px !important;
+
+  &:has(:global(.semi-form-field-error-message)) {
+    /* stylelint-disable-next-line declaration-no-important */
+    padding-bottom: 0 !important;
+  }
+
+  :global {
+    .semi-form-field-error-message {
+      margin-top: 4px;
+      line-height: 20px;
+      margin-left: var(--var-error-msg-offset);
+      // 解决errorMessage溢出展示不全问题
+      word-break: break-word;
+    }
+  }
+}

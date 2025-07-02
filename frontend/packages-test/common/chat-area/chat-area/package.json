@@ -1,0 +1,132 @@
+{
+  "name": "@coze-common/chat-area",
+  "version": "0.0.1",
+  "description": "The abstraction of the Chat",
+  "license": "Apache-2.0",
+  "author": "gaoyuanhan.duty@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.tsx",
+    "./hooks/*": "./src/hooks/*",
+    "./context/*": "./src/context/*",
+    "./service/*": "./src/service/*",
+    "./store/*": "./src/store/*",
+    "./types": "./src/components/types"
+  },
+  "main": "src/index.tsx",
+  "typesVersions": {
+    "*": {
+      "hooks/*": [
+        "./src/hooks/*"
+      ],
+      "context/*": [
+        "./src/context/*"
+      ],
+      "service/*": [
+        "./src/service/*"
+      ],
+      "store/*": [
+        "./src/store/*"
+      ],
+      "types": [
+        "./src/components/types"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "lint:type": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/bot-http": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-common/chat-area-utils": "workspace:*",
+    "@coze-common/chat-hooks": "workspace:*",
+    "@coze-common/chat-uikit": "workspace:*",
+    "@coze-common/chat-uikit-shared": "workspace:*",
+    "@coze-common/websocket-manager-adapter": "workspace:*",
+    "@coze-data/llmPlugins": "workspace:*",
+    "@coze-studio/uploader-adapter": "workspace:*",
+    "mitt": "^3.0.1",
+    "zod": "3.22.4"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-icons": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@coze-common/chat-core": "workspace:*",
+    "@coze-common/json-viewer": "workspace:*",
+    "@coze-common/scroll-view": "workspace:*",
+    "@douyinfe/semi-illustrations": "^2.36.0",
+    "@storybook/addon-essentials": "^7.6.7",
+    "@storybook/addon-interactions": "^7.6.7",
+    "@storybook/addon-links": "^7.6.7",
+    "@storybook/addon-onboarding": "^1.0.10",
+    "@storybook/blocks": "^7.6.7",
+    "@storybook/react": "^7.6.7",
+    "@storybook/react-vite": "^7.6.7",
+    "@storybook/test": "^7.6.7",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/lodash-es": "^4.17.10",
+    "@types/mockjs": "~1.0.10",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "ahooks": "^3.7.8",
+    "big-integer": "^1.6.52",
+    "classnames": "^2.3.2",
+    "copy-to-clipboard": "^3.3.3",
+    "eventemitter3": "^5.0.1",
+    "immer": "^10.0.3",
+    "lodash-es": "^4.17.21",
+    "mockjs": "~1.1.0",
+    "nanoid": "^4.0.2",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "storybook": "^7.6.7",
+    "stylelint": "^15.11.0",
+    "tailwindcss": "~3.3.3",
+    "vite": "^4.3.9",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5",
+    "zustand": "^4.4.7"
+  },
+  "peerDependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-icons": "workspace:*",
+    "@coze-arch/bot-md-box-adapter": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-common/chat-core": "workspace:*",
+    "@coze-common/json-viewer": "workspace:*",
+    "@douyinfe/semi-icons": "^2.36.0",
+    "@douyinfe/semi-illustrations": "^2.36.0",
+    "ahooks": "^3.7.8",
+    "big-integer": "^1.6.52",
+    "classnames": "^2.3.2",
+    "copy-to-clipboard": "^3.3.3",
+    "eventemitter3": "^5.0.1",
+    "immer": "^10.0.3",
+    "lodash-es": "^4.17.21",
+    "nanoid": "^4.0.2",
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0",
+    "zustand": "^4.4.7"
+  }
+}
+

@@ -1,0 +1,87 @@
+.font-normal {
+  color: rgba(28, 31, 35, 0.80);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.container {
+  display: flex;
+  align-items: center !important;
+  position: relative;
+
+  // 下面是兼容线的样式的，不要动
+  &:first-child {
+    & > div:first-child {
+      & > div {
+        & > div:first-child {
+          top: 12px;
+        }
+        & > div:last-child {
+          top: 12px;
+        }
+      }
+    }
+    & > div:last-child {
+      margin-top: 0;
+    }
+  }
+  :global {
+    .semi-form-field {
+      flex: 1;
+    }
+    .semi-tree-option-expand-icon {
+      display: flex;
+      align-items: center;
+      height: 24px;
+    }
+  }
+  .level-icon {
+    display: flex;
+    align-self: stretch;
+  }
+  .wrapper {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    flex: 1;
+  }
+}
+.readonly-icon-container {
+  margin-top: 10px;
+  &.more-level {
+    cursor: default;
+    & > span,& > div {
+      cursor: pointer;
+    }
+    &:hover, &:active {
+      background: transparent;
+    }
+  }
+  &:first-child {
+    margin-top: 0;
+  }
+}
+.readonly-container {
+  display: flex;
+  align-items: baseline;
+  .name {
+    .font-normal();
+    word-break: keep-all;
+  }
+  .tag {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: rgba(230, 232, 234, 0.76);
+    margin-left: 8px;
+    .label {
+      .font-normal();
+      color: rgba(28, 31, 35, 0.60);
+      font-weight: 400;
+    }
+  }
+}

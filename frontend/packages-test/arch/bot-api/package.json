@@ -1,0 +1,178 @@
+{
+  "name": "@coze-arch/bot-api",
+  "version": "0.0.1",
+  "description": "RPC wrapper for bot studio application",
+  "author": "fanwenjie.fe@bytedance.com",
+  "exports": {
+    ".": "./src/index.ts",
+    "./developer_api": "./src/idl/developer_api.ts",
+    "./connector_api": "./src/idl/connector_api.ts",
+    "./dp_manage_api": "./src/idl/dp_manage.ts",
+    "./playground_api": "./src/idl/playground_api.ts",
+    "./plugin_impl_api": "./src/idl/plugin_impl_api.ts",
+    "./memory": "./src/idl/memory.ts",
+    "./product_api": "./src/idl/product_api.ts",
+    "./permission_authz": "./src/idl/permission_authz.ts",
+    "./market_interaction_api": "./src/idl/market_interaction_api.ts",
+    "./plugin_develop": "./src/idl/plugin_develop.ts",
+    "./debugger_api": "./src/idl/debugger_api.ts",
+    "./workflow_api": "./src/idl/workflow_api.ts",
+    "./knowledge": "./src/idl/knowledge.ts",
+    "./card": "./src/idl/card.ts",
+    "./trade": "./src/idl/trade.ts",
+    "./benefit": "./src/idl/benefit.ts",
+    "./fulfill": "./src/idl/fulfill.ts",
+    "./filebox": "./src/idl/filebox.ts",
+    "./incentive": "./src/idl/incentive.ts",
+    "./ob_query_api": "./src/idl/ob_query_api.ts",
+    "./ob_data": "./src/idl/ob_data.ts",
+    "./devops_evaluation": "./src/idl/devops_evaluation.ts",
+    "./social_api": "./src/idl/social_api.ts",
+    "./pat_permission_api": "./src/idl/pat_permission_api.ts",
+    "./developer_backend": "./src/idl/developer_backend.ts",
+    "./permission_oauth2": "./src/idl/permission_oauth2.ts",
+    "./basic_api": "./src/idl/basic_api.ts",
+    "./multimedia_api": "./src/idl/multimedia_api.ts",
+    "./evaluation_lite_api": "./src/idl/evaluation_lite_api.ts",
+    "./resource": "./src/idl/resource.ts",
+    "./app_builder": "./src/idl/app_builder.ts",
+    "./ui-builder": "./src/idl/ui-builder",
+    "./intelligence_api": "./src/idl/intelligence_api.ts",
+    "./hub_api": "./src/idl/hub_api.ts"
+  },
+  "main": "./src/index.ts",
+  "typesVersions": {
+    "*": {
+      "developer_api": [
+        "./src/idl/developer_api.ts"
+      ],
+      "connector_api": [
+        "./src/idl/connector_api.ts"
+      ],
+      "dp_manage_api": [
+        "./src/idl/dp_manage.ts"
+      ],
+      "playground_api": [
+        "./src/idl/playground_api.ts"
+      ],
+      "intelligence_api": [
+        "./src/idl/intelligence_api.ts"
+      ],
+      "plugin_impl_api": [
+        "./src/idl/plugin_impl_api.ts"
+      ],
+      "product_api": [
+        "./src/idl/product_api.ts"
+      ],
+      "memory": [
+        "./src/idl/memory.ts"
+      ],
+      "knowledge": [
+        "./src/idl/knowledge.ts"
+      ],
+      "permission_authz": [
+        "./src/idl/permission_authz.ts"
+      ],
+      "card": [
+        "./src/idl/card.ts"
+      ],
+      "market_interaction_api": [
+        "./src/idl/market_interaction_api.ts"
+      ],
+      "plugin_develop": [
+        "./src/idl/plugin_develop.ts"
+      ],
+      "debugger_api": [
+        "./src/idl/debugger_api.ts"
+      ],
+      "ob_query_api": [
+        "./src/idl/ob_query_api.ts"
+      ],
+      "trade": [
+        "./src/idl/trade.ts"
+      ],
+      "benefit": [
+        "./src/idl/benefit.ts"
+      ],
+      "filebox": [
+        "./src/idl/filebox.ts"
+      ],
+      "fulfill": [
+        "./src/idl/fulfill.ts"
+      ],
+      "incentive": [
+        "./src/idl/incentive.ts"
+      ],
+      "devops_evaluation": [
+        "./src/idl/devops_evaluation.ts"
+      ],
+      "workflow_api": [
+        "./src/idl/workflow_api.ts"
+      ],
+      "social_api": [
+        "./src/idl/social_api.ts"
+      ],
+      "ob_data": [
+        "./src/idl/ob_data.ts"
+      ],
+      "pat_permission_api": [
+        "./src/idl/pat_permission_api.ts"
+      ],
+      "developer_backend": [
+        "./src/idl/developer_backend.ts"
+      ],
+      "permission_oauth2": [
+        "./src/idl/permission_oauth2.ts"
+      ],
+      "basic_api": [
+        "./src/idl/basic_api.ts"
+      ],
+      "evaluation_lite_api": [
+        "./src/idl/evaluation_lite_api.ts"
+      ],
+      "resource": [
+        "./src/idl/resource.ts"
+      ],
+      "app_builder": [
+        "./src/idl/app_builder.ts"
+      ],
+      "ui-builder": [
+        "./src/idl/ui-builder.ts"
+      ],
+      "hub_api": [
+        "./src/idl/hub_api.ts"
+      ],
+      "multimedia_api": [
+        "./src/idl/multimedia_api.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/bot-http": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/idl": "workspace:*",
+    "axios": "^1.4.0",
+    "query-string": "^8.1.0"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/fs-enhance": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/node": "^18",
+    "@vitest/coverage-v8": "~3.0.5",
+    "debug": "^4.3.4",
+    "sucrase": "^3.32.0",
+    "tsconfig-paths": "4.1.0",
+    "vitest": "~3.0.5"
+  },
+  "// deps": "debug@^4.3.4 为脚本自动补齐，请勿改动"
+}
+

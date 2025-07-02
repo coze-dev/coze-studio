@@ -1,0 +1,42 @@
+.container {
+  cursor: pointer;
+
+  position: relative;
+
+  margin-bottom: 20px;
+  padding: 16px;
+
+  border: 1px solid;
+  border-radius: 8px;
+
+  @apply coz-stroke-primary;
+
+
+  &:not(.skeleton):hover {
+    @apply coz-bg-max;
+    @apply coz-stroke-primary;
+
+    box-shadow: 0 6px 8px 0 rgba(28, 31, 35, 6%);
+
+    &.shadow-primary {
+      box-shadow: 0 6px 8px 0 rgba(0, 8, 16, 12%);
+    }
+  }
+
+  &.skeleton {
+    cursor: default;
+    border-color: transparent;
+  }
+
+  .check {
+    position: absolute;
+    z-index: 1;
+    top: 16px;
+    right: 16px;
+  }
+}
+
+.width100 {
+  overflow: hidden;
+  width: 100%;
+}

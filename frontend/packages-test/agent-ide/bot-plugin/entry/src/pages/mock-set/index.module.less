@@ -1,0 +1,91 @@
+/* stylelint-disable declaration-no-important */
+.page {
+  height: 100%;
+  color: #1c1d23;
+
+  :global {
+    .semi-table-row-head {
+      font-size: 12px;
+      color: var(--light-usage-text-color-text-1,
+          rgb(28 29 35 / 80%)) !important;
+    }
+
+    .semi-steps-item-title-text {
+      font-size: 14px;
+    }
+
+    .semi-table-row.semi-table-row-expanded:last-child {
+      .semi-table-row-cell {
+        border-bottom: 1px solid transparent;
+      }
+    }
+  }
+
+}
+
+.layout-content {
+  .header-info {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+    margin-bottom: 12px;
+    padding-top: 12px;
+    padding-bottom: 24px;
+
+    &::after {
+      content: '';
+
+      position: absolute;
+      bottom: 0;
+      left: -24px;
+
+      width: calc(100% + 48px);
+      height: 1px;
+
+      background-color: rgb(29 28 35 / 8%);
+    }
+
+  }
+}
+
+.layout-header-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.icon-disabled {
+  svg {
+    color: rgb(29 28 35 / 20%);
+
+    path {
+      fill: currentcolor
+    }
+  }
+
+}
+
+.icon-default {
+  span {
+    color: rgb(29 28 35 / 60%);
+  }
+
+  svg {
+    path {
+      fill: currentcolor;
+      fill-opacity: 1;
+    }
+  }
+
+}
+
+.icon-delete {
+  :global {
+    .semi-icon {
+      transform: scale(1.08);
+    }
+  }
+}

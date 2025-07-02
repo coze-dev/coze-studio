@@ -1,0 +1,79 @@
+{
+  "name": "@flowgram-adapter/free-layout-editor",
+  "version": "0.0.1",
+  "description": "对 flowgram 的封装",
+  "license": "Apache-2.0",
+  "author": "wencheng.lwc@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "require": "./src/index.ts"
+    },
+    "./css-load": {
+      "types": "./src/css-load.ts",
+      "import": "./src/css-load.ts",
+      "require": "./src/css-load.ts"
+    }
+  },
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "files": [
+    "src",
+    "bin"
+  ],
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@flowgram.ai/core": "0.1.28",
+    "@flowgram.ai/document": "0.1.28",
+    "@flowgram.ai/form": "0.1.28",
+    "@flowgram.ai/form-core": "0.1.28",
+    "@flowgram.ai/free-auto-layout-plugin": "0.1.28",
+    "@flowgram.ai/free-container-plugin": "0.1.28",
+    "@flowgram.ai/free-history-plugin": "0.1.28",
+    "@flowgram.ai/free-layout-core": "0.1.28",
+    "@flowgram.ai/free-layout-editor": "0.1.28",
+    "@flowgram.ai/free-lines-plugin": "0.1.28",
+    "@flowgram.ai/free-node-panel-plugin": "0.1.28",
+    "@flowgram.ai/free-snap-plugin": "0.1.28",
+    "@flowgram.ai/free-stack-plugin": "0.1.28",
+    "@flowgram.ai/history-node-plugin": "0.1.28",
+    "@flowgram.ai/minimap-plugin": "0.1.28",
+    "@flowgram.ai/node-core-plugin": "0.1.28",
+    "@flowgram.ai/node-variable-plugin": "0.1.28",
+    "@flowgram.ai/renderer": "0.1.28",
+    "@flowgram.ai/variable-plugin": "0.1.28",
+    "reflect-metadata": "^0.1.13"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/node": "^18",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "react-is": ">= 16.8.0",
+    "styled-components": ">=4",
+    "stylelint": "^15.11.0",
+    "vitest": "~3.0.5"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  }
+}
+

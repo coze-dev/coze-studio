@@ -1,0 +1,41 @@
+
+.icon-filled {
+  width: 100%;
+  color: rgba(255, 204, 18, 100%);
+}
+
+.icon-stroked {
+  width: 100%;
+  color: rgba(29, 28, 35, 35%);
+}
+
+.show-ani {
+  animation-name: ani;
+  animation-duration: 0.6s;
+}
+
+.show-btn {
+  &.icon-stroked {
+    width: 100%;
+    color: var(--coz-fg-primary);
+  }
+}
+
+@keyframes ani {
+  0% {
+    transform: scale(0);
+  }
+
+  38% {
+    transform: scale(1.11);
+  }
+
+  64% {
+    transform: scale(0.99);
+  }
+
+  74%,
+  100% {
+    transform: scale(1);
+  }
+}

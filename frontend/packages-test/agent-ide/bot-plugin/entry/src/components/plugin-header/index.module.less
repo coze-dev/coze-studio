@@ -1,0 +1,44 @@
+.plugin-detail-info {
+  position: relative;
+  padding-bottom: 12px;
+
+  &::after {
+    content: '';
+
+    position: absolute;
+    bottom: 0;
+    left: -24px;
+
+    width: calc(100% + 48px);
+    height: 1px;
+
+    background-color: rgb(29 28 35 / 8%);
+  }
+
+  .plugin-detail-title {
+    max-width: 300px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 24px;
+  }
+
+  .plugin-detail-published {
+    font-size: 12px;
+    line-height: 16px;
+    color: rgb(28 29 35 / 60%);
+
+  }
+
+  .plugin-detail-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+  }
+
+  .plugin-detail-desc {
+    max-width: 300px;
+    line-height: 16px;
+    color: rgb(28 29 35 / 80%);
+  }
+}
+

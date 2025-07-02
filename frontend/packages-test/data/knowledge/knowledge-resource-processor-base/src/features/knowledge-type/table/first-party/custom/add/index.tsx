@@ -1,0 +1,1 @@
+export { TableCustomAddConfig } from './config';

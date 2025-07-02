@@ -1,0 +1,138 @@
+{
+  "name": "@coze-agent-ide/bot-plugin-mock-set",
+  "version": "0.0.1",
+  "description": "plugin mock set",
+  "license": "Apache-2.0",
+  "author": "lihuiwen.123@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.tsx",
+    "./hook/use-mock-set-in-setting-modal": "./src/hook/use-mock-set-in-setting-modal.ts",
+    "./use-trans-schema": "./src/hoos/use-trans-schema.ts",
+    "./mockset-edit-modal": "./src/component/mockset-edit-modal/index.tsx",
+    "./mockset-delete-modal": "./src/component/mockset-delete-modal/index.tsx",
+    "./interface": "./src/component/interface.ts",
+    "./mock-set/utils": "./src/util/index.ts",
+    "./mock-set-intro": "./src/component/mock-set-intro.tsx",
+    "./mock-data-list": "./src/component/mock-data-list.tsx",
+    "./mock-data-page-breadcrumb": "./src/component/mock-data-page-breadcrumb.tsx",
+    "./mock-set/const": "./src/component/const.ts",
+    "./long-text-with-tooltip": "./src/component/long-text-with-tooltip/index.tsx",
+    "./typings": "./src/util/typings.ts",
+    "./util": "./src/util/index.ts",
+    "./auto-generate-select": "./src/component/auto-generate-select.tsx",
+    "./mock-set-select-actions": "./src/component/mock-select/index.tsx"
+  },
+  "main": "src/index.tsx",
+  "typesVersions": {
+    "*": {
+      "hook/use-mock-set-in-setting-modal": [
+        "./src/hook/use-mock-set-in-setting-modal.ts"
+      ],
+      "use-trans-schema": [
+        "./src/hoos/use-trans-schema.ts"
+      ],
+      "mockset-edit-modal": [
+        "./src/component/mockset-edit-modal/index.tsx"
+      ],
+      "mockset-delete-modal": [
+        "./src/component/mockset-delete-modal/index.tsx"
+      ],
+      "interface": [
+        "./src/component/interface.ts"
+      ],
+      "mock-set/utils": [
+        "./src/util/index.ts"
+      ],
+      "mock-set-intro": [
+        "./src/component/mock-set-intro.tsx"
+      ],
+      "mock-data-list": [
+        "./src/component/mock-data-list.tsx"
+      ],
+      "mock-data-page-breadcrumb": [
+        "./src/component/mock-data-page-breadcrumb.tsx"
+      ],
+      "mock-set/const": [
+        "./src/component/const.ts"
+      ],
+      "long-text-with-tooltip": [
+        "./src/component/long-text-with-tooltip/index.tsx"
+      ],
+      "typings": [
+        "./src/util/typings.ts"
+      ],
+      "util": [
+        "./src/util/index.ts"
+      ],
+      "auto-generate-select": [
+        "./src/component/auto-generate-select/index.tsx"
+      ],
+      "mock-set-select-actions": [
+        "./src/component/mock-select/index.tsx"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/bot-hooks": "workspace:*",
+    "@coze-arch/bot-icons": "workspace:*",
+    "@coze-arch/bot-monaco-editor": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/bot-studio-store": "workspace:*",
+    "@coze-arch/bot-tea": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-studio/bot-detail-store": "workspace:*",
+    "@coze-studio/bot-utils": "workspace:*",
+    "@coze-studio/components": "workspace:*",
+    "@coze-studio/mockset-edit-modal-adapter": "workspace:*",
+    "@coze-studio/mockset-editor": "workspace:*",
+    "@coze-studio/mockset-editor-adapter": "workspace:*",
+    "@coze-studio/mockset-shared": "workspace:*",
+    "@coze-studio/user-store": "workspace:*",
+    "@douyinfe/semi-icons": "^2.36.0",
+    "@douyinfe/semi-illustrations": "^2.36.0",
+    "ahooks": "^3.7.8",
+    "axios": "^1.4.0",
+    "classnames": "^2.3.2",
+    "immer": "^10.0.3",
+    "json-schema": "~0.4.0",
+    "lodash-es": "^4.17.21",
+    "nanoid": "^4.0.2",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "react-router-dom": "^6.22.0",
+    "stylelint": "^15.11.0",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  }
+}
+

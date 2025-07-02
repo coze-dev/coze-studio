@@ -1,0 +1,144 @@
+{
+  "name": "@coze-agent-ide/bot-plugin",
+  "version": "0.0.1",
+  "description": "空间下 plugin 能力",
+  "license": "Apache-2.0",
+  "author": "lihuiwen.123@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.tsx",
+    "./page": "./src/pages/index.ts",
+    "./hook": "./src/hooks/index.ts",
+    "./util": "./src/util/index.ts",
+    "./store": "./src/store/index.ts",
+    "./components/plugin-apis/use-plugin-apis-modal": "./src/components/plugin-apis/use-plugin-apis-modal.tsx",
+    "./component": "./src/components/index.ts",
+    "./components/*": "./src/components/*"
+  },
+  "main": "src/index.tsx",
+  "typesVersions": {
+    "*": {
+      "page": [
+        "./src/pages/index.ts"
+      ],
+      "hook": [
+        "./src/hooks/index.ts"
+      ],
+      "util": [
+        "./src/util/index.ts"
+      ],
+      "store": [
+        "./src/store/index.ts"
+      ],
+      "component": [
+        "./src/components/index.ts"
+      ],
+      "components/plugin-apis/use-plugin-apis-modal": [
+        "./src/components/plugin-apis/use-plugin-apis-modal.tsx"
+      ],
+      "components/*": [
+        "./src/components/*"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@blueprintjs/core": "^5.1.5",
+    "@coze-agent-ide/bot-plugin-export": "workspace:*",
+    "@coze-agent-ide/bot-plugin-mock-set": "workspace:*",
+    "@coze-agent-ide/bot-plugin-tools": "workspace:*",
+    "@coze-agent-ide/plugin-content-adapter": "workspace:*",
+    "@coze-agent-ide/plugin-modal-adapter": "workspace:*",
+    "@coze-agent-ide/plugin-risk-warning": "workspace:*",
+    "@coze-agent-ide/plugin-shared": "workspace:*",
+    "@coze-agent-ide/tool": "workspace:*",
+    "@coze-agent-ide/tool-config": "workspace:*",
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/bot-hooks": "workspace:*",
+    "@coze-arch/bot-icons": "workspace:*",
+    "@coze-arch/bot-md-box-adapter": "workspace:*",
+    "@coze-arch/bot-monaco-editor": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/bot-space-api": "workspace:*",
+    "@coze-arch/bot-studio-store": "workspace:*",
+    "@coze-arch/bot-tea": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/foundation-sdk": "workspace:*",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/idl": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-arch/report-events": "workspace:*",
+    "@coze-arch/report-tti": "workspace:*",
+    "@coze-common/assets": "workspace:*",
+    "@coze-common/biz-components": "workspace:*",
+    "@coze-studio/bot-detail-store": "workspace:*",
+    "@coze-studio/bot-plugin-store": "workspace:*",
+    "@coze-studio/bot-utils": "workspace:*",
+    "@coze-studio/components": "workspace:*",
+    "@coze-studio/file-kit": "workspace:*",
+    "@coze-studio/mockset-edit-modal-adapter": "workspace:*",
+    "@coze-studio/mockset-shared": "workspace:*",
+    "@coze-studio/plugin-publish-ui-adapter": "workspace:*",
+    "@coze-studio/plugin-shared": "workspace:*",
+    "@coze-studio/plugin-tool-columns-adapter": "workspace:*",
+    "@coze-studio/user-store": "workspace:*",
+    "@coze-workflow/base": "workspace:*",
+    "@douyinfe/semi-icons": "^2.36.0",
+    "@douyinfe/semi-illustrations": "^2.36.0",
+    "@flowgram-adapter/free-layout-editor": "workspace:*",
+    "ahooks": "^3.7.8",
+    "classnames": "^2.3.2",
+    "copy-to-clipboard": "^3.3.3",
+    "dayjs": "^1.11.7",
+    "immer": "^10.0.3",
+    "lodash-es": "^4.17.21",
+    "nanoid": "^4.0.2",
+    "qs": "^6.11.2",
+    "query-string": "^8.1.0",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@rsbuild/core": "1.1.13",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/json-schema": "~7.0.15",
+    "@types/lodash-es": "^4.17.10",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "debug": "^4.3.4",
+    "less": "^3.13.1",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "react-is": ">= 16.8.0",
+    "react-router-dom": "^6.22.0",
+    "scheduler": ">=0.19.0",
+    "styled-components": ">= 2",
+    "stylelint": "^15.11.0",
+    "typescript": "~5.8.2",
+    "utility-types": "^3.10.0",
+    "vite": "^4.3.9",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5",
+    "webpack": "~5.91.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  },
+  "// deps": "debug@^4.3.4 为脚本自动补齐，请勿改动"
+}
+

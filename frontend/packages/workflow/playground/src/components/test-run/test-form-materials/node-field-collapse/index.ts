@@ -1,1 +1,0 @@
-export { NodeFieldCollapse } from './collapse';

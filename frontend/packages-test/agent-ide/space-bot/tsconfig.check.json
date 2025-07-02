@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "rootDir": "./",
+    "outDir": "./dist",
+    "types": ["utility-types", "vitest/globals"],
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "useUnknownInCatchVariables": false,
+    "strictPropertyInitialization": false,
+    "module": "ESNext"
+  },
+  "include": [
+    "src",
+    "__tests__",
+    "stories",
+    "vitest.config.ts",
+    "tailwind.config.ts"
+  ]
+}

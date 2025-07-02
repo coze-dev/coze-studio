@@ -1,0 +1,23 @@
+{
+  "name": "@coze-common/assets",
+  "version": "0.0.1",
+  "description": "通用全局样式 & 图片啥的",
+  "license": "Apache-2.0",
+  "author": "fanchen@bytedance.com",
+  "maintainers": [],
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0"
+  }
+}
+

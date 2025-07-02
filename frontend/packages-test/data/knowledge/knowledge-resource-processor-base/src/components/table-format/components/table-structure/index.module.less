@@ -1,0 +1,234 @@
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable no-duplicate-selectors */
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable max-nesting-depth */
+.table-structure-wrapper {
+  overflow: hidden;
+  flex: 1;
+  height: 100%;
+}
+
+.structure-wrapper {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+}
+
+.drag-table {
+  :global {
+    .semi-table-container {
+      .semi-table-tbody {
+        .semi-table-row {
+          .semi-table-row-cell {
+            &:first-child {
+              padding-left: 16px !important;
+            }
+        }
+
+        /** 暂时注释，后续还要用，待讨论 */
+          // &:hover {
+          //   background: var(--coz-mg-secondary-hovered) !important;
+
+          //   .semi-table-row-cell:first-child {
+          //     border-top-left-radius: 8px !important;
+          //     border-bottom-left-radius: 8px !important;
+          //   }
+          // }
+        }
+      }
+    }
+
+  }
+}
+
+.table-structure {
+  overflow: hidden;
+  margin-top: 4px !important;
+  border-radius: 8px;
+
+  :global {
+    .semi-spin, .semi-spin-children, .semi-table-fixed-header,.semi-table-container {
+      height: 100%;
+    }
+  }
+
+
+  &-required-container {
+    display: flex;
+    align-items: center;
+  }
+
+  &-col-required {
+    margin-top: 4px;
+
+    font-size: 12px;
+    font-weight: 600;
+    font-style: normal;
+    line-height: 16px;
+    color: var(--coz-fg-hglt-red);
+    text-overflow: ellipsis;
+  }
+
+  .input-suffix {
+    display: inline-block;
+    margin-right: 5px;
+    font-size: 12px;
+    // color: rgb(28 29 35 / 35%);
+  }
+
+  .input-error-msg {
+    position: relative;
+    z-index: 100;
+
+    margin-top: 4px;
+    margin-bottom: -20px;
+
+    font-size: 12px;
+    font-weight: 400;
+    font-style: normal;
+    line-height: 16px;
+    color: var(--coz-fg-hglt-red);
+  }
+
+  .semantic-radio {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    height: 100%;
+    // padding-top: 3px;
+    padding-left: 2px;
+  }
+
+  .column-item-action {
+    display: flex;
+    align-items: center;
+
+    height: 100%;
+    padding-top: 3px;
+    padding-left: 7px;
+
+    &-delete {
+      cursor: pointer;
+      font-size: 14px;
+    }
+  }
+
+  .column-item {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .column-item-value {
+    font-size: 14px;
+    line-height: 32px;
+    color: var(--coz-fg-secondary);
+    text-overflow: ellipsis;
+  }
+
+  :global {
+    .structure-table-drag-icon {
+      position: absolute;
+      left: -16px;
+      opacity: 0;
+    }
+
+    .semi-table-row {
+      &:hover,
+      &:focus {
+        .structure-table-drag-icon {
+          opacity: 1;
+        }
+      }
+    }
+
+   .semi-table-thead>.semi-table-row>.semi-table-row-head {
+      font-size: 12px !important;
+      color: var(--coz-fg-secondary) !important;
+    }
+
+    .semi-table-container {
+      .semi-table-body {
+        height: calc(100% - 39px) !important;
+        padding-bottom: 12px;
+      }
+    }
+
+    .select-error-text {
+      padding-top: 0 !important;
+    }
+
+    .singleline-select-error-content {
+      height: 0;
+    }
+
+    .semi-table-thead>.semi-table-row>.semi-table-row-head {
+      &:first-child {
+        padding-left: 8px;
+      }
+    }
+
+    /** table去掉背景色 */
+    .semi-table-thead>.semi-table-row>.semi-table-row-head, .semi-table-tbody>.semi-table-row, .semi-table-tbody>.semi-table-row>.semi-table-cell-fixed-left,.semi-table-thead>.semi-table-row>.semi-table-row-head.semi-table-cell-fixed-left::before {
+      background-color: transparent !important;
+    }
+
+    .semi-table-tbody {
+      padding: 5px 0;
+
+      .semi-table-row {
+        .semi-table-row-cell {
+          height: 56px !important;
+          padding: 12px 8px !important;
+          border-bottom: 0;
+
+          // 此处不需要 UITable 默认的 border-radius
+          &:first-child {
+            padding-right: 28px !important;
+            padding-left: 8px !important;
+            border-radius: 0 !important;
+          }
+
+
+        }
+
+        &:hover {
+          cursor: auto;
+          background: var(--coz-mg-secondary-hovered);
+
+          &>.semi-table-row-cell {
+            background: transparent !important;
+            border-bottom: 0 !important;
+          }
+        }
+
+      }
+    }
+
+  }
+}
+
+.table-header-tooltip {
+  display: flex;
+  align-items: center;
+}
+
+.table-structure-bar-title {
+  display: flex;
+  align-items: center;
+
+  height: 32px;
+
+  font-size: 14px;
+  font-weight: 600;
+  font-style: normal;
+  color: var(--coz-fg-plus);
+
+  .icon {
+    margin-top: 3px;
+    margin-left: 4px;
+  }
+}

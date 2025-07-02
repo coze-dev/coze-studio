@@ -1,0 +1,89 @@
+/* eslint-disable */
+/* tslint:disable */
+// @ts-nocheck
+
+export type Int64 = string | number;
+
+export enum MDType {
+  Default = 0,
+  Image = 1,
+  Audio = 2,
+  Video = 3,
+  Document = 4,
+  Font = 5,
+  Archive = 6,
+  Other = 255,
+}
+
+export interface FileChunk {
+  seq_id?: number;
+  content?: string;
+}
+
+export interface FileListRPCMeta {
+  Uri?: string;
+  Name?: string;
+  CreateTime?: Int64;
+  Format?: string;
+  /** 文件大小 */
+  Size?: Int64;
+  /** 文件大类, 精确匹配 */
+  MdType?: number;
+  /** 可访问url, 不保证持久化 */
+  Url?: string;
+}
+
+export interface FileMetaInfo {
+  id: string;
+  file_id: string;
+  file_name: string;
+  md_type: MDType;
+  format: string;
+  uri: string;
+  position: string;
+  device: string;
+  size: number;
+  tags: string;
+  created_at_ms: Int64;
+  updated_at_ms: Int64;
+  user_id: Int64;
+  conversation_id: Int64;
+  biz_type: string;
+  biz_id: string;
+  /** 注意：该字段返回给前端可能因精度丢失而不一致 */
+  bot_id: Int64;
+  message_id: Int64;
+  /** 原图地址 */
+  normal_file_url?: FileURL;
+  /** 缩略图地址 */
+  thumbnail_file_url?: FileURL;
+  /** 图片 meta 信息，当文件类型为图片时有效 */
+  image_meta?: ImageMeta;
+  /** 255:文件未构建索引; 254:没有启用byterag; 0:rag索引构建成功; 1:rag索引构建中; 2:rag索引构建失败; 3:rag索引已删除 */
+  rag_document_status?: Int64;
+  /** rag内容的切片数 */
+  rag_content_chunk_num?: number;
+}
+
+export interface FileSearchItem {
+  file_name?: string;
+  file_url?: string;
+  content?: string;
+}
+
+export interface FileURL {
+  main_url: string;
+  backup_url: string;
+}
+
+export interface FileURLData {
+  url: string;
+}
+
+export interface ImageMeta {
+  /** 图片宽度，单位：px */
+  width: number;
+  /** 图片高度，单位：px */
+  height: number;
+}
+/* eslint-enable */

@@ -1,0 +1,31 @@
+.label {
+  overflow-x: hidden;
+
+  width: fit-content;
+  max-width: calc(100 - 16px);
+  margin-bottom: 0;
+  padding-right: 0;
+
+  :global(.semi-form-field-label-text) {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    width: 100%;
+  }
+}
+
+.text {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.icon {
+  margin-left: 2px;
+  padding: 2px;
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+}

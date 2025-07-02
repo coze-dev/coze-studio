@@ -1,0 +1,84 @@
+.content {
+  overflow: hidden;
+  width: 276px;
+
+  .title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+    margin-bottom: 16px;
+
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 24px;
+    color: rgb(6 7 9 / 80%);
+  }
+
+  .description {
+    margin-bottom: 16px;
+
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    color: rgb(6 7 9 / 50%);
+  }
+
+  .table {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    color: rgb(6 7 9 / 80%);
+
+  }
+
+  .icon {
+    font-size: 16px;
+    color: #060709;
+  }
+
+
+}
+
+.row {
+  &:last-child {
+    * {
+      border-bottom: none !important;
+    }
+  }
+}
+
+.icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 16px;
+  height: 16px;
+}
+
+.icon-cell {
+  width: 24px;
+  height: 24px;
+  padding: 0 !important;
+}
+
+.cell-column {
+  width: 24px !important;
+  min-width: none !important;
+}
+
+.mark-column {
+  width: 68px;
+  min-width: none !important;
+  padding-right: 0 !important;
+  /* stylelint-disable-next-line declaration-no-important */
+  padding-left: 0 !important
+}
+
+.example-column {
+  /* stylelint-disable-next-line declaration-no-important */
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}

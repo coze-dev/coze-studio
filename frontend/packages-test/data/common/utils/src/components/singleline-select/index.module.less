@@ -1,0 +1,32 @@
+/* stylelint-disable declaration-no-important */
+.select-wapper {
+  width: 100%;
+
+  span {
+    width: 100%;
+  }
+
+  :global(.singleline-select-error-content) {
+    height: 20px;
+  }
+
+  :global(.select-error-text) {
+    position: absolute;
+    z-index: 100;
+
+    padding-top: 2px;
+    padding-left: 12px;
+
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--coz-fg-hglt-red);
+  }
+}
+
+.error-wapper {
+  :global {
+    .semi-select {
+      border: 1px solid var(--coz-fg-hglt-red) !important;
+    }
+  }
+}

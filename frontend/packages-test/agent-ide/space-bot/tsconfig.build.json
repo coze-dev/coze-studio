@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "types": [],
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "useUnknownInCatchVariables": false,
+    "strictPropertyInitialization": false,
+    "module": "ESNext",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../arch/bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-error/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-flags/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-hooks/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-http/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-md-box-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-space-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-store/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-tea/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/fetch-stream/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/foundation-sdk/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/hooks/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/idl/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/logger/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/report-events/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/report-tti/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/tea/tsconfig.build.json"
+    },
+    {
+      "path": "../bot-audit-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../bot-editor-context-store/tsconfig.build.json"
+    },
+    {
+      "path": "../bot-input-length-limit/tsconfig.build.json"
+    },
+    {
+      "path": "../chat-background-shared/tsconfig.build.json"
+    },
+    {
+      "path": "../chat-background/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/assets/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/biz-components/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/chat-area/chat-area/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/chat-area/utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/coze-mitt/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/editor-plugins/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/flowgram-adapter/free-layout-editor/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/md-editor-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/prompt-kit/main/tsconfig.build.json"
+    },
+    {
+      "path": "../commons/tsconfig.build.json"
+    },
+    {
+      "path": "../../components/bot-icons/tsconfig.build.json"
+    },
+    {
+      "path": "../../components/bot-semi/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
+      "path": "../context/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/common/e2e/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/common/reporter/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/common/utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/knowledge/knowledge-data-set-for-agent/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/knowledge/knowledge-ide-base/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/knowledge/knowledge-modal-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/knowledge/knowledge-modal-base/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/knowledge/knowledge-resource-processor-core/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/memory/database-v2-main/tsconfig.build.json"
+    },
+    {
+      "path": "../../data/memory/database/tsconfig.build.json"
+    },
+    {
+      "path": "../debug-tool-list/tsconfig.build.json"
+    },
+    {
+      "path": "../../devops/debug/debug-panel/tsconfig.build.json"
+    },
+    {
+      "path": "../../foundation/account-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../foundation/enterprise-store-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../foundation/global-store/tsconfig.build.json"
+    },
+    {
+      "path": "../model-manager/tsconfig.build.json"
+    },
+    {
+      "path": "../onboarding/tsconfig.build.json"
+    },
+    {
+      "path": "../publish-to-base/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/bot-utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/components/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/open-platform/open-env-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/premium/premium-components-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/publish-manage-hooks/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/stores/bot-detail/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/user-store/tsconfig.build.json"
+    },
+    {
+      "path": "../tool-config/tsconfig.build.json"
+    },
+    {
+      "path": "../tool/tsconfig.build.json"
+    }
+  ]
+}

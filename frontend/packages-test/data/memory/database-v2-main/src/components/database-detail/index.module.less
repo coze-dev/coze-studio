@@ -1,0 +1,58 @@
+.tab {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  :global {
+    .semi-tabs-bar {
+      min-height: 56px;
+    }
+
+    .semi-tabs-bar-extra {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: end;
+
+      width: 100%;
+      padding: 0;
+    }
+
+    .semi-tabs-content {
+      overflow: auto;
+      flex-grow: 1;
+      padding: 0;
+
+      .coz-tab-bar-content.semi-tabs-pane-active {
+        height: 100%;
+
+        .semi-tabs-pane-motion-overlay {
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+        }
+      }
+    }
+  }
+}
+
+.th-tip-dot {
+  position: relative;
+  padding-left: 16px;
+}
+
+.th-tip-dot::before {
+  content: '';
+
+  position: absolute;
+  top: 7px;
+  left: 0;
+
+  width: 5px;
+  height: 5px;
+
+  background-color: #000;
+  border-radius: 50%;
+}

@@ -1,0 +1,27 @@
+.ui-empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 5%;
+
+  :global {
+    .semi-empty-content {
+      margin-top: 16px;
+    }
+    .semi-empty-title {
+      font-size: 16px !important;
+    }
+    .semi-empty-description {
+      font-size: 14px;
+    }
+    .semi-empty-title + .semi-empty-description {
+      margin-top: 4px;
+    }
+    .semi-empty-footer {
+      display: flex;
+      justify-content: center;
+    }
+  }
+}

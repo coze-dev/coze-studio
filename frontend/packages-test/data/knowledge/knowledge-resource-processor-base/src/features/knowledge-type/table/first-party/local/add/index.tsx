@@ -1,0 +1,1 @@
+export { TableLocalAddConfig } from './config';

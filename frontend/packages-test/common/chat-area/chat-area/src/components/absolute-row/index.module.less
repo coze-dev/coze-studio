@@ -1,0 +1,32 @@
+.absolute-row {
+  position: absolute;
+  z-index: 10;
+  bottom: 100%;
+
+  display: flex;
+  flex-direction: column;
+  row-gap: 16px;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  margin-bottom: 12px;
+
+  background: transparent;
+
+  transition: height 0.1s ease-in-out;
+}
+
+.bg {
+  @apply !coz-bg-max;
+
+  &:hover {
+    /* stylelint-disable-next-line declaration-no-important */
+    background-color: #E9EBF3 !important;
+  }
+
+  &:active {
+    /* stylelint-disable-next-line declaration-no-important */
+    background-color: #DCE0EA !important;
+  }
+}

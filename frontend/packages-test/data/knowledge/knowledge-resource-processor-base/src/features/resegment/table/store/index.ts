@@ -1,0 +1,1 @@
+export { createTableLocalResegmentStore } from './store';

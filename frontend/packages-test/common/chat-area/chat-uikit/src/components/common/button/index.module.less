@@ -1,0 +1,86 @@
+.button {
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  padding: 12px;
+
+  color: #4D53E8;
+
+  background: #FFF;
+  border: 1px solid rgba(10, 17, 61, 6%);
+  border-radius: 16px;
+}
+
+.button:hover {
+  background: linear-gradient(0deg, rgba(0, 0, 0, 4%) 0%, rgba(0, 0, 0, 4%) 100%), #FFF;
+}
+
+.button:active {
+  background: linear-gradient(0deg, rgba(0, 0, 0, 8%) 0%, rgba(0, 0, 0, 8%) 100%), #FFF;
+}
+
+.button-text {
+  margin-left: 8px;
+
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #4D53E8;
+}
+
+.outlined-icon-button {
+  @apply !coz-bg-max;
+
+  &:hover {
+    @apply !coz-mg-secondary-hovered;
+  }
+
+  &:active {
+    @apply !coz-mg-secondary-pressed;
+  }
+
+  &:disabled {
+    @apply !coz-fg-dim bg-transparent;
+
+    &:hover,
+    &:active {
+      @apply !coz-fg-dim bg-transparent;
+    }
+  }
+}
+
+.outlined-icon-button-background {
+  &:hover {
+    /* stylelint-disable-next-line declaration-no-important */
+    background: rgba(249, 249, 249, 90%) !important;
+  }
+
+  &:active {
+    /* stylelint-disable-next-line declaration-no-important */
+    background: rgba(249, 249, 249, 85%) !important;
+  }
+
+  &:disabled {
+    @apply !coz-fg-dim bg-transparent;
+
+    &:hover,
+    &:active {
+      @apply !coz-fg-dim bg-transparent;
+    }
+  }
+}
+
+.base-outlined-icon-button {
+  @apply !coz-fg-primary !coz-stroke-plus;
+
+  width: 32px;
+  // 和 ui 确认后的业务定制样式
+  /* stylelint-disable-next-line declaration-no-important */
+  border-style: solid !important;
+  /* stylelint-disable-next-line declaration-no-important */
+  border-width: 1px !important;
+}

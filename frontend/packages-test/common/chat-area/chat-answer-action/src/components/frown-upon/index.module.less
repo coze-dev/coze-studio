@@ -1,0 +1,63 @@
+.frown-upon-container {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+
+  border: 1px solid rgba(10, 17, 61, 6%);
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+
+    width: 100%;
+    margin-bottom: 12px;
+
+    line-height: 20px;
+
+    .title {
+      font-size: 14px;
+      font-weight: 600;
+      font-style: normal;
+      color: rgba(6, 7, 9, 96%);
+    }
+  }
+
+  .reasons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+
+    .item {
+      cursor: pointer;
+
+      padding: 8px 16px;
+
+      font-size: 14px;
+      font-weight: 400;
+      font-style: normal;
+
+      background-color: rgba(6, 7, 9, 5%);
+      border-radius: 6px;
+    }
+
+    .item:hover {
+      background-color: rgba(128, 138, 255, 20%);
+    }
+
+    .item.selected {
+      background-color: rgba(128, 138, 255, 40%);
+    }
+
+  }
+
+  .textarea {
+    margin-bottom: 12px;
+  }
+
+  .footer {
+    text-align: right;
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "name": "@coze-arch/bot-typings",
+  "version": "0.0.1",
+  "description": "bot typings that extract from bot/src/typings",
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.d.ts",
+    "./common": "./src/common.ts",
+    "./teamspace": "./src/teamspace.ts"
+  },
+  "main": "src/index.d.ts",
+  "types": "src/index.d.ts",
+  "typesVersions": {
+    ".": {
+      "*": [
+        "./src/index.d.ts"
+      ]
+    },
+    "*": {
+      "common": [
+        "./src/common.ts"
+      ],
+      "teamspace": [
+        "./src/teamspace.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@coze-arch/bot-env": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@rspack/core": "0.6.0",
+    "@types/node": "^18",
+    "debug": "^4.3.4",
+    "i18next": ">= 19.0.0",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "react-is": ">= 16.8.0",
+    "styled-components": ">= 2",
+    "typescript": "~5.8.2",
+    "webpack": "~5.91.0"
+  }
+}
+
