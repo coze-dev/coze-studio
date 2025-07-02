@@ -52,6 +52,10 @@ func (i *impl) SyncExecuteWorkflow(ctx context.Context, config vo.ExecuteConfig,
 	return i.DomainSVC.SyncExecute(ctx, config, input)
 }
 
+func (i *impl) WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option {
+	return i.DomainSVC.WithExecuteConfig(cfg)
+}
+
 func (i *impl) GetWorkflowIDsByAppID(ctx context.Context, appID int64) ([]int64, error) {
 	metas, _, err := i.DomainSVC.MGet(ctx, &vo.MGetPolicy{
 		MetaQuery: vo.MetaQuery{

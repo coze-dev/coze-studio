@@ -41,7 +41,8 @@ type AgentRunner struct {
 	runner            compose.Runnable[*AgentRequest, *schema.Message]
 	requireCheckpoint bool
 
-	modelInfo *crossmodelmgr.Model
+	containWfTool bool
+	modelInfo     *crossmodelmgr.Model
 }
 
 func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
@@ -73,6 +74,21 @@ func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
 			} else {
 				composeOpts = append(composeOpts, compose.WithCheckPointID(executeID.String()))
 			}
+		}
+		if r.containWfTool {
+			cfReq := crossworkflow.ExecuteConfig{
+				AgentID:      &req.Identity.AgentID,
+				ConnectorUID: req.UserID,
+				ConnectorID:  req.Identity.ConnectorID,
+				BizType:      crossworkflow.BizTypeAgent,
+			}
+			if req.Identity.IsDraft {
+				cfReq.Mode = crossworkflow.ExecuteModeDebug
+			} else {
+				cfReq.Mode = crossworkflow.ExecuteModeRelease
+			}
+			wfConfig := crossworkflow.DefaultSVC().WithExecuteConfig(cfReq)
+			composeOpts = append(composeOpts, wfConfig)
 		}
 		_, _ = r.runner.Stream(ctx, req, composeOpts...)
 	}()

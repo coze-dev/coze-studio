@@ -122,7 +122,11 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 			return nil, err
 		}
 	}
+	containWfTool := false
 
+	if len(wfTools) > 0 {
+		containWfTool = true
+	}
 	agentTools := make([]tool.BaseTool, 0, len(pluginTools)+len(wfTools)+len(dbTools)+len(avTools))
 	agentTools = append(agentTools, slices.Transform(pluginTools, func(a tool.InvokableTool) tool.BaseTool {
 		return a
@@ -253,6 +257,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 		runner:            runner,
 		requireCheckpoint: requireCheckpoint,
 		modelInfo:         modelInfo,
+		containWfTool:     containWfTool,
 	}, nil
 }
 
