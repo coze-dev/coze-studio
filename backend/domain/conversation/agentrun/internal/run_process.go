@@ -6,6 +6,7 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/repository"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
@@ -45,12 +46,13 @@ func (r *RunProcess) StepToInProgress(ctx context.Context, srRecord *entity.Chun
 	return nil
 }
 
-func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
+func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *agentrun.Usage) {
 
 	completedAt := time.Now().UnixMilli()
 
 	updateMeta := &entity.UpdateMeta{
 		Status:      entity.RunStatusCompleted,
+		Usage:       usage,
 		CompletedAt: completedAt,
 		UpdatedAt:   completedAt,
 	}
@@ -70,8 +72,6 @@ func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkR
 	r.event.SendRunEvent(entity.RunEventCompleted, srRecord, sw)
 
 	r.event.SendStreamDoneEvent(sw)
-	return
-
 }
 func (r *RunProcess) StepToFailed(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
 

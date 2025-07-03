@@ -2,6 +2,8 @@ package middleware
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"regexp"
 	"strings"
 
@@ -94,7 +96,10 @@ func OpenapiAuthMW() app.HandlerFunc {
 			return
 		}
 
-		apiKeyInfo, err := openauth.OpenAuthApplication.CheckPermission(ctx, apiKey)
+		md5Hash := md5.Sum([]byte(apiKey))
+		md5Key := hex.EncodeToString(md5Hash[:])
+		apiKeyInfo, err := openauth.OpenAuthApplication.CheckPermission(ctx, md5Key)
+
 		if err != nil {
 			logs.CtxErrorf(ctx, "OpenAuthApplication.CheckPermission failed, err=%v", err)
 			httputil.InternalError(ctx, c,

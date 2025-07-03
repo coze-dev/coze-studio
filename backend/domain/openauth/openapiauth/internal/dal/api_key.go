@@ -2,13 +2,16 @@ package dal
 
 import (
 	"context"
+	"crypto/md5"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/entity"
 	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/openauth/openapiauth/internal/dal/query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
@@ -26,21 +29,55 @@ func NewApiKeyDAO(idGen idgen.IDGenerator, db *gorm.DB) *ApiKeyDAO {
 	}
 }
 
-func (a *ApiKeyDAO) Create(ctx context.Context, data *model.APIKey) (*model.APIKey, error) {
+func (a *ApiKeyDAO) Create(ctx context.Context, do *entity.CreateApiKey) (*entity.ApiKey, error) {
+
+	poData, err := a.doToPo(ctx, do)
+	if err != nil {
+		return nil, err
+	}
+	originApiKey, md5Key := a.getAPIKey(poData.ID)
+	poData.Key = md5Key
+	err = a.dbQuery.APIKey.WithContext(ctx).Create(poData)
+	if err != nil {
+		return nil, err
+	}
+	doData := a.poToDo(poData)
+	doData.ApiKey = originApiKey
+	return doData, nil
+}
+
+func (a *ApiKeyDAO) doToPo(ctx context.Context, do *entity.CreateApiKey) (*model.APIKey, error) {
 	id, err := a.IDGen.GenID(ctx)
 	if err != nil {
 		return nil, errors.New("gen id failed")
 	}
-	data.ID = id
-
-	hash := sha256.Sum256([]byte(fmt.Sprintf("%d", id)))
-	data.Key = hex.EncodeToString(hash[:])
-
-	err = a.dbQuery.APIKey.WithContext(ctx).Create(data)
-	if err != nil {
-		return nil, err
+	po := &model.APIKey{
+		ID:        id,
+		Name:      do.Name,
+		ExpiredAt: do.Expire,
+		UserID:    do.UserID,
+		CreatedAt: time.Now().Unix(),
 	}
-	return data, nil
+	return po, nil
+}
+func (a *ApiKeyDAO) poToDo(po *model.APIKey) *entity.ApiKey {
+	do := &entity.ApiKey{
+		ID:        po.ID,
+		Name:      po.Name,
+		ExpiredAt: po.ExpiredAt,
+		UserID:    po.UserID,
+		CreatedAt: po.CreatedAt,
+	}
+	return do
+}
+
+func (a *ApiKeyDAO) getAPIKey(id int64) (string, string) {
+	hash := sha256.Sum256([]byte(fmt.Sprintf("%d", id)))
+	apiKey := "pat_" + hex.EncodeToString(hash[:])
+
+	md5Hash := md5.Sum([]byte(apiKey))
+	md5Key := hex.EncodeToString(md5Hash[:])
+	return apiKey, md5Key
 }
 
 func (a *ApiKeyDAO) Delete(ctx context.Context, id int64, userID int64) error {

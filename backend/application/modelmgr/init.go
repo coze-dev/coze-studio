@@ -60,7 +60,11 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 		cursor = listMetaResp.NextCursor
 	}
 
-	root := os.Getenv("PWD")
+	root, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
 	filePath := filepath.Join(root, "resources/conf/model/meta")
 	staticModelMeta, err := readDirYaml[crossmodelmgr.ModelMeta](filePath)
 	if err != nil {

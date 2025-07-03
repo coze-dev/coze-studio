@@ -16,6 +16,7 @@ import (
 	"github.com/mohae/deepcopy"
 
 	messageModel "code.byted.org/flow/opencoze/backend/api/model/conversation/message"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossagent"
@@ -46,6 +47,8 @@ type runtimeDependence struct {
 	questionMsgID int64
 	runMeta       *entity.AgentRunMeta
 	startTime     time.Time
+
+	usage *agentrun.Usage
 }
 
 type Components struct {
@@ -100,7 +103,7 @@ func (c *runImpl) run(ctx context.Context, sw *schema.StreamWriter[*entity.Agent
 			c.runProcess.StepToFailed(ctx, srRecord, sw)
 			return
 		}
-		c.runProcess.StepToComplete(ctx, srRecord, sw)
+		c.runProcess.StepToComplete(ctx, srRecord, sw, rtDependence.usage)
 	}()
 
 	agentInfo, err := c.handlerAgent(ctx, rtDependence)
@@ -746,6 +749,12 @@ func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessa
 		msg.Ext[string(msgEntity.MessageExtKeyToken)] = strconv.FormatInt(usage.TotalCount, 10)
 		msg.Ext[string(msgEntity.MessageExtKeyInputTokens)] = strconv.FormatInt(usage.InputTokens, 10)
 		msg.Ext[string(msgEntity.MessageExtKeyOutputTokens)] = strconv.FormatInt(usage.OutputTokens, 10)
+
+		rtDependence.usage = &agentrun.Usage{
+			LlmPromptTokens:     usage.InputTokens,
+			LlmCompletionTokens: usage.OutputTokens,
+			LlmTotalTokens:      usage.TotalCount,
+		}
 	}
 
 	if _, ok := msg.Ext[string(msgEntity.MessageExtKeyTimeCost)]; !ok {

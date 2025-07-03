@@ -34,16 +34,11 @@ func NewService(c *Components) APIAuth {
 }
 
 func (a *apiAuthImpl) Create(ctx context.Context, req *entity.CreateApiKey) (*entity.ApiKey, error) {
-
-	apiData, err := a.buildApiKey2PoData(ctx, req)
+	apiKeyData, err := a.dao.Create(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	apiModel, err := a.dao.Create(ctx, apiData)
-	if err != nil {
-		return nil, err
-	}
-	return a.buildPoData2ApiKey([]*model.APIKey{apiModel})[0], nil
+	return apiKeyData, nil
 }
 
 func (a *apiAuthImpl) buildApiKey2PoData(ctx context.Context, req *entity.CreateApiKey) (*model.APIKey, error) {

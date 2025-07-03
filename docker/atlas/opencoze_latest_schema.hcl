@@ -2043,6 +2043,13 @@ table "plugin_version" {
     default = 0
     comment = "Plugin Type, 1:http, 6:local"
   }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Create Time in Milliseconds"
+  }
   column "version" {
     null    = false
     type    = varchar(255)
@@ -2063,13 +2070,6 @@ table "plugin_version" {
     null    = true
     type    = json
     comment = "OpenAPI Document, only stores the root"
-  }
-  column "created_at" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Create Time in Milliseconds"
   }
   column "deleted_at" {
     null    = true
@@ -2188,24 +2188,6 @@ table "run_record" {
     unsigned = true
     comment  = "执行来源 0 API,"
   }
-  column "token_count" {
-    null    = false
-    type    = int
-    default = 0
-    comment = "token 消耗"
-  }
-  column "output_tokens" {
-    null    = false
-    type    = int
-    default = 0
-    comment = "消耗的 output token 数"
-  }
-  column "input_tokens" {
-    null    = false
-    type    = int
-    default = 0
-    comment = "消耗的 input token 数"
-  }
   column "status" {
     null    = false
     type    = varchar(255)
@@ -2263,6 +2245,11 @@ table "run_record" {
     type    = text
     comment = "扩展字段"
     collate = "utf8mb4_general_ci"
+  }
+  column "usage" {
+    null    = true
+    type    = json
+    comment = "usage"
   }
   primary_key {
     columns = [column.id]
@@ -3172,6 +3159,13 @@ table "tool_version" {
     unsigned = true
     comment  = "Plugin ID"
   }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Create Time in Milliseconds"
+  }
   column "version" {
     null    = false
     type    = varchar(255)
@@ -3194,13 +3188,6 @@ table "tool_version" {
     null    = true
     type    = json
     comment = "Tool Openapi Operation Schema"
-  }
-  column "created_at" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Create Time in Milliseconds"
   }
   column "deleted_at" {
     null    = true
@@ -3807,12 +3794,6 @@ table "workflow_reference" {
     unsigned = true
     comment  = "workflow id"
   }
-  column "referred_id" {
-    null     = false
-    type     = bigint
-    unsigned = true
-    comment  = "the id of the workflow that is referred by other entities"
-  }
   column "referring_id" {
     null     = false
     type     = bigint
@@ -3837,15 +3818,21 @@ table "workflow_reference" {
     unsigned = true
     comment  = "create time in millisecond"
   }
+  column "deleted_at" {
+    null = true
+    type = datetime(3)
+  }
+  column "referred_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "the id of the workflow that is referred by other entities"
+  }
   column "status" {
     null     = false
     type     = tinyint
     unsigned = true
     comment  = "whether this reference currently takes effect. 0: disabled 1: enabled"
-  }
-  column "deleted_at" {
-    null = true
-    type = datetime(3)
   }
   primary_key {
     columns = [column.id]

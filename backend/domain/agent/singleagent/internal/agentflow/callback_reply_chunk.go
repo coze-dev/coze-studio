@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 
 	"github.com/cloudwego/eino/callbacks"
@@ -18,6 +17,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -78,8 +78,14 @@ func (r *replyChunkCallback) OnError(ctx context.Context, info *callbacks.RunInf
 			r.sw.Send(interruptEvent, nil)
 
 		} else {
-			r.sw.Send(nil, fmt.Errorf("node execute failed, component=%v, name=%v, err=%w",
-				info.Component, info.Name, err))
+			logs.CtxErrorf(ctx, "node execute failed, component=%v, name=%v, err=%w",
+				info.Component, info.Name, err)
+			var customErr errorx.StatusError
+			errMsg := "Internal server error"
+			if errors.As(err, &customErr) && customErr.Code() != 0 {
+				errMsg = customErr.Msg()
+			}
+			r.sw.Send(nil, errors.New(errMsg))
 		}
 
 	}
