@@ -110,20 +110,13 @@ func jsonParseRelaxed(ctx context.Context, data string, schema_ map[string]*vo.T
 		return nil, err
 	}
 
-	for k, v := range result {
-		if s, ok := schema_[k]; ok {
-			val, err := nodes.Convert(ctx, v, k, s, nodes.SkipUnknownFields())
-			if err != nil {
-				var warnings nodes.ConversionWarnings
-				if errors.As(err, &warnings) {
-					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-					result[k] = val
-				}
-			} else {
-				result[k] = val
-			}
-		}
+	r, ws, err := nodes.ConvertInputs(ctx, result, schema_, nodes.SkipUnknownFields())
+	if err != nil {
+		return nil, err
+	}
+	if ws != nil {
+		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
 	}
 
-	return result, nil
+	return r, nil
 }

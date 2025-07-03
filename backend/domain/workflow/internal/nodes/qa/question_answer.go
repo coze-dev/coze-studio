@@ -350,22 +350,13 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 		return nil, fmt.Errorf("field %s not found", fieldInfo)
 	}
 
-	realOutput := make(map[string]any)
-	for k, v := range fields.(map[string]any) {
-		if s, ok := q.config.OutputFields[k]; ok {
-			val, err := nodes.Convert(ctx, v, k, s)
-			if err != nil {
-				var warnings nodes.ConversionWarnings
-				if errors.As(err, &warnings) {
-					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-					realOutput[k] = val
-				} else {
-					return nil, fmt.Errorf("invalid type: %v, %v", k, err)
-				}
-			} else {
-				realOutput[k] = val
-			}
-		}
+	realOutput, ws, err := nodes.ConvertInputs(ctx, fields.(map[string]any), q.config.OutputFields, nodes.SkipRequireCheck())
+	if err != nil {
+		return nil, err
+	}
+
+	if ws != nil {
+		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	realOutput[UserResponseKey] = userResponse

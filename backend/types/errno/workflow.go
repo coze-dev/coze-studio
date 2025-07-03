@@ -58,7 +58,7 @@ func init() {
 
 	code.Register(
 		ErrMissingRequiredParam,
-		"Missing required parameters. Please review the API documentation and ensure all mandatory fields are included in your request.",
+		"Missing required parameters {param}. Please review the API documentation and ensure all mandatory fields are included in your request.",
 		code.WithAffectStability(false),
 	)
 

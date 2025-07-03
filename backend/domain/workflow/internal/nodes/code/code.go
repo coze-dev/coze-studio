@@ -14,6 +14,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
@@ -184,9 +185,15 @@ func (c *CodeRunner) RunCode(ctx context.Context, input map[string]any) (ret map
 
 	result := response.Result
 	ctxcache.Store(ctx, coderRunnerRawOutputCtxKey, result)
-	output, err := formatOutput(ctx, c.config.OutputConfig, result)
+
+	output, ws, err := nodes.ConvertInputs(ctx, result, c.config.OutputConfig)
 	if err != nil {
-		return nil, err
+		return nil, vo.WrapError(errno.ErrCodeExecuteFail, err, errorx.KV("detail", err.Error()))
+	}
+
+	if ws != nil && len(*ws) > 0 {
+		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+		ctxcache.Store(ctx, coderRunnerWarnErrorLevelCtxKey, *ws)
 	}
 
 	return output, nil
@@ -246,34 +253,4 @@ func parsePythonImports(code string) []string {
 	}
 
 	return maps.Keys(modules)
-}
-
-func formatOutput(ctx context.Context, inInfo map[string]*vo.TypeInfo, in map[string]any) (map[string]any, error) {
-	ret := make(map[string]any, len(inInfo))
-	var warnings nodes.ConversionWarnings
-	for k, info := range inInfo {
-		if _, ok := in[k]; !ok {
-			ret[k] = nil
-			continue
-		}
-		vv, err := nodes.Convert(ctx, in[k], k, info)
-		if err != nil {
-			var subWarnings nodes.ConversionWarnings
-			if errors.As(err, &subWarnings) {
-				warnings = subWarnings.Merge(warnings)
-				ret[k] = nil
-			} else {
-				return nil, err
-			}
-		} else {
-			ret[k] = vv
-		}
-
-	}
-
-	if len(warnings) > 0 {
-		ctxcache.Store(ctx, coderRunnerWarnErrorLevelCtxKey, warnings)
-	}
-
-	return ret, nil
 }
