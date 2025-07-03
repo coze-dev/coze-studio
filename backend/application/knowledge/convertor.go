@@ -193,7 +193,7 @@ func convertSlice2Model(sliceEntity *entity.Slice) *dataset.SliceInfo {
 		CharCount:  sliceEntity.CharCount,
 		Sequence:   sliceEntity.Sequence,
 		DocumentID: sliceEntity.DocumentID,
-		ChunkInfo:  "", // todo chunk info逻辑没写
+		ChunkInfo:  "",
 	}
 }
 
@@ -207,7 +207,6 @@ func convertSliceContent(s *entity.Slice) string {
 			tableData = append(tableData, sliceContentData{
 				ColumnID:   strconv.FormatInt(col.ColumnID, 10),
 				ColumnName: col.ColumnName,
-				IsSemantic: false, // TODO: 这个对应 indexing？需要确认下是否有用到的地方，看起来冗余了
 				Value:      col.GetNullableStringValue(),
 				Desc:       "",
 			})
@@ -221,7 +220,6 @@ func convertSliceContent(s *entity.Slice) string {
 type sliceContentData struct {
 	ColumnID   string `json:"column_id"`
 	ColumnName string `json:"column_name"`
-	IsSemantic bool   `json:"is_semantic"`
 	Value      string `json:"value"`
 	Desc       string `json:"desc"`
 }

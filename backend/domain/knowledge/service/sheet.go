@@ -259,7 +259,7 @@ func (k *knowledgeSVC) ValidateTableSchema(ctx context.Context, request *Validat
 	// 1. 表头名称对齐（不要求顺序一致）
 	// 2. indexing 列必须有值, 其余列可以为空
 	// 3. 值类型可转换
-	// 4. 已有表表头字段全包含（TODO: 待讨论）
+	// 4. 已有表表头字段全包含
 	dstMapping := make(map[string]*entity.TableColumn)
 	for _, col := range dst.Columns {
 		dstCol := col
@@ -345,7 +345,6 @@ func (k *knowledgeSVC) GetDocumentTableInfo(ctx context.Context, request *GetDoc
 		RowsCount:     0, // get all rows
 	}, nil)
 	if err != nil {
-		// TODO: resp code msg 具体填写
 		return nil, err
 	}
 

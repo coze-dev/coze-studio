@@ -983,7 +983,7 @@ table "knowledge_document" {
   }
   column "fail_reason" {
     null    = true
-    type    = tinytext
+    type    = text
     comment = "失败原因"
   }
   column "parse_rule" {
@@ -1176,7 +1176,7 @@ table "knowledge_document_slice" {
   }
   column "fail_reason" {
     null    = true
-    type    = tinytext
+    type    = text
     comment = "失败原因"
   }
   column "hit" {
@@ -2043,13 +2043,6 @@ table "plugin_version" {
     default = 0
     comment = "Plugin Type, 1:http, 6:local"
   }
-  column "created_at" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Create Time in Milliseconds"
-  }
   column "version" {
     null    = false
     type    = varchar(255)
@@ -2070,6 +2063,13 @@ table "plugin_version" {
     null    = true
     type    = json
     comment = "OpenAPI Document, only stores the root"
+  }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Create Time in Milliseconds"
   }
   column "deleted_at" {
     null    = true
@@ -3159,13 +3159,6 @@ table "tool_version" {
     unsigned = true
     comment  = "Plugin ID"
   }
-  column "created_at" {
-    null     = false
-    type     = bigint
-    default  = 0
-    unsigned = true
-    comment  = "Create Time in Milliseconds"
-  }
   column "version" {
     null    = false
     type    = varchar(255)
@@ -3188,6 +3181,13 @@ table "tool_version" {
     null    = true
     type    = json
     comment = "Tool Openapi Operation Schema"
+  }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Create Time in Milliseconds"
   }
   column "deleted_at" {
     null    = true

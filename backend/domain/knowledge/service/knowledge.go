@@ -40,7 +40,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/messages2query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
@@ -67,7 +66,6 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHa
 		searchStoreManagers:       config.SearchStoreManagers,
 		parseManager:              config.ParseManager,
 		storage:                   config.Storage,
-		imageX:                    config.ImageX,
 		reranker:                  config.Reranker,
 		rewriter:                  config.Rewriter,
 		nl2Sql:                    config.NL2Sql,
@@ -95,7 +93,6 @@ type KnowledgeSVCConfig struct {
 	ParseManager              parser.Manager                 // optional: 文档切分与处理能力, default builtin parser
 	Storage                   storage.Storage                // required: oss
 	ModelFactory              chatmodel.Factory              // required: 模型 factory
-	ImageX                    imagex.ImageX                  // TODO: 确认下 oss 是否返回 uri / url
 	Rewriter                  messages2query.MessagesToQuery // optional: 未配置时不改写
 	Reranker                  rerank.Reranker                // optional: 未配置时默认 rrf
 	NL2Sql                    nl2sql.NL2SQL                  // optional: 未配置时默认不支持
@@ -121,7 +118,6 @@ type knowledgeSVC struct {
 	reranker                  rerank.Reranker
 	storage                   storage.Storage
 	nl2Sql                    nl2sql.NL2SQL
-	imageX                    imagex.ImageX
 	cacheCli                  cache.Cmdable
 	enableCompactTable        bool // 表格数据压缩
 	isAutoAnnotationSupported bool // 是否支持了图片自动标注
@@ -396,7 +392,6 @@ func (k *knowledgeSVC) UpdateDocument(ctx context.Context, request *UpdateDocume
 				doc.TableInfo.Columns = finalColumns
 			}
 		}
-		// todo，如果是更改索引列怎么处理
 	}
 	doc.UpdatedAt = time.Now().UnixMilli()
 	err = k.documentRepo.Update(ctx, doc)

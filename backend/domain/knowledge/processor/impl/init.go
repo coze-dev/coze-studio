@@ -26,7 +26,7 @@ type DocProcessorConfig struct {
 	Idgen         idgen.IDGenerator
 	Storage       storage.Storage
 	Rdb           rdb.RDB
-	Producer      eventbus.Producer // TODO: document id 维度有序?
+	Producer      eventbus.Producer
 	ParseManager  parser.Manager
 }
 

@@ -148,7 +148,6 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		SearchStoreManagers:       sManagers,
 		ParseManager:              builtinParser.NewManager(c.Storage, ocrImpl, imageAnnoChatModel), // default builtin
 		Storage:                   c.Storage,
-		ImageX:                    c.ImageX,
 		Rewriter:                  rewriter,
 		Reranker:                  rrf.NewRRFReranker(0), // default rrf
 		NL2Sql:                    n2s,
