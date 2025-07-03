@@ -112,7 +112,10 @@ func jsonParseRelaxed(ctx context.Context, data string, schema_ map[string]*vo.T
 
 	for k, v := range result {
 		if s, ok := schema_[k]; ok {
-			val, warnings, err := nodes.Convert(ctx, v, k, s, nodes.SkipUnknownFields(), nodes.NeedReturnDefaultValue(vo.DataTypeArray, vo.DataTypeObject))
+			val, warnings, err := nodes.Convert(ctx, v, k, s, nodes.SkipUnknownFields(), nodes.WithWarningDefaultValue(map[vo.DataType]any{
+				vo.DataTypeObject: map[string]any{},
+				vo.DataTypeArray:  []any{},
+			}))
 			if err != nil {
 				return nil, err
 			}

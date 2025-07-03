@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -95,9 +94,9 @@ func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.
 }
 
 type convertOptions struct {
-	shouldFastFailed            bool
-	skipUnknownFields           bool
-	returnDefaultValueDataTypes []vo.DataType
+	shouldFastFailed   bool
+	skipUnknownFields  bool
+	warningReturnValue map[vo.DataType]any
 }
 
 type ConvertOption func(*convertOptions)
@@ -113,9 +112,10 @@ func SkipUnknownFields() ConvertOption {
 		o.skipUnknownFields = true
 	}
 }
-func NeedReturnDefaultValue(ds ...vo.DataType) ConvertOption {
+
+func WithWarningDefaultValue(vals map[vo.DataType]any) ConvertOption {
 	return func(o *convertOptions) {
-		o.returnDefaultValueDataTypes = ds
+		o.warningReturnValue = vals
 	}
 }
 
@@ -123,43 +123,29 @@ func Convert(ctx context.Context, in any, path string, t *vo.TypeInfo, opts ...C
 	if in == nil {
 		return nil, nil, nil
 	}
-
 	var err error
-	options := &convertOptions{}
+	options := &convertOptions{
+		warningReturnValue: make(map[vo.DataType]any),
+	}
 	for _, opt := range opts {
 		opt(options)
 	}
 
-	defaultValue, useDefaultValue := slices.ToMap(options.returnDefaultValueDataTypes, func(e vo.DataType) (vo.DataType, any) {
-		switch e {
-		case vo.DataTypeString, vo.DataTypeFile, vo.DataTypeTime:
-			return vo.DataTypeString, ""
-		case vo.DataTypeInteger:
-			return vo.DataTypeInteger, 0
-		case vo.DataTypeNumber:
-			return vo.DataTypeInteger, float64(0)
-		case vo.DataTypeBoolean:
-			return vo.DataTypeBoolean, false
-		case vo.DataTypeArray:
-			return vo.DataTypeArray, []any{}
-		case vo.DataTypeObject:
-			return vo.DataTypeObject, map[string]any{}
-		default:
-			return e, nil
-		}
-	})[t.Type]
-
 	handlerError := func(value any, e error) (any, ConversionWarnings, error) {
+		if e == nil {
+			return value, nil, nil
+		}
 		if options.shouldFastFailed {
 			return nil, nil, err
 		}
 		if !errors.As(err, &ConversionWarnings{}) {
 			return nil, nil, err
 		}
-		if useDefaultValue {
+
+		if defaultValue, ok := options.warningReturnValue[t.Type]; ok {
 			return defaultValue, err.(ConversionWarnings), nil
 		}
-		return value, nil, nil
+		return value, err.(ConversionWarnings), nil
 	}
 
 	switch t.Type {
@@ -183,7 +169,7 @@ func Convert(ctx context.Context, in any, path string, t *vo.TypeInfo, opts ...C
 
 const TimeFormat = "2006-01-02 15:04:05 -0700 MST"
 
-func convertToString(_ context.Context, in any, path string) (any, error) {
+func convertToString(_ context.Context, in any, path string) (string, error) {
 	switch in.(type) {
 	case string:
 		return in.(string), nil
@@ -196,7 +182,7 @@ func convertToString(_ context.Context, in any, path string) (any, error) {
 	case []any, map[string]any:
 		s, err := sonic.MarshalString(in)
 		if err != nil {
-			return nil, ConversionWarnings{{Path: path, Type: vo.DataTypeString, Err: err}}
+			return "", ConversionWarnings{{Path: path, Type: vo.DataTypeString, Err: err}}
 		}
 		return s, nil
 	case []byte:
@@ -205,11 +191,11 @@ func convertToString(_ context.Context, in any, path string) (any, error) {
 		return in.(time.Time).Format(TimeFormat), nil
 
 	default:
-		return nil, ConversionWarnings{{Path: path, Type: vo.DataTypeString}}
+		return "", ConversionWarnings{{Path: path, Type: vo.DataTypeString}}
 	}
 }
 
-func convertToInt64(_ context.Context, in any, path string) (any, error) {
+func convertToInt64(_ context.Context, in any, path string) (int64, error) {
 	switch in.(type) {
 	case int64:
 		return in.(int64), nil
@@ -218,15 +204,15 @@ func convertToInt64(_ context.Context, in any, path string) (any, error) {
 	case string:
 		i, err := strconv.ParseInt(in.(string), 10, 64)
 		if err != nil {
-			return nil, ConversionWarnings{{Path: path, Type: vo.DataTypeInteger, Err: err}}
+			return 0, ConversionWarnings{{Path: path, Type: vo.DataTypeInteger, Err: err}}
 		}
 		return i, nil
 	default:
-		return nil, ConversionWarnings{{Path: path, Type: vo.DataTypeInteger}}
+		return 0, ConversionWarnings{{Path: path, Type: vo.DataTypeInteger}}
 	}
 }
 
-func convertToFloat64(_ context.Context, in any, path string) (any, error) {
+func convertToFloat64(_ context.Context, in any, path string) (float64, error) {
 	switch in.(type) {
 	case int64:
 		return float64(in.(int64)), nil
@@ -235,15 +221,15 @@ func convertToFloat64(_ context.Context, in any, path string) (any, error) {
 	case string:
 		f, err := strconv.ParseFloat(in.(string), 64)
 		if err != nil {
-			return nil, ConversionWarnings{{Path: path, Type: vo.DataTypeNumber, Err: err}}
+			return 0, ConversionWarnings{{Path: path, Type: vo.DataTypeNumber, Err: err}}
 		}
 		return f, nil
 	default:
-		return nil, ConversionWarnings{{Path: path, Type: vo.DataTypeNumber}}
+		return 0, ConversionWarnings{{Path: path, Type: vo.DataTypeNumber}}
 	}
 }
 
-func convertToBool(_ context.Context, in any, path string) (any, error) {
+func convertToBool(_ context.Context, in any, path string) (bool, error) {
 	switch in.(type) {
 	case bool:
 		return in.(bool), nil
@@ -254,7 +240,7 @@ func convertToBool(_ context.Context, in any, path string) (any, error) {
 		}
 		return b, nil
 	default:
-		return nil, ConversionWarnings{{Path: path, Type: vo.DataTypeBoolean}}
+		return false, ConversionWarnings{{Path: path, Type: vo.DataTypeBoolean}}
 	}
 }
 

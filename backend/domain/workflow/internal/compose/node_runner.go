@@ -692,7 +692,7 @@ func parseDefaultOutput(ctx context.Context, data string, schema_ map[string]*vo
 		if s, ok := schema_[k]; ok {
 			val, warnings, err := nodes.Convert(ctx, v, k, s)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("invalid type: %v, %v", k, err)
 			}
 			if len(warnings) > 0 {
 				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)

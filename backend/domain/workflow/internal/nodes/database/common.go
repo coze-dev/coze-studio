@@ -43,7 +43,10 @@ func objectFormatted(ctx context.Context, props map[string]*vo.TypeInfo, object 
 			ret[path] = nil
 		} else {
 			var err error
-			value, warnings, err := nodes.Convert(ctx, val, path, info, nodes.NeedReturnDefaultValue(vo.DataTypeArray, vo.DataTypeObject))
+			value, warnings, err := nodes.Convert(ctx, val, path, info, nodes.WithWarningDefaultValue(map[vo.DataType]any{
+				vo.DataTypeObject: map[string]any{},
+				vo.DataTypeArray:  []any{},
+			}))
 			if err != nil {
 				return nil, err
 			}

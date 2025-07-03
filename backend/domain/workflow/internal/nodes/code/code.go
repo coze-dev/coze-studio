@@ -256,7 +256,10 @@ func formatOutput(ctx context.Context, inInfo map[string]*vo.TypeInfo, in map[st
 			ret[k] = nil
 			continue
 		}
-		vv, subWarnings, err := nodes.Convert(ctx, in[k], k, info, nodes.NeedReturnDefaultValue(vo.DataTypeArray, vo.DataTypeObject))
+		vv, subWarnings, err := nodes.Convert(ctx, in[k], k, info, nodes.WithWarningDefaultValue(map[vo.DataType]any{
+			vo.DataTypeObject: map[string]any{},
+			vo.DataTypeArray:  []any{},
+		}))
 		if err != nil {
 			return nil, err
 		}

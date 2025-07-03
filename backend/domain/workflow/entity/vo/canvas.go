@@ -229,7 +229,7 @@ type PluginAPIParam struct {
 
 type CodeRunner struct {
 	Code     string `json:"code"`
-	Language int64
+	Language int64  `json:"language"`
 }
 
 type KnowledgeIndexer struct {
