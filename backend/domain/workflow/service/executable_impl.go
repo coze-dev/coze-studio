@@ -77,7 +77,7 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 
 	convertedInput, ws, err := nodes.ConvertInputs(ctx, input, wf.Inputs(), cOpts...)
 	if err != nil {
-		return nil, "", vo.WrapError(errno.ErrInvalidParameter, err)
+		return nil, "", err
 	} else if ws != nil {
 		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
 	}
@@ -216,7 +216,7 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 
 	convertedInput, ws, err := nodes.ConvertInputs(ctx, input, wf.Inputs(), cOpts...)
 	if err != nil {
-		return 0, errorx.WrapByCode(err, errno.ErrInvalidParameter)
+		return 0, err
 	} else if ws != nil {
 		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
 	}
@@ -281,7 +281,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 
 	convertedInput, ws, err := nodes.ConvertInputs(ctx, input, wf.Inputs(), cOpts...)
 	if err != nil {
-		return 0, errorx.WrapByCode(err, errno.ErrInvalidParameter)
+		return 0, err
 	} else if ws != nil {
 		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
 	}
@@ -368,7 +368,7 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 
 	input, ws, err = nodes.ConvertInputs(ctx, input, wf.Inputs(), cOpts...)
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrInvalidParameter)
+		return nil, err
 	} else if ws != nil {
 		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
 	}

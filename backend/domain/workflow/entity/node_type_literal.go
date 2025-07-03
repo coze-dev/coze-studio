@@ -377,6 +377,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		SupportBatch: false, // supportBatch: 1
 		ExecutableMeta: ExecutableMeta{
 			PostFillNil:        true,
+			CallbackEnabled:    true,
 			StreamingParadigms: map[StreamingParadigm]bool{Invoke: true},
 		},
 		EnUSName:        "Input",

@@ -104,6 +104,10 @@ func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.
 		}
 	}
 
+	if len(warnings) > 0 {
+		return out, &warnings, nil
+	}
+
 	return out, nil, nil
 }
 
@@ -170,7 +174,7 @@ func convert(ctx context.Context, in any, path string, t *vo.TypeInfo, options *
 	}
 }
 
-func convertToString(_ context.Context, in any, path string, options *convertOptions) (string, *ConversionWarnings, error) {
+func convertToString(_ context.Context, in any, path string, options *convertOptions) (any, *ConversionWarnings, error) {
 	switch in.(type) {
 	case string:
 		return in.(string), nil, nil
@@ -184,20 +188,20 @@ func convertToString(_ context.Context, in any, path string, options *convertOpt
 		s, err := sonic.MarshalString(in)
 		if err != nil {
 			if options.failFast {
-				return "", nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
+				return nil, nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 			}
-			return "", newWarnings(path, vo.DataTypeString, err), nil
+			return nil, newWarnings(path, vo.DataTypeString, err), nil
 		}
 		return s, nil, nil
 	default:
 		if options.failFast {
-			return "", nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported type to convert to string: %T", in))
+			return nil, nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported type to convert to string: %T", in))
 		}
-		return "", newWarnings(path, vo.DataTypeString, fmt.Errorf("unsupported type to convert to string: %T", in)), nil
+		return nil, newWarnings(path, vo.DataTypeString, fmt.Errorf("unsupported type to convert to string: %T", in)), nil
 	}
 }
 
-func convertToInt64(_ context.Context, in any, path string, options *convertOptions) (int64, *ConversionWarnings, error) {
+func convertToInt64(_ context.Context, in any, path string, options *convertOptions) (any, *ConversionWarnings, error) {
 	switch in.(type) {
 	case int64:
 		return in.(int64), nil, nil
@@ -207,20 +211,20 @@ func convertToInt64(_ context.Context, in any, path string, options *convertOpti
 		i, err := strconv.ParseInt(in.(string), 10, 64)
 		if err != nil {
 			if options.failFast {
-				return 0, nil, vo.WrapError(errno.ErrInvalidParameter, err)
+				return nil, nil, vo.WrapError(errno.ErrInvalidParameter, err)
 			}
-			return 0, newWarnings(path, vo.DataTypeInteger, err), nil
+			return nil, newWarnings(path, vo.DataTypeInteger, err), nil
 		}
 		return i, nil, nil
 	default:
 		if options.failFast {
-			return 0, nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported type to convert to int64: %T", in))
+			return nil, nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported type to convert to int64: %T", in))
 		}
-		return 0, newWarnings(path, vo.DataTypeInteger, fmt.Errorf("unsupported type to convert to int64: %T", in)), nil
+		return nil, newWarnings(path, vo.DataTypeInteger, fmt.Errorf("unsupported type to convert to int64: %T", in)), nil
 	}
 }
 
-func convertToFloat64(_ context.Context, in any, path string, options *convertOptions) (float64, *ConversionWarnings, error) {
+func convertToFloat64(_ context.Context, in any, path string, options *convertOptions) (any, *ConversionWarnings, error) {
 	switch in.(type) {
 	case int64:
 		return float64(in.(int64)), nil, nil
@@ -230,20 +234,20 @@ func convertToFloat64(_ context.Context, in any, path string, options *convertOp
 		f, err := strconv.ParseFloat(in.(string), 64)
 		if err != nil {
 			if options.failFast {
-				return 0, nil, vo.WrapError(errno.ErrInvalidParameter, err)
+				return nil, nil, vo.WrapError(errno.ErrInvalidParameter, err)
 			}
-			return 0, newWarnings(path, vo.DataTypeNumber, err), nil
+			return nil, newWarnings(path, vo.DataTypeNumber, err), nil
 		}
 		return f, nil, nil
 	default:
 		if options.failFast {
-			return 0, nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported type to convert to float64: %T", in))
+			return nil, nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported type to convert to float64: %T", in))
 		}
-		return 0, newWarnings(path, vo.DataTypeNumber, fmt.Errorf("unsupported type to convert to float64: %T", in)), nil
+		return nil, newWarnings(path, vo.DataTypeNumber, fmt.Errorf("unsupported type to convert to float64: %T", in)), nil
 	}
 }
 
-func convertToBool(_ context.Context, in any, path string, options *convertOptions) (bool, *ConversionWarnings, error) {
+func convertToBool(_ context.Context, in any, path string, options *convertOptions) (any, *ConversionWarnings, error) {
 	switch in.(type) {
 	case bool:
 		return in.(bool), nil, nil
@@ -251,16 +255,16 @@ func convertToBool(_ context.Context, in any, path string, options *convertOptio
 		b, err := strconv.ParseBool(in.(string))
 		if err != nil {
 			if options.failFast {
-				return false, nil, vo.WrapError(errno.ErrInvalidParameter, err)
+				return nil, nil, vo.WrapError(errno.ErrInvalidParameter, err)
 			}
-			return false, newWarnings(path, vo.DataTypeBoolean, err), nil
+			return nil, newWarnings(path, vo.DataTypeBoolean, err), nil
 		}
 		return b, nil, nil
 	default:
 		if options.failFast {
-			return false, nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported type to convert to bool: %T", in))
+			return nil, nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported type to convert to bool: %T", in))
 		}
-		return false, newWarnings(path, vo.DataTypeBoolean, fmt.Errorf("unsupported type to convert to bool: %T", in)), nil
+		return nil, newWarnings(path, vo.DataTypeBoolean, fmt.Errorf("unsupported type to convert to bool: %T", in)), nil
 	}
 }
 
@@ -285,7 +289,7 @@ func convertToObject(ctx context.Context, in any, path string, t *vo.TypeInfo, o
 		return nil, newWarnings(path, vo.DataTypeObject, fmt.Errorf("unsupported type to convert to object: %T", in)), nil
 	}
 
-	if m == nil {
+	if len(m) == 0 {
 		if !options.skipRequireCheck {
 			for pn, pro := range t.Properties {
 				if pro.Required {
@@ -294,7 +298,7 @@ func convertToObject(ctx context.Context, in any, path string, t *vo.TypeInfo, o
 				}
 			}
 		}
-		return nil, nil, nil
+		return m, nil, nil
 	}
 
 	out := make(map[string]any, len(m))
@@ -349,13 +353,13 @@ func convertToArray(ctx context.Context, in any, path string, t *vo.TypeInfo, op
 			if options.failFast {
 				return nil, nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 			}
-			return nil, newWarnings(path, vo.DataTypeArray, err), nil
+			return []any{}, newWarnings(path, vo.DataTypeArray, err), nil
 		}
 	default:
 		if options.failFast {
 			return nil, nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported type to convert to array: %T", in))
 		}
-		return nil, newWarnings(path, vo.DataTypeArray, fmt.Errorf("unsupported type to convert to array: %T", in)), nil
+		return []any{}, newWarnings(path, vo.DataTypeArray, fmt.Errorf("unsupported type to convert to array: %T", in)), nil
 	}
 
 	if len(a) == 0 {

@@ -188,7 +188,7 @@ func (c *CodeRunner) RunCode(ctx context.Context, input map[string]any) (ret map
 
 	output, ws, err := nodes.ConvertInputs(ctx, result, c.config.OutputConfig)
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrCodeExecuteFail, err, errorx.KV("detail", err.Error()))
+		return nil, vo.WrapIfNeeded(errno.ErrCodeExecuteFail, err, errorx.KV("detail", err.Error()))
 	}
 
 	if ws != nil && len(*ws) > 0 {

@@ -170,7 +170,7 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 			},
 		},
 		inputJSON:      `"not a number"`,
-		expectedOutput: 0,
+		expectedOutput: nil,
 		expectErr:      false,
 		expectWarnings: 1,
 	}, {
@@ -221,7 +221,7 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 			},
 		},
 		inputJSON:      `true`,
-		expectedOutput: 0,
+		expectedOutput: nil,
 		expectErr:      false,
 		expectWarnings: 1,
 	}, {
@@ -273,7 +273,7 @@ func TestJsonDeserializer_Invoke(t *testing.T) {
 			},
 		},
 		inputJSON:      `"123abc"`,
-		expectedOutput: 0,
+		expectedOutput: nil,
 		expectErr:      false,
 		expectWarnings: 1,
 	}, {
