@@ -109,6 +109,9 @@ table "agent_tool_draft" {
   primary_key {
     columns = [column.id]
   }
+  index "idx_agent_plugin_tool" {
+    columns = [column.agent_id, column.plugin_id, column.tool_id]
+  }
   index "idx_agent_tool_bind" {
     columns = [column.agent_id, column.created_at]
   }
@@ -1795,7 +1798,7 @@ table "plugin" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_space_create_at" {
+  index "idx_space_created_at" {
     columns = [column.space_id, column.created_at]
   }
   index "idx_space_updated_at" {
@@ -1886,11 +1889,102 @@ table "plugin_draft" {
   index "idx_app_id" {
     columns = [column.app_id, column.id]
   }
-  index "idx_space_app_create_at" {
+  index "idx_space_app_created_at" {
     columns = [column.space_id, column.app_id, column.created_at]
   }
   index "idx_space_app_updated_at" {
     columns = [column.space_id, column.app_id, column.updated_at]
+  }
+}
+table "plugin_oauth_auth" {
+  schema  = schema.opencoze
+  comment = "Plugin OAuth Authorization Code Info"
+  column "id" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Primary Key"
+  }
+  column "user_id" {
+    null    = false
+    type    = varchar(255)
+    default = ""
+    comment = "User ID"
+  }
+  column "plugin_id" {
+    null    = false
+    type    = bigint
+    default = 0
+    comment = "Plugin ID"
+  }
+  column "is_draft" {
+    null    = false
+    type    = bool
+    default = 0
+    comment = "Is Draft Plugin"
+  }
+  column "oauth_config" {
+    null    = true
+    type    = json
+    comment = "Authorization Code OAuth Config"
+  }
+  column "access_token" {
+    null    = false
+    type    = varchar(1024)
+    default = ""
+    comment = "Access Token"
+  }
+  column "refresh_token" {
+    null    = false
+    type    = varchar(1024)
+    default = ""
+    comment = "Refresh Token"
+  }
+  column "token_expired_at" {
+    null    = true
+    type    = bigint
+    comment = "Token Expired in Milliseconds"
+  }
+  column "next_token_refresh_at" {
+    null    = true
+    type    = bigint
+    comment = "Next Token Refresh Time in Milliseconds"
+  }
+  column "last_active_at" {
+    null    = true
+    type    = bigint
+    comment = "Last active time in Milliseconds"
+  }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Create Time in Milliseconds"
+  }
+  column "updated_at" {
+    null     = false
+    type     = bigint
+    default  = 0
+    unsigned = true
+    comment  = "Update Time in Milliseconds"
+  }
+  primary_key {
+    columns = [column.id]
+  }
+  index "idx_last_active_at" {
+    columns = [column.last_active_at]
+  }
+  index "idx_last_token_expired_at" {
+    columns = [column.token_expired_at]
+  }
+  index "idx_next_token_refresh_at" {
+    columns = [column.next_token_refresh_at]
+  }
+  index "uniq_idx_user_plugin_is_draft" {
+    unique  = true
+    columns = [column.user_id, column.plugin_id, column.is_draft]
   }
 }
 table "plugin_version" {
@@ -3713,6 +3807,12 @@ table "workflow_reference" {
     unsigned = true
     comment  = "workflow id"
   }
+  column "referred_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "the id of the workflow that is referred by other entities"
+  }
   column "referring_id" {
     null     = false
     type     = bigint
@@ -3737,21 +3837,15 @@ table "workflow_reference" {
     unsigned = true
     comment  = "create time in millisecond"
   }
-  column "deleted_at" {
-    null = true
-    type = datetime(3)
-  }
-  column "referred_id" {
-    null     = false
-    type     = bigint
-    unsigned = true
-    comment  = "the id of the workflow that is referred by other entities"
-  }
   column "status" {
     null     = false
     type     = tinyint
     unsigned = true
     comment  = "whether this reference currently takes effect. 0: disabled 1: enabled"
+  }
+  column "deleted_at" {
+    null = true
+    type = datetime(3)
   }
   primary_key {
     columns = [column.id]

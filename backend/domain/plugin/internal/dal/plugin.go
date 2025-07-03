@@ -65,6 +65,12 @@ func (p *PluginDAO) getSelected(opt *PluginSelectedOption) (selected []field.Exp
 	if opt.Version {
 		selected = append(selected, table.Version)
 	}
+	if opt.Manifest {
+		selected = append(selected, table.Manifest)
+	}
+	if opt.IconURI {
+		selected = append(selected, table.IconURI)
+	}
 
 	return selected
 }

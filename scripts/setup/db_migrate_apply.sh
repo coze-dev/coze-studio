@@ -52,7 +52,7 @@ echo -e "${GREEN}✅ apply mysql schema successfully${NC}"
 #         --url "$ATLAS_URL" \
 #         --dir "file://migrations" \
 #         --revisions-schema opencoze \
-#         --baseline "20250618025620"
+#         --baseline "20250703095335"
 #     echo -e "${GREEN}✅ migrate mysql successfully${NC}"
 # elif [ "$OS" = "Windows" ]; then
 #     echo -e "${RED}Windows is not supported. Please install Atlas manually.${NC}"

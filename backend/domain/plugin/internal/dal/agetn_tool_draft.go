@@ -205,6 +205,39 @@ func (at *AgentToolDraftDAO) DeleteAll(ctx context.Context, agentID int64) (err 
 	return nil
 }
 
+func (at *AgentToolDraftDAO) GetAllPluginIDs(ctx context.Context, agentID int64) (pluginIDs []int64, err error) {
+	const size = 100
+	table := at.query.AgentToolDraft
+	cursor := int64(0)
+
+	for {
+		tls, err := table.WithContext(ctx).
+			Select(table.PluginID, table.ID).
+			Where(
+				table.AgentID.Eq(agentID),
+				table.ID.Gt(cursor),
+			).
+			Order(table.ID.Asc()).
+			Limit(size).
+			Find()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, tl := range tls {
+			pluginIDs = append(pluginIDs, tl.PluginID)
+		}
+
+		if len(tls) < size {
+			break
+		}
+
+		cursor = tls[len(tls)-1].ID
+	}
+
+	return slices.Unique(pluginIDs), nil
+}
+
 func (at *AgentToolDraftDAO) DeleteAllWithTX(ctx context.Context, tx *query.QueryTx, agentID int64) (err error) {
 	const limit = 20
 	table := tx.AgentToolDraft

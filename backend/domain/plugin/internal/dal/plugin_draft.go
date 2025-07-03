@@ -61,6 +61,12 @@ func (p *PluginDraftDAO) getSelected(opt *PluginSelectedOption) (selected []fiel
 	if opt.OpenapiDoc {
 		selected = append(selected, table.OpenapiDoc)
 	}
+	if opt.Manifest {
+		selected = append(selected, table.Manifest)
+	}
+	if opt.IconURI {
+		selected = append(selected, table.IconURI)
+	}
 
 	return selected
 }

@@ -625,10 +625,13 @@ func (c *runImpl) parseInterruptData(_ context.Context, interruptData *singleage
 	}
 
 	defaultContentType := message.ContentTypeText
-	switch entity.EventType(interruptData.AllToolInterruptData[interruptData.ToolCallID].EventType) {
-	case entity.EventType_Question:
+	switch interruptData.InterruptType {
+	case singleagent.InterruptEventType_OauthPlugin:
+		data := interruptData.AllToolInterruptData[interruptData.ToolCallID].ToolNeedOAuth.Message
+		return data, defaultContentType, nil
+	case singleagent.InterruptEventType_Question:
 		var iData map[string][]*msg
-		err := json.Unmarshal([]byte(interruptData.AllToolInterruptData[interruptData.ToolCallID].InterruptData), &iData)
+		err := json.Unmarshal([]byte(interruptData.AllWfInterruptData[interruptData.ToolCallID].InterruptData), &iData)
 		if err != nil {
 			return "", defaultContentType, err
 		}
@@ -646,17 +649,16 @@ func (c *runImpl) parseInterruptData(_ context.Context, interruptData *singleage
 			}
 			return string(iMarshalData), message.ContentTypeCard, nil
 		}
-	case entity.EventType_InputNode:
-		data := interruptData.AllToolInterruptData[interruptData.ToolCallID].InterruptData
-
+	case singleagent.InterruptEventType_InputNode:
+		data := interruptData.AllWfInterruptData[interruptData.ToolCallID].InterruptData
 		return data, message.ContentTypeCard, nil
-	case entity.EventType_WorkflowLLM:
-		toolInterruptEvent := interruptData.AllToolInterruptData[interruptData.ToolCallID].ToolInterruptEvent
+	case singleagent.InterruptEventType_WorkflowLLM:
+		toolInterruptEvent := interruptData.AllWfInterruptData[interruptData.ToolCallID].ToolInterruptEvent
 		data := toolInterruptEvent.InterruptData
-		if entity.EventType(toolInterruptEvent.EventType) == entity.EventType_InputNode {
+		if singleagent.InterruptEventType(toolInterruptEvent.EventType) == singleagent.InterruptEventType_InputNode {
 			return data, message.ContentTypeCard, nil
 		}
-		if entity.EventType(toolInterruptEvent.EventType) == entity.EventType_Question {
+		if singleagent.InterruptEventType(toolInterruptEvent.EventType) == singleagent.InterruptEventType_Question {
 			var iData map[string][]*msg
 			err := json.Unmarshal([]byte(data), &iData)
 			if err != nil {

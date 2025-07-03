@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"encoding/json"
+	"net/url"
 	"strings"
 
 	api "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
@@ -75,7 +76,9 @@ func (mf PluginManifest) validateAuthInfo() (err error) {
 	}
 
 	if mf.Auth.Payload != nil {
-		if !isValidJSON([]byte(*mf.Auth.Payload)) {
+		js := json.RawMessage{}
+		err = sonic.UnmarshalString(*mf.Auth.Payload, &js)
+		if err != nil {
 			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
 				"invalid auth payload"))
 		}
@@ -102,70 +105,143 @@ func (mf PluginManifest) validateAuthInfo() (err error) {
 			"sub-auth type is required"))
 	}
 
-	if mf.Auth.SubType != AuthzSubTypeOfServiceAPIToken &&
-		mf.Auth.SubType != AuthzSubTypeOfOAuthClientCredentials {
+	switch mf.Auth.SubType {
+	case AuthzSubTypeOfServiceAPIToken:
+		err = mf.validateServiceToken()
+	//case AuthzSubTypeOfOAuthClientCredentials:
+	//	err = mf.validateClientCredentials()
+	case AuthzSubTypeOfOAuthAuthorizationCode:
+		err = mf.validateAuthCode()
+	default:
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
 			"invalid sub-auth type '%s'", mf.Auth.SubType))
 	}
-
-	if mf.Auth.SubType == AuthzSubTypeOfServiceAPIToken {
-		if mf.Auth.AuthOfAPIToken == nil {
-			err = json.Unmarshal([]byte(*mf.Auth.Payload), &mf.Auth.AuthOfAPIToken)
-			if err != nil {
-				return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
-					"invalid auth payload"))
-			}
-		}
-
-		apiToken := mf.Auth.AuthOfAPIToken
-
-		if apiToken.ServiceToken == "" {
-			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
-				"service token is required"))
-		}
-		if apiToken.Key == "" {
-			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
-				"key is required"))
-		}
-
-		loc := HTTPParamLocation(strings.ToLower(string(apiToken.Location)))
-		if loc != ParamInHeader && loc != ParamInQuery {
-			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
-				"invalid location '%s'", apiToken.Location))
-		}
-	}
-
-	if mf.Auth.SubType == AuthzSubTypeOfOAuthClientCredentials {
-		if mf.Auth.AuthOfOAuthClientCredentials == nil {
-			err = sonic.UnmarshalString(*mf.Auth.Payload, &mf.Auth.AuthOfOAuthClientCredentials)
-			if err != nil {
-				return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
-					"invalid auth payload"))
-			}
-		}
-
-		clientCredentials := mf.Auth.AuthOfOAuthClientCredentials
-
-		if clientCredentials.ClientID == "" {
-			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
-				"client id is required"))
-		}
-		if clientCredentials.ClientSecret == "" {
-			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
-				"client secret is required"))
-		}
-		if clientCredentials.TokenURL == "" {
-			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
-				"token url is required"))
-		}
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func isValidJSON(data []byte) bool {
-	var js json.RawMessage
-	return sonic.Unmarshal(data, &js) == nil
+func (mf PluginManifest) validateServiceToken() (err error) {
+	if mf.Auth.AuthOfAPIToken == nil {
+		err = json.Unmarshal([]byte(*mf.Auth.Payload), &mf.Auth.AuthOfAPIToken)
+		if err != nil {
+			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+				"invalid auth payload"))
+		}
+	}
+
+	apiToken := mf.Auth.AuthOfAPIToken
+
+	if apiToken.ServiceToken == "" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"service token is required"))
+	}
+	if apiToken.Key == "" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"key is required"))
+	}
+
+	loc := HTTPParamLocation(strings.ToLower(string(apiToken.Location)))
+	if loc != ParamInHeader && loc != ParamInQuery {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
+			"invalid location '%s'", apiToken.Location))
+	}
+
+	return nil
+}
+
+func (mf PluginManifest) validateClientCredentials() (err error) {
+	if mf.Auth.AuthOfOAuthClientCredentials == nil {
+		err = sonic.UnmarshalString(*mf.Auth.Payload, mf.Auth.AuthOfOAuthClientCredentials)
+		if err != nil {
+			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+				"invalid auth payload"))
+		}
+	}
+
+	clientCredentials := mf.Auth.AuthOfOAuthClientCredentials
+
+	if clientCredentials.ClientID == "" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"client id is required"))
+	}
+	if clientCredentials.ClientSecret == "" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"client secret is required"))
+	}
+	if clientCredentials.TokenURL == "" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"token url is required"))
+	}
+
+	urlParse, err := url.Parse(clientCredentials.TokenURL)
+	if err != nil || urlParse.Hostname() == "" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"invalid token url"))
+	}
+	if urlParse.Scheme != "https" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"token url scheme must be 'https'"))
+	}
+
+	return nil
+}
+
+func (mf PluginManifest) validateAuthCode() (err error) {
+	if mf.Auth.AuthOfOAuthAuthorizationCode == nil {
+		err = sonic.UnmarshalString(*mf.Auth.Payload, mf.Auth.AuthOfOAuthAuthorizationCode)
+		if err != nil {
+			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+				"invalid auth payload"))
+		}
+	}
+
+	authCode := mf.Auth.AuthOfOAuthAuthorizationCode
+
+	if authCode.ClientID == "" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"client id is required"))
+	}
+	if authCode.ClientSecret == "" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"client secret is required"))
+	}
+	if authCode.AuthorizationContentType != MediaTypeJson {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"authorization content type must be 'application/json'"))
+	}
+	if authCode.AuthorizationURL == "" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"token url is required"))
+	}
+	if authCode.ClientURL == "" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"client url is required"))
+	}
+
+	urlParse, err := url.Parse(authCode.AuthorizationURL)
+	if err != nil || urlParse.Hostname() == "" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"invalid authorization url"))
+	}
+	//if urlParse.Scheme != "https" {
+	//	return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+	//		"authorization url scheme must be 'https'"))
+	//}
+
+	urlParse, err = url.Parse(authCode.ClientURL)
+	if err != nil || urlParse.Hostname() == "" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"invalid client url"))
+	}
+	//if urlParse.Scheme != "https" {
+	//	return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+	//		"client url scheme must be 'https'"))
+	//}
+
+	return nil
 }
 
 type Auth struct {
@@ -193,8 +269,8 @@ type AuthV2 struct {
 	AuthOfAPIToken *AuthOfAPIToken `json:"-"`
 
 	// oauth
-	AuthOfOAuthAuthorizationCode *AuthOfOAuthAuthorizationCode `json:"-"`
-	AuthOfOAuthClientCredentials *AuthOfOAuthClientCredentials `json:"-"`
+	AuthOfOAuthAuthorizationCode *OAuthAuthorizationCodeConfig `json:"-"`
+	AuthOfOAuthClientCredentials *OAuthClientCredentialsConfig `json:"-"`
 }
 
 func (au *AuthV2) UnmarshalJSON(data []byte) error {
@@ -215,23 +291,16 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 
 	switch au.Type {
 	case AuthzTypeOfNone:
-		return nil
-
 	case AuthzTypeOfOAuth:
 		err = au.unmarshalOAuth(auth)
-		if err != nil {
-			return err
-		}
-
 	case AuthzTypeOfService:
 		err = au.unmarshalService(auth)
-		if err != nil {
-			return err
-		}
-
 	default:
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
 			"invalid plugin auth type '%s'", au.Type))
+	}
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -286,7 +355,7 @@ func (au *AuthV2) unmarshalOAuth(auth *Auth) (err error) {
 
 	if au.SubType == AuthzSubTypeOfOAuthAuthorizationCode {
 		if len(auth.ClientSecret) > 0 {
-			au.AuthOfOAuthAuthorizationCode = &AuthOfOAuthAuthorizationCode{
+			au.AuthOfOAuthAuthorizationCode = &OAuthAuthorizationCodeConfig{
 				ClientID:                 auth.ClientID,
 				ClientSecret:             auth.ClientSecret,
 				ClientURL:                auth.ClientURL,
@@ -295,7 +364,7 @@ func (au *AuthV2) unmarshalOAuth(auth *Auth) (err error) {
 				AuthorizationContentType: auth.AuthorizationContentType,
 			}
 		} else {
-			oauth := &AuthOfOAuthAuthorizationCode{}
+			oauth := &OAuthAuthorizationCodeConfig{}
 			err = json.Unmarshal([]byte(auth.Payload), oauth)
 			if err != nil {
 				return errorx.WrapByCode(err, errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
@@ -304,14 +373,14 @@ func (au *AuthV2) unmarshalOAuth(auth *Auth) (err error) {
 			au.AuthOfOAuthAuthorizationCode = oauth
 		}
 
-		payload, err = json.Marshal(au.AuthOfOAuthClientCredentials)
+		payload, err = json.Marshal(au.AuthOfOAuthAuthorizationCode)
 		if err != nil {
 			return err
 		}
 	}
 
 	if au.SubType == AuthzSubTypeOfOAuthClientCredentials {
-		oauth := &AuthOfOAuthClientCredentials{}
+		oauth := &OAuthClientCredentialsConfig{}
 		err = json.Unmarshal([]byte(auth.Payload), oauth)
 		if err != nil {
 			return errorx.WrapByCode(err, errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
@@ -341,7 +410,7 @@ type AuthOfAPIToken struct {
 	ServiceToken string            `json:"service_token"`
 }
 
-type AuthOfOAuthAuthorizationCode struct {
+type OAuthAuthorizationCodeConfig struct {
 	ClientID                 string   `json:"client_id"`
 	ClientSecret             string   `json:"client_secret"`
 	ClientURL                string   `json:"client_url"`
@@ -350,11 +419,10 @@ type AuthOfOAuthAuthorizationCode struct {
 	AuthorizationContentType string   `json:"authorization_content_type"` // only support application/json
 }
 
-type AuthOfOAuthClientCredentials struct {
-	ClientID     string   `json:"client_id"`
-	ClientSecret string   `json:"client_secret"`
-	TokenURL     string   `json:"token_url"`
-	Scopes       []string `json:"scopes,omitempty"`
+type OAuthClientCredentialsConfig struct {
+	ClientID     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+	TokenURL     string `json:"token_url"`
 }
 
 type APIDesc struct {

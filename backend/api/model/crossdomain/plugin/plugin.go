@@ -28,7 +28,7 @@ type PluginInfo struct {
 	APPID        *int64
 	RefProductID *int64 // for product plugin
 	IconURI      *string
-	ServerURL    *string // TODO(@mrh): 去除，直接使用 doc 内的 servers 定义？
+	ServerURL    *string
 	Version      *string
 	VersionDesc  *string
 
@@ -141,4 +141,13 @@ type CheckCanPublishPluginsRequest struct {
 
 type CheckCanPublishPluginsResponse struct {
 	InvalidPlugins []*PluginInfo
+}
+
+type ToolInterruptEvent struct {
+	Event         InterruptEventType
+	ToolNeedOAuth *ToolNeedOAuthInterruptEvent
+}
+
+type ToolNeedOAuthInterruptEvent struct {
+	Message string
 }

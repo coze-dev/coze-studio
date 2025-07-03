@@ -93,3 +93,9 @@ const (
 	CopySceneOfDuplicate    CopyScene = "duplicate"
 	CopySceneOfAPPDuplicate CopyScene = "app_duplicate"
 )
+
+type InterruptEventType string
+
+const (
+	InterruptEventTypeOfToolNeedOAuth InterruptEventType = "tool_need_oauth"
+)

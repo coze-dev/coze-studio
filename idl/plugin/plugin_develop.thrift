@@ -46,6 +46,7 @@ service PluginDevelopService {
     // 批量创建工具，目前是配合 Convert2OpenAPI 接口使用
     BatchCreateAPIResponse BatchCreateAPI(1: BatchCreateAPIRequest request)(api.post='/api/plugin_api/batch_create_api', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
     RevokeAuthTokenResponse RevokeAuthToken(1: RevokeAuthTokenRequest request)(api.post='/api/plugin_api/revoke_auth_token', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
+    GetOAuthPluginListResponse GetOAuthPluginList(1: GetOAuthPluginListRequest request)(api.post='/api/plugin_api/get_oauth_plugin_list', api.category="plugin", api.gen_path="plugin", agw.preserve_base="true")
 }
 
 struct GetPlaygroundPluginListRequest {
@@ -600,4 +601,23 @@ struct RevokeAuthTokenRequest {
 
 struct RevokeAuthTokenResponse {
     255: required base.BaseResp BaseResp,
+}
+
+struct GetOAuthPluginListRequest {
+    1  : required i64       entity_id  (api.js_conv = "str")   ,
+    2  : optional i32       context_type  ,   // '授权上下文, 0-bot, 1-project,2-workflow'
+    3  : optional string    entity_version, // 授权实体的版本，根据context_type，可能是 bot_version、project_version、workflow_version
+    255:          base.Base Base          ,
+}
+
+struct GetOAuthPluginListResponse {
+    1  :          list<OAuthPluginInfo> oauth_plugin_list,
+    255: required base.BaseResp                   BaseResp         ,
+}
+
+struct OAuthPluginInfo {
+    1: i64                            plugin_id (api.js_conv = "str") ,
+    2: plugin_develop_common.OAuthStatus status     , // 用户授权状态
+    3: string                            name       , // 插件name
+    4: string                            plugin_icon, // 插件头像
 }

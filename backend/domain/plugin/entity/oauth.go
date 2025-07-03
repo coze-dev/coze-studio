@@ -8,17 +8,46 @@ import (
 	"encoding/json"
 	"fmt"
 
-	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/openauth"
+	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 )
+
+type AuthorizationCodeMeta struct {
+	UserID   string
+	PluginID int64
+	IsDraft  bool
+}
+
+type AuthorizationCodeInfo struct {
+	RecordID             int64
+	Meta                 *AuthorizationCodeMeta
+	Config               *model.OAuthAuthorizationCodeConfig
+	AccessToken          string
+	RefreshToken         string
+	TokenExpiredAtMS     int64
+	NextTokenRefreshAtMS *int64
+	LastActiveAtMS       int64
+}
+
+func (a *AuthorizationCodeInfo) GetNextTokenRefreshAtMS() int64 {
+	if a == nil {
+		return 0
+	}
+	return ptr.FromOrDefault(a.NextTokenRefreshAtMS, 0)
+}
+
+type OAuthInfo struct {
+	OAuthMode         model.AuthzSubType
+	AuthorizationCode *AuthorizationCodeInfo
+}
 
 const stateSecretKey = "osj^kfhsd*(z!sno"
 
 type State struct {
-	ClientName    model.OAuthProvider `json:"client_name"`
-	AuthInfoID    int64               `json:"auth_info_id"`
-	OAuthToken    string              `json:"oauth_token"`
-	OAuthVerifier string              `json:"oauth_verifier"`
-	ContentType   string              `json:"content_type"`
+	ClientName OAuthProvider `json:"client_name"`
+	UserID     string        `json:"user_id"`
+	PluginID   int64         `json:"plugin_id"`
+	IsDraft    bool          `json:"is_draft"`
 }
 
 func (s State) EncryptState() (string, error) {

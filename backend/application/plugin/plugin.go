@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -19,6 +20,7 @@ import (
 	searchModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/search"
 	productCommon "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_common"
 	productAPI "code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
+	botOpenAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_open_api"
 	pluginAPI "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/plugin_develop"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
@@ -26,7 +28,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/application/base/pluginutil"
 	pluginConf "code.byted.org/flow/opencoze/backend/conf/plugin"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crosssearch"
-	oauth "code.byted.org/flow/opencoze/backend/domain/openauth/oauth/service"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
@@ -46,11 +47,11 @@ import (
 var PluginApplicationSVC = &PluginApplicationService{}
 
 type PluginApplicationService struct {
-	DomainSVC  service.PluginService
-	eventbus   search.ResourceEventBus
-	oss        storage.Storage
-	userSVC    user.User
-	oauthSVC   oauth.OAuthService
+	DomainSVC service.PluginService
+	eventbus  search.ResourceEventBus
+	oss       storage.Storage
+	userSVC   user.User
+
 	toolRepo   repository.ToolRepository
 	pluginRepo repository.PluginRepository
 }
@@ -714,7 +715,12 @@ func (p *PluginApplicationService) GetUserAuthority(ctx context.Context, req *pl
 }
 
 func (p *PluginApplicationService) GetOAuthStatus(ctx context.Context, req *pluginAPI.GetOAuthStatusRequest) (resp *pluginAPI.GetOAuthStatusResponse, err error) {
-	res, err := p.DomainSVC.GetOAuthStatus(ctx, req.PluginID)
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrSearchPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	}
+
+	res, err := p.DomainSVC.GetOAuthStatus(ctx, *userID, req.PluginID)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "GetOAuthStatus failed, pluginID=%d", req.PluginID)
 	}
@@ -1537,7 +1543,22 @@ func (p *PluginApplicationService) BatchCreateAPI(ctx context.Context, req *plug
 }
 
 func (p *PluginApplicationService) RevokeAuthToken(ctx context.Context, req *pluginAPI.RevokeAuthTokenRequest) (resp *pluginAPI.RevokeAuthTokenResponse, err error) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	}
+
+	err = p.DomainSVC.RevokeAccessToken(ctx, &entity.AuthorizationCodeMeta{
+		UserID:   conv.Int64ToStr(*userID),
+		PluginID: req.PluginID,
+		IsDraft:  req.GetBotID() == 0,
+	})
+	if err != nil {
+		return nil, errorx.Wrapf(err, "RevokeAccessToken failed, pluginID=%d", req.PluginID)
+	}
+
 	resp = &pluginAPI.RevokeAuthTokenResponse{}
+
 	return resp, nil
 }
 
@@ -1629,4 +1650,59 @@ func (p *PluginApplicationService) validateDraftPluginAccess(ctx context.Context
 	}
 
 	return plugin, nil
+}
+
+func (p *PluginApplicationService) OauthAuthorizationCode(ctx context.Context, req *botOpenAPI.OauthAuthorizationCodeReq) (resp *botOpenAPI.OauthAuthorizationCodeResp, err error) {
+	stateStr, err := url.QueryUnescape(req.State)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
+	}
+
+	state, err := entity.DecryptState(stateStr)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
+	}
+
+	err = p.DomainSVC.OAuthCode(ctx, req.Code, state)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "authorization failed"))
+	}
+
+	resp = &botOpenAPI.OauthAuthorizationCodeResp{}
+
+	return resp, nil
+}
+
+func (p *PluginApplicationService) GetOAuthPluginList(ctx context.Context, req *pluginAPI.GetOAuthPluginListRequest) (resp *pluginAPI.GetOAuthPluginListResponse, err error) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	}
+
+	status, err := p.DomainSVC.GetAgentPluginsOAuthStatus(ctx, *userID, req.EntityID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "GetAgentPluginsOAuthStatus failed, userID=%d, agentID=%d", *userID, req.EntityID)
+	}
+
+	if len(status) == 0 {
+		return &pluginAPI.GetOAuthPluginListResponse{
+			OauthPluginList: []*pluginAPI.OAuthPluginInfo{},
+		}, nil
+	}
+
+	oauthPluginList := make([]*pluginAPI.OAuthPluginInfo, 0, len(status))
+	for _, s := range status {
+		oauthPluginList = append(oauthPluginList, &pluginAPI.OAuthPluginInfo{
+			PluginID:   s.PluginID,
+			Status:     s.Status,
+			Name:       s.PluginName,
+			PluginIcon: s.PluginIconURL,
+		})
+	}
+
+	resp = &pluginAPI.GetOAuthPluginListResponse{
+		OauthPluginList: oauthPluginList,
+	}
+
+	return resp, nil
 }

@@ -3,6 +3,8 @@ package dal
 type PluginSelectedOption struct {
 	PluginID   bool
 	OpenapiDoc bool
+	Manifest   bool
+	IconURI    bool
 	Version    bool
 }
 

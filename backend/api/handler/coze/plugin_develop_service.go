@@ -872,3 +872,28 @@ func RevokeAuthToken(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// GetOAuthPluginList .
+// @router /api/plugin_api/get_oauth_plugin_list [POST]
+func GetOAuthPluginList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.GetOAuthPluginListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.EntityID <= 0 {
+		invalidParamRequestResponse(c, "entityID is required")
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.GetOAuthPluginList(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

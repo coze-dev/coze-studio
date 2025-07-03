@@ -43,11 +43,6 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 	}
 	mf.Auth = authV2
 
-	err = p.validateOAuthInfo(ctx, req.DeveloperID, mf.Auth)
-	if err != nil {
-		return 0, err
-	}
-
 	for loc, params := range req.CommonParams {
 		location, ok := model.ToHTTPParamLocation(loc)
 		if !ok {
@@ -181,11 +176,6 @@ func (p *pluginServiceImpl) CreateDraftPluginWithCode(ctx context.Context, req *
 		return nil, err
 	}
 
-	err = p.validateOAuthInfo(ctx, req.DeveloperID, req.Manifest.Auth)
-	if err != nil {
-		return nil, err
-	}
-
 	res, err := p.pluginRepo.CreateDraftPluginWithCode(ctx, &repository.CreateDraftPluginWithCodeRequest{
 		SpaceID:     req.SpaceID,
 		DeveloperID: req.DeveloperID,
@@ -214,11 +204,6 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 		return err
 	}
 	err = mf.Validate()
-	if err != nil {
-		return err
-	}
-
-	err = p.validateOAuthInfo(ctx, req.UserID, mf.Auth)
 	if err != nil {
 		return err
 	}
@@ -447,11 +432,6 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 	mf, err := updatePluginManifest(ctx, oldPlugin.Manifest, req)
 	if err != nil {
 		return errorx.Wrapf(err, "updatePluginManifest failed")
-	}
-
-	err = p.validateOAuthInfo(ctx, oldPlugin.DeveloperID, mf.Auth)
-	if err != nil {
-		return err
 	}
 
 	newPlugin := entity.NewPluginInfo(&model.PluginInfo{

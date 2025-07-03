@@ -21,6 +21,7 @@ var (
 	AgentToolVersion *agentToolVersion
 	Plugin           *plugin
 	PluginDraft      *pluginDraft
+	PluginOauthAuth  *pluginOauthAuth
 	PluginVersion    *pluginVersion
 	Tool             *tool
 	ToolDraft        *toolDraft
@@ -33,6 +34,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	AgentToolVersion = &Q.AgentToolVersion
 	Plugin = &Q.Plugin
 	PluginDraft = &Q.PluginDraft
+	PluginOauthAuth = &Q.PluginOauthAuth
 	PluginVersion = &Q.PluginVersion
 	Tool = &Q.Tool
 	ToolDraft = &Q.ToolDraft
@@ -46,6 +48,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		AgentToolVersion: newAgentToolVersion(db, opts...),
 		Plugin:           newPlugin(db, opts...),
 		PluginDraft:      newPluginDraft(db, opts...),
+		PluginOauthAuth:  newPluginOauthAuth(db, opts...),
 		PluginVersion:    newPluginVersion(db, opts...),
 		Tool:             newTool(db, opts...),
 		ToolDraft:        newToolDraft(db, opts...),
@@ -60,6 +63,7 @@ type Query struct {
 	AgentToolVersion agentToolVersion
 	Plugin           plugin
 	PluginDraft      pluginDraft
+	PluginOauthAuth  pluginOauthAuth
 	PluginVersion    pluginVersion
 	Tool             tool
 	ToolDraft        toolDraft
@@ -75,6 +79,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		AgentToolVersion: q.AgentToolVersion.clone(db),
 		Plugin:           q.Plugin.clone(db),
 		PluginDraft:      q.PluginDraft.clone(db),
+		PluginOauthAuth:  q.PluginOauthAuth.clone(db),
 		PluginVersion:    q.PluginVersion.clone(db),
 		Tool:             q.Tool.clone(db),
 		ToolDraft:        q.ToolDraft.clone(db),
@@ -97,6 +102,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		AgentToolVersion: q.AgentToolVersion.replaceDB(db),
 		Plugin:           q.Plugin.replaceDB(db),
 		PluginDraft:      q.PluginDraft.replaceDB(db),
+		PluginOauthAuth:  q.PluginOauthAuth.replaceDB(db),
 		PluginVersion:    q.PluginVersion.replaceDB(db),
 		Tool:             q.Tool.replaceDB(db),
 		ToolDraft:        q.ToolDraft.replaceDB(db),
@@ -109,6 +115,7 @@ type queryCtx struct {
 	AgentToolVersion IAgentToolVersionDo
 	Plugin           IPluginDo
 	PluginDraft      IPluginDraftDo
+	PluginOauthAuth  IPluginOauthAuthDo
 	PluginVersion    IPluginVersionDo
 	Tool             IToolDo
 	ToolDraft        IToolDraftDo
@@ -121,6 +128,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		AgentToolVersion: q.AgentToolVersion.WithContext(ctx),
 		Plugin:           q.Plugin.WithContext(ctx),
 		PluginDraft:      q.PluginDraft.WithContext(ctx),
+		PluginOauthAuth:  q.PluginOauthAuth.WithContext(ctx),
 		PluginVersion:    q.PluginVersion.WithContext(ctx),
 		Tool:             q.Tool.WithContext(ctx),
 		ToolDraft:        q.ToolDraft.WithContext(ctx),

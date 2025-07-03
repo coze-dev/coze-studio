@@ -195,6 +195,10 @@ func Register(r *server.Hertz) {
 			}
 		}
 		{
+			_oauth := _api.Group("/oauth", _oauthMw()...)
+			_oauth.GET("/authorization_code", append(_oauthauthorizationcodeMw(), coze.OauthAuthorizationCode)...)
+		}
+		{
 			_passport := _api.Group("/passport", _passportMw()...)
 			{
 				_account := _passport.Group("/account", _accountMw()...)
@@ -295,6 +299,7 @@ func Register(r *server.Hertz) {
 			_plugin_api.POST("/delete_api", append(_deleteapiMw(), coze.DeleteAPI)...)
 			_plugin_api.POST("/get_bot_default_params", append(_getbotdefaultparamsMw(), coze.GetBotDefaultParams)...)
 			_plugin_api.POST("/get_dev_plugin_list", append(_getdevpluginlistMw(), coze.GetDevPluginList)...)
+			_plugin_api.POST("/get_oauth_plugin_list", append(_getoauthpluginlistMw(), coze.GetOAuthPluginList)...)
 			_plugin_api.POST("/get_oauth_schema", append(_getoauthschemaapiMw(), coze.GetOAuthSchemaAPI)...)
 			_plugin_api.POST("/get_oauth_status", append(_getoauthstatusMw(), coze.GetOAuthStatus)...)
 			_plugin_api.POST("/get_playground_plugin_list", append(_getplaygroundpluginlistMw(), coze.GetPlaygroundPluginList)...)
