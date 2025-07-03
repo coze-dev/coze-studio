@@ -3,10 +3,11 @@ package middleware
 import (
 	"context"
 
+	"github.com/cloudwego/hertz/pkg/app"
+
 	"code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/types/errno"
-	"github.com/cloudwego/hertz/pkg/app"
 
 	"code.byted.org/flow/opencoze/backend/api/internal/httputil"
 	"code.byted.org/flow/opencoze/backend/application/user"

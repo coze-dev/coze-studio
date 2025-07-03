@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	api "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/utils"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 
 	"github.com/bytedance/sonic"
@@ -25,7 +25,50 @@ type PluginManifest struct {
 	CommonParams        map[HTTPParamLocation][]*api.CommonParamSchema `json:"common_params" yaml:"common_params"`
 }
 
-func (mf PluginManifest) Validate() (err error) {
+func (mf *PluginManifest) Copy() (*PluginManifest, error) {
+	if mf == nil {
+		return mf, nil
+	}
+
+	b, err := json.Marshal(mf)
+	if err != nil {
+		return nil, err
+	}
+
+	mf_ := &PluginManifest{}
+	err = json.Unmarshal(b, mf_)
+	if err != nil {
+		return nil, err
+	}
+
+	return mf_, err
+}
+
+func (mf *PluginManifest) EncryptAuthPayload() (*PluginManifest, error) {
+	if mf == nil || mf.Auth == nil {
+		return mf, nil
+	}
+
+	mf_, err := mf.Copy()
+	if err != nil {
+		return nil, err
+	}
+
+	if mf_.Auth.Payload == "" {
+		return mf_, nil
+	}
+
+	payload_, err := utils.EncryptByAES([]byte(mf_.Auth.Payload), authSecretKey)
+	if err != nil {
+		return nil, err
+	}
+
+	mf_.Auth.Payload = payload_
+
+	return mf_, nil
+}
+
+func (mf *PluginManifest) Validate() (err error) {
 	if mf.SchemaVersion != "v1" {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
 			"invalid schema version '%s'", mf.SchemaVersion))
@@ -69,15 +112,15 @@ func (mf PluginManifest) Validate() (err error) {
 	return nil
 }
 
-func (mf PluginManifest) validateAuthInfo() (err error) {
+func (mf *PluginManifest) validateAuthInfo() (err error) {
 	if mf.Auth == nil {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
 			"auth is required"))
 	}
 
-	if mf.Auth.Payload != nil {
+	if mf.Auth.Payload != "" {
 		js := json.RawMessage{}
-		err = sonic.UnmarshalString(*mf.Auth.Payload, &js)
+		err = sonic.UnmarshalString(mf.Auth.Payload, &js)
 		if err != nil {
 			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
 				"invalid auth payload"))
@@ -123,9 +166,9 @@ func (mf PluginManifest) validateAuthInfo() (err error) {
 	return nil
 }
 
-func (mf PluginManifest) validateServiceToken() (err error) {
+func (mf *PluginManifest) validateServiceToken() (err error) {
 	if mf.Auth.AuthOfAPIToken == nil {
-		err = json.Unmarshal([]byte(*mf.Auth.Payload), &mf.Auth.AuthOfAPIToken)
+		err = json.Unmarshal([]byte(mf.Auth.Payload), &mf.Auth.AuthOfAPIToken)
 		if err != nil {
 			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
 				"invalid auth payload"))
@@ -152,9 +195,9 @@ func (mf PluginManifest) validateServiceToken() (err error) {
 	return nil
 }
 
-func (mf PluginManifest) validateClientCredentials() (err error) {
+func (mf *PluginManifest) validateClientCredentials() (err error) {
 	if mf.Auth.AuthOfOAuthClientCredentials == nil {
-		err = sonic.UnmarshalString(*mf.Auth.Payload, mf.Auth.AuthOfOAuthClientCredentials)
+		err = sonic.UnmarshalString(mf.Auth.Payload, mf.Auth.AuthOfOAuthClientCredentials)
 		if err != nil {
 			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
 				"invalid auth payload"))
@@ -189,9 +232,9 @@ func (mf PluginManifest) validateClientCredentials() (err error) {
 	return nil
 }
 
-func (mf PluginManifest) validateAuthCode() (err error) {
+func (mf *PluginManifest) validateAuthCode() (err error) {
 	if mf.Auth.AuthOfOAuthAuthorizationCode == nil {
-		err = sonic.UnmarshalString(*mf.Auth.Payload, mf.Auth.AuthOfOAuthAuthorizationCode)
+		err = sonic.UnmarshalString(mf.Auth.Payload, mf.Auth.AuthOfOAuthAuthorizationCode)
 		if err != nil {
 			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
 				"invalid auth payload"))
@@ -226,20 +269,20 @@ func (mf PluginManifest) validateAuthCode() (err error) {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
 			"invalid authorization url"))
 	}
-	//if urlParse.Scheme != "https" {
-	//	return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
-	//		"authorization url scheme must be 'https'"))
-	//}
+	if urlParse.Scheme != "https" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"authorization url scheme must be 'https'"))
+	}
 
 	urlParse, err = url.Parse(authCode.ClientURL)
 	if err != nil || urlParse.Hostname() == "" {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
 			"invalid client url"))
 	}
-	//if urlParse.Scheme != "https" {
-	//	return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
-	//		"client url scheme must be 'https'"))
-	//}
+	if urlParse.Scheme != "https" {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"client url scheme must be 'https'"))
+	}
 
 	return nil
 }
@@ -264,7 +307,7 @@ type Auth struct {
 type AuthV2 struct {
 	Type    AuthzType    `json:"type" yaml:"type"`
 	SubType AuthzSubType `json:"sub_type" yaml:"sub_type"`
-	Payload *string      `json:"payload,omitempty" yaml:"payload,omitempty"`
+	Payload string       `json:"payload" yaml:"payload"`
 	// service
 	AuthOfAPIToken *AuthOfAPIToken `json:"-"`
 
@@ -289,6 +332,13 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 			"plugin auth type is required"))
 	}
 
+	if auth.Payload != "" {
+		payload_, err := utils.DecryptByAES(auth.Payload, authSecretKey)
+		if err == nil {
+			auth.Payload = string(payload_)
+		}
+	}
+
 	switch au.Type {
 	case AuthzTypeOfNone:
 	case AuthzTypeOfOAuth:
@@ -307,7 +357,7 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 }
 
 func (au *AuthV2) unmarshalService(auth *Auth) (err error) {
-	if au.SubType == "" && (au.Payload == nil || *au.Payload == "") { // 兼容老数据
+	if au.SubType == "" && au.Payload == "" { // 兼容老数据
 		au.SubType = AuthzSubTypeOfServiceAPIToken
 	}
 
@@ -341,7 +391,7 @@ func (au *AuthV2) unmarshalService(auth *Auth) (err error) {
 			"invalid plugin sub-auth type '%s'", au.SubType))
 	}
 
-	au.Payload = ptr.Of(string(payload))
+	au.Payload = string(payload)
 
 	return nil
 }
@@ -399,7 +449,7 @@ func (au *AuthV2) unmarshalOAuth(auth *Auth) (err error) {
 			"invalid plugin sub-auth type '%s'", au.SubType))
 	}
 
-	au.Payload = ptr.Of(string(payload))
+	au.Payload = string(payload)
 
 	return nil
 }

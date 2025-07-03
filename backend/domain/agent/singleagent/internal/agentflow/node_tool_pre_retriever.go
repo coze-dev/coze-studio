@@ -55,7 +55,7 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 			opts := []pluginEntity.ExecuteToolOpt{
 				plugin.WithProjectInfo(&plugin.ProjectInfo{
 					ProjectID:      ar.Identity.AgentID,
-					ProjectType:    plugin.ProjectTypeOfBot,
+					ProjectType:    plugin.ProjectTypeOfAgent,
 					ProjectVersion: ptr.Of(ar.Identity.Version),
 				}),
 			}

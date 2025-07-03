@@ -49,7 +49,7 @@ func (dao *RunRecordDAO) GetByID(ctx context.Context, id int64) (*model.RunRecor
 
 func (dao *RunRecordDAO) UpdateByID(ctx context.Context, id int64, updateMeta *entity.UpdateMeta) error {
 	po := &model.RunRecord{
-		ID:    id,
+		ID: id,
 	}
 	if updateMeta.Status != "" {
 
@@ -76,7 +76,6 @@ func (dao *RunRecordDAO) UpdateByID(ctx context.Context, id int64, updateMeta *e
 	}
 	po.UpdatedAt = time.Now().UnixMilli()
 
-	
 	_, err := dao.query.RunRecord.WithContext(ctx).Where(dao.query.RunRecord.ID.Eq(id)).Updates(po)
 	return err
 }

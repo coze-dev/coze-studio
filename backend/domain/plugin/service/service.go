@@ -70,7 +70,7 @@ type PluginService interface {
 
 	GetOAuthStatus(ctx context.Context, userID, pluginID int64) (resp *GetOAuthStatusResponse, err error)
 	GetAgentPluginsOAuthStatus(ctx context.Context, userID, agentID int64) (status []*AgentPluginOAuthStatus, err error)
-	OAuthCode(ctx context.Context, code string, state *entity.State) (err error)
+	OAuthCode(ctx context.Context, code string, state *entity.OAuthState) (err error)
 	GetAccessToken(ctx context.Context, oa *entity.OAuthInfo) (accessToken string, err error)
 	RevokeAccessToken(ctx context.Context, meta *entity.AuthorizationCodeMeta) (err error)
 }
@@ -211,7 +211,7 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 		return &model.AuthV2{
 			Type:                         model.AuthzTypeOfOAuth,
 			SubType:                      model.AuthzSubTypeOfOAuthClientCredentials,
-			Payload:                      &str,
+			Payload:                      str,
 			AuthOfOAuthClientCredentials: _oauthInfo,
 		}, nil
 	}
@@ -240,7 +240,7 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 		return &model.AuthV2{
 			Type:                         model.AuthzTypeOfOAuth,
 			SubType:                      model.AuthzSubTypeOfOAuthAuthorizationCode,
-			Payload:                      &str,
+			Payload:                      str,
 			AuthOfOAuthAuthorizationCode: _oauthInfo,
 		}, nil
 	}
@@ -279,7 +279,7 @@ func (p PluginAuthInfo) authOfServiceToAuthV2() (*model.AuthV2, error) {
 		return &model.AuthV2{
 			Type:           model.AuthzTypeOfService,
 			SubType:        model.AuthzSubTypeOfServiceAPIToken,
-			Payload:        &str,
+			Payload:        str,
 			AuthOfAPIToken: tokenAuth,
 		}, nil
 	}

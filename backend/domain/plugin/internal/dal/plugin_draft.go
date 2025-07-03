@@ -77,6 +77,11 @@ func (p *PluginDraftDAO) Create(ctx context.Context, plugin *entity.PluginInfo) 
 		return 0, err
 	}
 
+	mf, err := plugin.Manifest.EncryptAuthPayload()
+	if err != nil {
+		return 0, fmt.Errorf("EncryptAuthPayload failed, err=%w", err)
+	}
+
 	table := p.query.PluginDraft
 	err = table.WithContext(ctx).Create(&model.PluginDraft{
 		ID:          id,
@@ -86,7 +91,7 @@ func (p *PluginDraftDAO) Create(ctx context.Context, plugin *entity.PluginInfo) 
 		IconURI:     plugin.GetIconURI(),
 		ServerURL:   plugin.GetServerURL(),
 		AppID:       plugin.GetAPPID(),
-		Manifest:    plugin.Manifest,
+		Manifest:    mf,
 		OpenapiDoc:  plugin.OpenapiDoc,
 	})
 	if err != nil {
@@ -216,8 +221,13 @@ func (p *PluginDraftDAO) List(ctx context.Context, spaceID, appID int64, pageInf
 }
 
 func (p *PluginDraftDAO) Update(ctx context.Context, plugin *entity.PluginInfo) (err error) {
+	mf, err := plugin.Manifest.EncryptAuthPayload()
+	if err != nil {
+		return fmt.Errorf("EncryptAuthPayload failed, err=%w", err)
+	}
+
 	m := &model.PluginDraft{
-		Manifest:   plugin.Manifest,
+		Manifest:   mf,
 		OpenapiDoc: plugin.OpenapiDoc,
 	}
 	if plugin.IconURI != nil {
@@ -241,6 +251,11 @@ func (p *PluginDraftDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, pl
 		return 0, err
 	}
 
+	mf, err := plugin.Manifest.EncryptAuthPayload()
+	if err != nil {
+		return 0, fmt.Errorf("EncryptAuthPayload failed, err=%w", err)
+	}
+
 	table := tx.PluginDraft
 	err = table.WithContext(ctx).Create(&model.PluginDraft{
 		ID:          id,
@@ -250,7 +265,7 @@ func (p *PluginDraftDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, pl
 		IconURI:     plugin.GetIconURI(),
 		ServerURL:   plugin.GetServerURL(),
 		AppID:       plugin.GetAPPID(),
-		Manifest:    plugin.Manifest,
+		Manifest:    mf,
 		OpenapiDoc:  plugin.OpenapiDoc,
 	})
 	if err != nil {
@@ -265,11 +280,17 @@ func (p *PluginDraftDAO) UpdateWithTX(ctx context.Context, tx *query.QueryTx, pl
 
 	updateMap := map[string]any{}
 	if plugin.Manifest != nil {
-		mf, err := json.Marshal(plugin.Manifest)
+		mf, err := plugin.Manifest.EncryptAuthPayload()
+		if err != nil {
+			return fmt.Errorf("EncryptAuthPayload failed, err=%w", err)
+		}
+
+		mfBytes, err := json.Marshal(mf)
 		if err != nil {
 			return err
 		}
-		updateMap[table.Manifest.ColumnName().String()] = mf
+
+		updateMap[table.Manifest.ColumnName().String()] = mfBytes
 	}
 	if plugin.OpenapiDoc != nil {
 		doc, err := json.Marshal(plugin.OpenapiDoc)

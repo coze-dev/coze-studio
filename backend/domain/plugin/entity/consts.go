@@ -33,3 +33,5 @@ const (
 	OAuthProviderOfLark       OAuthProvider = "lark"
 	OAuthProviderOfStandard   OAuthProvider = "standard"
 )
+
+const StateSecretKey = "osj^kfhsd*(z!sno"

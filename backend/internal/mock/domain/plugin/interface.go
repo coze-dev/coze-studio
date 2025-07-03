@@ -538,7 +538,7 @@ func (mr *MockPluginServiceMockRecorder) MoveAPPPluginToLibrary(ctx, pluginID an
 }
 
 // OAuthCode mocks base method.
-func (m *MockPluginService) OAuthCode(ctx context.Context, code string, state *entity.State) error {
+func (m *MockPluginService) OAuthCode(ctx context.Context, code string, state *entity.OAuthState) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OAuthCode", ctx, code, state)
 	ret0, _ := ret[0].(error)

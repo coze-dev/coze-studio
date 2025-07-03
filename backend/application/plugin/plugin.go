@@ -31,6 +31,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/service"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/utils"
 	searchEntity "code.byted.org/flow/opencoze/backend/domain/search/entity"
 	search "code.byted.org/flow/opencoze/backend/domain/search/service"
 	user "code.byted.org/flow/opencoze/backend/domain/user/service"
@@ -620,7 +621,7 @@ func (p *PluginApplicationService) fillAuthInfoInMetaInfo(ctx context.Context, d
 	}
 
 	if authType == common.AuthorizationType_OAuth {
-		metaInfo.OauthInfo = authInfo.Payload
+		metaInfo.OauthInfo = &authInfo.Payload
 	}
 
 	return nil
@@ -1658,7 +1659,13 @@ func (p *PluginApplicationService) OauthAuthorizationCode(ctx context.Context, r
 		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
 	}
 
-	state, err := entity.DecryptState(stateStr)
+	stateBytes, err := utils.DecryptByAES(stateStr, entity.StateSecretKey)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
+	}
+
+	state := &entity.OAuthState{}
+	err = json.Unmarshal(stateBytes, state)
 	if err != nil {
 		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
 	}

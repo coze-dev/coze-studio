@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"sync"
@@ -12,6 +13,7 @@ import (
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
+	"code.byted.org/flow/opencoze/backend/domain/plugin/utils"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -240,7 +242,7 @@ func isValidAuthCodeConfig(o, n *model.OAuthAuthorizationCodeConfig, expireAt, l
 	return true
 }
 
-func (p *pluginServiceImpl) OAuthCode(ctx context.Context, code string, state *entity.State) (err error) {
+func (p *pluginServiceImpl) OAuthCode(ctx context.Context, code string, state *entity.OAuthState) (err error) {
 	var plugin *entity.PluginInfo
 	if state.IsDraft {
 		plugin, err = p.GetDraftPlugin(ctx, state.PluginID)
@@ -422,13 +424,17 @@ func genAuthURL(info *entity.AuthorizationCodeInfo) (string, error) {
 		Scopes:      config.Scopes,
 	}
 
-	state := &entity.State{
+	state := &entity.OAuthState{
 		ClientName: "",
 		UserID:     info.Meta.UserID,
 		PluginID:   info.Meta.PluginID,
 		IsDraft:    info.Meta.IsDraft,
 	}
-	encryptState, err := state.EncryptState()
+	stateStr, err := json.Marshal(state)
+	if err != nil {
+		return "", fmt.Errorf("marshal state failed, err=%v", err)
+	}
+	encryptState, err := utils.EncryptByAES(stateStr, entity.StateSecretKey)
 	if err != nil {
 		return "", fmt.Errorf("encrypt state failed, err=%v", err)
 	}
