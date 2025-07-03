@@ -58,7 +58,7 @@ func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData
 			}, nil
 
 		}
-		t, err := time.Parse(TimeFormat, val)
+		t, err := time.Parse(time.DateTime, val)
 		if err != nil {
 			return nil, err
 		}

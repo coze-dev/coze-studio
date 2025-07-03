@@ -92,7 +92,7 @@ func (d *ColumnData) GetStringValue() string {
 	case TableColumnTypeInteger:
 		return strconv.FormatInt(ptr.From(d.ValInteger), 10)
 	case TableColumnTypeTime:
-		return ptr.From(d.ValTime).String()
+		return ptr.From(d.ValTime).Format(time.DateTime)
 	case TableColumnTypeNumber:
 		return strconv.FormatFloat(ptr.From(d.ValNumber), 'f', 20, 64)
 	case TableColumnTypeBoolean:
@@ -117,7 +117,7 @@ func (d *ColumnData) GetNullableStringValue() string {
 		if d.ValTime == nil {
 			return ""
 		}
-		return ptr.From(d.ValTime).String()
+		return ptr.From(d.ValTime).Format(time.DateTime)
 	case TableColumnTypeNumber:
 		if d.ValNumber == nil {
 			return ""
