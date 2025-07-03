@@ -17,7 +17,7 @@ import (
 const rowNum = "rowNum"
 const outputList = "outputList"
 
-func objectFormatted(ctx context.Context, props map[string]*vo.TypeInfo, object database.Object) map[string]any {
+func objectFormatted(ctx context.Context, props map[string]*vo.TypeInfo, object database.Object) (map[string]any, error) {
 	ret := make(map[string]any)
 	const TimeFormat = "2006-01-02 15:04:05 -0700 MST"
 
@@ -35,7 +35,7 @@ func objectFormatted(ctx context.Context, props map[string]*vo.TypeInfo, object 
 				ret[k] = v.(time.Time).Format(TimeFormat)
 			}
 		}
-		return ret
+		return ret, nil
 	}
 
 	for path, info := range props {
@@ -43,15 +43,20 @@ func objectFormatted(ctx context.Context, props map[string]*vo.TypeInfo, object 
 			ret[path] = nil
 		} else {
 			var err error
-			value, err := nodes.Convert(ctx, val, path, info)
+			value, warnings, err := nodes.Convert(ctx, val, path, info, nodes.NeedReturnDefaultValue(vo.DataTypeArray, vo.DataTypeObject))
 			if err != nil {
-				logs.Warnf("failed to convert value for path %s: %v", path, err.Error())
+				return nil, err
 			}
+
+			if len(warnings) > 0 {
+				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+			}
+
 			ret[path] = value
 		}
 	}
 
-	return ret
+	return ret, nil
 }
 
 // responseFormatted convert the object list returned by "response" into the field mapping of the "config output" configuration,
@@ -75,10 +80,12 @@ func responseFormatted(ctx context.Context, configOutput map[string]*vo.TypeInfo
 	}
 
 	props := outputListTypeInfo.ElemTypeInfo.Properties
-
 	for _, object := range response.Objects {
-
-		list = append(list, objectFormatted(ctx, props, object))
+		result, err := objectFormatted(ctx, props, object)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, result)
 	}
 
 	ret[outputList] = list

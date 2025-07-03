@@ -2,7 +2,6 @@ package json
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -81,16 +80,13 @@ func (jd *JsonDeserializer) Invoke(ctx context.Context, input map[string]any) (m
 		return nil, fmt.Errorf("JSON unmarshaling failed: %w", err)
 	}
 
-	convertedValue, err := nodes.Convert(ctx, rawValue, OutputKeyDeserialization, typeInfo)
+	convertedValue, warnings, err := nodes.Convert(ctx, rawValue, OutputKeyDeserialization, typeInfo)
 	if err != nil {
-		var convertWarnings nodes.ConversionWarnings
-		if errors.As(err, &convertWarnings) {
-			ctxcache.Store(ctx, warningsKey, convertWarnings)
-		} else {
-			return nil, err
-		}
+		return nil, err
 	}
-
+	if len(warnings) > 0 {
+		ctxcache.Store(ctx, warningsKey, warnings)
+	}
 	return map[string]any{OutputKeyDeserialization: convertedValue}, nil
 }
 

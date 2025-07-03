@@ -256,18 +256,15 @@ func formatOutput(ctx context.Context, inInfo map[string]*vo.TypeInfo, in map[st
 			ret[k] = nil
 			continue
 		}
-		vv, err := nodes.Convert(ctx, in[k], k, info)
+		vv, subWarnings, err := nodes.Convert(ctx, in[k], k, info, nodes.NeedReturnDefaultValue(vo.DataTypeArray, vo.DataTypeObject))
 		if err != nil {
-			var subWarnings nodes.ConversionWarnings
-			if errors.As(err, &subWarnings) {
-				warnings = subWarnings.Merge(warnings)
-				ret[k] = nil
-			} else {
-				return nil, err
-			}
-		} else {
-			ret[k] = vv
+			return nil, err
 		}
+
+		if len(subWarnings) > 0 {
+			warnings = subWarnings.Merge(subWarnings)
+		}
+		ret[k] = vv
 
 	}
 

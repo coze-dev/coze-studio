@@ -190,18 +190,17 @@ func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo
 
 	for k, v := range result {
 		if s, ok := schema_[k]; ok {
-			val, err := nodes.Convert(ctx, v, k, s)
+			val, warnings, err := nodes.Convert(ctx, v, k, s)
 			if err != nil {
-				var warnings nodes.ConversionWarnings
-				if errors.As(err, &warnings) {
-					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-					result[k] = val
-				} else {
-					return nil, vo.WrapError(errno.ErrLLMStructuredOutputParseFail, err)
-				}
-			} else {
-				result[k] = val
+				return nil, err
 			}
+			if len(warnings) > 0 {
+				logs.CtxErrorf(ctx, "convert inputs warnings: %v", warnings)
+
+			}
+
+			result[k] = val
+
 		}
 	}
 
