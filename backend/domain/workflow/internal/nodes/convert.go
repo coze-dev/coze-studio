@@ -42,14 +42,14 @@ func (e ConversionWarnings) Error() string {
 	return strings.Join(errs, ", ")
 }
 
-func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.TypeInfo) (map[string]any, error) {
+func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.TypeInfo, shouldFastFailed bool) (map[string]any, ConversionWarnings, error) {
 	if len(in) == 0 {
 		for _, t := range tInfo {
 			if t.Required {
-				return nil, vo.NewError(errno.ErrMissingRequiredParam)
+				return nil, nil, vo.NewError(errno.ErrMissingRequiredParam)
 			}
 		}
-		return in, nil
+		return in, nil, nil
 	}
 
 	out := make(map[string]any)
@@ -62,12 +62,19 @@ func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.
 			out[k] = in[k]
 			continue
 		}
-		converted, warns, err := Convert(ctx, v, k, t)
-		if err != nil {
-			return nil, err
+
+		opts := make([]ConvertOption, 0, 1)
+		if shouldFastFailed {
+			opts = append(opts, WithFastFailed())
 		}
-		if len(warns) > 0 {
-			warnings = warns.Merge(warnings)
+
+		converted, cWarnings, err := Convert(ctx, v, k, t, opts...)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if len(cWarnings) > 0 {
+			warnings = cWarnings.Merge(warnings)
 		}
 
 		out[k] = converted
@@ -76,15 +83,15 @@ func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.
 	for k, t := range tInfo {
 		if _, ok := out[k]; !ok {
 			if t.Required {
-				return nil, vo.NewError(errno.ErrMissingRequiredParam)
+				return nil, nil, vo.NewError(errno.ErrMissingRequiredParam)
 			}
 		}
 	}
 
 	if len(warnings) == 0 {
-		return out, nil
+		return out, nil, nil
 	}
-	return out, warnings
+	return out, warnings, nil
 }
 
 type convertOptions struct {

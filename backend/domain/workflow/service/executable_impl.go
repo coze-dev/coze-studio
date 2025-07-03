@@ -69,15 +69,13 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 	if wfEntity.AppID != nil && config.AppID == nil {
 		config.AppID = wfEntity.AppID
 	}
-
-	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
+	var warnings nodes.ConversionWarnings
+	convertedInput, warnings, err := nodes.ConvertInputs(ctx, input, wf.Inputs(), config.InputFailFast)
 	if err != nil {
-		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) && !config.InputFailFast {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-		} else {
-			return nil, "", vo.WrapError(errno.ErrInvalidParameter, err)
-		}
+		return nil, "", vo.WrapError(errno.ErrInvalidParameter, err)
+	}
+	if len(warnings) > 0 {
+		logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -207,14 +205,13 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 
 	config.CommitID = wfEntity.CommitID
 
-	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
+	var warnings nodes.ConversionWarnings
+	convertedInput, warnings, err := nodes.ConvertInputs(ctx, input, wf.Inputs(), config.InputFailFast)
 	if err != nil {
-		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) && !config.InputFailFast {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-		} else {
-			return 0, errorx.WrapByCode(err, errno.ErrInvalidParameter)
-		}
+		return 0, errorx.WrapByCode(err, errno.ErrInvalidParameter)
+	}
+	if len(warnings) > 0 {
+		logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -270,14 +267,13 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 		return 0, fmt.Errorf("failed to create workflow: %w", err)
 	}
 
-	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
+	var warnings nodes.ConversionWarnings
+	convertedInput, warnings, err := nodes.ConvertInputs(ctx, input, wf.Inputs(), config.InputFailFast)
 	if err != nil {
-		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) && !config.InputFailFast {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-		} else {
-			return 0, errorx.WrapByCode(err, errno.ErrInvalidParameter)
-		}
+		return 0, errorx.WrapByCode(err, errno.ErrInvalidParameter)
+	}
+	if len(warnings) > 0 {
+		logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
 	}
 
 	if wfEntity.AppID != nil && config.AppID == nil {
@@ -354,14 +350,14 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 
 	config.CommitID = wfEntity.CommitID
 
-	input, err = nodes.ConvertInputs(ctx, input, wf.Inputs())
+	var warnings nodes.ConversionWarnings
+	input, warnings, err = nodes.ConvertInputs(ctx, input, wf.Inputs(), config.InputFailFast)
 	if err != nil {
-		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) && !config.InputFailFast {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-		} else {
-			return nil, errorx.WrapByCode(err, errno.ErrInvalidParameter)
-		}
+		return nil, errorx.WrapByCode(err, errno.ErrInvalidParameter)
+	}
+
+	if len(warnings) > 0 {
+		logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
 	}
 
 	inStr, err := sonic.MarshalString(input)

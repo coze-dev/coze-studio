@@ -2,7 +2,6 @@ package compose
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -106,15 +105,16 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 		if entryNode == nil {
 			panic("entry node not found in tool workflow")
 		}
-		in, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
+		var warnings nodes.ConversionWarnings
+		in, warnings, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes, false)
 		if err != nil {
-			var warnings nodes.ConversionWarnings
-			if errors.As(err, &warnings) {
-				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-			} else {
-				return "", err
-			}
+			return "", err
 		}
+
+		if len(warnings) > 0 {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+		}
+
 	}
 
 	cancelCtx, executeID, callOpts, _, err = NewWorkflowRunner(i.wfEntity.GetBasic(), i.sc, cfg, runOpts...).Prepare(ctx)
@@ -257,15 +257,16 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 		if entryNode == nil {
 			panic("entry node not found in tool workflow")
 		}
-		in, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
+		var warnings nodes.ConversionWarnings
+		in, warnings, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes, false)
+
 		if err != nil {
-			var warnings nodes.ConversionWarnings
-			if errors.As(err, &warnings) {
-				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-			} else {
-				return nil, err
-			}
+			return nil, err
 		}
+		if len(warnings) > 0 {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+		}
+
 	}
 
 	cancelCtx, executeID, callOpts, _, err = NewWorkflowRunner(s.wfEntity.GetBasic(), s.sc, cfg, runOpts...).Prepare(ctx)

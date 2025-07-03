@@ -723,17 +723,16 @@ func parseDefaultOutputOrFallback(ctx context.Context, data string, schema_ map[
 
 func preTypeConverter(inTypes map[string]*vo.TypeInfo) func(ctx context.Context, in map[string]any) (map[string]any, error) {
 	return func(ctx context.Context, in map[string]any) (map[string]any, error) {
-		out, err := nodes.ConvertInputs(ctx, in, inTypes)
+		out, warnings, err := nodes.ConvertInputs(ctx, in, inTypes, false)
 		if err != nil {
-			var warnings nodes.ConversionWarnings
-			if errors.As(err, &warnings) {
-				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-				return out, nil
-			} else {
-				return out, err
-			}
+			return nil, err
 		}
-		return out, err
+
+		if len(warnings) > 0 {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
+		}
+		return out, nil
+
 	}
 }
 
