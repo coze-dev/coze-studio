@@ -41,9 +41,13 @@ func TestCustomSQL_Execute(t *testing.T) {
 	mockSQLer := mockCustomSQLer{
 		validate: func(req *database.CustomSQLRequest) {
 			assert.Equal(t, int64(111), req.DatabaseInfoID)
-			ps := []string{"v2_value", "v3_value"}
+			ps := []database.SQLParam{
+				database.SQLParam{Value: "v1_value"},
+				database.SQLParam{Value: "v2_value"},
+				database.SQLParam{Value: "v3_value"},
+			}
 			assert.Equal(t, ps, req.Params)
-			assert.Equal(t, "select * from v1 where v1 = v1_value and v2 = ? and v3 = ?", req.SQL)
+			assert.Equal(t, "select * from v1 where v1 = ? and v2 = ? and v3 = ?", req.SQL)
 		},
 	}
 

@@ -2,6 +2,7 @@ package nodes
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -140,6 +141,13 @@ func removeSlice(s string) string {
 type renderOptions struct {
 	type2CustomRenderer map[reflect.Type]func(any) (string, error)
 	reservedKey         map[string]struct{}
+	nilRenderer         func() (string, error)
+}
+
+func WithNilRender(fn func() (string, error)) RenderOption {
+	return func(opts *renderOptions) {
+		opts.nilRenderer = fn
+	}
 }
 
 type RenderOption func(options *renderOptions)
@@ -241,12 +249,15 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 		return tp.literal, nil
 	}
 
-	i, err := n.Interface()
+	i, err := n.InterfaceUseNumber()
 	if err != nil {
 		return tp.literal, nil
 	}
 
 	if i == nil {
+		if options.nilRenderer != nil {
+			return options.nilRenderer()
+		}
 		return "", nil
 	}
 
@@ -260,10 +271,8 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 	switch i.(type) {
 	case string:
 		return i.(string), nil
-	case int64:
-		return strconv.FormatInt(i.(int64), 10), nil
-	case float64:
-		return strconv.FormatFloat(i.(float64), 'f', -1, 64), nil
+	case json.Number:
+		return i.(json.Number).String(), nil
 	case bool:
 		return strconv.FormatBool(i.(bool)), nil
 	default:

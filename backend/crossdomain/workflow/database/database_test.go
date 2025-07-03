@@ -115,7 +115,10 @@ func TestDatabase_Database(t *testing.T) {
 		response, err := ds.Execute(context.Background(), &nodedatabase.CustomSQLRequest{
 			DatabaseInfoID: 1,
 			SQL:            "select * from table where v1=? and v2=?",
-			Params:         []string{"1", "2"},
+			Params: []nodedatabase.SQLParam{
+				nodedatabase.SQLParam{Value: "1"},
+				nodedatabase.SQLParam{Value: "2"},
+			},
 		})
 		assert.Nil(t, err)
 		assert.Equal(t, response.Objects, []nodedatabase.Object{
