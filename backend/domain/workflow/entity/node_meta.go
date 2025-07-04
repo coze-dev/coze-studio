@@ -12,11 +12,16 @@ type NodeTypeMeta struct {
 	IconURL         string   `json:"icon_url"`
 	SupportBatch    bool     `json:"support_batch"`
 	Disabled        bool     `json:"disabled,omitempty"`
-	EnUSCategory    string   `json:"en_us_category,omitempty"`
 	EnUSName        string   `json:"en_us_name,omitempty"`
 	EnUSDescription string   `json:"en_us_description,omitempty"`
 
 	ExecutableMeta
+}
+
+type Category struct {
+	Key      string `json:"key"`
+	Name     string `json:"name"`
+	EnUSName string `json:"en_us_name"`
 }
 
 type StreamingParadigm string

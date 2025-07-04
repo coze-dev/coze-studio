@@ -27,7 +27,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
-	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -56,7 +55,7 @@ func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis *redis.Cl
 	return repo.NewRepository(idgen, db, redis, tos, cpStore)
 }
 
-func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]bool, locale entity.Locale) (map[string][]*entity.NodeTypeMeta, error) {
+func (i *impl) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, []entity.Category, error) {
 	// Initialize result maps
 	nodeMetaMap := make(map[string][]*entity.NodeTypeMeta)
 
@@ -76,12 +75,11 @@ func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]boo
 	// Process standard node types
 	for _, meta := range entity.NodeTypeMetas {
 		if shouldInclude(meta) {
-			category := ternary.IFElse(locale == entity.EnUS, meta.EnUSCategory, meta.Category)
-			nodeMetaMap[category] = append(nodeMetaMap[category], meta)
+			nodeMetaMap[meta.Category] = append(nodeMetaMap[meta.Category], meta)
 		}
 	}
 
-	return nodeMetaMap, nil
+	return nodeMetaMap, entity.Categories, nil
 }
 
 func (i *impl) Create(ctx context.Context, meta *vo.MetaCreate) (int64, error) {

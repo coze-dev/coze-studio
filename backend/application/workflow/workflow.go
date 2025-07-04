@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"runtime/debug"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -81,7 +80,7 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 		}
 		toQueryTypes[entityType] = true
 	}
-	category2NodeMetaList, err := GetWorkflowDomainSVC().ListNodeMeta(ctx, toQueryTypes, GetLocale(ctx))
+	category2NodeMetaList, categories, err := GetWorkflowDomainSVC().ListNodeMeta(ctx, toQueryTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -117,23 +116,16 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 		}
 	}
 
-	var headerCategory *workflow.NodeCategory
-	for category, nodeCategory := range categoryMap {
-		nodeCategory = &workflow.NodeCategory{
-			Name:         category,
-			NodeTypeList: nodeCategory.NodeTypeList,
-		}
-		if category == "" {
-			headerCategory = nodeCategory
+	for _, cate := range categories {
+		key := cate.Key
+		nodeCategory, ok := categoryMap[key]
+		if !ok {
 			continue
 		}
-		resp.Data.CateList = append(resp.Data.CateList, nodeCategory)
-	}
-	sort.Slice(resp.Data.CateList, func(i, j int) bool {
-		return strings.Compare(resp.Data.CateList[i].Name, resp.Data.CateList[j].Name) < 0
-	})
-	if headerCategory != nil {
-		resp.Data.CateList = append([]*workflow.NodeCategory{headerCategory}, resp.Data.CateList...)
+		resp.Data.CateList = append(resp.Data.CateList, &workflow.NodeCategory{
+			Name:         ternary.IFElse(GetLocale(ctx) == entity.EnUS, cate.EnUSName, cate.Name),
+			NodeTypeList: nodeCategory.NodeTypeList,
+		})
 	}
 
 	return resp, nil
