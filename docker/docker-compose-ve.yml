@@ -1,5 +1,5 @@
 x-env-file: &env_file
-  - .env
+  - .env.ve
 
 services:
   elasticsearch-setup:
@@ -73,6 +73,7 @@ services:
     image: opencoze-cn-beijing.cr.volces.com/opencoze/server:0.0.2
     container_name: coze-server-on-volcano
     env_file: *env_file
+    profiles: [ 'volcano-server' ]
     networks:
       - coze-network
     ports:
@@ -87,7 +88,7 @@ services:
         condition: service_completed_successfully
       mysql-setup-init-sql:
         condition: service_completed_successfully
-    command: ['/app/bootstrap.sh']
+    command: [ '/app/bootstrap.sh' ]
     deploy:
       resources:
         limits:

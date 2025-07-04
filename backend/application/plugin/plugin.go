@@ -1672,7 +1672,7 @@ func (p *PluginApplicationService) OauthAuthorizationCode(ctx context.Context, r
 
 	err = p.DomainSVC.OAuthCode(ctx, req.Code, state)
 	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "authorization failed"))
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "authorize failed"))
 	}
 
 	resp = &botOpenAPI.OauthAuthorizationCodeResp{}

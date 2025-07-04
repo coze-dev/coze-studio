@@ -261,14 +261,8 @@ func (p *pluginServiceImpl) OAuthCode(ctx context.Context, code string, state *e
 		return errorx.New(errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "plugin auth info is nil"))
 	}
 
-	config := &oauth2.Config{
-		ClientID:     authInfo.AuthOfOAuthAuthorizationCode.ClientID,
-		ClientSecret: authInfo.AuthOfOAuthAuthorizationCode.ClientSecret,
-		Scopes:       authInfo.AuthOfOAuthAuthorizationCode.Scopes,
-		Endpoint: oauth2.Endpoint{
-			TokenURL: authInfo.AuthOfOAuthAuthorizationCode.AuthorizationURL,
-		},
-	}
+	config := getStanderOAuthConfig(authInfo.AuthOfOAuthAuthorizationCode)
+
 	token, err := config.Exchange(ctx, code)
 	if err != nil {
 		return errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "exchange token failed"))
@@ -410,19 +404,7 @@ func (p *pluginServiceImpl) getPluginOAuthStatus(ctx context.Context, userID int
 }
 
 func genAuthURL(info *entity.AuthorizationCodeInfo) (string, error) {
-	redirectURL := fmt.Sprintf("https://%s/api/oauth/authorization_code", os.Getenv("SERVER_HOST"))
-
-	config := info.Config
-	conf := &oauth2.Config{
-		ClientID:     config.ClientID,
-		ClientSecret: config.ClientSecret,
-		Endpoint: oauth2.Endpoint{
-			TokenURL: config.AuthorizationURL,
-			AuthURL:  config.ClientURL,
-		},
-		RedirectURL: redirectURL,
-		Scopes:      config.Scopes,
-	}
+	config := getStanderOAuthConfig(info.Config)
 
 	state := &entity.OAuthState{
 		ClientName: "",
@@ -439,9 +421,25 @@ func genAuthURL(info *entity.AuthorizationCodeInfo) (string, error) {
 		return "", fmt.Errorf("encrypt state failed, err=%v", err)
 	}
 
-	authURL := conf.AuthCodeURL(encryptState)
+	authURL := config.AuthCodeURL(encryptState)
 
 	return authURL, nil
+}
+
+func getStanderOAuthConfig(config *model.OAuthAuthorizationCodeConfig) *oauth2.Config {
+	if config == nil {
+		return nil
+	}
+	return &oauth2.Config{
+		ClientID:     config.ClientID,
+		ClientSecret: config.ClientSecret,
+		Endpoint: oauth2.Endpoint{
+			TokenURL: config.AuthorizationURL,
+			AuthURL:  config.ClientURL,
+		},
+		RedirectURL: fmt.Sprintf("https://%s/api/oauth/authorization_code", os.Getenv("SERVER_HOST")),
+		Scopes:      config.Scopes,
+	}
 }
 
 func (p *pluginServiceImpl) GetAgentPluginsOAuthStatus(ctx context.Context, userID, agentID int64) (status []*AgentPluginOAuthStatus, err error) {
