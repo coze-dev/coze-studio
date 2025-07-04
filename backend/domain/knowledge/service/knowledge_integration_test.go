@@ -156,7 +156,6 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 		SearchStoreManagers: mgrs,
 		ParseManager:        nil, // default builtin
 		Storage:             tosClient,
-		ImageX:              nil, // TODO: image not support
 		Rewriter:            nil,
 		Reranker:            nil, // default rrf
 		EnableCompactTable:  ptr.Of(true),

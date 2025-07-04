@@ -131,9 +131,6 @@ func (dao *KnowledgeDocumentDAO) DeleteDocuments(ctx context.Context, ids []int6
 
 func (dao *KnowledgeDocumentDAO) SetStatus(ctx context.Context, documentID int64, status int32, reason string) error {
 	k := dao.Query.KnowledgeDocument
-	if len(reason) > 255 { // TODO: tinytext 换成 text ?
-		reason = reason[:255]
-	}
 	d := &model.KnowledgeDocument{Status: status, FailReason: reason, UpdatedAt: time.Now().UnixMilli()}
 	_, err := k.WithContext(ctx).Debug().Where(k.ID.Eq(documentID)).Updates(d)
 	return err
@@ -143,7 +140,6 @@ func (dao *KnowledgeDocumentDAO) CreateWithTx(ctx context.Context, tx *gorm.DB, 
 	if len(documents) == 0 {
 		return nil
 	}
-	// todo，要不要做限制，行数限制等
 	tx = tx.WithContext(ctx).Debug().CreateInBatches(documents, len(documents))
 	return tx.Error
 }

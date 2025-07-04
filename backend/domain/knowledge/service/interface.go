@@ -32,7 +32,7 @@ type Knowledge interface {
 	ResegmentDocument(ctx context.Context, request *ResegmentDocumentRequest) (response *ResegmentDocumentResponse, err error)
 	GetAlterTableSchema(ctx context.Context, request *AlterTableSchemaRequest) (response *TableSchemaResponse, err error)
 	ValidateTableSchema(ctx context.Context, request *ValidateTableSchemaRequest) (response *ValidateTableSchemaResponse, err error)
-	GetDocumentTableInfo(ctx context.Context, request *GetDocumentTableInfoRequest) (response *GetDocumentTableInfoResponse, err error) // todo: 这个接口是否还有必要保留？
+	GetDocumentTableInfo(ctx context.Context, request *GetDocumentTableInfoRequest) (response *GetDocumentTableInfoResponse, err error)
 	GetImportDataTableSchema(ctx context.Context, request *ImportDataTableSchemaRequest) (response *TableSchemaResponse, err error)
 
 	CreateSlice(ctx context.Context, request *CreateSliceRequest) (response *CreateSliceResponse, err error)

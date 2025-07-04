@@ -85,7 +85,6 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 func (k *knowledgeSVC) deleteKnowledgeDataEventHandler(ctx context.Context, event *entity.Event) error {
 	// 删除知识库在各个存储里的数据
 	for _, manager := range k.searchStoreManagers {
-		// TODO: non retry 错误可能导致其他资源删除也失效
 		s, err := manager.GetSearchStore(ctx, getCollectionName(event.KnowledgeID))
 		if err != nil {
 			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("get search store failed, err: %v", err)))
@@ -132,7 +131,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		return errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", "[indexDocument] document not provided"))
 	}
 
-	// TODO: document redis lock
 	// 1. retry 队列和普通队列中对同一文档的 index 操作并发，同一个文档数据写入两份（在后端 bugfix 上线时产生）
 	// 2. rebalance 重复消费同一条消息
 
@@ -163,7 +161,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		}
 	}()
 
-	// TODO: fix append retry
 	// clear
 	collectionName := getCollectionName(doc.KnowledgeID)
 
@@ -331,7 +328,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	progressbar := progressbar.NewProgressBar(ctx, doc.ID, int64(len(ssDocs)*len(k.searchStoreManagers)), k.cacheCli, true)
 	for _, manager := range k.searchStoreManagers {
 		now := time.Now()
-		// TODO: knowledge 可以记录 search store 状态，不需要每次都 create 然后靠 create 检查
 		if err = manager.Create(ctx, &searchstore.CreateRequest{
 			CollectionName: collectionName,
 			Fields:         fields,

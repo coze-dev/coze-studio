@@ -715,7 +715,6 @@ func (k *KnowledgeApplicationService) GetTableSchema(ctx context.Context, req *d
 
 	resp.TableMeta = convertTableColumns2Model(domainResp.TableMeta)
 
-	// TODO: sheet list 有个问题，怎么表示当前选中的是哪个？
 	resp.SheetList = make([]*dataset.DocTableSheet, 0)
 	for i := range domainResp.AllTableSheets {
 		if domainResp.AllTableSheets[i] == nil {

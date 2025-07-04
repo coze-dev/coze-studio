@@ -71,8 +71,6 @@ func (k *knowledgeSVC) Retrieve(ctx context.Context, request *RetrieveRequest) (
 		AddLambda("nl2SqlRetrieveNode", Nl2SqlRetrieveNode).
 		AddLambda("passRequestContext", passRequestContextNode)
 
-	// TODO: 加一个对 table 类型数据回表读取操作
-
 	r, err := chain.
 		AppendLambda(rewriteNode).
 		AppendParallel(parallelNode).
@@ -258,7 +256,6 @@ func (k *knowledgeSVC) retrieveChannels(ctx context.Context, req *RetrieveContex
 		info := knowledgeInfo
 		collectionName := getCollectionName(kid)
 
-		// TODO: creator id 过滤
 		dsl := &searchstore.DSL{
 			Op:    searchstore.OpIn,
 			Field: "document_id",
@@ -391,7 +388,6 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 		return nil, err
 	}
 	for i := range resp.ResultSet.Rows {
-		// TODO: 列转换
 		id, ok := resp.ResultSet.Rows[i][consts.RDBFieldID].(int64)
 		if !ok {
 			logs.CtxWarnf(ctx, "convert id failed, row: %v", resp.ResultSet.Rows[i])
