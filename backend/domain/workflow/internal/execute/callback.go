@@ -739,7 +739,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 			return fmt.Sprint(o["output"])
 		}
 	case entity.NodeTypeInputReceiver:
-		e.Input = output.(map[string]any)
+		e.Input = outputMap
 	default:
 	}
 

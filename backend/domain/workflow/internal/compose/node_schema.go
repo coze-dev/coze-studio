@@ -250,7 +250,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		return invokableNode(s, inputR.Invoke), nil
+		return invokableNode(s, inputR.Invoke, withCallbackOutputConverter(inputR.ToCallbackOutput)), nil
 	case entity.NodeTypeOutputEmitter:
 		conf, err := s.ToOutputEmitterConfig(sc)
 		if err != nil {

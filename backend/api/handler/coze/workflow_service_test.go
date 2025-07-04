@@ -4464,7 +4464,7 @@ func TestMismatchedTypeConvert(t *testing.T) {
 		})
 		e := r.getProcess(id, exeID)
 		e.assertSuccess()
-		assert.Equal(t, "false  {\"s\":[2,false]} [{\"a\":1}] 3 0 {\"b\":true}\nI don't know. {\"a\":1} false", e.output)
+		assert.Equal(t, "false [] {\"s\":[2,false]} [{\"a\":1}] 3 0 {\"b\":true}\nI don't know. {\"a\":1} false", e.output)
 	})
 }
 

@@ -688,24 +688,16 @@ func parseDefaultOutput(ctx context.Context, data string, schema_ map[string]*vo
 		return nil, err
 	}
 
-	for k, v := range result {
-		if s, ok := schema_[k]; ok {
-			val, err := nodes.Convert(ctx, v, k, s)
-			if err != nil {
-				var warnings nodes.ConversionWarnings
-				if errors.As(err, &warnings) {
-					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-					result[k] = val
-				} else {
-					return nil, fmt.Errorf("invalid type: %v, %v", k, err)
-				}
-			} else {
-				result[k] = val
-			}
-		}
+	r, ws, e := nodes.ConvertInputs(ctx, result, schema_)
+	if e != nil {
+		return nil, e
 	}
 
-	return result, nil
+	if ws != nil {
+		logs.CtxWarnf(ctx, "convert output warnings: %v", *ws)
+	}
+
+	return r, nil
 }
 
 func parseDefaultOutputOrFallback(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo) map[string]any {
@@ -726,16 +718,15 @@ func parseDefaultOutputOrFallback(ctx context.Context, data string, schema_ map[
 
 func preTypeConverter(inTypes map[string]*vo.TypeInfo) func(ctx context.Context, in map[string]any) (map[string]any, error) {
 	return func(ctx context.Context, in map[string]any) (map[string]any, error) {
-		out, err := nodes.ConvertInputs(ctx, in, inTypes)
+		out, ws, err := nodes.ConvertInputs(ctx, in, inTypes)
 		if err != nil {
-			var warnings nodes.ConversionWarnings
-			if errors.As(err, &warnings) {
-				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-				return out, nil
-			} else {
-				return out, err
-			}
+			return nil, err
 		}
+
+		if ws != nil {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+		}
+
 		return out, err
 	}
 }

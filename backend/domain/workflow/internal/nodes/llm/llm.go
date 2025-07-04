@@ -188,24 +188,16 @@ func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo
 		return nil, err
 	}
 
-	for k, v := range result {
-		if s, ok := schema_[k]; ok {
-			val, err := nodes.Convert(ctx, v, k, s)
-			if err != nil {
-				var warnings nodes.ConversionWarnings
-				if errors.As(err, &warnings) {
-					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-					result[k] = val
-				} else {
-					return nil, vo.WrapError(errno.ErrLLMStructuredOutputParseFail, err)
-				}
-			} else {
-				result[k] = val
-			}
-		}
+	r, ws, err := nodes.ConvertInputs(ctx, result, schema_)
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrLLMStructuredOutputParseFail, err)
 	}
 
-	return result, nil
+	if ws != nil {
+		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+	}
+
+	return r, nil
 }
 
 func getReasoningContent(message *schema.Message) string {
