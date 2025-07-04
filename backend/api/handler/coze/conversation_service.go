@@ -100,7 +100,7 @@ func CreateConversation(ctx context.Context, c *app.RequestContext) {
 	var req conversation.CreateConversationRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -122,7 +122,7 @@ func ClearConversationApi(ctx context.Context, c *app.RequestContext) {
 	var req conversation.ClearConversationApiRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -148,7 +148,7 @@ func ListConversationsApi(ctx context.Context, c *app.RequestContext) {
 	var req conversation.ListConversationsApiRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 

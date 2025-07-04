@@ -41,16 +41,6 @@ func (a *apiAuthImpl) Create(ctx context.Context, req *entity.CreateApiKey) (*en
 	return apiKeyData, nil
 }
 
-func (a *apiAuthImpl) buildApiKey2PoData(ctx context.Context, req *entity.CreateApiKey) (*model.APIKey, error) {
-
-	apiKey := &model.APIKey{
-		Name:      req.Name,
-		ExpiredAt: req.Expire,
-		UserID:    req.UserID,
-		CreatedAt: time.Now().Unix(),
-	}
-	return apiKey, nil
-}
 
 func (a *apiAuthImpl) Delete(ctx context.Context, req *entity.DeleteApiKey) error {
 

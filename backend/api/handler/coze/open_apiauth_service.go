@@ -23,7 +23,7 @@ func GetPersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestCont
 	var req openapiauth.GetPersonalAccessTokenAndPermissionRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -39,8 +39,6 @@ func GetPersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestCont
 		return
 	}
 	resp.Data = apiKeyResp
-	resp.Code = 0
-	resp.Msg = "success"
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -52,7 +50,7 @@ func DeletePersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestC
 	var req openapiauth.DeletePersonalAccessTokenAndPermissionRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -65,8 +63,8 @@ func DeletePersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestC
 	err = openapiauthApp.OpenAuthApplication.DeletePersonalAccessTokenAndPermission(ctx, &req)
 	if err != nil {
 		logs.CtxErrorf(ctx, "OpenAuthApplication.DeletePersonalAccessTokenAndPermission failed, err=%v", err)
-		resp.Code = 500 // 错误码后面统一处理
-		resp.Msg = err.Error()
+		internalServerErrorResponse(ctx, c, err)
+		return
 	}
 
 	c.JSON(consts.StatusOK, resp)
@@ -79,7 +77,7 @@ func ListPersonalAccessTokens(ctx context.Context, c *app.RequestContext) {
 	var req openapiauth.ListPersonalAccessTokensRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -98,11 +96,8 @@ func ListPersonalAccessTokens(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if apiKeyResp != nil {
-		resp.Data = apiKeyResp
-		resp.Code = 0
-		resp.Msg = "success"
-	}
+	resp.Data = apiKeyResp
+
 
 	c.JSON(consts.StatusOK, resp)
 }
@@ -114,7 +109,7 @@ func CreatePersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestC
 	var req openapiauth.CreatePersonalAccessTokenAndPermissionRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		internalServerErrorResponse(ctx, c, err)
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -152,7 +147,7 @@ func UpdatePersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestC
 	var req openapiauth.UpdatePersonalAccessTokenAndPermissionRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
@@ -161,11 +156,8 @@ func UpdatePersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestC
 	err = openapiauthApp.OpenAuthApplication.UpdatePersonalAccessTokenAndPermission(ctx, &req)
 	if err != nil {
 		logs.CtxErrorf(ctx, "OpenAuthApplication.UpdatePersonalAccessTokenAndPermission failed, err=%v", err)
-		resp.Code = 500 // 错误码后面统一处理
-		resp.Msg = err.Error()
-	} else {
-		resp.Code = 0
-		resp.Msg = "success"
+		internalServerErrorResponse(ctx, c, err)
+		return
 	}
 
 	c.JSON(consts.StatusOK, resp)
