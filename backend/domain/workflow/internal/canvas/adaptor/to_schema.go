@@ -989,17 +989,6 @@ func toSubWorkflowNodeSchema(ctx context.Context, n *vo.Node) (*compose.NodeSche
 		SubWorkflowSchema: subWorkflowSC,
 	}
 
-	terminationType := n.Data.Inputs.TerminationType
-
-	// TODO: this may be wrong, termination type and streaming mode are not the same thing
-	if terminationType == 0 {
-		ns.SetConfigKV("Mode", nodes.NonStreaming)
-	} else if terminationType == 1 {
-		ns.SetConfigKV("Mode", nodes.Streaming)
-	} else {
-		return nil, fmt.Errorf("sub workflow node's terminationType is not supported: %d", terminationType)
-	}
-
 	workflowIDStr := n.Data.Inputs.WorkflowID
 	if workflowIDStr == "" {
 		return nil, fmt.Errorf("sub workflow node's workflowID is empty")
@@ -1989,7 +1978,7 @@ func buildClauseFromParams(params []*vo.Param) (*database.Clause, error) {
 
 func parseBatchMode(n *vo.Node) (
 	batchN *vo.Node, // the new batch node
-	enabled bool, // whether the node has enabled batch mode
+	enabled bool,    // whether the node has enabled batch mode
 	err error) {
 	if n.Data == nil || n.Data.Inputs == nil {
 		return nil, false, nil
