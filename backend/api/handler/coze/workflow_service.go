@@ -32,7 +32,6 @@ func CreateWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	appworkflow.SetLocale(ctx, string(c.GetHeader("x-locale")))
 	resp, err := appworkflow.SVC.CreateWorkflow(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
@@ -297,7 +296,7 @@ func NodeTemplateList(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, err.Error())
 		return
 	}
-	appworkflow.SetLocale(ctx, string(c.GetHeader("x-locale")))
+
 	resp, err := appworkflow.SVC.GetNodeTemplateList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)

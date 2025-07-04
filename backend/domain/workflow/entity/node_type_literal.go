@@ -1,6 +1,9 @@
 package entity
 
-import "code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
+import (
+	"code.byted.org/flow/opencoze/backend/pkg/i18n"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
+)
 
 var Categories = []Category{
 	{
@@ -685,13 +688,6 @@ func NodeMetaByNodeType(t NodeType) *NodeTypeMeta {
 	return nil
 }
 
-type Locale string
-
-const (
-	ZhCN Locale = "zh-CN"
-	EnUS Locale = "en-US"
-)
-
 const defaultZhCNInitCanvasJsonSchema = `{
  "nodes": [
   {
@@ -848,6 +844,6 @@ const defaultEnUSInitCanvasJsonSchema = `{
  }
 }`
 
-func GetDefaultInitCanvasJsonSchema(locale Locale) string {
-	return ternary.IFElse(locale == EnUS, defaultEnUSInitCanvasJsonSchema, defaultZhCNInitCanvasJsonSchema)
+func GetDefaultInitCanvasJsonSchema(locale i18n.Locale) string {
+	return ternary.IFElse(locale == i18n.LocaleEN, defaultEnUSInitCanvasJsonSchema, defaultZhCNInitCanvasJsonSchema)
 }

@@ -34,8 +34,8 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
 	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
-	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/i18n"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/maps"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
@@ -103,8 +103,8 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 			tpl := &workflow.NodeTemplate{
 				ID:           fmt.Sprintf("%d", nodeMeta.ID),
 				Type:         tplType,
-				Name:         ternary.IFElse(GetLocale(ctx) == entity.EnUS, nodeMeta.EnUSName, nodeMeta.Name),
-				Desc:         ternary.IFElse(GetLocale(ctx) == entity.EnUS, nodeMeta.EnUSDescription, nodeMeta.Desc),
+				Name:         ternary.IFElse(i18n.GetLocale(ctx) == i18n.LocaleEN, nodeMeta.EnUSName, nodeMeta.Name),
+				Desc:         ternary.IFElse(i18n.GetLocale(ctx) == i18n.LocaleEN, nodeMeta.EnUSDescription, nodeMeta.Desc),
 				IconURL:      nodeMeta.IconURL,
 				SupportBatch: ternary.IFElse(nodeMeta.SupportBatch, workflow.SupportBatch_SUPPORT, workflow.SupportBatch_NOT_SUPPORT),
 				NodeType:     fmt.Sprintf("%d", tplType),
@@ -123,7 +123,7 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 			continue
 		}
 		resp.Data.CateList = append(resp.Data.CateList, &workflow.NodeCategory{
-			Name:         ternary.IFElse(GetLocale(ctx) == entity.EnUS, cate.EnUSName, cate.Name),
+			Name:         ternary.IFElse(i18n.GetLocale(ctx) == i18n.LocaleEN, cate.EnUSName, cate.Name),
 			NodeTypeList: nodeCategory.NodeTypeList,
 		})
 	}
@@ -157,7 +157,7 @@ func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.C
 		IconURI:          req.IconURI,
 		AppID:            parseInt64(req.ProjectID),
 		Mode:             ternary.IFElse(req.IsSetFlowMode(), req.GetFlowMode(), workflow.WorkflowMode_Workflow),
-		InitCanvasSchema: entity.GetDefaultInitCanvasJsonSchema(GetLocale(ctx)),
+		InitCanvasSchema: entity.GetDefaultInitCanvasJsonSchema(i18n.GetLocale(ctx)),
 	}
 
 	id, err := GetWorkflowDomainSVC().Create(ctx, wf)
@@ -3754,15 +3754,4 @@ func checkUserSpace(ctx context.Context, uid int64, spaceID int64) error {
 	}
 
 	return nil
-}
-
-func SetLocale(ctx context.Context, locale string) {
-	ctxcache.Store(ctx, "locale", locale)
-}
-func GetLocale(ctx context.Context) entity.Locale {
-	r, ok := ctxcache.Get[string](ctx, "locale")
-	if !ok {
-		return ""
-	}
-	return entity.Locale(r)
 }

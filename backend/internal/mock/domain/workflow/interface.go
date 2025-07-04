@@ -289,27 +289,29 @@ func (mr *MockServiceMockRecorder) GetWorkflowReference(ctx, id any) *gomock.Cal
 }
 
 // ListNodeMeta mocks base method.
-func (m *MockService) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool, locale entity.Locale) (map[string][]*entity.NodeTypeMeta, error) {
+func (m *MockService) ListNodeMeta(ctx context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, []entity.Category, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListNodeMeta", ctx, nodeTypes, locale)
+	ret := m.ctrl.Call(m, "ListNodeMeta", ctx, nodeTypes)
 	ret0, _ := ret[0].(map[string][]*entity.NodeTypeMeta)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].([]entity.Category)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // ListNodeMeta indicates an expected call of ListNodeMeta.
-func (mr *MockServiceMockRecorder) ListNodeMeta(ctx, nodeTypes, locale any) *gomock.Call {
+func (mr *MockServiceMockRecorder) ListNodeMeta(ctx, nodeTypes any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNodeMeta", reflect.TypeOf((*MockService)(nil).ListNodeMeta), ctx, nodeTypes, locale)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNodeMeta", reflect.TypeOf((*MockService)(nil).ListNodeMeta), ctx, nodeTypes)
 }
 
 // MGet mocks base method.
-func (m *MockService) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, error) {
+func (m *MockService) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGet", ctx, policy)
 	ret0, _ := ret[0].([]*entity.Workflow)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // MGet indicates an expected call of MGet.
@@ -979,12 +981,13 @@ func (mr *MockRepositoryMockRecorder) MDelete(ctx, ids any) *gomock.Call {
 }
 
 // MGetDrafts mocks base method.
-func (m *MockRepository) MGetDrafts(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, error) {
+func (m *MockRepository) MGetDrafts(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGetDrafts", ctx, policy)
 	ret0, _ := ret[0].([]*entity.Workflow)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // MGetDrafts indicates an expected call of MGetDrafts.
@@ -994,12 +997,13 @@ func (mr *MockRepositoryMockRecorder) MGetDrafts(ctx, policy any) *gomock.Call {
 }
 
 // MGetLatestVersion mocks base method.
-func (m *MockRepository) MGetLatestVersion(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, error) {
+func (m *MockRepository) MGetLatestVersion(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGetLatestVersion", ctx, policy)
 	ret0, _ := ret[0].([]*entity.Workflow)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // MGetLatestVersion indicates an expected call of MGetLatestVersion.
@@ -1009,12 +1013,13 @@ func (mr *MockRepositoryMockRecorder) MGetLatestVersion(ctx, policy any) *gomock
 }
 
 // MGetMetas mocks base method.
-func (m *MockRepository) MGetMetas(ctx context.Context, query *vo.MetaQuery) (map[int64]*vo.Meta, error) {
+func (m *MockRepository) MGetMetas(ctx context.Context, query *vo.MetaQuery) (map[int64]*vo.Meta, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGetMetas", ctx, query)
 	ret0, _ := ret[0].(map[int64]*vo.Meta)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // MGetMetas indicates an expected call of MGetMetas.

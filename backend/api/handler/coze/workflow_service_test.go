@@ -949,9 +949,9 @@ func TestNodeTemplateList(t *testing.T) {
 		assert.Equal(t, 3, len(resp.Data.CateList))
 
 		id2Name := map[string]string{
-			"3":  "大模型",
-			"5":  "代码",
-			"18": "问答",
+			"3":  "LLM",
+			"5":  "Code",
+			"18": "Question",
 		}
 		for _, tl := range resp.Data.TemplateList {
 			assert.Equal(t, tl.Name, id2Name[tl.ID])
