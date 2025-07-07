@@ -113,6 +113,7 @@ type knowledgeSVC struct {
 	sliceRepo        repository.KnowledgeDocumentSliceRepo
 	reviewRepo       repository.KnowledgeDocumentReviewRepo
 	webCrawlTaskRepo repository.WebCrawlTaskRepo
+	updateConfigRepo repository.KnowledgeDocumentUpdateConfigRepo
 	modelFactory     chatmodel.Factory
 	crawler          crawl.Crawler
 
@@ -442,13 +443,16 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, request *DeleteDocume
 	if err != nil {
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
-
+	err = k.updateConfigRepo.DeleteByDocumentID(ctx, request.DocumentID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[DeleteDocument] delete update config failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+	}
 	sliceIDs, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{request.DocumentID})
 	if err != nil {
 		logs.CtxErrorf(ctx, "[DeleteDocument] get document slice ids failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
-
 	if err = k.emitDeleteKnowledgeDataEvent(ctx, doc.KnowledgeID, sliceIDs, strconv.FormatInt(request.DocumentID, 10)); err != nil {
 		return err
 	}

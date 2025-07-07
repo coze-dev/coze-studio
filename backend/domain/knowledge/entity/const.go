@@ -48,8 +48,8 @@ const (
 type WebCrawlTaskStatus int64
 
 const (
-	WebContentStatusInit    WebCrawlTaskStatus = 0
-	WebContentStatusSuccess WebCrawlTaskStatus = 1
-	WebContentStatusFailed  WebCrawlTaskStatus = 2
-	WebContentStatusAborted WebCrawlTaskStatus = 3
+	WebCrawlTaskStatusInit    WebCrawlTaskStatus = 0
+	WebCrawlTaskStatusSuccess WebCrawlTaskStatus = 1
+	WebCrawlTaskStatusFailed  WebCrawlTaskStatus = 2
+	WebCrawlTaskStatusAborted WebCrawlTaskStatus = 3
 )

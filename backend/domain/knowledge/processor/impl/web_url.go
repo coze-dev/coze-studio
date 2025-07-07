@@ -23,7 +23,7 @@ func (w *webDocProcessor) BeforeCreate() error {
 				logs.CtxErrorf(w.ctx, "get web content task failed, err: %v", err)
 				return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 			}
-			if task.Status != int32(entity.WebContentStatusSuccess) {
+			if task.Status != int32(entity.WebCrawlTaskStatusSuccess) {
 				logs.CtxErrorf(w.ctx, "web content task status not success, status: %v", task.Status)
 				return errorx.New(errno.ErrKnowledgeCrawlWebUrlFailCode, errorx.KV("msg", "web content task status not success"))
 			}

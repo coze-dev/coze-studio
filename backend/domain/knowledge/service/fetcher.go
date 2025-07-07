@@ -4,11 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/crawl"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 	"code.byted.org/flow/opencoze/backend/types/errno"
 	"github.com/google/uuid"
 )
@@ -70,15 +73,40 @@ func (k *knowledgeSVC) fetchFromWebUrl(ctx context.Context, req *fecthRequest) (
 	}, nil
 }
 
-func (k *knowledgeSVC) saveFetchResult(ctx context.Context, source *entity.DocumentSource, fetchResp *fetchResponse) (newSourceFileID int64, err error) {
-	if source == nil {
-		return 0, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "document source is nil"))
-	}
+func (k *knowledgeSVC) saveWebCrawlTaskResult(ctx context.Context, fetchResp *fetchResponse, originSourceFileID int64) (newSourceFileID int64, err error) {
 	if fetchResp == nil {
 		return 0, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "fetch response is nil"))
 	}
-	switch ptr.From(source) {
-	case entity.DocumentSourceWeb:
-		task:=
+	taskID, err := k.idgen.GenID(ctx)
+	if err != nil {
+		return 0, errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("gen id failed, err: %v", err)))
 	}
+	originTask, err := k.webCrawlTaskRepo.GetByID(ctx, originSourceFileID)
+	if err != nil {
+		return 0, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("get crawl task failed, err: %v", err)))
+	}
+	tosUri := uuid.NewString() + ".json"
+	byteData, err := sonic.Marshal(fetchResp.SubLinkUrls)
+	if err != nil {
+		return 0, errorx.New(errno.ErrKnowledgeParseJSONCode, errorx.KV("msg", fmt.Sprintf("marshal failed, err: %v", err)))
+	}
+	err = k.storage.PutObject(ctx, tosUri, byteData)
+	if err != nil {
+		return 0, errorx.New(errno.ErrKnowledgePutObjectFailCode, errorx.KV("msg", fmt.Sprintf("put object failed, err: %v", err)))
+	}
+	newTask := model.WebCrawlTask{
+		ID:            taskID,
+		Title:         originTask.Title,
+		SubPageCount:  int32(len(fetchResp.SubLinkUrls)),
+		ContentTosURL: fetchResp.ContentUri,
+		SublinkTosURI: tosUri,
+		Status:        int32(entity.WebCrawlTaskStatusSuccess),
+		CreatedAt:     time.Now().UnixMilli(),
+		UpdatedAt:     time.Now().UnixMilli(),
+	}
+	err = k.webCrawlTaskRepo.Create(ctx, &newTask)
+	if err != nil {
+		return 0, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("save crawl task failed, err: %v", err)))
+	}
+	return taskID, nil
 }

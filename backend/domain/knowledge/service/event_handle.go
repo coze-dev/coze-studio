@@ -19,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/events"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
@@ -602,7 +603,8 @@ func (k *knowledgeSVC) refreshDocument(ctx context.Context, refreshCtx *RefreshD
 		logs.CtxErrorf(ctx, "document not found, id: %d", refreshCtx.DocumentID)
 		return errorx.New(errno.ErrKnowledgeDocumentNotExistCode, errorx.KV("msg", fmt.Sprintf("document not found, id: %d", refreshCtx.DocumentID)))
 	}
-	if oldDoc.SourceType == int32(entity.DocumentSourceLocal) || oldDoc.SourceType == int32(entity.DocumentSourceCustom) {
+	documentSource := entity.DocumentSource(oldDoc.SourceType)
+	if documentSource == entity.DocumentSourceLocal || documentSource == entity.DocumentSourceCustom {
 		logs.CtxWarnf(ctx, "document source type not support refresh, id: %d", refreshCtx.DocumentID)
 		return nil
 	}
@@ -623,6 +625,63 @@ func (k *knowledgeSVC) refreshDocument(ctx context.Context, refreshCtx *RefreshD
 	if err != nil {
 		return err
 	}
+	switch entity.DocumentSource(oldDoc.SourceType) {
+	case entity.DocumentSourceWeb:
+		newDoc.SourceFileID, err = k.saveWebCrawlTaskResult(ctx, fetchResp, oldDoc.SourceFileID)
+		if err != nil {
+			return err
+		}
+	default:
+	}
+	docEntity, err := k.fromModelDocument(ctx, newDoc)
+	if err != nil {
+		return err
+	}
+	docProcessor := impl.NewDocProcessor(ctx, &impl.DocProcessorConfig{
+		UserID:         oldDoc.CreatorID,
+		SpaceID:        oldDoc.SpaceID,
+		DocumentSource: documentSource,
+		Documents:      []*entity.Document{docEntity},
+		KnowledgeRepo:  k.knowledgeRepo,
+		DocumentRepo:   k.documentRepo,
+		SliceRepo:      k.sliceRepo,
+		Idgen:          k.idgen,
+		Producer:       k.producer,
+		ParseManager:   k.parseManager,
+		Storage:        k.storage,
+		Rdb:            k.rdb,
+	})
+	err = docProcessor.BeforeCreate()
+	if err != nil {
+		return err
+	}
+	err = docProcessor.BuildDBModel()
+	if err != nil {
+		return err
+	}
+	err = docProcessor.InsertDBModel()
+	if err != nil {
+		return err
+	}
+	processorResp := docProcessor.GetResp()
+	if len(processorResp) == 0 {
+		return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "document processor resp is empty"))
+	}
+	defer func() {
+		if err != nil {
+			logs.CtxErrorf(ctx, "refresh document failed, err: %v", err)
+			deleteErr := k.DeleteDocument(ctx, &DeleteDocumentRequest{DocumentID: docProcessor.GetResp()[0].ID})
+			if deleteErr != nil {
+				logs.CtxErrorf(ctx, "delete document failed, err: %v", deleteErr)
+			}
+		}
+	}()
 
-	// strp n: unlock
+	// sync index
+	err = k.indexDocument(ctx, &entity.Event{Document: docProcessor.GetResp()[0]})
+	if err != nil {
+		return err
+	}
+	return nil
+	// step n: unlock
 }
