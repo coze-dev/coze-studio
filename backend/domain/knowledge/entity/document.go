@@ -40,6 +40,9 @@ type Document struct {
 	Source           DocumentSource       // 文档来源
 	ParsingStrategy  *ParsingStrategy     // 解析策略
 	ChunkingStrategy *ChunkingStrategy    // 分段策略
+	UpdateRule       *UpdateRule          // 更新规则
+	WebURL           string               // 在线网页获取数据，传入网页URL
+	SourceFileID     int64                // 三方源ID
 
 	TableInfo TableInfo
 	IsAppend  bool // 是否在表格中追加
@@ -47,6 +50,18 @@ type Document struct {
 	// LevelURI   string // 层级分段预览 uri
 	// PreviewURI string // 预览 uri
 }
+
+type UpdateRule struct {
+	UpdateType     UpdateType
+	UpdateInterval int32 // day
+}
+
+type UpdateType int64
+
+const (
+	UpdateType_NoUpdate UpdateType = 0
+	UpdateType_Cover    UpdateType = 1
+)
 
 type TableInfo struct {
 	VirtualTableName  string         `json:"virtual_table_name"`

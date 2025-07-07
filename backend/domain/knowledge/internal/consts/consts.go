@@ -26,4 +26,5 @@ const (
 	DefaultOverlap         = 10
 	DefaultTrimSpace       = false
 	DefaultTrimURLAndEmail = false
+	DocumentConfigLockKey  = "document_config_lock_key"
 )

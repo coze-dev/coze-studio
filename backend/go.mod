@@ -64,6 +64,7 @@ require (
 	github.com/extrame/xls v0.0.1
 	github.com/hertz-contrib/cors v0.1.0
 	github.com/jinzhu/copier v0.4.0
+	github.com/larksuite/oapi-sdk-go/v3 v3.4.21
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/ollama/ollama v0.5.12
 	github.com/rbretecher/go-postman-collection v0.9.0

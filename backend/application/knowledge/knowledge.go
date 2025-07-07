@@ -27,10 +27,12 @@ import (
 	"github.com/bytedance/sonic"
 
 	modelCommon "github.com/coze-dev/coze-studio/backend/api/model/common"
+	"github.com/coze-dev/coze-studio/backend/api/model/connector"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/flow/dataengine/dataset"
 	"github.com/coze-dev/coze-studio/backend/api/model/knowledge/document"
 	resource "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
+	"github.com/coze-dev/coze-studio/backend/api/model/web_crawl"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/application/search"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
@@ -299,10 +301,7 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 		if req.GetDocumentBases()[i] == nil {
 			continue
 		}
-		docSource := entity.DocumentSourceCustom
-		if req.GetDocumentBases()[i].GetSourceInfo().GetTosURI() != "" {
-			docSource = entity.DocumentSourceLocal
-		}
+
 		var captionType *dataset.CaptionType
 		if req.GetChunkStrategy() != nil {
 			captionType = req.GetChunkStrategy().CaptionType
@@ -319,10 +318,12 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 			RawContent:       req.GetDocumentBases()[i].GetSourceInfo().GetCustomContent(),
 			URI:              req.GetDocumentBases()[i].GetSourceInfo().GetTosURI(),
 			FileExtension:    parser.FileExtension(GetExtension(req.GetDocumentBases()[i].GetSourceInfo().GetTosURI())),
-			Source:           docSource,
+			Source:           convertDocumentSource2Entity(req.GetDocumentBases()[i].GetSourceInfo().GetDocumentSource()),
 			IsAppend:         req.GetIsAppend(),
 			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet, captionType, req.GetDocumentBases()[i].FilterStrategy),
 			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
+			SourceFileID:     req.GetDocumentBases()[i].GetSourceInfo().GetWebID(),
+			UpdateRule:       convertUpdateRule2Entity(req.GetDocumentBases()[i].UpdateRule),
 			TableInfo: entity.TableInfo{
 				Columns: convertTableColumns2Entity(req.GetDocumentBases()[i].GetTableMeta()),
 			},
@@ -407,6 +408,7 @@ func (k *KnowledgeApplicationService) UpdateDocument(ctx context.Context, req *d
 		TableInfo: &entity.TableInfo{
 			Columns: convertTableColumns2Entity(req.GetTableMeta()),
 		},
+		UpdateRule: convertUpdateRule2Entity(req.GetUpdateRule()),
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "update document failed, err: %v", err)
@@ -1120,4 +1122,227 @@ func (k *KnowledgeApplicationService) ExtractPhotoCaption(ctx context.Context, r
 
 type DeleteAppKnowledgeRequest struct {
 	AppID int64 `json:"app_id"`
+}
+
+func (k *KnowledgeApplicationService) SubmitWebUrl(ctx context.Context, req *dataset.SubmitWebUrlRequest) (*dataset.SubmitWebUrlResponse, error) {
+	resp := dataset.NewSubmitWebUrlResponse()
+	if req == nil {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	source := entity.DocumentSourceWeb
+	if ptr.From(req.FormatType) == dataset.FormatType_Table {
+		source = entity.DocumentSourceTableDataUrl
+	}
+	domainResp, err := k.DomainSVC.SubmitWebUrlTask(ctx, &service.SubmitWebUrlTaskRequest{
+		Source: source,
+		URLs:   []string{req.GetWebURL()},
+	})
+	if err != nil {
+		return resp, err
+	}
+	if len(domainResp.TaskIDs) == 0 {
+		return resp, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "submit web url task failed"))
+	}
+	resp.WebID = domainResp.TaskIDs[0]
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) BatchSubmitWebUrl(ctx context.Context, req *dataset.BatchSubmitWebUrlRequest) (*dataset.BatchSubmitWebUrlResponse, error) {
+	resp := dataset.NewBatchSubmitWebUrlResponse()
+	if req == nil {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	if len(req.GetWebUrls()) == 0 {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "web urls is empty"))
+	}
+	domainResp, err := k.DomainSVC.SubmitWebUrlTask(ctx, &service.SubmitWebUrlTaskRequest{
+		Source: entity.DocumentSourceWeb,
+		URLs:   req.GetWebUrls(),
+	})
+	if err != nil {
+		return resp, err
+	}
+	if len(domainResp.TaskIDs) != len(req.GetWebUrls()) {
+		return resp, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "submit web url task failed"))
+	}
+	resp.WebIds = slices.Transform(domainResp.TaskIDs, func(id int64) string {
+		return strconv.FormatInt(id, 10)
+	})
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) GetWebInfo(ctx context.Context, req *dataset.GetWebInfoRequest) (*dataset.GetWebInfoResponse, error) {
+	resp := dataset.NewGetWebInfoResponse()
+	if req == nil {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	if len(req.GetWebIds()) == 0 {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "web ids is empty"))
+	}
+	webIDs, err := slices.TransformWithErrorCheck(req.GetWebIds(), func(s string) (int64, error) {
+		id, err := strconv.ParseInt(s, 10, 64)
+		return id, err
+	})
+	if err != nil {
+		return resp, err
+	}
+
+	domainResp, err := k.DomainSVC.GetWebUrlInfo(ctx, &service.GetWebUrlInfoRequest{TaskIDs: webIDs})
+	if err != nil {
+		return resp, err
+	}
+	resp.Data = map[string]*dataset.RootWebData{}
+	for k, v := range domainResp.Tasks {
+		id := strconv.FormatInt(k, 10)
+		value := dataset.RootWebData{
+			Progress: int32(v.Progress),
+			WebInfo: &dataset.WebInfo{
+				ID:            k,
+				URL:           v.URL,
+				Title:         v.Title,
+				SubpagesCount: int32(len(v.SubLinkUrls)),
+				Status:        convertWebStatus2Model(v.Status),
+			},
+		}
+		resp.Data[id] = &value
+	}
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) CreateSubLinkDiscoveryTask(ctx context.Context, req *web_crawl.CreateSubLinkDiscoveryTaskRequest) (*web_crawl.CreateSubLinkDiscoveryTaskResponse, error) {
+	resp := web_crawl.NewCreateSubLinkDiscoveryTaskResponse()
+	if req == nil {
+		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	source := entity.DocumentSourceWeb
+	domainResp, err := k.DomainSVC.SubmitWebUrlTask(ctx, &service.SubmitWebUrlTaskRequest{
+		Source: source,
+		URLs:   []string{req.GetURL()},
+	})
+	if err != nil {
+		return resp, err
+	}
+	if len(domainResp.TaskIDs) == 0 {
+		return resp, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "submit SubLinkDiscoveryTask failed"))
+	}
+	resp.TaskID = domainResp.TaskIDs[0]
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) GetSubLinkDiscoveryTask(ctx context.Context, req *web_crawl.GetSubLinkDiscoveryTaskRequest) (*web_crawl.GetSubLinkDiscoveryTaskResponse, error) {
+	resp := web_crawl.NewGetSubLinkDiscoveryTaskResponse()
+	if req == nil {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	if req.GetTaskID() == 0 {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "task id is empty"))
+	}
+	domainResp, err := k.DomainSVC.GetWebUrlInfo(ctx, &service.GetWebUrlInfoRequest{TaskIDs: []int64{req.GetTaskID()}})
+	if err != nil {
+		return resp, err
+	}
+	if len(domainResp.Tasks) != 1 {
+		return resp, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "get SubLinkDiscoveryTask failed"))
+	}
+	resp.Status = convertSubLinkDiscoveryTaskStatus2Model(domainResp.Tasks[req.GetTaskID()].Status)
+	resp.Urls = domainResp.Tasks[req.GetTaskID()].SubLinkUrls
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) AbortSubLinkDiscoveryTask(ctx context.Context, req *web_crawl.AbortSubLinkDiscoveryTaskRequest) (*web_crawl.AbortSubLinkDiscoveryTaskResponse, error) {
+	resp := web_crawl.NewAbortSubLinkDiscoveryTaskResponse()
+	if req == nil {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	if req.GetTaskID() == 0 {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "task id is empty"))
+	}
+	err := k.DomainSVC.AbortWebUrlTask(ctx, &service.AbortWebUrlTaskRequest{TaskID: req.GetTaskID()})
+	if err != nil {
+		return resp, err
+	}
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) FetchWebUrl(ctx context.Context, req *dataset.FetchWebUrlRequest) (*dataset.FetchWebUrlResponse, error) {
+	resp := dataset.NewFetchWebUrlResponse()
+	if req == nil {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	if len(req.DocumentIds) == 0 {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "document ids is empty"))
+	}
+	ids, err := slices.TransformWithErrorCheck(req.DocumentIds, func(s string) (int64, error) {
+		id, err := strconv.ParseInt(s, 10, 64)
+		return id, err
+	})
+	if err != nil {
+		return resp, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "document ids is invalid"))
+	}
+	err = k.DomainSVC.BatchRefreshDocument(ctx, &service.BatchRefreshDocumentRequest{DocumentIDs: ids})
+	if err != nil {
+		return resp, err
+	}
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) MGetAuthInfo(ctx context.Context, req *connector.MGetAuthInfoRequest) (*connector.MGetAuthInfoResponse, error) {
+	resp := connector.NewMGetAuthInfoResponse()
+	if req == nil {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	if len(req.ConnectorIDList) == 0 {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "connector id list is empty"))
+	}
+	ids, err := slices.TransformWithErrorCheck(req.GetConnectorIDList(), func(id string) (int64, error) {
+		return strconv.ParseInt(id, 10, 64)
+	})
+	if err != nil {
+		return resp, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "connector id list is invalid"))
+	}
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
+	}
+	domainResp, err := k.DomainSVC.MGetAuthInfo(ctx, &service.MGetAuthInfoRequest{ConnectorIDs: ids, CreatorID: ptr.From(uid)})
+	if err != nil {
+		return resp, err
+	}
+	resp.AuthInfoMap = map[string][]*connector.AuthInfo{}
+	for key, val := range domainResp.AuthMap {
+		if len(val) == 0 {
+			continue
+		}
+		infos := []*connector.AuthInfo{}
+		for i := range val {
+			if val[i] == nil {
+				continue
+			}
+			v := val[i]
+			infos = append(infos, &connector.AuthInfo{
+				AuthID:      v.ID,
+				ConnectorID: connector.ConnectorID(v.ConnectorID),
+				Name:        v.Name,
+				Icon:        v.Icon,
+			})
+		}
+		resp.AuthInfoMap[key] = infos
+	}
+	return resp, nil
+}
+
+func (k *KnowledgeApplicationService) DataSourceOAuthConsentURL(ctx context.Context, req *connector.DataSourceOAuthConsentURLRequest) (*connector.DataSourceOAuthConsentURLResponse, error) {
+	resp := connector.NewDataSourceOAuthConsentURLResponse()
+	if req == nil {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	if req.GetConnectorID() == 0 {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "connector id is empty"))
+	}
+	domainResp, err := k.DomainSVC.GetAuthConsentURL(ctx, &service.GetAuthConsentURLRequest{ConnectorID: int64(req.GetConnectorID())})
+	if err != nil {
+		return resp, err
+	}
+	resp.ConsentURL = domainResp.ConsentURL
+	return resp, nil
 }

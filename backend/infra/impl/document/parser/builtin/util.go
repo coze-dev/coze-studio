@@ -21,8 +21,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"math/rand"
-	"path"
-	"strings"
 	"time"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
@@ -48,17 +46,6 @@ func createSecret(uid int64, fileType string) string {
 		result += string(baseWord[index])
 	}
 	return result
-}
-func getExtension(uri string) string {
-	if uri == "" {
-		return ""
-	}
-	fileExtension := path.Base(uri)
-	ext := path.Ext(fileExtension)
-	if ext != "" {
-		return strings.TrimPrefix(ext, ".")
-	}
-	return ""
 }
 
 func getCreatorIDFromExtraMeta(extraMeta map[string]any) int64 {

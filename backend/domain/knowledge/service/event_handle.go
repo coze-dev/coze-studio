@@ -27,6 +27,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
+	"github.com/jinzhu/copier"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
@@ -34,6 +35,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/events"
+	"github.com/coze-dev/coze-studio/backend/domain/knowledge/processor/impl"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
@@ -41,6 +43,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/progressbar"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -88,6 +91,16 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 	case entity.EventTypeDocumentReview:
 		if err = k.documentReviewEventHandler(ctx, event); err != nil {
 			logs.CtxErrorf(ctx, "[HandleMessage] document review failed, err: %v", err)
+			return err
+		}
+	case entity.EventTypeCrawlData:
+		if err = k.crawlDataEventHandler(ctx, event); err != nil {
+			logs.CtxErrorf(ctx, "[HandleMessage] crawl data failed, err: %v", err)
+			return err
+		}
+	case entity.EventTypeRefreshDocument:
+		if err = k.refreshDocumentEventHandler(ctx, event); err != nil {
+			logs.CtxErrorf(ctx, "[HandleMessage] refresh document failed, err: %v", err)
 			return err
 		}
 	default:
@@ -592,4 +605,183 @@ func (k *knowledgeSVC) slice2Document(ctx context.Context, src *entity.Document,
 		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", fmt.Sprintf("document type invalid, type=%d", src.Type)))
 	}
 	return fn(ctx, slice, src.TableInfo.Columns, k.enableCompactTable)
+}
+
+func (k *knowledgeSVC) refreshDocument(ctx context.Context, documentID int64) (err error) {
+	defer func() {
+		if e := recover(); e != nil {
+			logs.CtxErrorf(ctx, "refresh document panic, err: %v", e)
+			err = errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("msg", fmt.Sprintf("refresh document panic, err: %v", e)))
+		}
+	}()
+	updateConfig, err := k.updateConfigRepo.GetByDocumentID(ctx, documentID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "get document update config failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("get document update config failed, err: %v", err)))
+	}
+	if updateConfig == nil {
+		return nil
+	}
+	updateConfig.NextUpdateTime = time.UnixMilli(updateConfig.NextUpdateTime).Add(time.Hour * time.Duration(updateConfig.UpdateInterval)).UnixMilli()
+	err = k.updateConfigRepo.Upsert(ctx, updateConfig)
+	if err != nil {
+		logs.CtxErrorf(ctx, "upsert document update config failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("upsert document update config failed, err: %v", err)))
+	}
+	// step 2: fetch old doc
+	oldDoc, err := k.documentRepo.GetByID(ctx, documentID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "get document by id failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("get document by id failed, err: %v", err)))
+	}
+	if oldDoc == nil || oldDoc.ID == 0 {
+		logs.CtxErrorf(ctx, "document not found, id: %d", documentID)
+		return errorx.New(errno.ErrKnowledgeDocumentNotExistCode, errorx.KV("msg", fmt.Sprintf("document not found, id: %d", documentID)))
+	}
+	documentSource := entity.DocumentSource(oldDoc.SourceType)
+	if documentSource == entity.DocumentSourceLocal || documentSource == entity.DocumentSourceCustom {
+		logs.CtxWarnf(ctx, "document source type not support refresh, id: %d", documentID)
+		return nil
+	}
+	newDoc := &model.KnowledgeDocument{}
+	err = copier.CopyWithOption(newDoc, oldDoc, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	if err != nil {
+		logs.CtxErrorf(ctx, "copy document failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", fmt.Sprintf("copy document failed, err: %v", err)))
+	}
+	// step 3: fetch
+	fetcher := k.newFetchFunc(ptr.Of(entity.DocumentSource(oldDoc.SourceType)))
+
+	fetchReq, err := k.newFetchRequest(ctx, ptr.Of(entity.DocumentSource(oldDoc.SourceType)), oldDoc.SourceFileID)
+	if err != nil {
+		return err
+	}
+	fetchResp, err := fetcher(ctx, fetchReq)
+	if err != nil {
+		return err
+	}
+	switch entity.DocumentSource(oldDoc.SourceType) {
+	case entity.DocumentSourceWeb:
+		newDoc.SourceFileID, err = k.saveWebCrawlTaskResult(ctx, fetchResp, oldDoc.SourceFileID)
+		if err != nil {
+			return err
+		}
+	default:
+	}
+	docEntity, err := k.fromModelDocument(ctx, newDoc)
+	if err != nil {
+		return err
+	}
+	docEntity.UpdateRule = &entity.UpdateRule{
+		UpdateType:     entity.UpdateType_Cover,
+		UpdateInterval: updateConfig.UpdateInterval / 24,
+	}
+	docProcessor := impl.NewDocProcessor(ctx, &impl.DocProcessorConfig{
+		UserID:           oldDoc.CreatorID,
+		SpaceID:          oldDoc.SpaceID,
+		DocumentSource:   documentSource,
+		Documents:        []*entity.Document{docEntity},
+		KnowledgeRepo:    k.knowledgeRepo,
+		DocumentRepo:     k.documentRepo,
+		SliceRepo:        k.sliceRepo,
+		WebCrawlTaskRepo: k.webCrawlTaskRepo,
+		UpdateConfigRepo: k.updateConfigRepo,
+		Idgen:            k.idgen,
+		Producer:         k.producer,
+		ParseManager:     k.parseManager,
+		Storage:          k.storage,
+		Rdb:              k.rdb,
+	})
+	err = docProcessor.BeforeCreate()
+	if err != nil {
+		return err
+	}
+	err = docProcessor.BuildDBModel()
+	if err != nil {
+		return err
+	}
+	err = docProcessor.InsertDBModel()
+	if err != nil {
+		return err
+	}
+	processorResp := docProcessor.GetResp()
+	if len(processorResp) == 0 {
+		return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "document processor resp is empty"))
+	}
+	defer func() {
+		if err != nil {
+			logs.CtxErrorf(ctx, "refresh document failed, err: %v", err)
+			deleteErr := k.DeleteDocument(ctx, &DeleteDocumentRequest{DocumentID: docProcessor.GetResp()[0].ID})
+			if deleteErr != nil {
+				logs.CtxErrorf(ctx, "delete document failed, err: %v", deleteErr)
+			}
+		}
+	}()
+
+	// sync index
+	err = k.indexDocument(ctx, &entity.Event{Document: docProcessor.GetResp()[0]})
+	if err != nil {
+		return err
+	}
+	return k.DeleteDocument(ctx, &DeleteDocumentRequest{DocumentID: oldDoc.ID})
+}
+
+func (k *knowledgeSVC) crawlDataEventHandler(ctx context.Context, event *entity.Event) (err error) {
+	task := event.WebCrawlTask
+	if task == nil {
+		return errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("msg", "web crawl task is nil"))
+	}
+	defer func() {
+		if err != nil {
+			updateErr := k.webCrawlTaskRepo.Update(ctx, task.TaskID, map[string]any{"status": entity.WebCrawlTaskStatusFailed, "fail_reason": err.Error(), "updated_at": time.Now().UnixMilli()})
+			if updateErr != nil {
+				logs.CtxErrorf(ctx, "update web crawl task failed, err: %v", updateErr)
+				err = errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("update web crawl task failed, err: %v", updateErr)))
+				return
+			}
+		}
+	}()
+	fetcher := k.newFetchFunc(&task.Source)
+	fetchReq, err := k.newFetchRequest(ctx, &task.Source, task.TaskID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "new fetch request failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("msg", fmt.Sprintf("new fetch request failed, err: %v", err)))
+	}
+	fetchResp, err := fetcher(ctx, fetchReq)
+	if err != nil {
+		logs.CtxErrorf(ctx, "fetch data failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("msg", fmt.Sprintf("fetch data failed, err: %v", err)))
+	}
+	switch entity.DocumentSource(task.Source) {
+	case entity.DocumentSourceWeb:
+		sublinkUri, err := k.saveSubLinks2Storage(ctx, fetchResp.SubLinkUrls)
+		if err != nil {
+			return err
+		}
+		err = k.webCrawlTaskRepo.Update(ctx, task.TaskID, map[string]any{
+			"title":           fetchResp.Title,
+			"sub_page_count":  len(fetchResp.SubLinkUrls),
+			"content_tos_url": fetchResp.ContentUri,
+			"sublink_tos_uri": sublinkUri,
+			"status":          entity.WebCrawlTaskStatusSuccess,
+			"updated_at":      time.Now().UnixMilli(),
+		})
+		if err != nil {
+			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("update web crawl task failed, err: %v", err)))
+		}
+	}
+	return nil
+}
+
+func (k *knowledgeSVC) refreshDocumentEventHandler(ctx context.Context, event *entity.Event) (err error) {
+	doc := event.Document
+	if doc == nil || doc.ID == 0 {
+		return errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("msg", "document is nil"))
+	}
+	err = k.refreshDocument(ctx, doc.ID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "refresh document failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("msg", fmt.Sprintf("refresh document failed, err: %v", err)))
+	}
+	return nil
 }

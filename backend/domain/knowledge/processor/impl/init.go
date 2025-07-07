@@ -28,6 +28,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
 type DocProcessorConfig struct {
@@ -36,31 +37,35 @@ type DocProcessorConfig struct {
 	DocumentSource entity.DocumentSource
 	Documents      []*entity.Document
 
-	KnowledgeRepo repository.KnowledgeRepo
-	DocumentRepo  repository.KnowledgeDocumentRepo
-	SliceRepo     repository.KnowledgeDocumentSliceRepo
-	Idgen         idgen.IDGenerator
-	Storage       storage.Storage
-	Rdb           rdb.RDB
-	Producer      eventbus.Producer
-	ParseManager  parser.Manager
+	KnowledgeRepo    repository.KnowledgeRepo
+	DocumentRepo     repository.KnowledgeDocumentRepo
+	SliceRepo        repository.KnowledgeDocumentSliceRepo
+	WebCrawlTaskRepo repository.WebCrawlTaskRepo
+	UpdateConfigRepo repository.KnowledgeDocumentUpdateConfigRepo
+	Idgen            idgen.IDGenerator
+	Storage          storage.Storage
+	Rdb              rdb.RDB
+	Producer         eventbus.Producer
+	ParseManager     parser.Manager
 }
 
 func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) (p processor.DocProcessor) {
 	base := &baseDocProcessor{
-		ctx:            ctx,
-		UserID:         config.UserID,
-		SpaceID:        config.SpaceID,
-		Documents:      config.Documents,
-		documentSource: &config.DocumentSource,
-		knowledgeRepo:  config.KnowledgeRepo,
-		documentRepo:   config.DocumentRepo,
-		sliceRepo:      config.SliceRepo,
-		storage:        config.Storage,
-		idgen:          config.Idgen,
-		rdb:            config.Rdb,
-		producer:       config.Producer,
-		parseManager:   config.ParseManager,
+		ctx:              ctx,
+		UserID:           config.UserID,
+		SpaceID:          config.SpaceID,
+		Documents:        config.Documents,
+		documentSource:   &config.DocumentSource,
+		knowledgeRepo:    config.KnowledgeRepo,
+		documentRepo:     config.DocumentRepo,
+		sliceRepo:        config.SliceRepo,
+		webCrawlTaskRepo: config.WebCrawlTaskRepo,
+		updateConfigRepo: config.UpdateConfigRepo,
+		storage:          config.Storage,
+		idgen:            config.Idgen,
+		rdb:              config.Rdb,
+		producer:         config.Producer,
+		parseManager:     config.ParseManager,
 	}
 
 	switch config.DocumentSource {
@@ -81,6 +86,11 @@ func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) (p process
 			}
 		}
 		return base
+	case entity.DocumentSourceWeb:
+		p = &webDocProcessor{
+			baseDocProcessor: ptr.From(base),
+		}
+		return p
 	default:
 		return base
 	}

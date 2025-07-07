@@ -29,6 +29,7 @@ import (
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/flow/dataengine/dataset"
+	"github.com/coze-dev/coze-studio/backend/api/model/web_crawl"
 	"github.com/coze-dev/coze-studio/backend/application/upload"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
@@ -287,7 +288,7 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 		HitCount:              int32(documentEntity.Hits),
 		SourceType:            convertDocumentSource2Model(documentEntity.Source),
 		FormatType:            convertDocumentTypeEntity2Dataset(documentEntity.Type),
-		WebURL:                &documentEntity.URL,
+		WebURL:                &documentEntity.WebURL,
 		TableMeta:             convertTableColumns2Model(documentEntity.TableInfo.Columns),
 		StatusDescript:        &documentEntity.StatusMsg,
 		SpaceID:               ptr.Of(documentEntity.SpaceID),
@@ -296,6 +297,10 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 		PreviewTosURL:         &documentEntity.URL,
 		ChunkStrategy:         chunkStrategy,
 		ParsingStrategy:       parseStrategy,
+	}
+	if documentEntity.UpdateRule != nil {
+		docInfo.UpdateInterval = documentEntity.UpdateRule.UpdateInterval
+		docInfo.UpdateType = dataset.UpdateType_Cover
 	}
 	return docInfo
 }
@@ -306,6 +311,10 @@ func convertDocumentSource2Entity(sourceType dataset.DocumentSource) entity.Docu
 		return entity.DocumentSourceCustom
 	case dataset.DocumentSource_Document:
 		return entity.DocumentSourceLocal
+	case dataset.DocumentSource_Web:
+		return entity.DocumentSourceWeb
+	case dataset.DocumentSource_FeishuWeb:
+		return entity.DocumentSourceFeishuWeb
 	default:
 		return entity.DocumentSourceLocal
 	}
@@ -776,5 +785,55 @@ func convertFormatType2Entity(tp dataset.FormatType) model.DocumentType {
 		return model.DocumentTypeImage
 	default:
 		return model.DocumentTypeUnknown
+	}
+}
+
+func convertWebStatus2Model(status entity.WebCrawlTaskStatus) dataset.WebStatus {
+	switch status {
+	case entity.WebCrawlTaskStatusInit:
+		return dataset.WebStatus_Handling
+	case entity.WebCrawlTaskStatusSuccess:
+		return dataset.WebStatus_Finish
+	case entity.WebCrawlTaskStatusAborted, entity.WebCrawlTaskStatusFailed:
+		return dataset.WebStatus_Failed
+	default:
+		return dataset.WebStatus_Failed
+	}
+}
+
+func convertSubLinkDiscoveryTaskStatus2Model(status entity.WebCrawlTaskStatus) web_crawl.SubLinkDiscoveryTaskStatus {
+	switch status {
+	case entity.WebCrawlTaskStatusInit:
+		return web_crawl.SubLinkDiscoveryTaskStatus_SUB_LINK_DISCOVERY_TASK_STATUS_RUNNING
+	case entity.WebCrawlTaskStatusSuccess:
+		return web_crawl.SubLinkDiscoveryTaskStatus_SUB_LINK_DISCOVERY_TASK_STATUS_SUCCESS
+	case entity.WebCrawlTaskStatusFailed:
+		return web_crawl.SubLinkDiscoveryTaskStatus_SUB_LINK_DISCOVERY_TASK_STATUS_FINISHED_WITH_ERROR
+	case entity.WebCrawlTaskStatusAborted:
+		return web_crawl.SubLinkDiscoveryTaskStatus_SUB_LINK_DISCOVERY_TASK_STATUS_ABORTED
+	default:
+		return web_crawl.SubLinkDiscoveryTaskStatus_SUB_LINK_DISCOVERY_TASK_STATUS_FINISHED_WITH_ERROR
+	}
+}
+
+func convertUpdateRule2Entity(rule *dataset.UpdateRule) *entity.UpdateRule {
+	if rule == nil {
+		return nil
+	}
+	r := entity.UpdateRule{
+		UpdateType:     convertUpdateType2Entity(rule.UpdateType),
+		UpdateInterval: rule.UpdateInterval,
+	}
+	return &r
+}
+
+func convertUpdateType2Entity(tp dataset.UpdateType) entity.UpdateType {
+	switch tp {
+	case dataset.UpdateType_NoUpdate:
+		return entity.UpdateType_NoUpdate
+	case dataset.UpdateType_Cover:
+		return entity.UpdateType_Cover
+	default:
+		return entity.UpdateType_NoUpdate
 	}
 }

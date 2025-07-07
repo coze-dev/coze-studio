@@ -24,7 +24,9 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
+	connector "github.com/coze-dev/coze-studio/backend/api/model/connector"
 	dataset "github.com/coze-dev/coze-studio/backend/api/model/flow/dataengine/dataset"
+	"github.com/coze-dev/coze-studio/backend/api/model/web_crawl"
 	application "github.com/coze-dev/coze-studio/backend/application/knowledge"
 	"github.com/coze-dev/coze-studio/backend/application/upload"
 )
@@ -524,5 +526,281 @@ func ExtractPhotoCaption(ctx context.Context, c *app.RequestContext) {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// SubmitWebUrl .
+// @router /api/knowledge/web_url/submit [POST]
+func SubmitWebUrl(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.SubmitWebUrlRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.SubmitWebUrlResponse)
+	resp, err = application.KnowledgeSVC.SubmitWebUrl(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// BatchSubmitWebUrl .
+// @router /api/knowledge/web_url/batch_submit [POST]
+func BatchSubmitWebUrl(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.BatchSubmitWebUrlRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.BatchSubmitWebUrlResponse)
+	resp, err = application.KnowledgeSVC.BatchSubmitWebUrl(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetWebInfo .
+// @router /api/knowledge/web_url/get [POST]
+func GetWebInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.GetWebInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.GetWebInfoResponse)
+	resp, err = application.KnowledgeSVC.GetWebInfo(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// FetchWebUrl .
+// @router /api/knowledge/document/batch_fetch [POST]
+func FetchWebUrl(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.FetchWebUrlRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.FetchWebUrlResponse)
+	resp, err = application.KnowledgeSVC.FetchWebUrl(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// BatchUpdateDocument .
+// @router /api/knowledge/document/batch_update [POST]
+func BatchUpdateDocument(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.BatchUpdateDocumentRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.BatchUpdateDocumentResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// CreateSubLinkDiscoveryTask .
+// @router /api/memory/knowledge/create_sub_link_discovery_task [POST]
+func CreateSubLinkDiscoveryTask(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req web_crawl.CreateSubLinkDiscoveryTaskRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(web_crawl.CreateSubLinkDiscoveryTaskResponse)
+	resp, err = application.KnowledgeSVC.CreateSubLinkDiscoveryTask(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetSubLinkDiscoveryTask .
+// @router /api/memory/knowledge/get_sub_link_discovery_task [GET]
+func GetSubLinkDiscoveryTask(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req web_crawl.GetSubLinkDiscoveryTaskRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(web_crawl.GetSubLinkDiscoveryTaskResponse)
+	resp, err = application.KnowledgeSVC.GetSubLinkDiscoveryTask(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// AbortSubLinkDiscoveryTask .
+// @router /api/memory/knowledge/abort_sub_link_discovery_task [POST]
+func AbortSubLinkDiscoveryTask(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req web_crawl.AbortSubLinkDiscoveryTaskRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(web_crawl.AbortSubLinkDiscoveryTaskResponse)
+	resp, err = application.KnowledgeSVC.AbortSubLinkDiscoveryTask(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// MGetAuthInfo .
+// @router /api/memory/knowledge/query_auth_info [POST]
+func MGetAuthInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req connector.MGetAuthInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(connector.MGetAuthInfoResponse)
+	resp, err = application.KnowledgeSVC.MGetAuthInfo(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DataSourceOAuthConsentURL .
+// @router /api/memory/knowledge/oauth_consent_url [POST]
+func DataSourceOAuthConsentURL(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req connector.DataSourceOAuthConsentURLRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(connector.DataSourceOAuthConsentURLResponse)
+	resp, err = application.KnowledgeSVC.DataSourceOAuthConsentURL(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DataSourceOAuthComplete .
+// @router /api/memory/knowledge/oauth_complete [GET]
+func DataSourceOAuthComplete(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req connector.DataSourceOAuthCompleteRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(connector.DataSourceOAuthCompleteResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// SubmitConnectionTask .
+// @router /api/memory/knowledge/submit_connection_task [POST]
+func SubmitConnectionTask(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req connector.SubmitConnectionTaskRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(connector.SubmitConnectionTaskResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PollConnectionTask .
+// @router /api/memory/knowledge/poll_connection_task [POST]
+func PollConnectionTask(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req connector.PollConnectionTaskRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(connector.PollConnectionTaskResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetFileTreeDocList .
+// @router /api/knowledge/connector/file_tree_doc_list [POST]
+func GetFileTreeDocList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req connector.GetFileTreeDocListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(connector.GetFileTreeDocListResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// SearchDocument .
+// @router /api/knowledge/connector/search_document [POST]
+func SearchDocument(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req connector.SearchDocumentRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(connector.SearchDocumentResponse)
+
 	c.JSON(consts.StatusOK, resp)
 }

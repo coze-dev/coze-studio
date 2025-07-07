@@ -25,6 +25,7 @@ type Event struct {
 	SliceIDs       []int64
 	KnowledgeID    int64
 	DocumentReview *Review
+	WebCrawlTask   *WebCrawlTask
 }
 
 type EventType string
@@ -46,5 +47,13 @@ const (
 	// Event requires: Event.KnowledgeID, Event.SliceIDs
 	EventTypeDeleteKnowledgeData EventType = "delete_knowledge_data"
 
+	// EventTypeDocumentReview 文档审核
+	// Event requires: Event.DocumentReview
 	EventTypeDocumentReview EventType = "document_review"
+
+	// EventTypeCrawlData 互联网数据获取
+	EventTypeCrawlData EventType = "crawl_data"
+
+	// EventTypeRefreshDocument 自动从网络中拉取数据覆盖到文档中
+	EventTypeRefreshDocument EventType = "refresh_document"
 )

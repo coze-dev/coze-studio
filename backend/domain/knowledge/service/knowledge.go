@@ -48,7 +48,10 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/events"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/processor/impl"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/cachelock"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/document/crawl"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/document/dataconnector"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/nl2sql"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
@@ -60,6 +63,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
 	rdbEntity "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/cachelock/lockimpl"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/progressbar"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/rrf"
@@ -72,10 +76,13 @@ import (
 
 func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHandler) {
 	svc := &knowledgeSVC{
-		knowledgeRepo:             repository.NewKnowledgeDAO(config.DB),
-		documentRepo:              repository.NewKnowledgeDocumentDAO(config.DB),
-		sliceRepo:                 repository.NewKnowledgeDocumentSliceDAO(config.DB),
-		reviewRepo:                repository.NewKnowledgeDocumentReviewDAO(config.DB),
+		knowledgeRepo:    repository.NewKnowledgeDAO(config.DB),
+		documentRepo:     repository.NewKnowledgeDocumentDAO(config.DB),
+		sliceRepo:        repository.NewKnowledgeDocumentSliceDAO(config.DB),
+		reviewRepo:       repository.NewKnowledgeDocumentReviewDAO(config.DB),
+		webCrawlTaskRepo: repository.NewWebCrawlTaskDAO(config.DB),
+		updateConfigRepo: repository.NewKnowledgeDocumentUpdateConfigDAO(config.DB),
+
 		idgen:                     config.IDGen,
 		rdb:                       config.RDB,
 		producer:                  config.Producer,
@@ -83,6 +90,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHa
 		parseManager:              config.ParseManager,
 		storage:                   config.Storage,
 		reranker:                  config.Reranker,
+		crawler:                   config.Crawler,
 		rewriter:                  config.Rewriter,
 		nl2Sql:                    config.NL2Sql,
 		enableCompactTable:        ptr.FromOrDefault(config.EnableCompactTable, true),
@@ -96,7 +104,7 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHa
 	if svc.parseManager == nil {
 		svc.parseManager = builtin.NewManager(config.Storage, config.OCR, nil)
 	}
-
+	go svc.scanDocumentConfigAndUpdate()
 	return svc, svc
 }
 
@@ -114,16 +122,20 @@ type KnowledgeSVCConfig struct {
 	NL2Sql                    nl2sql.NL2SQL                  // optional: 未配置时默认不支持
 	EnableCompactTable        *bool                          // optional: 表格数据压缩，默认 true
 	OCR                       ocr.OCR                        // optional: ocr, 未提供时 ocr 功能不可用
+	Crawler                   crawl.Crawler                  // required: 网页内容获取
 	CacheCli                  cache.Cmdable                  // optional: 缓存实现
 	IsAutoAnnotationSupported bool                           // 是否支持了图片自动标注
 }
 
 type knowledgeSVC struct {
-	knowledgeRepo repository.KnowledgeRepo
-	documentRepo  repository.KnowledgeDocumentRepo
-	sliceRepo     repository.KnowledgeDocumentSliceRepo
-	reviewRepo    repository.KnowledgeDocumentReviewRepo
-	modelFactory  chatmodel.Factory
+	knowledgeRepo    repository.KnowledgeRepo
+	documentRepo     repository.KnowledgeDocumentRepo
+	sliceRepo        repository.KnowledgeDocumentSliceRepo
+	reviewRepo       repository.KnowledgeDocumentReviewRepo
+	webCrawlTaskRepo repository.WebCrawlTaskRepo
+	updateConfigRepo repository.KnowledgeDocumentUpdateConfigRepo
+	modelFactory     chatmodel.Factory
+	crawler          crawl.Crawler
 
 	idgen                     idgen.IDGenerator
 	rdb                       rdb.RDB
@@ -137,6 +149,7 @@ type knowledgeSVC struct {
 	cacheCli                  cache.Cmdable
 	enableCompactTable        bool // 表格数据压缩
 	isAutoAnnotationSupported bool // 是否支持了图片自动标注
+	dataConnectorManager      dataconnector.FetcherManager
 }
 
 func (k *knowledgeSVC) CreateKnowledge(ctx context.Context, request *CreateKnowledgeRequest) (response *CreateKnowledgeResponse, err error) {
@@ -344,18 +357,20 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *CreateDocume
 	spaceID := request.Documents[0].SpaceID
 	documentSource := request.Documents[0].Source
 	docProcessor := impl.NewDocProcessor(ctx, &impl.DocProcessorConfig{
-		UserID:         userID,
-		SpaceID:        spaceID,
-		DocumentSource: documentSource,
-		Documents:      request.Documents,
-		KnowledgeRepo:  k.knowledgeRepo,
-		DocumentRepo:   k.documentRepo,
-		SliceRepo:      k.sliceRepo,
-		Idgen:          k.idgen,
-		Producer:       k.producer,
-		ParseManager:   k.parseManager,
-		Storage:        k.storage,
-		Rdb:            k.rdb,
+		UserID:           userID,
+		SpaceID:          spaceID,
+		DocumentSource:   documentSource,
+		Documents:        request.Documents,
+		KnowledgeRepo:    k.knowledgeRepo,
+		DocumentRepo:     k.documentRepo,
+		SliceRepo:        k.sliceRepo,
+		WebCrawlTaskRepo: k.webCrawlTaskRepo,
+		UpdateConfigRepo: k.updateConfigRepo,
+		Idgen:            k.idgen,
+		Producer:         k.producer,
+		ParseManager:     k.parseManager,
+		Storage:          k.storage,
+		Rdb:              k.rdb,
 	})
 	// 1. 前置的动作，上传 tos 等
 	err = docProcessor.BeforeCreate()
@@ -415,6 +430,37 @@ func (k *knowledgeSVC) UpdateDocument(ctx context.Context, request *UpdateDocume
 		logs.CtxErrorf(ctx, "[UpdateDocument] update document failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
+	if request.UpdateRule != nil {
+		if request.UpdateRule.UpdateType == entity.UpdateType_NoUpdate {
+			err = k.updateConfigRepo.DeleteByDocumentID(ctx, request.DocumentID)
+			if err != nil {
+				logs.CtxErrorf(ctx, "[UpdateDocument] delete update config failed, err: %v", err)
+				return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+			}
+		}
+		if request.UpdateRule.UpdateType == entity.UpdateType_Cover {
+			updateInterval := request.UpdateRule.UpdateInterval
+			nextExecTime := time.Now().Add(time.Hour * 24 * time.Duration(updateInterval))
+			config, err := k.updateConfigRepo.GetByDocumentID(ctx, request.DocumentID)
+			if err != nil {
+				return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+			}
+			if config == nil || config.DocumentID == 0 {
+				config = &model.KnowledgeDocumentUpdateConfig{
+					DocumentID:     request.DocumentID,
+					LastUpdateTime: time.Now().UnixMilli(),
+					CreateAt:       time.Now().UnixMilli(),
+					UpdateAt:       time.Now().UnixMilli(),
+				}
+			}
+			config.UpdateInterval = updateInterval * 24
+			config.NextUpdateTime = nextExecTime.UnixMilli()
+			err = k.updateConfigRepo.Upsert(ctx, config)
+			if err != nil {
+				return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+			}
+		}
+	}
 	return nil
 }
 
@@ -450,13 +496,16 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, request *DeleteDocume
 	if err != nil {
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
-
+	err = k.updateConfigRepo.DeleteByDocumentID(ctx, request.DocumentID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[DeleteDocument] delete update config failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+	}
 	sliceIDs, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{request.DocumentID})
 	if err != nil {
 		logs.CtxErrorf(ctx, "[DeleteDocument] get document slice ids failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
-
 	if err = k.emitDeleteKnowledgeDataEvent(ctx, doc.KnowledgeID, sliceIDs, strconv.FormatInt(request.DocumentID, 10)); err != nil {
 		return err
 	}
@@ -1261,6 +1310,7 @@ func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.Kn
 		Status:           entity.DocumentStatus(document.Status),
 		ParsingStrategy:  document.ParseRule.ParsingStrategy,
 		ChunkingStrategy: document.ParseRule.ChunkingStrategy,
+		SourceFileID:     document.SourceFileID,
 	}
 	if document.TableInfo != nil {
 		documentEntity.TableInfo = *document.TableInfo
@@ -1275,15 +1325,56 @@ func (k *knowledgeSVC) fromModelDocument(ctx context.Context, document *model.Kn
 			documentEntity.TableInfo.Columns = append(documentEntity.TableInfo.Columns, document.TableInfo.Columns[i])
 		}
 	}
-	if len(document.URI) != 0 {
+	objUrl, err := k.storage.GetObjectUrl(ctx, document.URI)
+	if err != nil {
+		logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
+		return nil, errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KV("msg", err.Error()))
+	}
+	webUrl, err := k.getWebUrl(ctx, document)
+	if err != nil {
+		return nil, err
+	}
+	documentEntity.URL = objUrl
+	documentEntity.WebURL = webUrl
+	config, err := k.updateConfigRepo.GetByDocumentID(ctx, document.ID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "get document update config failed, err: %v", err)
+		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+	}
+	if config != nil {
+		documentEntity.UpdateRule = &entity.UpdateRule{
+			UpdateType:     entity.UpdateType_Cover,
+			UpdateInterval: config.UpdateInterval / 24,
+		}
+	}
+	return documentEntity, nil
+}
+
+func (k *knowledgeSVC) getWebUrl(ctx context.Context, document *model.KnowledgeDocument) (string, error) {
+	switch document.SourceType {
+	case int32(entity.DocumentSourceWeb), int32(entity.DocumentSourceTableDataUrl):
+		task, err := k.webCrawlTaskRepo.GetByID(ctx, document.SourceFileID)
+		if err != nil {
+			logs.CtxErrorf(ctx, "get web crawl task failed, err: %v", err)
+			return "", errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+		}
+		if task == nil || task.ID == 0 {
+			objUrl, err := k.storage.GetObjectUrl(ctx, document.URI)
+			if err != nil {
+				logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
+				return "", errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KV("msg", err.Error()))
+			}
+			return objUrl, nil
+		}
+		return task.WebURL, nil
+	default:
 		objUrl, err := k.storage.GetObjectUrl(ctx, document.URI)
 		if err != nil {
 			logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
-			return nil, errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KV("msg", err.Error()))
+			return "", errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KV("msg", err.Error()))
 		}
-		documentEntity.URL = objUrl
+		return objUrl, nil
 	}
-	return documentEntity, nil
 }
 
 func (k *knowledgeSVC) fromModelSlice(ctx context.Context, slice *model.KnowledgeDocumentSlice) *entity.Slice {
@@ -1491,4 +1582,54 @@ func (k *knowledgeSVC) genMultiIDs(ctx context.Context, counts int) ([]int64, er
 		allIDs = append(allIDs, ids...)
 	}
 	return allIDs, nil
+}
+
+func (k *knowledgeSVC) BatchRefreshDocument(ctx context.Context, request *BatchRefreshDocumentRequest) error {
+	if request == nil || len(request.DocumentIDs) == 0 {
+		return errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	msg, err := slices.TransformWithErrorCheck(request.DocumentIDs, func(id int64) ([]byte, error) {
+		event := events.NewRefreshDocumentEvent(id)
+		byteData, err := sonic.Marshal(event)
+		if err != nil {
+			return nil, errorx.New(errno.ErrKnowledgeParseJSONCode, errorx.KV("msg", fmt.Sprintf("Marshal failed, err: %v", err)))
+		}
+		return byteData, nil
+	})
+	if err != nil {
+		return err
+	}
+	err = k.producer.BatchSend(ctx, msg)
+	if err != nil {
+		return errorx.New(errno.ErrKnowledgeMQSendFailCode, errorx.KV("msg", fmt.Sprintf("BatchSend failed, err: %v", err)))
+	}
+	return nil
+}
+
+func (k *knowledgeSVC) scanDocumentConfigAndUpdate() {
+	locker := lockimpl.NewCacheLocker(k.cacheCli, 20)
+	for {
+		k.loopScan(locker)
+		time.Sleep(180 * time.Second)
+	}
+}
+
+func (k *knowledgeSVC) loopScan(locker cachelock.Locker) {
+	ctx := context.Background()
+	locked, lockResult := locker.GetLock(ctx, consts.DocumentConfigLockKey)
+	if !locked {
+		return
+	}
+	defer lockResult.ReleaseLock()
+	docIDs, err := k.updateConfigRepo.BatchGetDocumentIDsNeedUpdate(ctx, 200)
+	if err != nil {
+		logs.CtxErrorf(ctx, "BatchGetDocumentIDsNeedUpdate failed, err: %v", err)
+	}
+	if len(docIDs) == 0 {
+		return
+	}
+	err = k.BatchRefreshDocument(ctx, &BatchRefreshDocumentRequest{DocumentIDs: docIDs})
+	if err != nil {
+		logs.CtxErrorf(ctx, "BatchRefreshDocument failed, err: %v", err)
+	}
 }

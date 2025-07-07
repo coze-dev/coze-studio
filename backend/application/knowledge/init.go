@@ -56,6 +56,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	chatmodelImpl "github.com/coze-dev/coze-studio/backend/infra/impl/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/crawl/crawl4ai"
 	builtinNL2SQL "github.com/coze-dev/coze-studio/backend/infra/impl/document/nl2sql/builtin"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/ocr/veocr"
 	builtinParser "github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
@@ -170,6 +171,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		Rewriter:                  rewriter,
 		Reranker:                  rrf.NewRRFReranker(0), // default rrf
 		NL2Sql:                    n2s,
+		Crawler:                   crawl4ai.NewCrawl4ai(),
 		OCR:                       ocrImpl,
 		CacheCli:                  c.CacheCli,
 		IsAutoAnnotationSupported: configured,

@@ -49,17 +49,20 @@ type baseDocProcessor struct {
 	documentSource *entity.DocumentSource
 
 	// 落DB 的 model
-	TableName string
-	docModels []*model.KnowledgeDocument
+	TableName          string
+	docModels          []*model.KnowledgeDocument
+	updateConfigModels []*model.KnowledgeDocumentUpdateConfig
 
-	storage       storage.Storage
-	knowledgeRepo repository.KnowledgeRepo
-	documentRepo  repository.KnowledgeDocumentRepo
-	sliceRepo     repository.KnowledgeDocumentSliceRepo
-	idgen         idgen.IDGenerator
-	rdb           rdb.RDB
-	producer      eventbus.Producer
-	parseManager  parser.Manager
+	storage          storage.Storage
+	knowledgeRepo    repository.KnowledgeRepo
+	documentRepo     repository.KnowledgeDocumentRepo
+	sliceRepo        repository.KnowledgeDocumentSliceRepo
+	webCrawlTaskRepo repository.WebCrawlTaskRepo
+	updateConfigRepo repository.KnowledgeDocumentUpdateConfigRepo
+	idgen            idgen.IDGenerator
+	rdb              rdb.RDB
+	producer         eventbus.Producer
+	parseManager     parser.Manager
 }
 
 func (p *baseDocProcessor) BeforeCreate() error {
@@ -90,8 +93,9 @@ func (p *baseDocProcessor) BuildDBModel() error {
 				ParsingStrategy:  p.Documents[i].ParsingStrategy,
 				ChunkingStrategy: p.Documents[i].ChunkingStrategy,
 			},
-			CreatedAt: time.Now().UnixMilli(),
-			UpdatedAt: time.Now().UnixMilli(),
+			SourceFileID: p.Documents[i].SourceFileID,
+			CreatedAt:    time.Now().UnixMilli(),
+			UpdatedAt:    time.Now().UnixMilli(),
 		}
 		p.Documents[i].ID = docModel.ID
 		p.docModels = append(p.docModels, docModel)
@@ -148,6 +152,13 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 	if err != nil {
 		logs.CtxErrorf(ctx, "update knowledge failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+	}
+	if len(p.updateConfigModels) != 0 {
+		err = p.updateConfigRepo.BatchCreate(ctx, p.updateConfigModels)
+		if err != nil {
+			logs.CtxErrorf(ctx, "batch create update config failed, err: %v", err)
+			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+		}
 	}
 	return nil
 }

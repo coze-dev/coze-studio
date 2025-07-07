@@ -16,7 +16,10 @@
 
 package events
 
-import "github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
+import (
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
+)
 
 func NewIndexDocumentsEvent(knowledgeID int64, documents []*entity.Document) *entity.Event {
 	return &entity.Event{
@@ -55,5 +58,19 @@ func NewDocumentReviewEvent(document *entity.Document, review *entity.Review) *e
 		Type:           entity.EventTypeDocumentReview,
 		Document:       document,
 		DocumentReview: review,
+	}
+}
+
+func NewWebCrawlTaskEvent(task *entity.WebCrawlTask) *entity.Event {
+	return &entity.Event{
+		Type:         entity.EventTypeCrawlData,
+		WebCrawlTask: task,
+	}
+}
+
+func NewRefreshDocumentEvent(documentID int64) *entity.Event {
+	return &entity.Event{
+		Type:     entity.EventTypeRefreshDocument,
+		Document: &entity.Document{Info: knowledge.Info{ID: documentID}},
 	}
 }

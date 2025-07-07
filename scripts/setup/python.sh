@@ -28,6 +28,7 @@ echo "Installing required Python packages"
 source "$VENV_DIR/bin/activate"
 pip install --upgrade pip
 # If you want to use other third-party libraries, you can install them here.
+pip install crawl4ai
 pip install urllib3==1.26.16
 
 REQUESTS_ASYNC_REPO_URL="https://gitcode.com/gh_mirrors/re/requests-async.git"
@@ -54,6 +55,9 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+python -m playwright install
+crawl4ai-setup
+crawl4ai-doctor
 echo "Python packages installed successfully!"
 deactivate
 

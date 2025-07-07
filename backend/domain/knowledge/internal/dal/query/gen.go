@@ -16,11 +16,13 @@ import (
 )
 
 var (
-	Q                       = new(Query)
-	Knowledge               *knowledge
-	KnowledgeDocument       *knowledgeDocument
-	KnowledgeDocumentReview *knowledgeDocumentReview
-	KnowledgeDocumentSlice  *knowledgeDocumentSlice
+	Q                             = new(Query)
+	Knowledge                     *knowledge
+	KnowledgeDocument             *knowledgeDocument
+	KnowledgeDocumentReview       *knowledgeDocumentReview
+	KnowledgeDocumentSlice        *knowledgeDocumentSlice
+	KnowledgeDocumentUpdateConfig *knowledgeDocumentUpdateConfig
+	WebCrawlTask                  *webCrawlTask
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
@@ -29,36 +31,44 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	KnowledgeDocument = &Q.KnowledgeDocument
 	KnowledgeDocumentReview = &Q.KnowledgeDocumentReview
 	KnowledgeDocumentSlice = &Q.KnowledgeDocumentSlice
+	KnowledgeDocumentUpdateConfig = &Q.KnowledgeDocumentUpdateConfig
+	WebCrawlTask = &Q.WebCrawlTask
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:                      db,
-		Knowledge:               newKnowledge(db, opts...),
-		KnowledgeDocument:       newKnowledgeDocument(db, opts...),
-		KnowledgeDocumentReview: newKnowledgeDocumentReview(db, opts...),
-		KnowledgeDocumentSlice:  newKnowledgeDocumentSlice(db, opts...),
+		db:                            db,
+		Knowledge:                     newKnowledge(db, opts...),
+		KnowledgeDocument:             newKnowledgeDocument(db, opts...),
+		KnowledgeDocumentReview:       newKnowledgeDocumentReview(db, opts...),
+		KnowledgeDocumentSlice:        newKnowledgeDocumentSlice(db, opts...),
+		KnowledgeDocumentUpdateConfig: newKnowledgeDocumentUpdateConfig(db, opts...),
+		WebCrawlTask:                  newWebCrawlTask(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	Knowledge               knowledge
-	KnowledgeDocument       knowledgeDocument
-	KnowledgeDocumentReview knowledgeDocumentReview
-	KnowledgeDocumentSlice  knowledgeDocumentSlice
+	Knowledge                     knowledge
+	KnowledgeDocument             knowledgeDocument
+	KnowledgeDocumentReview       knowledgeDocumentReview
+	KnowledgeDocumentSlice        knowledgeDocumentSlice
+	KnowledgeDocumentUpdateConfig knowledgeDocumentUpdateConfig
+	WebCrawlTask                  webCrawlTask
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:                      db,
-		Knowledge:               q.Knowledge.clone(db),
-		KnowledgeDocument:       q.KnowledgeDocument.clone(db),
-		KnowledgeDocumentReview: q.KnowledgeDocumentReview.clone(db),
-		KnowledgeDocumentSlice:  q.KnowledgeDocumentSlice.clone(db),
+		db:                            db,
+		Knowledge:                     q.Knowledge.clone(db),
+		KnowledgeDocument:             q.KnowledgeDocument.clone(db),
+		KnowledgeDocumentReview:       q.KnowledgeDocumentReview.clone(db),
+		KnowledgeDocumentSlice:        q.KnowledgeDocumentSlice.clone(db),
+		KnowledgeDocumentUpdateConfig: q.KnowledgeDocumentUpdateConfig.clone(db),
+		WebCrawlTask:                  q.WebCrawlTask.clone(db),
 	}
 }
 
@@ -72,27 +82,33 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:                      db,
-		Knowledge:               q.Knowledge.replaceDB(db),
-		KnowledgeDocument:       q.KnowledgeDocument.replaceDB(db),
-		KnowledgeDocumentReview: q.KnowledgeDocumentReview.replaceDB(db),
-		KnowledgeDocumentSlice:  q.KnowledgeDocumentSlice.replaceDB(db),
+		db:                            db,
+		Knowledge:                     q.Knowledge.replaceDB(db),
+		KnowledgeDocument:             q.KnowledgeDocument.replaceDB(db),
+		KnowledgeDocumentReview:       q.KnowledgeDocumentReview.replaceDB(db),
+		KnowledgeDocumentSlice:        q.KnowledgeDocumentSlice.replaceDB(db),
+		KnowledgeDocumentUpdateConfig: q.KnowledgeDocumentUpdateConfig.replaceDB(db),
+		WebCrawlTask:                  q.WebCrawlTask.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	Knowledge               IKnowledgeDo
-	KnowledgeDocument       IKnowledgeDocumentDo
-	KnowledgeDocumentReview IKnowledgeDocumentReviewDo
-	KnowledgeDocumentSlice  IKnowledgeDocumentSliceDo
+	Knowledge                     IKnowledgeDo
+	KnowledgeDocument             IKnowledgeDocumentDo
+	KnowledgeDocumentReview       IKnowledgeDocumentReviewDo
+	KnowledgeDocumentSlice        IKnowledgeDocumentSliceDo
+	KnowledgeDocumentUpdateConfig IKnowledgeDocumentUpdateConfigDo
+	WebCrawlTask                  IWebCrawlTaskDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		Knowledge:               q.Knowledge.WithContext(ctx),
-		KnowledgeDocument:       q.KnowledgeDocument.WithContext(ctx),
-		KnowledgeDocumentReview: q.KnowledgeDocumentReview.WithContext(ctx),
-		KnowledgeDocumentSlice:  q.KnowledgeDocumentSlice.WithContext(ctx),
+		Knowledge:                     q.Knowledge.WithContext(ctx),
+		KnowledgeDocument:             q.KnowledgeDocument.WithContext(ctx),
+		KnowledgeDocumentReview:       q.KnowledgeDocumentReview.WithContext(ctx),
+		KnowledgeDocumentSlice:        q.KnowledgeDocumentSlice.WithContext(ctx),
+		KnowledgeDocumentUpdateConfig: q.KnowledgeDocumentUpdateConfig.WithContext(ctx),
+		WebCrawlTask:                  q.WebCrawlTask.WithContext(ctx),
 	}
 }
 

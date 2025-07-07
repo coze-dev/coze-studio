@@ -92,6 +92,7 @@ func MockKnowledgeSVC(t *testing.T) Knowledge {
 	}).AnyTimes()
 	producer := producerMock.NewMockProducer(ctrl)
 	producer.EXPECT().Send(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	producer.EXPECT().BatchSend(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	mockStorage := storageMock.NewMockStorage(ctrl)
 	mockStorage.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any()).Return("URL_ADDRESS", nil).AnyTimes()
 	mockStorage.EXPECT().GetObject(gomock.Any(), gomock.Any()).Return([]byte("test text"), nil).AnyTimes()

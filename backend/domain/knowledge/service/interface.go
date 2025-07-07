@@ -26,6 +26,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/document/dataconnector"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/sets"
 )
 
@@ -61,6 +62,14 @@ type Knowledge interface {
 	CreateDocumentReview(ctx context.Context, request *CreateDocumentReviewRequest) (response *CreateDocumentReviewResponse, err error)
 	MGetDocumentReview(ctx context.Context, request *MGetDocumentReviewRequest) (response *MGetDocumentReviewResponse, err error)
 	SaveDocumentReview(ctx context.Context, request *SaveDocumentReviewRequest) error
+
+	SubmitWebUrlTask(ctx context.Context, request *SubmitWebUrlTaskRequest) (*SubmitWebUrlTaskResponse, error)
+	GetWebUrlInfo(ctx context.Context, request *GetWebUrlInfoRequest) (*GetWebUrlInfoResponse, error)
+	AbortWebUrlTask(ctx context.Context, request *AbortWebUrlTaskRequest) error
+	BatchRefreshDocument(ctx context.Context, request *BatchRefreshDocumentRequest) error
+
+	MGetAuthInfo(ctx context.Context, request *MGetAuthInfoRequest) (*MGetAuthInfoResponse, error)
+	GetAuthConsentURL(ctx context.Context, request *GetAuthConsentURLRequest) (*GetAuthConsentURLResponse, error)
 }
 
 type CreateKnowledgeRequest struct {
@@ -94,6 +103,7 @@ type UpdateDocumentRequest struct {
 	DocumentID   int64
 	DocumentName *string
 	TableInfo    *entity.TableInfo
+	UpdateRule   *entity.UpdateRule
 }
 
 type DeleteDocumentRequest struct {
@@ -355,3 +365,45 @@ type ExtractPhotoCaptionResponse struct {
 }
 type MGetKnowledgeByIDRequest = knowledge.MGetKnowledgeByIDRequest
 type MGetKnowledgeByIDResponse = knowledge.MGetKnowledgeByIDResponse
+
+type SubmitWebUrlTaskRequest struct {
+	Source entity.DocumentSource
+	URLs   []string
+}
+
+type SubmitWebUrlTaskResponse struct {
+	TaskIDs []int64
+}
+
+type GetWebUrlInfoRequest struct {
+	TaskIDs []int64
+}
+
+type GetWebUrlInfoResponse struct {
+	Tasks map[int64]*entity.WebCrawlTaskResp
+}
+
+type AbortWebUrlTaskRequest struct {
+	TaskID int64
+}
+
+type BatchRefreshDocumentRequest struct {
+	DocumentIDs []int64
+}
+
+type MGetAuthInfoRequest struct {
+	CreatorID    int64
+	ConnectorIDs []int64
+}
+
+type MGetAuthInfoResponse struct {
+	AuthMap map[string][]*dataconnector.AuthInfo
+}
+
+type GetAuthConsentURLRequest struct {
+	ConnectorID int64
+}
+
+type GetAuthConsentURLResponse struct {
+	ConsentURL string
+}

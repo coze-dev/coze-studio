@@ -3,6 +3,8 @@ include "dataset.thrift"
 include "document.thrift"
 include "common.thrift"
 include "review.thrift"
+include "web_crawl.thrift"
+include "../connector/connector.thrift"
 
 namespace go flow.dataengine.dataset
 
@@ -33,8 +35,28 @@ service DatasetService {
     slice.CreateSliceResponse CreateSlice(1:slice.CreateSliceRequest req) (api.post='/api/knowledge/slice/create', api.category="knowledge",agw.preserve_base="true")
     slice.UpdateSliceResponse UpdateSlice(1:slice.UpdateSliceRequest req) (api.post='/api/knowledge/slice/update', api.category="knowledge",agw.preserve_base="true")
     slice.ListSliceResponse ListSlice(1:slice.ListSliceRequest req) (api.post='/api/knowledge/slice/list', api.category="knowledge",agw.preserve_base="true")
-    /** 预分片相关 **/
+    // 预分片相关
     review.CreateDocumentReviewResponse CreateDocumentReview(1:review.CreateDocumentReviewRequest req) (api.post='/api/knowledge/review/create', api.category="knowledge",agw.preserve_base="true")
     review.MGetDocumentReviewResponse MGetDocumentReview(1:review.MGetDocumentReviewRequest req) (api.post='/api/knowledge/review/mget', api.category="knowledge",agw.preserve_base="true")
     review.SaveDocumentReviewResponse SaveDocumentReview(1:review.SaveDocumentReviewRequest req) (api.post='/api/knowledge/review/save', api.category="knowledge",agw.preserve_base="true")
+
+    // Web 拉取数据源
+    document.SubmitWebUrlResponse SubmitWebUrl(1:document.SubmitWebUrlRequest req) (api.post='/api/knowledge/web_url/submit', api.category="knowledge",agw.preserve_base="true")
+    document.BatchSubmitWebUrlResponse BatchSubmitWebUrl(1:document.BatchSubmitWebUrlRequest req) (api.post='/api/knowledge/web_url/batch_submit', api.category="knowledge",agw.preserve_base="true")
+    document.GetWebInfoResponse GetWebInfo(1:document.GetWebInfoRequest req) (api.post='/api/knowledge/web_url/get', api.category="knowledge",agw.preserve_base="true")
+    document.FetchWebUrlResponse FetchWebUrl(1:document.FetchWebUrlRequest req) (api.post='/api/knowledge/document/batch_fetch', api.category="knowledge",agw.preserve_base="true")
+    document.BatchUpdateDocumentResponse BatchUpdateDocument(1:document.BatchUpdateDocumentRequest req) (api.post='/api/knowledge/document/batch_update', api.category="knowledge",agw.preserve_base="true")
+    web_crawl.CreateSubLinkDiscoveryTaskResponse CreateSubLinkDiscoveryTask(1:web_crawl.CreateSubLinkDiscoveryTaskRequest request)(api.post='/api/memory/knowledge/create_sub_link_discovery_task', api.category="web_crawl",agw.preserve_base="true")
+    web_crawl.GetSubLinkDiscoveryTaskResponse GetSubLinkDiscoveryTask(1:web_crawl.GetSubLinkDiscoveryTaskRequest request)(api.get='/api/memory/knowledge/get_sub_link_discovery_task', api.category="web_crawl",agw.preserve_base="true")
+    web_crawl.AbortSubLinkDiscoveryTaskResponse AbortSubLinkDiscoveryTask(1:web_crawl.AbortSubLinkDiscoveryTaskRequest request)(api.post='/api/memory/knowledge/abort_sub_link_discovery_task', api.category="web_crawl",agw.preserve_base="true")
+
+    // Auth
+    connector.MGetAuthInfoResponse MGetAuthInfo(1: connector.MGetAuthInfoRequest req)(api.post='/api/memory/knowledge/query_auth_info', api.category="memory",agw.preserve_base="true")
+    connector.DataSourceOAuthConsentURLResponse DataSourceOAuthConsentURL(1: connector.DataSourceOAuthConsentURLRequest request)(api.post='/api/memory/knowledge/oauth_consent_url', api.category="memory",agw.preserve_base="true")
+    connector.DataSourceOAuthCompleteResponse DataSourceOAuthComplete(1: connector.DataSourceOAuthCompleteRequest request)(api.get='/api/memory/knowledge/oauth_complete', api.category="memory")
+    connector.SubmitConnectionTaskResponse SubmitConnectionTask(1: connector.SubmitConnectionTaskRequest request)(api.post='/api/memory/knowledge/submit_connection_task', api.category="memory",agw.preserve_base="true")
+    connector.PollConnectionTaskResponse PollConnectionTask(1: connector.PollConnectionTaskRequest request)(api.post='/api/memory/knowledge/poll_connection_task', api.category="memory",agw.preserve_base="true")
+    connector.GetFileTreeDocListResponse GetFileTreeDocList(1: connector.GetFileTreeDocListRequest request)(api.post='/api/knowledge/connector/file_tree_doc_list', api.category="knowledge",agw.preserve_base="true")
+    connector.SearchDocumentResponse SearchDocument(1:connector.SearchDocumentRequest req)(api.post='/api/knowledge/connector/search_document', api.category="knowledge",agw.preserve_base="true")
+
 }
