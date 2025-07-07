@@ -14,19 +14,19 @@ import (
 type RunRecord = model.RunRecord
 
 type RunRecordMeta struct {
-	ID             int64     `json:"id"`
-	ConversationID int64     `json:"conversation_id"`
-	SectionID      int64     `json:"section_id"`
-	AgentID        int64     `json:"agent_id"`
-	Status         RunStatus `json:"status"`
-	Error          *RunError `json:"error"`
-	Usage          *Usage    `json:"usage"`
-	Ext            string    `json:"ext"`
-	CreatedAt      int64     `json:"created_at"`
-	UpdatedAt      int64     `json:"updated_at"`
-	ChatRequest    *string   `json:"chat_message"`
-	CompletedAt    int64     `json:"completed_at"`
-	FailedAt       int64     `json:"failed_at"`
+	ID             int64           `json:"id"`
+	ConversationID int64           `json:"conversation_id"`
+	SectionID      int64           `json:"section_id"`
+	AgentID        int64           `json:"agent_id"`
+	Status         RunStatus       `json:"status"`
+	Error          *RunError       `json:"error"`
+	Usage          *agentrun.Usage `json:"usage"`
+	Ext            string          `json:"ext"`
+	CreatedAt      int64           `json:"created_at"`
+	UpdatedAt      int64           `json:"updated_at"`
+	ChatRequest    *string         `json:"chat_message"`
+	CompletedAt    int64           `json:"completed_at"`
+	FailedAt       int64           `json:"failed_at"`
 }
 
 type ChunkRunItem = RunRecordMeta
@@ -88,13 +88,6 @@ type MetaInfo struct {
 	Info string   `json:"info"`
 }
 
-type Usage struct {
-	LlmPromptTokens     int64  `json:"llm_prompt_tokens"`
-	LlmCompletionTokens int64  `json:"llm_completion_tokens"`
-	LlmTotalTokens      int64  `json:"llm_total_tokens"`
-	WorkflowTokens      *int64 `json:"workflow_tokens"`
-	WorkflowCost        *int64 `json:"workflow_cost"`
-}
 type AgentRunMeta struct {
 	ConversationID   int64                    `json:"conversation_id"`
 	ConnectorID      int64                    `json:"connector_id"`
@@ -118,6 +111,7 @@ type AgentRunMeta struct {
 type UpdateMeta struct {
 	Status      RunStatus
 	LastError   *RunError
+	Usage       *agentrun.Usage
 	UpdatedAt   int64
 	CompletedAt int64
 	FailedAt    int64

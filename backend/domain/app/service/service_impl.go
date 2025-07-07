@@ -93,9 +93,9 @@ func (a *appServiceImpl) UpdateDraftAPP(ctx context.Context, req *UpdateDraftAPP
 
 func (a *appServiceImpl) GetAPPPublishRecord(ctx context.Context, req *GetAPPPublishRecordRequest) (record *entity.PublishRecord, exist bool, err error) {
 	record, exist, err = a.APPRepo.GetPublishRecord(ctx, &repository.GetPublishRecordRequest{
-		APPID:    req.APPID,
-		RecordID: req.RecordID,
-		Oldest:   req.Oldest,
+		APPID:         req.APPID,
+		RecordID:      req.RecordID,
+		OldestSuccess: req.Oldest,
 	})
 	if err != nil {
 		return nil, false, errorx.Wrapf(err, "GetPublishRecord failed, appID=%d", req.APPID)

@@ -9,10 +9,10 @@ import {
 } from '@coze-data/knowledge-modal-base/create-knowledge-modal-v2';
 import { KnowledgeE2e } from '@coze-data/e2e';
 import { I18n } from '@coze-arch/i18n';
+import { Button, Form, LoadingButton } from '@coze-arch/coze-design';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { FormatType } from '@coze-arch/bot-api/memory';
 import { KnowledgeApi } from '@coze-arch/bot-api';
-import { Button, Form, LoadingButton } from '@coze-arch/coze-design';
 
 import styles from './index.module.less';
 
@@ -27,13 +27,11 @@ export const useCreateKnowledgeModalV2 = (
   const { onFinish, beforeCreate, projectID } = params;
   const formRef = useRef<Form<CozeKnowledgeAddTypeContentFormData>>(null);
   // 使用 useState 保证能重新渲染
-  // TODO: hzf 重命名
   const [currentFormatType, setCurrentFormatType] = useState(FormatType.Text);
   const spaceId = useSpaceStore(store => store.getSpaceId());
 
   const resourceNavigate = useDataNavigate();
 
-  // TODO: hzf 重命名
   const [unitType, setUnitType] = useState<UnitType>(UnitType.TEXT_DOC);
 
   const createDataset = async () => {

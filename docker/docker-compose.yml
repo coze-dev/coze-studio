@@ -418,11 +418,13 @@ services:
         condition: service_healthy
     volumes:
       - ./volumes/minio/default_icon/:/default_icon
+      - ./volumes/minio/official_plugin_icon/:/official_plugin_icon
     entrypoint: >
       /bin/sh -c  "
         (/usr/bin/mc alias set localminio http://coze-minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} && \
         /usr/bin/mc mb --ignore-existing localminio/${STORAGE_BUCKET} && \
         /usr/bin/mc cp --recursive /default_icon/ localminio/${STORAGE_BUCKET}/default_icon/ && \
+        /usr/bin/mc cp --recursive /official_plugin_icon/ localminio/${STORAGE_BUCKET}/official_plugin_icon/ && \
         echo 'upload files to minio complete: Files uploaded to ${STORAGE_BUCKET} bucket.') || exit 1; \
       "
     networks:
@@ -495,30 +497,12 @@ services:
     networks:
       - coze-network
     restart: 'no'
-  tos-setup:
-    image: alpine/curl:8.12.1
-    container_name: coze-tos-setup
-    profiles: ['volcano-setup']
-    env_file: *env_file
-    volumes:
-      - ./volumes/minio/default_icon/:/default_icon
-      - ./volumes/minio/tosutil:/tosutil
-    entrypoint: >
-      /bin/sh -c  "
-        (/tosutil version && \
-        /tosutil config -i ${TOS_ACCESS_KEY} -k ${TOS_SECRET_KEY} -e ${TOS_ENDPOINT} -re ${TOS_REGION} && \
-        /tosutil cp /default_icon tos://${STORAGE_BUCKET} -r && \
-        echo 'upload files to tos complete: Files uploaded to ${STORAGE_BUCKET} bucket.') || exit 1; \
-      "
-    networks:
-      - coze-network
-    restart: 'no'
 
   coze-server:
     # build:
-    #   c6ntext: ../
+    #   context: ../
     #   dockerfile: backend/Dockerfile
-    image: fanlv/opencoze:0.1.1
+    image: fanlv/opencoze:latest
     container_name: coze-server
     profiles: ['run-server']
     env_file: *env_file
@@ -531,7 +515,7 @@ services:
     volumes:
       - ../docker/.env:/app/.env
       - ../backend/conf:/app/resources/conf
-      # - ../backend/static:/app/resources/static
+      - ../backend/static:/app/resources/static
     depends_on:
       mysql:
         condition: service_healthy
@@ -548,36 +532,6 @@ services:
       milvus:
         condition: service_healthy
       minio-setup:
-        condition: service_completed_successfully
-      elasticsearch-setup:
-        condition: service_completed_successfully
-      mysql-setup-init-sql:
-        condition: service_completed_successfully
-    command: ['/app/bootstrap.sh']
-    deploy:
-      resources:
-        limits:
-          cpus: '8'
-          memory: 16G
-        reservations:
-          cpus: '2'
-          memory: 4G
-  coze-server-on-volcano:
-    image: fanlv/opencoze:0.1.1
-    container_name: coze-server-on-volcano
-    profiles: ['volcano-server']
-    env_file: *env_file
-    environment:
-      LISTEN_ADDR: 0.0.0.0:80
-    networks:
-      - coze-network
-    ports:
-      - '80:80'
-    volumes:
-      - ../docker/.env:/app/.env
-      - ../backend/conf:/app/resources/conf
-    depends_on:
-      tos-setup:
         condition: service_completed_successfully
       elasticsearch-setup:
         condition: service_completed_successfully

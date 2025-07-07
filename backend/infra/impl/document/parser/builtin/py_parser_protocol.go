@@ -26,8 +26,9 @@ const (
 )
 
 type pyParseRequest struct {
-	ExtractImages bool `json:"extract_images"`
-	ExtractTables bool `json:"extract_tables"`
+	ExtractImages bool  `json:"extract_images"`
+	ExtractTables bool  `json:"extract_tables"`
+	FilterPages   []int `json:"filter_pages"`
 }
 
 type pyParseResult struct {
@@ -71,6 +72,7 @@ func parseByPython(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 		reqb, err := json.Marshal(pyParseRequest{
 			ExtractImages: config.ParsingStrategy.ExtractImage,
 			ExtractTables: config.ParsingStrategy.ExtractTable,
+			FilterPages:   config.ParsingStrategy.FilterPages,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("[parseByPython] create parse request failed, %w", err)

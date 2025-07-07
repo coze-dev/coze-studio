@@ -65,6 +65,12 @@ func (p *PluginDAO) getSelected(opt *PluginSelectedOption) (selected []field.Exp
 	if opt.Version {
 		selected = append(selected, table.Version)
 	}
+	if opt.Manifest {
+		selected = append(selected, table.Manifest)
+	}
+	if opt.IconURI {
+		selected = append(selected, table.IconURI)
+	}
 
 	return selected
 }
@@ -178,6 +184,9 @@ func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin 
 	}
 
 	updateMap := map[string]any{}
+	if plugin.APPID != nil {
+		updateMap[table.AppID.ColumnName().String()] = *plugin.APPID
+	}
 	if plugin.IconURI != nil {
 		updateMap[table.IconURI.ColumnName().String()] = *plugin.IconURI
 	}

@@ -40,13 +40,15 @@ def is_structured_table(table):
     return row_count >= 2 and col_count >= 2
 
 
-def extract_pdf_content(pdf_data: bytes, extract_images, extract_tables: bool):
+def extract_pdf_content(pdf_data: bytes, extract_images, extract_tables: bool, filter_pages: []):
     with pdfplumber.open(io.BytesIO(pdf_data)) as pdf:
         content = []
 
         for page_num, page in enumerate(pdf.pages):
+            if page_num + 1 in filter_pages:
+                print(f"Skip page {page_num + 1}...")
+                continue
             print(f"Processing page {page_num + 1}...")
-
             text = page.extract_text(x_tolerance=2)
             content.append({
                 'type': 'text',
@@ -135,8 +137,8 @@ if __name__ == "__main__":
 
     try:
         req = json.load(r)
-        ei, et = req['extract_images'], req['extract_tables']
-        extracted_content = extract_pdf_content(pdf_data, ei, et)
+        ei, et, fp = req['extract_images'], req['extract_tables'], req['filter_pages']
+        extracted_content = extract_pdf_content(pdf_data, ei, et, fp)
         print(f"Extracted {len(extracted_content)} items")
         result = json.dumps({"content": extracted_content}, ensure_ascii=False)
         w.write(str.encode(result))

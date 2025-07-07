@@ -152,9 +152,10 @@ type UpsertDataRequest struct {
 }
 
 type UpsertDataResponse struct {
-	AffectedRows int64 // 受影响的行数
-	InsertedRows int64 // 新插入的行数
-	UpdatedRows  int64 // 更新的行数
+	AffectedRows  int64 // 受影响的行数
+	InsertedRows  int64 // 新插入的行数
+	UpdatedRows   int64 // 更新的行数
+	UnchangedRows int64 // 不变的行数（没有插入或更新的行数）
 }
 
 // ExecuteSQLRequest 执行SQL请求

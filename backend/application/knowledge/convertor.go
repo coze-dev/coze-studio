@@ -58,7 +58,7 @@ func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData
 			}, nil
 
 		}
-		t, err := time.Parse(TimeFormat, val)
+		t, err := time.Parse(time.DateTime, val)
 		if err != nil {
 			return nil, err
 		}
@@ -193,7 +193,7 @@ func convertSlice2Model(sliceEntity *entity.Slice) *dataset.SliceInfo {
 		CharCount:  sliceEntity.CharCount,
 		Sequence:   sliceEntity.Sequence,
 		DocumentID: sliceEntity.DocumentID,
-		ChunkInfo:  "", // todo chunk info逻辑没写
+		ChunkInfo:  "",
 	}
 }
 
@@ -207,7 +207,6 @@ func convertSliceContent(s *entity.Slice) string {
 			tableData = append(tableData, sliceContentData{
 				ColumnID:   strconv.FormatInt(col.ColumnID, 10),
 				ColumnName: col.ColumnName,
-				IsSemantic: false, // TODO: 这个对应 indexing？需要确认下是否有用到的地方，看起来冗余了
 				Value:      col.GetNullableStringValue(),
 				Desc:       "",
 			})
@@ -221,7 +220,6 @@ func convertSliceContent(s *entity.Slice) string {
 type sliceContentData struct {
 	ColumnID   string `json:"column_id"`
 	ColumnName string `json:"column_name"`
-	IsSemantic bool   `json:"is_semantic"`
 	Value      string `json:"value"`
 	Desc       string `json:"desc"`
 }
@@ -238,12 +236,25 @@ func convertSliceStatus2Model(status knowledgeModel.SliceStatus) dataset.SliceSt
 		return dataset.SliceStatus_PendingVectoring
 	}
 }
-
+func convertFilterStrategy2Model(strategy *entity.ParsingStrategy) *dataset.FilterStrategy {
+	if strategy == nil {
+		return nil
+	}
+	if len(strategy.FilterPages) != 0 {
+		return &dataset.FilterStrategy{
+			FilterPage: slices.Transform(strategy.FilterPages, func(page int) int32 {
+				return int32(page)
+			}),
+		}
+	}
+	return nil
+}
 func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInfo {
 	if documentEntity == nil {
 		return nil
 	}
 	chunkStrategy := convertChunkingStrategy2Model(documentEntity.ChunkingStrategy)
+	filterStrategy := convertFilterStrategy2Model(documentEntity.ParsingStrategy)
 	parseStrategy, _ := convertParsingStrategy2Model(documentEntity.ParsingStrategy)
 	docInfo := &dataset.DocumentInfo{
 		Name:                  documentEntity.Name,
@@ -265,6 +276,7 @@ func convertDocument2Model(documentEntity *entity.Document) *dataset.DocumentInf
 		StatusDescript:        &documentEntity.StatusMsg,
 		SpaceID:               ptr.Of(documentEntity.SpaceID),
 		EditableAppendContent: nil,
+		FilterStrategy:        filterStrategy,
 		PreviewTosURL:         &documentEntity.URL,
 		ChunkStrategy:         chunkStrategy,
 		ParsingStrategy:       parseStrategy,
@@ -276,8 +288,12 @@ func convertDocumentSource2Entity(sourceType dataset.DocumentSource) entity.Docu
 	switch sourceType {
 	case dataset.DocumentSource_Custom:
 		return entity.DocumentSourceCustom
+	case dataset.DocumentSource_Web:
+		return entity.DocumentSourceWeb
 	case dataset.DocumentSource_Document:
 		return entity.DocumentSourceLocal
+	case dataset.DocumentSource_FeishuWeb:
+		return entity.DocumentSourceFeishuWeb
 	default:
 		return entity.DocumentSourceLocal
 	}
@@ -401,7 +417,7 @@ func convertColumnType2Entity(columnType dataset.ColumnType) document.TableColum
 	}
 }
 
-func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dataset.TableSheet, captionType *dataset.CaptionType) *entity.ParsingStrategy {
+func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dataset.TableSheet, captionType *dataset.CaptionType, filterStrategy *dataset.FilterStrategy) *entity.ParsingStrategy {
 	if strategy == nil && sheet == nil && captionType == nil {
 		return nil
 	}
@@ -421,6 +437,9 @@ func convertParsingStrategy2Entity(strategy *dataset.ParsingStrategy, sheet *dat
 		res.SheetID = sheet.GetSheetID()
 		res.HeaderLine = int(sheet.GetHeaderLineIdx())
 		res.DataStartLine = int(sheet.GetStartLineIdx())
+	}
+	if filterStrategy != nil {
+		res.FilterPages = slices.Transform(filterStrategy.GetFilterPage(), func(page int32) int { return int(page) })
 	}
 	res.CaptionType = convertCaptionType2Entity(captionType)
 
@@ -637,7 +656,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*m
 			IconURI:              k.IconURI,
 			IconURL:              k.IconURL,
 			Description:          k.Description,
-			CanEdit:              true, // todo，判断user id是否等于creator id
+			CanEdit:              true,
 			CreateTime:           int32(k.CreatedAtMs / 1000),
 			CreatorID:            k.CreatorID,
 			SpaceID:              k.SpaceID,
@@ -690,7 +709,7 @@ func convertCreateDocReviewReq(req *dataset.CreateDocumentReviewRequest) *servic
 	}
 	resp := &service.CreateDocumentReviewRequest{
 		ChunkStrategy:   convertChunkingStrategy2Entity(req.ChunkStrategy),
-		ParsingStrategy: convertParsingStrategy2Entity(req.ParsingStrategy, nil, captionType),
+		ParsingStrategy: convertParsingStrategy2Entity(req.ParsingStrategy, nil, captionType, nil),
 	}
 	resp.KnowledgeID = req.GetDatasetID()
 	resp.Reviews = slices.Transform(req.GetReviews(), func(r *dataset.ReviewInput) *service.ReviewInput {
@@ -746,4 +765,40 @@ func convertFormatType2Entity(tp dataset.FormatType) model.DocumentType {
 	default:
 		return model.DocumentTypeUnknown
 	}
+}
+
+func convertUpdateRule2Entity(rule *dataset.UpdateRule) *entity.UpdateRule {
+	if rule == nil {
+		return nil
+	}
+	res := &entity.UpdateRule{
+		UpdateInterval: rule.UpdateInterval,
+	}
+	switch rule.UpdateType {
+	case dataset.UpdateType_NoUpdate:
+		res.UpdateType = entity.UpdateType_NoUpdate
+	case dataset.UpdateType_Cover:
+		res.UpdateType = entity.UpdateType_Cover
+	default:
+		res.UpdateType = entity.UpdateType_NoUpdate
+	}
+	return res
+}
+
+func convertUpdateRule2Model(rule *entity.UpdateRule) *dataset.UpdateRule {
+	if rule == nil {
+		return nil
+	}
+	res := &dataset.UpdateRule{
+		UpdateInterval: rule.UpdateInterval,
+	}
+	switch rule.UpdateType {
+	case entity.UpdateType_NoUpdate:
+		res.UpdateType = dataset.UpdateType_NoUpdate
+	case entity.UpdateType_Cover:
+		res.UpdateType = dataset.UpdateType_Cover
+	default:
+		res.UpdateType = dataset.UpdateType_NoUpdate
+	}
+	return res
 }

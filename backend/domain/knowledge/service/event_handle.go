@@ -11,6 +11,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
+	"github.com/jinzhu/copier"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/entity"
@@ -18,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/convert"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/dal/model"
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/internal/events"
+	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
@@ -25,6 +27,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/storage"
 	"code.byted.org/flow/opencoze/backend/infra/impl/document/progressbar"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/errno"
@@ -83,7 +86,6 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 func (k *knowledgeSVC) deleteKnowledgeDataEventHandler(ctx context.Context, event *entity.Event) error {
 	// 删除知识库在各个存储里的数据
 	for _, manager := range k.searchStoreManagers {
-		// TODO: non retry 错误可能导致其他资源删除也失效
 		s, err := manager.GetSearchStore(ctx, getCollectionName(event.KnowledgeID))
 		if err != nil {
 			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("get search store failed, err: %v", err)))
@@ -130,7 +132,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		return errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", "[indexDocument] document not provided"))
 	}
 
-	// TODO: document redis lock
 	// 1. retry 队列和普通队列中对同一文档的 index 操作并发，同一个文档数据写入两份（在后端 bugfix 上线时产生）
 	// 2. rebalance 重复消费同一条消息
 
@@ -161,7 +162,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		}
 	}()
 
-	// TODO: fix append retry
 	// clear
 	collectionName := getCollectionName(doc.KnowledgeID)
 
@@ -233,7 +233,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		batchSize := r - l
 		ids, err := k.idgen.GenMultiIDs(ctx, batchSize)
 		if err != nil {
-			return errorx.New(errno.ErrAgentIDGenFailCode)
+			return errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("GenMultiIDs failed, err: %v", err)))
 		}
 		allIDs = append(allIDs, ids...)
 		for i := 0; i < batchSize; i++ {
@@ -329,7 +329,6 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 	progressbar := progressbar.NewProgressBar(ctx, doc.ID, int64(len(ssDocs)*len(k.searchStoreManagers)), k.cacheCli, true)
 	for _, manager := range k.searchStoreManagers {
 		now := time.Now()
-		// TODO: knowledge 可以记录 search store 状态，不需要每次都 create 然后靠 create 检查
 		if err = manager.Create(ctx, &searchstore.CreateRequest{
 			CollectionName: collectionName,
 			Fields:         fields,
@@ -389,7 +388,7 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 		logs.CtxErrorf(ctx, "[insertDataToTable] insert data failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KVf("msg", "insert data failed, err: %v", err))
 	}
-	if resp.AffectedRows != int64(len(slices)) {
+	if resp.AffectedRows+resp.UnchangedRows != int64(len(slices)) {
 		logs.CtxErrorf(ctx, "[insertDataToTable] insert data failed, affected rows: %d, expect: %d", resp.AffectedRows, len(slices))
 		return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KVf("msg", "insert data failed, affected rows: %d, expect: %d", resp.AffectedRows, len(slices)))
 	}
@@ -528,9 +527,9 @@ func (k *knowledgeSVC) documentReviewEventHandler(ctx context.Context, event *en
 	if err != nil {
 		return errorx.New(errno.ErrKnowledgeParserParseFailCode, errorx.KV("msg", fmt.Sprintf("parse document failed, err: %v", err)))
 	}
-	ids, err := k.idgen.GenMultiIDs(ctx, len(result))
+	ids, err := k.genMultiIDs(ctx, len(result))
 	if err != nil {
-		return errorx.New(errno.ErrAgentIDGenFailCode)
+		return errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("GenMultiIDs failed, err: %v", err)))
 	}
 	fn, ok := d2sMapping[event.Document.Type]
 	if !ok {
@@ -580,4 +579,109 @@ func (k *knowledgeSVC) slice2Document(ctx context.Context, src *entity.Document,
 		return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", fmt.Sprintf("document type invalid, type=%d", src.Type)))
 	}
 	return fn(ctx, slice, src.TableInfo.Columns, k.enableCompactTable)
+}
+
+// func (k *knowledgeSVC) crawlWebUrl(ctx context.Context, url string) (contentUri string, SubLinkUrls []string, err error) {
+
+// }
+
+type RefreshDocumentCtx struct {
+	DocumentID     int64
+	UpdateConfigID int64
+}
+
+func (k *knowledgeSVC) refreshDocument(ctx context.Context, refreshCtx *RefreshDocumentCtx) (err error) {
+	// step 1: lock
+
+	// step 2: fetch old doc
+	oldDoc, err := k.documentRepo.GetByID(ctx, refreshCtx.DocumentID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "get document by id failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("get document by id failed, err: %v", err)))
+	}
+	if oldDoc == nil || oldDoc.ID == 0 {
+		logs.CtxErrorf(ctx, "document not found, id: %d", refreshCtx.DocumentID)
+		return errorx.New(errno.ErrKnowledgeDocumentNotExistCode, errorx.KV("msg", fmt.Sprintf("document not found, id: %d", refreshCtx.DocumentID)))
+	}
+	documentSource := entity.DocumentSource(oldDoc.SourceType)
+	if documentSource == entity.DocumentSourceLocal || documentSource == entity.DocumentSourceCustom {
+		logs.CtxWarnf(ctx, "document source type not support refresh, id: %d", refreshCtx.DocumentID)
+		return nil
+	}
+	newDoc := &model.KnowledgeDocument{}
+	err = copier.CopyWithOption(newDoc, oldDoc, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+	if err != nil {
+		logs.CtxErrorf(ctx, "copy document failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", fmt.Sprintf("copy document failed, err: %v", err)))
+	}
+	// step 3: fetch
+	fetcher := k.newFetchFunc(ptr.Of(entity.DocumentSource(oldDoc.SourceType)))
+
+	fetchReq, err := k.newFetchRequest(ctx, ptr.Of(entity.DocumentSource(oldDoc.SourceType)), oldDoc.SourceFileID)
+	if err != nil {
+		return err
+	}
+	fetchResp, err := fetcher(ctx, fetchReq)
+	if err != nil {
+		return err
+	}
+	switch entity.DocumentSource(oldDoc.SourceType) {
+	case entity.DocumentSourceWeb:
+		newDoc.SourceFileID, err = k.saveWebCrawlTaskResult(ctx, fetchResp, oldDoc.SourceFileID)
+		if err != nil {
+			return err
+		}
+	default:
+	}
+	docEntity, err := k.fromModelDocument(ctx, newDoc)
+	if err != nil {
+		return err
+	}
+	docProcessor := impl.NewDocProcessor(ctx, &impl.DocProcessorConfig{
+		UserID:         oldDoc.CreatorID,
+		SpaceID:        oldDoc.SpaceID,
+		DocumentSource: documentSource,
+		Documents:      []*entity.Document{docEntity},
+		KnowledgeRepo:  k.knowledgeRepo,
+		DocumentRepo:   k.documentRepo,
+		SliceRepo:      k.sliceRepo,
+		Idgen:          k.idgen,
+		Producer:       k.producer,
+		ParseManager:   k.parseManager,
+		Storage:        k.storage,
+		Rdb:            k.rdb,
+	})
+	err = docProcessor.BeforeCreate()
+	if err != nil {
+		return err
+	}
+	err = docProcessor.BuildDBModel()
+	if err != nil {
+		return err
+	}
+	err = docProcessor.InsertDBModel()
+	if err != nil {
+		return err
+	}
+	processorResp := docProcessor.GetResp()
+	if len(processorResp) == 0 {
+		return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "document processor resp is empty"))
+	}
+	defer func() {
+		if err != nil {
+			logs.CtxErrorf(ctx, "refresh document failed, err: %v", err)
+			deleteErr := k.DeleteDocument(ctx, &DeleteDocumentRequest{DocumentID: docProcessor.GetResp()[0].ID})
+			if deleteErr != nil {
+				logs.CtxErrorf(ctx, "delete document failed, err: %v", deleteErr)
+			}
+		}
+	}()
+
+	// sync index
+	err = k.indexDocument(ctx, &entity.Event{Document: docProcessor.GetResp()[0]})
+	if err != nil {
+		return err
+	}
+	return nil
+	// step n: unlock
 }

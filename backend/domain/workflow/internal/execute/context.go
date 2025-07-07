@@ -129,6 +129,11 @@ func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey, resumeEvent *entity
 		storedCtx.NodeCtx.ResumingEvent = nil
 	}
 
+	existingC := GetExeCtx(ctx)
+	if existingC != nil {
+		storedCtx.RootCtx.ResumeEvent = existingC.RootCtx.ResumeEvent
+	}
+
 	// restore the parent-child relationship between token collectors
 	if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil {
 		currentC := GetExeCtx(ctx)
@@ -160,10 +165,14 @@ func tryRestoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey) (context.Context
 
 	storedCtx.NodeCtx.ResumingEvent = nil
 
+	existingC := GetExeCtx(ctx)
+	if existingC != nil {
+		storedCtx.RootCtx.ResumeEvent = existingC.RootCtx.ResumeEvent
+	}
+
 	// restore the parent-child relationship between token collectors
-	if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil {
-		currentC := GetExeCtx(ctx)
-		currentTokenCollector := currentC.TokenCollector
+	if storedCtx.TokenCollector != nil && storedCtx.TokenCollector.Parent != nil && existingC != nil {
+		currentTokenCollector := existingC.TokenCollector
 		storedCtx.TokenCollector.Parent = currentTokenCollector
 	}
 

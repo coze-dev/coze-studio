@@ -13,8 +13,11 @@ import (
 	"gopkg.in/yaml.v3"
 
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
+	searchModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/search"
 	"code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
 	common "code.byted.org/flow/opencoze/backend/api/model/plugin_develop_common"
+	resCommon "code.byted.org/flow/opencoze/backend/api/model/resource/common"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crosssearch"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/entity"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/internal/openapi"
 	"code.byted.org/flow/opencoze/backend/domain/plugin/repository"
@@ -39,11 +42,6 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 		return 0, err
 	}
 	mf.Auth = authV2
-
-	err = p.validateOAuthInfo(ctx, req.DeveloperID, mf.Auth)
-	if err != nil {
-		return 0, err
-	}
 
 	for loc, params := range req.CommonParams {
 		location, ok := model.ToHTTPParamLocation(loc)
@@ -107,18 +105,64 @@ func (p *pluginServiceImpl) MGetDraftPlugins(ctx context.Context, pluginIDs []in
 }
 
 func (p *pluginServiceImpl) ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error) {
-	res, err := p.pluginRepo.ListDraftPlugins(ctx, &repository.ListDraftPluginsRequest{
+	if req.PageInfo.Name == nil || *req.PageInfo.Name == "" {
+		res, err := p.pluginRepo.ListDraftPlugins(ctx, &repository.ListDraftPluginsRequest{
+			SpaceID:  req.SpaceID,
+			APPID:    req.APPID,
+			PageInfo: req.PageInfo,
+		})
+		if err != nil {
+			return nil, errorx.Wrapf(err, "ListDraftPlugins failed, spaceID=%d, appID=%d", req.SpaceID, req.APPID)
+		}
+
+		return &ListDraftPluginsResponse{
+			Plugins: res.Plugins,
+			Total:   res.Total,
+		}, nil
+	}
+
+	res, err := crosssearch.DefaultSVC().SearchResources(ctx, &searchModel.SearchResourcesRequest{
 		SpaceID:  req.SpaceID,
 		APPID:    req.APPID,
-		PageInfo: req.PageInfo,
+		Name:     *req.PageInfo.Name,
+		OrderAsc: false,
+		ResTypeFilter: []resCommon.ResType{
+			resCommon.ResType_Plugin,
+		},
+		OrderFiledName: func() string {
+			if req.PageInfo.SortBy == nil || *req.PageInfo.SortBy != entity.SortByCreatedAt {
+				return searchModel.FieldOfUpdateTime
+			}
+			return searchModel.FieldOfCreateTime
+		}(),
+		Page:  ptr.Of(int32(req.PageInfo.Page)),
+		Limit: int32(req.PageInfo.Size),
 	})
 	if err != nil {
-		return nil, errorx.Wrapf(err, "ListDraftPlugins failed, spaceID=%d, appID=%d", req.SpaceID, req.APPID)
+		return nil, errorx.Wrapf(err, "SearchResources failed, spaceID=%d, appID=%d", req.SpaceID, req.APPID)
+	}
+
+	plugins := make([]*entity.PluginInfo, 0, len(res.Data))
+	for _, pl := range res.Data {
+		draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, pl.ResID)
+		if err != nil {
+			return nil, errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", pl.ResID)
+		}
+		if !exist {
+			logs.CtxWarnf(ctx, "draft plugin not exist, pluginID=%d", pl.ResID)
+			continue
+		}
+		plugins = append(plugins, draftPlugin)
+	}
+
+	total := int64(0)
+	if res.TotalHits != nil {
+		total = *res.TotalHits
 	}
 
 	return &ListDraftPluginsResponse{
-		Plugins: res.Plugins,
-		Total:   res.Total,
+		Plugins: plugins,
+		Total:   total,
 	}, nil
 }
 
@@ -128,11 +172,6 @@ func (p *pluginServiceImpl) CreateDraftPluginWithCode(ctx context.Context, req *
 		return nil, err
 	}
 	err = req.Manifest.Validate()
-	if err != nil {
-		return nil, err
-	}
-
-	err = p.validateOAuthInfo(ctx, req.DeveloperID, req.Manifest.Auth)
 	if err != nil {
 		return nil, err
 	}
@@ -165,11 +204,6 @@ func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *
 		return err
 	}
 	err = mf.Validate()
-	if err != nil {
-		return err
-	}
-
-	err = p.validateOAuthInfo(ctx, req.UserID, mf.Auth)
 	if err != nil {
 		return err
 	}
@@ -400,11 +434,6 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 		return errorx.Wrapf(err, "updatePluginManifest failed")
 	}
 
-	err = p.validateOAuthInfo(ctx, oldPlugin.DeveloperID, mf.Auth)
-	if err != nil {
-		return err
-	}
-
 	newPlugin := entity.NewPluginInfo(&model.PluginInfo{
 		ID:         req.PluginID,
 		IconURI:    ptr.Of(mf.LogoURL),
@@ -574,18 +603,26 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateTool
 		op.Parameters = req.Parameters
 	}
 
-	if req.RequestBody != nil {
+	if req.RequestBody == nil {
+		op.RequestBody = draftTool.Operation.RequestBody
+	} else {
 		mType, ok := req.RequestBody.Value.Content[model.MediaTypeJson]
 		if !ok {
 			return fmt.Errorf("the '%s' media type is not defined in request body", model.MediaTypeJson)
 		}
-		if op.RequestBody.Value.Content == nil {
-			op.RequestBody.Value.Content = map[string]*openapi3.MediaType{}
+		if op.RequestBody == nil || op.RequestBody.Value == nil || op.RequestBody.Value.Content == nil {
+			op.RequestBody = &openapi3.RequestBodyRef{
+				Value: &openapi3.RequestBody{
+					Content: map[string]*openapi3.MediaType{},
+				},
+			}
 		}
 		op.RequestBody.Value.Content[model.MediaTypeJson] = mType
 	}
 
-	if req.Responses != nil {
+	if req.Responses == nil {
+		op.Responses = draftTool.Operation.Responses
+	} else {
 		newRespRef, ok := req.Responses[strconv.Itoa(http.StatusOK)]
 		if !ok {
 			return fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
@@ -753,7 +790,7 @@ func getConvertFunc(ctx context.Context, rawInput string) (convertFunc, common.P
 func validateConvertResult(ctx context.Context, req *ConvertToOpenapi3DocRequest, doc *model.Openapi3T, mf *entity.PluginManifest) error {
 	if req.PluginServerURL != nil {
 		if doc.Servers[0].URL != *req.PluginServerURL {
-			return fmt.Errorf("inconsistent API URL prefix")
+			return errorx.New(errno.ErrPluginConvertProtocolFailed, errorx.KV(errno.PluginMsgKey, "inconsistent API URL prefix"))
 		}
 	}
 

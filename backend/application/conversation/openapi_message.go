@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
+	"code.byted.org/flow/opencoze/backend/api/model/conversation/run"
 	message3 "code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
 	convEntity "code.byted.org/flow/opencoze/backend/domain/conversation/conversation/entity"
@@ -83,11 +84,8 @@ func (m *OpenapiMessageApplication) buildMessageListResponse(ctx context.Context
 	messagesVO := slices.Transform(mListMessages.Messages, func(dm *entity.Message) *message.OpenMessageApi {
 
 		content := dm.Content
-		if dm.ContentType == message3.ContentTypeMix && dm.DisplayContent != "" {
 
-			content = dm.DisplayContent
-		}
-		return &message.OpenMessageApi{
+		msg := &message.OpenMessageApi{
 			ID:             dm.ID,
 			ConversationID: dm.ConversationID,
 			BotID:          dm.AgentID,
@@ -101,6 +99,11 @@ func (m *OpenapiMessageApplication) buildMessageListResponse(ctx context.Context
 			ChatID:         dm.RunID,
 			MetaData:       dm.Ext,
 		}
+		if dm.ContentType == message3.ContentTypeMix && dm.DisplayContent != "" {
+			msg.Content = dm.DisplayContent
+			msg.ContentType = run.ContentTypeMixApi
+		}
+		return msg
 	})
 
 	resp := &message.ListMessageApiResponse{

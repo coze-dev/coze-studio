@@ -9,8 +9,10 @@ DUMP_DB_SCRIPT := $(SCRIPTS_DIR)/setup/db_migrate_dump.sh
 SETUP_DOCKER_SCRIPT := $(SCRIPTS_DIR)/setup/docker.sh
 SETUP_PYTHON_SCRIPT := $(SCRIPTS_DIR)/setup/python.sh
 COMPOSE_FILE := docker/docker-compose.yml
+COMPOSE_FILE_VE := docker/docker-compose-ve.yml
 MYSQL_SCHEMA := ./docker/volumes/mysql/schema.sql
 ENV_FILE := ./docker/.env
+ENV_FILE_VE := ./docker/.env.ve
 
 debug: middleware python server
 
@@ -20,11 +22,11 @@ fe:
 
 ve: 
 	@echo "Run opencoze on VolcEngine..."
-	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile volcano-setup --profile volcano-server up -d --wait
+	@docker compose -f $(COMPOSE_FILE_VE) --env-file $(ENV_FILE_VE)  up -d --wait
 
 debug_ve: python
 	@echo "Debug opencoze on VolcEngine..."
-	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile volcano-setup up -d
+	@docker compose -f $(COMPOSE_FILE_VE) --env-file $(ENV_FILE_VE) --profile volcano-setup up -d
 	@echo "Building and run server..."
 	@bash $(BUILD_SERVER_SCRIPT) -start
 
@@ -55,7 +57,7 @@ middleware:
 
 web:
 	@echo "Start web server in docker"
-	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile middleware --profile run-server up -d --wait
+	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile '*' up -d --wait
 
 down:
 	@echo "Stop all docker containers"

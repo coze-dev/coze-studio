@@ -41,6 +41,21 @@ func (m *MockKnowledgeOperator) EXPECT() *MockKnowledgeOperatorMockRecorder {
 	return m.recorder
 }
 
+// Delete mocks base method.
+func (m *MockKnowledgeOperator) Delete(arg0 context.Context, arg1 *knowledge.DeleteDocumentRequest) (*knowledge.DeleteDocumentResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
+	ret0, _ := ret[0].(*knowledge.DeleteDocumentResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockKnowledgeOperatorMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockKnowledgeOperator)(nil).Delete), arg0, arg1)
+}
+
 // ListKnowledgeDetail mocks base method.
 func (m *MockKnowledgeOperator) ListKnowledgeDetail(arg0 context.Context, arg1 *knowledge.ListKnowledgeDetailRequest) (*knowledge.ListKnowledgeDetailResponse, error) {
 	m.ctrl.T.Helper()

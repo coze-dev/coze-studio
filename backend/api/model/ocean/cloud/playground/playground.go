@@ -16134,7 +16134,7 @@ func (p *UploadFileOpenRequest) String() string {
 }
 
 type UploadFileOpenResponse struct {
-	File     *File          `thrift:"File,1,optional" form:"File" json:"File,omitempty" query:"File"`
+	File     *File          `thrift:"File,1,optional" form:"data" json:"data,omitempty"`
 	Code     int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
 	Msg      string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
 	BaseResp *base.BaseResp `thrift:"BaseResp,255" form:"BaseResp" json:"BaseResp" query:"BaseResp"`

@@ -296,6 +296,10 @@ func (t *toolRepoImpl) BindDraftAgentTools(ctx context.Context, agentID int64, t
 	return tx.Commit()
 }
 
+func (t *toolRepoImpl) GetAgentPluginIDs(ctx context.Context, agentID int64) (pluginIDs []int64, err error) {
+	return t.agentToolDraftDAO.GetAllPluginIDs(ctx, agentID)
+}
+
 func (t *toolRepoImpl) DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) (err error) {
 	tools, err := t.agentToolDraftDAO.GetAll(ctx, fromAgentID)
 	if err != nil {

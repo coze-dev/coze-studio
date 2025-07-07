@@ -513,7 +513,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NotNil(t, selectResp)
 	assert.NotNil(t, selectResp.Records)
 	assert.True(t, len(selectResp.Records) == 2)
-	assert.Equal(t, selectResp.Records[0]["name"], "Bob")
+	assert.Equal(t, string(selectResp.Records[0]["name"].([]uint8)), "Bob")
 	assert.NotNil(t, selectResp.Records[0][database.DefaultUidDisplayColName])
 	assert.NotNil(t, selectResp.Records[0][database.DefaultIDDisplayColName])
 	assert.NotNil(t, selectResp.Records[0][database.DefaultCreateTimeDisplayColName])
@@ -548,7 +548,7 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NotNil(t, selectNotNullResp)
 	assert.NotNil(t, selectNotNullResp.Records)
 	assert.True(t, len(selectNotNullResp.Records) == 2)
-	assert.Equal(t, selectNotNullResp.Records[0]["name"], "Bob")
+	assert.Equal(t, string(selectNotNullResp.Records[0]["name"].([]uint8)), "Bob")
 
 	executeNullSelectReq := &ExecuteSQLRequest{
 		DatabaseID:      resp.Database.ID,

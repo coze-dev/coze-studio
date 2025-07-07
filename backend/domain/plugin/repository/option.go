@@ -18,6 +18,18 @@ func WithPluginOpenapiDoc() PluginSelectedOptions {
 	}
 }
 
+func WithPluginManifest() PluginSelectedOptions {
+	return func(opts *dal.PluginSelectedOption) {
+		opts.Manifest = true
+	}
+}
+
+func WithPluginIconURI() PluginSelectedOptions {
+	return func(opts *dal.PluginSelectedOption) {
+		opts.IconURI = true
+	}
+}
+
 func WithPluginVersion() PluginSelectedOptions {
 	return func(opts *dal.PluginSelectedOption) {
 		opts.Version = true

@@ -33,17 +33,19 @@ type baseDocProcessor struct {
 	documentSource *entity.DocumentSource
 
 	// 落DB 的 model
-	TableName string
-	docModels []*model.KnowledgeDocument
+	TableName          string
+	docModels          []*model.KnowledgeDocument
+	updateConfigModels []*model.KnowledgeDocumentUpdateConfig
 
-	storage       storage.Storage
-	knowledgeRepo repository.KnowledgeRepo
-	documentRepo  repository.KnowledgeDocumentRepo
-	sliceRepo     repository.KnowledgeDocumentSliceRepo
-	idgen         idgen.IDGenerator
-	rdb           rdb.RDB
-	producer      eventbus.Producer
-	parseManager  parser.Manager
+	storage          storage.Storage
+	knowledgeRepo    repository.KnowledgeRepo
+	documentRepo     repository.KnowledgeDocumentRepo
+	sliceRepo        repository.KnowledgeDocumentSliceRepo
+	webCrawlTaskRepo repository.WebCrawlTaskRepo
+	idgen            idgen.IDGenerator
+	rdb              rdb.RDB
+	producer         eventbus.Producer
+	parseManager     parser.Manager
 }
 
 func (p *baseDocProcessor) BeforeCreate() error {
@@ -74,10 +76,29 @@ func (p *baseDocProcessor) BuildDBModel() error {
 				ParsingStrategy:  p.Documents[i].ParsingStrategy,
 				ChunkingStrategy: p.Documents[i].ChunkingStrategy,
 			},
-			CreatedAt: time.Now().UnixMilli(),
-			UpdatedAt: time.Now().UnixMilli(),
+			SourceFileID: p.Documents[i].SourceFileID,
+			CreatedAt:    time.Now().UnixMilli(),
+			UpdatedAt:    time.Now().UnixMilli(),
 		}
 		p.Documents[i].ID = docModel.ID
+		if p.Documents[i].UpdateRule != nil {
+			id, err := p.idgen.GenID(p.ctx)
+			if err != nil {
+				logs.CtxErrorf(p.ctx, "gen id failed, err: %v", err)
+				return errorx.New(errno.ErrKnowledgeIDGenCode)
+			}
+			updateConfigModel := &model.KnowledgeDocumentUpdateConfig{
+				ID:                 id,
+				DocumentID:         docModel.ID,
+				UpdateInterval:     p.Documents[i].UpdateRule.UpdateInterval * 24,
+				WebURL:             p.Documents[i].WebURL,
+				DocumentSourceType: int32(p.Documents[i].Source),
+				NextUpdateTime:     time.Now().Add(time.Hour * 24 * time.Duration(p.Documents[i].UpdateRule.UpdateInterval)).UnixMilli(),
+				CreateAt:           time.Now().UnixMilli(),
+				UpdateAt:           time.Now().UnixMilli(),
+			}
+			p.updateConfigModels = append(p.updateConfigModels, updateConfigModel)
+		}
 		p.docModels = append(p.docModels, docModel)
 	}
 

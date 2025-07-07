@@ -3,6 +3,7 @@
 package dataset
 
 import (
+	"code.byted.org/flow/opencoze/backend/api/model/web_crawl"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
@@ -53,12 +54,28 @@ type DatasetService interface {
 	UpdateSlice(ctx context.Context, req *UpdateSliceRequest) (r *UpdateSliceResponse, err error)
 
 	ListSlice(ctx context.Context, req *ListSliceRequest) (r *ListSliceResponse, err error)
-	/** 预分片相关 **/
+	// 预分片相关
 	CreateDocumentReview(ctx context.Context, req *CreateDocumentReviewRequest) (r *CreateDocumentReviewResponse, err error)
 
 	MGetDocumentReview(ctx context.Context, req *MGetDocumentReviewRequest) (r *MGetDocumentReviewResponse, err error)
 
 	SaveDocumentReview(ctx context.Context, req *SaveDocumentReviewRequest) (r *SaveDocumentReviewResponse, err error)
+	// Web 拉取数据源
+	SubmitWebUrl(ctx context.Context, req *SubmitWebUrlRequest) (r *SubmitWebUrlResponse, err error)
+
+	BatchSubmitWebUrl(ctx context.Context, req *BatchSubmitWebUrlRequest) (r *BatchSubmitWebUrlResponse, err error)
+
+	GetWebInfo(ctx context.Context, req *GetWebInfoRequest) (r *GetWebInfoResponse, err error)
+
+	FetchWebUrl(ctx context.Context, req *FetchWebUrlRequest) (r *FetchWebUrlResponse, err error)
+
+	BatchUpdateDocument(ctx context.Context, req *BatchUpdateDocumentRequest) (r *BatchUpdateDocumentResponse, err error)
+
+	CreateSubLinkDiscoveryTask(ctx context.Context, request *web_crawl.CreateSubLinkDiscoveryTaskRequest) (r *web_crawl.CreateSubLinkDiscoveryTaskResponse, err error)
+
+	GetSubLinkDiscoveryTask(ctx context.Context, request *web_crawl.GetSubLinkDiscoveryTaskRequest) (r *web_crawl.GetSubLinkDiscoveryTaskResponse, err error)
+
+	AbortSubLinkDiscoveryTask(ctx context.Context, request *web_crawl.AbortSubLinkDiscoveryTaskRequest) (r *web_crawl.AbortSubLinkDiscoveryTaskResponse, err error)
 }
 
 type DatasetServiceClient struct {
@@ -312,6 +329,78 @@ func (p *DatasetServiceClient) SaveDocumentReview(ctx context.Context, req *Save
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *DatasetServiceClient) SubmitWebUrl(ctx context.Context, req *SubmitWebUrlRequest) (r *SubmitWebUrlResponse, err error) {
+	var _args DatasetServiceSubmitWebUrlArgs
+	_args.Req = req
+	var _result DatasetServiceSubmitWebUrlResult
+	if err = p.Client_().Call(ctx, "SubmitWebUrl", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *DatasetServiceClient) BatchSubmitWebUrl(ctx context.Context, req *BatchSubmitWebUrlRequest) (r *BatchSubmitWebUrlResponse, err error) {
+	var _args DatasetServiceBatchSubmitWebUrlArgs
+	_args.Req = req
+	var _result DatasetServiceBatchSubmitWebUrlResult
+	if err = p.Client_().Call(ctx, "BatchSubmitWebUrl", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *DatasetServiceClient) GetWebInfo(ctx context.Context, req *GetWebInfoRequest) (r *GetWebInfoResponse, err error) {
+	var _args DatasetServiceGetWebInfoArgs
+	_args.Req = req
+	var _result DatasetServiceGetWebInfoResult
+	if err = p.Client_().Call(ctx, "GetWebInfo", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *DatasetServiceClient) FetchWebUrl(ctx context.Context, req *FetchWebUrlRequest) (r *FetchWebUrlResponse, err error) {
+	var _args DatasetServiceFetchWebUrlArgs
+	_args.Req = req
+	var _result DatasetServiceFetchWebUrlResult
+	if err = p.Client_().Call(ctx, "FetchWebUrl", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *DatasetServiceClient) BatchUpdateDocument(ctx context.Context, req *BatchUpdateDocumentRequest) (r *BatchUpdateDocumentResponse, err error) {
+	var _args DatasetServiceBatchUpdateDocumentArgs
+	_args.Req = req
+	var _result DatasetServiceBatchUpdateDocumentResult
+	if err = p.Client_().Call(ctx, "BatchUpdateDocument", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *DatasetServiceClient) CreateSubLinkDiscoveryTask(ctx context.Context, request *web_crawl.CreateSubLinkDiscoveryTaskRequest) (r *web_crawl.CreateSubLinkDiscoveryTaskResponse, err error) {
+	var _args DatasetServiceCreateSubLinkDiscoveryTaskArgs
+	_args.Request = request
+	var _result DatasetServiceCreateSubLinkDiscoveryTaskResult
+	if err = p.Client_().Call(ctx, "CreateSubLinkDiscoveryTask", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *DatasetServiceClient) GetSubLinkDiscoveryTask(ctx context.Context, request *web_crawl.GetSubLinkDiscoveryTaskRequest) (r *web_crawl.GetSubLinkDiscoveryTaskResponse, err error) {
+	var _args DatasetServiceGetSubLinkDiscoveryTaskArgs
+	_args.Request = request
+	var _result DatasetServiceGetSubLinkDiscoveryTaskResult
+	if err = p.Client_().Call(ctx, "GetSubLinkDiscoveryTask", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *DatasetServiceClient) AbortSubLinkDiscoveryTask(ctx context.Context, request *web_crawl.AbortSubLinkDiscoveryTaskRequest) (r *web_crawl.AbortSubLinkDiscoveryTaskResponse, err error) {
+	var _args DatasetServiceAbortSubLinkDiscoveryTaskArgs
+	_args.Request = request
+	var _result DatasetServiceAbortSubLinkDiscoveryTaskResult
+	if err = p.Client_().Call(ctx, "AbortSubLinkDiscoveryTask", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 
 type DatasetServiceProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
@@ -358,6 +447,14 @@ func NewDatasetServiceProcessor(handler DatasetService) *DatasetServiceProcessor
 	self.AddToProcessorMap("CreateDocumentReview", &datasetServiceProcessorCreateDocumentReview{handler: handler})
 	self.AddToProcessorMap("MGetDocumentReview", &datasetServiceProcessorMGetDocumentReview{handler: handler})
 	self.AddToProcessorMap("SaveDocumentReview", &datasetServiceProcessorSaveDocumentReview{handler: handler})
+	self.AddToProcessorMap("SubmitWebUrl", &datasetServiceProcessorSubmitWebUrl{handler: handler})
+	self.AddToProcessorMap("BatchSubmitWebUrl", &datasetServiceProcessorBatchSubmitWebUrl{handler: handler})
+	self.AddToProcessorMap("GetWebInfo", &datasetServiceProcessorGetWebInfo{handler: handler})
+	self.AddToProcessorMap("FetchWebUrl", &datasetServiceProcessorFetchWebUrl{handler: handler})
+	self.AddToProcessorMap("BatchUpdateDocument", &datasetServiceProcessorBatchUpdateDocument{handler: handler})
+	self.AddToProcessorMap("CreateSubLinkDiscoveryTask", &datasetServiceProcessorCreateSubLinkDiscoveryTask{handler: handler})
+	self.AddToProcessorMap("GetSubLinkDiscoveryTask", &datasetServiceProcessorGetSubLinkDiscoveryTask{handler: handler})
+	self.AddToProcessorMap("AbortSubLinkDiscoveryTask", &datasetServiceProcessorAbortSubLinkDiscoveryTask{handler: handler})
 	return self
 }
 func (p *DatasetServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -1561,6 +1658,390 @@ func (p *datasetServiceProcessorSaveDocumentReview) Process(ctx context.Context,
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("SaveDocumentReview", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type datasetServiceProcessorSubmitWebUrl struct {
+	handler DatasetService
+}
+
+func (p *datasetServiceProcessorSubmitWebUrl) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := DatasetServiceSubmitWebUrlArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("SubmitWebUrl", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := DatasetServiceSubmitWebUrlResult{}
+	var retval *SubmitWebUrlResponse
+	if retval, err2 = p.handler.SubmitWebUrl(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing SubmitWebUrl: "+err2.Error())
+		oprot.WriteMessageBegin("SubmitWebUrl", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("SubmitWebUrl", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type datasetServiceProcessorBatchSubmitWebUrl struct {
+	handler DatasetService
+}
+
+func (p *datasetServiceProcessorBatchSubmitWebUrl) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := DatasetServiceBatchSubmitWebUrlArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("BatchSubmitWebUrl", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := DatasetServiceBatchSubmitWebUrlResult{}
+	var retval *BatchSubmitWebUrlResponse
+	if retval, err2 = p.handler.BatchSubmitWebUrl(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing BatchSubmitWebUrl: "+err2.Error())
+		oprot.WriteMessageBegin("BatchSubmitWebUrl", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("BatchSubmitWebUrl", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type datasetServiceProcessorGetWebInfo struct {
+	handler DatasetService
+}
+
+func (p *datasetServiceProcessorGetWebInfo) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := DatasetServiceGetWebInfoArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetWebInfo", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := DatasetServiceGetWebInfoResult{}
+	var retval *GetWebInfoResponse
+	if retval, err2 = p.handler.GetWebInfo(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetWebInfo: "+err2.Error())
+		oprot.WriteMessageBegin("GetWebInfo", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetWebInfo", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type datasetServiceProcessorFetchWebUrl struct {
+	handler DatasetService
+}
+
+func (p *datasetServiceProcessorFetchWebUrl) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := DatasetServiceFetchWebUrlArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("FetchWebUrl", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := DatasetServiceFetchWebUrlResult{}
+	var retval *FetchWebUrlResponse
+	if retval, err2 = p.handler.FetchWebUrl(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing FetchWebUrl: "+err2.Error())
+		oprot.WriteMessageBegin("FetchWebUrl", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("FetchWebUrl", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type datasetServiceProcessorBatchUpdateDocument struct {
+	handler DatasetService
+}
+
+func (p *datasetServiceProcessorBatchUpdateDocument) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := DatasetServiceBatchUpdateDocumentArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("BatchUpdateDocument", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := DatasetServiceBatchUpdateDocumentResult{}
+	var retval *BatchUpdateDocumentResponse
+	if retval, err2 = p.handler.BatchUpdateDocument(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing BatchUpdateDocument: "+err2.Error())
+		oprot.WriteMessageBegin("BatchUpdateDocument", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("BatchUpdateDocument", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type datasetServiceProcessorCreateSubLinkDiscoveryTask struct {
+	handler DatasetService
+}
+
+func (p *datasetServiceProcessorCreateSubLinkDiscoveryTask) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := DatasetServiceCreateSubLinkDiscoveryTaskArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("CreateSubLinkDiscoveryTask", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := DatasetServiceCreateSubLinkDiscoveryTaskResult{}
+	var retval *web_crawl.CreateSubLinkDiscoveryTaskResponse
+	if retval, err2 = p.handler.CreateSubLinkDiscoveryTask(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing CreateSubLinkDiscoveryTask: "+err2.Error())
+		oprot.WriteMessageBegin("CreateSubLinkDiscoveryTask", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("CreateSubLinkDiscoveryTask", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type datasetServiceProcessorGetSubLinkDiscoveryTask struct {
+	handler DatasetService
+}
+
+func (p *datasetServiceProcessorGetSubLinkDiscoveryTask) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := DatasetServiceGetSubLinkDiscoveryTaskArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetSubLinkDiscoveryTask", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := DatasetServiceGetSubLinkDiscoveryTaskResult{}
+	var retval *web_crawl.GetSubLinkDiscoveryTaskResponse
+	if retval, err2 = p.handler.GetSubLinkDiscoveryTask(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetSubLinkDiscoveryTask: "+err2.Error())
+		oprot.WriteMessageBegin("GetSubLinkDiscoveryTask", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetSubLinkDiscoveryTask", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type datasetServiceProcessorAbortSubLinkDiscoveryTask struct {
+	handler DatasetService
+}
+
+func (p *datasetServiceProcessorAbortSubLinkDiscoveryTask) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := DatasetServiceAbortSubLinkDiscoveryTaskArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("AbortSubLinkDiscoveryTask", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := DatasetServiceAbortSubLinkDiscoveryTaskResult{}
+	var retval *web_crawl.AbortSubLinkDiscoveryTaskResponse
+	if retval, err2 = p.handler.AbortSubLinkDiscoveryTask(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing AbortSubLinkDiscoveryTask: "+err2.Error())
+		oprot.WriteMessageBegin("AbortSubLinkDiscoveryTask", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("AbortSubLinkDiscoveryTask", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -8875,5 +9356,2341 @@ func (p *DatasetServiceSaveDocumentReviewResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("DatasetServiceSaveDocumentReviewResult(%+v)", *p)
+
+}
+
+type DatasetServiceSubmitWebUrlArgs struct {
+	Req *SubmitWebUrlRequest `thrift:"req,1"`
+}
+
+func NewDatasetServiceSubmitWebUrlArgs() *DatasetServiceSubmitWebUrlArgs {
+	return &DatasetServiceSubmitWebUrlArgs{}
+}
+
+func (p *DatasetServiceSubmitWebUrlArgs) InitDefault() {
+}
+
+var DatasetServiceSubmitWebUrlArgs_Req_DEFAULT *SubmitWebUrlRequest
+
+func (p *DatasetServiceSubmitWebUrlArgs) GetReq() (v *SubmitWebUrlRequest) {
+	if !p.IsSetReq() {
+		return DatasetServiceSubmitWebUrlArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_DatasetServiceSubmitWebUrlArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *DatasetServiceSubmitWebUrlArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DatasetServiceSubmitWebUrlArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceSubmitWebUrlArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceSubmitWebUrlArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewSubmitWebUrlRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *DatasetServiceSubmitWebUrlArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("SubmitWebUrl_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceSubmitWebUrlArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *DatasetServiceSubmitWebUrlArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceSubmitWebUrlArgs(%+v)", *p)
+
+}
+
+type DatasetServiceSubmitWebUrlResult struct {
+	Success *SubmitWebUrlResponse `thrift:"success,0,optional"`
+}
+
+func NewDatasetServiceSubmitWebUrlResult() *DatasetServiceSubmitWebUrlResult {
+	return &DatasetServiceSubmitWebUrlResult{}
+}
+
+func (p *DatasetServiceSubmitWebUrlResult) InitDefault() {
+}
+
+var DatasetServiceSubmitWebUrlResult_Success_DEFAULT *SubmitWebUrlResponse
+
+func (p *DatasetServiceSubmitWebUrlResult) GetSuccess() (v *SubmitWebUrlResponse) {
+	if !p.IsSetSuccess() {
+		return DatasetServiceSubmitWebUrlResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_DatasetServiceSubmitWebUrlResult = map[int16]string{
+	0: "success",
+}
+
+func (p *DatasetServiceSubmitWebUrlResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DatasetServiceSubmitWebUrlResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceSubmitWebUrlResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceSubmitWebUrlResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewSubmitWebUrlResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *DatasetServiceSubmitWebUrlResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("SubmitWebUrl_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceSubmitWebUrlResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *DatasetServiceSubmitWebUrlResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceSubmitWebUrlResult(%+v)", *p)
+
+}
+
+type DatasetServiceBatchSubmitWebUrlArgs struct {
+	Req *BatchSubmitWebUrlRequest `thrift:"req,1"`
+}
+
+func NewDatasetServiceBatchSubmitWebUrlArgs() *DatasetServiceBatchSubmitWebUrlArgs {
+	return &DatasetServiceBatchSubmitWebUrlArgs{}
+}
+
+func (p *DatasetServiceBatchSubmitWebUrlArgs) InitDefault() {
+}
+
+var DatasetServiceBatchSubmitWebUrlArgs_Req_DEFAULT *BatchSubmitWebUrlRequest
+
+func (p *DatasetServiceBatchSubmitWebUrlArgs) GetReq() (v *BatchSubmitWebUrlRequest) {
+	if !p.IsSetReq() {
+		return DatasetServiceBatchSubmitWebUrlArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_DatasetServiceBatchSubmitWebUrlArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *DatasetServiceBatchSubmitWebUrlArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DatasetServiceBatchSubmitWebUrlArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceBatchSubmitWebUrlArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceBatchSubmitWebUrlArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewBatchSubmitWebUrlRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *DatasetServiceBatchSubmitWebUrlArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("BatchSubmitWebUrl_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceBatchSubmitWebUrlArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *DatasetServiceBatchSubmitWebUrlArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceBatchSubmitWebUrlArgs(%+v)", *p)
+
+}
+
+type DatasetServiceBatchSubmitWebUrlResult struct {
+	Success *BatchSubmitWebUrlResponse `thrift:"success,0,optional"`
+}
+
+func NewDatasetServiceBatchSubmitWebUrlResult() *DatasetServiceBatchSubmitWebUrlResult {
+	return &DatasetServiceBatchSubmitWebUrlResult{}
+}
+
+func (p *DatasetServiceBatchSubmitWebUrlResult) InitDefault() {
+}
+
+var DatasetServiceBatchSubmitWebUrlResult_Success_DEFAULT *BatchSubmitWebUrlResponse
+
+func (p *DatasetServiceBatchSubmitWebUrlResult) GetSuccess() (v *BatchSubmitWebUrlResponse) {
+	if !p.IsSetSuccess() {
+		return DatasetServiceBatchSubmitWebUrlResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_DatasetServiceBatchSubmitWebUrlResult = map[int16]string{
+	0: "success",
+}
+
+func (p *DatasetServiceBatchSubmitWebUrlResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DatasetServiceBatchSubmitWebUrlResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceBatchSubmitWebUrlResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceBatchSubmitWebUrlResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewBatchSubmitWebUrlResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *DatasetServiceBatchSubmitWebUrlResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("BatchSubmitWebUrl_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceBatchSubmitWebUrlResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *DatasetServiceBatchSubmitWebUrlResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceBatchSubmitWebUrlResult(%+v)", *p)
+
+}
+
+type DatasetServiceGetWebInfoArgs struct {
+	Req *GetWebInfoRequest `thrift:"req,1"`
+}
+
+func NewDatasetServiceGetWebInfoArgs() *DatasetServiceGetWebInfoArgs {
+	return &DatasetServiceGetWebInfoArgs{}
+}
+
+func (p *DatasetServiceGetWebInfoArgs) InitDefault() {
+}
+
+var DatasetServiceGetWebInfoArgs_Req_DEFAULT *GetWebInfoRequest
+
+func (p *DatasetServiceGetWebInfoArgs) GetReq() (v *GetWebInfoRequest) {
+	if !p.IsSetReq() {
+		return DatasetServiceGetWebInfoArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_DatasetServiceGetWebInfoArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *DatasetServiceGetWebInfoArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DatasetServiceGetWebInfoArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceGetWebInfoArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceGetWebInfoArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewGetWebInfoRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *DatasetServiceGetWebInfoArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetWebInfo_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceGetWebInfoArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *DatasetServiceGetWebInfoArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceGetWebInfoArgs(%+v)", *p)
+
+}
+
+type DatasetServiceGetWebInfoResult struct {
+	Success *GetWebInfoResponse `thrift:"success,0,optional"`
+}
+
+func NewDatasetServiceGetWebInfoResult() *DatasetServiceGetWebInfoResult {
+	return &DatasetServiceGetWebInfoResult{}
+}
+
+func (p *DatasetServiceGetWebInfoResult) InitDefault() {
+}
+
+var DatasetServiceGetWebInfoResult_Success_DEFAULT *GetWebInfoResponse
+
+func (p *DatasetServiceGetWebInfoResult) GetSuccess() (v *GetWebInfoResponse) {
+	if !p.IsSetSuccess() {
+		return DatasetServiceGetWebInfoResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_DatasetServiceGetWebInfoResult = map[int16]string{
+	0: "success",
+}
+
+func (p *DatasetServiceGetWebInfoResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DatasetServiceGetWebInfoResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceGetWebInfoResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceGetWebInfoResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewGetWebInfoResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *DatasetServiceGetWebInfoResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetWebInfo_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceGetWebInfoResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *DatasetServiceGetWebInfoResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceGetWebInfoResult(%+v)", *p)
+
+}
+
+type DatasetServiceFetchWebUrlArgs struct {
+	Req *FetchWebUrlRequest `thrift:"req,1"`
+}
+
+func NewDatasetServiceFetchWebUrlArgs() *DatasetServiceFetchWebUrlArgs {
+	return &DatasetServiceFetchWebUrlArgs{}
+}
+
+func (p *DatasetServiceFetchWebUrlArgs) InitDefault() {
+}
+
+var DatasetServiceFetchWebUrlArgs_Req_DEFAULT *FetchWebUrlRequest
+
+func (p *DatasetServiceFetchWebUrlArgs) GetReq() (v *FetchWebUrlRequest) {
+	if !p.IsSetReq() {
+		return DatasetServiceFetchWebUrlArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_DatasetServiceFetchWebUrlArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *DatasetServiceFetchWebUrlArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DatasetServiceFetchWebUrlArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceFetchWebUrlArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceFetchWebUrlArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewFetchWebUrlRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *DatasetServiceFetchWebUrlArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("FetchWebUrl_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceFetchWebUrlArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *DatasetServiceFetchWebUrlArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceFetchWebUrlArgs(%+v)", *p)
+
+}
+
+type DatasetServiceFetchWebUrlResult struct {
+	Success *FetchWebUrlResponse `thrift:"success,0,optional"`
+}
+
+func NewDatasetServiceFetchWebUrlResult() *DatasetServiceFetchWebUrlResult {
+	return &DatasetServiceFetchWebUrlResult{}
+}
+
+func (p *DatasetServiceFetchWebUrlResult) InitDefault() {
+}
+
+var DatasetServiceFetchWebUrlResult_Success_DEFAULT *FetchWebUrlResponse
+
+func (p *DatasetServiceFetchWebUrlResult) GetSuccess() (v *FetchWebUrlResponse) {
+	if !p.IsSetSuccess() {
+		return DatasetServiceFetchWebUrlResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_DatasetServiceFetchWebUrlResult = map[int16]string{
+	0: "success",
+}
+
+func (p *DatasetServiceFetchWebUrlResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DatasetServiceFetchWebUrlResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceFetchWebUrlResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceFetchWebUrlResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewFetchWebUrlResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *DatasetServiceFetchWebUrlResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("FetchWebUrl_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceFetchWebUrlResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *DatasetServiceFetchWebUrlResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceFetchWebUrlResult(%+v)", *p)
+
+}
+
+type DatasetServiceBatchUpdateDocumentArgs struct {
+	Req *BatchUpdateDocumentRequest `thrift:"req,1"`
+}
+
+func NewDatasetServiceBatchUpdateDocumentArgs() *DatasetServiceBatchUpdateDocumentArgs {
+	return &DatasetServiceBatchUpdateDocumentArgs{}
+}
+
+func (p *DatasetServiceBatchUpdateDocumentArgs) InitDefault() {
+}
+
+var DatasetServiceBatchUpdateDocumentArgs_Req_DEFAULT *BatchUpdateDocumentRequest
+
+func (p *DatasetServiceBatchUpdateDocumentArgs) GetReq() (v *BatchUpdateDocumentRequest) {
+	if !p.IsSetReq() {
+		return DatasetServiceBatchUpdateDocumentArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_DatasetServiceBatchUpdateDocumentArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *DatasetServiceBatchUpdateDocumentArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *DatasetServiceBatchUpdateDocumentArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceBatchUpdateDocumentArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceBatchUpdateDocumentArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewBatchUpdateDocumentRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *DatasetServiceBatchUpdateDocumentArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("BatchUpdateDocument_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceBatchUpdateDocumentArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *DatasetServiceBatchUpdateDocumentArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceBatchUpdateDocumentArgs(%+v)", *p)
+
+}
+
+type DatasetServiceBatchUpdateDocumentResult struct {
+	Success *BatchUpdateDocumentResponse `thrift:"success,0,optional"`
+}
+
+func NewDatasetServiceBatchUpdateDocumentResult() *DatasetServiceBatchUpdateDocumentResult {
+	return &DatasetServiceBatchUpdateDocumentResult{}
+}
+
+func (p *DatasetServiceBatchUpdateDocumentResult) InitDefault() {
+}
+
+var DatasetServiceBatchUpdateDocumentResult_Success_DEFAULT *BatchUpdateDocumentResponse
+
+func (p *DatasetServiceBatchUpdateDocumentResult) GetSuccess() (v *BatchUpdateDocumentResponse) {
+	if !p.IsSetSuccess() {
+		return DatasetServiceBatchUpdateDocumentResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_DatasetServiceBatchUpdateDocumentResult = map[int16]string{
+	0: "success",
+}
+
+func (p *DatasetServiceBatchUpdateDocumentResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DatasetServiceBatchUpdateDocumentResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceBatchUpdateDocumentResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceBatchUpdateDocumentResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewBatchUpdateDocumentResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *DatasetServiceBatchUpdateDocumentResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("BatchUpdateDocument_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceBatchUpdateDocumentResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *DatasetServiceBatchUpdateDocumentResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceBatchUpdateDocumentResult(%+v)", *p)
+
+}
+
+type DatasetServiceCreateSubLinkDiscoveryTaskArgs struct {
+	Request *web_crawl.CreateSubLinkDiscoveryTaskRequest `thrift:"request,1"`
+}
+
+func NewDatasetServiceCreateSubLinkDiscoveryTaskArgs() *DatasetServiceCreateSubLinkDiscoveryTaskArgs {
+	return &DatasetServiceCreateSubLinkDiscoveryTaskArgs{}
+}
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskArgs) InitDefault() {
+}
+
+var DatasetServiceCreateSubLinkDiscoveryTaskArgs_Request_DEFAULT *web_crawl.CreateSubLinkDiscoveryTaskRequest
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskArgs) GetRequest() (v *web_crawl.CreateSubLinkDiscoveryTaskRequest) {
+	if !p.IsSetRequest() {
+		return DatasetServiceCreateSubLinkDiscoveryTaskArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_DatasetServiceCreateSubLinkDiscoveryTaskArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceCreateSubLinkDiscoveryTaskArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := web_crawl.NewCreateSubLinkDiscoveryTaskRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("CreateSubLinkDiscoveryTask_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceCreateSubLinkDiscoveryTaskArgs(%+v)", *p)
+
+}
+
+type DatasetServiceCreateSubLinkDiscoveryTaskResult struct {
+	Success *web_crawl.CreateSubLinkDiscoveryTaskResponse `thrift:"success,0,optional"`
+}
+
+func NewDatasetServiceCreateSubLinkDiscoveryTaskResult() *DatasetServiceCreateSubLinkDiscoveryTaskResult {
+	return &DatasetServiceCreateSubLinkDiscoveryTaskResult{}
+}
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskResult) InitDefault() {
+}
+
+var DatasetServiceCreateSubLinkDiscoveryTaskResult_Success_DEFAULT *web_crawl.CreateSubLinkDiscoveryTaskResponse
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskResult) GetSuccess() (v *web_crawl.CreateSubLinkDiscoveryTaskResponse) {
+	if !p.IsSetSuccess() {
+		return DatasetServiceCreateSubLinkDiscoveryTaskResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_DatasetServiceCreateSubLinkDiscoveryTaskResult = map[int16]string{
+	0: "success",
+}
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceCreateSubLinkDiscoveryTaskResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := web_crawl.NewCreateSubLinkDiscoveryTaskResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("CreateSubLinkDiscoveryTask_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *DatasetServiceCreateSubLinkDiscoveryTaskResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceCreateSubLinkDiscoveryTaskResult(%+v)", *p)
+
+}
+
+type DatasetServiceGetSubLinkDiscoveryTaskArgs struct {
+	Request *web_crawl.GetSubLinkDiscoveryTaskRequest `thrift:"request,1"`
+}
+
+func NewDatasetServiceGetSubLinkDiscoveryTaskArgs() *DatasetServiceGetSubLinkDiscoveryTaskArgs {
+	return &DatasetServiceGetSubLinkDiscoveryTaskArgs{}
+}
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskArgs) InitDefault() {
+}
+
+var DatasetServiceGetSubLinkDiscoveryTaskArgs_Request_DEFAULT *web_crawl.GetSubLinkDiscoveryTaskRequest
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskArgs) GetRequest() (v *web_crawl.GetSubLinkDiscoveryTaskRequest) {
+	if !p.IsSetRequest() {
+		return DatasetServiceGetSubLinkDiscoveryTaskArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_DatasetServiceGetSubLinkDiscoveryTaskArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceGetSubLinkDiscoveryTaskArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := web_crawl.NewGetSubLinkDiscoveryTaskRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetSubLinkDiscoveryTask_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceGetSubLinkDiscoveryTaskArgs(%+v)", *p)
+
+}
+
+type DatasetServiceGetSubLinkDiscoveryTaskResult struct {
+	Success *web_crawl.GetSubLinkDiscoveryTaskResponse `thrift:"success,0,optional"`
+}
+
+func NewDatasetServiceGetSubLinkDiscoveryTaskResult() *DatasetServiceGetSubLinkDiscoveryTaskResult {
+	return &DatasetServiceGetSubLinkDiscoveryTaskResult{}
+}
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskResult) InitDefault() {
+}
+
+var DatasetServiceGetSubLinkDiscoveryTaskResult_Success_DEFAULT *web_crawl.GetSubLinkDiscoveryTaskResponse
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskResult) GetSuccess() (v *web_crawl.GetSubLinkDiscoveryTaskResponse) {
+	if !p.IsSetSuccess() {
+		return DatasetServiceGetSubLinkDiscoveryTaskResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_DatasetServiceGetSubLinkDiscoveryTaskResult = map[int16]string{
+	0: "success",
+}
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceGetSubLinkDiscoveryTaskResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := web_crawl.NewGetSubLinkDiscoveryTaskResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetSubLinkDiscoveryTask_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *DatasetServiceGetSubLinkDiscoveryTaskResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceGetSubLinkDiscoveryTaskResult(%+v)", *p)
+
+}
+
+type DatasetServiceAbortSubLinkDiscoveryTaskArgs struct {
+	Request *web_crawl.AbortSubLinkDiscoveryTaskRequest `thrift:"request,1"`
+}
+
+func NewDatasetServiceAbortSubLinkDiscoveryTaskArgs() *DatasetServiceAbortSubLinkDiscoveryTaskArgs {
+	return &DatasetServiceAbortSubLinkDiscoveryTaskArgs{}
+}
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskArgs) InitDefault() {
+}
+
+var DatasetServiceAbortSubLinkDiscoveryTaskArgs_Request_DEFAULT *web_crawl.AbortSubLinkDiscoveryTaskRequest
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskArgs) GetRequest() (v *web_crawl.AbortSubLinkDiscoveryTaskRequest) {
+	if !p.IsSetRequest() {
+		return DatasetServiceAbortSubLinkDiscoveryTaskArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_DatasetServiceAbortSubLinkDiscoveryTaskArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceAbortSubLinkDiscoveryTaskArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := web_crawl.NewAbortSubLinkDiscoveryTaskRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("AbortSubLinkDiscoveryTask_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceAbortSubLinkDiscoveryTaskArgs(%+v)", *p)
+
+}
+
+type DatasetServiceAbortSubLinkDiscoveryTaskResult struct {
+	Success *web_crawl.AbortSubLinkDiscoveryTaskResponse `thrift:"success,0,optional"`
+}
+
+func NewDatasetServiceAbortSubLinkDiscoveryTaskResult() *DatasetServiceAbortSubLinkDiscoveryTaskResult {
+	return &DatasetServiceAbortSubLinkDiscoveryTaskResult{}
+}
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskResult) InitDefault() {
+}
+
+var DatasetServiceAbortSubLinkDiscoveryTaskResult_Success_DEFAULT *web_crawl.AbortSubLinkDiscoveryTaskResponse
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskResult) GetSuccess() (v *web_crawl.AbortSubLinkDiscoveryTaskResponse) {
+	if !p.IsSetSuccess() {
+		return DatasetServiceAbortSubLinkDiscoveryTaskResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_DatasetServiceAbortSubLinkDiscoveryTaskResult = map[int16]string{
+	0: "success",
+}
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DatasetServiceAbortSubLinkDiscoveryTaskResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := web_crawl.NewAbortSubLinkDiscoveryTaskResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("AbortSubLinkDiscoveryTask_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *DatasetServiceAbortSubLinkDiscoveryTaskResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("DatasetServiceAbortSubLinkDiscoveryTaskResult(%+v)", *p)
 
 }

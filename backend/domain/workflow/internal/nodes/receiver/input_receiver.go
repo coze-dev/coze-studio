@@ -3,6 +3,7 @@ package receiver
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
@@ -10,9 +11,13 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
+	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	sonic2 "code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type Config struct {
@@ -52,7 +57,10 @@ func New(_ context.Context, cfg *Config) (*InputReceiver, error) {
 	}, nil
 }
 
-const ReceivedDataKey = "$received_data"
+const (
+	ReceivedDataKey    = "$received_data"
+	receiverWarningKey = "receiver_warning_%d_%s"
+)
 
 func (i *InputReceiver) Invoke(ctx context.Context, in map[string]any) (map[string]any, error) {
 	var input string
@@ -110,20 +118,48 @@ func jsonParseRelaxed(ctx context.Context, data string, schema_ map[string]*vo.T
 		return nil, err
 	}
 
-	for k, v := range result {
-		if s, ok := schema_[k]; ok {
-			val, err := nodes.Convert(ctx, v, k, s)
-			if err != nil {
-				var warnings nodes.ConversionWarnings
-				if errors.As(err, &warnings) {
-					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-					result[k] = val
-				}
-			} else {
-				result[k] = val
-			}
+	r, ws, err := nodes.ConvertInputs(ctx, result, schema_, nodes.SkipUnknownFields())
+	if err != nil {
+		return nil, err
+	}
+	if ws != nil && len(*ws) > 0 {
+		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+		var (
+			executeID int64
+			nodeKey   vo.NodeKey
+		)
+		if c := execute.GetExeCtx(ctx); c != nil {
+			executeID = c.RootExecuteID
+			nodeKey = c.NodeKey
 		}
+
+		warningKey := fmt.Sprintf(receiverWarningKey, executeID, nodeKey)
+		ctxcache.Store(ctx, warningKey, *ws)
 	}
 
-	return result, nil
+	return r, nil
+}
+
+func (i *InputReceiver) ToCallbackOutput(ctx context.Context, output map[string]any) (
+	*nodes.StructuredCallbackOutput, error) {
+	var (
+		executeID int64
+		nodeKey   vo.NodeKey
+	)
+	if c := execute.GetExeCtx(ctx); c != nil {
+		executeID = c.RootExecuteID
+		nodeKey = c.NodeKey
+	}
+
+	warningKey := fmt.Sprintf(receiverWarningKey, executeID, nodeKey)
+
+	var wfe vo.WorkflowError
+	if warnings, ok := ctxcache.Get[nodes.ConversionWarnings](ctx, warningKey); ok {
+		wfe = vo.WrapWarn(errno.ErrNodeOutputParseFail, warnings, errorx.KV("warnings", warnings.Error()))
+	}
+	return &nodes.StructuredCallbackOutput{
+		Output:    output,
+		RawOutput: output,
+		Error:     wfe,
+	}, nil
 }

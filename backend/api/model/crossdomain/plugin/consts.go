@@ -43,8 +43,8 @@ const (
 type ProjectType int8
 
 const (
-	ProjectTypeOfBot ProjectType = 1
-	ProjectTypeOfAPP ProjectType = 2
+	ProjectTypeOfAgent ProjectType = 1
+	ProjectTypeOfAPP   ProjectType = 2
 )
 
 type ExecuteScene string
@@ -93,3 +93,11 @@ const (
 	CopySceneOfDuplicate    CopyScene = "duplicate"
 	CopySceneOfAPPDuplicate CopyScene = "app_duplicate"
 )
+
+type InterruptEventType string
+
+const (
+	InterruptEventTypeOfToolNeedOAuth InterruptEventType = "tool_need_oauth"
+)
+
+const authSecretKey = "^*6x3hdu2nc%-p38"

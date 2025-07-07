@@ -3,9 +3,19 @@ import path from 'path';
 import { defineConfig } from '@coze-arch/rsbuild-config';
 import { GLOBAL_ENVS } from '@coze-arch/bot-env';
 
+const API_PROXY_TARGET = `http://localhost:${process.env.WEB_SERVER_PORT || 8888}/`;
+
 const mergedConfig = defineConfig({
   server: {
     strictPort: true,
+    proxy: [
+      {
+        context: ['/api'],
+        target: API_PROXY_TARGET,
+        secure: false,
+        changeOrigin: true,
+      },
+    ],
   },
   html: {
     title: '扣子 Studio',
@@ -38,14 +48,6 @@ const mergedConfig = defineConfig({
               exportsPresence: false,
             },
           },
-        },
-        devServer: {
-          proxy: [
-            // {
-            //   context: ['/api'],
-            //   target: 'http://localhost:8888',
-            // },
-          ],
         },
         resolve: {
           fallback: {

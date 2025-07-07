@@ -6,6 +6,9 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+
+	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type cancelSignalStoreImpl struct {
@@ -17,14 +20,20 @@ const (
 	workflowExecutionCancelStatusKey  = "workflow:cancel:status:%d"
 )
 
-func (c *cancelSignalStoreImpl) EmitWorkflowCancelSignal(ctx context.Context, wfExeID int64) error {
+func (c *cancelSignalStoreImpl) EmitWorkflowCancelSignal(ctx context.Context, wfExeID int64) (err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrRedisError, err)
+		}
+	}()
+
 	signalChannel := fmt.Sprintf(workflowExecutionCancelChannelKey, wfExeID)
 	statusKey := fmt.Sprintf(workflowExecutionCancelStatusKey, wfExeID)
 	// Define a reasonable expiration for the status key, e.g., 24 hours
 	expiration := 24 * time.Hour
 
 	// set a kv to redis to indicate cancellation status
-	err := c.redis.Set(ctx, statusKey, "cancelled", expiration).Err()
+	err = c.redis.Set(ctx, statusKey, "cancelled", expiration).Err()
 	if err != nil {
 		return fmt.Errorf("failed to set workflow cancel status for wfExeID %d after publishing signal: %w", wfExeID, err)
 	}
@@ -47,7 +56,7 @@ func (c *cancelSignalStoreImpl) SubscribeWorkflowCancelSignal(ctx context.Contex
 	_, err := pubSub.Receive(ctx) // Wait for subscription confirmation
 	if err != nil {
 		_ = pubSub.Close() // Cleanup on error
-		return nil, nil, fmt.Errorf("failed to subscribe to cancel signal: %w", err)
+		return nil, nil, vo.WrapError(errno.ErrRedisError, fmt.Errorf("failed to subscribe to cancel signal: %w", err))
 	}
 
 	closeFn := func() {
@@ -64,7 +73,7 @@ func (c *cancelSignalStoreImpl) GetWorkflowCancelFlag(ctx context.Context, wfExe
 	// Check if the key exists in Redis
 	count, err := c.redis.Exists(ctx, key).Result()
 	if err != nil {
-		return false, fmt.Errorf("failed to check cancellation status in Redis: %w", err)
+		return false, vo.WrapError(errno.ErrRedisError, fmt.Errorf("failed to check cancellation status in Redis: %w", err))
 	}
 
 	// If key exists (count == 1), return true; otherwise return false

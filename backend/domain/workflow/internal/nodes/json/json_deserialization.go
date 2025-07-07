@@ -3,12 +3,13 @@ package json
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 const (
@@ -21,12 +22,12 @@ type DeserializationConfig struct {
 	OutputFields map[string]*vo.TypeInfo `json:"outputFields,omitempty"`
 }
 
-type JsonDeserializer struct {
+type Deserializer struct {
 	config   *DeserializationConfig
 	typeInfo *vo.TypeInfo
 }
 
-func NewJsonDeserializer(_ context.Context, cfg *DeserializationConfig) (*JsonDeserializer, error) {
+func NewJsonDeserializer(_ context.Context, cfg *DeserializationConfig) (*Deserializer, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("config required")
 	}
@@ -37,23 +38,13 @@ func NewJsonDeserializer(_ context.Context, cfg *DeserializationConfig) (*JsonDe
 	if typeInfo == nil {
 		return nil, fmt.Errorf("no output field specified in deserialization config")
 	}
-	return &JsonDeserializer{
+	return &Deserializer{
 		config:   cfg,
 		typeInfo: typeInfo,
 	}, nil
 }
 
-func (jd *JsonDeserializer) addWarning(ctx context.Context, err error) {
-	if err == nil {
-		return
-	}
-	var warnings []string
-	warnings, _ = ctxcache.Get[[]string](ctx, warningsKey)
-	warnings = append(warnings, err.Error())
-	ctxcache.Store(ctx, warningsKey, warnings)
-}
-
-func (jd *JsonDeserializer) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
+func (jd *Deserializer) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
 	jsonStrValue := input[InputKeyDeserialization]
 
 	jsonStr, ok := jsonStrValue.(string)
@@ -89,24 +80,26 @@ func (jd *JsonDeserializer) Invoke(ctx context.Context, input map[string]any) (m
 		return nil, fmt.Errorf("JSON unmarshaling failed: %w", err)
 	}
 
-	convertedValue, err := nodes.Convert(ctx, rawValue, OutputKeyDeserialization, typeInfo)
-	jd.addWarning(ctx, err)
+	convertedValue, ws, err := nodes.Convert(ctx, rawValue, OutputKeyDeserialization, typeInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	if ws != nil && len(*ws) > 0 {
+		ctxcache.Store(ctx, warningsKey, *ws)
+	}
 
 	return map[string]any{OutputKeyDeserialization: convertedValue}, nil
 }
 
-func (jd *JsonDeserializer) ToCallbackOutput(ctx context.Context, out map[string]any) (*nodes.StructuredCallbackOutput, error) {
-	var errInfo *vo.ErrorInfo
-	if warnings, ok := ctxcache.Get[[]string](ctx, warningsKey); ok && len(warnings) > 0 {
-		errInfo = &vo.ErrorInfo{
-			Err:   fmt.Errorf("赋值异常: %s", strings.Join(warnings, ", ")),
-			Level: vo.LevelWarn,
-		}
+func (jd *Deserializer) ToCallbackOutput(ctx context.Context, out map[string]any) (*nodes.StructuredCallbackOutput, error) {
+	var wfe vo.WorkflowError
+	if warnings, ok := ctxcache.Get[nodes.ConversionWarnings](ctx, warningsKey); ok {
+		wfe = vo.WrapWarn(errno.ErrNodeOutputParseFail, warnings, errorx.KV("warnings", warnings.Error()))
 	}
 	return &nodes.StructuredCallbackOutput{
-			Output:    out,
-			RawOutput: out,
-			Error:     errInfo,
-		},
-		nil
+		Output:    out,
+		RawOutput: out,
+		Error:     wfe,
+	}, nil
 }

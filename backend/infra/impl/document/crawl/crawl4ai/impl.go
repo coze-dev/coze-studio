@@ -8,6 +8,10 @@ import (
 	"os/exec"
 
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/crawl"
+<<<<<<< HEAD
+=======
+	"code.byted.org/flow/opencoze/backend/pkg/goutil"
+>>>>>>> ebdecfc9490e2cecac3448adf102cc7568f64a8b
 )
 
 func NewCrawl4ai() crawl.Crawler {
@@ -17,7 +21,11 @@ func NewCrawl4ai() crawl.Crawler {
 type crawl4ai struct{}
 
 func (c *crawl4ai) Crawl(ctx context.Context, url string, opts crawl.CrawlOptions) (*crawl.CrawlResult, error) {
+<<<<<<< HEAD
 	cmd := exec.Command("python3", "crawl.py", url)
+=======
+	cmd := exec.Command(goutil.GetPython3Path(), "crawl.py", url)
+>>>>>>> ebdecfc9490e2cecac3448adf102cc7568f64a8b
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out

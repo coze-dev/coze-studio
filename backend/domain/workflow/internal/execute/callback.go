@@ -390,16 +390,7 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 		Type:     WorkflowFailed,
 		Context:  c,
 		Duration: time.Since(time.UnixMilli(c.StartTime)),
-	}
-
-	var errInfo *vo.ErrorInfo
-	if errors.As(err, &errInfo) {
-		e.Err = errInfo
-	} else {
-		e.Err = &vo.ErrorInfo{
-			Level: vo.LevelError,
-			Err:   err,
-		}
+		Err:      err,
 	}
 
 	if c.TokenCollector != nil {
@@ -587,6 +578,11 @@ func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (con
 			logs.Errorf("failed to restore node execute context: %v", err)
 			return ctx, resume
 		}
+		var resumeEventID int64
+		if c := GetExeCtx(newCtx); c != nil && c.RootCtx.ResumeEvent != nil {
+			resumeEventID = c.RootCtx.ResumeEvent.ID
+		}
+		logs.CtxInfof(ctx, "[restoreNodeCtx] restored nodeKey= %s, root.resumeEventID= %d", n.nodeKey, resumeEventID)
 	} else {
 		// even if this node is not on the resume path, it could still restore from checkpoint,
 		// for example:
@@ -594,7 +590,9 @@ func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (con
 		// but not resumed this time
 		restoredCtx, restored := tryRestoreNodeCtx(ctx, n.nodeKey)
 		if restored {
-			return restoredCtx, true
+			logs.CtxInfof(ctx, "[tryRestoreNodeCtx] restored, nodeKey= %s", n.nodeKey)
+			newCtx = restoredCtx
+			return newCtx, true
 		}
 
 		newCtx, err = PrepareNodeExeCtx(ctx, n.nodeKey, n.nodeName, typ, n.terminatePlan)
@@ -649,7 +647,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 
 	var (
 		outputMap, rawOutputMap, customExtra map[string]any
-		errInfo                              *vo.ErrorInfo
+		errInfo                              vo.WorkflowError
 		ok                                   bool
 	)
 
@@ -741,7 +739,7 @@ func (n *NodeHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output
 			return fmt.Sprint(o["output"])
 		}
 	case entity.NodeTypeInputReceiver:
-		e.Input = output.(map[string]any)
+		e.Input = outputMap
 	default:
 	}
 
@@ -763,6 +761,7 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 				return errors.New("state is nil")
 			}
 
+			logs.CtxInfof(ctx, "[SetNodeCtx] nodeKey= %s", n.nodeKey)
 			return state.SetNodeCtx(n.nodeKey, c)
 		}); err != nil {
 			logs.Errorf("failed to process state: %v", err)
@@ -780,10 +779,7 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 			Type:     NodeError,
 			Context:  c,
 			Duration: time.Since(time.UnixMilli(c.StartTime)),
-			Err: &vo.ErrorInfo{
-				Level: vo.LevelCancel,
-				Err:   err,
-			},
+			Err:      err,
 		}
 
 		if c.TokenCollector != nil {
@@ -802,16 +798,7 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 		Type:     NodeError,
 		Context:  c,
 		Duration: time.Since(time.UnixMilli(c.StartTime)),
-	}
-
-	var errInfo *vo.ErrorInfo
-	if errors.As(err, &errInfo) {
-		e.Err = errInfo
-	} else {
-		e.Err = &vo.ErrorInfo{
-			Level: vo.LevelError,
-			Err:   err,
-		}
+		Err:      err,
 	}
 
 	if c.TokenCollector != nil {
@@ -920,6 +907,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 		safego.Go(ctx, func() {
 			defer output.Close()
 			fullOutput := make(map[string]any)
+			fullRawOutput := make(map[string]any)
+			var warning error
 			for {
 				chunk, e := output.Recv()
 				if e != nil {
@@ -931,11 +920,23 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					_ = n.OnError(ctx, info, e)
 					return
 				}
-				fullOutput, e = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
+				so := chunk.(*nodes.StructuredCallbackOutput)
+				fullOutput, e = nodes.ConcatTwoMaps(fullOutput, so.Output)
 				if e != nil {
 					logs.Errorf("failed to concat two maps: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
+				}
+
+				fullRawOutput, e = nodes.ConcatTwoMaps(fullRawOutput, so.RawOutput)
+				if e != nil {
+					logs.Errorf("failed to concat two maps: %v", e)
+					_ = n.OnError(ctx, info, e)
+					return
+				}
+
+				if so.Error != nil {
+					warning = so.Error
 				}
 			}
 
@@ -943,8 +944,9 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				Type:      NodeEndStreaming,
 				Context:   c,
 				Output:    fullOutput,
-				RawOutput: fullOutput,
+				RawOutput: fullRawOutput,
 				Duration:  time.Since(time.UnixMilli(c.StartTime)),
+				Err:       warning,
 				extra:     &entity.NodeExtra{},
 			}
 
@@ -1366,10 +1368,7 @@ func (t *ToolHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 			FunctionInfo: t.info,
 			CallID:       compose.GetToolCallID(ctx),
 		},
-		Err: &vo.ErrorInfo{
-			Level: vo.LevelError, // TODO: handle warn level errors
-			Err:   err,
-		},
+		Err: err,
 	}
 	return ctx
 }

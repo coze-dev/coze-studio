@@ -143,17 +143,30 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 			}
 		}
 
-		if _, ok := input[string(b.config.BatchNodeKey)]; !ok {
-			input[string(b.config.BatchNodeKey)] = make(map[string]any)
-		}
-
-		input[string(b.config.BatchNodeKey)].(map[string]any)["index"] = int64(i)
+		input[string(b.config.BatchNodeKey)+"#index"] = int64(i)
 
 		items := make(map[string]any)
 		for arrayKey, array := range arrays {
 			ele := reflect.ValueOf(array).Index(i).Interface()
 			items[arrayKey] = []any{ele}
-			input[string(b.config.BatchNodeKey)].(map[string]any)[arrayKey] = ele
+			currentKey := string(b.config.BatchNodeKey) + "#" + arrayKey
+
+			// Recursively expand map[string]any elements
+			if m, ok := ele.(map[string]any); ok {
+				var expand func(prefix string, val interface{})
+				expand = func(prefix string, val interface{}) {
+					if nestedMap, ok := val.(map[string]any); ok {
+						for k, v := range nestedMap {
+							expand(prefix+"#"+k, v)
+						}
+					} else {
+						input[prefix] = val
+					}
+				}
+				expand(currentKey, m)
+			} else {
+				input[currentKey] = ele
+			}
 		}
 
 		return input, items, nil

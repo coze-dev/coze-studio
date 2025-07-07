@@ -9,6 +9,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/execute"
@@ -63,11 +64,10 @@ func NewLoop(_ context.Context, conf *Config) (*Loop, error) {
 		}
 
 		k := info.Path[0]
-
-		fromNodeKey := info.Source.Ref.FromNodeKey
 		fromPath := info.Source.Ref.FromPath
 
-		if fromNodeKey == conf.LoopNodeKey {
+		if info.Source.Ref != nil && info.Source.Ref.VariableType != nil &&
+			*info.Source.Ref.VariableType == variable.ParentIntermediate {
 			if len(fromPath) > 1 {
 				return nil, fmt.Errorf("loop output refers to intermediate variable, but path length > 1: %v", fromPath)
 			}
@@ -88,7 +88,7 @@ func NewLoop(_ context.Context, conf *Config) (*Loop, error) {
 }
 
 const (
-	Count = "LoopCount"
+	Count = "loopCount"
 )
 
 func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.NestedWorkflowOption) (out map[string]any, err error) {
@@ -175,16 +175,30 @@ func (l *Loop) Execute(ctx context.Context, in map[string]any, opts ...nodes.Nes
 			input[k] = v
 		}
 
-		if _, ok := input[string(l.config.LoopNodeKey)]; !ok {
-			input[string(l.config.LoopNodeKey)] = make(map[string]any)
-		}
-
-		input[string(l.config.LoopNodeKey)].(map[string]any)["index"] = int64(i)
+		input[string(l.config.LoopNodeKey)+"#index"] = int64(i)
 
 		items := make(map[string]any)
 		for arrayKey := range arrays {
-			items[arrayKey] = arrays[arrayKey][i]
-			input[string(l.config.LoopNodeKey)].(map[string]any)[arrayKey] = arrays[arrayKey][i]
+			ele := arrays[arrayKey][i]
+			items[arrayKey] = ele
+			currentKey := string(l.config.LoopNodeKey) + "#" + arrayKey
+
+			// Recursively expand map[string]any elements
+			if m, ok := ele.(map[string]any); ok {
+				var expand func(prefix string, val interface{})
+				expand = func(prefix string, val interface{}) {
+					if nestedMap, ok := val.(map[string]any); ok {
+						for k, v := range nestedMap {
+							expand(prefix+"#"+k, v)
+						}
+					} else {
+						input[prefix] = val
+					}
+				}
+				expand(currentKey, m)
+			} else {
+				input[currentKey] = ele
+			}
 		}
 
 		return input, items, nil

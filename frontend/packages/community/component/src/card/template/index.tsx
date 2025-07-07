@@ -71,7 +71,7 @@ export const TemplateCard: FC<TemplateCardProps> = props => {
               );
             }}
           >
-            {I18n.t('plugin_store_view_details')}
+            {I18n.t('plugin_usage_limits_modal_view_details')}
           </CardButton>
         </Space>
       </div>
@@ -118,8 +118,8 @@ const DuplicateModal: FC<{
         }
       }}
       onCancel={hide}
-      cancelText={I18n.t('common_button_cacel')}
-      okText={I18n.t('common_button_confirm')}
+      cancelText={I18n.t('Cancel')}
+      okText={I18n.t('Confirm')}
     >
       <Space vertical spacing={4} className="w-full">
         <Space className="w-full">

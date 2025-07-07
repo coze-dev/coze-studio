@@ -50,11 +50,11 @@ func (s *SearchApplicationService) LibraryResourceList(ctx context.Context, req 
 		SpaceID:             req.GetSpaceID(),
 		OwnerID:             0,
 		Name:                req.GetName(),
-		Limit:               req.GetSize(),
-		Cursor:              req.GetCursor(),
 		ResTypeFilter:       req.GetResTypeFilter(),
 		PublishStatusFilter: req.GetPublishStatusFilter(),
 		SearchKeys:          req.GetSearchKeys(),
+		Cursor:              req.GetCursor(),
+		Limit:               req.GetSize(),
 	}
 
 	// 设置用户过滤

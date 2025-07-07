@@ -21860,6 +21860,12 @@ type ModelAbility struct {
 	ImageUnderstanding *bool `thrift:"image_understanding,3,optional" form:"image_understanding" json:"image_understanding,omitempty" query:"image_understanding"`
 	// 是否支持视频理解
 	VideoUnderstanding *bool `thrift:"video_understanding,4,optional" form:"video_understanding" json:"video_understanding,omitempty" query:"video_understanding"`
+	// 是否支持音频理解
+	AudioUnderstanding *bool `thrift:"audio_understanding,5,optional" form:"audio_understanding" json:"audio_understanding,omitempty" query:"audio_understanding"`
+	// 是否支持多模态
+	SupportMultiModal *bool `thrift:"support_multi_modal,6,optional" form:"support_multi_modal" json:"support_multi_modal,omitempty" query:"support_multi_modal"`
+	// 是否支持续写
+	PrefillResp *bool `thrift:"prefill_resp,7,optional" form:"prefill_resp" json:"prefill_resp,omitempty" query:"prefill_resp"`
 }
 
 func NewModelAbility() *ModelAbility {
@@ -21905,11 +21911,41 @@ func (p *ModelAbility) GetVideoUnderstanding() (v bool) {
 	return *p.VideoUnderstanding
 }
 
+var ModelAbility_AudioUnderstanding_DEFAULT bool
+
+func (p *ModelAbility) GetAudioUnderstanding() (v bool) {
+	if !p.IsSetAudioUnderstanding() {
+		return ModelAbility_AudioUnderstanding_DEFAULT
+	}
+	return *p.AudioUnderstanding
+}
+
+var ModelAbility_SupportMultiModal_DEFAULT bool
+
+func (p *ModelAbility) GetSupportMultiModal() (v bool) {
+	if !p.IsSetSupportMultiModal() {
+		return ModelAbility_SupportMultiModal_DEFAULT
+	}
+	return *p.SupportMultiModal
+}
+
+var ModelAbility_PrefillResp_DEFAULT bool
+
+func (p *ModelAbility) GetPrefillResp() (v bool) {
+	if !p.IsSetPrefillResp() {
+		return ModelAbility_PrefillResp_DEFAULT
+	}
+	return *p.PrefillResp
+}
+
 var fieldIDToName_ModelAbility = map[int16]string{
 	1: "cot_display",
 	2: "function_call",
 	3: "image_understanding",
 	4: "video_understanding",
+	5: "audio_understanding",
+	6: "support_multi_modal",
+	7: "prefill_resp",
 }
 
 func (p *ModelAbility) IsSetCotDisplay() bool {
@@ -21926,6 +21962,18 @@ func (p *ModelAbility) IsSetImageUnderstanding() bool {
 
 func (p *ModelAbility) IsSetVideoUnderstanding() bool {
 	return p.VideoUnderstanding != nil
+}
+
+func (p *ModelAbility) IsSetAudioUnderstanding() bool {
+	return p.AudioUnderstanding != nil
+}
+
+func (p *ModelAbility) IsSetSupportMultiModal() bool {
+	return p.SupportMultiModal != nil
+}
+
+func (p *ModelAbility) IsSetPrefillResp() bool {
+	return p.PrefillResp != nil
 }
 
 func (p *ModelAbility) Read(iprot thrift.TProtocol) (err error) {
@@ -21973,6 +22021,30 @@ func (p *ModelAbility) Read(iprot thrift.TProtocol) (err error) {
 		case 4:
 			if fieldTypeId == thrift.BOOL {
 				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 6:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField6(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 7:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField7(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -22051,6 +22123,39 @@ func (p *ModelAbility) ReadField4(iprot thrift.TProtocol) error {
 	p.VideoUnderstanding = _field
 	return nil
 }
+func (p *ModelAbility) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.AudioUnderstanding = _field
+	return nil
+}
+func (p *ModelAbility) ReadField6(iprot thrift.TProtocol) error {
+
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.SupportMultiModal = _field
+	return nil
+}
+func (p *ModelAbility) ReadField7(iprot thrift.TProtocol) error {
+
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.PrefillResp = _field
+	return nil
+}
 
 func (p *ModelAbility) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -22072,6 +22177,18 @@ func (p *ModelAbility) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField4(oprot); err != nil {
 			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField6(oprot); err != nil {
+			fieldId = 6
+			goto WriteFieldError
+		}
+		if err = p.writeField7(oprot); err != nil {
+			fieldId = 7
 			goto WriteFieldError
 		}
 	}
@@ -22163,6 +22280,60 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+func (p *ModelAbility) writeField5(oprot thrift.TProtocol) (err error) {
+	if p.IsSetAudioUnderstanding() {
+		if err = oprot.WriteFieldBegin("audio_understanding", thrift.BOOL, 5); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteBool(*p.AudioUnderstanding); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+func (p *ModelAbility) writeField6(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSupportMultiModal() {
+		if err = oprot.WriteFieldBegin("support_multi_modal", thrift.BOOL, 6); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteBool(*p.SupportMultiModal); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
+}
+func (p *ModelAbility) writeField7(oprot thrift.TProtocol) (err error) {
+	if p.IsSetPrefillResp() {
+		if err = oprot.WriteFieldBegin("prefill_resp", thrift.BOOL, 7); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteBool(*p.PrefillResp); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 
 func (p *ModelAbility) String() string {

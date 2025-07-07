@@ -2,7 +2,6 @@ package compose
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -89,6 +88,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 		callOpts  []einoCompose.Option
 		in        map[string]any
 		err       error
+		ws        *nodes.ConversionWarnings
 	)
 
 	if rInfo == nil {
@@ -106,14 +106,11 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 		if entryNode == nil {
 			panic("entry node not found in tool workflow")
 		}
-		in, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
+		in, ws, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
 		if err != nil {
-			var warnings nodes.ConversionWarnings
-			if errors.As(err, &warnings) {
-				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-			} else {
-				return "", err
-			}
+			return "", err
+		} else if ws != nil {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
 		}
 	}
 
@@ -240,6 +237,7 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 		callOpts  []einoCompose.Option
 		in        map[string]any
 		err       error
+		ws        *nodes.ConversionWarnings
 	)
 
 	if rInfo == nil {
@@ -257,14 +255,11 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 		if entryNode == nil {
 			panic("entry node not found in tool workflow")
 		}
-		in, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
+		in, ws, err = nodes.ConvertInputs(ctx, in, entryNode.OutputTypes)
 		if err != nil {
-			var warnings nodes.ConversionWarnings
-			if errors.As(err, &warnings) {
-				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-			} else {
-				return nil, err
-			}
+			return nil, err
+		} else if ws != nil {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
 		}
 	}
 
@@ -307,9 +302,6 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 
 		if strings.HasSuffix(contentStr, nodes.KeyIsFinished) {
 			contentStr = strings.TrimSuffix(contentStr, nodes.KeyIsFinished)
-			if len(contentStr) == 0 {
-				return "", schema.ErrNoValue
-			}
 		}
 
 		return contentStr, nil

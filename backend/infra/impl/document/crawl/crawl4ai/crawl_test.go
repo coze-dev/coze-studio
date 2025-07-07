@@ -11,7 +11,11 @@ import (
 
 func TestCrawl(t *testing.T) {
 	crawler := NewCrawl4ai()
+<<<<<<< HEAD
 	res, err := crawler.Crawl(context.Background(), "https://www.baidu.com", crawl.CrawlOptions{})
+=======
+	res, err := crawler.Crawl(context.Background(), "https://www.7k7k.com", crawl.CrawlOptions{})
+>>>>>>> ebdecfc9490e2cecac3448adf102cc7568f64a8b
 	assert.NoError(t, err)
 	fmt.Println(res)
 }

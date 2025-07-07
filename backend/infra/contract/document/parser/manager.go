@@ -18,9 +18,10 @@ type Config struct {
 // ParsingStrategy for document parse before indexing
 type ParsingStrategy struct {
 	// Doc
-	ExtractImage bool `json:"extract_image"` // 提取图片元素
-	ExtractTable bool `json:"extract_table"` // 提取表格元素
-	ImageOCR     bool `json:"image_ocr"`     // 图片 ocr
+	ExtractImage bool  `json:"extract_image"` // 提取图片元素
+	ExtractTable bool  `json:"extract_table"` // 提取表格元素
+	ImageOCR     bool  `json:"image_ocr"`     // 图片 ocr
+	FilterPages  []int `json:"filter_pages"`  // 页过滤, 第一页=1
 
 	// Sheet
 	SheetID             *int               `json:"sheet_id"`        // xlsx sheet id

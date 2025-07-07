@@ -33,3 +33,18 @@ func (s *impl) SetVariableInstance(ctx context.Context, e *model.UserVariableMet
 	m := entity.NewUserVariableMeta(e)
 	return s.DomainSVC.SetVariableInstance(ctx, m, items)
 }
+
+func (s *impl) DecryptSysUUIDKey(ctx context.Context, encryptSysUUIDKey string) *model.UserVariableMeta {
+	m := s.DomainSVC.DecryptSysUUIDKey(ctx, encryptSysUUIDKey)
+	if m == nil {
+		return nil
+	}
+
+	return &model.UserVariableMeta{
+		BizType:      m.BizType,
+		BizID:        m.BizID,
+		Version:      m.Version,
+		ConnectorUID: m.ConnectorUID,
+		ConnectorID:  m.ConnectorID,
+	}
+}

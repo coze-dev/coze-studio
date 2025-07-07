@@ -32,7 +32,7 @@ type Knowledge interface {
 	ResegmentDocument(ctx context.Context, request *ResegmentDocumentRequest) (response *ResegmentDocumentResponse, err error)
 	GetAlterTableSchema(ctx context.Context, request *AlterTableSchemaRequest) (response *TableSchemaResponse, err error)
 	ValidateTableSchema(ctx context.Context, request *ValidateTableSchemaRequest) (response *ValidateTableSchemaResponse, err error)
-	GetDocumentTableInfo(ctx context.Context, request *GetDocumentTableInfoRequest) (response *GetDocumentTableInfoResponse, err error) // todo: 这个接口是否还有必要保留？
+	GetDocumentTableInfo(ctx context.Context, request *GetDocumentTableInfoRequest) (response *GetDocumentTableInfoResponse, err error)
 	GetImportDataTableSchema(ctx context.Context, request *ImportDataTableSchemaRequest) (response *TableSchemaResponse, err error)
 
 	CreateSlice(ctx context.Context, request *CreateSliceRequest) (response *CreateSliceResponse, err error)
@@ -45,6 +45,9 @@ type Knowledge interface {
 	CreateDocumentReview(ctx context.Context, request *CreateDocumentReviewRequest) (response *CreateDocumentReviewResponse, err error)
 	MGetDocumentReview(ctx context.Context, request *MGetDocumentReviewRequest) (response *MGetDocumentReviewResponse, err error)
 	SaveDocumentReview(ctx context.Context, request *SaveDocumentReviewRequest) error
+
+	SubmitWebUrlTask(ctx context.Context, request *SubmitWebUrlTaskRequest) (*SubmitWebUrlTaskResponse, error)
+	GetWebUrlInfo(ctx context.Context, request *GetWebUrlInfoRequest) (*GetWebUrlInfoResponse, error)
 }
 
 type CreateKnowledgeRequest struct {
@@ -156,6 +159,7 @@ type DocumentProgress struct {
 	Status        entity.DocumentStatus
 	StatusMsg     string
 	RemainingSec  int64
+	URL           string
 }
 
 type ResegmentDocumentRequest struct {
@@ -338,3 +342,19 @@ type ExtractPhotoCaptionResponse struct {
 }
 type MGetKnowledgeByIDRequest = knowledge.MGetKnowledgeByIDRequest
 type MGetKnowledgeByIDResponse = knowledge.MGetKnowledgeByIDResponse
+
+type SubmitWebUrlTaskRequest struct {
+	URLs []string
+}
+
+type SubmitWebUrlTaskResponse struct {
+	TaskIDs []int64
+}
+
+type GetWebUrlInfoRequest struct {
+	TaskIDs []int64
+}
+
+type GetWebUrlInfoResponse struct {
+	Tasks map[int64]*entity.WebCrawlTaskInfo
+}

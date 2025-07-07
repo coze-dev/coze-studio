@@ -15,23 +15,23 @@ type GetPlaygroundPluginListRequest struct {
 	Page *int32 `thrift:"page,1,optional" form:"page" json:"page,omitempty"`
 	// 每页大小
 	Size *int32 `thrift:"size,2,optional" form:"size" json:"size,omitempty"`
-	// 按照api名称搜索
+	// ignore
 	Name *string `thrift:"name,4,optional" form:"name" json:"name,omitempty"`
-	// team id
+	// 空间id
 	SpaceID *int64 `thrift:"space_id,5,optional" form:"space_id" json:"space_id,string,omitempty"`
-	// 插件id列表
+	// 如果存在，则根据插件id查询，无分页逻辑
 	PluginIds []string `thrift:"plugin_ids,6" form:"plugin_ids" json:"plugin_ids"`
-	// 插件类型筛选
+	// 长度为1 ，且为workflow时，返回已发布的workflow列表，默认返回已发布的plugin列表
 	PluginTypes []int32 `thrift:"plugin_types,7" form:"plugin_types" json:"plugin_types"`
-	// 插件渠道 默认获取全部渠道
+	// ignore
 	ChannelID *int32 `thrift:"channel_id,8,optional" form:"channel_id" json:"channel_id,omitempty"`
-	// 是否是自己创建的插件
+	// ignore
 	SelfCreated *bool `thrift:"self_created,9,optional" form:"self_created" json:"self_created,omitempty"`
 	// 排序
 	OrderBy *int32 `thrift:"order_by,10,optional" form:"order_by" json:"order_by,omitempty"`
-	// 是否获取在渠道下架的插件 临时字段，给wk引用页使用
+	// ignore
 	IsGetOffline *bool `thrift:"is_get_offline,11,optional" form:"is_get_offline" json:"is_get_offline,omitempty"`
-	// referer
+	// ignore
 	Referer string     `thrift:"referer,99" header:"Referer" json:"referer"`
 	Base    *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -1095,13 +1095,19 @@ func (p *GetPlaygroundPluginListResponse) String() string {
 }
 
 type GetPluginAPIsRequest struct {
-	PluginID         int64                               `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
-	APIIds           []string                            `thrift:"api_ids,2" form:"api_ids" json:"api_ids" query:"api_ids"`
-	Page             int32                               `thrift:"page,3" form:"page" json:"page" query:"page"`
-	Size             int32                               `thrift:"size,4" form:"size" json:"size" query:"size"`
-	Order            *plugin_develop_common.APIListOrder `thrift:"order,5" form:"order" json:"order" query:"order"`
-	PreviewVersionTs *string                             `thrift:"preview_version_ts,6,optional" form:"preview_version_ts" json:"preview_version_ts,omitempty" query:"preview_version_ts"`
-	Base             *base.Base                          `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	// 插件id
+	PluginID int64 `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
+	// 如果存在，则根据工具id查询，无分页逻辑
+	APIIds []string `thrift:"api_ids,2" form:"api_ids" json:"api_ids" query:"api_ids"`
+	// 页码
+	Page int32 `thrift:"page,3" form:"page" json:"page" query:"page"`
+	// 每页大小
+	Size int32 `thrift:"size,4" form:"size" json:"size" query:"size"`
+	// ignore
+	Order *plugin_develop_common.APIListOrder `thrift:"order,5" form:"order" json:"order" query:"order"`
+	// ignore
+	PreviewVersionTs *string    `thrift:"preview_version_ts,6,optional" form:"preview_version_ts" json:"preview_version_ts,omitempty" query:"preview_version_ts"`
+	Base             *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewGetPluginAPIsRequest() *GetPluginAPIsRequest {
@@ -1949,6 +1955,7 @@ func (p *GetPluginAPIsResponse) String() string {
 }
 
 type GetUpdatedAPIsRequest struct {
+	// 插件id
 	PluginID int64      `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
 	Base     *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -2149,10 +2156,13 @@ func (p *GetUpdatedAPIsRequest) String() string {
 }
 
 type GetUpdatedAPIsResponse struct {
-	Code            int64          `thrift:"code,1" form:"code" json:"code" query:"code"`
-	Msg             string         `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
-	CreatedAPINames []string       `thrift:"created_api_names,3" form:"created_api_names" json:"created_api_names" query:"created_api_names"`
-	DeletedAPINames []string       `thrift:"deleted_api_names,4" form:"deleted_api_names" json:"deleted_api_names" query:"deleted_api_names"`
+	Code int64  `thrift:"code,1" form:"code" json:"code" query:"code"`
+	Msg  string `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
+	// 新创建的工具名
+	CreatedAPINames []string `thrift:"created_api_names,3" form:"created_api_names" json:"created_api_names" query:"created_api_names"`
+	// 被删除的工具名
+	DeletedAPINames []string `thrift:"deleted_api_names,4" form:"deleted_api_names" json:"deleted_api_names" query:"deleted_api_names"`
+	// 被更新的工具名
 	UpdatedAPINames []string       `thrift:"updated_api_names,5" form:"updated_api_names" json:"updated_api_names" query:"updated_api_names"`
 	BaseResp        *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
 }
@@ -2582,7 +2592,8 @@ func (p *GetUpdatedAPIsResponse) String() string {
 
 type GetPluginInfoRequest struct {
 	// 目前只支持插件openapi插件的信息
-	PluginID          int64      `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
+	PluginID int64 `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
+	// ignore
 	PreviewVersionTsx *string    `thrift:"preview_version_tsx,2,optional" form:"preview_version_tsx" json:"preview_version_tsx,omitempty" query:"preview_version_tsx"`
 	Base              *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -2847,18 +2858,22 @@ type GetPluginInfoResponse struct {
 	// 是否已发布
 	Published bool `thrift:"published,6" form:"published" json:"published" query:"published"`
 	// 创建人信息
-	Creator             *plugin_develop_common.Creator             `thrift:"creator,7" form:"creator" json:"creator" query:"creator"`
-	StatisticData       *plugin_develop_common.PluginStatisticData `thrift:"statistic_data,8" form:"statistic_data" json:"statistic_data" query:"statistic_data"`
-	PluginProductStatus plugin_develop_common.ProductStatus        `thrift:"plugin_product_status,9" form:"plugin_product_status" json:"plugin_product_status" query:"plugin_product_status"`
-	// 隐私声明状态
+	Creator *plugin_develop_common.Creator `thrift:"creator,7" form:"creator" json:"creator" query:"creator"`
+	// ignore
+	StatisticData *plugin_develop_common.PluginStatisticData `thrift:"statistic_data,8" form:"statistic_data" json:"statistic_data" query:"statistic_data"`
+	// ignore
+	PluginProductStatus plugin_develop_common.ProductStatus `thrift:"plugin_product_status,9" form:"plugin_product_status" json:"plugin_product_status" query:"plugin_product_status"`
+	// ignore
 	PrivacyStatus bool `thrift:"privacy_status,10" form:"privacy_status" json:"privacy_status" query:"privacy_status"`
-	// 隐私声明内容
-	PrivacyInfo    string                               `thrift:"privacy_info,11" form:"privacy_info" json:"privacy_info" query:"privacy_info"`
+	// ignore
+	PrivacyInfo string `thrift:"privacy_info,11" form:"privacy_info" json:"privacy_info" query:"privacy_info"`
+	// ignore
 	CreationMethod plugin_develop_common.CreationMethod `thrift:"creation_method,12" form:"creation_method" json:"creation_method" query:"creation_method"`
-	IdeCodeRuntime string                               `thrift:"ide_code_runtime,13" form:"ide_code_runtime" json:"ide_code_runtime" query:"ide_code_runtime"`
-	// 编辑态版本
+	// ignore
+	IdeCodeRuntime string `thrift:"ide_code_runtime,13" form:"ide_code_runtime" json:"ide_code_runtime" query:"ide_code_runtime"`
+	// ignore
 	EditVersion int32 `thrift:"edit_version,14" form:"edit_version" json:"edit_version" query:"edit_version"`
-	// plugin的商品状态
+	// ignore
 	PluginType plugin_develop_common.PluginType `thrift:"plugin_type,15" form:"plugin_type" json:"plugin_type" query:"plugin_type"`
 	BaseResp   *base.BaseResp                   `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
 }
@@ -3691,16 +3706,22 @@ func (p *GetPluginInfoResponse) String() string {
 }
 
 type UpdatePluginRequest struct {
-	PluginID     int64   `thrift:"plugin_id,1" form:"plugin_id" json:"plugin_id,string" query:"plugin_id"`
-	AiPlugin     string  `thrift:"ai_plugin,3" form:"ai_plugin" json:"ai_plugin" query:"ai_plugin"`
-	Openapi      string  `thrift:"openapi,4" form:"openapi" json:"openapi" query:"openapi"`
-	ClientID     *string `thrift:"client_id,5,optional" form:"client_id" json:"client_id,omitempty" query:"client_id"`
+	PluginID int64 `thrift:"plugin_id,1" form:"plugin_id" json:"plugin_id,string" query:"plugin_id"`
+	// plugin manifest in json string
+	AiPlugin string `thrift:"ai_plugin,3" form:"ai_plugin" json:"ai_plugin" query:"ai_plugin"`
+	// plugin openapi3 document in yaml string
+	Openapi string `thrift:"openapi,4" form:"openapi" json:"openapi" query:"openapi"`
+	// ignore
+	ClientID *string `thrift:"client_id,5,optional" form:"client_id" json:"client_id,omitempty" query:"client_id"`
+	// ignore
 	ClientSecret *string `thrift:"client_secret,6,optional" form:"client_secret" json:"client_secret,omitempty" query:"client_secret"`
+	// ignore
 	ServiceToken *string `thrift:"service_token,7,optional" form:"service_token" json:"service_token,omitempty" query:"service_token"`
-	SourceCode   *string `thrift:"source_code,8,optional" form:"source_code" json:"source_code,omitempty" query:"source_code"`
-	// 编辑态版本
+	// ignore
+	SourceCode *string `thrift:"source_code,8,optional" form:"source_code" json:"source_code,omitempty" query:"source_code"`
+	// ignore
 	EditVersion *int32 `thrift:"edit_version,9,optional" form:"edit_version" json:"edit_version,omitempty" query:"edit_version"`
-	// 函数代码
+	// ignore
 	Base *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -4551,34 +4572,43 @@ func (p *UpdatePluginResponse) String() string {
 }
 
 type RegisterPluginMetaRequest struct {
-	Name     string                                              `thrift:"name,1,required" form:"name,required" json:"name,required" query:"name,required"`
-	Desc     string                                              `thrift:"desc,2,required" form:"desc,required" json:"desc,required" query:"desc,required"`
-	URL      *string                                             `thrift:"url,3,optional" form:"url" json:"url,omitempty" query:"url"`
-	Icon     *plugin_develop_common.PluginIcon                   `thrift:"icon,4,required" form:"icon,required" json:"icon,required" query:"icon,required"`
-	AuthType *plugin_develop_common.AuthorizationType            `thrift:"auth_type,5,optional" form:"auth_type" json:"auth_type,omitempty" query:"auth_type"`
+	// 插件名
+	Name string `thrift:"name,1,required" form:"name,required" json:"name,required" query:"name,required"`
+	// 插件描述
+	Desc string `thrift:"desc,2,required" form:"desc,required" json:"desc,required" query:"desc,required"`
+	// 插件服务地址前缀
+	URL *string `thrift:"url,3,optional" form:"url" json:"url,omitempty" query:"url"`
+	// 插件图标
+	Icon *plugin_develop_common.PluginIcon `thrift:"icon,4,required" form:"icon,required" json:"icon,required" query:"icon,required"`
+	// 插件授权类型
+	AuthType *plugin_develop_common.AuthorizationType `thrift:"auth_type,5,optional" form:"auth_type" json:"auth_type,omitempty" query:"auth_type"`
+	// 子授权类型为api/token时，token参数位置
 	Location *plugin_develop_common.AuthorizationServiceLocation `thrift:"location,6,optional" form:"location" json:"location,omitempty" query:"location"`
-	// service
+	// 子授权类型为api/token时，token参数key
 	Key *string `thrift:"key,7,optional" form:"key" json:"key,omitempty" query:"key"`
-	// service   Authorization: xxxxxx
+	// 子授权类型为api/token时，token参数value
 	ServiceToken *string `thrift:"service_token,8,optional" form:"service_token" json:"service_token,omitempty" query:"service_token"`
-	// service
+	// 授权类型为oauth是，oauth信息，见GetOAuthSchema返回值
 	OauthInfo *string `thrift:"oauth_info,9,optional" form:"oauth_info" json:"oauth_info,omitempty" query:"oauth_info"`
-	// json序列化
-	SpaceID      int64                                                                                  `thrift:"space_id,10,required" form:"space_id,required" json:"space_id,string,required" query:"space_id,required"`
+	// 空间id
+	SpaceID int64 `thrift:"space_id,10,required" form:"space_id,required" json:"space_id,string,required" query:"space_id,required"`
+	// 插件公共参数，key为参数位置，value为参数列表
 	CommonParams map[plugin_develop_common.ParameterLocation][]*plugin_develop_common.CommonParamSchema `thrift:"common_params,11,optional" form:"common_params" json:"common_params,omitempty" query:"common_params"`
-	// 默认0 默认原来表单创建方式，1 cloud ide创建方式
+	// ignore
 	CreationMethod *plugin_develop_common.CreationMethod `thrift:"creation_method,12,optional" form:"creation_method" json:"creation_method,omitempty" query:"creation_method"`
-	// ide创建下的代码编程语言 "1" Node.js "2" Python3
-	IdeCodeRuntime *string                           `thrift:"ide_code_runtime,13,optional" form:"ide_code_runtime" json:"ide_code_runtime,omitempty" query:"ide_code_runtime"`
-	PluginType     *plugin_develop_common.PluginType `thrift:"plugin_type,14,optional" form:"plugin_type" json:"plugin_type,omitempty" query:"plugin_type"`
-	ProjectID      *int64                            `thrift:"project_id,15,optional" form:"project_id" json:"project_id,string,omitempty" query:"project_id"`
-	// 二级授权类型
-	SubAuthType *int32  `thrift:"sub_auth_type,16,optional" form:"sub_auth_type" json:"sub_auth_type,omitempty" query:"sub_auth_type"`
+	// ignore
+	IdeCodeRuntime *string `thrift:"ide_code_runtime,13,optional" form:"ide_code_runtime" json:"ide_code_runtime,omitempty" query:"ide_code_runtime"`
+	// ignore
+	PluginType *plugin_develop_common.PluginType `thrift:"plugin_type,14,optional" form:"plugin_type" json:"plugin_type,omitempty" query:"plugin_type"`
+	// 应用id
+	ProjectID *int64 `thrift:"project_id,15,optional" form:"project_id" json:"project_id,string,omitempty" query:"project_id"`
+	// 二级授权类型，0：api/token of service，10：client credentials of oauth
+	SubAuthType *int32 `thrift:"sub_auth_type,16,optional" form:"sub_auth_type" json:"sub_auth_type,omitempty" query:"sub_auth_type"`
+	// ignore
 	AuthPayload *string `thrift:"auth_payload,17,optional" form:"auth_payload" json:"auth_payload,omitempty" query:"auth_payload"`
-	// 设置固定出口ip
-	FixedExportIP *bool `thrift:"fixed_export_ip,18,optional" form:"fixed_export_ip" json:"fixed_export_ip,omitempty" query:"fixed_export_ip"`
-	// 公共参数列表
-	Base *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	// ignore
+	FixedExportIP *bool      `thrift:"fixed_export_ip,18,optional" form:"fixed_export_ip" json:"fixed_export_ip,omitempty" query:"fixed_export_ip"`
+	Base          *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewRegisterPluginMetaRequest() *RegisterPluginMetaRequest {
@@ -6041,31 +6071,33 @@ func (p *RegisterPluginMetaResponse) String() string {
 }
 
 type UpdatePluginMetaRequest struct {
-	PluginID int64                             `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
-	Name     *string                           `thrift:"name,2,optional" form:"name" json:"name,omitempty" query:"name"`
-	Desc     *string                           `thrift:"desc,3,optional" form:"desc" json:"desc,omitempty" query:"desc"`
-	URL      *string                           `thrift:"url,4,optional" form:"url" json:"url,omitempty" query:"url"`
-	Icon     *plugin_develop_common.PluginIcon `thrift:"icon,5,optional" form:"icon" json:"icon,omitempty" query:"icon"`
-	// uri
-	AuthType *plugin_develop_common.AuthorizationType            `thrift:"auth_type,6,optional" form:"auth_type" json:"auth_type,omitempty" query:"auth_type"`
+	PluginID int64   `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
+	Name     *string `thrift:"name,2,optional" form:"name" json:"name,omitempty" query:"name"`
+	Desc     *string `thrift:"desc,3,optional" form:"desc" json:"desc,omitempty" query:"desc"`
+	// plugin service url
+	URL      *string                                  `thrift:"url,4,optional" form:"url" json:"url,omitempty" query:"url"`
+	Icon     *plugin_develop_common.PluginIcon        `thrift:"icon,5,optional" form:"icon" json:"icon,omitempty" query:"icon"`
+	AuthType *plugin_develop_common.AuthorizationType `thrift:"auth_type,6,optional" form:"auth_type" json:"auth_type,omitempty" query:"auth_type"`
+	// 子授权类型为api/token时，token参数位置
 	Location *plugin_develop_common.AuthorizationServiceLocation `thrift:"location,7,optional" form:"location" json:"location,omitempty" query:"location"`
-	// service
+	// 子授权类型为api/token时，token参数key
 	Key *string `thrift:"key,8,optional" form:"key" json:"key,omitempty" query:"key"`
-	// service   Authorization: xxxxxx
+	// 子授权类型为api/token时，token参数value
 	ServiceToken *string `thrift:"service_token,9,optional" form:"service_token" json:"service_token,omitempty" query:"service_token"`
-	// service
+	// 子授权类型为oauth时，oauth信息，见GetOAuthSchema返回值
 	OauthInfo *string `thrift:"oauth_info,10,optional" form:"oauth_info" json:"oauth_info,omitempty" query:"oauth_info"`
 	// json序列化
 	CommonParams map[plugin_develop_common.ParameterLocation][]*plugin_develop_common.CommonParamSchema `thrift:"common_params,11,optional" form:"common_params" json:"common_params,omitempty" query:"common_params"`
-	// //默认0 默认原来表单创建方式，1 cloud ide创建方式
+	// ignore
 	CreationMethod *plugin_develop_common.CreationMethod `thrift:"creation_method,12,optional" form:"creation_method" json:"creation_method,omitempty" query:"creation_method"`
-	// 编辑态版本
+	// ignore
 	EditVersion *int32                            `thrift:"edit_version,13,optional" form:"edit_version" json:"edit_version,omitempty" query:"edit_version"`
 	PluginType  *plugin_develop_common.PluginType `thrift:"plugin_type,14,optional" form:"plugin_type" json:"plugin_type,omitempty" query:"plugin_type"`
 	// 二级授权类型
-	SubAuthType *int32  `thrift:"sub_auth_type,15,optional" form:"sub_auth_type" json:"sub_auth_type,omitempty" query:"sub_auth_type"`
+	SubAuthType *int32 `thrift:"sub_auth_type,15,optional" form:"sub_auth_type" json:"sub_auth_type,omitempty" query:"sub_auth_type"`
+	// ignore
 	AuthPayload *string `thrift:"auth_payload,16,optional" form:"auth_payload" json:"auth_payload,omitempty" query:"auth_payload"`
-	// 是否配置固定出口ip
+	// ignore
 	FixedExportIP *bool      `thrift:"fixed_export_ip,17,optional" form:"fixed_export_ip" json:"fixed_export_ip,omitempty" query:"fixed_export_ip"`
 	Base          *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -10838,25 +10870,30 @@ func (p *DeleteBotDefaultParamsResponse) String() string {
 }
 
 type UpdateAPIRequest struct {
-	PluginID       int64                                 `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
-	APIID          int64                                 `thrift:"api_id,2,required" form:"api_id,required" json:"api_id,string,required" query:"api_id,required"`
-	Name           *string                               `thrift:"name,3,optional" form:"name" json:"name,omitempty" query:"name"`
-	Desc           *string                               `thrift:"desc,4,optional" form:"desc" json:"desc,omitempty" query:"desc"`
-	Path           *string                               `thrift:"path,5,optional" form:"path" json:"path,omitempty" query:"path"`
-	Method         *plugin_develop_common.APIMethod      `thrift:"method,6,optional" form:"method" json:"method,omitempty" query:"method"`
-	RequestParams  []*plugin_develop_common.APIParameter `thrift:"request_params,7,optional" form:"request_params" json:"request_params,omitempty" query:"request_params"`
+	PluginID int64   `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
+	APIID    int64   `thrift:"api_id,2,required" form:"api_id,required" json:"api_id,string,required" query:"api_id,required"`
+	Name     *string `thrift:"name,3,optional" form:"name" json:"name,omitempty" query:"name"`
+	Desc     *string `thrift:"desc,4,optional" form:"desc" json:"desc,omitempty" query:"desc"`
+	// http subURL of tool
+	Path *string `thrift:"path,5,optional" form:"path" json:"path,omitempty" query:"path"`
+	// http method of tool
+	Method *plugin_develop_common.APIMethod `thrift:"method,6,optional" form:"method" json:"method,omitempty" query:"method"`
+	// request parameters of tool
+	RequestParams []*plugin_develop_common.APIParameter `thrift:"request_params,7,optional" form:"request_params" json:"request_params,omitempty" query:"request_params"`
+	// response parameters of tool
 	ResponseParams []*plugin_develop_common.APIParameter `thrift:"response_params,8,optional" form:"response_params" json:"response_params,omitempty" query:"response_params"`
-	Disabled       *bool                                 `thrift:"disabled,9,optional" form:"disabled" json:"disabled,omitempty" query:"disabled"`
-	APIExtend      *plugin_develop_common.APIExtend      `thrift:"api_extend,10,optional" form:"api_extend" json:"api_extend,omitempty" query:"api_extend"`
-	// 编辑态版本
+	// whether disable tool
+	Disabled *bool `thrift:"disabled,9,optional" form:"disabled" json:"disabled,omitempty" query:"disabled"`
+	// ignore
+	APIExtend *plugin_develop_common.APIExtend `thrift:"api_extend,10,optional" form:"api_extend" json:"api_extend,omitempty" query:"api_extend"`
+	// ignore
 	EditVersion *int32 `thrift:"edit_version,11,optional" form:"edit_version" json:"edit_version,omitempty" query:"edit_version"`
-	// 是否保存调试结果
-	SaveExample *bool `thrift:"save_example,12,optional" form:"save_example" json:"save_example,omitempty" query:"save_example"`
-	// 调试结果
+	// whether save example
+	SaveExample  *bool                               `thrift:"save_example,12,optional" form:"save_example" json:"save_example,omitempty" query:"save_example"`
 	DebugExample *plugin_develop_common.DebugExample `thrift:"debug_example,13,optional" form:"debug_example" json:"debug_example,omitempty" query:"debug_example"`
-	FunctionName *string                             `thrift:"function_name,14,optional" form:"function_name" json:"function_name,omitempty" query:"function_name"`
-	// 启用/禁用
-	Base *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	// ignore
+	FunctionName *string    `thrift:"function_name,14,optional" form:"function_name" json:"function_name,omitempty" query:"function_name"`
+	Base         *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewUpdateAPIRequest() *UpdateAPIRequest {
@@ -12512,18 +12549,26 @@ func (p *DelPluginResponse) String() string {
 }
 
 type CreateAPIRequest struct {
-	// 第一次调用保存并继续的时候使用这个接口
-	PluginID       int64                                 `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
-	Name           string                                `thrift:"name,2,required" form:"name,required" json:"name,required" query:"name,required"`
-	Desc           string                                `thrift:"desc,3,required" form:"desc,required" json:"desc,required" query:"desc,required"`
-	Path           *string                               `thrift:"path,4,optional" form:"path" json:"path,omitempty" query:"path"`
-	Method         *plugin_develop_common.APIMethod      `thrift:"method,5,optional" form:"method" json:"method,omitempty" query:"method"`
-	APIExtend      *plugin_develop_common.APIExtend      `thrift:"api_extend,6,optional" form:"api_extend" json:"api_extend,omitempty" query:"api_extend"`
-	RequestParams  []*plugin_develop_common.APIParameter `thrift:"request_params,7,optional" form:"request_params" json:"request_params,omitempty" query:"request_params"`
+	PluginID int64 `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
+	// tool name
+	Name string `thrift:"name,2,required" form:"name,required" json:"name,required" query:"name,required"`
+	// tool description
+	Desc string `thrift:"desc,3,required" form:"desc,required" json:"desc,required" query:"desc,required"`
+	// http subURL of tool
+	Path *string `thrift:"path,4,optional" form:"path" json:"path,omitempty" query:"path"`
+	// http method of tool
+	Method *plugin_develop_common.APIMethod `thrift:"method,5,optional" form:"method" json:"method,omitempty" query:"method"`
+	// ignore
+	APIExtend *plugin_develop_common.APIExtend `thrift:"api_extend,6,optional" form:"api_extend" json:"api_extend,omitempty" query:"api_extend"`
+	// ignore
+	RequestParams []*plugin_develop_common.APIParameter `thrift:"request_params,7,optional" form:"request_params" json:"request_params,omitempty" query:"request_params"`
+	// ignore
 	ResponseParams []*plugin_develop_common.APIParameter `thrift:"response_params,8,optional" form:"response_params" json:"response_params,omitempty" query:"response_params"`
-	Disabled       *bool                                 `thrift:"disabled,9,optional" form:"disabled" json:"disabled,omitempty" query:"disabled"`
-	// 编辑态版本
-	EditVersion  *int32     `thrift:"edit_version,10,optional" form:"edit_version" json:"edit_version,omitempty" query:"edit_version"`
+	// ignore
+	Disabled *bool `thrift:"disabled,9,optional" form:"disabled" json:"disabled,omitempty" query:"disabled"`
+	// ignore
+	EditVersion *int32 `thrift:"edit_version,10,optional" form:"edit_version" json:"edit_version,omitempty" query:"edit_version"`
+	// ignore
 	FunctionName *string    `thrift:"function_name,11,optional" form:"function_name" json:"function_name,omitempty" query:"function_name"`
 	Base         *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -13631,8 +13676,9 @@ func (p *CreateAPIResponse) String() string {
 }
 
 type DeleteAPIRequest struct {
-	PluginID    int64      `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
-	APIID       int64      `thrift:"api_id,2,required" form:"api_id,required" json:"api_id,string,required" query:"api_id,required"`
+	PluginID int64 `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
+	APIID    int64 `thrift:"api_id,2,required" form:"api_id,required" json:"api_id,string,required" query:"api_id,required"`
+	// ignore
 	EditVersion *int32     `thrift:"edit_version,3,optional" form:"edit_version" json:"edit_version,omitempty" query:"edit_version"`
 	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -17092,13 +17138,15 @@ func (p *GetPluginPublishHistoryResponse) String() string {
 }
 
 type DebugAPIRequest struct {
-	PluginID   int64  `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
-	APIID      int64  `thrift:"api_id,2,required" form:"api_id,required" json:"api_id,string,required" query:"api_id,required"`
+	PluginID int64 `thrift:"plugin_id,1,required" form:"plugin_id,required" json:"plugin_id,string,required" query:"plugin_id,required"`
+	APIID    int64 `thrift:"api_id,2,required" form:"api_id,required" json:"api_id,string,required" query:"api_id,required"`
+	// request parameters in json string
 	Parameters string `thrift:"parameters,3,required" form:"parameters,required" json:"parameters,required" query:"parameters,required"`
-	// json
-	Operation   plugin_develop_common.DebugOperation `thrift:"operation,4,required" form:"operation,required" json:"operation,required" query:"operation,required"`
-	EditVersion *int32                               `thrift:"edit_version,5,optional" form:"edit_version" json:"edit_version,omitempty" query:"edit_version"`
-	Base        *base.Base                           `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	// ignore
+	Operation plugin_develop_common.DebugOperation `thrift:"operation,4,required" form:"operation,required" json:"operation,required" query:"operation,required"`
+	// ignore
+	EditVersion *int32     `thrift:"edit_version,5,optional" form:"edit_version" json:"edit_version,omitempty" query:"edit_version"`
+	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewDebugAPIRequest() *DebugAPIRequest {
@@ -17505,14 +17553,19 @@ func (p *DebugAPIRequest) String() string {
 }
 
 type DebugAPIResponse struct {
-	Code           int64                                 `thrift:"code,1" form:"code" json:"code" query:"code"`
-	Msg            string                                `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
+	Code int64  `thrift:"code,1" form:"code" json:"code" query:"code"`
+	Msg  string `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
+	// response parameters
 	ResponseParams []*plugin_develop_common.APIParameter `thrift:"response_params,3" form:"response_params" json:"response_params" query:"response_params"`
-	// parse时会返回这个字段
-	Success  bool           `thrift:"success,4" form:"success" json:"success" query:"success"`
-	Resp     string         `thrift:"resp,5" form:"resp" json:"resp" query:"resp"`
-	Reason   string         `thrift:"reason,6" form:"reason" json:"reason" query:"reason"`
-	RawResp  string         `thrift:"raw_resp,7" form:"raw_resp" json:"raw_resp" query:"raw_resp"`
+	// invoke success or not
+	Success bool `thrift:"success,4" form:"success" json:"success" query:"success"`
+	// trimmed response in json string
+	Resp string `thrift:"resp,5" form:"resp" json:"resp" query:"resp"`
+	// invoke failed reason
+	Reason string `thrift:"reason,6" form:"reason" json:"reason" query:"reason"`
+	// raw response in json string
+	RawResp string `thrift:"raw_resp,7" form:"raw_resp" json:"raw_resp" query:"raw_resp"`
+	// raw request in json string
 	RawReq   string         `thrift:"raw_req,8" form:"raw_req" json:"raw_req" query:"raw_req"`
 	BaseResp *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
 }
@@ -19069,19 +19122,23 @@ func (p *GetPluginNextVersionResponse) String() string {
 }
 
 type RegisterPluginRequest struct {
-	// ap_json
+	// plugin manifest in json string
 	AiPlugin string `thrift:"ai_plugin,1" form:"ai_plugin" json:"ai_plugin" query:"ai_plugin"`
-	// openapi.yaml
-	Openapi      string  `thrift:"openapi,2" form:"openapi" json:"openapi" query:"openapi"`
-	ClientID     *string `thrift:"client_id,4,optional" form:"client_id" json:"client_id,omitempty" query:"client_id"`
+	// plugin openapi3 document in yaml string
+	Openapi string `thrift:"openapi,2" form:"openapi" json:"openapi" query:"openapi"`
+	// ignore
+	ClientID *string `thrift:"client_id,4,optional" form:"client_id" json:"client_id,omitempty" query:"client_id"`
+	// ignore
 	ClientSecret *string `thrift:"client_secret,5,optional" form:"client_secret" json:"client_secret,omitempty" query:"client_secret"`
+	// ignore
 	ServiceToken *string `thrift:"service_token,6,optional" form:"service_token" json:"service_token,omitempty" query:"service_token"`
-	// plugin 类型，1 plugin 2=app 3= func
-	PluginType     *plugin_develop_common.PluginType `thrift:"plugin_type,7,optional" form:"plugin_type" json:"plugin_type,omitempty" query:"plugin_type"`
-	SpaceID        int64                             `thrift:"space_id,8" form:"space_id" json:"space_id,string" query:"space_id"`
-	ImportFromFile bool                              `thrift:"import_from_file,9" form:"import_from_file" json:"import_from_file" query:"import_from_file"`
-	ProjectID      *int64                            `thrift:"project_id,10,optional" form:"project_id" json:"project_id,string,omitempty" query:"project_id"`
-	Base           *base.Base                        `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	// ignore
+	PluginType *plugin_develop_common.PluginType `thrift:"plugin_type,7,optional" form:"plugin_type" json:"plugin_type,omitempty" query:"plugin_type"`
+	SpaceID    int64                             `thrift:"space_id,8" form:"space_id" json:"space_id,string" query:"space_id"`
+	// ignore
+	ImportFromFile bool       `thrift:"import_from_file,9" form:"import_from_file" json:"import_from_file" query:"import_from_file"`
+	ProjectID      *int64     `thrift:"project_id,10,optional" form:"project_id" json:"project_id,string,omitempty" query:"project_id"`
+	Base           *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewRegisterPluginRequest() *RegisterPluginRequest {
@@ -21143,11 +21200,14 @@ func (p *GetDevPluginListResponse) String() string {
 }
 
 type Convert2OpenAPIRequest struct {
-	PluginName        *string    `thrift:"plugin_name,1,optional" form:"plugin_name" json:"plugin_name,omitempty"`
-	PluginURL         *string    `thrift:"plugin_url,2,optional" form:"plugin_url" json:"plugin_url,omitempty"`
-	Data              string     `thrift:"data,3,required" form:"data,required" json:"data,required"`
-	MergeSamePaths    *bool      `thrift:"merge_same_paths,4,optional" form:"merge_same_paths" json:"merge_same_paths,omitempty"`
-	SpaceID           int64      `thrift:"space_id,5" form:"space_id" json:"space_id,string"`
+	PluginName *string `thrift:"plugin_name,1,optional" form:"plugin_name" json:"plugin_name,omitempty"`
+	PluginURL  *string `thrift:"plugin_url,2,optional" form:"plugin_url" json:"plugin_url,omitempty"`
+	// import content, e.g. curl, postman, swagger
+	Data string `thrift:"data,3,required" form:"data,required" json:"data,required"`
+	// ignore
+	MergeSamePaths *bool `thrift:"merge_same_paths,4,optional" form:"merge_same_paths" json:"merge_same_paths,omitempty"`
+	SpaceID        int64 `thrift:"space_id,5" form:"space_id" json:"space_id,string"`
+	// ignore
 	PluginDescription *string    `thrift:"plugin_description,6,optional" form:"plugin_description" json:"plugin_description,omitempty"`
 	Base              *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -21612,11 +21672,15 @@ func (p *Convert2OpenAPIRequest) String() string {
 }
 
 type Convert2OpenAPIResponse struct {
-	Code              int64                                     `thrift:"code,1" form:"code" json:"code" query:"code"`
-	Msg               string                                    `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
-	Openapi           *string                                   `thrift:"openapi,3,optional" form:"openapi" json:"openapi,omitempty" query:"openapi"`
-	AiPlugin          *string                                   `thrift:"ai_plugin,4,optional" form:"ai_plugin" json:"ai_plugin,omitempty" query:"ai_plugin"`
-	PluginDataFormat  *plugin_develop_common.PluginDataFormat   `thrift:"plugin_data_format,5,optional" form:"plugin_data_format" json:"plugin_data_format,omitempty" query:"plugin_data_format"`
+	Code int64  `thrift:"code,1" form:"code" json:"code" query:"code"`
+	Msg  string `thrift:"msg,2" form:"msg" json:"msg" query:"msg"`
+	// openapi3 document in yaml string
+	Openapi *string `thrift:"openapi,3,optional" form:"openapi" json:"openapi,omitempty" query:"openapi"`
+	// plugin manifest in json string
+	AiPlugin *string `thrift:"ai_plugin,4,optional" form:"ai_plugin" json:"ai_plugin,omitempty" query:"ai_plugin"`
+	// protocol type
+	PluginDataFormat *plugin_develop_common.PluginDataFormat `thrift:"plugin_data_format,5,optional" form:"plugin_data_format" json:"plugin_data_format,omitempty" query:"plugin_data_format"`
+	// ignore
 	DuplicateAPIInfos []*plugin_develop_common.DuplicateAPIInfo `thrift:"duplicate_api_infos,6" form:"duplicate_api_infos" json:"duplicate_api_infos" query:"duplicate_api_infos"`
 	// BaseResp.StatusCode
 	//     DuplicateAPIPath: 导入的文件中有重复的API Path，且 request.MergeSamePaths = false
@@ -22086,19 +22150,21 @@ func (p *Convert2OpenAPIResponse) String() string {
 }
 
 type BatchCreateAPIRequest struct {
-	PluginID int64  `thrift:"plugin_id,1" form:"plugin_id" json:"plugin_id,string"`
+	PluginID int64 `thrift:"plugin_id,1" form:"plugin_id" json:"plugin_id,string"`
+	// plugin manifest in json string
 	AiPlugin string `thrift:"ai_plugin,2" form:"ai_plugin" json:"ai_plugin"`
-	// tools信息存在这里，OpenAPI yaml格式
+	// plugin openapi3 document in yaml string
 	Openapi string `thrift:"openapi,3" form:"openapi" json:"openapi"`
 	SpaceID int64  `thrift:"space_id,4" form:"space_id" json:"space_id,string"`
-	DevID   int64  `thrift:"dev_id,5" form:"dev_id" json:"dev_id,string"`
-	// false: 只创建不重复的 path
-	// true : 只替换已存在的 path
+	// ignore
+	DevID int64 `thrift:"dev_id,5" form:"dev_id" json:"dev_id,string"`
+	// whether to replace the same tool, method:subURL is unique
 	ReplaceSamePaths bool `thrift:"replace_same_paths,6" form:"replace_same_paths" json:"replace_same_paths"`
-	// 要替换的path列表
+	// ignore
 	PathsToReplace []*plugin_develop_common.PluginAPIInfo `thrift:"paths_to_replace,7,optional" form:"paths_to_replace" json:"paths_to_replace,omitempty"`
-	EditVersion    *int32                                 `thrift:"edit_version,8,optional" form:"edit_version" json:"edit_version,omitempty"`
-	Base           *base.Base                             `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	// ignore
+	EditVersion *int32     `thrift:"edit_version,8,optional" form:"edit_version" json:"edit_version,omitempty"`
+	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewBatchCreateAPIRequest() *BatchCreateAPIRequest {
@@ -23547,21 +23613,828 @@ func (p *RevokeAuthTokenResponse) String() string {
 
 }
 
+type GetOAuthPluginListRequest struct {
+	EntityID int64 `thrift:"entity_id,1,required" form:"entity_id,required" json:"entity_id,string,required" query:"entity_id,required"`
+	// '授权上下文, 0-bot, 1-project,2-workflow'
+	ContextType *int32 `thrift:"context_type,2,optional" form:"context_type" json:"context_type,omitempty" query:"context_type"`
+	// 授权实体的版本，根据context_type，可能是 bot_version、project_version、workflow_version
+	EntityVersion *string    `thrift:"entity_version,3,optional" form:"entity_version" json:"entity_version,omitempty" query:"entity_version"`
+	Base          *base.Base `thrift:"Base,255" form:"Base" json:"Base" query:"Base"`
+}
+
+func NewGetOAuthPluginListRequest() *GetOAuthPluginListRequest {
+	return &GetOAuthPluginListRequest{}
+}
+
+func (p *GetOAuthPluginListRequest) InitDefault() {
+}
+
+func (p *GetOAuthPluginListRequest) GetEntityID() (v int64) {
+	return p.EntityID
+}
+
+var GetOAuthPluginListRequest_ContextType_DEFAULT int32
+
+func (p *GetOAuthPluginListRequest) GetContextType() (v int32) {
+	if !p.IsSetContextType() {
+		return GetOAuthPluginListRequest_ContextType_DEFAULT
+	}
+	return *p.ContextType
+}
+
+var GetOAuthPluginListRequest_EntityVersion_DEFAULT string
+
+func (p *GetOAuthPluginListRequest) GetEntityVersion() (v string) {
+	if !p.IsSetEntityVersion() {
+		return GetOAuthPluginListRequest_EntityVersion_DEFAULT
+	}
+	return *p.EntityVersion
+}
+
+var GetOAuthPluginListRequest_Base_DEFAULT *base.Base
+
+func (p *GetOAuthPluginListRequest) GetBase() (v *base.Base) {
+	if !p.IsSetBase() {
+		return GetOAuthPluginListRequest_Base_DEFAULT
+	}
+	return p.Base
+}
+
+var fieldIDToName_GetOAuthPluginListRequest = map[int16]string{
+	1:   "entity_id",
+	2:   "context_type",
+	3:   "entity_version",
+	255: "Base",
+}
+
+func (p *GetOAuthPluginListRequest) IsSetContextType() bool {
+	return p.ContextType != nil
+}
+
+func (p *GetOAuthPluginListRequest) IsSetEntityVersion() bool {
+	return p.EntityVersion != nil
+}
+
+func (p *GetOAuthPluginListRequest) IsSetBase() bool {
+	return p.Base != nil
+}
+
+func (p *GetOAuthPluginListRequest) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetEntityID bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetEntityID = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 255:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField255(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetEntityID {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_GetOAuthPluginListRequest[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_GetOAuthPluginListRequest[fieldId]))
+}
+
+func (p *GetOAuthPluginListRequest) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.EntityID = _field
+	return nil
+}
+func (p *GetOAuthPluginListRequest) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.ContextType = _field
+	return nil
+}
+func (p *GetOAuthPluginListRequest) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.EntityVersion = _field
+	return nil
+}
+func (p *GetOAuthPluginListRequest) ReadField255(iprot thrift.TProtocol) error {
+	_field := base.NewBase()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Base = _field
+	return nil
+}
+
+func (p *GetOAuthPluginListRequest) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetOAuthPluginListRequest"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField255(oprot); err != nil {
+			fieldId = 255
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *GetOAuthPluginListRequest) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("entity_id", thrift.I64, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.EntityID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *GetOAuthPluginListRequest) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetContextType() {
+		if err = oprot.WriteFieldBegin("context_type", thrift.I32, 2); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.ContextType); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *GetOAuthPluginListRequest) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetEntityVersion() {
+		if err = oprot.WriteFieldBegin("entity_version", thrift.STRING, 3); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.EntityVersion); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *GetOAuthPluginListRequest) writeField255(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("Base", thrift.STRUCT, 255); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Base.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
+}
+
+func (p *GetOAuthPluginListRequest) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetOAuthPluginListRequest(%+v)", *p)
+
+}
+
+type GetOAuthPluginListResponse struct {
+	OauthPluginList []*OAuthPluginInfo `thrift:"oauth_plugin_list,1" form:"oauth_plugin_list" json:"oauth_plugin_list" query:"oauth_plugin_list"`
+	BaseResp        *base.BaseResp     `thrift:"BaseResp,255,required" form:"BaseResp,required" json:"BaseResp,required" query:"BaseResp,required"`
+}
+
+func NewGetOAuthPluginListResponse() *GetOAuthPluginListResponse {
+	return &GetOAuthPluginListResponse{}
+}
+
+func (p *GetOAuthPluginListResponse) InitDefault() {
+}
+
+func (p *GetOAuthPluginListResponse) GetOauthPluginList() (v []*OAuthPluginInfo) {
+	return p.OauthPluginList
+}
+
+var GetOAuthPluginListResponse_BaseResp_DEFAULT *base.BaseResp
+
+func (p *GetOAuthPluginListResponse) GetBaseResp() (v *base.BaseResp) {
+	if !p.IsSetBaseResp() {
+		return GetOAuthPluginListResponse_BaseResp_DEFAULT
+	}
+	return p.BaseResp
+}
+
+var fieldIDToName_GetOAuthPluginListResponse = map[int16]string{
+	1:   "oauth_plugin_list",
+	255: "BaseResp",
+}
+
+func (p *GetOAuthPluginListResponse) IsSetBaseResp() bool {
+	return p.BaseResp != nil
+}
+
+func (p *GetOAuthPluginListResponse) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetBaseResp bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 255:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField255(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetBaseResp = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetBaseResp {
+		fieldId = 255
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_GetOAuthPluginListResponse[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_GetOAuthPluginListResponse[fieldId]))
+}
+
+func (p *GetOAuthPluginListResponse) ReadField1(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]*OAuthPluginInfo, 0, size)
+	values := make([]OAuthPluginInfo, size)
+	for i := 0; i < size; i++ {
+		_elem := &values[i]
+		_elem.InitDefault()
+
+		if err := _elem.Read(iprot); err != nil {
+			return err
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.OauthPluginList = _field
+	return nil
+}
+func (p *GetOAuthPluginListResponse) ReadField255(iprot thrift.TProtocol) error {
+	_field := base.NewBaseResp()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.BaseResp = _field
+	return nil
+}
+
+func (p *GetOAuthPluginListResponse) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetOAuthPluginListResponse"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField255(oprot); err != nil {
+			fieldId = 255
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *GetOAuthPluginListResponse) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("oauth_plugin_list", thrift.LIST, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.OauthPluginList)); err != nil {
+		return err
+	}
+	for _, v := range p.OauthPluginList {
+		if err := v.Write(oprot); err != nil {
+			return err
+		}
+	}
+	if err := oprot.WriteListEnd(); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *GetOAuthPluginListResponse) writeField255(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("BaseResp", thrift.STRUCT, 255); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.BaseResp.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 255 end error: ", p), err)
+}
+
+func (p *GetOAuthPluginListResponse) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetOAuthPluginListResponse(%+v)", *p)
+
+}
+
+type OAuthPluginInfo struct {
+	PluginID int64 `thrift:"plugin_id,1" form:"plugin_id" json:"plugin_id,string" query:"plugin_id"`
+	// 用户授权状态
+	Status plugin_develop_common.OAuthStatus `thrift:"status,2" form:"status" json:"status" query:"status"`
+	// 插件name
+	Name string `thrift:"name,3" form:"name" json:"name" query:"name"`
+	// 插件头像
+	PluginIcon string `thrift:"plugin_icon,4" form:"plugin_icon" json:"plugin_icon" query:"plugin_icon"`
+}
+
+func NewOAuthPluginInfo() *OAuthPluginInfo {
+	return &OAuthPluginInfo{}
+}
+
+func (p *OAuthPluginInfo) InitDefault() {
+}
+
+func (p *OAuthPluginInfo) GetPluginID() (v int64) {
+	return p.PluginID
+}
+
+func (p *OAuthPluginInfo) GetStatus() (v plugin_develop_common.OAuthStatus) {
+	return p.Status
+}
+
+func (p *OAuthPluginInfo) GetName() (v string) {
+	return p.Name
+}
+
+func (p *OAuthPluginInfo) GetPluginIcon() (v string) {
+	return p.PluginIcon
+}
+
+var fieldIDToName_OAuthPluginInfo = map[int16]string{
+	1: "plugin_id",
+	2: "status",
+	3: "name",
+	4: "plugin_icon",
+}
+
+func (p *OAuthPluginInfo) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_OAuthPluginInfo[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *OAuthPluginInfo) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.PluginID = _field
+	return nil
+}
+func (p *OAuthPluginInfo) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field plugin_develop_common.OAuthStatus
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = plugin_develop_common.OAuthStatus(v)
+	}
+	p.Status = _field
+	return nil
+}
+func (p *OAuthPluginInfo) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Name = _field
+	return nil
+}
+func (p *OAuthPluginInfo) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.PluginIcon = _field
+	return nil
+}
+
+func (p *OAuthPluginInfo) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("OAuthPluginInfo"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *OAuthPluginInfo) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("plugin_id", thrift.I64, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.PluginID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *OAuthPluginInfo) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("status", thrift.I32, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(int32(p.Status)); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *OAuthPluginInfo) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Name); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *OAuthPluginInfo) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("plugin_icon", thrift.STRING, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.PluginIcon); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+
+func (p *OAuthPluginInfo) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("OAuthPluginInfo(%+v)", *p)
+
+}
+
 type PluginDevelopService interface {
 	GetOAuthSchema(ctx context.Context, request *GetOAuthSchemaRequest) (r *GetOAuthSchemaResponse, err error)
 
 	GetOAuthSchemaAPI(ctx context.Context, request *GetOAuthSchemaRequest) (r *GetOAuthSchemaResponse, err error)
-
+	// 获取已发布 workflow、plugin 列表，或者多个插件的详情
 	GetPlaygroundPluginList(ctx context.Context, request *GetPlaygroundPluginListRequest) (r *GetPlaygroundPluginListResponse, err error)
-
+	// 通过 code 创建插件
 	RegisterPlugin(ctx context.Context, request *RegisterPluginRequest) (r *RegisterPluginResponse, err error)
-
+	// 通过 UI 创建插件
 	RegisterPluginMeta(ctx context.Context, request *RegisterPluginMetaRequest) (r *RegisterPluginMetaResponse, err error)
-
+	// 获取插件工具列表，或者多个工具详情
 	GetPluginAPIs(ctx context.Context, request *GetPluginAPIsRequest) (r *GetPluginAPIsResponse, err error)
-
+	// 获取插件详情
 	GetPluginInfo(ctx context.Context, request *GetPluginInfoRequest) (r *GetPluginInfoResponse, err error)
-
+	// 与最近一次发布版本相比，更新的工具列表
 	GetUpdatedAPIs(ctx context.Context, request *GetUpdatedAPIsRequest) (r *GetUpdatedAPIsResponse, err error)
 
 	GetOAuthStatus(ctx context.Context, request *GetOAuthStatusRequest) (r *GetOAuthStatusResponse, err error)
@@ -23569,23 +24442,23 @@ type PluginDevelopService interface {
 	CheckAndLockPluginEdit(ctx context.Context, request *CheckAndLockPluginEditRequest) (r *CheckAndLockPluginEditResponse, err error)
 
 	UnlockPluginEdit(ctx context.Context, request *UnlockPluginEditRequest) (r *UnlockPluginEditResponse, err error)
-
+	// 通过 code 更新插件
 	UpdatePlugin(ctx context.Context, request *UpdatePluginRequest) (r *UpdatePluginResponse, err error)
-
+	// 删除工具
 	DeleteAPI(ctx context.Context, request *DeleteAPIRequest) (r *DeleteAPIResponse, err error)
-
+	// 删除插件
 	DelPlugin(ctx context.Context, request *DelPluginRequest) (r *DelPluginResponse, err error)
-
+	// 发布插件
 	PublishPlugin(ctx context.Context, request *PublishPluginRequest) (r *PublishPluginResponse, err error)
-
+	// 通过UI更新插件
 	UpdatePluginMeta(ctx context.Context, request *UpdatePluginMetaRequest) (r *UpdatePluginMetaResponse, err error)
 
 	GetBotDefaultParams(ctx context.Context, request *GetBotDefaultParamsRequest) (r *GetBotDefaultParamsResponse, err error)
 
 	UpdateBotDefaultParams(ctx context.Context, request *UpdateBotDefaultParamsRequest) (r *UpdateBotDefaultParamsResponse, err error)
-
+	// 创建工具
 	CreateAPI(ctx context.Context, request *CreateAPIRequest) (r *CreateAPIResponse, err error)
-
+	// 更新工具
 	UpdateAPI(ctx context.Context, request *UpdateAPIRequest) (r *UpdateAPIResponse, err error)
 
 	GetUserAuthority(ctx context.Context, request *GetUserAuthorityRequest) (r *GetUserAuthorityResponse, err error)
@@ -23595,12 +24468,14 @@ type PluginDevelopService interface {
 	GetPluginNextVersion(ctx context.Context, request *GetPluginNextVersionRequest) (r *GetPluginNextVersionResponse, err error)
 
 	GetDevPluginList(ctx context.Context, request *GetDevPluginListRequest) (r *GetDevPluginListResponse, err error)
-
+	// 协议转换，如将 curl 、postman collection 协议转换为 openapi3 协议
 	Convert2OpenAPI(ctx context.Context, request *Convert2OpenAPIRequest) (r *Convert2OpenAPIResponse, err error)
-
+	// 批量创建工具，目前是配合 Convert2OpenAPI 接口使用
 	BatchCreateAPI(ctx context.Context, request *BatchCreateAPIRequest) (r *BatchCreateAPIResponse, err error)
 
 	RevokeAuthToken(ctx context.Context, request *RevokeAuthTokenRequest) (r *RevokeAuthTokenResponse, err error)
+
+	GetOAuthPluginList(ctx context.Context, request *GetOAuthPluginListRequest) (r *GetOAuthPluginListResponse, err error)
 }
 
 type PluginDevelopServiceClient struct {
@@ -23872,6 +24747,15 @@ func (p *PluginDevelopServiceClient) RevokeAuthToken(ctx context.Context, reques
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *PluginDevelopServiceClient) GetOAuthPluginList(ctx context.Context, request *GetOAuthPluginListRequest) (r *GetOAuthPluginListResponse, err error) {
+	var _args PluginDevelopServiceGetOAuthPluginListArgs
+	_args.Request = request
+	var _result PluginDevelopServiceGetOAuthPluginListResult
+	if err = p.Client_().Call(ctx, "GetOAuthPluginList", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 
 type PluginDevelopServiceProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
@@ -23920,6 +24804,7 @@ func NewPluginDevelopServiceProcessor(handler PluginDevelopService) *PluginDevel
 	self.AddToProcessorMap("Convert2OpenAPI", &pluginDevelopServiceProcessorConvert2OpenAPI{handler: handler})
 	self.AddToProcessorMap("BatchCreateAPI", &pluginDevelopServiceProcessorBatchCreateAPI{handler: handler})
 	self.AddToProcessorMap("RevokeAuthToken", &pluginDevelopServiceProcessorRevokeAuthToken{handler: handler})
+	self.AddToProcessorMap("GetOAuthPluginList", &pluginDevelopServiceProcessorGetOAuthPluginList{handler: handler})
 	return self
 }
 func (p *PluginDevelopServiceProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -25219,6 +26104,54 @@ func (p *pluginDevelopServiceProcessorRevokeAuthToken) Process(ctx context.Conte
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("RevokeAuthToken", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type pluginDevelopServiceProcessorGetOAuthPluginList struct {
+	handler PluginDevelopService
+}
+
+func (p *pluginDevelopServiceProcessorGetOAuthPluginList) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := PluginDevelopServiceGetOAuthPluginListArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("GetOAuthPluginList", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := PluginDevelopServiceGetOAuthPluginListResult{}
+	var retval *GetOAuthPluginListResponse
+	if retval, err2 = p.handler.GetOAuthPluginList(ctx, args.Request); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetOAuthPluginList: "+err2.Error())
+		oprot.WriteMessageBegin("GetOAuthPluginList", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("GetOAuthPluginList", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -33117,5 +34050,297 @@ func (p *PluginDevelopServiceRevokeAuthTokenResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("PluginDevelopServiceRevokeAuthTokenResult(%+v)", *p)
+
+}
+
+type PluginDevelopServiceGetOAuthPluginListArgs struct {
+	Request *GetOAuthPluginListRequest `thrift:"request,1"`
+}
+
+func NewPluginDevelopServiceGetOAuthPluginListArgs() *PluginDevelopServiceGetOAuthPluginListArgs {
+	return &PluginDevelopServiceGetOAuthPluginListArgs{}
+}
+
+func (p *PluginDevelopServiceGetOAuthPluginListArgs) InitDefault() {
+}
+
+var PluginDevelopServiceGetOAuthPluginListArgs_Request_DEFAULT *GetOAuthPluginListRequest
+
+func (p *PluginDevelopServiceGetOAuthPluginListArgs) GetRequest() (v *GetOAuthPluginListRequest) {
+	if !p.IsSetRequest() {
+		return PluginDevelopServiceGetOAuthPluginListArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+
+var fieldIDToName_PluginDevelopServiceGetOAuthPluginListArgs = map[int16]string{
+	1: "request",
+}
+
+func (p *PluginDevelopServiceGetOAuthPluginListArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *PluginDevelopServiceGetOAuthPluginListArgs) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PluginDevelopServiceGetOAuthPluginListArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceGetOAuthPluginListArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewGetOAuthPluginListRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Request = _field
+	return nil
+}
+
+func (p *PluginDevelopServiceGetOAuthPluginListArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetOAuthPluginList_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceGetOAuthPluginListArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceGetOAuthPluginListArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("PluginDevelopServiceGetOAuthPluginListArgs(%+v)", *p)
+
+}
+
+type PluginDevelopServiceGetOAuthPluginListResult struct {
+	Success *GetOAuthPluginListResponse `thrift:"success,0,optional"`
+}
+
+func NewPluginDevelopServiceGetOAuthPluginListResult() *PluginDevelopServiceGetOAuthPluginListResult {
+	return &PluginDevelopServiceGetOAuthPluginListResult{}
+}
+
+func (p *PluginDevelopServiceGetOAuthPluginListResult) InitDefault() {
+}
+
+var PluginDevelopServiceGetOAuthPluginListResult_Success_DEFAULT *GetOAuthPluginListResponse
+
+func (p *PluginDevelopServiceGetOAuthPluginListResult) GetSuccess() (v *GetOAuthPluginListResponse) {
+	if !p.IsSetSuccess() {
+		return PluginDevelopServiceGetOAuthPluginListResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_PluginDevelopServiceGetOAuthPluginListResult = map[int16]string{
+	0: "success",
+}
+
+func (p *PluginDevelopServiceGetOAuthPluginListResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *PluginDevelopServiceGetOAuthPluginListResult) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PluginDevelopServiceGetOAuthPluginListResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceGetOAuthPluginListResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewGetOAuthPluginListResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *PluginDevelopServiceGetOAuthPluginListResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("GetOAuthPluginList_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceGetOAuthPluginListResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *PluginDevelopServiceGetOAuthPluginListResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("PluginDevelopServiceGetOAuthPluginListResult(%+v)", *p)
 
 }

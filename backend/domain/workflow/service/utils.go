@@ -14,15 +14,18 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/canvas/validate"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/slices"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]*validate.Issue, error) {
 	c := &vo.Canvas{}
 	err := sonic.UnmarshalString(config.CanvasSchema, &c)
-	c.Nodes, c.Edges = adaptor.PruneIsolatedNodes(c.Nodes, c.Edges, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal canvas schema: %w", err)
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail,
+			fmt.Errorf("failed to unmarshal canvas schema: %w", err))
 	}
+
+	c.Nodes, c.Edges = adaptor.PruneIsolatedNodes(c.Nodes, c.Edges, nil)
 	validator, err := validate.NewCanvasValidator(ctx, &validate.Config{
 		Canvas:              c,
 		AppID:               config.AppID,
@@ -129,7 +132,12 @@ type version struct {
 	Patch  int
 }
 
-func parseVersion(versionString string) (version, error) {
+func parseVersion(versionString string) (_ version, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapError(errno.ErrInvalidVersionName, err)
+		}
+	}()
 	if !strings.HasPrefix(versionString, "v") {
 		return version{}, fmt.Errorf("invalid prefix format: %s", versionString)
 	}
@@ -321,8 +329,11 @@ func entityNodeTypeToBlockType(nodeType entity.NodeType) (vo.BlockType, error) {
 		return vo.BlockTypeJsonSerialization, nil
 	case entity.NodeTypeJsonDeserialization:
 		return vo.BlockTypeJsonDeserialization, nil
+	case entity.NodeTypeKnowledgeDeleter:
+		return vo.BlockTypeBotDatasetDelete, nil
 
 	default:
-		return "", fmt.Errorf("cannot map entity node type '%s' to a workflow.NodeTemplateType", nodeType)
+		return "", vo.WrapError(errno.ErrSchemaConversionFail,
+			fmt.Errorf("cannot map entity node type '%s' to a workflow.NodeTemplateType", nodeType))
 	}
 }

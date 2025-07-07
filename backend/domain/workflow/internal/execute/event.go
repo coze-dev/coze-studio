@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
-	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 )
 
 type EventType string
@@ -44,7 +43,7 @@ type Event struct {
 
 	RawOutput map[string]any
 
-	Err   *vo.ErrorInfo
+	Err   error
 	Token *TokenInfo
 
 	InterruptEvents []*entity.InterruptEvent

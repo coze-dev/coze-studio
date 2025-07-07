@@ -37,6 +37,7 @@ type PluginService interface {
 	MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *MGetPluginLatestVersionResponse, err error)
 	GetPluginNextVersion(ctx context.Context, pluginID int64) (version string, err error)
 	MGetVersionPlugins(ctx context.Context, versionPlugins []entity.VersionPlugin) (plugins []*entity.PluginInfo, err error)
+	ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
 
 	// Draft Tool
 	MGetDraftTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error)
@@ -67,7 +68,11 @@ type PluginService interface {
 	ListPluginProducts(ctx context.Context, req *ListPluginProductsRequest) (resp *ListPluginProductsResponse, err error)
 	GetPluginProductAllTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
 
-	GetOAuthStatus(ctx context.Context, pluginID int64) (resp *GetOAuthStatusResponse, err error)
+	GetOAuthStatus(ctx context.Context, userID, pluginID int64) (resp *GetOAuthStatusResponse, err error)
+	GetAgentPluginsOAuthStatus(ctx context.Context, userID, agentID int64) (status []*AgentPluginOAuthStatus, err error)
+	OAuthCode(ctx context.Context, code string, state *entity.OAuthState) (err error)
+	GetAccessToken(ctx context.Context, oa *entity.OAuthInfo) (accessToken string, err error)
+	RevokeAccessToken(ctx context.Context, meta *entity.AuthorizationCodeMeta) (err error)
 }
 
 type CreateDraftPluginRequest struct {
@@ -192,11 +197,10 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 	}
 
 	if *p.AuthzSubType == model.AuthzSubTypeOfOAuthClientCredentials {
-		_oauthInfo := &model.AuthOfOAuthClientCredentials{
+		_oauthInfo := &model.OAuthClientCredentialsConfig{
 			ClientID:     oauthInfo["client_id"],
 			ClientSecret: oauthInfo["client_secret"],
 			TokenURL:     oauthInfo["token_url"],
-			Scopes:       strings.Split(oauthInfo["scope"], " "),
 		}
 
 		str, err := sonic.MarshalString(_oauthInfo)
@@ -207,7 +211,7 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 		return &model.AuthV2{
 			Type:                         model.AuthzTypeOfOAuth,
 			SubType:                      model.AuthzSubTypeOfOAuthClientCredentials,
-			Payload:                      &str,
+			Payload:                      str,
 			AuthOfOAuthClientCredentials: _oauthInfo,
 		}, nil
 	}
@@ -219,7 +223,7 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 				"the type '%s' of authorization content is invalid", contentType))
 		}
 
-		_oauthInfo := &model.AuthOfOAuthAuthorizationCode{
+		_oauthInfo := &model.OAuthAuthorizationCodeConfig{
 			ClientID:                 oauthInfo["client_id"],
 			ClientSecret:             oauthInfo["client_secret"],
 			ClientURL:                oauthInfo["client_url"],
@@ -236,7 +240,7 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 		return &model.AuthV2{
 			Type:                         model.AuthzTypeOfOAuth,
 			SubType:                      model.AuthzSubTypeOfOAuthAuthorizationCode,
-			Payload:                      &str,
+			Payload:                      str,
 			AuthOfOAuthAuthorizationCode: _oauthInfo,
 		}, nil
 	}
@@ -275,7 +279,7 @@ func (p PluginAuthInfo) authOfServiceToAuthV2() (*model.AuthV2, error) {
 		return &model.AuthV2{
 			Type:           model.AuthzTypeOfService,
 			SubType:        model.AuthzSubTypeOfServiceAPIToken,
-			Payload:        &str,
+			Payload:        str,
 			AuthOfAPIToken: tokenAuth,
 		}, nil
 	}
@@ -347,6 +351,13 @@ type GetOAuthStatusResponse struct {
 	OAuthURL string
 }
 
+type AgentPluginOAuthStatus struct {
+	PluginID      int64
+	PluginName    string
+	PluginIconURL string
+	Status        common.OAuthStatus
+}
+
 type CopyPluginRequest struct {
 	UserID    int64
 	PluginID  int64
@@ -362,4 +373,11 @@ type CopyPluginResponse struct {
 
 type MoveAPPPluginToLibRequest struct {
 	PluginID int64
+}
+
+type GetAccessTokenRequest struct {
+	UserID    string
+	PluginID  *int64
+	Mode      model.AuthzSubType
+	OAuthInfo *entity.OAuthInfo
 }

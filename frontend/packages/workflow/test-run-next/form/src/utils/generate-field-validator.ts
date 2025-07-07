@@ -3,6 +3,8 @@ import { I18n } from '@coze-arch/i18n';
 
 import { type IFormSchemaValidate } from '../form-engine';
 
+const isEmptyValue = (v: unknown) => v === undefined || v === null || v === '';
+
 interface GenerateFieldValidatorOptions {
   name: string;
   title?: string;
@@ -22,7 +24,7 @@ export const generateFieldValidator = (
   const { required, title, name, validateJsonSchema } = options;
 
   const validator: IFormSchemaValidate = ({ value }) => {
-    if (required && value === undefined) {
+    if (required && isEmptyValue(value)) {
       return I18n.t('workflow_testset_required_tip', {
         param_name: title || name,
       });

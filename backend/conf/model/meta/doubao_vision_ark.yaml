@@ -6,10 +6,12 @@
 id: 103 # 模型 id, 同 id 数据不会覆盖
 name: Doubao-1.5-vision-pro # 模型 meta 名称
 icon_uri: doubao_v2.png
-description: 支持图片理解 # 模型默认描述
+description:
+  zh: 支持图片理解 # 模型默认描述
+  en: support image understanding
 protocol: ark # 模型连接协议
 capability: # 模型基础能力
-  function_call: true # 模型是否支持 function call
+  function_call: false # 模型是否支持 function call
   input_modal: # 模型输入支持模态
     - text
     - image
@@ -21,6 +23,7 @@ capability: # 模型基础能力
   json_mode: false # 是否支持 json mode
   prefix_caching: false # 是否支持 prefix caching
   reasoning: false # 是否支持 reasoning
+  prefill_response: false # 是否支持续写
 conn_config: # 模型连接参数
   api_key: 1ea0e64a-cef2-4f29-b96b-effaf97667ba   # REQUIRED: api_key
   model: ep-20250619193232-k6bbc     # REQUIRED: model name

@@ -28,8 +28,6 @@ type executableImpl struct {
 	repo workflow.Repository
 }
 
-const DebugURLExtraKey = "debug_url_extra_key"
-
 func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*entity.WorkflowExecution, vo.TerminatePlan, error) {
 	var (
 		err      error
@@ -72,14 +70,16 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 		config.AppID = wfEntity.AppID
 	}
 
-	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
+	var cOpts []nodes.ConvertOption
+	if config.InputFailFast {
+		cOpts = append(cOpts, nodes.FailFast())
+	}
+
+	convertedInput, ws, err := nodes.ConvertInputs(ctx, input, wf.Inputs(), cOpts...)
 	if err != nil {
-		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) && !config.InputFailFast {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-		} else {
-			return nil, "", errorx.WrapByCode(err, errno.ErrInvalidParameter)
-		}
+		return nil, "", err
+	} else if ws != nil {
+		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -98,12 +98,11 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 	out, err := wf.SyncRun(cancelCtx, convertedInput, opts...)
 	if err != nil {
 		if _, ok := einoCompose.ExtractInterruptInfo(err); !ok {
-			debugURL := fmt.Sprintf(vo.DebugURLTpl, executeID, wfEntity.SpaceID, wfEntity.ID)
-			var statusError errorx.StatusError
-			if errors.As(err, &statusError) {
-				return nil, "", errorx.New(statusError.Code(), errorx.Extra(DebugURLExtraKey, debugURL))
+			var wfe vo.WorkflowError
+			if errors.As(err, &wfe) {
+				return nil, "", wfe.AppendDebug(executeID, wfEntity.SpaceID, wfEntity.ID)
 			} else {
-				return nil, "", errorx.New(errno.ErrWorkflowExecuteFail, errorx.Extra(DebugURLExtraKey, debugURL))
+				return nil, "", vo.WrapWithDebug(errno.ErrWorkflowExecuteFail, err, executeID, wfEntity.SpaceID, wfEntity.ID, errorx.KV("cause", err.Error()))
 			}
 		}
 	}
@@ -136,7 +135,7 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 
 	var failReason *string
 	if lastEvent.Err != nil {
-		failReason = ptr.Of(lastEvent.Err.Err.Error())
+		failReason = ptr.Of(lastEvent.Err.Error())
 	}
 
 	return &entity.WorkflowExecution{
@@ -210,14 +209,16 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 
 	config.CommitID = wfEntity.CommitID
 
-	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
+	var cOpts []nodes.ConvertOption
+	if config.InputFailFast {
+		cOpts = append(cOpts, nodes.FailFast())
+	}
+
+	convertedInput, ws, err := nodes.ConvertInputs(ctx, input, wf.Inputs(), cOpts...)
 	if err != nil {
-		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) && !config.InputFailFast {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-		} else {
-			return 0, errorx.WrapByCode(err, errno.ErrInvalidParameter)
-		}
+		return 0, err
+	} else if ws != nil {
+		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -273,14 +274,16 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 		return 0, fmt.Errorf("failed to create workflow: %w", err)
 	}
 
-	convertedInput, err := nodes.ConvertInputs(ctx, input, wf.Inputs())
+	var cOpts []nodes.ConvertOption
+	if config.InputFailFast {
+		cOpts = append(cOpts, nodes.FailFast())
+	}
+
+	convertedInput, ws, err := nodes.ConvertInputs(ctx, input, wf.Inputs(), cOpts...)
 	if err != nil {
-		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) && !config.InputFailFast {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-		} else {
-			return 0, errorx.WrapByCode(err, errno.ErrInvalidParameter)
-		}
+		return 0, err
+	} else if ws != nil {
+		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	if wfEntity.AppID != nil && config.AppID == nil {
@@ -317,6 +320,7 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 	var (
 		err      error
 		wfEntity *entity.Workflow
+		ws       *nodes.ConversionWarnings
 	)
 
 	wfEntity, err = i.Get(ctx, &vo.GetPolicy{
@@ -357,14 +361,16 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 
 	config.CommitID = wfEntity.CommitID
 
-	input, err = nodes.ConvertInputs(ctx, input, wf.Inputs())
+	var cOpts []nodes.ConvertOption
+	if config.InputFailFast {
+		cOpts = append(cOpts, nodes.FailFast())
+	}
+
+	input, ws, err = nodes.ConvertInputs(ctx, input, wf.Inputs(), cOpts...)
 	if err != nil {
-		var warnings nodes.ConversionWarnings
-		if errors.As(err, &warnings) && !config.InputFailFast {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-		} else {
-			return nil, errorx.WrapByCode(err, errno.ErrInvalidParameter)
-		}
+		return nil, err
+	} else if ws != nil {
+		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -488,7 +494,7 @@ func (i *impl) GetNodeExecution(ctx context.Context, exeID int64, nodeID string)
 	}
 
 	if !found {
-		return nil, nil, fmt.Errorf("try getting node exe for exeID : %d, nodeID : %s, but not found", exeID, nodeID)
+		return nil, nil, fmt.Errorf("try getting workflow exe for exeID : %d, but not found", exeID)
 	}
 
 	if wfExe.Mode != vo.ExecuteModeNodeDebug {
@@ -527,16 +533,18 @@ func (i *impl) GetNodeExecution(ctx context.Context, exeID int64, nodeID string)
 func (i *impl) GetLatestTestRunInput(ctx context.Context, wfID int64, userID int64) (*entity.NodeExecution, bool, error) {
 	exeID, err := i.repo.GetTestRunLatestExeID(ctx, wfID, userID)
 	if err != nil {
-		return nil, false, err
+		logs.CtxErrorf(ctx, "[GetLatestTestRunInput] failed to get node execution from redis, wfID: %d, err: %v", wfID, err)
+		return nil, false, nil
 	}
 
 	if exeID == 0 {
 		return nil, false, nil
 	}
 
-	nodeExe, _, err := i.GetNodeExecution(ctx, exeID, compose.EntryNodeKey)
+	nodeExe, _, err := i.GetNodeExecution(ctx, exeID, entity.EntryNodeKey)
 	if err != nil {
-		return nil, false, err
+		logs.CtxErrorf(ctx, "[GetLatestTestRunInput] failed to get node execution, exeID: %d, err: %v", exeID, err)
+		return nil, false, nil
 	}
 
 	return nodeExe, true, nil
@@ -546,7 +554,9 @@ func (i *impl) GetLatestNodeDebugInput(ctx context.Context, wfID int64, nodeID s
 	*entity.NodeExecution, *entity.NodeExecution, bool, error) {
 	exeID, err := i.repo.GetNodeDebugLatestExeID(ctx, wfID, nodeID, userID)
 	if err != nil {
-		return nil, nil, false, err
+		logs.CtxErrorf(ctx, "[GetLatestNodeDebugInput] failed to get node execution from redis, wfID: %d, nodeID: %s, err: %v",
+			wfID, nodeID, err)
+		return nil, nil, false, nil
 	}
 
 	if exeID == 0 {
@@ -555,7 +565,9 @@ func (i *impl) GetLatestNodeDebugInput(ctx context.Context, wfID int64, nodeID s
 
 	nodeExe, innerExe, err := i.GetNodeExecution(ctx, exeID, nodeID)
 	if err != nil {
-		return nil, nil, false, err
+		logs.CtxErrorf(ctx, "[GetLatestNodeDebugInput] failed to get node execution, exeID: %d, nodeID: %s, err: %v",
+			exeID, nodeID, err)
+		return nil, nil, false, nil
 	}
 
 	return nodeExe, innerExe, true, nil

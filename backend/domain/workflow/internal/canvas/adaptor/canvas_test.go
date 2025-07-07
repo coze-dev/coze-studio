@@ -57,6 +57,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 				ExeCfg: vo.ExecuteConfig{
 					Mode:     vo.ExecuteModeDebug,
 					Operator: 123,
+					BizType:  vo.BizTypeWorkflow,
 				},
 			},
 		}).Build()
@@ -79,7 +80,7 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 				}, nil
 			},
 		}
-		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 
 		mockDatabaseOperator := databasemock.NewMockDatabaseOperator(ctrl)
 		n := int64(2)
@@ -216,6 +217,7 @@ func TestDatabaseCURD(t *testing.T) {
 				ExeCfg: vo.ExecuteConfig{
 					Mode:     vo.ExecuteModeDebug,
 					Operator: 123,
+					BizType:  vo.BizTypeWorkflow,
 				},
 			},
 		}).Build()
@@ -637,6 +639,49 @@ func TestKnowledgeNodes(t *testing.T) {
 			},
 			"v1": "v1",
 		}, resp)
+	})
+}
+
+func TestKnowledgeDeleter(t *testing.T) {
+	mockey.PatchConvey("knowledge deleter", t, func() {
+		data, err := os.ReadFile("../examples/knowledge_delete.json")
+		assert.NoError(t, err)
+		c := &vo.Canvas{}
+		err = sonic.Unmarshal(data, c)
+		assert.NoError(t, err)
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockKnowledgeOperator := knowledgemock.NewMockKnowledgeOperator(ctrl)
+		mockey.Mock(knowledge.GetKnowledgeOperator).Return(mockKnowledgeOperator).Build()
+
+		storeResponse := &knowledge.CreateDocumentResponse{
+			DocumentID: int64(1),
+			FileName:   "1706.03762v7.pdf",
+			FileURL:    "https://p26-bot-workflow-sign.byteimg.com/tos-cn-i-mdko3gqilj/5264fa1295da4a6483cd236b1316c454.pdf~tplv-mdko3gqilj-image.image?rk3s=81d4c505&x-expires=1782379180&x-signature=mlaXPIk9VJjOXu87xGaRmNRg9%2BA%3D&x-wf-file_name=1706.03762v7.pdf",
+		}
+		mockKnowledgeOperator.EXPECT().Store(gomock.Any(), gomock.Any()).Return(storeResponse, nil)
+
+		deleteResponse := &knowledge.DeleteDocumentResponse{
+			IsSuccess: true,
+		}
+		mockKnowledgeOperator.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(deleteResponse, nil)
+
+		ctx := t.Context()
+		ctx = ctxcache.Init(ctx)
+		ctxcache.Store(ctx, consts.SessionDataKeyInCtx, &userentity.Session{
+			UserID: 123,
+		})
+
+		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
+		assert.NoError(t, err)
+
+		wf, err := compose.NewWorkflow(ctx, workflowSC)
+		assert.NoError(t, err)
+
+		resp, err := wf.Runner.Invoke(ctx, map[string]any{})
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]any{"output": true}, resp)
 	})
 }
 

@@ -138,7 +138,7 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 	if interruptEvent != nil {
 		var stateOpt einoCompose.Option
 		stateModifier := GenStateModifierByEventType(interruptEvent.EventType,
-			interruptEvent.NodeKey, resumeReq.ResumeData)
+			interruptEvent.NodeKey, resumeReq.ResumeData, r.config)
 
 		if len(interruptEvent.NodePath) == 1 {
 			// this interrupt event is within the top level workflow
@@ -219,6 +219,9 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 	}
 
 	if interruptEvent == nil {
+		var logID string
+		logID, _ = ctx.Value("log-id").(string)
+
 		wfExec := &entity.WorkflowExecution{
 			ID:                     executeID,
 			WorkflowID:             wb.ID,
@@ -231,6 +234,7 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 			NodeCount:              sc.NodeCount(),
 			CurrentResumingEventID: ptr.Of(int64(0)),
 			CommitID:               wb.CommitID,
+			LogID:                  logID,
 		}
 
 		if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {

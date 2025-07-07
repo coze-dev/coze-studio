@@ -48,28 +48,35 @@ func (dao *RunRecordDAO) GetByID(ctx context.Context, id int64) (*model.RunRecor
 }
 
 func (dao *RunRecordDAO) UpdateByID(ctx context.Context, id int64, updateMeta *entity.UpdateMeta) error {
-
-	updateMeta.UpdatedAt = time.Now().UnixMilli()
-	updateColumn := make(map[string]interface{})
+	po := &model.RunRecord{
+		ID: id,
+	}
 	if updateMeta.Status != "" {
-		updateColumn["status"] = updateMeta.Status
+
+		po.Status = string(updateMeta.Status)
 	}
 	if updateMeta.LastError != nil {
 		errString, err := json.Marshal(updateMeta.LastError)
 		if err != nil {
 			return err
 		}
-		updateColumn["last_error"] = string(errString)
+		po.LastError = string(errString)
 	}
 	if updateMeta.CompletedAt != 0 {
-		updateColumn["completed_at"] = updateMeta.CompletedAt
+
+		po.CompletedAt = updateMeta.CompletedAt
 	}
 	if updateMeta.FailedAt != 0 {
-		updateColumn["failed_at"] = updateMeta.FailedAt
-	}
-	updateColumn["updated_at"] = time.Now().UnixMilli()
 
-	_, err := dao.query.RunRecord.WithContext(ctx).Where(dao.query.RunRecord.ID.Eq(id)).UpdateColumns(updateColumn)
+		po.FailedAt = updateMeta.FailedAt
+	}
+	if updateMeta.Usage != nil {
+
+		po.Usage = updateMeta.Usage
+	}
+	po.UpdatedAt = time.Now().UnixMilli()
+
+	_, err := dao.query.RunRecord.WithContext(ctx).Where(dao.query.RunRecord.ID.Eq(id)).Updates(po)
 	return err
 }
 
@@ -137,11 +144,7 @@ func (dao *RunRecordDAO) buildPo2Do(po *model.RunRecord) *entity.RunRecordMeta {
 		UpdatedAt:      po.UpdatedAt,
 		CompletedAt:    po.CompletedAt,
 		FailedAt:       po.FailedAt,
-		Usage: &entity.Usage{
-			LlmPromptTokens:     int64(po.InputTokens),
-			LlmCompletionTokens: int64(po.OutputTokens),
-			LlmTotalTokens:      int64(po.InputTokens + po.OutputTokens),
-		},
+		Usage:          po.Usage,
 	}
 
 	return runMeta

@@ -202,7 +202,7 @@ func ToThriftAuthType(typ AuthzType) (common.AuthorizationType, bool) {
 
 var subAuthTypes = map[int32]AuthzSubType{
 	int32(common.ServiceAuthSubType_ApiKey):                 AuthzSubTypeOfServiceAPIToken,
-	int32(common.ServiceAuthSubType_OAuthClientCredentials): AuthzSubTypeOfOAuthClientCredentials,
+	int32(common.ServiceAuthSubType_OAuthAuthorizationCode): AuthzSubTypeOfOAuthAuthorizationCode,
 }
 
 func ToAuthSubType(typ int32) (AuthzSubType, bool) {

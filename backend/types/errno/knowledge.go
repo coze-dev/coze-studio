@@ -41,6 +41,8 @@ const (
 	ErrKnowledgeCopyFailCode                   = 105000034
 	ErrKnowledgeParseResultEmptyCode           = 105000035
 	ErrKnowledgeCacheClientSetFailCode         = 105000036
+	ErrKnowledgeCheckTableSliceValidCode       = 105000037
+	ErrKnowledgeCrawlWebUrlFailCode            = 105000038
 )
 
 func init() {
@@ -64,191 +66,203 @@ func init() {
 
 	code.Register(
 		ErrKnowledgeDBCode,
-		"操作MySQL失败: {msg}",
-		code.WithAffectStability(false),
+		"MySQL operation failed: {msg}",
+		code.WithAffectStability(true),
 	)
 
 	code.Register(
 		ErrKnowledgeSearchStoreCode,
-		"操作SearchStore失败: {msg}",
+		"SearchStore operation failed: {msg}",
 		code.WithAffectStability(false),
 	)
 	code.Register(
 		ErrKnowledgeSystemCode,
-		"系统内部错误: {msg}",
+		"system internal error: {msg}",
 		code.WithAffectStability(false),
 	)
 	code.Register(
 		ErrKnowledgeCrossDomainCode,
-		"跨域错误: {msg}",
+		"cross-domain error: {msg}",
 		code.WithAffectStability(false),
 	)
 	code.Register(
 		ErrKnowledgeEmbeddingCode,
-		"向量化错误: {msg}",
+		"embedding error: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeIDGenCode,
-		"ID生成失败",
+		"ID generation failed: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeMQSendFailCode,
-		"MQ发送消息失败: {msg}",
+		"MQ send message failed: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeDuplicateCode,
-		"知识库命名重复: {msg}",
+		"knowledge name duplicate: {msg}",
 		code.WithAffectStability(false),
 	)
 	code.Register(
 		ErrKnowledgeNotExistCode,
-		"知识库不存在: {msg}",
+		"knowledge not exist: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeDocumentNotExistCode,
-		"文档不存在: {msg}",
+		"document not exist: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeSemanticColumnValueEmptyCode,
-		"语义列值为空: {msg}",
+		"semantic column value empty: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeParseJSONCode,
-		"解析JSON失败: {msg}",
+		"parse json failed: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeResegmentNotSupportedCode,
-		"正在处理中，不支持重新分片: {msg}",
+		"Processing, resegment is not supported: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeFieldNameDuplicatedCode,
-		"字段名重复: {msg}",
+		"field name duplicated: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeDocOversizeCode,
-		"文档过大: {msg}",
+		"document oversize: {msg}",
 		code.WithAffectStability(false),
 	)
 	code.Register(
 		ErrKnowledgeDocNotReadyCode,
-		"文档未就绪: {msg}",
+		"document not ready: {msg}",
 		code.WithAffectStability(false),
 	)
 	code.Register(
 		ErrKnowledgeDownloadFailedCode,
-		"下载失败: {msg}",
+		"download failed: {msg}",
 		code.WithAffectStability(false),
 	)
 	code.Register(
 		ErrKnowledgeGetObjectURLFailCode,
-		"获取storage链接失败: {msg}",
+		"get object url failed: {msg}",
 		code.WithAffectStability(false),
 	)
 	code.Register(
 		ErrKnowledgeTableInfoNotExistCode,
-		"表信息不存在: {msg}",
+		"table info not exist: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeGetDocProgressFailCode,
-		"获取文档进度失败: {msg}",
+		"get document progress failed: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeSliceInsertPositionIllegalCode,
-		"分片插入位置不合法",
+		"slice insert position illegal: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeSliceNotExistCode,
-		"分片不存在",
+		"slice not exist: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeColumnParseFailCode,
-		"列值解析失败: {msg}",
+		"column parse failed: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeAutoAnnotationNotSupportedCode,
-		"您没有实现自动标注功能:{msg}",
+		"auto annotation not supported: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeGetParserFailCode,
-		"获取文档解析器失败:{msg}",
+		"get parser failed: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeGetObjectFailCode,
-		"获取storage内容失败:{msg}",
+		"get object failed: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeParserParseFailCode,
-		"文档解析失败:{msg}",
+		"parser parse failed: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeBuildRetrieveChainFailCode,
-		"知识库召回Chain构建失败:{msg}",
+		"build retrieve chain failed: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeRetrieveExecFailCode,
-		"知识库召回执行失败:{msg}",
+		"retrieve exec failed: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeNL2SqlExecFailCode,
-		"NL2SQL执行失败:{msg}",
+		"nl2sql exec failed: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeCopyFailCode,
-		"复制失败:{msg}",
+		"copy failed: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeParseResultEmptyCode,
-		"解析结果为空:{msg}",
+		"parse result empty: {msg}",
 		code.WithAffectStability(false),
 	)
 
 	code.Register(
 		ErrKnowledgeCacheClientSetFailCode,
-		"缓存设置失败:{msg}",
+		"cache client set failed: {msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrKnowledgeCheckTableSliceValidCode,
+		"slice content validation failed, please check if the input is correct:{msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrKnowledgeCrawlWebUrlFailCode,
+		"crawl web url failed: {msg}",
 		code.WithAffectStability(false),
 	)
 }

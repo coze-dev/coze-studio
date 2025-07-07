@@ -156,8 +156,13 @@ func (c *es7Client) Search(ctx context.Context, index string, req *Request) (*Re
 		}
 		queryBody["sort"] = sorts
 	}
-	if len(req.SearchAfter) > 0 {
-		queryBody["search_after"] = req.SearchAfter
+
+	if req.From != nil {
+		queryBody["from"] = *req.From
+	} else {
+		if len(req.SearchAfter) > 0 {
+			queryBody["search_after"] = req.SearchAfter
+		}
 	}
 
 	body, err := json.Marshal(queryBody)

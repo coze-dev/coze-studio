@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 
 	"github.com/cloudwego/eino/callbacks"
@@ -14,9 +13,11 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/singleagent"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 	"code.byted.org/flow/opencoze/backend/domain/agent/singleagent/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 )
@@ -77,8 +78,14 @@ func (r *replyChunkCallback) OnError(ctx context.Context, info *callbacks.RunInf
 			r.sw.Send(interruptEvent, nil)
 
 		} else {
-			r.sw.Send(nil, fmt.Errorf("node execute failed, component=%v, name=%v, err=%w",
-				info.Component, info.Name, err))
+			logs.CtxErrorf(ctx, "node execute failed, component=%v, name=%v, err=%w",
+				info.Component, info.Name, err)
+			var customErr errorx.StatusError
+			errMsg := "Internal server error"
+			if errors.As(err, &customErr) && customErr.Code() != 0 {
+				errMsg = customErr.Msg()
+			}
+			r.sw.Send(nil, errors.New(errMsg))
 		}
 
 	}
@@ -91,6 +98,9 @@ func (r *replyChunkCallback) OnStart(ctx context.Context, info *callbacks.RunInf
 
 	switch info.Component {
 	case compose.ComponentOfToolsNode:
+		if info.Name != keyOfReActAgentToolsNode {
+			return ctx
+		}
 		ae := &entity.AgentEvent{
 			EventType: singleagent.EventTypeOfFuncCall,
 			FuncCall:  convToolsNodeCallbackInput(input),
@@ -200,25 +210,48 @@ func convInterruptInfo(ctx context.Context, interruptInfo *compose.InterruptInfo
 		extra = output.RerunNodesExtra[i]
 		break
 	}
-	toolsNodeExtra, err := extra.(*compose.ToolsInterruptAndRerunExtra)
-	logs.CtxInfof(ctx, "toolsNodeExtra=%v, err=%v", toolsNodeExtra, err)
+	toolsNodeExtra, ok := extra.(*compose.ToolsInterruptAndRerunExtra)
+	logs.CtxInfof(ctx, "toolsNodeExtra=%v, err=%v", toolsNodeExtra, ok)
 
 	var toolCallID string
-	for _, toolCall := range toolsNodeExtra.ToolCalls {
-		toolCallID = toolCall.ID
+
+	wfResumeData := make(map[string]*crossworkflow.ToolInterruptEvent)
+	toolResultData := make(map[string]*plugin.ToolInterruptEvent)
+	var interruptEventType singleagent.InterruptEventType
+	for k, v := range toolsNodeExtra.RerunExtraMap {
+		toolCallID = k
+
+		interruptEventType = convInterruptEventType(v)
+
+		if interruptEventType == singleagent.InterruptEventType_OauthPlugin {
+			toolResultData[k] = v.(*plugin.ToolInterruptEvent)
+		} else {
+			wfResumeData[k] = v.(*crossworkflow.ToolInterruptEvent)
+		}
 		break
 	}
 
-	resumeData := make(map[string]*crossworkflow.ToolInterruptEvent)
-	for k, v := range toolsNodeExtra.RerunExtraMap {
-		resumeData[k] = v.(*crossworkflow.ToolInterruptEvent)
-	}
-
 	interrupt := &singleagent.InterruptInfo{
-		AllToolInterruptData: resumeData,
+		AllToolInterruptData: toolResultData,
+		AllWfInterruptData:   wfResumeData,
 		ToolCallID:           toolCallID,
+		InterruptType:        interruptEventType,
 	}
 	return interrupt
+}
+
+func convInterruptEventType(interruptEvent any) singleagent.InterruptEventType {
+	var interruptEventType singleagent.InterruptEventType
+
+	switch t := interruptEvent.(type) {
+	case *crossworkflow.ToolInterruptEvent:
+		interruptEventType = singleagent.InterruptEventType(int64(t.EventType))
+	case *plugin.ToolInterruptEvent:
+		if t.Event == plugin.InterruptEventTypeOfToolNeedOAuth {
+			interruptEventType = singleagent.InterruptEventType_OauthPlugin
+		}
+	}
+	return interruptEventType
 }
 
 func concatToolsNodeOutput(ctx context.Context, output *schema.StreamReader[callbacks.CallbackOutput]) ([]*schema.Message, error) {

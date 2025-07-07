@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/cloudwego/eino/compose"
 
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
+	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
@@ -89,6 +91,11 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...WorkflowOption
 		wf.requireCheckpoint = true
 	}
 
+	wf.input = sc.GetNode(entity.EntryNodeKey).OutputTypes
+
+	// even if the terminate plan is use answer content, this still will be 'input types' of exit node
+	wf.output = sc.GetNode(entity.ExitNodeKey).InputTypes
+
 	// add all composite nodes with their inner workflow
 	compositeNodes := sc.GetCompositeNodes()
 	processedNodeKey := make(map[vo.NodeKey]struct{})
@@ -135,11 +142,6 @@ func NewWorkflow(ctx context.Context, sc *WorkflowSchema, opts ...WorkflowOption
 		return nil, err
 	}
 	wf.Runner = r
-
-	wf.input = sc.GetNode(EntryNodeKey).OutputTypes
-
-	// even if the terminate plan is use answer content, this still will be 'input types' of exit node
-	wf.output = sc.GetNode(ExitNodeKey).InputTypes
 
 	return wf, nil
 }
@@ -235,7 +237,7 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 		innerWorkflow = inner.inner
 	}
 
-	ins, err := ns.New(ctx, innerWorkflow, w.schema)
+	ins, err := ns.New(ctx, innerWorkflow, w.schema, deps)
 	if err != nil {
 		return nil, err
 	}
@@ -258,6 +260,10 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *NodeSchema, inner *i
 		wNode = w.AddLambdaNode(string(key), ins.Lambda, opts...)
 	} else {
 		return nil, fmt.Errorf("node instance has no Lambda: %s", key)
+	}
+
+	if err = deps.arrayDrillDown(w.schema.GetAllNodes()); err != nil {
+		return nil, err
 	}
 
 	for fromNodeKey := range deps.inputsFull {
@@ -316,7 +322,7 @@ func (w *Workflow) Compile(ctx context.Context, opts ...compose.GraphCompileOpti
 		}
 
 		w.entry.AddInput(compose.START)
-		w.End().AddInput(ExitNodeKey)
+		w.End().AddInput(entity.ExitNodeKey)
 	}
 
 	return w.workflow.Compile(ctx, opts...)
@@ -369,7 +375,7 @@ func (w *Workflow) getInnerWorkflow(ctx context.Context, cNode *CompositeNode) (
 			for _, fm := range fieldMappings {
 				duplicate := false
 				for _, existing := range carryOvers[fromNodeKey] {
-					if *fm == *existing {
+					if fm.Equals(existing) {
 						duplicate = true
 						break
 					}
@@ -436,6 +442,7 @@ type dependencyInfo struct {
 	inputsNoDirectDependency     map[vo.NodeKey][]*compose.FieldMapping
 	inputsNoDirectDependencyFull map[vo.NodeKey]struct{}
 	staticValues                 []*staticValue
+	variableInfos                []*variableInfo
 	inputsForParent              map[vo.NodeKey][]*compose.FieldMapping
 }
 
@@ -454,7 +461,7 @@ func (d *dependencyInfo) merge(mappings map[vo.NodeKey][]*compose.FieldMapping) 
 				fm := fms[i]
 				duplicate := false
 				for _, currentFM := range currentFMS {
-					if *fm == *currentFM {
+					if fm.Equals(currentFM) {
 						duplicate = true
 					}
 				}
@@ -468,7 +475,7 @@ func (d *dependencyInfo) merge(mappings map[vo.NodeKey][]*compose.FieldMapping) 
 				fm := fms[i]
 				duplicate := false
 				for _, currentFM := range currentFMS {
-					if *fm == *currentFM {
+					if fm.Equals(currentFM) {
 						duplicate = true
 					}
 				}
@@ -498,9 +505,137 @@ func (d *dependencyInfo) merge(mappings map[vo.NodeKey][]*compose.FieldMapping) 
 	return nil
 }
 
+// arrayDrillDown happens when the 'mapping from path' is taking fields from elements within arrays.
+// when this happens, we automatically takes the first element from any arrays along the 'from path'.
+// For example, if the 'from path' is ['a', 'b', 'c'], and 'b' is an array, we will take value using a.b[0].c.
+// As a counter example, if the 'from path' is ['a', 'b', 'c'], and 'b' is not an array, but 'c' is an array,
+// we will not try to drill, instead, just take value using a.b.c.
+func (d *dependencyInfo) arrayDrillDown(allNS map[vo.NodeKey]*NodeSchema) error {
+	for nKey, fms := range d.inputs {
+		if nKey == compose.START { // reference to START node would NEVER need to do array drill down
+			continue
+		}
+
+		var ot map[string]*vo.TypeInfo
+		ots, ok := allNS[nKey]
+		if !ok {
+			return fmt.Errorf("node not found: %s", nKey)
+		}
+		ot = ots.OutputTypes
+		for i := range fms {
+			fm := fms[i]
+			newFM, err := arrayDrillDown(nKey, fm, ot)
+			if err != nil {
+				return err
+			}
+			fms[i] = newFM
+		}
+	}
+
+	for nKey, fms := range d.inputsNoDirectDependency {
+		if nKey == compose.START {
+			continue
+		}
+
+		var ot map[string]*vo.TypeInfo
+		ots, ok := allNS[nKey]
+		if !ok {
+			return fmt.Errorf("node not found: %s", nKey)
+		}
+		ot = ots.OutputTypes
+		for i := range fms {
+			fm := fms[i]
+			newFM, err := arrayDrillDown(nKey, fm, ot)
+			if err != nil {
+				return err
+			}
+			fms[i] = newFM
+		}
+	}
+
+	return nil
+}
+
+func arrayDrillDown(nKey vo.NodeKey, fm *compose.FieldMapping, types map[string]*vo.TypeInfo) (*compose.FieldMapping, error) {
+	fromPath := fm.FromPath()
+	if len(fromPath) <= 1 { // no need to drill down
+		return fm, nil
+	}
+
+	ct := types
+	var arraySegIndexes []int
+	for j := 0; j < len(fromPath)-1; j++ {
+		p := fromPath[j]
+		t, ok := ct[p]
+		if !ok {
+			return nil, fmt.Errorf("type info not found for path: %s", fm.FromPath()[:j+1])
+		}
+
+		if t.Type == vo.DataTypeArray {
+			arraySegIndexes = append(arraySegIndexes, j)
+			if t.ElemTypeInfo.Type == vo.DataTypeObject {
+				ct = t.ElemTypeInfo.Properties
+			} else if j != len(fromPath)-1 {
+				return nil, fmt.Errorf("[arrayDrillDown] already found array of none obj, but still not last segment of path: %v",
+					fromPath[:j+1])
+			}
+		} else if t.Type == vo.DataTypeObject {
+			ct = t.Properties
+		} else if j != len(fromPath)-1 {
+			return nil, fmt.Errorf("[arrayDrillDown] found non-array, non-obj type: %v, but still not last segment of path: %v",
+				t.Type, fromPath[:j+1])
+		}
+	}
+
+	if len(arraySegIndexes) == 0 { // no arrays along from path
+		return fm, nil
+	}
+
+	extractor := func(a any) (any, error) {
+		for j := range fromPath {
+			p := fromPath[j]
+			m, ok := a.(map[string]any)
+			if !ok {
+				return nil, fmt.Errorf("[arrayDrillDown] trying to drill down from a non-map type:%T of path %s, "+
+					"from node key: %v", a, fromPath[:j+1], nKey)
+			}
+			a, ok = m[p]
+			if !ok {
+				return nil, fmt.Errorf("[arrayDrillDown] field %s not found along from path: %s, "+
+					"from node key: %v", p, fromPath[:j+1], nKey)
+			}
+			if slices.Contains(arraySegIndexes, j) { // this is an array needs drilling down
+				arr, ok := a.([]any)
+				if !ok {
+					return nil, fmt.Errorf("[arrayDrillDown] trying to drill down from a non-array type:%T of path %s, "+
+						"from node key: %v", a, fromPath[:j+1], nKey)
+				}
+
+				if len(arr) == 0 {
+					return nil, fmt.Errorf("[arrayDrillDown] trying to drill down from an array of length 0: %s, "+
+						"from node key: %v", fromPath[:j+1], nKey)
+				}
+
+				a = arr[0]
+			}
+		}
+
+		return a, nil
+	}
+
+	newFM := compose.ToFieldPath(fm.ToPath(), compose.WithCustomExtractor(extractor))
+	return newFM, nil
+}
+
 type staticValue struct {
 	val  any
 	path compose.FieldPath
+}
+
+type variableInfo struct {
+	varType  variable.Type
+	fromPath compose.FieldPath
+	toPath   compose.FieldPath
 }
 
 func (w *Workflow) resolveBranch(n vo.NodeKey, portCount int) (*BranchMapping, error) {
@@ -560,6 +695,7 @@ func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.Field
 		inputsNoDirectDependency     = make(map[vo.NodeKey][]*compose.FieldMapping)
 		inputsNoDirectDependencyFull map[vo.NodeKey]struct{}
 		staticValues                 []*staticValue
+		variableInfos                []*variableInfo
 
 		// inputsForParent contains all the field mappings from any nodes of the parent workflow
 		inputsForParent = make(map[vo.NodeKey][]*compose.FieldMapping)
@@ -583,8 +719,18 @@ func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.Field
 		} else if swp.Source.Ref != nil {
 			fromNode := swp.Source.Ref.FromNodeKey
 
-			if len(fromNode) == 0 || fromNode == n {
-				// skip all variables, they are handled in state pre handler. Also skip reference to self
+			if fromNode == n {
+				return nil, fmt.Errorf("node %s cannot refer to itself, fromPath: %v, toPath: %v", n,
+					swp.Source.Ref.FromPath, swp.Path)
+			}
+
+			if swp.Source.Ref.VariableType != nil {
+				// skip all variables, they are handled in state pre handler
+				variableInfos = append(variableInfos, &variableInfo{
+					varType:  *swp.Source.Ref.VariableType,
+					fromPath: swp.Source.Ref.FromPath,
+					toPath:   swp.Path,
+				})
 				continue
 			}
 
@@ -624,20 +770,20 @@ func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.Field
 						compose.MapFieldPaths(
 							// the START node of inner workflow will proxy for the fields required from parent workflow
 							// the field path within START node is prepended by the parent node key
-							append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...),
+							joinFieldPath(append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...)),
 							swp.Path))
 				} else { // not one of the first nodes in sub workflow, either succeeds other nodes or succeeds branches
 					inputsNoDirectDependency[compose.START] = append(inputsNoDirectDependency[compose.START],
 						compose.MapFieldPaths(
 							// same as above, the START node of inner workflow proxies for the fields from parent workflow
-							append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...),
+							joinFieldPath(append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...)),
 							swp.Path))
 				}
 
 				inputsForParent[fromNode] = append(inputsForParent[fromNode],
 					compose.MapFieldPaths(swp.Source.Ref.FromPath,
 						// our parent node will proxy for these field mappings, prepending the 'fromNode' to paths
-						append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...)))
+						joinFieldPath(append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...))))
 			}
 		} else {
 			return nil, fmt.Errorf("inputField's Val and Ref are both nil. path= %v", swp.Path)
@@ -682,18 +828,33 @@ func (w *Workflow) resolveDependencies(n vo.NodeKey, sourceWithPaths []*vo.Field
 		inputsNoDirectDependency:     inputsNoDirectDependency,
 		inputsNoDirectDependencyFull: inputsNoDirectDependencyFull,
 		staticValues:                 staticValues,
+		variableInfos:                variableInfos,
 		inputsForParent:              inputsForParent,
 	}, nil
 }
 
+const fieldPathSplitter = "#"
+
+func joinFieldPath(f compose.FieldPath) compose.FieldPath {
+	return []string{strings.Join(f, fieldPathSplitter)}
+}
+
 func (w *Workflow) resolveDependenciesAsParent(n vo.NodeKey, sourceWithPaths []*vo.FieldInfo) (*dependencyInfo, error) {
 	var (
+		// inputsFull and inputsNoDirectDependencyFull are NEVER used in this case,
+		// because a composite node MUST use explicit field mappings from inner nodes as its output.
 		inputs                   = make(map[vo.NodeKey][]*compose.FieldMapping)
 		dependencies             []vo.NodeKey
 		inputsNoDirectDependency = make(map[vo.NodeKey][]*compose.FieldMapping)
+		// although staticValues are not used for current composite nodes,
+		// they may be used in the future, so we calculate them none the less.
+		staticValues []*staticValue
+		// variableInfos are normally handled in state pre handler, but in the case of composite node's output,
+		// we need to handle them within composite node's state post handler,
+		variableInfos []*variableInfo
 	)
 
-	connMap := make(map[vo.NodeKey]Connection) // whether nodeKey is branch
+	connMap := make(map[vo.NodeKey]Connection)
 	for _, conn := range w.connections {
 		if conn.ToNode != n {
 			continue
@@ -707,11 +868,25 @@ func (w *Workflow) resolveDependenciesAsParent(n vo.NodeKey, sourceWithPaths []*
 	}
 
 	for _, swp := range sourceWithPaths {
-		if swp.Source.Ref != nil {
-			fromNode := swp.Source.Ref.FromNodeKey
-
-			if len(fromNode) == 0 { // skip all variables, they are handled in state pre handler
+		if swp.Source.Ref == nil {
+			staticValues = append(staticValues, &staticValue{
+				val:  swp.Source.Val,
+				path: swp.Path,
+			})
+		} else if swp.Source.Ref != nil {
+			if swp.Source.Ref.VariableType != nil {
+				variableInfos = append(variableInfos, &variableInfo{
+					varType:  *swp.Source.Ref.VariableType,
+					fromPath: swp.Source.Ref.FromPath,
+					toPath:   swp.Path,
+				})
 				continue
+			}
+
+			fromNode := swp.Source.Ref.FromNodeKey
+			if fromNode == n {
+				return nil, fmt.Errorf("node %s cannot refer to itself, fromPath= %v, toPath= %v", n,
+					swp.Source.Ref.FromPath, swp.Path)
 			}
 
 			if ok := isParentOf(w.hierarchy, n, fromNode); ok {
@@ -721,6 +896,8 @@ func (w *Workflow) resolveDependenciesAsParent(n vo.NodeKey, sourceWithPaths []*
 					inputsNoDirectDependency[fromNode] = append(inputsNoDirectDependency[fromNode], compose.MapFieldPaths(swp.Source.Ref.FromPath, append(compose.FieldPath{string(fromNode)}, swp.Source.Ref.FromPath...)))
 				}
 			}
+		} else {
+			return nil, fmt.Errorf("composite node's output field's Val and Ref are both nil. path= %v", swp.Path)
 		}
 	}
 
@@ -740,5 +917,7 @@ func (w *Workflow) resolveDependenciesAsParent(n vo.NodeKey, sourceWithPaths []*
 		inputs:                   inputs,
 		dependencies:             dependencies,
 		inputsNoDirectDependency: inputsNoDirectDependency,
+		staticValues:             staticValues,
+		variableInfos:            variableInfos,
 	}, nil
 }

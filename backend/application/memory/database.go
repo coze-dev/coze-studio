@@ -68,7 +68,21 @@ func (d *DatabaseApplicationService) ListDatabase(ctx context.Context, req *tabl
 		return nil, err
 	}
 
-	return convertListDatabaseRes(res), nil
+	bindDatabases := make([]*databaseEntity.Database, 0)
+	if req.GetBotID() != 0 {
+		resp, err := d.DomainSVC.MGetDatabaseByAgentID(ctx, &database.MGetDatabaseByAgentIDRequest{
+			AgentID:       req.GetBotID(),
+			TableType:     req.GetTableType(),
+			NeedSysFields: false,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		bindDatabases = resp.Databases
+	}
+
+	return convertListDatabaseRes(res, bindDatabases), nil
 }
 
 func (d *DatabaseApplicationService) GetDatabaseByID(ctx context.Context, req *table.SingleDatabaseRequest) (*table.SingleDatabaseResponse, error) {
@@ -108,6 +122,10 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "creator id is invalid"))
 	}
 
+	if req.GetTableName() == "database" {
+		return nil, errorx.New(errno.ErrMemoryDatabaseNameInvalid)
+	}
+
 	spaces, err := crossuser.DefaultSVC().GetUserSpaceList(ctx, *uid)
 	if err != nil {
 		return nil, err
@@ -129,14 +147,15 @@ func (d *DatabaseApplicationService) AddDatabase(ctx context.Context, req *table
 	err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 		OpType: searchEntity.Created,
 		Resource: &searchEntity.ResourceDocument{
-			ResType:      resCommon.ResType_Database,
-			ResID:        databaseRes.ID,
-			Name:         &databaseRes.TableName,
-			APPID:        ptrAppID,
-			SpaceID:      &databaseRes.SpaceID,
-			OwnerID:      &databaseRes.CreatorID,
-			CreateTimeMS: ptr.Of(databaseRes.CreatedAtMs),
-			UpdateTimeMS: ptr.Of(databaseRes.UpdatedAtMs),
+			ResType:       resCommon.ResType_Database,
+			ResID:         databaseRes.ID,
+			Name:          &databaseRes.TableName,
+			APPID:         ptrAppID,
+			SpaceID:       &databaseRes.SpaceID,
+			OwnerID:       &databaseRes.CreatorID,
+			PublishStatus: ptr.Of(resCommon.PublishStatus_Published),
+			CreateTimeMS:  ptr.Of(databaseRes.CreatedAtMs),
+			UpdateTimeMS:  ptr.Of(databaseRes.UpdatedAtMs),
 		},
 	})
 	if err != nil {
@@ -847,14 +866,15 @@ func (d *DatabaseApplicationService) CopyDatabase(ctx context.Context, req *Copy
 		err = d.eventbus.PublishResources(ctx, &searchEntity.ResourceDomainEvent{
 			OpType: searchEntity.Created,
 			Resource: &searchEntity.ResourceDocument{
-				ResType:      resCommon.ResType_Database,
-				ResID:        onlineDatabase.ID,
-				Name:         &onlineDatabase.TableName,
-				APPID:        &onlineDatabase.AppID,
-				SpaceID:      &onlineDatabase.SpaceID,
-				OwnerID:      &onlineDatabase.CreatorID,
-				CreateTimeMS: ptr.Of(onlineDatabase.CreatedAtMs),
-				UpdateTimeMS: ptr.Of(onlineDatabase.UpdatedAtMs),
+				ResType:       resCommon.ResType_Database,
+				ResID:         onlineDatabase.ID,
+				Name:          &onlineDatabase.TableName,
+				APPID:         &onlineDatabase.AppID,
+				SpaceID:       &onlineDatabase.SpaceID,
+				OwnerID:       &onlineDatabase.CreatorID,
+				PublishStatus: ptr.Of(resCommon.PublishStatus_Published),
+				CreateTimeMS:  ptr.Of(onlineDatabase.CreatedAtMs),
+				UpdateTimeMS:  ptr.Of(onlineDatabase.UpdatedAtMs),
 			},
 		})
 		if err != nil {

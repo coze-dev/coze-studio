@@ -77,7 +77,7 @@ type StoreInfo struct {
 	AppID        *int64
 	AgentID      *int64
 	ConnectorID  int64
-	ConnectorUID int64
+	ConnectorUID string
 }
 
 type StoreConfig struct {

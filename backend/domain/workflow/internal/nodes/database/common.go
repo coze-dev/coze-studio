@@ -17,6 +17,7 @@ import (
 
 const rowNum = "rowNum"
 const outputList = "outputList"
+const TimeFormat = "2006-01-02 15:04:05 -0700 MST"
 
 // formatted convert the interface type according to the datatype type.
 // notice: object is currently not supported by database, and ignore it.
@@ -108,7 +109,7 @@ func objectFormatted(props map[string]*vo.TypeInfo, object database.Object) (map
 	}
 
 	for k, v := range props {
-		if r, ok := object[k]; ok {
+		if r, ok := object[k]; ok && r != nil {
 			formattedValue, err := formatted(r, v)
 			if err != nil {
 				return nil, err

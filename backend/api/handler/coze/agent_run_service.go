@@ -10,6 +10,7 @@ import (
 
 	"github.com/hertz-contrib/sse"
 
+	"github.com/cloudwego/eino/schema"
 	"github.com/cloudwego/hertz/pkg/app"
 
 	"code.byted.org/flow/opencoze/backend/api/model/conversation/message"
@@ -17,7 +18,7 @@ import (
 	model "code.byted.org/flow/opencoze/backend/api/model/crossdomain/message"
 	"code.byted.org/flow/opencoze/backend/application/conversation"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
-	sse2 "code.byted.org/flow/opencoze/backend/infra/impl/sse"
+	sseImpl "code.byted.org/flow/opencoze/backend/infra/impl/sse"
 	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/conv"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
@@ -42,7 +43,7 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	sseSender := sse2.NewSSESender(sse.NewStream(c))
+	sseSender := sseImpl.NewSSESender(sse.NewStream(c))
 	c.SetStatusCode(http.StatusOK)
 	c.Response.Header.Set("X-Accel-Buffering", "no")
 
@@ -53,6 +54,7 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	var ackMessageInfo *entity.ChunkMessageItem
 	for {
 		chunk, recvErr := arStream.Recv()
 		if recvErr != nil {
@@ -67,10 +69,16 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 		case entity.RunEventCreated, entity.RunEventInProgress, entity.RunEventCompleted:
 			break
 		case entity.RunEventError:
-			sendErrorEvent(ctx, sseSender, chunk.Error.Code, chunk.Error.Msg)
+			id, err := conversation.ConversationSVC.GenID(ctx)
+			if err != nil {
+				sendErrorEvent(ctx, sseSender, errno.ErrConversationAgentRunError, err.Error())
+			} else {
+				sendMessageEvent(ctx, sseSender, run.RunEventMessage, buildErrMsg(ackMessageInfo, chunk.Error, id))
+			}
 		case entity.RunEventStreamDone:
 			sendDoneEvent(ctx, sseSender, run.RunEventDone)
 		case entity.RunEventAck:
+			ackMessageInfo = chunk.ChunkMessageItem
 			sendMessageEvent(ctx, sseSender, run.RunEventMessage, buildARSM2Message(chunk, &req))
 		case entity.RunEventMessageDelta, entity.RunEventMessageCompleted:
 			sendMessageEvent(ctx, sseSender, run.RunEventMessage, buildARSM2Message(chunk, &req))
@@ -96,7 +104,7 @@ func checkParams(_ context.Context, ar *run.AgentRunRequest) error {
 	return nil
 }
 
-func sendDoneEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, event string) {
+func sendDoneEvent(ctx context.Context, sseImpl *sseImpl.SSenderImpl, event string) {
 	sendData := &sse.Event{
 		Event: event,
 	}
@@ -108,7 +116,7 @@ func sendDoneEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, event string)
 	return
 }
 
-func sendErrorEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, errCode int64, errMsg string) {
+func sendErrorEvent(ctx context.Context, sseImpl *sseImpl.SSenderImpl, errCode int64, errMsg string) {
 	errData := run.ErrorData{
 		Code: errCode,
 		Msg:  errMsg,
@@ -128,7 +136,7 @@ func sendErrorEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, errCode int6
 	return
 }
 
-func sendMessageEvent(ctx context.Context, sseImpl *sse2.SSenderImpl, event string, msg []byte) {
+func sendMessageEvent(ctx context.Context, sseImpl *sseImpl.SSenderImpl, event string, msg []byte) {
 	sendData := &sse.Event{
 		Event: event,
 		Data:  msg,
@@ -212,6 +220,26 @@ func buildExt(extra map[string]string) *message.ExtraInfo {
 		ReferFormat:         extra["refer_format"],
 	}
 }
+func buildErrMsg(ackChunk *entity.ChunkMessageItem, err *entity.RunError, id int64) []byte {
+
+	chunkMessage := &run.RunStreamResponse{
+		IsFinish:       ptr.Of(true),
+		ConversationID: strconv.FormatInt(ackChunk.ConversationID, 10),
+		Message: &message.ChatMessage{
+			Role:        string(schema.Assistant),
+			ContentType: string(model.ContentTypeText),
+			Type:        string(model.MessageTypeAnswer),
+			MessageID:   strconv.FormatInt(id, 10),
+			SectionID:   strconv.FormatInt(ackChunk.SectionID, 10),
+			ReplyID:     strconv.FormatInt(ackChunk.ReplyID, 10),
+			Content:     "Something error:" + err.Msg,
+			ExtraInfo:   &message.ExtraInfo{},
+		},
+	}
+
+	mCM, _ := json.Marshal(chunkMessage)
+	return mCM
+}
 
 // ChatV3 .
 // @router /v3/chat [POST]
@@ -229,7 +257,7 @@ func ChatV3(ctx context.Context, c *app.RequestContext) {
 	}
 	arStream, err := conversation.ConversationOpenAPISVC.OpenapiAgentRun(ctx, &req)
 
-	sseSender := sse2.NewSSESender(sse.NewStream(c))
+	sseSender := sseImpl.NewSSESender(sse.NewStream(c))
 
 	c.SetStatusCode(http.StatusOK)
 	c.Response.Header.Set("X-Accel-Buffering", "no")
@@ -261,9 +289,9 @@ func ChatV3(ctx context.Context, c *app.RequestContext) {
 			break
 
 		case entity.RunEventCreated, entity.RunEventCancelled, entity.RunEventInProgress, entity.RunEventFailed, entity.RunEventCompleted:
-			sendMessageEvent(ctx, sseSender, string(chunk.Event), buildARSM2ApiChatMessage(chunk, &req))
+			sendMessageEvent(ctx, sseSender, string(chunk.Event), buildARSM2ApiChatMessage(chunk))
 		case entity.RunEventMessageDelta, entity.RunEventMessageCompleted:
-			sendMessageEvent(ctx, sseSender, string(chunk.Event), buildARSM2ApiMessage(chunk, &req))
+			sendMessageEvent(ctx, sseSender, string(chunk.Event), buildARSM2ApiMessage(chunk))
 		default:
 			logs.CtxErrorf(ctx, "unknow handler event:%v", chunk.Event)
 		}
@@ -271,7 +299,7 @@ func ChatV3(ctx context.Context, c *app.RequestContext) {
 	}
 }
 
-func buildARSM2ApiMessage(chunk *entity.AgentRunResponse, req *run.ChatV3Request) []byte {
+func buildARSM2ApiMessage(chunk *entity.AgentRunResponse) []byte {
 	chunkMessageItem := chunk.ChunkMessageItem
 	chunkMessage := &run.ChatV3MessageDetail{
 		ID:               strconv.FormatInt(chunkMessageItem.ID, 10),
@@ -290,7 +318,7 @@ func buildARSM2ApiMessage(chunk *entity.AgentRunResponse, req *run.ChatV3Request
 	return mCM
 }
 
-func buildARSM2ApiChatMessage(chunk *entity.AgentRunResponse, req *run.ChatV3Request) []byte {
+func buildARSM2ApiChatMessage(chunk *entity.AgentRunResponse) []byte {
 	chunkRunItem := chunk.ChunkRunItem
 	chunkMessage := &run.ChatV3ChatDetail{
 		ID:             chunkRunItem.ID,

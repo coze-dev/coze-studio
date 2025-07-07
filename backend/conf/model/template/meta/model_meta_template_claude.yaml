@@ -2,7 +2,9 @@ id: 106 # 模型 id, 同 id 数据不会覆盖
 name: Claude-3.5-Sonnet # 模型 meta 名称
 icon_uri: claude_v2.png # 模型展示图片 uri
 icon_url: '' # 模型展示图片 url
-description: Multi-modal, 320ms, 88.7% MMLU, excels in education, customer support, health, and entertainment. # 模型默认描述
+description:
+  zh: claude 模型简介 # 模型默认描述
+  en: claude model description
 protocol: openai # 模型连接协议, see: backend/infra/contract/chatmodel/protocol.go
 capability: # 模型基础能力
   function_call: true # 模型是否支持 function call
@@ -17,6 +19,7 @@ capability: # 模型基础能力
   json_mode: false # 是否支持 json mode
   prefix_caching: false # 是否支持 prefix caching
   reasoning: false # 是否支持 reasoning
+  prefill_response: false # 是否支持续写
 conn_config: # 模型连接参数
   base_url: ''  # REQUIRED: base_url
   api_key: ''   # REQUIRED: api_key

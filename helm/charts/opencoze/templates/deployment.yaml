@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "opencoze.fullname" . }}
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "opencoze.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "opencoze.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.cozeServer.image.repository }}:{{ .Values.cozeServer.image.tag }}"
+          imagePullPolicy: {{ .Values.cozeServer.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

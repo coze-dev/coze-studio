@@ -33,6 +33,7 @@ import (
 	"gorm.io/gorm"
 
 	modelknowledge "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
+	crossmodelmgr "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	plugin2 "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	pluginmodel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
@@ -255,7 +256,7 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	knowledge.SetKnowledgeOperator(mockKwOperator)
 
 	mockModelManage := mockmodel.NewMockManager(ctrl)
-	mockModelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockModelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(nil, nil, nil).AnyTimes()
 	m3 := mockey.Mock(model.GetManager).Return(mockModelManage).Build()
 
 	m := mockey.Mock(crossuser.DefaultSVC).Return(mockCU).Build()
@@ -1133,7 +1134,7 @@ func TestValidateTree(t *testing.T) {
 			_ = r.load("validate/workflow_has_no_connected_nodes.json", withID(7498321598097768457))
 
 			errs := r.validateTree("validate/sub_workflow_terminate_plan_type.json")
-			assert.Equal(t, len(errs), 2)
+			require.Equal(t, 2, len(errs))
 			assert.Equal(t, errs[0][0].Message, `node name 变量赋值,param [app_list_v2] is updated, please update the param`)
 
 			for _, i := range errs[1] {
@@ -1403,7 +1404,7 @@ func TestResumeWithQANode(t *testing.T) {
 				return nil, errors.New("not found")
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 
 		id := r.load("qa_with_structured_output.json")
 
@@ -1494,11 +1495,11 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
-				return chatModel1, nil
+				return chatModel1, nil, nil
 			} else {
-				return chatModel2, nil
+				return chatModel2, nil, nil
 			}
 		}).AnyTimes()
 
@@ -1840,7 +1841,7 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 				}
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 
 		id := r.load("function_call/llm_with_workflow_as_tool.json")
 		defer func() {
@@ -1963,13 +1964,13 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 			if params.ModelType == 1706077826 {
 				innerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
-				return innerModel, nil
+				return innerModel, nil, nil
 			} else {
 				outerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
-				return outerModel, nil
+				return outerModel, nil, nil
 			}
 		}).AnyTimes()
 
@@ -2035,7 +2036,7 @@ func TestSimpleInterruptibleTool(t *testing.T) {
 				}
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 
 		id := r.load("function_call/llm_with_workflow_as_tool_1.json")
 
@@ -2152,13 +2153,13 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 			if params.ModelType == 1706077827 {
 				outerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
-				return outerModel, nil
+				return outerModel, nil, nil
 			} else {
 				innerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
-				return innerModel, nil
+				return innerModel, nil, nil
 			}
 		}).AnyTimes()
 
@@ -2224,7 +2225,7 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 				}
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 
 		id := r.load("batch/node_batches.json")
 
@@ -2369,13 +2370,13 @@ func TestAggregateStreamVariables(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
 				cm1.ModelType = strconv.FormatInt(params.ModelType, 10)
-				return cm1, nil
+				return cm1, nil, nil
 			} else {
 				cm2.ModelType = strconv.FormatInt(params.ModelType, 10)
-				return cm2, nil
+				return cm2, nil, nil
 			}
 		}).AnyTimes()
 
@@ -2512,11 +2513,11 @@ func TestParallelInterrupts(t *testing.T) {
 				}
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
-				return chatModel1, nil
+				return chatModel1, nil, nil
 			} else {
-				return chatModel2, nil
+				return chatModel2, nil, nil
 			}
 		}).AnyTimes()
 
@@ -2625,10 +2626,10 @@ func TestInputComplex(t *testing.T) {
 			"output_list": []any{
 				map[string]any{
 					"name": "user_1",
-					"age":  int64(0), // TODO: this is different to online behavior which is nil
+					"age":  nil,
 				},
 				map[string]any{
-					"name": "", // TODO: this is different to online behavior which is nil
+					"name": nil,
 					"age":  int64(2),
 				},
 			},
@@ -2684,7 +2685,7 @@ func TestLLMWithSkills(t *testing.T) {
 				return nil, fmt.Errorf("unexpected index: %d", index)
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil, nil).AnyTimes()
 
 		r.plugin.EXPECT().ExecuteTool(gomock.Any(), gomock.Any(), gomock.Any()).Return(&plugin2.ExecuteToolResponse{
 			TrimmedResp: `{"data":"ok","err_msg":"error","data_structural":{"content":"ok","title":"title","weburl":"weburl"}}`,
@@ -2840,7 +2841,7 @@ func TestLLMWithSkills(t *testing.T) {
 				return nil, fmt.Errorf("unexpected index: %d", index)
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil, nil).AnyTimes()
 
 		t.Run("llm with workflow tool", func(t *testing.T) {
 			r.load("llm_node_with_skills/llm_workflow_as_tool.json", withID(7509120431183544356), withPublish("v0.0.1"))
@@ -2893,7 +2894,7 @@ func TestLLMWithSkills(t *testing.T) {
 				return nil, fmt.Errorf("unexpected index: %d", index)
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil, nil).AnyTimes()
 
 		r.knowledge.EXPECT().ListKnowledgeDetail(gomock.Any(), gomock.Any()).Return(&knowledge.ListKnowledgeDetailResponse{
 			KnowledgeDetails: []*knowledge.KnowledgeDetail{
@@ -2941,7 +2942,7 @@ func TestStreamRun(t *testing.T) {
 				return sr, nil
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel1, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel1, nil, nil).AnyTimes()
 
 		id := r.load("sse/llm_emitter.json")
 
@@ -3182,7 +3183,7 @@ func TestStreamResume(t *testing.T) {
 					NodeTitle:    ptr.Of("结束"),
 					NodeSeqID:    ptr.Of("0"),
 					NodeIsFinish: ptr.Of(true),
-					Content:      ptr.Of("{\"output\":{\"age\":1,\"name\":\"eino\"},\"output_list\":[{\"age\":0,\"name\":\"user_1\"},{\"age\":2,\"name\":\"\"}]}"),
+					Content:      ptr.Of("{\"output\":{\"age\":1,\"name\":\"eino\"},\"output_list\":[{\"age\":null,\"name\":\"user_1\"},{\"age\":2,\"name\":null}]}"),
 					ContentType:  ptr.Of("text"),
 					// Token:        ptr.Of(int64(0)), TODO: verify if we need to uncomment this
 				},
@@ -3555,7 +3556,7 @@ func TestCopyWorkflow(t *testing.T) {
 			CommitID: "",
 		})
 		assert.NotNil(t, err)
-		assert.Equal(t, fmt.Sprintf("workflow meta not found for ID %s: record not found", id), err.Error())
+		assert.ErrorContains(t, err, strconv.Itoa(errno.ErrWorkflowNotFound))
 	})
 }
 
@@ -3749,11 +3750,11 @@ func TestLLMException(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
-				return mainChatModel, nil
+				return mainChatModel, nil, nil
 			} else {
-				return fallbackChatModel, nil
+				return fallbackChatModel, nil, nil
 			}
 		}).AnyTimes()
 
@@ -3785,8 +3786,8 @@ func TestLLMException(t *testing.T) {
 				"age":       int64(3),
 				"isSuccess": false,
 				"errorBody": map[string]any{
-					"errorMessage": "[GraphRunError]\ncontext has been canceled: context deadline exceeded",
-					"errorCode":    int64(-1),
+					"errorMessage": "node timeout",
+					"errorCode":    int64(errno.ErrNodeTimeout),
 				},
 			}, mustUnmarshalToMap(t, e.output))
 		})
@@ -3816,18 +3817,17 @@ func TestLLMExceptionThenThrow(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, error) {
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *crossmodelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
-				return mainChatModel, nil
+				return mainChatModel, nil, nil
 			} else {
-				return fallbackChatModel, nil
+				return fallbackChatModel, nil, nil
 			}
 		}).AnyTimes()
 
 		exeID := r.nodeDebug(id, "103929", withNDInput(map[string]string{"input": "hello"}))
 		e := r.getProcess(id, exeID)
 		assert.Equal(t, workflow.WorkflowExeStatus(entity.WorkflowFailed), e.status)
-		assert.Contains(t, e.reason, "context deadline exceeded")
 	})
 }
 
@@ -3884,6 +3884,7 @@ func TestCodeExceptionBranch(t *testing.T) {
 
 func TestCopyWorkflowAppToLibrary(t *testing.T) {
 	r := newWfTestRunner(t)
+	appworkflow.SVC.IDGenerator = r.idGen
 	defer r.closeFn()
 
 	vars := []*variable.VarMeta{
@@ -3910,7 +3911,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 
 	r.varGetter.EXPECT().GetProjectVariablesMeta(gomock.Any(), gomock.Any(), gomock.Any()).Return(vars, nil).AnyTimes()
 
-	mockey.PatchConvey("copy only with subworkflow", t, func() {
+	mockey.PatchConvey("copy with subworkflow, subworkflow with external resource ", t, func() {
 		var copiedIDs = make([]int64, 0)
 		var mockPublishWorkflowResource func(ctx context.Context, OpType crosssearch.OpType, event *crosssearch.Resource) error
 		var ignoreIDs = map[int64]bool{
@@ -3938,24 +3939,81 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 			copiedIDMap := slices.ToMap(copiedIDs, func(e int64) (string, bool) {
 				return strconv.FormatInt(e, 10), true
 			})
+
 			var validateSubWorkflowIDs func(nodes []*vo.Node)
 			validateSubWorkflowIDs = func(nodes []*vo.Node) {
 				for _, node := range nodes {
-					if node.Type == vo.BlockTypeBotSubWorkflow {
+					switch node.Type {
+					case vo.BlockTypeBotAPI:
+						apiParams := slices.ToMap(node.Data.Inputs.APIParams, func(e *vo.Param) (string, *vo.Param) {
+							return e.Name, e
+						})
+						pluginIDParam, ok := apiParams["pluginID"]
+						assert.True(t, ok)
+						pID, err := strconv.ParseInt(pluginIDParam.Input.Value.Content.(string), 10, 64)
+						assert.NoError(t, err)
+
+						pluginVersionParam, ok := apiParams["pluginVersion"]
+						assert.True(t, ok)
+
+						pVersion := pluginVersionParam.Input.Value.Content.(string)
+
+						if pVersion == "0" {
+							assert.Equal(t, "100100", pID)
+						}
+
+					case vo.BlockTypeBotSubWorkflow:
 						assert.True(t, copiedIDMap[node.Data.Inputs.WorkflowID])
-					}
-					if node.Type == vo.BlockTypeBotLLM {
+						wfId, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+						assert.NoError(t, err)
+
+						subWf, err := appworkflow.GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
+							ID:    wfId,
+							QType: vo.FromLatestVersion,
+						})
+						assert.NoError(t, err)
+						subworkflowCanvas := &vo.Canvas{}
+						err = sonic.UnmarshalString(subWf.Canvas, subworkflowCanvas)
+						assert.NoError(t, err)
+						validateSubWorkflowIDs(subworkflowCanvas.Nodes)
+					case vo.BlockTypeBotLLM:
 						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
 							for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 								assert.True(t, copiedIDMap[w.WorkflowID])
 							}
 						}
+
+						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.PluginFCParam != nil {
+							for _, p := range node.Data.Inputs.FCParam.PluginFCParam.PluginList {
+								if p.PluginVersion == "0" {
+									assert.Equal(t, "100100", p.PluginID)
+								}
+							}
+						}
+
+						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.KnowledgeFCParam != nil {
+							for _, k := range node.Data.Inputs.FCParam.KnowledgeFCParam.KnowledgeList {
+								assert.Equal(t, "100100", k.ID)
+							}
+						}
+					case vo.BlockTypeBotDataset, vo.BlockTypeBotDatasetWrite:
+						datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
+						knowledgeIDs := datasetListInfoParam.Input.Value.Content.([]any)
+						for idx := range knowledgeIDs {
+							assert.Equal(t, "100100", knowledgeIDs[idx].(string))
+						}
+					case vo.BlockTypeDatabase, vo.BlockTypeDatabaseSelect, vo.BlockTypeDatabaseInsert, vo.BlockTypeDatabaseDelete, vo.BlockTypeDatabaseUpdate:
+						for _, d := range node.Data.Inputs.DatabaseInfoList {
+							assert.Equal(t, "100100", d.DatabaseInfoID)
+						}
+
 					}
 
 				}
 			}
 
 			validateSubWorkflowIDs(canvas.Nodes)
+
 			return nil
 
 		}
@@ -3970,6 +4028,31 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 		r.load("copy_to_app/child_2.json", withID(7515027182796668928), withProjectID(appIDInt64))
 		r.load("copy_to_app/child_1.json", withID(7515027150387281920), withProjectID(appIDInt64))
 		r.load("copy_to_app/main.json", withID(7515027091302121472), withProjectID(appIDInt64))
+
+		defer mockey.Mock((*appknowledge.KnowledgeApplicationService).CopyKnowledge).Return(&modelknowledge.CopyKnowledgeResponse{
+			TargetKnowledgeID: 100100,
+		}, nil).Build().UnPatch()
+
+		mockCopyDatabase := func(ctx context.Context, req *appmemory.CopyDatabaseRequest) (*appmemory.CopyDatabaseResponse, error) {
+			es := make(map[int64]*entity4.Database)
+			for _, id := range req.DatabaseIDs {
+				es[id] = &entity4.Database{ID: 100100}
+			}
+			return &appmemory.CopyDatabaseResponse{
+				Databases: es,
+			}, nil
+		}
+
+		defer mockey.Mock((*appmemory.DatabaseApplicationService).CopyDatabase).To(mockCopyDatabase).Build().UnPatch()
+
+		defer mockey.Mock((*appplugin.PluginApplicationService).CopyPlugin).Return(&appplugin.CopyPluginResponse{
+			Plugin: &entity5.PluginInfo{
+				PluginInfo: &pluginmodel.PluginInfo{
+					ID:      100100,
+					Version: ptr.Of("v0.0.1"),
+				},
+			},
+		}, nil).Build().UnPatch()
 
 		_, is, err := appworkflow.SVC.CopyWorkflowFromAppToLibrary(t.Context(), 7515027091302121472, appIDInt64, appIDInt64)
 		assert.NoError(t, err)
@@ -4189,10 +4272,11 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 
 			mId, err := strconv.ParseInt(mIdStr, 10, 64)
 
-			vs, err := appworkflow.SVC.MoveWorkflowFromAppToLibrary(ctx, mId, 123, appIDInt64)
+			id, vs, err := appworkflow.SVC.MoveWorkflowFromAppToLibrary(ctx, mId, 123, appIDInt64)
 			assert.NoError(t, err)
-			assert.Equal(t, 0, len(vs))
 
+			assert.Equal(t, 0, len(vs))
+			assert.Equal(t, id, old2newID[mId])
 			_, err = getCanvas(ctx, mIdStr)
 
 			assert.NotNil(t, err)
@@ -4364,7 +4448,7 @@ func TestMismatchedTypeConvert(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil).AnyTimes()
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
 
 		id := r.load("type_convert/mismatched_types.json")
 		exeID := r.testRun(id, map[string]string{
@@ -4380,7 +4464,7 @@ func TestMismatchedTypeConvert(t *testing.T) {
 		})
 		e := r.getProcess(id, exeID)
 		e.assertSuccess()
-		assert.Equal(t, "false  {\"s\":[2,false]} [{\"a\":1}] 3 0 {\"b\":true}\nI don't know. {\"a\":1} false", e.output)
+		assert.Equal(t, "false [] {\"s\":[2,false]} [{\"a\":1}] 3 0 {\"b\":true}\nI don't know. {\"a\":1} false", e.output)
 	})
 }
 
@@ -4459,7 +4543,7 @@ func TestJsonSerializationDeserializationWithWarning(t *testing.T) {
 		outputData, ok := result["output"].(map[string]any)
 		assert.True(t, ok, "output field is not a map[string]any")
 
-		assert.Equal(t, false, outputData["int"], "int field mismatch")
+		assert.Equal(t, nil, outputData["int"], "int field mismatch")
 		assert.Equal(t, "abc", outputData["string"], "string field mismatch")
 		assert.Equal(t, true, outputData["bool"], "bool field mismatch")
 	})

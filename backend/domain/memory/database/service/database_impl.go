@@ -19,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/api/model/table"
+	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossvariables"
 	entity2 "code.byted.org/flow/opencoze/backend/domain/memory/database/entity"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/convertor"
 	"code.byted.org/flow/opencoze/backend/domain/memory/database/internal/dal/query"
@@ -488,8 +489,12 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *AddDatabase
 	})
 
 	convertedRecords := make([]map[string]interface{}, 0, len(req.Records))
+	ids, err := d.generator.GenMultiIDs(ctx, len(req.Records))
+	if err != nil {
+		return err
+	}
 
-	for _, recordMap := range req.Records {
+	for index, recordMap := range req.Records {
 		convertedRecord := make(map[string]interface{})
 
 		cid := consts.CozeConnectorID
@@ -499,6 +504,7 @@ func (d databaseService) AddDatabaseRecord(ctx context.Context, req *AddDatabase
 		convertedRecord[database.DefaultUidColName] = req.UserID
 		convertedRecord[database.DefaultCidColName] = cid
 		convertedRecord[database.DefaultCreateTimeColName] = time.Now()
+		convertedRecord[database.DefaultIDColName] = ids[index]
 
 		if _, ok := recordMap[database.DefaultIDColName]; ok {
 			delete(recordMap, database.DefaultIDColName)
@@ -796,7 +802,7 @@ func (d databaseService) ListDatabaseRecord(ctx context.Context, req *ListDataba
 		return &ListDatabaseRecordResponse{}, nil
 	}
 
-	records := convertor.ConvertResultSet(selectResp.ResultSet, physicalToFieldName, physicalToFieldType)
+	records := convertor.ConvertResultSetToString(selectResp.ResultSet, physicalToFieldName, physicalToFieldType)
 
 	var hasMore bool
 	if selectResp.Total <= int64(req.Limit)+int64(req.Offset) {
@@ -981,7 +987,7 @@ func (d databaseService) ExecuteSQL(ctx context.Context, req *ExecuteSQLRequest)
 	if resultSet != nil && len(resultSet.Rows) > 0 {
 		response.Records = convertor.ConvertResultSet(resultSet, physicalToFieldName, physicalToFieldType)
 	} else {
-		response.Records = []map[string]string{}
+		response.Records = make([]map[string]interface{}, 0)
 	}
 
 	// process special system fields
@@ -1032,7 +1038,11 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 	if req.SQLParams != nil {
 		params = make([]interface{}, 0, len(req.SQLParams))
 		for _, param := range req.SQLParams {
-			params = append(params, param.Value)
+			value := param.Value
+			if param.ISNull {
+				value = nil
+			}
+			params = append(params, value)
 		}
 	}
 
@@ -1048,17 +1058,80 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 		return nil, fmt.Errorf("parse sql failed: %v", err)
 	}
 
-	if req.SQLType == database.SQLType_Raw && operation == sqlparsercontract.OperationTypeInsert {
+	insertResult := make([]map[string]interface{}, 0)
+	if operation == sqlparsercontract.OperationTypeInsert {
 		cid := consts.CozeConnectorID
 		if req.ConnectorID != nil {
 			cid = *req.ConnectorID
 		}
-		parsedSQL, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, map[string]interface{}{
-			database.DefaultCidColName: cid,
-			database.DefaultUidColName: req.UserID,
-		})
+		nums, err := sqlparser.NewSQLParser().GetInsertDataNums(parsedSQL)
 		if err != nil {
-			return nil, fmt.Errorf("add columns to insert sql failed: %v", err)
+			return nil, err
+		}
+
+		ids, err := d.generator.GenMultiIDs(ctx, nums)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, id := range ids {
+			insertResult = append(insertResult, map[string]interface{}{
+				database.DefaultIDColName: id,
+			})
+		}
+
+		existingCols := make(map[string]bool)
+		if req.SQLType == database.SQLType_Raw {
+			iIDs := make([]interface{}, len(ids))
+			for i, id := range ids {
+				iIDs[i] = id
+			}
+			parsedSQL, _, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColumnValue{
+				{
+					ColName: database.DefaultCidColName,
+					Value:   cid,
+				},
+				{
+					ColName: database.DefaultUidColName,
+					Value:   req.UserID,
+				},
+			}, &sqlparsercontract.PrimaryKeyValue{ColName: database.DefaultIDColName, Values: iIDs}, false)
+			if err != nil {
+				return nil, fmt.Errorf("add columns to insert sql failed: %v", err)
+			}
+		} else if req.SQLType == database.SQLType_Parameterized {
+			parsedSQL, existingCols, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColumnValue{
+				{
+					ColName: database.DefaultCidColName,
+				},
+				{
+					ColName: database.DefaultUidColName,
+				},
+			}, &sqlparsercontract.PrimaryKeyValue{ColName: database.DefaultIDColName}, true)
+			if err != nil {
+				return nil, fmt.Errorf("add columns to insert sql failed: %v", err)
+			}
+
+			if nums > 0 {
+				if len(params)%nums != 0 {
+					return nil, fmt.Errorf("number of params is not a multiple of number of rows")
+				}
+				paramsPerRow := len(params) / nums
+				newParams := make([]interface{}, 0)
+				for i := 0; i < nums; i++ {
+					newParams = append(newParams, params[i*paramsPerRow:(i+1)*paramsPerRow]...)
+					if !existingCols[database.DefaultCidColName] {
+						newParams = append(newParams, cid)
+					}
+					if !existingCols[database.DefaultUidColName] {
+						newParams = append(newParams, req.UserID)
+					}
+					if !existingCols[database.DefaultIDColName] {
+						newParams = append(newParams, ids[i])
+					}
+				}
+				params = newParams
+			}
 		}
 	}
 
@@ -1072,6 +1145,15 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 		return nil, fmt.Errorf("execute SQL failed: %v", err)
 	}
 
+	if operation == sqlparsercontract.OperationTypeInsert {
+		if execResp.ResultSet == nil {
+			execResp.ResultSet = &entity3.ResultSet{
+				Rows: insertResult,
+			}
+		} else {
+			execResp.ResultSet.Rows = insertResult
+		}
+	}
 	return execResp.ResultSet, nil
 }
 
@@ -1103,7 +1185,7 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *ExecuteSQLRe
 	var complexCond *rdb.ComplexCondition
 	var err error
 	if req.Condition != nil {
-		complexCond, err = convertCondition(req.Condition, fieldNameToPhysical, req.SQLParams)
+		complexCond, err = convertCondition(ctx, req.Condition, fieldNameToPhysical, req.SQLParams)
 		if err != nil {
 			return nil, fmt.Errorf("convert condition failed: %v", err)
 		}
@@ -1197,6 +1279,7 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 
 			fieldVal := sqlParams[i].Value
 			if sqlParams[i].ISNull || fieldVal == nil {
+				rowData[field.PhysicalName] = nil
 				i++
 				continue
 			}
@@ -1249,9 +1332,11 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 			return -1, errorx.New(errno.ErrMemoryDatabaseFieldNotFoundCode)
 		}
 
-		fieldVal := req.SQLParams[index].Value
+		param := req.SQLParams[index]
+		fieldVal := param.Value
 		index++
-		if fieldVal == nil {
+		if param.ISNull || fieldVal == nil {
+			updateData[field.PhysicalName] = nil
 			continue
 		}
 
@@ -1265,7 +1350,7 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 	}
 
 	condParams := req.SQLParams[index:]
-	complexCond, err := convertCondition(req.Condition, fieldNameToPhysical, condParams)
+	complexCond, err := convertCondition(ctx, req.Condition, fieldNameToPhysical, condParams)
 	if err != nil {
 		return -1, fmt.Errorf("convert condition failed: %v", err)
 	}
@@ -1305,7 +1390,7 @@ func (d databaseService) executeDeleteSQL(ctx context.Context, req *ExecuteSQLRe
 		return -1, fmt.Errorf("missing delete condition")
 	}
 
-	complexCond, err := convertCondition(req.Condition, fieldNameToPhysical, req.SQLParams)
+	complexCond, err := convertCondition(ctx, req.Condition, fieldNameToPhysical, req.SQLParams)
 	if err != nil {
 		return -1, fmt.Errorf("convert condition failed: %v", err)
 	}
@@ -1355,7 +1440,7 @@ func convertSortDirection(direction table.SortDirection) entity3.SortDirection {
 	return entity3.SortDirectionAsc
 }
 
-func convertCondition(cond *database.ComplexCondition, fieldMap map[string]string, params []*database.SQLParamVal) (*rdb.ComplexCondition, error) {
+func convertCondition(ctx context.Context, cond *database.ComplexCondition, fieldMap map[string]string, params []*database.SQLParamVal) (*rdb.ComplexCondition, error) {
 	if cond == nil {
 		return nil, nil
 	}
@@ -1401,7 +1486,7 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 						index++
 						continue
 					}
-					vals = append(vals, *params[index].Value)
+					vals = append(vals, decryptSysUUIDKey(ctx, leftField, *params[index].Value))
 					index++
 				}
 				conditions = append(conditions, &rdb.Condition{
@@ -1420,7 +1505,7 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 			conditions = append(conditions, &rdb.Condition{
 				Field:    leftField,
 				Operator: convertor.ConvertOperator(c.Operation),
-				Value:    *params[index].Value,
+				Value:    decryptSysUUIDKey(ctx, leftField, *params[index].Value),
 			})
 			index++
 		}
@@ -1435,6 +1520,17 @@ func convertCondition(cond *database.ComplexCondition, fieldMap map[string]strin
 	// }
 
 	return result, nil
+}
+
+func decryptSysUUIDKey(ctx context.Context, leftField, value string) string {
+	if leftField == database.DefaultUidDisplayColName || leftField == database.DefaultUidColName {
+		decryptVal := crossvariables.DefaultSVC().DecryptSysUUIDKey(ctx, value)
+		if decryptVal != nil {
+			value = decryptVal.ConnectorUID
+		}
+	}
+
+	return value
 }
 
 func (d databaseService) BindDatabase(ctx context.Context, req *BindDatabaseToAgentRequest) error {

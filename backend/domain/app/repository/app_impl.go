@@ -86,8 +86,8 @@ func (a *appRepoImpl) GetPublishRecord(ctx context.Context, req *GetPublishRecor
 	var app *entity.APP
 	if req.RecordID != nil {
 		app, exist, err = a.appReleaseRecordDAO.GetReleaseRecordWithID(ctx, *req.RecordID)
-	} else if req.Oldest {
-		app, exist, err = a.appReleaseRecordDAO.GetOldestReleaseRecord(ctx, req.APPID)
+	} else if req.OldestSuccess {
+		app, exist, err = a.appReleaseRecordDAO.GetOldestReleaseSuccessRecord(ctx, req.APPID)
 	} else {
 		app, exist, err = a.appReleaseRecordDAO.GetLatestReleaseRecord(ctx, req.APPID)
 	}

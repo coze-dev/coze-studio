@@ -73,15 +73,17 @@ func (k *KnowledgeApplicationService) CreateKnowledge(ctx context.Context, req *
 	err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 		OpType: resourceEntity.Created,
 		Resource: &resourceEntity.ResourceDocument{
-			ResType:      resource.ResType_Knowledge,
-			ResID:        domainResp.KnowledgeID,
-			Name:         ptr.Of(req.Name),
-			ResSubType:   ptr.Of(int32(req.FormatType)),
-			SpaceID:      ptr.Of(req.SpaceID),
-			APPID:        ptrAppID,
-			OwnerID:      ptr.Of(*uid),
-			CreateTimeMS: ptr.Of(domainResp.CreatedAtMs),
-			UpdateTimeMS: ptr.Of(domainResp.CreatedAtMs),
+			ResType:       resource.ResType_Knowledge,
+			ResID:         domainResp.KnowledgeID,
+			Name:          ptr.Of(req.Name),
+			ResSubType:    ptr.Of(int32(req.FormatType)),
+			SpaceID:       ptr.Of(req.SpaceID),
+			APPID:         ptrAppID,
+			OwnerID:       ptr.Of(*uid),
+			PublishStatus: ptr.Of(resource.PublishStatus_Published),
+			PublishTimeMS: ptr.Of(domainResp.CreatedAtMs),
+			CreateTimeMS:  ptr.Of(domainResp.CreatedAtMs),
+			UpdateTimeMS:  ptr.Of(domainResp.CreatedAtMs),
 		},
 	})
 	if err != nil {
@@ -281,10 +283,6 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 		if req.GetDocumentBases()[i] == nil {
 			continue
 		}
-		docSource := entity.DocumentSourceCustom
-		if req.GetDocumentBases()[i].GetSourceInfo().GetTosURI() != "" {
-			docSource = entity.DocumentSourceLocal
-		}
 		var captionType *dataset.CaptionType
 		if req.GetChunkStrategy() != nil {
 			captionType = req.GetChunkStrategy().CaptionType
@@ -300,11 +298,14 @@ func (k *KnowledgeApplicationService) CreateDocument(ctx context.Context, req *d
 			Type:             convertDocumentTypeDataset2Entity(req.GetFormatType()),
 			RawContent:       req.GetDocumentBases()[i].GetSourceInfo().GetCustomContent(),
 			URI:              req.GetDocumentBases()[i].GetSourceInfo().GetTosURI(),
+			WebURL:           req.GetDocumentBases()[i].GetSourceInfo().GetWebURL(),
+			SourceFileID:     req.GetDocumentBases()[i].GetSourceInfo().GetWebID(),
 			FileExtension:    parser.FileExtension(GetExtension(req.GetDocumentBases()[i].GetSourceInfo().GetTosURI())),
-			Source:           docSource,
+			Source:           convertDocumentSource2Entity(ptr.From(req.GetDocumentBases()[i].SourceInfo.DocumentSource)),
 			IsAppend:         req.GetIsAppend(),
-			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet, captionType),
+			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), req.GetDocumentBases()[i].TableSheet, captionType, req.GetDocumentBases()[i].FilterStrategy),
 			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
+			UpdateRule:       convertUpdateRule2Entity(req.GetDocumentBases()[i].UpdateRule),
 			TableInfo: entity.TableInfo{
 				Columns: convertTableColumns2Entity(req.GetDocumentBases()[i].GetTableMeta()),
 			},
@@ -416,7 +417,6 @@ func (k *KnowledgeApplicationService) GetDocumentProgress(ctx context.Context, r
 	resp := dataset.NewGetDocumentProgressResponse()
 	resp.Data = make([]*dataset.DocumentProgress, 0)
 	for i := range domainResp.ProgressList {
-		url := "" // todo，图片型知识库需要
 		resp.Data = append(resp.Data, &dataset.DocumentProgress{
 			DocumentID:     domainResp.ProgressList[i].ID,
 			Progress:       int32(domainResp.ProgressList[i].Progress),
@@ -426,7 +426,7 @@ func (k *KnowledgeApplicationService) GetDocumentProgress(ctx context.Context, r
 			RemainingTime:  &domainResp.ProgressList[i].RemainingSec,
 			Size:           &domainResp.ProgressList[i].Size,
 			Type:           &domainResp.ProgressList[i].FileExtension,
-			URL:            &url,
+			URL:            ptr.Of(domainResp.ProgressList[i].URL),
 		})
 	}
 	return resp, nil
@@ -448,7 +448,7 @@ func (k *KnowledgeApplicationService) Resegment(ctx context.Context, req *datase
 		resegmentResp, err := k.DomainSVC.ResegmentDocument(ctx, &service.ResegmentDocumentRequest{
 			DocumentID:       docID,
 			ChunkingStrategy: convertChunkingStrategy2Entity(req.GetChunkStrategy()),
-			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), nil, captionType),
+			ParsingStrategy:  convertParsingStrategy2Entity(req.GetParsingStrategy(), nil, captionType, req.FilterStrategy),
 		})
 		if err != nil {
 			logs.CtxErrorf(ctx, "resegment document failed, err: %v", err)
@@ -488,7 +488,7 @@ func (k *KnowledgeApplicationService) CreateSlice(ctx context.Context, req *data
 		err = packTableSliceColumnData(ctx, sliceEntity, req.GetRawText(), listResp.Documents[0])
 		if err != nil {
 			logs.CtxErrorf(ctx, "pack table slice column data failed, err: %v", err)
-			return dataset.NewCreateSliceResponse(), err
+			return dataset.NewCreateSliceResponse(), errorx.New(errno.ErrKnowledgeCheckTableSliceValidCode, errorx.KV("msg", err.Error()))
 		}
 	} else {
 		sliceEntity.RawContent = []*model.SliceContent{
@@ -565,7 +565,7 @@ func (k *KnowledgeApplicationService) UpdateSlice(ctx context.Context, req *data
 		err = packTableSliceColumnData(ctx, sliceEntity, req.GetRawText(), listResp.Documents[0])
 		if err != nil {
 			logs.CtxErrorf(ctx, "pack table slice column data failed, err: %v", err)
-			return dataset.NewUpdateSliceResponse(), err
+			return dataset.NewUpdateSliceResponse(), errorx.New(errno.ErrKnowledgeCheckTableSliceValidCode, errorx.KV("msg", err.Error()))
 		}
 	} else {
 		sliceEntity.RawContent = []*model.SliceContent{
@@ -715,7 +715,6 @@ func (k *KnowledgeApplicationService) GetTableSchema(ctx context.Context, req *d
 
 	resp.TableMeta = convertTableColumns2Model(domainResp.TableMeta)
 
-	// TODO: sheet list 有个问题，怎么表示当前选中的是哪个？
 	resp.SheetList = make([]*dataset.DocTableSheet, 0)
 	for i := range domainResp.AllTableSheets {
 		if domainResp.AllTableSheets[i] == nil {
@@ -914,15 +913,16 @@ func (k *KnowledgeApplicationService) CopyKnowledge(ctx context.Context, req *mo
 		err = k.eventBus.PublishResources(ctx, &resourceEntity.ResourceDomainEvent{
 			OpType: resourceEntity.Created,
 			Resource: &resourceEntity.ResourceDocument{
-				ResID:        resp.TargetKnowledgeID,
-				ResType:      resource.ResType_Knowledge,
-				ResSubType:   ptr.Of(int32(getResp.Knowledge.Type)),
-				Name:         ptr.Of(getResp.Knowledge.Name),
-				OwnerID:      ptr.Of(getResp.Knowledge.CreatorID),
-				SpaceID:      ptr.Of(getResp.Knowledge.SpaceID),
-				APPID:        appIDPtr,
-				CreateTimeMS: ptr.Of(getResp.Knowledge.CreatedAtMs),
-				UpdateTimeMS: ptr.Of(getResp.Knowledge.CreatedAtMs),
+				ResID:         resp.TargetKnowledgeID,
+				ResType:       resource.ResType_Knowledge,
+				ResSubType:    ptr.Of(int32(getResp.Knowledge.Type)),
+				Name:          ptr.Of(getResp.Knowledge.Name),
+				OwnerID:       ptr.Of(getResp.Knowledge.CreatorID),
+				SpaceID:       ptr.Of(getResp.Knowledge.SpaceID),
+				APPID:         appIDPtr,
+				PublishStatus: ptr.Of(resource.PublishStatus_Published),
+				CreateTimeMS:  ptr.Of(getResp.Knowledge.CreatedAtMs),
+				UpdateTimeMS:  ptr.Of(getResp.Knowledge.CreatedAtMs),
 			},
 		})
 		if err != nil {

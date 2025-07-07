@@ -56,6 +56,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 			PreFillZero:        true,
 			PostFillNil:        true,
 			CallbackEnabled:    true,
+			InputSourceAware:   true,
 			MayUseChatModel:    true,
 			StreamingParadigms: map[StreamingParadigm]bool{Invoke: true, Stream: true},
 		},
@@ -376,6 +377,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		SupportBatch: false, // supportBatch: 1
 		ExecutableMeta: ExecutableMeta{
 			PostFillNil:        true,
+			CallbackEnabled:    true,
 			StreamingParadigms: map[StreamingParadigm]bool{Invoke: true},
 		},
 		EnUSName:        "Input",
@@ -619,6 +621,25 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		EnUSName:        "JSON deserialization",
 		EnUSCategory:    "Utilities",
 		EnUSDescription: "Parse JSON string to variable",
+	},
+	{
+		ID:           60,
+		Name:         "知识库删除",
+		Type:         NodeTypeKnowledgeDeleter,
+		Category:     "知识库&数据", // Mapped from cate_list
+		Desc:         "用于删除知识库中的文档",
+		Color:        "#FF811A",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icons-dataset-delete.png",
+		SupportBatch: false, // supportBatch: 1
+		ExecutableMeta: ExecutableMeta{
+			DefaultTimeoutMS:   60 * 1000, // 1 minute
+			PreFillZero:        true,
+			PostFillNil:        true,
+			StreamingParadigms: map[StreamingParadigm]bool{Invoke: true},
+		},
+		EnUSName:        "Knowledge delete",
+		EnUSCategory:    "Data",
+		EnUSDescription: "The delete node can delete a document in knowledge base.",
 	},
 	// --- End of nodes parsed from template_list ---
 }

@@ -18,6 +18,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ptr"
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 func setRootWorkflowSuccess(ctx context.Context, event *Event, repo workflow.Repository,
@@ -94,6 +95,9 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 		if parentNodeID != nil { // root workflow execution has already been created
+			var logID string
+			logID, _ = ctx.Value("log-id").(string)
+
 			wfExec := &entity.WorkflowExecution{
 				ID:                  exeID,
 				WorkflowID:          wb.ID,
@@ -107,6 +111,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				ParentNodeExecuteID: parentNodeExecuteID,
 				NodeCount:           event.nodeCount,
 				CommitID:            wb.CommitID,
+				LogID:               logID,
 			}
 
 			if err = repo.CreateWorkflowExecution(ctx, wfExec); err != nil {
@@ -172,8 +177,10 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		return workflowSuccess, nil
 	case WorkflowFailed:
 		exeID := event.RootCtx.RootExecuteID
+		wfID := event.RootCtx.RootWorkflowBasic.ID
 		if event.SubWorkflowCtx != nil {
 			exeID = event.SubExecuteID
+			wfID = event.SubWorkflowBasic.ID
 		}
 
 		logs.CtxErrorf(ctx, "workflow execution failed: %v", event.Err)
@@ -188,22 +195,28 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			},
 		}
 
-		var (
-			errInfo   *vo.ErrorInfo
-			statusErr errorx.StatusError
-		)
-		if errors.As(err, &errInfo) {
-			wfExec.FailReason = ptr.Of(errInfo.Err.Error())
-		}
-		if errors.As(err, &statusErr) {
-			wfExec.ErrorCode = ptr.Of(strconv.FormatInt(int64(statusErr.Code()), 10))
-			if wfExec.FailReason == nil {
-				wfExec.FailReason = ptr.Of(statusErr.Msg())
+		var wfe vo.WorkflowError
+		if !errors.As(event.Err, &wfe) {
+			if errors.Is(event.Err, context.DeadlineExceeded) {
+				wfe = vo.WorkflowTimeoutErr
+			} else if errors.Is(event.Err, context.Canceled) {
+				wfe = vo.CancelErr
+			} else {
+				wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err, errorx.KV("cause", vo.UnwrapRootErr(event.Err).Error()))
 			}
 		}
-		if wfExec.FailReason == nil {
-			wfExec.FailReason = ptr.Of(event.Err.Err.Error()[:min(1000, len(event.Err.Err.Error()))])
+
+		if cause := errors.Unwrap(event.Err); cause != nil {
+			logs.CtxErrorf(ctx, "workflow %d for exeID %d returns err: %v, cause: %v",
+				wfID, exeID, event.Err, cause)
+		} else {
+			logs.CtxErrorf(ctx, "workflow %d for exeID %d returns err: %v",
+				wfID, exeID, event.Err)
 		}
+
+		errMsg := wfe.Msg()[:min(1000, len(wfe.Msg()))]
+		wfExec.ErrorCode = ptr.Of(strconv.Itoa(int(wfe.Code())))
+		wfExec.FailReason = ptr.Of(errMsg)
 
 		var (
 			updatedRows   int64
@@ -223,10 +236,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 						EventID:   event.GetResumedEventID(),
 						Status:    entity.WorkflowFailed,
 						Usage:     wfExec.TokenInfo,
-						LastError: &entity.ErrorInfo{
-							Code: 4200,                  // TODO: the error codes
-							Msg:  event.Err.Err.Error(), // TODO: do I need to consider the error level here?
-						},
+						LastError: wfe,
 					},
 				}, nil)
 			}
@@ -367,10 +377,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 						EventID:   event.GetResumedEventID(),
 						Status:    entity.WorkflowCancel,
 						Usage:     wfExec.TokenInfo,
-						LastError: &entity.ErrorInfo{
-							Code: 4200,                      // TODO: the error codes
-							Msg:  "workflow cancel by user", // TODO: do I need to consider the error level here?
-						},
+						LastError: vo.CancelErr,
 					},
 				}, nil)
 			}
@@ -429,11 +436,20 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 		if event.Err != nil {
-			var errorInfo, errorLevel string
-			errorInfo = event.Err.Err.Error()[:min(1000, len(event.Err.Err.Error()))]
-			errorLevel = string(event.Err.Level)
-			nodeExec.ErrorInfo = ptr.Of(errorInfo)
-			nodeExec.ErrorLevel = ptr.Of(errorLevel)
+			var wfe vo.WorkflowError
+			if !errors.As(event.Err, &wfe) {
+				panic("node end: event.Err is not a WorkflowError")
+			}
+
+			if cause := errors.Unwrap(event.Err); cause != nil {
+				logs.CtxWarnf(ctx, "node %s for exeID %d end with warning: %v, cause: %v",
+					event.NodeKey, event.NodeExecuteID, event.Err, cause)
+			} else {
+				logs.CtxWarnf(ctx, "node %s for exeID %d end with warning: %v",
+					event.NodeKey, event.NodeExecuteID, event.Err)
+			}
+			nodeExec.ErrorInfo = ptr.Of(wfe.Msg())
+			nodeExec.ErrorLevel = ptr.Of(string(wfe.Level()))
 		}
 
 		if event.outputExtractor != nil {
@@ -465,18 +481,25 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 		if event.NodeCtx.ResumingEvent != nil {
-			deletedEvent, deleted, err := repo.PopFirstInterruptEvent(ctx, event.RootCtx.RootExecuteID)
+			firstIE, found, err := repo.GetFirstInterruptEvent(ctx, event.RootCtx.RootExecuteID)
 			if err != nil {
 				return noTerminate, err
 			}
 
-			if !deleted {
-				return noTerminate, fmt.Errorf("node end: interrupt events does not exist, wfExeID: %d", event.RootCtx.RootExecuteID)
-			}
+			if found && firstIE.ID == event.NodeCtx.ResumingEvent.ID {
+				deletedEvent, deleted, err := repo.PopFirstInterruptEvent(ctx, event.RootCtx.RootExecuteID)
+				if err != nil {
+					return noTerminate, err
+				}
 
-			if deletedEvent.ID != event.NodeCtx.ResumingEvent.ID {
-				return noTerminate, fmt.Errorf("interrupt event id mismatch when deleting, expect: %d, actual: %d",
-					event.RootCtx.ResumeEvent.ID, deletedEvent.ID)
+				if !deleted {
+					return noTerminate, fmt.Errorf("node end: interrupt events does not exist, wfExeID: %d", event.RootCtx.RootExecuteID)
+				}
+
+				if deletedEvent.ID != event.NodeCtx.ResumingEvent.ID {
+					return noTerminate, fmt.Errorf("interrupt event id mismatch when deleting, expect: %d, actual: %d",
+						event.RootCtx.ResumeEvent.ID, deletedEvent.ID)
+				}
 			}
 		}
 
@@ -582,13 +605,27 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 	case NodeError:
 		var errorInfo, errorLevel string
-		if errors.Is(event.Err.Err, context.Canceled) {
-			errorInfo = "workflow cancel by user"
-			errorLevel = string(vo.LevelCancel)
-		} else {
-			errorInfo = event.Err.Err.Error()[:min(100, len(event.Err.Err.Error()))]
-			errorLevel = string(vo.LevelError)
+		var wfe vo.WorkflowError
+		if !errors.As(event.Err, &wfe) {
+			if errors.Is(event.Err, context.DeadlineExceeded) {
+				wfe = vo.NodeTimeoutErr
+			} else if errors.Is(event.Err, context.Canceled) {
+				wfe = vo.CancelErr
+			} else {
+				wfe = vo.WrapError(errno.ErrWorkflowExecuteFail, event.Err, errorx.KV("cause", vo.UnwrapRootErr(event.Err).Error()))
+			}
 		}
+
+		if cause := errors.Unwrap(event.Err); cause != nil {
+			logs.CtxErrorf(ctx, "node %s for exeID %d returns err: %v, cause: %v",
+				event.NodeKey, event.NodeExecuteID, event.Err, cause)
+		} else {
+			logs.CtxErrorf(ctx, "node %s for exeID %d returns err: %v",
+				event.NodeKey, event.NodeExecuteID, event.Err)
+		}
+
+		errorInfo = wfe.Msg()[:min(1000, len(wfe.Msg()))]
+		errorLevel = string(wfe.Level())
 
 		if event.Context == nil || event.Context.NodeCtx == nil {
 			return noTerminate, fmt.Errorf("nil event context")
@@ -666,11 +703,11 @@ type fcInfo struct {
 }
 
 func HandleExecuteEvent(ctx context.Context,
-	eventChan <-chan *Event,                // workflow execution event emitted by workflow handler and node handlers
-	cancelFn context.CancelFunc,            // func to cancel the context given to running workflow
-	timeoutFn context.CancelFunc,           // func to timeout the context
+	eventChan <-chan *Event, // workflow execution event emitted by workflow handler and node handlers
+	cancelFn context.CancelFunc, // func to cancel the context given to running workflow
+	timeoutFn context.CancelFunc, // func to timeout the context
 	cancelSignalChan <-chan *redis.Message, // channel to receive workflow cancel signal from redis
-	clearFn func(),                         // func to clear the cancel signal subscription
+	clearFn func(), // func to clear the cancel signal subscription
 	repo workflow.Repository,
 	sw *schema.StreamWriter[*entity.Message], // stream writer for emitting entity.Message
 	exeCfg vo.ExecuteConfig,

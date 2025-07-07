@@ -120,19 +120,67 @@ func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, err
 			errorx.KVf(errno.PluginMsgKey, "the type '%s' of field '%s' is invalid", apiParam.Type, apiParam.Name))
 	}
 
-	if paramType == openapi3.TypeObject || paramType == openapi3.TypeArray { //TODO:(@maronghong): 支持 array
+	if paramType == openapi3.TypeObject {
 		return nil, errorx.New(errno.ErrPluginInvalidParamCode,
-			errorx.KVf(errno.PluginMsgKey, "the type of field '%s' cannot be 'array' or 'object'", apiParam.Name))
+			errorx.KVf(errno.PluginMsgKey, "the type of field '%s' cannot be 'object'", apiParam.Name))
 	}
 
 	paramSchema := &openapi3.Schema{
-		Description: apiParam.Desc,
-		Type:        paramType,
-		Default:     apiParam.GlobalDefault,
+		Type:    paramType,
+		Default: apiParam.GlobalDefault,
 		Extensions: map[string]interface{}{
 			plugin.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
 		},
 	}
+
+	if paramType == openapi3.TypeArray {
+		if apiParam.Location == common.ParameterLocation_Path {
+			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+				errorx.KVf(errno.PluginMsgKey, "the type of field '%s' cannot be 'array'", apiParam.Name))
+		}
+		if len(apiParam.SubParameters) == 0 {
+			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+				errorx.KVf(errno.PluginMsgKey, "the sub parameters of field '%s' is required", apiParam.Name))
+		}
+
+		arrayItem := apiParam.SubParameters[0]
+		arrayItemType, ok := plugin.ToOpenapiParamType(arrayItem.Type)
+		if !ok {
+			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+				errorx.KVf(errno.PluginMsgKey, "the item type '%s' of field '%s' is invalid", arrayItemType, apiParam.Name))
+		}
+
+		if arrayItemType == openapi3.TypeObject || arrayItemType == openapi3.TypeArray {
+			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+				errorx.KVf(errno.PluginMsgKey, "the item type of field '%s' cannot be 'array' or 'object'", apiParam.Name))
+		}
+
+		itemSchema := &openapi3.Schema{
+			Type:        arrayItemType,
+			Description: arrayItem.Desc,
+			Extensions:  map[string]any{},
+		}
+
+		if arrayItem.GetAssistType() > 0 {
+			aType, ok := plugin.ToAPIAssistType(arrayItem.GetAssistType())
+			if !ok {
+				return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+					errorx.KVf(errno.PluginMsgKey, "the assist type '%s' of field '%s' is invalid", arrayItem.GetAssistType(), apiParam.Name))
+			}
+			itemSchema.Extensions[plugin.APISchemaExtendAssistType] = aType
+			format, ok := plugin.AssistTypeToFormat(aType)
+			if !ok {
+				return nil, errorx.New(errno.ErrPluginInvalidParamCode,
+					errorx.KVf(errno.PluginMsgKey, "the assist type '%s' of field '%s' is invalid", aType, apiParam.Name))
+			}
+			itemSchema.Format = format
+		}
+
+		paramSchema.Items = &openapi3.SchemaRef{
+			Value: itemSchema,
+		}
+	}
+
 	if apiParam.LocalDefault != nil && *apiParam.LocalDefault != "" {
 		paramSchema.Default = apiParam.LocalDefault
 	}

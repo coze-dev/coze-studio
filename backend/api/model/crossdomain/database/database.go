@@ -27,7 +27,16 @@ type ExecuteSQLRequest struct {
 }
 
 type ExecuteSQLResponse struct {
-	Records      []map[string]string
+	// Records contains the query result, where each map represents a row.
+	// The map's key is the column name, and the value is the raw data from the database.
+	// The caller is responsible for type assertion and conversion to the desired format.
+	// Common types returned by database drivers include:
+	//   - Text:    []uint8 (can be converted to string)
+	//   - Number:  int64
+	//   - Float:   float64
+	//   - Boolean: bool
+	//   - Date:    time.Time
+	Records      []map[string]any
 	FieldList    []*FieldItem
 	RowsAffected *int64
 }

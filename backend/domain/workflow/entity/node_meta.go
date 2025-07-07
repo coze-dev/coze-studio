@@ -80,6 +80,7 @@ const (
 	NodeTypeDatabaseUpdate             NodeType = "DatabaseUpdate"
 	NodeTypeKnowledgeIndexer           NodeType = "KnowledgeIndexer"
 	NodeTypeKnowledgeRetriever         NodeType = "KnowledgeRetriever"
+	NodeTypeKnowledgeDeleter           NodeType = "KnowledgeDeleter"
 	NodeTypeEntry                      NodeType = "Entry"
 	NodeTypeExit                       NodeType = "Exit"
 	NodeTypeCodeRunner                 NodeType = "CodeRunner"
@@ -94,4 +95,9 @@ const (
 	NodeTypeSubWorkflow                NodeType = "SubWorkflow"
 	NodeTypeJsonSerialization          NodeType = "JsonSerialization"
 	NodeTypeJsonDeserialization        NodeType = "JsonDeserialization"
+)
+
+const (
+	EntryNodeKey = "100001"
+	ExitNodeKey  = "900001"
 )

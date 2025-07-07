@@ -83,7 +83,7 @@ func (v *UserVariableMeta) encryptSysUUIDKey(ctx context.Context) string {
 	return base64.StdEncoding.EncodeToString([]byte(plain))
 }
 
-func (v *UserVariableMeta) decryptSysUUIDKey(ctx context.Context, encryptSysUUIDKey string) *VariableInstance {
+func (v *UserVariableMeta) DecryptSysUUIDKey(ctx context.Context, encryptSysUUIDKey string) *VariableInstance {
 	data, err := base64.StdEncoding.DecodeString(encryptSysUUIDKey)
 	if err != nil {
 		return nil

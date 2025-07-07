@@ -52,7 +52,7 @@ export const PluginCard: FC<PluginCardProps> = props => (
             );
           }}
         >
-          {I18n.t('plugin_store_view_details')}
+          {I18n.t('plugin_usage_limits_modal_view_details')}
         </CardButton>
       </Space>
     </div>

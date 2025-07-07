@@ -12,7 +12,7 @@ func TestFormatDatabaseResult(t *testing.T) {
 	t.Run("normal case with data", func(t *testing.T) {
 		rowsAffected := int64(1)
 		resp := &service.ExecuteSQLResponse{
-			Records: []map[string]string{
+			Records: []map[string]any{
 				{"name": "ZhangSan", "age": "25"},
 				{"name": "LiSi", "age": "30"},
 			},
@@ -34,7 +34,7 @@ func TestFormatDatabaseResult(t *testing.T) {
 
 	t.Run("empty result", func(t *testing.T) {
 		resp := &service.ExecuteSQLResponse{
-			Records: []map[string]string{},
+			Records: []map[string]any{},
 		}
 
 		result := formatDatabaseResult(resp)
@@ -45,7 +45,7 @@ func TestFormatDatabaseResult(t *testing.T) {
 	t.Run("result with rows affected only", func(t *testing.T) {
 		rowsAffected := int64(5)
 		resp := &service.ExecuteSQLResponse{
-			Records:      []map[string]string{},
+			Records:      []map[string]any{},
 			RowsAffected: &rowsAffected,
 		}
 
@@ -56,7 +56,7 @@ func TestFormatDatabaseResult(t *testing.T) {
 
 	t.Run("result with null values", func(t *testing.T) {
 		resp := &service.ExecuteSQLResponse{
-			Records: []map[string]string{
+			Records: []map[string]any{
 				{"name": "ZhangSan", "age": "", "email": "zhangsan@example.com"},
 				{"name": "LiSi", "age": "30", "email": ""},
 			},

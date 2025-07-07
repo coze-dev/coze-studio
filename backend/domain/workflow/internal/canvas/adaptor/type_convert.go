@@ -2,8 +2,6 @@ package adaptor
 
 import (
 	"fmt"
-	"time"
-
 	"strconv"
 	"strings"
 
@@ -256,14 +254,7 @@ func CanvasBlockInputToFieldInfo(b *vo.BlockInput, path einoCompose.FieldPath, p
 			default:
 				return nil, fmt.Errorf("unsupported variable type for boolean: %s", b.Type)
 			}
-		case vo.VariableTypeString:
-			if b.AssistType == vo.AssistTypeTime {
-				t, err := time.Parse(time.DateTime, content.(string))
-				if err != nil {
-					return nil, fmt.Errorf("failed to parse input %s as time: %w", content.(string), err)
-				}
-				content = t
-			}
+		default:
 		}
 		return []*vo.FieldInfo{
 			{

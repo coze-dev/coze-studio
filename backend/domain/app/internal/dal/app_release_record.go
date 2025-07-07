@@ -94,10 +94,13 @@ func (r *APPReleaseRecordDAO) GetLatestReleaseRecord(ctx context.Context, appID 
 	return app, true, nil
 }
 
-func (r *APPReleaseRecordDAO) GetOldestReleaseRecord(ctx context.Context, appID int64) (app *entity.APP, exist bool, err error) {
+func (r *APPReleaseRecordDAO) GetOldestReleaseSuccessRecord(ctx context.Context, appID int64) (app *entity.APP, exist bool, err error) {
 	table := r.query.AppReleaseRecord
 	res, err := table.WithContext(ctx).
-		Where(table.AppID.Eq(appID)).
+		Where(
+			table.AppID.Eq(appID),
+			table.PublishStatus.Eq(int32(entity.PublishStatusOfPublishDone)),
+		).
 		Order(table.PublishAt.Asc()).
 		First()
 	if err != nil {

@@ -6,11 +6,33 @@ import (
 	"fmt"
 	"os/exec"
 
-	"code.byted.org/flow/opencoze/backend/pkg/sonic"
-
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
 	"code.byted.org/flow/opencoze/backend/pkg/goutil"
+	"code.byted.org/flow/opencoze/backend/pkg/sonic"
 )
+
+var pythonCode = `
+import asyncio
+import json
+import sys
+
+class Args:
+    def __init__(self, params):
+        self.params = params
+
+class Output(dict):
+    pass
+
+%s
+
+try:
+    result = asyncio.run(main( Args(json.loads(sys.argv[1]))))
+    print(json.dumps(result))
+except Exception as  e:
+    print(f"{type(e).__name__}: {str(e)}", file=sys.stderr)
+    sys.exit(1)
+
+`
 
 type Runner struct{}
 
@@ -37,15 +59,14 @@ func (r *Runner) Run(ctx context.Context, request *code.RunRequest) (*code.RunRe
 
 func (r *Runner) pythonCmdRun(_ context.Context, code string, params map[string]any) (map[string]any, error) {
 	bs, _ := sonic.Marshal(params)
-	cmd := exec.Command(goutil.GetPython3Path(), goutil.GetPythonFilePath("python_script.py"), code, string(bs))
+	cmd := exec.Command(goutil.GetPython3Path(), "-c", fmt.Sprintf(pythonCode, code), string(bs)) //ignore_security_alert RCE
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
-
 	err := cmd.Run()
 	if err != nil {
-		return nil, fmt.Errorf("failed to run python script err: %s, std err: %s", err, stderr.String())
+		return nil, fmt.Errorf("failed to run python script err: %s, std err: %s", err.Error(), stderr.String())
 	}
 
 	if stderr.String() != "" {

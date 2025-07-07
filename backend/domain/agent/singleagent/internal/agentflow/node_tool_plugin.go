@@ -43,7 +43,7 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 
 	projectInfo := &plugin.ProjectInfo{
 		ProjectID:      conf.agentIdentity.AgentID,
-		ProjectType:    plugin.ProjectTypeOfBot,
+		ProjectType:    plugin.ProjectTypeOfAgent,
 		ProjectVersion: ptr.Of(conf.agentIdentity.Version),
 		ConnectorID:    conf.agentIdentity.ConnectorID,
 	}

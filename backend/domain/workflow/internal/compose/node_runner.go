@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"runtime/debug"
+	"strings"
 	"time"
 
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	"golang.org/x/exp/maps"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/entity/vo"
@@ -19,6 +21,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/safego"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type nodeRunConfig[O any] struct {
@@ -70,6 +73,7 @@ func newNodeRunConfig[O any](ns *NodeSchema,
 
 	preProcessors := []func(ctx context.Context, input map[string]any) (map[string]any, error){
 		preTypeConverter(ns.InputTypes),
+		keyFinishedMarkerTrimmer(),
 	}
 	if meta.PreFillZero {
 		preProcessors = append(preProcessors, ns.inputValueFiller())
@@ -619,15 +623,19 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		return nil, false
 	}
 
-	var (
-		sErr errorx.StatusError
-		code = -1
-		msg  = err.Error()
-	)
-	if errors.As(err, &sErr) {
-		code = int(sErr.Code())
-		msg = sErr.Msg()
+	var sErr vo.WorkflowError
+	if !errors.As(err, &sErr) {
+		if errors.Is(err, context.DeadlineExceeded) {
+			sErr = vo.NodeTimeoutErr
+		} else if errors.Is(err, context.Canceled) {
+			sErr = vo.CancelErr
+		} else {
+			sErr = vo.WrapError(errno.ErrWorkflowExecuteFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
+		}
 	}
+
+	code := int(sErr.Code())
+	msg := sErr.Msg()
 
 	switch r.errProcessType {
 	case vo.ErrorProcessTypeDefault:
@@ -638,18 +646,11 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		}
 		d["isSuccess"] = false
 		if r.callbackEnabled {
-			var errInfo *vo.ErrorInfo
-			if !errors.As(err, &errInfo) {
-				errInfo = &vo.ErrorInfo{
-					Err:   err,
-					Level: vo.LevelWarn,
-				}
-			}
-
+			sErr = sErr.ChangeErrLevel(vo.LevelWarn)
 			sOutput := &nodes.StructuredCallbackOutput{
 				Output:    d,
 				RawOutput: d,
-				Error:     errInfo,
+				Error:     sErr,
 			}
 			_ = callbacks.OnEnd(ctx, sOutput)
 		}
@@ -662,25 +663,18 @@ func (r *nodeRunner[O]) onError(ctx context.Context, err error) (map[string]any,
 		}
 		s["isSuccess"] = false
 		if r.callbackEnabled {
-			var errInfo *vo.ErrorInfo
-			if !errors.As(err, &errInfo) {
-				errInfo = &vo.ErrorInfo{
-					Err:   err,
-					Level: vo.LevelWarn,
-				}
-			}
-
+			sErr = sErr.ChangeErrLevel(vo.LevelWarn)
 			sOutput := &nodes.StructuredCallbackOutput{
 				Output:    s,
 				RawOutput: s,
-				Error:     errInfo,
+				Error:     sErr,
 			}
 			_ = callbacks.OnEnd(ctx, sOutput)
 		}
 		return s, true
 	default:
 		if r.callbackEnabled {
-			_ = callbacks.OnError(ctx, err)
+			_ = callbacks.OnError(ctx, sErr)
 		}
 		return nil, false
 	}
@@ -694,24 +688,16 @@ func parseDefaultOutput(ctx context.Context, data string, schema_ map[string]*vo
 		return nil, err
 	}
 
-	for k, v := range result {
-		if s, ok := schema_[k]; ok {
-			val, err := nodes.Convert(ctx, v, k, s)
-			if err != nil {
-				var warnings nodes.ConversionWarnings
-				if errors.As(err, &warnings) {
-					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-					result[k] = val
-				} else {
-					return nil, fmt.Errorf("invalid type: %v, %v", k, err)
-				}
-			} else {
-				result[k] = val
-			}
-		}
+	r, ws, e := nodes.ConvertInputs(ctx, result, schema_)
+	if e != nil {
+		return nil, e
 	}
 
-	return result, nil
+	if ws != nil {
+		logs.CtxWarnf(ctx, "convert output warnings: %v", *ws)
+	}
+
+	return r, nil
 }
 
 func parseDefaultOutputOrFallback(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo) map[string]any {
@@ -732,16 +718,59 @@ func parseDefaultOutputOrFallback(ctx context.Context, data string, schema_ map[
 
 func preTypeConverter(inTypes map[string]*vo.TypeInfo) func(ctx context.Context, in map[string]any) (map[string]any, error) {
 	return func(ctx context.Context, in map[string]any) (map[string]any, error) {
-		out, err := nodes.ConvertInputs(ctx, in, inTypes)
+		out, ws, err := nodes.ConvertInputs(ctx, in, inTypes)
 		if err != nil {
-			var warnings nodes.ConversionWarnings
-			if errors.As(err, &warnings) {
-				logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-				return out, nil
-			} else {
-				return out, err
+			return nil, err
+		}
+
+		if ws != nil {
+			logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+		}
+
+		return out, err
+	}
+}
+
+func trimKeyFinishedMarker(ctx context.Context, in map[string]any) (map[string]any, bool, error) {
+	var (
+		newIn   map[string]any
+		trimmed bool
+	)
+	for k, v := range in {
+		if vStr, ok := v.(string); ok {
+			if strings.HasSuffix(vStr, nodes.KeyIsFinished) {
+				if newIn == nil {
+					newIn = maps.Clone(in)
+				}
+				vStr = strings.TrimSuffix(vStr, nodes.KeyIsFinished)
+				newIn[k] = vStr
+				trimmed = true
+			}
+		} else if vMap, ok := v.(map[string]any); ok {
+			newMap, subTrimmed, err := trimKeyFinishedMarker(ctx, vMap)
+			if err != nil {
+				return nil, false, err
+			}
+			if subTrimmed {
+				if newIn == nil {
+					newIn = maps.Clone(in)
+				}
+				newIn[k] = newMap
+				trimmed = true
 			}
 		}
+	}
+
+	if trimmed {
+		return newIn, true, nil
+	}
+
+	return in, false, nil
+}
+
+func keyFinishedMarkerTrimmer() func(ctx context.Context, in map[string]any) (map[string]any, error) {
+	return func(ctx context.Context, in map[string]any) (map[string]any, error) {
+		out, _, err := trimKeyFinishedMarker(ctx, in)
 		return out, err
 	}
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	crossmodelmgr "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	workflow3 "code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/workflow"
 	workflow2 "code.byted.org/flow/opencoze/backend/domain/workflow"
 	crosscode "code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/code"
@@ -54,7 +55,9 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 		SystemPrompt: getKeyOrZero[string]("SystemPrompt", s.Configs),
 		UserPrompt:   getKeyOrZero[string]("UserPrompt", s.Configs),
 		OutputFormat: mustGetKey[llm.Format]("OutputFormat", s.Configs),
+		InputFields:  s.InputTypes,
 		OutputFields: s.OutputTypes,
+		FullSources:  getKeyOrZero[map[string]*nodes.SourceInfo]("FullSources", s.Configs),
 	}
 
 	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", s.Configs)
@@ -63,11 +66,13 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 		return nil, fmt.Errorf("llm node llmParams is required")
 	}
 	var (
-		err       error
-		chatModel einomodel.BaseChatModel
+		err                  error
+		chatModel, fallbackM einomodel.BaseChatModel
+		info, fallbackI      *crossmodelmgr.Model
+		modelWithInfo        llm.ModelWithInfo
 	)
 
-	chatModel, err = model.GetManager().GetModel(ctx, llmParams)
+	chatModel, info, err = model.GetManager().GetModel(ctx, llmParams)
 	if err != nil {
 		return nil, err
 	}
@@ -76,26 +81,19 @@ func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 	if metaConfigs != nil && metaConfigs.MaxRetry > 0 {
 		backupModelParams := getKeyOrZero[*model.LLMParams]("BackupLLMParams", s.Configs)
 		if backupModelParams != nil {
-			backupChatModel, err := model.GetManager().GetModel(ctx, backupModelParams)
+			fallbackM, fallbackI, err = model.GetManager().GetModel(ctx, backupModelParams)
 			if err != nil {
 				return nil, err
-			}
-			chatModel = &llm.ModelWithFallback{
-				Model:         chatModel,
-				FallbackModel: backupChatModel,
-				UseFallback: func(ctx context.Context) bool {
-					exeCtx := execute.GetExeCtx(ctx)
-					if exeCtx == nil || exeCtx.NodeCtx == nil {
-						return false
-					}
-
-					return exeCtx.CurrentRetryCount > 0
-				},
 			}
 		}
 	}
 
-	llmConf.ChatModel = chatModel
+	if fallbackM == nil {
+		modelWithInfo = llm.NewModel(chatModel, info)
+	} else {
+		modelWithInfo = llm.NewModelWithFallback(chatModel, fallbackM, info, fallbackI)
+	}
+	llmConf.ChatModel = modelWithInfo
 
 	fcParams := getKeyOrZero[*vo.FCParam]("FCParam", s.Configs)
 	if fcParams != nil {
@@ -444,7 +442,7 @@ func (s *NodeSchema) ToQAConfig(ctx context.Context) (*qa.Config, error) {
 
 	llmParams := getKeyOrZero[*model.LLMParams]("LLMParams", s.Configs)
 	if llmParams != nil {
-		m, err := model.GetManager().GetModel(ctx, llmParams)
+		m, _, err := model.GetManager().GetModel(ctx, llmParams)
 		if err != nil {
 			return nil, err
 		}
@@ -552,6 +550,13 @@ func (s *NodeSchema) ToKnowledgeRetrieveConfig() (*knowledge.RetrieveConfig, err
 	}, nil
 }
 
+func (s *NodeSchema) ToKnowledgeDeleterConfig() (*knowledge.DeleterConfig, error) {
+	return &knowledge.DeleterConfig{
+		KnowledgeID:      mustGetKey[int64]("KnowledgeID", s.Configs),
+		KnowledgeDeleter: crossknowledge.GetKnowledgeOperator(),
+	}, nil
+}
+
 func (s *NodeSchema) ToPluginConfig() (*plugin.Config, error) {
 	return &plugin.Config{
 		PluginID:      mustGetKey[int64]("PluginID", s.Configs),
@@ -597,7 +602,7 @@ func (s *NodeSchema) ToIntentDetectorConfig(ctx context.Context) (*intentdetecto
 	}
 
 	llmParams := mustGetKey[*model.LLMParams]("LLMParams", s.Configs)
-	m, err := model.GetManager().GetModel(ctx, llmParams)
+	m, _, err := model.GetManager().GetModel(ctx, llmParams)
 	if err != nil {
 		return nil, err
 	}
@@ -690,6 +695,6 @@ func knowledgeRecallChatModel(ctx context.Context) (einomodel.BaseChatModel, err
 		Temperature: ptr.Of(0.5),
 		MaxTokens:   4096,
 	}
-	return model.GetManager().GetModel(ctx, defaultChatModelParma)
-
+	m, _, err := model.GetManager().GetModel(ctx, defaultChatModelParma)
+	return m, err
 }

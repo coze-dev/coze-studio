@@ -27,6 +27,14 @@ func NewKnowledgeDocumentSliceDAO(db *gorm.DB) KnowledgeDocumentSliceRepo {
 	return &dao.KnowledgeDocumentSliceDAO{DB: db, Query: query.Use(db)}
 }
 
+func NewWebContentTaskDAO(db *gorm.DB) WebCrawlTaskRepo {
+	return &dao.WebCrawlTaskDAO{DB: db, Query: query.Use(db)}
+}
+
+func NewKnowledgeDocumentUpdateConfigDAO(db *gorm.DB) KnowledgeDocumentUpdateConfigRepo {
+	return &dao.KnowledgeDocumentUpdateConfigDAO{DB: db, Query: query.Use(db)}
+}
+
 //go:generate mockgen -destination ../internal/mock/dal/dao/knowledge.go --package dao -source knowledge.go
 type KnowledgeRepo interface {
 	Create(ctx context.Context, knowledge *model.Knowledge) error
@@ -82,4 +90,20 @@ type KnowledgeDocumentSliceRepo interface {
 	IncrementHitCount(ctx context.Context, sliceIDs []int64) error
 	GetSliceHitByKnowledgeID(ctx context.Context, knowledgeID int64) (int64, error)
 	GetLastSequence(ctx context.Context, documentID int64) (float64, error)
+}
+
+type WebCrawlTaskRepo interface {
+	Create(ctx context.Context, task *model.WebCrawlTask) error
+	GetByID(ctx context.Context, id int64) (*model.WebCrawlTask, error)
+	Update(ctx context.Context, mp map[string]any) error
+	Upsert(ctx context.Context, task *model.WebCrawlTask) error
+}
+
+type KnowledgeDocumentUpdateConfigRepo interface {
+	Create(ctx context.Context, config *model.KnowledgeDocumentUpdateConfig) error
+	GetByDocumentID(ctx context.Context, documentID int64) (*model.KnowledgeDocumentUpdateConfig, error)
+	Update(ctx context.Context, mp map[string]any) error
+	Upsert(ctx context.Context, config *model.KnowledgeDocumentUpdateConfig) error
+	DeleteByDocumentID(ctx context.Context, documentID int64) error
+	DeleteByID(ctx context.Context, id int64) error
 }

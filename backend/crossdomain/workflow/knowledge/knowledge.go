@@ -135,6 +135,22 @@ func (k *Knowledge) Retrieve(ctx context.Context, r *crossknowledge.RetrieveRequ
 	}, nil
 }
 
+func (k *Knowledge) Delete(ctx context.Context, r *crossknowledge.DeleteDocumentRequest) (*crossknowledge.DeleteDocumentResponse, error) {
+	docID, err := strconv.ParseInt(r.DocumentID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid document id: %s", r.DocumentID)
+	}
+
+	err = k.client.DeleteDocument(ctx, &domainknowledge.DeleteDocumentRequest{
+		DocumentID: docID,
+	})
+	if err != nil {
+		return &crossknowledge.DeleteDocumentResponse{IsSuccess: false}, err
+	}
+
+	return &crossknowledge.DeleteDocumentResponse{IsSuccess: true}, nil
+}
+
 func (k *Knowledge) ListKnowledgeDetail(ctx context.Context, req *crossknowledge.ListKnowledgeDetailRequest) (*crossknowledge.ListKnowledgeDetailResponse, error) {
 	response, err := k.client.MGetKnowledgeByID(ctx, &domainknowledge.MGetKnowledgeByIDRequest{
 		KnowledgeIDs: req.KnowledgeIDs,

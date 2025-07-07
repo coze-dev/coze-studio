@@ -33,9 +33,6 @@ func newRunRecord(db *gorm.DB, opts ...gen.DOOption) runRecord {
 	_runRecord.AgentID = field.NewInt64(tableName, "agent_id")
 	_runRecord.UserID = field.NewString(tableName, "user_id")
 	_runRecord.Source = field.NewInt32(tableName, "source")
-	_runRecord.TokenCount = field.NewInt32(tableName, "token_count")
-	_runRecord.OutputTokens = field.NewInt32(tableName, "output_tokens")
-	_runRecord.InputTokens = field.NewInt32(tableName, "input_tokens")
 	_runRecord.Status = field.NewString(tableName, "status")
 	_runRecord.CreatorID = field.NewInt64(tableName, "creator_id")
 	_runRecord.CreatedAt = field.NewInt64(tableName, "created_at")
@@ -45,6 +42,7 @@ func newRunRecord(db *gorm.DB, opts ...gen.DOOption) runRecord {
 	_runRecord.CompletedAt = field.NewInt64(tableName, "completed_at")
 	_runRecord.ChatRequest = field.NewString(tableName, "chat_request")
 	_runRecord.Ext = field.NewString(tableName, "ext")
+	_runRecord.Usage = field.NewField(tableName, "usage")
 
 	_runRecord.fillFieldMap()
 
@@ -62,9 +60,6 @@ type runRecord struct {
 	AgentID        field.Int64  // agent_id
 	UserID         field.String // user id
 	Source         field.Int32  // 执行来源 0 API,
-	TokenCount     field.Int32  // token 消耗
-	OutputTokens   field.Int32  // 消耗的 output token 数
-	InputTokens    field.Int32  // 消耗的 input token 数
 	Status         field.String // 状态,0 Unknown, 1-Created,2-InProgress,3-Completed,4-Failed,5-Expired,6-Cancelled,7-RequiresAction
 	CreatorID      field.Int64  // 创建者标识
 	CreatedAt      field.Int64  // 创建时间
@@ -74,6 +69,7 @@ type runRecord struct {
 	CompletedAt    field.Int64  // 结束时间
 	ChatRequest    field.String // 保存原始请求的部分字段
 	Ext            field.String // 扩展字段
+	Usage          field.Field  // usage
 
 	fieldMap map[string]field.Expr
 }
@@ -96,9 +92,6 @@ func (r *runRecord) updateTableName(table string) *runRecord {
 	r.AgentID = field.NewInt64(table, "agent_id")
 	r.UserID = field.NewString(table, "user_id")
 	r.Source = field.NewInt32(table, "source")
-	r.TokenCount = field.NewInt32(table, "token_count")
-	r.OutputTokens = field.NewInt32(table, "output_tokens")
-	r.InputTokens = field.NewInt32(table, "input_tokens")
 	r.Status = field.NewString(table, "status")
 	r.CreatorID = field.NewInt64(table, "creator_id")
 	r.CreatedAt = field.NewInt64(table, "created_at")
@@ -108,6 +101,7 @@ func (r *runRecord) updateTableName(table string) *runRecord {
 	r.CompletedAt = field.NewInt64(table, "completed_at")
 	r.ChatRequest = field.NewString(table, "chat_request")
 	r.Ext = field.NewString(table, "ext")
+	r.Usage = field.NewField(table, "usage")
 
 	r.fillFieldMap()
 
@@ -124,16 +118,13 @@ func (r *runRecord) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (r *runRecord) fillFieldMap() {
-	r.fieldMap = make(map[string]field.Expr, 18)
+	r.fieldMap = make(map[string]field.Expr, 16)
 	r.fieldMap["id"] = r.ID
 	r.fieldMap["conversation_id"] = r.ConversationID
 	r.fieldMap["section_id"] = r.SectionID
 	r.fieldMap["agent_id"] = r.AgentID
 	r.fieldMap["user_id"] = r.UserID
 	r.fieldMap["source"] = r.Source
-	r.fieldMap["token_count"] = r.TokenCount
-	r.fieldMap["output_tokens"] = r.OutputTokens
-	r.fieldMap["input_tokens"] = r.InputTokens
 	r.fieldMap["status"] = r.Status
 	r.fieldMap["creator_id"] = r.CreatorID
 	r.fieldMap["created_at"] = r.CreatedAt
@@ -143,6 +134,7 @@ func (r *runRecord) fillFieldMap() {
 	r.fieldMap["completed_at"] = r.CompletedAt
 	r.fieldMap["chat_request"] = r.ChatRequest
 	r.fieldMap["ext"] = r.Ext
+	r.fieldMap["usage"] = r.Usage
 }
 
 func (r runRecord) clone(db *gorm.DB) runRecord {

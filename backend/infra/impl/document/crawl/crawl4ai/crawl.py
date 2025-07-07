@@ -15,12 +15,19 @@ async def main(url):
        cache_mode=CacheMode.DISABLED,
        markdown_generator=DefaultMarkdownGenerator(),
     )
+<<<<<<< HEAD
     async with AsyncWebCrawler(browser_config=browser_config, run_config=run_config, thread_safe=True) as crawler:
+=======
+    async with AsyncWebCrawler(config=browser_config, thread_safe=True) as crawler:
+>>>>>>> ebdecfc9490e2cecac3448adf102cc7568f64a8b
         result = await crawler.arun(url=url, config=run_config)
         # 输出json字符串
         print(json.dumps({
             "content": result.markdown,
+<<<<<<< HEAD
             # 可以加上其他需要的字段
+=======
+>>>>>>> ebdecfc9490e2cecac3448adf102cc7568f64a8b
         }))
 
 if __name__ == '__main__':

@@ -238,7 +238,7 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 	mu := sync.Mutex{}
 	var failList []int64
 
-	newIDs, err := k.idgen.GenMultiIDs(ctx, len(documents))
+	newIDs, err := k.genMultiIDs(ctx, len(documents))
 	if err != nil {
 		logs.CtxErrorf(ctx, "gen document id failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeIDGenCode)
@@ -367,7 +367,7 @@ func (k *knowledgeSVC) copyDocument(ctx context.Context, copyCtx *knowledgeCopyC
 			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 		}
 		newSliceModels := make([]*model.KnowledgeDocumentSlice, 0)
-		newSliceIDs, err := k.idgen.GenMultiIDs(ctx, len(sliceInfo))
+		newSliceIDs, err := k.genMultiIDs(ctx, len(sliceInfo))
 		if err != nil {
 			return errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", err.Error()))
 		}
@@ -459,7 +459,7 @@ func (k *knowledgeSVC) createTable(ctx context.Context, doc *model.KnowledgeDocu
 	// 表格型知识库，创建表
 	rdbColumns := []*rdbEntity.Column{}
 	tableColumns := doc.TableInfo.Columns
-	columnIDs, err := k.idgen.GenMultiIDs(ctx, len(tableColumns)+1)
+	columnIDs, err := k.genMultiIDs(ctx, len(tableColumns)+1)
 	if err != nil {
 		return err
 	}
@@ -529,6 +529,6 @@ func (k *knowledgeSVC) MoveKnowledgeToLibrary(ctx context.Context, request *Move
 		return errors.New("knowledge not found")
 	}
 	kn.AppID = 0
-	err = k.knowledgeRepo.Update(ctx, kn)
+	err = k.knowledgeRepo.Upsert(ctx, kn)
 	return err
 }

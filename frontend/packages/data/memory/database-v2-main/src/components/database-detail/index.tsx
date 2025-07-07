@@ -15,12 +15,12 @@ import {
 import { DatabaseModeSelect } from '@coze-data/database-v2-adapter/components/database-mode-select';
 import { DatabaseCreateTableModal } from '@coze-data/database-v2-adapter/components/create-table-modal';
 import { DatabaseBaseInfoModal } from '@coze-data/database-v2-adapter/components/base-info-modal';
+import { DatabaseDetailWaring } from '@coze-data/database-v2-adapter';
 import { I18n } from '@coze-arch/i18n';
 import {
   IconCozEdit,
   IconCozCross,
   IconCozArrowLeft,
-  IconCozWarningCircle,
 } from '@coze-arch/coze-design/icons';
 import {
   Button,
@@ -296,12 +296,7 @@ export const DatabaseDetail = ({
             align="left"
             tabBarExtraContent={
               <Space spacing={16}>
-                <Space spacing={4} className="coz-fg-dim">
-                  <IconCozWarningCircle className="text-lg" />
-                  <div className="text-base leading-[16px]">
-                    {I18n.t('data_base_doubao_channel_tips')}
-                  </div>
-                </Space>
+                <DatabaseDetailWaring />
                 {activeKey === DatabaseTabs.Structure ? (
                   <Button
                     data-testid={BotE2e.BotDatabaseEditTableStructureBtn}

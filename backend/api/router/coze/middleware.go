@@ -1434,3 +1434,65 @@ func _getbotonlineinfoMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _oauthMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+func _fetchweburlMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _oauthauthorizationcodeMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+func _batchupdatedocumentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getoauthpluginlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+func _web_urlMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _batchsubmitweburlMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getwebinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _submitweburlMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _knowledge0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _abortsublinkdiscoverytaskMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createsublinkdiscoverytaskMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getsublinkdiscoverytaskMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

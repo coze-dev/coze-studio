@@ -55,7 +55,7 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 			opts := []pluginEntity.ExecuteToolOpt{
 				plugin.WithProjectInfo(&plugin.ProjectInfo{
 					ProjectID:      ar.Identity.AgentID,
-					ProjectType:    plugin.ProjectTypeOfBot,
+					ProjectType:    plugin.ProjectTypeOfAgent,
 					ProjectVersion: ptr.Of(ar.Identity.Version),
 				}),
 			}
@@ -76,13 +76,13 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 				ID:           item.PluginID,
 				ConnectorID:  ar.Identity.ConnectorID,
 				ConnectorUID: ar.UserID,
-				TaskType:     vo.TaskTypeForeground,
+				TaskType:     crossworkflow.TaskTypeForeground,
 				AgentID:      ptr.Of(ar.Identity.AgentID),
-				Mode: func() vo.ExecuteMode {
+				Mode: func() crossworkflow.ExecuteMode {
 					if ar.Identity.IsDraft {
-						return vo.ExecuteModeDebug
+						return crossworkflow.ExecuteModeDebug
 					} else {
-						return vo.ExecuteModeRelease
+						return crossworkflow.ExecuteModeRelease
 					}
 				}(),
 			}, input)

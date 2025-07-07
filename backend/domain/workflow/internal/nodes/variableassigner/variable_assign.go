@@ -70,9 +70,10 @@ func (v *VariableAssigner) Assign(ctx context.Context, in map[string]any) (map[s
 			if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil {
 				exeCfg := exeCtx.RootCtx.ExeCfg
 				opts = append(opts, variable.WithStoreInfo(variable.StoreInfo{
-					AgentID:     exeCfg.AgentID,
-					AppID:       exeCfg.AppID,
-					ConnectorID: exeCfg.ConnectorID,
+					AgentID:      exeCfg.AgentID,
+					AppID:        exeCfg.AppID,
+					ConnectorID:  exeCfg.ConnectorID,
+					ConnectorUID: exeCfg.ConnectorUID,
 				}))
 			}
 			err := v.config.Handler.Set(ctx, *pair.Left.VariableType, pair.Left.FromPath, right, opts...)

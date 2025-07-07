@@ -10,6 +10,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/api/model/flow/dataengine/dataset"
 	"code.byted.org/flow/opencoze/backend/api/model/flow/marketplace/product_public_api"
 	"code.byted.org/flow/opencoze/backend/api/model/intelligence"
+	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_open_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/memory"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/playground"
@@ -411,6 +412,32 @@ func NewKnowledgeServiceClient(c thrift.TClient) *KnowledgeServiceClient {
 	}
 }
 
+type BotOpenApiService interface {
+	bot_open_api.BotOpenApiService
+}
+
+type BotOpenApiServiceClient struct {
+	*bot_open_api.BotOpenApiServiceClient
+}
+
+func NewBotOpenApiServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *BotOpenApiServiceClient {
+	return &BotOpenApiServiceClient{
+		BotOpenApiServiceClient: bot_open_api.NewBotOpenApiServiceClientFactory(t, f),
+	}
+}
+
+func NewBotOpenApiServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *BotOpenApiServiceClient {
+	return &BotOpenApiServiceClient{
+		BotOpenApiServiceClient: bot_open_api.NewBotOpenApiServiceClientProtocol(t, iprot, oprot),
+	}
+}
+
+func NewBotOpenApiServiceClient(c thrift.TClient) *BotOpenApiServiceClient {
+	return &BotOpenApiServiceClient{
+		BotOpenApiServiceClient: bot_open_api.NewBotOpenApiServiceClient(c),
+	}
+}
+
 type IntelligenceServiceProcessor struct {
 	*intelligence.IntelligenceServiceProcessor
 }
@@ -543,5 +570,14 @@ type KnowledgeServiceProcessor struct {
 
 func NewKnowledgeServiceProcessor(handler KnowledgeService) *KnowledgeServiceProcessor {
 	self := &KnowledgeServiceProcessor{dataset.NewDatasetServiceProcessor(handler)}
+	return self
+}
+
+type BotOpenApiServiceProcessor struct {
+	*bot_open_api.BotOpenApiServiceProcessor
+}
+
+func NewBotOpenApiServiceProcessor(handler BotOpenApiService) *BotOpenApiServiceProcessor {
+	self := &BotOpenApiServiceProcessor{bot_open_api.NewBotOpenApiServiceProcessor(handler)}
 	return self
 }

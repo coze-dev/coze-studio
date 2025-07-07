@@ -52,10 +52,11 @@ func (d *DatabaseRepository) Execute(ctx context.Context, request *nodedatabase.
 
 	req.SQLParams = make([]*database.SQLParamVal, 0, len(request.Params))
 	for i := range request.Params {
-		value := request.Params[i]
+		param := request.Params[i]
 		req.SQLParams = append(req.SQLParams, &database.SQLParamVal{
 			ValueType: table.FieldItemType_Text,
-			Value:     &value,
+			Value:     &param.Value,
+			ISNull:    param.IsNull,
 		})
 	}
 	response, err := d.client.ExecuteSQL(ctx, req)
@@ -416,7 +417,7 @@ func toLogic(relation nodedatabase.ClauseRelation) (database.Logic, error) {
 func toNodeDateBaseResponse(response *service.ExecuteSQLResponse) *nodedatabase.Response {
 	objects := make([]nodedatabase.Object, 0, len(response.Records))
 	for i := range response.Records {
-		objects = append(objects, toMapStringAny(response.Records[i]))
+		objects = append(objects, response.Records[i])
 	}
 	return &nodedatabase.Response{
 		Objects:   objects,

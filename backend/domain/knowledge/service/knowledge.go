@@ -19,6 +19,7 @@ import (
 	redisV9 "github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	knowledgeModel "code.byted.org/flow/opencoze/backend/api/model/crossdomain/knowledge"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/developer_api"
 	"code.byted.org/flow/opencoze/backend/application/base/ctxutil"
@@ -32,6 +33,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/knowledge/processor/impl"
 	"code.byted.org/flow/opencoze/backend/infra/contract/cache"
 	"code.byted.org/flow/opencoze/backend/infra/contract/chatmodel"
+	"code.byted.org/flow/opencoze/backend/infra/contract/document/crawl"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/nl2sql"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/ocr"
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/parser"
@@ -39,7 +41,6 @@ import (
 	"code.byted.org/flow/opencoze/backend/infra/contract/document/searchstore"
 	"code.byted.org/flow/opencoze/backend/infra/contract/eventbus"
 	"code.byted.org/flow/opencoze/backend/infra/contract/idgen"
-	"code.byted.org/flow/opencoze/backend/infra/contract/imagex"
 	"code.byted.org/flow/opencoze/backend/infra/contract/messages2query"
 	"code.byted.org/flow/opencoze/backend/infra/contract/rdb"
 	rdbEntity "code.byted.org/flow/opencoze/backend/infra/contract/rdb/entity"
@@ -56,18 +57,20 @@ import (
 
 func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHandler) {
 	svc := &knowledgeSVC{
-		knowledgeRepo:             repository.NewKnowledgeDAO(config.DB),
-		documentRepo:              repository.NewKnowledgeDocumentDAO(config.DB),
-		sliceRepo:                 repository.NewKnowledgeDocumentSliceDAO(config.DB),
-		reviewRepo:                repository.NewKnowledgeDocumentReviewDAO(config.DB),
+		knowledgeRepo:    repository.NewKnowledgeDAO(config.DB),
+		documentRepo:     repository.NewKnowledgeDocumentDAO(config.DB),
+		sliceRepo:        repository.NewKnowledgeDocumentSliceDAO(config.DB),
+		reviewRepo:       repository.NewKnowledgeDocumentReviewDAO(config.DB),
+		webCrawlTaskRepo: repository.NewWebContentTaskDAO(config.DB),
+
 		idgen:                     config.IDGen,
 		rdb:                       config.RDB,
 		producer:                  config.Producer,
 		searchStoreManagers:       config.SearchStoreManagers,
 		parseManager:              config.ParseManager,
 		storage:                   config.Storage,
-		imageX:                    config.ImageX,
 		reranker:                  config.Reranker,
+		crawler:                   config.Crawler,
 		rewriter:                  config.Rewriter,
 		nl2Sql:                    config.NL2Sql,
 		enableCompactTable:        ptr.FromOrDefault(config.EnableCompactTable, true),
@@ -94,22 +97,25 @@ type KnowledgeSVCConfig struct {
 	ParseManager              parser.Manager                 // optional: 文档切分与处理能力, default builtin parser
 	Storage                   storage.Storage                // required: oss
 	ModelFactory              chatmodel.Factory              // required: 模型 factory
-	ImageX                    imagex.ImageX                  // TODO: 确认下 oss 是否返回 uri / url
 	Rewriter                  messages2query.MessagesToQuery // optional: 未配置时不改写
 	Reranker                  rerank.Reranker                // optional: 未配置时默认 rrf
 	NL2Sql                    nl2sql.NL2SQL                  // optional: 未配置时默认不支持
 	EnableCompactTable        *bool                          // optional: 表格数据压缩，默认 true
 	OCR                       ocr.OCR                        // optional: ocr, 未提供时 ocr 功能不可用
+	Crawler                   crawl.Crawler                  // required: 网页内容获取
 	CacheCli                  cache.Cmdable                  // optional: 缓存实现
 	IsAutoAnnotationSupported bool                           // 是否支持了图片自动标注
 }
 
 type knowledgeSVC struct {
-	knowledgeRepo repository.KnowledgeRepo
-	documentRepo  repository.KnowledgeDocumentRepo
-	sliceRepo     repository.KnowledgeDocumentSliceRepo
-	reviewRepo    repository.KnowledgeDocumentReviewRepo
-	modelFactory  chatmodel.Factory
+	knowledgeRepo    repository.KnowledgeRepo
+	documentRepo     repository.KnowledgeDocumentRepo
+	sliceRepo        repository.KnowledgeDocumentSliceRepo
+	reviewRepo       repository.KnowledgeDocumentReviewRepo
+	webCrawlTaskRepo repository.WebCrawlTaskRepo
+	updateConfigRepo repository.KnowledgeDocumentUpdateConfigRepo
+	modelFactory     chatmodel.Factory
+	crawler          crawl.Crawler
 
 	idgen                     idgen.IDGenerator
 	rdb                       rdb.RDB
@@ -120,7 +126,6 @@ type knowledgeSVC struct {
 	reranker                  rerank.Reranker
 	storage                   storage.Storage
 	nl2Sql                    nl2sql.NL2SQL
-	imageX                    imagex.ImageX
 	cacheCli                  cache.Cmdable
 	enableCompactTable        bool // 表格数据压缩
 	isAutoAnnotationSupported bool // 是否支持了图片自动标注
@@ -331,18 +336,19 @@ func (k *knowledgeSVC) CreateDocument(ctx context.Context, request *CreateDocume
 	spaceID := request.Documents[0].SpaceID
 	documentSource := request.Documents[0].Source
 	docProcessor := impl.NewDocProcessor(ctx, &impl.DocProcessorConfig{
-		UserID:         userID,
-		SpaceID:        spaceID,
-		DocumentSource: documentSource,
-		Documents:      request.Documents,
-		KnowledgeRepo:  k.knowledgeRepo,
-		DocumentRepo:   k.documentRepo,
-		SliceRepo:      k.sliceRepo,
-		Idgen:          k.idgen,
-		Producer:       k.producer,
-		ParseManager:   k.parseManager,
-		Storage:        k.storage,
-		Rdb:            k.rdb,
+		UserID:           userID,
+		SpaceID:          spaceID,
+		DocumentSource:   documentSource,
+		Documents:        request.Documents,
+		KnowledgeRepo:    k.knowledgeRepo,
+		DocumentRepo:     k.documentRepo,
+		SliceRepo:        k.sliceRepo,
+		WebCrawlTaskRepo: k.webCrawlTaskRepo,
+		Idgen:            k.idgen,
+		Producer:         k.producer,
+		ParseManager:     k.parseManager,
+		Storage:          k.storage,
+		Rdb:              k.rdb,
 	})
 	// 1. 前置的动作，上传 tos 等
 	err = docProcessor.BeforeCreate()
@@ -395,7 +401,6 @@ func (k *knowledgeSVC) UpdateDocument(ctx context.Context, request *UpdateDocume
 				doc.TableInfo.Columns = finalColumns
 			}
 		}
-		// todo，如果是更改索引列怎么处理
 	}
 	doc.UpdatedAt = time.Now().UnixMilli()
 	err = k.documentRepo.Update(ctx, doc)
@@ -438,13 +443,16 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, request *DeleteDocume
 	if err != nil {
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
-
+	err = k.updateConfigRepo.DeleteByDocumentID(ctx, request.DocumentID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[DeleteDocument] delete update config failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+	}
 	sliceIDs, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{request.DocumentID})
 	if err != nil {
 		logs.CtxErrorf(ctx, "[DeleteDocument] get document slice ids failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
-
 	if err = k.emitDeleteKnowledgeDataEvent(ctx, doc.KnowledgeID, sliceIDs, strconv.FormatInt(request.DocumentID, 10)); err != nil {
 		return err
 	}
@@ -522,6 +530,13 @@ func (k *knowledgeSVC) MGetDocumentProgress(ctx context.Context, request *MGetDo
 			FileExtension: documents[i].FileExtension,
 			Status:        entity.DocumentStatus(documents[i].Status),
 			StatusMsg:     entity.DocumentStatus(documents[i].Status).String(),
+		}
+		if documents[i].DocumentType == int32(knowledge.DocumentTypeImage) && len(documents[i].URI) != 0 {
+			item.URL, err = k.storage.GetObjectUrl(ctx, documents[i].URI)
+			if err != nil {
+				logs.CtxErrorf(ctx, "get object url failed, err: %v", err)
+				return nil, errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KV("msg", err.Error()))
+			}
 		}
 		if documents[i].Status == int32(entity.DocumentStatusEnable) || documents[i].Status == int32(entity.DocumentStatusFailed) {
 			item.Progress = progressbar.ProcessDone
@@ -984,7 +999,7 @@ func (k *knowledgeSVC) CreateDocumentReview(ctx context.Context, request *Create
 		reviews = append(reviews, review)
 	}
 	// STEP 1. 生成ID
-	reviewIDs, err := k.idgen.GenMultiIDs(ctx, len(request.Reviews))
+	reviewIDs, err := k.genMultiIDs(ctx, len(request.Reviews))
 	if err != nil {
 		return nil, errorx.New(errno.ErrKnowledgeIDGenCode)
 	}
@@ -1458,4 +1473,26 @@ func (k *knowledgeSVC) getObjectURL(ctx context.Context, uri string) (string, er
 
 	url := cmd.Val()
 	return url, nil
+}
+
+func (k *knowledgeSVC) genMultiIDs(ctx context.Context, counts int) ([]int64, error) {
+	allIDs := make([]int64, 0)
+	for l := 0; l < counts; l += 100 {
+		r := min(l+100, counts)
+		batchSize := r - l
+		ids, err := k.idgen.GenMultiIDs(ctx, batchSize)
+		if err != nil {
+			return nil, errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("GenMultiIDs failed, err: %v", err)))
+		}
+		allIDs = append(allIDs, ids...)
+	}
+	return allIDs, nil
+}
+
+func (k *knowledgeSVC) SubmitWebUrlTask(ctx context.Context, request *SubmitWebUrlTaskRequest) (*SubmitWebUrlTaskResponse, error) {
+	return nil, nil
+}
+
+func (k *knowledgeSVC) GetWebUrlInfo(ctx context.Context, request *GetWebUrlInfoRequest) (*GetWebUrlInfoResponse, error) {
+	return nil, nil
 }

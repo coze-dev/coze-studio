@@ -5,14 +5,15 @@ import {
   type UnitItem,
   UnitType,
 } from '@coze-data/knowledge-resource-processor-core';
+import { ActionRenderByDelete } from '@coze-data/knowledge-resource-processor-base/components/upload-unit-table';
 import {
   UploadUnitFile,
   UploadUnitTable,
 } from '@coze-data/knowledge-resource-processor-base';
 import { I18n } from '@coze-arch/i18n';
+import { Typography } from '@coze-arch/coze-design';
 import { type TableType } from '@coze-arch/bot-api/memory';
 import { MemoryApi } from '@coze-arch/bot-api';
-import { Typography } from '@coze-arch/coze-design';
 
 export interface StepUploadProps {
   databaseId: string;
@@ -75,6 +76,20 @@ export function StepUpload({
         unitList={unitList}
         onChange={onUnitListChange}
         disableRetry
+        getColumns={(record, index) => ({
+          actions: [
+            <ActionRenderByDelete
+              record={record}
+              index={index}
+              params={{
+                unitList,
+                onChange: onUnitListChange,
+                type: UnitType.TABLE_DOC,
+                edit: false,
+              }}
+            />,
+          ],
+        })}
       />
     </>
   );

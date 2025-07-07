@@ -5,14 +5,15 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 
+	"code.byted.org/flow/opencoze/backend/domain/user/entity"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/types/errno"
+
 	"code.byted.org/flow/opencoze/backend/api/internal/httputil"
 	"code.byted.org/flow/opencoze/backend/application/user"
-	"code.byted.org/flow/opencoze/backend/domain/user/entity"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
-	"code.byted.org/flow/opencoze/backend/pkg/errorx"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/types/consts"
-	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 var noNeedSessionCheckPath = map[string]bool{
@@ -33,7 +34,6 @@ func SessionAuthMW() app.HandlerFunc {
 			return
 		}
 
-		// session auth check
 		s := ctx.Cookie(entity.SessionKey)
 		if len(s) == 0 {
 			logs.Errorf("[SessionAuthMW] session id is nil")

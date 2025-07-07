@@ -216,12 +216,12 @@ func mergeAgentToolInfo(ctx context.Context, dest, src *entity.ToolInfo) (*entit
 
 	dest.Operation.Parameters = newParameters
 
-	newReqBody, err := mergeRequestBody(ctx, dest.Operation.RequestBody.Value, src.Operation.RequestBody.Value)
+	newReqBody, err := mergeRequestBody(ctx, dest.Operation.RequestBody, src.Operation.RequestBody)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "mergeRequestBody failed")
 	}
 
-	dest.Operation.RequestBody.Value = newReqBody
+	dest.Operation.RequestBody = newReqBody
 
 	newRespBody, err := mergeResponseBody(ctx, dest.Operation.Responses, src.Operation.Responses)
 	if err != nil {
@@ -234,6 +234,10 @@ func mergeAgentToolInfo(ctx context.Context, dest, src *entity.ToolInfo) (*entit
 }
 
 func mergeParameters(ctx context.Context, dest, src openapi3.Parameters) (openapi3.Parameters, error) {
+	if len(dest) == 0 || len(src) == 0 {
+		return src, nil
+	}
+
 	srcMap := make(map[string]*openapi3.ParameterRef, len(src))
 	for _, p := range src {
 		srcMap[p.Value.Name] = p
@@ -266,9 +270,13 @@ func mergeParameters(ctx context.Context, dest, src openapi3.Parameters) (openap
 	return dest, nil
 }
 
-func mergeRequestBody(ctx context.Context, dest, src *openapi3.RequestBody) (*openapi3.RequestBody, error) {
-	for ct, dm := range dest.Content {
-		sm, ok := src.Content[ct]
+func mergeRequestBody(ctx context.Context, dest, src *openapi3.RequestBodyRef) (*openapi3.RequestBodyRef, error) {
+	if dest == nil || src == nil {
+		return src, nil
+	}
+
+	for ct, dm := range dest.Value.Content {
+		sm, ok := src.Value.Content[ct]
 		if !ok {
 			continue
 		}
@@ -331,9 +339,16 @@ func mergeMediaSchema(ctx context.Context, dest, src *openapi3.Schema) (*openapi
 }
 
 func mergeResponseBody(ctx context.Context, dest, src openapi3.Responses) (openapi3.Responses, error) {
+	if len(dest) == 0 || len(src) == 0 {
+		return src, nil
+	}
+
 	for code, dr := range dest {
-		sr, ok := src[code]
-		if !ok {
+		sr := src[code]
+		if dr == nil || sr == nil {
+			continue
+		}
+		if len(dr.Value.Content) == 0 || len(sr.Value.Content) == 0 {
 			continue
 		}
 

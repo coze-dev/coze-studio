@@ -34,10 +34,9 @@ export const useValidateWorkflow = () => {
     if (hasError) {
       validationService.setErrorsV2(errors);
     }
-    // 无论是否有错误，都需要校验连线
-    lineService.validateAllLine();
+
     return hasError;
-  }, [validationService, lineService]);
+  }, [validationService]);
 
   const validate = useCallback(async () => {
     validationService.validating = true;
@@ -50,11 +49,12 @@ export const useValidateWorkflow = () => {
       if (!feHasError && !beHasError) {
         validationService.clearErrors();
       }
+      lineService.validateAllLine();
       return beHasError;
     } finally {
       validationService.validating = false;
     }
-  }, [feValidate, beValidate, validationService]);
+  }, [feValidate, beValidate, validationService, lineService]);
 
   return { validate };
 };

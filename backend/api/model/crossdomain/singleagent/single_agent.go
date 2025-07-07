@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
 	"code.byted.org/flow/opencoze/backend/api/model/ocean/cloud/bot_common"
 	"code.byted.org/flow/opencoze/backend/crossdomain/contract/crossworkflow"
 )
@@ -65,9 +66,24 @@ type SingleAgent struct {
 	ShortcutCommand         []string
 }
 
+type InterruptEventType int64
+
+const (
+	InterruptEventType_LocalPlugin         InterruptEventType = 1
+	InterruptEventType_Question            InterruptEventType = 2
+	InterruptEventType_RequireInfos        InterruptEventType = 3
+	InterruptEventType_SceneChat           InterruptEventType = 4
+	InterruptEventType_InputNode           InterruptEventType = 5
+	InterruptEventType_WorkflowLocalPlugin InterruptEventType = 6
+	InterruptEventType_OauthPlugin         InterruptEventType = 7
+	InterruptEventType_WorkflowLLM         InterruptEventType = 100
+)
+
 type InterruptInfo struct {
-	AllToolInterruptData map[string]*crossworkflow.ToolInterruptEvent
+	AllToolInterruptData map[string]*plugin.ToolInterruptEvent
+	AllWfInterruptData   map[string]*crossworkflow.ToolInterruptEvent
 	ToolCallID           string
+	InterruptType        InterruptEventType
 	InterruptID          string
 }
 

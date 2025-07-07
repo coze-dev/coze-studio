@@ -6,19 +6,23 @@
   "author": "haozhenfei@bytedance.com",
   "maintainers": [],
   "exports": {
-    "./components/*": "./src/components/*/index.tsx"
+    ".": "./src/index.tsx",
+    "./components/*": "./src/components/*/index.tsx",
+    "./features/*": "./src/features/*/index.tsx"
   },
   "main": "src/index.tsx",
   "typesVersions": {
     "*": {
       "components/*": [
         "./src/components/*/index.tsx"
+      ],
+      "features/*": [
+        "./src/features/*/index.tsx"
       ]
     }
   },
   "scripts": {
     "build": "exit 0",
-    "dev": "storybook dev -p 6006",
     "lint": "eslint ./ --cache",
     "test": "vitest --run --passWithNoTests",
     "test:cov": "npm run test -- --coverage"

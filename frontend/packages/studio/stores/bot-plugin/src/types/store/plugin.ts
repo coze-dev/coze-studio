@@ -33,6 +33,9 @@ interface PluginAction {
   init: () => Promise<void>;
   setCanEdit: (can: boolean) => void;
   setInitSuccessed: (v: boolean) => void;
+  updatePluginInfoByImmer: (
+    updateFn: (pluginInfo: PluginState['pluginInfo']) => void,
+  ) => void;
 }
 
 export type BotPluginStateAction = PluginState & PluginGetter & PluginAction;

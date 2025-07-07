@@ -82,7 +82,7 @@ func (v *varStore) Get(ctx context.Context, path compose.FieldPath, opts ...vari
 		BizType:      bizType,
 		BizID:        bizID,
 		ConnectorID:  opt.StoreInfo.ConnectorID,
-		ConnectorUID: strconv.FormatInt(opt.StoreInfo.ConnectorUID, 10),
+		ConnectorUID: opt.StoreInfo.ConnectorUID,
 	})
 	if len(path) == 0 {
 		return nil, errors.New("field path is required")
@@ -198,10 +198,10 @@ func (v *varStore) Set(ctx context.Context, path compose.FieldPath, value any, o
 	}
 
 	meta := entity.NewUserVariableMeta(&variablesModel.UserVariableMeta{
-		BizType:     bizType,
-		BizID:       bizID,
-		ConnectorID: opt.StoreInfo.ConnectorID,
-		//ConnectorUID:
+		BizType:      bizType,
+		BizID:        bizID,
+		ConnectorID:  opt.StoreInfo.ConnectorID,
+		ConnectorUID: opt.StoreInfo.ConnectorUID,
 	})
 
 	if len(path) == 0 {

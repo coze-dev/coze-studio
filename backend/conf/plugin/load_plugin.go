@@ -123,35 +123,13 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 	toolProducts = map[int64]*ToolInfo{}
 
 	for _, m := range pluginsMeta {
-		if m.Deprecated {
-			continue
-		}
-
-		if !semver.IsValid(m.Version) {
-			logs.Errorf("invalid version '%s'", m.Version)
-			continue
-		}
-		if m.PluginID <= 0 {
-			logs.Errorf("invalid plugin id '%d'", m.PluginID)
-			continue
-		}
-		if m.ProductID <= 0 {
-			logs.Errorf("invalid product id '%d'", m.ProductID)
-			continue
-		}
-		_, ok := toolProducts[m.PluginID]
-		if ok {
-			logs.Errorf("duplicate plugin id '%d'", m.PluginID)
-			continue
-		}
-		if m.PluginType != common.PluginType_PLUGIN {
-			logs.Errorf("invalid plugin type '%s'", m.PluginType)
+		if !checkPluginMetaInfo(ctx, m) {
 			continue
 		}
 
 		err = m.Manifest.Validate()
 		if err != nil {
-			logs.Errorf("plugin manifest validates failed, err=%v", err)
+			logs.CtxErrorf(ctx, "plugin manifest validates failed, err=%v", err)
 			continue
 		}
 
@@ -159,7 +137,7 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 		loader := openapi3.NewLoader()
 		_doc, err := loader.LoadFromFile(docPath)
 		if err != nil {
-			logs.Errorf("load file '%s', err=%v", docPath, err)
+			logs.CtxErrorf(ctx, "load file '%s', err=%v", docPath, err)
 			continue
 		}
 
@@ -167,7 +145,7 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 
 		err = doc.Validate(ctx)
 		if err != nil {
-			logs.Errorf("the openapi3 doc '%s' validates failed, err=%v", m.OpenapiDocFile, err)
+			logs.CtxErrorf(ctx, "the openapi3 doc '%s' validates failed, err=%v", m.OpenapiDocFile, err)
 			continue
 		}
 
@@ -186,7 +164,7 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 		}
 
 		if pluginProducts[m.PluginID] != nil {
-			logs.Errorf("duplicate plugin id '%d'", m.PluginID)
+			logs.CtxErrorf(ctx, "duplicate plugin id '%d'", m.PluginID)
 			continue
 		}
 
@@ -208,9 +186,9 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 				continue
 			}
 
-			_, ok = toolProducts[t.ToolID]
+			_, ok := toolProducts[t.ToolID]
 			if ok {
-				logs.Errorf("duplicate tool id '%d'", t.ToolID)
+				logs.CtxErrorf(ctx, "duplicate tool id '%d'", t.ToolID)
 				continue
 			}
 
@@ -220,11 +198,11 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 			}
 			op, ok := apis[api]
 			if !ok {
-				logs.Errorf("api '[%s]:%s' not found in doc '%s'", api.Method, api.SubURL, docPath)
+				logs.CtxErrorf(ctx, "api '[%s]:%s' not found in doc '%s'", api.Method, api.SubURL, docPath)
 				continue
 			}
 			if err = op.Validate(); err != nil {
-				logs.Errorf("the openapi3 operation of tool '[%s]:%s' in '%s' validates failed, err=%v",
+				logs.CtxErrorf(ctx, "the openapi3 operation of tool '[%s]:%s' in '%s' validates failed, err=%v",
 					t.Method, t.SubURL, m.OpenapiDocFile, err)
 				continue
 			}
@@ -251,4 +229,34 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 	}
 
 	return nil
+}
+
+func checkPluginMetaInfo(ctx context.Context, m *pluginProductMeta) (continued bool) {
+	if m.Deprecated {
+		return false
+	}
+
+	if !semver.IsValid(m.Version) {
+		logs.CtxErrorf(ctx, "invalid version '%s'", m.Version)
+		return false
+	}
+	if m.PluginID <= 0 {
+		logs.CtxErrorf(ctx, "invalid plugin id '%d'", m.PluginID)
+		return false
+	}
+	if m.ProductID <= 0 {
+		logs.CtxErrorf(ctx, "invalid product id '%d'", m.ProductID)
+		return false
+	}
+	_, ok := toolProducts[m.PluginID]
+	if ok {
+		logs.CtxErrorf(ctx, "duplicate plugin id '%d'", m.PluginID)
+		return false
+	}
+	if m.PluginType != common.PluginType_PLUGIN {
+		logs.CtxErrorf(ctx, "invalid plugin type '%s'", m.PluginType)
+		return false
+	}
+
+	return true
 }

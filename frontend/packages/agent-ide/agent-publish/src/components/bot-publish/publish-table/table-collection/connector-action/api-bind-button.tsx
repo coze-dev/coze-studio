@@ -2,8 +2,8 @@ import { useState } from 'react';
 
 import { PatBody } from '@coze-studio/open-auth';
 import { I18n } from '@coze-arch/i18n';
-import { UIButton } from '@coze-arch/bot-semi';
 import { Modal } from '@coze-arch/coze-design';
+import { UIButton } from '@coze-arch/bot-semi';
 
 export const ApiBindButton: React.FC = () => {
   const [visible, setVisible] = useState(false);
@@ -20,8 +20,7 @@ export const ApiBindButton: React.FC = () => {
       </UIButton>
       <Modal
         size="xl"
-        // @ts-expect-error -- ignore
-        title={I18n.t('menu_profile_api_auth')}
+        title={I18n.t('settings_api_authorization')}
         visible={visible}
         onCancel={() => {
           setVisible(false);

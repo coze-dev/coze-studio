@@ -60,7 +60,7 @@ On developer machine（I want to update my local database with the changes that 
 
 On Server machine
 
-	atlas migrate apply --url $ATLAS_URL --dir "file://migrations"  --baseline "20250618025620" # step 1 for dev server
+	atlas migrate apply --url $ATLAS_URL --dir "file://migrations"  --baseline "20250703095335" # step 1 for dev server
 
 
 

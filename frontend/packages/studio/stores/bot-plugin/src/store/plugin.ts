@@ -230,6 +230,14 @@ export const createPluginStore = (options: {
             );
           }
         },
+        updatePluginInfoByImmer: updateFn =>
+          set(
+            produce<BotPluginStateAction>(s => {
+              updateFn(s.pluginInfo);
+            }),
+            false,
+            'updatePluginInfoByImmer',
+          ),
       })),
       {
         enabled: IS_DEV_MODE,

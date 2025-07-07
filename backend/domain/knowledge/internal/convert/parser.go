@@ -23,6 +23,7 @@ func ToParseConfig(fileExtension parser.FileExtension, ps *entity.ParsingStrateg
 		ExtractImage:        ps.ExtractImage,
 		ExtractTable:        ps.ExtractTable,
 		ImageOCR:            ps.ImageOCR,
+		FilterPages:         ps.FilterPages,
 		SheetID:             ptr.Of(int(ps.SheetID)),
 		HeaderLine:          ps.HeaderLine,
 		DataStartLine:       ps.DataStartLine,

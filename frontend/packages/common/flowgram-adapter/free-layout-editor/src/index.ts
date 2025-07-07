@@ -195,6 +195,9 @@ export {
   createFreeHistoryPlugin,
   FreeOperationType,
   HistoryService,
+  type OperationMeta,
+  OperationRegistry,
+  OperationContribution,
 } from '@flowgram.ai/free-history-plugin';
 // export {
 //   FormRehajeContainerModule,

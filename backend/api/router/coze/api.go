@@ -4,7 +4,6 @@ package coze
 
 import (
 	coze "code.byted.org/flow/opencoze/backend/api/handler/coze"
-
 	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
@@ -91,6 +90,8 @@ func Register(r *server.Hertz) {
 			_knowledge.POST("/update", append(_updatedatasetMw(), coze.UpdateDataset)...)
 			{
 				_document := _knowledge.Group("/document", _documentMw()...)
+				_document.POST("/batch_fetch", append(_fetchweburlMw(), coze.FetchWebUrl)...)
+				_document.POST("/batch_update", append(_batchupdatedocumentMw(), coze.BatchUpdateDocument)...)
 				_document.POST("/create", append(_createdocumentMw(), coze.CreateDocument)...)
 				_document.POST("/delete", append(_deletedocumentMw(), coze.DeleteDocument)...)
 				_document.POST("/list", append(_listdocumentMw(), coze.ListDocument)...)
@@ -129,6 +130,12 @@ func Register(r *server.Hertz) {
 				_table_schema := _knowledge.Group("/table_schema", _table_schemaMw()...)
 				_table_schema.POST("/get", append(_gettableschemaMw(), coze.GetTableSchema)...)
 				_table_schema.POST("/validate", append(_validatetableschemaMw(), coze.ValidateTableSchema)...)
+			}
+			{
+				_web_url := _knowledge.Group("/web_url", _web_urlMw()...)
+				_web_url.POST("/batch_submit", append(_batchsubmitweburlMw(), coze.BatchSubmitWebUrl)...)
+				_web_url.POST("/get", append(_getwebinfoMw(), coze.GetWebInfo)...)
+				_web_url.POST("/submit", append(_submitweburlMw(), coze.SubmitWebUrl)...)
 			}
 		}
 		{
@@ -170,6 +177,12 @@ func Register(r *server.Hertz) {
 				}
 			}
 			{
+				_knowledge0 := _memory.Group("/knowledge", _knowledge0Mw()...)
+				_knowledge0.POST("/abort_sub_link_discovery_task", append(_abortsublinkdiscoverytaskMw(), coze.AbortSubLinkDiscoveryTask)...)
+				_knowledge0.POST("/create_sub_link_discovery_task", append(_createsublinkdiscoverytaskMw(), coze.CreateSubLinkDiscoveryTask)...)
+				_knowledge0.GET("/get_sub_link_discovery_task", append(_getsublinkdiscoverytaskMw(), coze.GetSubLinkDiscoveryTask)...)
+			}
+			{
 				_project := _memory.Group("/project", _projectMw()...)
 				{
 					_variable := _project.Group("/variable", _variableMw()...)
@@ -194,6 +207,10 @@ func Register(r *server.Hertz) {
 				_variable0.POST("/get_meta", append(_getmemoryvariablemetaMw(), coze.GetMemoryVariableMeta)...)
 				_variable0.POST("/upsert", append(_setkvmemoryMw(), coze.SetKvMemory)...)
 			}
+		}
+		{
+			_oauth := _api.Group("/oauth", _oauthMw()...)
+			_oauth.GET("/authorization_code", append(_oauthauthorizationcodeMw(), coze.OauthAuthorizationCode)...)
 		}
 		{
 			_passport := _api.Group("/passport", _passportMw()...)
@@ -296,6 +313,7 @@ func Register(r *server.Hertz) {
 			_plugin_api.POST("/delete_api", append(_deleteapiMw(), coze.DeleteAPI)...)
 			_plugin_api.POST("/get_bot_default_params", append(_getbotdefaultparamsMw(), coze.GetBotDefaultParams)...)
 			_plugin_api.POST("/get_dev_plugin_list", append(_getdevpluginlistMw(), coze.GetDevPluginList)...)
+			_plugin_api.POST("/get_oauth_plugin_list", append(_getoauthpluginlistMw(), coze.GetOAuthPluginList)...)
 			_plugin_api.POST("/get_oauth_schema", append(_getoauthschemaapiMw(), coze.GetOAuthSchemaAPI)...)
 			_plugin_api.POST("/get_oauth_status", append(_getoauthstatusMw(), coze.GetOAuthStatus)...)
 			_plugin_api.POST("/get_playground_plugin_list", append(_getplaygroundpluginlistMw(), coze.GetPlaygroundPluginList)...)

@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -33,7 +31,7 @@ func (dao *KnowledgeDocumentSliceDAO) Create(ctx context.Context, slice *model.K
 func (dao *KnowledgeDocumentSliceDAO) Update(ctx context.Context, slice *model.KnowledgeDocumentSlice) error {
 	s := dao.Query.KnowledgeDocumentSlice
 	slice.UpdatedAt = time.Now().UnixMilli()
-	_, err := s.WithContext(ctx).Updates(slice)
+	err := s.WithContext(ctx).Save(slice)
 	return err
 }
 
@@ -45,9 +43,6 @@ func (dao *KnowledgeDocumentSliceDAO) BatchSetStatus(ctx context.Context, ids []
 	s := dao.Query.KnowledgeDocumentSlice
 	updates := map[string]any{s.Status.ColumnName().String(): status}
 	if reason != "" {
-		if len(reason) > 255 { // TODO: tinytext 换成 text ?
-			reason = reason[:255]
-		}
 		updates[s.FailReason.ColumnName().String()] = reason
 	}
 	updates[s.UpdatedAt.ColumnName().String()] = time.Now().UnixMilli()
@@ -67,63 +62,73 @@ func (dao *KnowledgeDocumentSliceDAO) DeleteByDocument(ctx context.Context, docu
 	return err
 }
 
-func (dao *KnowledgeDocumentSliceDAO) List(ctx context.Context, knowledgeID int64, documentID int64, limit int, cursor *string) (
-	pos []*model.KnowledgeDocumentSlice, nextCursor *string, hasMore bool, err error) {
+func (dao *KnowledgeDocumentSliceDAO) List(ctx context.Context, knowledgeID int64, documentID int64, limit int) (
+	pos []*model.KnowledgeDocumentSlice, hasMore bool, err error) {
 
-	do, err := dao.listDo(ctx, knowledgeID, documentID, limit, cursor)
+	do, err := dao.listDo(ctx, knowledgeID, documentID)
 	if err != nil {
-		return nil, nil, false, err
+		return nil, false, err
 	}
+	if limit == -1 {
+		var (
+			lastID    int64 = 0
+			batchSize       = 100
+		)
+		for {
+			sliceArr, _, err := dao.listBatch(ctx, knowledgeID, documentID, batchSize, lastID)
+			if err != nil {
+				return nil, false, err
+			}
+			if len(sliceArr) == 0 {
+				break
+			}
+			pos = append(pos, sliceArr...)
+			lastID = sliceArr[len(sliceArr)-1].ID
+		}
+		return pos, false, nil
+	} else {
+		pos, err = do.Limit(limit).Find()
+		if err != nil {
+			return nil, false, err
+		}
 
-	pos, err = do.Limit(limit).Find()
-	if err != nil {
-		return nil, nil, false, err
+		if len(pos) == 0 {
+			return nil, false, nil
+		}
+
+		hasMore = len(pos) == limit
+
+		return pos, hasMore, err
 	}
-
-	if len(pos) == 0 {
-		return nil, nil, false, nil
-	}
-
-	hasMore = len(pos) == limit
-	last := pos[len(pos)-1]
-	cursor = dao.toCursor(int64(last.Sequence), last.ID)
-
-	return pos, nextCursor, hasMore, err
 }
 
-func (dao *KnowledgeDocumentSliceDAO) ListStatus(ctx context.Context, documentID int64, limit int, cursor *string) (
-	resp []*model.SliceProgress, nextCursor *string, hasMore bool, err error) {
+func (dao *KnowledgeDocumentSliceDAO) listBatch(ctx context.Context, knowledgeID int64, documentID int64, batchSize int, lastID int64) (
+	pos []*model.KnowledgeDocumentSlice, hasMore bool, err error) {
 
-	s := dao.Query.KnowledgeDocumentSlice
-	do, err := dao.listDo(ctx, 0, documentID, limit, cursor)
+	if batchSize <= 0 {
+		batchSize = 100 // 默认批量大小
+	}
+
+	do, err := dao.listDo(ctx, knowledgeID, documentID)
 	if err != nil {
-		return nil, nil, false, err
+		return nil, false, err
 	}
 
-	pos, err := do.Select(s.ID, s.Status, s.FailReason, s.UpdatedAt).Limit(limit).Find()
+	if lastID > 0 {
+		do = do.Where(dao.Query.KnowledgeDocumentSlice.ID.Gt(lastID))
+	}
+
+	pos, err = do.Debug().Limit(batchSize).Order(dao.Query.KnowledgeDocumentSlice.ID.Asc()).Find()
 	if err != nil {
-		return nil, nil, false, err
+		return nil, false, err
 	}
 
-	if len(pos) == 0 {
-		return nil, nil, false, nil
-	}
+	hasMore = len(pos) == batchSize
 
-	hasMore = len(pos) == limit
-	last := pos[len(pos)-1]
-	cursor = dao.toCursor(int64(last.Sequence), last.ID)
-	resp = make([]*model.SliceProgress, 0, len(pos))
-	for _, po := range pos {
-		resp = append(resp, &model.SliceProgress{
-			Status:    model.SliceStatus(po.Status),
-			StatusMsg: po.FailReason,
-		})
-	}
-
-	return resp, nextCursor, hasMore, nil
+	return pos, hasMore, nil
 }
 
-func (dao *KnowledgeDocumentSliceDAO) listDo(ctx context.Context, knowledgeID int64, documentID int64, limit int, cursor *string) (
+func (dao *KnowledgeDocumentSliceDAO) listDo(ctx context.Context, knowledgeID int64, documentID int64) (
 	query.IKnowledgeDocumentSliceDo, error) {
 
 	s := dao.Query.KnowledgeDocumentSlice
@@ -134,35 +139,8 @@ func (dao *KnowledgeDocumentSliceDAO) listDo(ctx context.Context, knowledgeID in
 	if knowledgeID != 0 {
 		do = do.Where(s.KnowledgeID.Eq(knowledgeID))
 	}
-	if cursor != nil {
-		// todo，因sequence逻辑更新，这里逻辑可能要改动下
-	}
 
 	return do, nil
-}
-
-func (dao *KnowledgeDocumentSliceDAO) fromCursor(cursor string) (seq, id int64, err error) {
-	parts := strings.Split(cursor, ",")
-	if len(parts) != 2 {
-		return 0, 0, fmt.Errorf("invalid cursor string")
-	}
-
-	seq, err = strconv.ParseInt(parts[0], 10, 64)
-	if err != nil {
-		return 0, 0, fmt.Errorf("invalid cursor part 0")
-	}
-
-	id, err = strconv.ParseInt(parts[1], 10, 64)
-	if err != nil {
-		return 0, 0, fmt.Errorf("invalid cursor part 1")
-	}
-
-	return seq, id, nil
-}
-
-func (dao *KnowledgeDocumentSliceDAO) toCursor(seq, id int64) *string {
-	c := fmt.Sprintf("%d,%d", seq, id)
-	return &c
 }
 
 func (dao *KnowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, docIDs []int64) (sliceIDs []int64, err error) {
@@ -190,7 +168,7 @@ func (dao *KnowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, d
 			default:
 			}
 
-			slices, _, _, dbErr := dao.List(ctx, 0, docID, -1, nil)
+			slices, _, dbErr := dao.List(ctx, 0, docID, -1)
 			if dbErr != nil {
 				logs.CtxErrorf(ctx, "[getDocSliceIDs] get deleted slice id err:%+v, doc_id:%v", dbErr, docID)
 				return dbErr

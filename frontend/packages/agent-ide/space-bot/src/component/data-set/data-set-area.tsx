@@ -16,6 +16,8 @@ import { useDatasetStore } from '@coze-data/knowledge-data-set-for-agent';
 import { BotE2e } from '@coze-data/e2e';
 import { REPORT_EVENTS as ReportEventNames } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
+import { IconCozCopy, IconCozMinusCircle } from '@coze-arch/coze-design/icons';
+import { Tooltip, Popover } from '@coze-arch/coze-design';
 import { OpenBlockEvent, emitEvent } from '@coze-arch/bot-utils';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { UIButton, UITag, Toast } from '@coze-arch/bot-semi';
@@ -35,8 +37,6 @@ import {
   AddButton,
 } from '@coze-agent-ide/tool';
 import { useBotEditor } from '@coze-agent-ide/bot-editor-context-store';
-import { IconCozCopy, IconCozMinusCircle } from '@coze-arch/coze-design/icons';
-import { Tooltip, Popover } from '@coze-arch/coze-design';
 
 import { usePopoverLock } from '../../hook/use-popover-lock';
 import { useDatasetAutoChangeConfirm } from '../../hook/use-dataset-auto-change-confirm';
@@ -181,6 +181,7 @@ export const DataSetAreaItem: FC<IDataSetAreaProps> = ({
   const jumpToAdd = (datasetID: string, type: UnitType) => {
     const queryParams = {
       biz: 'agentIDE',
+      type,
       bot_id: params.bot_id,
       action_type: ActionType.ADD,
       page_mode: 'modal',

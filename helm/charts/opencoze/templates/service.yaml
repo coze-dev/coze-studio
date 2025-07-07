@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "opencoze.fullname" . }}
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.cozeServer.service.type }}
+  ports:
+    - port: {{ .Values.cozeServer.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "opencoze.selectorLabels" . | nindent 4 }}

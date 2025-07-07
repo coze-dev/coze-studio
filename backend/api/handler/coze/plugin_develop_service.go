@@ -724,6 +724,10 @@ func GetDevPluginList(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, "size is invalid")
 		return
 	}
+	if req.GetSize() > 50 {
+		invalidParamRequestResponse(c, "size is too large")
+		return
+	}
 
 	resp, err := plugin.PluginApplicationSVC.GetDevPluginList(ctx, &req)
 	if err != nil {
@@ -861,6 +865,31 @@ func RevokeAuthToken(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := plugin.PluginApplicationSVC.RevokeAuthToken(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetOAuthPluginList .
+// @router /api/plugin_api/get_oauth_plugin_list [POST]
+func GetOAuthPluginList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req plugin_develop.GetOAuthPluginListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.EntityID <= 0 {
+		invalidParamRequestResponse(c, "entityID is required")
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.GetOAuthPluginList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

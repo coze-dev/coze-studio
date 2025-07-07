@@ -3,6 +3,7 @@ package compose
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 
 	"github.com/cloudwego/eino/compose"
 
@@ -30,6 +31,9 @@ import (
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableaggregator"
 	"code.byted.org/flow/opencoze/backend/domain/workflow/internal/nodes/variableassigner"
 	"code.byted.org/flow/opencoze/backend/pkg/ctxcache"
+	"code.byted.org/flow/opencoze/backend/pkg/errorx"
+	"code.byted.org/flow/opencoze/backend/pkg/safego"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 
 	"code.byted.org/flow/opencoze/backend/domain/workflow/crossdomain/variable"
 )
@@ -81,9 +85,19 @@ type Node struct {
 }
 
 func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]any, map[string]any],
-	sc *WorkflowSchema) (*Node, error) {
+	sc *WorkflowSchema, deps *dependencyInfo) (_ *Node, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrCreateNodeFail, err, errorx.KV("node_name", s.Name), errorx.KV("cause", err.Error()))
+		}
+	}()
+
 	if m := entity.NodeMetaByNodeType(s.Type); m != nil && m.InputSourceAware {
-		if err := s.SetFullSources(sc.GetAllNodes()); err != nil {
+		if err = s.SetFullSources(sc.GetAllNodes(), deps); err != nil {
 			return nil, err
 		}
 	}
@@ -106,7 +120,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		return invokableStreamableNodeWO(s, l.Chat, l.ChatStream), nil
+		return invokableStreamableNodeWO(s, l.Chat, l.ChatStream, withCallbackOutputConverter(l.ToCallbackOutput)), nil
 	case entity.NodeTypeSelector:
 		conf := s.ToSelectorConfig()
 
@@ -236,7 +250,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		return invokableNode(s, inputR.Invoke), nil
+		return invokableNode(s, inputR.Invoke, withCallbackOutputConverter(inputR.ToCallbackOutput)), nil
 	case entity.NodeTypeOutputEmitter:
 		conf, err := s.ToOutputEmitterConfig(sc)
 		if err != nil {
@@ -353,6 +367,16 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 		return invokableNode(s, r.Retrieve), nil
+	case entity.NodeTypeKnowledgeDeleter:
+		conf, err := s.ToKnowledgeDeleterConfig()
+		if err != nil {
+			return nil, err
+		}
+		r, err := knowledge.NewKnowledgeDeleter(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return invokableNode(s, r.Delete), nil
 	case entity.NodeTypeCodeRunner:
 		conf, err := s.ToCodeRunnerConfig()
 		if err != nil {
@@ -362,7 +386,10 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 		if err != nil {
 			return nil, err
 		}
-		return invokableNode(s, r.RunCode, withCallbackOutputConverter(r.ToCallbackOutput)), nil
+		initFn := func(ctx context.Context) (context.Context, error) {
+			return ctxcache.Init(ctx), nil
+		}
+		return invokableNode(s, r.RunCode, withCallbackOutputConverter(r.ToCallbackOutput), withInit(initFn)), nil
 	case entity.NodeTypePlugin:
 		conf, err := s.ToPluginConfig()
 		if err != nil {

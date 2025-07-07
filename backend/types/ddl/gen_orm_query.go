@@ -14,6 +14,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/database"
 	modelEntity "code.byted.org/flow/opencoze/backend/api/model/crossdomain/modelmgr"
 	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/plugin"
@@ -86,9 +87,14 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"tool_version": {
 			"operation": &plugin.Openapi3Operation{},
 		},
+		"plugin_oauth_auth": {
+			"oauth_config": &plugin.OAuthAuthorizationCodeConfig{},
+		},
 	},
 	"domain/conversation/agentrun/internal/dal/query": {
-		"run_record": {},
+		"run_record": {
+			"usage": &agentrun.Usage{},
+		},
 	},
 	"domain/conversation/conversation/internal/dal/query": {
 		"conversation": {},

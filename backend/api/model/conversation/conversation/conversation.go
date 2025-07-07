@@ -2234,8 +2234,8 @@ func (p *ClearConversationApiRequest) String() string {
 }
 
 type Section struct {
-	ID             int64 `thrift:"id,1" json:"id" form:"id" query:"id"`
-	ConversationID int64 `thrift:"conversation_id,2" json:"conversation_id" form:"conversation_id" query:"conversation_id"`
+	ID             int64 `thrift:"id,1" form:"id" json:"id,string" query:"id"`
+	ConversationID int64 `thrift:"conversation_id,2" form:"conversation_id" json:"conversation_id,string" query:"conversation_id"`
 }
 
 func NewSection() *Section {

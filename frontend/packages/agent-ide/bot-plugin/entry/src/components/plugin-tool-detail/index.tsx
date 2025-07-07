@@ -11,6 +11,7 @@ import {
   REPORT_EVENTS as ReportEventNames,
 } from '@coze-arch/report-events';
 import { useErrorHandler } from '@coze-arch/logger';
+import { Spin, Collapse } from '@coze-arch/coze-design';
 import { CustomError } from '@coze-arch/bot-error';
 import {
   type APIParameter,
@@ -22,7 +23,6 @@ import { PluginDevelopApi } from '@coze-arch/bot-api';
 import { addDepthAndValue } from '@coze-agent-ide/bot-plugin-tools/pluginModal/utils';
 import { type RenderEnhancedComponentProps } from '@coze-agent-ide/bot-plugin-tools/pluginModal/types';
 import { setEditToolExampleValue } from '@coze-agent-ide/bot-plugin-tools/example/utils';
-import { Spin, Collapse } from '@coze-arch/coze-design';
 
 import { useContentResponse } from './use-content-response';
 import { useContentRequest } from './use-content-request';
@@ -62,7 +62,7 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
     unlockPlugin,
     spaceID,
     pluginID,
-    setPluginInfo,
+    updatePluginInfoByImmer,
     version,
   } = usePluginStore(
     useShallow(store => ({
@@ -74,15 +74,17 @@ export const ToolDetailPage: FC<ToolDetailPageProps> = ({
       unlockPlugin: store.unlockPlugin,
       spaceID: store.spaceID,
       pluginID: store.pluginId,
-      setPluginInfo: store.setPluginInfo,
+      updatePluginInfoByImmer: store.updatePluginInfoByImmer,
       version: store.version,
     })),
   );
 
   const handleSuccess = (baseResData: UpdateAPIResponse) => {
-    setPluginInfo({
-      ...pluginInfo,
-      edit_version: baseResData?.edit_version,
+    updatePluginInfoByImmer(draft => {
+      if (!draft) {
+        return;
+      }
+      draft.edit_version = baseResData?.edit_version;
     });
   };
 

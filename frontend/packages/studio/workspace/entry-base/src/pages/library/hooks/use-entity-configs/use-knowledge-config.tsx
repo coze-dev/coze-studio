@@ -84,7 +84,7 @@ const renderKnowledgeItem = (item: ResourceInfo) => {
               size="mini"
               className="flex-shrink-0 flex-grow-0"
             >
-              {knowledgeBizStatusTag}
+              {I18n.t(knowledgeBizStatusTag)}
             </Tag>
           ) : null}
         </>

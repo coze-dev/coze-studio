@@ -20,7 +20,31 @@ type Workflow interface {
 	ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error)
 	GetWorkflowIDsByAppID(ctx context.Context, appID int64) ([]int64, error)
 	SyncExecuteWorkflow(ctx context.Context, config vo.ExecuteConfig, input map[string]any) (*workflowEntity.WorkflowExecution, vo.TerminatePlan, error)
+	WithExecuteConfig(cfg vo.ExecuteConfig) einoCompose.Option
 }
+
+type ExecuteConfig = vo.ExecuteConfig
+type ExecuteMode = vo.ExecuteMode
+
+const (
+	ExecuteModeDebug     ExecuteMode = "debug"
+	ExecuteModeRelease   ExecuteMode = "release"
+	ExecuteModeNodeDebug ExecuteMode = "node_debug"
+)
+
+type TaskType = vo.TaskType
+
+const (
+	TaskTypeForeground TaskType = "foreground"
+	TaskTypeBackground TaskType = "background"
+)
+
+type BizType = vo.BizType
+
+const (
+	BizTypeAgent    BizType = "agent"
+	BizTypeWorkflow BizType = "workflow"
+)
 
 type ReleaseWorkflowConfig = vo.ReleaseWorkflowConfig
 

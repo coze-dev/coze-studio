@@ -229,7 +229,7 @@ type PluginAPIParam struct {
 
 type CodeRunner struct {
 	Code     string `json:"code"`
-	Language int64
+	Language int64  `json:"language"`
 }
 
 type KnowledgeIndexer struct {
@@ -478,6 +478,7 @@ const (
 
 	BlockTypeJsonSerialization   BlockType = "58"
 	BlockTypeJsonDeserialization BlockType = "59"
+	BlockTypeBotDatasetDelete    BlockType = "60"
 )
 
 type VariableType string

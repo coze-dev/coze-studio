@@ -19,6 +19,7 @@ import (
 	"code.byted.org/flow/opencoze/backend/pkg/lang/ternary"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
 	"code.byted.org/flow/opencoze/backend/pkg/sonic"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type QuestionAnswer struct {
@@ -253,14 +254,14 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (out ma
 			}
 		case DynamicChoices:
 			dynamicChoices, ok := nodes.TakeMapValue(in, compose.FieldPath{DynamicChoicesKey})
-			if !ok {
-				return nil, fmt.Errorf("dynamic choices not found")
+			if !ok || len(dynamicChoices.([]any)) == 0 {
+				return nil, vo.NewError(errno.ErrQuestionOptionsEmpty)
 			}
 
 			const maxDynamicChoices = 26
 			for i, choice := range dynamicChoices.([]any) {
 				if i >= maxDynamicChoices {
-					return nil, fmt.Errorf("dynamic choice with index %d is out of range", i)
+					break // take first 26 choices, discard the others
 				}
 				c := choice.(string)
 				formattedChoices = append(formattedChoices, c)
@@ -349,22 +350,13 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 		return nil, fmt.Errorf("field %s not found", fieldInfo)
 	}
 
-	realOutput := make(map[string]any)
-	for k, v := range fields.(map[string]any) {
-		if s, ok := q.config.OutputFields[k]; ok {
-			val, err := nodes.Convert(ctx, v, k, s)
-			if err != nil {
-				var warnings nodes.ConversionWarnings
-				if errors.As(err, &warnings) {
-					logs.CtxWarnf(ctx, "convert inputs warnings: %v", warnings)
-					realOutput[k] = val
-				} else {
-					return nil, fmt.Errorf("invalid type: %v, %v", k, err)
-				}
-			} else {
-				realOutput[k] = val
-			}
-		}
+	realOutput, ws, err := nodes.ConvertInputs(ctx, fields.(map[string]any), q.config.OutputFields, nodes.SkipRequireCheck())
+	if err != nil {
+		return nil, err
+	}
+
+	if ws != nil {
+		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	realOutput[UserResponseKey] = userResponse

@@ -8,6 +8,7 @@
   "exports": {
     "./components/*": "./src/components/*/index.tsx",
     "./constants": "./src/constants/index.ts",
+    "./features/*": "./src/features/*/index.tsx",
     "./types": "./src/types/index.ts"
   },
   "main": "src/index.tsx",
@@ -19,6 +20,9 @@
       "constants": [
         "./src/constants/index.ts"
       ],
+      "features/*": [
+        "./src/features/*/index.tsx"
+      ],
       "types": [
         "./src/types/index.ts"
       ]
@@ -26,7 +30,6 @@
   },
   "scripts": {
     "build": "exit 0",
-    "dev": "storybook dev -p 6006",
     "lint": "eslint ./ --cache",
     "test": "vitest --run --passWithNoTests",
     "test:cov": "npm run test -- --coverage"

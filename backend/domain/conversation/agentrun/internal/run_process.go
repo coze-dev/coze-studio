@@ -6,9 +6,11 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/flow/opencoze/backend/api/model/crossdomain/agentrun"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/entity"
 	"code.byted.org/flow/opencoze/backend/domain/conversation/agentrun/repository"
 	"code.byted.org/flow/opencoze/backend/pkg/logs"
+	"code.byted.org/flow/opencoze/backend/types/errno"
 )
 
 type RunProcess struct {
@@ -44,19 +46,23 @@ func (r *RunProcess) StepToInProgress(ctx context.Context, srRecord *entity.Chun
 	return nil
 }
 
-func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
+func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *agentrun.Usage) {
 
 	completedAt := time.Now().UnixMilli()
 
 	updateMeta := &entity.UpdateMeta{
 		Status:      entity.RunStatusCompleted,
+		Usage:       usage,
 		CompletedAt: completedAt,
 		UpdatedAt:   completedAt,
 	}
 	err := r.RunRecordRepo.UpdateByID(ctx, srRecord.ID, updateMeta)
 	if err != nil {
 		logs.CtxErrorf(ctx, "RunRecordRepo.UpdateByID error: %v", err)
-		r.event.SendErrEvent(entity.RunEventError, 10000, err.Error(), sw)
+		r.event.SendErrEvent(entity.RunEventError, sw, &entity.RunError{
+			Code: errno.ErrConversationAgentRunError,
+			Msg:  err.Error(),
+		})
 		return
 	}
 
@@ -66,8 +72,6 @@ func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkR
 	r.event.SendRunEvent(entity.RunEventCompleted, srRecord, sw)
 
 	r.event.SendStreamDoneEvent(sw)
-	return
-
 }
 func (r *RunProcess) StepToFailed(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
 
@@ -82,13 +86,19 @@ func (r *RunProcess) StepToFailed(ctx context.Context, srRecord *entity.ChunkRun
 	err := r.RunRecordRepo.UpdateByID(ctx, srRecord.ID, updateMeta)
 
 	if err != nil {
-		r.event.SendErrEvent(entity.RunEventError, 10000, err.Error(), sw)
+		r.event.SendErrEvent(entity.RunEventError, sw, &entity.RunError{
+			Code: errno.ErrConversationAgentRunError,
+			Msg:  err.Error(),
+		})
 		logs.CtxErrorf(ctx, "update run record failed, err: %v", err)
 		return
 	}
 	srRecord.Status = entity.RunStatusFailed
 	srRecord.FailedAt = time.Now().UnixMilli()
-	r.event.SendErrEvent(entity.RunEventError, srRecord.Error.Code, srRecord.Error.Msg, sw)
+	r.event.SendErrEvent(entity.RunEventError, sw, &entity.RunError{
+		Code: srRecord.Error.Code,
+		Msg:  srRecord.Error.Msg,
+	})
 	return
 }
 

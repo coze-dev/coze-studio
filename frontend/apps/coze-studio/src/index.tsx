@@ -19,7 +19,9 @@ const main = () => {
   initFlags();
   // 初始化i18n
   initI18nInstance({
-    lng: IS_OVERSEA ? 'en' : 'zh-CN',
+    lng: (localStorage.getItem('i18next') ?? (IS_OVERSEA ? 'en' : 'zh-CN')) as
+      | 'en'
+      | 'zh-CN',
   });
   // 动态导入mdbox 样式
   dynamicImportMdBoxStyle();

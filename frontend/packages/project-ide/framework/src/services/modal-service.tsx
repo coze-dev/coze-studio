@@ -1,5 +1,7 @@
 /* eslint-disable @coze-arch/use-error-in-catch */
 import { inject, injectable } from 'inversify';
+import { Emitter, type Event } from '@coze-project-ide/client';
+import { OptionsService } from '@coze-project-ide/base-adapter';
 import { I18n } from '@coze-arch/i18n';
 import { sleep } from '@coze-arch/bot-utils';
 import {
@@ -10,8 +12,6 @@ import {
   TaskStatus,
 } from '@coze-arch/bot-api/plugin_develop';
 import { PluginDevelopApi } from '@coze-arch/bot-api';
-import { Emitter, type Event } from '@coze-project-ide/client';
-import { OptionsService } from '@coze-project-ide/base-adapter';
 
 export enum ModalType {
   RESOURCE = 'resource',
@@ -63,13 +63,13 @@ export class ModalService {
 
     try {
       // 1. 请求接口，获取 taskId
-      const { task_id, failed_reasons } =
-        await PluginDevelopApi.ResourceCopyDispatch(props);
       this.onModalVisibleChangeEmitter.fire({
         type: ModalType.RESOURCE,
         scene: props.scene,
         resourceName,
       });
+      const { task_id, failed_reasons } =
+        await PluginDevelopApi.ResourceCopyDispatch(props);
       this._taskId = task_id;
 
       if (failed_reasons?.length) {

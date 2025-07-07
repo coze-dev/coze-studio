@@ -2,6 +2,7 @@ package nodes
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -139,13 +140,35 @@ func removeSlice(s string) string {
 
 type renderOptions struct {
 	type2CustomRenderer map[reflect.Type]func(any) (string, error)
+	reservedKey         map[string]struct{}
+	nilRenderer         func() (string, error)
+}
+
+func WithNilRender(fn func() (string, error)) RenderOption {
+	return func(opts *renderOptions) {
+		opts.nilRenderer = fn
+	}
 }
 
 type RenderOption func(options *renderOptions)
 
 func WithCustomRender(rType reflect.Type, fn func(any) (string, error)) RenderOption {
 	return func(opts *renderOptions) {
+		if opts.type2CustomRenderer == nil {
+			opts.type2CustomRenderer = make(map[reflect.Type]func(any) (string, error))
+		}
 		opts.type2CustomRenderer[rType] = fn
+	}
+}
+
+func WithReservedKey(keys ...string) RenderOption {
+	return func(opts *renderOptions) {
+		if opts.reservedKey == nil {
+			opts.reservedKey = make(map[string]struct{})
+		}
+		for _, key := range keys {
+			opts.reservedKey[key] = struct{}{}
+		}
 	}
 }
 
@@ -201,18 +224,19 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 									return tp.literal, nil
 								}
 
-								return "", errorx.WrapByCode(
-									vo.NewErrorInfo(fmt.Errorf("Array类型的变量 %s 只有 %d 长度，无法提取下标 %d的值",
-										joinJsonPath(tp.JsonPath[:i]), len(segArr), segmentI), vo.LevelError),
-									errno.ErrArrIndexOutOfRange)
+								return "", vo.NewError(errno.ErrArrIndexOutOfRange,
+									errorx.KV("arr_name", joinJsonPath(tp.JsonPath[:i])),
+									errorx.KV("req_index", strconv.Itoa(segmentI)),
+									errorx.KV("arr_len", strconv.Itoa(len(segArr))))
 							}
 						}
 						return tp.literal, nil // not array element not found, but object field, just print
 					} else if errors.As(err, &syntaxErr) {
 						segmentI, ok := tp.JsonPath[i].(int)
 						if ok {
-							return "", fmt.Errorf("Array类型的变量 %s 为空，无法提取下标 %d的值",
-								joinJsonPath(tp.JsonPath[:i]), segmentI)
+							return "", vo.NewError(errno.ErrIndexingNilArray,
+								errorx.KV("arr_name", joinJsonPath(tp.JsonPath[:i])),
+								errorx.KV("req_index", strconv.Itoa(segmentI)))
 						}
 						return tp.literal, nil // not array element not found, but object field, just print
 					}
@@ -225,12 +249,15 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 		return tp.literal, nil
 	}
 
-	i, err := n.Interface()
+	i, err := n.InterfaceUseNumber()
 	if err != nil {
 		return tp.literal, nil
 	}
 
 	if i == nil {
+		if options.nilRenderer != nil {
+			return options.nilRenderer()
+		}
 		return "", nil
 	}
 
@@ -244,10 +271,8 @@ func (tp TemplatePart) Render(m []byte, opts ...RenderOption) (string, error) {
 	switch i.(type) {
 	case string:
 		return i.(string), nil
-	case int64:
-		return strconv.FormatInt(i.(int64), 10), nil
-	case float64:
-		return strconv.FormatFloat(i.(float64), 'f', -1, 64), nil
+	case json.Number:
+		return i.(json.Number).String(), nil
 	case bool:
 		return strconv.FormatBool(i.(bool)), nil
 	default:
@@ -310,6 +335,28 @@ func (tp TemplatePart) Skipped(resolvedSources map[string]*SourceInfo) (skipped 
 	return checkSourceSkipped(matchingSource), false
 }
 
+func (tp TemplatePart) TypeInfo(types map[string]*vo.TypeInfo) *vo.TypeInfo {
+	if len(tp.SubPathsBeforeSlice) == 0 {
+		return types[tp.Root]
+	}
+	rootType, ok := types[tp.Root]
+	if !ok {
+		return nil
+	}
+	currentType := rootType
+	for _, subPath := range tp.SubPathsBeforeSlice {
+		if len(currentType.Properties) == 0 {
+			return nil
+		}
+		subType, ok := currentType.Properties[subPath]
+		if !ok {
+			return nil
+		}
+		currentType = subType
+	}
+	return currentType
+}
+
 func Render(ctx context.Context, tpl string, input map[string]any, sources map[string]*SourceInfo, opts ...RenderOption) (string, error) {
 	mi, err := sonic.Marshal(input)
 	if err != nil {
@@ -321,12 +368,29 @@ func Render(ctx context.Context, tpl string, input map[string]any, sources map[s
 		return "", err
 	}
 
+	options := &renderOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
 	var sb strings.Builder
 	parts := ParseTemplate(tpl)
 	for _, part := range parts {
 		if !part.IsVariable {
 			sb.WriteString(part.Value)
 			continue
+		}
+
+		if options.reservedKey != nil {
+			if _, ok := options.reservedKey[part.Root]; ok {
+				i, err := part.Render(mi, opts...)
+				if err != nil {
+					return "", err
+				}
+
+				sb.WriteString(i)
+				continue
+			}
 		}
 
 		skipped, invalid := part.Skipped(resolvedSources)

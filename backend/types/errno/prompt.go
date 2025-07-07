@@ -6,12 +6,12 @@ import "code.byted.org/flow/opencoze/backend/pkg/errorx/code"
 const (
 	ErrPromptInvalidParamCode = 110000000
 	ErrPromptPermissionCode   = 110000001
-	ErrPromptIDGenFailCode    = 100000002
-	ErrPromptCreateCode       = 100000003
-	ErrPromptGetCode          = 100000004
-	ErrPromptDataNotFoundCode = 100000005
-	ErrPromptUpdateCode       = 100000006
-	ErrPromptDeleteCode       = 100000007
+	ErrPromptIDGenFailCode    = 110000002
+	ErrPromptCreateCode       = 110000003
+	ErrPromptGetCode          = 110000004
+	ErrPromptDataNotFoundCode = 110000005
+	ErrPromptUpdateCode       = 110000006
+	ErrPromptDeleteCode       = 110000007
 )
 
 func init() {
