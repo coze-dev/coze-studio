@@ -39,7 +39,6 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model"
 	crossplugin "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/plugin"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
-	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
