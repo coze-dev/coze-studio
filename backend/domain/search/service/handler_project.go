@@ -26,7 +26,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 )
 
-const projectIndexName = "project_draft"
+const projectIndexName = "project_draft_new"
 
 type ProjectHandlerImpl struct {
 	esClient es.Client

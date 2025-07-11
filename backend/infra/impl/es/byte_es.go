@@ -113,7 +113,7 @@ func (c *byteESClient) Search(ctx context.Context, index string, req *Request) (
 		return nil, fmt.Errorf("req is nil")
 	}
 	q := c.query2ESQuery(ctx, req.Query)
-	logs.CtxInfof(ctx, "[search] search index, rawReq: %+v, req: %+v", req, q)
+	logs.CtxInfof(ctx, "[search] search index, rawReq: %s, q: %s", conv.DebugJsonToStr(req), conv.DebugJsonToStr(q))
 	// ctx 中增加 log_request_enabled
 	ctx = context.WithValue(ctx, "log-request-enabled", true)
 	res, err := c.readClient.Search().Index(index).Query(q).Do(ctx)
@@ -151,12 +151,28 @@ func (c *byteESClient) query2ESQuery(ctx context.Context, q *Query) elastic.Quer
 	case es.QueryTypeContains:
 		typesQ = elastic.NewWildcardQuery(q.KV.Key, fmt.Sprintf("*%s*", q.KV.Value)).CaseInsensitive(true)
 	case es.QueryTypeIn:
-		_, ok := q.KV.Value.([]any)
-		if !ok {
-			logs.CtxErrorf(ctx, "query2ESQuery failed, value is not []any, value: %v", q.KV.Value)
-			return typesQ
+		// q.KV.Value 预期是一个 slice 或数组，类型可能是 []interface{} 或 []string / []int 等
+		// 需要断言类型，或者直接传给 NewTermsQuery
+		// elastic.NewTermsQuery 支持变参，或者用 NewTermsQuery(key, values...)
+		// 如果 q.KV.Value 是 slice，需要转换成 []interface{}
+		var values []interface{}
+		switch v := q.KV.Value.(type) {
+		case []interface{}:
+			values = v
+		case []string:
+			for _, s := range v {
+				values = append(values, s)
+			}
+		case []int:
+			for _, i := range v {
+				values = append(values, i)
+			}
+		default:
+			// 如果不是 slice，直接用一个值构造
+			values = []interface{}{q.KV.Value}
 		}
-		typesQ = elastic.NewTermsQuery(q.KV.Key, q.KV.Value)
+		typesQ = elastic.NewTermsQuery(q.KV.Key, values...)
+		logs.CtxInfof(ctx, "[query2ESQuery] terms query, key: %s, values: %v, %+v", q.KV.Key, values, typesQ)
 	default:
 		logs.CtxInfof(ctx, "[query2ESQuery] default, key: %s, value: %v", q.KV.Key, q.KV.Value)
 	}
@@ -178,7 +194,7 @@ func (c *byteESClient) query2ESQuery(ctx context.Context, q *Query) elastic.Quer
 
 	for idx := range q.Bool.MustNot {
 		v := q.Bool.MustNot[idx]
-		typesQ = boolQuery.Must(c.query2ESQuery(ctx, &v))
+		typesQ = boolQuery.MustNot(c.query2ESQuery(ctx, &v))
 	}
 
 	for idx := range q.Bool.Should {
