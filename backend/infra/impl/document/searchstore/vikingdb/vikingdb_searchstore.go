@@ -28,12 +28,12 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/volcengine/volc-sdk-golang/service/vikingdb"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/sets"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/searchstore"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/sets"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 type vkSearchStore struct {

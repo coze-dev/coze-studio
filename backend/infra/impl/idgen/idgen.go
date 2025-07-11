@@ -21,9 +21,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/redis/go-redis/v9"
-
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/cache/redis"
 )
 
 const (
@@ -123,7 +122,7 @@ func (i *idGenImpl) GenMultiIDs(ctx context.Context, counts int) ([]int64, error
 }
 
 func (i *idGenImpl) IncrBy(ctx context.Context, key string, num int64) (cntPos int64, err error) {
-	return i.cli.IncrBy(ctx, key, num).Result()
+	return i.cli.WithContext(ctx).IncrBy(key, num).Result()
 }
 
 func (i *idGenImpl) GetIDTimeMs() int64 {
@@ -132,7 +131,7 @@ func (i *idGenImpl) GetIDTimeMs() int64 {
 
 func (i *idGenImpl) Expire(ctx context.Context, key string) {
 	// 暂时忽略错误
-	_, _ = i.cli.Expire(ctx, key, counterKeyExpirationTime).Result()
+	_, _ = i.cli.WithContext(ctx).Expire(key, counterKeyExpirationTime).Result()
 }
 
 func genIDKey(space string, svrID int64, ms int64) string {

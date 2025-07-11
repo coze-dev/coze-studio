@@ -19,11 +19,11 @@ package search
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/resource/common"
-	"github.com/coze-dev/coze-studio/backend/domain/search/entity"
-	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
-	crosssearch "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/search"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/resource/common"
+	"code.byted.org/data_edc/workflow_engine_next/domain/search/entity"
+	search "code.byted.org/data_edc/workflow_engine_next/domain/search/service"
+	crosssearch "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/search"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 type Notifier interface {

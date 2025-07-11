@@ -17,7 +17,7 @@
 package repository
 
 import (
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal"
 )
 
 type PluginSelectedOptions func(*dal.PluginSelectedOption)

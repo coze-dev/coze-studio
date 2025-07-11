@@ -19,9 +19,9 @@ package middleware
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
 
-	"github.com/cloudwego/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/app"
 )
 
 func ContextCacheMW() app.HandlerFunc {

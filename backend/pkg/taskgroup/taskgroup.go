@@ -22,7 +22,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 type TaskGroup interface {

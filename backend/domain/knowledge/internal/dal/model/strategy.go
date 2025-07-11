@@ -1,6 +1,6 @@
 package model
 
-import "github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
+import "code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
 
 type DocumentParseRule struct {
 	ParsingStrategy  *entity.ParsingStrategy  `json:"parsing_strategy"`

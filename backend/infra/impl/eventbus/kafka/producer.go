@@ -21,10 +21,10 @@ import (
 
 	"github.com/IBM/sarama"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/signal"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/pkg/safego"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/signal"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
 )
 
 type producerImpl struct {

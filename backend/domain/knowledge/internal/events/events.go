@@ -16,7 +16,7 @@
 
 package events
 
-import "github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
+import "code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
 
 func NewIndexDocumentsEvent(knowledgeID int64, documents []*entity.Document) *entity.Event {
 	return &entity.Event{

@@ -17,8 +17,8 @@
 package entity
 
 import (
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 type AuthorizationCodeMeta struct {

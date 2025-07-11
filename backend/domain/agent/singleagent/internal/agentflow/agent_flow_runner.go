@@ -26,13 +26,13 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmodelmgr"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossworkflow"
-	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/agentrun"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/singleagent"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossmodelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossworkflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 type AgentState struct {

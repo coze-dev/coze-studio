@@ -22,9 +22,9 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/code"
-	"github.com/coze-dev/coze-studio/backend/pkg/goutil"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/code"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/goutil"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 )
 
 var pythonCode = `

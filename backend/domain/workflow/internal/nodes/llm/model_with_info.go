@@ -25,8 +25,8 @@ import (
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
 
-	crossmodelmgr "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
+	crossmodelmgr "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
 )
 
 type ModelWithInfo interface {

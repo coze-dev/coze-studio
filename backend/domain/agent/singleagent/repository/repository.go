@@ -19,12 +19,12 @@ package repository
 import (
 	"context"
 
-	"github.com/redis/go-redis/v9"
+	redis "code.byted.org/kv/goredis"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/dal"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/internal/dal"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 )
 
 func NewSingleAgentRepo(db *gorm.DB, idGen idgen.IDGenerator, cli *redis.Client) SingleAgentDraftRepo {

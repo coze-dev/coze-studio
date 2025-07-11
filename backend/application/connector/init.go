@@ -17,8 +17,8 @@
 package connector
 
 import (
-	connector "github.com/coze-dev/coze-studio/backend/domain/connector/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	connector "code.byted.org/data_edc/workflow_engine_next/domain/connector/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 )
 
 func InitService(tos storage.Storage) *ConnectorApplicationService {

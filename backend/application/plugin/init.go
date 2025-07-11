@@ -21,13 +21,13 @@ import (
 
 	"gorm.io/gorm"
 
-	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
-	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
-	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	pluginConf "code.byted.org/data_edc/workflow_engine_next/domain/plugin/conf"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/repository"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/service"
+	search "code.byted.org/data_edc/workflow_engine_next/domain/search/service"
+	user "code.byted.org/data_edc/workflow_engine_next/domain/user/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 )
 
 type ServiceComponents struct {

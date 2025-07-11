@@ -20,7 +20,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/knowledge"
 )
 
 type DeleterConfig struct {

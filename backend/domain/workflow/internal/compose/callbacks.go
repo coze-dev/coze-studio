@@ -22,9 +22,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/selector"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/selector"
 )
 
 type selectorCallbackField struct {

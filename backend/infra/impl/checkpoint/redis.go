@@ -22,8 +22,9 @@ import (
 	"fmt"
 	"time"
 
+	redis "code.byted.org/kv/goredis"
+	redisV6 "code.byted.org/kv/redis-v6"
 	"github.com/cloudwego/eino/compose"
-	"github.com/redis/go-redis/v9"
 )
 
 type redisStore struct {
@@ -36,9 +37,9 @@ const (
 )
 
 func (r *redisStore) Get(ctx context.Context, checkPointID string) ([]byte, bool, error) {
-	v, err := r.client.Get(ctx, fmt.Sprintf(checkpointKeyTpl, checkPointID)).Bytes()
+	v, err := r.client.WithContext(ctx).Get(fmt.Sprintf(checkpointKeyTpl, checkPointID)).Bytes()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, redisV6.Nil) {
 			return nil, false, nil
 		}
 		return nil, false, err
@@ -47,7 +48,7 @@ func (r *redisStore) Get(ctx context.Context, checkPointID string) ([]byte, bool
 }
 
 func (r *redisStore) Set(ctx context.Context, checkPointID string, checkPoint []byte) error {
-	return r.client.Set(ctx, fmt.Sprintf(checkpointKeyTpl, checkPointID), checkPoint, checkpointExpire).Err()
+	return r.client.WithContext(ctx).Set(fmt.Sprintf(checkpointKeyTpl, checkPointID), checkPoint, checkpointExpire).Err()
 }
 
 func NewRedisStore(client *redis.Client) compose.CheckPointStore {

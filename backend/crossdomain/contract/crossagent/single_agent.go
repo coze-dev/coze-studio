@@ -21,8 +21,8 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/singleagent"
 )
 
 // Requests and responses must not reference domain entities and can only use models under api/model/crossdomain.

@@ -27,9 +27,9 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossknowledge"
-	knowledgeEntity "github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossknowledge"
+	knowledgeEntity "code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
 )
 
 const (

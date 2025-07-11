@@ -23,14 +23,13 @@ import (
 	"strings"
 	"time"
 
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 	"github.com/cloudwego/eino/compose"
-
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
 const rowNum = "rowNum"

@@ -19,7 +19,7 @@ package repository
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/entity"
 )
 
 type AppRepository interface {

@@ -20,9 +20,10 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/redis/go-redis/v9"
+	redis "code.byted.org/kv/goredis"
+	redisV6 "code.byted.org/kv/redis-v6"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 )
 
 func NewCountRepo(cli *redis.Client) *CounterImpl {
@@ -36,8 +37,8 @@ type CounterImpl struct {
 }
 
 func (c *CounterImpl) Get(ctx context.Context, key string) (int64, error) {
-	val, err := c.cacheClient.Get(ctx, key).Result()
-	if err == redis.Nil {
+	val, err := c.cacheClient.WithContext(ctx).Get(key).Result()
+	if err == redisV6.Nil {
 		return 0, nil
 	}
 	if err != nil {
@@ -48,16 +49,16 @@ func (c *CounterImpl) Get(ctx context.Context, key string) (int64, error) {
 }
 
 func (c *CounterImpl) IncrBy(ctx context.Context, key string, incr int64) error {
-	_, err := c.cacheClient.IncrBy(ctx, key, incr).Result()
+	_, err := c.cacheClient.WithContext(ctx).IncrBy(key, incr).Result()
 	return errorx.Wrapf(err, "failed to incr_by count for %s", key)
 }
 
 func (c *CounterImpl) Set(ctx context.Context, key string, value int64) error {
-	_, err := c.cacheClient.Set(ctx, key, value, 0).Result()
+	_, err := c.cacheClient.WithContext(ctx).Set(key, value, 0).Result()
 	return errorx.Wrapf(err, "failed to set count for %s", key)
 }
 
 func (c *CounterImpl) Del(ctx context.Context, key string) error {
-	_, err := c.cacheClient.Del(ctx, key).Result()
+	_, err := c.cacheClient.WithContext(ctx).Del(key).Result()
 	return errorx.Wrapf(err, "failed to del count for %s", key)
 }

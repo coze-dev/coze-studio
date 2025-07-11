@@ -35,14 +35,14 @@ import (
 	"github.com/extrame/xls"
 	"github.com/xuri/excelize/v2"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type CellTypeIdentifier struct {

@@ -24,11 +24,11 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/repository"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 func (p *pluginServiceImpl) BindAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error) {

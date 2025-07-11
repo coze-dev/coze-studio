@@ -19,6 +19,11 @@ package consts
 import "time"
 
 const (
+	WorkflowEnginePSM = "data.ecom.workflow_engine_next"
+	I18nMQCluster     = "ecom_global"
+
+	ElasticSearchPSM = "byte.es.ecom_ai_eng.service.my"
+
 	MySQLDsn           = "MYSQL_DSN"
 	RedisAddr          = "REDIS_ADDR"
 	VeImageXAK         = "VE_IMAGEX_AK"
@@ -38,15 +43,15 @@ const (
 	TOSRegion     = "TOS_REGION"
 	TOSEndpoint   = "TOS_ENDPOINT"
 
-	RMQServer                = "RMQ_NAME_SERVER"
-	RMQSecretKey             = "RMQ_SECRET_KEY"
-	RMQAccessKey             = "RMQ_ACCESS_KEY"
-	RMQTopicApp              = "opencoze_search_app"
-	RMQTopicResource         = "opencoze_search_resource"
-	RMQTopicKnowledge        = "opencoze_knowledge"
-	RMQConsumeGroupResource  = "cg_search_resource"
-	RMQConsumeGroupApp       = "cg_search_app"
-	RMQConsumeGroupKnowledge = "cg_knowledge"
+	RMQServer    = "RMQ_NAME_SERVER"
+	RMQSecretKey = "RMQ_SECRET_KEY"
+	RMQAccessKey = "RMQ_ACCESS_KEY"
+	//RMQTopicApp             = "opencoze_search_app"
+	//RMQTopicResource        = "opencoze_search_resource"
+	//RMQTopicKnowledge       = "opencoze_knowledge"
+	RMQTopicSearchResource = "ecom_wf_cg_search_resource" // TODO:: 后续topic需要修改和注册
+	RMQTopicSearchApp      = "ecom_wf_cg_search_app"      // TODO:: 后续topic需要修改和注册
+	RMQTopicKnowledge      = "ecom_wf_cg_knowledge"       // TODO:: 知识库先不管, 异步操作，向量化文档
 
 	CozeConnectorID   = int64(10000010)
 	WebSDKConnectorID = int64(999)

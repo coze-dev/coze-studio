@@ -19,10 +19,10 @@ package prompt
 import (
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/application/search"
-	"github.com/coze-dev/coze-studio/backend/domain/prompt/repository"
-	prompt "github.com/coze-dev/coze-studio/backend/domain/prompt/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/application/search"
+	"code.byted.org/data_edc/workflow_engine_next/domain/prompt/repository"
+	prompt "code.byted.org/data_edc/workflow_engine_next/domain/prompt/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 )
 
 func InitService(db *gorm.DB, idGenSVC idgen.IDGenerator, re search.ResourceEventBus) *PromptApplicationService {

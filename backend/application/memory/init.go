@@ -17,18 +17,17 @@
 package memory
 
 import (
+	redis "code.byted.org/kv/goredis"
 	"gorm.io/gorm"
 
-	"github.com/redis/go-redis/v9"
-
-	database "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/repository"
-	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
-	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	rdbService "github.com/coze-dev/coze-studio/backend/infra/impl/rdb"
+	database "code.byted.org/data_edc/workflow_engine_next/domain/memory/database/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/repository"
+	variables "code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/service"
+	search "code.byted.org/data_edc/workflow_engine_next/domain/search/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	rdbService "code.byted.org/data_edc/workflow_engine_next/infra/impl/rdb"
 )
 
 type MemoryApplicationServices struct {

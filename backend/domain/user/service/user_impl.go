@@ -32,19 +32,19 @@ import (
 
 	"golang.org/x/crypto/argon2"
 
-	uploadEntity "github.com/coze-dev/coze-studio/backend/domain/upload/entity"
-	userEntity "github.com/coze-dev/coze-studio/backend/domain/user/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/user/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/domain/user/repository"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	uploadEntity "code.byted.org/data_edc/workflow_engine_next/domain/upload/entity"
+	userEntity "code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/repository"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type Components struct {
@@ -101,12 +101,12 @@ func (u *userImpl) Login(ctx context.Context, email, password string) (user *use
 
 	userModel.SessionKey = sessionKey
 
-	resURL, err := u.IconOSS.GetObjectUrl(ctx, userModel.IconURI)
-	if err != nil {
-		return nil, err
-	}
+	// resURL, err := u.IconOSS.GetObjectUrl(ctx, userModel.IconURI)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	return userPo2Do(userModel, resURL), nil
+	return userPo2Do(userModel, ""), nil
 }
 
 func (u *userImpl) Logout(ctx context.Context, userID int64) (err error) {

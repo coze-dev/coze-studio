@@ -5,9 +5,9 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 type ListKnowledgeRequest struct {

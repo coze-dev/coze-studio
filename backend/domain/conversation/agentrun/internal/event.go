@@ -19,7 +19,7 @@ package internal
 import (
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/entity"
 )
 
 type Event struct {

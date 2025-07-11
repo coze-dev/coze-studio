@@ -26,15 +26,15 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	workflow2 "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/qa"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/receiver"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
+	workflow2 "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/qa"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/receiver"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 )
 
 type State struct {

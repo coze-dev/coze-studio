@@ -22,8 +22,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/sqlparser"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/sqlparser"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func TestSQLParser_ParseAndModifySQL(t *testing.T) {

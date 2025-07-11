@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/coze-dev/coze-studio/backend/infra/impl/dynconf/static/internal"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/dynconf/static/internal"
 )
 
 type ConfJson struct {

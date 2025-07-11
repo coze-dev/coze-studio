@@ -23,19 +23,20 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/redis/go-redis/v9"
+	redis "code.byted.org/kv/goredis"
+	redisV6 "code.byted.org/kv/redis-v6"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/model"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/query"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type executeHistoryStoreImpl struct {
@@ -303,7 +304,7 @@ func (e *executeHistoryStoreImpl) UpdateNodeExecutionStreaming(ctx context.Conte
 
 	key := fmt.Sprintf(nodeExecOutputKey, execution.ID)
 
-	if err := e.redis.Set(ctx, key, execution.Output, nodeExecDataExpiry).Err(); err != nil {
+	if err := e.redis.WithContext(ctx).Set(key, execution.Output, nodeExecDataExpiry).Err(); err != nil {
 		return vo.WrapError(errno.ErrRedisError, err)
 	}
 
@@ -455,9 +456,9 @@ func (e *executeHistoryStoreImpl) GetNodeExecutionsByWfExeID(ctx context.Context
 func (e *executeHistoryStoreImpl) loadNodeExecutionFromRedis(ctx context.Context, nodeExeEntity *entity.NodeExecution) error {
 	key := fmt.Sprintf(nodeExecOutputKey, nodeExeEntity.ID)
 
-	result, err := e.redis.Get(ctx, key).Result()
+	result, err := e.redis.WithContext(ctx).Get(key).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, redisV6.Nil) {
 			return nil
 		}
 		return vo.WrapError(errno.ErrRedisError, err)
@@ -511,7 +512,7 @@ const (
 
 func (e *executeHistoryStoreImpl) SetTestRunLatestExeID(ctx context.Context, wfID int64, uID int64, exeID int64) error {
 	key := fmt.Sprintf(testRunLastExeKey, wfID, uID)
-	err := e.redis.Set(ctx, key, exeID, 7*24*time.Hour).Err()
+	err := e.redis.WithContext(ctx).Set(key, exeID, 7*24*time.Hour).Err()
 	if err != nil {
 		return vo.WrapError(errno.ErrRedisError, err)
 	}
@@ -521,9 +522,9 @@ func (e *executeHistoryStoreImpl) SetTestRunLatestExeID(ctx context.Context, wfI
 
 func (e *executeHistoryStoreImpl) GetTestRunLatestExeID(ctx context.Context, wfID int64, uID int64) (int64, error) {
 	key := fmt.Sprintf(testRunLastExeKey, wfID, uID)
-	exeIDStr, err := e.redis.Get(ctx, key).Result()
+	exeIDStr, err := e.redis.WithContext(ctx).Get(key).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, redisV6.Nil) {
 			return 0, nil
 		}
 		return 0, vo.WrapError(errno.ErrRedisError, err)
@@ -537,7 +538,7 @@ func (e *executeHistoryStoreImpl) GetTestRunLatestExeID(ctx context.Context, wfI
 
 func (e *executeHistoryStoreImpl) SetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64, exeID int64) error {
 	key := fmt.Sprintf(nodeDebugLastExeKey, wfID, nodeID, uID)
-	err := e.redis.Set(ctx, key, exeID, 7*24*time.Hour).Err()
+	err := e.redis.WithContext(ctx).Set(key, exeID, 7*24*time.Hour).Err()
 	if err != nil {
 		return vo.WrapError(errno.ErrRedisError, err)
 	}
@@ -546,9 +547,9 @@ func (e *executeHistoryStoreImpl) SetNodeDebugLatestExeID(ctx context.Context, w
 
 func (e *executeHistoryStoreImpl) GetNodeDebugLatestExeID(ctx context.Context, wfID int64, nodeID string, uID int64) (int64, error) {
 	key := fmt.Sprintf(nodeDebugLastExeKey, wfID, nodeID, uID)
-	exeIDStr, err := e.redis.Get(ctx, key).Result()
+	exeIDStr, err := e.redis.WithContext(ctx).Get(key).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, redisV6.Nil) {
 			return 0, nil
 		}
 		return 0, vo.WrapError(errno.ErrRedisError, err)

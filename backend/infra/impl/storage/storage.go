@@ -18,39 +18,19 @@ package storage
 
 import (
 	"context"
-	"fmt"
-	"os"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/minio"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/tos"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/storage/tos"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 )
 
 type Storage = storage.Storage
 
 func New(ctx context.Context) (Storage, error) {
-	storageType := os.Getenv(consts.StorageType)
-	switch storageType {
-	case "minio":
-		return minio.New(
-			ctx,
-			os.Getenv(consts.MinIOEndpoint),
-			os.Getenv(consts.MinIOAK),
-			os.Getenv(consts.MinIOSK),
-			os.Getenv(consts.StorageBucket),
-			false,
-		)
-	case "tos":
-		return tos.New(
-			ctx,
-			os.Getenv(consts.TOSAccessKey),
-			os.Getenv(consts.TOSSecretKey),
-			os.Getenv(consts.StorageBucket),
-			os.Getenv(consts.TOSEndpoint),
-			os.Getenv(consts.TOSRegion),
-		)
-	}
-
-	return nil, fmt.Errorf("unknown storage type: %s", storageType)
+	return tos.New(
+		ctx,
+		"gec-algo-arch-us",
+		"9D42I3SXHU32NTIAX34O",
+		consts.WorkflowEnginePSM,
+	)
 }

@@ -28,17 +28,17 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/flow/dataengine/dataset"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
-	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
-	"github.com/coze-dev/coze-studio/backend/domain/upload/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/flow/dataengine/dataset"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/developer_api"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/domain/upload/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 func InitService(oss storage.Storage) {

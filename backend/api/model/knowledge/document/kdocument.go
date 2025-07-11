@@ -3,8 +3,8 @@
 package document
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
-	"github.com/coze-dev/coze-studio/backend/api/model/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/base"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/common"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
 )

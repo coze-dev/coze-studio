@@ -26,17 +26,17 @@ import (
 
 	"github.com/xuri/excelize/v2"
 
-	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/consts"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/convert"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	rentity "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	knowledgeModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/consts"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/convert"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	rentity "code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 func (k *knowledgeSVC) GetAlterTableSchema(ctx context.Context, req *AlterTableSchemaRequest) (*TableSchemaResponse, error) {

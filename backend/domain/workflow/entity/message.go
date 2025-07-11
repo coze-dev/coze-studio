@@ -19,8 +19,8 @@ package entity
 import (
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 )
 
 type Message struct {

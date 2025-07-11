@@ -1,6 +1,6 @@
 package connector
 
-import "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
+import "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/developer_api"
 
 type Connector struct {
 	ID              int64                                `json:"id"`

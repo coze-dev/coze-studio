@@ -27,7 +27,7 @@ import (
 	"github.com/shopspring/decimal"
 	"gopkg.in/yaml.v3"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
 )
 
 func EncodeBodyWithContentType(contentType string, body map[string]any) ([]byte, error) {

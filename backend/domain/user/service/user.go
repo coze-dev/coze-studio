@@ -19,7 +19,7 @@ package service
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/domain/user/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
 )
 
 type UpdateProfileRequest struct {

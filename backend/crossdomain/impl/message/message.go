@@ -19,9 +19,9 @@ package message
 import (
 	"context"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmessage"
-	message "github.com/coze-dev/coze-studio/backend/domain/conversation/message/service"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossmessage"
+	message "code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/service"
 )
 
 var defaultSVC crossmessage.Message

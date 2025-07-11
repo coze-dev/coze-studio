@@ -22,24 +22,24 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
-	appworkflow "github.com/coze-dev/coze-studio/backend/application/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	appworkflow "code.byted.org/data_edc/workflow_engine_next/application/workflow"
 
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"code.byted.org/middleware/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/protocol/consts"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/developer_api"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/product_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/product_public_api"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
-	appApplication "github.com/coze-dev/coze-studio/backend/application/app"
-	"github.com/coze-dev/coze-studio/backend/application/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/application/plugin"
-	"github.com/coze-dev/coze-studio/backend/application/search"
-	"github.com/coze-dev/coze-studio/backend/application/singleagent"
-	"github.com/coze-dev/coze-studio/backend/application/template"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/flow/marketplace/product_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/flow/marketplace/product_public_api"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
+	appApplication "code.byted.org/data_edc/workflow_engine_next/application/app"
+	"code.byted.org/data_edc/workflow_engine_next/application/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/application/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/application/search"
+	"code.byted.org/data_edc/workflow_engine_next/application/singleagent"
+	"code.byted.org/data_edc/workflow_engine_next/application/template"
 )
 
 // PublicGetProductList .

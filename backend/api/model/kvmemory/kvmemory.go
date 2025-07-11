@@ -3,9 +3,9 @@
 package kvmemory
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
-	"github.com/coze-dev/coze-studio/backend/api/model/project_memory"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/base"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/project_memory"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
 )

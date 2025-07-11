@@ -21,7 +21,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/redis/go-redis/v9"
+	redis "code.byted.org/kv/goredis"
+	redisV6 "code.byted.org/kv/redis-v6"
 )
 
 type JsonCache[T any] struct {
@@ -47,7 +48,7 @@ func (g *JsonCache[T]) Save(ctx context.Context, k string, v *T) error {
 	}
 
 	key := g.prefix + k
-	if err := g.cache.Set(ctx, key, data, 0).Err(); err != nil {
+	if err := g.cache.WithContext(ctx).Set(key, data, 0).Err(); err != nil {
 		return fmt.Errorf("redis set failed for key %s: %w", k, err)
 	}
 	return nil
@@ -58,8 +59,8 @@ func (g *JsonCache[T]) Get(ctx context.Context, k string) (*T, error) {
 	key := g.prefix + k
 	var obj T
 
-	data, err := g.cache.Get(ctx, key).Result()
-	if err == redis.Nil {
+	data, err := g.cache.WithContext(ctx).Get(key).Result()
+	if err == redisV6.Nil {
 		return &obj, nil
 	}
 
@@ -74,7 +75,7 @@ func (g *JsonCache[T]) Get(ctx context.Context, k string) (*T, error) {
 }
 
 func (g *JsonCache[T]) Delete(ctx context.Context, k string) error {
-	if err := g.cache.Del(ctx, k).Err(); err != nil {
+	if err := g.cache.WithContext(ctx).Del(k).Err(); err != nil {
 		return fmt.Errorf("failed to delete key %s: %w", k, err)
 	}
 	return nil

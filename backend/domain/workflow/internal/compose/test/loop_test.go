@@ -23,12 +23,12 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	compose2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/loop"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/variableassigner"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	compose2 "code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/loop"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/variableassigner"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func TestLoop(t *testing.T) {

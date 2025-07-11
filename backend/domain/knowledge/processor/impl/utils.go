@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
 )
 
 func getFormatType(tp knowledge.DocumentType) parser.FileExtension {

@@ -22,18 +22,18 @@ import (
 
 	"gorm.io/gorm"
 
-	connectorModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/connector"
-	databaseModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossconnector"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatabase"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossknowledge"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossplugin"
-	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/app/repository"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	connectorModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/connector"
+	databaseModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	knowledgeModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossconnector"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossdatabase"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossknowledge"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossplugin"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/repository"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type Components struct {

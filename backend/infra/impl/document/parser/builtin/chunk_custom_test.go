@@ -22,7 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
 )
 
 func TestChunkCustom(t *testing.T) {

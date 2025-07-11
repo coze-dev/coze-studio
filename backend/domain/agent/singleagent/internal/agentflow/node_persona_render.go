@@ -23,7 +23,7 @@ import (
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/maps"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/maps"
 )
 
 type personaRender struct {

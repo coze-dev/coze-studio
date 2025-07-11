@@ -24,9 +24,9 @@ import (
 	. "github.com/bytedance/mockey"
 	"github.com/smartystreets/goconvey/convey"
 
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func TestParseAnyData(t *testing.T) {

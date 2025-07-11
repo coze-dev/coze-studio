@@ -17,7 +17,7 @@
 package code
 
 import (
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx/internal"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx/internal"
 )
 
 type RegisterOptionFn = internal.RegisterOption

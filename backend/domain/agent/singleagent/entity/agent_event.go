@@ -16,7 +16,7 @@
 
 package entity
 
-import "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
+import "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/singleagent"
 
 type AgentEvent = singleagent.AgentEvent
 

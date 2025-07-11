@@ -24,13 +24,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/conversation"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/repository"
-	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/orm"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/conversation"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/repository"
+	mock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/orm"
 )
 
 // Test_NewListMessage tests the NewListMessage function

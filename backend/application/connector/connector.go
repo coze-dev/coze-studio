@@ -19,9 +19,9 @@ package connector
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/domain/connector/entity"
-	connector "github.com/coze-dev/coze-studio/backend/domain/connector/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/domain/connector/entity"
+	connector "code.byted.org/data_edc/workflow_engine_next/domain/connector/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 )
 
 type ConnectorApplicationService struct {

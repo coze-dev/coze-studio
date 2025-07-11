@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
 )
 
 func makeAgentPopupInfoKey(uid, agentID int64, agentPopupType playground.BotPopupType) string {

@@ -1,6 +1,6 @@
 package conversation
 
-import "github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
+import "code.byted.org/data_edc/workflow_engine_next/api/model/conversation/common"
 
 type GetCurrent struct {
 	UserID      int64        `json:"user_id"`

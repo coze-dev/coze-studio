@@ -16,7 +16,7 @@
 
 package entity
 
-import "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+import "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
 
 type Message = message.Message
 

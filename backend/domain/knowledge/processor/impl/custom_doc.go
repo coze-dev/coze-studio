@@ -16,7 +16,7 @@
 
 package impl
 
-import "github.com/coze-dev/coze-studio/backend/pkg/logs"
+import "code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 
 // 用户输入自定义内容后创建文档
 type customDocProcessor struct {

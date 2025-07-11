@@ -24,16 +24,16 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
-	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	sonic2 "github.com/coze-dev/coze-studio/backend/pkg/sonic"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	sonic2 "code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type Config struct {

@@ -19,7 +19,7 @@ package domain
 import (
 	"net/url"
 
-	"github.com/cloudwego/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/app"
 )
 
 const (

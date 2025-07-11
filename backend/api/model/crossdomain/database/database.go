@@ -1,8 +1,8 @@
 package database
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
 )
 
 type ExecuteSQLRequest struct {

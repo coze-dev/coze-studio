@@ -29,10 +29,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/crypto"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/crypto"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 )
 
 const defaultGetFileTimeout = 20       // second

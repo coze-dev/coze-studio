@@ -16,8 +16,8 @@ import (
 	gomock "go.uber.org/mock/gomock"
 	gorm "gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
-	model "github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	model "code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/dal/model"
 )
 
 // MockKnowledgeDocumentRepo is a mock of KnowledgeDocumentRepo interface.

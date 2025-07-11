@@ -13,12 +13,12 @@ import (
 	context "context"
 	reflect "reflect"
 
+	workflow "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	workflow0 "code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	entity "code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	vo "code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 	compose "github.com/cloudwego/eino/compose"
 	schema "github.com/cloudwego/eino/schema"
-	workflow "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
-	workflow0 "github.com/coze-dev/coze-studio/backend/domain/workflow"
-	entity "github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	vo "github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	gomock "go.uber.org/mock/gomock"
 )
 

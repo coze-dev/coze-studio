@@ -19,16 +19,16 @@ package singleagent
 import (
 	"context"
 
-	intelligence "github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
-	"github.com/coze-dev/coze-studio/backend/api/model/project_memory"
-	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossplugin"
-	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
-	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
-	shortcutCMDEntity "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	intelligence "code.byted.org/data_edc/workflow_engine_next/api/model/intelligence/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/developer_api"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/project_memory"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossplugin"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	searchEntity "code.byted.org/data_edc/workflow_engine_next/domain/search/entity"
+	shortcutCMDEntity "code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 type duplicateAgentResourceFn func(ctx context.Context, appContext *ServiceComponents, oldAgent, newAgent *entity.SingleAgent) (*entity.SingleAgent, error)

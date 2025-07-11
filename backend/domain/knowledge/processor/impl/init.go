@@ -19,15 +19,15 @@ package impl
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/processor"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/repository"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/processor"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/repository"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 )
 
 type DocProcessorConfig struct {

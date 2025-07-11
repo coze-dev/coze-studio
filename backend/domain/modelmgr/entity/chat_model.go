@@ -16,7 +16,7 @@
 
 package entity
 
-import "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
+import "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
 
 type Model struct {
 	*modelmgr.Model

@@ -22,12 +22,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/redis/go-redis/v9"
+	redisV6 "code.byted.org/kv/redis-v6"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/progressbar"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/cache"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/progressbar"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 type ProgressBarImpl struct {
@@ -50,10 +50,10 @@ const (
 
 func NewProgressBar(ctx context.Context, pkID int64, total int64, CacheCli cache.Cmdable, needInit bool) progressbar.ProgressBar {
 	if needInit {
-		CacheCli.Set(ctx, fmt.Sprintf(ProgressBarTotalNumRedisKey, pkID), total, ttl)
-		CacheCli.Set(ctx, fmt.Sprintf(ProgressBarProcessedNumRedisKey, pkID), 0, ttl)
-		CacheCli.Set(ctx, fmt.Sprintf(ProgressBarErrMsgRedisKey, pkID), "", ttl)
-		CacheCli.Set(ctx, fmt.Sprintf(ProgressBarStartTimeRedisKey, pkID), time.Now().Unix(), ttl)
+		CacheCli.WithContext(ctx).Set(fmt.Sprintf(ProgressBarTotalNumRedisKey, pkID), total, ttl)
+		CacheCli.WithContext(ctx).Set(fmt.Sprintf(ProgressBarProcessedNumRedisKey, pkID), 0, ttl)
+		CacheCli.WithContext(ctx).Set(fmt.Sprintf(ProgressBarErrMsgRedisKey, pkID), "", ttl)
+		CacheCli.WithContext(ctx).Set(fmt.Sprintf(ProgressBarStartTimeRedisKey, pkID), time.Now().Unix(), ttl)
 	}
 	return &ProgressBarImpl{
 		PrimaryKeyID: pkID,
@@ -66,7 +66,7 @@ func (p *ProgressBarImpl) AddN(n int) error {
 	if p.ErrMsg != "" {
 		return errors.New(p.ErrMsg)
 	}
-	_, err := p.CacheCli.IncrBy(context.Background(), fmt.Sprintf(ProgressBarProcessedNumRedisKey, p.PrimaryKeyID), int64(n)).Result()
+	_, err := p.CacheCli.WithContext(context.Background()).IncrBy(fmt.Sprintf(ProgressBarProcessedNumRedisKey, p.PrimaryKeyID), int64(n)).Result()
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func (p *ProgressBarImpl) AddN(n int) error {
 
 func (p *ProgressBarImpl) ReportError(err error) error {
 	p.ErrMsg = err.Error()
-	_, err = p.CacheCli.Set(context.Background(), fmt.Sprintf(ProgressBarErrMsgRedisKey, p.PrimaryKeyID), err.Error(), ttl).Result()
+	_, err = p.CacheCli.WithContext(context.Background()).Set(fmt.Sprintf(ProgressBarErrMsgRedisKey, p.PrimaryKeyID), err.Error(), ttl).Result()
 	if err != nil {
 		return err
 	}
@@ -89,8 +89,8 @@ func (p *ProgressBarImpl) GetProgress(ctx context.Context) (percent int, remainS
 		startTime    *int64
 		err          error
 	)
-	errMsg, err = p.CacheCli.Get(ctx, fmt.Sprintf(ProgressBarErrMsgRedisKey, p.PrimaryKeyID)).Result()
-	if err == redis.Nil {
+	errMsg, err = p.CacheCli.WithContext(ctx).Get(fmt.Sprintf(ProgressBarErrMsgRedisKey, p.PrimaryKeyID)).Result()
+	if err == redisV6.Nil {
 		errMsg = ""
 	} else if err != nil {
 		return ProcessDone, 0, err.Error()
@@ -98,8 +98,8 @@ func (p *ProgressBarImpl) GetProgress(ctx context.Context) (percent int, remainS
 	if len(errMsg) != 0 {
 		return ProcessDone, 0, errMsg
 	}
-	totalNumStr, err := p.CacheCli.Get(ctx, fmt.Sprintf(ProgressBarTotalNumRedisKey, p.PrimaryKeyID)).Result()
-	if err == redis.Nil || len(totalNumStr) == 0 {
+	totalNumStr, err := p.CacheCli.WithContext(ctx).Get(fmt.Sprintf(ProgressBarTotalNumRedisKey, p.PrimaryKeyID)).Result()
+	if err == redisV6.Nil || len(totalNumStr) == 0 {
 		totalNum = ptr.Of(int64(0))
 	} else if err != nil {
 		return ProcessDone, 0, err.Error()
@@ -111,8 +111,8 @@ func (p *ProgressBarImpl) GetProgress(ctx context.Context) (percent int, remainS
 			totalNum = ptr.Of(num)
 		}
 	}
-	processedNumStr, err := p.CacheCli.Get(ctx, fmt.Sprintf(ProgressBarProcessedNumRedisKey, p.PrimaryKeyID)).Result()
-	if err == redis.Nil || len(processedNumStr) == 0 {
+	processedNumStr, err := p.CacheCli.WithContext(ctx).Get(fmt.Sprintf(ProgressBarProcessedNumRedisKey, p.PrimaryKeyID)).Result()
+	if err == redisV6.Nil || len(processedNumStr) == 0 {
 		processedNum = ptr.Of(int64(0))
 	} else if err != nil {
 		return ProcessDone, 0, err.Error()
@@ -127,8 +127,8 @@ func (p *ProgressBarImpl) GetProgress(ctx context.Context) (percent int, remainS
 	if ptr.From(totalNum) == 0 {
 		return ProcessInit, DefaultProcessTime, ""
 	}
-	startTimeStr, err := p.CacheCli.Get(ctx, fmt.Sprintf(ProgressBarStartTimeRedisKey, p.PrimaryKeyID)).Result()
-	if err == redis.Nil || len(startTimeStr) == 0 {
+	startTimeStr, err := p.CacheCli.WithContext(ctx).Get(fmt.Sprintf(ProgressBarStartTimeRedisKey, p.PrimaryKeyID)).Result()
+	if err == redisV6.Nil || len(startTimeStr) == 0 {
 		startTime = ptr.Of(int64(0))
 	} else if err != nil {
 		return ProcessDone, 0, err.Error()

@@ -19,8 +19,8 @@ package service
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/repository"
+	"code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/repository"
 )
 
 type Components struct {

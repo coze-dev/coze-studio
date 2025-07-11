@@ -19,7 +19,7 @@ package openapiauth
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/entity"
 )
 
 type APIAuth interface {

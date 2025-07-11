@@ -24,11 +24,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/code"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
-	mockcode "github.com/coze-dev/coze-studio/backend/internal/mock/domain/workflow/crossdomain/code"
-	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/code"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	mockcode "code.byted.org/data_edc/workflow_engine_next/internal/mock/domain/workflow/crossdomain/code"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
 )
 
 var codeTpl string

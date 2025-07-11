@@ -27,16 +27,16 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
 
-	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatabase"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/sqlparser"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossdatabase"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/sqlparser"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 const (

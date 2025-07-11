@@ -20,7 +20,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 type TableSchema struct {

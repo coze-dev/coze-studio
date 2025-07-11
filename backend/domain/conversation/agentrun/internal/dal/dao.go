@@ -23,11 +23,11 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 type RunRecordDAO struct {

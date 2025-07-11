@@ -20,16 +20,16 @@ import (
 	"context"
 	"errors"
 
-	"github.com/redis/go-redis/v9"
+	redis "code.byted.org/kv/goredis"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
-	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/singleagent"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type SingleAgentDraftDAO struct {

@@ -19,11 +19,11 @@ package builtin
 import (
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/pkg/goutil"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/ocr"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/goutil"
 )
 
 func NewManager(storage storage.Storage, ocr ocr.OCR, imageAnnotationModel chatmodel.BaseChatModel) parser.Manager {

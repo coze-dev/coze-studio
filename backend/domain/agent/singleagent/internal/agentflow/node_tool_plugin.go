@@ -22,15 +22,15 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossplugin"
-	pluginEntity "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossplugin"
+	pluginEntity "code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/service"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 type toolConfig struct {

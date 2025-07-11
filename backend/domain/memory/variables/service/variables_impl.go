@@ -22,14 +22,14 @@ import (
 	"sort"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/kvmemory"
-	"github.com/coze-dev/coze-studio/backend/api/model/project_memory"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/repository"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/kvmemory"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/project_memory"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/repository"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 var sysVariableConf []*kvmemory.VariableInfo = []*kvmemory.VariableInfo{

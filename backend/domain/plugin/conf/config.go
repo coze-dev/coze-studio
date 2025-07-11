@@ -25,7 +25,7 @@ import (
 
 	"github.com/bytedance/sonic"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 func InitConfig(ctx context.Context) (err error) {
@@ -35,7 +35,7 @@ func InitConfig(ctx context.Context) (err error) {
 		cwd = os.Getenv("PWD")
 	}
 
-	basePath := path.Join(cwd, "resources", "conf", "plugin")
+	basePath := path.Join(cwd, "conf", "plugin")
 
 	err = loadPluginProductMeta(ctx, basePath)
 	if err != nil {

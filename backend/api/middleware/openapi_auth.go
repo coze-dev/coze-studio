@@ -23,16 +23,16 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/cloudwego/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/app"
 
-	"github.com/coze-dev/coze-studio/backend/api/internal/httputil"
-	"github.com/coze-dev/coze-studio/backend/application/openauth"
-	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/internal/httputil"
+	"code.byted.org/data_edc/workflow_engine_next/application/openauth"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 const HeaderAuthorizationKey = "Authorization"

@@ -26,16 +26,16 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	variablesModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/variables"
-	"github.com/coze-dev/coze-studio/backend/api/model/kvmemory"
-	"github.com/coze-dev/coze-studio/backend/api/model/project_memory"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
-	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	variablesModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/variables"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/kvmemory"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/project_memory"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/entity"
+	variables "code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
 )
 
 type varStore struct {

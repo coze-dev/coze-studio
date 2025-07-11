@@ -25,32 +25,31 @@ import (
 	"testing"
 	"time"
 
+	redis "code.byted.org/kv/goredis"
 	"github.com/alicebob/miniredis/v2"
 	"github.com/bytedance/mockey"
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	model2 "github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
-	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
-	mockmodel "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model/modelmock"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	compose2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/qa"
-	repo2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/checkpoint"
-	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/idgen"
-	storageMock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/storage"
-
-	"github.com/coze-dev/coze-studio/backend/internal/testutil"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model"
+	mockmodel "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model/modelmock"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	compose2 "code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/qa"
+	repo2 "code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/checkpoint"
+	mock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/idgen"
+	storageMock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/internal/testutil"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func TestQuestionAnswer(t *testing.T) {
@@ -93,9 +92,8 @@ func TestQuestionAnswer(t *testing.T) {
 		}
 		defer s.Close()
 
-		redisClient := redis.NewClient(&redis.Options{
-			Addr: s.Addr(),
-		})
+		redisClient, err := redis.NewClient("TEST_PSM")
+		assert.NoError(t, err)
 
 		mockIDGen := mock.NewMockIDGenerator(ctrl)
 		mockIDGen.EXPECT().GenID(gomock.Any()).Return(time.Now().UnixNano(), nil).AnyTimes()

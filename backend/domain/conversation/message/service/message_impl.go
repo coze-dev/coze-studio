@@ -19,10 +19,10 @@ package message
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/repository"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/repository"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 type messageImpl struct {

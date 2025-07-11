@@ -29,8 +29,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	variable "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
-	vo "github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	variable "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
+	vo "code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 	compose "github.com/cloudwego/eino/compose"
 	gomock "go.uber.org/mock/gomock"
 )

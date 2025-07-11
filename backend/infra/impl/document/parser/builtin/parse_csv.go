@@ -26,7 +26,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/dimchansky/utfbom"
 
-	contract "github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
+	contract "code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
 )
 
 func parseCSV(config *contract.Config) parseFn {

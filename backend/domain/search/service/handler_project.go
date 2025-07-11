@@ -21,51 +21,48 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bytedance/sonic"
-
-	"github.com/coze-dev/coze-studio/backend/domain/search/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/domain/search/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/es"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 )
 
 const projectIndexName = "project_draft"
 
-type projectHandlerImpl struct {
+type ProjectHandlerImpl struct {
 	esClient es.Client
 }
 
-type ConsumerHandler = eventbus.ConsumerHandler
+//type ConsumerHandler = eventbus.ConsumerHandler
 
-var defaultProjectHandle *projectHandlerImpl // deprecate
+var defaultProjectHandle *ProjectHandlerImpl
 
-func NewProjectHandler(ctx context.Context, e es.Client) ConsumerHandler {
-	handler := &projectHandlerImpl{
+func NewProjectHandler(ctx context.Context, e es.Client) *ProjectHandlerImpl {
+
+	defaultProjectHandle = &ProjectHandlerImpl{
 		esClient: e,
 	}
 
-	return handler
+	return defaultProjectHandle
 }
 
-func (s *projectHandlerImpl) HandleMessage(ctx context.Context, msg *eventbus.Message) error {
-	ev := &entity.ProjectDomainEvent{}
+//func (s *projectHandlerImpl) HandleMessage(ctx context.Context, msg *eventbus.Message) error {
+//	ev := &entity.ProjectDomainEvent{}
+//
+//	logs.CtxInfof(ctx, "Project Handler receive: %s", string(msg.Body))
+//	err := sonic.Unmarshal(msg.Body, ev)
+//	if err != nil {
+//		return err
+//	}
+//
+//	err = s.indexProject(ctx, ev)
+//	if err != nil {
+//		return err
+//	}
+//
+//	return nil
+//}
 
-	logs.CtxInfof(ctx, "Project Handler receive: %s", string(msg.Body))
-	err := sonic.Unmarshal(msg.Body, ev)
-	if err != nil {
-		return err
-	}
-
-	err = s.indexProject(ctx, ev)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *projectHandlerImpl) indexProject(ctx context.Context, ev *entity.ProjectDomainEvent) error {
+func (s *ProjectHandlerImpl) indexProject(ctx context.Context, ev *entity.ProjectDomainEvent) error {
 	if ev.Project == nil {
 		return fmt.Errorf("project is nil")
 	}

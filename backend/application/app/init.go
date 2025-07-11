@@ -17,24 +17,24 @@
 package app
 
 import (
-	redisV9 "github.com/redis/go-redis/v9"
+	redis "code.byted.org/kv/goredis"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/app/repository"
-	"github.com/coze-dev/coze-studio/backend/domain/app/service"
-	connector "github.com/coze-dev/coze-studio/backend/domain/connector/service"
-	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
-	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
-	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/repository"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/service"
+	connector "code.byted.org/data_edc/workflow_engine_next/domain/connector/service"
+	variables "code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/service"
+	search "code.byted.org/data_edc/workflow_engine_next/domain/search/service"
+	user "code.byted.org/data_edc/workflow_engine_next/domain/user/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 )
 
 type ServiceComponents struct {
 	IDGen           idgen.IDGenerator
 	DB              *gorm.DB
 	OSS             storage.Storage
-	CacheCli        *redisV9.Client
+	CacheCli        *redis.Client
 	ProjectEventBus search.ProjectEventBus
 
 	UserSVC      user.User

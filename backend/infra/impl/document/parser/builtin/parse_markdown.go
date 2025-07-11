@@ -32,10 +32,10 @@ import (
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/text"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
-	contract "github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/ocr"
+	contract "code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 func parseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR) parseFn {

@@ -22,11 +22,11 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/datacopy"
-	"github.com/coze-dev/coze-studio/backend/domain/datacopy/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/datacopy/internal/convert"
-	"github.com/coze-dev/coze-studio/backend/domain/datacopy/internal/dal/dao"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/domain/datacopy"
+	"code.byted.org/data_edc/workflow_engine_next/domain/datacopy/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/datacopy/internal/convert"
+	"code.byted.org/data_edc/workflow_engine_next/domain/datacopy/internal/dal/dao"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/idgen"
 )
 
 type DataCopySVCConfig struct {

@@ -24,17 +24,16 @@ import (
 	"fmt"
 	"io"
 
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	appworkflow "code.byted.org/data_edc/workflow_engine_next/application/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/middleware/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/protocol/consts"
 	"github.com/cloudwego/eino/schema"
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
-
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
-	appworkflow "github.com/coze-dev/coze-studio/backend/application/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
 // CreateWorkflow .

@@ -29,10 +29,10 @@ import (
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
-	contract "github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/ocr"
+	contract "code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 )
 
 const (

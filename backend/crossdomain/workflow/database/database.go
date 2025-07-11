@@ -24,14 +24,14 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
-	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
-	nodedatabase "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/service"
+	nodedatabase "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
 )
 
 type DatabaseRepository struct {

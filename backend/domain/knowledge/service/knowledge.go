@@ -31,43 +31,42 @@ import (
 	"time"
 	"unicode/utf8"
 
+	redisV6 "code.byted.org/kv/redis-v6"
 	"github.com/bytedance/sonic"
-	redisV9 "github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
-	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/repository"
-
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/consts"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/convert"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/events"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/processor/impl"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/nl2sql"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/rerank"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/messages2query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	rdbEntity "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/progressbar"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/rrf"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	knowledgeModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/developer_api"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/consts"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/convert"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/events"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/processor/impl"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/repository"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/cache"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/nl2sql"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/ocr"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/rerank"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/searchstore"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/messages2query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	rdbEntity "code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/document/parser/builtin"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/document/progressbar"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/document/rerank/rrf"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHandler) {
@@ -1460,14 +1459,14 @@ const (
 )
 
 func (k *knowledgeSVC) getObjectURL(ctx context.Context, uri string) (string, error) {
-	cmd := k.cacheCli.Get(ctx, uri)
+	cmd := k.cacheCli.WithContext(ctx).Get(uri)
 	if cmd.Err() != nil {
 		url, err := k.storage.GetObjectUrl(ctx, uri, storage.WithExpire(expireTime))
 		if err != nil {
 			return "", errorx.New(errno.ErrKnowledgeGetObjectURLFailCode, errorx.KV("msg", fmt.Sprintf("get object url failed, %v", err)))
 		}
-		if errors.Is(cmd.Err(), redisV9.Nil) {
-			err = k.cacheCli.Set(ctx, uri, url, cacheTime*time.Second).Err()
+		if errors.Is(cmd.Err(), redisV6.Nil) {
+			err = k.cacheCli.WithContext(ctx).Set(uri, url, cacheTime*time.Second).Err()
 			if err != nil {
 				logs.CtxErrorf(ctx, "[getObjectURL] set cache failed, %v", err)
 			}

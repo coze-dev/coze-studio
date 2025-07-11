@@ -20,11 +20,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmodelmgr"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossmodelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type config struct {

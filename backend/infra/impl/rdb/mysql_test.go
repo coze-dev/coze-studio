@@ -30,10 +30,10 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	entity2 "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
-	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	entity2 "code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb/entity"
+	mock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func setupTestDB(t *testing.T) (*gorm.DB, rdb.RDB) {

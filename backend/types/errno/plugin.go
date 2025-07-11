@@ -19,7 +19,7 @@ package errno
 import (
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx/code"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx/code"
 )
 
 // Plugin: 109 000 000 ~ 109 999 999

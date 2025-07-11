@@ -5,10 +5,10 @@ import (
 	"net/url"
 	"strings"
 
-	api "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/utils"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	api "code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/utils"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 
 	"github.com/bytedance/sonic"
 )

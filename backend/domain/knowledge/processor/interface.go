@@ -16,7 +16,7 @@
 
 package processor
 
-import "github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
+import "code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
 
 type DocProcessor interface {
 	BeforeCreate() error         // 获取数据源

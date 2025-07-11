@@ -17,8 +17,8 @@
 package entity
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/conversation"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/conversation"
 )
 
 type Conversation = conversation.Conversation

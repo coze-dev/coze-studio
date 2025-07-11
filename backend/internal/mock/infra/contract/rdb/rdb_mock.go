@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	rdb "github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
+	rdb "code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
 	gomock "go.uber.org/mock/gomock"
 )
 

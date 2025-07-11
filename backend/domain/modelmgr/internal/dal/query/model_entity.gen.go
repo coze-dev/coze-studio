@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/internal/dal/model"
 )
 
 func newModelEntity(db *gorm.DB, opts ...gen.DOOption) modelEntity {

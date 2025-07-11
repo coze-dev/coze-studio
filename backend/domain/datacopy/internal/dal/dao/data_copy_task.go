@@ -22,8 +22,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"github.com/coze-dev/coze-studio/backend/domain/datacopy/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/domain/datacopy/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/domain/datacopy/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/datacopy/internal/dal/query"
 )
 
 type DataCopyTaskRepo interface {

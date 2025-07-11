@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-ROOT_DIR=$(realpath "$SCRIPT_DIR/..")
+ROOT_DIR=$(realpath "$SCRIPT_DIR/../..")
 
 if [ "$CUSTOM_SKIP_POST_INSTALL" == "true" ]; then
   exit 0
 fi
 
 # pushd $ROOT_DIR/packages/arch/i18n && npm run pull-i18n && popd || exit
-node $ROOT_DIR/common/scripts/install-run-rush.js pull-idl -a install || exit
+node $ROOT_DIR/common/scripts/install-run-rush.js install || exit
 if [ "$NO_STARLING" != true ]; then
   # 更新文案
   pushd $ROOT_DIR/ee/infra/sync-scripts && npm run sync:starling && popd || exit

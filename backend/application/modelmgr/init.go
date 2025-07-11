@@ -28,13 +28,14 @@ import (
 	"gopkg.in/yaml.v3"
 	"gorm.io/gorm"
 
-	crossmodelmgr "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/idgen"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	crossmodelmgr "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/env"
 )
 
 func InitService(db *gorm.DB, idgen idgen.IDGenerator, oss storage.Storage) (*ModelmgrApplicationService, error) {
@@ -81,7 +82,7 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 		return err
 	}
 
-	filePath := filepath.Join(root, "resources/conf/model/meta")
+	filePath := filepath.Join(root, "conf/model/meta")
 	staticModelMeta, err := readDirYaml[crossmodelmgr.ModelMeta](filePath)
 	if err != nil {
 		return err
@@ -92,10 +93,11 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 				return fmt.Errorf("missing icon URI or icon URL, id=%d", modelMeta.ID)
 			} else if modelMeta.IconURL != "" {
 				// do nothing
-			} else if modelMeta.IconURI != "" {
+			} else if modelMeta.IconURI != "" && env.InTCE() {
+				// TODO：本地调不通 TOS，只在开发机上跑
 				// try local path
 				base := filepath.Base(modelMeta.IconURI)
-				iconPath := filepath.Join("resources/conf/model/icon", base)
+				iconPath := filepath.Join("conf/model/icon", base)
 				if _, err = os.Stat(iconPath); err == nil {
 					// try upload icon
 					icon, err := os.ReadFile(iconPath)
@@ -128,7 +130,7 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 		}
 	}
 
-	filePath = filepath.Join(root, "resources/conf/model/entity")
+	filePath = filepath.Join(root, "conf/model/entity")
 	staticModel, err := readDirYaml[crossmodelmgr.Model](filePath)
 	if err != nil {
 		return err

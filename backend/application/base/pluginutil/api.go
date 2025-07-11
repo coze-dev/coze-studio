@@ -22,10 +22,10 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	common "code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (*openapi3.Operation, error) {

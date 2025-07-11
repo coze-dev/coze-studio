@@ -25,15 +25,15 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type MessageDAO struct {

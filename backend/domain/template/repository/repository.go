@@ -21,12 +21,12 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/template/internal/dal"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/domain/template/internal/dal"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 
-	"github.com/coze-dev/coze-studio/backend/domain/template/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/template/entity"
 
-	"github.com/coze-dev/coze-studio/backend/domain/template/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/template/internal/dal/model"
 )
 
 func NewTemplateDAO(db *gorm.DB, idGen idgen.IDGenerator) TemplateRepository {

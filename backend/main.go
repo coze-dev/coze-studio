@@ -20,132 +20,135 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
-	"fmt"
-	"os"
-	"runtime/debug"
-	"strings"
 
-	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/cloudwego/hertz/pkg/common/config"
-	"github.com/hertz-contrib/cors"
-	"github.com/joho/godotenv"
-
-	"github.com/coze-dev/coze-studio/backend/api/middleware"
-	"github.com/coze-dev/coze-studio/backend/api/router"
-	"github.com/coze-dev/coze-studio/backend/application"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/api/middleware"
+	"code.byted.org/data_edc/workflow_engine_next/api/router"
+	"code.byted.org/data_edc/workflow_engine_next/application"
+	"code.byted.org/middleware/hertz/byted"
 )
 
-func main() {
+func InitInfra() {
+
 	ctx := context.Background()
-	// Please do not change the order of the function calls below
-	setLogLevel()
-	setCrashOutput()
-
-	if err := loadEnv(); err != nil {
-		panic("loadEnv failed, err=" + err.Error())
-	}
-
 	if err := application.Init(ctx); err != nil {
 		panic("InitializeInfra failed, err=" + err.Error())
 	}
-
-	startHttpServer()
 }
-
-func startHttpServer() {
-	maxRequestBodySize := os.Getenv("MAX_REQUEST_BODY_SIZE")
-	maxSize := conv.StrToInt64D(maxRequestBodySize, 1024*1024*200)
-	addr := getEnv("LISTEN_ADDR", ":8888")
-
-	opts := []config.Option{
-		server.WithHostPorts(addr),
-		server.WithMaxRequestBodySize(int(maxSize)),
-	}
-
-	useSSL := getEnv("USE_SSL", "0")
-	if useSSL == "1" {
-		cert, err := tls.LoadX509KeyPair("cert.pem", "key.pem")
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-		cfg := &tls.Config{}
-		cfg.Certificates = append(cfg.Certificates, cert)
-		opts = append(opts, server.WithTLS(cfg))
-		logs.Infof("Use SSL")
-	}
-
-	s := server.Default(opts...)
-
-	// cors option
-	config := cors.DefaultConfig()
-	config.AllowAllOrigins = true
-	config.AllowHeaders = []string{"*"}
-	corsHandler := cors.New(config)
+func main() {
+	InitInfra()
+	byted.Init()
+	s := byted.Default()
 
 	// Middleware order matters
 	s.Use(middleware.ContextCacheMW())     // must be first
 	s.Use(middleware.RequestInspectorMW()) // must be second
-	s.Use(middleware.SetLogIDMW())
-	s.Use(corsHandler)
+	// s.Use(middleware.SetLogIDMW())
 	s.Use(middleware.AccessLogMW())
 	s.Use(middleware.OpenapiAuthMW())
 	s.Use(middleware.SessionAuthMW())
 	s.Use(middleware.I18nMW()) // must after SessionAuthMW
-
 	router.GeneratedRegister(s)
 	s.Spin()
 }
 
-func loadEnv() (err error) {
-	appEnv := os.Getenv("APP_ENV")
-	fileName := ternary.IFElse(appEnv == "", ".env", ".env."+appEnv)
-
-	logs.Infof("load env file: %s", fileName)
-
-	err = godotenv.Load(fileName)
-	if err != nil {
-		return fmt.Errorf("load env file(%s) failed, err=%w", fileName, err)
-	}
-
-	return err
-}
-
-func getEnv(key string, defaultValue string) string {
-	v := os.Getenv(key)
-	if v == "" {
-		return defaultValue
-	}
-	return v
-}
-
-func setLogLevel() {
-	level := strings.ToLower(os.Getenv("LOG_LEVEL"))
-
-	switch level {
-	case "trace":
-		logs.SetLevel(logs.LevelTrace)
-	case "debug":
-		logs.SetLevel(logs.LevelDebug)
-	case "info":
-		logs.SetLevel(logs.LevelInfo)
-	case "notice":
-		logs.SetLevel(logs.LevelNotice)
-	case "warn":
-		logs.SetLevel(logs.LevelWarn)
-	case "error":
-		logs.SetLevel(logs.LevelError)
-	case "fatal":
-		logs.SetLevel(logs.LevelFatal)
-	default:
-		logs.SetLevel(logs.LevelInfo)
-	}
-}
-
-func setCrashOutput() {
-	crashFile, _ := os.Create("crash.log")
-	debug.SetCrashOutput(crashFile, debug.CrashOptions{})
-}
+//func main() {
+//	ctx := context.Background()
+//
+//	if err := loadEnv(); err != nil {
+//		panic("loadEnv failed, err=" + err.Error())
+//	}
+//
+//	setLogLevel()
+//
+//	if err := application.Init(ctx); err != nil {
+//		panic("InitializeInfra failed, err=" + err.Error())
+//	}
+//
+//	addr := os.Getenv("LISTEN_ADDR")
+//	if addr == "" {
+//		addr = ":8888"
+//	}
+//
+//	maxRequestBodySize := os.Getenv("MAX_REQUEST_BODY_SIZE")
+//	maxSize := conv.StrToInt64D(maxRequestBodySize, 1024*1024*200)
+//
+//	opts := []config.Option{
+//		server.WithHostPorts(addr),
+//		server.WithMaxRequestBodySize(int(maxSize)),
+//	}
+//
+//	if os.Getenv("USE_SSL") == "1" {
+//		cfg := &tls.Config{}
+//		cert, err := tls.LoadX509KeyPair("cert.pem", "key.pem")
+//		if err != nil {
+//			fmt.Println(err.Error())
+//		}
+//		cfg.Certificates = append(cfg.Certificates, cert)
+//		opts = append(opts, server.WithTLS(cfg))
+//		logs.Infof("Use SSL")
+//	}
+//
+//	s := server.Default(opts...)
+//
+//	// cors option
+//	config := cors.DefaultConfig()
+//	config.AllowAllOrigins = true
+//	config.AllowHeaders = []string{"*"}
+//	corsHandler := cors.New(config)
+//
+//	// Middleware order matters
+//	s.Use(middleware.ContextCacheMW())     // must be first
+//	s.Use(middleware.RequestInspectorMW()) // must be second
+//	s.Use(middleware.SetLogIDMW())
+//	s.Use(corsHandler)
+//	s.Use(middleware.AccessLogMW())
+//	s.Use(middleware.OpenapiAuthMW())
+//	s.Use(middleware.SessionAuthMW())
+//	s.Use(middleware.I18nMW()) // must after SessionAuthMW
+//	router.GeneratedRegister(s)
+//	s.Spin()
+//}
+//
+//func loadEnv() (err error) {
+//	env := os.Getenv("APP_ENV")
+//	logs.Infof("APP_ENV: %s", env)
+//
+//	if env == "" {
+//		err = godotenv.Load()
+//	} else {
+//		fileName := ".env." + env
+//		err = godotenv.Load(fileName)
+//	}
+//
+//	if err != nil {
+//		log.Fatalf("Error loading .env file, err = %v ", err)
+//	}
+//
+//	return err
+//}
+//
+//func setLogLevel() {
+//	level := strings.ToLower(os.Getenv("LOG_LEVEL"))
+//
+//	switch level {
+//	case "trace":
+//		logs.SetLevel(logs.LevelTrace)
+//	case "debug":
+//		logs.SetLevel(logs.LevelDebug)
+//	case "info":
+//		logs.SetLevel(logs.LevelInfo)
+//	case "notice":
+//		logs.SetLevel(logs.LevelNotice)
+//	case "warn":
+//		logs.SetLevel(logs.LevelWarn)
+//	case "error":
+//		logs.SetLevel(logs.LevelError)
+//	case "fatal":
+//		logs.SetLevel(logs.LevelFatal)
+//	default:
+//		logs.SetLevel(logs.LevelInfo)
+//	}
+//
+//	crashFile, _ := os.Create("crash.log")
+//	debug.SetCrashOutput(crashFile, debug.CrashOptions{})
+//}

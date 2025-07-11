@@ -21,12 +21,12 @@ import (
 	"sort"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossconnector"
-	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/developer_api"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossconnector"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 )
 
 func (s *singleAgentImpl) SavePublishRecord(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error {

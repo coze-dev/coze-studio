@@ -21,7 +21,7 @@ import (
 
 	"github.com/cloudwego/eino-ext/components/embedding/openai"
 
-	contract "github.com/coze-dev/coze-studio/backend/infra/contract/embedding"
+	contract "code.byted.org/data_edc/workflow_engine_next/infra/contract/embedding"
 )
 
 func NewOpenAIEmbedder(ctx context.Context, config *openai.EmbeddingConfig, dimensions int64) (contract.Embedder, error) {

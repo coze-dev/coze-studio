@@ -25,7 +25,7 @@ import (
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
 
-	contract "github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
+	contract "code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
 )
 
 var (

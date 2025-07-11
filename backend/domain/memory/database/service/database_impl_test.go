@@ -30,17 +30,17 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
-	entity2 "github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/dal"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/database/repository"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	rdb2 "github.com/coze-dev/coze-studio/backend/infra/impl/rdb"
-	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/idgen"
-	storageMock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
+	entity2 "code.byted.org/data_edc/workflow_engine_next/domain/memory/database/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/internal/dal"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/repository"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	rdb2 "code.byted.org/data_edc/workflow_engine_next/infra/impl/rdb"
+	mock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/idgen"
+	storageMock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 func setupTestEnv(t *testing.T) (*gorm.DB, rdb.RDB, *mock.MockIDGenerator, repository.DraftDAO, repository.OnlineDAO, Database) {

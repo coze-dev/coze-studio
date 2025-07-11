@@ -22,14 +22,14 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
-	domainknowledge "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
-	crossknowledge "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	domainknowledge "code.byted.org/data_edc/workflow_engine_next/domain/knowledge/service"
+	crossknowledge "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 type Knowledge struct {

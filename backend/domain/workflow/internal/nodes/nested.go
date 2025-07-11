@@ -20,7 +20,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 )
 
 type NestedWorkflowOptions struct {

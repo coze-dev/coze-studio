@@ -21,10 +21,10 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/internal/dal"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/internal/dal"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 )
 
 func NewMessageRepo(db *gorm.DB, idGen idgen.IDGenerator) MessageRepo {

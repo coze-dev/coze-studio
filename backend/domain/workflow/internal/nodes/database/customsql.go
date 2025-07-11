@@ -22,10 +22,10 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 )
 
 type CustomSQLConfig struct {

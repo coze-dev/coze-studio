@@ -19,9 +19,9 @@ package connector
 import (
 	"context"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/connector"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossconnector"
-	connector "github.com/coze-dev/coze-studio/backend/domain/connector/service"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/connector"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossconnector"
+	connector "code.byted.org/data_edc/workflow_engine_next/domain/connector/service"
 )
 
 var defaultSVC crossconnector.Connector

@@ -20,13 +20,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/convertor"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	entity3 "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/internal/convertor"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	entity3 "code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func CreatePhysicalTable(ctx context.Context, db rdb.RDB, columns []*entity3.Column) (*rdb.CreateTableResponse, error) {

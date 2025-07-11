@@ -17,10 +17,7 @@
 package es
 
 import (
-	"fmt"
-	"os"
-
-	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/es"
 )
 
 type (
@@ -35,12 +32,9 @@ type (
 )
 
 func New() (Client, error) {
-	v := os.Getenv("ES_VERSION")
-	if v == "v8" {
-		return newES8()
-	} else if v == "v7" {
-		return newES7()
+	cli, err := newByteES()
+	if err != nil {
+		return nil, err
 	}
-
-	return nil, fmt.Errorf("unsupported es version %s", v)
+	return cli, nil
 }

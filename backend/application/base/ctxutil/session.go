@@ -19,9 +19,9 @@ package ctxutil
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/domain/user/entity"
-	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 )
 
 func GetUserSessionFromCtx(ctx context.Context) *entity.Session {

@@ -21,16 +21,16 @@ package coze
 import (
 	"context"
 
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"code.byted.org/middleware/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/protocol/consts"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
-	appApplication "github.com/coze-dev/coze-studio/backend/application/app"
-	"github.com/coze-dev/coze-studio/backend/application/prompt"
-	"github.com/coze-dev/coze-studio/backend/application/shortcutcmd"
-	"github.com/coze-dev/coze-studio/backend/application/singleagent"
-	"github.com/coze-dev/coze-studio/backend/application/upload"
-	"github.com/coze-dev/coze-studio/backend/application/user"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
+	appApplication "code.byted.org/data_edc/workflow_engine_next/application/app"
+	"code.byted.org/data_edc/workflow_engine_next/application/prompt"
+	"code.byted.org/data_edc/workflow_engine_next/application/shortcutcmd"
+	"code.byted.org/data_edc/workflow_engine_next/application/singleagent"
+	"code.byted.org/data_edc/workflow_engine_next/application/upload"
+	"code.byted.org/data_edc/workflow_engine_next/application/user"
 )
 
 // UpdateDraftBotInfoAgw .

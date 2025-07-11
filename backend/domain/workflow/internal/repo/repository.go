@@ -23,34 +23,34 @@ import (
 	"strconv"
 	"time"
 
+	redis "code.byted.org/kv/goredis"
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
-	"github.com/redis/go-redis/v9"
 	"golang.org/x/exp/maps"
 	"gorm.io/gen"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
-	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/adaptor"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/model"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/pkg/safego"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	workflow3 "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/canvas/adaptor"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type RepositoryImpl struct {
@@ -1427,11 +1427,11 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, pol
 	var copiedWorkflowName string
 	if policy.ShouldModifyWorkflowName {
 		copiedWorkflowRedisKey := fmt.Sprintf("%s:%d:%d", copyWorkflowRedisKeyPrefix, workflowID, ctxutil.MustGetUIDFromCtx(ctx))
-		copiedNameSuffix, err := r.redis.Incr(ctx, copiedWorkflowRedisKey).Result()
+		copiedNameSuffix, err := r.redis.WithContext(ctx).Incr(copiedWorkflowRedisKey).Result()
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrRedisError, err)
 		}
-		err = r.redis.Expire(ctx, copiedWorkflowRedisKey, copyWorkflowRedisKeyExpireInterval).Err()
+		err = r.redis.WithContext(ctx).Expire(copiedWorkflowRedisKey, copyWorkflowRedisKeyExpireInterval).Err()
 		if err != nil {
 			logs.Warnf("failed to set the rediskey %v expiration time, err=%v", copiedWorkflowRedisKey, err)
 		}

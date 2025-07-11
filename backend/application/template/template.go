@@ -19,12 +19,12 @@ package template
 import (
 	"context"
 
-	productAPI "github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/product_public_api"
-	"github.com/coze-dev/coze-studio/backend/domain/template/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/template/repository"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
+	productAPI "code.byted.org/data_edc/workflow_engine_next/api/model/flow/marketplace/product_public_api"
+	"code.byted.org/data_edc/workflow_engine_next/domain/template/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/template/repository"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 )
 
 type ApplicationService struct {

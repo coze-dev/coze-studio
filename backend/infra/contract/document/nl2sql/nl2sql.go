@@ -21,7 +21,7 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
 )
 
 type NL2SQL interface {

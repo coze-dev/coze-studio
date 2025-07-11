@@ -28,32 +28,33 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/redis/go-redis/v9"
+	redis "code.byted.org/kv/goredis"
+	redisV6 "code.byted.org/kv/redis-v6"
 	"github.com/tealeg/xlsx/v3"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossvariables"
-	entity2 "github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/convertor"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/physicaltable"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/sheet"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/database/repository"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	entity3 "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
-	sqlparsercontract "github.com/coze-dev/coze-studio/backend/infra/contract/sqlparser"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/sqlparser"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossvariables"
+	entity2 "code.byted.org/data_edc/workflow_engine_next/domain/memory/database/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/internal/convertor"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/internal/physicaltable"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/internal/sheet"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/repository"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	entity3 "code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb/entity"
+	sqlparsercontract "code.byted.org/data_edc/workflow_engine_next/infra/contract/sqlparser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/sqlparser"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type databaseService struct {
@@ -1819,12 +1820,12 @@ func (d databaseService) SubmitDatabaseInsertTask(ctx context.Context, req *Subm
 	defer func() {
 		if r := recover(); r != nil {
 			errMsg := fmt.Sprintf("panic: %v", r)
-			d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), errMsg, redisKeyTimeOut)
+			d.cache.WithContext(ctx).Set(fmt.Sprintf(failKey, req.DatabaseID, req.UserID), errMsg, redisKeyTimeOut)
 			err = fmt.Errorf("panic: %v", r)
 			return
 		}
 		if err != nil {
-			d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
+			d.cache.WithContext(ctx).Set(fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
 		}
 	}()
 
@@ -1867,7 +1868,7 @@ func (d databaseService) SubmitDatabaseInsertTask(ctx context.Context, req *Subm
 		defer func() {
 			if r := recover(); r != nil {
 				errMsg := fmt.Sprintf("panic: %v", r)
-				d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), errMsg, redisKeyTimeOut)
+				d.cache.WithContext(ctx).Set(fmt.Sprintf(failKey, req.DatabaseID, req.UserID), errMsg, redisKeyTimeOut)
 			}
 		}()
 
@@ -1885,13 +1886,13 @@ func (d databaseService) SubmitDatabaseInsertTask(ctx context.Context, req *Subm
 				Records:     batchRecords,
 			})
 			if err != nil {
-				d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
+				d.cache.WithContext(ctx).Set(fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
 				return
 			}
 
 			err = d.increaseProgress(ctx, req, int64(len(batchRecords)))
 			if err != nil {
-				d.cache.Set(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
+				d.cache.WithContext(ctx).Set(fmt.Sprintf(failKey, req.DatabaseID, req.UserID), err.Error(), redisKeyTimeOut)
 				return
 			}
 		}
@@ -1917,23 +1918,23 @@ func (d databaseService) GetDatabaseFileProgressData(ctx context.Context, req *G
 	if req.TableType == table.TableType_DraftTable {
 		currentFileName = draftCurrentFileName
 	}
-	totalNum, err := d.cache.Get(ctx, fmt.Sprintf(totalKey, req.DatabaseID, req.UserID)).Int64()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	totalNum, err := d.cache.WithContext(ctx).Get(fmt.Sprintf(totalKey, req.DatabaseID, req.UserID)).Int64()
+	if err != nil && !errors.Is(err, redisV6.Nil) {
 		return nil, err
 	}
 
-	progressNum, err := d.cache.Get(ctx, fmt.Sprintf(progressKey, req.DatabaseID, req.UserID)).Int64()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	progressNum, err := d.cache.WithContext(ctx).Get(fmt.Sprintf(progressKey, req.DatabaseID, req.UserID)).Int64()
+	if err != nil && !errors.Is(err, redisV6.Nil) {
 		return nil, err
 	}
 
-	failReason, err := d.cache.Get(ctx, fmt.Sprintf(failKey, req.DatabaseID, req.UserID)).Result()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	failReason, err := d.cache.WithContext(ctx).Get(fmt.Sprintf(failKey, req.DatabaseID, req.UserID)).Result()
+	if err != nil && !errors.Is(err, redisV6.Nil) {
 		return nil, err
 	}
 
-	fileName, err := d.cache.Get(ctx, fmt.Sprintf(currentFileName, req.DatabaseID, req.UserID)).Result()
-	if err != nil && !errors.Is(err, redis.Nil) {
+	fileName, err := d.cache.WithContext(ctx).Get(fmt.Sprintf(currentFileName, req.DatabaseID, req.UserID)).Result()
+	if err != nil && !errors.Is(err, redisV6.Nil) {
 		return nil, err
 	}
 
@@ -1983,22 +1984,22 @@ func (d databaseService) initializeCache(ctx context.Context, req *SubmitDatabas
 		failKey = draftFailReasonKey
 	}
 
-	_, err := d.cache.Set(ctx, fmt.Sprintf(totalKey, databaseID, userID), fmt.Sprintf("%d", len(parseData.SampleData)), redisKeyTimeOut).Result()
+	_, err := d.cache.WithContext(ctx).Set(fmt.Sprintf(totalKey, databaseID, userID), fmt.Sprintf("%d", len(parseData.SampleData)), redisKeyTimeOut).Result()
 	if err != nil {
 		return err
 	}
 
-	_, err = d.cache.Set(ctx, fmt.Sprintf(progressKey, databaseID, userID), int64(0), redisKeyTimeOut).Result()
+	_, err = d.cache.WithContext(ctx).Set(fmt.Sprintf(progressKey, databaseID, userID), int64(0), redisKeyTimeOut).Result()
 	if err != nil {
 		return err
 	}
 
-	_, err = d.cache.Set(ctx, fmt.Sprintf(failKey, databaseID, userID), "", redisKeyTimeOut).Result()
+	_, err = d.cache.WithContext(ctx).Set(fmt.Sprintf(failKey, databaseID, userID), "", redisKeyTimeOut).Result()
 	if err != nil {
 		return err
 	}
 
-	_, err = d.cache.Set(ctx, fmt.Sprintf(currentFileName, databaseID, userID), extra.Sheets[req.TableSheet.SheetID].SheetName, redisKeyTimeOut).Result()
+	_, err = d.cache.WithContext(ctx).Set(fmt.Sprintf(currentFileName, databaseID, userID), extra.Sheets[req.TableSheet.SheetID].SheetName, redisKeyTimeOut).Result()
 	if err != nil {
 		return err
 	}
@@ -2016,7 +2017,7 @@ func (d databaseService) increaseProgress(ctx context.Context, req *SubmitDataba
 		progressKey = draftProgressKey
 	}
 
-	_, err := d.cache.IncrBy(ctx, fmt.Sprintf(progressKey, databaseID, userID), successNum).Result()
+	_, err := d.cache.WithContext(ctx).IncrBy(fmt.Sprintf(progressKey, databaseID, userID), successNum).Result()
 	if err != nil {
 		return err
 	}

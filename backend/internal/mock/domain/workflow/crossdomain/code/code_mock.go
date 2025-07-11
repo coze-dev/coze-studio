@@ -10,7 +10,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 
-	code "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/code"
+	code "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/code"
 )
 
 // MockRunner is a mock of Runner interface.

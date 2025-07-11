@@ -24,10 +24,10 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 type PluginInfo struct {

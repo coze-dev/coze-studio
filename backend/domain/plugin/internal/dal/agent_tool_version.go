@@ -24,11 +24,11 @@ import (
 	"gorm.io/gen"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 func NewAgentToolVersionDAO(db *gorm.DB, idGen idgen.IDGenerator) *AgentToolVersionDAO {

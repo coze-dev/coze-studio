@@ -22,16 +22,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"code.byted.org/middleware/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/protocol/consts"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/intelligence"
-	"github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
-	project "github.com/coze-dev/coze-studio/backend/api/model/project"
-	publish "github.com/coze-dev/coze-studio/backend/api/model/publish"
-	task "github.com/coze-dev/coze-studio/backend/api/model/task"
-	appApplication "github.com/coze-dev/coze-studio/backend/application/app"
-	"github.com/coze-dev/coze-studio/backend/application/search"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/intelligence"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/intelligence/common"
+	project "code.byted.org/data_edc/workflow_engine_next/api/model/project"
+	publish "code.byted.org/data_edc/workflow_engine_next/api/model/publish"
+	task "code.byted.org/data_edc/workflow_engine_next/api/model/task"
+	appApplication "code.byted.org/data_edc/workflow_engine_next/application/app"
+	"code.byted.org/data_edc/workflow_engine_next/application/search"
 )
 
 // GetDraftIntelligenceList .

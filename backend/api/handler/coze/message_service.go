@@ -20,13 +20,13 @@ import (
 	"context"
 	"errors"
 
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"code.byted.org/middleware/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/protocol/consts"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
-	application "github.com/coze-dev/coze-studio/backend/application/conversation"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/message"
+	application "code.byted.org/data_edc/workflow_engine_next/application/conversation"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 // GetMessageList .

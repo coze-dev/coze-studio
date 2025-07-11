@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/internal/dal/model"
 )
 
 func newRunRecord(db *gorm.DB, opts ...gen.DOOption) runRecord {

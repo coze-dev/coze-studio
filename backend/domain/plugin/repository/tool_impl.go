@@ -23,14 +23,14 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	pluginConf "code.byted.org/data_edc/workflow_engine_next/domain/plugin/conf"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 type toolRepoImpl struct {

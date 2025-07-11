@@ -19,8 +19,8 @@
 package coze
 
 import (
-	coze "github.com/coze-dev/coze-studio/backend/api/handler/coze"
-	"github.com/cloudwego/hertz/pkg/app/server"
+	coze "code.byted.org/data_edc/workflow_engine_next/api/handler/coze"
+	"code.byted.org/middleware/hertz/pkg/app/server"
 )
 
 /*

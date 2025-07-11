@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"time"
 
@@ -36,37 +35,22 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/volcengine/volc-sdk-golang/service/vikingdb"
-	"github.com/volcengine/volc-sdk-golang/service/visual"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/application/search"
-	knowledgeImpl "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/nl2sql"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/embedding"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/messages2query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	chatmodelImpl "github.com/coze-dev/coze-studio/backend/infra/impl/chatmodel"
-	builtinNL2SQL "github.com/coze-dev/coze-studio/backend/infra/impl/document/nl2sql/builtin"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/ocr/veocr"
-	builtinParser "github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/rrf"
-	sses "github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/elasticsearch"
-	ssmilvus "github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/milvus"
-	ssvikingdb "github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/vikingdb"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/embedding/wrap"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus/rmq"
-	builtinM2Q "github.com/coze-dev/coze-studio/backend/infra/impl/messages2query/builtin"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/application/search"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/cache"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/searchstore"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/embedding"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/es"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/imagex"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	ssmilvus "code.byted.org/data_edc/workflow_engine_next/infra/impl/document/searchstore/milvus"
+	ssvikingdb "code.byted.org/data_edc/workflow_engine_next/infra/impl/document/searchstore/vikingdb"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/embedding/wrap"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 type ServiceComponents struct {
@@ -81,106 +65,108 @@ type ServiceComponents struct {
 }
 
 func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
-	ctx := context.Background()
-
-	nameServer := os.Getenv(consts.RMQServer)
-
-	knowledgeProducer, err := rmq.NewProducer(nameServer, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, 2)
-	if err != nil {
-		return nil, fmt.Errorf("init knowledge producer failed, err=%w", err)
-	}
-
-	var sManagers []searchstore.Manager
-
-	// es full text search
-	sManagers = append(sManagers, sses.NewManager(&sses.ManagerConfig{Client: c.ES}))
-
-	// vector search
-	mgr, err := getVectorStore(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("init vector store failed, err=%w", err)
-	}
-	sManagers = append(sManagers, mgr)
-
-	var ocrImpl ocr.OCR
-	switch os.Getenv("OCR_TYPE") {
-	case "ve":
-		ocrAK := os.Getenv("VE_OCR_AK")
-		ocrSK := os.Getenv("VE_OCR_SK")
-		inst := visual.NewInstance()
-		inst.Client.SetAccessKey(ocrAK)
-		inst.Client.SetSecretKey(ocrSK)
-		ocrImpl = veocr.NewOCR(&veocr.Config{Client: inst})
-	default:
-		// accept ocr not configured
-	}
-
-	root, err := os.Getwd()
-	if err != nil {
-		logs.Warnf("[InitConfig] Failed to get current working directory: %v", err)
-		root = os.Getenv("PWD")
-	}
-
-	var rewriter messages2query.MessagesToQuery
-	if rewriterChatModel, _, err := getBuiltinChatModel(ctx, "M2Q_"); err != nil {
-		return nil, err
-	} else {
-		filePath := filepath.Join(root, "resources/conf/prompt/messages_to_query_template_jinja2.json")
-		rewriterTemplate, err := readJinja2PromptTemplate(filePath)
-		if err != nil {
-			return nil, err
-		}
-		rewriter, err = builtinM2Q.NewMessagesToQuery(ctx, rewriterChatModel, rewriterTemplate)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	var n2s nl2sql.NL2SQL
-	if n2sChatModel, _, err := getBuiltinChatModel(ctx, "NL2SQL_"); err != nil {
-		return nil, err
-	} else {
-		filePath := filepath.Join(root, "resources/conf/prompt/nl2sql_template_jinja2.json")
-		n2sTemplate, err := readJinja2PromptTemplate(filePath)
-		if err != nil {
-			return nil, err
-		}
-		n2s, err = builtinNL2SQL.NewNL2SQL(ctx, n2sChatModel, n2sTemplate)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	imageAnnoChatModel, configured, err := getBuiltinChatModel(ctx, "IA_")
-	if err != nil {
-		return nil, err
-	}
-
-	knowledgeDomainSVC, knowledgeEventHandler := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
-		DB:                        c.DB,
-		IDGen:                     c.IDGenSVC,
-		RDB:                       c.RDB,
-		Producer:                  knowledgeProducer,
-		SearchStoreManagers:       sManagers,
-		ParseManager:              builtinParser.NewManager(c.Storage, ocrImpl, imageAnnoChatModel), // default builtin
-		Storage:                   c.Storage,
-		Rewriter:                  rewriter,
-		Reranker:                  rrf.NewRRFReranker(0), // default rrf
-		NL2Sql:                    n2s,
-		OCR:                       ocrImpl,
-		CacheCli:                  c.CacheCli,
-		IsAutoAnnotationSupported: configured,
-		ModelFactory:              chatmodelImpl.NewDefaultFactory(),
-	})
-
-	if err = rmq.RegisterConsumer(nameServer, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, knowledgeEventHandler); err != nil {
-		return nil, fmt.Errorf("register knowledge consumer failed, err=%w", err)
-	}
-
-	KnowledgeSVC.DomainSVC = knowledgeDomainSVC
-	KnowledgeSVC.eventBus = c.EventBus
-	KnowledgeSVC.storage = c.Storage
-	return KnowledgeSVC, nil
+	// TODO:: 知识库先不管
+	return &KnowledgeApplicationService{}, nil
+	//ctx := context.Background()
+	//
+	//nameServer := os.Getenv(consts.RMQServer)
+	//
+	//knowledgeProducer, err := rmq.NewProducer(consts.WorkflowEnginePSM, consts.I18nMQCluster, consts.RMQTopicKnowledge)
+	//if err != nil {
+	//	return nil, fmt.Errorf("init knowledge producer failed, err=%w", err)
+	//}
+	//
+	//var sManagers []searchstore.Manager
+	//
+	//// es full text search
+	//sManagers = append(sManagers, sses.NewManager(&sses.ManagerConfig{Client: c.ES}))
+	//
+	//// vector search
+	//mgr, err := getVectorStore(ctx)
+	//if err != nil {
+	//	return nil, fmt.Errorf("init vector store failed, err=%w", err)
+	//}
+	//sManagers = append(sManagers, mgr)
+	//
+	//var ocrImpl ocr.OCR
+	//switch os.Getenv("OCR_TYPE") {
+	//case "ve":
+	//	ocrAK := os.Getenv("VE_OCR_AK")
+	//	ocrSK := os.Getenv("VE_OCR_SK")
+	//	inst := visual.NewInstance()
+	//	inst.Client.SetAccessKey(ocrAK)
+	//	inst.Client.SetSecretKey(ocrSK)
+	//	ocrImpl = veocr.NewOCR(&veocr.Config{Client: inst})
+	//default:
+	//	// accept ocr not configured
+	//}
+	//
+	//root, err := os.Getwd()
+	//if err != nil {
+	//	logs.Warnf("[InitConfig] Failed to get current working directory: %v", err)
+	//	root = os.Getenv("PWD")
+	//}
+	//
+	//var rewriter messages2query.MessagesToQuery
+	//if rewriterChatModel, _, err := getBuiltinChatModel(ctx, "M2Q_"); err != nil {
+	//	return nil, err
+	//} else {
+	//	filePath := filepath.Join(root, "conf/prompt/messages_to_query_template_jinja2.json")
+	//	rewriterTemplate, err := readJinja2PromptTemplate(filePath)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	rewriter, err = builtinM2Q.NewMessagesToQuery(ctx, rewriterChatModel, rewriterTemplate)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//}
+	//
+	//var n2s nl2sql.NL2SQL
+	//if n2sChatModel, _, err := getBuiltinChatModel(ctx, "NL2SQL_"); err != nil {
+	//	return nil, err
+	//} else {
+	//	filePath := filepath.Join(root, "conf/prompt/nl2sql_template_jinja2.json")
+	//	n2sTemplate, err := readJinja2PromptTemplate(filePath)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	n2s, err = builtinNL2SQL.NewNL2SQL(ctx, n2sChatModel, n2sTemplate)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//}
+	//
+	//imageAnnoChatModel, configured, err := getBuiltinChatModel(ctx, "IA_")
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//knowledgeDomainSVC, knowledgeEventHandler := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
+	//	DB:                        c.DB,
+	//	IDGen:                     c.IDGenSVC,
+	//	RDB:                       c.RDB,
+	//	Producer:                  knowledgeProducer,
+	//	SearchStoreManagers:       sManagers,
+	//	ParseManager:              builtinParser.NewManager(c.Storage, ocrImpl, imageAnnoChatModel), // default builtin
+	//	Storage:                   c.Storage,
+	//	Rewriter:                  rewriter,
+	//	Reranker:                  rrf.NewRRFReranker(0), // default rrf
+	//	NL2Sql:                    n2s,
+	//	OCR:                       ocrImpl,
+	//	CacheCli:                  c.CacheCli,
+	//	IsAutoAnnotationSupported: configured,
+	//	ModelFactory:              chatmodelImpl.NewDefaultFactory(),
+	//})
+	//
+	//if err = rmq.RegisterConsumer(nameServer, "opencoze_knowledge", "cg_knowledge", knowledgeEventHandler); err != nil {
+	//	return nil, fmt.Errorf("register knowledge consumer failed, err=%w", err)
+	//}
+	//
+	//KnowledgeSVC.DomainSVC = knowledgeDomainSVC
+	//KnowledgeSVC.eventBus = c.EventBus
+	//KnowledgeSVC.storage = c.Storage
+	//return KnowledgeSVC, nil
 }
 
 func getVectorStore(ctx context.Context) (searchstore.Manager, error) {

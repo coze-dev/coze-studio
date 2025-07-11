@@ -20,14 +20,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/resource/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
-	dbservice "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/resource/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/service"
+	dbservice "code.byted.org/data_edc/workflow_engine_next/domain/memory/database/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 var defaultAction = []*common.ResourceAction{

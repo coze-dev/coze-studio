@@ -25,17 +25,17 @@ import (
 	"github.com/smartystreets/goconvey/convey"
 	"go.uber.org/mock/gomock"
 
-	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/consts"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/convert"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/mock/dal/dao"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	rentity "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
-	mrdb "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/rdb"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	knowledgeModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/consts"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/convert"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/mock/dal/dao"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb"
+	rentity "code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb/entity"
+	mrdb "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/rdb"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func TestValidateTableSchema(t *testing.T) {

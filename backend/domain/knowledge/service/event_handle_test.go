@@ -24,8 +24,8 @@ import (
 	. "github.com/bytedance/mockey"
 	"github.com/smartystreets/goconvey/convey"
 
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
 )
 
 func TestEventHandle(t *testing.T) {

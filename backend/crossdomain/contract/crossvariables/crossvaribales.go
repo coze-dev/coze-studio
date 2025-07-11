@@ -19,8 +19,8 @@ package crossvariables
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/variables"
-	"github.com/coze-dev/coze-studio/backend/api/model/kvmemory"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/variables"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/kvmemory"
 )
 
 type Variables interface {

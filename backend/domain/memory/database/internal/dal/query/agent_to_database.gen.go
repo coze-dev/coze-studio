@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/internal/dal/model"
 )
 
 func newAgentToDatabase(db *gorm.DB, opts ...gen.DOOption) agentToDatabase {

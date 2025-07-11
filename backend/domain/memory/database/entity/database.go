@@ -19,8 +19,8 @@ package entity
 import (
 	"github.com/xuri/excelize/v2"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
 )
 
 type Database = database.Database

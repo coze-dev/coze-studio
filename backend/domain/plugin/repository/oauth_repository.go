@@ -19,7 +19,7 @@ package repository
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
 )
 
 type OAuthRepository interface {

@@ -19,9 +19,9 @@ package database
 import (
 	"context"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatabase"
-	database "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossdatabase"
+	database "code.byted.org/data_edc/workflow_engine_next/domain/memory/database/service"
 )
 
 var defaultSVC crossdatabase.Database

@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 )
 
 func putImageObject(ctx context.Context, st storage.Storage, imgExt string, uid int64, img []byte) (format string, err error) {

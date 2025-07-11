@@ -19,10 +19,10 @@ package agentflow
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossworkflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossworkflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 )
 
 type workflowConfig struct {

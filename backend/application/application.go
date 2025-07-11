@@ -20,53 +20,51 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/application/openauth"
-	"github.com/coze-dev/coze-studio/backend/application/template"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crosssearch"
+	"code.byted.org/data_edc/workflow_engine_next/application/app"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/appinfra"
+	"code.byted.org/data_edc/workflow_engine_next/application/connector"
+	"code.byted.org/data_edc/workflow_engine_next/application/conversation"
+	"code.byted.org/data_edc/workflow_engine_next/application/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/application/memory"
+	"code.byted.org/data_edc/workflow_engine_next/application/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/application/openauth"
+	"code.byted.org/data_edc/workflow_engine_next/application/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/application/prompt"
+	"code.byted.org/data_edc/workflow_engine_next/application/search"
+	"code.byted.org/data_edc/workflow_engine_next/application/shortcutcmd"
+	"code.byted.org/data_edc/workflow_engine_next/application/singleagent"
+	"code.byted.org/data_edc/workflow_engine_next/application/template"
+	"code.byted.org/data_edc/workflow_engine_next/application/upload"
+	"code.byted.org/data_edc/workflow_engine_next/application/user"
+	"code.byted.org/data_edc/workflow_engine_next/application/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossagent"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossagentrun"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossconnector"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossconversation"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossdatabase"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossdatacopy"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossmessage"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossmodelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossplugin"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crosssearch"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossuser"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossvariables"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossworkflow"
+	agentrunImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/agentrun"
+	connectorImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/connector"
+	conversationImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/conversation"
+	crossuserImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/crossuser"
+	databaseImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/database"
+	dataCopyImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/datacopy"
+	messageImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/message"
+	modelmgrImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/modelmgr"
+	pluginImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/plugin"
+	searchImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/search"
+	singleagentImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/singleagent"
+	variablesImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/variables"
+	workflowImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/workflow"
 
-	"github.com/coze-dev/coze-studio/backend/application/app"
-	"github.com/coze-dev/coze-studio/backend/application/base/appinfra"
-	"github.com/coze-dev/coze-studio/backend/application/connector"
-	"github.com/coze-dev/coze-studio/backend/application/conversation"
-	"github.com/coze-dev/coze-studio/backend/application/knowledge"
-	"github.com/coze-dev/coze-studio/backend/application/memory"
-	"github.com/coze-dev/coze-studio/backend/application/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/application/plugin"
-	"github.com/coze-dev/coze-studio/backend/application/prompt"
-	"github.com/coze-dev/coze-studio/backend/application/search"
-	"github.com/coze-dev/coze-studio/backend/application/shortcutcmd"
-	"github.com/coze-dev/coze-studio/backend/application/singleagent"
-	"github.com/coze-dev/coze-studio/backend/application/upload"
-	"github.com/coze-dev/coze-studio/backend/application/user"
-	"github.com/coze-dev/coze-studio/backend/application/workflow"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossagent"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossagentrun"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossconnector"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossconversation"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatabase"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatacopy"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossknowledge"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmessage"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmodelmgr"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossplugin"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossuser"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossvariables"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossworkflow"
-	agentrunImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/agentrun"
-	connectorImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/connector"
-	conversationImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/conversation"
-	crossuserImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/crossuser"
-	databaseImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/database"
-	dataCopyImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/datacopy"
-	knowledgeImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/knowledge"
-	messageImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/message"
-	modelmgrImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/modelmgr"
-	pluginImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/plugin"
-	searchImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/search"
-	singleagentImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/singleagent"
-	variablesImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/variables"
-	workflowImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/workflow"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/checkpoint"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/checkpoint"
 )
 
 type eventbusImpl struct {
@@ -129,7 +127,7 @@ func Init(ctx context.Context) (err error) {
 
 	crossconnector.SetDefaultSVC(connectorImpl.InitDomainService(basicServices.connectorSVC.DomainSVC))
 	crossdatabase.SetDefaultSVC(databaseImpl.InitDomainService(primaryServices.memorySVC.DatabaseDomainSVC))
-	crossknowledge.SetDefaultSVC(knowledgeImpl.InitDomainService(primaryServices.knowledgeSVC.DomainSVC))
+	// crossknowledge.SetDefaultSVC(knowledgeImpl.InitDomainService(primaryServices.knowledgeSVC.DomainSVC))
 	crossmodelmgr.SetDefaultSVC(modelmgrImpl.InitDomainService(basicServices.modelMgrSVC.DomainSVC))
 	crossplugin.SetDefaultSVC(pluginImpl.InitDomainService(primaryServices.pluginSVC.DomainSVC))
 	crossvariables.SetDefaultSVC(variablesImpl.InitDomainService(primaryServices.memorySVC.VariablesDomainSVC))
@@ -256,7 +254,7 @@ func (b *basicServices) toKnowledgeServiceComponents(memoryService *memory.Memor
 		IDGenSVC: b.infra.IDGenSVC,
 		Storage:  b.infra.TOSClient,
 		RDB:      memoryService.RDBDomainSVC,
-		ImageX:   b.infra.ImageXClient,
+		// ImageX:   b.infra.ImageXClient,
 		ES:       b.infra.ESClient,
 		EventBus: b.eventbus.resourceEventBus,
 		CacheCli: b.infra.CacheCli,
@@ -265,22 +263,22 @@ func (b *basicServices) toKnowledgeServiceComponents(memoryService *memory.Memor
 
 func (b *basicServices) toMemoryServiceComponents() *memory.ServiceComponents {
 	return &memory.ServiceComponents{
-		IDGen:                  b.infra.IDGenSVC,
-		DB:                     b.infra.DB,
-		EventBus:               b.eventbus.resourceEventBus,
-		TosClient:              b.infra.TOSClient,
-		ResourceDomainNotifier: b.eventbus.resourceEventBus,
-		CacheCli:               b.infra.CacheCli,
+		IDGen:     b.infra.IDGenSVC,
+		DB:        b.infra.DB,
+		EventBus:  b.eventbus.resourceEventBus,
+		TosClient: b.infra.TOSClient,
+		// ResourceDomainNotifier: b.eventbus.resourceEventBus,
+		CacheCli: b.infra.CacheCli,
 	}
 }
 
 func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginApplicationService, memorySVC *memory.MemoryApplicationServices, knowledgeSVC *knowledge.KnowledgeApplicationService) *workflow.ServiceComponents {
 	return &workflow.ServiceComponents{
-		IDGen:              b.infra.IDGenSVC,
-		DB:                 b.infra.DB,
-		Cache:              b.infra.CacheCli,
-		Tos:                b.infra.TOSClient,
-		ImageX:             b.infra.ImageXClient,
+		IDGen: b.infra.IDGenSVC,
+		DB:    b.infra.DB,
+		Cache: b.infra.CacheCli,
+		Tos:   b.infra.TOSClient,
+		// ImageX:             b.infra.ImageXClient,
 		DatabaseDomainSVC:  memorySVC.DatabaseDomainSVC,
 		VariablesDomainSVC: memorySVC.VariablesDomainSVC,
 		PluginDomainSVC:    pluginSVC.DomainSVC,
@@ -293,11 +291,11 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 
 func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceComponents {
 	return &singleagent.ServiceComponents{
-		IDGen:                p.basicServices.infra.IDGenSVC,
-		DB:                   p.basicServices.infra.DB,
-		Cache:                p.basicServices.infra.CacheCli,
-		TosClient:            p.basicServices.infra.TOSClient,
-		ImageX:               p.basicServices.infra.ImageXClient,
+		IDGen:     p.basicServices.infra.IDGenSVC,
+		DB:        p.basicServices.infra.DB,
+		Cache:     p.basicServices.infra.CacheCli,
+		TosClient: p.basicServices.infra.TOSClient,
+		// ImageX:               p.basicServices.infra.ImageXClient,
 		ModelMgrDomainSVC:    p.basicServices.modelMgrSVC.DomainSVC,
 		UserDomainSVC:        p.basicServices.userSVC.DomainSVC,
 		EventBus:             p.basicServices.eventbus.projectEventBus,

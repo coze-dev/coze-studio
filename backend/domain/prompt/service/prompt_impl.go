@@ -20,10 +20,10 @@ import (
 	"context"
 	"strings"
 
-	"github.com/coze-dev/coze-studio/backend/domain/prompt/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/prompt/internal/official"
-	"github.com/coze-dev/coze-studio/backend/domain/prompt/repository"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/domain/prompt/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/prompt/internal/official"
+	"code.byted.org/data_edc/workflow_engine_next/domain/prompt/repository"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 type promptService struct {

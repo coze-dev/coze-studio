@@ -29,8 +29,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/spf13/cast"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
 )
 
 type Config struct {

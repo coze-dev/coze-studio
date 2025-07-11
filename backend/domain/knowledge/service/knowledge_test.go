@@ -29,14 +29,14 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/rdb"
-	producerMock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/eventbus"
-	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/idgen"
-	storageMock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	knowledgeModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/rdb"
+	producerMock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/eventbus"
+	mock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/idgen"
+	storageMock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func MockKnowledgeSVC(t *testing.T) Knowledge {

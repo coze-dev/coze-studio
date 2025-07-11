@@ -21,7 +21,7 @@ import (
 
 	"github.com/cloudwego/eino/components/model"
 
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmodelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossmodelmgr"
 )
 
 type LLMParams struct {

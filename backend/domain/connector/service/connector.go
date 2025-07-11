@@ -19,7 +19,7 @@ package connector
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/domain/connector/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/connector/entity"
 )
 
 type Connector interface {

@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/internal/dal/model"
 )
 
 func newShortcutCommand(db *gorm.DB, opts ...gen.DOOption) shortcutCommand {

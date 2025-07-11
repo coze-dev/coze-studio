@@ -21,13 +21,13 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/intelligence"
-	"github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
-	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
-	appService "github.com/coze-dev/coze-studio/backend/domain/app/service"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/intelligence"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/intelligence/common"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/entity"
+	appService "code.byted.org/data_edc/workflow_engine_next/domain/app/service"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 type projectInfo struct {

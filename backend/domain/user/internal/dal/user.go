@@ -23,8 +23,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/user/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/domain/user/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/internal/dal/query"
 )
 
 func NewUserDAO(db *gorm.DB) *UserDAO {

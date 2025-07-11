@@ -19,9 +19,9 @@ package modelmgr
 import (
 	"context"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmodelmgr"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossmodelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr"
 )
 
 var defaultSVC crossmodelmgr.ModelMgr

@@ -24,20 +24,20 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol"
+	"code.byted.org/middleware/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/protocol"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/passport"
-	"github.com/coze-dev/coze-studio/backend/application/user"
-	"github.com/coze-dev/coze-studio/backend/domain/user/entity"
-	"github.com/coze-dev/coze-studio/backend/pkg/hertzutil/domain"
-	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/passport"
+	"code.byted.org/data_edc/workflow_engine_next/application/user"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/hertzutil/domain"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 )
 
 // PassportWebEmailRegisterV2Post .
-// @router /passport/web/email/register/v2/ [POST]
+// @router /api/passport/web/email/register/v2/ [POST]
 func PassportWebEmailRegisterV2Post(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req passport.PassportWebEmailRegisterV2PostRequest
@@ -66,7 +66,7 @@ func PassportWebEmailRegisterV2Post(ctx context.Context, c *app.RequestContext) 
 }
 
 // PassportWebLogoutGet .
-// @router /passport/web/logout/ [GET]
+// @router /api/passport/web/logout/ [GET]
 func PassportWebLogoutGet(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req passport.PassportWebLogoutGetRequest
@@ -86,7 +86,7 @@ func PassportWebLogoutGet(ctx context.Context, c *app.RequestContext) {
 }
 
 // PassportWebEmailLoginPost .
-// @router /passport/web/email/login/ [POST]
+// @router /api/passport/web/email/login/ [POST]
 func PassportWebEmailLoginPost(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req passport.PassportWebEmailLoginPostRequest
@@ -114,7 +114,7 @@ func PassportWebEmailLoginPost(ctx context.Context, c *app.RequestContext) {
 }
 
 // PassportWebEmailPasswordResetGet .
-// @router /passport/web/email/password/reset/ [GET]
+// @router /api/passport/web/email/password/reset/ [GET]
 func PassportWebEmailPasswordResetGet(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req passport.PassportWebEmailPasswordResetGetRequest
@@ -134,7 +134,7 @@ func PassportWebEmailPasswordResetGet(ctx context.Context, c *app.RequestContext
 }
 
 // PassportAccountInfoV2 .
-// @router /passport/account/info/v2/ [POST]
+// @router /api/passport/account/info/v2/ [POST]
 func PassportAccountInfoV2(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req passport.PassportAccountInfoV2Request
@@ -154,7 +154,7 @@ func PassportAccountInfoV2(ctx context.Context, c *app.RequestContext) {
 }
 
 // UserUpdateAvatar .
-// @router web/user/update/upload_avatar/ [POST]
+// @router /api/web/user/update/upload_avatar/ [POST]
 func UserUpdateAvatar(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req passport.UserUpdateAvatarRequest
@@ -200,7 +200,7 @@ func UserUpdateAvatar(ctx context.Context, c *app.RequestContext) {
 }
 
 // UserUpdateProfile .
-// @router api/user/update_profile [POST]
+// @router /api/user/update_profile [POST]
 func UserUpdateProfile(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req passport.UserUpdateProfileRequest

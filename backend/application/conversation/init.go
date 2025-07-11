@@ -19,18 +19,18 @@ package conversation
 import (
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/application/singleagent"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/repository"
-	agentrun "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/service"
-	convRepo "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/repository"
-	conversation "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/service"
-	msgRepo "github.com/coze-dev/coze-studio/backend/domain/conversation/message/repository"
-	message "github.com/coze-dev/coze-studio/backend/domain/conversation/message/service"
-	shortcutRepo "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/repository"
-	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/application/singleagent"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/repository"
+	agentrun "code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/service"
+	convRepo "code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/repository"
+	conversation "code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/service"
+	msgRepo "code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/repository"
+	message "code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/service"
+	shortcutRepo "code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/repository"
+	"code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/imagex"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 )
 
 type ServiceComponents struct {

@@ -25,16 +25,16 @@ import (
 	"sync"
 	"time"
 
-	redisV9 "github.com/redis/go-redis/v9"
+	redis "code.byted.org/kv/goredis"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/app/internal/dal"
-	"github.com/coze-dev/coze-studio/backend/domain/app/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/pkg/taskgroup"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/internal/dal"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/taskgroup"
 )
 
 type appRepoImpl struct {
@@ -50,7 +50,7 @@ type appRepoImpl struct {
 type APPRepoComponents struct {
 	IDGen    idgen.IDGenerator
 	DB       *gorm.DB
-	CacheCli *redisV9.Client
+	CacheCli *redis.Client
 }
 
 func NewAPPRepo(components *APPRepoComponents) AppRepository {

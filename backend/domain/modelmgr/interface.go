@@ -19,8 +19,8 @@ package modelmgr
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr/entity"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/entity"
 )
 
 type Manager interface {

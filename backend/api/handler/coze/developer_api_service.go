@@ -27,19 +27,19 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"code.byted.org/middleware/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/protocol/consts"
 
-	developer_api "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
-	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
-	"github.com/coze-dev/coze-studio/backend/application/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/application/singleagent"
-	application "github.com/coze-dev/coze-studio/backend/application/singleagent"
-	"github.com/coze-dev/coze-studio/backend/application/upload"
-	"github.com/coze-dev/coze-studio/backend/application/user"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	developer_api "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/developer_api"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/application/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/application/singleagent"
+	application "code.byted.org/data_edc/workflow_engine_next/application/singleagent"
+	"code.byted.org/data_edc/workflow_engine_next/application/upload"
+	"code.byted.org/data_edc/workflow_engine_next/application/user"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 // DraftBotCreate .

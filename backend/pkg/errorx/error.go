@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx/internal"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx/internal"
 )
 
 // StatusError is an interface for error with status code, you can

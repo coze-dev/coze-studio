@@ -23,13 +23,13 @@ import (
 
 	"github.com/pkg/errors"
 
-	openapimodel "github.com/coze-dev/coze-studio/backend/api/model/permission/openapiauth"
-	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
-	openapi "github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth"
-	"github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	openapimodel "code.byted.org/data_edc/workflow_engine_next/api/model/permission/openapiauth"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	openapi "code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth"
+	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 type OpenAuthApplicationService struct {

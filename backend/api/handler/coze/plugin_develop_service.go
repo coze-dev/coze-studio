@@ -22,13 +22,13 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"code.byted.org/middleware/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/protocol/consts"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/plugin_develop"
-	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
-	"github.com/coze-dev/coze-studio/backend/application/plugin"
-	appworkflow "github.com/coze-dev/coze-studio/backend/application/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/plugin_develop"
+	common "code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	"code.byted.org/data_edc/workflow_engine_next/application/plugin"
+	appworkflow "code.byted.org/data_edc/workflow_engine_next/application/workflow"
 )
 
 // GetPlaygroundPluginList .

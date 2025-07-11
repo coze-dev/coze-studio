@@ -19,18 +19,18 @@ package prompt
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
-	"github.com/coze-dev/coze-studio/backend/api/model/resource/common"
-	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
-	"github.com/coze-dev/coze-studio/backend/application/search"
-	"github.com/coze-dev/coze-studio/backend/domain/prompt/entity"
-	prompt "github.com/coze-dev/coze-studio/backend/domain/prompt/service"
-	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/resource/common"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	"code.byted.org/data_edc/workflow_engine_next/application/search"
+	"code.byted.org/data_edc/workflow_engine_next/domain/prompt/entity"
+	prompt "code.byted.org/data_edc/workflow_engine_next/domain/prompt/service"
+	searchEntity "code.byted.org/data_edc/workflow_engine_next/domain/search/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type PromptApplicationService struct {

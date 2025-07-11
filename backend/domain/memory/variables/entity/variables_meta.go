@@ -19,8 +19,8 @@ package entity
 import (
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/project_memory"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/project_memory"
 )
 
 type VariablesMeta struct {

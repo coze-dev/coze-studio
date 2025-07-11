@@ -19,7 +19,7 @@ package safego
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/goutil"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/goutil"
 )
 
 func Go(ctx context.Context, fn func()) {

@@ -22,12 +22,12 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/internal/dal"
-	"github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/internal/dal"
+	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 type apiAuthImpl struct {

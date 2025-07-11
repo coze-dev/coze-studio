@@ -24,11 +24,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/variables"
-	"github.com/coze-dev/coze-studio/backend/api/model/kvmemory"
-	"github.com/coze-dev/coze-studio/backend/api/model/project_memory"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/variables"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/kvmemory"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/project_memory"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type UserVariableMeta struct {

@@ -21,17 +21,17 @@ package coze
 import (
 	"context"
 
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"code.byted.org/middleware/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/protocol/consts"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/knowledge/document"
-	"github.com/coze-dev/coze-studio/backend/api/model/kvmemory"
-	"github.com/coze-dev/coze-studio/backend/api/model/project_memory"
-	table "github.com/coze-dev/coze-studio/backend/api/model/table"
-	appApplication "github.com/coze-dev/coze-studio/backend/application/app"
-	"github.com/coze-dev/coze-studio/backend/application/knowledge"
-	"github.com/coze-dev/coze-studio/backend/application/memory"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/knowledge/document"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/kvmemory"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/project_memory"
+	table "code.byted.org/data_edc/workflow_engine_next/api/model/table"
+	appApplication "code.byted.org/data_edc/workflow_engine_next/application/app"
+	"code.byted.org/data_edc/workflow_engine_next/application/knowledge"
+	"code.byted.org/data_edc/workflow_engine_next/application/memory"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 )
 
 // GetSysVariableConf .

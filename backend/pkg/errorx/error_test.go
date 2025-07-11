@@ -24,7 +24,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx/code"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx/code"
 )
 
 var (

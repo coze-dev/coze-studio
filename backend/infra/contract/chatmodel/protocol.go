@@ -16,7 +16,7 @@
 
 package chatmodel
 
-import "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
+import "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/developer_api"
 
 type Protocol string
 

@@ -22,12 +22,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/redis/go-redis/v9"
+	redis "code.byted.org/kv/goredis"
+	redisV6 "code.byted.org/kv/redis-v6"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type interruptEventStoreImpl struct {
@@ -79,9 +80,9 @@ func (i *interruptEventStoreImpl) SaveInterruptEvents(ctx context.Context, wfExe
 		return nil
 	}
 
-	previousEventStr, err := i.redis.Get(ctx, previousResumedEventKey).Result()
+	previousEventStr, err := i.redis.WithContext(ctx).Get(previousResumedEventKey).Result()
 	if err != nil {
-		if !errors.Is(err, redis.Nil) {
+		if !errors.Is(err, redisV6.Nil) {
 			return fmt.Errorf("failed to get previous resumed event for wfExeID %d: %w", wfExeID, err)
 		}
 	}
@@ -106,7 +107,7 @@ func (i *interruptEventStoreImpl) SaveInterruptEvents(ctx context.Context, wfExe
 		}
 	}
 
-	pipe := i.redis.Pipeline()
+	pipe := i.redis.WithContext(ctx).Pipeline()
 	eventJSONs := make([]interface{}, 0, len(events))
 
 	for _, event := range events {
@@ -124,16 +125,16 @@ func (i *interruptEventStoreImpl) SaveInterruptEvents(ctx context.Context, wfExe
 			return vo.WrapError(errno.ErrSerializationDeserializationFail,
 				fmt.Errorf("failed to marshal top priority interrupt event %d to JSON: %w", topPriorityEvent.ID, err))
 		}
-		pipe.LPush(ctx, listKey, topPriorityEventJSON)
+		pipe.LPush(listKey, topPriorityEventJSON)
 	}
 
 	if len(eventJSONs) > 0 {
-		pipe.RPush(ctx, listKey, eventJSONs...)
+		pipe.RPush(listKey, eventJSONs...)
 	}
 
-	pipe.Expire(ctx, listKey, interruptEventTTL)
+	pipe.Expire(listKey, interruptEventTTL)
 
-	_, err = pipe.Exec(ctx) // ignore_security_alert SQL_INJECTION
+	_, err = pipe.Exec() // ignore_security_alert SQL_INJECTION
 	if err != nil {
 		return fmt.Errorf("failed to save interrupt events to Redis list: %w", err)
 	}
@@ -152,9 +153,9 @@ func (i *interruptEventStoreImpl) GetFirstInterruptEvent(ctx context.Context, wf
 
 	listKey := fmt.Sprintf(interruptEventListKeyPattern, wfExeID)
 
-	eventJSON, err := i.redis.LIndex(ctx, listKey, 0).Result()
+	eventJSON, err := i.redis.WithContext(ctx).LIndex(listKey, 0).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, redisV6.Nil) {
 			return nil, false, nil // List is empty or key does not exist
 		}
 		return nil, false, fmt.Errorf("failed to get first interrupt event from Redis list for wfExeID %d: %w", wfExeID, err)
@@ -183,13 +184,13 @@ func (i *interruptEventStoreImpl) UpdateFirstInterruptEvent(ctx context.Context,
 		return vo.WrapError(errno.ErrSerializationDeserializationFail,
 			fmt.Errorf("failed to marshal interrupt event %d to JSON: %w", event.ID, err))
 	}
-	err = i.redis.LSet(ctx, listKey, 0, eventJSON).Err()
+	err = i.redis.WithContext(ctx).LSet(listKey, 0, eventJSON).Err()
 	if err != nil {
 		return fmt.Errorf("failed to update first interrupt event in Redis list for wfExeID %d: %w", wfExeID, err)
 	}
 
 	previousResumedEventKey := fmt.Sprintf(previousResumedEventKeyPattern, wfExeID)
-	err = i.redis.Set(ctx, previousResumedEventKey, eventJSON, interruptEventTTL).Err()
+	err = i.redis.WithContext(ctx).Set(previousResumedEventKey, eventJSON, interruptEventTTL).Err()
 	if err != nil {
 		return fmt.Errorf("failed to set previous resumed event for wfExeID %d: %w", wfExeID, err)
 	}
@@ -201,9 +202,9 @@ func (i *interruptEventStoreImpl) UpdateFirstInterruptEvent(ctx context.Context,
 func (i *interruptEventStoreImpl) PopFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error) {
 	listKey := fmt.Sprintf(interruptEventListKeyPattern, wfExeID)
 
-	eventJSON, err := i.redis.LPop(ctx, listKey).Result()
+	eventJSON, err := i.redis.WithContext(ctx).LPop(listKey).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, redisV6.Nil) {
 			return nil, false, nil // List is empty or key does not exist
 		}
 		return nil, false, vo.WrapError(errno.ErrRedisError,
@@ -225,9 +226,9 @@ func (i *interruptEventStoreImpl) PopFirstInterruptEvent(ctx context.Context, wf
 func (i *interruptEventStoreImpl) ListInterruptEvents(ctx context.Context, wfExeID int64) ([]*entity.InterruptEvent, error) {
 	listKey := fmt.Sprintf(interruptEventListKeyPattern, wfExeID)
 
-	eventJSONs, err := i.redis.LRange(ctx, listKey, 0, -1).Result()
+	eventJSONs, err := i.redis.WithContext(ctx).LRange(listKey, 0, -1).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, redisV6.Nil) {
 			return nil, nil // List is empty or key does not exist
 		}
 		return nil, vo.WrapError(errno.ErrRedisError,

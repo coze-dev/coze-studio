@@ -25,11 +25,11 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/sqlutil"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/sqlutil"
 )
 
 const (

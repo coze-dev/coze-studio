@@ -21,10 +21,10 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/user/repository"
-	"github.com/coze-dev/coze-studio/backend/domain/user/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/repository"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/service"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/idgen"
 )
 
 func InitService(ctx context.Context, db *gorm.DB, oss storage.Storage, idgen idgen.IDGenerator) *UserApplicationService {

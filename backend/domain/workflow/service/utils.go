@@ -22,15 +22,15 @@ import (
 	"strconv"
 	"strings"
 
-	cloudworkflow "github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/adaptor"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/validate"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	cloudworkflow "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/variable"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/canvas/adaptor"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/canvas/validate"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 func validateWorkflowTree(ctx context.Context, config vo.ValidateTreeConfig) ([]*validate.Issue, error) {

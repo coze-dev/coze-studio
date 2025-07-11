@@ -22,10 +22,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
-	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 )
 
 func TestNewJsonDeserializer(t *testing.T) {

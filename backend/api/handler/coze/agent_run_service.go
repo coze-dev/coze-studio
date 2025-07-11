@@ -26,20 +26,20 @@ import (
 
 	"github.com/hertz-contrib/sse"
 
+	"code.byted.org/middleware/hertz/pkg/app"
 	"github.com/cloudwego/eino/schema"
-	"github.com/cloudwego/hertz/pkg/app"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	"github.com/coze-dev/coze-studio/backend/application/conversation"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
-	sseImpl "github.com/coze-dev/coze-studio/backend/infra/impl/sse"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/message"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/run"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
+	"code.byted.org/data_edc/workflow_engine_next/application/conversation"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/entity"
+	sseImpl "code.byted.org/data_edc/workflow_engine_next/infra/impl/sse"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 // AgentRun .

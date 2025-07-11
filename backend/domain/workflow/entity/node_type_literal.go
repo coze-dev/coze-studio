@@ -17,8 +17,8 @@
 package entity
 
 import (
-	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
 )
 
 var Categories = []Category{

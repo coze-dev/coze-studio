@@ -30,15 +30,15 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	modelEntity "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
-	appEntity "github.com/coze-dev/coze-studio/backend/domain/app/entity"
-	variableEntity "github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/agentrun"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	modelEntity "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
+	appEntity "code.byted.org/data_edc/workflow_engine_next/domain/app/entity"
+	variableEntity "code.byted.org/data_edc/workflow_engine_next/domain/memory/variables/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{

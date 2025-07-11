@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 )
 
 func getKeyOrZero[T any](key string, cfg any) T {

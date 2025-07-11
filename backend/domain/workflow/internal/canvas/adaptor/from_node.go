@@ -23,9 +23,9 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"golang.org/x/exp/maps"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
 )
 
 func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (

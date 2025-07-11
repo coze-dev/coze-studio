@@ -24,10 +24,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/internal/dal/model"
-	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/orm"
+	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/internal/dal/model"
+	mock "code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/internal/mock/infra/contract/orm"
 )
 
 func TestApiAuthImpl_Create(t *testing.T) {

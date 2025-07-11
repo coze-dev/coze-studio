@@ -19,8 +19,8 @@ package openauth
 import (
 	"gorm.io/gorm"
 
-	openapiauth2 "github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	openapiauth2 "code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 )
 
 var (

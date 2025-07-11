@@ -21,13 +21,13 @@ package coze
 import (
 	"context"
 
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"code.byted.org/middleware/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/protocol/consts"
 
-	appApplication "github.com/coze-dev/coze-studio/backend/application/app"
+	appApplication "code.byted.org/data_edc/workflow_engine_next/application/app"
 
-	resource "github.com/coze-dev/coze-studio/backend/api/model/resource"
-	"github.com/coze-dev/coze-studio/backend/application/search"
+	resource "code.byted.org/data_edc/workflow_engine_next/api/model/resource"
+	"code.byted.org/data_edc/workflow_engine_next/application/search"
 )
 
 // LibraryResourceList .

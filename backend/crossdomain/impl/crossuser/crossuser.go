@@ -19,9 +19,9 @@ package crossuser
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossuser"
-	"github.com/coze-dev/coze-studio/backend/domain/user/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/user/service"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossuser"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/user/service"
 )
 
 var defaultSVC crossuser.User

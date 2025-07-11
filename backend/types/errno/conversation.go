@@ -16,7 +16,7 @@
 
 package errno
 
-import "github.com/coze-dev/coze-studio/backend/pkg/errorx/code"
+import "code.byted.org/data_edc/workflow_engine_next/pkg/errorx/code"
 
 // Conversation: 103 000 000 ~ 103 999 999
 const (

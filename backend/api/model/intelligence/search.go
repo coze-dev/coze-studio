@@ -3,8 +3,8 @@
 package intelligence
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
-	"github.com/coze-dev/coze-studio/backend/api/model/intelligence/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/base"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/intelligence/common"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"

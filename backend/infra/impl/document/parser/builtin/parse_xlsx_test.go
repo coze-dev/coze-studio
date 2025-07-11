@@ -25,8 +25,8 @@ import (
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	contract "github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	contract "code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
 )
 
 func TestParseXLSX(t *testing.T) {

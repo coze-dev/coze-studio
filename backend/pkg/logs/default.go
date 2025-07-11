@@ -22,6 +22,8 @@ import (
 	"io"
 	"log"
 	"os"
+
+	"code.byted.org/gopkg/logs"
 )
 
 var logger FullLogger = &defaultLogger{
@@ -130,32 +132,32 @@ func CtxFatalf(ctx context.Context, format string, v ...interface{}) {
 
 // CtxErrorf calls the default logs's CtxErrorf method.
 func CtxErrorf(ctx context.Context, format string, v ...interface{}) {
-	logger.CtxErrorf(ctx, format, v...)
+	logs.CtxError(ctx, format, v...)
 }
 
 // CtxWarnf calls the default logs's CtxWarnf method.
 func CtxWarnf(ctx context.Context, format string, v ...interface{}) {
-	logger.CtxWarnf(ctx, format, v...)
+	logs.CtxWarn(ctx, format, v...)
 }
 
 // CtxNoticef calls the default logs's CtxNoticef method.
 func CtxNoticef(ctx context.Context, format string, v ...interface{}) {
-	logger.CtxNoticef(ctx, format, v...)
+	logs.CtxNotice(ctx, format, v...)
 }
 
 // CtxInfof calls the default logs's CtxInfof method.
 func CtxInfof(ctx context.Context, format string, v ...interface{}) {
-	logger.CtxInfof(ctx, format, v...)
+	logs.CtxInfo(ctx, format, v...)
 }
 
 // CtxDebugf calls the default logs's CtxDebugf method.
 func CtxDebugf(ctx context.Context, format string, v ...interface{}) {
-	logger.CtxDebugf(ctx, format, v...)
+	logs.CtxDebug(ctx, format, v...)
 }
 
 // CtxTracef calls the default logs's CtxTracef method.
 func CtxTracef(ctx context.Context, format string, v ...interface{}) {
-	logger.CtxTracef(ctx, format, v...)
+	logs.CtxTrace(ctx, format, v...)
 }
 
 type defaultLogger struct {

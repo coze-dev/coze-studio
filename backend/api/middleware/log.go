@@ -25,11 +25,11 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/cloudwego/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/app"
 	"github.com/google/uuid"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 func AccessLogMW() app.HandlerFunc {

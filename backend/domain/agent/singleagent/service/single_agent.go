@@ -21,8 +21,8 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
-	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
+	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
 )
 
 type SingleAgent interface {

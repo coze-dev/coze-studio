@@ -34,16 +34,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
-	mockmodel "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model/modelmock"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	compose2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/llm"
-	"github.com/coze-dev/coze-studio/backend/internal/testutil"
-	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model"
+	mockmodel "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/model/modelmock"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	compose2 "code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/compose"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/llm"
+	"code.byted.org/data_edc/workflow_engine_next/internal/testutil"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
 )
 
 func TestLLM(t *testing.T) {

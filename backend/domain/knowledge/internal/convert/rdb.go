@@ -17,8 +17,8 @@
 package convert
 
 import (
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	rdbEntity "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	rdbEntity "code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb/entity"
 )
 
 func ConvertColumnType(columnType document.TableColumnType) rdbEntity.DataType {

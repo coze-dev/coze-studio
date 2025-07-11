@@ -19,9 +19,9 @@ package coze
 import (
 	"context"
 
-	"github.com/cloudwego/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/app"
 
-	"github.com/coze-dev/coze-studio/backend/api/internal/httputil"
+	"code.byted.org/data_edc/workflow_engine_next/api/internal/httputil"
 )
 
 func invalidParamRequestResponse(c *app.RequestContext, errMsg string) {

@@ -21,8 +21,8 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	workflow2 "github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	workflow2 "code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 )
 
 func NewWorkflowFromNode(ctx context.Context, sc *WorkflowSchema, nodeKey vo.NodeKey, opts ...compose.GraphCompileOption) (

@@ -19,7 +19,7 @@
 package coze
 
 import (
-	"github.com/cloudwego/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/app"
 )
 
 func rootMw() []app.HandlerFunc {

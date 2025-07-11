@@ -21,10 +21,10 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/application/base/appinfra"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossdatacopy"
-	"github.com/coze-dev/coze-studio/backend/domain/datacopy"
-	"github.com/coze-dev/coze-studio/backend/domain/datacopy/service"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/appinfra"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossdatacopy"
+	"code.byted.org/data_edc/workflow_engine_next/domain/datacopy"
+	"code.byted.org/data_edc/workflow_engine_next/domain/datacopy/service"
 )
 
 var defaultSVC crossdatacopy.DataCopy

@@ -29,7 +29,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	database "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
+	database "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
 	gomock "go.uber.org/mock/gomock"
 )
 

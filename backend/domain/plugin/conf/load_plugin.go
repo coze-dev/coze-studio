@@ -27,11 +27,11 @@ import (
 	"golang.org/x/mod/semver"
 	"gopkg.in/yaml.v3"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	common "code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 type pluginProductMeta struct {

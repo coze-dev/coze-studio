@@ -24,8 +24,8 @@ import (
 	"github.com/volcengine/volc-sdk-golang/base"
 	veimagex "github.com/volcengine/volc-sdk-golang/service/imagex/v2"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/imagex"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 func New(ak, sk, domain, uploadHost, template string, serverIDs []string) (imagex.ImageX, error) {

@@ -20,7 +20,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/cloudwego/hertz/pkg/app"
+	"code.byted.org/middleware/hertz/pkg/app"
 )
 
 const RequestAuthTypeStr = "RequestAuthTypeStr"

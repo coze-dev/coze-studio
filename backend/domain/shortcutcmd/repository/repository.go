@@ -21,9 +21,9 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/internal/dal"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/internal/dal"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 )
 
 func NewShortCutCmdRepo(db *gorm.DB, idGen idgen.IDGenerator) ShortCutCmdRepo {

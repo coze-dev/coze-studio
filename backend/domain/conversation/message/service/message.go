@@ -19,7 +19,7 @@ package message
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/entity"
 )
 
 type Message interface {

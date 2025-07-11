@@ -21,7 +21,7 @@ import (
 
 	"github.com/cloudwego/eino-ext/components/embedding/ark"
 
-	contract "github.com/coze-dev/coze-studio/backend/infra/contract/embedding"
+	contract "code.byted.org/data_edc/workflow_engine_next/infra/contract/embedding"
 )
 
 func NewArkEmbedder(ctx context.Context, config *ark.EmbeddingConfig, dimensions int64) (contract.Embedder, error) {

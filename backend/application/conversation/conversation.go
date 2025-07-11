@@ -19,19 +19,19 @@ package conversation
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/conversation"
-	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
-	agentrun "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/service"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
-	conversationService "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/service"
-	message "github.com/coze-dev/coze-studio/backend/domain/conversation/message/service"
-	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/service"
-	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/conversation"
+	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
+	agentrun "code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/entity"
+	conversationService "code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/service"
+	message "code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/service"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 )
 
 type ConversationApplicationService struct {

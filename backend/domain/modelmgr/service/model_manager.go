@@ -24,16 +24,16 @@ import (
 
 	"gorm.io/gorm"
 
-	modelmgrModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/modelmgr/internal/dal/dao"
-	dmodel "github.com/coze-dev/coze-studio/backend/domain/modelmgr/internal/dal/model"
-	uploadEntity "github.com/coze-dev/coze-studio/backend/domain/upload/entity"
-	modelcontract "github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	modelmgrModel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/internal/dal/dao"
+	dmodel "code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/internal/dal/model"
+	uploadEntity "code.byted.org/data_edc/workflow_engine_next/domain/upload/entity"
+	modelcontract "code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 func NewModelManager(db *gorm.DB, idgen idgen.IDGenerator, oss storage.Storage) modelmgr.Manager {

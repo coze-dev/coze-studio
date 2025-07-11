@@ -3,7 +3,7 @@ package plugin
 import (
 	"github.com/getkin/kin-openapi/openapi3"
 
-	api "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop_common"
+	api "code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
 )
 
 type VersionPlugin struct {

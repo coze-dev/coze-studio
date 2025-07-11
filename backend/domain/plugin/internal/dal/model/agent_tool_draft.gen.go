@@ -4,7 +4,7 @@
 
 package model
 
-import "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+import "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
 
 const TableNameAgentToolDraft = "agent_tool_draft"
 

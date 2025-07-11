@@ -18,28 +18,22 @@ package search
 
 import (
 	"context"
-	"fmt"
-	"os"
-
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/application/singleagent"
-	app "github.com/coze-dev/coze-studio/backend/domain/app/service"
-	connector "github.com/coze-dev/coze-studio/backend/domain/connector/service"
-	knowledge "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
-	database "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
-	prompt "github.com/coze-dev/coze-studio/backend/domain/prompt/service"
-	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
-	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/cache/redis"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus/rmq"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/application/singleagent"
+	app "code.byted.org/data_edc/workflow_engine_next/domain/app/service"
+	connector "code.byted.org/data_edc/workflow_engine_next/domain/connector/service"
+	knowledge "code.byted.org/data_edc/workflow_engine_next/domain/knowledge/service"
+	database "code.byted.org/data_edc/workflow_engine_next/domain/memory/database/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/service"
+	prompt "code.byted.org/data_edc/workflow_engine_next/domain/prompt/service"
+	search "code.byted.org/data_edc/workflow_engine_next/domain/search/service"
+	user "code.byted.org/data_edc/workflow_engine_next/domain/user/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/es"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/cache/redis"
 )
 
 type ServiceComponents struct {
@@ -66,23 +60,26 @@ func InitService(ctx context.Context, s *ServiceComponents) (*SearchApplicationS
 	SearchSVC.DomainSVC = searchDomainSVC
 	SearchSVC.ServiceComponents = s
 
+	search.NewProjectHandler(ctx, s.ESClient)
+	search.NewResourceHandler(ctx, s.ESClient)
+	// 注释掉Consumer
 	// setup consumer
-	searchConsumer := search.NewProjectHandler(ctx, s.ESClient)
+	//searchConsumer := search.NewProjectHandler(ctx, s.ESClient)
 
-	logs.Infof("start search domain consumer...")
-	nameServer := os.Getenv(consts.RMQServer)
+	//logs.Infof("start search domain consumer...")
+	//nameServer := os.Getenv(consts.RMQServer)
 
-	err := rmq.RegisterConsumer(nameServer, consts.RMQTopicApp, consts.RMQConsumeGroupApp, searchConsumer)
-	if err != nil {
-		return nil, fmt.Errorf("register search consumer failed, err=%w", err)
-	}
+	//err := rmq.RegisterConsumer(nameServer, "opencoze_search_app", consts.RMQTopicSearchApp, searchConsumer)
+	//if err != nil {
+	//	return nil, fmt.Errorf("registe	r search consumer failed, err=%w", err)
+	//}
 
-	searchResourceConsumer := search.NewResourceHandler(ctx, s.ESClient)
+	//searchResourceConsumer := search.NewResourceHandler(ctx, s.ESClient)
 
-	err = rmq.RegisterConsumer(nameServer, consts.RMQTopicResource, consts.RMQConsumeGroupResource, searchResourceConsumer)
-	if err != nil {
-		return nil, fmt.Errorf("register search consumer failed, err=%w", err)
-	}
+	//err = rmq.RegisterConsumer(nameServer, "opencoze_search_resource", consts.RMQTopicSearchResource, searchResourceConsumer)
+	//if err != nil {
+	//	return nil, fmt.Errorf("register search consumer failed, err=%w", err)
+	//}
 
 	return SearchSVC, nil
 }

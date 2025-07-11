@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/rerank"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/rerank"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func NewRRFReranker(k int64) rerank.Reranker {

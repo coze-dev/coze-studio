@@ -19,7 +19,7 @@ package prompt
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/domain/prompt/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/prompt/entity"
 )
 
 type Prompt interface {

@@ -3,8 +3,8 @@
 package database
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/knowledge/document"
-	"github.com/coze-dev/coze-studio/backend/api/model/table"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/knowledge/document"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/table"
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"

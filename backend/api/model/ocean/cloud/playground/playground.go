@@ -3,8 +3,8 @@
 package playground
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/base"
-	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/bot_common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/base"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
 	"context"
 	"database/sql"
 	"database/sql/driver"

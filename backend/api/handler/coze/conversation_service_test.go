@@ -22,15 +22,15 @@ import (
 	"net/http"
 	"testing"
 
+	"code.byted.org/middleware/hertz/pkg/app/server"
+	"code.byted.org/middleware/hertz/pkg/common/ut"
 	"github.com/bytedance/sonic"
-	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/cloudwego/hertz/pkg/common/ut"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/conversation"
-	"github.com/coze-dev/coze-studio/backend/application"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/common"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/conversation"
+	"code.byted.org/data_edc/workflow_engine_next/application"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func TestClearConversationCtx(t *testing.T) {

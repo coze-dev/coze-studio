@@ -17,7 +17,7 @@
 package builtin
 
 import (
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
 )
 
 func alignTableSliceValue(schema []*document.Column, row []*document.ColumnData) (err error) {

@@ -22,15 +22,15 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossagent"
-	singleagent "github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/service"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/agentrun"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
+	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/singleagent"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossagent"
+	singleagent "code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/service"
+	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/entity"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 )
 
 var defaultSVC crossagent.SingleAgent

@@ -26,7 +26,7 @@ import (
 	"github.com/pingcap/tidb/pkg/parser/mysql"
 	_ "github.com/pingcap/tidb/pkg/parser/test_driver"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/sqlparser"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/sqlparser"
 )
 
 // Impl implements the SQLParser interface

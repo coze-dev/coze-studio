@@ -25,7 +25,7 @@ import (
 
 	"github.com/volcengine/volc-sdk-golang/service/visual"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/ocr"
 )
 
 type Config struct {

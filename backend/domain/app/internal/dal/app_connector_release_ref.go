@@ -21,10 +21,10 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/app/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/domain/app/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/internal/dal/model"
+	"code.byted.org/data_edc/workflow_engine_next/domain/app/internal/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 )
 
 func NewAPPConnectorReleaseRefDAO(db *gorm.DB, idGen idgen.IDGenerator) *APPConnectorReleaseRefDAO {

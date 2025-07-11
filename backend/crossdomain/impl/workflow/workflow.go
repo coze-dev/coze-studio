@@ -21,12 +21,12 @@ import (
 
 	einoCompose "github.com/cloudwego/eino/compose"
 
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossworkflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	workflowEntity "github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossworkflow"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow"
+	workflowEntity "code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 )
 
 var defaultSVC crossworkflow.Workflow

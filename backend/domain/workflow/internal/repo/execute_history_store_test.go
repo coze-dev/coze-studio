@@ -23,16 +23,15 @@ import (
 	"testing"
 	"time"
 
+	redis "code.byted.org/kv/goredis"
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/alicebob/miniredis/v2"
-	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/query"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity"
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/repo/dal/query"
 )
 
 type ExecuteHistoryStoreSuite struct {
@@ -45,9 +44,7 @@ type ExecuteHistoryStoreSuite struct {
 
 func (s *ExecuteHistoryStoreSuite) SetupTest() {
 	var err error
-	mr, err := miniredis.Run()
-	assert.NoError(s.T(), err)
-	s.redis = redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	s.redis, err = redis.NewClient("TEST_PSM")
 
 	mockDB, mock, err := sqlmock.New()
 	assert.NoError(s.T(), err)
@@ -96,7 +93,7 @@ func (s *ExecuteHistoryStoreSuite) TestNodeExecutionStreaming() {
 	err = s.store.UpdateNodeExecutionStreaming(ctx, nodeExecution)
 	assert.NoError(s.T(), err)
 
-	val, err := s.redis.Get(ctx, fmt.Sprintf("wf:node_exec:output:%d", nodeExecID)).Result()
+	val, err := s.redis.WithContext(ctx).Get(fmt.Sprintf("wf:node_exec:output:%d", nodeExecID)).Result()
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), streamingOutput, val)
 

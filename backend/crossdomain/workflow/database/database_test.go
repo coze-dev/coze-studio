@@ -24,10 +24,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
-	nodedatabase "github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
-	mockDatabase "github.com/coze-dev/coze-studio/backend/internal/mock/domain/memory/database"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/database"
+	"code.byted.org/data_edc/workflow_engine_next/domain/memory/database/service"
+	nodedatabase "code.byted.org/data_edc/workflow_engine_next/domain/workflow/crossdomain/database"
+	mockDatabase "code.byted.org/data_edc/workflow_engine_next/internal/mock/domain/memory/database"
 )
 
 func mockExecuteSQL(t *testing.T) func(ctx context.Context, request *service.ExecuteSQLRequest) (*service.ExecuteSQLResponse, error) {

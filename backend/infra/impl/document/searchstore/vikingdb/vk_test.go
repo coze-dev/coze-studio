@@ -28,10 +28,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/volcengine/volc-sdk-golang/service/vikingdb"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/embedding/wrap"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/searchstore"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/embedding/wrap"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 )
 
 func TestVikingEmbeddingIntegration(t *testing.T) {
