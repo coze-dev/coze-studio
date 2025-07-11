@@ -122,10 +122,10 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 			if err != nil {
 				return err
 			}
-			logs.Infof("[loadStaticModelConfig] model meta create success, id=%d", newMeta.ID)
+			logs.CtxInfof(ctx, "[loadStaticModelConfig] model meta create success, id=%d", newMeta.ID)
 			id2Meta[newMeta.ID] = newMeta
 		} else {
-			logs.Infof("[loadStaticModelConfig] model meta founded, skip create, id=%d", modelMeta.ID)
+			logs.CtxInfof(ctx, "[loadStaticModelConfig] model meta founded, skip create, id=%d", modelMeta.ID)
 
 		}
 	}
@@ -141,7 +141,7 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 			return err
 		}
 		if len(curModelEntities) > 0 {
-			logs.Infof("[loadStaticModelConfig] model entity founded, skip create, id=%d", modelEntity.ID)
+			logs.CtxInfof(ctx, "[loadStaticModelConfig] model entity founded, skip create, id=%d", modelEntity.ID)
 			continue
 		}
 		meta, found := id2Meta[modelEntity.Meta.ID]
@@ -152,7 +152,7 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 		if _, err = svc.CreateModel(ctx, &entity.Model{Model: modelEntity}); err != nil {
 			return err
 		}
-		logs.Infof("[loadStaticModelConfig] model entity create success, id=%d", modelEntity.ID)
+		logs.CtxInfof(ctx, "[loadStaticModelConfig] model entity create success, id=%d", modelEntity.ID)
 	}
 
 	return nil

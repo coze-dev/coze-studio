@@ -64,7 +64,7 @@ func NewConsumer(broker string, topic, groupID string, handler eventbus.Consumer
 	safego.Go(ctx, func() {
 		for {
 			if err := consumerGroup.Consume(ctx, []string{topic}, c); err != nil {
-				logs.Errorf("consumer group consume: %v", err)
+				logs.CtxErrorf(ctx, "consumer group consume: %v", err)
 				break
 			}
 		}
@@ -74,7 +74,7 @@ func NewConsumer(broker string, topic, groupID string, handler eventbus.Consumer
 		signal.WaitExit()
 
 		if err := c.consumerGroup.Close(); err != nil {
-			logs.Errorf("consumer group close: %v", err)
+			logs.CtxErrorf(ctx, "consumer group close: %v", err)
 		}
 	})
 

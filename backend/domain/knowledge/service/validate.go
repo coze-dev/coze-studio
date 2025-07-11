@@ -49,7 +49,7 @@ func (k *knowledgeSVC) isWritableKnowledge(ctx context.Context, knowledgeID int6
 		return false, fmt.Errorf("[isWritableKnowledge] GetByID failed, %w", err)
 	}
 	if knowledgeModel == nil {
-		logs.Errorf("[isWritableKnowledge] knowledge is nil, id=%d", knowledgeID)
+		logs.CtxErrorf(ctx, "[isWritableKnowledge] knowledge is nil, id=%d", knowledgeID)
 		return false, errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", "[isWritableKnowledge] knowledge not found"))
 	}
 	switch model.KnowledgeStatus(knowledgeModel.Status) {
@@ -68,7 +68,7 @@ func (k *knowledgeSVC) isWritableDocument(ctx context.Context, documentID int64)
 		return false, fmt.Errorf("[isWritableDocument] GetByID failed, %w", err)
 	}
 	if documentModel == nil {
-		logs.Errorf("[isWritableDocument] document is nil, id=%d", documentID)
+		logs.CtxErrorf(ctx, "[isWritableDocument] document is nil, id=%d", documentID)
 		return false, errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", "[isWritableDocument] document not found"))
 	}
 	switch entity.DocumentStatus(documentModel.Status) {

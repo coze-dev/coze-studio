@@ -82,7 +82,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 	}
 
 	if previouslyInterrupted && rInfo.ExecuteID != previousExecuteID {
-		logs.Infof("previous interrupted call ID: %s, previous execute ID: %d, current execute ID: %d. Not resuming, interrupt immediately", callID, previousExecuteID, rInfo.ExecuteID)
+		logs.CtxInfof(ctx, "previous interrupted call ID: %s, previous execute ID: %d, current execute ID: %d. Not resuming, interrupt immediately", callID, previousExecuteID, rInfo.ExecuteID)
 		return "", einoCompose.InterruptAndRerun
 	}
 
@@ -231,7 +231,7 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 	}
 
 	if previouslyInterrupted && rInfo.ExecuteID != previousExecuteID {
-		logs.Infof("previous interrupted call ID: %s, previous execute ID: %d, current execute ID: %d. Not resuming, interrupt immediately", callID, previousExecuteID, rInfo.ExecuteID)
+		logs.CtxInfof(ctx, "previous interrupted call ID: %s, previous execute ID: %d, current execute ID: %d. Not resuming, interrupt immediately", callID, previousExecuteID, rInfo.ExecuteID)
 		return nil, einoCompose.InterruptAndRerun
 	}
 

@@ -747,7 +747,7 @@ func (p *pluginServiceImpl) ConvertToOpenapi3Doc(ctx context.Context, req *Conve
 	var err error
 	defer func() {
 		if err != nil {
-			logs.Errorf("ConvertToOpenapi3Doc failed, err=%s", err)
+			logs.CtxErrorf(ctx, "ConvertToOpenapi3Doc failed, err=%s", err)
 
 			resp.ErrMsg = "internal server error"
 

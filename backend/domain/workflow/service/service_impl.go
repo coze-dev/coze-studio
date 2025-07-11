@@ -143,7 +143,7 @@ func (i *impl) Save(ctx context.Context, id int64, schema string) (err error) {
 	}
 
 	var inputParams, outputParams string
-	inputs, outputs := extractInputsAndOutputsNamedInfoList(&draft)
+	inputs, outputs := extractInputsAndOutputsNamedInfoList(ctx, &draft)
 	if inputParams, err = sonic.MarshalString(inputs); err != nil {
 		return vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
@@ -174,10 +174,10 @@ func (i *impl) Save(ctx context.Context, id int64, schema string) (err error) {
 	})
 }
 
-func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeInfo, outputs []*vo.NamedTypeInfo) {
+func extractInputsAndOutputsNamedInfoList(ctx context.Context, c *vo.Canvas) (inputs []*vo.NamedTypeInfo, outputs []*vo.NamedTypeInfo) {
 	defer func() {
 		if err := recover(); err != nil {
-			logs.Warnf("failed to extract inputs and outputs: %v", err)
+			logs.CtxWarnf(ctx, "failed to extract inputs and outputs: %v", err)
 		}
 	}()
 	var (
@@ -212,7 +212,7 @@ func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeI
 			return nInfo, nil
 		})
 		if err != nil {
-			logs.Warn(fmt.Sprintf("transform start node outputs to named info failed, err=%v", err))
+			logs.CtxWarnf(ctx, fmt.Sprintf("transform start node outputs to named info failed, err=%v", err))
 		}
 	}
 
@@ -221,7 +221,7 @@ func extractInputsAndOutputsNamedInfoList(c *vo.Canvas) (inputs []*vo.NamedTypeI
 			return adaptor.BlockInputToNamedTypeInfo(a.Name, a.Input)
 		})
 		if err != nil {
-			logs.Warn(fmt.Sprintf("transform end node inputs to named info failed, err=%v", err))
+			logs.CtxWarnf(ctx, fmt.Sprintf("transform end node inputs to named info failed, err=%v", err))
 		}
 	}
 

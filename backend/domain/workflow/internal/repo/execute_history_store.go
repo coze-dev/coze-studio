@@ -385,7 +385,7 @@ func (e *executeHistoryStoreImpl) CancelAllRunningNodes(ctx context.Context, wfE
 	return nil
 }
 
-func convertNodeExecution(nodeExec *model.NodeExecution) *entity.NodeExecution {
+func convertNodeExecution(ctx context.Context, nodeExec *model.NodeExecution) *entity.NodeExecution {
 	nodeExeEntity := &entity.NodeExecution{
 		ID:                   nodeExec.ID,
 		ExecuteID:            nodeExec.ExecuteID,
@@ -420,7 +420,7 @@ func convertNodeExecution(nodeExec *model.NodeExecution) *entity.NodeExecution {
 	if len(nodeExec.Extra) > 0 {
 		var extra entity.NodeExtra
 		if err := sonic.UnmarshalString(nodeExec.Extra, &extra); err != nil {
-			logs.Errorf("failed to unmarshal extra: %v", err)
+			logs.CtxErrorf(ctx, "failed to unmarshal extra: %v", err)
 		} else {
 			nodeExeEntity.Extra = &extra
 		}
@@ -438,7 +438,7 @@ func (e *executeHistoryStoreImpl) GetNodeExecutionsByWfExeID(ctx context.Context
 	}
 
 	for _, nodeExec := range nodeExecs {
-		nodeExeEntity := convertNodeExecution(nodeExec)
+		nodeExeEntity := convertNodeExecution(ctx, nodeExec)
 		// For nodes that are currently running and support streaming, their complete information needs to be retrieved from Redis.
 		if nodeExeEntity.Status == entity.NodeRunning {
 			meta := entity.NodeMetaByNodeType(nodeExeEntity.NodeType)
@@ -482,7 +482,7 @@ func (e *executeHistoryStoreImpl) GetNodeExecution(ctx context.Context, wfExeID 
 		return nil, false, vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("failed to find node executions: %w", err))
 	}
 
-	nodeExeEntity := convertNodeExecution(nodeExec)
+	nodeExeEntity := convertNodeExecution(ctx, nodeExec)
 
 	return nodeExeEntity, true, nil
 }
@@ -497,7 +497,7 @@ func (e *executeHistoryStoreImpl) GetNodeExecutionByParent(ctx context.Context, 
 	}
 	var result []*entity.NodeExecution
 	for _, nodeExec := range nodeExecs {
-		nodeExeEntity := convertNodeExecution(nodeExec)
+		nodeExeEntity := convertNodeExecution(ctx, nodeExec)
 		result = append(result, nodeExeEntity)
 	}
 	return result, nil

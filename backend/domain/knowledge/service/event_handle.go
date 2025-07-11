@@ -51,13 +51,13 @@ func (k *knowledgeSVC) HandleMessage(ctx context.Context, msg *eventbus.Message)
 		if err != nil {
 			var statusError errorx.StatusError
 			if errors.As(err, &statusError) && statusError.Code() == errno.ErrKnowledgeNonRetryableCode {
-				logs.Errorf("[HandleMessage][no-retry] failed, %v", err)
+				logs.CtxErrorf(ctx, "[HandleMessage][no-retry] failed, %v", err)
 				err = nil
 			} else {
-				logs.Errorf("[HandleMessage][retry] failed, %v", err)
+				logs.CtxErrorf(ctx, "[HandleMessage][retry] failed, %v", err)
 			}
 		} else {
-			logs.Infof("[HandleMessage] knowledge event handle success, body=%s", string(msg.Body))
+			logs.CtxInfof(ctx, "[HandleMessage] knowledge event handle success, body=%s", string(msg.Body))
 		}
 	}()
 
@@ -106,7 +106,7 @@ func (k *knowledgeSVC) deleteKnowledgeDataEventHandler(ctx context.Context, even
 		if err := s.Delete(ctx, slices.Transform(event.SliceIDs, func(id int64) string {
 			return strconv.FormatInt(id, 10)
 		})); err != nil {
-			logs.Errorf("delete knowledge failed, err: %v", err)
+			logs.CtxErrorf(ctx, "delete knowledge failed, err: %v", err)
 			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("delete search store failed, err: %v", err)))
 		}
 	}
@@ -195,7 +195,7 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 				if err := s.Delete(ctx, slices.Transform(event.SliceIDs, func(id int64) string {
 					return strconv.FormatInt(id, 10)
 				})); err != nil {
-					logs.Errorf("[indexDocument] delete knowledge failed, err: %v", err)
+					logs.CtxErrorf(ctx, "[indexDocument] delete knowledge failed, err: %v", err)
 					return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("delete search store failed, err: %v", err)))
 				}
 			}
@@ -388,7 +388,7 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 	if len(slices) == 0 {
 		return nil
 	}
-	insertData, err := packInsertData(slices)
+	insertData, err := packInsertData(ctx, slices)
 	if err != nil {
 		logs.CtxErrorf(ctx, "[insertDataToTable] pack insert data failed, err: %v", err)
 		return err
@@ -408,10 +408,10 @@ func (k *knowledgeSVC) upsertDataToTable(ctx context.Context, tableInfo *entity.
 	return nil
 }
 
-func packInsertData(slices []*entity.Slice) (data []map[string]interface{}, err error) {
+func packInsertData(ctx context.Context, slices []*entity.Slice) (data []map[string]interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			logs.Errorf("[packInsertData] panic: %v", r)
+			logs.CtxErrorf(ctx, "[packInsertData] panic: %v", r)
 			err = errorx.New(errno.ErrKnowledgeSystemCode, errorx.KVf("msg", "panic: %v", r))
 			return
 		}

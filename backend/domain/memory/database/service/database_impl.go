@@ -335,7 +335,7 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 			TableName: draftInfo.ActualTableName,
 		})
 		if err != nil {
-			logs.Errorf("drop draft physical table failed: %v, table_name=%s", err, draftInfo.ActualTableName)
+			logs.CtxErrorf(ctx, "drop draft physical table failed: %v, table_name=%s", err, draftInfo.ActualTableName)
 		}
 	}
 
@@ -345,7 +345,7 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 			TableName: onlineInfo.ActualTableName,
 		})
 		if err != nil {
-			logs.Errorf("drop online physical table failed: %v, table_name=%s", err, onlineInfo.ActualTableName)
+			logs.CtxErrorf(ctx, "drop online physical table failed: %v, table_name=%s", err, onlineInfo.ActualTableName)
 		}
 	}
 
@@ -618,7 +618,7 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *UpdateDa
 			physicalFieldName := fieldInfo.PhysicalName
 			convertedValue, err := convertor.ConvertValueByType(valueStr, fieldInfo.Type)
 			if err != nil {
-				logs.Warnf("convert value failed for field %s: %v, using original value", fieldName, err)
+				logs.CtxWarnf(ctx, "convert value failed for field %s: %v, using original value", fieldName, err)
 				convertedValue = valueStr
 			}
 			updateData[physicalFieldName] = convertedValue
@@ -1303,7 +1303,7 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 
 			convertedValue, err := convertor.ConvertValueByType(*fieldVal, field.Type)
 			if err != nil {
-				logs.Warnf("convert value failed: %v, using original value", err)
+				logs.CtxWarnf(ctx, "convert value failed: %v, using original value", err)
 				rowData[field.PhysicalName] = *fieldVal
 			} else {
 				rowData[field.PhysicalName] = convertedValue
@@ -1359,7 +1359,7 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 
 		convertedValue, err := convertor.ConvertValueByType(*fieldVal, field.Type)
 		if err != nil {
-			logs.Warnf("convert value failed: %v, using original value", err)
+			logs.CtxWarnf(ctx, "convert value failed: %v, using original value", err)
 			updateData[field.PhysicalName] = *fieldVal
 		} else {
 			updateData[field.PhysicalName] = convertedValue
@@ -2138,7 +2138,7 @@ func (d databaseService) DeleteDatabaseByAppID(ctx context.Context, req *DeleteD
 			TableName: physical,
 		})
 		if err != nil {
-			logs.Errorf("drop online physical table failed: %v, table_name=%s", err, physical)
+			logs.CtxErrorf(ctx, "drop online physical table failed: %v, table_name=%s", err, physical)
 		}
 	}
 	for _, physical := range draftPhysicals {
@@ -2146,7 +2146,7 @@ func (d databaseService) DeleteDatabaseByAppID(ctx context.Context, req *DeleteD
 			TableName: physical,
 		})
 		if err != nil {
-			logs.Errorf("drop draft physical table failed: %v, table_name=%s", err, physical)
+			logs.CtxErrorf(ctx, "drop draft physical table failed: %v, table_name=%s", err, physical)
 		}
 	}
 

@@ -31,7 +31,7 @@ import (
 func InitConfig(ctx context.Context) (err error) {
 	cwd, err := os.Getwd()
 	if err != nil {
-		logs.Warnf("[InitConfig] Failed to get current working directory: %v", err)
+		logs.CtxWarnf(ctx, "[InitConfig] Failed to get current working directory: %v", err)
 		cwd = os.Getenv("PWD")
 	}
 

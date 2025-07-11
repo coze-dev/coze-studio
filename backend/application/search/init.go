@@ -18,6 +18,7 @@ package search
 
 import (
 	"context"
+
 	"gorm.io/gorm"
 
 	"code.byted.org/data_edc/workflow_engine_next/application/singleagent"
@@ -66,7 +67,7 @@ func InitService(ctx context.Context, s *ServiceComponents) (*SearchApplicationS
 	// setup consumer
 	//searchConsumer := search.NewProjectHandler(ctx, s.ESClient)
 
-	//logs.Infof("start search domain consumer...")
+	//logs.CtxInfof(ctx, "start search domain consumer...")
 	//nameServer := os.Getenv(consts.RMQServer)
 
 	//err := rmq.RegisterConsumer(nameServer, "opencoze_search_app", consts.RMQTopicSearchApp, searchConsumer)

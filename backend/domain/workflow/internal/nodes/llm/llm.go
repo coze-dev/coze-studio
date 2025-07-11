@@ -608,7 +608,7 @@ func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...Option) (co
 					return
 				}
 
-				logs.Infof("received message from tool workflow: %+v", msg)
+				logs.CtxInfof(ctx, "received message from tool workflow: %+v", msg)
 
 				llmOpts.toolWorkflowSW.Send(msg, nil)
 			}

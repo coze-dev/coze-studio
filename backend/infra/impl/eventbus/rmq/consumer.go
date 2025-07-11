@@ -106,10 +106,11 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 		return fmt.Errorf("[RegisterConsumer-Start] nameServer: %s, topic: %s, group : %s, err: %w", nameServer, topic, group, err)
 	}
 
-	safego.Go(context.Background(), func() {
+	ctx := context.Background()
+	safego.Go(ctx, func() {
 		signal.WaitExit()
 		if err := c.Shutdown(); err != nil {
-			logs.Errorf("shutdown consumer error: %v", err)
+			logs.CtxErrorf(ctx, "shutdown consumer error: %v", err)
 		}
 	})
 

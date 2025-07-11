@@ -91,7 +91,7 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 	for _, t := range req.NodeTypes {
 		entityType, err := nodeType2EntityNodeType(t)
 		if err != nil {
-			logs.Warnf("get node type %v failed, err:=%v", t, err)
+			logs.CtxWarnf(ctx, "get node type %v failed, err:=%v", t, err)
 			continue
 		}
 		toQueryTypes[entityType] = true
@@ -1223,7 +1223,7 @@ const (
 	InterruptEvent StreamRunEventType = "interrupt"
 )
 
-func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *workflow.OpenAPIStreamRunFlowResponse, err error) {
+func convertStreamRunEvent(ctx context.Context, workflowID int64) func(msg *entity.Message) (res *workflow.OpenAPIStreamRunFlowResponse, err error) {
 	var (
 		messageID  int
 		executeID  int64
@@ -1310,7 +1310,7 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 			var nodeType workflow.NodeTemplateType
 			nodeType, err = entityNodeTypeToAPINodeTemplateType(msg.NodeType)
 			if err != nil {
-				logs.Errorf("convert node type %v failed, err:=%v", msg.NodeType, err)
+				logs.CtxErrorf(ctx, "convert node type %v failed, err:=%v", msg.NodeType, err)
 				nodeType = workflow.NodeTemplateType(0)
 			}
 
@@ -1425,7 +1425,7 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 		return nil, err
 	}
 
-	convert := convertStreamRunEvent(meta.ID)
+	convert := convertStreamRunEvent(ctx, meta.ID)
 
 	return schema.StreamReaderWithConvert(sr, convert), nil
 }
@@ -1484,7 +1484,7 @@ func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workf
 		return nil, err
 	}
 
-	convert := convertStreamRunEvent(workflowID)
+	convert := convertStreamRunEvent(ctx, workflowID)
 
 	return schema.StreamReaderWithConvert(sr, convert), nil
 }

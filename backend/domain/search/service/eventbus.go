@@ -91,7 +91,7 @@ func (d *eventbusImpl) PublishResources(ctx context.Context, event *entity.Resou
 		return err
 	}
 
-	logs.Infof("PublishResources success: %s", string(bytes))
+	logs.CtxInfo(ctx, "PublishResources success: %s", string(bytes))
 	//return d.producer.Send(ctx, bytes)
 	return nil
 }

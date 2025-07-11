@@ -25,9 +25,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/es"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
-	"code.byted.org/gopkg/logs"
 )
 
 type byteESClient struct {
@@ -38,9 +38,9 @@ type byteESClient struct {
 func newByteES() (Client, error) {
 	ctx := context.Background()
 	readClient, err := elastic.NewClient(elastic.SetConsulSniff(consts.ElasticSearchPSM, "client"), elastic.SetCustomMetricsPrefix(consts.WorkflowEnginePSM+".read"))
-
+	logs.CtxInfof(ctx, "[newByteES] new read client: %+v", readClient)
 	if err != nil {
-		logs.CtxError(ctx, "[newByteES] new read client failed, err: %v", err)
+		logs.CtxErrorf(ctx, "[newByteES] new read client failed, err: %v", err)
 		return nil, err
 	}
 
@@ -56,7 +56,7 @@ func (c *byteESClient) Create(ctx context.Context, index, id string, document an
 
 	_, err := c.writeClient.Index().Index(index).Id(id).BodyJson(document).Do(ctx)
 	if err != nil {
-		logs.CtxError(ctx, "[create] create index failed, err: %v", err)
+		logs.CtxErrorf(ctx, "[create] create index failed, err: %v", err)
 		return err
 	}
 
@@ -66,7 +66,7 @@ func (c *byteESClient) Create(ctx context.Context, index, id string, document an
 func (c *byteESClient) Update(ctx context.Context, index, id string, document any) error {
 	_, err := c.writeClient.Update().Index(index).Id(id).Doc(document).Do(ctx)
 	if err != nil {
-		logs.CtxError(ctx, "[update] update index failed, err: %v", err)
+		logs.CtxErrorf(ctx, "[update] update index failed, err: %v", err)
 		return err
 	}
 	return nil
@@ -75,7 +75,7 @@ func (c *byteESClient) Update(ctx context.Context, index, id string, document an
 func (c *byteESClient) Delete(ctx context.Context, index, id string) error {
 	_, err := c.writeClient.Delete().Index(index).Id(id).Do(ctx)
 	if err != nil {
-		logs.CtxError(ctx, "[delete] delete index failed, err: %v", err)
+		logs.CtxErrorf(ctx, "[delete] delete index failed, err: %v", err)
 		return err
 	}
 	return nil
@@ -84,7 +84,7 @@ func (c *byteESClient) Delete(ctx context.Context, index, id string) error {
 func (c *byteESClient) Exists(ctx context.Context, index string) (bool, error) {
 	_, err := c.readClient.Exists().Index(index).Id("").Do(ctx)
 	if err != nil {
-		logs.CtxError(ctx, "[exists] exists index failed, err: %v", err)
+		logs.CtxErrorf(ctx, "[exists] exists index failed, err: %v", err)
 		return false, err
 	}
 	return true, nil
@@ -93,7 +93,7 @@ func (c *byteESClient) Exists(ctx context.Context, index string) (bool, error) {
 func (c *byteESClient) CreateIndex(ctx context.Context, index string, properties map[string]any) error {
 	_, err := c.writeClient.CreateIndex(index).BodyJson(properties).Do(ctx)
 	if err != nil {
-		logs.CtxError(ctx, "[create] create index failed, err: %v", err)
+		logs.CtxErrorf(ctx, "[create] create index failed, err: %v", err)
 		return err
 	}
 	return nil
@@ -102,7 +102,7 @@ func (c *byteESClient) CreateIndex(ctx context.Context, index string, properties
 func (c *byteESClient) DeleteIndex(ctx context.Context, index string) error {
 	_, err := c.writeClient.DeleteIndex(index).Do(ctx)
 	if err != nil {
-		logs.CtxError(ctx, "[delete] delete index failed, err: %v", err)
+		logs.CtxErrorf(ctx, "[delete] delete index failed, err: %v", err)
 		return err
 	}
 	return nil
@@ -112,16 +112,16 @@ func (c *byteESClient) Search(ctx context.Context, index string, req *Request) (
 	if req == nil {
 		return nil, fmt.Errorf("req is nil")
 	}
-	q := c.query2ESQuery(req.Query)
+	q := c.query2ESQuery(ctx, req.Query)
 
 	// ctx 中增加 log_request_enabled
 	ctx = context.WithValue(ctx, "log-request-enabled", true)
 	res, err := c.readClient.Search().Index(index).Query(q).Do(ctx)
 	if err != nil {
-		logs.CtxError(ctx, "[search] search index failed, err: %v", err)
+		logs.CtxErrorf(ctx, "[search] search index failed, err: %v", err)
 		return nil, err
 	}
-	logs.CtxInfo(ctx, "[search] search index, req: %s, res: %s", conv.DebugJsonToStr(req), conv.DebugJsonToStr(res))
+	logs.CtxInfof(ctx, "[search] search index, req: %s, res: %s", conv.DebugJsonToStr(req), conv.DebugJsonToStr(res))
 
 	var hits = es.HitsMetadata{}
 	hitStr, _ := sonic.MarshalString(res.Hits)
@@ -132,7 +132,7 @@ func (c *byteESClient) Search(ctx context.Context, index string, req *Request) (
 	}, nil
 }
 
-func (c *byteESClient) query2ESQuery(q *Query) elastic.Query {
+func (c *byteESClient) query2ESQuery(ctx context.Context, q *Query) elastic.Query {
 	if q == nil {
 		return nil
 	}
@@ -157,7 +157,7 @@ func (c *byteESClient) query2ESQuery(q *Query) elastic.Query {
 	case es.QueryTypeIn:
 		_, ok := q.KV.Value.([]any)
 		if !ok {
-			logs.Errorf("query2ESQuery failed, value is not []any, value: %v", q.KV.Value)
+			logs.CtxErrorf(ctx, "query2ESQuery failed, value is not []any, value: %v", q.KV.Value)
 			return typesQ
 		}
 		typesQ = elastic.NewTermsQuery(q.KV.Key, q.KV.Value)
@@ -173,22 +173,22 @@ func (c *byteESClient) query2ESQuery(q *Query) elastic.Query {
 	boolQuery := elastic.NewBoolQuery()
 	for idx := range q.Bool.Filter {
 		v := q.Bool.Filter[idx]
-		boolQuery.Filter(c.query2ESQuery(&v))
+		boolQuery.Filter(c.query2ESQuery(ctx, &v))
 	}
 
 	for idx := range q.Bool.Must {
 		v := q.Bool.Must[idx]
-		boolQuery.Must(c.query2ESQuery(&v))
+		boolQuery.Must(c.query2ESQuery(ctx, &v))
 	}
 
 	for idx := range q.Bool.MustNot {
 		v := q.Bool.MustNot[idx]
-		boolQuery.Must(c.query2ESQuery(&v))
+		boolQuery.Must(c.query2ESQuery(ctx, &v))
 	}
 
 	for idx := range q.Bool.Should {
 		v := q.Bool.Should[idx]
-		boolQuery.Should(c.query2ESQuery(&v))
+		boolQuery.Should(c.query2ESQuery(ctx, &v))
 	}
 
 	if q.Bool.MinimumShouldMatch != nil {

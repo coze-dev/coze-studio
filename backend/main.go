@@ -42,7 +42,7 @@ func main() {
 	// Middleware order matters
 	s.Use(middleware.ContextCacheMW())     // must be first
 	s.Use(middleware.RequestInspectorMW()) // must be second
-	// s.Use(middleware.SetLogIDMW())
+	s.Use(middleware.SetLogIDMW())
 	s.Use(middleware.AccessLogMW())
 	s.Use(middleware.OpenapiAuthMW())
 	s.Use(middleware.SessionAuthMW())

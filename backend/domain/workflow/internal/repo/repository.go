@@ -380,22 +380,22 @@ func (r *RepositoryImpl) MDelete(ctx context.Context, ids []int64) error {
 	safego.Go(ctx, func() {
 		_, err = r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.In(ids...)).Delete()
 		if err != nil {
-			logs.Warnf("delete workflow draft failed err=%v, ids %v", err, ids)
+			logs.CtxWarnf(ctx, "delete workflow draft failed err=%v, ids %v", err, ids)
 		}
 
 		_, err = r.query.WorkflowVersion.WithContext(ctx).Where(r.query.WorkflowVersion.ID.In(ids...)).Delete()
 		if err != nil {
-			logs.Warnf("delete workflow version failed err=%v, ids %v", err, ids)
+			logs.CtxWarnf(ctx, "delete workflow version failed err=%v, ids %v", err, ids)
 		}
 
 		_, err = r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowReference.ID.In(ids...)).Delete()
 		if err != nil {
-			logs.Warnf("delete workflow reference failed err=%v, ids %v", err, ids)
+			logs.CtxWarnf(ctx, "delete workflow reference failed err=%v, ids %v", err, ids)
 
 		}
 		_, err = r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowReference.ReferringID.In(ids...)).Delete()
 		if err != nil {
-			logs.Warnf("delete workflow reference refer failed err=%v, ids %v", err, ids)
+			logs.CtxWarnf(ctx, "delete workflow reference refer failed err=%v, ids %v", err, ids)
 		}
 	})
 
@@ -424,7 +424,7 @@ func (r *RepositoryImpl) GetMeta(ctx context.Context, id int64) (_ *vo.Meta, err
 func (r *RepositoryImpl) convertMeta(ctx context.Context, meta *model.WorkflowMeta) (*vo.Meta, error) {
 	url, err := r.tos.GetObjectUrl(ctx, meta.IconURI)
 	if err != nil {
-		logs.Warnf("failed to get url for workflow meta %v", err)
+		logs.CtxWarnf(ctx, "failed to get url for workflow meta %v", err)
 	}
 	// Initialize the result entity
 	wfMeta := &vo.Meta{
@@ -805,7 +805,7 @@ func (r *RepositoryImpl) MGetDrafts(ctx context.Context, policy *vo.MGetPolicy) 
 	for i, draft := range combinedDrafts {
 		url, err := r.tos.GetObjectUrl(ctx, draft.IconURI)
 		if err != nil {
-			logs.Warnf("failed to get url for workflow meta %v", err)
+			logs.CtxWarnf(ctx, "failed to get url for workflow meta %v", err)
 		}
 
 		canvasInfo := &vo.CanvasInfo{
@@ -964,7 +964,7 @@ func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetP
 	for i, version := range combinedVersions {
 		url, err := r.tos.GetObjectUrl(ctx, version.IconURI)
 		if err != nil {
-			logs.Warnf("failed to get url for workflow meta %v", err)
+			logs.CtxWarnf(ctx, "failed to get url for workflow meta %v", err)
 		}
 
 		canvasInfo := &vo.CanvasInfo{
@@ -1433,7 +1433,7 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, pol
 		}
 		err = r.redis.WithContext(ctx).Expire(copiedWorkflowRedisKey, copyWorkflowRedisKeyExpireInterval).Err()
 		if err != nil {
-			logs.Warnf("failed to set the rediskey %v expiration time, err=%v", copiedWorkflowRedisKey, err)
+			logs.CtxWarnf(ctx, "failed to set the rediskey %v expiration time, err=%v", copiedWorkflowRedisKey, err)
 		}
 		copiedWorkflowName = fmt.Sprintf("%s_%d", wfMeta.Name, copiedNameSuffix)
 	} else {

@@ -17,15 +17,12 @@
 package service
 
 import (
-	"context"
-
 	"github.com/go-resty/resty/v2"
 	"gorm.io/gorm"
 
 	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/repository"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
 )
 
 type Components struct {
@@ -47,12 +44,12 @@ func NewService(components *Components) PluginService {
 		httpCli:    resty.New(),
 	}
 
-	initOnce.Do(func() {
-		ctx := context.Background()
-		safego.Go(ctx, func() {
-			impl.processOAuthAccessToken(ctx)
-		})
-	})
+	// initOnce.Do(func() {
+	// 	ctx := context.Background()
+	// 	safego.Go(ctx, func() {
+	// 		impl.processOAuthAccessToken(ctx)
+	// 	})
+	// })
 
 	return impl
 }

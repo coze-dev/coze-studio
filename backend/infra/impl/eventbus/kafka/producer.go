@@ -43,10 +43,11 @@ func NewProducer(broker, topic string) (eventbus.Producer, error) {
 		return nil, err
 	}
 
-	safego.Go(context.Background(), func() {
+	ctx := context.Background()
+	safego.Go(ctx, func() {
 		signal.WaitExit()
 		if err := producer.Close(); err != nil {
-			logs.Errorf("close producer error: %s", err.Error())
+			logs.CtxErrorf(ctx, "close producer error: %s", err.Error())
 		}
 	})
 

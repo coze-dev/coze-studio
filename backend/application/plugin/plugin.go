@@ -191,7 +191,7 @@ func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context
 
 	iconURL, err := p.oss.GetObjectUrl(ctx, pl.GetIconURI())
 	if err != nil {
-		logs.Errorf("get plugin icon url failed, err=%v", err)
+		logs.CtxErrorf(ctx, "get plugin icon url failed, err=%v", err)
 	}
 
 	authType, ok := model.ToThriftAuthType(pl.GetAuthInfo().Type)
