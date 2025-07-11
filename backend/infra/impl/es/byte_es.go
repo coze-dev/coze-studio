@@ -23,6 +23,7 @@ import (
 
 	"code.byted.org/ad/elastic-go/v7"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/es"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
@@ -113,11 +114,14 @@ func (c *byteESClient) Search(ctx context.Context, index string, req *Request) (
 	}
 	q := c.query2ESQuery(req.Query)
 
+	// ctx 中增加 log_request_enabled
+	ctx = context.WithValue(ctx, "log-request-enabled", true)
 	res, err := c.readClient.Search().Index(index).Query(q).Do(ctx)
 	if err != nil {
 		logs.CtxError(ctx, "[search] search index failed, err: %v", err)
 		return nil, err
 	}
+	logs.CtxInfo(ctx, "[search] search index, req: %s, res: %s", conv.DebugJsonToStr(req), conv.DebugJsonToStr(res))
 
 	var hits = es.HitsMetadata{}
 	hitStr, _ := sonic.MarshalString(res.Hits)
