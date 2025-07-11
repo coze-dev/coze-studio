@@ -151,7 +151,11 @@ func (c *byteESClient) query2ESQuery(q *Query) elastic.Query {
 		typesQ = elastic.NewWildcardQuery(q.KV.Key, fmt.Sprintf("*%s*", q.KV.Value)).CaseInsensitive(true)
 
 	case es.QueryTypeIn:
-		// TODO:: 转下Interface
+		_, ok := q.KV.Value.([]any)
+		if !ok {
+			logs.Errorf("query2ESQuery failed, value is not []any, value: %v", q.KV.Value)
+			return typesQ
+		}
 		typesQ = elastic.NewTermsQuery(q.KV.Key, q.KV.Value)
 
 	default:
