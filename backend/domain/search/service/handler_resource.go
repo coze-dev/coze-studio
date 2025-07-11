@@ -26,7 +26,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 )
 
-const resourceIndexName = "coze_resource"
+const resourceIndexName = "coze_resource_new"
 
 type ResourceHandlerImpl struct {
 	esClient es.Client

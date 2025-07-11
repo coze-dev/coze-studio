@@ -113,7 +113,7 @@ func (c *byteESClient) Search(ctx context.Context, index string, req *Request) (
 		return nil, fmt.Errorf("req is nil")
 	}
 	q := c.query2ESQuery(ctx, req.Query)
-
+	logs.CtxInfof(ctx, "[search] search index, rawReq: %+v, req: %+v", req, q)
 	// ctx 中增加 log_request_enabled
 	ctx = context.WithValue(ctx, "log-request-enabled", true)
 	res, err := c.readClient.Search().Index(index).Query(q).Do(ctx)
@@ -121,7 +121,7 @@ func (c *byteESClient) Search(ctx context.Context, index string, req *Request) (
 		logs.CtxErrorf(ctx, "[search] search index failed, err: %v", err)
 		return nil, err
 	}
-	logs.CtxInfof(ctx, "[search] search index, req: %s, res: %s", conv.DebugJsonToStr(req), conv.DebugJsonToStr(res))
+	logs.CtxInfof(ctx, "[search] search index, req: %+v, rawReq: %+v, res: %s", q, req, conv.DebugJsonToStr(res))
 
 	var hits = es.HitsMetadata{}
 	hitStr, _ := sonic.MarshalString(res.Hits)
@@ -141,19 +141,15 @@ func (c *byteESClient) query2ESQuery(ctx context.Context, q *Query) elastic.Quer
 	switch q.Type {
 	case es.QueryTypeEqual:
 		typesQ = elastic.NewTermQuery(q.KV.Key, q.KV.Value)
-
+		logs.CtxInfof(ctx, "[query2ESQuery] term query, key: %s, value: %v, %+v", q.KV.Key, q.KV.Value, typesQ)
 	case es.QueryTypeMatch:
 		typesQ = elastic.NewMatchQuery(q.KV.Key, q.KV.Value)
-
 	case es.QueryTypeMultiMatch:
 		typesQ = elastic.NewMultiMatchQuery(q.MultiMatchQuery.Query, q.MultiMatchQuery.Fields...)
-
 	case es.QueryTypeNotExists:
 		typesQ = elastic.NewBoolQuery().MustNot(elastic.NewExistsQuery(q.KV.Key))
-
 	case es.QueryTypeContains:
 		typesQ = elastic.NewWildcardQuery(q.KV.Key, fmt.Sprintf("*%s*", q.KV.Value)).CaseInsensitive(true)
-
 	case es.QueryTypeIn:
 		_, ok := q.KV.Value.([]any)
 		if !ok {
@@ -161,9 +157,8 @@ func (c *byteESClient) query2ESQuery(ctx context.Context, q *Query) elastic.Quer
 			return typesQ
 		}
 		typesQ = elastic.NewTermsQuery(q.KV.Key, q.KV.Value)
-
 	default:
-
+		logs.CtxInfof(ctx, "[query2ESQuery] default, key: %s, value: %v", q.KV.Key, q.KV.Value)
 	}
 
 	if q.Bool == nil {
@@ -173,29 +168,29 @@ func (c *byteESClient) query2ESQuery(ctx context.Context, q *Query) elastic.Quer
 	boolQuery := elastic.NewBoolQuery()
 	for idx := range q.Bool.Filter {
 		v := q.Bool.Filter[idx]
-		boolQuery.Filter(c.query2ESQuery(ctx, &v))
+		typesQ = boolQuery.Filter(c.query2ESQuery(ctx, &v))
 	}
 
 	for idx := range q.Bool.Must {
 		v := q.Bool.Must[idx]
-		boolQuery.Must(c.query2ESQuery(ctx, &v))
+		typesQ = boolQuery.Must(c.query2ESQuery(ctx, &v))
 	}
 
 	for idx := range q.Bool.MustNot {
 		v := q.Bool.MustNot[idx]
-		boolQuery.Must(c.query2ESQuery(ctx, &v))
+		typesQ = boolQuery.Must(c.query2ESQuery(ctx, &v))
 	}
 
 	for idx := range q.Bool.Should {
 		v := q.Bool.Should[idx]
-		boolQuery.Should(c.query2ESQuery(ctx, &v))
+		typesQ = boolQuery.Should(c.query2ESQuery(ctx, &v))
 	}
 
 	if q.Bool.MinimumShouldMatch != nil {
 		v := q.Bool.MinimumShouldMatch
-		boolQuery.MinimumShouldMatch(strconv.Itoa(*v))
+		typesQ = boolQuery.MinimumShouldMatch(strconv.Itoa(*v))
 	}
-
+	logs.CtxInfof(ctx, "[query2ESQuery] result: %+v", typesQ)
 	return typesQ
 }
 
