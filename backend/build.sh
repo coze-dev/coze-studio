@@ -1,7 +1,7 @@
 #!/bin/bash
 RUN_NAME="data.ecom.workflow_engine_next"
 cd backend
-mkdir -p output/bin output/conf output/app
+mkdir -p output/bin output/conf output/bin/app
 cp script/bootstrap.sh output 2>/dev/null
 chmod +x output/bootstrap.sh
 cp script/bootstrap.sh output/bootstrap_staging.sh
