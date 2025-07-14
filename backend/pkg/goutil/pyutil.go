@@ -40,5 +40,6 @@ func GetPython3Path() string {
 		return ".venv/bin/python3"
 	}
 
-	return filepath.Join(cwd, ".venv/bin/python3")
+	//return filepath.Join(cwd, ".venv/bin/python3")
+	return filepath.Join(cwd, "python3")
 }
