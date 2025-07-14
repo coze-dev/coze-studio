@@ -30,8 +30,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/gopkg/logs"
 )
 
 const answerKey = "output"
@@ -82,7 +82,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 	}
 
 	if previouslyInterrupted && rInfo.ExecuteID != previousExecuteID {
-		logs.CtxInfof(ctx, "previous interrupted call ID: %s, previous execute ID: %d, current execute ID: %d. Not resuming, interrupt immediately", callID, previousExecuteID, rInfo.ExecuteID)
+		logs.CtxInfo(ctx, "previous interrupted call ID: %s, previous execute ID: %d, current execute ID: %d. Not resuming, interrupt immediately", callID, previousExecuteID, rInfo.ExecuteID)
 		return "", einoCompose.InterruptAndRerun
 	}
 
@@ -126,7 +126,7 @@ func (i *invokableWorkflow) InvokableRun(ctx context.Context, argumentsInJSON st
 		if err != nil {
 			return "", err
 		} else if ws != nil {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+			logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 		}
 	}
 
@@ -231,7 +231,7 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 	}
 
 	if previouslyInterrupted && rInfo.ExecuteID != previousExecuteID {
-		logs.CtxInfof(ctx, "previous interrupted call ID: %s, previous execute ID: %d, current execute ID: %d. Not resuming, interrupt immediately", callID, previousExecuteID, rInfo.ExecuteID)
+		logs.CtxInfo(ctx, "previous interrupted call ID: %s, previous execute ID: %d, current execute ID: %d. Not resuming, interrupt immediately", callID, previousExecuteID, rInfo.ExecuteID)
 		return nil, einoCompose.InterruptAndRerun
 	}
 
@@ -275,7 +275,7 @@ func (s *streamableWorkflow) StreamableRun(ctx context.Context, argumentsInJSON 
 		if err != nil {
 			return nil, err
 		} else if ws != nil {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+			logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 		}
 	}
 

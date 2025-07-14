@@ -30,8 +30,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 const (
@@ -208,7 +208,7 @@ func (c *CodeRunner) RunCode(ctx context.Context, input map[string]any) (ret map
 	}
 
 	if ws != nil && len(*ws) > 0 {
-		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 		ctxcache.Store(ctx, coderRunnerWarnErrorLevelCtxKey, *ws)
 	}
 

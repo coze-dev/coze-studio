@@ -28,8 +28,8 @@ import (
 	appworkflow "code.byted.org/data_edc/workflow_engine_next/application/workflow"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/gopkg/logs"
 	"code.byted.org/middleware/hertz/pkg/app"
 	"code.byted.org/middleware/hertz/pkg/protocol/consts"
 	"github.com/cloudwego/eino/schema"
@@ -936,7 +936,7 @@ func sendStreamRunSSE(ctx context.Context, w *sse.Writer, sr *schema.StreamReade
 			}
 
 			if err = w.Write(event); err != nil {
-				logs.CtxErrorf(ctx, "publish stream event failed, err:%v", err)
+				logs.CtxError(ctx, "publish stream event failed, err:%v", err)
 			}
 			return
 		}
@@ -949,7 +949,7 @@ func sendStreamRunSSE(ctx context.Context, w *sse.Writer, sr *schema.StreamReade
 				Data: []byte(err.Error()),
 			}
 			if err = w.Write(event); err != nil {
-				logs.CtxErrorf(ctx, "publish stream event failed, err:%v", err)
+				logs.CtxError(ctx, "publish stream event failed, err:%v", err)
 			}
 			return
 		}
@@ -961,7 +961,7 @@ func sendStreamRunSSE(ctx context.Context, w *sse.Writer, sr *schema.StreamReade
 		}
 
 		if err = w.Write(event); err != nil {
-			logs.CtxErrorf(ctx, "publish stream event failed, err:%v", err)
+			logs.CtxError(ctx, "publish stream event failed, err:%v", err)
 			return
 		}
 	}

@@ -25,7 +25,7 @@ import (
 	"os"
 
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 	"code.byted.org/gopkg/tos"
 )
 
@@ -34,7 +34,7 @@ type tosClient struct {
 }
 
 func New(ctx context.Context, bucketName string, accessKey string, psm string) (storage.Storage, error) {
-	logs.CtxInfof(ctx, "TOS GO SDK Version: %s", tos.Version)
+	logs.CtxInfo(ctx, "TOS GO SDK Version: %s", tos.Version)
 
 	TosClient, err := tos.NewTos(tos.WithBucket(bucketName),
 		tos.WithCredentials(&tos.BucketAccessKeyCredentials{
@@ -64,7 +64,7 @@ func (t *tosClient) PutObject(ctx context.Context, objectKey string, content []b
 
 	err := client.PutObject(ctx, objectKey, int64(len(content)), bytes.NewBuffer(content), tosOptions...)
 	if err != nil {
-		logs.CtxErrorf(ctx, "PutObject failed: %v, objectKey: %v", err, objectKey)
+		logs.CtxError(ctx, "PutObject failed: %v, objectKey: %v", err, objectKey)
 	}
 
 	return err
@@ -76,7 +76,7 @@ func (t *tosClient) GetObject(ctx context.Context, objectKey string) ([]byte, er
 	// 下载数据到内存
 	getOutput, err := client.GetObject(ctx, objectKey)
 	if err != nil {
-		logs.CtxErrorf(ctx, "GetObject failed: %v, objectKey: %v", err, objectKey)
+		logs.CtxError(ctx, "GetObject failed: %v, objectKey: %v", err, objectKey)
 		return nil, err
 	}
 
@@ -93,7 +93,7 @@ func (t *tosClient) DeleteObject(ctx context.Context, objectKey string) error {
 	// 删除存储桶中指定对象
 	err := client.DelObject(ctx, objectKey)
 	if err != nil {
-		logs.CtxErrorf(ctx, "DeleteObject failed: %v, objectKey: %v", err, objectKey)
+		logs.CtxError(ctx, "DeleteObject failed: %v, objectKey: %v", err, objectKey)
 		return err
 	}
 	return nil

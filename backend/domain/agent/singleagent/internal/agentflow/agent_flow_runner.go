@@ -32,7 +32,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossmodelmgr"
 	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossworkflow"
 	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type AgentState struct {
@@ -71,7 +71,7 @@ func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
 	go func() {
 		defer func() {
 			if pe := recover(); pe != nil {
-				logs.CtxErrorf(ctx, "[AgentRunner] StreamExecute recover, err: %v", pe)
+				logs.CtxError(ctx, "[AgentRunner] StreamExecute recover, err: %v", pe)
 
 				sw.Send(nil, errors.New("internal server error"))
 			}

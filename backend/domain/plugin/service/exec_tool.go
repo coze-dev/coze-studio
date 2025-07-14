@@ -43,8 +43,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolRequest, opts ...entity.ExecuteToolOpt) (resp *ExecuteToolResponse, err error) {
@@ -69,7 +69,7 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 			DebugStatus: ptr.Of(common.APIDebugStatus_DebugPassed),
 		})
 		if err != nil {
-			logs.CtxErrorf(ctx, "UpdateDraftTool failed, tooID=%d, err=%v", req.ToolID, err)
+			logs.CtxError(ctx, "UpdateDraftTool failed, tooID=%d, err=%v", req.ToolID, err)
 		}
 	}
 
@@ -444,7 +444,7 @@ func parseResponseToBodySchemaRef(ctx context.Context, value any) *openapi3.Sche
 		}
 
 	default:
-		logs.CtxWarnf(ctx, "unsupported type: %T", val)
+		logs.CtxWarn(ctx, "unsupported type: %T", val)
 		return nil
 	}
 }
@@ -520,7 +520,7 @@ func (t *toolExecutor) execute(ctx context.Context, argumentsInJson string) (res
 	}
 	restyReq.SetContext(ctx)
 
-	logs.CtxDebugf(ctx, "[execute] url=%s, header=%s, method=%s, body=%s",
+	logs.CtxDebug(ctx, "[execute] url=%s, header=%s, method=%s, body=%s",
 		restyReq.URL, restyReq.Header, restyReq.Method, restyReq.Body)
 
 	httpResp, err := restyReq.Send()
@@ -528,7 +528,7 @@ func (t *toolExecutor) execute(ctx context.Context, argumentsInJson string) (res
 		return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KVf(errno.PluginMsgKey, "http request failed, err=%s", err))
 	}
 
-	logs.CtxDebugf(ctx, "[execute] status=%s, response=%s", httpResp.Status(), httpResp.String())
+	logs.CtxDebug(ctx, "[execute] status=%s, response=%s", httpResp.Status(), httpResp.String())
 
 	if httpResp.StatusCode() != http.StatusOK {
 		return nil, errorx.New(errno.ErrPluginExecuteToolFailed,
@@ -826,7 +826,7 @@ func (t *toolExecutor) getDefaultValue(ctx context.Context, scVal *openapi3.Sche
 
 	vnStr, ok := vn.(string)
 	if !ok {
-		logs.CtxErrorf(ctx, "invalid variable_ref type '%T'", vn)
+		logs.CtxError(ctx, "invalid variable_ref type '%T'", vn)
 		return nil, nil
 	}
 
@@ -1000,25 +1000,25 @@ func (t *toolExecutor) processResponse(ctx context.Context, rawResp string) (tri
 	case model.InvalidResponseProcessStrategyOfReturnRaw:
 		trimmedRespMap, err = t.processWithInvalidRespProcessStrategyOfReturnRaw(ctx, respMap, schemaVal)
 		if err != nil {
-			logs.CtxErrorf(ctx, "processWithInvalidRespProcessStrategyOfReturnRaw failed, err=%v", err)
+			logs.CtxError(ctx, "processWithInvalidRespProcessStrategyOfReturnRaw failed, err=%v", err)
 			return rawResp, nil
 		}
 
 	case model.InvalidResponseProcessStrategyOfReturnDefault:
 		trimmedRespMap, err = t.processWithInvalidRespProcessStrategyOfReturnDefault(ctx, respMap, schemaVal)
 		if err != nil {
-			logs.CtxErrorf(ctx, "processWithInvalidRespProcessStrategyOfReturnDefault failed, err=%v", err)
+			logs.CtxError(ctx, "processWithInvalidRespProcessStrategyOfReturnDefault failed, err=%v", err)
 			return rawResp, nil
 		}
 
 	default:
-		logs.CtxErrorf(ctx, "invalid response process strategy '%d'", t.invalidRespProcessStrategy)
+		logs.CtxError(ctx, "invalid response process strategy '%d'", t.invalidRespProcessStrategy)
 		return rawResp, nil
 	}
 
 	trimmedResp, err = sonic.MarshalString(trimmedRespMap)
 	if err != nil {
-		logs.CtxErrorf(ctx, "marshal trimmed response failed, err=%v", err)
+		logs.CtxError(ctx, "marshal trimmed response failed, err=%v", err)
 		return rawResp, nil
 	}
 

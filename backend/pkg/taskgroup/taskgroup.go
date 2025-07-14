@@ -22,7 +22,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type TaskGroup interface {
@@ -60,7 +60,7 @@ func (t *taskGroup) Go(f func() error) {
 	t.errGroup.Go(func() error {
 		defer func() {
 			if err := recover(); err != nil {
-				logs.CtxErrorf(t.ctx, "[TaskGroup] exec panic recover:%+v", err)
+				logs.CtxError(t.ctx, "[TaskGroup] exec panic recover:%+v", err)
 			}
 		}()
 

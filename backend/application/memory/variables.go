@@ -32,9 +32,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type VariableApplicationService struct {
@@ -226,7 +226,7 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 	for _, v := range req.VariableList {
 		if v.Channel == project_memory.VariableChannel_System &&
 			sysVarsKeys2Meta[v.Keyword] == nil {
-			logs.CtxInfof(ctx, "sys variable not found, keyword: %s", v.Keyword)
+			logs.CtxInfo(ctx, "sys variable not found, keyword: %s", v.Keyword)
 			continue
 		}
 

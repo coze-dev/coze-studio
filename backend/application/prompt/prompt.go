@@ -29,8 +29,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type PromptApplicationService struct {
@@ -66,7 +66,7 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 			},
 		})
 		if pErr != nil {
-			logs.CtxErrorf(ctx, "publish resource event failed: %v", pErr)
+			logs.CtxError(ctx, "publish resource event failed: %v", pErr)
 		}
 
 		return resp, nil
@@ -88,7 +88,7 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 		},
 	})
 	if pErr != nil {
-		logs.CtxErrorf(ctx, "publish resource event failed: %v", pErr)
+		logs.CtxError(ctx, "publish resource event failed: %v", pErr)
 	}
 
 	return resp, nil
@@ -157,7 +157,7 @@ func (p *PromptApplicationService) DeletePromptResource(ctx context.Context, req
 		},
 	})
 	if pErr != nil {
-		logs.CtxErrorf(ctx, "publish resource event failed: %v", pErr)
+		logs.CtxError(ctx, "publish resource event failed: %v", pErr)
 	}
 
 	return &playground.DeletePromptResourceResponse{
@@ -192,7 +192,7 @@ func (p *PromptApplicationService) updatePromptResource(ctx context.Context, req
 		return nil, err
 	}
 
-	logs.CtxInfof(ctx, "promptResource.SpaceID: %v , promptResource.CreatorID : %v", promptResource.SpaceID, promptResource.CreatorID)
+	logs.CtxInfo(ctx, "promptResource.SpaceID: %v , promptResource.CreatorID : %v", promptResource.SpaceID, promptResource.CreatorID)
 	uid := ctxutil.GetUIDFromCtx(ctx)
 
 	if promptResource.CreatorID != *uid {

@@ -35,8 +35,8 @@ import (
 	cmdEntity "code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/entity"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/gopkg/logs"
 )
 
 func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, ar *run.ChatV3Request) (*schema.StreamReader[*entity.AgentRunResponse], error) {
@@ -50,20 +50,20 @@ func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, ar *ru
 	}
 	agentInfo, caErr := a.checkAgent(ctx, ar, connectorID)
 	if caErr != nil {
-		logs.CtxErrorf(ctx, "checkAgent err:%v", caErr)
+		logs.CtxError(ctx, "checkAgent err:%v", caErr)
 		return nil, caErr
 	}
 
 	conversationData, ccErr := a.checkConversation(ctx, ar, creatorID, connectorID)
 	if ccErr != nil {
-		logs.CtxErrorf(ctx, "checkConversation err:%v", ccErr)
+		logs.CtxError(ctx, "checkConversation err:%v", ccErr)
 		return nil, ccErr
 	}
 
 	spaceID := agentInfo.SpaceID
 	arr, err := a.buildAgentRunRequest(ctx, ar, connectorID, spaceID, conversationData)
 	if err != nil {
-		logs.CtxErrorf(ctx, "buildAgentRunRequest err:%v", err)
+		logs.CtxError(ctx, "buildAgentRunRequest err:%v", err)
 		return nil, err
 	}
 	return ConversationSVC.AgentRunDomainSVC.AgentRun(ctx, arr)
@@ -213,7 +213,7 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 			var inputs []*run.AdditionalContent
 			err := json.Unmarshal([]byte(item.Content), &inputs)
 
-			logs.CtxInfof(ctx, "inputs:%v, err:%v", conv.DebugJsonToStr(inputs), err)
+			logs.CtxInfo(ctx, "inputs:%v, err:%v", conv.DebugJsonToStr(inputs), err)
 			if err != nil {
 				continue
 			}

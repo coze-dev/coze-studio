@@ -25,9 +25,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/es"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/gopkg/logs"
 )
 
 type byteESClient struct {
@@ -38,9 +38,9 @@ type byteESClient struct {
 func newByteES() (Client, error) {
 	ctx := context.Background()
 	readClient, err := elastic.NewClient(elastic.SetConsulSniff(consts.ElasticSearchPSM, "client"), elastic.SetCustomMetricsPrefix(consts.WorkflowEnginePSM+".read"))
-	logs.CtxInfof(ctx, "[newByteES] new read client: %+v", readClient)
+	logs.CtxInfo(ctx, "[newByteES] new read client: %+v", readClient)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[newByteES] new read client failed, err: %v", err)
+		logs.CtxError(ctx, "[newByteES] new read client failed, err: %v", err)
 		return nil, err
 	}
 
@@ -56,7 +56,7 @@ func (c *byteESClient) Create(ctx context.Context, index, id string, document an
 
 	_, err := c.writeClient.Index().Index(index).Id(id).BodyJson(document).Do(ctx)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[create] create index failed, err: %v", err)
+		logs.CtxError(ctx, "[create] create index failed, err: %v", err)
 		return err
 	}
 
@@ -66,7 +66,7 @@ func (c *byteESClient) Create(ctx context.Context, index, id string, document an
 func (c *byteESClient) Update(ctx context.Context, index, id string, document any) error {
 	_, err := c.writeClient.Update().Index(index).Id(id).Doc(document).Do(ctx)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[update] update index failed, err: %v", err)
+		logs.CtxError(ctx, "[update] update index failed, err: %v", err)
 		return err
 	}
 	return nil
@@ -75,7 +75,7 @@ func (c *byteESClient) Update(ctx context.Context, index, id string, document an
 func (c *byteESClient) Delete(ctx context.Context, index, id string) error {
 	_, err := c.writeClient.Delete().Index(index).Id(id).Do(ctx)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[delete] delete index failed, err: %v", err)
+		logs.CtxError(ctx, "[delete] delete index failed, err: %v", err)
 		return err
 	}
 	return nil
@@ -84,7 +84,7 @@ func (c *byteESClient) Delete(ctx context.Context, index, id string) error {
 func (c *byteESClient) Exists(ctx context.Context, index string) (bool, error) {
 	_, err := c.readClient.Exists().Index(index).Id("").Do(ctx)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[exists] exists index failed, err: %v", err)
+		logs.CtxError(ctx, "[exists] exists index failed, err: %v", err)
 		return false, err
 	}
 	return true, nil
@@ -93,7 +93,7 @@ func (c *byteESClient) Exists(ctx context.Context, index string) (bool, error) {
 func (c *byteESClient) CreateIndex(ctx context.Context, index string, properties map[string]any) error {
 	_, err := c.writeClient.CreateIndex(index).BodyJson(properties).Do(ctx)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[create] create index failed, err: %v", err)
+		logs.CtxError(ctx, "[create] create index failed, err: %v", err)
 		return err
 	}
 	return nil
@@ -102,7 +102,7 @@ func (c *byteESClient) CreateIndex(ctx context.Context, index string, properties
 func (c *byteESClient) DeleteIndex(ctx context.Context, index string) error {
 	_, err := c.writeClient.DeleteIndex(index).Do(ctx)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[delete] delete index failed, err: %v", err)
+		logs.CtxError(ctx, "[delete] delete index failed, err: %v", err)
 		return err
 	}
 	return nil
@@ -113,15 +113,15 @@ func (c *byteESClient) Search(ctx context.Context, index string, req *Request) (
 		return nil, fmt.Errorf("req is nil")
 	}
 	q := c.query2ESQuery(ctx, req.Query)
-	logs.CtxInfof(ctx, "[search] search index, rawReq: %s, q: %s", conv.DebugJsonToStr(req), conv.DebugJsonToStr(q))
+	logs.CtxInfo(ctx, "[search] search index, rawReq: %s, q: %s", conv.DebugJsonToStr(req), conv.DebugJsonToStr(q))
 	// ctx 中增加 log_request_enabled
 	ctx = context.WithValue(ctx, "log-request-enabled", true)
 	res, err := c.readClient.Search().Index(index).Query(q).Do(ctx)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[search] search index failed, err: %v", err)
+		logs.CtxError(ctx, "[search] search index failed, err: %v", err)
 		return nil, err
 	}
-	logs.CtxInfof(ctx, "[search] search index, req: %+v, rawReq: %+v, res: %s", q, req, conv.DebugJsonToStr(res))
+	logs.CtxInfo(ctx, "[search] search index, req: %+v, rawReq: %+v, res: %s", q, req, conv.DebugJsonToStr(res))
 
 	var hits = es.HitsMetadata{}
 	hitStr, _ := sonic.MarshalString(res.Hits)
@@ -141,7 +141,7 @@ func (c *byteESClient) query2ESQuery(ctx context.Context, q *Query) elastic.Quer
 	switch q.Type {
 	case es.QueryTypeEqual:
 		typesQ = elastic.NewTermQuery(q.KV.Key, q.KV.Value)
-		logs.CtxInfof(ctx, "[query2ESQuery] term query, key: %s, value: %v, %+v", q.KV.Key, q.KV.Value, typesQ)
+		logs.CtxInfo(ctx, "[query2ESQuery] term query, key: %s, value: %v, %+v", q.KV.Key, q.KV.Value, typesQ)
 	case es.QueryTypeMatch:
 		typesQ = elastic.NewMatchQuery(q.KV.Key, q.KV.Value)
 	case es.QueryTypeMultiMatch:
@@ -172,9 +172,9 @@ func (c *byteESClient) query2ESQuery(ctx context.Context, q *Query) elastic.Quer
 			values = []interface{}{q.KV.Value}
 		}
 		typesQ = elastic.NewTermsQuery(q.KV.Key, values...)
-		logs.CtxInfof(ctx, "[query2ESQuery] terms query, key: %s, values: %v, %+v", q.KV.Key, values, typesQ)
+		logs.CtxInfo(ctx, "[query2ESQuery] terms query, key: %s, values: %v, %+v", q.KV.Key, values, typesQ)
 	default:
-		logs.CtxInfof(ctx, "[query2ESQuery] default, key: %s, value: %v", q.KV.Key, q.KV.Value)
+		logs.CtxInfo(ctx, "[query2ESQuery] default, key: %s, value: %v", q.KV.Key, q.KV.Value)
 	}
 
 	if q.Bool == nil {
@@ -206,7 +206,7 @@ func (c *byteESClient) query2ESQuery(ctx context.Context, q *Query) elastic.Quer
 		v := q.Bool.MinimumShouldMatch
 		typesQ = boolQuery.MinimumShouldMatch(strconv.Itoa(*v))
 	}
-	logs.CtxInfof(ctx, "[query2ESQuery] result: %+v", typesQ)
+	logs.CtxInfo(ctx, "[query2ESQuery] result: %+v", typesQ)
 	return typesQ
 }
 

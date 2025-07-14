@@ -34,8 +34,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/qa"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
+	"code.byted.org/gopkg/logs"
 )
 
 type WorkflowRunner struct {
@@ -230,7 +230,7 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 			return ctx, 0, nil, nil, fmt.Errorf("workflow execution lock failed, current status is %v, executeID: %d", currentStatus, executeID)
 		}
 
-		logs.CtxInfof(ctx, "resuming with eventID: %d, executeID: %d, nodeKey: %s", interruptEvent.ID,
+		logs.CtxInfo(ctx, "resuming with eventID: %d, executeID: %d, nodeKey: %s", interruptEvent.ID,
 			executeID, interruptEvent.NodeKey)
 	}
 
@@ -273,7 +273,7 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 	go func() {
 		defer func() {
 			if panicErr := recover(); panicErr != nil {
-				logs.CtxErrorf(ctx, "panic when handling execute event: %v", safego.NewPanicErr(panicErr, debug.Stack()))
+				logs.CtxError(ctx, "panic when handling execute event: %v", safego.NewPanicErr(panicErr, debug.Stack()))
 			}
 		}()
 		defer func() {

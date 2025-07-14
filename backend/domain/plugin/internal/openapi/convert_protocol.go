@@ -38,8 +38,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/entity"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func CurlToOpenapi3Doc(ctx context.Context, rawCURL string) (doc *model.Openapi3T, mf *entity.PluginManifest, err error) {
@@ -553,7 +553,7 @@ func parseRequestToBodySchemaRef(ctx context.Context, desc string, value any) (*
 		}, nil
 
 	default:
-		logs.CtxWarnf(ctx, "unsupported type: %T", val)
+		logs.CtxWarn(ctx, "unsupported type: %T", val)
 		return nil, nil
 	}
 }

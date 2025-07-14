@@ -34,8 +34,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/service"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/idgen"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/gopkg/env"
+	"code.byted.org/gopkg/logs"
 )
 
 func InitService(db *gorm.DB, idgen idgen.IDGenerator, oss storage.Storage) (*ModelmgrApplicationService, error) {
@@ -122,10 +122,10 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 			if err != nil {
 				return err
 			}
-			logs.CtxInfof(ctx, "[loadStaticModelConfig] model meta create success, id=%d", newMeta.ID)
+			logs.CtxInfo(ctx, "[loadStaticModelConfig] model meta create success, id=%d", newMeta.ID)
 			id2Meta[newMeta.ID] = newMeta
 		} else {
-			logs.CtxInfof(ctx, "[loadStaticModelConfig] model meta founded, skip create, id=%d", modelMeta.ID)
+			logs.CtxInfo(ctx, "[loadStaticModelConfig] model meta founded, skip create, id=%d", modelMeta.ID)
 
 		}
 	}
@@ -141,7 +141,7 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 			return err
 		}
 		if len(curModelEntities) > 0 {
-			logs.CtxInfof(ctx, "[loadStaticModelConfig] model entity founded, skip create, id=%d", modelEntity.ID)
+			logs.CtxInfo(ctx, "[loadStaticModelConfig] model entity founded, skip create, id=%d", modelEntity.ID)
 			continue
 		}
 		meta, found := id2Meta[modelEntity.Meta.ID]
@@ -152,7 +152,7 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 		if _, err = svc.CreateModel(ctx, &entity.Model{Model: modelEntity}); err != nil {
 			return err
 		}
-		logs.CtxInfof(ctx, "[loadStaticModelConfig] model entity create success, id=%d", modelEntity.ID)
+		logs.CtxInfo(ctx, "[loadStaticModelConfig] model entity create success, id=%d", modelEntity.ID)
 	}
 
 	return nil

@@ -20,7 +20,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 func GetPythonFilePath(fileName string) string {

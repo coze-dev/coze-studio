@@ -25,13 +25,13 @@ import (
 
 	"github.com/bytedance/sonic"
 
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 func InitConfig(ctx context.Context) (err error) {
 	cwd, err := os.Getwd()
 	if err != nil {
-		logs.CtxWarnf(ctx, "[InitConfig] Failed to get current working directory: %v", err)
+		logs.CtxWarn(ctx, "[InitConfig] Failed to get current working directory: %v", err)
 		cwd = os.Getenv("PWD")
 	}
 

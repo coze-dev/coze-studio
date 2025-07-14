@@ -34,9 +34,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/taskgroup"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 var (
@@ -56,17 +56,17 @@ func (p *pluginServiceImpl) processOAuthAccessToken(ctx context.Context) {
 		lastActiveAt := now.Add(-lastActiveInterval)
 		err := p.oauthRepo.DeleteInactiveAuthorizationCodeTokens(ctx, lastActiveAt.UnixMilli(), deleteLimit)
 		if err != nil {
-			logs.CtxWarnf(ctx, "DeleteInactiveAuthorizationCodeTokens failed, err=%v", err)
+			logs.CtxWarn(ctx, "DeleteInactiveAuthorizationCodeTokens failed, err=%v", err)
 		}
 
 		err = p.oauthRepo.DeleteExpiredAuthorizationCodeTokens(ctx, now.UnixMilli(), deleteLimit)
 		if err != nil {
-			logs.CtxWarnf(ctx, "DeleteExpiredAuthorizationCodeTokens failed, err=%v", err)
+			logs.CtxWarn(ctx, "DeleteExpiredAuthorizationCodeTokens failed, err=%v", err)
 		}
 
 		refreshTokenList, err := p.oauthRepo.GetAuthorizationCodeRefreshTokens(ctx, now.UnixMilli(), refreshLimit)
 		if err != nil {
-			logs.CtxErrorf(ctx, "GetAuthorizationCodeRefreshTokens failed, err=%v", err)
+			logs.CtxError(ctx, "GetAuthorizationCodeRefreshTokens failed, err=%v", err)
 			<-time.After(time.Second)
 			continue
 		}
@@ -96,7 +96,7 @@ func (p *pluginServiceImpl) processOAuthAccessToken(ctx context.Context) {
 		if len(expired) > 0 {
 			err = p.oauthRepo.BatchDeleteAuthorizationCodeByIDs(ctx, expired)
 			if err != nil {
-				logs.CtxWarnf(ctx, "BatchDeleteAuthorizationCodeByIDs failed, err=%v", err)
+				logs.CtxWarn(ctx, "BatchDeleteAuthorizationCodeByIDs failed, err=%v", err)
 			}
 		}
 
@@ -136,10 +136,10 @@ func (p *pluginServiceImpl) refreshToken(ctx context.Context, info *entity.Autho
 		<-time.After(time.Second)
 	}
 	if err != nil {
-		logs.CtxInfof(ctx, "refreshToken failed, recordID=%d, err=%v", info.RecordID, err)
+		logs.CtxInfo(ctx, "refreshToken failed, recordID=%d, err=%v", info.RecordID, err)
 		err = p.oauthRepo.BatchDeleteAuthorizationCodeByIDs(ctx, []int64{info.RecordID})
 		if err != nil {
-			logs.CtxErrorf(ctx, "BatchDeleteAuthorizationCodeByIDs failed, recordID=%d, err=%v", info.RecordID, err)
+			logs.CtxError(ctx, "BatchDeleteAuthorizationCodeByIDs failed, recordID=%d, err=%v", info.RecordID, err)
 		}
 		return
 	}
@@ -168,10 +168,10 @@ func (p *pluginServiceImpl) refreshToken(ctx context.Context, info *entity.Autho
 		<-time.After(time.Second)
 	}
 	if err != nil {
-		logs.CtxInfof(ctx, "UpsertAuthorizationCode failed, recordID=%d, err=%v", info.RecordID, err)
+		logs.CtxInfo(ctx, "UpsertAuthorizationCode failed, recordID=%d, err=%v", info.RecordID, err)
 		err = p.oauthRepo.BatchDeleteAuthorizationCodeByIDs(ctx, []int64{info.RecordID})
 		if err != nil {
-			logs.CtxErrorf(ctx, "BatchDeleteAuthorizationCodeByIDs failed, recordID=%d, err=%v", info.RecordID, err)
+			logs.CtxError(ctx, "BatchDeleteAuthorizationCodeByIDs failed, recordID=%d, err=%v", info.RecordID, err)
 		}
 	}
 }
@@ -209,7 +209,7 @@ func (p *pluginServiceImpl) getAccessTokenByAuthorizationCode(ctx context.Contex
 	if now-info.LastActiveAtMS > time.Minute.Milliseconds() { // don't update too frequently
 		err = p.oauthRepo.UpdateAuthorizationCodeLastActiveAt(ctx, meta, now)
 		if err != nil {
-			logs.CtxWarnf(ctx, "UpdateAuthorizationCodeLastActiveAt failed, userID=%s, pluginID=%d, isDraft=%t, err=%v",
+			logs.CtxWarn(ctx, "UpdateAuthorizationCodeLastActiveAt failed, userID=%s, pluginID=%d, isDraft=%t, err=%v",
 				meta.UserID, meta.PluginID, meta.IsDraft, err)
 		}
 	}
@@ -486,7 +486,7 @@ func (p *pluginServiceImpl) GetAgentPluginsOAuthStatus(ctx context.Context, user
 
 		needAuth, _, err := p.getPluginOAuthStatus(ctx, userID, plugin, false)
 		if err != nil {
-			logs.CtxErrorf(ctx, "getPluginOAuthStatus failed, pluginID=%d, err=%v", plugin.ID, err)
+			logs.CtxError(ctx, "getPluginOAuthStatus failed, pluginID=%d, err=%v", plugin.ID, err)
 			continue
 		}
 

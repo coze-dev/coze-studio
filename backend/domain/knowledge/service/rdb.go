@@ -29,8 +29,8 @@ import (
 	rdbEntity "code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb/entity"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.TableInfo, slices []*model.KnowledgeDocumentSlice) (sliceEntityMap map[int64]*entity.Slice, err error) {
@@ -53,7 +53,7 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "execute sql failed, err: %v", err)
+		logs.CtxError(ctx, "execute sql failed, err: %v", err)
 		return nil, errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 	}
 	rows := resp.ResultSet.Rows
@@ -65,7 +65,7 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 	for i := range rows {
 		sliceID, ok := rows[i][consts.RDBFieldID].(int64)
 		if !ok {
-			logs.CtxErrorf(ctx, "slice id is not int64")
+			logs.CtxError(ctx, "slice id is not int64")
 			return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "slice id is not int64"))
 		}
 		delete(rows[i], consts.RDBFieldID)
@@ -81,12 +81,12 @@ func (k *knowledgeSVC) selectTableData(ctx context.Context, tableInfo *entity.Ta
 		for cName, val := range valMap[slices[i].ID] {
 			column, found := virtualColumnMap[cName]
 			if !found {
-				logs.CtxInfof(ctx, "column not found, name: %s", cName)
+				logs.CtxInfo(ctx, "column not found, name: %s", cName)
 				continue
 			}
 			columnData, err := convert.ParseAnyData(column, val)
 			if err != nil {
-				logs.CtxErrorf(ctx, "parse any data failed: %v", err)
+				logs.CtxError(ctx, "parse any data failed: %v", err)
 				return nil, errorx.New(errno.ErrKnowledgeColumnParseFailCode, errorx.KV("msg", err.Error()))
 			}
 			if columnData.Type == document.TableColumnTypeString {
@@ -119,7 +119,7 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 			// 要新增的列
 			columnID, err := k.idgen.GenID(ctx)
 			if err != nil {
-				logs.CtxErrorf(ctx, "gen id failed, err: %v", err)
+				logs.CtxError(ctx, "gen id failed, err: %v", err)
 				return nil, errorx.New(errno.ErrKnowledgeIDGenCode)
 			}
 			targetColumns[i].ID = columnID
@@ -167,7 +167,7 @@ func (k *knowledgeSVC) alterTableSchema(ctx context.Context, beforeColumns []*en
 	}
 	_, err = k.rdb.AlterTable(ctx, alterRequest)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[alterTableSchema] alter table failed, err: %v", err)
+		logs.CtxError(ctx, "[alterTableSchema] alter table failed, err: %v", err)
 		return nil, errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 	}
 	return finalColumns, nil

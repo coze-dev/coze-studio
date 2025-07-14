@@ -35,9 +35,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type executableImpl struct {
@@ -95,7 +95,7 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 	if err != nil {
 		return nil, "", err
 	} else if ws != nil {
-		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -234,7 +234,7 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 	if err != nil {
 		return 0, err
 	} else if ws != nil {
-		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -250,7 +250,7 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 
 	if config.Mode == vo.ExecuteModeDebug {
 		if err = i.repo.SetTestRunLatestExeID(ctx, wfEntity.ID, config.Operator, executeID); err != nil {
-			logs.CtxErrorf(ctx, "failed to set test run latest exe id: %v", err)
+			logs.CtxError(ctx, "failed to set test run latest exe id: %v", err)
 		}
 	}
 
@@ -299,7 +299,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 	if err != nil {
 		return 0, err
 	} else if ws != nil {
-		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	if wfEntity.AppID != nil && config.AppID == nil {
@@ -321,7 +321,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 
 	if config.Mode == vo.ExecuteModeNodeDebug {
 		if err = i.repo.SetNodeDebugLatestExeID(ctx, wfEntity.ID, nodeID, config.Operator, executeID); err != nil {
-			logs.CtxErrorf(ctx, "failed to set node debug latest exe id: %v", err)
+			logs.CtxError(ctx, "failed to set node debug latest exe id: %v", err)
 		}
 	}
 
@@ -386,7 +386,7 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 	if err != nil {
 		return nil, err
 	} else if ws != nil {
-		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -549,7 +549,7 @@ func (i *impl) GetNodeExecution(ctx context.Context, exeID int64, nodeID string)
 func (i *impl) GetLatestTestRunInput(ctx context.Context, wfID int64, userID int64) (*entity.NodeExecution, bool, error) {
 	exeID, err := i.repo.GetTestRunLatestExeID(ctx, wfID, userID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[GetLatestTestRunInput] failed to get node execution from redis, wfID: %d, err: %v", wfID, err)
+		logs.CtxError(ctx, "[GetLatestTestRunInput] failed to get node execution from redis, wfID: %d, err: %v", wfID, err)
 		return nil, false, nil
 	}
 
@@ -559,7 +559,7 @@ func (i *impl) GetLatestTestRunInput(ctx context.Context, wfID int64, userID int
 
 	nodeExe, _, err := i.GetNodeExecution(ctx, exeID, entity.EntryNodeKey)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[GetLatestTestRunInput] failed to get node execution, exeID: %d, err: %v", exeID, err)
+		logs.CtxError(ctx, "[GetLatestTestRunInput] failed to get node execution, exeID: %d, err: %v", exeID, err)
 		return nil, false, nil
 	}
 
@@ -570,7 +570,7 @@ func (i *impl) GetLatestNodeDebugInput(ctx context.Context, wfID int64, nodeID s
 	*entity.NodeExecution, *entity.NodeExecution, bool, error) {
 	exeID, err := i.repo.GetNodeDebugLatestExeID(ctx, wfID, nodeID, userID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[GetLatestNodeDebugInput] failed to get node execution from redis, wfID: %d, nodeID: %s, err: %v",
+		logs.CtxError(ctx, "[GetLatestNodeDebugInput] failed to get node execution from redis, wfID: %d, nodeID: %s, err: %v",
 			wfID, nodeID, err)
 		return nil, nil, false, nil
 	}
@@ -581,7 +581,7 @@ func (i *impl) GetLatestNodeDebugInput(ctx context.Context, wfID int64, nodeID s
 
 	nodeExe, innerExe, err := i.GetNodeExecution(ctx, exeID, nodeID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "[GetLatestNodeDebugInput] failed to get node execution, exeID: %d, nodeID: %s, err: %v",
+		logs.CtxError(ctx, "[GetLatestNodeDebugInput] failed to get node execution, exeID: %d, nodeID: %s, err: %v",
 			exeID, nodeID, err)
 		return nil, nil, false, nil
 	}

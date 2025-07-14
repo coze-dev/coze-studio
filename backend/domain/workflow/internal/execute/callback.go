@@ -39,8 +39,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
+	"code.byted.org/gopkg/logs"
 )
 
 type NodeHandler struct {
@@ -153,13 +153,13 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 			resume = true
 			newCtx, err = restoreWorkflowCtx(ctx, w)
 			if err != nil {
-				logs.CtxErrorf(ctx, "failed to restore root execute context: %v", err)
+				logs.CtxError(ctx, "failed to restore root execute context: %v", err)
 				return ctx, false
 			}
 		} else {
 			newCtx, err = PrepareRootExeCtx(ctx, w)
 			if err != nil {
-				logs.CtxErrorf(ctx, "failed to prepare root exe context: %v", err)
+				logs.CtxError(ctx, "failed to prepare root exe context: %v", err)
 				return ctx, false
 			}
 		}
@@ -194,13 +194,13 @@ func (w *WorkflowHandler) initWorkflowCtx(ctx context.Context) (context.Context,
 		if resume {
 			newCtx, err = restoreWorkflowCtx(ctx, w)
 			if err != nil {
-				logs.CtxErrorf(ctx, "failed to restore sub execute context: %v", err)
+				logs.CtxError(ctx, "failed to restore sub execute context: %v", err)
 				return ctx, false
 			}
 		} else {
 			newCtx, err = PrepareSubExeCtx(ctx, w.subWorkflowBasic, w.requireCheckpoint)
 			if err != nil {
-				logs.CtxErrorf(ctx, "failed to prepare root exe context: %v", err)
+				logs.CtxError(ctx, "failed to prepare root exe context: %v", err)
 				return ctx, false
 			}
 		}
@@ -221,7 +221,7 @@ func (w *WorkflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, 
 		// check if already canceled
 		canceled, err := workflow.GetRepository().GetWorkflowCancelFlag(newCtx, w.rootExecuteID)
 		if err != nil {
-			logs.CtxErrorf(ctx, "failed to get workflow cancel flag: %v", err)
+			logs.CtxError(ctx, "failed to get workflow cancel flag: %v", err)
 		}
 
 		if canceled {
@@ -291,7 +291,7 @@ func extractInterruptEvents(ctx context.Context, interruptInfo *compose.Interrup
 	for _, nodeKey := range interruptInfo.RerunNodes {
 		interruptE, ok, err := ieStore.GetInterruptEvent(vo.NodeKey(nodeKey))
 		if err != nil {
-			logs.CtxErrorf(ctx, "failed to extract interrupt event from node key: %v", err)
+			logs.CtxError(ctx, "failed to extract interrupt event from node key: %v", err)
 			continue
 		}
 
@@ -302,7 +302,7 @@ func extractInterruptEvents(ctx context.Context, interruptInfo *compose.Interrup
 			}
 			interruptE, ok = extra.(*entity.InterruptEvent)
 			if !ok {
-				logs.CtxErrorf(ctx, "failed to extract tool interrupt event from node key: %v", err)
+				logs.CtxError(ctx, "failed to extract tool interrupt event from node key: %v", err)
 				continue
 			}
 		}
@@ -358,12 +358,12 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 
 		interruptEvents, err := extractInterruptEvents(ctx, interruptInfo)
 		if err != nil {
-			logs.CtxErrorf(ctx, "failed to extract interrupt events: %v", err)
+			logs.CtxError(ctx, "failed to extract interrupt events: %v", err)
 			return ctx
 		}
 
 		for _, interruptEvent := range interruptEvents {
-			logs.CtxInfof(ctx, "emit interrupt event id= %d, eventType= %d, nodeID= %s", interruptEvent.ID,
+			logs.CtxInfo(ctx, "emit interrupt event id= %d, eventType= %d, nodeID= %s", interruptEvent.ID,
 				interruptEvent.EventType, interruptEvent.NodeKey)
 		}
 
@@ -400,7 +400,7 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 		return ctx
 	}
 
-	logs.CtxErrorf(ctx, "workflow failed: %v", err)
+	logs.CtxError(ctx, "workflow failed: %v", err)
 
 	e := &Event{
 		Type:     WorkflowFailed,
@@ -438,7 +438,7 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 		// check if already canceled
 		canceled, err := workflow.GetRepository().GetWorkflowCancelFlag(newCtx, w.rootExecuteID)
 		if err != nil {
-			logs.CtxErrorf(ctx, "failed to get workflow cancel flag: %v", err)
+			logs.CtxError(ctx, "failed to get workflow cancel flag: %v", err)
 		}
 
 		if canceled {
@@ -468,12 +468,12 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 			if e == io.EOF {
 				break
 			}
-			logs.CtxErrorf(ctx, "failed to receive stream input: %v", e)
+			logs.CtxError(ctx, "failed to receive stream input: %v", e)
 			return newCtx
 		}
 		fullInput, e = nodes.ConcatTwoMaps(fullInput, chunk.(map[string]any))
 		if e != nil {
-			logs.CtxErrorf(ctx, "failed to concat two maps: %v", e)
+			logs.CtxError(ctx, "failed to concat two maps: %v", e)
 			return newCtx
 		}
 	}
@@ -510,13 +510,13 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 				continue
 			}
 
-			logs.CtxErrorf(ctx, "workflow OnEndWithStreamOutput failed to receive stream output: %v", e)
+			logs.CtxError(ctx, "workflow OnEndWithStreamOutput failed to receive stream output: %v", e)
 			_ = w.OnError(ctx, info, e)
 			return ctx
 		}
 		fullOutput, e = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
 		if e != nil {
-			logs.CtxErrorf(ctx, "failed to concat two maps: %v", e)
+			logs.CtxError(ctx, "failed to concat two maps: %v", e)
 			return ctx
 		}
 	}
@@ -591,14 +591,14 @@ func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (con
 	if resume {
 		newCtx, err = restoreNodeCtx(ctx, n.nodeKey, n.resumeEvent, exactlyResuming)
 		if err != nil {
-			logs.CtxErrorf(ctx, "failed to restore node execute context: %v", err)
+			logs.CtxError(ctx, "failed to restore node execute context: %v", err)
 			return ctx, resume
 		}
 		var resumeEventID int64
 		if c := GetExeCtx(newCtx); c != nil && c.RootCtx.ResumeEvent != nil {
 			resumeEventID = c.RootCtx.ResumeEvent.ID
 		}
-		logs.CtxInfof(ctx, "[restoreNodeCtx] restored nodeKey= %s, root.resumeEventID= %d", n.nodeKey, resumeEventID)
+		logs.CtxInfo(ctx, "[restoreNodeCtx] restored nodeKey= %s, root.resumeEventID= %d", n.nodeKey, resumeEventID)
 	} else {
 		// even if this node is not on the resume path, it could still restore from checkpoint,
 		// for example:
@@ -606,14 +606,14 @@ func (n *NodeHandler) initNodeCtx(ctx context.Context, typ entity.NodeType) (con
 		// but not resumed this time
 		restoredCtx, restored := tryRestoreNodeCtx(ctx, n.nodeKey)
 		if restored {
-			logs.CtxInfof(ctx, "[tryRestoreNodeCtx] restored, nodeKey= %s", n.nodeKey)
+			logs.CtxInfo(ctx, "[tryRestoreNodeCtx] restored, nodeKey= %s", n.nodeKey)
 			newCtx = restoredCtx
 			return newCtx, true
 		}
 
 		newCtx, err = PrepareNodeExeCtx(ctx, n.nodeKey, n.nodeName, typ, n.terminatePlan)
 		if err != nil {
-			logs.CtxErrorf(ctx, "failed to prepare node execute context: %v", err)
+			logs.CtxError(ctx, "failed to prepare node execute context: %v", err)
 			return ctx, resume
 		}
 	}
@@ -777,10 +777,10 @@ func (n *NodeHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 				return errors.New("state is nil")
 			}
 
-			logs.CtxInfof(ctx, "[SetNodeCtx] nodeKey= %s", n.nodeKey)
+			logs.CtxInfo(ctx, "[SetNodeCtx] nodeKey= %s", n.nodeKey)
 			return state.SetNodeCtx(n.nodeKey, c)
 		}); err != nil {
-			logs.CtxErrorf(ctx, "failed to process state: %v", err)
+			logs.CtxError(ctx, "failed to process state: %v", err)
 		}
 
 		return ctx
@@ -892,14 +892,14 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 					continue
 				}
 
-				logs.CtxErrorf(ctx, "node OnStartWithStreamInput failed to receive stream output: %v", e)
+				logs.CtxError(ctx, "node OnStartWithStreamInput failed to receive stream output: %v", e)
 				_ = n.OnError(newCtx, info, e)
 				return
 			}
 			previous = fullInput
 			fullInput, e = nodes.ConcatTwoMaps(fullInput, chunk.(map[string]any))
 			if e != nil {
-				logs.CtxErrorf(ctx, "failed to concat two maps: %v", e)
+				logs.CtxError(ctx, "failed to concat two maps: %v", e)
 				return
 			}
 
@@ -945,21 +945,21 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 						break
 					}
 
-					logs.CtxErrorf(ctx, "node OnEndWithStreamOutput failed to receive stream output: %v", e)
+					logs.CtxError(ctx, "node OnEndWithStreamOutput failed to receive stream output: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
 				}
 				so := chunk.(*nodes.StructuredCallbackOutput)
 				fullOutput, e = nodes.ConcatTwoMaps(fullOutput, so.Output)
 				if e != nil {
-					logs.CtxErrorf(ctx, "failed to concat two maps: %v", e)
+					logs.CtxError(ctx, "failed to concat two maps: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
 				}
 
 				fullRawOutput, e = nodes.ConcatTwoMaps(fullRawOutput, so.RawOutput)
 				if e != nil {
-					logs.CtxErrorf(ctx, "failed to concat two maps: %v", e)
+					logs.CtxError(ctx, "failed to concat two maps: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
 				}
@@ -1051,7 +1051,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 						break
 					}
 
-					logs.CtxErrorf(ctx, "node OnEndWithStreamOutput failed to receive stream output: %v", e)
+					logs.CtxError(ctx, "node OnEndWithStreamOutput failed to receive stream output: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
 				}
@@ -1059,14 +1059,14 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 
 				fullOutputMap, e := nodes.ConcatTwoMaps(fullOutput.Output, chunk.(*nodes.StructuredCallbackOutput).Output)
 				if e != nil {
-					logs.CtxErrorf(ctx, "failed to concat two maps: %v", e)
+					logs.CtxError(ctx, "failed to concat two maps: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
 				}
 
 				fullRawOutput, e := nodes.ConcatTwoMaps(fullOutput.RawOutput, chunk.(*nodes.StructuredCallbackOutput).RawOutput)
 				if e != nil {
-					logs.CtxErrorf(ctx, "failed to concat two maps: %v", e)
+					logs.CtxError(ctx, "failed to concat two maps: %v", e)
 					_ = n.OnError(ctx, info, e)
 					return
 				}
@@ -1145,7 +1145,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					if _, ok := schema.GetSourceName(err); ok {
 						continue
 					}
-					logs.CtxErrorf(ctx, "node OnEndWithStreamOutput failed to receive stream output: %v", err)
+					logs.CtxError(ctx, "node OnEndWithStreamOutput failed to receive stream output: %v", err)
 					return n.OnError(ctx, info, err)
 				}
 
@@ -1155,7 +1155,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 
 				fullOutput, err = nodes.ConcatTwoMaps(fullOutput, chunk.(map[string]any))
 				if err != nil {
-					logs.CtxErrorf(ctx, "failed to concat two maps: %v", err)
+					logs.CtxError(ctx, "failed to concat two maps: %v", err)
 					return n.OnError(ctx, info, err)
 				}
 
@@ -1340,7 +1340,7 @@ func (t *ToolHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					}
 					break
 				}
-				logs.CtxErrorf(ctx, "tool OnEndWithStreamOutput failed to receive stream output: %v", e)
+				logs.CtxError(ctx, "tool OnEndWithStreamOutput failed to receive stream output: %v", e)
 				_ = t.OnError(ctx, info, e)
 				return
 			}

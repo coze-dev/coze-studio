@@ -24,8 +24,8 @@ import (
 
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/signal"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
+	"code.byted.org/gopkg/logs"
 )
 
 type consumerImpl struct {
@@ -64,7 +64,7 @@ func NewConsumer(broker string, topic, groupID string, handler eventbus.Consumer
 	safego.Go(ctx, func() {
 		for {
 			if err := consumerGroup.Consume(ctx, []string{topic}, c); err != nil {
-				logs.CtxErrorf(ctx, "consumer group consume: %v", err)
+				logs.CtxError(ctx, "consumer group consume: %v", err)
 				break
 			}
 		}
@@ -74,7 +74,7 @@ func NewConsumer(broker string, topic, groupID string, handler eventbus.Consumer
 		signal.WaitExit()
 
 		if err := c.consumerGroup.Close(); err != nil {
-			logs.CtxErrorf(ctx, "consumer group close: %v", err)
+			logs.CtxError(ctx, "consumer group close: %v", err)
 		}
 	})
 

@@ -27,7 +27,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/internal/dal/model"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type apiAuthImpl struct {
@@ -65,7 +65,7 @@ func (a *apiAuthImpl) Delete(ctx context.Context, req *entity.DeleteApiKey) erro
 func (a *apiAuthImpl) Get(ctx context.Context, req *entity.GetApiKey) (*entity.ApiKey, error) {
 
 	apiKey, err := a.dao.Get(ctx, req.ID)
-	logs.CtxInfof(ctx, "apiKey=%v, err:%v", apiKey, err)
+	logs.CtxInfo(ctx, "apiKey=%v, err:%v", apiKey, err)
 	if err != nil {
 		return nil, err
 	}

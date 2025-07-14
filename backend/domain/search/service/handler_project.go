@@ -48,7 +48,7 @@ func NewProjectHandler(ctx context.Context, e es.Client) *ProjectHandlerImpl {
 //func (s *projectHandlerImpl) HandleMessage(ctx context.Context, msg *eventbus.Message) error {
 //	ev := &entity.ProjectDomainEvent{}
 //
-//	logs.CtxInfof(ctx, "Project Handler receive: %s", string(msg.Body))
+//	logs.CtxInfo(ctx, "Project Handler receive: %s", string(msg.Body))
 //	err := sonic.Unmarshal(msg.Body, ev)
 //	if err != nil {
 //		return err

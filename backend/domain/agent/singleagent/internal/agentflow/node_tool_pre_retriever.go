@@ -32,7 +32,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/plugin/service"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type toolPreCallConf struct{}
@@ -85,7 +85,7 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 			var input map[string]any
 			err := json.Unmarshal([]byte(item.Arguments), &input)
 			if err != nil {
-				logs.CtxErrorf(ctx, "Failed to unmarshal json arguments: %s", item.Arguments)
+				logs.CtxError(ctx, "Failed to unmarshal json arguments: %s", item.Arguments)
 				return nil, err
 			}
 			execResp, _, err := crossworkflow.DefaultSVC().SyncExecuteWorkflow(ctx, vo.ExecuteConfig{

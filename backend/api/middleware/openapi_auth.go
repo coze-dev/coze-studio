@@ -30,9 +30,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 const HeaderAuthorizationKey = "Authorization"
@@ -117,7 +117,7 @@ func OpenapiAuthMW() app.HandlerFunc {
 		apiKeyInfo, err := openauth.OpenAuthApplication.CheckPermission(ctx, md5Key)
 
 		if err != nil {
-			logs.CtxErrorf(ctx, "OpenAuthApplication.CheckPermission failed, err=%v", err)
+			logs.CtxError(ctx, "OpenAuthApplication.CheckPermission failed, err=%v", err)
 			httputil.InternalError(ctx, c,
 				errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", err.Error())))
 			return
@@ -130,11 +130,11 @@ func OpenapiAuthMW() app.HandlerFunc {
 		}
 
 		apiKeyInfo.ConnectorID = consts.APIConnectorID
-		logs.CtxInfof(ctx, "OpenapiAuthMW: apiKeyInfo=%v", conv.DebugJsonToStr(apiKeyInfo))
+		logs.CtxInfo(ctx, "OpenapiAuthMW: apiKeyInfo=%v", conv.DebugJsonToStr(apiKeyInfo))
 		ctxcache.Store(ctx, consts.OpenapiAuthKeyInCtx, apiKeyInfo)
 		err = openauth.OpenAuthApplication.UpdateLastUsedAt(ctx, apiKeyInfo.ID, apiKeyInfo.UserID)
 		if err != nil {
-			logs.CtxErrorf(ctx, "OpenAuthApplication.UpdateLastUsedAt failed, err=%v", err)
+			logs.CtxError(ctx, "OpenAuthApplication.UpdateLastUsedAt failed, err=%v", err)
 		}
 		c.Next(ctx)
 	}

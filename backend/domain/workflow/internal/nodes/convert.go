@@ -26,9 +26,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type ConversionWarning struct {
@@ -92,7 +92,7 @@ func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.
 		t, ok := tInfo[k]
 		if !ok {
 			// for input fields not explicitly defined, just pass the string value through
-			logs.CtxWarnf(ctx, "input %s not found in type info", k)
+			logs.CtxWarn(ctx, "input %s not found in type info", k)
 			if !options.skipUnknownFields {
 				out[k] = in[k]
 			}
@@ -185,7 +185,7 @@ func convert(ctx context.Context, in any, path string, t *vo.TypeInfo, options *
 		if options.failFast {
 			return nil, nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unknown input type %s for path %s", t.Type, path))
 		}
-		logs.CtxErrorf(ctx, "unknown input type %s for path %s", t.Type, path)
+		logs.CtxError(ctx, "unknown input type %s for path %s", t.Type, path)
 		return in, newWarnings(path, t.Type, errors.New("unknown input type")), nil
 	}
 }
@@ -323,7 +323,7 @@ func convertToObject(ctx context.Context, in any, path string, t *vo.TypeInfo, o
 		propType, ok := t.Properties[k]
 		if !ok {
 			// for input fields not explicitly defined, just pass the value through
-			logs.CtxWarnf(ctx, "input %s.%s not found in type info", path, k)
+			logs.CtxWarn(ctx, "input %s.%s not found in type info", path, k)
 			if !options.skipUnknownFields {
 				out[k] = v
 			}

@@ -27,7 +27,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/internal/dal/model"
 	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/internal/dal/query"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type RunRecordDAO struct {
@@ -107,7 +107,7 @@ func (dao *RunRecordDAO) Delete(ctx context.Context, id []int64) error {
 }
 
 func (dao *RunRecordDAO) List(ctx context.Context, conversationID int64, sectionID int64, limit int32) ([]*model.RunRecord, error) {
-	logs.CtxInfof(ctx, "list run record req:%v, sectionID:%v, limit:%v", conversationID, sectionID, limit)
+	logs.CtxInfo(ctx, "list run record req:%v, sectionID:%v, limit:%v", conversationID, sectionID, limit)
 	m := dao.query.RunRecord
 	do := m.WithContext(ctx).Where(m.ConversationID.Eq(conversationID)).Debug().Where(m.Status.NotIn(string(entity.RunStatusDeleted)))
 

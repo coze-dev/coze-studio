@@ -40,8 +40,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDraftPluginRequest) (pluginID int64, err error) {
@@ -174,7 +174,7 @@ func (p *pluginServiceImpl) ListDraftPlugins(ctx context.Context, req *ListDraft
 			return nil, errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", pl.ResID)
 		}
 		if !exist {
-			logs.CtxWarnf(ctx, "draft plugin not exist, pluginID=%d", pl.ResID)
+			logs.CtxWarn(ctx, "draft plugin not exist, pluginID=%d", pl.ResID)
 			continue
 		}
 		plugins = append(plugins, draftPlugin)
@@ -747,7 +747,7 @@ func (p *pluginServiceImpl) ConvertToOpenapi3Doc(ctx context.Context, req *Conve
 	var err error
 	defer func() {
 		if err != nil {
-			logs.CtxErrorf(ctx, "ConvertToOpenapi3Doc failed, err=%s", err)
+			logs.CtxError(ctx, "ConvertToOpenapi3Doc failed, err=%s", err)
 
 			resp.ErrMsg = "internal server error"
 

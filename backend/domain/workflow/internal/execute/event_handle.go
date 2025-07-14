@@ -33,8 +33,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func setRootWorkflowSuccess(ctx context.Context, event *Event, repo workflow.Repository,
@@ -199,7 +199,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			wfID = event.SubWorkflowBasic.ID
 		}
 
-		logs.CtxErrorf(ctx, "workflow execution failed: %v", event.Err)
+		logs.CtxError(ctx, "workflow execution failed: %v", event.Err)
 
 		wfExec := &entity.WorkflowExecution{
 			ID:       exeID,
@@ -223,10 +223,10 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 		if cause := errors.Unwrap(event.Err); cause != nil {
-			logs.CtxErrorf(ctx, "workflow %d for exeID %d returns err: %v, cause: %v",
+			logs.CtxError(ctx, "workflow %d for exeID %d returns err: %v, cause: %v",
 				wfID, exeID, event.Err, cause)
 		} else {
-			logs.CtxErrorf(ctx, "workflow %d for exeID %d returns err: %v",
+			logs.CtxError(ctx, "workflow %d for exeID %d returns err: %v",
 				wfID, exeID, event.Err)
 		}
 
@@ -375,7 +375,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		)
 
 		if err = repo.CancelAllRunningNodes(ctx, exeID); err != nil {
-			logs.CtxErrorf(ctx, err.Error())
+			logs.CtxError(ctx, err.Error())
 		}
 
 		if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning,
@@ -458,10 +458,10 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			}
 
 			if cause := errors.Unwrap(event.Err); cause != nil {
-				logs.CtxWarnf(ctx, "node %s for exeID %d end with warning: %v, cause: %v",
+				logs.CtxWarn(ctx, "node %s for exeID %d end with warning: %v, cause: %v",
 					event.NodeKey, event.NodeExecuteID, event.Err, cause)
 			} else {
-				logs.CtxWarnf(ctx, "node %s for exeID %d end with warning: %v",
+				logs.CtxWarn(ctx, "node %s for exeID %d end with warning: %v",
 					event.NodeKey, event.NodeExecuteID, event.Err)
 			}
 			nodeExec.ErrorInfo = ptr.Of(wfe.Msg())
@@ -633,10 +633,10 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 		if cause := errors.Unwrap(event.Err); cause != nil {
-			logs.CtxErrorf(ctx, "node %s for exeID %d returns err: %v, cause: %v",
+			logs.CtxError(ctx, "node %s for exeID %d returns err: %v, cause: %v",
 				event.NodeKey, event.NodeExecuteID, event.Err, cause)
 		} else {
-			logs.CtxErrorf(ctx, "node %s for exeID %d returns err: %v",
+			logs.CtxError(ctx, "node %s for exeID %d returns err: %v",
 				event.NodeKey, event.NodeExecuteID, event.Err)
 		}
 
@@ -704,7 +704,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}, nil)
 	case ToolError:
 		// TODO: optimize this log
-		logs.CtxErrorf(ctx, "received tool error event: %v", event)
+		logs.CtxError(ctx, "received tool error event: %v", event)
 	default:
 		panic("unimplemented event type: " + event.Type)
 	}
@@ -745,12 +745,12 @@ func HandleExecuteEvent(ctx context.Context,
 			nodeKey = event.Context.NodeCtx.NodeKey
 		}
 
-		logs.CtxInfof(ctx, "receiving event type= %v, workflowID= %v, nodeType= %v, nodeKey = %s",
+		logs.CtxInfo(ctx, "receiving event type= %v, workflowID= %v, nodeType= %v, nodeKey = %s",
 			event.Type, event.RootWorkflowBasic.ID, nodeType, nodeKey)
 
 		signal, err := handleEvent(ctx, event, repo, sw)
 		if err != nil {
-			logs.CtxErrorf(ctx, "failed to handle event: %v", err)
+			logs.CtxError(ctx, "failed to handle event: %v", err)
 		}
 
 		switch signal {
@@ -762,7 +762,7 @@ func HandleExecuteEvent(ctx context.Context,
 			wfSuccessEvent = event
 			if lastNodeIsDone || exeCfg.Mode == vo.ExecuteModeNodeDebug {
 				if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
-					logs.CtxErrorf(ctx, "failed to set root workflow success for workflow %d: %v",
+					logs.CtxError(ctx, "failed to set root workflow success for workflow %d: %v",
 						wfSuccessEvent.RootWorkflowBasic.ID, err)
 				}
 				return wfSuccessEvent
@@ -771,7 +771,7 @@ func HandleExecuteEvent(ctx context.Context,
 			lastNodeIsDone = true
 			if wfSuccessEvent != nil {
 				if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
-					logs.CtxErrorf(ctx, "failed to set root workflow success: %v", err)
+					logs.CtxError(ctx, "failed to set root workflow success: %v", err)
 				}
 				return wfSuccessEvent
 			}
@@ -785,7 +785,7 @@ func HandleExecuteEvent(ctx context.Context,
 		// Add cancellation check timer
 		cancelTicker := time.NewTicker(cancelCheckInterval)
 		defer func() {
-			logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
+			logs.CtxInfo(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
 				event.Type, event.Context.RootWorkflowBasic.ID)
 			cancelTicker.Stop() // Clean up timer
 			if timeoutFn != nil {
@@ -804,13 +804,13 @@ func HandleExecuteEvent(ctx context.Context,
 				// Check cancellation status in Redis
 				isCancelled, err := repo.GetWorkflowCancelFlag(ctx, wfExeID)
 				if err != nil {
-					logs.CtxErrorf(ctx, "failed to check cancellation status for workflow %d: %v", wfExeID, err)
+					logs.CtxError(ctx, "failed to check cancellation status for workflow %d: %v", wfExeID, err)
 					continue
 				}
 
 				if isCancelled {
 					cancelled = true
-					logs.CtxInfof(ctx, "workflow %d cancellation detected", wfExeID)
+					logs.CtxInfo(ctx, "workflow %d cancellation detected", wfExeID)
 					cancelFn()
 				}
 			case event = <-eventChan:
@@ -821,7 +821,7 @@ func HandleExecuteEvent(ctx context.Context,
 		}
 	} else {
 		defer func() {
-			logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
+			logs.CtxInfo(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
 				event.Type, event.Context.RootWorkflowBasic.ID)
 			if timeoutFn != nil {
 				timeoutFn()

@@ -24,7 +24,7 @@ import (
 	"code.byted.org/middleware/hertz/pkg/app"
 
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type data struct {
@@ -40,11 +40,11 @@ func InternalError(ctx context.Context, c *app.RequestContext, err error) {
 	var customErr errorx.StatusError
 
 	if errors.As(err, &customErr) && customErr.Code() != 0 {
-		logs.CtxWarnf(ctx, "[ErrorX] error:  %v %v \n", customErr.Code(), err)
+		logs.CtxWarn(ctx, "[ErrorX] error:  %v %v \n", customErr.Code(), err)
 		c.AbortWithStatusJSON(http.StatusOK, data{Code: customErr.Code(), Msg: customErr.Msg()})
 		return
 	}
 
-	logs.CtxErrorf(ctx, "[InternalError]  error: %v \n", err)
+	logs.CtxError(ctx, "[InternalError]  error: %v \n", err)
 	c.AbortWithStatusJSON(http.StatusInternalServerError, data{Code: 500, Msg: "internal server error"})
 }

@@ -164,7 +164,7 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 // 		strings.Join(tableOptions, " "),
 // 	)
 
-// 	logs.CtxInfof(ctx, "[CreateTable] execute sql is %s, req is %v", createSQL, req)
+// 	logs.CtxInfo(ctx, "[CreateTable] execute sql is %s, req is %v", createSQL, req)
 
 // 	err := m.db.WithContext(ctx).Exec(createSQL).Error
 // 	if err != nil {
@@ -255,7 +255,7 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 
 // 	alterSQL += " " + strings.Join(operations, ", ")
 
-// 	logs.CtxInfof(ctx, "[AlterTable] execute sql is %s, req is %v", alterSQL, req)
+// 	logs.CtxInfo(ctx, "[AlterTable] execute sql is %s, req is %v", alterSQL, req)
 
 // 	err := m.db.WithContext(ctx).Exec(alterSQL).Error
 // 	if err != nil {
@@ -282,7 +282,7 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 // 	}
 // 	dropSQL += fmt.Sprintf(" `%s`", req.TableName)
 
-// 	logs.CtxInfof(ctx, "[DropTable] execute sql is %s, req is %v", dropSQL, req)
+// 	logs.CtxInfo(ctx, "[DropTable] execute sql is %s, req is %v", dropSQL, req)
 
 // 	err := m.db.WithContext(ctx).Exec(dropSQL).Error
 // 	if err != nil {
@@ -348,7 +348,7 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 // 			strings.Join(placeholderGroups, ","),
 // 		)
 
-// 		logs.CtxInfof(ctx, "[InsertData] execute sql is %s, value is %v in batch %d", insertSQL, values, i)
+// 		logs.CtxInfo(ctx, "[InsertData] execute sql is %s, value is %v in batch %d", insertSQL, values, i)
 
 // 		result := m.db.WithContext(ctx).Exec(insertSQL, values...)
 // 		if result.Error != nil {
@@ -393,7 +393,7 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 // 		limitClause,
 // 	)
 
-// 	logs.CtxInfof(ctx, "[UpdateData] execute sql is %s, value is %v, req is %v", updateSQL, values, req)
+// 	logs.CtxInfo(ctx, "[UpdateData] execute sql is %s, value is %v, req is %v", updateSQL, values, req)
 
 // 	result := m.db.WithContext(ctx).Exec(updateSQL, values...)
 // 	if result.Error != nil {
@@ -427,7 +427,7 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 // 		limitClause,
 // 	)
 
-// 	logs.CtxInfof(ctx, "[DeleteData] execute sql is %s, value is %v, req is %v", deleteSQL, whereValues, req)
+// 	logs.CtxInfo(ctx, "[DeleteData] execute sql is %s, value is %v, req is %v", deleteSQL, whereValues, req)
 
 // 	result := m.db.WithContext(ctx).Exec(deleteSQL, whereValues...)
 // 	if result.Error != nil {
@@ -486,7 +486,7 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 // 		limitClause,
 // 	)
 
-// 	logs.CtxInfof(ctx, "[SelectData] execute sql is %s, value is %v, req is %v", selectSQL, whereValues, req)
+// 	logs.CtxInfo(ctx, "[SelectData] execute sql is %s, value is %v, req is %v", selectSQL, whereValues, req)
 
 // 	rows, err := m.db.WithContext(ctx).Raw(selectSQL, whereValues...).Rows()
 // 	if err != nil {
@@ -614,7 +614,7 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 // 			strings.Join(updateClauses, ","),
 // 		)
 
-// 		logs.CtxInfof(ctx, "[UpsertData] execute sql is %s, value is %v, batch is %d", upsertSQL, values, i)
+// 		logs.CtxInfo(ctx, "[UpsertData] execute sql is %s, value is %v, batch is %d", upsertSQL, values, i)
 
 // 		result := m.db.WithContext(ctx).Exec(upsertSQL, values...)
 // 		if result.Error != nil {
@@ -681,7 +681,7 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 // 		return nil, fmt.Errorf("invalid request")
 // 	}
 
-// 	logs.CtxInfof(ctx, "[ExecuteSQL] req is %v", req)
+// 	logs.CtxInfo(ctx, "[ExecuteSQL] req is %v", req)
 
 // 	var processedSQL string
 // 	var processedParams []interface{}

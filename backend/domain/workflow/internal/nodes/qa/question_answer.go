@@ -33,9 +33,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type QuestionAnswer struct {
@@ -372,7 +372,7 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 	}
 
 	if ws != nil {
-		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	realOutput[UserResponseKey] = userResponse

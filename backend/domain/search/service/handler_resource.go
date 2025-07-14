@@ -45,7 +45,7 @@ func NewResourceHandler(ctx context.Context, e es.Client) *ResourceHandlerImpl {
 //func (s *resourceHandlerImpl) HandleMessage(ctx context.Context, msg *eventbus.Message) error {
 //	ev := &entity.ResourceDomainEvent{}
 //
-//	logs.CtxInfof(ctx, "Resource Handler receive: %s", string(msg.Body))
+//	logs.CtxInfo(ctx, "Resource Handler receive: %s", string(msg.Body))
 //
 //	err := sonic.Unmarshal(msg.Body, ev)
 //	if err != nil {

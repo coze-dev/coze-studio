@@ -29,7 +29,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/openauth/openapiauth/entity"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type OpenAuthApplicationService struct {
@@ -50,7 +50,7 @@ func (s *OpenAuthApplicationService) GetPersonalAccessTokenAndPermission(ctx con
 	apiKeyResp, err := openapiAuthDomainSVC.Get(ctx, appReq)
 
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplicationService.GetPersonalAccessTokenAndPermission failed, err=%v", err)
+		logs.CtxError(ctx, "OpenAuthApplicationService.GetPersonalAccessTokenAndPermission failed, err=%v", err)
 		return resp, errors.New("GetPersonalAccessTokenAndPermission failed")
 	}
 	if apiKeyResp == nil {
@@ -94,7 +94,7 @@ func (s *OpenAuthApplicationService) CreatePersonalAccessToken(ctx context.Conte
 
 	apiKeyResp, err := openapiAuthDomainSVC.Create(ctx, appReq)
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplicationService.CreatePersonalAccessToken failed, err=%v", err)
+		logs.CtxError(ctx, "OpenAuthApplicationService.CreatePersonalAccessToken failed, err=%v", err)
 		return resp, errors.New("CreatePersonalAccessToken failed")
 	}
 	resp.Data = &openapimodel.CreatePersonalAccessTokenAndPermissionResponseData{
@@ -124,7 +124,7 @@ func (s *OpenAuthApplicationService) ListPersonalAccessTokens(ctx context.Contex
 
 	apiKeyResp, err := openapiAuthDomainSVC.List(ctx, appReq)
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplicationService.ListPersonalAccessTokens failed, err=%v", err)
+		logs.CtxError(ctx, "OpenAuthApplicationService.ListPersonalAccessTokens failed, err=%v", err)
 		return resp, errors.New("ListPersonalAccessTokens failed")
 	}
 
@@ -162,7 +162,7 @@ func (s *OpenAuthApplicationService) DeletePersonalAccessTokenAndPermission(ctx 
 	}
 	err := openapiAuthDomainSVC.Delete(ctx, appReq)
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplicationService.DeletePersonalAccessTokenAndPermission failed, err=%v", err)
+		logs.CtxError(ctx, "OpenAuthApplicationService.DeletePersonalAccessTokenAndPermission failed, err=%v", err)
 		return resp, errors.New("DeletePersonalAccessTokenAndPermission failed")
 	}
 	return resp, nil
@@ -196,7 +196,7 @@ func (s *OpenAuthApplicationService) CheckPermission(ctx context.Context, token 
 	}
 	apiKey, err := openapiAuthDomainSVC.CheckPermission(ctx, appReq)
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplicationService.CheckPermission failed, err=%v", err)
+		logs.CtxError(ctx, "OpenAuthApplicationService.CheckPermission failed, err=%v", err)
 		return nil, errors.New("CheckPermission failed")
 	}
 	return apiKey, nil

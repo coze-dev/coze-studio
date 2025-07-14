@@ -41,8 +41,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req *playground.GetDraftBotInfoAgwRequest) (*playground.GetDraftBotInfoAgwResponse, error) {
@@ -127,7 +127,7 @@ func (s *SingleAgentApplicationService) fetchShortcutCMD(ctx context.Context, ag
 		}),
 	})
 
-	logs.CtxInfof(ctx, "fetchShortcutCMD cmdDOs = %v, err = %v", conv.DebugJsonToStr(cmdDOs), err)
+	logs.CtxInfo(ctx, "fetchShortcutCMD cmdDOs = %v, err = %v", conv.DebugJsonToStr(cmdDOs), err)
 
 	if err != nil {
 		return nil, err
@@ -309,7 +309,7 @@ func (s *SingleAgentApplicationService) pluginInfoDo2Vo(ctx context.Context, plu
 			var err error
 			iconURL, err = s.appContext.TosClient.GetObjectUrl(ctx, e.GetIconURI())
 			if err != nil {
-				logs.CtxErrorf(ctx, "get icon url failed, err = %v", err)
+				logs.CtxError(ctx, "get icon url failed, err = %v", err)
 			}
 		}
 

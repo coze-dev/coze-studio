@@ -32,8 +32,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/hertzutil/domain"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/gopkg/logs"
 )
 
 // PassportWebEmailRegisterV2Post .
@@ -102,7 +102,7 @@ func PassportWebEmailLoginPost(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	logs.CtxInfof(ctx, "[PassportWebEmailLoginPost] sessionKey: %s", sessionKey)
+	logs.CtxInfo(ctx, "[PassportWebEmailLoginPost] sessionKey: %s", sessionKey)
 
 	c.SetCookie(entity.SessionKey,
 		sessionKey,
@@ -162,7 +162,7 @@ func UserUpdateAvatar(ctx context.Context, c *app.RequestContext) {
 	// 获取上传的文件
 	file, err := c.FormFile("avatar")
 	if err != nil {
-		logs.CtxErrorf(ctx, "Get Avatar Fail failed, err=%v", err)
+		logs.CtxError(ctx, "Get Avatar Fail failed, err=%v", err)
 		invalidParamRequestResponse(c, "missing avatar file")
 		return
 	}

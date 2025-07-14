@@ -29,9 +29,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	commonConsts "code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (a *appServiceImpl) PublishAPP(ctx context.Context, req *PublishAPPRequest) (resp *PublishAPPResponse, err error) {
@@ -47,7 +47,7 @@ func (a *appServiceImpl) PublishAPP(ctx context.Context, req *PublishAPPRequest)
 
 	success, err := a.publishByConnectors(ctx, recordID, req)
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish by connectors failed, recordID=%d, err=%v", recordID, err)
+		logs.CtxError(ctx, "publish by connectors failed, recordID=%d, err=%v", recordID, err)
 	}
 
 	resp = &PublishAPPResponse{
@@ -66,7 +66,7 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 				PublishStatus: entity.PublishStatusOfPackFailed,
 			})
 			if updateErr != nil {
-				logs.CtxErrorf(ctx, "UpdateAPPPublishStatus failed, recordID=%d, err=%v", recordID, updateErr)
+				logs.CtxError(ctx, "UpdateAPPPublishStatus failed, recordID=%d, err=%v", recordID, updateErr)
 			}
 		}
 	}()
@@ -76,11 +76,11 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 		return false, err
 	}
 	if len(failedResources) > 0 {
-		logs.CtxWarnf(ctx, "packResources failed, recordID=%d, len=%d", recordID, len(failedResources))
+		logs.CtxWarn(ctx, "packResources failed, recordID=%d, len=%d", recordID, len(failedResources))
 
 		processErr := a.packResourcesFailedPostProcess(ctx, recordID, failedResources)
 		if processErr != nil {
-			logs.CtxErrorf(ctx, "packResourcesFailedPostProcess failed, recordID=%d, err=%v", recordID, processErr)
+			logs.CtxError(ctx, "packResourcesFailedPostProcess failed, recordID=%d, err=%v", recordID, processErr)
 		}
 
 		return false, nil
@@ -94,7 +94,7 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 				continue
 			}
 
-			logs.CtxErrorf(ctx, "failed to update connector '%d' publish status to success, err=%v", cid, updateSuccessErr)
+			logs.CtxError(ctx, "failed to update connector '%d' publish status to success, err=%v", cid, updateSuccessErr)
 
 			updateFailedErr := a.APPRepo.UpdateAPPPublishStatus(ctx, &repository.UpdateAPPPublishStatusRequest{
 				RecordID:      recordID,
@@ -102,7 +102,7 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 			})
 
 			if updateFailedErr != nil {
-				logs.CtxWarnf(ctx, "failed to update connector '%d' publish status to failed, err=%v", cid, updateFailedErr)
+				logs.CtxWarn(ctx, "failed to update connector '%d' publish status to failed, err=%v", cid, updateFailedErr)
 			}
 
 		default:

@@ -32,8 +32,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
+	"code.byted.org/gopkg/logs"
 )
 
 type Batch struct {
@@ -284,7 +284,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 		ithOpts = append(ithOpts, options.GetOptsForIndexed(i)...)
 		mu.Unlock()
 		if subCheckpointID != "" {
-			logs.CtxInfof(ctx, "[testInterrupt] prepare %d th run for batch node %s, subCheckPointID %s",
+			logs.CtxInfo(ctx, "[testInterrupt] prepare %d th run for batch node %s, subCheckPointID %s",
 				i, b.config.BatchNodeKey, subCheckpointID)
 			ithOpts = append(ithOpts, compose.WithCheckPointID(subCheckpointID))
 		}
@@ -428,7 +428,7 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 	}
 
 	if existingCState != nil && len(existingCState.Index2InterruptInfo) > 0 {
-		logs.CtxInfof(ctx, "no interrupt thrown this round, but has historical interrupt events yet to be resumed, "+
+		logs.CtxInfo(ctx, "no interrupt thrown this round, but has historical interrupt events yet to be resumed, "+
 			"nodeKey: %v. indexes: %v", b.config.BatchNodeKey, maps.Keys(existingCState.Index2InterruptInfo))
 		return nil, compose.InterruptAndRerun // interrupt again to wait for resuming of previously interrupted index runs
 	}

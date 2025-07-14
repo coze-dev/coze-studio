@@ -19,6 +19,7 @@ package middleware
 import (
 	"context"
 
+	"code.byted.org/gopkg/logs"
 	"code.byted.org/middleware/hertz/pkg/app"
 
 	"code.byted.org/data_edc/workflow_engine_next/domain/user/entity"
@@ -28,7 +29,6 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/api/internal/httputil"
 	"code.byted.org/data_edc/workflow_engine_next/application/user"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 )
 

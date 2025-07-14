@@ -30,8 +30,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/sets"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type ManagerConfig struct {
@@ -203,7 +203,7 @@ func (m *milvusManager) createIndexes(ctx context.Context, req *searchstore.Crea
 func (m *milvusManager) tryCreateIndex(ctx context.Context, collectionName, fieldName, indexName string, idx mindex.Index, createdIndexes sets.Set[string]) func() error {
 	return func() error {
 		if _, found := createdIndexes[indexName]; found {
-			logs.CtxInfof(ctx, "[tryCreateIndex] index exists, so skip, collectionName=%s, fieldName=%s, idx=%v, type=%s\n",
+			logs.CtxInfo(ctx, "[tryCreateIndex] index exists, so skip, collectionName=%s, fieldName=%s, idx=%v, type=%s\n",
 				collectionName, fieldName, indexName, idx.IndexType())
 
 			return nil
@@ -220,7 +220,7 @@ func (m *milvusManager) tryCreateIndex(ctx context.Context, collectionName, fiel
 			return fmt.Errorf("[tryCreateIndex] await failed, %w", err)
 		}
 
-		logs.CtxInfof(ctx, "[tryCreateIndex] CreateIndex success, collectionName=%s, fieldName=%s, idx=%v, type=%s\n",
+		logs.CtxInfo(ctx, "[tryCreateIndex] CreateIndex success, collectionName=%s, fieldName=%s, idx=%v, type=%s\n",
 			collectionName, fieldName, indexName, idx.IndexType())
 
 		return nil

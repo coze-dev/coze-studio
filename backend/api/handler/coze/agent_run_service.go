@@ -38,8 +38,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 // AgentRun .
@@ -99,7 +99,7 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 		case entity.RunEventMessageDelta, entity.RunEventMessageCompleted:
 			sendMessageEvent(ctx, sseSender, run.RunEventMessage, buildARSM2Message(chunk, &req))
 		default:
-			logs.CtxErrorf(ctx, "unknown handler event:%v", chunk.Event)
+			logs.CtxError(ctx, "unknown handler event:%v", chunk.Event)
 		}
 
 	}
@@ -127,7 +127,7 @@ func sendDoneEvent(ctx context.Context, sseImpl *sseImpl.SSenderImpl, event stri
 
 	sendErr := sseImpl.Send(ctx, sendData)
 	if sendErr != nil {
-		logs.CtxErrorf(ctx, "sendErrorEvent err:%v", sendErr)
+		logs.CtxError(ctx, "sendErrorEvent err:%v", sendErr)
 	}
 	return
 }
@@ -146,7 +146,7 @@ func sendErrorEvent(ctx context.Context, sseImpl *sseImpl.SSenderImpl, errCode i
 	sendErr := sseImpl.Send(ctx, event)
 
 	if sendErr != nil {
-		logs.CtxErrorf(ctx, "sendErrorEvent err:%v", sendErr)
+		logs.CtxError(ctx, "sendErrorEvent err:%v", sendErr)
 	}
 
 	return
@@ -159,7 +159,7 @@ func sendMessageEvent(ctx context.Context, sseImpl *sseImpl.SSenderImpl, event s
 	}
 	sendErr := sseImpl.Send(ctx, sendData)
 	if sendErr != nil {
-		logs.CtxErrorf(ctx, "sendErrorEvent err:%v", sendErr)
+		logs.CtxError(ctx, "sendErrorEvent err:%v", sendErr)
 	}
 	return
 }
@@ -285,7 +285,7 @@ func ChatV3(ctx context.Context, c *app.RequestContext) {
 
 	for {
 		chunk, recvErr := arStream.Recv()
-		logs.CtxInfof(ctx, "chunk :%v, err:%v", conv.DebugJsonToStr(chunk), recvErr)
+		logs.CtxInfo(ctx, "chunk :%v, err:%v", conv.DebugJsonToStr(chunk), recvErr)
 		if recvErr != nil {
 			if errors.Is(recvErr, io.EOF) {
 				return
@@ -309,7 +309,7 @@ func ChatV3(ctx context.Context, c *app.RequestContext) {
 		case entity.RunEventMessageDelta, entity.RunEventMessageCompleted:
 			sendMessageEvent(ctx, sseSender, string(chunk.Event), buildARSM2ApiMessage(chunk))
 		default:
-			logs.CtxErrorf(ctx, "unknow handler event:%v", chunk.Event)
+			logs.CtxError(ctx, "unknow handler event:%v", chunk.Event)
 		}
 
 	}

@@ -31,7 +31,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/es"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type es7Client struct {
@@ -68,7 +68,7 @@ func (c *es7Client) Create(ctx context.Context, index, id string, document any) 
 		Refresh:    "true",
 	}
 
-	logs.CtxDebugf(ctx, "[Create] req : %s", conv.DebugJsonToStr(req))
+	logs.CtxDebug(ctx, "[Create] req : %s", conv.DebugJsonToStr(req))
 	_, err = req.Do(ctx, c.esClient)
 	return err
 }
@@ -85,7 +85,7 @@ func (c *es7Client) Update(ctx context.Context, index, id string, document any) 
 		Body:       bytes.NewReader(body),
 	}
 
-	logs.CtxDebugf(ctx, "[Update] req : %s", conv.DebugJsonToStr(req))
+	logs.CtxDebug(ctx, "[Update] req : %s", conv.DebugJsonToStr(req))
 
 	_, err = req.Do(ctx, c.esClient)
 	return err
@@ -97,7 +97,7 @@ func (c *es7Client) Delete(ctx context.Context, index, id string) error {
 		DocumentID: id,
 	}
 
-	logs.CtxDebugf(ctx, "[Delete] req : %s", conv.DebugJsonToStr(req))
+	logs.CtxDebug(ctx, "[Delete] req : %s", conv.DebugJsonToStr(req))
 
 	_, err := req.Do(ctx, c.esClient)
 	return err
@@ -105,7 +105,7 @@ func (c *es7Client) Delete(ctx context.Context, index, id string) error {
 
 func (c *es7Client) Exists(ctx context.Context, index string) (bool, error) {
 	req := esapi.IndicesExistsRequest{Index: []string{index}}
-	logs.CtxDebugf(ctx, "[Exists] req : %s", conv.DebugJsonToStr(req))
+	logs.CtxDebug(ctx, "[Exists] req : %s", conv.DebugJsonToStr(req))
 
 	res, err := req.Do(ctx, c.esClient)
 	if err != nil {
@@ -132,7 +132,7 @@ func (c *es7Client) CreateIndex(ctx context.Context, index string, properties ma
 		Body:  bytes.NewReader(body),
 	}
 
-	logs.CtxDebugf(ctx, "[CreateIndex] req : %s", conv.DebugJsonToStr(req))
+	logs.CtxDebug(ctx, "[CreateIndex] req : %s", conv.DebugJsonToStr(req))
 	_, err = req.Do(ctx, c.esClient)
 	return err
 }
@@ -143,7 +143,7 @@ func (c *es7Client) DeleteIndex(ctx context.Context, index string) error {
 		IgnoreUnavailable: ptr.Of(true),
 	}
 
-	logs.CtxDebugf(ctx, "[DeleteIndex] req : %s", conv.DebugJsonToStr(req))
+	logs.CtxDebug(ctx, "[DeleteIndex] req : %s", conv.DebugJsonToStr(req))
 	_, err := req.Do(ctx, c.esClient)
 	return err
 }
@@ -192,7 +192,7 @@ func (c *es7Client) Search(ctx context.Context, index string, req *Request) (*Re
 		c.esClient.Search.WithBody(bytes.NewReader(body)),
 	)
 
-	logs.CtxDebugf(ctx, "[Search] req : %s", string(body))
+	logs.CtxDebug(ctx, "[Search] req : %s", string(body))
 
 	if err != nil {
 		return nil, err

@@ -27,7 +27,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/sets"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type ModelmgrApplicationService struct {
@@ -52,7 +52,7 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, req *deve
 
 	locale := i18n.GetLocale(ctx)
 	modelList, err := slices.TransformWithErrorCheck(modelResp.ModelList, func(m *modelEntity.Model) (*developer_api.Model, error) {
-		logs.CtxInfof(ctx, "ChatModel DefaultParameters: %v", m.DefaultParameters)
+		logs.CtxInfo(ctx, "ChatModel DefaultParameters: %v", m.DefaultParameters)
 		return modelDo2To(m, locale)
 	})
 	if err != nil {

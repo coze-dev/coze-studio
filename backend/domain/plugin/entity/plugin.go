@@ -27,7 +27,7 @@ import (
 	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
 	"code.byted.org/data_edc/workflow_engine_next/api/model/plugin_develop_common"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type PluginInfo struct {
@@ -99,7 +99,7 @@ func (p PluginInfo) GetToolExample(ctx context.Context, toolName string) *ToolEx
 	}
 	reqExampleStr, err := sonic.MarshalString(reqExample)
 	if err != nil {
-		logs.CtxErrorf(ctx, "marshal request example failed, err=%v", err)
+		logs.CtxError(ctx, "marshal request example failed, err=%v", err)
 		return nil
 	}
 
@@ -109,7 +109,7 @@ func (p PluginInfo) GetToolExample(ctx context.Context, toolName string) *ToolEx
 	}
 	respExampleStr, err := sonic.MarshalString(respExample)
 	if err != nil {
-		logs.CtxErrorf(ctx, "marshal response example failed, err=%v", err)
+		logs.CtxError(ctx, "marshal response example failed, err=%v", err)
 		return nil
 	}
 

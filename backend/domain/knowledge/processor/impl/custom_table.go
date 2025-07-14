@@ -20,8 +20,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
 	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 // 用户自定义表格创建文档
@@ -33,16 +33,16 @@ func (c *customTableProcessor) BeforeCreate() error {
 	if isTableAppend(c.Documents) {
 		tableDoc, _, err := c.documentRepo.FindDocumentByCondition(c.ctx, &entity.WhereDocumentOpt{KnowledgeIDs: []int64{c.Documents[0].KnowledgeID}, SelectAll: true})
 		if err != nil {
-			logs.CtxErrorf(c.ctx, "find document failed, err: %v", err)
+			logs.CtxError(c.ctx, "find document failed, err: %v", err)
 			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 		}
 		if len(tableDoc) == 0 {
-			logs.CtxErrorf(c.ctx, "table doc not found")
+			logs.CtxError(c.ctx, "table doc not found")
 			return errorx.New(errno.ErrKnowledgeDocumentNotExistCode, errorx.KV("msg", "doc not found"))
 		}
 		c.Documents[0].ID = tableDoc[0].ID
 		if tableDoc[0].TableInfo == nil {
-			logs.CtxErrorf(c.ctx, "table info not found")
+			logs.CtxError(c.ctx, "table info not found")
 			return errorx.New(errno.ErrKnowledgeTableInfoNotExistCode, errorx.KVf("msg", "table info not found, doc_id: %d", tableDoc[0].ID))
 		}
 		c.Documents[0].TableInfo = *tableDoc[0].TableInfo
@@ -52,7 +52,7 @@ func (c *customTableProcessor) BeforeCreate() error {
 			uri := getTosUri(c.UserID, string(c.Documents[0].FileExtension))
 			err := c.storage.PutObject(c.ctx, uri, []byte(c.Documents[0].RawContent))
 			if err != nil {
-				logs.CtxErrorf(c.ctx, "put object failed, err: %v", err)
+				logs.CtxError(c.ctx, "put object failed, err: %v", err)
 				return errorx.New(errno.ErrKnowledgePutObjectFailCode, errorx.KV("msg", err.Error()))
 			}
 			c.Documents[0].URI = uri
@@ -87,7 +87,7 @@ func (c *customTableProcessor) InsertDBModel() error {
 		// 追加场景，设置文档为处理中状态
 		err := c.documentRepo.SetStatus(c.ctx, c.Documents[0].ID, int32(entity.DocumentStatusUploading), "")
 		if err != nil {
-			logs.CtxErrorf(c.ctx, "document set status err:%v", err)
+			logs.CtxError(c.ctx, "document set status err:%v", err)
 			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 		}
 		return nil
@@ -100,7 +100,7 @@ func (c *customTableProcessor) Indexing() error {
 	if isTableAppend(c.Documents) {
 		err := c.baseDocProcessor.Indexing()
 		if err != nil {
-			logs.CtxErrorf(c.ctx, "document indexing err:%v", err)
+			logs.CtxError(c.ctx, "document indexing err:%v", err)
 			return err
 		}
 	}

@@ -44,10 +44,10 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type Format int
@@ -193,7 +193,7 @@ func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo
 	if err != nil {
 		c := execute.GetExeCtx(ctx)
 		if c != nil {
-			logs.CtxErrorf(ctx, "failed to parse json: %v, data: %s", err, data)
+			logs.CtxError(ctx, "failed to parse json: %v, data: %s", err, data)
 			rawOutputK := fmt.Sprintf(rawOutputKey, c.NodeCtx.NodeKey)
 			warningK := fmt.Sprintf(warningKey, c.NodeCtx.NodeKey)
 			ctxcache.Store(ctx, rawOutputK, data)
@@ -210,7 +210,7 @@ func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo
 	}
 
 	if ws != nil {
-		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 	}
 
 	return r, nil
@@ -565,17 +565,17 @@ func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...Option) (co
 				// pop the previous interrupt event immediately
 				ie, deleted, e := workflow.GetRepository().PopFirstInterruptEvent(ctx, c.RootExecuteID)
 				if e != nil {
-					logs.CtxErrorf(ctx, "failed to pop first interrupt event on react agent chatmodel start: %v", err)
+					logs.CtxError(ctx, "failed to pop first interrupt event on react agent chatmodel start: %v", err)
 					return ctx
 				}
 
 				if !deleted {
-					logs.CtxErrorf(ctx, "failed to pop first interrupt event on react agent chatmodel start: not deleted")
+					logs.CtxError(ctx, "failed to pop first interrupt event on react agent chatmodel start: not deleted")
 					return ctx
 				}
 
 				if ie.ID != resumingEvent.ID {
-					logs.CtxErrorf(ctx, "failed to pop first interrupt event on react agent chatmodel start, "+
+					logs.CtxError(ctx, "failed to pop first interrupt event on react agent chatmodel start, "+
 						"deleted ID: %d, resumingEvent ID: %d", ie.ID, resumingEvent.ID)
 					return ctx
 				}
@@ -604,11 +604,11 @@ func (l *LLM) prepare(ctx context.Context, _ map[string]any, opts ...Option) (co
 					if err == io.EOF {
 						return
 					}
-					logs.CtxErrorf(ctx, "failed to receive message from tool workflow: %v", err)
+					logs.CtxError(ctx, "failed to receive message from tool workflow: %v", err)
 					return
 				}
 
-				logs.CtxInfof(ctx, "received message from tool workflow: %+v", msg)
+				logs.CtxInfo(ctx, "received message from tool workflow: %+v", msg)
 
 				llmOpts.toolWorkflowSW.Send(msg, nil)
 			}

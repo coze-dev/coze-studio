@@ -37,8 +37,8 @@ import (
 	rdbEntity "code.byted.org/data_edc/workflow_engine_next/infra/contract/rdb/entity"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type baseDocProcessor struct {
@@ -71,7 +71,7 @@ func (p *baseDocProcessor) BuildDBModel() error {
 	p.docModels = make([]*model.KnowledgeDocument, 0, len(p.Documents))
 	ids, err := p.idgen.GenMultiIDs(p.ctx, len(p.Documents))
 	if err != nil {
-		logs.CtxErrorf(p.ctx, "gen ids failed, err: %v", err)
+		logs.CtxError(p.ctx, "gen ids failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeIDGenCode)
 	}
 	for i := range p.Documents {
@@ -106,30 +106,30 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 	if !isTableAppend(p.Documents) {
 		err = p.createTable()
 		if err != nil {
-			logs.CtxErrorf(ctx, "create table failed, err: %v", err)
+			logs.CtxError(ctx, "create table failed, err: %v", err)
 			return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 		}
 	}
 
 	tx, err := p.knowledgeRepo.InitTx()
 	if err != nil {
-		logs.CtxErrorf(ctx, "init tx failed, err: %v", err)
+		logs.CtxError(ctx, "init tx failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	defer func() {
 		if e := recover(); e != nil {
-			logs.CtxErrorf(ctx, "panic: %v", e)
+			logs.CtxError(ctx, "panic: %v", e)
 			err = errorx.New(errno.ErrKnowledgeSystemCode, errorx.KVf("msg", "panic: %v", e))
 			tx.Rollback()
 			return
 		}
 		if err != nil {
-			logs.CtxErrorf(ctx, "InsertDBModel err: %v", err)
+			logs.CtxError(ctx, "InsertDBModel err: %v", err)
 			tx.Rollback()
 			if p.TableName != "" {
 				deleteErr := p.deleteTable()
 				if deleteErr != nil {
-					logs.CtxErrorf(ctx, "delete table failed, err: %v", deleteErr)
+					logs.CtxError(ctx, "delete table failed, err: %v", deleteErr)
 					return
 				}
 			}
@@ -139,14 +139,14 @@ func (p *baseDocProcessor) InsertDBModel() (err error) {
 	}()
 	err = p.documentRepo.CreateWithTx(ctx, tx, p.docModels)
 	if err != nil {
-		logs.CtxErrorf(ctx, "create document failed, err: %v", err)
+		logs.CtxError(ctx, "create document failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	err = p.knowledgeRepo.UpdateWithTx(ctx, tx, p.Documents[0].KnowledgeID, map[string]interface{}{
 		"updated_at": time.Now().UnixMilli(),
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "update knowledge failed, err: %v", err)
+		logs.CtxError(ctx, "update knowledge failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 	return nil
@@ -159,7 +159,7 @@ func (p *baseDocProcessor) createTable() error {
 		tableColumns := p.Documents[0].TableInfo.Columns
 		columnIDs, err := p.idgen.GenMultiIDs(p.ctx, len(tableColumns)+1)
 		if err != nil {
-			logs.CtxErrorf(p.ctx, "gen ids failed, err: %v", err)
+			logs.CtxError(p.ctx, "gen ids failed, err: %v", err)
 			return errorx.New(errno.ErrKnowledgeIDGenCode)
 		}
 		for i := range tableColumns {
@@ -198,7 +198,7 @@ func (p *baseDocProcessor) createTable() error {
 			},
 		})
 		if err != nil {
-			logs.CtxErrorf(p.ctx, "create table failed, err: %v", err)
+			logs.CtxError(p.ctx, "create table failed, err: %v", err)
 			return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 		}
 		p.TableName = resp.Table.Name
@@ -220,7 +220,7 @@ func (p *baseDocProcessor) deleteTable() error {
 			IfExists:  false,
 		})
 		if err != nil {
-			logs.CtxErrorf(p.ctx, "[deleteTable] drop table failed, err: %v", err)
+			logs.CtxError(p.ctx, "[deleteTable] drop table failed, err: %v", err)
 			return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
 		}
 	}
@@ -235,7 +235,7 @@ func (p *baseDocProcessor) Indexing() error {
 	}
 
 	if err = p.producer.Send(p.ctx, body); err != nil {
-		logs.CtxErrorf(p.ctx, "send message failed, err: %v", err)
+		logs.CtxError(p.ctx, "send message failed, err: %v", err)
 		return errorx.New(errno.ErrKnowledgeMQSendFailCode, errorx.KV("msg", err.Error()))
 	}
 	return nil

@@ -34,10 +34,10 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/taskgroup"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 var projectType2iconURI = map[common.IntelligenceType]string{
@@ -75,7 +75,7 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 	lock := sync.Mutex{}
 	intelligenceDataList := make([]*intelligence.IntelligenceData, len(searchResp.Data))
 
-	logs.CtxDebugf(ctx, "[GetDraftIntelligenceList] searchResp.Data: %v", conv.DebugJsonToStr(searchResp.Data))
+	logs.CtxDebug(ctx, "[GetDraftIntelligenceList] searchResp.Data: %v", conv.DebugJsonToStr(searchResp.Data))
 
 	for idx := range searchResp.Data {
 		data := searchResp.Data[idx]
@@ -83,7 +83,7 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 		tasks.Go(func() error {
 			info, err := s.packIntelligenceData(ctx, data)
 			if err != nil {
-				logs.CtxErrorf(ctx, "[packIntelligenceData] failed id %v, type %d , name %s, err: %v", data.ID, data.Type, data.GetName(), err)
+				logs.CtxError(ctx, "[packIntelligenceData] failed id %v, type %d , name %s, err: %v", data.ID, data.Type, data.GetName(), err)
 
 				return err
 			}
@@ -218,7 +218,7 @@ func (s *SearchApplicationService) searchFavProjects(ctx context.Context, userID
 	for _, r := range res.Data {
 		favEntity, err := s.projectResourceToProductInfo(ctx, userID, r)
 		if err != nil {
-			logs.CtxErrorf(ctx, "[pluginResourceToProductInfo] failed to get project info, id=%v, type=%d, err=%v",
+			logs.CtxError(ctx, "[pluginResourceToProductInfo] failed to get project info, id=%v, type=%d, err=%v",
 				r.ID, r.Type, err)
 			continue
 		}
@@ -305,7 +305,7 @@ func (s *SearchApplicationService) GetUserRecentlyEditIntelligence(ctx context.C
 		data := res.Data[idx]
 		info, err := s.packIntelligenceData(ctx, data)
 		if err != nil {
-			logs.CtxErrorf(ctx, "[packIntelligenceData] failed id %v, type %d, name %s, err: %v", data.ID, data.Type, data.GetName(), err)
+			logs.CtxError(ctx, "[packIntelligenceData] failed id %v, type %d, name %s, err: %v", data.ID, data.Type, data.GetName(), err)
 			continue
 		}
 		intelligenceDataList = append(intelligenceDataList, info)
@@ -430,7 +430,7 @@ func searchRequestTo2Do(userID int64, req *intelligence.GetDraftIntelligenceList
 func (s *SearchApplicationService) getProjectDefaultIconURL(ctx context.Context, tp common.IntelligenceType) string {
 	iconURL, ok := projectType2iconURI[tp]
 	if !ok {
-		logs.CtxWarnf(ctx, "[getProjectDefaultIconURL] don't have type: %d  default icon", tp)
+		logs.CtxWarn(ctx, "[getProjectDefaultIconURL] don't have type: %d  default icon", tp)
 
 		return ""
 	}

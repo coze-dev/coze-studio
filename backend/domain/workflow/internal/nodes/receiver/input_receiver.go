@@ -31,9 +31,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	sonic2 "code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type Config struct {
@@ -139,7 +139,7 @@ func jsonParseRelaxed(ctx context.Context, data string, schema_ map[string]*vo.T
 		return nil, err
 	}
 	if ws != nil && len(*ws) > 0 {
-		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+		logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 		var (
 			executeID int64
 			nodeKey   vo.NodeKey

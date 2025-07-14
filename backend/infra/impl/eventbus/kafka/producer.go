@@ -23,8 +23,8 @@ import (
 
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/signal"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
+	"code.byted.org/gopkg/logs"
 )
 
 type producerImpl struct {
@@ -47,7 +47,7 @@ func NewProducer(broker, topic string) (eventbus.Producer, error) {
 	safego.Go(ctx, func() {
 		signal.WaitExit()
 		if err := producer.Close(); err != nil {
-			logs.CtxErrorf(ctx, "close producer error: %s", err.Error())
+			logs.CtxError(ctx, "close producer error: %s", err.Error())
 		}
 	})
 

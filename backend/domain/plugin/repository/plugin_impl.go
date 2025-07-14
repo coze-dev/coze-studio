@@ -35,8 +35,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type pluginRepoImpl struct {
@@ -136,14 +136,14 @@ func (p *pluginRepoImpl) UpdateDraftPlugin(ctx context.Context, plugin *entity.P
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -307,14 +307,14 @@ func (p *pluginRepoImpl) PublishPlugin(ctx context.Context, draftPlugin *entity.
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -392,14 +392,14 @@ func (p *pluginRepoImpl) PublishPlugins(ctx context.Context, draftPlugins []*ent
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -445,14 +445,14 @@ func (p *pluginRepoImpl) DeleteDraftPlugin(ctx context.Context, pluginID int64) 
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -506,14 +506,14 @@ func (p *pluginRepoImpl) DeleteAPPAllPlugins(ctx context.Context, appID int64) (
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -562,14 +562,14 @@ func (p *pluginRepoImpl) UpdateDraftPluginWithCode(ctx context.Context, req *Upd
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -653,14 +653,14 @@ func (p *pluginRepoImpl) CreateDraftPluginWithCode(ctx context.Context, req *Cre
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -701,14 +701,14 @@ func (p *pluginRepoImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest)
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -794,14 +794,14 @@ func (p *pluginRepoImpl) MoveAPPPluginToLibrary(ctx context.Context, draftPlugin
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()

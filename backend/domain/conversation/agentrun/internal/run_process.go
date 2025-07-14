@@ -25,8 +25,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/agentrun"
 	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/entity"
 	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/repository"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type RunProcess struct {
@@ -74,7 +74,7 @@ func (r *RunProcess) StepToComplete(ctx context.Context, srRecord *entity.ChunkR
 	}
 	err := r.RunRecordRepo.UpdateByID(ctx, srRecord.ID, updateMeta)
 	if err != nil {
-		logs.CtxErrorf(ctx, "RunRecordRepo.UpdateByID error: %v", err)
+		logs.CtxError(ctx, "RunRecordRepo.UpdateByID error: %v", err)
 		r.event.SendErrEvent(entity.RunEventError, sw, &entity.RunError{
 			Code: errno.ErrConversationAgentRunError,
 			Msg:  err.Error(),
@@ -106,7 +106,7 @@ func (r *RunProcess) StepToFailed(ctx context.Context, srRecord *entity.ChunkRun
 			Code: errno.ErrConversationAgentRunError,
 			Msg:  err.Error(),
 		})
-		logs.CtxErrorf(ctx, "update run record failed, err: %v", err)
+		logs.CtxError(ctx, "update run record failed, err: %v", err)
 		return
 	}
 	srRecord.Status = entity.RunStatusFailed

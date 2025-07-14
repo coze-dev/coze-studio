@@ -34,24 +34,24 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentRunRequest) (*schema.StreamReader[*entity.AgentRunResponse], error) {
 	agentInfo, caErr := c.checkAgent(ctx, ar)
 	if caErr != nil {
-		logs.CtxErrorf(ctx, "checkAgent err:%v", caErr)
+		logs.CtxError(ctx, "checkAgent err:%v", caErr)
 		return nil, caErr
 	}
 
 	userID := ctxutil.MustGetUIDFromCtx(ctx)
 	conversationData, ccErr := c.checkConversation(ctx, ar, userID)
 
-	logs.CtxInfof(ctx, "conversationData:%v", conv.DebugJsonToStr(conversationData))
+	logs.CtxInfo(ctx, "conversationData:%v", conv.DebugJsonToStr(conversationData))
 	if ccErr != nil {
-		logs.CtxErrorf(ctx, "checkConversation err:%v", ccErr)
+		logs.CtxError(ctx, "checkConversation err:%v", ccErr)
 		return nil, ccErr
 	}
 
@@ -85,7 +85,7 @@ func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentR
 
 	arr, err := c.buildAgentRunRequest(ctx, ar, userID, agentInfo.SpaceID, conversationData, shortcutCmd)
 	if err != nil {
-		logs.CtxErrorf(ctx, "buildAgentRunRequest err:%v", err)
+		logs.CtxError(ctx, "buildAgentRunRequest err:%v", err)
 		return nil, err
 	}
 	return c.AgentRunDomainSVC.AgentRun(ctx, arr)
@@ -106,7 +106,7 @@ func (c *ConversationApplicationService) checkConversation(ctx context.Context, 
 			Scene:       ptr.From(ar.Scene),
 			ConnectorID: consts.CozeConnectorID,
 		})
-		logs.CtxInfof(ctx, "conversatioin data:%v", conv.DebugJsonToStr(realCurrCon))
+		logs.CtxInfo(ctx, "conversatioin data:%v", conv.DebugJsonToStr(realCurrCon))
 		if err != nil {
 			return nil, err
 		}
@@ -127,7 +127,7 @@ func (c *ConversationApplicationService) checkConversation(ctx context.Context, 
 		if err != nil {
 			return nil, err
 		}
-		logs.CtxInfof(ctx, "conversatioin create data:%v", conv.DebugJsonToStr(conData))
+		logs.CtxInfo(ctx, "conversatioin create data:%v", conv.DebugJsonToStr(conData))
 		conversationData = conData
 
 		ar.ConversationID = conversationData.ID

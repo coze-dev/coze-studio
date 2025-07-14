@@ -28,7 +28,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossvariables"
 	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type variableConf struct {
@@ -120,7 +120,7 @@ func (a *avTool) Invoke(ctx context.Context, v *KVMemoryVariable) (string, error
 		if len(items) > 0 {
 			_, err := crossvariables.DefaultSVC().SetVariableInstance(ctx, vbMeta, items)
 			if err != nil {
-				logs.CtxErrorf(ctx, "setVariableInstance failed, err=%v", err)
+				logs.CtxError(ctx, "setVariableInstance failed, err=%v", err)
 				return "fail", nil
 			}
 		}

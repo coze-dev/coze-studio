@@ -33,6 +33,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/crypto"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"github.com/spf13/cast"
 )
 
 const defaultGetFileTimeout = 20       // second
@@ -273,14 +274,12 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 	if contentType != "" {
 		httpRequest.Header.Add(HeaderContentType, contentType)
 	}
-
-	for i := uint64(0); i < retryTimes; i++ {
+	for i := uint64(0); i < retryTimes+1; i++ {
 		response, err = hg.client.Do(httpRequest)
 		if err == nil {
 			break
 		}
 	}
-
 	if err != nil {
 		return nil, err
 	}
@@ -604,7 +603,7 @@ func (cfg *Config) parserToRequest(input map[string]any) (*Request, error) {
 					if strings.HasPrefix(jsonKey, "global_variable_") {
 						jsonKey = globalVariableReplaceRegexp.ReplaceAllString(jsonKey, "global_variable_$1.$2")
 					}
-					nodes.SetMapValue(request.JsonVars, strings.Split(jsonKey, "."), value.(string))
+					nodes.SetMapValue(request.JsonVars, strings.Split(jsonKey, "."), cast.ToString(value))
 				}
 
 			}

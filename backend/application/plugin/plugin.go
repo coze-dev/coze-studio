@@ -56,9 +56,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	commonConsts "code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 var PluginApplicationSVC = &PluginApplicationService{}
@@ -178,7 +178,7 @@ func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context
 	var creator *common.Creator
 	userInfo, err := p.userSVC.GetUserInfo(context.Background(), pl.DeveloperID)
 	if err != nil {
-		logs.CtxErrorf(ctx, "get user info failed, err=%v", err)
+		logs.CtxError(ctx, "get user info failed, err=%v", err)
 		creator = common.NewCreator()
 	} else {
 		creator = &common.Creator{
@@ -191,7 +191,7 @@ func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context
 
 	iconURL, err := p.oss.GetObjectUrl(ctx, pl.GetIconURI())
 	if err != nil {
-		logs.CtxErrorf(ctx, "get plugin icon url failed, err=%v", err)
+		logs.CtxError(ctx, "get plugin icon url failed, err=%v", err)
 	}
 
 	authType, ok := model.ToThriftAuthType(pl.GetAuthInfo().Type)
@@ -585,7 +585,7 @@ func (p *PluginApplicationService) getPluginMetaInfo(ctx context.Context, draftP
 
 	iconURL, err := p.oss.GetObjectUrl(ctx, draftPlugin.GetIconURI())
 	if err != nil {
-		logs.CtxWarnf(ctx, "get icon url with '%s' failed, err=%v", draftPlugin.GetIconURI(), err)
+		logs.CtxWarn(ctx, "get icon url with '%s' failed, err=%v", draftPlugin.GetIconURI(), err)
 	}
 
 	metaInfo := &common.PluginMetaInfo{
@@ -699,14 +699,14 @@ func (p *PluginApplicationService) GetUpdatedAPIs(ctx context.Context, req *plug
 
 		os, err := sonic.MarshalString(ot.Operation)
 		if err != nil {
-			logs.CtxErrorf(ctx, "marshal online tool operation failed, toolID=%d, err=%v", ot.ID, err)
+			logs.CtxError(ctx, "marshal online tool operation failed, toolID=%d, err=%v", ot.ID, err)
 
 			updatedToolName = append(updatedToolName, name)
 			continue
 		}
 		ds, err := sonic.MarshalString(dt.Operation)
 		if err != nil {
-			logs.CtxErrorf(ctx, "marshal draft tool operation failed, toolID=%d, err=%v", ot.ID, err)
+			logs.CtxError(ctx, "marshal draft tool operation failed, toolID=%d, err=%v", ot.ID, err)
 
 			updatedToolName = append(updatedToolName, name)
 			continue
@@ -851,7 +851,7 @@ func (p *PluginApplicationService) UpdateAPI(ctx context.Context, req *pluginAPI
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
+		logs.CtxError(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
 	}
 
 	resp = &pluginAPI.UpdateAPIResponse{}
@@ -901,7 +901,7 @@ func (p *PluginApplicationService) UpdatePlugin(ctx context.Context, req *plugin
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
+		logs.CtxError(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
 	}
 
 	resp = &pluginAPI.UpdatePluginResponse{
@@ -982,7 +982,7 @@ func (p *PluginApplicationService) PublishPlugin(ctx context.Context, req *plugi
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
+		logs.CtxError(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
 	}
 
 	resp = &pluginAPI.PublishPluginResponse{}
@@ -1025,7 +1025,7 @@ func (p *PluginApplicationService) UpdatePluginMeta(ctx context.Context, req *pl
 		},
 	})
 	if err != nil {
-		logs.CtxErrorf(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
+		logs.CtxError(ctx, "publish resource '%d' failed, err=%v", req.PluginID, err)
 	}
 
 	resp = &pluginAPI.UpdatePluginMetaResponse{}
@@ -1166,7 +1166,7 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 			return resp, nil
 		}
 
-		logs.CtxErrorf(ctx, "ExecuteTool failed, err=%v", err)
+		logs.CtxError(ctx, "ExecuteTool failed, err=%v", err)
 		resp.Reason = defaultErrReason
 
 		return resp, nil
@@ -1186,7 +1186,7 @@ func (p *PluginApplicationService) DebugAPI(ctx context.Context, req *pluginAPI.
 
 	respParams, err := res.Tool.ToRespAPIParameter()
 	if err != nil {
-		logs.CtxErrorf(ctx, "ToRespAPIParameter failed, err=%v", err)
+		logs.CtxError(ctx, "ToRespAPIParameter failed, err=%v", err)
 		resp.Success = false
 		resp.Reason = defaultErrReason
 	} else {
@@ -1270,7 +1270,7 @@ func (p *PluginApplicationService) buildProductInfo(ctx context.Context, plugin 
 func (p *PluginApplicationService) buildProductMetaInfo(ctx context.Context, plugin *entity.PluginInfo) (*productAPI.ProductMetaInfo, error) {
 	iconURL, err := p.oss.GetObjectUrl(ctx, plugin.GetIconURI())
 	if err != nil {
-		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", plugin.GetIconURI(), err)
+		logs.CtxWarn(ctx, "get icon url failed with '%s', err=%v", plugin.GetIconURI(), err)
 	}
 
 	return &productAPI.ProductMetaInfo{
@@ -1336,7 +1336,7 @@ func (p *PluginApplicationService) buildPluginProductExtraInfo(ctx context.Conte
 			authMode = ptr.Of(productAPI.PluginAuthMode_Required)
 			err := plugin.Manifest.Validate(false)
 			if err != nil {
-				logs.CtxWarnf(ctx, "validate plugin manifest failed, err=%v", err)
+				logs.CtxWarn(ctx, "validate plugin manifest failed, err=%v", err)
 			} else {
 				authMode = ptr.Of(productAPI.PluginAuthMode_Configured)
 			}
@@ -1466,7 +1466,7 @@ func (p *PluginApplicationService) getDevPluginListByName(ctx context.Context, r
 			return nil, 0, errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", pl.ResID)
 		}
 		if !exist {
-			logs.CtxWarnf(ctx, "plugin not exist, pluginID=%d", pl.ResID)
+			logs.CtxWarn(ctx, "plugin not exist, pluginID=%d", pl.ResID)
 			continue
 		}
 

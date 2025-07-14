@@ -35,7 +35,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/ocr"
 	contract "code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 func parseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR) parseFn {
@@ -198,7 +198,7 @@ func parseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 							pushSlice()
 						}
 					} else {
-						logs.CtxInfof(ctx, "[parseMarkdown] not a valid image url, skip, got=%s", imageURL)
+						logs.CtxInfo(ctx, "[parseMarkdown] not a valid image url, skip, got=%s", imageURL)
 					}
 				}
 			}

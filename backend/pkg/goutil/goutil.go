@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 func Recovery(ctx context.Context) {
@@ -35,5 +35,5 @@ func Recovery(ctx context.Context) {
 	}
 
 	err := fmt.Errorf("%v", e)
-	logs.CtxErrorf(ctx, fmt.Sprintf("[catch panic] err = %v \n stacktrace:\n%s", err, debug.Stack()))
+	logs.CtxError(ctx, fmt.Sprintf("[catch panic] err = %v \n stacktrace:\n%s", err, debug.Stack()))
 }

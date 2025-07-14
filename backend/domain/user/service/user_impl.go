@@ -42,9 +42,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type Components struct {
@@ -360,12 +360,12 @@ func (u *userImpl) getUniqueNameFormEmail(ctx context.Context, email string) str
 
 	exist, err := u.UserRepo.CheckUniqueNameExist(ctx, username)
 	if err != nil {
-		logs.CtxWarnf(ctx, "check unique name exist failed: %v", err)
+		logs.CtxWarn(ctx, "check unique name exist failed: %v", err)
 		return email
 	}
 
 	if exist {
-		logs.CtxWarnf(ctx, "unique name %s already exist", username)
+		logs.CtxWarn(ctx, "unique name %s already exist", username)
 
 		return email
 	}

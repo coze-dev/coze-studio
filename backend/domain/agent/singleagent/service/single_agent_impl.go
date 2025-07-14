@@ -35,8 +35,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/jsoncache"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type singleAgentImpl struct {
@@ -276,7 +276,7 @@ func (s *singleAgentImpl) ListAgentPublishHistory(ctx context.Context, agentID i
 		return s.AgentVersionRepo.List(ctx, agentID, pageIndex, pageSize)
 	}
 
-	logs.CtxInfof(ctx, "ListAgentPublishHistory, agentID=%v, pageIndex=%v, pageSize=%v, connectorID=%v",
+	logs.CtxInfo(ctx, "ListAgentPublishHistory, agentID=%v, pageIndex=%v, pageSize=%v, connectorID=%v",
 		agentID, pageIndex, pageSize, *connectorID)
 
 	var (

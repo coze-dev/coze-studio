@@ -33,8 +33,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/app/internal/dal/query"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/taskgroup"
+	"code.byted.org/gopkg/logs"
 )
 
 type appRepoImpl struct {
@@ -141,14 +141,14 @@ func (a *appRepoImpl) CreateAPPPublishRecord(ctx context.Context, record *entity
 	defer func() {
 		if r := recover(); r != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
 			return
 		}
 		if err != nil {
 			if e := tx.Rollback(); e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()

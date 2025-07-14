@@ -33,7 +33,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/sets"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type vkSearchStore struct {
@@ -359,7 +359,7 @@ func (v *vkSearchStore) dsl2Filter(ctx context.Context, src map[string]any) (map
 			"conds": toSliceValue(dsl.Value),
 		}
 	case searchstore.OpLike:
-		logs.CtxWarnf(ctx, "[dsl2Filter] vikingdb invalid dsl type, skip, type=%s", dsl.Op)
+		logs.CtxWarn(ctx, "[dsl2Filter] vikingdb invalid dsl type, skip, type=%s", dsl.Op)
 	case searchstore.OpAnd, searchstore.OpOr:
 		var conds []map[string]any
 		sub, ok := dsl.Value.([]map[string]any)

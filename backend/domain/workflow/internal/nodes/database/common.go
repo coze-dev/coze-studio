@@ -27,8 +27,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/gopkg/logs"
 	"github.com/cloudwego/eino/compose"
 )
 

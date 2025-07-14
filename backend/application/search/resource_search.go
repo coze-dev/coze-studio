@@ -32,10 +32,10 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/taskgroup"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 var SearchSVC = &SearchApplicationService{}
@@ -92,7 +92,7 @@ func (s *SearchApplicationService) LibraryResourceList(ctx context.Context, req 
 		tasks.Go(func() error {
 			ri, err := s.packResource(ctx, v)
 			if err != nil {
-				logs.CtxErrorf(ctx, "[LibraryResourceList] packResource failed, will ignore resID: %d, Name : %s, resType: %d, err: %v",
+				logs.CtxError(ctx, "[LibraryResourceList] packResource failed, will ignore resID: %d, Name : %s, resType: %d, err: %v",
 					v.ResID, v.GetName(), v.ResType, err)
 				return err
 			}
@@ -124,7 +124,7 @@ func (s *SearchApplicationService) LibraryResourceList(ctx context.Context, req 
 func (s *SearchApplicationService) getResourceDefaultIconURL(ctx context.Context, tp common.ResType) string {
 	iconURL, ok := resType2iconURI[tp]
 	if !ok {
-		logs.CtxWarnf(ctx, "[getDefaultIconURL] don't have type: %d  default icon", tp)
+		logs.CtxWarn(ctx, "[getDefaultIconURL] don't have type: %d  default icon", tp)
 
 		return ""
 	}
@@ -135,7 +135,7 @@ func (s *SearchApplicationService) getResourceDefaultIconURL(ctx context.Context
 func (s *SearchApplicationService) getURL(ctx context.Context, uri string) string {
 	url, err := s.TOS.GetObjectUrl(ctx, uri)
 	if err != nil {
-		logs.CtxWarnf(ctx, "[getDefaultIconURLWitURI] GetObjectUrl failed, uri: %s, err: %v", uri, err)
+		logs.CtxWarn(ctx, "[getDefaultIconURLWitURI] GetObjectUrl failed, uri: %s, err: %v", uri, err)
 
 		return ""
 	}
@@ -159,7 +159,7 @@ func (s *SearchApplicationService) getResourceIconURL(ctx context.Context, uri *
 func (s *SearchApplicationService) packUserInfo(ctx context.Context, ri *common.ResourceInfo, ownerID int64) *common.ResourceInfo {
 	u, err := s.UserDomainSVC.GetUserInfo(ctx, ownerID)
 	if err != nil {
-		logs.CtxWarnf(ctx, "[LibraryResourceList] GetUserInfo failed, uid: %d, resID: %d, Name : %s, err: %v",
+		logs.CtxWarn(ctx, "[LibraryResourceList] GetUserInfo failed, uid: %d, resID: %d, Name : %s, err: %v",
 			ownerID, ri.ResID, ri.GetName(), err)
 	} else {
 		ri.CreatorName = ptr.Of(u.Name)
@@ -199,7 +199,7 @@ func (s *SearchApplicationService) packResource(ctx context.Context, doc *entity
 
 	data, err := packer.GetDataInfo(ctx)
 	if err != nil {
-		logs.CtxWarnf(ctx, "[packResource] GetDataInfo failed, resID: %d, Name : %s, resType: %d, err: %v",
+		logs.CtxWarn(ctx, "[packResource] GetDataInfo failed, resID: %d, Name : %s, resType: %d, err: %v",
 			doc.ResID, doc.GetName(), doc.ResType, err)
 
 		ri.Icon = ptr.Of(s.getResourceDefaultIconURL(ctx, doc.ResType))
@@ -283,7 +283,7 @@ func (s *SearchApplicationService) packAPPResources(ctx context.Context, resourc
 		tasks.Go(func() error {
 			ri, err := s.packProjectResource(ctx, v)
 			if err != nil {
-				logs.CtxErrorf(ctx, "packAPPResources failed, will ignore resID: %d, Name : %s, resType: %d, err: %v",
+				logs.CtxError(ctx, "packAPPResources failed, will ignore resID: %d, Name : %s, resType: %d, err: %v",
 					v.ResID, v.GetName(), v.ResType, err)
 				return err
 			}
@@ -299,7 +299,7 @@ func (s *SearchApplicationService) packAPPResources(ctx context.Context, resourc
 			case common.ResType_Database, common.ResType_Knowledge:
 				dataGroup.ResourceList = append(dataGroup.GetResourceList(), ri)
 			default:
-				logs.CtxWarnf(ctx, "unsupported resType: %d", v.ResType)
+				logs.CtxWarn(ctx, "unsupported resType: %d", v.ResType)
 			}
 
 			return nil
@@ -337,7 +337,7 @@ func (s *SearchApplicationService) packProjectResource(ctx context.Context, reso
 		}
 		di, err := packer.GetDataInfo(ctx)
 		if err != nil {
-			logs.CtxErrorf(ctx, "GetDataInfo failed, resID=%d, resType=%d, err=%v",
+			logs.CtxError(ctx, "GetDataInfo failed, resID=%d, resType=%d, err=%v",
 				resource.ResID, resource.ResType, err)
 		} else {
 			info.BizResStatus = ptr.Of(*di.status)
@@ -358,7 +358,7 @@ func (s *SearchApplicationService) packProjectResource(ctx context.Context, reso
 		if err != nil {
 			var e errorx.StatusError
 			if !errors.As(err, &e) {
-				logs.CtxErrorf(ctx, "CheckPluginToolsDebugStatus failed, resID=%d, resType=%d, err=%v",
+				logs.CtxError(ctx, "CheckPluginToolsDebugStatus failed, resID=%d, resType=%d, err=%v",
 					resource.ResID, resource.ResType, err)
 			} else {
 				actions := slices.Clone(info.Actions)

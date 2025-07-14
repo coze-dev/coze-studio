@@ -23,8 +23,8 @@ import (
 	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
 	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/entity"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (k *knowledgeSVC) isWritableKnowledgeAndDocument(ctx context.Context, knowledgeID, documentID int64) (bool, error) {
@@ -49,7 +49,7 @@ func (k *knowledgeSVC) isWritableKnowledge(ctx context.Context, knowledgeID int6
 		return false, fmt.Errorf("[isWritableKnowledge] GetByID failed, %w", err)
 	}
 	if knowledgeModel == nil {
-		logs.CtxErrorf(ctx, "[isWritableKnowledge] knowledge is nil, id=%d", knowledgeID)
+		logs.CtxError(ctx, "[isWritableKnowledge] knowledge is nil, id=%d", knowledgeID)
 		return false, errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", "[isWritableKnowledge] knowledge not found"))
 	}
 	switch model.KnowledgeStatus(knowledgeModel.Status) {
@@ -68,7 +68,7 @@ func (k *knowledgeSVC) isWritableDocument(ctx context.Context, documentID int64)
 		return false, fmt.Errorf("[isWritableDocument] GetByID failed, %w", err)
 	}
 	if documentModel == nil {
-		logs.CtxErrorf(ctx, "[isWritableDocument] document is nil, id=%d", documentID)
+		logs.CtxError(ctx, "[isWritableDocument] document is nil, id=%d", documentID)
 		return false, errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", "[isWritableDocument] document not found"))
 	}
 	switch entity.DocumentStatus(documentModel.Status) {

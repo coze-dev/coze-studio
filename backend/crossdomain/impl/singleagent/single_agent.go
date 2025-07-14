@@ -30,7 +30,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/entity"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 var defaultSVC crossagent.SingleAgent
@@ -56,7 +56,7 @@ func (c *impl) StreamExecute(ctx context.Context, historyMsg []*message.Message,
 	singleAgentStreamExecReq := c.buildSingleAgentStreamExecuteReq(ctx, historyMsg, query, agentRuntime)
 
 	streamEvent, err := c.DomainSVC.StreamExecute(ctx, singleAgentStreamExecReq)
-	logs.CtxInfof(ctx, "agent StreamExecute req:%v, streamEvent:%v, err:%v", conv.DebugJsonToStr(singleAgentStreamExecReq), streamEvent, err)
+	logs.CtxInfo(ctx, "agent StreamExecute req:%v, streamEvent:%v, err:%v", conv.DebugJsonToStr(singleAgentStreamExecReq), streamEvent, err)
 	return streamEvent, err
 }
 

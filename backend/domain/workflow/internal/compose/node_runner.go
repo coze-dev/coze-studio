@@ -34,10 +34,10 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/execute"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type nodeRunConfig[O any] struct {
@@ -256,7 +256,7 @@ func (nc *nodeRunConfig[O]) invoke() func(ctx context.Context, input map[string]
 					output = errOutput
 					err = nil
 					if output, err = runner.postProcess(ctx, output); err != nil {
-						logs.CtxErrorf(ctx, "postProcess failed after returning error output: %v", err)
+						logs.CtxError(ctx, "postProcess failed after returning error output: %v", err)
 					}
 				}
 			}
@@ -490,7 +490,7 @@ func (r *nodeRunner[O]) invoke(ctx context.Context, input map[string]any, opts .
 				return nil, err
 			}
 
-			logs.CtxErrorf(ctx, "[invoke] node %s ID %s failed on %d attempt, err: %v", r.nodeName, r.nodeKey, n, err)
+			logs.CtxError(ctx, "[invoke] node %s ID %s failed on %d attempt, err: %v", r.nodeName, r.nodeKey, n, err)
 			if r.maxRetry > n {
 				n++
 				if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil && exeCtx.NodeCtx != nil {
@@ -521,7 +521,7 @@ func (r *nodeRunner[O]) stream(ctx context.Context, input map[string]any, opts .
 				return nil, err
 			}
 
-			logs.CtxErrorf(ctx, "[invoke] node %s ID %s failed on %d attempt, err: %v", r.nodeName, r.nodeKey, n, err)
+			logs.CtxError(ctx, "[invoke] node %s ID %s failed on %d attempt, err: %v", r.nodeName, r.nodeKey, n, err)
 			if r.maxRetry > n {
 				n++
 				if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil && exeCtx.NodeCtx != nil {
@@ -564,7 +564,7 @@ func (r *nodeRunner[O]) transform(ctx context.Context, input *schema.StreamReade
 				return nil, err
 			}
 
-			logs.CtxErrorf(ctx, "[invoke] node %s ID %s failed on %d attempt, err: %v", r.nodeName, r.nodeKey, n, err)
+			logs.CtxError(ctx, "[invoke] node %s ID %s failed on %d attempt, err: %v", r.nodeName, r.nodeKey, n, err)
 			if r.maxRetry > n {
 				n++
 				if exeCtx := execute.GetExeCtx(ctx); exeCtx != nil && exeCtx.NodeCtx != nil {
@@ -709,7 +709,7 @@ func parseDefaultOutput(ctx context.Context, data string, schema_ map[string]*vo
 	}
 
 	if ws != nil {
-		logs.CtxWarnf(ctx, "convert output warnings: %v", *ws)
+		logs.CtxWarn(ctx, "convert output warnings: %v", *ws)
 	}
 
 	return r, nil
@@ -739,7 +739,7 @@ func preTypeConverter(inTypes map[string]*vo.TypeInfo) func(ctx context.Context,
 		}
 
 		if ws != nil {
-			logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+			logs.CtxWarn(ctx, "convert inputs warnings: %v", *ws)
 		}
 
 		return out, err

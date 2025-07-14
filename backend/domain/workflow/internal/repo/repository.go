@@ -47,10 +47,10 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type RepositoryImpl struct {
@@ -290,7 +290,7 @@ func (r *RepositoryImpl) CreateVersion(ctx context.Context, id int64, info *vo.V
 	}
 
 	if result.RowsAffected == 0 {
-		logs.CtxWarnf(ctx, "update workflow draft when publish failed: no rows affected. WorkflowID: %d", id)
+		logs.CtxWarn(ctx, "update workflow draft when publish failed: no rows affected. WorkflowID: %d", id)
 	}
 
 	_, err = r.query.WorkflowMeta.WithContext(ctx).
@@ -301,7 +301,7 @@ func (r *RepositoryImpl) CreateVersion(ctx context.Context, id int64, info *vo.V
 			r.query.WorkflowMeta.LatestVersionTs.Value(time.Now().UnixMilli()),
 		)
 	if err != nil {
-		logs.CtxWarnf(ctx, "update workflow meta when publish failed: %v", err)
+		logs.CtxWarn(ctx, "update workflow meta when publish failed: %v", err)
 	}
 
 	return nil
@@ -380,22 +380,22 @@ func (r *RepositoryImpl) MDelete(ctx context.Context, ids []int64) error {
 	safego.Go(ctx, func() {
 		_, err = r.query.WorkflowDraft.WithContext(ctx).Where(r.query.WorkflowDraft.ID.In(ids...)).Delete()
 		if err != nil {
-			logs.CtxWarnf(ctx, "delete workflow draft failed err=%v, ids %v", err, ids)
+			logs.CtxWarn(ctx, "delete workflow draft failed err=%v, ids %v", err, ids)
 		}
 
 		_, err = r.query.WorkflowVersion.WithContext(ctx).Where(r.query.WorkflowVersion.ID.In(ids...)).Delete()
 		if err != nil {
-			logs.CtxWarnf(ctx, "delete workflow version failed err=%v, ids %v", err, ids)
+			logs.CtxWarn(ctx, "delete workflow version failed err=%v, ids %v", err, ids)
 		}
 
 		_, err = r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowReference.ID.In(ids...)).Delete()
 		if err != nil {
-			logs.CtxWarnf(ctx, "delete workflow reference failed err=%v, ids %v", err, ids)
+			logs.CtxWarn(ctx, "delete workflow reference failed err=%v, ids %v", err, ids)
 
 		}
 		_, err = r.query.WorkflowReference.WithContext(ctx).Where(r.query.WorkflowReference.ReferringID.In(ids...)).Delete()
 		if err != nil {
-			logs.CtxWarnf(ctx, "delete workflow reference refer failed err=%v, ids %v", err, ids)
+			logs.CtxWarn(ctx, "delete workflow reference refer failed err=%v, ids %v", err, ids)
 		}
 	})
 
@@ -424,7 +424,7 @@ func (r *RepositoryImpl) GetMeta(ctx context.Context, id int64) (_ *vo.Meta, err
 func (r *RepositoryImpl) convertMeta(ctx context.Context, meta *model.WorkflowMeta) (*vo.Meta, error) {
 	url, err := r.tos.GetObjectUrl(ctx, meta.IconURI)
 	if err != nil {
-		logs.CtxWarnf(ctx, "failed to get url for workflow meta %v", err)
+		logs.CtxWarn(ctx, "failed to get url for workflow meta %v", err)
 	}
 	// Initialize the result entity
 	wfMeta := &vo.Meta{
@@ -805,7 +805,7 @@ func (r *RepositoryImpl) MGetDrafts(ctx context.Context, policy *vo.MGetPolicy) 
 	for i, draft := range combinedDrafts {
 		url, err := r.tos.GetObjectUrl(ctx, draft.IconURI)
 		if err != nil {
-			logs.CtxWarnf(ctx, "failed to get url for workflow meta %v", err)
+			logs.CtxWarn(ctx, "failed to get url for workflow meta %v", err)
 		}
 
 		canvasInfo := &vo.CanvasInfo{
@@ -964,7 +964,7 @@ func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetP
 	for i, version := range combinedVersions {
 		url, err := r.tos.GetObjectUrl(ctx, version.IconURI)
 		if err != nil {
-			logs.CtxWarnf(ctx, "failed to get url for workflow meta %v", err)
+			logs.CtxWarn(ctx, "failed to get url for workflow meta %v", err)
 		}
 
 		canvasInfo := &vo.CanvasInfo{
@@ -1207,7 +1207,7 @@ func (r *RepositoryImpl) CreateSnapshotIfNeeded(ctx context.Context, id int64, c
 
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			logs.CtxErrorf(ctx, "query workflow snapshot failed err=%v", err)
+			logs.CtxError(ctx, "query workflow snapshot failed err=%v", err)
 		}
 	} else if latestSnapshot != nil { // already have this snapshot, no need to create it
 		return nil
@@ -1433,7 +1433,7 @@ func (r *RepositoryImpl) CopyWorkflow(ctx context.Context, workflowID int64, pol
 		}
 		err = r.redis.WithContext(ctx).Expire(copiedWorkflowRedisKey, copyWorkflowRedisKeyExpireInterval).Err()
 		if err != nil {
-			logs.CtxWarnf(ctx, "failed to set the rediskey %v expiration time, err=%v", copiedWorkflowRedisKey, err)
+			logs.CtxWarn(ctx, "failed to set the rediskey %v expiration time, err=%v", copiedWorkflowRedisKey, err)
 		}
 		copiedWorkflowName = fmt.Sprintf("%s_%d", wfMeta.Name, copiedNameSuffix)
 	} else {

@@ -130,10 +130,10 @@ func (d *eventbusImpl) PublishProject(ctx context.Context, event *entity.Project
 	//	err := defaultProjectHandle.indexProject(ctx, event)
 	//	if err == nil {
 	//		json, _ := sonic.Marshal(event)
-	//		logs.CtxInfof(ctx, "Sync PublishProject success: %s", string(json))
+	//		logs.CtxInfo(ctx, "Sync PublishProject success: %s", string(json))
 	//		return nil
 	//	}
-	//	logs.CtxWarnf(ctx, "Sync PublishProject indexProject error: %s", err.Error())
+	//	logs.CtxWarn(ctx, "Sync PublishProject indexProject error: %s", err.Error())
 	//}
 
 	bytes, err := sonic.Marshal(event)

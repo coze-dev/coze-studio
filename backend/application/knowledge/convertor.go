@@ -36,7 +36,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/parser"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 func assertValAs(typ document.TableColumnType, val string) (*document.ColumnData, error) {
@@ -627,7 +627,7 @@ func batchConvertKnowledgeEntity2Model(ctx context.Context, knowledgeEntity []*m
 			SelectAll:   true,
 		})
 		if err != nil {
-			logs.CtxErrorf(ctx, "list document failed, err: %v", err)
+			logs.CtxError(ctx, "list document failed, err: %v", err)
 			return nil, err
 		}
 		datasetStatus := dataset.DatasetStatus_DatasetReady

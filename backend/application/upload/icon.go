@@ -36,9 +36,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func InitService(oss storage.Storage) {
@@ -160,7 +160,7 @@ func (u *UploadService) UploadFileOpen(ctx context.Context, req *playground.Uplo
 	}
 	form, err := parseMultipartFormData(ctx, req)
 	if err != nil {
-		logs.CtxErrorf(ctx, "parse multipart form data failed, err: %v", err)
+		logs.CtxError(ctx, "parse multipart form data failed, err: %v", err)
 		return nil, err
 	}
 	if len(form.File["file"]) == 0 {

@@ -25,8 +25,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossconnector"
 	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/gopkg/logs"
 )
 
 func (s *singleAgentImpl) SavePublishRecord(ctx context.Context, p *entity.SingleAgentPublish, e *entity.SingleAgent) error {
@@ -37,7 +37,7 @@ func (s *singleAgentImpl) SavePublishRecord(ctx context.Context, p *entity.Singl
 
 	err = s.UpdatePublishInfo(ctx, e.AgentID, p.ConnectorIds)
 	if err != nil {
-		logs.CtxWarnf(ctx, "update publish info failed: %v, agentID: %d , connectorIDs: %v", err, e.AgentID, p.ConnectorIds)
+		logs.CtxWarn(ctx, "update publish info failed: %v, agentID: %d , connectorIDs: %v", err, e.AgentID, p.ConnectorIds)
 	}
 
 	return nil

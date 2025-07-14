@@ -35,7 +35,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 func newReplyCallback(_ context.Context, executeID string) (clb callbacks.Handler,
@@ -64,7 +64,7 @@ type replyChunkCallback struct {
 }
 
 func (r *replyChunkCallback) OnError(ctx context.Context, info *callbacks.RunInfo, err error) context.Context {
-	logs.CtxInfof(ctx, "info-OnError, info=%v, err=%v", conv.DebugJsonToStr(info), err)
+	logs.CtxInfo(ctx, "info-OnError, info=%v, err=%v", conv.DebugJsonToStr(info), err)
 
 	switch info.Component {
 	case compose.ComponentOfGraph:
@@ -94,7 +94,7 @@ func (r *replyChunkCallback) OnError(ctx context.Context, info *callbacks.RunInf
 			r.sw.Send(interruptEvent, nil)
 
 		} else {
-			logs.CtxErrorf(ctx, "node execute failed, component=%v, name=%v, err=%w",
+			logs.CtxError(ctx, "node execute failed, component=%v, name=%v, err=%w",
 				info.Component, info.Name, err)
 			var customErr errorx.StatusError
 			errMsg := "Internal server error"
@@ -110,7 +110,7 @@ func (r *replyChunkCallback) OnError(ctx context.Context, info *callbacks.RunInf
 }
 
 func (r *replyChunkCallback) OnStart(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
-	logs.CtxInfof(ctx, "info-OnStart, info=%v, input=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(input))
+	logs.CtxInfo(ctx, "info-OnStart, info=%v, input=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(input))
 
 	switch info.Component {
 	case compose.ComponentOfToolsNode:
@@ -128,7 +128,7 @@ func (r *replyChunkCallback) OnStart(ctx context.Context, info *callbacks.RunInf
 }
 
 func (r *replyChunkCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
-	logs.CtxInfof(ctx, "info-OnEnd, info=%v, output=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(output))
+	logs.CtxInfo(ctx, "info-OnEnd, info=%v, output=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(output))
 	switch info.Name {
 	case keyOfKnowledgeRetriever:
 		knowledgeEvent := &entity.AgentEvent{
@@ -183,7 +183,7 @@ func (r *replyChunkCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo,
 func (r *replyChunkCallback) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo,
 	output *schema.StreamReader[callbacks.CallbackOutput],
 ) context.Context {
-	logs.CtxInfof(ctx, "info-OnEndWithStreamOutput, info=%v, output=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(output))
+	logs.CtxInfo(ctx, "info-OnEndWithStreamOutput, info=%v, output=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(output))
 	switch info.Component {
 	case compose.ComponentOfGraph, components.ComponentOfChatModel:
 		if info.Name != keyOfReActAgent && info.Name != keyOfLLM {
@@ -227,7 +227,7 @@ func convInterruptInfo(ctx context.Context, interruptInfo *compose.InterruptInfo
 		break
 	}
 	toolsNodeExtra, ok := extra.(*compose.ToolsInterruptAndRerunExtra)
-	logs.CtxInfof(ctx, "toolsNodeExtra=%v, err=%v", toolsNodeExtra, ok)
+	logs.CtxInfo(ctx, "toolsNodeExtra=%v, err=%v", toolsNodeExtra, ok)
 
 	var toolCallID string
 

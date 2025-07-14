@@ -32,8 +32,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (p *pluginServiceImpl) GetOnlinePlugin(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error) {
@@ -173,7 +173,7 @@ func (p *pluginServiceImpl) ListCustomOnlinePlugins(ctx context.Context, spaceID
 			return nil, 0, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", pl.ResID)
 		}
 		if !exist {
-			logs.CtxWarnf(ctx, "online plugin not exist, pluginID=%d", pl.ResID)
+			logs.CtxWarn(ctx, "online plugin not exist, pluginID=%d", pl.ResID)
 			continue
 		}
 		plugins = append(plugins, draftPlugin)

@@ -29,7 +29,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type ShortCutCmdDAO struct {
@@ -51,7 +51,7 @@ func (dao *ShortCutCmdDAO) Create(ctx context.Context, shortcut *entity.Shortcut
 		return nil, err
 	}
 	createErr := dao.query.ShortcutCommand.WithContext(ctx).Debug().Create(createPO)
-	logs.CtxInfof(ctx, "ShortcutCommand %v, err:%v", conv.DebugJsonToStr(createPO), err)
+	logs.CtxInfo(ctx, "ShortcutCommand %v, err:%v", conv.DebugJsonToStr(createPO), err)
 	if createErr != nil {
 		return nil, createErr
 	}
@@ -157,12 +157,12 @@ func (dao *ShortCutCmdDAO) PublishCMDs(ctx context.Context, objID int64, cmdIDs 
 		if tx.Error != nil {
 			rbErr := tx.Rollback()
 			if rbErr != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err:%v", rbErr)
+				logs.CtxError(ctx, "rollback failed, err:%v", rbErr)
 			}
 		}
 		cErr := tx.Commit()
 		if cErr != nil {
-			logs.CtxErrorf(ctx, "commit failed, err:%v", cErr)
+			logs.CtxError(ctx, "commit failed, err:%v", cErr)
 		}
 	}()
 
@@ -194,7 +194,7 @@ func (dao *ShortCutCmdDAO) PublishCMDs(ctx context.Context, objID int64, cmdIDs 
 				Save(item)
 		}
 
-		logs.CtxInfof(ctx, "publish cmd %v, err:%v", conv.DebugJsonToStr(item), opErr)
+		logs.CtxInfo(ctx, "publish cmd %v, err:%v", conv.DebugJsonToStr(item), opErr)
 		if opErr != nil {
 			return opErr
 		}

@@ -52,9 +52,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type databaseService struct {
@@ -134,7 +134,7 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -144,7 +144,7 @@ func (d databaseService) CreateDatabase(ctx context.Context, req *CreateDatabase
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -244,7 +244,7 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *UpdateDatabase
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -254,7 +254,7 @@ func (d databaseService) UpdateDatabase(ctx context.Context, req *UpdateDatabase
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -299,7 +299,7 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -309,7 +309,7 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -335,7 +335,7 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 			TableName: draftInfo.ActualTableName,
 		})
 		if err != nil {
-			logs.CtxErrorf(ctx, "drop draft physical table failed: %v, table_name=%s", err, draftInfo.ActualTableName)
+			logs.CtxError(ctx, "drop draft physical table failed: %v, table_name=%s", err, draftInfo.ActualTableName)
 		}
 	}
 
@@ -345,7 +345,7 @@ func (d databaseService) DeleteDatabase(ctx context.Context, req *DeleteDatabase
 			TableName: onlineInfo.ActualTableName,
 		})
 		if err != nil {
-			logs.CtxErrorf(ctx, "drop online physical table failed: %v, table_name=%s", err, onlineInfo.ActualTableName)
+			logs.CtxError(ctx, "drop online physical table failed: %v, table_name=%s", err, onlineInfo.ActualTableName)
 		}
 	}
 
@@ -618,7 +618,7 @@ func (d databaseService) UpdateDatabaseRecord(ctx context.Context, req *UpdateDa
 			physicalFieldName := fieldInfo.PhysicalName
 			convertedValue, err := convertor.ConvertValueByType(valueStr, fieldInfo.Type)
 			if err != nil {
-				logs.CtxWarnf(ctx, "convert value failed for field %s: %v, using original value", fieldName, err)
+				logs.CtxWarn(ctx, "convert value failed for field %s: %v, using original value", fieldName, err)
 				convertedValue = valueStr
 			}
 			updateData[physicalFieldName] = convertedValue
@@ -1303,7 +1303,7 @@ func (d databaseService) executeInsertSQL(ctx context.Context, req *ExecuteSQLRe
 
 			convertedValue, err := convertor.ConvertValueByType(*fieldVal, field.Type)
 			if err != nil {
-				logs.CtxWarnf(ctx, "convert value failed: %v, using original value", err)
+				logs.CtxWarn(ctx, "convert value failed: %v, using original value", err)
 				rowData[field.PhysicalName] = *fieldVal
 			} else {
 				rowData[field.PhysicalName] = convertedValue
@@ -1359,7 +1359,7 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 
 		convertedValue, err := convertor.ConvertValueByType(*fieldVal, field.Type)
 		if err != nil {
-			logs.CtxWarnf(ctx, "convert value failed: %v, using original value", err)
+			logs.CtxWarn(ctx, "convert value failed: %v, using original value", err)
 			updateData[field.PhysicalName] = *fieldVal
 		} else {
 			updateData[field.PhysicalName] = convertedValue
@@ -2084,7 +2084,7 @@ func (d databaseService) DeleteDatabaseByAppID(ctx context.Context, req *DeleteD
 		if r := recover(); r != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 
 			err = fmt.Errorf("catch panic: %v\nstack=%s", r, string(debug.Stack()))
@@ -2094,7 +2094,7 @@ func (d databaseService) DeleteDatabaseByAppID(ctx context.Context, req *DeleteD
 		if err != nil {
 			e := tx.Rollback()
 			if e != nil {
-				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+				logs.CtxError(ctx, "rollback failed, err=%v", e)
 			}
 		}
 	}()
@@ -2138,7 +2138,7 @@ func (d databaseService) DeleteDatabaseByAppID(ctx context.Context, req *DeleteD
 			TableName: physical,
 		})
 		if err != nil {
-			logs.CtxErrorf(ctx, "drop online physical table failed: %v, table_name=%s", err, physical)
+			logs.CtxError(ctx, "drop online physical table failed: %v, table_name=%s", err, physical)
 		}
 	}
 	for _, physical := range draftPhysicals {
@@ -2146,7 +2146,7 @@ func (d databaseService) DeleteDatabaseByAppID(ctx context.Context, req *DeleteD
 			TableName: physical,
 		})
 		if err != nil {
-			logs.CtxErrorf(ctx, "drop draft physical table failed: %v, table_name=%s", err, physical)
+			logs.CtxError(ctx, "drop draft physical table failed: %v, table_name=%s", err, physical)
 		}
 	}
 

@@ -25,7 +25,7 @@ import (
 	veimagex "github.com/volcengine/volc-sdk-golang/service/imagex/v2"
 
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/imagex"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 func New(ak, sk, domain, uploadHost, template string, serverIDs []string) (imagex.ImageX, error) {
@@ -157,7 +157,7 @@ func (v *veImageX) GetResourceURL(ctx context.Context, uri string, opts ...image
 		Tpl:       option.Template,
 	}
 
-	logs.CtxInfof(ctx, "GetResourceURL param: %+v", param)
+	logs.CtxInfo(ctx, "GetResourceURL param: %+v", param)
 
 	instance := veimagex.DefaultInstance
 	resp, err := instance.GetResourceURL(context.Background(), param)

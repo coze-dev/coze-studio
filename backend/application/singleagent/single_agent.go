@@ -47,8 +47,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type SingleAgentApplicationService struct {
@@ -392,7 +392,7 @@ func (s *SingleAgentApplicationService) DeleteAgentDraft(ctx context.Context, re
 		},
 	})
 	if err != nil {
-		logs.CtxWarnf(ctx, "publish delete project event failed id = %v , err = %v", req.GetBotID(), err)
+		logs.CtxWarn(ctx, "publish delete project event failed id = %v , err = %v", req.GetBotID(), err)
 	}
 
 	return &developer_api.DeleteDraftBotResponse{
@@ -541,7 +541,7 @@ func (s *SingleAgentApplicationService) ValidateAgentDraftAccess(ctx context.Con
 	}
 
 	if do.CreatorID != *uid {
-		logs.CtxErrorf(ctx, "user(%d) is not the creator(%d) of the agent draft", *uid, do.CreatorID)
+		logs.CtxError(ctx, "user(%d) is not the creator(%d) of the agent draft", *uid, do.CreatorID)
 
 		return do, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("detail", "you are not the agent owner"))
 	}
@@ -630,7 +630,7 @@ func (s *SingleAgentApplicationService) ReportUserBehavior(ctx context.Context, 
 		},
 	})
 	if err != nil {
-		logs.CtxWarnf(ctx, "publish updated project event failed id=%v, err=%v", req.ResourceID, err)
+		logs.CtxWarn(ctx, "publish updated project event failed id=%v, err=%v", req.ResourceID, err)
 	}
 
 	return &playground.ReportUserBehaviorResponse{}, nil
@@ -656,7 +656,7 @@ func (s *SingleAgentApplicationService) GetAgentOnlineInfo(ctx context.Context, 
 		return nil, err
 	}
 	if agentInfo == nil {
-		logs.CtxErrorf(ctx, "agent(%d) is not exist", req.BotID)
+		logs.CtxError(ctx, "agent(%d) is not exist", req.BotID)
 		return nil, errorx.New(errno.ErrAgentPermissionCode, errorx.KV("msg", "agent not exist"))
 	}
 	if agentInfo.CreatorID != uid {

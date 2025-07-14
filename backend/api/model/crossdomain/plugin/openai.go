@@ -12,8 +12,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 	"github.com/cloudwego/eino/schema"
 )
 
@@ -213,7 +213,7 @@ func (op *Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map
 		}
 
 		if _, ok := result[paramVal.Name]; ok {
-			logs.CtxWarnf(ctx, "duplicate parameter name '%s'", paramVal.Name)
+			logs.CtxWarn(ctx, "duplicate parameter name '%s'", paramVal.Name)
 			continue
 		}
 
@@ -241,7 +241,7 @@ func (op *Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map
 			}
 
 			if _, ok := result[paramName]; ok {
-				logs.CtxWarnf(ctx, "duplicate parameter name '%s'", paramName)
+				logs.CtxWarn(ctx, "duplicate parameter name '%s'", paramName)
 				continue
 			}
 

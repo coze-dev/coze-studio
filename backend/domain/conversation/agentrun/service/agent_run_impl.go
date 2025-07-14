@@ -45,9 +45,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type runImpl struct {
@@ -84,7 +84,7 @@ func (c *runImpl) AgentRun(ctx context.Context, arm *entity.AgentRunMeta) (*sche
 
 	defer func() {
 		if pe := recover(); pe != nil {
-			logs.CtxErrorf(ctx, "panic recover: %v\n, [stack]:%v", pe, string(debug.Stack()))
+			logs.CtxError(ctx, "panic recover: %v\n, [stack]:%v", pe, string(debug.Stack()))
 			return
 		}
 	}()
@@ -393,7 +393,7 @@ func (c *runImpl) getRunID(rr []*model.RunRecord) []int64 {
 func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) (*entity.RunRecordMeta, error) {
 	runPoData, err := c.RunRecordRepo.Create(ctx, rtDependence.runMeta)
 	if err != nil {
-		logs.CtxErrorf(ctx, "RunRecordRepo.Create error: %v", err)
+		logs.CtxError(ctx, "RunRecordRepo.Create error: %v", err)
 		return nil, err
 	}
 
@@ -403,7 +403,7 @@ func (c *runImpl) createRunRecord(ctx context.Context, sw *schema.StreamWriter[*
 
 	err = c.runProcess.StepToInProgress(ctx, srRecord, sw)
 	if err != nil {
-		logs.CtxErrorf(ctx, "runProcess.StepToInProgress error: %v", err)
+		logs.CtxError(ctx, "runProcess.StepToInProgress error: %v", err)
 		return nil, err
 	}
 
@@ -484,7 +484,7 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 	var err error
 	defer func() {
 		if err != nil {
-			logs.CtxErrorf(ctx, "run.push error: %v", err)
+			logs.CtxError(ctx, "run.push error: %v", err)
 			c.handlerErr(ctx, err, sw)
 		}
 	}()
@@ -494,7 +494,7 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 		if !ok || chunk == nil {
 			return
 		}
-		logs.CtxInfof(ctx, "hanlder event:%v,err:%v", conv.DebugJsonToStr(chunk), chunk.Err)
+		logs.CtxInfo(ctx, "hanlder event:%v,err:%v", conv.DebugJsonToStr(chunk), chunk.Err)
 		if chunk.Err != nil {
 			if errors.Is(chunk.Err, io.EOF) {
 				return

@@ -28,8 +28,8 @@ import (
 	openapiauthApp "code.byted.org/data_edc/workflow_engine_next/application/openauth"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 // GetPersonalAccessTokenAndPermission .
@@ -50,7 +50,7 @@ func GetPersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestCont
 
 	resp, err := openapiauthApp.OpenAuthApplication.GetPersonalAccessTokenAndPermission(ctx, &req)
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplicationService.GetPersonalAccessTokenAndPermission failed, err=%v", err)
+		logs.CtxError(ctx, "OpenAuthApplicationService.GetPersonalAccessTokenAndPermission failed, err=%v", err)
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
@@ -76,7 +76,7 @@ func DeletePersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestC
 
 	resp, err := openapiauthApp.OpenAuthApplication.DeletePersonalAccessTokenAndPermission(ctx, &req)
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplication.DeletePersonalAccessTokenAndPermission failed, err=%v", err)
+		logs.CtxError(ctx, "OpenAuthApplication.DeletePersonalAccessTokenAndPermission failed, err=%v", err)
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
@@ -104,7 +104,7 @@ func ListPersonalAccessTokens(ctx context.Context, c *app.RequestContext) {
 
 	resp, err := openapiauthApp.OpenAuthApplication.ListPersonalAccessTokens(ctx, &req)
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplication.ListPersonalAccessTokens failed, err=%v", err)
+		logs.CtxError(ctx, "OpenAuthApplication.ListPersonalAccessTokens failed, err=%v", err)
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
@@ -130,7 +130,7 @@ func CreatePersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestC
 
 	resp, err := openapiauthApp.OpenAuthApplication.CreatePersonalAccessToken(ctx, &req)
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplicationService.CreatePersonalAccessToken failed, err=%v", err)
+		logs.CtxError(ctx, "OpenAuthApplicationService.CreatePersonalAccessToken failed, err=%v", err)
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
@@ -160,7 +160,7 @@ func UpdatePersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestC
 
 	resp, err := openapiauthApp.OpenAuthApplication.UpdatePersonalAccessTokenAndPermission(ctx, &req)
 	if err != nil {
-		logs.CtxErrorf(ctx, "OpenAuthApplication.UpdatePersonalAccessTokenAndPermission failed, err=%v", err)
+		logs.CtxError(ctx, "OpenAuthApplication.UpdatePersonalAccessTokenAndPermission failed, err=%v", err)
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}

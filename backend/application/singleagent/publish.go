@@ -34,9 +34,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/taskgroup"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *developer_api.PublishDraftBotRequest) (*developer_api.PublishDraftBotResponse, error) {
@@ -99,7 +99,7 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		tasks.Go(func() error {
 			_, err = s.DomainSVC.CreateSingleAgent(ctx, connectorID, version, draftAgent)
 			if err != nil {
-				logs.CtxWarnf(ctx, "create single agent failed: %v, agentID: %d, connectorID: %d , version : %s", err, draftAgent.AgentID, connectorID, version)
+				logs.CtxWarn(ctx, "create single agent failed: %v, agentID: %d, connectorID: %d , version : %s", err, draftAgent.AgentID, connectorID, version)
 				lock.Lock()
 				publishResult[conv.Int64ToStr(connectorID)] = &developer_api.ConnectorBindResult{
 					PublishResultStatus: ptr.Of(developer_api.PublishResultStatus_Failed),
@@ -131,7 +131,7 @@ func (s *SingleAgentApplicationService) PublishAgent(ctx context.Context, req *d
 		},
 	})
 	if err != nil {
-		logs.CtxWarnf(ctx, "publish project event failed, agentID: %d, err : %v", draftAgent.AgentID, err)
+		logs.CtxWarn(ctx, "publish project event failed, agentID: %d, err : %v", draftAgent.AgentID, err)
 	}
 
 	return &developer_api.PublishDraftBotResponse{
@@ -234,7 +234,7 @@ func publishAgentPlugins(ctx context.Context, appContext *ServiceComponents, pub
 }
 
 func publishShortcutCommand(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
-	logs.CtxInfof(ctx, "publishShortcutCommand agentID: %d, shortcutCommand: %v", agent.AgentID, agent.ShortcutCommand)
+	logs.CtxInfo(ctx, "publishShortcutCommand agentID: %d, shortcutCommand: %v", agent.AgentID, agent.ShortcutCommand)
 	if agent.ShortcutCommand == nil || len(agent.ShortcutCommand) == 0 {
 		return agent, nil
 	}

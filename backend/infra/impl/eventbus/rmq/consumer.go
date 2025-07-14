@@ -29,9 +29,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/signal"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/gopkg/logs"
 )
 
 func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.ConsumerHandler, opts ...eventbus.ConsumerOpt) error {
@@ -86,10 +86,10 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 					Body:  msgArr[i].Body,
 				}
 
-				logs.CtxDebugf(ctx, "[Subscribe] receive msg : %v \n", conv.DebugJsonToStr(msg))
+				logs.CtxDebug(ctx, "[Subscribe] receive msg : %v \n", conv.DebugJsonToStr(msg))
 				err = consumerHandler.HandleMessage(ctx, msg)
 				if err != nil {
-					logs.CtxErrorf(ctx, "[Subscribe] handle msg failed, topic : %s , group : %s, err: %v \n", msg.Topic, msg.Group, err)
+					logs.CtxError(ctx, "[Subscribe] handle msg failed, topic : %s , group : %s, err: %v \n", msg.Topic, msg.Group, err)
 					return consumer.ConsumeRetryLater, err // TODO: 策略可以可以配置
 				}
 
@@ -110,7 +110,7 @@ func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.
 	safego.Go(ctx, func() {
 		signal.WaitExit()
 		if err := c.Shutdown(); err != nil {
-			logs.CtxErrorf(ctx, "shutdown consumer error: %v", err)
+			logs.CtxError(ctx, "shutdown consumer error: %v", err)
 		}
 	})
 

@@ -27,7 +27,7 @@ import (
 	dbservice "code.byted.org/data_edc/workflow_engine_next/domain/memory/database/service"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 var defaultAction = []*common.ResourceAction{
@@ -102,7 +102,7 @@ func (p *pluginPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 
 	iconURL, err := p.appContext.TOS.GetObjectUrl(ctx, plugin.GetIconURI())
 	if err != nil {
-		logs.CtxWarnf(ctx, "get icon url failed with '%s', err=%v", plugin.GetIconURI(), err)
+		logs.CtxWarn(ctx, "get icon url failed with '%s', err=%v", plugin.GetIconURI(), err)
 	}
 
 	return &dataInfo{

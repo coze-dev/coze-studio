@@ -26,7 +26,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/document/searchstore"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/embedding"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type ManagerConfig struct {
@@ -193,7 +193,7 @@ func (m *manager) createCollection(ctx context.Context, req *searchstore.CreateR
 		return err
 	}
 
-	logs.CtxInfof(ctx, "[vikingdb] Create collection success, collection=%s", req.CollectionName)
+	logs.CtxInfo(ctx, "[vikingdb] Create collection success, collection=%s", req.CollectionName)
 
 	return nil
 }
@@ -228,7 +228,7 @@ func (m *manager) createIndex(ctx context.Context, req *searchstore.CreateReques
 		return err
 	}
 
-	logs.CtxInfof(ctx, "[vikingdb] Create index success, collection=%s, index=%s", req.CollectionName, vikingIndexName)
+	logs.CtxInfo(ctx, "[vikingdb] Create index success, collection=%s, index=%s", req.CollectionName, vikingIndexName)
 
 	return nil
 }

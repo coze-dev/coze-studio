@@ -29,7 +29,7 @@ import (
 	"github.com/google/uuid"
 
 	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 func AccessLogMW() app.HandlerFunc {
@@ -55,9 +55,9 @@ func AccessLogMW() app.HandlerFunc {
 
 		switch {
 		case status >= http.StatusInternalServerError:
-			logs.CtxErrorf(c, "%s", baseLog)
+			logs.CtxError(c, "%s", baseLog)
 		case status >= http.StatusBadRequest:
-			logs.CtxWarnf(c, "%s ", baseLog)
+			logs.CtxWarn(c, "%s ", baseLog)
 		default:
 			urlQuery := ctx.Request.URI().QueryString()
 			reqBody := bytesToString(ctx.Request.Body())
@@ -72,7 +72,7 @@ func AccessLogMW() app.HandlerFunc {
 
 			requestAuthType := ctx.GetInt32(RequestAuthTypeStr)
 			if requestAuthType != int32(RequestAuthTypeStaticFile) && filepath.Ext(path) == "" {
-				logs.CtxDebugf(c, "%s \nquery : %s \nreq : %s \nresp: %s",
+				logs.CtxDebug(c, "%s \nquery : %s \nreq : %s \nresp: %s",
 					baseLog, urlQuery, reqBody, respBody)
 			}
 		}

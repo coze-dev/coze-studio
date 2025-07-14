@@ -31,8 +31,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 func (p *pluginServiceImpl) GetPluginNextVersion(ctx context.Context, pluginID int64) (version string, err error) {
@@ -48,13 +48,13 @@ func (p *pluginServiceImpl) GetPluginNextVersion(ctx context.Context, pluginID i
 
 	parts := strings.Split(pl.GetVersion(), ".") // Remove the 'v' and split
 	if len(parts) < 3 {
-		logs.CtxWarnf(ctx, "invalid version format '%s'", pl.GetVersion())
+		logs.CtxWarn(ctx, "invalid version format '%s'", pl.GetVersion())
 		return defaultVersion, nil
 	}
 
 	patch, err := strconv.ParseInt(parts[2], 10, 64)
 	if err != nil {
-		logs.CtxWarnf(ctx, "invalid version format '%s'", pl.GetVersion())
+		logs.CtxWarn(ctx, "invalid version format '%s'", pl.GetVersion())
 		return defaultVersion, nil
 	}
 
@@ -169,7 +169,7 @@ func (p *pluginServiceImpl) checkCanPublishAPPPlugins(ctx context.Context, versi
 			}
 		}
 		if len(failedPluginIDs) > 0 {
-			logs.CtxErrorf(ctx, "invalid version of plugins '%v'", failedPluginIDs)
+			logs.CtxError(ctx, "invalid version of plugins '%v'", failedPluginIDs)
 			return failedPluginIDs, nil
 		}
 	}
@@ -179,7 +179,7 @@ func (p *pluginServiceImpl) checkCanPublishAPPPlugins(ctx context.Context, versi
 		err = p.checkToolsDebugStatus(ctx, draftPlugin.ID)
 		if err != nil {
 			failedPluginIDs = append(failedPluginIDs, draftPlugin.ID)
-			logs.CtxErrorf(ctx, "checkToolsDebugStatus failed, pluginID=%d, err=%s", draftPlugin.ID, err)
+			logs.CtxError(ctx, "checkToolsDebugStatus failed, pluginID=%d, err=%s", draftPlugin.ID, err)
 		}
 	}
 

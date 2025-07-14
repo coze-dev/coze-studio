@@ -28,7 +28,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/modelmgr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 type UTChatModel struct {
@@ -50,7 +50,7 @@ func (q *UTChatModel) Generate(ctx context.Context, in []*schema.Message, _ ...m
 	}()
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
-			logs.CtxErrorf(ctx, "ut Chat Model: %s, panic: %v, stack: %s", q.ModelType, panicErr, string(debug.Stack()))
+			logs.CtxError(ctx, "ut Chat Model: %s, panic: %v, stack: %s", q.ModelType, panicErr, string(debug.Stack()))
 			callbacks.OnError(ctx, fmt.Errorf("model: %s, panic: %v, stack: %s", q.ModelType, panicErr, string(debug.Stack())))
 		}
 	}()
@@ -89,7 +89,7 @@ func (q *UTChatModel) Stream(ctx context.Context, in []*schema.Message, _ ...mod
 	}()
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
-			logs.CtxErrorf(ctx, "ut Chat Model: %s, panic: %v, stack: %s", q.ModelType, panicErr, string(debug.Stack()))
+			logs.CtxError(ctx, "ut Chat Model: %s, panic: %v, stack: %s", q.ModelType, panicErr, string(debug.Stack()))
 			callbacks.OnError(ctx, fmt.Errorf("model: %s, panic: %v, stack: %s", q.ModelType, panicErr, string(debug.Stack())))
 		}
 	}()

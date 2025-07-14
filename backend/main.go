@@ -85,7 +85,7 @@ func main() {
 //		}
 //		cfg.Certificates = append(cfg.Certificates, cert)
 //		opts = append(opts, server.WithTLS(cfg))
-//		logs.Infof("Use SSL")
+//		logs.Info("Use SSL")
 //	}
 //
 //	s := server.Default(opts...)
@@ -111,7 +111,7 @@ func main() {
 //
 //func loadEnv() (err error) {
 //	env := os.Getenv("APP_ENV")
-//	logs.Infof("APP_ENV: %s", env)
+//	logs.Info("APP_ENV: %s", env)
 //
 //	if env == "" {
 //		err = godotenv.Load()

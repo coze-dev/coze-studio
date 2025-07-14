@@ -43,9 +43,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type impl struct {
@@ -177,7 +177,7 @@ func (i *impl) Save(ctx context.Context, id int64, schema string) (err error) {
 func extractInputsAndOutputsNamedInfoList(ctx context.Context, c *vo.Canvas) (inputs []*vo.NamedTypeInfo, outputs []*vo.NamedTypeInfo) {
 	defer func() {
 		if err := recover(); err != nil {
-			logs.CtxWarnf(ctx, "failed to extract inputs and outputs: %v", err)
+			logs.CtxWarn(ctx, "failed to extract inputs and outputs: %v", err)
 		}
 	}()
 	var (
@@ -212,7 +212,7 @@ func extractInputsAndOutputsNamedInfoList(ctx context.Context, c *vo.Canvas) (in
 			return nInfo, nil
 		})
 		if err != nil {
-			logs.CtxWarnf(ctx, fmt.Sprintf("transform start node outputs to named info failed, err=%v", err))
+			logs.CtxWarn(ctx, fmt.Sprintf("transform start node outputs to named info failed, err=%v", err))
 		}
 	}
 
@@ -221,7 +221,7 @@ func extractInputsAndOutputsNamedInfoList(ctx context.Context, c *vo.Canvas) (in
 			return adaptor.BlockInputToNamedTypeInfo(a.Name, a.Input)
 		})
 		if err != nil {
-			logs.CtxWarnf(ctx, fmt.Sprintf("transform end node inputs to named info failed, err=%v", err))
+			logs.CtxWarn(ctx, fmt.Sprintf("transform end node inputs to named info failed, err=%v", err))
 		}
 	}
 

@@ -31,8 +31,8 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/knowledge/internal/dal/query"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type KnowledgeDocumentSliceDAO struct {
@@ -173,20 +173,20 @@ func (dao *KnowledgeDocumentSliceDAO) GetDocumentSliceIDs(ctx context.Context, d
 		errGroup.Go(func() (err error) {
 			defer func() {
 				if panicErr := recover(); panicErr != nil {
-					logs.CtxErrorf(ctx, "[getDocSliceIDs] routine error recover:%+v", panicErr)
+					logs.CtxError(ctx, "[getDocSliceIDs] routine error recover:%+v", panicErr)
 				}
 			}()
 
 			select {
 			case <-ctx.Done():
-				logs.CtxErrorf(ctx, "[getDocSliceIDs] doc_id:%d canceled", docID)
+				logs.CtxError(ctx, "[getDocSliceIDs] doc_id:%d canceled", docID)
 				return ctx.Err()
 			default:
 			}
 
 			slices, _, dbErr := dao.List(ctx, 0, docID, -1)
 			if dbErr != nil {
-				logs.CtxErrorf(ctx, "[getDocSliceIDs] get deleted slice id err:%+v, doc_id:%v", dbErr, docID)
+				logs.CtxError(ctx, "[getDocSliceIDs] get deleted slice id err:%+v, doc_id:%v", dbErr, docID)
 				return dbErr
 			}
 			mu.Lock()

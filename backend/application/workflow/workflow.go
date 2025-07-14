@@ -56,11 +56,11 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type ApplicationService struct {
@@ -91,7 +91,7 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 	for _, t := range req.NodeTypes {
 		entityType, err := nodeType2EntityNodeType(t)
 		if err != nil {
-			logs.CtxWarnf(ctx, "get node type %v failed, err:=%v", t, err)
+			logs.CtxWarn(ctx, "get node type %v failed, err:=%v", t, err)
 			continue
 		}
 		toQueryTypes[entityType] = true
@@ -1310,7 +1310,7 @@ func convertStreamRunEvent(ctx context.Context, workflowID int64) func(msg *enti
 			var nodeType workflow.NodeTemplateType
 			nodeType, err = entityNodeTypeToAPINodeTemplateType(msg.NodeType)
 			if err != nil {
-				logs.CtxErrorf(ctx, "convert node type %v failed, err:=%v", msg.NodeType, err)
+				logs.CtxError(ctx, "convert node type %v failed, err:=%v", msg.NodeType, err)
 				nodeType = workflow.NodeTemplateType(0)
 			}
 

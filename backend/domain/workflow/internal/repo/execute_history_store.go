@@ -34,9 +34,9 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/slices"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ternary"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
+	"code.byted.org/gopkg/logs"
 )
 
 type executeHistoryStoreImpl struct {
@@ -420,7 +420,7 @@ func convertNodeExecution(ctx context.Context, nodeExec *model.NodeExecution) *e
 	if len(nodeExec.Extra) > 0 {
 		var extra entity.NodeExtra
 		if err := sonic.UnmarshalString(nodeExec.Extra, &extra); err != nil {
-			logs.CtxErrorf(ctx, "failed to unmarshal extra: %v", err)
+			logs.CtxError(ctx, "failed to unmarshal extra: %v", err)
 		} else {
 			nodeExeEntity.Extra = &extra
 		}
@@ -444,7 +444,7 @@ func (e *executeHistoryStoreImpl) GetNodeExecutionsByWfExeID(ctx context.Context
 			meta := entity.NodeMetaByNodeType(nodeExeEntity.NodeType)
 			if meta.ExecutableMeta.IncrementalOutput {
 				if err := e.loadNodeExecutionFromRedis(ctx, nodeExeEntity); err != nil {
-					logs.CtxErrorf(ctx, "failed to load node execution from redis: %v", err)
+					logs.CtxError(ctx, "failed to load node execution from redis: %v", err)
 				}
 			}
 		}

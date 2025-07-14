@@ -27,7 +27,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/es"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/gopkg/logs"
 )
 
 var searchInstance *searchImpl
@@ -61,7 +61,7 @@ const (
 )
 
 func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.SearchProjectsRequest) (resp *searchEntity.SearchProjectsResponse, err error) {
-	logs.CtxDebugf(ctx, "[SearchProjects] search : %s", conv.DebugJsonToStr(req))
+	logs.CtxDebug(ctx, "[SearchProjects] search : %s", conv.DebugJsonToStr(req))
 	searchReq := &es.Request{
 		Query: &es.Query{
 			Bool: &es.BoolQuery{},
@@ -138,7 +138,7 @@ func (s *searchImpl) SearchProjects(ctx context.Context, req *searchEntity.Searc
 
 	result, err := s.esClient.Search(ctx, projectIndexName, searchReq)
 	if err != nil {
-		logs.CtxDebugf(ctx, "[Serarch.DO] err : %v", err)
+		logs.CtxDebug(ctx, "[Serarch.DO] err : %v", err)
 		return nil, err
 	}
 
@@ -241,7 +241,7 @@ func formatResourceNextCursor(ob string, val *searchEntity.ResourceDocument) str
 }
 
 func (s *searchImpl) SearchResources(ctx context.Context, req *searchEntity.SearchResourcesRequest) (resp *searchEntity.SearchResourcesResponse, err error) {
-	logs.CtxDebugf(ctx, "[SearchResources] search : %s", conv.DebugJsonToStr(req))
+	logs.CtxDebug(ctx, "[SearchResources] search : %s", conv.DebugJsonToStr(req))
 	searchReq := &es.Request{
 		Query: &es.Query{
 			Bool: &es.BoolQuery{},
