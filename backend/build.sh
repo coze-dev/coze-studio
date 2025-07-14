@@ -8,6 +8,8 @@ cp script/bootstrap.sh output/bootstrap_staging.sh
 chmod +x output/bootstrap_staging.sh
 find conf/ -type f ! -name "*_local.*" | xargs -I{} cp {} output/conf/
 cp run.sh output/run.sh
+cp infra/impl/document/parser/builtin/parse_pdf.py output/bin/parse_pdf.py
+cp infra/impl/document/parser/builtin/parse_docx.py output/bin/parse_docx.py
 cp -r conf/* output/conf/
 
 export CGO_ENABLED=0 && go build -o output/bin/${RUN_NAME}
