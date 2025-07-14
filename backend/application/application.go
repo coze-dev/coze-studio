@@ -43,6 +43,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossconversation"
 	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossdatabase"
 	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossdatacopy"
+	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossknowledge"
 	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossmessage"
 	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossmodelmgr"
 	"code.byted.org/data_edc/workflow_engine_next/crossdomain/contract/crossplugin"
@@ -56,6 +57,7 @@ import (
 	crossuserImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/crossuser"
 	databaseImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/database"
 	dataCopyImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/datacopy"
+	knowledgeImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/knowledge"
 	messageImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/message"
 	modelmgrImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/modelmgr"
 	pluginImpl "code.byted.org/data_edc/workflow_engine_next/crossdomain/impl/plugin"
@@ -127,7 +129,7 @@ func Init(ctx context.Context) (err error) {
 
 	crossconnector.SetDefaultSVC(connectorImpl.InitDomainService(basicServices.connectorSVC.DomainSVC))
 	crossdatabase.SetDefaultSVC(databaseImpl.InitDomainService(primaryServices.memorySVC.DatabaseDomainSVC))
-	// crossknowledge.SetDefaultSVC(knowledgeImpl.InitDomainService(primaryServices.knowledgeSVC.DomainSVC))
+	crossknowledge.SetDefaultSVC(knowledgeImpl.InitDomainService(primaryServices.knowledgeSVC.DomainSVC))
 	crossmodelmgr.SetDefaultSVC(modelmgrImpl.InitDomainService(basicServices.modelMgrSVC.DomainSVC))
 	crossplugin.SetDefaultSVC(pluginImpl.InitDomainService(primaryServices.pluginSVC.DomainSVC))
 	crossvariables.SetDefaultSVC(variablesImpl.InitDomainService(primaryServices.memorySVC.VariablesDomainSVC))
