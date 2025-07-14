@@ -30,7 +30,7 @@ func GetPythonFilePath(fileName string) string {
 		return fileName
 	}
 
-	return filepath.Join(cwd, fileName)
+	return filepath.Join(cwd, "app", fileName)
 }
 
 func GetPython3Path() string {
