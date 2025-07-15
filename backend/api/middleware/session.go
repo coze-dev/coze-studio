@@ -59,12 +59,12 @@ func SessionAuthMW() app.HandlerFunc {
 		}
 
 		// sessionID -> sessionData
-		session, _ := user.UserApplicationSVC.ValidateSession(c, string(s))
-		// if err != nil {
-		// 	logs.Errorf("[SessionAuthMW] validate session failed, err: %v", err)
-		// 	httputil.InternalError(c, ctx, err)
-		// 	return
-		// }
+		session, err := user.UserApplicationSVC.ValidateSession(c, string(s))
+		if err != nil {
+			logs.Errorf("[SessionAuthMW] validate session failed, err: %v", err)
+			httputil.InternalError(c, ctx, err)
+			return
+		}
 
 		if session != nil {
 			ctxcache.Store(c, consts.SessionDataKeyInCtx, session)

@@ -81,12 +81,13 @@ func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context,
 func (u *UserApplicationService) PassportWebLogoutGet(ctx context.Context, req *passport.PassportWebLogoutGetRequest) (
 	resp *passport.PassportWebLogoutGetResponse, err error,
 ) {
-	uid := ctxutil.MustGetUIDFromCtx(ctx)
+	// 这里先不做真实的登出操作，便于多人同时使用一个账号【TODO】
+	// uid := ctxutil.MustGetUIDFromCtx(ctx)
 
-	err = u.DomainSVC.Logout(ctx, uid)
-	if err != nil {
-		return nil, err
-	}
+	// err = u.DomainSVC.Logout(ctx, uid)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return &passport.PassportWebLogoutGetResponse{
 		Code: 0,

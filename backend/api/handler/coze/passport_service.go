@@ -33,6 +33,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/hertzutil/domain"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 	"code.byted.org/gopkg/logs"
 )
 
@@ -76,13 +77,13 @@ func PassportWebLogoutGet(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := user.UserApplicationSVC.PassportWebLogoutGet(ctx, &req)
+	_, err = user.UserApplicationSVC.PassportWebLogoutGet(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
 	}
 
-	c.JSON(http.StatusUnauthorized, resp)
+	c.JSON(http.StatusOK, &passport.PassportWebLogoutGetResponse{Code: errno.ErrUserAuthenticationFailed, Msg: "logout"})
 }
 
 // PassportWebEmailLoginPost .
