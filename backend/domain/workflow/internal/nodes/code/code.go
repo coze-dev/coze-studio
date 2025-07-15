@@ -109,6 +109,7 @@ var pythonBuiltinBlacklist = map[string]struct{}{
 var pythonThirdPartyWhitelist = map[string]struct{}{
 	"requests_async": {},
 	"numpy":          {},
+	"bytedenv":       {},
 }
 
 type Config struct {
