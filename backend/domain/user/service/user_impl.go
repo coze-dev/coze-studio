@@ -83,6 +83,15 @@ func (u *userImpl) Login(ctx context.Context, email, password string) (user *use
 		return nil, errorx.New(errno.ErrUserInfoInvalidateCode)
 	}
 
+	resURL, err := u.IconOSS.GetObjectUrl(ctx, userModel.IconURI)
+	if err != nil {
+		return nil, err
+	}
+	// 登录后如果已经有 SessionKey 就直接返回，不需要重新生成【TODO】
+	if userModel.SessionKey != "" {
+		return userPo2Do(userModel, resURL), nil
+	}
+
 	uniqueSessionID, err := u.IDGen.GenID(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate session id: %w", err)
@@ -100,13 +109,7 @@ func (u *userImpl) Login(ctx context.Context, email, password string) (user *use
 	}
 
 	userModel.SessionKey = sessionKey
-
-	// resURL, err := u.IconOSS.GetObjectUrl(ctx, userModel.IconURI)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	return userPo2Do(userModel, ""), nil
+	return userPo2Do(userModel, resURL), nil
 }
 
 func (u *userImpl) Logout(ctx context.Context, userID int64) (err error) {
