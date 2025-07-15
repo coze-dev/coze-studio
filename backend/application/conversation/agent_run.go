@@ -25,15 +25,17 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/message"
 	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/run"
 	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/agentrun"
-	"code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
+	crossDomainMessage "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
 	"code.byted.org/data_edc/workflow_engine_next/application/base/ctxutil"
 	saEntity "code.byted.org/data_edc/workflow_engine_next/domain/agent/singleagent/entity"
 	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/entity"
 	convEntity "code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/entity"
 	msgEntity "code.byted.org/data_edc/workflow_engine_next/domain/conversation/message/entity"
 	cmdEntity "code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/entity"
+	sseImpl "code.byted.org/data_edc/workflow_engine_next/infra/impl/sse"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
@@ -128,7 +130,7 @@ func (c *ConversationApplicationService) pullStream(ctx context.Context, sseSend
 		case entity.RunEventMessageDelta, entity.RunEventMessageCompleted:
 			sseSender.Send(ctx, buildMessageChunkEvent(run.RunEventMessage, buildARSM2Message(chunk, req)))
 		default:
-			logs.CtxErrorf(ctx, "unknown handler event:%v", chunk.Event)
+			logs.CtxError(ctx, "unknown handler event:%v", chunk.Event)
 		}
 
 	}

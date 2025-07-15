@@ -26,7 +26,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/crypto"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/crypto"
 	"github.com/stretchr/testify/assert"
 )
 

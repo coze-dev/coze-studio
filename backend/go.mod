@@ -54,6 +54,7 @@ require github.com/alicebob/miniredis/v2 v2.34.0
 
 require (
 	code.byted.org/ad/elastic-go/v7 v7.2.24
+	code.byted.org/gopkg/env v1.6.27
 	code.byted.org/gopkg/logs v1.2.26
 	code.byted.org/gopkg/tos v1.5.16
 	code.byted.org/gorm/bytedgorm v0.9.30
@@ -97,7 +98,6 @@ require (
 	code.byted.org/gopkg/consul v1.2.6 // indirect
 	code.byted.org/gopkg/ctxvalues v0.6.0 // indirect
 	code.byted.org/gopkg/debug v0.10.1 // indirect
-	code.byted.org/gopkg/env v1.6.27 // indirect
 	code.byted.org/gopkg/etcd_util v2.3.2+incompatible // indirect
 	code.byted.org/gopkg/etcdproxy v0.1.1 // indirect
 	code.byted.org/gopkg/logid v0.0.0-20211104042040-f78600e482f2 // indirect

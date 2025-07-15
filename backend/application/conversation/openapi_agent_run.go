@@ -35,6 +35,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/entity"
 	convEntity "code.byted.org/data_edc/workflow_engine_next/domain/conversation/conversation/entity"
 	cmdEntity "code.byted.org/data_edc/workflow_engine_next/domain/shortcutcmd/entity"
+	sseImpl "code.byted.org/data_edc/workflow_engine_next/infra/impl/sse"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
@@ -258,7 +259,7 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 func (a *OpenapiAgentRunApplication) pullStream(ctx context.Context, sseSender *sseImpl.SSenderImpl, streamer *schema.StreamReader[*entity.AgentRunResponse]) {
 	for {
 		chunk, recvErr := streamer.Recv()
-		logs.CtxInfof(ctx, "chunk :%v, err:%v", conv.DebugJsonToStr(chunk), recvErr)
+		logs.CtxInfo(ctx, "chunk :%v, err:%v", conv.DebugJsonToStr(chunk), recvErr)
 		if recvErr != nil {
 			if errors.Is(recvErr, io.EOF) {
 				return
@@ -280,7 +281,7 @@ func (a *OpenapiAgentRunApplication) pullStream(ctx context.Context, sseSender *
 			sseSender.Send(ctx, buildMessageChunkEvent(string(chunk.Event), buildARSM2ApiMessage(chunk)))
 
 		default:
-			logs.CtxErrorf(ctx, "unknow handler event:%v", chunk.Event)
+			logs.CtxError(ctx, "unknow handler event:%v", chunk.Event)
 		}
 	}
 }

@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
 	"github.com/stretchr/testify/assert"
 )
 

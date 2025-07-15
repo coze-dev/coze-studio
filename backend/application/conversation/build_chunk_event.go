@@ -21,7 +21,7 @@ import (
 
 	"github.com/hertz-contrib/sse"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/run"
 )
 
 func buildDoneEvent(event string) *sse.Event {

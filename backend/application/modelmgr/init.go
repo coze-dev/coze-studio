@@ -127,11 +127,11 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 			newMeta, err := svc.CreateModelMeta(ctx, modelMeta)
 			if err != nil {
 				if errors.Is(err, gorm.ErrDuplicatedKey) {
-					logs.CtxInfo("[loadStaticModelConfig] model meta conflict for id=%d, skip", newMeta.ID)
+					logs.CtxInfo(ctx, "[loadStaticModelConfig] model meta conflict for id=%d, skip", newMeta.ID)
 				}
 				return err
 			} else {
-				logs.CtxInfo("[loadStaticModelConfig] model meta create success, id=%d", newMeta.ID)
+				logs.CtxInfo(ctx, "[loadStaticModelConfig] model meta create success, id=%d", newMeta.ID)
 			}
 			id2Meta[newMeta.ID] = newMeta
 		} else {
@@ -161,11 +161,11 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 		modelEntity.Meta = *meta
 		if _, err = svc.CreateModel(ctx, &entity.Model{Model: modelEntity}); err != nil {
 			if errors.Is(err, gorm.ErrDuplicatedKey) {
-				logs.CtxInfo("[loadStaticModelConfig] model entity conflict for id=%d, skip", modelEntity.ID)
+				logs.CtxInfo(ctx, "[loadStaticModelConfig] model entity conflict for id=%d, skip", modelEntity.ID)
 			}
 			return err
 		} else {
-			logs.CtxInfo("[loadStaticModelConfig] model entity create success, id=%d", modelEntity.ID)
+			logs.CtxInfo(ctx, "[loadStaticModelConfig] model entity create success, id=%d", modelEntity.ID)
 		}
 	}
 
