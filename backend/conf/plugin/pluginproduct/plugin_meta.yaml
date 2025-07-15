@@ -847,3 +847,67 @@
       deprecated: false
       method: patch
       sub_url: /calendar/update_event/{event_id}
+- plugin_id: 22
+  product_id: 7379953949534715956
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: gaode_map.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: gaodedetu
+    name_for_human: 高德地图
+    description_for_model: 高德地图相关工具，可以帮助用户规划路线、搜索附近相关地点、还有其他常用小工具
+    description_for_human: 高德地图相关工具，可以帮助用户规划路线、搜索附近相关地点、还有其他常用小工具
+    logo_url: official_plugin_icon/plugin_gaode_map.jpeg
+    api:
+      type: openapi
+    common_params:
+      path: [ ]
+      query: [ ]
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+    auth:
+      type: service_http
+      key: Authorization
+      sub_type: token/api_key
+      payload: '{"key": "key", "service_token": "", "location": "Query"}'  # apply token on the Gaode Open Platform(https://lbs.amap.com/api).
+  tools:
+    - tool_id: 220001
+      deprecated: false
+      method: get
+      sub_url: /v3/geocode/geo
+    - tool_id: 220002
+      deprecated: false
+      method: get
+      sub_url: /v3/ip
+    - tool_id: 220003
+      deprecated: false
+      method: get
+      sub_url: /v3/geocode/regeo
+    - tool_id: 220004
+      deprecated: false
+      method: get
+      sub_url: /v5/direction/bicycling
+    - tool_id: 220005
+      deprecated: false
+      method: get
+      sub_url: /v5/direction/driving
+    - tool_id: 220006
+      deprecated: false
+      method: get
+      sub_url: /v5/direction/electrobike
+    - tool_id: 220007
+      deprecated: false
+      method: get
+      sub_url: /v5/direction/transit/integrated
+    - tool_id: 220008
+      deprecated: false
+      method: get
+      sub_url: /v5/direction/walking
+    - tool_id: 220009
+      deprecated: false
+      method: get
+      sub_url: /v5/place/around

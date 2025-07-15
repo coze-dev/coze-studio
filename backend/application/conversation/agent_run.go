@@ -19,6 +19,9 @@ package conversation
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"io"
+	"strconv"
 
 	"github.com/cloudwego/eino/schema"
 
@@ -39,36 +42,35 @@ import (
 	"code.byted.org/gopkg/logs"
 )
 
-func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentRunRequest) (*schema.StreamReader[*entity.AgentRunResponse], error) {
+func (c *ConversationApplicationService) Run(ctx context.Context, sseSender *sseImpl.SSenderImpl, ar *run.AgentRunRequest) error {
 	agentInfo, caErr := c.checkAgent(ctx, ar)
 	if caErr != nil {
 		logs.CtxError(ctx, "checkAgent err:%v", caErr)
-		return nil, caErr
+		return caErr
 	}
 
 	userID := ctxutil.MustGetUIDFromCtx(ctx)
 	conversationData, ccErr := c.checkConversation(ctx, ar, userID)
 
-	logs.CtxInfo(ctx, "conversationData:%v", conv.DebugJsonToStr(conversationData))
 	if ccErr != nil {
 		logs.CtxError(ctx, "checkConversation err:%v", ccErr)
-		return nil, ccErr
+		return ccErr
 	}
 
 	if ar.RegenMessageID != nil && ptr.From(ar.RegenMessageID) > 0 {
 		msgMeta, err := c.MessageDomainSVC.GetByID(ctx, ptr.From(ar.RegenMessageID))
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if msgMeta != nil {
 			if msgMeta.UserID != conv.Int64ToStr(userID) {
-				return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "message not match"))
+				return errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "message not match"))
 			}
 			delErr := c.MessageDomainSVC.Delete(ctx, &msgEntity.DeleteMeta{
 				RunIDs: []int64{msgMeta.RunID},
 			})
 			if delErr != nil {
-				return nil, delErr
+				return delErr
 			}
 		}
 
@@ -78,7 +80,7 @@ func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentR
 		cmdID := ar.GetShortcutCmdID()
 		cmdMeta, err := c.ShortcutDomainSVC.GetByCmdID(ctx, cmdID, 0)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		shortcutCmd = cmdMeta
 	}
@@ -86,9 +88,143 @@ func (c *ConversationApplicationService) Run(ctx context.Context, ar *run.AgentR
 	arr, err := c.buildAgentRunRequest(ctx, ar, userID, agentInfo.SpaceID, conversationData, shortcutCmd)
 	if err != nil {
 		logs.CtxError(ctx, "buildAgentRunRequest err:%v", err)
-		return nil, err
+		return err
 	}
-	return c.AgentRunDomainSVC.AgentRun(ctx, arr)
+	streamer, err := c.AgentRunDomainSVC.AgentRun(ctx, arr)
+	if err != nil {
+		return err
+	}
+	c.pullStream(ctx, sseSender, streamer, ar)
+	return nil
+}
+
+func (c *ConversationApplicationService) pullStream(ctx context.Context, sseSender *sseImpl.SSenderImpl, arStream *schema.StreamReader[*entity.AgentRunResponse], req *run.AgentRunRequest) {
+	var ackMessageInfo *entity.ChunkMessageItem
+	for {
+		chunk, recvErr := arStream.Recv()
+		if recvErr != nil {
+			if errors.Is(recvErr, io.EOF) {
+				return
+			}
+			sseSender.Send(ctx, buildErrorEvent(errno.ErrConversationAgentRunError, recvErr.Error()))
+			return
+		}
+
+		switch chunk.Event {
+		case entity.RunEventCreated, entity.RunEventInProgress, entity.RunEventCompleted:
+		case entity.RunEventError:
+			id, err := c.GenID(ctx)
+			if err != nil {
+				sseSender.Send(ctx, buildErrorEvent(errno.ErrConversationAgentRunError, err.Error()))
+
+			} else {
+				sseSender.Send(ctx, buildMessageChunkEvent(run.RunEventMessage, buildErrMsg(ackMessageInfo, chunk.Error, id)))
+			}
+		case entity.RunEventStreamDone:
+			sseSender.Send(ctx, buildDoneEvent(run.RunEventDone))
+		case entity.RunEventAck:
+			ackMessageInfo = chunk.ChunkMessageItem
+			sseSender.Send(ctx, buildMessageChunkEvent(run.RunEventMessage, buildARSM2Message(chunk, req)))
+		case entity.RunEventMessageDelta, entity.RunEventMessageCompleted:
+			sseSender.Send(ctx, buildMessageChunkEvent(run.RunEventMessage, buildARSM2Message(chunk, req)))
+		default:
+			logs.CtxErrorf(ctx, "unknown handler event:%v", chunk.Event)
+		}
+
+	}
+}
+
+func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest) []byte {
+	chunkMessageItem := chunk.ChunkMessageItem
+
+	chunkMessage := &run.RunStreamResponse{
+		ConversationID: strconv.FormatInt(chunkMessageItem.ConversationID, 10),
+		IsFinish:       ptr.Of(chunk.ChunkMessageItem.IsFinish),
+		Message: &message.ChatMessage{
+			Role:        string(chunkMessageItem.Role),
+			ContentType: string(chunkMessageItem.ContentType),
+			MessageID:   strconv.FormatInt(chunkMessageItem.ID, 10),
+			SectionID:   strconv.FormatInt(chunkMessageItem.SectionID, 10),
+			ContentTime: chunkMessageItem.CreatedAt,
+			ExtraInfo:   buildExt(chunkMessageItem.Ext),
+			ReplyID:     strconv.FormatInt(chunkMessageItem.ReplyID, 10),
+
+			Status:           "",
+			Type:             string(chunkMessageItem.MessageType),
+			Content:          chunkMessageItem.Content,
+			ReasoningContent: chunkMessageItem.ReasoningContent,
+			RequiredAction:   chunkMessageItem.RequiredAction,
+		},
+		Index: int32(chunkMessageItem.Index),
+		SeqID: int32(chunkMessageItem.SeqID),
+	}
+	if chunkMessageItem.MessageType == crossDomainMessage.MessageTypeAck {
+		chunkMessage.Message.Content = req.GetQuery()
+		chunkMessage.Message.ContentType = req.GetContentType()
+		chunkMessage.Message.ExtraInfo = &message.ExtraInfo{
+			LocalMessageID: req.GetLocalMessageID(),
+		}
+	} else {
+		chunkMessage.Message.ExtraInfo = buildExt(chunkMessageItem.Ext)
+		chunkMessage.Message.SenderID = ptr.Of(strconv.FormatInt(chunkMessageItem.AgentID, 10))
+		chunkMessage.Message.Content = chunkMessageItem.Content
+
+		if chunkMessageItem.MessageType == crossDomainMessage.MessageTypeKnowledge {
+			chunkMessage.Message.Type = string(crossDomainMessage.MessageTypeVerbose)
+		}
+	}
+
+	if chunk.ChunkMessageItem.IsFinish && chunkMessageItem.MessageType == crossDomainMessage.MessageTypeAnswer {
+		chunkMessage.Message.Content = ""
+	}
+
+	mCM, _ := json.Marshal(chunkMessage)
+	return mCM
+}
+
+func buildExt(extra map[string]string) *message.ExtraInfo {
+	if extra == nil {
+		return nil
+	}
+
+	return &message.ExtraInfo{
+		InputTokens:         extra["input_tokens"],
+		OutputTokens:        extra["output_tokens"],
+		Token:               extra["token"],
+		PluginStatus:        extra["plugin_status"],
+		TimeCost:            extra["time_cost"],
+		WorkflowTokens:      extra["workflow_tokens"],
+		BotState:            extra["bot_state"],
+		PluginRequest:       extra["plugin_request"],
+		ToolName:            extra["tool_name"],
+		Plugin:              extra["plugin"],
+		MockHitInfo:         extra["mock_hit_info"],
+		MessageTitle:        extra["message_title"],
+		StreamPluginRunning: extra["stream_plugin_running"],
+		ExecuteDisplayName:  extra["execute_display_name"],
+		TaskType:            extra["task_type"],
+		ReferFormat:         extra["refer_format"],
+	}
+}
+func buildErrMsg(ackChunk *entity.ChunkMessageItem, err *entity.RunError, id int64) []byte {
+
+	chunkMessage := &run.RunStreamResponse{
+		IsFinish:       ptr.Of(true),
+		ConversationID: strconv.FormatInt(ackChunk.ConversationID, 10),
+		Message: &message.ChatMessage{
+			Role:        string(schema.Assistant),
+			ContentType: string(crossDomainMessage.ContentTypeText),
+			Type:        string(crossDomainMessage.MessageTypeAnswer),
+			MessageID:   strconv.FormatInt(id, 10),
+			SectionID:   strconv.FormatInt(ackChunk.SectionID, 10),
+			ReplyID:     strconv.FormatInt(ackChunk.ReplyID, 10),
+			Content:     "Something error:" + err.Msg,
+			ExtraInfo:   &message.ExtraInfo{},
+		},
+	}
+
+	mCM, _ := json.Marshal(chunkMessage)
+	return mCM
 }
 
 func (c *ConversationApplicationService) GenID(ctx context.Context) (int64, error) {
@@ -153,11 +289,11 @@ func (c *ConversationApplicationService) checkAgent(ctx context.Context, ar *run
 }
 
 func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Context, ar *run.AgentRunRequest, userID int64, spaceID int64, conversationData *convEntity.Conversation, shortcutCMD *cmdEntity.ShortcutCmd) (*entity.AgentRunMeta, error) {
-	var contentType message.ContentType
-	contentType = message.ContentTypeText
+	var contentType crossDomainMessage.ContentType
+	contentType = crossDomainMessage.ContentTypeText
 
-	if ptr.From(ar.ContentType) != string(message.ContentTypeText) {
-		contentType = message.ContentTypeMix
+	if ptr.From(ar.ContentType) != string(crossDomainMessage.ContentTypeText) {
+		contentType = crossDomainMessage.ContentTypeMix
 	}
 
 	shortcutCMDData, err := c.buildTools(ctx, ar.ToolList, shortcutCMD)
@@ -231,13 +367,13 @@ func (c *ConversationApplicationService) buildTools(ctx context.Context, tools [
 	return ts, nil
 }
 
-func (c *ConversationApplicationService) buildMultiContent(ctx context.Context, ar *run.AgentRunRequest) []*message.InputMetaData {
-	var multiContents []*message.InputMetaData
+func (c *ConversationApplicationService) buildMultiContent(ctx context.Context, ar *run.AgentRunRequest) []*crossDomainMessage.InputMetaData {
+	var multiContents []*crossDomainMessage.InputMetaData
 
 	switch *ar.ContentType {
 	case run.ContentTypeText:
-		multiContents = append(multiContents, &message.InputMetaData{
-			Type: message.InputTypeText,
+		multiContents = append(multiContents, &crossDomainMessage.InputMetaData{
+			Type: crossDomainMessage.InputTypeText,
 			Text: ar.Query,
 		})
 	case run.ContentTypeImage, run.ContentTypeFile, run.ContentTypeMix, run.ContentTypeVideo, run.ContentTypeAudio:
@@ -245,8 +381,8 @@ func (c *ConversationApplicationService) buildMultiContent(ctx context.Context, 
 
 		err := json.Unmarshal([]byte(ar.Query), &mc)
 		if err != nil {
-			multiContents = append(multiContents, &message.InputMetaData{
-				Type: message.InputTypeText,
+			multiContents = append(multiContents, &crossDomainMessage.InputMetaData{
+				Type: crossDomainMessage.InputTypeText,
 				Text: ar.Query,
 			})
 			return multiContents
@@ -266,12 +402,12 @@ func (c *ConversationApplicationService) buildMultiContent(ctx context.Context, 
 	return multiContents
 }
 
-func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, mc []*run.Item) (multiContents []*message.InputMetaData, mcNew []*run.Item) {
+func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, mc []*run.Item) (multiContents []*crossDomainMessage.InputMetaData, mcNew []*run.Item) {
 	for index, item := range mc {
 		switch item.Type {
 		case run.ContentTypeText:
-			multiContents = append(multiContents, &message.InputMetaData{
-				Type: message.InputTypeText,
+			multiContents = append(multiContents, &crossDomainMessage.InputMetaData{
+				Type: crossDomainMessage.InputTypeText,
 				Text: item.Text,
 			})
 		case run.ContentTypeImage:
@@ -283,9 +419,9 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 			mc[index].Image.ImageThumb.URL = resourceUrl.URL
 			mc[index].Image.ImageOri.URL = resourceUrl.URL
 
-			multiContents = append(multiContents, &message.InputMetaData{
-				Type: message.InputTypeImage,
-				FileData: []*message.FileData{
+			multiContents = append(multiContents, &crossDomainMessage.InputMetaData{
+				Type: crossDomainMessage.InputTypeImage,
+				FileData: []*crossDomainMessage.FileData{
 					{
 						Url: resourceUrl.URL,
 					},
@@ -299,9 +435,9 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 			}
 			mc[index].File.FileURL = resourceUrl
 
-			multiContents = append(multiContents, &message.InputMetaData{
-				Type: message.InputType(item.Type),
-				FileData: []*message.FileData{
+			multiContents = append(multiContents, &crossDomainMessage.InputMetaData{
+				Type: crossDomainMessage.InputType(item.Type),
+				FileData: []*crossDomainMessage.FileData{
 					{
 						Url: resourceUrl,
 					},

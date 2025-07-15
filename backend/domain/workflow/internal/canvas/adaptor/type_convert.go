@@ -615,6 +615,7 @@ var globalVariableRegex = regexp.MustCompile(`global_variable_\w+\s*\["(.*?)"\]`
 
 func SetHttpRequesterInputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema, implicitNodeDependencies []*vo.ImplicitNodeDependency) (err error) {
 	inputs := n.Data.Inputs
+	implicitPathVars := make(map[string]bool)
 	addImplicitVarsSources := func(prefix string, vars []string) error {
 		for _, v := range vars {
 			if strings.HasPrefix(v, "block_output_") {
@@ -624,9 +625,14 @@ func SetHttpRequesterInputsForNodeSchema(n *vo.Node, ns *compose.NodeSchema, imp
 				}
 				for _, dep := range implicitNodeDependencies {
 					if dep.NodeID == paths[0] && strings.Join(dep.FieldPath, ".") == strings.Join(paths[1:], ".") {
-						ns.SetInputType(prefix+crypto.MD5HexValue(v), dep.TypeInfo)
+						pathValue := prefix + crypto.MD5HexValue(v)
+						if _, visited := implicitPathVars[pathValue]; visited {
+							continue
+						}
+						implicitPathVars[pathValue] = true
+						ns.SetInputType(pathValue, dep.TypeInfo)
 						ns.AddInputSource(&vo.FieldInfo{
-							Path: []string{prefix + crypto.MD5HexValue(v)},
+							Path: []string{pathValue},
 							Source: vo.FieldSource{
 								Ref: &vo.Reference{
 									FromNodeKey: vo.NodeKey(dep.NodeID),

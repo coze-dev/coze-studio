@@ -82,11 +82,17 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 		return err
 	}
 
+	envModelMeta, envModelEntity, err := initModelByEnv(root, "conf/model/template")
+	if err != nil {
+		return err
+	}
+
 	filePath := filepath.Join(root, "conf/model/meta")
 	staticModelMeta, err := readDirYaml[crossmodelmgr.ModelMeta](filePath)
 	if err != nil {
 		return err
 	}
+	staticModelMeta = append(staticModelMeta, envModelMeta...)
 	for _, modelMeta := range staticModelMeta {
 		if _, found := id2Meta[modelMeta.ID]; !found {
 			if modelMeta.IconURI == "" && modelMeta.IconURL == "" {
@@ -120,13 +126,16 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 			}
 			newMeta, err := svc.CreateModelMeta(ctx, modelMeta)
 			if err != nil {
+				if errors.Is(err, gorm.ErrDuplicatedKey) {
+					logs.CtxInfo("[loadStaticModelConfig] model meta conflict for id=%d, skip", newMeta.ID)
+				}
 				return err
+			} else {
+				logs.CtxInfo("[loadStaticModelConfig] model meta create success, id=%d", newMeta.ID)
 			}
-			logs.CtxInfo(ctx, "[loadStaticModelConfig] model meta create success, id=%d", newMeta.ID)
 			id2Meta[newMeta.ID] = newMeta
 		} else {
 			logs.CtxInfo(ctx, "[loadStaticModelConfig] model meta founded, skip create, id=%d", modelMeta.ID)
-
 		}
 	}
 
@@ -135,6 +144,7 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 	if err != nil {
 		return err
 	}
+	staticModel = append(staticModel, envModelEntity...)
 	for _, modelEntity := range staticModel {
 		curModelEntities, err := svc.MGetModelByID(ctx, &modelmgr.MGetModelRequest{IDs: []int64{modelEntity.ID}})
 		if err != nil {
@@ -150,9 +160,13 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 		}
 		modelEntity.Meta = *meta
 		if _, err = svc.CreateModel(ctx, &entity.Model{Model: modelEntity}); err != nil {
+			if errors.Is(err, gorm.ErrDuplicatedKey) {
+				logs.CtxInfo("[loadStaticModelConfig] model entity conflict for id=%d, skip", modelEntity.ID)
+			}
 			return err
+		} else {
+			logs.CtxInfo("[loadStaticModelConfig] model entity create success, id=%d", modelEntity.ID)
 		}
-		logs.CtxInfo(ctx, "[loadStaticModelConfig] model entity create success, id=%d", modelEntity.ID)
 	}
 
 	return nil

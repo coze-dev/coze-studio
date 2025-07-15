@@ -33,6 +33,7 @@ func newWorkflowSnapshot(db *gorm.DB, opts ...gen.DOOption) workflowSnapshot {
 	_workflowSnapshot.InputParams = field.NewString(tableName, "input_params")
 	_workflowSnapshot.OutputParams = field.NewString(tableName, "output_params")
 	_workflowSnapshot.CreatedAt = field.NewInt64(tableName, "created_at")
+	_workflowSnapshot.ID = field.NewInt64(tableName, "id")
 
 	_workflowSnapshot.fillFieldMap()
 
@@ -50,6 +51,7 @@ type workflowSnapshot struct {
 	InputParams  field.String // input parameter info
 	OutputParams field.String // output parameter info
 	CreatedAt    field.Int64
+	ID           field.Int64 // ID
 
 	fieldMap map[string]field.Expr
 }
@@ -72,6 +74,7 @@ func (w *workflowSnapshot) updateTableName(table string) *workflowSnapshot {
 	w.InputParams = field.NewString(table, "input_params")
 	w.OutputParams = field.NewString(table, "output_params")
 	w.CreatedAt = field.NewInt64(table, "created_at")
+	w.ID = field.NewInt64(table, "id")
 
 	w.fillFieldMap()
 
@@ -88,13 +91,14 @@ func (w *workflowSnapshot) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (w *workflowSnapshot) fillFieldMap() {
-	w.fieldMap = make(map[string]field.Expr, 6)
+	w.fieldMap = make(map[string]field.Expr, 7)
 	w.fieldMap["workflow_id"] = w.WorkflowID
 	w.fieldMap["commit_id"] = w.CommitID
 	w.fieldMap["canvas"] = w.Canvas
 	w.fieldMap["input_params"] = w.InputParams
 	w.fieldMap["output_params"] = w.OutputParams
 	w.fieldMap["created_at"] = w.CreatedAt
+	w.fieldMap["id"] = w.ID
 }
 
 func (w workflowSnapshot) clone(db *gorm.DB) workflowSnapshot {

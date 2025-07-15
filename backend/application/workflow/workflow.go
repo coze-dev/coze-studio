@@ -76,7 +76,8 @@ func GetWorkflowDomainSVC() domainWorkflow.Service {
 }
 
 func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workflow.NodeTemplateListRequest) (
-	_ *workflow.NodeTemplateListResponse, err error) {
+	_ *workflow.NodeTemplateListResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -148,7 +149,8 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 }
 
 func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.CreateWorkflowRequest) (
-	_ *workflow.CreateWorkflowResponse, err error) {
+	_ *workflow.CreateWorkflowResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -189,7 +191,8 @@ func (w *ApplicationService) CreateWorkflow(ctx context.Context, req *workflow.C
 }
 
 func (w *ApplicationService) SaveWorkflow(ctx context.Context, req *workflow.SaveWorkflowRequest) (
-	_ *workflow.SaveWorkflowResponse, err error) {
+	_ *workflow.SaveWorkflowResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -214,7 +217,8 @@ func (w *ApplicationService) SaveWorkflow(ctx context.Context, req *workflow.Sav
 }
 
 func (w *ApplicationService) UpdateWorkflowMeta(ctx context.Context, req *workflow.UpdateWorkflowMetaRequest) (
-	_ *workflow.UpdateWorkflowMetaResponse, err error) {
+	_ *workflow.UpdateWorkflowMetaResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -241,7 +245,8 @@ func (w *ApplicationService) UpdateWorkflowMeta(ctx context.Context, req *workfl
 }
 
 func (w *ApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.DeleteWorkflowRequest) (
-	_ *workflow.DeleteWorkflowResponse, err error) {
+	_ *workflow.DeleteWorkflowResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -273,7 +278,8 @@ func (w *ApplicationService) DeleteWorkflow(ctx context.Context, req *workflow.D
 }
 
 func (w *ApplicationService) BatchDeleteWorkflow(ctx context.Context, req *workflow.BatchDeleteWorkflowRequest) (
-	_ *workflow.BatchDeleteWorkflowResponse, err error) {
+	_ *workflow.BatchDeleteWorkflowResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -310,7 +316,8 @@ func (w *ApplicationService) BatchDeleteWorkflow(ctx context.Context, req *workf
 }
 
 func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.GetCanvasInfoRequest) (
-	_ *workflow.GetCanvasInfoResponse, err error) {
+	_ *workflow.GetCanvasInfoResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -347,7 +354,7 @@ func (w *ApplicationService) GetCanvasInfo(ctx context.Context, req *workflow.Ge
 		devStatus = workflow.WorkFlowDevStatus_HadSubmit
 	}
 
-	var updateTime = time.Time{}
+	updateTime := time.Time{}
 	if wf.UpdatedAt != nil {
 		updateTime = *wf.UpdatedAt
 	}
@@ -459,7 +466,8 @@ func (w *ApplicationService) TestRun(ctx context.Context, req *workflow.WorkFlow
 }
 
 func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.WorkflowNodeDebugV2Request) (
-	_ *workflow.WorkflowNodeDebugV2Response, err error) {
+	_ *workflow.WorkflowNodeDebugV2Response, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -530,7 +538,8 @@ func (w *ApplicationService) NodeDebug(ctx context.Context, req *workflow.Workfl
 }
 
 func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWorkflowProcessRequest) (
-	_ *workflow.GetWorkflowProcessResponse, err error) {
+	_ *workflow.GetWorkflowProcessResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -668,7 +677,6 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 					}
 					resp.Data.NodeResults = append(resp.Data.NodeResults, endNodeExe)
 				}
-
 			}
 		}
 	}
@@ -713,7 +721,8 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 }
 
 func (w *ApplicationService) GetNodeExecuteHistory(ctx context.Context, req *workflow.GetNodeExecuteHistoryRequest) (
-	_ *workflow.GetNodeExecuteHistoryResponse, err error) {
+	_ *workflow.GetNodeExecuteHistoryResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -866,7 +875,8 @@ func (w *ApplicationService) CheckWorkflowsExistByAppID(ctx context.Context, app
 }
 
 func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int64, spaceID, appID int64) (
-	_ int64, _ []*vo.ValidateIssue, err error) {
+	_ int64, _ []*vo.ValidateIssue, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -1003,11 +1013,11 @@ func (w *ApplicationService) DuplicateWorkflowsByAppID(ctx context.Context, sour
 	}
 
 	return GetWorkflowDomainSVC().DuplicateWorkflowsByAppID(ctx, sourceAppID, targetAppID, externalResourceRelated)
-
 }
 
 func (w *ApplicationService) CopyWorkflowFromLibraryToApp(ctx context.Context, workflowID int64, appID int64) (
-	_ int64, err error) {
+	_ int64, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -1058,7 +1068,6 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 			}
 
 		}
-
 	}
 
 	if len(ds.KnowledgeIDs) > 0 {
@@ -1071,7 +1080,6 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 				return 0, nil, err
 			}
 		}
-
 	}
 
 	if len(ds.DatabaseIDs) > 0 {
@@ -1086,7 +1094,6 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 	relatedWorkflows, vIssues, err := GetWorkflowDomainSVC().CopyWorkflowFromAppToLibrary(ctx, workflowID, appID, vo.ExternalResourceRelated{
 		PluginMap: pluginMap,
 	})
-
 	if err != nil {
 		return 0, nil, err
 	}
@@ -1097,7 +1104,6 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 	err = GetWorkflowDomainSVC().SyncRelatedWorkflowResources(ctx, appID, relatedWorkflows, vo.ExternalResourceRelated{
 		PluginMap: pluginMap,
 	})
-
 	if err != nil {
 		return 0, nil, err
 	}
@@ -1345,7 +1351,8 @@ func convertStreamRunEvent(ctx context.Context, workflowID int64) func(msg *enti
 }
 
 func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow.OpenAPIRunFlowRequest) (
-	_ *schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], err error) {
+	_ *schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -1431,7 +1438,8 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 }
 
 func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workflow.OpenAPIStreamResumeFlowRequest) (
-	_ *schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], err error) {
+	_ *schema.StreamReader[*workflow.OpenAPIStreamRunFlowResponse], err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -1490,7 +1498,8 @@ func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workf
 }
 
 func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenAPIRunFlowRequest) (
-	_ *workflow.OpenAPIRunFlowResponse, err error) {
+	_ *workflow.OpenAPIRunFlowResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -1615,7 +1624,8 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 }
 
 func (w *ApplicationService) OpenAPIGetWorkflowRunHistory(ctx context.Context, req *workflow.GetWorkflowRunHistoryRequest) (
-	_ *workflow.GetWorkflowRunHistoryResponse, err error) {
+	_ *workflow.GetWorkflowRunHistoryResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -1683,7 +1693,8 @@ func (w *ApplicationService) OpenAPIGetWorkflowRunHistory(ctx context.Context, r
 }
 
 func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.ValidateTreeRequest) (
-	_ *workflow.ValidateTreeResponse, err error) {
+	_ *workflow.ValidateTreeResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -1721,7 +1732,8 @@ func (w *ApplicationService) ValidateTree(ctx context.Context, req *workflow.Val
 }
 
 func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *workflow.GetWorkflowReferencesRequest) (
-	_ *workflow.GetWorkflowReferencesResponse, err error) {
+	_ *workflow.GetWorkflowReferencesResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -1779,7 +1791,8 @@ func (w *ApplicationService) GetWorkflowReferences(ctx context.Context, req *wor
 }
 
 func (w *ApplicationService) TestResume(ctx context.Context, req *workflow.WorkflowTestResumeRequest) (
-	_ *workflow.WorkflowTestResumeResponse, err error) {
+	_ *workflow.WorkflowTestResumeResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -1813,7 +1826,8 @@ func (w *ApplicationService) TestResume(ctx context.Context, req *workflow.Workf
 }
 
 func (w *ApplicationService) Cancel(ctx context.Context, req *workflow.CancelWorkFlowRequest) (
-	_ *workflow.CancelWorkFlowResponse, err error) {
+	_ *workflow.CancelWorkFlowResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -1838,7 +1852,8 @@ func (w *ApplicationService) Cancel(ctx context.Context, req *workflow.CancelWor
 }
 
 func (w *ApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *workflow.QueryWorkflowNodeTypeRequest) (
-	_ *workflow.QueryWorkflowNodeTypeResponse, err error) {
+	_ *workflow.QueryWorkflowNodeTypeResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -1914,7 +1929,8 @@ func (w *ApplicationService) QueryWorkflowNodeTypes(ctx context.Context, req *wo
 }
 
 func (w *ApplicationService) PublishWorkflow(ctx context.Context, req *workflow.PublishWorkflowRequest) (
-	_ *workflow.PublishWorkflowResponse, err error) {
+	_ *workflow.PublishWorkflowResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -1953,7 +1969,8 @@ func (w *ApplicationService) PublishWorkflow(ctx context.Context, req *workflow.
 }
 
 func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.GetWorkFlowListRequest) (
-	_ *workflow.GetWorkFlowListResponse, err error) {
+	_ *workflow.GetWorkFlowListResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -2119,7 +2136,8 @@ func (w *ApplicationService) ListWorkflow(ctx context.Context, req *workflow.Get
 }
 
 func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflow.GetWorkflowDetailRequest) (
-	_ *vo.WorkflowDetailDataList, err error) {
+	_ *vo.WorkflowDetailDataList, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -2140,7 +2158,6 @@ func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflo
 			return 0, err
 		}
 		return wid, nil
-
 	})
 	if err != nil {
 		return nil, err
@@ -2215,7 +2232,8 @@ func (w *ApplicationService) GetWorkflowDetail(ctx context.Context, req *workflo
 }
 
 func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *workflow.GetWorkflowDetailInfoRequest) (
-	_ *vo.WorkflowDetailInfoDataList, err error) {
+	_ *vo.WorkflowDetailInfoDataList, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -2360,7 +2378,8 @@ func (w *ApplicationService) GetWorkflowDetailInfo(ctx context.Context, req *wor
 }
 
 func (w *ApplicationService) GetWorkflowUploadAuthToken(ctx context.Context, req *workflow.GetUploadAuthTokenRequest) (
-	_ *workflow.GetUploadAuthTokenResponse, err error) {
+	_ *workflow.GetUploadAuthTokenResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -2402,11 +2421,11 @@ func (w *ApplicationService) GetWorkflowUploadAuthToken(ctx context.Context, req
 			},
 		},
 	}, nil
-
 }
 
 func (w *ApplicationService) SignImageURL(ctx context.Context, req *workflow.SignImageURLRequest) (
-	_ *workflow.SignImageURLResponse, err error) {
+	_ *workflow.SignImageURLResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -2425,11 +2444,11 @@ func (w *ApplicationService) SignImageURL(ctx context.Context, req *workflow.Sig
 	return &workflow.SignImageURLResponse{
 		URL: url.URL,
 	}, nil
-
 }
 
 func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.GetApiDetailRequest) (
-	_ *vo.ToolDetailInfo, err error) {
+	_ *vo.ToolDetailInfo, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -2500,11 +2519,11 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 	}
 
 	return toolDetailInfo, nil
-
 }
 
 func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req *workflow.GetLLMNodeFCSettingDetailRequest) (
-	_ *GetLLMNodeFCSettingDetailResponse, err error) {
+	_ *GetLLMNodeFCSettingDetailResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -2709,7 +2728,8 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 }
 
 func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req *workflow.GetLLMNodeFCSettingsMergedRequest) (
-	_ *workflow.GetLLMNodeFCSettingsMergedResponse, err error) {
+	_ *workflow.GetLLMNodeFCSettingsMergedResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -2824,7 +2844,8 @@ func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req
 }
 
 func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *pluginAPI.GetPlaygroundPluginListRequest) (
-	resp *pluginAPI.GetPlaygroundPluginListResponse, err error) {
+	resp *pluginAPI.GetPlaygroundPluginListResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -2886,7 +2907,7 @@ func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *p
 			PluginIcon:   wf.IconURL,
 			DescForHuman: wf.Desc,
 			Creator: &common.Creator{
-				Self: ternary.IFElse(wf.CreatorID == currentUser, true, false),
+				Self: wf.CreatorID == currentUser,
 			},
 			PluginType:  common.PluginType_WORKFLOW,
 			VersionName: wf.VersionMeta.Version,
@@ -2894,14 +2915,13 @@ func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *p
 			UpdateTime:  strconv.FormatInt(wf.VersionCreatedAt.Unix(), 10),
 		}
 
-		var pluginApi = &common.PluginApi{
+		pluginApi := &common.PluginApi{
 			APIID:    strconv.FormatInt(wf.ID, 10),
 			Name:     wf.Name,
 			Desc:     wf.Desc,
 			PluginID: strconv.FormatInt(wf.ID, 10),
 		}
 		pluginApi.Parameters, err = slices.TransformWithErrorCheck(wf.InputParams, toPluginParameter)
-
 		if err != nil {
 			return nil, err
 		}
@@ -2919,7 +2939,8 @@ func (w *ApplicationService) GetPlaygroundPluginList(ctx context.Context, req *p
 }
 
 func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.CopyWorkflowRequest) (
-	resp *workflow.CopyWorkflowResponse, err error) {
+	resp *workflow.CopyWorkflowResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -2959,7 +2980,8 @@ func (w *ApplicationService) CopyWorkflow(ctx context.Context, req *workflow.Cop
 }
 
 func (w *ApplicationService) GetHistorySchema(ctx context.Context, req *workflow.GetHistorySchemaRequest) (
-	resp *workflow.GetHistorySchemaResponse, err error) {
+	resp *workflow.GetHistorySchemaResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -3036,7 +3058,8 @@ func (w *ApplicationService) GetHistorySchema(ctx context.Context, req *workflow
 }
 
 func (w *ApplicationService) GetExampleWorkFlowList(ctx context.Context, req *workflow.GetExampleWorkFlowListRequest) (
-	resp *workflow.GetExampleWorkFlowListResponse, err error) {
+	resp *workflow.GetExampleWorkFlowListResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -3121,7 +3144,8 @@ func (w *ApplicationService) GetExampleWorkFlowList(ctx context.Context, req *wo
 }
 
 func (w *ApplicationService) CopyWkTemplateApi(ctx context.Context, req *workflow.CopyWkTemplateApiRequest) (
-	resp *workflow.CopyWkTemplateApiResponse, err error) {
+	resp *workflow.CopyWkTemplateApiResponse, err error,
+) {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			err = safego.NewPanicErr(panicErr, debug.Stack())
@@ -3160,7 +3184,6 @@ func (w *ApplicationService) CopyWkTemplateApi(ctx context.Context, req *workflo
 			CreatorID: ctxutil.MustGetUIDFromCtx(ctx),
 			Force:     true,
 		})
-
 		if err != nil {
 			return nil, err
 		}
@@ -3475,7 +3498,7 @@ func i64PtrToStringPtr(i *int64) *string {
 }
 
 func toVariables(namedTypeInfoList []*vo.NamedTypeInfo) ([]*vo.Variable, error) {
-	var vs = make([]*vo.Variable, 0, len(namedTypeInfoList))
+	vs := make([]*vo.Variable, 0, len(namedTypeInfoList))
 	for _, in := range namedTypeInfoList {
 		v, err := in.ToVariable()
 		if err != nil {
@@ -3485,7 +3508,6 @@ func toVariables(namedTypeInfoList []*vo.NamedTypeInfo) ([]*vo.Variable, error) 
 	}
 
 	return vs, nil
-
 }
 
 func toPluginParameter(info *vo.NamedTypeInfo) (*common.PluginParameter, error) {
@@ -3690,7 +3712,6 @@ func toVariable(p *workflow.APIParameter) (*vo.Variable, error) {
 }
 
 func mergeWorkflowAPIParameters(latestAPIParameters []*workflow.APIParameter, existAPIParameters []*workflow.APIParameter) {
-
 	existAPIParameterMap := slices.ToMap(existAPIParameters, func(w *workflow.APIParameter) (string, *workflow.APIParameter) {
 		return w.Name, w
 	})
@@ -3706,9 +3727,7 @@ func mergeWorkflowAPIParameters(latestAPIParameters []*workflow.APIParameter, ex
 		} else {
 			existAPIParameters = append(existAPIParameters, parameter)
 		}
-
 	}
-
 }
 
 func parseWorkflowTerminatePlanType(c *vo.Canvas) (int32, error) {
@@ -3730,7 +3749,6 @@ func parseWorkflowTerminatePlanType(c *vo.Canvas) (int32, error) {
 	default:
 		return 0, fmt.Errorf("invalid terminate plan type %v", *endNode.Data.Inputs.TerminatePlan)
 	}
-
 }
 
 type GetLLMNodeFCSettingDetailResponse struct {

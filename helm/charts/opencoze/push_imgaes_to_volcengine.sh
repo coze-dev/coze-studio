@@ -12,12 +12,15 @@ TARGET_REGISTRY="opencoze-cn-beijing.cr.volces.com/iac"
 
 images=(
     "mysql:8.4.5"
-    "bitnami/redis:7.2"
+    "bitnami/redis:8.0"
     "opencoze/opencoze:latest"
     "apache/rocketmq:5.3.2"
     "bitnami/elasticsearch:8.18.0"
-    "minio/minio:latest"
+    "minio/minio:RELEASE.2025-06-13T11-33-47Z-cpuv1"
+    "minio/mc:RELEASE.2025-05-21T01-59-54Z-cpuv1"
+    "arigaio/atlas:0.35.0-community-alpine"
     "bitnami/etcd:3.5"
+    "alpine/curl:8.12.1"
     "milvusdb/milvus:v2.5.10"
     "busybox:latest"
 )
@@ -47,11 +50,15 @@ tag_and_push() {
 
 # Pull all images first
 for image in "${images[@]}"; do
-    echo "Pulling $image"
-    if [ "$DRY_RUN" = false ]; then
-        docker pull "$image"
+    if docker image inspect "${image}" >/dev/null 2>&1; then
+        echo "Image ${image} already exists locally, skipping pull."
     else
-        echo "[dry-run] docker pull \"$image\""
+        echo "Pulling ${image}"
+        if [ "${DRY_RUN}" = false ]; then
+            docker pull "${image}"
+        else
+            echo "[dry-run] docker pull \"${image}\""
+        fi
     fi
 done
 

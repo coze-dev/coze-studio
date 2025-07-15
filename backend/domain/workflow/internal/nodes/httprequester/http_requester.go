@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -235,7 +236,7 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 		Header: http.Header{},
 	}
 
-	httpURL, err := nodes.Jinja2TemplateRender(hg.config.URLConfig.Tpl, req.URLVars)
+	httpURL, err := nodes.TemplateRender(hg.config.URLConfig.Tpl, req.URLVars)
 	if err != nil {
 		return nil, err
 	}
@@ -318,10 +319,30 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 			httpURL, response.StatusCode, response.Status, headers, string(bodyBytes))
 	}
 
-	result["body"] = string(bodyBytes)
+	result["body"] = decodeUnicode(string(bodyBytes))
 	result["statusCode"] = int64(response.StatusCode)
 
 	return result, nil
+}
+
+// decodeUnicode parses the Unicode escape sequence in the string
+func decodeUnicode(s string) string {
+	var result strings.Builder
+	for i := 0; i < len(s); {
+		if i+1 < len(s) && s[i] == '\\' && s[i+1] == 'u' {
+			if i+6 <= len(s) {
+				hexStr := s[i+2 : i+6]
+				if code, err := strconv.ParseInt(hexStr, 16, 32); err == nil {
+					result.WriteRune(rune(code))
+					i += 6
+					continue
+				}
+			}
+		}
+		result.WriteByte(s[i])
+		i++
+	}
+	return result.String()
 }
 
 func (authCfg *AuthenticationConfig) addAuthentication(_ context.Context, auth *Authentication, header http.Header, params url.Values) (
@@ -357,7 +378,7 @@ func (b *BodyConfig) getBodyAndContentType(ctx context.Context, req *Request) (i
 
 	switch b.BodyType {
 	case BodyTypeJSON:
-		jsonString, err := nodes.Jinja2TemplateRender(b.TextJsonConfig.Tpl, req.JsonVars)
+		jsonString, err := nodes.TemplateRender(b.TextJsonConfig.Tpl, req.JsonVars)
 		if err != nil {
 			return nil, contentType, err
 		}
@@ -372,7 +393,7 @@ func (b *BodyConfig) getBodyAndContentType(ctx context.Context, req *Request) (i
 		body = strings.NewReader(form.Encode())
 		contentType = ContentTypeFormURLEncoded
 	case BodyTypeRawText:
-		textString, err := nodes.Jinja2TemplateRender(b.TextPlainConfig.Tpl, req.TextPlainVars)
+		textString, err := nodes.TemplateRender(b.TextPlainConfig.Tpl, req.TextPlainVars)
 		if err != nil {
 			return nil, contentType, err
 		}
@@ -467,7 +488,7 @@ func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any
 	result := make(map[string]any)
 	result["method"] = config.Method
 
-	u, err := nodes.Jinja2TemplateRender(config.URLConfig.Tpl, request.URLVars)
+	u, err := nodes.TemplateRender(config.URLConfig.Tpl, request.URLVars)
 	if err != nil {
 		return nil, err
 	}
@@ -501,7 +522,7 @@ func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any
 	result["body"] = nil
 	switch config.BodyConfig.BodyType {
 	case BodyTypeJSON:
-		js, err := nodes.Jinja2TemplateRender(config.BodyConfig.TextJsonConfig.Tpl, request.JsonVars)
+		js, err := nodes.TemplateRender(config.BodyConfig.TextJsonConfig.Tpl, request.JsonVars)
 		if err != nil {
 			return nil, err
 		}
@@ -512,7 +533,7 @@ func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any
 		}
 		result["body"] = ret
 	case BodyTypeRawText:
-		tx, err := nodes.Jinja2TemplateRender(config.BodyConfig.TextPlainConfig.Tpl, request.TextPlainVars)
+		tx, err := nodes.TemplateRender(config.BodyConfig.TextPlainConfig.Tpl, request.TextPlainVars)
 		if err != nil {
 
 			return nil, err
@@ -628,7 +649,7 @@ func (cfg *Config) parserToRequest(input map[string]any) (*Request, error) {
 					if strings.HasPrefix(rawTextKey, "global_variable_") {
 						rawTextKey = globalVariableReplaceRegexp.ReplaceAllString(rawTextKey, "global_variable_$1.$2")
 					}
-					nodes.SetMapValue(request.TextPlainVars, strings.Split(rawTextKey, "."), value.(string))
+					nodes.SetMapValue(request.TextPlainVars, strings.Split(rawTextKey, "."), value)
 				}
 			}
 

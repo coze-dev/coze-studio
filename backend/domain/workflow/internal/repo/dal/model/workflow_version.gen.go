@@ -12,8 +12,9 @@ const TableNameWorkflowVersion = "workflow_version"
 
 // WorkflowVersion workflow 画布版本信息表，用于记录不同版本的画布信息
 type WorkflowVersion struct {
-	ID                 int64          `gorm:"column:id;primaryKey;comment:workflow id" json:"id"`                          // workflow id
-	Version            string         `gorm:"column:version;primaryKey;comment:发布版本" json:"version"`                       // 发布版本
+	ID                 int64          `gorm:"column:id;primaryKey;autoIncrement:true;comment:ID" json:"id"`                // ID
+	WorkflowID         int64          `gorm:"column:workflow_id;not null;comment:workflow id" json:"workflow_id"`          // workflow id
+	Version            string         `gorm:"column:version;not null;comment:发布版本" json:"version"`                         // 发布版本
 	VersionDescription string         `gorm:"column:version_description;not null;comment:版本描述" json:"version_description"` // 版本描述
 	Canvas             string         `gorm:"column:canvas;not null;comment:前端 schema" json:"canvas"`                      // 前端 schema
 	InputParams        string         `gorm:"column:input_params" json:"input_params"`

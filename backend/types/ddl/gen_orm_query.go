@@ -42,6 +42,9 @@ import (
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
+	"domain/datacopy/internal/dal/query": {
+		"data_copy_task": {},
+	},
 	"domain/agent/singleagent/internal/dal/query": {
 		"single_agent_draft": {
 			// "variable":        []*bot_common.Variable{},

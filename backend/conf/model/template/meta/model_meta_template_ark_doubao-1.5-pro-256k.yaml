@@ -1,0 +1,40 @@
+# ark model template
+# model list: https://www.volcengine.com/docs/82379/1330310
+# get api_key: https://www.volcengine.com/docs/82379/1399008#b00dee71
+# get region:  https://www.volcengine.com/docs/82379/1319853#%E8%AE%BE%E7%BD%AE%E5%9C%B0%E5%9F%9F%E5%92%8C%E8%AE%BF%E9%97%AE%E5%9F%9F%E5%90%8D
+# get ak/sk: https://www.volcengine.com/docs/82379/1319853#%E4%BD%BF%E7%94%A8access-key%E9%89%B4%E6%9D%83
+id: 65536 # 模型 id, 同 id 数据不会覆盖
+name: doubao-1.5-pro-256k # 模型 meta 名称
+icon_uri: doubao_v2.png
+description:
+  zh: 'doubao-1.5-pro-256k，基于doubao-1.5-Pro全面升级版，整体效果大幅提升10%。更高性能、更大窗口、超高性价比，适用于更广泛的应用场景。' # 模型默认描述
+  en: 'doubao-1.5-pro-256k is a fully upgraded version based on doubao-1.5-Pro, with an overall performance improvement of 10%. It offers higher performance, a larger context window, and exceptional cost-effectiveness, making it suitable for a wider range of application scenarios.'
+protocol: ark # 模型连接协议
+capability: # 模型基础能力
+  function_call: true # 模型是否支持 function call
+  input_modal: # 模型输入支持模态
+    - text
+  input_tokens: 96000 # 输入 token 上限
+  output_modal: # 模型输出支持模态
+    - text
+  output_tokens: 12000 # 输出 token 上限
+  max_tokens: 256000 # 最大 token 数量
+  json_mode: false # 是否支持 json mode
+  prefix_caching: false # 是否支持 prefix caching
+  reasoning: false # 是否支持 reasoning
+  prefill_response: false # 是否支持续写
+conn_config: # 模型连接参数
+  api_key: ''   # REQUIRED: api_key
+  model: ''     # REQUIRED: model name
+  temperature: 0.1 # 默认 temperature
+  frequency_penalty: 0 # 默认 frequency_penalty
+  presence_penalty: 0 # 默认 presence_penalty
+  max_tokens: 4096 # 默认 max_tokens
+  top_p: 0.7 # 默认 top_p
+  top_k: 0 # 默认 top_k
+  # 下面是模型专用配置，仅配置 protocol 所对应的类型即可
+  ark: # OPTIONAL
+    region: ''
+    access_key: ''
+    secret_key: ''
+  status: 1

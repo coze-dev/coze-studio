@@ -41,7 +41,7 @@ echo "📑 Copying environment file..."
 if [ -f "$DOCKER_DIR/.env" ]; then
     cp "$DOCKER_DIR/.env" "$BIN_DIR/.env"
 else
-    echo "❌ .env file not found in $BACKEND_DIR"
+    echo "❌ .env file not found in $DOCKER_DIR"
     exit 1
 fi
 

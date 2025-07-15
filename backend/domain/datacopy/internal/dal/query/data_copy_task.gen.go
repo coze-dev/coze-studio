@@ -42,6 +42,7 @@ func newDataCopyTask(db *gorm.DB, opts ...gen.DOOption) dataCopyTask {
 	_dataCopyTask.FinishTime = field.NewInt64(tableName, "finish_time")
 	_dataCopyTask.Status = field.NewInt32(tableName, "status")
 	_dataCopyTask.ErrorMsg = field.NewString(tableName, "error_msg")
+	_dataCopyTask.ID = field.NewInt64(tableName, "id")
 
 	_dataCopyTask.fillFieldMap()
 
@@ -68,6 +69,7 @@ type dataCopyTask struct {
 	FinishTime    field.Int64  // 任务结束时间
 	Status        field.Int32  // 1:创建 2:执行中 3:成功 4:失败
 	ErrorMsg      field.String // 错误信息
+	ID            field.Int64  // ID
 
 	fieldMap map[string]field.Expr
 }
@@ -99,6 +101,7 @@ func (d *dataCopyTask) updateTableName(table string) *dataCopyTask {
 	d.FinishTime = field.NewInt64(table, "finish_time")
 	d.Status = field.NewInt32(table, "status")
 	d.ErrorMsg = field.NewString(table, "error_msg")
+	d.ID = field.NewInt64(table, "id")
 
 	d.fillFieldMap()
 
@@ -115,7 +118,7 @@ func (d *dataCopyTask) GetFieldByName(fieldName string) (field.OrderExpr, bool) 
 }
 
 func (d *dataCopyTask) fillFieldMap() {
-	d.fieldMap = make(map[string]field.Expr, 15)
+	d.fieldMap = make(map[string]field.Expr, 16)
 	d.fieldMap["master_task_id"] = d.MasterTaskID
 	d.fieldMap["origin_data_id"] = d.OriginDataID
 	d.fieldMap["target_data_id"] = d.TargetDataID
@@ -131,6 +134,7 @@ func (d *dataCopyTask) fillFieldMap() {
 	d.fieldMap["finish_time"] = d.FinishTime
 	d.fieldMap["status"] = d.Status
 	d.fieldMap["error_msg"] = d.ErrorMsg
+	d.fieldMap["id"] = d.ID
 }
 
 func (d dataCopyTask) clone(db *gorm.DB) dataCopyTask {

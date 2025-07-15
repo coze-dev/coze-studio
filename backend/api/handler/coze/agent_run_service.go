@@ -19,27 +19,18 @@ package coze
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"io"
 	"net/http"
-	"strconv"
 
 	"github.com/hertz-contrib/sse"
 
 	"code.byted.org/middleware/hertz/pkg/app"
-	"github.com/cloudwego/eino/schema"
 
-	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/message"
 	"code.byted.org/data_edc/workflow_engine_next/api/model/conversation/run"
-	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/message"
 	"code.byted.org/data_edc/workflow_engine_next/application/conversation"
-	"code.byted.org/data_edc/workflow_engine_next/domain/conversation/agentrun/entity"
 	sseImpl "code.byted.org/data_edc/workflow_engine_next/infra/impl/sse"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/types/errno"
-	"code.byted.org/gopkg/logs"
 )
 
 // AgentRun .
@@ -63,45 +54,17 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 	c.SetStatusCode(http.StatusOK)
 	c.Response.Header.Set("X-Accel-Buffering", "no")
 
-	arStream, err := conversation.ConversationSVC.Run(ctx, &req)
-
+	err = conversation.ConversationSVC.Run(ctx, sseSender, &req)
 	if err != nil {
-		sendErrorEvent(ctx, sseSender, errno.ErrConversationAgentRunError, err.Error())
-		return
-	}
-
-	var ackMessageInfo *entity.ChunkMessageItem
-	for {
-		chunk, recvErr := arStream.Recv()
-		if recvErr != nil {
-			if errors.Is(recvErr, io.EOF) {
-				return
-			}
-			sendErrorEvent(ctx, sseSender, errno.ErrConversationAgentRunError, recvErr.Error())
-			return
+		errData := run.ErrorData{
+			Code: errno.ErrConversationAgentRunError,
+			Msg:  err.Error(),
 		}
-
-		switch chunk.Event {
-		case entity.RunEventCreated, entity.RunEventInProgress, entity.RunEventCompleted:
-			break
-		case entity.RunEventError:
-			id, err := conversation.ConversationSVC.GenID(ctx)
-			if err != nil {
-				sendErrorEvent(ctx, sseSender, errno.ErrConversationAgentRunError, err.Error())
-			} else {
-				sendMessageEvent(ctx, sseSender, run.RunEventMessage, buildErrMsg(ackMessageInfo, chunk.Error, id))
-			}
-		case entity.RunEventStreamDone:
-			sendDoneEvent(ctx, sseSender, run.RunEventDone)
-		case entity.RunEventAck:
-			ackMessageInfo = chunk.ChunkMessageItem
-			sendMessageEvent(ctx, sseSender, run.RunEventMessage, buildARSM2Message(chunk, &req))
-		case entity.RunEventMessageDelta, entity.RunEventMessageCompleted:
-			sendMessageEvent(ctx, sseSender, run.RunEventMessage, buildARSM2Message(chunk, &req))
-		default:
-			logs.CtxError(ctx, "unknown handler event:%v", chunk.Event)
-		}
-
+		ed, _ := json.Marshal(errData)
+		_ = sseSender.Send(ctx, &sse.Event{
+			Event: run.RunEventError,
+			Data:  ed,
+		})
 	}
 }
 
@@ -120,143 +83,6 @@ func checkParams(_ context.Context, ar *run.AgentRunRequest) error {
 	return nil
 }
 
-func sendDoneEvent(ctx context.Context, sseImpl *sseImpl.SSenderImpl, event string) {
-	sendData := &sse.Event{
-		Event: event,
-	}
-
-	sendErr := sseImpl.Send(ctx, sendData)
-	if sendErr != nil {
-		logs.CtxError(ctx, "sendErrorEvent err:%v", sendErr)
-	}
-	return
-}
-
-func sendErrorEvent(ctx context.Context, sseImpl *sseImpl.SSenderImpl, errCode int64, errMsg string) {
-	errData := run.ErrorData{
-		Code: errCode,
-		Msg:  errMsg,
-	}
-	ed, _ := json.Marshal(errData)
-
-	event := &sse.Event{
-		Event: run.RunEventError,
-		Data:  ed,
-	}
-	sendErr := sseImpl.Send(ctx, event)
-
-	if sendErr != nil {
-		logs.CtxError(ctx, "sendErrorEvent err:%v", sendErr)
-	}
-
-	return
-}
-
-func sendMessageEvent(ctx context.Context, sseImpl *sseImpl.SSenderImpl, event string, msg []byte) {
-	sendData := &sse.Event{
-		Event: event,
-		Data:  msg,
-	}
-	sendErr := sseImpl.Send(ctx, sendData)
-	if sendErr != nil {
-		logs.CtxError(ctx, "sendErrorEvent err:%v", sendErr)
-	}
-	return
-}
-
-func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest) []byte {
-	chunkMessageItem := chunk.ChunkMessageItem
-
-	chunkMessage := &run.RunStreamResponse{
-		ConversationID: strconv.FormatInt(chunkMessageItem.ConversationID, 10),
-		IsFinish:       ptr.Of(chunk.ChunkMessageItem.IsFinish),
-		Message: &message.ChatMessage{
-			Role:        string(chunkMessageItem.Role),
-			ContentType: string(chunkMessageItem.ContentType),
-			MessageID:   strconv.FormatInt(chunkMessageItem.ID, 10),
-			SectionID:   strconv.FormatInt(chunkMessageItem.SectionID, 10),
-			ContentTime: chunkMessageItem.CreatedAt,
-			ExtraInfo:   buildExt(chunkMessageItem.Ext),
-			ReplyID:     strconv.FormatInt(chunkMessageItem.ReplyID, 10),
-
-			Status:           "",
-			Type:             string(chunkMessageItem.MessageType),
-			Content:          chunkMessageItem.Content,
-			ReasoningContent: chunkMessageItem.ReasoningContent,
-			RequiredAction:   chunkMessageItem.RequiredAction,
-		},
-		Index: int32(chunkMessageItem.Index),
-		SeqID: int32(chunkMessageItem.SeqID),
-	}
-	if chunkMessageItem.MessageType == model.MessageTypeAck {
-		chunkMessage.Message.Content = req.GetQuery()
-		chunkMessage.Message.ContentType = req.GetContentType()
-		chunkMessage.Message.ExtraInfo = &message.ExtraInfo{
-			LocalMessageID: req.GetLocalMessageID(),
-		}
-	} else {
-		chunkMessage.Message.ExtraInfo = buildExt(chunkMessageItem.Ext)
-		chunkMessage.Message.SenderID = ptr.Of(strconv.FormatInt(chunkMessageItem.AgentID, 10))
-		chunkMessage.Message.Content = chunkMessageItem.Content
-
-		if chunkMessageItem.MessageType == model.MessageTypeKnowledge {
-			chunkMessage.Message.Type = string(model.MessageTypeVerbose)
-		}
-	}
-
-	if chunk.ChunkMessageItem.IsFinish && chunkMessageItem.MessageType == model.MessageTypeAnswer {
-		chunkMessage.Message.Content = ""
-	}
-
-	mCM, _ := json.Marshal(chunkMessage)
-	return mCM
-}
-
-func buildExt(extra map[string]string) *message.ExtraInfo {
-	if extra == nil {
-		return nil
-	}
-
-	return &message.ExtraInfo{
-		InputTokens:         extra["input_tokens"],
-		OutputTokens:        extra["output_tokens"],
-		Token:               extra["token"],
-		PluginStatus:        extra["plugin_status"],
-		TimeCost:            extra["time_cost"],
-		WorkflowTokens:      extra["workflow_tokens"],
-		BotState:            extra["bot_state"],
-		PluginRequest:       extra["plugin_request"],
-		ToolName:            extra["tool_name"],
-		Plugin:              extra["plugin"],
-		MockHitInfo:         extra["mock_hit_info"],
-		MessageTitle:        extra["message_title"],
-		StreamPluginRunning: extra["stream_plugin_running"],
-		ExecuteDisplayName:  extra["execute_display_name"],
-		TaskType:            extra["task_type"],
-		ReferFormat:         extra["refer_format"],
-	}
-}
-func buildErrMsg(ackChunk *entity.ChunkMessageItem, err *entity.RunError, id int64) []byte {
-
-	chunkMessage := &run.RunStreamResponse{
-		IsFinish:       ptr.Of(true),
-		ConversationID: strconv.FormatInt(ackChunk.ConversationID, 10),
-		Message: &message.ChatMessage{
-			Role:        string(schema.Assistant),
-			ContentType: string(model.ContentTypeText),
-			Type:        string(model.MessageTypeAnswer),
-			MessageID:   strconv.FormatInt(id, 10),
-			SectionID:   strconv.FormatInt(ackChunk.SectionID, 10),
-			ReplyID:     strconv.FormatInt(ackChunk.ReplyID, 10),
-			Content:     "Something error:" + err.Msg,
-			ExtraInfo:   &message.ExtraInfo{},
-		},
-	}
-
-	mCM, _ := json.Marshal(chunkMessage)
-	return mCM
-}
-
 // ChatV3 .
 // @router /v3/chat [POST]
 func ChatV3(ctx context.Context, c *app.RequestContext) {
@@ -271,90 +97,23 @@ func ChatV3(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, checkErr.Error())
 		return
 	}
-	arStream, err := conversation.ConversationOpenAPISVC.OpenapiAgentRun(ctx, &req)
-
-	sseSender := sseImpl.NewSSESender(sse.NewStream(c))
 
 	c.SetStatusCode(http.StatusOK)
 	c.Response.Header.Set("X-Accel-Buffering", "no")
-
+	sseSender := sseImpl.NewSSESender(sse.NewStream(c))
+	err = conversation.ConversationOpenAPISVC.OpenapiAgentRun(ctx, sseSender, &req)
 	if err != nil {
-		sendErrorEvent(ctx, sseSender, errno.ErrConversationAgentRunError, err.Error())
-		return
-	}
-
-	for {
-		chunk, recvErr := arStream.Recv()
-		logs.CtxInfo(ctx, "chunk :%v, err:%v", conv.DebugJsonToStr(chunk), recvErr)
-		if recvErr != nil {
-			if errors.Is(recvErr, io.EOF) {
-				return
-			}
-			sendErrorEvent(ctx, sseSender, errno.ErrConversationAgentRunError, recvErr.Error())
-			return
+		errData := run.ErrorData{
+			Code: errno.ErrConversationAgentRunError,
+			Msg:  err.Error(),
 		}
-
-		switch chunk.Event {
-
-		case entity.RunEventError:
-			sendErrorEvent(ctx, sseSender, chunk.Error.Code, chunk.Error.Msg)
-			break
-		case entity.RunEventStreamDone:
-			sendDoneEvent(ctx, sseSender, string(entity.RunEventStreamDone))
-		case entity.RunEventAck:
-			break
-
-		case entity.RunEventCreated, entity.RunEventCancelled, entity.RunEventInProgress, entity.RunEventFailed, entity.RunEventCompleted:
-			sendMessageEvent(ctx, sseSender, string(chunk.Event), buildARSM2ApiChatMessage(chunk))
-		case entity.RunEventMessageDelta, entity.RunEventMessageCompleted:
-			sendMessageEvent(ctx, sseSender, string(chunk.Event), buildARSM2ApiMessage(chunk))
-		default:
-			logs.CtxError(ctx, "unknow handler event:%v", chunk.Event)
-		}
-
-	}
-}
-
-func buildARSM2ApiMessage(chunk *entity.AgentRunResponse) []byte {
-	chunkMessageItem := chunk.ChunkMessageItem
-	chunkMessage := &run.ChatV3MessageDetail{
-		ID:               strconv.FormatInt(chunkMessageItem.ID, 10),
-		ConversationID:   strconv.FormatInt(chunkMessageItem.ConversationID, 10),
-		BotID:            strconv.FormatInt(chunkMessageItem.AgentID, 10),
-		Role:             string(chunkMessageItem.Role),
-		Type:             string(chunkMessageItem.MessageType),
-		Content:          chunkMessageItem.Content,
-		ContentType:      string(chunkMessageItem.ContentType),
-		MetaData:         chunkMessageItem.Ext,
-		ChatID:           strconv.FormatInt(chunkMessageItem.RunID, 10),
-		ReasoningContent: chunkMessageItem.ReasoningContent,
+		ed, _ := json.Marshal(errData)
+		_ = sseSender.Send(ctx, &sse.Event{
+			Event: run.RunEventError,
+			Data:  ed,
+		})
 	}
 
-	mCM, _ := json.Marshal(chunkMessage)
-	return mCM
-}
-
-func buildARSM2ApiChatMessage(chunk *entity.AgentRunResponse) []byte {
-	chunkRunItem := chunk.ChunkRunItem
-	chunkMessage := &run.ChatV3ChatDetail{
-		ID:             chunkRunItem.ID,
-		ConversationID: chunkRunItem.ConversationID,
-		BotID:          chunkRunItem.AgentID,
-		Status:         string(chunkRunItem.Status),
-		SectionID:      ptr.Of(chunkRunItem.SectionID),
-		CreatedAt:      ptr.Of(int32(chunkRunItem.CreatedAt)),
-		CompletedAt:    ptr.Of(int32(chunkRunItem.CompletedAt)),
-		FailedAt:       ptr.Of(int32(chunkRunItem.FailedAt)),
-	}
-	if chunkRunItem.Usage != nil {
-		chunkMessage.Usage = &run.Usage{
-			TokenCount:   ptr.Of(int32(chunkRunItem.Usage.LlmTotalTokens)),
-			InputTokens:  ptr.Of(int32(chunkRunItem.Usage.LlmPromptTokens)),
-			OutputTokens: ptr.Of(int32(chunkRunItem.Usage.LlmCompletionTokens)),
-		}
-	}
-	mCM, _ := json.Marshal(chunkMessage)
-	return mCM
 }
 
 func checkParamsV3(_ context.Context, ar *run.ChatV3Request) error {

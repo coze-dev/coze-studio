@@ -45,7 +45,7 @@ def extract_pdf_content(pdf_data: bytes, extract_images, extract_tables: bool, f
         content = []
 
         for page_num, page in enumerate(pdf.pages):
-            if page_num + 1 in filter_pages:
+            if filter_pages is not None and page_num + 1 in filter_pages:
                 print(f"Skip page {page_num + 1}...")
                 continue
             print(f"Processing page {page_num + 1}...")

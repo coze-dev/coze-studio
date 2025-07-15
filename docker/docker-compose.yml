@@ -481,8 +481,8 @@ services:
     ports:
       - '8888:8888'
     volumes:
-      - ../docker/.env:/app/.env
-      - ../backend/conf:/app/resources/conf
+      - .env:/app/.env
+      # - ../backend/conf:/app/resources/conf
       # - ../backend/static:/app/resources/static
     depends_on:
       mysql:

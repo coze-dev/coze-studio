@@ -971,6 +971,7 @@ func (c *runImpl) buildSendMsg(_ context.Context, msg *msgEntity.Message, isFini
 		Type:             msg.MessageType,
 		CreatedAt:        msg.CreatedAt,
 		UpdatedAt:        msg.UpdatedAt,
+		RunID:            rtDependence.runID,
 		Ext:              copyMap,
 		IsFinish:         isFinish,
 		ReasoningContent: ptr.Of(msg.ReasoningContent),

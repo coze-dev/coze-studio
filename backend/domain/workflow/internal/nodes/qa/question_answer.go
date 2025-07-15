@@ -210,7 +210,7 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (out ma
 	case AnswerDirectly:
 		if isFirst { // first execution, ask the question
 			// format the question. Which is common to all use cases
-			firstQuestion, err := nodes.Jinja2TemplateRender(q.config.QuestionTpl, in)
+			firstQuestion, err := nodes.TemplateRender(q.config.QuestionTpl, in)
 			if err != nil {
 				return nil, err
 			}
@@ -253,7 +253,7 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (out ma
 		}
 
 		// format the question. Which is common to all use cases
-		firstQuestion, err := nodes.Jinja2TemplateRender(q.config.QuestionTpl, in)
+		firstQuestion, err := nodes.TemplateRender(q.config.QuestionTpl, in)
 		if err != nil {
 			return nil, err
 		}
@@ -262,7 +262,7 @@ func (q *QuestionAnswer) Execute(ctx context.Context, in map[string]any) (out ma
 		switch q.config.ChoiceType {
 		case FixedChoices:
 			for _, choice := range q.config.FixedChoices {
-				formattedChoice, err := nodes.Jinja2TemplateRender(choice, in)
+				formattedChoice, err := nodes.TemplateRender(choice, in)
 				if err != nil {
 					return nil, err
 				}
@@ -310,7 +310,7 @@ func (q *QuestionAnswer) extractFromAnswer(ctx context.Context, in map[string]an
 
 	var formattedAdditionalPrompt string
 	if len(q.config.AdditionalSystemPromptTpl) > 0 {
-		additionalPrompt, err := nodes.Jinja2TemplateRender(q.config.AdditionalSystemPromptTpl, in)
+		additionalPrompt, err := nodes.TemplateRender(q.config.AdditionalSystemPromptTpl, in)
 		if err != nil {
 			return nil, err
 		}

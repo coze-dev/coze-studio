@@ -1,5 +1,5 @@
 id: 2002 # 模型 entity id, 同 id 数据不会覆盖
-name: Doubao-1.5-Pro-32k
+name: Doubao Model
 description: test doubao description
 meta:
   id: 102

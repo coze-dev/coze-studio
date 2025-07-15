@@ -23,8 +23,10 @@ import (
 	"strings"
 
 	"github.com/cloudwego/eino/compose"
-	"github.com/nikolalohinski/gonja"
 
+	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
+	"code.byted.org/data_edc/workflow_engine_next/types/errno"
 	"code.byted.org/gopkg/logs"
 )
 
@@ -62,12 +64,26 @@ func SetMapValue(m map[string]any, path compose.FieldPath, v any) {
 	container[path[len(path)-1]] = v
 }
 
-func Jinja2TemplateRender(template string, vals map[string]interface{}) (string, error) {
-	tpl, err := gonja.FromString(template)
+func TemplateRender(template string, vals map[string]interface{}) (string, error) {
+	sb := strings.Builder{}
+	valsBytes, err := sonic.Marshal(vals)
 	if err != nil {
-		return "", err
+		return "", vo.WrapError(errno.ErrSerializationDeserializationFail, err)
 	}
-	return tpl.Execute(vals)
+	parts := ParseTemplate(template)
+	for idx := range parts {
+		part := parts[idx]
+		if !part.IsVariable {
+			sb.WriteString(part.Value)
+		} else {
+			renderString, err := part.Render(valsBytes)
+			if err != nil {
+				return "", err
+			}
+			sb.WriteString(renderString)
+		}
+	}
+	return sb.String(), nil
 }
 
 func ExtractJSONString(content string) string {

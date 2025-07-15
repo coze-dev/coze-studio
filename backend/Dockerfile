@@ -42,7 +42,7 @@ RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip git && \
     # If you want to use other third-party libraries, you can install them here.
     pip install git+https://gitcode.com/gh_mirrors/re/requests-async.git@master && \
     pip install urllib3==1.26.16 && \
-    pip install --no-cache-dir pillow pdfplumber python-docx numpy && \
+    pip install --no-cache-dir pillow==11.2.1 pdfplumber==0.11.7 python-docx==1.2.0 numpy==2.3.1 && \
     # Deactivate (optional, as RUN is a new shell)
     # deactivate && \
     # Remove build dependencies
@@ -60,7 +60,7 @@ COPY backend/infra/impl/document/parser/builtin/parse_docx.py /app/parse_docx.py
 # Copy static resources
 COPY backend/static /app/resources/static/
 COPY backend/conf /app/resources/conf/
-COPY docker/.env /app/.env
+COPY docker/.env.example /app/.env
 # COPY docker/.env.ve /app/.env
 # COPY docker/cert.pem /app/cert.pem
 # COPY docker/key.pem /app/key.pem

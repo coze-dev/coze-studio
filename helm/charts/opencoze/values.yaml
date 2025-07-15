@@ -71,6 +71,12 @@ cozeServer:
     BUILTIN_CM_OPENAI_API_KEY: "your_api_key"
     BUILTIN_CM_OPENAI_BY_AZURE: "false"
     BUILTIN_CM_OPENAI_MODEL: "gpt-4o-2024-05-13"
+    VE_IMAGEX_AK: ""
+    VE_IMAGEX_SK: ""
+    VE_IMAGEX_SERVER_ID: ""
+    VE_IMAGEX_DOMAIN: ""
+    VE_IMAGEX_TEMPLATE: ""
+    VE_IMAGEX_UPLOAD_HOST: "https://imagex.volcengineapi.com"
 
 rocketmq:
   enabled: true

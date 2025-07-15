@@ -46,7 +46,7 @@ else
     echo "requests-async repository already exists."
 fi
 
-pip install pillow pdfplumber python-docx numpy "$REQUESTS_ASYNC_DIR"
+pip install pillow==11.2.1 pdfplumber==0.11.7 python-docx==1.2.0 numpy==2.3.1 "$REQUESTS_ASYNC_DIR"
 
 if [ $? -ne 0 ]; then
     echo "Failed to install Python packages - aborting startup"

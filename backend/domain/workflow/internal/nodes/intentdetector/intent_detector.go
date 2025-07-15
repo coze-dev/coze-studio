@@ -115,7 +115,7 @@ func NewIntentDetector(ctx context.Context, cfg *Config) (*IntentDetector, error
 
 	spt := ternary.IFElse[string](cfg.IsFastMode, FastModeSystemIntentPrompt, SystemIntentPrompt)
 
-	sptTemplate, err := nodes.Jinja2TemplateRender(spt, map[string]interface{}{
+	sptTemplate, err := nodes.TemplateRender(spt, map[string]interface{}{
 		"intents": toIntentString(cfg.Intents),
 	})
 	if err != nil {
@@ -179,7 +179,7 @@ func (id *IntentDetector) Invoke(ctx context.Context, input map[string]any) (map
 	vars := make(map[string]any)
 	vars["query"] = queryStr
 	if !id.config.IsFastMode {
-		ad, err := nodes.Jinja2TemplateRender(id.config.SystemPrompt, map[string]any{"query": query})
+		ad, err := nodes.TemplateRender(id.config.SystemPrompt, map[string]any{"query": query})
 		if err != nil {
 			return nil, err
 		}

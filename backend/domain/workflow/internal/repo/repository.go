@@ -265,7 +265,8 @@ func (r *RepositoryImpl) CreateVersion(ctx context.Context, id int64, info *vo.V
 	}
 
 	if err = r.query.WorkflowVersion.WithContext(ctx).Create(&model.WorkflowVersion{
-		ID:                 id,
+		// ID: auto_increment
+		WorkflowID:         id,
 		Version:            info.Version,
 		VersionDescription: info.VersionDescription,
 		Canvas:             info.Canvas,
@@ -352,7 +353,7 @@ func (r *RepositoryImpl) Delete(ctx context.Context, id int64) (err error) {
 			return fmt.Errorf("delete workflow draft: %w", err)
 		}
 
-		_, err = tx.WorkflowVersion.WithContext(ctx).Where(tx.WorkflowVersion.ID.Eq(id)).Delete()
+		_, err = tx.WorkflowVersion.WithContext(ctx).Where(tx.WorkflowVersion.WorkflowID.Eq(id)).Delete()
 		if err != nil {
 			return fmt.Errorf("delete workflow versions: %w", err)
 		}
@@ -383,7 +384,7 @@ func (r *RepositoryImpl) MDelete(ctx context.Context, ids []int64) error {
 			logs.CtxWarn(ctx, "delete workflow draft failed err=%v, ids %v", err, ids)
 		}
 
-		_, err = r.query.WorkflowVersion.WithContext(ctx).Where(r.query.WorkflowVersion.ID.In(ids...)).Delete()
+		_, err = r.query.WorkflowVersion.WithContext(ctx).Where(r.query.WorkflowVersion.WorkflowID.In(ids...)).Delete()
 		if err != nil {
 			logs.CtxWarn(ctx, "delete workflow version failed err=%v, ids %v", err, ids)
 		}
@@ -601,7 +602,7 @@ func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version strin
 	}()
 
 	wfVersion, err := r.query.WorkflowVersion.WithContext(ctx).
-		Where(r.query.WorkflowVersion.ID.Eq(id), r.query.WorkflowVersion.Version.Eq(version)).
+		Where(r.query.WorkflowVersion.WorkflowID.Eq(id), r.query.WorkflowVersion.Version.Eq(version)).
 		First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -878,7 +879,7 @@ func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetP
 		conditions []gen.Condition
 	)
 	if len(q.IDs) > 0 {
-		conditions = append(conditions, r.query.WorkflowVersion.ID.In(q.IDs...))
+		conditions = append(conditions, r.query.WorkflowVersion.WorkflowID.In(q.IDs...))
 	}
 
 	if q.Name != nil {
@@ -929,7 +930,7 @@ func (r *RepositoryImpl) MGetLatestVersion(ctx context.Context, policy *vo.MGetP
 	)
 
 	d := r.query.WorkflowMeta.Debug().WithContext(ctx).
-		Join(r.query.WorkflowVersion, r.query.WorkflowVersion.ID.EqCol(r.query.WorkflowMeta.ID),
+		Join(r.query.WorkflowVersion, r.query.WorkflowVersion.WorkflowID.EqCol(r.query.WorkflowMeta.ID),
 			r.query.WorkflowVersion.Version.EqCol(r.query.WorkflowMeta.LatestVersion)).
 		Select(selectColumns...).
 		Where(conditions...)
@@ -1174,7 +1175,7 @@ func (r *RepositoryImpl) MGetMetas(ctx context.Context, query *vo.MetaQuery) (
 }
 
 func (r *RepositoryImpl) GetLatestVersion(ctx context.Context, id int64) (*vo.VersionInfo, error) {
-	version, err := r.query.WorkflowVersion.WithContext(ctx).Where(r.query.WorkflowVersion.ID.Eq(id)).
+	version, err := r.query.WorkflowVersion.WithContext(ctx).Where(r.query.WorkflowVersion.WorkflowID.Eq(id)).
 		Order(r.query.WorkflowVersion.CreatedAt.Desc()).First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -1228,6 +1229,7 @@ func (r *RepositoryImpl) CreateSnapshotIfNeeded(ctx context.Context, id int64, c
 	}
 
 	return r.query.WorkflowSnapshot.WithContext(ctx).Save(&model.WorkflowSnapshot{
+		// ID: auto_increment
 		WorkflowID:   id,
 		CommitID:     commitID,
 		Canvas:       draft.Canvas,

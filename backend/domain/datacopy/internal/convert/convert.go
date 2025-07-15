@@ -38,5 +38,6 @@ func ConvertToDataCopyTaskModel(task *entity.CopyDataTask) *model.DataCopyTask {
 		FinishTime:    task.FinishTime,
 		ExtInfo:       task.ExtInfo,
 		ErrorMsg:      task.ErrorMsg,
+		// ID: auto_increment
 	}
 }

@@ -27,7 +27,7 @@ require (
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/matoous/go-nanoid v1.5.1
 	github.com/milvus-io/milvus-proto/go-api/v2 v2.5.0-beta.0.20250325034212-6e98baa34971 // indirect
-	github.com/nikolalohinski/gonja v1.5.3
+	github.com/nikolalohinski/gonja v1.5.3 // indirect
 	github.com/onsi/gomega v1.27.3
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20250417044355-c5882b1f6c58
 	github.com/shopspring/decimal v1.4.0

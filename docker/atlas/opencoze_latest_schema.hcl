@@ -682,7 +682,18 @@ table "data_copy_task" {
     type    = varchar(128)
     comment = "错误信息"
   }
+  column "id" {
+    null           = false
+    type           = bigint
+    unsigned       = true
+    comment        = "ID"
+    auto_increment = true
+  }
   primary_key {
+    columns = [column.id]
+  }
+  index "uniq_master_task_id_origin_data_id_data_type" {
+    unique  = true
     columns = [column.master_task_id, column.origin_data_id, column.data_type]
   }
 }
@@ -3904,7 +3915,18 @@ table "workflow_snapshot" {
     type     = bigint
     unsigned = true
   }
+  column "id" {
+    null           = false
+    type           = bigint
+    unsigned       = true
+    comment        = "ID"
+    auto_increment = true
+  }
   primary_key {
+    columns = [column.id]
+  }
+  index "uniq_workflow_id_commit_id" {
+    unique  = true
     columns = [column.workflow_id, column.commit_id]
   }
 }
@@ -3912,6 +3934,13 @@ table "workflow_version" {
   schema  = schema.opencoze
   comment = "workflow 画布版本信息表，用于记录不同版本的画布信息"
   column "id" {
+    null           = false
+    type           = bigint
+    unsigned       = true
+    comment        = "ID"
+    auto_increment = true
+  }
+  column "workflow_id" {
     null     = false
     type     = bigint
     unsigned = true
@@ -3963,10 +3992,14 @@ table "workflow_version" {
     comment = "the commit id corresponding to this version"
   }
   primary_key {
-    columns = [column.id, column.version]
+    columns = [column.id]
   }
   index "idx_id_created_at" {
-    columns = [column.id, column.created_at]
+    columns = [column.workflow_id, column.created_at]
+  }
+  index "uniq_workflow_id_version" {
+    unique  = true
+    columns = [column.workflow_id, column.version]
   }
 }
 schema "opencoze" {
