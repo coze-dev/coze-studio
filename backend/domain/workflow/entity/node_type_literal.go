@@ -150,7 +150,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg",
 		SupportBatch: true, // supportBatch: 2
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS:   3 * 60 * 1000, // 3 minutes
+			DefaultTimeoutMS:   30 * 60 * 1000, // 3 minutes
 			PreFillZero:        true,
 			PostFillNil:        true,
 			StreamingParadigms: map[StreamingParadigm]bool{Invoke: true},
@@ -168,7 +168,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
 		SupportBatch: false, // supportBatch: 1
 		ExecutableMeta: ExecutableMeta{
-			DefaultTimeoutMS:   60 * 1000, // 1 minute
+			DefaultTimeoutMS:   3 * 60 * 1000, // 1 minute
 			PreFillZero:        true,
 			PostFillNil:        true,
 			CallbackEnabled:    true,
@@ -344,7 +344,7 @@ var NodeTypeMetas = []*NodeTypeMeta{
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			IsComposite:        true,
-			DefaultTimeoutMS:   60 * 1000, // 1 minute
+			DefaultTimeoutMS:   30 * 60 * 1000, // 30 minute
 			PreFillZero:        true,
 			PostFillNil:        true,
 			CallbackEnabled:    true,

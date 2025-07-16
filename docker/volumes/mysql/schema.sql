@@ -857,7 +857,8 @@ CREATE TABLE IF NOT EXISTS `workflow_snapshot` (
 
 -- Create 'workflow_version' table
 CREATE TABLE IF NOT EXISTS `workflow_version` (
-  `id` bigint unsigned NOT NULL COMMENT 'workflow id',
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `workflow_id` bigint unsigned NOT NULL default 0 COMMENT 'workflow id',
   `version` varchar(50) NOT NULL COMMENT '发布版本',
   `version_description` varchar(2000) NOT NULL COMMENT '版本描述',
   `canvas` mediumtext COMMENT '前端 schema',
@@ -867,6 +868,7 @@ CREATE TABLE IF NOT EXISTS `workflow_version` (
   `created_at` bigint unsigned NOT NULL COMMENT '创建时间毫秒时间戳',
   `deleted_at` datetime(3) NULL COMMENT '删除毫秒时间戳',
   `commit_id` varchar(255) NOT NULL COMMENT 'the commit id corresponding to this version',
-  PRIMARY KEY (`id`, `version`),
-  INDEX `idx_id_created_at` (`id`, `created_at`)
+  PRIMARY KEY (`id`),
+  INDEX `idx_id_created_at` (`workflow_id`, `created_at`),
+  UNIQUE INDEX `uniq_workflow_id_version` (`workflow_id`, `version`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = 'workflow version';
