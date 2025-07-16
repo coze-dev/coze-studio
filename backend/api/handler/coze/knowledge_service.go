@@ -737,7 +737,11 @@ func DataSourceOAuthComplete(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(connector.DataSourceOAuthCompleteResponse)
-
+	resp, err = application.KnowledgeSVC.DataSourceOAuthComplete(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 

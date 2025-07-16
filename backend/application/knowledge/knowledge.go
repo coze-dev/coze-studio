@@ -1346,3 +1346,11 @@ func (k *KnowledgeApplicationService) DataSourceOAuthConsentURL(ctx context.Cont
 	resp.ConsentURL = domainResp.ConsentURL
 	return resp, nil
 }
+
+func (k *KnowledgeApplicationService) DataSourceOAuthComplete(ctx context.Context, req *connector.DataSourceOAuthCompleteRequest) (*connector.DataSourceOAuthCompleteResponse, error) {
+	resp := connector.NewDataSourceOAuthCompleteResponse()
+	if req == nil {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+
+}
