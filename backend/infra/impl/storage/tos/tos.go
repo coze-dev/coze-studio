@@ -40,7 +40,7 @@ func New(ctx context.Context, bucketName string, accessKey string, psm string) (
 		tos.WithCredentials(&tos.BucketAccessKeyCredentials{
 			BucketName: bucketName,
 			AccessKey:  accessKey,
-		}), tos.WithServiceName("toutiao.tos.tosapi"), tos.WithCluster("maliva"), tos.WithRemotePSM(psm))
+		}), tos.WithServiceName("toutiao.tos.tosapi"), tos.WithCluster("default"), tos.WithIDC("maliva"), tos.WithRemotePSM(psm))
 	if err != nil {
 		fmt.Println("Error:", err)
 		os.Exit(-1)

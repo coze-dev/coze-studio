@@ -116,7 +116,7 @@ func (c *byteESClient) Search(ctx context.Context, index string, req *Request) (
 	logs.CtxInfo(ctx, "[search] search index, rawReq: %s, q: %s", conv.DebugJsonToStr(req), conv.DebugJsonToStr(q))
 	// ctx 中增加 log_request_enabled
 	ctx = context.WithValue(ctx, "log-request-enabled", true)
-	res, err := c.readClient.Search().Index(index).Query(q).Do(ctx)
+	res, err := c.readClient.Search().Index(index).Query(q).Size(*req.Size).Do(ctx)
 	if err != nil {
 		logs.CtxError(ctx, "[search] search index failed, err: %v", err)
 		return nil, err
