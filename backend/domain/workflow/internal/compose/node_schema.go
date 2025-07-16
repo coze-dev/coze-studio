@@ -32,6 +32,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/conversation"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/database"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/emitter"
+	entry "code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/entry"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/httprequester"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/intentdetector"
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/internal/nodes/json"

@@ -33,8 +33,8 @@ import (
 
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"code.byted.org/gopkg/logs"
 )
 
 type minioClient struct {
@@ -195,7 +195,7 @@ func (m *minioClient) GetObjectUrl(ctx context.Context, objectKey string, opts .
 		return "", fmt.Errorf("GetObjectUrl failed: %v", err)
 	}
 
-	logs.CtxDebugf(ctx, "[GetObjectUrl] origin presignedURL.String = %s", presignedURL.String())
+	logs.CtxDebug(ctx, "[GetObjectUrl] origin presignedURL.String = %s", presignedURL.String())
 
 	proxyPort := os.Getenv(consts.MinIOProxyEndpoint) // :8889
 	if len(proxyPort) > 0 {
@@ -210,7 +210,7 @@ func (m *minioClient) GetObjectUrl(ctx context.Context, objectKey string, opts .
 		}
 		minioProxyHost := host + proxyPort
 		presignedURL.Host = minioProxyHost
-		logs.CtxDebugf(ctx, "[GetObjectUrl] reset presignedURL.String = %s", presignedURL.String())
+		logs.CtxDebug(ctx, "[GetObjectUrl] reset presignedURL.String = %s", presignedURL.String())
 	}
 
 	return presignedURL.String(), nil

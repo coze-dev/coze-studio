@@ -63,6 +63,7 @@ import (
 	sses "code.byted.org/data_edc/workflow_engine_next/infra/impl/document/searchstore/elasticsearch"
 	ssmilvus "code.byted.org/data_edc/workflow_engine_next/infra/impl/document/searchstore/milvus"
 	ssvikingdb "code.byted.org/data_edc/workflow_engine_next/infra/impl/document/searchstore/vikingdb"
+	arkemb "code.byted.org/data_edc/workflow_engine_next/infra/impl/embedding/ark"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/embedding/wrap"
 	builtinM2Q "code.byted.org/data_edc/workflow_engine_next/infra/impl/messages2query/builtin"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
