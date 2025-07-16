@@ -81,7 +81,7 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 	if err != nil {
 		return err
 	}
-
+	logs.CtxInfo(ctx, "[loadStaticModelConfig] get work dir, root=%s", root)
 	envModelMeta, envModelEntity, err := initModelByEnv(root, "conf/model/template")
 	if err != nil {
 		return err

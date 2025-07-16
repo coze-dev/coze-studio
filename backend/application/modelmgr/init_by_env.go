@@ -1,6 +1,7 @@
 package modelmgr
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -15,7 +16,7 @@ import (
 func initModelByEnv(wd, templatePath string) (metaSlice []*modelmgr.ModelMeta, entitySlice []*modelmgr.Model, err error) {
 	metaRoot := filepath.Join(wd, templatePath, "meta")
 	entityRoot := filepath.Join(wd, templatePath, "entity")
-
+	logs.CtxInfo(context.Background(), "[initModelByEnv] metaRoot=%s, entityRoot=%s", metaRoot, entityRoot)
 	for i := -1; i < 1000; i++ {
 		rawProtocol := os.Getenv(concatEnvKey(modelProtocolPrefix, i))
 		if rawProtocol == "" {
