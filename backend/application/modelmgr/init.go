@@ -34,7 +34,6 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/modelmgr/service"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/idgen"
-	"code.byted.org/gopkg/env"
 	"code.byted.org/gopkg/logs"
 )
 
@@ -99,8 +98,7 @@ func loadStaticModelConfig(svc modelmgr.Manager, oss storage.Storage) error {
 				return fmt.Errorf("missing icon URI or icon URL, id=%d", modelMeta.ID)
 			} else if modelMeta.IconURL != "" {
 				// do nothing
-			} else if modelMeta.IconURI != "" && env.InTCE() {
-				// TODO：本地调不通 TOS，只在开发机上跑
+			} else if modelMeta.IconURI != "" {
 				// try local path
 				base := filepath.Base(modelMeta.IconURI)
 				iconPath := filepath.Join("conf/model/icon", base)
