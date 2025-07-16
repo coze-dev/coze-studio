@@ -65,6 +65,13 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/safego"
 )
 
+func (s *NodeSchema) ToEntryConfig(_ context.Context) (*entry.Config, error) {
+	return &entry.Config{
+		DefaultValues: getKeyOrZero[map[string]any]("DefaultValues", s.Configs),
+		OutputTypes:   s.OutputTypes,
+	}, nil
+}
+
 func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 	llmConf := &llm.Config{
 		SystemPrompt: getKeyOrZero[string]("SystemPrompt", s.Configs),

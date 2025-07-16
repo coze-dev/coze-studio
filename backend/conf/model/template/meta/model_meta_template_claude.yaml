@@ -5,7 +5,7 @@ icon_url: '' # 模型展示图片 url
 description:
   zh: claude 模型简介 # 模型默认描述
   en: claude model description
-protocol: openai # 模型连接协议, see: backend/infra/contract/chatmodel/protocol.go
+protocol: claude # 模型连接协议, see: backend/infra/contract/chatmodel/protocol.go
 capability: # 模型基础能力
   function_call: true # 模型是否支持 function call
   input_modal: # 模型输入支持模态

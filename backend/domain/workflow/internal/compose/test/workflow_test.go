@@ -37,7 +37,9 @@ func TestAddSelector(t *testing.T) {
 	entry := &compose2.NodeSchema{
 		Key:  entity.EntryNodeKey,
 		Type: entity.NodeTypeEntry,
-	}
+		Configs: map[string]any{
+			"DefaultValues": map[string]any{},
+		}}
 
 	exit := &compose2.NodeSchema{
 		Key:  entity.ExitNodeKey,
@@ -304,6 +306,9 @@ func TestVariableAggregator(t *testing.T) {
 	entry := &compose2.NodeSchema{
 		Key:  entity.EntryNodeKey,
 		Type: entity.NodeTypeEntry,
+		Configs: map[string]any{
+			"DefaultValues": map[string]any{},
+		},
 	}
 
 	exit := &compose2.NodeSchema{
@@ -446,6 +451,9 @@ func TestTextProcessor(t *testing.T) {
 		entry := &compose2.NodeSchema{
 			Key:  entity.EntryNodeKey,
 			Type: entity.NodeTypeEntry,
+			Configs: map[string]any{
+				"DefaultValues": map[string]any{},
+			},
 		}
 
 		exit := &compose2.NodeSchema{
@@ -522,6 +530,9 @@ func TestTextProcessor(t *testing.T) {
 		entry := &compose2.NodeSchema{
 			Key:  entity.EntryNodeKey,
 			Type: entity.NodeTypeEntry,
+			Configs: map[string]any{
+				"DefaultValues": map[string]any{},
+			},
 		}
 
 		exit := &compose2.NodeSchema{

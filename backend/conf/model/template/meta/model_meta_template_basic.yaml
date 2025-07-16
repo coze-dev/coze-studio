@@ -60,4 +60,16 @@ conn_config: # 模型连接参数
       key: val
   deepseek:
     response_format_type: text
+  gemini:
+    backend: 0
+    project: ''
+    location: ''
+    api_version: ''
+    headers:
+      key_1:
+        - val_1
+        - val_2
+    timeout: 0
+    include_thoughts: true
+    thinking_budget: null
   status: 1

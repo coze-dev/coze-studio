@@ -23,13 +23,18 @@ import (
 	"io"
 	"log"
 	"math/rand"
+	"net"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/logs"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 )
 
 type minioClient struct {
@@ -63,7 +68,7 @@ func New(ctx context.Context, endpoint, accessKeyID, secretAccessKey, bucketName
 		return nil, fmt.Errorf("init minio client failed %v", err)
 	}
 
-	// m.Test()
+	// m.test()
 
 	return m, nil
 }
@@ -188,6 +193,24 @@ func (m *minioClient) GetObjectUrl(ctx context.Context, objectKey string, opts .
 	presignedURL, err := m.client.PresignedGetObject(ctx, m.bucketName, objectKey, time.Duration(option.Expire)*time.Second, reqParams)
 	if err != nil {
 		return "", fmt.Errorf("GetObjectUrl failed: %v", err)
+	}
+
+	logs.CtxDebugf(ctx, "[GetObjectUrl] origin presignedURL.String = %s", presignedURL.String())
+
+	proxyPort := os.Getenv(consts.MinIOProxyEndpoint) // :8889
+	if len(proxyPort) > 0 {
+		currentHost, ok := ctxcache.Get[string](ctx, consts.HostKeyInCtx)
+		if !ok {
+			return presignedURL.String(), nil
+		}
+
+		host, _, err := net.SplitHostPort(currentHost)
+		if err != nil {
+			host = currentHost
+		}
+		minioProxyHost := host + proxyPort
+		presignedURL.Host = minioProxyHost
+		logs.CtxDebugf(ctx, "[GetObjectUrl] reset presignedURL.String = %s", presignedURL.String())
 	}
 
 	return presignedURL.String(), nil

@@ -480,6 +480,7 @@ services:
       - coze-network
     ports:
       - '8888:8888'
+      - '8889:8889'
     volumes:
       - .env:/app/.env
       # - ../backend/conf:/app/resources/conf

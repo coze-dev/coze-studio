@@ -2289,6 +2289,83 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 		})
 	})
 }
+
+func TestStartNodeDefaultValues(t *testing.T) {
+	mockey.PatchConvey("default values", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		t.Run("no input keys, all fields use default values", func(t *testing.T) {
+			idStr := r.load("start_node_default_values.json")
+			r.publish(idStr, "v0.0.1", true)
+			input := map[string]string{}
+			result, _ := r.openapiSyncRun(idStr, input)
+			assert.Equal(t, result, map[string]any{
+				"ts":    "2025-07-09 21:43:34",
+				"files": "http://imagex.fanlv.fun/tos-cn-i-1heqlfnr21/e81acc11277f421390770618e24e01ce.jpeg~tplv-1heqlfnr21-image.image?x-wf-file_name=20250317-154742.jpeg",
+				"str":   "str",
+				"object": map[string]any{
+					"a": "1",
+				},
+				"array":  []any{"1", "2"},
+				"inter":  int64(100),
+				"number": 12.4,
+				"bool":   false,
+			})
+
+		})
+		t.Run("all fields use default values", func(t *testing.T) {
+			idStr := r.load("start_node_default_values.json")
+			r.publish(idStr, "v0.0.1", true)
+			input := map[string]string{
+				"str":    "",
+				"array":  "[]",
+				"object": "{}",
+			}
+
+			result, _ := r.openapiSyncRun(idStr, input)
+			assert.Equal(t, result, map[string]any{
+				"ts":    "2025-07-09 21:43:34",
+				"files": "http://imagex.fanlv.fun/tos-cn-i-1heqlfnr21/e81acc11277f421390770618e24e01ce.jpeg~tplv-1heqlfnr21-image.image?x-wf-file_name=20250317-154742.jpeg",
+				"str":   "str",
+				"object": map[string]any{
+					"a": "1",
+				},
+				"array":  []any{"1", "2"},
+				"inter":  int64(100),
+				"number": 12.4,
+				"bool":   false,
+			})
+
+		})
+		t.Run("some use default values and some use user-entered values", func(t *testing.T) {
+			idStr := r.load("start_node_default_values.json")
+			r.publish(idStr, "v0.0.1", true)
+			input := map[string]string{
+				"str":    "value",
+				"array":  `["a","b"]`,
+				"object": "{}",
+				"bool":   "true",
+			}
+
+			result, _ := r.openapiSyncRun(idStr, input)
+			assert.Equal(t, result, map[string]any{
+				"ts":    "2025-07-09 21:43:34",
+				"files": "http://imagex.fanlv.fun/tos-cn-i-1heqlfnr21/e81acc11277f421390770618e24e01ce.jpeg~tplv-1heqlfnr21-image.image?x-wf-file_name=20250317-154742.jpeg",
+				"str":   "value",
+				"object": map[string]any{
+					"a": "1",
+				},
+				"array":  []any{"a", "b"},
+				"inter":  int64(100),
+				"number": 12.4,
+				"bool":   true,
+			})
+
+		})
+
+	})
+}
+
 func TestAggregateStreamVariables(t *testing.T) {
 	mockey.PatchConvey("test aggregate stream variables", t, func() {
 		r := newWfTestRunner(t)

@@ -14,6 +14,7 @@ capability: # 模型基础能力
   function_call: true # 模型是否支持 function call
   input_modal: # 模型输入支持模态
     - text
+    - image
   input_tokens: 128000 # 输入 token 上限
   output_modal: # 模型输出支持模态
     - text

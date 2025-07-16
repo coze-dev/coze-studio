@@ -138,6 +138,9 @@ func TestBatch(t *testing.T) {
 	entry := &compose2.NodeSchema{
 		Key:  entity.EntryNodeKey,
 		Type: entity.NodeTypeEntry,
+		Configs: map[string]any{
+			"DefaultValues": map[string]any{},
+		},
 	}
 
 	ns := &compose2.NodeSchema{

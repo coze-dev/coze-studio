@@ -28,9 +28,9 @@ ON DUPLICATE KEY UPDATE
 -- mock chat mode config for self-test, if publish should remove
 
 INSERT INTO single_agent_draft (
-    agent_id, creator_id, space_id, name, `desc`, icon_uri, created_at, updated_at, deleted_at,
+    agent_id, creator_id, space_id, name, `description`, icon_uri, created_at, updated_at, deleted_at,
     model_info, onboarding_info, prompt, plugin, knowledge, workflow, suggest_reply,
-    jump_config, background_image_info_list, `database`, shortcut_command
+    jump_config, background_image_info_list, `database_config`, shortcut_command
 ) VALUES (
     7416518827749425204, 0, 999999, 'english', '', 'default_icon/default_agent_icon.png', 1749197285550, 1749197395401, NULL,
     '{"top_p": 0.7, "model_id": "2002", "max_tokens": 4096, "model_style": 2, "temperature": 0.8, "response_format": 0, "short_memory_policy": {"history_round": 10}}',
@@ -53,9 +53,9 @@ INSERT INTO template (agent_id, space_id, product_entity_type, meta_info) VALUES
 
 
 INSERT INTO single_agent_draft (
-        agent_id, creator_id, space_id, name, `desc`, icon_uri, created_at, updated_at, deleted_at,
+        agent_id, creator_id, space_id, name, `description`, icon_uri, created_at, updated_at, deleted_at,
         model_info, onboarding_info, prompt, plugin, knowledge, workflow, suggest_reply,
-        jump_config, background_image_info_list, `database`, shortcut_command
+        jump_config, background_image_info_list, `database_config`, shortcut_command
 ) VALUES (7418535986059067392, 0, 999999, '导购陪练',
   'AI模拟真实顾客进店场景，有效考核导购的需求洞察力、产品搭配技巧和口才；销售成长之旅，与 SalesGenius 同行。',
   'default_icon/default_agent_icon.png', 1749634633027, 1749634659646, NULL,

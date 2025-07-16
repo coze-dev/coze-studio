@@ -21,6 +21,7 @@ import (
 
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
 	"github.com/cloudwego/eino-ext/libs/acl/openai"
+	"google.golang.org/genai"
 )
 
 type Config struct {
@@ -43,6 +44,7 @@ type Config struct {
 	Ark      *ArkConfig      `json:"ark,omitempty" yaml:"ark"`
 	Deepseek *DeepseekConfig `json:"deepseek,omitempty" yaml:"deepseek"`
 	Qwen     *QwenConfig     `json:"qwen,omitempty" yaml:"qwen"`
+	Gemini   *GeminiConfig   `json:"gemini,omitempty" yaml:"gemini"`
 
 	Custom map[string]string `json:"custom,omitempty" yaml:"custom"`
 }
@@ -77,4 +79,16 @@ type DeepseekConfig struct {
 
 type QwenConfig struct {
 	ResponseFormat *openai.ChatCompletionResponseFormat `json:"response_format,omitempty" yaml:"response_format"`
+}
+
+type GeminiConfig struct {
+	Backend    genai.Backend       `json:"backend,omitempty" yaml:"backend"`
+	Project    string              `json:"project,omitempty" yaml:"project"`
+	Location   string              `json:"location,omitempty" yaml:"location"`
+	APIVersion string              `json:"api_version,omitempty" yaml:"api_version"`
+	Headers    map[string][]string `json:"headers,omitempty" yaml:"headers"`
+	TimeoutMs  int64               `json:"timeout_ms,omitempty" yaml:"timeout_ms"`
+
+	IncludeThoughts *bool  `json:"include_thoughts,omitempty" yaml:"include_thoughts"` // default true
+	ThinkingBudget  *int32 `json:"thinking_budget,omitempty" yaml:"thinking_budget"`   // default nil
 }

@@ -10,6 +10,7 @@ SETUP_DOCKER_SCRIPT := $(SCRIPTS_DIR)/setup/docker.sh
 SETUP_PYTHON_SCRIPT := $(SCRIPTS_DIR)/setup/python.sh
 COMPOSE_FILE := docker/docker-compose.yml
 MYSQL_SCHEMA := ./docker/volumes/mysql/schema.sql
+MYSQL_INIT_SQL := ./docker/volumes/mysql/sql_init.sql
 ENV_FILE := ./docker/.env
 
 debug: middleware python server
@@ -30,7 +31,7 @@ sync_db:
 	@echo "Syncing database..."
 	@docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) --profile mysql-setup up -d
 
-dump_db:
+dump_db: dump_sql_schema
 	@echo "Dumping database..."
 	@bash $(DUMP_DB_SCRIPT)
 
@@ -64,6 +65,9 @@ dump_sql_schema: sync_db
 	@. $(ENV_FILE); \
 	{ echo "SET NAMES utf8mb4;\nCREATE DATABASE IF NOT EXISTS opencoze COLLATE utf8mb4_unicode_ci;"; atlas schema inspect -u $$ATLAS_URL --format "{{ sql . }}" --exclude "atlas_schema_revisions,table_*" | sed 's/CREATE TABLE/CREATE TABLE IF NOT EXISTS/g'; } > $(MYSQL_SCHEMA)
 	@sed -I '' -E 's/(\))[[:space:]]+CHARSET utf8mb4/\1 ENGINE=InnoDB CHARSET utf8mb4/' $(MYSQL_SCHEMA)
+	@echo "Dumping mysql schema to helm/charts/opencoze/files/mysql ..."
+	@cp $(MYSQL_SCHEMA) ./helm/charts/opencoze/files/mysql/
+	@cp $(MYSQL_INIT_SQL) ./helm/charts/opencoze/files/mysql/
 
 atlas-hash:
 	@echo "Rehash atlas migration files..."

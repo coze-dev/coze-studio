@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package wrap
+package middleware
 
 import (
 	"context"
 
-	"github.com/cloudwego/eino-ext/components/embedding/ark"
+	"github.com/cloudwego/hertz/pkg/app"
 
-	contract "code.byted.org/data_edc/workflow_engine_next/infra/contract/embedding"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/ctxcache"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 )
 
-func NewArkEmbedder(ctx context.Context, config *ark.EmbeddingConfig, dimensions int64) (contract.Embedder, error) {
-	emb, err := ark.NewEmbedder(ctx, config)
-	if err != nil {
-		return nil, err
+func SetHostMW() app.HandlerFunc {
+	return func(c context.Context, ctx *app.RequestContext) {
+		ctxcache.Store(c, consts.HostKeyInCtx, string(ctx.Host()))
+		ctx.Next(c)
 	}
-
-	return &denseOnlyWrap{dims: dimensions, Embedder: emb}, nil
 }

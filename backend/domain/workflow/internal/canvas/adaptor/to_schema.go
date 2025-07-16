@@ -365,6 +365,20 @@ func toEntryNodeSchema(n *vo.Node, _ ...OptionFn) (*compose.NodeSchema, error) {
 		Name: n.Data.Meta.Title,
 	}
 
+	defaultValues := make(map[string]any, len(n.Data.Outputs))
+	for _, v := range n.Data.Outputs {
+		variable, err := vo.ParseVariable(v)
+		if err != nil {
+			return nil, err
+		}
+		if variable.DefaultValue != nil {
+			defaultValues[variable.Name] = variable.DefaultValue
+		}
+
+	}
+
+	ns.SetConfigKV("DefaultValues", defaultValues)
+
 	if err := SetOutputTypesForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}

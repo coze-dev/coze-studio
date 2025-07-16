@@ -107,7 +107,9 @@ func TestQuestionAnswer(t *testing.T) {
 			entry := &compose2.NodeSchema{
 				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
-			}
+				Configs: map[string]any{
+					"DefaultValues": map[string]any{},
+				}}
 
 			ns := &compose2.NodeSchema{
 				Key:  "qa_node_key",
@@ -209,6 +211,9 @@ func TestQuestionAnswer(t *testing.T) {
 			entry := &compose2.NodeSchema{
 				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
+				Configs: map[string]any{
+					"DefaultValues": map[string]any{},
+				},
 			}
 
 			ns := &compose2.NodeSchema{
@@ -358,6 +363,9 @@ func TestQuestionAnswer(t *testing.T) {
 			entry := &compose2.NodeSchema{
 				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
+				Configs: map[string]any{
+					"DefaultValues": map[string]any{},
+				},
 			}
 
 			ns := &compose2.NodeSchema{
@@ -515,6 +523,9 @@ func TestQuestionAnswer(t *testing.T) {
 			entry := &compose2.NodeSchema{
 				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
+				Configs: map[string]any{
+					"DefaultValues": map[string]any{},
+				},
 			}
 
 			ns := &compose2.NodeSchema{

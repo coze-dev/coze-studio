@@ -23,10 +23,12 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/claude"
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
+	"github.com/cloudwego/eino-ext/components/model/gemini"
 	"github.com/cloudwego/eino-ext/components/model/ollama"
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino-ext/components/model/qwen"
 	"github.com/ollama/ollama/api"
+	"google.golang.org/genai"
 
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/chatmodel"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
@@ -44,7 +46,7 @@ func NewFactory(customFactory map[chatmodel.Protocol]Builder) chatmodel.Factory 
 		chatmodel.ProtocolClaude:   claudeBuilder,
 		chatmodel.ProtocolDeepseek: deepseekBuilder,
 		chatmodel.ProtocolArk:      arkBuilder,
-		chatmodel.ProtocolGemini:   nil, // TODO: upgrade gemini api
+		chatmodel.ProtocolGemini:   geminiBuilder,
 		chatmodel.ProtocolOllama:   ollamaBuilder,
 		chatmodel.ProtocolQwen:     qwenBuilder,
 		chatmodel.ProtocolErnie:    nil,
@@ -219,4 +221,53 @@ func qwenBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.ToolC
 		cfg.ResponseFormat = config.Qwen.ResponseFormat
 	}
 	return qwen.NewChatModel(ctx, cfg)
+}
+
+func geminiBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.ToolCallingChatModel, error) {
+	gc := &genai.ClientConfig{
+		APIKey: config.APIKey,
+		HTTPOptions: genai.HTTPOptions{
+			BaseURL: config.BaseURL,
+		},
+	}
+	if config.Gemini != nil {
+		gc.Backend = config.Gemini.Backend
+		gc.Project = config.Gemini.Project
+		gc.Location = config.Gemini.Location
+		gc.HTTPOptions.APIVersion = config.Gemini.APIVersion
+		gc.HTTPOptions.Headers = config.Gemini.Headers
+	}
+
+	client, err := genai.NewClient(ctx, gc)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := &gemini.Config{
+		Client:      client,
+		Model:       config.Model,
+		MaxTokens:   config.MaxTokens,
+		Temperature: config.Temperature,
+		TopP:        config.TopP,
+		ThinkingConfig: &genai.ThinkingConfig{
+			IncludeThoughts: true,
+			ThinkingBudget:  nil,
+		},
+	}
+	if config.TopK != nil {
+		cfg.TopK = ptr.Of(int32(ptr.From(config.TopK)))
+	}
+	if config.Gemini != nil && config.Gemini.IncludeThoughts != nil {
+		cfg.ThinkingConfig.IncludeThoughts = ptr.From(config.Gemini.IncludeThoughts)
+	}
+	if config.Gemini != nil && config.Gemini.ThinkingBudget != nil {
+		cfg.ThinkingConfig.ThinkingBudget = config.Gemini.ThinkingBudget
+	}
+
+	cm, err := gemini.NewChatModel(ctx, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return cm, nil
 }
