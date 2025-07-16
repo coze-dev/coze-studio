@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"sort"
 	"strconv"
 	"time"
@@ -1339,11 +1340,19 @@ func (k *KnowledgeApplicationService) DataSourceOAuthConsentURL(ctx context.Cont
 	if req.GetConnectorID() == 0 {
 		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "connector id is empty"))
 	}
-	domainResp, err := k.DomainSVC.GetAuthConsentURL(ctx, &service.GetAuthConsentURLRequest{ConnectorID: int64(req.GetConnectorID())})
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
+	}
+	domainResp, err := k.DomainSVC.GetAuthConsentURL(ctx, &service.GetAuthConsentURLRequest{
+		ConnectorID: int64(req.GetConnectorID()),
+		CreatorID:   ptr.From(uid),
+		RedirectURI: req.GetRedirectURL(),
+	})
 	if err != nil {
 		return resp, err
 	}
-	resp.ConsentURL = domainResp.ConsentURL
+	resp.ConsentURL = ptr.Of(domainResp.ConsentURL)
 	return resp, nil
 }
 
@@ -1351,6 +1360,15 @@ func (k *KnowledgeApplicationService) DataSourceOAuthComplete(ctx context.Contex
 	resp := connector.NewDataSourceOAuthCompleteResponse()
 	if req == nil {
 		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "request is empty"))
+	}
+	if len(req.GetDomain()) == 0 {
+		return resp, errorx.New(errno.ErrKnowledgeInvalidParamCode, errorx.KV("msg", "domain is empty"))
+	}
+	if req.GetCode() == "" && req.GetState() == "" {
+		logs.CtxInfof(ctx, "[DataSourceOAuthComplete] code and state is empty,redirect to home page")
+		resp.BaseResp.StatusCode = http.StatusFound
+		resp.RedirectURL = fmt.Sprintf("https://%s/home", req.GetDomain())
+		return resp, nil
 	}
 
 }

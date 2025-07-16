@@ -61,22 +61,27 @@ struct AuthInfo {
 }
 
 struct DataSourceOAuthConsentURLRequest {
-    1: required ConnectorID ConnectorID
+    1: required ConnectorID ConnectorID (api.js_conv="true",api.body="connector_id")
+    2: required string RedirectURL (api.body="redirect_url")
+    3: required string domain (api.header="host",api.none="true")
 
     255: optional base.Base Base
 }
 
-struct DataSourceOAuthConsentURLResponse {
-    1: required string ConsentURL
 
-    255: optional base.BaseResp BaseResp
+struct DataSourceOAuthConsentURLResponse {
+    1: optional string ConsentURL (agw.key="consent_url")
+
+    253: required i64 code
+    254: required string msg
+    255: optional base.BaseResp BaseResp(api.none="true")
 }
+
 
 struct DataSourceOAuthCompleteRequest {
     1: required string Code (api.body="code")
     2: required string State (api.body="state")
     3: required string domain (api.header="host")
-    4: optional string AuthCode (api.query="auth_code")
     255: optional base.Base Base
 }
 

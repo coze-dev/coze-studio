@@ -402,6 +402,8 @@ type MGetAuthInfoResponse struct {
 
 type GetAuthConsentURLRequest struct {
 	ConnectorID int64
+	CreatorID   int64
+	RedirectURI string
 }
 
 type GetAuthConsentURLResponse struct {

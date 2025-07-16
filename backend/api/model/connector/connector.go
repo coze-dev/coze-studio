@@ -2004,7 +2004,9 @@ func (p *AuthInfo) String() string {
 }
 
 type DataSourceOAuthConsentURLRequest struct {
-	ConnectorID ConnectorID `thrift:"ConnectorID,1,required" form:"ConnectorID,required" json:"ConnectorID,required" query:"ConnectorID,required"`
+	ConnectorID ConnectorID `thrift:"ConnectorID,1,required" form:"connector_id,required" json:"connector_id,string,required"`
+	RedirectURL string      `thrift:"RedirectURL,2,required" form:"redirect_url,required" json:"redirect_url,required"`
+	Domain      string      `thrift:"domain,3,required" header:"-" json:"-"`
 	Base        *base.Base  `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
@@ -2019,6 +2021,14 @@ func (p *DataSourceOAuthConsentURLRequest) GetConnectorID() (v ConnectorID) {
 	return p.ConnectorID
 }
 
+func (p *DataSourceOAuthConsentURLRequest) GetRedirectURL() (v string) {
+	return p.RedirectURL
+}
+
+func (p *DataSourceOAuthConsentURLRequest) GetDomain() (v string) {
+	return p.Domain
+}
+
 var DataSourceOAuthConsentURLRequest_Base_DEFAULT *base.Base
 
 func (p *DataSourceOAuthConsentURLRequest) GetBase() (v *base.Base) {
@@ -2030,6 +2040,8 @@ func (p *DataSourceOAuthConsentURLRequest) GetBase() (v *base.Base) {
 
 var fieldIDToName_DataSourceOAuthConsentURLRequest = map[int16]string{
 	1:   "ConnectorID",
+	2:   "RedirectURL",
+	3:   "domain",
 	255: "Base",
 }
 
@@ -2041,6 +2053,8 @@ func (p *DataSourceOAuthConsentURLRequest) Read(iprot thrift.TProtocol) (err err
 	var fieldTypeId thrift.TType
 	var fieldId int16
 	var issetConnectorID bool = false
+	var issetRedirectURL bool = false
+	var issetDomain bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -2062,6 +2076,24 @@ func (p *DataSourceOAuthConsentURLRequest) Read(iprot thrift.TProtocol) (err err
 					goto ReadFieldError
 				}
 				issetConnectorID = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetRedirectURL = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetDomain = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -2088,6 +2120,16 @@ func (p *DataSourceOAuthConsentURLRequest) Read(iprot thrift.TProtocol) (err err
 
 	if !issetConnectorID {
 		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetRedirectURL {
+		fieldId = 2
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetDomain {
+		fieldId = 3
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -2119,6 +2161,28 @@ func (p *DataSourceOAuthConsentURLRequest) ReadField1(iprot thrift.TProtocol) er
 	p.ConnectorID = _field
 	return nil
 }
+func (p *DataSourceOAuthConsentURLRequest) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.RedirectURL = _field
+	return nil
+}
+func (p *DataSourceOAuthConsentURLRequest) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Domain = _field
+	return nil
+}
 func (p *DataSourceOAuthConsentURLRequest) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBase()
 	if err := _field.Read(iprot); err != nil {
@@ -2136,6 +2200,14 @@ func (p *DataSourceOAuthConsentURLRequest) Write(oprot thrift.TProtocol) (err er
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -2176,6 +2248,38 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
+func (p *DataSourceOAuthConsentURLRequest) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("RedirectURL", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.RedirectURL); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *DataSourceOAuthConsentURLRequest) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("domain", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Domain); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
 func (p *DataSourceOAuthConsentURLRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {
 		if err = oprot.WriteFieldBegin("Base", thrift.STRUCT, 255); err != nil {
@@ -2204,8 +2308,10 @@ func (p *DataSourceOAuthConsentURLRequest) String() string {
 }
 
 type DataSourceOAuthConsentURLResponse struct {
-	ConsentURL string         `thrift:"ConsentURL,1,required" form:"ConsentURL,required" json:"ConsentURL,required" query:"ConsentURL,required"`
-	BaseResp   *base.BaseResp `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
+	ConsentURL *string        `thrift:"ConsentURL,1,optional" form:"ConsentURL" json:"ConsentURL,omitempty" query:"ConsentURL"`
+	Code       int64          `thrift:"code,253,required" form:"code,required" json:"code,required" query:"code,required"`
+	Msg        string         `thrift:"msg,254,required" form:"msg,required" json:"msg,required" query:"msg,required"`
+	BaseResp   *base.BaseResp `thrift:"BaseResp,255,optional" form:"-" json:"-" query:"-"`
 }
 
 func NewDataSourceOAuthConsentURLResponse() *DataSourceOAuthConsentURLResponse {
@@ -2215,8 +2321,21 @@ func NewDataSourceOAuthConsentURLResponse() *DataSourceOAuthConsentURLResponse {
 func (p *DataSourceOAuthConsentURLResponse) InitDefault() {
 }
 
+var DataSourceOAuthConsentURLResponse_ConsentURL_DEFAULT string
+
 func (p *DataSourceOAuthConsentURLResponse) GetConsentURL() (v string) {
-	return p.ConsentURL
+	if !p.IsSetConsentURL() {
+		return DataSourceOAuthConsentURLResponse_ConsentURL_DEFAULT
+	}
+	return *p.ConsentURL
+}
+
+func (p *DataSourceOAuthConsentURLResponse) GetCode() (v int64) {
+	return p.Code
+}
+
+func (p *DataSourceOAuthConsentURLResponse) GetMsg() (v string) {
+	return p.Msg
 }
 
 var DataSourceOAuthConsentURLResponse_BaseResp_DEFAULT *base.BaseResp
@@ -2230,7 +2349,13 @@ func (p *DataSourceOAuthConsentURLResponse) GetBaseResp() (v *base.BaseResp) {
 
 var fieldIDToName_DataSourceOAuthConsentURLResponse = map[int16]string{
 	1:   "ConsentURL",
+	253: "code",
+	254: "msg",
 	255: "BaseResp",
+}
+
+func (p *DataSourceOAuthConsentURLResponse) IsSetConsentURL() bool {
+	return p.ConsentURL != nil
 }
 
 func (p *DataSourceOAuthConsentURLResponse) IsSetBaseResp() bool {
@@ -2240,7 +2365,8 @@ func (p *DataSourceOAuthConsentURLResponse) IsSetBaseResp() bool {
 func (p *DataSourceOAuthConsentURLResponse) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
-	var issetConsentURL bool = false
+	var issetCode bool = false
+	var issetMsg bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -2261,7 +2387,24 @@ func (p *DataSourceOAuthConsentURLResponse) Read(iprot thrift.TProtocol) (err er
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetConsentURL = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 253:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField253(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 254:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField254(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -2286,8 +2429,13 @@ func (p *DataSourceOAuthConsentURLResponse) Read(iprot thrift.TProtocol) (err er
 		goto ReadStructEndError
 	}
 
-	if !issetConsentURL {
-		fieldId = 1
+	if !issetCode {
+		fieldId = 253
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 254
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -2310,13 +2458,35 @@ RequiredFieldNotSetError:
 
 func (p *DataSourceOAuthConsentURLResponse) ReadField1(iprot thrift.TProtocol) error {
 
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.ConsentURL = _field
+	return nil
+}
+func (p *DataSourceOAuthConsentURLResponse) ReadField253(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *DataSourceOAuthConsentURLResponse) ReadField254(iprot thrift.TProtocol) error {
+
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
 		_field = v
 	}
-	p.ConsentURL = _field
+	p.Msg = _field
 	return nil
 }
 func (p *DataSourceOAuthConsentURLResponse) ReadField255(iprot thrift.TProtocol) error {
@@ -2336,6 +2506,14 @@ func (p *DataSourceOAuthConsentURLResponse) Write(oprot thrift.TProtocol) (err e
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField253(oprot); err != nil {
+			fieldId = 253
+			goto WriteFieldError
+		}
+		if err = p.writeField254(oprot); err != nil {
+			fieldId = 254
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -2361,10 +2539,28 @@ WriteStructEndError:
 }
 
 func (p *DataSourceOAuthConsentURLResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("ConsentURL", thrift.STRING, 1); err != nil {
+	if p.IsSetConsentURL() {
+		if err = oprot.WriteFieldBegin("ConsentURL", thrift.STRING, 1); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.ConsentURL); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *DataSourceOAuthConsentURLResponse) writeField253(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I64, 253); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ConsentURL); err != nil {
+	if err := oprot.WriteI64(p.Code); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2372,9 +2568,25 @@ func (p *DataSourceOAuthConsentURLResponse) writeField1(oprot thrift.TProtocol) 
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 end error: ", p), err)
+}
+func (p *DataSourceOAuthConsentURLResponse) writeField254(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 254); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 end error: ", p), err)
 }
 func (p *DataSourceOAuthConsentURLResponse) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBaseResp() {
@@ -2404,11 +2616,10 @@ func (p *DataSourceOAuthConsentURLResponse) String() string {
 }
 
 type DataSourceOAuthCompleteRequest struct {
-	Code     string     `thrift:"Code,1,required" form:"code,required" json:"code,required"`
-	State    string     `thrift:"State,2,required" form:"state,required" json:"state,required"`
-	Domain   string     `thrift:"domain,3,required" header:"host,required" json:"domain,required"`
-	AuthCode *string    `thrift:"AuthCode,4,optional" json:"AuthCode,omitempty" query:"auth_code"`
-	Base     *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	Code   string     `thrift:"Code,1,required" form:"code,required" json:"code,required"`
+	State  string     `thrift:"State,2,required" form:"state,required" json:"state,required"`
+	Domain string     `thrift:"domain,3,required" header:"host,required" json:"domain,required"`
+	Base   *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewDataSourceOAuthCompleteRequest() *DataSourceOAuthCompleteRequest {
@@ -2430,15 +2641,6 @@ func (p *DataSourceOAuthCompleteRequest) GetDomain() (v string) {
 	return p.Domain
 }
 
-var DataSourceOAuthCompleteRequest_AuthCode_DEFAULT string
-
-func (p *DataSourceOAuthCompleteRequest) GetAuthCode() (v string) {
-	if !p.IsSetAuthCode() {
-		return DataSourceOAuthCompleteRequest_AuthCode_DEFAULT
-	}
-	return *p.AuthCode
-}
-
 var DataSourceOAuthCompleteRequest_Base_DEFAULT *base.Base
 
 func (p *DataSourceOAuthCompleteRequest) GetBase() (v *base.Base) {
@@ -2452,12 +2654,7 @@ var fieldIDToName_DataSourceOAuthCompleteRequest = map[int16]string{
 	1:   "Code",
 	2:   "State",
 	3:   "domain",
-	4:   "AuthCode",
 	255: "Base",
-}
-
-func (p *DataSourceOAuthCompleteRequest) IsSetAuthCode() bool {
-	return p.AuthCode != nil
 }
 
 func (p *DataSourceOAuthCompleteRequest) IsSetBase() bool {
@@ -2509,14 +2706,6 @@ func (p *DataSourceOAuthCompleteRequest) Read(iprot thrift.TProtocol) (err error
 					goto ReadFieldError
 				}
 				issetDomain = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -2606,17 +2795,6 @@ func (p *DataSourceOAuthCompleteRequest) ReadField3(iprot thrift.TProtocol) erro
 	p.Domain = _field
 	return nil
 }
-func (p *DataSourceOAuthCompleteRequest) ReadField4(iprot thrift.TProtocol) error {
-
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.AuthCode = _field
-	return nil
-}
 func (p *DataSourceOAuthCompleteRequest) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBase()
 	if err := _field.Read(iprot); err != nil {
@@ -2642,10 +2820,6 @@ func (p *DataSourceOAuthCompleteRequest) Write(oprot thrift.TProtocol) (err erro
 		}
 		if err = p.writeField3(oprot); err != nil {
 			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -2717,24 +2891,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-func (p *DataSourceOAuthCompleteRequest) writeField4(oprot thrift.TProtocol) (err error) {
-	if p.IsSetAuthCode() {
-		if err = oprot.WriteFieldBegin("AuthCode", thrift.STRING, 4); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteString(*p.AuthCode); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 func (p *DataSourceOAuthCompleteRequest) writeField255(oprot thrift.TProtocol) (err error) {
 	if p.IsSetBase() {
