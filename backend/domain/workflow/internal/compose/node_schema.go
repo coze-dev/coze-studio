@@ -201,7 +201,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		return invokableNode(s, hr.Invoke, withCallbackInputConverter(hr.ToCallbackInput)), nil
+		return invokableNode(s, hr.Invoke, withCallbackInputConverter(hr.ToCallbackInput), withCallbackOutputConverter(hr.ToCallbackOutput)), nil
 	case entity.NodeTypeContinue:
 		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
 			return map[string]any{}, nil

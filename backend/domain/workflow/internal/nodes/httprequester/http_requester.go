@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -320,7 +321,7 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 			httpURL, response.StatusCode, response.Status, headers, string(bodyBytes))
 	}
 
-	result["body"] = decodeUnicode(string(bodyBytes))
+	result["body"] = string(bodyBytes)
 	result["statusCode"] = int64(response.StatusCode)
 
 	return result, nil
@@ -663,4 +664,21 @@ func (cfg *Config) parserToRequest(input map[string]any) (*Request, error) {
 	}
 
 	return request, nil
+}
+
+func (hg *HTTPRequester) ToCallbackOutput(_ context.Context, out map[string]any) (*nodes.StructuredCallbackOutput, error) {
+	if body, ok := out["body"]; !ok {
+		return &nodes.StructuredCallbackOutput{
+			RawOutput: out,
+			Output:    out,
+		}, nil
+	} else {
+		output := maps.Clone(out)
+		output["body"] = decodeUnicode(body.(string))
+		return &nodes.StructuredCallbackOutput{
+			RawOutput: out,
+			Output:    output,
+		}, nil
+	}
+
 }
