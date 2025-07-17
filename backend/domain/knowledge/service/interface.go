@@ -70,6 +70,7 @@ type Knowledge interface {
 
 	MGetAuthInfo(ctx context.Context, request *MGetAuthInfoRequest) (*MGetAuthInfoResponse, error)
 	GetAuthConsentURL(ctx context.Context, request *GetAuthConsentURLRequest) (*GetAuthConsentURLResponse, error)
+	DataSourceOAuthComplete(ctx context.Context, request *DataSourceOAuthCompleteRequest) (*DataSourceOAuthCompleteResponse, error)
 }
 
 type CreateKnowledgeRequest struct {
@@ -408,4 +409,10 @@ type GetAuthConsentURLRequest struct {
 
 type GetAuthConsentURLResponse struct {
 	ConsentURL string
+}
+
+type DataSourceOAuthCompleteRequest struct {
+	Code   string
+	State  string
+	Domain string
 }

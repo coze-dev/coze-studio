@@ -3,10 +3,12 @@ package service
 import (
 	"context"
 	"encoding/base64"
+	"net/url"
 	"strconv"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/dataconnector"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
@@ -49,7 +51,28 @@ func (k *knowledgeSVC) GetAuthConsentURL(ctx context.Context, request *GetAuthCo
 		CreatorID:   request.CreatorID,
 		RedirectURI: request.RedirectURI,
 	})
-	base64.StdEncoding.Encode()
-	resp.ConsentURL = consentURL
+	if err != nil {
+		logs.CtxErrorf(ctx, "marshal state fail, err=%v", err)
+		return nil, errorx.New(errno.ErrKnowledgeParseJSONCode, errorx.KV("msg", err.Error()))
+	}
+	stateVal := base64.RawURLEncoding.EncodeToString(byteData)
+	urlInfo, err := url.Parse(consentURL)
+	if err != nil {
+		logs.CtxErrorf(ctx, "parse consent url fail, err=%v", err)
+		return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", err.Error()))
+	}
+	query := urlInfo.Query()
+	redirectURI := query.Get("redirect_uri")
+	parsedRedirectURI, err := url.Parse(redirectURI)
+	if err != nil {
+		logs.CtxErrorf(ctx, "parse redirect uri fail, err=%v", err)
+		return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", err.Error()))
+	}
+	redirectQueryParams := parsedRedirectURI.Query()
+	redirectQueryParams.Set("state", stateVal)
+	parsedRedirectURI.RawQuery = redirectQueryParams.Encode()
+	query.Set("redirect_uri", parsedRedirectURI.String())
+	urlInfo.RawQuery = query.Encode()
+	resp.ConsentURL = urlInfo.String()
 	return resp, nil
 }

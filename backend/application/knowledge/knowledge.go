@@ -1370,5 +1370,15 @@ func (k *KnowledgeApplicationService) DataSourceOAuthComplete(ctx context.Contex
 		resp.RedirectURL = fmt.Sprintf("https://%s/home", req.GetDomain())
 		return resp, nil
 	}
-
+	domainResp, err := k.DomainSVC.DataSourceOAuthComplete(ctx, &service.DataSourceOAuthCompleteRequest{
+		Domain: req.GetDomain(),
+		Code:   req.GetCode(),
+		State:  req.GetState(),
+	})
+	if err != nil {
+		return resp, err
+	}
+	resp.BaseResp.StatusCode = http.StatusFound
+	resp.RedirectURL = domainResp.RedirectURL
+	return resp, nil
 }
