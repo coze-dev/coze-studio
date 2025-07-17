@@ -1,8 +1,8 @@
 module code.byted.org/data_edc/workflow_engine_next
 
-go 1.23.4
+go 1.24.0
 
-toolchain go1.23.10
+toolchain go1.24.5
 
 replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 
@@ -55,7 +55,6 @@ require github.com/alicebob/miniredis/v2 v2.34.0
 
 require (
 	code.byted.org/ad/elastic-go/v7 v7.2.24
-	code.byted.org/gopkg/env v1.6.27
 	code.byted.org/gopkg/logs v1.2.26
 	code.byted.org/gopkg/tos v1.5.16
 	code.byted.org/gorm/bytedgorm v0.9.30
@@ -69,7 +68,6 @@ require (
 	github.com/cloudwego/eino-ext/components/model/gemini v0.1.2
 	github.com/cloudwego/eino-ext/components/model/ollama v0.0.0-20250610035057-2c4e7c8488a5
 	github.com/cloudwego/eino-ext/components/model/qwen v0.0.0-20250612061754-5a3deb091dc5
-	github.com/cloudwego/hertz v0.10.0
 	github.com/dimchansky/utfbom v1.1.1
 	github.com/elastic/go-elasticsearch/v7 v7.17.10
 	github.com/extrame/xls v0.0.1
@@ -104,6 +102,7 @@ require (
 	code.byted.org/gopkg/consul v1.2.6 // indirect
 	code.byted.org/gopkg/ctxvalues v0.6.0 // indirect
 	code.byted.org/gopkg/debug v0.10.1 // indirect
+	code.byted.org/gopkg/env v1.6.27 // indirect
 	code.byted.org/gopkg/etcd_util v2.3.2+incompatible // indirect
 	code.byted.org/gopkg/etcdproxy v0.1.1 // indirect
 	code.byted.org/gopkg/logid v0.0.0-20211104042040-f78600e482f2 // indirect
@@ -170,7 +169,13 @@ require (
 	github.com/hertz-contrib/http2 v0.1.1 // indirect
 	github.com/hertz-contrib/localsession v0.1.0 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
+	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/meguminnnnnnnnn/go-openai v0.0.0-20250620092828-0d508a1dcdde // indirect
+	github.com/mitchellh/mapstructure v1.4.2 // indirect
+	github.com/modern-go/gls v0.0.0-20220109145502-612d0167dce5 // indirect
+	github.com/olivere/elastic/v7 v7.0.22 // indirect
+	github.com/opentracing/opentracing-go v1.2.0 // indirect
+	github.com/pelletier/go-toml v1.2.0 // indirect
 	github.com/peterbourgon/diskv/v3 v3.0.1 // indirect
 	github.com/peterbourgon/g2s v0.0.0-20170223122336-d4e7ad98afea // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
