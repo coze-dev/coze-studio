@@ -39,9 +39,10 @@ import (
 
 func InitService(db *gorm.DB, idgen idgen.IDGenerator, oss storage.Storage) (*ModelmgrApplicationService, error) {
 	svc := service.NewModelManager(db, idgen, oss)
-	if err := loadStaticModelConfig(svc, oss); err != nil {
-		return nil, err
-	}
+	// 先不通过这种形式初始化模型，后续通过接口增加模型配置
+	// if err := loadStaticModelConfig(svc, oss); err != nil {
+	// 	return nil, err
+	// }
 	ModelmgrApplicationSVC.DomainSVC = svc
 
 	return ModelmgrApplicationSVC, nil
