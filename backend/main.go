@@ -45,7 +45,8 @@ func main() {
 	s.Use(middleware.SetHostMW())
 	s.Use(middleware.SetLogIDMW())
 	s.Use(middleware.AccessLogMW())
-	s.Use(middleware.OpenapiAuthMW())
+	// 这个是 api 发布后的鉴权，先去掉
+	// s.Use(middleware.OpenapiAuthMW())
 	s.Use(middleware.SessionAuthMW())
 	s.Use(middleware.I18nMW()) // must after SessionAuthMW
 	router.GeneratedRegister(s)
