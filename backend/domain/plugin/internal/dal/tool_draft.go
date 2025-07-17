@@ -447,7 +447,7 @@ func (t *ToolDraftDAO) getToolDraftUpdateMap(tool *entity.ToolInfo) (map[string]
 		if err != nil {
 			return nil, err
 		}
-		updateMap[table.Operation.ColumnName().String()] = b
+		updateMap[table.Operation.ColumnName().String()] = string(b)
 	}
 	if tool.SubURL != nil {
 		updateMap[table.SubURL.ColumnName().String()] = *tool.SubURL
@@ -461,6 +461,5 @@ func (t *ToolDraftDAO) getToolDraftUpdateMap(tool *entity.ToolInfo) (map[string]
 	if tool.DebugStatus != nil {
 		updateMap[table.DebugStatus.ColumnName().String()] = int32(*tool.DebugStatus)
 	}
-
 	return updateMap, nil
 }

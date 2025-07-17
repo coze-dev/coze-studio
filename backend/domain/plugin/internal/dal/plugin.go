@@ -220,14 +220,14 @@ func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin 
 		if err != nil {
 			return err
 		}
-		updateMap[table.Manifest.ColumnName().String()] = b
+		updateMap[table.Manifest.ColumnName().String()] = string(b)
 	}
 	if plugin.OpenapiDoc != nil {
 		b, err := json.Marshal(plugin.OpenapiDoc)
 		if err != nil {
 			return err
 		}
-		updateMap[table.OpenapiDoc.ColumnName().String()] = b
+		updateMap[table.OpenapiDoc.ColumnName().String()] = string(b)
 	}
 
 	_, err = table.WithContext(ctx).

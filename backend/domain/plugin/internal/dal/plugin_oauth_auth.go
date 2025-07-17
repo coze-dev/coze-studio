@@ -173,7 +173,7 @@ func (p *PluginOAuthAuthDAO) Upsert(ctx context.Context, info *entity.Authorizat
 		if err != nil {
 			return err
 		}
-		updateMap[table.OauthConfig.ColumnName().String()] = b
+		updateMap[table.OauthConfig.ColumnName().String()] = string(b)
 	}
 
 	_, err = table.WithContext(ctx).

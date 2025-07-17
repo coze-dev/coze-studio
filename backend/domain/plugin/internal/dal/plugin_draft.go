@@ -306,14 +306,14 @@ func (p *PluginDraftDAO) UpdateWithTX(ctx context.Context, tx *query.QueryTx, pl
 			return err
 		}
 
-		updateMap[table.Manifest.ColumnName().String()] = mfBytes
+		updateMap[table.Manifest.ColumnName().String()] = string(mfBytes)
 	}
 	if plugin.OpenapiDoc != nil {
 		doc, err := json.Marshal(plugin.OpenapiDoc)
 		if err != nil {
 			return err
 		}
-		updateMap[table.OpenapiDoc.ColumnName().String()] = doc
+		updateMap[table.OpenapiDoc.ColumnName().String()] = string(doc)
 	}
 	if plugin.IconURI != nil {
 		updateMap[table.IconURI.ColumnName().String()] = *plugin.IconURI

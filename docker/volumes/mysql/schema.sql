@@ -846,13 +846,15 @@ CREATE TABLE IF NOT EXISTS `workflow_reference` (
 
 -- Create 'workflow_snapshot' table
 CREATE TABLE IF NOT EXISTS `workflow_snapshot` (
+   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `workflow_id` bigint unsigned NOT NULL COMMENT 'workflow id this snapshot belongs to',
   `commit_id` varchar(255) NOT NULL COMMENT 'the commit id of the workflow draft',
   `canvas` mediumtext COMMENT 'frontend schema for this snapshot',
   `input_params` mediumtext NULL COMMENT 'input parameter info',
   `output_params` mediumtext NULL COMMENT 'output parameter info',
   `created_at` bigint unsigned NOT NULL COMMENT 'create time in millisecond',
-  PRIMARY KEY (`workflow_id`, `commit_id`)
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uniq_workflow_id_commit_id` (`workflow_id`, `commit_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = 'snapshot for executed workflow draft';
 
 -- Create 'workflow_version' table
