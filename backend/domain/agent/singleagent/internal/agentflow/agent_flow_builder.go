@@ -50,6 +50,7 @@ const (
 	keyOfPromptTemplate         = "prompt_template"
 	keyOfReActAgent             = "react_agent"
 	keyOfReActAgentToolsNode    = "agent_tool"
+	keyOfReActAgentChatModel    = "re_act_chat_model"
 	keyOfLLM                    = "llm"
 	keyOfToolsPreRetriever      = "tools_pre_retriever"
 )
@@ -160,7 +161,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	if len(agentTools) > 0 {
 		isReActAgent = true
 		requireCheckpoint = true
-		if modelInfo.Meta.Capability != nil && modelInfo.Meta.Capability.FunctionCall == false {
+		if modelInfo.Meta.Capability != nil && !modelInfo.Meta.Capability.FunctionCall {
 			return nil, fmt.Errorf("model %v does not support function call", modelInfo.Meta.Name)
 		}
 	}
@@ -175,6 +176,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 				Tools: agentTools,
 			},
 			ToolReturnDirectly: toolsReturnDirectly,
+			ModelNodeName:      keyOfReActAgentChatModel,
 			ToolsNodeName:      keyOfReActAgentToolsNode,
 		})
 		if err != nil {

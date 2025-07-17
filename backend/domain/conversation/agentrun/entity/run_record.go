@@ -143,7 +143,7 @@ type AgentRunResponse struct {
 type AgentRespEvent struct {
 	EventType message.MessageType
 
-	FinalAnswer  *schema.StreamReader[*schema.Message]
+	ModelAnswer  *schema.StreamReader[*schema.Message]
 	ToolsMessage []*schema.Message
 	FuncCall     *schema.Message
 	Suggest      *schema.Message
@@ -152,7 +152,7 @@ type AgentRespEvent struct {
 	Err          error
 }
 
-type FinalAnswerEvent struct {
+type ModelAnswerEvent struct {
 	Message *schema.Message
 	Err     error
 }

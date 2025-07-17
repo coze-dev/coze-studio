@@ -4589,3 +4589,21 @@ func TestJsonSerializationDeserializationWithWarning(t *testing.T) {
 		assert.Equal(t, true, outputData["bool"], "bool field mismatch")
 	})
 }
+
+func TestSetAppVariablesFOrSubProcesses(t *testing.T) {
+	mockey.PatchConvey("app variables for sub_process", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		r.appVarS.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return("1.0", nil).AnyTimes()
+		idStr := r.load("app_variables_for_sub_process.json")
+		r.publish(idStr, "v0.0.1", true)
+		result, _ := r.openapiSyncRun(idStr, map[string]any{
+			"input": "ax",
+		})
+
+		assert.Equal(t, result, map[string]any{
+			"output": "ax",
+		})
+
+	})
+}

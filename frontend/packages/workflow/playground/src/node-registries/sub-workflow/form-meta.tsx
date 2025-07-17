@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { get } from 'lodash-es';
 import {
   ValidateTrigger,
@@ -74,13 +74,15 @@ export const SUB_WORKFLOW_FORM_META: FormMetaV2<FormData> = {
     'inputs.batch.inputLists.*.name': createNodeInputNameValidate({
       getNames: ({ formValues }) =>
         (get(formValues, 'batch.inputLists') || []).map(item => item.name),
-      skipValidate: ({ formValues }) => formValues.batchMode === 'single',
+      skipValidate: ({ formValues }) =>
+        formValues?.inputs?.batchMode === 'single',
     }),
 
     // 校验批处理入参的值
     'inputs.batch.inputLists.*.input': createValueExpressionInputValidate({
       required: true,
-      skipValidate: ({ formValues }) => formValues.batchMode === 'single',
+      skipValidate: ({ formValues }) =>
+        formValues?.inputs?.batchMode === 'single',
     }),
 
     settingOnError: settingOnErrorValidate,

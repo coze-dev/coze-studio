@@ -252,6 +252,9 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 		Role: msgDO.Role,
 		Name: msgDO.Name,
 	}
+	if msgDO.Content == "" && len(msgDO.MultiContent) == 0 {
+		return "", nil
+	}
 
 	var multiContent []schema.ChatMessagePart
 	for _, contentData := range msgDO.MultiContent {
@@ -305,22 +308,23 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 func (dao *MessageDAO) batchMessagePO2DO(msgPOs []*model.Message) []*entity.Message {
 	return slices.Transform(msgPOs, func(msgPO *model.Message) *entity.Message {
 		msgDO := &entity.Message{
-			ID:             msgPO.ID,
-			AgentID:        msgPO.AgentID,
-			ConversationID: msgPO.ConversationID,
-			SectionID:      msgPO.SectionID,
-			UserID:         msgPO.UserID,
-			RunID:          msgPO.RunID,
-			Role:           schema.RoleType(msgPO.Role),
-			ContentType:    message.ContentType(msgPO.ContentType),
-			MessageType:    message.MessageType(msgPO.MessageType),
-			Position:       msgPO.BrokenPosition,
-			ModelContent:   msgPO.ModelContent,
-			Content:        msgPO.Content,
-			Status:         message.MessageStatus(msgPO.Status),
-			DisplayContent: msgPO.DisplayContent,
-			CreatedAt:      msgPO.CreatedAt,
-			UpdatedAt:      msgPO.UpdatedAt,
+			ID:               msgPO.ID,
+			AgentID:          msgPO.AgentID,
+			ConversationID:   msgPO.ConversationID,
+			SectionID:        msgPO.SectionID,
+			UserID:           msgPO.UserID,
+			RunID:            msgPO.RunID,
+			Role:             schema.RoleType(msgPO.Role),
+			ContentType:      message.ContentType(msgPO.ContentType),
+			MessageType:      message.MessageType(msgPO.MessageType),
+			Position:         msgPO.BrokenPosition,
+			ModelContent:     msgPO.ModelContent,
+			Content:          msgPO.Content,
+			Status:           message.MessageStatus(msgPO.Status),
+			DisplayContent:   msgPO.DisplayContent,
+			CreatedAt:        msgPO.CreatedAt,
+			UpdatedAt:        msgPO.UpdatedAt,
+			ReasoningContent: msgPO.ReasoningContent,
 		}
 
 		var ext map[string]string

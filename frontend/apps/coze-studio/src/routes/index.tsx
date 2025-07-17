@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import { SpaceSubModuleEnum } from '@coze-foundation/space-ui-adapter';
@@ -29,7 +29,7 @@ import {
   AgentIDELayout,
   AgentIDE,
   AgentPublishPage,
-  DocsRedirect,
+  Redirect,
   spaceSubMenu,
   exploreSubMenu,
   WorkflowPage,
@@ -51,7 +51,7 @@ export const router: ReturnType<typeof createBrowserRouter> =
     // 文档路由
     {
       path: '/open/docs/*',
-      Component: DocsRedirect,
+      Component: Redirect,
       loader: () => ({
         hasSider: false,
         requireAuth: false,
@@ -59,13 +59,20 @@ export const router: ReturnType<typeof createBrowserRouter> =
     },
     {
       path: '/docs/*',
-      Component: DocsRedirect,
+      Component: Redirect,
       loader: () => ({
         hasSider: false,
         requireAuth: false,
       }),
     },
-
+    {
+      path: '/information/auth/success',
+      Component: Redirect,
+      loader: () => ({
+        hasSider: false,
+        requireAuth: false,
+      }),
+    },
     // 主应用路由
     {
       path: '/',

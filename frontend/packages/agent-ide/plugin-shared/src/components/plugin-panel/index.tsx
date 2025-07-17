@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable max-lines */
 /* eslint-disable @coze-arch/max-line-per-function */
 
@@ -80,13 +80,17 @@ import { PluginPerfStatics } from './plugin-perf-statics';
 import { withSlardarIdButton } from '@coze-studio/bot-utils';
 import { Tag, Tooltip } from '@coze-arch/coze-design';
 
-import { IconCozDesktop, IconCozInfoCircle } from '@coze-arch/coze-design/icons';
+import {
+  IconCozDesktop,
+  IconCozInfoCircle,
+} from '@coze-arch/coze-design/icons';
 
-import { isBoolean } from 'lodash-es';
+import { isBoolean, isUndefined } from 'lodash-es';
 import {
   type CommercialSetting,
   PluginType as ProductPluginType,
 } from '@coze-arch/bot-api/product_api';
+import { PluginAuthMode } from '../../types/auth-mode';
 export interface PluginPanelProps extends PluginModalModeProps {
   info: PluginInfoForPlayground & {
     listed_at?: Int64;
@@ -174,7 +178,7 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
     version_ts,
   } = info;
   const botId = useBotInfoStore(state => state.botId);
-  const { id: productId, status: marketStatus } = productInfo || {};
+  const { id: productId, status: marketStatus, auth_mode } = productInfo || {};
   const refTarget = useRef(null);
   const refHasReport = useRef(false);
 
@@ -254,6 +258,27 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
         ? Number(create_time)
         : Number(update_time)) || 0;
 
+  const renderAuthStatus = () => {
+    if (isUndefined(auth_mode) || auth_mode === PluginAuthMode.NoAuth) {
+      return null;
+    }
+    if (
+      auth_mode === PluginAuthMode.Required ||
+      auth_mode === PluginAuthMode.Supported
+    ) {
+      return (
+        <Tag color="yellow" className="font-medium !py-2px !px-4px !h-20px">
+          {I18n.t('plugin_tool_config_status_unauthorized')}
+        </Tag>
+      );
+    }
+    return (
+      <Tag color="brand" className="font-medium !py-2px !px-4px !h-20px">
+        {I18n.t('plugin_tool_config_status_authorized')}
+      </Tag>
+    );
+  };
+
   return (
     <Collapse.Panel
       data-testid="plugin-collapse-panel"
@@ -283,6 +308,7 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
                     component="strong"
                   />
                 </Typography.Text>
+                {renderAuthStatus()}
                 {showProjectPluginLink && clickProjectPluginCallback ? (
                   <IconViewinchatOutlined
                     className={s['market-link-icon']}

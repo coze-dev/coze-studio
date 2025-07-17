@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { injectable, decorate, unmanaged } from 'inversify';
 import {
   Emitter,
@@ -72,21 +72,20 @@ export class AbstractWidget extends Widget {
   }
 
   private async createScrollbar(): Promise<void> {
-        const container = await this.getScrollContainer();
-        container.style.overflow = 'hidden';
-        this.scrollBar = new PerfectScrollbar(container, this.scrollOptions);
-        this.disableScrollBarFocus(container);
-        this.toBeforeDetach.push(
-          Disposable.create(() => {
-            if (this.scrollBar) {
-              this.scrollBar.destroy();
-              this.scrollBar = undefined;
-            }
-            container.style.overflow = 'initial';
-          }),
-        );
-      }
-
+    const container = await this.getScrollContainer();
+    container.style.overflow = 'hidden';
+    this.scrollBar = new PerfectScrollbar(container, this.scrollOptions);
+    this.disableScrollBarFocus(container);
+    this.toBeforeDetach.push(
+      Disposable.create(() => {
+        if (this.scrollBar) {
+          this.scrollBar.destroy();
+          this.scrollBar = undefined;
+        }
+        container.style.overflow = 'initial';
+      }),
+    );
+  }
 
   protected override onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
