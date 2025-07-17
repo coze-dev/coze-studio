@@ -393,13 +393,14 @@ type Param struct {
 }
 
 type Variable struct {
-	Name        string       `json:"name"`
-	Type        VariableType `json:"type"`
-	Required    bool         `json:"required,omitempty"`
-	AssistType  AssistType   `json:"assistType,omitempty"`
-	Schema      any          `json:"schema,omitempty"` // either []*Variable (for object) or *Variable (for list)
-	Description string       `json:"description,omitempty"`
-	ReadOnly    bool         `json:"readOnly,omitempty"`
+	Name         string       `json:"name"`
+	Type         VariableType `json:"type"`
+	Required     bool         `json:"required,omitempty"`
+	AssistType   AssistType   `json:"assistType,omitempty"`
+	Schema       any          `json:"schema,omitempty"` // either []*Variable (for object) or *Variable (for list)
+	Description  string       `json:"description,omitempty"`
+	ReadOnly     bool         `json:"readOnly,omitempty"`
+	DefaultValue any          `json:"defaultValue,omitempty"`
 }
 
 type BlockInput struct {

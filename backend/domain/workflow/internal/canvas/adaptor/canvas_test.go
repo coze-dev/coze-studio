@@ -778,7 +778,7 @@ func TestCodeAndPluginNodes(t *testing.T) {
 		resp, err := wf.Runner.Invoke(ctx, map[string]any{
 			"code_input":   "v1",
 			"code_input_2": "v2",
-			"model_type":   123,
+			"model_type":   int64(123),
 		})
 		assert.NoError(t, err)
 

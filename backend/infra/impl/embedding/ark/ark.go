@@ -23,6 +23,7 @@ import (
 
 	"github.com/cloudwego/eino-ext/components/embedding/ark"
 	"github.com/cloudwego/eino/components/embedding"
+
 	contract "github.com/coze-dev/coze-studio/backend/infra/contract/embedding"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )

@@ -198,17 +198,18 @@ func (c *ConversationApplicationService) buildMessageListResponse(ctx context.Co
 
 func (c *ConversationApplicationService) buildDomainMsg2VOMessage(ctx context.Context, dm *entity.Message, runToQuestionIDMap map[int64]int64) *message.ChatMessage {
 	cm := &message.ChatMessage{
-		MessageID:   strconv.FormatInt(dm.ID, 10),
-		Role:        string(dm.Role),
-		Type:        string(dm.MessageType),
-		Content:     dm.Content,
-		ContentType: string(dm.ContentType),
-		ReplyID:     "0",
-		SectionID:   strconv.FormatInt(dm.SectionID, 10),
-		ExtraInfo:   buildDExt2ApiExt(dm.Ext),
-		ContentTime: dm.CreatedAt,
-		Status:      "available",
-		Source:      0,
+		MessageID:        strconv.FormatInt(dm.ID, 10),
+		Role:             string(dm.Role),
+		Type:             string(dm.MessageType),
+		Content:          dm.Content,
+		ContentType:      string(dm.ContentType),
+		ReplyID:          "0",
+		SectionID:        strconv.FormatInt(dm.SectionID, 10),
+		ExtraInfo:        buildDExt2ApiExt(dm.Ext),
+		ContentTime:      dm.CreatedAt,
+		Status:           "available",
+		Source:           0,
+		ReasoningContent: ptr.Of(dm.ReasoningContent),
 	}
 
 	if dm.Status == model.MessageStatusBroken {

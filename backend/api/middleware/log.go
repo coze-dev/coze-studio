@@ -50,14 +50,15 @@ func AccessLogMW() app.HandlerFunc {
 		}
 
 		requestType := ctx.GetInt32(RequestAuthTypeStr)
-		baseLog := fmt.Sprintf("| %s | %d | %v | %s | %s | %v | %s | %d ｜ %s",
-			ctx.Host(), status, latency, clientIP, method, path, handleName, requestType, i18n.GetLocale(c))
+		baseLog := fmt.Sprintf("| %s | %s | %d | %v | %s | %s | %v | %s | %d ｜ %s",
+			string(ctx.GetRequest().Scheme()), ctx.Host(), status,
+			latency, clientIP, method, path, handleName, requestType, i18n.GetLocale(c))
 
 		switch {
 		case status >= http.StatusInternalServerError:
 			logs.CtxErrorf(c, "%s", baseLog)
 		case status >= http.StatusBadRequest:
-			logs.CtxWarnf(c, "%s ", baseLog)
+			logs.CtxWarnf(c, "%s", baseLog)
 		default:
 			urlQuery := ctx.Request.URI().QueryString()
 			reqBody := bytesToString(ctx.Request.Body())
@@ -72,8 +73,9 @@ func AccessLogMW() app.HandlerFunc {
 
 			requestAuthType := ctx.GetInt32(RequestAuthTypeStr)
 			if requestAuthType != int32(RequestAuthTypeStaticFile) && filepath.Ext(path) == "" {
-				logs.CtxDebugf(c, "%s \nquery : %s \nreq : %s \nresp: %s",
-					baseLog, urlQuery, reqBody, respBody)
+				logs.CtxInfof(c, "%s ", baseLog)
+				logs.CtxDebugf(c, "query : %s \nreq : %s \nresp: %s",
+					urlQuery, reqBody, respBody)
 			}
 		}
 	}

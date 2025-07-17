@@ -47,6 +47,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/database"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/emitter"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/entry"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/httprequester"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/intentdetector"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/json"
@@ -64,6 +65,13 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/safego"
 )
+
+func (s *NodeSchema) ToEntryConfig(_ context.Context) (*entry.Config, error) {
+	return &entry.Config{
+		DefaultValues: getKeyOrZero[map[string]any]("DefaultValues", s.Configs),
+		OutputTypes:   s.OutputTypes,
+	}, nil
+}
 
 func (s *NodeSchema) ToLLMConfig(ctx context.Context) (*llm.Config, error) {
 	llmConf := &llm.Config{

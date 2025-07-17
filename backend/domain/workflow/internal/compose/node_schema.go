@@ -32,6 +32,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/database"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/emitter"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/entry"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/httprequester"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/intentdetector"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/json"
@@ -200,7 +201,7 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 			return nil, err
 		}
 
-		return invokableNode(s, hr.Invoke, withCallbackInputConverter(hr.ToCallbackInput)), nil
+		return invokableNode(s, hr.Invoke, withCallbackInputConverter(hr.ToCallbackInput), withCallbackOutputConverter(hr.ToCallbackOutput)), nil
 	case entity.NodeTypeContinue:
 		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
 			return map[string]any{}, nil
@@ -280,10 +281,15 @@ func (s *NodeSchema) New(ctx context.Context, inner compose.Runnable[map[string]
 
 		return invokableTransformableNode(s, e.Emit, e.EmitStream), nil
 	case entity.NodeTypeEntry:
-		i := func(ctx context.Context, in map[string]any) (map[string]any, error) {
-			return in, nil
+		conf, err := s.ToEntryConfig(ctx)
+		if err != nil {
+			return nil, err
 		}
-		return invokableNode(s, i), nil
+		e, err := entry.NewEntry(ctx, conf)
+		if err != nil {
+			return nil, err
+		}
+		return invokableNode(s, e.Invoke), nil
 	case entity.NodeTypeExit:
 		terminalPlan := mustGetKey[vo.TerminatePlan]("TerminalPlan", s.Configs)
 		if terminalPlan == vo.ReturnVariables {

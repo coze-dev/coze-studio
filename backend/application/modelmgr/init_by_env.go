@@ -6,10 +6,11 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"gopkg.in/yaml.v3"
 )
 
 func initModelByEnv(wd, templatePath string) (metaSlice []*modelmgr.ModelMeta, entitySlice []*modelmgr.Model, err error) {

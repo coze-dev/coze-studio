@@ -186,7 +186,7 @@ func (r *replyChunkCallback) OnEndWithStreamOutput(ctx context.Context, info *ca
 	logs.CtxInfof(ctx, "info-OnEndWithStreamOutput, info=%v, output=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(output))
 	switch info.Component {
 	case compose.ComponentOfGraph, components.ComponentOfChatModel:
-		if info.Name != keyOfReActAgent && info.Name != keyOfLLM {
+		if info.Name != keyOfReActAgentChatModel && info.Name != keyOfLLM {
 			output.Close()
 			return ctx
 		}
@@ -196,8 +196,8 @@ func (r *replyChunkCallback) OnEndWithStreamOutput(ctx context.Context, info *ca
 		})
 
 		r.sw.Send(&entity.AgentEvent{
-			EventType:   singleagent.EventTypeOfFinalAnswer,
-			FinalAnswer: sr,
+			EventType:       singleagent.EventTypeOfChatModelAnswer,
+			ChatModelAnswer: sr,
 		}, nil)
 		return ctx
 	case compose.ComponentOfToolsNode:

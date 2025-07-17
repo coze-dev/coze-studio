@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import qs from 'qs';
 import { useSpaceStore } from '@coze-foundation/space-store';
 import {
@@ -32,6 +32,7 @@ import {
 import { ProductApi, PluginDevelopApi } from '@coze-arch/bot-api';
 
 import { type RequestServiceResp } from '../types/plugin-modal-types';
+import { type AuthMode } from '../types/auth-mode';
 import { DEFAULT_PAGE_SIZE } from '../constants/plugin-modal-constants';
 
 type ProductMetaInfo = public_api.ProductMetaInfo;
@@ -49,7 +50,9 @@ export type SimplifyProductInfo = Pick<
   | 'status'
   | 'listed_at'
   | 'user_info'
-> & { favorite_time: string; version_name?: string } & PluginExtraInfo;
+> & { favorite_time: string; version_name?: string } & PluginExtraInfo &
+  AuthMode;
+
 export interface PluginContentListItem {
   productInfo?: SimplifyProductInfo;
   pluginInfo: PluginInfoForPlayground;

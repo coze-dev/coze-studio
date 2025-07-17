@@ -5,8 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
 )
 
 func TestInitByEnv(t *testing.T) {

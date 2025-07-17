@@ -80,7 +80,7 @@ func NewService(c *Components) Run {
 }
 
 func (c *runImpl) AgentRun(ctx context.Context, arm *entity.AgentRunMeta) (*schema.StreamReader[*entity.AgentRunResponse], error) {
-	sr, sw := schema.Pipe[*entity.AgentRunResponse](100)
+	sr, sw := schema.Pipe[*entity.AgentRunResponse](20)
 
 	defer func() {
 		if pe := recover(); pe != nil {
@@ -159,7 +159,6 @@ func (c *runImpl) handlerAgent(ctx context.Context, rtDependence *runtimeDepende
 
 func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWriter[*entity.AgentRunResponse], historyMsg []*msgEntity.Message, input *msgEntity.Message, rtDependence *runtimeDependence) (err error) {
 	mainChan := make(chan *entity.AgentRespEvent, 100)
-	faChan := make(chan *entity.FinalAnswerEvent, 100)
 
 	ar := &singleagent.AgentRuntime{
 		AgentVersion:     rtDependence.runMeta.Version,
@@ -178,12 +177,12 @@ func (c *runImpl) handlerStreamExecute(ctx context.Context, sw *schema.StreamWri
 	wg.Add(2)
 	safego.Go(ctx, func() {
 		defer wg.Done()
-		c.pull(ctx, mainChan, faChan, streamer)
+		c.pull(ctx, mainChan, streamer)
 	})
 
 	safego.Go(ctx, func() {
 		defer wg.Done()
-		c.push(ctx, mainChan, faChan, sw, rtDependence)
+		c.push(ctx, mainChan, sw, rtDependence)
 	})
 
 	wg.Wait()
@@ -200,7 +199,7 @@ func transformEventMap(eventType singleagent.EventType) (message.MessageType, er
 		return message.MessageTypeKnowledge, nil
 	case singleagent.EventTypeOfToolsMessage:
 		return message.MessageTypeToolResponse, nil
-	case singleagent.EventTypeOfFinalAnswer:
+	case singleagent.EventTypeOfChatModelAnswer:
 		return message.MessageTypeAnswer, nil
 	case singleagent.EventTypeOfSuggest:
 		return message.MessageTypeFlowUp, nil
@@ -425,10 +424,9 @@ func (c *runImpl) handlerInput(ctx context.Context, sw *schema.StreamWriter[*ent
 	return cm, nil
 }
 
-func (c *runImpl) pull(_ context.Context, mainChan chan *entity.AgentRespEvent, faChan chan *entity.FinalAnswerEvent, events *schema.StreamReader[*crossagent.AgentEvent]) {
+func (c *runImpl) pull(_ context.Context, mainChan chan *entity.AgentRespEvent, events *schema.StreamReader[*crossagent.AgentEvent]) {
 	defer func() {
 		close(mainChan)
-		close(faChan)
 	}()
 
 	for {
@@ -453,7 +451,7 @@ func (c *runImpl) pull(_ context.Context, mainChan chan *entity.AgentRespEvent, 
 
 		respChunk := &entity.AgentRespEvent{
 			EventType:    eventType,
-			FinalAnswer:  rm.FinalAnswer,
+			ModelAnswer:  rm.ChatModelAnswer,
 			ToolsMessage: rm.ToolsMessage,
 			FuncCall:     rm.FuncCall,
 			Knowledge:    rm.Knowledge,
@@ -462,24 +460,10 @@ func (c *runImpl) pull(_ context.Context, mainChan chan *entity.AgentRespEvent, 
 		}
 
 		mainChan <- respChunk
-
-		if rm.EventType == singleagent.EventTypeOfFinalAnswer {
-			for {
-				answer, answerErr := rm.FinalAnswer.Recv()
-
-				faChan <- &entity.FinalAnswerEvent{
-					Message: answer,
-					Err:     answerErr,
-				}
-				if answerErr != nil {
-					break
-				}
-			}
-		}
 	}
 }
 
-func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent, faChan chan *entity.FinalAnswerEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) {
+func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) {
 
 	var err error
 	defer func() {
@@ -522,22 +506,23 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 		case message.MessageTypeAnswer:
 			fullContent := bytes.NewBuffer([]byte{})
 			reasoningContent := bytes.NewBuffer([]byte{})
-			preMsg, pErr := c.handlerPreAnswer(ctx, rtDependence)
-			if pErr != nil {
-				err = pErr
-				return
-			}
-			var usage *msgEntity.UsageExt
-			for {
-				answerEvent, ok := <-faChan
-				if !ok {
-					break
-				}
 
-				sendMsg := c.buildSendMsg(ctx, preMsg, false, rtDependence)
-				if answerEvent.Err != nil {
-					if errors.Is(answerEvent.Err, io.EOF) {
-						finalAnswer := sendMsg
+			var preMsg *msgEntity.Message
+			var usage *msgEntity.UsageExt
+			var createPreMsg = true
+			var isToolCalls = false
+
+			for {
+				streamMsg, receErr := chunk.ModelAnswer.Recv()
+
+				if receErr != nil {
+					if errors.Is(receErr, io.EOF) {
+
+						if isToolCalls && reasoningContent.String() == "" {
+							break
+						}
+
+						finalAnswer := c.buildSendMsg(ctx, preMsg, false, rtDependence)
 						finalAnswer.Content = fullContent.String()
 						finalAnswer.ReasoningContent = ptr.Of(reasoningContent.String())
 						hfErr := c.handlerFinalAnswer(ctx, finalAnswer, sw, usage, rtDependence)
@@ -545,7 +530,6 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 							err = hfErr
 							return
 						}
-
 						finishErr := c.handlerFinalAnswerFinish(ctx, sw, rtDependence)
 						if finishErr != nil {
 							err = finishErr
@@ -553,17 +537,35 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 						}
 						break
 					}
-					err = answerEvent.Err
+					err = receErr
 					return
 				}
-				rc := c.parseReasoningContent(ctx, answerEvent)
-				reasoningContent.WriteString(rc)
-				sendMsg.ReasoningContent = ptr.Of(rc)
 
-				answer := answerEvent.Message
-				usage = c.handlerUsage(answer.ResponseMeta)
-				fullContent.WriteString(answer.Content)
-				sendMsg.Content = answer.Content
+				if streamMsg != nil && len(streamMsg.ToolCalls) > 0 {
+					isToolCalls = true
+				}
+
+				if streamMsg != nil && streamMsg.ResponseMeta != nil {
+					usage = c.handlerUsage(streamMsg.ResponseMeta)
+				}
+
+				if streamMsg != nil && len(streamMsg.ReasoningContent) == 0 && len(streamMsg.Content) == 0 {
+					continue
+				}
+				if createPreMsg && (len(streamMsg.ReasoningContent) > 0 || len(streamMsg.Content) > 0) {
+					preMsg, err = c.handlerPreAnswer(ctx, rtDependence)
+					if err != nil {
+						return
+					}
+					createPreMsg = false
+				}
+
+				sendMsg := c.buildSendMsg(ctx, preMsg, false, rtDependence)
+				reasoningContent.WriteString(streamMsg.ReasoningContent)
+				sendMsg.ReasoningContent = ptr.Of(streamMsg.ReasoningContent)
+
+				fullContent.WriteString(streamMsg.Content)
+				sendMsg.Content = streamMsg.Content
 
 				c.runEvent.SendMsgEvent(entity.RunEventMessageDelta, sendMsg, sw)
 			}
@@ -581,13 +583,6 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 			}
 		}
 	}
-}
-
-func (c *runImpl) parseReasoningContent(ctx context.Context, chunk *entity.FinalAnswerEvent) string {
-	if rc, ok := chunk.Message.Extra["ark-reasoning-content"]; ok {
-		return rc.(string)
-	}
-	return ""
 }
 
 func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespEvent, sw *schema.StreamWriter[*entity.AgentRunResponse], rtDependence *runtimeDependence) error {
@@ -756,6 +751,11 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context, rtDependence *runtimeDep
 }
 
 func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt, rtDependence *runtimeDependence) error {
+
+	if len(msg.Content) == 0 && len(ptr.From(msg.ReasoningContent)) == 0 {
+		return nil
+	}
+
 	msg.IsFinish = true
 
 	if msg.Ext == nil {

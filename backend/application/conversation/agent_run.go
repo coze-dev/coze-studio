@@ -179,6 +179,7 @@ func buildARSM2Message(chunk *entity.AgentRunResponse, req *run.AgentRunRequest)
 
 	if chunk.ChunkMessageItem.IsFinish && chunkMessageItem.MessageType == crossDomainMessage.MessageTypeAnswer {
 		chunkMessage.Message.Content = ""
+		chunkMessage.Message.ReasoningContent = ptr.Of("")
 	}
 
 	mCM, _ := json.Marshal(chunkMessage)

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { lazy } from 'react';
 
 // 登录页面
@@ -24,7 +24,7 @@ export const LoginPage = lazy(() =>
 );
 
 // 文档页面
-export const DocsRedirect = lazy(() => import('../pages/docs'));
+export const Redirect = lazy(() => import('../pages/redirect'));
 
 // 工作空间侧边栏组件
 export const spaceSubMenu = lazy(() =>

@@ -1,0 +1,250 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 180,
+          "y": 26.700000000000003
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 1300,
+          "y": 13.700000000000003
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "159154",
+                    "name": "output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "159154",
+      "type": "21",
+      "meta": {
+        "position": {
+          "x": 740,
+          "y": 0
+        },
+        "canvasPosition": {
+          "x": 560,
+          "y": 319.4
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "循环",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Loop-v2.jpg",
+          "description": "用于通过设定循环次数和逻辑，重复执行一系列任务",
+          "mainColor": "#00B2B2",
+          "subTitle": "循环"
+        },
+        "inputs": {
+          "loopType": "array",
+          "loopCount": {
+            "type": "integer",
+            "value": {
+              "type": "literal",
+              "content": "10"
+            }
+          },
+          "variableParameters": [
+            {
+              "name": "vars",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "list",
+                "value": {
+                  "type": "literal",
+                  "content": "[\"1\"]",
+                  "rawMeta": {
+                    "type": 99
+                  }
+                },
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "input": {
+              "type": "string",
+              "value": {
+                "type": "ref",
+                "content": {
+                  "source": "block-output",
+                  "blockID": "159154",
+                  "name": "vars"
+                },
+                "rawMeta": {
+                  "type": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "blocks": [
+        {
+          "id": "108785",
+          "type": "40",
+          "meta": {
+            "position": {
+              "x": 180,
+              "y": 0
+            }
+          },
+          "data": {
+            "nodeMeta": {
+              "title": "变量赋值",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/Variable.jpg",
+              "description": "用于给支持写入的变量赋值，包括应用变量、用户变量",
+              "mainColor": "#FF811A",
+              "subTitle": "变量赋值"
+            },
+            "inputs": {
+              "inputParameters": [
+                {
+                  "name": "appv1",
+                  "left": {
+                    "type": "string",
+                    "value": {
+                      "type": "ref",
+                      "content": {
+                        "source": "global_variable_app",
+                        "path": [
+                          "appv1"
+                        ],
+                        "blockID": "",
+                        "name": ""
+                      }
+                    }
+                  },
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "ref",
+                      "content": {
+                        "source": "block-output",
+                        "blockID": "100001",
+                        "name": "input"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                }
+              ],
+              "variableTypeMap": {
+                "appv1": "global_variable_app"
+              }
+            },
+            "outputs": [
+              {
+                "name": "isSuccess",
+                "type": "boolean"
+              }
+            ]
+          }
+        }
+      ],
+      "edges": [
+        {
+          "sourceNodeID": "159154",
+          "targetNodeID": "108785",
+          "sourcePortID": "loop-function-inline-output"
+        },
+        {
+          "sourceNodeID": "108785",
+          "targetNodeID": "159154",
+          "targetPortID": "loop-function-inline-input"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "159154"
+    },
+    {
+      "sourceNodeID": "159154",
+      "targetNodeID": "900001",
+      "sourcePortID": "loop-output"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

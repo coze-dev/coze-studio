@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {
   Emitter,
   type Event as CustomEvent,
@@ -88,7 +88,6 @@ export class FlowDockPanel extends DockPanel {
       tabBars[0].addClass(ACTIVE_TABBAR_CLASS);
     }
   }
-  
 
   get currentTabBar(): TabBar<Widget> | undefined {
     return this._currentTitle && this.findTabBar(this._currentTitle);

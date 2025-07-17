@@ -13,11 +13,11 @@ require (
 	github.com/bytedance/mockey v1.2.14
 	github.com/bytedance/sonic v1.13.2
 	github.com/cloudwego/eino v0.3.51
-	github.com/cloudwego/eino-ext/components/model/ark v0.1.9
-	github.com/cloudwego/eino-ext/components/model/claude v0.0.0-20250522060253-ddb617598b09
-	github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250522060253-ddb617598b09
-	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250522023626-7bc321639a70
-	github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250526061219-600837d0bdf3
+	github.com/cloudwego/eino-ext/components/model/ark v0.1.15
+	github.com/cloudwego/eino-ext/components/model/claude v0.1.1
+	github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250715055739-0d0e28441a2f
+	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250715055739-0d0e28441a2f
+	github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250626133421-3c142631c961
 	github.com/cloudwego/hertz v0.10.0
 	github.com/elastic/go-elasticsearch/v8 v8.18.0
 	github.com/getkin/kin-openapi v0.118.0
@@ -66,7 +66,7 @@ require (
 	github.com/jinzhu/copier v0.4.0
 	github.com/larksuite/oapi-sdk-go/v3 v3.4.21
 	github.com/mattn/go-shellwords v1.0.12
-	github.com/ollama/ollama v0.5.12
+	github.com/ollama/ollama v0.6.5
 	github.com/rbretecher/go-postman-collection v0.9.0
 	github.com/volcengine/ve-tos-golang-sdk/v2 v2.7.17
 	github.com/yuin/goldmark v1.4.13
@@ -88,7 +88,7 @@ require (
 	github.com/google/s2a-go v0.1.8 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
-	github.com/meguminnnnnnnnn/go-openai v0.0.0-20250523041550-e202cd57070c // indirect
+	github.com/meguminnnnnnnnn/go-openai v0.0.0-20250620092828-0d508a1dcdde // indirect
 	github.com/peterbourgon/diskv/v3 v3.0.1 // indirect
 	github.com/rogpeppe/fastuuid v1.2.0 // indirect
 	github.com/shabbyrobe/xmlwriter v0.0.0-20200208144257-9fca06d00ffa // indirect
@@ -103,7 +103,7 @@ require (
 )
 
 require (
-	github.com/anthropics/anthropic-sdk-go v0.2.0-alpha.8 // indirect
+	github.com/anthropics/anthropic-sdk-go v1.4.0 // indirect
 	github.com/avast/retry-go v3.0.0+incompatible // indirect
 	github.com/aws/aws-sdk-go-v2 v1.33.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.3 // indirect
@@ -131,7 +131,7 @@ require (
 	github.com/cockroachdb/errors v1.9.1 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20211118104740-dabe8e521a4f // indirect
 	github.com/cockroachdb/redact v1.1.3 // indirect
-	github.com/cohesion-org/deepseek-go v1.2.8 // indirect
+	github.com/cohesion-org/deepseek-go v1.3.2 // indirect
 	github.com/containerd/cgroups/v3 v3.0.3 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
@@ -241,7 +241,7 @@ require (
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20201229170055-e5319fda7802 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/uber/jaeger-client-go v2.30.0+incompatible // indirect
-	github.com/volcengine/volcengine-go-sdk v1.1.8 // indirect
+	github.com/volcengine/volcengine-go-sdk v1.1.20 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2 // indirect
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect

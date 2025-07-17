@@ -34,6 +34,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/qa"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/receiver"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/variableassigner"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
@@ -52,7 +53,7 @@ type State struct {
 
 	ToolInterruptEvents map[vo.NodeKey]map[string] /*ToolCallID*/ *entity.ToolInterruptEvent `json:"tool_interrupt_events,omitempty"`
 	LLMToResumeData     map[vo.NodeKey]string                                                `json:"llm_to_resume_data,omitempty"`
-	AppVariableStore    map[string]any                                                       `json:"variable_app_store,omitempty"`
+	AppVariableStore    *variableassigner.AppVariables                                       `json:"variable_app_store,omitempty"`
 }
 
 func init() {
@@ -84,15 +85,15 @@ func init() {
 	_ = compose.RegisterSerializableType[vo.SyncPattern]("sync_pattern")
 	_ = compose.RegisterSerializableType[vo.Locator]("wf_locator")
 	_ = compose.RegisterSerializableType[vo.BizType]("biz_type")
+	_ = compose.RegisterSerializableType[*variableassigner.AppVariables]("app_variables")
 }
 
 func (s *State) SetAppVariableValue(key string, value any) {
-	s.AppVariableStore[key] = value
+	s.AppVariableStore.Set(key, value)
 }
 
 func (s *State) GetAppVariableValue(key string) (any, bool) {
-	v, ok := s.AppVariableStore[key]
-	return v, ok
+	return s.AppVariableStore.Get(key)
 }
 
 func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {
@@ -270,6 +271,19 @@ func (s *State) NodeExecuted(key vo.NodeKey) bool {
 
 func GenState() compose.GenLocalState[*State] {
 	return func(ctx context.Context) (state *State) {
+		var parentState *State
+		_ = compose.ProcessState(ctx, func(ctx context.Context, s *State) error {
+			parentState = s
+			return nil
+		})
+
+		var appVariableStore *variableassigner.AppVariables
+		if parentState == nil {
+			appVariableStore = variableassigner.NewAppVariables()
+		} else {
+			appVariableStore = parentState.AppVariableStore
+		}
+
 		return &State{
 			Answers:              make(map[vo.NodeKey][]string),
 			Questions:            make(map[vo.NodeKey][]*qa.Question),
@@ -282,7 +296,7 @@ func GenState() compose.GenLocalState[*State] {
 			GroupChoices:         make(map[vo.NodeKey]map[string]int),
 			ToolInterruptEvents:  make(map[vo.NodeKey]map[string]*entity.ToolInterruptEvent),
 			LLMToResumeData:      make(map[vo.NodeKey]string),
-			AppVariableStore:     make(map[string]any),
+			AppVariableStore:     appVariableStore,
 		}
 	}
 }

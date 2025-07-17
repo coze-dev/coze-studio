@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/cloudwego/eino/compose"
 
@@ -30,6 +31,33 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
+
+type AppVariables struct {
+	vars map[string]any
+	mu   sync.RWMutex
+}
+
+func NewAppVariables() *AppVariables {
+	return &AppVariables{
+		vars: make(map[string]any),
+	}
+}
+
+func (av *AppVariables) Set(key string, value any) {
+	av.mu.Lock()
+	av.vars[key] = value
+	av.mu.Unlock()
+}
+
+func (av *AppVariables) Get(key string) (any, bool) {
+	av.mu.RLock()
+	defer av.mu.RUnlock()
+
+	if value, ok := av.vars[key]; ok {
+		return value, ok
+	}
+	return nil, false
+}
 
 type AppVariableStore interface {
 	GetAppVariableValue(key string) (any, bool)

@@ -111,6 +111,9 @@ func TestLLM(t *testing.T) {
 			entry := &compose2.NodeSchema{
 				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
+				Configs: map[string]any{
+					"DefaultValues": map[string]any{},
+				},
 			}
 
 			llmNode := &compose2.NodeSchema{
@@ -228,6 +231,9 @@ func TestLLM(t *testing.T) {
 			entry := &compose2.NodeSchema{
 				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
+				Configs: map[string]any{
+					"DefaultValues": map[string]any{},
+				},
 			}
 
 			llmNode := &compose2.NodeSchema{
@@ -334,6 +340,9 @@ func TestLLM(t *testing.T) {
 			entry := &compose2.NodeSchema{
 				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
+				Configs: map[string]any{
+					"DefaultValues": map[string]any{},
+				},
 			}
 
 			llmNode := &compose2.NodeSchema{
@@ -450,6 +459,9 @@ func TestLLM(t *testing.T) {
 			entry := &compose2.NodeSchema{
 				Key:  entity.EntryNodeKey,
 				Type: entity.NodeTypeEntry,
+				Configs: map[string]any{
+					"DefaultValues": map[string]any{},
+				},
 			}
 
 			openaiNode := &compose2.NodeSchema{

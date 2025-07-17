@@ -22,6 +22,10 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"log"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"runtime/debug"
 	"strings"
@@ -37,6 +41,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/pkg/safego"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
 func main() {
@@ -54,6 +60,7 @@ func main() {
 		panic("InitializeInfra failed, err=" + err.Error())
 	}
 
+	asyncStartMinioProxyServer(ctx)
 	startHttpServer()
 }
 
@@ -90,6 +97,7 @@ func startHttpServer() {
 	// Middleware order matters
 	s.Use(middleware.ContextCacheMW())     // must be first
 	s.Use(middleware.RequestInspectorMW()) // must be second
+	s.Use(middleware.SetHostMW())
 	s.Use(middleware.SetLogIDMW())
 	s.Use(corsHandler)
 	s.Use(middleware.AccessLogMW())
@@ -150,4 +158,40 @@ func setLogLevel() {
 func setCrashOutput() {
 	crashFile, _ := os.Create("crash.log")
 	debug.SetCrashOutput(crashFile, debug.CrashOptions{})
+}
+
+func asyncStartMinioProxyServer(ctx context.Context) {
+	proxyURL := getEnv(consts.MinIOAPIHost, "http://localhost:9000")
+	minioProxyEndpoint := getEnv(consts.MinIOProxyEndpoint, "")
+	if len(minioProxyEndpoint) == 0 {
+		return
+	}
+
+	safego.Go(ctx, func() {
+		target, err := url.Parse(proxyURL)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		proxy := httputil.NewSingleHostReverseProxy(target)
+		originDirector := proxy.Director
+		proxy.Director = func(req *http.Request) {
+			originDirector(req)
+			req.Host = req.URL.Host
+		}
+		useSSL := getEnv("USE_SSL", "0")
+		if useSSL == "1" {
+			logs.Infof("Minio proxy server is listening on %s with SSL", minioProxyEndpoint)
+			err := http.ListenAndServeTLS(minioProxyEndpoint, "cert.pem", "key.pem", proxy)
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			logs.Infof("Minio proxy server is listening on %s", minioProxyEndpoint)
+			err := http.ListenAndServe(minioProxyEndpoint, proxy)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	})
 }
