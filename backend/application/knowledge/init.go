@@ -159,7 +159,7 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		return nil, err
 	}
 
-	knowledgeDomainSVC, knowledgeEventHandler := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
+	knowledgeDomainSVC, _ := knowledgeImpl.NewKnowledgeSVC(&knowledgeImpl.KnowledgeSVCConfig{
 		DB:                        c.DB,
 		IDGen:                     c.IDGenSVC,
 		RDB:                       c.RDB,

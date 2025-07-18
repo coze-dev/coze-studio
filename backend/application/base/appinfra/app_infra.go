@@ -60,7 +60,10 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		return nil, err
 	}
 
-	deps.ESClient = es.New()
+	deps.ESClient, err = es.New()
+	if err != nil {
+		return nil, err
+	}
 	deps.ImageXClient, err = initImageX(ctx)
 	if err != nil {
 		return nil, err
