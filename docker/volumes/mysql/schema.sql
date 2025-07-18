@@ -110,7 +110,18 @@ CREATE TABLE IF NOT EXISTS `app_release_record` (
   INDEX `idx_app_publish_at` (`app_id`, `publish_at`),
   UNIQUE INDEX `uniq_idx_app_version_connector` (`app_id`, `version`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = 'Application Release Record';
-
+-- Create 'connector_workflow_version' table
+CREATE TABLE IF NOT EXISTS `connector_workflow_version` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `app_id` bigint unsigned NOT NULL DEFAULT 0 COMMENT 'app id',
+  `connector_id` bigint unsigned NOT NULL DEFAULT 0 COMMENT 'connector id',
+  `workflow_id` bigint unsigned NOT NULL DEFAULT 0 COMMENT 'workflow id',
+  `version` varchar(256) NOT NULL COMMENT 'version',
+  `created_at` bigint unsigned NOT NULL DEFAULT 0 COMMENT 'create time in millisecond',
+  PRIMARY KEY (`id`),
+  INDEX `idx_connector_id_workflow_id_create_at` (`connector_id`, `workflow_id`, `created_at`),
+  UNIQUE INDEX `uk_connector_id_workflow_id_version` (`connector_id`, `workflow_id`, `version`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = 'Connector Workflow Version';
 -- Create 'conversation' table
 CREATE TABLE IF NOT EXISTS `conversation` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -146,7 +157,7 @@ CREATE TABLE IF NOT EXISTS `data_copy_task` (
   `status` tinyint NOT NULL DEFAULT 1 COMMENT '1:创建 2:执行中 3:成功 4:失败',
   `error_msg` varchar(128) NULL COMMENT '错误信息',
   PRIMARY KEY (`id`),
-  INDEX `idx_master_task_id_origin_data_id_data_type` (`master_task_id`, `origin_data_id`, `data_type`)
+  UNIQUE INDEX `uk_master_task_id_origin_data_id_data_type` (`master_task_id`, `origin_data_id`, `data_type`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = 'data方向复制任务记录表';
 
 -- Create 'draft_database_info' table
@@ -243,7 +254,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_document_slice` (
   `knowledge_id` bigint unsigned NOT NULL DEFAULT 0 COMMENT 'knowledge id',
   `document_id` bigint unsigned NOT NULL DEFAULT 0 COMMENT 'document id',
   `content` text NULL COMMENT '切片内容',
-  `sequence` DECIMAL(10, 2) NOT NULL COMMENT '切片顺序号, 从1开始',
+  `sequence` DECIMAL(20, 5) NOT NULL COMMENT '切片顺序号, 从1开始',
   `created_at` bigint unsigned NOT NULL DEFAULT 0 COMMENT 'Create Time in Milliseconds',
   `updated_at` bigint unsigned NOT NULL DEFAULT 0 COMMENT 'Update Time in Milliseconds',
   `deleted_at` datetime(3) NULL COMMENT 'Delete Time in Milliseconds',
@@ -345,7 +356,7 @@ CREATE TABLE IF NOT EXISTS `node_execution` (
   PRIMARY KEY (`id`),
   INDEX `idx_execute_id_node_id` (`execute_id`, `node_id`),
   INDEX `idx_execute_id_parent_node_id` (`execute_id`, `parent_node_id`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT 'node execution';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT 'node 节点运行记录，用于记录每次workflow执行时，每个节点的状态信息';
 
 -- Create 'online_database_info' table
 CREATE TABLE IF NOT EXISTS `online_database_info` (
@@ -873,4 +884,4 @@ CREATE TABLE IF NOT EXISTS `workflow_version` (
   PRIMARY KEY (`id`),
   INDEX `idx_id_created_at` (`workflow_id`, `created_at`),
   UNIQUE INDEX `uniq_workflow_id_version` (`workflow_id`, `version`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = 'workflow version';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = 'workflow version 画布版本信息表，用于记录不同版本的画布信';
