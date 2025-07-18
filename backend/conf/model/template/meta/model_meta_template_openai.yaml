@@ -32,7 +32,7 @@ conn_config: # 模型连接参数
   top_k: 0 # 默认 top_k
   # 下面是模型专用配置，仅配置 protocol 所对应的类型即可
   openai: # OPTIONAL
-    by_azure: true    # true if using azure openai
+    by_azure: false    # true if using azure openai
     api_version: ''   # azure api version
     response_format:  # response format
       type: text
