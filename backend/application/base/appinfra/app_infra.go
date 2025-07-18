@@ -24,10 +24,10 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/imagex"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/cache/redis"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/es"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/eventbus"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/idgen"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/mysql"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus"
 )
 
 type AppDependencies struct {

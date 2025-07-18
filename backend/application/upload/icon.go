@@ -80,14 +80,14 @@ const (
 func (u *UploadService) PartUploadFileInit(ctx context.Context, objKey string) (uploadID string, err error) {
 	uploadID = uuid.NewString()
 	key := fmt.Sprintf(uploadKey, uploadID)
-	err = u.cache.HSet(ctx,
+	err = u.cache.WithContext(ctx).HSet(
 		key,
 		"objkey", objKey,
 	).Err()
 	if err != nil {
 		return "", err
 	}
-	err = u.cache.Expire(ctx, key, time.Minute*10).Err()
+	err = u.cache.WithContext(ctx).Expire(key, time.Minute*10).Err()
 	return
 }
 
@@ -109,7 +109,7 @@ type PartUploadFileCompleteRequest struct {
 
 func (u *UploadService) PartUploadFile(ctx context.Context, req *PartUploadFileRequest) (resp *PartUploadFileResponse, err error) {
 	key := fmt.Sprintf(uploadKey, req.UploadID)
-	exists, err := u.cache.Exists(ctx, key).Result()
+	exists, err := u.cache.WithContext(ctx).Exists(key).Result()
 	if err != nil || exists == 0 {
 		return nil, fmt.Errorf("upload session invalid: %v", err)
 	}
@@ -127,11 +127,11 @@ func (u *UploadService) PartUploadFile(ctx context.Context, req *PartUploadFileR
 		return nil, err
 	}
 	partKey := fmt.Sprintf(uploadPartKey, req.UploadID)
-	err = u.cache.HSet(ctx, partKey, req.PartNumber, string(partMetaData)).Err()
+	err = u.cache.WithContext(ctx).HSet(partKey, req.PartNumber, string(partMetaData)).Err()
 	if err != nil {
 		return nil, err
 	}
-	err = u.cache.Expire(ctx, partKey, time.Minute*10).Err()
+	err = u.cache.WithContext(ctx).Expire(partKey, time.Minute*10).Err()
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +158,7 @@ func getContentType(uri string) (contentType string) {
 
 func (u *UploadService) PartUploadFileComplete(ctx context.Context, req *PartUploadFileCompleteRequest) error {
 	partKey := fmt.Sprintf(uploadPartKey, req.UploadID)
-	parts, err := u.cache.HGetAll(ctx, partKey).Result()
+	parts, err := u.cache.WithContext(ctx).HGetAll(partKey).Result()
 	if err != nil {
 		return err
 	}
@@ -456,7 +456,7 @@ func (u *UploadService) GetIconForDataset(ctx context.Context, req *dataset.GetI
 }
 
 func (u *UploadService) UploadSessionKey(ctx context.Context, sessionKey string, tosKey string) error {
-	return u.cache.Set(ctx, sessionKey, tosKey, time.Minute*30).Err()
+	return u.cache.WithContext(ctx).Set(sessionKey, tosKey, time.Minute*30).Err()
 }
 
 type GetObjInfoBySessionKey struct {
@@ -490,7 +490,7 @@ func isImageUri(uri string) bool {
 }
 func (u *UploadService) GetObjInfoBySessionKey(ctx context.Context, sessionKey string) (*GetObjInfoBySessionKey, error) {
 	resp := GetObjInfoBySessionKey{}
-	objKey, err := u.cache.Get(ctx, sessionKey).Result()
+	objKey, err := u.cache.WithContext(ctx).Get(sessionKey).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -503,7 +503,7 @@ func (u *UploadService) GetObjInfoBySessionKey(ctx context.Context, sessionKey s
 		if isSVG(objKey) {
 			width, height, err := getSVGDimensions(content)
 			if err != nil {
-				logs.CtxErrorf(ctx, "get svg dimensions failed, err: %v", err)
+				logs.CtxError(ctx, "get svg dimensions failed, err: %v", err)
 				// default val
 				resp.Width = 100
 				resp.Height = 100
@@ -514,7 +514,7 @@ func (u *UploadService) GetObjInfoBySessionKey(ctx context.Context, sessionKey s
 		} else {
 			img, _, err := image.Decode(bytes.NewReader(content))
 			if err != nil {
-				logs.CtxErrorf(ctx, "decode image failed, err: %v", err)
+				logs.CtxError(ctx, "decode image failed, err: %v", err)
 				// default val
 				resp.Width = 100
 				resp.Height = 100

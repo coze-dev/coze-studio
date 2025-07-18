@@ -66,7 +66,7 @@ import (
 	arkemb "code.byted.org/data_edc/workflow_engine_next/infra/impl/embedding/ark"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/embedding/wrap"
 	builtinM2Q "code.byted.org/data_edc/workflow_engine_next/infra/impl/messages2query/builtin"
-	"code.byted.org/data_edc/workflow_engine_next/pkg/conv"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/gopkg/logs"
 )

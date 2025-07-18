@@ -421,7 +421,7 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 			}
 
 			if err != nil {
-				logs.CtxErrorf(ctx, "failed to unescape resource url, err is %v", err)
+				logs.CtxError(ctx, "failed to unescape resource url, err is %v", err)
 				continue
 			}
 

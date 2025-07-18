@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus/kafka"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus/nsq"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus/rmq"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/eventbus/kafka"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/eventbus/nsq"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/eventbus/rmq"
+	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 )
 
 type (

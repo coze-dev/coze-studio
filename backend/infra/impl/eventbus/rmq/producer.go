@@ -32,7 +32,7 @@ type producerImpl struct {
 	p     producer.Producer
 }
 
-func NewProducer(psm, clusterName, topic string) (eventbus.Producer, error) {
+func NewProducer(psm, clusterName, topic string, retries int) (eventbus.Producer, error) {
 	if psm == "" {
 		return nil, fmt.Errorf("psm is empty")
 	}
