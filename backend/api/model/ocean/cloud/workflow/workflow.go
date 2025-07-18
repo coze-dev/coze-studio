@@ -3,10 +3,11 @@
 package workflow
 
 import (
-	"code.byted.org/data_edc/workflow_engine_next/api/model/base"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+
+	"code.byted.org/data_edc/workflow_engine_next/api/model/base"
 	"github.com/apache/thrift/lib/go/thrift"
 )
 
@@ -39397,6 +39398,7 @@ type GetUploadAuthTokenData struct {
 	UploadPathPrefix string               `thrift:"upload_path_prefix,2" form:"upload_path_prefix" json:"upload_path_prefix" query:"upload_path_prefix"`
 	Auth             *UploadAuthTokenInfo `thrift:"auth,3" form:"auth" json:"auth" query:"auth"`
 	UploadHost       string               `thrift:"upload_host,4" form:"upload_host" json:"upload_host" query:"upload_host"`
+	Schema           string               `thrift:"schema,5" form:"schema" json:"schema" query:"schema"`
 }
 
 func NewGetUploadAuthTokenData() *GetUploadAuthTokenData {
@@ -39427,11 +39429,16 @@ func (p *GetUploadAuthTokenData) GetUploadHost() (v string) {
 	return p.UploadHost
 }
 
+func (p *GetUploadAuthTokenData) GetSchema() (v string) {
+	return p.Schema
+}
+
 var fieldIDToName_GetUploadAuthTokenData = map[int16]string{
 	1: "service_id",
 	2: "upload_path_prefix",
 	3: "auth",
 	4: "upload_host",
+	5: "schema",
 }
 
 func (p *GetUploadAuthTokenData) IsSetAuth() bool {
@@ -39483,6 +39490,14 @@ func (p *GetUploadAuthTokenData) Read(iprot thrift.TProtocol) (err error) {
 		case 4:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -39558,6 +39573,17 @@ func (p *GetUploadAuthTokenData) ReadField4(iprot thrift.TProtocol) error {
 	p.UploadHost = _field
 	return nil
 }
+func (p *GetUploadAuthTokenData) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Schema = _field
+	return nil
+}
 
 func (p *GetUploadAuthTokenData) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -39579,6 +39605,10 @@ func (p *GetUploadAuthTokenData) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField4(oprot); err != nil {
 			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
 			goto WriteFieldError
 		}
 	}
@@ -39662,6 +39692,22 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+func (p *GetUploadAuthTokenData) writeField5(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("schema", thrift.STRING, 5); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Schema); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 
 func (p *GetUploadAuthTokenData) String() string {

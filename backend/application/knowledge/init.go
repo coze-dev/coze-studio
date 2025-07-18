@@ -66,6 +66,7 @@ import (
 	arkemb "code.byted.org/data_edc/workflow_engine_next/infra/impl/embedding/ark"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/embedding/wrap"
 	builtinM2Q "code.byted.org/data_edc/workflow_engine_next/infra/impl/messages2query/builtin"
+	"code.byted.org/data_edc/workflow_engine_next/pkg/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/gopkg/logs"
 )
@@ -84,14 +85,14 @@ type ServiceComponents struct {
 func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 	// TODO:: MQ未就绪，知识库会依赖，先不处理
 	ctx := context.Background()
-	//
-	//nameServer := os.Getenv(consts.RMQServer)
-	//
-	//knowledgeProducer, err := rmq.NewProducer(consts.WorkflowEnginePSM, consts.I18nMQCluster, consts.RMQTopicKnowledge)
-	//if err != nil {
-	//	return nil, fmt.Errorf("init knowledge producer failed, err=%w", err)
-	//}
-	//
+
+	// nameServer := os.Getenv(consts.MQServer)
+
+	// knowledgeProducer, err := eventbus.NewProducer(nameServer, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, 2)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("init knowledge producer failed, err=%w", err)
+	// }
+
 	var sManagers []searchstore.Manager
 	//
 	// es full text search
@@ -174,12 +175,11 @@ func InitService(c *ServiceComponents) (*KnowledgeApplicationService, error) {
 		IsAutoAnnotationSupported: configured,
 		ModelFactory:              chatmodelImpl.NewDefaultFactory(),
 	})
-	logs.CtxInfo(ctx, "knowledge service init success, knowledgeEventHandler: %v", knowledgeEventHandler)
-	//
-	//if err = rmq.RegisterConsumer(nameServer, "opencoze_knowledge", "cg_knowledge", knowledgeEventHandler); err != nil {
-	//	return nil, fmt.Errorf("register knowledge consumer failed, err=%w", err)
-	//}
-	//
+
+	// if err = eventbus.RegisterConsumer(nameServer, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, knowledgeEventHandler); err != nil {
+	// 	return nil, fmt.Errorf("register knowledge consumer failed, err=%w", err)
+	// }
+
 	KnowledgeSVC.DomainSVC = knowledgeDomainSVC
 	KnowledgeSVC.eventBus = c.EventBus
 	KnowledgeSVC.storage = c.Storage
@@ -286,12 +286,13 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 	switch os.Getenv("EMBEDDING_TYPE") {
 	case "openai":
 		var (
-			openAIEmbeddingBaseURL    = os.Getenv("OPENAI_EMBEDDING_BASE_URL")
-			openAIEmbeddingModel      = os.Getenv("OPENAI_EMBEDDING_MODEL")
-			openAIEmbeddingApiKey     = os.Getenv("OPENAI_EMBEDDING_API_KEY")
-			openAIEmbeddingByAzure    = os.Getenv("OPENAI_EMBEDDING_BY_AZURE")
-			openAIEmbeddingApiVersion = os.Getenv("OPENAI_EMBEDDING_API_VERSION")
-			openAIEmbeddingDims       = os.Getenv("OPENAI_EMBEDDING_DIMS")
+			openAIEmbeddingBaseURL     = os.Getenv("OPENAI_EMBEDDING_BASE_URL")
+			openAIEmbeddingModel       = os.Getenv("OPENAI_EMBEDDING_MODEL")
+			openAIEmbeddingApiKey      = os.Getenv("OPENAI_EMBEDDING_API_KEY")
+			openAIEmbeddingByAzure     = os.Getenv("OPENAI_EMBEDDING_BY_AZURE")
+			openAIEmbeddingApiVersion  = os.Getenv("OPENAI_EMBEDDING_API_VERSION")
+			openAIEmbeddingDims        = os.Getenv("OPENAI_EMBEDDING_DIMS")
+			openAIRequestEmbeddingDims = os.Getenv("OPENAI_EMBEDDING_REQUEST_DIMS")
 		)
 
 		byAzure, err := strconv.ParseBool(openAIEmbeddingByAzure)
@@ -304,23 +305,31 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 			return nil, fmt.Errorf("init openai embedding dims failed, err=%w", err)
 		}
 
-		emb, err = wrap.NewOpenAIEmbedder(ctx, &openai.EmbeddingConfig{
+		openAICfg := &openai.EmbeddingConfig{
 			APIKey:     openAIEmbeddingApiKey,
 			ByAzure:    byAzure,
 			BaseURL:    openAIEmbeddingBaseURL,
 			APIVersion: openAIEmbeddingApiVersion,
 			Model:      openAIEmbeddingModel,
-			Dimensions: ptr.Of(int(dims)),
-		}, dims)
+			// Dimensions: ptr.Of(int(dims)),
+		}
+		reqDims := conv.StrToInt64D(openAIRequestEmbeddingDims, 0)
+		if reqDims > 0 {
+			// some openai model not support request dims
+			openAICfg.Dimensions = ptr.Of(int(reqDims))
+		}
+
+		emb, err = wrap.NewOpenAIEmbedder(ctx, openAICfg, dims)
 		if err != nil {
 			return nil, fmt.Errorf("init openai embedding failed, err=%w", err)
 		}
 
 	case "ark":
 		var (
-			arkEmbeddingModel = os.Getenv("ARK_EMBEDDING_MODEL")
-			arkEmbeddingAK    = os.Getenv("ARK_EMBEDDING_AK")
-			arkEmbeddingDims  = os.Getenv("ARK_EMBEDDING_DIMS")
+			arkEmbeddingBaseURL = os.Getenv("ARK_EMBEDDING_BASE_URL")
+			arkEmbeddingModel   = os.Getenv("ARK_EMBEDDING_MODEL")
+			arkEmbeddingAK      = os.Getenv("ARK_EMBEDDING_AK")
+			arkEmbeddingDims    = os.Getenv("ARK_EMBEDDING_DIMS")
 		)
 
 		dims, err := strconv.ParseInt(arkEmbeddingDims, 10, 64)
@@ -329,8 +338,9 @@ func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
 		}
 
 		emb, err = arkemb.NewArkEmbedder(ctx, &ark.EmbeddingConfig{
-			APIKey: arkEmbeddingAK,
-			Model:  arkEmbeddingModel,
+			APIKey:  arkEmbeddingAK,
+			Model:   arkEmbeddingModel,
+			BaseURL: arkEmbeddingBaseURL,
 		}, dims)
 		if err != nil {
 			return nil, fmt.Errorf("init ark embedding client failed, err=%w", err)
@@ -361,8 +371,9 @@ func getBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.B
 		})
 	case "ark":
 		bcm, err = ao.NewChatModel(ctx, &ao.ChatModelConfig{
-			APIKey: getEnv("BUILTIN_CM_ARK_API_KEY"),
-			Model:  getEnv("BUILTIN_CM_ARK_MODEL"),
+			APIKey:  getEnv("BUILTIN_CM_ARK_API_KEY"),
+			Model:   getEnv("BUILTIN_CM_ARK_MODEL"),
+			BaseURL: getEnv("BUILTIN_CM_ARK_BASE_URL"),
 		})
 	case "deepseek":
 		bcm, err = deepseek.NewChatModel(ctx, &deepseek.ChatModelConfig{

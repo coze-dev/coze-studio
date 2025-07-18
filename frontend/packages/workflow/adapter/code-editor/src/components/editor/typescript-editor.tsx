@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useEffect } from 'react';
 
 import { Renderer, EditorProvider } from '@coze-editor/editor/react';
-import preset from '@coze-editor/editor/preset-code';
 import { EditorView } from '@codemirror/view';
 
 import { type EditorOtherProps, type EditorProps } from '../../interface';
@@ -25,6 +24,7 @@ import {
   initInputAndOutput,
   initTypescriptServer,
 } from './typescript-editor-utils';
+import preset from './preset';
 
 initTypescriptServer();
 
@@ -84,6 +84,7 @@ export const TypescriptEditor = (props: EditorProps & EditorOtherProps) => {
           languageId: 'typescript',
           theme: 'code-editor-dark',
           height,
+          readOnly: readonly,
           editable: !readonly,
           fontSize: 12,
           tabSize: 4,

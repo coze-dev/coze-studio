@@ -28,7 +28,7 @@ type ImageX interface {
 	GetResourceURL(ctx context.Context, uri string, opts ...GetResourceOpt) (*ResourceURL, error)
 	Upload(ctx context.Context, data []byte, opts ...UploadAuthOpt) (*UploadResult, error)
 	GetServerID() string
-	GetUploadHost() string
+	GetUploadHost(ctx context.Context) string
 }
 
 type SecurityToken struct {
@@ -37,6 +37,7 @@ type SecurityToken struct {
 	SessionToken    string `thrift:"session_token,3" frugal:"3,default,string" json:"session_token"`
 	ExpiredTime     string `thrift:"expired_time,4" frugal:"4,default,string" json:"expired_time"`
 	CurrentTime     string `thrift:"current_time,5" frugal:"5,default,string" json:"current_time"`
+	HostScheme      string `thrift:"host_scheme,6" frugal:"6,default,string" json:"host_scheme"`
 }
 
 type ResourceURL struct {

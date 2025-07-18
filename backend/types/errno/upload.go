@@ -29,6 +29,9 @@ const (
 	ErrUploadEmptyFileCode                   = 104000006
 	ErrUploadFileUploadGreaterOneCode        = 104000007
 	ErrUploadSystemErrorCode                 = 104000008
+
+	ErrUploadHostNotExistCode       = 104000009
+	ErrUploadHostSchemaNotExistCode = 104000010
 )
 
 func init() {
@@ -83,6 +86,16 @@ func init() {
 	code.Register(
 		ErrUploadSystemErrorCode,
 		"system error : {msg}",
+		code.WithAffectStability(false),
+	)
+	code.Register(
+		ErrUploadHostNotExistCode,
+		"upload host not exist",
+		code.WithAffectStability(false),
+	)
+	code.Register(
+		ErrUploadHostSchemaNotExistCode,
+		"upload host schema not exist",
 		code.WithAffectStability(false),
 	)
 

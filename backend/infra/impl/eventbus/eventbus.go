@@ -15,3 +15,50 @@
  */
 
 package eventbus
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus/kafka"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus/nsq"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus/rmq"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
+)
+
+type (
+	Producer        = eventbus.Producer
+	Consumer        = eventbus.Consumer
+	ConsumerHandler = eventbus.ConsumerHandler
+	ConsumerOpt     = eventbus.ConsumerOpt
+	Message         = eventbus.Message
+)
+
+func RegisterConsumer(nameServer, topic, group string, consumerHandler eventbus.ConsumerHandler, opts ...eventbus.ConsumerOpt) error {
+	tp := os.Getenv(consts.MQTypeKey)
+	switch tp {
+	case "nsq":
+		return nsq.RegisterConsumer(nameServer, topic, group, consumerHandler, opts...)
+	case "kafka":
+		return kafka.RegisterConsumer(nameServer, topic, group, consumerHandler, opts...)
+	case "rmq":
+		return rmq.RegisterConsumer(nameServer, topic, group, consumerHandler, opts...)
+	}
+
+	return fmt.Errorf("invalid mq type: %s , only support nsq, kafka, rmq", tp)
+}
+
+func NewProducer(nameServer, topic, group string, retries int) (eventbus.Producer, error) {
+	tp := os.Getenv(consts.MQTypeKey)
+	switch tp {
+	case "nsq":
+		return nsq.NewProducer(nameServer, topic, group)
+	case "kafka":
+		return kafka.NewProducer(nameServer, topic)
+	case "rmq":
+		return rmq.NewProducer(nameServer, topic, group, retries)
+	}
+
+	return nil, fmt.Errorf("invalid mq type: %s , only support nsq, kafka, rmq", tp)
+}

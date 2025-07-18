@@ -106,6 +106,18 @@ CREATE TABLE IF NOT EXISTS `app_release_record` (
   INDEX `idx_app_publish_at` (`app_id`, `publish_at`),
   UNIQUE INDEX `uniq_idx_app_version_connector` (`app_id`, `version`)
 ) ENGINE=InnoDB CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT "Application Release Record";
+-- Create "connector_workflow_version" table
+CREATE TABLE IF NOT EXISTS `connector_workflow_version` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT "id",
+  `app_id` bigint unsigned NOT NULL COMMENT "app id",
+  `connector_id` bigint unsigned NOT NULL COMMENT "connector id",
+  `workflow_id` bigint unsigned NOT NULL COMMENT "workflow id",
+  `version` varchar(256) NOT NULL COMMENT "version",
+  `created_at` bigint unsigned NOT NULL COMMENT "create time in millisecond",
+  PRIMARY KEY (`id`),
+  INDEX `idx_connector_id_workflow_id_create_at` (`connector_id`, `workflow_id`, `created_at`),
+  UNIQUE INDEX `idx_connector_id_workflow_id_version` (`connector_id`, `workflow_id`, `version`)
+) ENGINE=InnoDB CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 -- Create "conversation" table
 CREATE TABLE IF NOT EXISTS `conversation` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT "主键ID",
@@ -583,7 +595,7 @@ CREATE TABLE IF NOT EXISTS `space` (
   PRIMARY KEY (`id`),
   INDEX `idx_creator_id` (`creator_id`),
   INDEX `idx_owner_id` (`owner_id`)
-) ENGINE=InnoDB CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT "Space Table" AUTO_INCREMENT 666;
+) ENGINE=InnoDB CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT "Space Table";
 -- Create "space_user" table
 CREATE TABLE IF NOT EXISTS `space_user` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT "Primary Key ID, Auto Increment",
@@ -675,7 +687,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   INDEX `idx_session_key` (`session_key`),
   UNIQUE INDEX `uniq_email` (`email`),
   UNIQUE INDEX `uniq_unique_name` (`unique_name`)
-) ENGINE=InnoDB CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT "User Table" AUTO_INCREMENT 888;
+) ENGINE=InnoDB CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT "User Table";
 -- Create "variable_instance" table
 CREATE TABLE IF NOT EXISTS `variable_instance` (
   `id` bigint unsigned NOT NULL DEFAULT 0 COMMENT "主键ID",

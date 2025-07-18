@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React, { useEffect, useRef } from 'react';
 
-import { type EditorAPI } from '@coze-editor/editor/preset-code';
-
+import { type EditorAPI } from '../editor/preset';
 import { Editor } from '../editor';
 import { type PreviewerProps } from '../../interface';
 
@@ -30,7 +29,7 @@ export const Previewer = (props: PreviewerProps) => {
     }
 
     if (props.content !== apiRef.current.getValue()) {
-      apiRef.current.setValue(props.content);
+      apiRef.current.forceSetValue(props.content);
     }
   }, [props.content]);
 

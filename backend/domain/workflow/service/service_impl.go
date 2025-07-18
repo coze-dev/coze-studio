@@ -665,6 +665,10 @@ func (i *impl) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.Cop
 }
 
 func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, config *vo.ReleaseWorkflowConfig) ([]*vo.ValidateIssue, error) {
+	if len(config.ConnectorIDs) == 0 {
+		return nil, fmt.Errorf("connector ids is required")
+	}
+
 	wfs, _, err := i.MGet(ctx, &vo.MGetPolicy{
 		MetaQuery: vo.MetaQuery{
 			AppID: &appID,
@@ -762,13 +766,22 @@ func (i *impl) ReleaseApplicationWorkflows(ctx context.Context, appID int64, con
 		}
 	}
 
+	workflowIDs := make([]int64, 0, len(wfs))
 	for id, vInfo := range workflowsToPublish {
 		wfRefs, err := canvasToRefs(id, vInfo.Canvas)
 		if err != nil {
 			return nil, err
 		}
 
+		workflowIDs = append(workflowIDs, id)
 		if err = i.repo.CreateVersion(ctx, id, vInfo, wfRefs); err != nil {
+			return nil, err
+		}
+	}
+
+	for _, connectorID := range config.ConnectorIDs {
+		err = i.repo.BatchCreateConnectorWorkflowVersion(ctx, appID, connectorID, workflowIDs, config.Version)
+		if err != nil {
 			return nil, err
 		}
 	}

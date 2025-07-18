@@ -1465,3 +1465,33 @@ func _getqueriedoauthpluginlistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _applyimageactionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _commonuploadMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _applyimagexactionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _applyimagexaction0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _applyuploadactionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _applyuploadaction0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

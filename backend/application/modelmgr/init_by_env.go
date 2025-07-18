@@ -61,6 +61,9 @@ func initModelByEnv(wd, templatePath string) (metaSlice []*modelmgr.ModelMeta, e
 			modelMeta.ID = id
 			modelMeta.ConnConfig.Model = info.modelID
 			modelMeta.ConnConfig.APIKey = info.apiKey
+			if info.baseURL != "" {
+				modelMeta.ConnConfig.BaseURL = info.baseURL
+			}
 			modelEntity.ID = id
 			modelEntity.Meta.ID = id
 			if !foundTemplate {
@@ -79,7 +82,7 @@ func initModelByEnv(wd, templatePath string) (metaSlice []*modelmgr.ModelMeta, e
 }
 
 type envModelInfo struct {
-	id, modelName, modelID, apiKey string
+	id, modelName, modelID, apiKey, baseURL string
 }
 
 func getModelEnv(idx int) (info envModelInfo, valid bool) {
@@ -87,6 +90,7 @@ func getModelEnv(idx int) (info envModelInfo, valid bool) {
 	info.modelName = os.Getenv(concatEnvKey(modelNamePrefix, idx))
 	info.modelID = os.Getenv(concatEnvKey(modelIDPrefix, idx))
 	info.apiKey = os.Getenv(concatEnvKey(modelApiKeyPrefix, idx))
+	info.baseURL = os.Getenv(concatEnvKey(modelBaseURLPrefix, idx))
 	valid = info.modelName != "" && info.modelID != "" && info.apiKey != ""
 	return
 }
@@ -123,6 +127,7 @@ const (
 	modelNamePrefix       = "MODEL_NAME"        // model name,
 	modelIDPrefix         = "MODEL_ID"          // model in conn config
 	modelApiKeyPrefix     = "MODEL_API_KEY"     // model api key
+	modelBaseURLPrefix    = "MODEL_BASE_URL"    // model base url
 )
 
 var modelMapping = map[chatmodel.Protocol]map[string]string{

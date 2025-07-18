@@ -46,7 +46,6 @@ import (
 	ssmilvus "code.byted.org/data_edc/workflow_engine_next/infra/impl/document/searchstore/milvus"
 	hembed "code.byted.org/data_edc/workflow_engine_next/infra/impl/embedding/http"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/es"
-	"code.byted.org/data_edc/workflow_engine_next/infra/impl/eventbus/rmq"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/idgen"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/mysql"
 	rdbservice "code.byted.org/data_edc/workflow_engine_next/infra/impl/rdb"
@@ -124,7 +123,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 
 	rdbService := rdbservice.NewService(db, idGenSVC)
 
-	knowledgeProducer, err := rmq.NewProducer(rmqEndpoint, consts.RMQTopicKnowledge, "")
+	knowledgeProducer, err := eventbus.NewProducer(rmqEndpoint, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, 2)
 	if err != nil {
 		panic(err)
 	}
@@ -182,7 +181,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 
 	suite.handler = knowledgeEventHandler
 
-	err = rmq.RegisterConsumer(rmqEndpoint, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, suite)
+	err = eventbus.RegisterConsumer(rmqEndpoint, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, suite)
 	if err != nil {
 		panic(err)
 	}

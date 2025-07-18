@@ -148,13 +148,14 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		},
 	},
 	"domain/workflow/internal/repo/dal/query": {
-		"workflow_meta":      {},
-		"workflow_draft":     {},
-		"workflow_version":   {},
-		"workflow_reference": {},
-		"workflow_execution": {},
-		"node_execution":     {},
-		"workflow_snapshot":  {},
+		"workflow_meta":              {},
+		"workflow_draft":             {},
+		"workflow_version":           {},
+		"workflow_reference":         {},
+		"workflow_execution":         {},
+		"node_execution":             {},
+		"workflow_snapshot":          {},
+		"connector_workflow_version": {},
 	},
 
 	"domain/openauth/openapiauth/internal/dal/query": {

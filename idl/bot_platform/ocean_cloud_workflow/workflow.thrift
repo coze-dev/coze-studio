@@ -1140,6 +1140,7 @@ struct GetUploadAuthTokenData {
     2: string              upload_path_prefix,
     3: UploadAuthTokenInfo auth              ,
     4: string              upload_host       ,
+    5: string              schema
 }
 
 struct UploadAuthTokenInfo {

@@ -506,6 +506,55 @@ table "app_release_record" {
     columns = [column.app_id, column.version]
   }
 }
+table "connector_workflow_version" {
+  schema = schema.opencoze
+  column "id" {
+    null           = false
+    type           = bigint
+    unsigned       = true
+    comment        = "id"
+    auto_increment = true
+  }
+  column "app_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "app id"
+  }
+  column "connector_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "connector id"
+  }
+  column "workflow_id" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "workflow id"
+  }
+  column "version" {
+    null    = false
+    type    = varchar(256)
+    comment = "version"
+  }
+  column "created_at" {
+    null     = false
+    type     = bigint
+    unsigned = true
+    comment  = "create time in millisecond"
+  }
+  primary_key {
+    columns = [column.id]
+  }
+  index "idx_connector_id_workflow_id_create_at" {
+    columns = [column.connector_id, column.workflow_id, column.created_at]
+  }
+  index "idx_connector_id_workflow_id_version" {
+    unique  = true
+    columns = [column.connector_id, column.workflow_id, column.version]
+  }
+}
 table "conversation" {
   schema  = schema.opencoze
   comment = "会话信息表"

@@ -31,6 +31,7 @@ import (
 
 	model "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/knowledge"
 	pluginmodel "code.byted.org/data_edc/workflow_engine_next/api/model/crossdomain/plugin"
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
 	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
 	pluginAPI "code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/plugin_develop"
 	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/workflow"
@@ -50,6 +51,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/domain/workflow/entity/vo"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/idgen"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/imagex"
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/errorx"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/i18n"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/maps"
@@ -66,6 +68,7 @@ import (
 type ApplicationService struct {
 	DomainSVC   workflowDomain.Service
 	ImageX      imagex.ImageX // we set Imagex here, because Imagex is used as a proxy to get auth token, there is no actual correlation with the workflow domain.
+	TosClient   storage.Storage
 	IDGenerator idgen.IDGenerator
 }
 
@@ -2402,16 +2405,16 @@ func (w *ApplicationService) GetWorkflowUploadAuthToken(ctx context.Context, req
 		return nil, fmt.Errorf("scene %s is not supported", req.GetScene())
 	}
 
-	authToken, err := w.ImageX.GetUploadAuth(ctx)
+	authToken, err := w.getAuthToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return &workflow.GetUploadAuthTokenResponse{
 		Data: &workflow.GetUploadAuthTokenData{
-			ServiceID:        w.ImageX.GetServerID(),
+			ServiceID:        authToken.ServiceID,
 			UploadPathPrefix: prefix,
-			UploadHost:       w.ImageX.GetUploadHost(),
+			UploadHost:       authToken.UploadHost,
 			Auth: &workflow.UploadAuthTokenInfo{
 				AccessKeyID:     authToken.AccessKeyID,
 				SecretAccessKey: authToken.SecretAccessKey,
@@ -2419,8 +2422,27 @@ func (w *ApplicationService) GetWorkflowUploadAuthToken(ctx context.Context, req
 				ExpiredTime:     authToken.ExpiredTime,
 				CurrentTime:     authToken.CurrentTime,
 			},
+			Schema: authToken.HostScheme,
 		},
 	}, nil
+}
+
+func (w *ApplicationService) getAuthToken(ctx context.Context) (*bot_common.AuthToken, error) {
+	uploadAuthToken, err := w.ImageX.GetUploadAuth(ctx)
+	if err != nil {
+		return nil, err
+	}
+	authToken := &bot_common.AuthToken{
+		ServiceID:       w.ImageX.GetServerID(),
+		AccessKeyID:     uploadAuthToken.AccessKeyID,
+		SecretAccessKey: uploadAuthToken.SecretAccessKey,
+		SessionToken:    uploadAuthToken.SessionToken,
+		ExpiredTime:     uploadAuthToken.ExpiredTime,
+		CurrentTime:     uploadAuthToken.CurrentTime,
+		UploadHost:      w.ImageX.GetUploadHost(ctx),
+		HostScheme:      uploadAuthToken.HostScheme,
+	}
+	return authToken, nil
 }
 
 func (w *ApplicationService) SignImageURL(ctx context.Context, req *workflow.SignImageURLRequest) (

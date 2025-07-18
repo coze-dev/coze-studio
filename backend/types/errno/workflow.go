@@ -41,21 +41,22 @@ const (
 )
 
 const (
-	ErrWorkflowCanceledByUser          = 777777777
-	ErrNodeTimeout                     = 777777776
-	ErrWorkflowOperationFail           = 777777775
-	ErrIndexingNilArray                = 777777774
-	ErrLLMStructuredOutputParseFail    = 777777773
-	ErrCreateNodeFail                  = 777777772
-	ErrWorkflowSnapshotNotFound        = 777777771
-	ErrNotifyWorkflowResourceChangeErr = 777777770
-	ErrInvalidVersionName              = 777777769
-	ErrPluginIDNotFound                = 777777768
-	ErrTOSError                        = 777777767
-	ErrToolIDNotFound                  = 777777766
-	ErrAuthorizationRequired           = 777777765
-	ErrVariablesAPIFail                = 777777764
-	ErrInputFieldMissing               = 777777763
+	ErrWorkflowSpecifiedVersionNotFound = 777777778
+	ErrWorkflowCanceledByUser           = 777777777
+	ErrNodeTimeout                      = 777777776
+	ErrWorkflowOperationFail            = 777777775
+	ErrIndexingNilArray                 = 777777774
+	ErrLLMStructuredOutputParseFail     = 777777773
+	ErrCreateNodeFail                   = 777777772
+	ErrWorkflowSnapshotNotFound         = 777777771
+	ErrNotifyWorkflowResourceChangeErr  = 777777770
+	ErrInvalidVersionName               = 777777769
+	ErrPluginIDNotFound                 = 777777768
+	ErrTOSError                         = 777777767
+	ErrToolIDNotFound                   = 777777766
+	ErrAuthorizationRequired            = 777777765
+	ErrVariablesAPIFail                 = 777777764
+	ErrInputFieldMissing                = 777777763
 )
 
 // stability problems

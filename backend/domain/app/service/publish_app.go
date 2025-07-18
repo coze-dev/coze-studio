@@ -71,7 +71,11 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 		}
 	}()
 
-	failedResources, err := a.packResources(ctx, req.APPID, req.Version)
+	connectorIDs := make([]int64, 0, len(req.ConnectorPublishConfigs))
+	for cid := range req.ConnectorPublishConfigs {
+		connectorIDs = append(connectorIDs, cid)
+	}
+	failedResources, err := a.packResources(ctx, req.APPID, req.Version, connectorIDs)
 	if err != nil {
 		return false, err
 	}
@@ -168,7 +172,7 @@ func (a *appServiceImpl) createPublishVersion(ctx context.Context, req *PublishA
 	return recordID, nil
 }
 
-func (a *appServiceImpl) packResources(ctx context.Context, appID int64, version string) (failedResources []*entity.PackResourceFailedInfo, err error) {
+func (a *appServiceImpl) packResources(ctx context.Context, appID int64, version string, connectorIDs []int64) (failedResources []*entity.PackResourceFailedInfo, err error) {
 	failedPlugins, allDraftPlugins, err := a.packPlugins(ctx, appID, version)
 	if err != nil {
 		return nil, err
@@ -177,7 +181,7 @@ func (a *appServiceImpl) packResources(ctx context.Context, appID int64, version
 	workflowFailedInfoList, err := a.packWorkflows(ctx, appID, version,
 		slices.Transform(allDraftPlugins, func(a *plugin.PluginInfo) int64 {
 			return a.ID
-		}))
+		}), connectorIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -215,10 +219,11 @@ func (a *appServiceImpl) packPlugins(ctx context.Context, appID int64, version s
 
 }
 
-func (a *appServiceImpl) packWorkflows(ctx context.Context, appID int64, version string, allDraftPluginIDs []int64) (workflowFailedInfoList []*entity.PackResourceFailedInfo, err error) {
+func (a *appServiceImpl) packWorkflows(ctx context.Context, appID int64, version string, allDraftPluginIDs []int64, connectorIDs []int64) (workflowFailedInfoList []*entity.PackResourceFailedInfo, err error) {
 	issues, err := crossworkflow.DefaultSVC().ReleaseApplicationWorkflows(ctx, appID, &crossworkflow.ReleaseWorkflowConfig{
-		Version:   version,
-		PluginIDs: allDraftPluginIDs,
+		Version:      version,
+		PluginIDs:    allDraftPluginIDs,
+		ConnectorIDs: connectorIDs,
 	})
 	if err != nil {
 		return nil, errorx.Wrapf(err, "ReleaseApplicationWorkflows failed, appID=%d, version=%s", appID, version)

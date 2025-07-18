@@ -67,20 +67,19 @@ func InitService(ctx context.Context, s *ServiceComponents) (*SearchApplicationS
 	// setup consumer
 	//searchConsumer := search.NewProjectHandler(ctx, s.ESClient)
 
-	//logs.CtxInfo(ctx, "start search domain consumer...")
-	//nameServer := os.Getenv(consts.RMQServer)
+	// nameServer := os.Getenv(consts.MQServer)
 
-	//err := rmq.RegisterConsumer(nameServer, "opencoze_search_app", consts.RMQTopicSearchApp, searchConsumer)
-	//if err != nil {
-	//	return nil, fmt.Errorf("registe	r search consumer failed, err=%w", err)
-	//}
+	// err := eventbus.RegisterConsumer(nameServer, consts.RMQTopicApp, consts.RMQConsumeGroupApp, searchConsumer)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("register search consumer failed, err=%w", err)
+	// }
 
 	//searchResourceConsumer := search.NewResourceHandler(ctx, s.ESClient)
 
-	//err = rmq.RegisterConsumer(nameServer, "opencoze_search_resource", consts.RMQTopicSearchResource, searchResourceConsumer)
-	//if err != nil {
-	//	return nil, fmt.Errorf("register search consumer failed, err=%w", err)
-	//}
+	// err = eventbus.RegisterConsumer(nameServer, consts.RMQTopicResource, consts.RMQConsumeGroupResource, searchResourceConsumer)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("register search consumer failed, err=%w", err)
+	// }
 
 	return SearchSVC, nil
 }

@@ -1,0 +1,41 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { api, type InferEditorAPIFromPlugins } from '@coze-editor/editor/react';
+import preset from '@coze-editor/editor/preset-code';
+import { type EditorView } from '@codemirror/view';
+
+// 忽略 readOnly 强制设置值
+const forceSetValue =
+  ({ view }: { view: EditorView }) =>
+  (value: string) => {
+    const { state } = view;
+    view.dispatch(
+      state.update({
+        changes: {
+          from: 0,
+          to: state.doc.length,
+          insert: value ?? '',
+        },
+      }),
+    );
+  };
+
+const customPreset = [...preset, api('forceSetValue', forceSetValue)];
+
+export type EditorAPI = InferEditorAPIFromPlugins<typeof customPreset>;
+
+export default customPreset;

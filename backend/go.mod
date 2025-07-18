@@ -73,9 +73,11 @@ require (
 	github.com/extrame/xls v0.0.1
 	github.com/jinzhu/copier v0.4.0
 	github.com/mattn/go-shellwords v1.0.12
+	github.com/nsqio/go-nsq v1.1.0
 	github.com/ollama/ollama v0.6.5
 	github.com/rbretecher/go-postman-collection v0.9.0
 	github.com/yuin/goldmark v1.4.13
+	golang.org/x/image v0.22.0
 	golang.org/x/oauth2 v0.23.0
 	google.golang.org/genai v1.13.0
 )

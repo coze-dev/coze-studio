@@ -36,7 +36,7 @@ type consumerImpl struct {
 	consumerGroup sarama.ConsumerGroup
 }
 
-func NewConsumer(broker string, topic, groupID string, handler eventbus.ConsumerHandler, opts ...eventbus.ConsumerOpt) (eventbus.Consumer, error) {
+func RegisterConsumer(broker string, topic, groupID string, handler eventbus.ConsumerHandler, opts ...eventbus.ConsumerOpt) error {
 	config := sarama.NewConfig()
 	config.Consumer.Offsets.Initial = sarama.OffsetOldest // 从最早消息开始消费
 	config.Consumer.Group.Session.Timeout = 30 * time.Second
@@ -49,7 +49,7 @@ func NewConsumer(broker string, topic, groupID string, handler eventbus.Consumer
 
 	consumerGroup, err := sarama.NewConsumerGroup([]string{broker}, groupID, config)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	c := &consumerImpl{
@@ -78,7 +78,7 @@ func NewConsumer(broker string, topic, groupID string, handler eventbus.Consumer
 		}
 	})
 
-	return c, nil
+	return nil
 }
 
 func (c *consumerImpl) Setup(sess sarama.ConsumerGroupSession) error {

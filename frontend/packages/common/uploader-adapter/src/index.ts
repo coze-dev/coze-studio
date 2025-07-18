@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import Uploader, { type ImageXFileOption } from 'tt-uploader';
 import {
   type Config,
@@ -35,8 +35,13 @@ export const getUploader = (config: Config, isOversea?: boolean) => {
     config.imageHost ||
     config.imageFallbackHost ||
     ''
-  ).replace(/^https:\/\//, '');
+  ).replace(/^https:\/\//, config.schema ? `${config.schema}://` : '');
   const uploader = new Uploader({
+    /**
+     * 需要根据当前用户的部署环境动态获取schema
+     * schema 兼容特殊 http 场景字段
+     */
+    schema: config.schema,
     region: isOversea ? 'ap-singapore-1' : 'cn-north-1',
     imageHost,
     appId: config.appId,
@@ -44,7 +49,7 @@ export const getUploader = (config: Config, isOversea?: boolean) => {
     useFileExtension: config.useFileExtension,
     uploadTimeout: config.uploadTimeout,
     imageConfig: config.imageConfig,
-  });
+  } as any);
 
   const originalAddImageFile: (option: ImageXFileOption) => string =
     uploader.addImageFile.bind(uploader);

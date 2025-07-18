@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { type ClipboardEvent } from 'react';
 
@@ -110,10 +110,12 @@ export function uploadFile({
     };
 
     const upload = (authToken: GetUploadAuthTokenData) => {
-      const { service_id, upload_host, auth } = authToken;
+      const { service_id, upload_host, auth, schema } =
+        authToken as GetUploadAuthTokenData & { schema: string };
 
       bytedUploader = getUploader(
         {
+          schema,
           useFileExtension: true,
           // 解决报错问题：
           userId,

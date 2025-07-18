@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   getUploader as initUploader,
@@ -118,10 +118,12 @@ export function uploadFileV2({
     };
 
     const upload = (authToken: GetUploadAuthTokenData) => {
-      const { service_id, upload_host, auth } = authToken;
+      const { service_id, upload_host, auth, schema } =
+        authToken as GetUploadAuthTokenData & { schema?: string };
 
       const uploader = initUploader(
         {
+          schema,
           useFileExtension: true,
           // 解决报错问题：
           userId,

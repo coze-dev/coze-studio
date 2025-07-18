@@ -53,6 +53,10 @@ import (
 	"code.byted.org/gopkg/logs"
 )
 
+const (
+	batchCreateSize = 10
+)
+
 type RepositoryImpl struct {
 	idgen.IDGenerator
 	query *query.Query
@@ -625,6 +629,23 @@ func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version strin
 		},
 		CommitID: wfVersion.CommitID,
 	}, nil
+}
+
+func (r *RepositoryImpl) IsApplicationConnectorWorkflowVersion(ctx context.Context, connectorID, workflowID int64, version string) (b bool, err error) {
+	connectorWorkflowVersion := r.query.ConnectorWorkflowVersion
+	_, err = connectorWorkflowVersion.WithContext(ctx).
+		Where(connectorWorkflowVersion.ConnectorID.Eq(connectorID),
+			connectorWorkflowVersion.WorkflowID.Eq(workflowID),
+			connectorWorkflowVersion.Version.Eq(version)).
+		First()
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, vo.WrapError(errno.ErrDatabaseError, err)
+	}
+	return true, nil
 }
 
 func (r *RepositoryImpl) DraftV2(ctx context.Context, id int64, commitID string) (_ *vo.DraftInfo, err error) {
@@ -1541,6 +1562,25 @@ func (r *RepositoryImpl) GetDraftWorkflowsByAppID(ctx context.Context, AppID int
 		return e.ID, e.Name
 	})
 	return result, wid2Named, nil
+}
+
+func (r *RepositoryImpl) BatchCreateConnectorWorkflowVersion(ctx context.Context, appID, connectorID int64, workflowIDs []int64, version string) error {
+	objects := make([]*model.ConnectorWorkflowVersion, 0, len(workflowIDs))
+	for idx := range workflowIDs {
+		workflowID := workflowIDs[idx]
+		objects = append(objects, &model.ConnectorWorkflowVersion{
+			AppID:       appID,
+			ConnectorID: connectorID,
+			Version:     version,
+			WorkflowID:  workflowID,
+		})
+	}
+	err := r.query.ConnectorWorkflowVersion.WithContext(ctx).CreateInBatches(objects, batchCreateSize)
+	if err != nil {
+		return vo.WrapError(errno.ErrDatabaseError, err)
+	}
+
+	return nil
 }
 
 func filterDisabledAPIParameters(parametersCfg []*workflow3.APIParameter, m map[string]any) map[string]any {

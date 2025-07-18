@@ -18,19 +18,16 @@ package appinfra
 
 import (
 	"context"
-	"os"
 
 	"gorm.io/gorm"
 
-	"code.byted.org/data_edc/workflow_engine_next/infra/contract/eventbus"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/imagex"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/cache/redis"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/es"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/idgen"
-	"code.byted.org/data_edc/workflow_engine_next/infra/impl/imagex/veimagex"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/mysql"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/storage"
-	"code.byted.org/data_edc/workflow_engine_next/types/consts"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus"
 )
 
 type AppDependencies struct {
@@ -63,15 +60,11 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		return nil, err
 	}
 
-	deps.ESClient, err = es.New()
+	deps.ESClient = es.New()
+	deps.ImageXClient, err = initImageX(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	// deps.ImageXClient, err = initImageX()
-	// if err != nil {
-	// 	return nil, err
-	// }
 
 	deps.TOSClient, err = initTOS(ctx)
 	if err != nil {
@@ -91,36 +84,31 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 	return deps, nil
 }
 
-func initImageX() (imagex.ImageX, error) {
-	return veimagex.New(
-		os.Getenv(consts.VeImageXAK),
-		os.Getenv(consts.VeImageXSK),
-		os.Getenv(consts.VeImageXDomain),
-		os.Getenv(consts.VeImageXUploadHost),
-		os.Getenv(consts.VeImageXTemplate),
-		[]string{os.Getenv(consts.VeImageXServerID)},
-	)
+func initImageX(ctx context.Context) (imagex.ImageX, error) {
+	return storage.NewImagex(ctx)
 }
 
 func initTOS(ctx context.Context) (storage.Storage, error) {
 	return storage.New(ctx)
 }
 
-//func initResourceEventBusProducer() (eventbus.Producer, error) {
-//	resourceEventBusProducer, err := rmq.NewProducer(consts.WorkflowEnginePSM, consts.I18nMQCluster, consts.RMQTopicSearchResource)
-//	if err != nil {
-//		return nil, fmt.Errorf("init resource producer failed, err=%w", err)
-//	}
-//
-//	return resourceEventBusProducer, nil
-//}
+// func initResourceEventBusProducer() (eventbus.Producer, error) {
+// 	nameServer := os.Getenv(consts.MQServer)
+// 	resourceEventBusProducer, err := eventbus.NewProducer(nameServer,
+// 		consts.RMQTopicResource, consts.RMQConsumeGroupResource, 1)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("init resource producer failed, err=%w", err)
+// 	}
 
-//func initAppEventProducer() (eventbus.Producer, error) {
-//
-//	appEventProducer, err := rmq.NewProducer(consts.WorkflowEnginePSM, consts.I18nMQCluster, consts.RMQTopicSearchApp)
-//	if err != nil {
-//		return nil, fmt.Errorf("init search producer failed, err=%w", err)
-//	}
-//
-//	return appEventProducer, nil
-//}
+// 	return resourceEventBusProducer, nil
+// }
+
+// func initAppEventProducer() (eventbus.Producer, error) {
+// 	nameServer := os.Getenv(consts.MQServer)
+// 	appEventProducer, err := eventbus.NewProducer(nameServer, consts.RMQTopicApp, consts.RMQConsumeGroupApp, 1)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("init app producer failed, err=%w", err)
+// 	}
+
+// 	return appEventProducer, nil
+// }

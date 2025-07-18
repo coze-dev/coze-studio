@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import React from 'react';
 
 import { Renderer, EditorProvider } from '@coze-editor/editor/react';
-import preset, { languages } from '@coze-editor/editor/preset-code';
+import { languages } from '@coze-editor/editor/preset-code';
 import { python } from '@coze-editor/editor/language-python';
 import { EditorView } from '@codemirror/view';
 
 import { type EditorOtherProps, type EditorProps } from '../../interface';
+import preset from './preset';
 
 languages.register('python', python);
 
@@ -73,6 +74,7 @@ export const PythonEditor = (props: EditorProps & EditorOtherProps) => {
           languageId: 'python',
           theme: 'code-editor-dark',
           height,
+          readOnly: readonly,
           editable: !readonly,
           fontSize: 12,
           tabSize: 4,

@@ -19,6 +19,7 @@ package storage
 import (
 	"context"
 
+	"code.byted.org/data_edc/workflow_engine_next/infra/contract/imagex"
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/storage"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/storage/tos"
 	"code.byted.org/data_edc/workflow_engine_next/types/consts"
@@ -31,6 +32,18 @@ func New(ctx context.Context) (Storage, error) {
 		ctx,
 		"gec-algo-arch-us",
 		"9D42I3SXHU32NTIAX34O",
+		"maliva",
+		consts.WorkflowEnginePSM,
+	)
+}
+
+func NewImagex(ctx context.Context) (imagex.ImageX, error) {
+	// TODO: 图片后续可以用单独的 tos 配置
+	return tos.New(
+		ctx,
+		"gec-algo-arch-us",
+		"9D42I3SXHU32NTIAX34O",
+		"maliva",
 		consts.WorkflowEnginePSM,
 	)
 }

@@ -105,6 +105,7 @@ func (v *veImageX) GetUploadAuthWithExpire(ctx context.Context, expire time.Dura
 		SessionToken:    token.SessionToken,
 		ExpiredTime:     token.ExpiredTime,
 		CurrentTime:     token.CurrentTime,
+		HostScheme:      "https",
 	}, nil
 }
 
@@ -236,6 +237,6 @@ func (v *veImageX) GetServerID() string {
 	return v.serverIDs[0]
 }
 
-func (v *veImageX) GetUploadHost() string {
+func (v *veImageX) GetUploadHost(ctx context.Context) string {
 	return v.uploadHost
 }

@@ -1,5 +1,17 @@
 namespace go ocean.cloud.bot_common
 
+
+struct AuthToken {
+    1: string service_id,
+    2: string access_key_id,
+    3: string secret_access_key,
+    4: string session_token,
+    5: string expired_time,
+    6: string current_time,
+    7: string upload_host,
+    8: string host_scheme,
+}
+
 struct PromptInfo {
     1: optional string Prompt (api.body="prompt"), // 文本prompt
 }

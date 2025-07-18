@@ -80,6 +80,7 @@ func InitService(components *ServiceComponents) *ApplicationService {
 
 	SVC.DomainSVC = workflowDomainSVC
 	SVC.ImageX = components.ImageX
+	SVC.TosClient = components.Tos
 	SVC.IDGenerator = components.IDGen
 
 	return SVC

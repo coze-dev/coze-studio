@@ -33,6 +33,10 @@ const (
 	VeImageXTemplate   = "VE_IMAGEX_TEMPLATE"
 	VeImageXUploadHost = "VE_IMAGEX_UPLOAD_HOST"
 
+	FileUploadComponentType        = "FILE_UPLOAD_COMPONENT_TYPE"
+	FileUploadComponentTypeImagex  = "imagex"
+	FileUploadComponentTypeStorage = "storage"
+
 	StorageType        = "STORAGE_TYPE"
 	MinIOAK            = "MINIO_AK"
 	MinIOSK            = "MINIO_SK"
@@ -48,15 +52,18 @@ const (
 	HostKeyInCtx          = "HOST_KEY_IN_CTX"
 	RequestSchemeKeyInCtx = "REQUEST_SCHEME_IN_CTX"
 
-	RMQServer    = "RMQ_NAME_SERVER"
-	RMQSecretKey = "RMQ_SECRET_KEY"
-	RMQAccessKey = "RMQ_ACCESS_KEY"
-	//RMQTopicApp             = "opencoze_search_app"
-	//RMQTopicResource        = "opencoze_search_resource"
-	//RMQTopicKnowledge       = "opencoze_knowledge"
-	RMQTopicSearchResource = "ecom_wf_cg_search_resource" // TODO:: 后续topic需要修改和注册
-	RMQTopicSearchApp      = "ecom_wf_cg_search_app"      // TODO:: 后续topic需要修改和注册
-	RMQTopicKnowledge      = "ecom_wf_cg_knowledge"       // TODO:: 知识库先不管, 异步操作，向量化文档
+	MQTypeKey                = "COZE_MQ_TYPE"
+	MQServer                 = "MQ_NAME_SERVER"
+	RMQSecretKey             = "RMQ_SECRET_KEY"
+	RMQAccessKey             = "RMQ_ACCESS_KEY"
+	RMQTopicApp              = "opencoze_search_app"
+	RMQTopicResource         = "opencoze_search_resource"
+	RMQConsumeGroupResource  = "cg_search_resource"
+	RMQConsumeGroupApp       = "cg_search_app"
+	RMQConsumeGroupKnowledge = "cg_knowledge"
+	RMQTopicSearchResource   = "ecom_wf_cg_search_resource" // TODO:: 后续topic需要修改和注册
+	RMQTopicSearchApp        = "ecom_wf_cg_search_app"      // TODO:: 后续topic需要修改和注册
+	RMQTopicKnowledge        = "ecom_wf_cg_knowledge"       // TODO:: 知识库先不管, 异步操作，向量化文档
 
 	CozeConnectorID   = int64(10000010)
 	WebSDKConnectorID = int64(999)
@@ -89,4 +96,9 @@ const (
 
 const (
 	TemplateSpaceID = int64(999999) // special space id for template
+)
+
+const (
+	ApplyUploadActionURI = "/api/playground/apply_upload_action"
+	UploadURI            = "/api/playground/upload"
 )

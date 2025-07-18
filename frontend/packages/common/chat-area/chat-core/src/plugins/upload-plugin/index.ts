@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import { EventEmitter } from 'eventemitter3';
 import {
   getUploader,
@@ -58,9 +58,11 @@ export class ChatCoreUploadPlugin implements UploadPluginInterface {
         },
       });
       this.dataAuth = dataAuth.data || {};
-      const { service_id, upload_host } = this.dataAuth || {};
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { service_id, upload_host, schema } = (this.dataAuth || {}) as any;
       this.uploader = getUploader(
         {
+          schema,
           useFileExtension: true,
           // cp-disable-next-line
           imageHost: `https://${upload_host}`, //imageX上传必填

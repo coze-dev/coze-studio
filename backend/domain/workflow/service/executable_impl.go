@@ -61,6 +61,14 @@ func (i *impl) SyncExecute(ctx context.Context, config vo.ExecuteConfig, input m
 		return nil, "", err
 	}
 
+	isApplicationWorkflow := wfEntity.AppID != nil
+	if isApplicationWorkflow && config.Mode == vo.ExecuteModeRelease {
+		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
+		if err != nil {
+			return nil, "", err
+		}
+	}
+
 	c := &vo.Canvas{}
 	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
 		return nil, "", fmt.Errorf("failed to unmarshal canvas: %w", err)
@@ -198,6 +206,14 @@ func (i *impl) AsyncExecute(ctx context.Context, config vo.ExecuteConfig, input 
 		return 0, err
 	}
 
+	isApplicationWorkflow := wfEntity.AppID != nil
+	if isApplicationWorkflow && config.Mode == vo.ExecuteModeRelease {
+		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
+		if err != nil {
+			return 0, err
+		}
+	}
+
 	c := &vo.Canvas{}
 	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
 		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
@@ -275,6 +291,14 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config vo.Ex
 		return 0, err
 	}
 
+	isApplicationWorkflow := wfEntity.AppID != nil
+	if isApplicationWorkflow && config.Mode == vo.ExecuteModeRelease {
+		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
+		if err != nil {
+			return 0, err
+		}
+	}
+
 	c := &vo.Canvas{}
 	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
 		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
@@ -348,6 +372,14 @@ func (i *impl) StreamExecute(ctx context.Context, config vo.ExecuteConfig, input
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	isApplicationWorkflow := wfEntity.AppID != nil
+	if isApplicationWorkflow && config.Mode == vo.ExecuteModeRelease {
+		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	c := &vo.Canvas{}
@@ -891,4 +923,16 @@ func (i *impl) Cancel(ctx context.Context, wfExeID int64, wfID, spaceID int64) e
 
 	// emit cancel signal just in case the execution is running
 	return i.repo.SetWorkflowCancelFlag(ctx, wfExeID)
+}
+
+func (i *impl) checkApplicationWorkflowReleaseVersion(ctx context.Context, appID, connectorID, workflowID int64, version string) error {
+	ok, err := i.repo.IsApplicationConnectorWorkflowVersion(ctx, connectorID, workflowID, version)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return vo.WrapError(errno.ErrWorkflowSpecifiedVersionNotFound, fmt.Errorf("applcaition id %v, workflow id %v,connector id %v not have version %v", appID, workflowID, connectorID, version))
+	}
+
+	return nil
 }

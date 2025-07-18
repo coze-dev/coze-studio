@@ -3681,8 +3681,9 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 		}
 
 		vIssues, err := appworkflow.GetWorkflowDomainSVC().ReleaseApplicationWorkflows(context.Background(), appID, &vo.ReleaseWorkflowConfig{
-			Version:   version,
-			PluginIDs: []int64{7511616454588891136},
+			Version:      version,
+			PluginIDs:    []int64{7511616454588891136},
+			ConnectorIDs: []int64{consts.APIConnectorID},
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(vIssues))
@@ -3781,8 +3782,9 @@ func TestReleaseApplicationWorkflows(t *testing.T) {
 		}
 
 		vIssues, err := appworkflow.GetWorkflowDomainSVC().ReleaseApplicationWorkflows(context.Background(), 100010001, &vo.ReleaseWorkflowConfig{
-			Version:   version,
-			PluginIDs: []int64{},
+			Version:      version,
+			PluginIDs:    []int64{},
+			ConnectorIDs: []int64{consts.APIConnectorID},
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, 1, len(vIssues))

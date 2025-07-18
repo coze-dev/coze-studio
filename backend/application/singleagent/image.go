@@ -20,12 +20,14 @@ import (
 	"context"
 	"strings"
 
+	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/bot_common"
 	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/developer_api"
 	"code.byted.org/data_edc/workflow_engine_next/api/model/ocean/cloud/playground"
 )
 
 func (s *SingleAgentApplicationService) GetUploadAuthToken(ctx context.Context, req *developer_api.GetUploadAuthTokenRequest) (*developer_api.GetUploadAuthTokenResponse, error) {
-	authToken, err := s.appContext.ImageX.GetUploadAuth(ctx)
+
+	authToken, err := s.getAuthToken(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -34,9 +36,9 @@ func (s *SingleAgentApplicationService) GetUploadAuthToken(ctx context.Context, 
 
 	return &developer_api.GetUploadAuthTokenResponse{
 		Data: &developer_api.GetUploadAuthTokenData{
-			ServiceID:        s.appContext.ImageX.GetServerID(),
+			ServiceID:        authToken.ServiceID,
 			UploadPathPrefix: prefix,
-			UploadHost:       s.appContext.ImageX.GetUploadHost(),
+			UploadHost:       authToken.UploadHost,
 			Auth: &developer_api.UploadAuthTokenInfo{
 				AccessKeyID:     authToken.AccessKeyID,
 				SecretAccessKey: authToken.SecretAccessKey,
@@ -44,8 +46,26 @@ func (s *SingleAgentApplicationService) GetUploadAuthToken(ctx context.Context, 
 				ExpiredTime:     authToken.ExpiredTime,
 				CurrentTime:     authToken.CurrentTime,
 			},
+			Schema: authToken.HostScheme,
 		},
 	}, nil
+}
+func (s *SingleAgentApplicationService) getAuthToken(ctx context.Context) (*bot_common.AuthToken, error) {
+	uploadAuthToken, err := s.appContext.ImageX.GetUploadAuth(ctx)
+	if err != nil {
+		return nil, err
+	}
+	authToken := &bot_common.AuthToken{
+		ServiceID:       s.appContext.ImageX.GetServerID(),
+		AccessKeyID:     uploadAuthToken.AccessKeyID,
+		SecretAccessKey: uploadAuthToken.SecretAccessKey,
+		SessionToken:    uploadAuthToken.SessionToken,
+		ExpiredTime:     uploadAuthToken.ExpiredTime,
+		CurrentTime:     uploadAuthToken.CurrentTime,
+		UploadHost:      s.appContext.ImageX.GetUploadHost(ctx),
+		HostScheme:      uploadAuthToken.HostScheme,
+	}
+	return authToken, nil
 }
 
 func (s *SingleAgentApplicationService) getUploadPrefix(scene, dataType string) string {

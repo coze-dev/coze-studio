@@ -50,7 +50,7 @@ func (m *MockStorage) DeleteObject(ctx context.Context, objectKey string) error 
 }
 
 // DeleteObject indicates an expected call of DeleteObject.
-func (mr *MockStorageMockRecorder) DeleteObject(ctx, objectKey any) *gomock.Call {
+func (mr *MockStorageMockRecorder) DeleteObject(ctx, objectKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteObject", reflect.TypeOf((*MockStorage)(nil).DeleteObject), ctx, objectKey)
 }
@@ -65,7 +65,7 @@ func (m *MockStorage) GetObject(ctx context.Context, objectKey string) ([]byte, 
 }
 
 // GetObject indicates an expected call of GetObject.
-func (mr *MockStorageMockRecorder) GetObject(ctx, objectKey any) *gomock.Call {
+func (mr *MockStorageMockRecorder) GetObject(ctx, objectKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetObject", reflect.TypeOf((*MockStorage)(nil).GetObject), ctx, objectKey)
 }
@@ -73,7 +73,7 @@ func (mr *MockStorageMockRecorder) GetObject(ctx, objectKey any) *gomock.Call {
 // GetObjectUrl mocks base method.
 func (m *MockStorage) GetObjectUrl(ctx context.Context, objectKey string, opts ...storage.GetOptFn) (string, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{ctx, objectKey}
+	varargs := []interface{}{ctx, objectKey}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
@@ -84,16 +84,31 @@ func (m *MockStorage) GetObjectUrl(ctx context.Context, objectKey string, opts .
 }
 
 // GetObjectUrl indicates an expected call of GetObjectUrl.
-func (mr *MockStorageMockRecorder) GetObjectUrl(ctx, objectKey any, opts ...any) *gomock.Call {
+func (mr *MockStorageMockRecorder) GetObjectUrl(ctx, objectKey interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{ctx, objectKey}, opts...)
+	varargs := append([]interface{}{ctx, objectKey}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetObjectUrl", reflect.TypeOf((*MockStorage)(nil).GetObjectUrl), varargs...)
+}
+
+// GetUploadAuth mocks base method.
+func (m *MockStorage) GetUploadAuth(ctx context.Context) (*storage.SecurityToken, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUploadAuth", ctx)
+	ret0, _ := ret[0].(*storage.SecurityToken)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUploadAuth indicates an expected call of GetUploadAuth.
+func (mr *MockStorageMockRecorder) GetUploadAuth(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUploadAuth", reflect.TypeOf((*MockStorage)(nil).GetUploadAuth), ctx)
 }
 
 // PutObject mocks base method.
 func (m *MockStorage) PutObject(ctx context.Context, objectKey string, content []byte, opts ...storage.PutOptFn) error {
 	m.ctrl.T.Helper()
-	varargs := []any{ctx, objectKey, content}
+	varargs := []interface{}{ctx, objectKey, content}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
@@ -103,8 +118,8 @@ func (m *MockStorage) PutObject(ctx context.Context, objectKey string, content [
 }
 
 // PutObject indicates an expected call of PutObject.
-func (mr *MockStorageMockRecorder) PutObject(ctx, objectKey, content any, opts ...any) *gomock.Call {
+func (mr *MockStorageMockRecorder) PutObject(ctx, objectKey, content interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{ctx, objectKey, content}, opts...)
+	varargs := append([]interface{}{ctx, objectKey, content}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutObject", reflect.TypeOf((*MockStorage)(nil).PutObject), varargs...)
 }

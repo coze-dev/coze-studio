@@ -155,7 +155,7 @@ func initEventBus(infra *appinfra.AppDependencies) *eventbusImpl {
 
 // initBasicServices init basic services that only depends on infra.
 func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *eventbusImpl) (*basicServices, error) {
-	upload.InitService(infra.TOSClient)
+	upload.InitService(infra.TOSClient, infra.CacheCli)
 	openAuthSVC := openauth.InitService(infra.DB, infra.IDGenSVC)
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
 	modelMgrSVC, err := modelmgr.InitService(infra.DB, infra.IDGenSVC, infra.TOSClient)
@@ -292,6 +292,7 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 }
 
 func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceComponents {
+
 	return &singleagent.ServiceComponents{
 		IDGen:     p.basicServices.infra.IDGenSVC,
 		DB:        p.basicServices.infra.DB,

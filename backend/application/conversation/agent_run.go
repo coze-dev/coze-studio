@@ -415,27 +415,34 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 			})
 		case run.ContentTypeImage:
 
-			resourceUrl, err := c.appContext.ImageX.GetResourceURL(ctx, item.Image.Key)
+			resourceUrl, err := c.getUrlByUri(ctx, item.Image.Key)
 			if err != nil {
 				continue
 			}
-			mc[index].Image.ImageThumb.URL = resourceUrl.URL
-			mc[index].Image.ImageOri.URL = resourceUrl.URL
+
+			if err != nil {
+				logs.CtxErrorf(ctx, "failed to unescape resource url, err is %v", err)
+				continue
+			}
+
+			mc[index].Image.ImageThumb.URL = resourceUrl
+			mc[index].Image.ImageOri.URL = resourceUrl
 
 			multiContents = append(multiContents, &crossDomainMessage.InputMetaData{
 				Type: crossDomainMessage.InputTypeImage,
 				FileData: []*crossDomainMessage.FileData{
 					{
-						Url: resourceUrl.URL,
+						Url: resourceUrl,
 					},
 				},
 			})
 		case run.ContentTypeFile, run.ContentTypeAudio, run.ContentTypeVideo:
 
-			resourceUrl, err := c.appContext.TosClient.GetObjectUrl(ctx, item.File.FileKey)
+			resourceUrl, err := c.getUrlByUri(ctx, item.File.FileKey)
 			if err != nil {
 				continue
 			}
+
 			mc[index].File.FileURL = resourceUrl
 
 			multiContents = append(multiContents, &crossDomainMessage.InputMetaData{
@@ -450,4 +457,14 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 	}
 
 	return multiContents, mc
+}
+
+func (s *ConversationApplicationService) getUrlByUri(ctx context.Context, uri string) (string, error) {
+
+	url, err := s.appContext.ImageX.GetResourceURL(ctx, uri)
+	if err != nil {
+		return "", err
+	}
+
+	return url.URL, nil
 }
