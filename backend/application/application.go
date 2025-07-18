@@ -256,7 +256,7 @@ func (b *basicServices) toKnowledgeServiceComponents(memoryService *memory.Memor
 		IDGenSVC: b.infra.IDGenSVC,
 		Storage:  b.infra.TOSClient,
 		RDB:      memoryService.RDBDomainSVC,
-		// ImageX:   b.infra.ImageXClient,
+		ImageX:   b.infra.ImageXClient,
 		ES:       b.infra.ESClient,
 		EventBus: b.eventbus.resourceEventBus,
 		CacheCli: b.infra.CacheCli,
@@ -276,11 +276,11 @@ func (b *basicServices) toMemoryServiceComponents() *memory.ServiceComponents {
 
 func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginApplicationService, memorySVC *memory.MemoryApplicationServices, knowledgeSVC *knowledge.KnowledgeApplicationService) *workflow.ServiceComponents {
 	return &workflow.ServiceComponents{
-		IDGen: b.infra.IDGenSVC,
-		DB:    b.infra.DB,
-		Cache: b.infra.CacheCli,
-		Tos:   b.infra.TOSClient,
-		// ImageX:             b.infra.ImageXClient,
+		IDGen:              b.infra.IDGenSVC,
+		DB:                 b.infra.DB,
+		Cache:              b.infra.CacheCli,
+		Tos:                b.infra.TOSClient,
+		ImageX:             b.infra.ImageXClient,
 		DatabaseDomainSVC:  memorySVC.DatabaseDomainSVC,
 		VariablesDomainSVC: memorySVC.VariablesDomainSVC,
 		PluginDomainSVC:    pluginSVC.DomainSVC,
@@ -294,11 +294,11 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceComponents {
 
 	return &singleagent.ServiceComponents{
-		IDGen:     p.basicServices.infra.IDGenSVC,
-		DB:        p.basicServices.infra.DB,
-		Cache:     p.basicServices.infra.CacheCli,
-		TosClient: p.basicServices.infra.TOSClient,
-		// ImageX:               p.basicServices.infra.ImageXClient,
+		IDGen:                p.basicServices.infra.IDGenSVC,
+		DB:                   p.basicServices.infra.DB,
+		Cache:                p.basicServices.infra.CacheCli,
+		TosClient:            p.basicServices.infra.TOSClient,
+		ImageX:               p.basicServices.infra.ImageXClient,
 		ModelMgrDomainSVC:    p.basicServices.modelMgrSVC.DomainSVC,
 		UserDomainSVC:        p.basicServices.userSVC.DomainSVC,
 		EventBus:             p.basicServices.eventbus.projectEventBus,
