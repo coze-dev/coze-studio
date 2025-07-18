@@ -62,6 +62,7 @@ const (
 	ErrKnowledgeFetcherNotFoundCode            = 105000039
 	ErrKnowledgeGetAuthInfoFailCode            = 105000040
 	ErrKnowledgeGetAuthConsentURLFailCode      = 105000041
+	ErrKnowledgeAuthorizeCodeFailCode          = 105000042
 )
 
 func init() {
@@ -300,6 +301,12 @@ func init() {
 	code.Register(
 		ErrKnowledgeGetAuthConsentURLFailCode,
 		"get auth consent url failed: {msg}",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrKnowledgeAuthorizeCodeFailCode,
+		"authorize code failed: {msg}",
 		code.WithAffectStability(false),
 	)
 }

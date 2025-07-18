@@ -416,3 +416,8 @@ type DataSourceOAuthCompleteRequest struct {
 	State  string
 	Domain string
 }
+
+type DataSourceOAuthCompleteResponse struct {
+	StatusCode  int32
+	RedirectURL string
+}

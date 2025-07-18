@@ -76,3 +76,28 @@ func (k *knowledgeSVC) GetAuthConsentURL(ctx context.Context, request *GetAuthCo
 	resp.ConsentURL = urlInfo.String()
 	return resp, nil
 }
+
+func (k *knowledgeSVC) DataSourceOAuthComplete(ctx context.Context, request *DataSourceOAuthCompleteRequest) (*DataSourceOAuthCompleteResponse, error) {
+	resp := &DataSourceOAuthCompleteResponse{}
+	stateByteData, err := base64.RawURLEncoding.DecodeString(string(request.State))
+	if err != nil {
+		return nil, errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", err.Error()))
+	}
+	stateVal := state{}
+	err = sonic.Unmarshal(stateByteData, &stateVal)
+	if err != nil {
+		logs.CtxErrorf(ctx, "unmarshal state fail, err=%v", err)
+		return nil, errorx.New(errno.ErrKnowledgeParseJSONCode, errorx.KV("msg", err.Error()))
+	}
+	fetcher, err := k.dataConnectorManager.Get(dataconnector.ConnectorID(stateVal.ConnectorID))
+	if err != nil {
+		return nil, errorx.New(errno.ErrKnowledgeFetcherNotFoundCode, errorx.KV("msg", err.Error()))
+	}
+	err = fetcher.AuthorizeCode(ctx, stateVal.CreatorID, request.Code)
+	if err != nil {
+		return nil, errorx.New(errno.ErrKnowledgeAuthorizeCodeFailCode, errorx.KV("msg", err.Error()))
+	}
+	resp.RedirectURL = stateVal.RedirectURI
+	resp.StatusCode = 301
+	return resp, nil
+}

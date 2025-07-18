@@ -1378,7 +1378,7 @@ func (k *KnowledgeApplicationService) DataSourceOAuthComplete(ctx context.Contex
 	if err != nil {
 		return resp, err
 	}
-	resp.BaseResp.StatusCode = http.StatusFound
+	resp.BaseResp.StatusCode = http.StatusMovedPermanently
 	resp.RedirectURL = domainResp.RedirectURL
 	return resp, nil
 }
