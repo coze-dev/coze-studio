@@ -39,7 +39,7 @@ func New(ctx context.Context) (Storage, error) {
 
 func NewImagex(ctx context.Context) (imagex.ImageX, error) {
 	// TODO: 图片后续可以用单独的 tos 配置
-	return tos.New(
+	return tos.NewStorageImagex(
 		ctx,
 		"gec-algo-arch-us",
 		"9D42I3SXHU32NTIAX34O",
