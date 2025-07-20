@@ -1,0 +1,33 @@
+.tree {
+  // padding: 10px;
+  display: flex;
+  box-sizing: border-box;
+  // background-color: #f1f1f1;
+
+  .tree-container {
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+
+    .tree-path-list {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .tree-node-list {
+      position: relative;
+
+      .tree-node {
+        display: flex;
+        align-items: flex-start;
+
+        /* stylelint-disable-next-line max-nesting-depth */
+        .tree-node-box {
+          display: flex;
+          align-items: stretch;
+        }
+      }
+    }
+  }
+}

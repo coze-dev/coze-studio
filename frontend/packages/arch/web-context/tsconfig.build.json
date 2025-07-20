@@ -1,0 +1,21 @@
+{
+  "extends": "@coze-arch/ts-config/tsconfig.node.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "useUnknownInCatchVariables": false,
+    "types": ["vitest/globals"],
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["./src"],
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "references": [
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+/* stylelint-disable declaration-no-important */
+.list-container {
+  padding: 0 12px;
+
+  .empty-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 300px;
+  }
+
+  &.in-batch {
+    padding-bottom: 56px;
+  }
+}
+
+.title {
+  top: 28px;
+  bottom: 0;
+
+  &.is-bottom {
+    border-top: 1px solid var(--coz-stroke-primary);
+  }
+}
+
+.batch-wrap {
+  position: absolute;
+  z-index: 2;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  display: flex;
+  column-gap: 5px;
+  align-items: center;
+
+  padding: 5px;
+
+  background-color: var(--coz-bg-max);
+  border: 1px solid var(--coz-stroke-primary);
+  border-radius: 10px;
+  box-shadow: var(--coz-shadow-default);
+}
+
+.is-batch-selected {
+  background-color: var(--coz-mg-hglt-secondary)!important;
+}

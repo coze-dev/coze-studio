@@ -1,0 +1,14 @@
+cluster:
+  name: "docker-cluster"
+  routing:
+    allocation:
+      disk:
+        watermark:
+          low: "99%"
+          high: "99%"
+          flood_stage: "99%"
+discovery:
+  type: single-node
+xpack:
+  security:
+    enabled: false

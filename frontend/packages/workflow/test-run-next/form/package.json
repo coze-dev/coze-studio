@@ -1,0 +1,48 @@
+{
+  "name": "@coze-workflow/test-run-form",
+  "version": "0.0.1",
+  "description": "Workflow TestRun Form",
+  "author": "jiangxujin@bytedance.com",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "main": "./src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest run --passWithNoTests",
+    "test:cov": "vitest run --passWithNoTests --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-workflow/base": "workspace:*",
+    "@coze-workflow/components": "workspace:*",
+    "@coze-workflow/test-run-shared": "workspace:*",
+    "@flowgram-adapter/common": "workspace:*",
+    "@flowgram-adapter/free-layout-editor": "workspace:*",
+    "ahooks": "^3.7.8",
+    "ajv": "~8.12.0",
+    "bignumber.js": "~9.0.0",
+    "clsx": "^1.2.1",
+    "lodash-es": "^4.17.21",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@types/lodash-es": "^4.17.10",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "typescript": "~5.8.2",
+    "vitest": "~3.0.5"
+  }
+}
+

@@ -1,0 +1,59 @@
+.slider-area {
+  .slider-wrapper {
+    display: flex;
+    align-items: center;
+
+    .slider {
+      width: 242px;
+
+      :global {
+        .semi-slider-mark {
+          margin-top: 9px;
+          font-size: 12px;
+          line-height: 16px;
+        }
+
+        .semi-slider-handle {
+          z-index: 0;
+        }
+      }
+
+    }
+  }
+
+  .slider-boundary {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    box-sizing: border-box;
+    width: 216px;
+    margin: 0 12px;
+
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--light-color-black-black, #000);
+
+    .marks {
+      cursor: pointer;
+
+      position: absolute;
+      transform: translate(-50%, 0);
+
+      display: inline-block;
+
+      color: var(--semi-color-text-2);
+      text-align: center;
+    }
+  }
+}
+
+.slider-area-dataset{
+  :global {
+    .semi-slider{
+      padding: 0;
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{{- if .Values.rocketmq.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "opencoze.fullname" . }}-rocketmq-namesrv
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ .Release.Name }}-rocketmq-namesrv
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: rocketmq-namesrv
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ include "opencoze.name" . }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: rocketmq-namesrv
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/name: {{ include "opencoze.name" . }}
+    spec:
+      containers:
+        - name: namesrv
+          securityContext:
+            runAsUser: 0
+          image: "{{ .Values.rocketmq.namesrv.image.repository }}:{{ .Values.rocketmq.namesrv.image.tag }}"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -ex
+              export PATH=$PATH:/home/rocketmq/rocketmq-5.3.2/bin
+              mkdir -p /home/rocketmq/logs /home/rocketmq/store
+              chown -R rocketmq:rocketmq /home/rocketmq/logs /home/rocketmq/store
+              exec sh mqnamesrv
+
+          ports:
+            - containerPort: 9876
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "/home/rocketmq/rocketmq-5.3.2/bin/mqadmin clusterList -n localhost:9876"
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: namesrv-store
+              mountPath: /home/rocketmq/store
+            - name: namesrv-logs
+              mountPath: /home/rocketmq/logs
+  volumeClaimTemplates:
+    - metadata:
+        name: namesrv-store
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: {{ .Values.rocketmq.namesrv.persistence.store.storageClassName | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.rocketmq.namesrv.persistence.store.size | quote }}
+    - metadata:
+        name: namesrv-logs
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: {{ .Values.rocketmq.namesrv.persistence.logs.storageClassName | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.rocketmq.namesrv.persistence.logs.size | quote }}
+{{- end }}

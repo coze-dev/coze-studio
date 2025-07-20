@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "types": [],
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "./dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../../arch/bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-flags/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-hooks/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-monaco-editor/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-store/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-tea/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/logger/tsconfig.build.json"
+    },
+    {
+      "path": "../../../components/bot-icons/tsconfig.build.json"
+    },
+    {
+      "path": "../../../components/bot-semi/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../studio/bot-utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../../studio/components/tsconfig.build.json"
+    },
+    {
+      "path": "../../../studio/mockset-edit-modal-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../../studio/mockset-editor-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../../studio/mockset-editor/tsconfig.build.json"
+    },
+    {
+      "path": "../../../studio/mockset-shared/tsconfig.build.json"
+    },
+    {
+      "path": "../../../studio/stores/bot-detail/tsconfig.build.json"
+    },
+    {
+      "path": "../../../studio/user-store/tsconfig.build.json"
+    }
+  ]
+}

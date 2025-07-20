@@ -1,0 +1,293 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "description": "",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "start"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "float"
+          },
+          {
+            "name": "obj",
+            "required": true,
+            "schema": [
+              {
+                "name": "field1",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list"
+              }
+            ],
+            "type": "object"
+          },
+          {
+            "name": "arr",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "type": "list"
+          }
+        ],
+        "trigger_parameters": []
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "content": {
+            "type": "string",
+            "value": {
+              "content": "{{output}}_{{output_obj.field1}}",
+              "type": "literal"
+            }
+          },
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "",
+                    "name": "",
+                    "path": [
+                      "app_var"
+                    ],
+                    "source": "global_variable_app"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output"
+            },
+            {
+              "input": {
+                "schema": [
+                  {
+                    "name": "field1",
+                    "required": false,
+                    "schema": {
+                      "assistType": 10000,
+                      "type": "string"
+                    },
+                    "type": "list"
+                  }
+                ],
+                "type": "object",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "obj",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 6
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output_obj"
+            },
+            {
+              "input": {
+                "schema": {
+                  "assistType": 10000,
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "obj.field1",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 116
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output_field1"
+            },
+            {
+              "input": {
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "arr",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 99
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output_arr"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "literal_value",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "literal_key"
+            },
+            {
+              "input": {
+                "schema": [
+                  {
+                    "input": {
+                      "type": "float",
+                      "value": {
+                        "content": {
+                          "blockID": "100001",
+                          "name": "input",
+                          "source": "block-output"
+                        },
+                        "rawMeta": {
+                          "type": 4
+                        },
+                        "type": "ref"
+                      }
+                    },
+                    "name": "obj_container_1"
+                  },
+                  {
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "content": "sub_literal",
+                        "rawMeta": {
+                          "type": 1
+                        },
+                        "type": "literal"
+                      }
+                    },
+                    "name": "obj_container_2"
+                  }
+                ],
+                "type": "object",
+                "value": {
+                  "type": "object_ref"
+                }
+              },
+              "name": "obj_container"
+            },
+            {
+              "input": {
+                "schema": [],
+                "type": "object",
+                "value": {
+                  "content": "{\"a\": \"b\"}",
+                  "rawMeta": {
+                    "type": 6
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "obj_literal"
+            },
+            {
+              "input": {
+                "schema": {
+                  "type": "integer"
+                },
+                "type": "list",
+                "value": {
+                  "content": "[1,2]",
+                  "rawMeta": {
+                    "type": 100
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "arr_literal"
+            }
+          ],
+          "streamingOutput": true,
+          "terminatePlan": "useAnswerContent"
+        },
+        "nodeMeta": {
+          "description": "end",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "end"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "position": {
+          "x": 559,
+          "y": -13
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "note": "[{\"type\":\"paragraph\",\"children\":[{\"text\":\"this is a comment\",\"type\":\"text\"}]}]",
+          "schemaType": "slate"
+        },
+        "size": {
+          "height": 150,
+          "width": 240
+        }
+      },
+      "edges": null,
+      "id": "117701",
+      "meta": {
+        "position": {
+          "x": 292.5,
+          "y": 160
+        }
+      },
+      "type": "31"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

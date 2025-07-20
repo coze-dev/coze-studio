@@ -1,0 +1,277 @@
+{
+	"nodes": [{
+		"blocks": [],
+		"data": {
+			"nodeMeta": {
+				"description": "工作流的起始节点，用于设定启动工作流需要的信息",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+				"subTitle": "",
+				"title": "开始"
+			},
+			"outputs": [{
+				"name": "input",
+				"required": false,
+				"type": "string"
+			}],
+			"trigger_parameters": []
+		},
+		"edges": null,
+		"id": "100001",
+		"meta": {
+			"position": {
+				"x": 0,
+				"y": 0
+			}
+		},
+		"type": "1"
+	}, {
+		"blocks": [],
+		"data": {
+			"inputs": {
+				"inputParameters": [{
+					"input": {
+						"type": "boolean",
+						"value": {
+							"content": {
+								"blockID": "196335",
+								"name": "isSuccess",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 3
+							},
+							"type": "ref"
+						}
+					},
+					"name": "output"
+				}],
+				"terminatePlan": "returnVariables"
+			},
+			"nodeMeta": {
+				"description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+				"subTitle": "",
+				"title": "结束"
+			}
+		},
+		"edges": null,
+		"id": "900001",
+		"meta": {
+			"position": {
+				"x": 1000,
+				"y": 0
+			}
+		},
+		"type": "2"
+	}, {
+		"blocks": [],
+		"data": {
+			"inputs": {
+				"datasetParam": [{
+					"input": {
+						"schema": {
+							"type": "string"
+						},
+						"type": "list",
+						"value": {
+							"content": ["7519861718982361099"],
+							"type": "literal"
+						}
+					},
+					"name": "datasetList"
+				}, {
+					"input": {
+						"type": "integer",
+						"value": {
+							"content": 0,
+							"type": "literal"
+						}
+					},
+					"name": "datasetType"
+				}, {
+					"input": {
+						"schema": {
+							"schema": [{
+								"name": "datasetID",
+								"type": "string"
+							}, {
+								"name": "volcanoServiceID",
+								"type": "string"
+							}],
+							"type": "object"
+						},
+						"type": "list",
+						"value": {
+							"content": [],
+							"type": "literal"
+						}
+					},
+					"name": "VolcanoInfoList"
+				}],
+				"inputParameters": [{
+					"input": {
+						"type": "string",
+						"value": {
+							"content": {
+								"blockID": "110594",
+								"name": "documentId",
+								"source": "block-output"
+							},
+							"rawMeta": {
+								"type": 1
+							},
+							"type": "ref"
+						}
+					},
+					"name": "documentID"
+				}]
+			},
+			"nodeMeta": {
+				"description": "用于删除知识库中的文档",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icons-dataset-delete.png",
+				"mainColor": "#FF811A",
+				"subTitle": "知识库删除",
+				"title": "知识库删除"
+			},
+			"outputs": [{
+				"name": "isSuccess",
+				"type": "boolean"
+			}]
+		},
+		"edges": null,
+		"id": "196335",
+		"meta": {
+			"position": {
+				"x": 484,
+				"y": -388
+			}
+		},
+		"type": "60"
+	}, {
+		"blocks": [],
+		"data": {
+			"inputs": {
+				"actionType": 0,
+				"datasetParam": [{
+					"input": {
+						"schema": {
+							"type": "string"
+						},
+						"type": "list",
+						"value": {
+							"content": ["7519861718982361099"],
+							"type": "literal"
+						}
+					},
+					"name": "datasetList"
+				}, {
+					"input": {
+						"type": "string",
+						"value": {
+							"content": "",
+							"rawMeta": {
+								"fileName": ""
+							},
+							"type": "literal"
+						}
+					},
+					"name": "documentID"
+				}, {
+					"input": {
+						"type": "integer",
+						"value": {
+							"content": 0,
+							"type": "literal"
+						}
+					},
+					"name": "datasetType"
+				}, {
+					"input": {
+						"schema": {
+							"schema": [{
+								"name": "datasetID",
+								"type": "string"
+							}, {
+								"name": "volcanoServiceID",
+								"type": "string"
+							}],
+							"type": "object"
+						},
+						"type": "list",
+						"value": {
+							"content": [],
+							"type": "literal"
+						}
+					},
+					"name": "VolcanoInfoList"
+				}],
+				"inputParameters": [{
+					"input": {
+						"assistType": 1,
+						"type": "string",
+						"value": {
+							"content": "https://p26-bot-workflow-sign.byteimg.com/tos-cn-i-mdko3gqilj/5264fa1295da4a6483cd236b1316c454.pdf~tplv-mdko3gqilj-image.image?rk3s=81d4c505\u0026x-expires=1782379180\u0026x-signature=mlaXPIk9VJjOXu87xGaRmNRg9%2BA%3D\u0026x-wf-file_name=1706.03762v7.pdf",
+							"rawMeta": {
+								"fileName": "1706.03762v7.pdf",
+								"type": 8
+							},
+							"type": "literal"
+						}
+					},
+					"name": "knowledge"
+				}],
+				"strategyParam": {
+					"chunkStrategy": {
+						"chunkType": "default"
+					},
+					"indexStrategy": {},
+					"parsingStrategy": {
+						"parsingType": "fast"
+					}
+				}
+			},
+			"nodeMeta": {
+				"description": "写入节点可以添加 文本类型 的知识库，仅可以添加一个知识库",
+				"icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeWriting-v2.jpg",
+				"mainColor": "#FF811A",
+				"subTitle": "知识库写入",
+				"title": "知识库写入"
+			},
+			"outputs": [{
+				"name": "documentId",
+				"type": "string"
+			}, {
+				"name": "fileName",
+				"type": "string"
+			}, {
+				"name": "fileUrl",
+				"type": "string"
+			}]
+		},
+		"edges": null,
+		"id": "110594",
+		"meta": {
+			"position": {
+				"x": 508,
+				"y": -68.5
+			}
+		},
+		"type": "27"
+	}],
+	"edges": [{
+		"sourceNodeID": "100001",
+		"targetNodeID": "110594",
+		"sourcePortID": ""
+	}, {
+		"sourceNodeID": "196335",
+		"targetNodeID": "900001",
+		"sourcePortID": ""
+	}, {
+		"sourceNodeID": "110594",
+		"targetNodeID": "196335",
+		"sourcePortID": ""
+	}],
+	"versions": {
+		"loop": "v2"
+	}
+}

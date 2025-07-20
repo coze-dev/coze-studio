@@ -1,0 +1,45 @@
+{
+  "name": "@coze-arch/bot-studio-store",
+  "version": "0.0.1",
+  "description": "bot studio global store ",
+  "license": "Apache-2.0",
+  "author": "wenming.2020@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/bot-error": "workspace:*",
+    "@coze-foundation/space-store": "workspace:*",
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-arch/report-events": "workspace:*",
+    "immer": "^10.0.3",
+    "localforage": "^1.9.0",
+    "lodash-es": "^4.17.21",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/lodash-es": "^4.17.10",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "vitest": "~3.0.5"
+  },
+  "// deps": "immer@^10.0.3 为脚本自动补齐，请勿改动"
+}
+

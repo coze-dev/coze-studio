@@ -1,0 +1,73 @@
+.font-normal {
+  @apply coz-fg-primary;
+
+  font-size: 16px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 22px;
+}
+
+.spin-container {
+  display: flex;
+
+  :global {
+    .semi-spin-wrapper {
+      display: flex;
+    }
+  }
+}
+
+.container {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+
+
+
+  width: 100%;
+
+  background-color: var(--coz-bg-max);
+  border-radius: 8px 8px 0 0;
+
+  transition: background .2s linear 0s;
+
+  .log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 12px;
+  }
+
+  .left-content {
+    display: flex;
+    align-items: center;
+
+    .icon {
+      width: 20px;
+      height: 20px;
+
+      &>span {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .right-button {
+    .font-normal();
+
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--light-usage-primary-color-primary, #4D53E8);
+  }
+
+}
+
+.status-icon {
+  :global {
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+}

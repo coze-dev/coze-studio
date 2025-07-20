@@ -1,0 +1,72 @@
+.modal {
+  :global {
+    .semi-modal {
+      .semi-modal-footer {
+        margin-top: 32px;
+      }
+
+      .semi-modal-content {
+        padding: 24px;
+      }
+    }
+  }
+}
+
+.content-container {
+  display: flex;
+  flex-direction: column;
+
+  .content-text {
+    margin-top: 16px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--coz-fg-secondary);
+  }
+
+  .rebind-chat {
+    margin-top: 24px;
+
+    .rebind-title {
+      margin-bottom: 4px;
+
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+      color: var(--coz-fg-primary);
+    }
+
+    .rebind-icon {
+      margin-right: 2px;
+    }
+
+    .rebind-text {
+      width: 50%;
+    }
+
+    .rebind-desc {
+      margin-bottom: 18px;
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--coz-fg-secondary);
+    }
+
+    .rebind-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+    }
+  }
+}
+
+.rebind-select {
+  .option-text-wrapper {
+    overflow: hidden;
+  }
+
+  :global {
+    .option-text-wrapper {
+      overflow: hidden;
+    }
+  }
+}

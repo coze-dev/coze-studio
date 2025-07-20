@@ -1,0 +1,35 @@
+{
+  "name": "@coze-arch/idl2ts-helper",
+  "version": "0.1.6",
+  "description": "@coze-arch/idl2ts-helper",
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "main": "./src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.12.14",
+    "@babel/template": "^7.6.0",
+    "@babel/types": "^7.20.7",
+    "@coze-arch/idl-parser": "workspace:*",
+    "fs-extra": "^9.1.0",
+    "prettier": "~3.3.3"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/fs-extra": "^9.0.5",
+    "@types/jssha": "^2.0.0",
+    "@types/lodash": "^4.14.137",
+    "@types/node": "^18",
+    "@types/yaml": "^1.2.0",
+    "@vitest/coverage-v8": "~3.0.5",
+    "tsx": "^4.19.2",
+    "vitest": "~3.0.5"
+  }
+}

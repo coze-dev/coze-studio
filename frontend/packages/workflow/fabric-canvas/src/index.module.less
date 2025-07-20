@@ -1,0 +1,48 @@
+/* stylelint-disable declaration-no-important */
+
+.top-bar {
+  :global {
+    // 实现 top-bar 文本选择 & 形状选择，选中后仅显示 icon ，隐藏文本
+    .hide-selected-label {
+      .semi-select-selection {
+        @apply hidden;
+      }
+    }
+
+    .hide-border {
+      @apply border-0;
+    }
+
+    // .semi-portal-inner{
+    //   transform: translateX(calc(-100% + 24px)) translateY(0%) !important;
+    // }
+  }
+}
+
+// 实现 top-bar 文本选择 & 形状选择的 popover 显示在左下
+.top-bar-pop-align-right {
+  :global {
+    .semi-portal-inner {
+      transform: translateX(calc(-100% + 24px)) translateY(0%) !important;
+    }
+  }
+}
+
+// select 分组，隐藏组名，仅显示分割线
+.select-hidden-group-label {
+  :global {
+    .semi-select-group{
+      @apply m-0;
+      @apply !p-0;
+      @apply h-0;
+      @apply overflow-hidden;
+    }
+
+  }
+}
+
+// 解决 fabric itext 内容过长，编辑时讲光标移动到行尾，会导致 body 出现滚动条
+textarea[data-fabric='textarea'] {
+  top: 0 !important;
+  left: 0 !important;
+}

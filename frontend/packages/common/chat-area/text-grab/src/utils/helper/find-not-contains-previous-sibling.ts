@@ -1,0 +1,49 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+import { compareNodePosition } from './compare-node-position';
+
+export const findNotContainsPreviousSibling = (
+  node: Node | null,
+): Node | null => {
+  if (!node || node === document) {
+    return null;
+  }
+
+  let sibling: Node | null = node.previousSibling ?? node.parentNode;
+
+  while (sibling) {
+    if (sibling === document) {
+      return null;
+    }
+
+    // 获取两个节点之间的关系
+    const relationship = compareNodePosition(sibling, node);
+
+    // 如果两个节点之间没有包含关系，则返回当前兄弟节点
+    if (!['containedBy', 'contains'].includes(relationship)) {
+      return sibling;
+    }
+
+    if (!sibling.previousSibling) {
+      sibling = sibling.parentNode;
+    } else {
+      sibling = sibling.previousSibling;
+    }
+  }
+
+  return null;
+};

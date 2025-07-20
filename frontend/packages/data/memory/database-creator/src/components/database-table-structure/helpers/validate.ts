@@ -1,0 +1,185 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+/* eslint-disable complexity */
+import { type TableMemoryItem } from '@coze-studio/bot-detail-store';
+import { I18n } from '@coze-arch/i18n';
+
+import { type MapperItem, type TriggerType, VerifyType } from '../../../types';
+
+// 校验 Table Name 和 Field Name
+const namingRegexMapper = [
+  {
+    type: 1,
+    regex: /[^a-z0-9_]/,
+    errorMsg: I18n.t('db_add_table_field_name_tips2'),
+  },
+  {
+    type: 2,
+    regex: /^[^a-z]/,
+    errorMsg: I18n.t('db_add_table_field_name_tips3'),
+  },
+  {
+    type: 3,
+    regex: /[\s\S]{64,}/,
+    errorMsg: I18n.t('db_add_table_field_name_tips4'),
+  },
+];
+export const validateNaming = (str: string, errList: string[] = []) => {
+  let list = [...errList];
+  namingRegexMapper.forEach(i => {
+    list = list.filter(j => j !== i.errorMsg);
+    if (i.regex.test(str || '')) {
+      list.push(i.errorMsg);
+    }
+  });
+  return list;
+};
+
+// 校验 Table Fields
+export const thMapper: MapperItem[] = [
+  {
+    label: I18n.t('db_add_table_field_name'),
+    key: 'name',
+    validator: [
+      {
+        type: VerifyType.Naming,
+        message: '',
+      },
+      {
+        type: VerifyType.Required,
+        message: I18n.t('db_table_save_exception_nofieldname'),
+      },
+      {
+        type: VerifyType.Unique,
+        message: I18n.t('db_table_save_exception_fieldname'),
+      },
+    ],
+    defaultValue: '',
+    require: true,
+  },
+  {
+    label: I18n.t('db_add_table_field_desc'),
+    key: 'desc',
+    require: false,
+    validator: [],
+    defaultValue: '',
+  },
+  {
+    label: I18n.t('db_add_table_field_type'),
+    key: 'type',
+    require: true,
+    validator: [
+      {
+        type: VerifyType.Required,
+        message: I18n.t('db_table_save_exception_fieldtype'),
+      },
+    ],
+    defaultValue: '',
+  },
+  {
+    label: I18n.t('db_add_table_field_necessary'),
+    key: 'must_required',
+    require: false,
+    validator: [],
+    defaultValue: true,
+  },
+];
+export const validateFields = (
+  list: TableMemoryItem[],
+  trigger: TriggerType,
+) => {
+  const resList = list.map(_listItem => {
+    const listItem: TableMemoryItem = { ..._listItem };
+    thMapper.forEach(thItem => {
+      const thKey = thItem.key as keyof TableMemoryItem;
+
+      thItem.validator.forEach(verifyItem => {
+        if (!listItem?.errorMapper) {
+          listItem.errorMapper = {};
+        }
+        let errTarget = listItem?.errorMapper?.[thKey];
+        const value = listItem[thKey];
+        if (!errTarget) {
+          listItem.errorMapper[thKey] = [];
+          errTarget = [];
+        }
+        const msg = verifyItem.message;
+        switch (verifyItem.type) {
+          case VerifyType.Required: {
+            // 报错出现时机：点击保存按钮时，出现提示。表中某一行填写了数据，但是未填写必填字段时，需要报错
+            if (
+              trigger === 'save' &&
+              !value &&
+              thMapper.find(
+                i =>
+                  !!listItem[i.key as keyof TableMemoryItem] && !i.defaultValue,
+              )
+            ) {
+              listItem.errorMapper[thKey].push(msg);
+            }
+            // 报错消失时机：必填输入框输入了内容后，报错立刻消失
+            if (trigger === 'change' && value) {
+              listItem.errorMapper[thKey] = errTarget.filter(i => i !== msg);
+            }
+            break;
+          }
+          case VerifyType.Unique: {
+            // 报错出现时机：点击保存按钮时，出现提示。
+            if (
+              trigger === 'save' &&
+              value &&
+              list.filter(i => i[thKey] === listItem[thKey]).length !== 1
+            ) {
+              listItem.errorMapper[thKey].push(msg);
+            }
+            // 报错消失时机：必填输入框输入了内容后，报错立刻消失
+            if (
+              trigger === 'change' &&
+              value &&
+              list.filter(i => i[thKey] === listItem[thKey]).length === 1
+            ) {
+              listItem.errorMapper[thKey] = errTarget.filter(i => i !== msg);
+            }
+            break;
+          }
+          case VerifyType.Naming: {
+            // 报错出现时机：命名格式有问题，失去焦点时，立刻校验格式
+            if (
+              trigger === 'save' ||
+              trigger === 'blur' ||
+              (trigger === 'change' && errTarget.length)
+            ) {
+              listItem.errorMapper[thKey] = validateNaming(
+                value as string,
+                errTarget,
+              );
+            }
+            break;
+          }
+          default:
+            break;
+        }
+        listItem.errorMapper[thKey] = Array.from(
+          new Set(listItem.errorMapper[thKey]),
+        );
+      });
+    });
+    return listItem;
+  });
+
+  return resList;
+};

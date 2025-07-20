@@ -1,0 +1,20 @@
+{
+  "extends": "@coze-arch/ts-config/tsconfig.node.json",
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "sourceMap": false,
+    "strictNullChecks": true,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "types": ["node"],
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["./src"],
+  "exclude": ["./src/**/*.test.ts"],
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "references": [
+    {
+      "path": "../../config/ts-config/tsconfig.build.json"
+    }
+  ]
+}

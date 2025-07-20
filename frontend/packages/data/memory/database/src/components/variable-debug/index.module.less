@@ -1,0 +1,118 @@
+/* stylelint-disable declaration-no-important */
+// @import '../../../../../../../assets/styles/common.less';
+
+.variable-debug-container {
+  overflow-y: auto;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+
+  height: 100%;
+
+  .keyword {
+    flex-shrink: 0;
+    width: 140px;
+    margin-right: 16px;
+  }
+
+  .value {
+    flex: 1;
+    width: 0;
+  }
+
+  .update_time {
+    flex-shrink: 0;
+    width: 110px;
+    margin-left: 16px;
+  }
+
+  .modal-container-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+
+    .keyword,
+    .value,
+    .update_time {
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--Light-usage-text---color-text-0, #1D1C23);
+    }
+  }
+
+  .modal-container-row {
+    display: flex;
+    align-items: center;
+
+    &.system_row {
+      font-size: 12px;
+      color: var(--Light-usage-text---color-text-1, rgba(29, 28, 35, 80%));
+
+
+      :global {
+        .semi-typography {
+          flex: 1;
+          font-size: 12px;
+          color: var(--Light-usage-text---color-text-1, rgba(29, 28, 35, 80%));
+        }
+      }
+    }
+
+    &:not(:last-child) {
+      margin-bottom: 16px;
+    }
+
+    .keyword {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 22px;
+    }
+
+    .update_time {
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--light-usage-text-color-text-2, rgb(29 28 35 / 60%));
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+.operate-area {
+  flex-shrink: 0;
+  padding: 24px 0;
+  border-top: 1px solid var(--light-usage-border-color-border, rgb(29 28 35 / 8%));
+}
+
+
+.hover-tip {
+  max-width: 410px !important;
+}
+
+.variable-debug-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin: 24px 0;
+}
+
+.debug-header-deal-button {
+  height: 26px !important;
+  margin-left: 8px !important;
+  padding: 4px !important;
+  border-radius: 4px !important;
+
+  &:hover {
+    background: var(--light-usage-fill-color-fill-0,
+        rgb(46 46 56 / 4%)) !important;
+  }
+
+  &:active {
+    background: var(--light-usage-fill-color-fill-1,
+        rgb(46 46 56 / 8%)) !important;
+  }
+
+  &.click {
+    background: var(--light-usage-fill-color-fill-2,
+        rgb(46 46 56 / 12%)) !important;
+  }
+}

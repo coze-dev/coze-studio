@@ -1,0 +1,79 @@
+{
+  "name": "@coze-arch/bot-hooks",
+  "version": "0.0.1",
+  "description": "hooks for bot studio",
+  "license": "Apache-2.0",
+  "author": "zhanghaochen.z@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.ts",
+    "./bot/use-tts-player": "./src/bot/use-tts-player.tsx",
+    "./src/use-drag-and-paste-upload": "./src/use-drag-and-paste-upload/index.ts"
+  },
+  "main": "src/index.ts",
+  "typesVersions": {
+    "*": {
+      "bot/use-tts-player": [
+        "./src/bot/use-tts-player.tsx"
+      ],
+      "src/use-drag-and-paste-upload": [
+        "./src/use-drag-and-paste-upload/index.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
+    "@coze-arch/bot-hooks-adapter": "workspace:*",
+    "@coze-arch/bot-hooks-base": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-arch/report-events": "workspace:*",
+    "@coze-common/chat-area": "workspace:*",
+    "@coze-studio/bot-detail-store": "workspace:*",
+    "@coze-studio/user-store": "workspace:*",
+    "lodash-es": "^4.17.21",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@coze-common/assets": "workspace:*",
+    "@rsbuild/core": "1.1.13",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/lodash-es": "^4.17.10",
+    "@types/node": "18.18.9",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "react-is": ">= 16.8.0",
+    "react-router-dom": "^6.22.0",
+    "styled-components": ">= 2",
+    "stylelint": "^15.11.0",
+    "typescript": "~5.8.2",
+    "vitest": "~3.0.5",
+    "webpack": "~5.91.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  },
+  "// deps": "immer@^10.0.3 为脚本自动补齐，请勿改动"
+}
+

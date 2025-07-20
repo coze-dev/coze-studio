@@ -1,0 +1,323 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "title": "entry"
+        },
+        "outputs": [
+          {
+            "name": "input_array",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "type": "list"
+          },
+          {
+            "name": "batch_concurrency",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "optional",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "trigger_parameters": []
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "position": {
+          "x": -10.588288288288288,
+          "y": -166.3
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": {
+                    "blockID": "163658",
+                    "name": "USER_RESPONSE_list",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 99
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output"
+            }
+          ],
+          "terminatePlan": "returnVariables"
+        },
+        "nodeMeta": {
+          "title": "exit"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "position": {
+          "x": 1039.3313063063065,
+          "y": -179.3
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [
+        {
+          "blocks": [],
+          "data": {
+            "inputs": {
+              "outputSchema": "[{\"type\":\"string\",\"name\":\"input\",\"required\":true}]"
+            },
+            "nodeMeta": {
+              "title": "receiver"
+            },
+            "outputs": [
+              {
+                "name": "input",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "edges": null,
+          "id": "165663",
+          "meta": {
+            "position": {
+              "x": -180.51644144144146,
+              "y": 76.74533360653558
+            }
+          },
+          "type": "30"
+        },
+        {
+          "blocks": [],
+          "data": {
+            "inputs": {
+              "answer_type": "text",
+              "dynamic_option": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "",
+                    "name": "",
+                    "source": "block-output"
+                  },
+                  "type": "ref"
+                }
+              },
+              "extra_output": false,
+              "inputParameters": [
+                {
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "content": {
+                        "blockID": "163658",
+                        "name": "input",
+                        "source": "block-output"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      },
+                      "type": "ref"
+                    }
+                  },
+                  "name": "arr_item"
+                },
+                {
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "content": {
+                        "blockID": "165663",
+                        "name": "input",
+                        "source": "block-output"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      },
+                      "type": "ref"
+                    }
+                  },
+                  "name": "user_input"
+                }
+              ],
+              "limit": 3,
+              "llmParam": {
+                "generationDiversity": "balance",
+                "maxTokens": 1024,
+                "modelName": "doubao function calling",
+                "modelType": 1706077826,
+                "responseFormat": 2,
+                "systemPrompt": "",
+                "temperature": 1,
+                "topP": 0.7
+              },
+              "option_type": "static",
+              "options": [
+                {
+                  "name": ""
+                }
+              ],
+              "question": "{{arr_item}} {{user_input}}"
+            },
+            "nodeMeta": {
+              "title": "qa"
+            },
+            "outputs": [
+              {
+                "name": "USER_RESPONSE",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          },
+          "edges": null,
+          "id": "197297",
+          "meta": {
+            "position": {
+              "x": 358.2819819819821,
+              "y": 37.74533360653553
+            }
+          },
+          "type": "18"
+        }
+      ],
+      "data": {
+        "inputs": {
+          "batchSize": {
+            "type": "integer",
+            "value": {
+              "content": "100",
+              "type": "literal"
+            }
+          },
+          "concurrentSize": {
+            "type": "integer",
+            "value": {
+              "content": {
+                "blockID": "100001",
+                "name": "batch_concurrency",
+                "source": "block-output"
+              },
+              "rawMeta": {
+                "type": 2
+              },
+              "type": "ref"
+            }
+          },
+          "inputParameters": [
+            {
+              "input": {
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input_array",
+                    "source": "block-output"
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            }
+          ]
+        },
+        "nodeMeta": {
+          "title": "batch"
+        },
+        "outputs": [
+          {
+            "input": {
+              "schema": {
+                "type": "string"
+              },
+              "type": "list",
+              "value": {
+                "content": {
+                  "blockID": "197297",
+                  "name": "USER_RESPONSE",
+                  "source": "block-output"
+                },
+                "rawMeta": {
+                  "type": 1
+                },
+                "type": "ref"
+              }
+            },
+            "name": "USER_RESPONSE_list"
+          }
+        ]
+      },
+      "edges": [
+        {
+          "sourceNodeID": "163658",
+          "targetNodeID": "165663",
+          "sourcePortID": "batch-function-inline-output"
+        },
+        {
+          "sourceNodeID": "165663",
+          "targetNodeID": "197297",
+          "sourcePortID": ""
+        },
+        {
+          "sourceNodeID": "197297",
+          "targetNodeID": "163658",
+          "sourcePortID": "",
+          "targetPortID": "batch-function-inline-input"
+        }
+      ],
+      "id": "163658",
+      "meta": {
+        "canvasPosition": {
+          "x": 389.04110360360346,
+          "y": 88.16987652593423
+        },
+        "position": {
+          "x": 477.92387387387384,
+          "y": -180
+        }
+      },
+      "type": "28"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "163658",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "163658",
+      "targetNodeID": "900001",
+      "sourcePortID": "batch-output"
+    }
+  ],
+  "versions": {
+    "loop": "v2",
+    "batch": "v2"
+  }
+}

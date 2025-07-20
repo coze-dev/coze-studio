@@ -1,0 +1,197 @@
+{
+  "name": "@coze-agent-ide/space-bot",
+  "version": "0.0.1",
+  "description": "空间下的 bot 能力",
+  "author": "liwei.1019@bytedance.com",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./hook": "./src/hook/index.ts",
+    "./util": "./src/util/index.ts",
+    "./store": "./src/store/index.ts",
+    "./component/*": "./src/component/*",
+    "./component": "./src/component/index.ts",
+    "./use-create-bot": "./src/hook/use-create-bot/index.tsx",
+    "./use-create-ocean": "./src/hook/use-create-ocean/index.tsx",
+    "./authorize-button": "./src/component/authorize-button/index.tsx",
+    "./onboarding-editor": "./src/component/onboarding-message/onboarding-editor/index.tsx",
+    "./input-slider": "./src/component/input-slider/index.ts",
+    "./custom-platform-setting-modal": "./src/component/publish-platform-setting/custom-platform-setting-modal.tsx",
+    "./diff-mode-task-continue": "./src/component/diff-mode-task-continue/index.tsx"
+  },
+  "main": "src/index.tsx",
+  "typesVersions": {
+    "*": {
+      "hook": [
+        "./src/hook/index.ts"
+      ],
+      "util": [
+        "./src/util/index.ts"
+      ],
+      "store": [
+        "./src/store/index.ts"
+      ],
+      "component/*": [
+        "./src/component/*"
+      ],
+      "component": [
+        "./src/component/index.ts"
+      ],
+      "input-slider": [
+        "./src/component/input-slider/index.ts"
+      ],
+      "use-create-bot": [
+        "./src/hook/use-create-bot/index.tsx"
+      ],
+      "authorize-button": [
+        "./src/component/authorize-button/index.tsx"
+      ],
+      "onboarding-editor": [
+        "./src/component/onboarding-message/onboarding-editor/index.tsx"
+      ],
+      "prompt-editor": [
+        "./src/component/prompt-editor/prompt-editor-kit/index.tsx"
+      ],
+      "custom-platform-setting-modal": [
+        "./src/component/publish-platform-setting/custom-platform-setting-modal.tsx"
+      ],
+      "diff-mode-task-continue": [
+        "./src/component/diff-mode-task-continue/index.tsx"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "lint:type": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@blueprintjs/core": "^5.1.5",
+    "@coze-agent-ide/agent-ide-commons": "workspace:*",
+    "@coze-agent-ide/bot-creator-context": "workspace:*",
+    "@coze-agent-ide/bot-editor-context-store": "workspace:*",
+    "@coze-agent-ide/bot-input-length-limit": "workspace:*",
+    "@coze-agent-ide/chat-background": "workspace:*",
+    "@coze-agent-ide/chat-background-shared": "workspace:*",
+    "@coze-agent-ide/debug-tool-list": "workspace:*",
+    "@coze-agent-ide/model-manager": "workspace:*",
+    "@coze-agent-ide/onboarding": "workspace:*",
+    "@coze-agent-ide/space-bot-publish-to-base": "workspace:*",
+    "@coze-agent-ide/tool": "workspace:*",
+    "@coze-agent-ide/tool-config": "workspace:*",
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/bot-hooks": "workspace:*",
+    "@coze-arch/bot-http": "workspace:*",
+    "@coze-arch/bot-icons": "workspace:*",
+    "@coze-arch/bot-md-box-adapter": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/bot-space-api": "workspace:*",
+    "@coze-arch/bot-studio-store": "workspace:*",
+    "@coze-arch/bot-tea": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/fetch-stream": "workspace:*",
+    "@coze-arch/hooks": "workspace:*",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/idl": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-arch/report-events": "workspace:*",
+    "@coze-arch/report-tti": "workspace:*",
+    "@coze-arch/tea": "workspace:*",
+    "@coze-common/assets": "workspace:*",
+    "@coze-common/biz-components": "workspace:*",
+    "@coze-common/chat-area": "workspace:*",
+    "@coze-common/chat-area-utils": "workspace:*",
+    "@coze-common/coze-mitt": "workspace:*",
+    "@coze-common/editor-plugins": "workspace:*",
+    "@coze-common/md-editor-adapter": "workspace:*",
+    "@coze-common/prompt-kit": "workspace:*",
+    "@coze-data/database": "workspace:*",
+    "@coze-data/database-v2": "workspace:*",
+    "@coze-data/e2e": "workspace:*",
+    "@coze-data/knowledge-data-set-for-agent": "workspace:*",
+    "@coze-data/knowledge-ide-base": "workspace:*",
+    "@coze-data/knowledge-modal-adapter": "workspace:*",
+    "@coze-data/knowledge-modal-base": "workspace:*",
+    "@coze-data/knowledge-resource-processor-core": "workspace:*",
+    "@coze-data/reporter": "workspace:*",
+    "@coze-data/utils": "workspace:*",
+    "@coze-devops/debug-panel": "workspace:*",
+    "@coze-foundation/account-adapter": "workspace:*",
+    "@coze-foundation/enterprise-store-adapter": "workspace:*",
+    "@coze-foundation/global-store": "workspace:*",
+    "@coze-studio/bot-audit-adapter": "workspace:*",
+    "@coze-studio/bot-detail-store": "workspace:*",
+    "@coze-studio/bot-utils": "workspace:*",
+    "@coze-studio/components": "workspace:*",
+    "@coze-studio/open-env-adapter": "workspace:*",
+    "@coze-studio/premium-components-adapter": "workspace:*",
+    "@coze-studio/publish-manage-hooks": "workspace:*",
+    "@coze-studio/user-store": "workspace:*",
+    "@douyinfe/semi-icons": "^2.36.0",
+    "@douyinfe/semi-illustrations": "^2.36.0",
+    "@flowgram-adapter/free-layout-editor": "workspace:*",
+    "ahooks": "^3.7.8",
+    "classnames": "^2.3.2",
+    "copy-to-clipboard": "^3.3.3",
+    "dayjs": "^1.11.7",
+    "eventsource-parser": "^1.0.0",
+    "immer": "^10.0.3",
+    "lodash-es": "^4.17.21",
+    "mitt": "^3.0.1",
+    "nanoid": "^4.0.2",
+    "qs": "^6.11.2",
+    "rc-slider": "10.6.2",
+    "react-hotkeys-hook": "~4.5.0",
+    "react-markdown": "^8.0.3",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/foundation-sdk": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@rsbuild/core": "1.1.13",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/ajv": "~1.0.0",
+    "@types/draft-js": "^0.11.12",
+    "@types/json-schema": "~7.0.15",
+    "@types/lodash-es": "^4.17.10",
+    "@types/node": "^18",
+    "@types/papaparse": "^5.3.9",
+    "@types/qs": "^6.9.7",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@types/react-resizable": "^3.0.6",
+    "@vitest/coverage-v8": "~3.0.5",
+    "core-js": "^3.37.1",
+    "danmu.js": "^0.5.0",
+    "debug": "^4.3.4",
+    "devcert": "1.2.2",
+    "less": "^3.13.1",
+    "monaco-editor": "^0.45.0",
+    "react-is": ">= 16.8.0",
+    "react-router-dom": "^6.22.0",
+    "scheduler": ">=0.19.0",
+    "styled-components": ">= 2",
+    "stylelint": "^15.11.0",
+    "tailwindcss": "~3.3.3",
+    "typescript": "~5.8.2",
+    "utility-types": "^3.10.0",
+    "vitest": "~3.0.5",
+    "webpack": "~5.91.0",
+    "xgplayer-subtitles": "^1.0.21"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  },
+  "// deps": "immer@^10.0.3 为脚本自动补齐，请勿改动"
+}
+

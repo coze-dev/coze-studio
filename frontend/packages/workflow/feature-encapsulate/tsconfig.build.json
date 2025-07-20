@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "strictNullChecks": true,
+    "types": [],
+    "noImplicitReturns": false,
+    "useUnknownInCatchVariables": false,
+    "strictPropertyInitialization": false,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"],
+  "references": [
+    {
+      "path": "../../arch/bot-flags/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../base/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/flowgram-adapter/common/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/flowgram-adapter/free-layout-editor/tsconfig.build.json"
+    },
+    {
+      "path": "../../components/bot-semi/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
+      "path": "../nodes/tsconfig.build.json"
+    },
+    {
+      "path": "../render/tsconfig.build.json"
+    },
+    {
+      "path": "../variable/tsconfig.build.json"
+    }
+  ]
+}

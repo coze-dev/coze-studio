@@ -1,0 +1,20 @@
+{{- if .Values.milvus.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "opencoze.fullname" . }}-milvus
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: milvus
+      port: 19530
+      targetPort: 19530
+    - name: metrics
+      port: 9091
+      targetPort: 9091
+  selector:
+    app.kubernetes.io/component: milvus
+    app.kubernetes.io/name: {{ include "opencoze.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

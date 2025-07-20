@@ -1,0 +1,47 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
+  "commands": [
+    {
+      "name": "fix-ts-refers",
+      "description": "Fix common project issues",
+      "commandKind": "global",
+      "summary": "⭐️️ Fix tsconfig.json and tsconfig.build.json",
+      "shellCommand": "rush-fix-ts-refers fix",
+      "safeForSimultaneousRushProcesses": true
+    }
+  ],
+  "parameters": [
+    {
+      "parameterKind": "string",
+      "description": "Specify the package to fix",
+      "shortName": "-p",
+      "longName": "--package",
+      "argumentName": "PACKAGE",
+      "associatedCommands": ["fix-ts-refers"],
+      "required": false
+    },
+    {
+      "parameterKind": "flag",
+      "description": "Use cached files",
+      "shortName": "-c",
+      "longName": "--use-cached-files",
+      "associatedCommands": ["fix-ts-refers"],
+      "required": false
+    },
+    {
+      "parameterKind": "flag",
+      "description": "Submit changes",
+      "shortName": "-s",
+      "longName": "--submit-changes",
+      "associatedCommands": ["fix-ts-refers"],
+      "required": false
+    },
+    {
+      "parameterKind": "flag",
+      "description": "Shallow fix",
+      "longName": "--shallow",
+      "associatedCommands": ["fix-ts-refers"],
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,294 @@
+{
+  "name": "@coze-arch/idl",
+  "version": "0.0.1",
+  "description": "idl descriptions ",
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.ts",
+    "./app_builder": "./src/auto-generated/app_builder/index.ts",
+    "./basic_api": "./src/auto-generated/basic_api/index.ts",
+    "./benefit": "./src/auto-generated/benefit/index.ts",
+    "./bot_connector": "./src/auto-generated/bot_connector/index.ts",
+    "./bot_open_api": "./src/auto-generated/bot_open_api/index.ts",
+    "./bytefaas_api": "./src/auto-generated/bytefaas_api/index.ts",
+    "./card": "./src/auto-generated/card/index.ts",
+    "./connector_api": "./src/auto-generated/connector_api/index.ts",
+    "./debugger_api": "./src/auto-generated/debugger_api/index.ts",
+    "./developer_api": "./src/auto-generated/developer_api/index.ts",
+    "./developer_backend": "./src/auto-generated/developer_backend/index.ts",
+    "./devops_evaluation": "./src/auto-generated/devops_evaluation/index.ts",
+    "./dp_manage": "./src/auto-generated/dp_manage/index.ts",
+    "./english_examination": "./src/auto-generated/english_examination/index.ts",
+    "./evaluation_api": "./src/auto-generated/evaluation_api/index.ts",
+    "./evaluation_lite": "./src/auto-generated/evaluation_lite/index.ts",
+    "./filebox": "./src/auto-generated/filebox/index.ts",
+    "./flow_bot_operation": "./src/auto-generated/flow_bot_operation/index.ts",
+    "./fornax_api": "./src/auto-generated/fornax_api/index.ts",
+    "./fornax_api2": "./src/auto-generated/fornax_api2/index.ts",
+    "./fornax_eino_api": "./src/auto-generated/fornax_eino_api/index.ts",
+    "./fornax_knowledge": "./src/auto-generated/fornax_knowledge/index.ts",
+    "./fornax_ml_flow": "./src/auto-generated/fornax_ml_flow/index.ts",
+    "./fornax_nclc": "./src/auto-generated/fornax_nclc/index.ts",
+    "./fornax_ob_api": "./src/auto-generated/fornax_ob_api/index.ts",
+    "./fornax_plugin": "./src/auto-generated/fornax_plugin/index.ts",
+    "./fulfill": "./src/auto-generated/fulfill/index.ts",
+    "./fulfill_operation": "./src/auto-generated/fulfill_operation/index.ts",
+    "./hub_api": "./src/auto-generated/hub_api/index.ts",
+    "./incentive": "./src/auto-generated/incentive/index.ts",
+    "./incentive_operation": "./src/auto-generated/incentive_operation/index.ts",
+    "./intelligence_api": "./src/auto-generated/intelligence_api/index.ts",
+    "./interaction_operation": "./src/auto-generated/interaction_operation/index.ts",
+    "./knowledge": "./src/auto-generated/knowledge/index.ts",
+    "./magic_english": "./src/auto-generated/magic_english/index.ts",
+    "./market_interaction_api": "./src/auto-generated/market_interaction_api/index.ts",
+    "./marketplace_operation": "./src/auto-generated/marketplace_operation/index.ts",
+    "./memory": "./src/auto-generated/memory/index.ts",
+    "./multimedia_api": "./src/auto-generated/multimedia_api/index.ts",
+    "./nclc_api": "./src/auto-generated/nclc_api/index.ts",
+    "./notice": "./src/auto-generated/notice/index.ts",
+    "./notify_api": "./src/auto-generated/notify_api/index.ts",
+    "./ob_data": "./src/auto-generated/ob_data/index.ts",
+    "./ob_query_api": "./src/auto-generated/ob_query_api/index.ts",
+    "./pat_permission_api": "./src/auto-generated/pat_permission_api/index.ts",
+    "./permission_authz": "./src/auto-generated/permission_authz/index.ts",
+    "./permission_oauth2": "./src/auto-generated/permission_oauth2/index.ts",
+    "./playground_api": "./src/auto-generated/playground_api/index.ts",
+    "./plugin_develop": "./src/auto-generated/plugin_develop/index.ts",
+    "./plugin_impl_api": "./src/auto-generated/plugin_impl_api/index.ts",
+    "./plugin_operation": "./src/auto-generated/plugin_operation/index.ts",
+    "./product_api": "./src/auto-generated/product_api/index.ts",
+    "./prompt_admin_api": "./src/auto-generated/prompt_admin_api/index.ts",
+    "./prompt_api": "./src/auto-generated/prompt_api/index.ts",
+    "./prompt_api2": "./src/auto-generated/prompt_api2/index.ts",
+    "./prompt_evaluate_api": "./src/auto-generated/prompt_evaluate_api/index.ts",
+    "./prompt_record_api": "./src/auto-generated/prompt_record_api/index.ts",
+    "./resource": "./src/auto-generated/resource/index.ts",
+    "./social_api": "./src/auto-generated/social_api/index.ts",
+    "./stone_coze_space": "./src/auto-generated/stone_coze_space/index.ts",
+    "./stone_fornax_evaluation": "./src/auto-generated/stone_fornax_evaluation/index.ts",
+    "./trade": "./src/auto-generated/trade/index.ts",
+    "./trade_operation": "./src/auto-generated/trade_operation/index.ts",
+    "./ui_builder": "./src/auto-generated/ui_builder/index.ts",
+    "./workflow_api": "./src/auto-generated/workflow_api/index.ts",
+    "./xmemory_api": "./src/auto-generated/xmemory_api/index.ts"
+  },
+  "main": "src/index.ts",
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./src/index.ts"
+      ],
+      "app_builder": [
+        "./src/auto-generated/app_builder/index.ts"
+      ],
+      "basic_api": [
+        "./src/auto-generated/basic_api/index.ts"
+      ],
+      "benefit": [
+        "./src/auto-generated/benefit/index.ts"
+      ],
+      "bot_connector": [
+        "./src/auto-generated/bot_connector/index.ts"
+      ],
+      "bot_open_api": [
+        "./src/auto-generated/bot_open_api/index.ts"
+      ],
+      "bytefaas_api": [
+        "./src/auto-generated/bytefaas_api/index.ts"
+      ],
+      "card": [
+        "./src/auto-generated/card/index.ts"
+      ],
+      "connector_api": [
+        "./src/auto-generated/connector_api/index.ts"
+      ],
+      "debugger_api": [
+        "./src/auto-generated/debugger_api/index.ts"
+      ],
+      "developer_api": [
+        "./src/auto-generated/developer_api/index.ts"
+      ],
+      "developer_backend": [
+        "./src/auto-generated/developer_backend/index.ts"
+      ],
+      "devops_evaluation": [
+        "./src/auto-generated/devops_evaluation/index.ts"
+      ],
+      "dp_manage": [
+        "./src/auto-generated/dp_manage/index.ts"
+      ],
+      "english_examination": [
+        "./src/auto-generated/english_examination/index.ts"
+      ],
+      "evaluation_api": [
+        "./src/auto-generated/evaluation_api/index.ts"
+      ],
+      "evaluation_lite": [
+        "./src/auto-generated/evaluation_lite/index.ts"
+      ],
+      "filebox": [
+        "./src/auto-generated/filebox/index.ts"
+      ],
+      "flow_bot_operation": [
+        "./src/auto-generated/flow_bot_operation/index.ts"
+      ],
+      "fornax_api": [
+        "./src/auto-generated/fornax_api/index.ts"
+      ],
+      "fornax_api2": [
+        "./src/auto-generated/fornax_api2/index.ts"
+      ],
+      "fornax_eino_api": [
+        "./src/auto-generated/fornax_eino_api/index.ts"
+      ],
+      "fornax_knowledge": [
+        "./src/auto-generated/fornax_knowledge/index.ts"
+      ],
+      "fornax_ml_flow": [
+        "./src/auto-generated/fornax_ml_flow/index.ts"
+      ],
+      "fornax_nclc": [
+        "./src/auto-generated/fornax_nclc/index.ts"
+      ],
+      "fornax_ob_api": [
+        "./src/auto-generated/fornax_ob_api/index.ts"
+      ],
+      "fornax_plugin": [
+        "./src/auto-generated/fornax_plugin/index.ts"
+      ],
+      "fulfill": [
+        "./src/auto-generated/fulfill/index.ts"
+      ],
+      "fulfill_operation": [
+        "./src/auto-generated/fulfill_operation/index.ts"
+      ],
+      "hub_api": [
+        "./src/auto-generated/hub_api/index.ts"
+      ],
+      "incentive": [
+        "./src/auto-generated/incentive/index.ts"
+      ],
+      "incentive_operation": [
+        "./src/auto-generated/incentive_operation/index.ts"
+      ],
+      "intelligence_api": [
+        "./src/auto-generated/intelligence_api/index.ts"
+      ],
+      "interaction_operation": [
+        "./src/auto-generated/interaction_operation/index.ts"
+      ],
+      "knowledge": [
+        "./src/auto-generated/knowledge/index.ts"
+      ],
+      "magic_english": [
+        "./src/auto-generated/magic_english/index.ts"
+      ],
+      "market_interaction_api": [
+        "./src/auto-generated/market_interaction_api/index.ts"
+      ],
+      "marketplace_operation": [
+        "./src/auto-generated/marketplace_operation/index.ts"
+      ],
+      "memory": [
+        "./src/auto-generated/memory/index.ts"
+      ],
+      "multimedia_api": [
+        "./src/auto-generated/multimedia_api/index.ts"
+      ],
+      "nclc_api": [
+        "./src/auto-generated/nclc_api/index.ts"
+      ],
+      "notice": [
+        "./src/auto-generated/notice/index.ts"
+      ],
+      "notify_api": [
+        "./src/auto-generated/notify_api/index.ts"
+      ],
+      "ob_data": [
+        "./src/auto-generated/ob_data/index.ts"
+      ],
+      "ob_query_api": [
+        "./src/auto-generated/ob_query_api/index.ts"
+      ],
+      "pat_permission_api": [
+        "./src/auto-generated/pat_permission_api/index.ts"
+      ],
+      "permission_authz": [
+        "./src/auto-generated/permission_authz/index.ts"
+      ],
+      "permission_oauth2": [
+        "./src/auto-generated/permission_oauth2/index.ts"
+      ],
+      "playground_api": [
+        "./src/auto-generated/playground_api/index.ts"
+      ],
+      "plugin_develop": [
+        "./src/auto-generated/plugin_develop/index.ts"
+      ],
+      "plugin_impl_api": [
+        "./src/auto-generated/plugin_impl_api/index.ts"
+      ],
+      "plugin_operation": [
+        "./src/auto-generated/plugin_operation/index.ts"
+      ],
+      "product_api": [
+        "./src/auto-generated/product_api/index.ts"
+      ],
+      "prompt_admin_api": [
+        "./src/auto-generated/prompt_admin_api/index.ts"
+      ],
+      "prompt_api": [
+        "./src/auto-generated/prompt_api/index.ts"
+      ],
+      "prompt_api2": [
+        "./src/auto-generated/prompt_api2/index.ts"
+      ],
+      "prompt_evaluate_api": [
+        "./src/auto-generated/prompt_evaluate_api/index.ts"
+      ],
+      "prompt_record_api": [
+        "./src/auto-generated/prompt_record_api/index.ts"
+      ],
+      "resource": [
+        "./src/auto-generated/resource/index.ts"
+      ],
+      "social_api": [
+        "./src/auto-generated/social_api/index.ts"
+      ],
+      "stone_coze_space": [
+        "./src/auto-generated/stone_coze_space/index.ts"
+      ],
+      "stone_fornax_evaluation": [
+        "./src/auto-generated/stone_fornax_evaluation/index.ts"
+      ],
+      "trade": [
+        "./src/auto-generated/trade/index.ts"
+      ],
+      "trade_operation": [
+        "./src/auto-generated/trade_operation/index.ts"
+      ],
+      "ui_builder": [
+        "./src/auto-generated/ui_builder/index.ts"
+      ],
+      "workflow_api": [
+        "./src/auto-generated/workflow_api/index.ts"
+      ],
+      "xmemory_api": [
+        "./src/auto-generated/xmemory_api/index.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test:cov": "exit 0"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@types/node": "^18"
+  }
+}
+

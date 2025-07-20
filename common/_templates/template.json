@@ -1,0 +1,4 @@
+{
+  "templates": [],
+  "globalPluginEntryPoint": "_plugins/global.config.ts" // a global plugin
+}

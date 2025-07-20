@@ -1,0 +1,47 @@
+{
+  "name": "@coze-arch/idl2ts-generator",
+  "version": "0.1.6",
+  "description": "@coze-arch/idl2ts-generator",
+  "homepage": "",
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "main": "./src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@babel/core": "^7.20.2",
+    "@babel/generator": "^7",
+    "@babel/helpers": "^7.6.2",
+    "@babel/parser": "^7.12.14",
+    "@babel/plugin-transform-typescript": "^7.7.2",
+    "@babel/preset-typescript": "^7.7.2",
+    "@babel/template": "^7.6.0",
+    "@babel/traverse": "^7",
+    "@babel/types": "^7.20.7",
+    "@coze-arch/idl-parser": "workspace:*",
+    "@coze-arch/idl2ts-helper": "workspace:*",
+    "@coze-arch/idl2ts-plugin": "workspace:*",
+    "@faker-js/faker": "~9.3.0",
+    "ajv": "~8.12.0",
+    "camelcase": "^6.2.0",
+    "fs-extra": "^9.1.0",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/fs-extra": "^9.0.5",
+    "@types/jssha": "^2.0.0",
+    "@types/lodash": "^4.14.137",
+    "@types/node": "^18",
+    "@types/yaml": "^1.2.0",
+    "@vitest/coverage-v8": "~3.0.5",
+    "tsx": "^4.19.2",
+    "vitest": "~3.0.5"
+  }
+}

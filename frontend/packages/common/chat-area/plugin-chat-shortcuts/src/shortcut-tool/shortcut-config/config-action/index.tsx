@@ -1,0 +1,37 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+import React from 'react';
+
+import { I18n } from '@coze-arch/i18n';
+import { Image } from '@coze-arch/bot-semi';
+
+import style from '../index.module.less';
+import shortcutTipEn from '../../../assets/shortcut-tip_en.png';
+import shortcutTipCn from '../../../assets/shortcut-tip_cn.png';
+
+export const ShortcutTips = () => (
+  <div className={style['tip-content']}>
+    <div style={{ marginBottom: '8px' }}>
+      {I18n.t('bot_ide_shortcut_intro')}
+    </div>
+    <Image
+      preview={false}
+      width={416}
+      src={IS_OVERSEA ? shortcutTipEn : shortcutTipCn}
+    />
+  </div>
+);

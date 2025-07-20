@@ -1,0 +1,110 @@
+{{- if .Values.cozeServer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-server" (include "opencoze.fullname" .) }}
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.cozeServer.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ include "opencoze.name" . }}
+      app.kubernetes.io/component: server
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/name: {{ include "opencoze.name" . }}
+        app.kubernetes.io/component: server
+    spec:
+      initContainers:
+        - name: wait-for-mysql
+          image: {{ .Values.images.busybox }}
+          command: ['sh', '-c', 'until nc -z {{ include "opencoze.fullname" . }}-mysql 3306; do echo waiting for mysql; sleep 2; done']
+        {{- if .Values.redis.enabled }}
+        - name: wait-for-redis
+          image: {{ .Values.images.busybox }}
+          command: ['sh', '-c', 'until nc -z {{ include "opencoze.fullname" . }}-redis {{ .Values.redis.port }}; do echo waiting for redis; sleep 2; done']
+        {{- end }}
+        {{- if .Values.rocketmq.enabled }}
+        - name: wait-for-rocketmq
+          image: {{ .Values.images.busybox }}
+          command: ['sh', '-c', 'until nc -z {{ include "opencoze.fullname" . }}-rocketmq-namesrv 9876; do echo waiting for rocketmq; sleep 2; done']
+        {{- end }}
+        {{- if .Values.elasticsearch.enabled }}
+        - name: wait-for-elasticsearch
+          image: {{ .Values.images.busybox }}
+          command: ['sh', '-c', 'until nc -z {{ include "opencoze.fullname" . }}-elasticsearch 9200; do echo waiting for elasticsearch; sleep 2; done']
+        {{- end }}
+        {{- if .Values.minio.enabled }}
+        - name: wait-for-minio
+          image: {{ .Values.images.busybox }}
+          command: ['sh', '-c', 'until nc -z {{ include "opencoze.fullname" . }}-minio 9000; do echo waiting for minio; sleep 2; done']
+        {{- end }}
+        {{- if .Values.milvus.enabled }}
+        - name: wait-for-milvus
+          image: {{ .Values.images.busybox }}
+          command: ['sh', '-c', 'until nc -z {{ include "opencoze.fullname" . }}-milvus 19530; do echo waiting for milvus; sleep 2; done']
+        {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.cozeServer.image.repository }}:{{ .Values.cozeServer.image.tag }}"
+          imagePullPolicy: {{ .Values.cozeServer.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.cozeServer.service.port }}
+          env:
+            - name: MYSQL_HOST
+              value: "{{ include "opencoze.fullname" . }}-mysql"
+            - name: MYSQL_PORT
+              value: {{ .Values.mysql.port | quote }}
+            - name: MYSQL_USER
+              value: {{ .Values.mysql.user | quote }}
+            - name: MYSQL_PASSWORD
+              value: {{ .Values.mysql.password | quote }}
+            - name: MYSQL_DATABASE
+              value: {{ .Values.mysql.database | quote }}
+            - name: REDIS_ADDR
+              value: "{{ include "opencoze.fullname" . }}-redis:{{ .Values.redis.port }}"
+            - name: MINIO_AK
+              value: {{ .Values.minio.accessKey | quote }}
+            - name: MINIO_SK
+              value: {{ .Values.minio.secretKey | quote }}
+            - name: STORAGE_BUCKET
+              value: {{ .Values.minio.bucket | quote }}
+            - name: ES_ADDR
+              value: "http://{{ include "opencoze.fullname" . }}-elasticsearch:9200"
+            - name: ES_USERNAME
+              value: {{ .Values.elasticsearch.username | quote }}
+            - name: ES_PASSWORD
+              value: {{ .Values.elasticsearch.password | quote }}
+            - name: RMQ_NAME_SERVER
+              value: "http://{{ include "opencoze.fullname" . }}-rocketmq-namesrv:9876"
+            - name: MILVUS_ADDR
+              value: "{{ include "opencoze.fullname" . }}-milvus:19530"
+            - name: MYSQL_DSN
+              value: "{{ .Values.mysql.user }}:{{ .Values.mysql.password }}@tcp({{ include "opencoze.fullname" . }}-mysql:3306)/{{ .Values.mysql.database }}?charset=utf8mb4&parseTime=True&loc=Local"
+            {{- range $key, $val := .Values.cozeServer.env }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end }}
+
+          {{- if .Values.cozeServer.confHostPath }}
+          volumeMounts:
+            - name: opencoze-server-conf
+              mountPath: /app/resources/conf
+          {{- end }}
+      {{- if .Values.cozeServer.confHostPath }}
+      volumes:
+        - name: opencoze-server-conf
+          hostPath:
+            path: {{ .Values.cozeServer.confHostPath }}
+            type: DirectoryOrCreate
+      {{- end }}
+{{- end }}

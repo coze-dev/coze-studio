@@ -1,0 +1,52 @@
+{
+  "name": "@coze-foundation/space-store",
+  "version": "0.0.1",
+  "description": "基座中的空间store",
+  "license": "Apache-2.0",
+  "author": "yuwenbinjie@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-arch/report-events": "workspace:*",
+    "@coze-foundation/enterprise-store-adapter": "workspace:*",
+    "@coze-foundation/space-store-adapter": "workspace:*",
+    "classnames": "^2.3.2",
+    "immer": "^10.0.3",
+    "react-router-dom": "^6.22.0",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "stylelint": "^15.11.0",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  },
+  "// deps": "immer@^10.0.3 为脚本自动补齐，请勿改动"
+}
+

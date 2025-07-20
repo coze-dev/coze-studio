@@ -1,0 +1,58 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+import {
+  ASTFactory,
+  type ASTNodeJSON,
+  type BaseVariableField,
+} from '@flowgram-adapter/free-layout-editor';
+
+import {
+  CustomKeyPathExpression,
+  type RefExpressionJSON,
+} from './custom-key-path-expression';
+
+/**
+ * 遍历表达式，对列表进行遍历，获取遍历后的变量类型
+ */
+export class WrapArrayExpression extends CustomKeyPathExpression {
+  static kind = 'WrapArrayExpression';
+
+  getReturnTypeJSONByRef(
+    _ref: BaseVariableField | undefined,
+  ): ASTNodeJSON | undefined {
+    return ASTFactory.createArray({
+      items: _ref?.type?.toJSON(),
+    });
+  }
+
+  toJSON() {
+    return {
+      kind: this.kind,
+      keyPath: this._keyPath,
+      rawMeta: this._rawMeta,
+    };
+  }
+}
+
+export const createWrapArrayExpression = ({
+  keyPath,
+  rawMeta,
+}: RefExpressionJSON) => ({
+  kind: WrapArrayExpression.kind,
+  keyPath,
+  rawMeta,
+});

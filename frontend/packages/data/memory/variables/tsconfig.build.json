@@ -1,0 +1,126 @@
+{
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "jsx": "react-jsx",
+    "lib": ["DOM", "ESNext"],
+    "module": "ESNext",
+    "target": "ES2020",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    {
+      "path": "../../../arch/bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-error/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-flags/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-hooks/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-monaco-editor/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-store/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-tea/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/logger/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/report-events/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/report-tti/tsconfig.build.json"
+    },
+    {
+      "path": "../../../common/chat-area/utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/e2e/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/reporter/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../../components/bot-icons/tsconfig.build.json"
+    },
+    {
+      "path": "../../../components/bot-semi/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../foundation/local-storage/tsconfig.build.json"
+    },
+    {
+      "path": "../../knowledge/common/components/tsconfig.build.json"
+    },
+    {
+      "path": "../../knowledge/common/stores/tsconfig.build.json"
+    },
+    {
+      "path": "../../knowledge/knowledge-ide-base/tsconfig.build.json"
+    },
+    {
+      "path": "../../knowledge/knowledge-modal-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../knowledge/knowledge-modal-base/tsconfig.build.json"
+    },
+    {
+      "path": "../../knowledge/knowledge-resource-processor-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../knowledge/knowledge-resource-processor-base/tsconfig.build.json"
+    },
+    {
+      "path": "../../knowledge/knowledge-resource-processor-core/tsconfig.build.json"
+    },
+    {
+      "path": "../../../studio/components/tsconfig.build.json"
+    },
+    {
+      "path": "../../../studio/premium/premium-components-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../../studio/premium/premium-store-adapter/tsconfig.build.json"
+    }
+  ]
+}

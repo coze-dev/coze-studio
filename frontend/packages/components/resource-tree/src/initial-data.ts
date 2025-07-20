@@ -1,0 +1,113 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+import { type FlowDocumentJSON } from '@flowgram-adapter/fixed-layout-editor';
+// only for test
+export const initialData: FlowDocumentJSON = {
+  nodes: [
+    // 开始节点
+    {
+      id: 'start_0',
+      type: 'split',
+      data: {
+        title: 'Start',
+        content: 'start content',
+      },
+      blocks: [
+        {
+          id: 'noop',
+          type: 'block',
+          blocks: [
+            // 分支节点
+            {
+              id: 'condition_0',
+              type: 'split',
+              data: {
+                title: 'Condition',
+              },
+              blocks: [
+                {
+                  id: 'block_1',
+                  type: 'block',
+                  blocks: [
+                    {
+                      id: 'block_4',
+                      type: 'split',
+                      blocks: [
+                        {
+                          id: 'block_5',
+                          type: 'block',
+                          blocks: [
+                            {
+                              id: 'custom_1',
+                              type: 'custom',
+                              meta: {
+                                isNodeEnd: true,
+                              },
+                            },
+                            {
+                              id: 'custom_2',
+                              type: 'custom',
+                              meta: {
+                                isNodeEnd: true,
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  id: 'block_2',
+                  type: 'block',
+                  meta: {
+                    isNodeEnd: true,
+                  },
+                  blocks: [
+                    {
+                      id: 'custom_3',
+                      type: 'custom',
+                      meta: {
+                        isNodeEnd: true,
+                      },
+                    },
+                  ],
+                },
+                {
+                  id: 'block_3',
+                  type: 'block',
+                  meta: {
+                    isNodeEnd: true,
+                  },
+                  blocks: [
+                    {
+                      id: 'custom_4',
+                      type: 'custom',
+                      meta: {
+                        isNodeEnd: true,
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};

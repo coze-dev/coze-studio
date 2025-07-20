@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "types": ["lodash-es"],
+    "strictNullChecks": true,
+    "rootDir": "./src",
+    "skipLibCheck": true,
+    "disableReferencedProjectLoad": true,
+    "outDir": "./dist",
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../agent-ide/tool-config/tsconfig.build.json"
+    },
+    {
+      "path": "../bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../bot-error/tsconfig.build.json"
+    },
+    {
+      "path": "../bot-flags/tsconfig.build.json"
+    },
+    {
+      "path": "../bot-store/tsconfig.build.json"
+    },
+    {
+      "path": "../bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/chat-area/chat-core/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/uploader-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
+      "path": "../i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../logger/tsconfig.build.json"
+    },
+    {
+      "path": "../report-events/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/user-store/tsconfig.build.json"
+    },
+    {
+      "path": "../tea/tsconfig.build.json"
+    },
+    {
+      "path": "../web-context/tsconfig.build.json"
+    }
+  ]
+}

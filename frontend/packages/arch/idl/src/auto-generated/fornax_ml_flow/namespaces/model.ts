@@ -1,0 +1,579 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+/* eslint-disable */
+/* tslint:disable */
+// @ts-nocheck
+
+export type Int64 = string | number;
+
+export enum ByteTreeNodeResourceProvider {
+  TCE = 1,
+  TCC = 2,
+  Bernard = 3,
+}
+
+export enum CommercialModelStatus {
+  Online = 1,
+  Offline = 2,
+  Deleted = 3,
+  FineTuneInQueue = 4,
+  FineTuneRunning = 5,
+  FineTuneFailed = 6,
+  FineTuneTerminated = 7,
+}
+
+export enum DataImportMode {
+  Undefined = 0,
+  /** 追加 */
+  Append = 1,
+  /** 覆盖 */
+  Overwrite = 2,
+}
+
+export enum DataSourceType {
+  Undefined = 0,
+  TOS = 1,
+}
+
+export enum Family {
+  Undefined = 0,
+  GPT = 1,
+  Seed = 2,
+  Gemini = 3,
+  Claude = 4,
+  Ernie = 5,
+  Baichuan = 6,
+  Qwen = 7,
+  GLM = 8,
+  SkyLark = 9,
+  Moonshot = 10,
+  Minimax = 11,
+  Doubao = 12,
+  Baichuan2 = 13,
+  DeepSeekV2 = 14,
+  DeepSeekCoderV2 = 15,
+  DeepseekCoder = 16,
+  InternLM2_5 = 17,
+  Qwen2 = 18,
+  Qwen2_5 = 19,
+  Qwen2_5_Coder = 20,
+  MiniCPM = 21,
+  MiniCPM3 = 22,
+  ChatGLM3 = 23,
+  Mistral = 24,
+  Gemma = 25,
+  Gemma2 = 26,
+  InternVL2 = 27,
+  InternVL2_5 = 28,
+  DeepSeekV3 = 29,
+}
+
+export enum IDC {
+  HL = 1,
+  LF = 2,
+  LQ = 3,
+  YG = 4,
+  GL = 5,
+  MALIVA = 101,
+  SG1 = 201,
+  MY = 202,
+  MY2 = 203,
+  MYCISB = 204,
+}
+
+export enum MerlinFramework {
+  LLMServerPublic = 1,
+  Laplace = 2,
+}
+
+export enum MerlinLLMInterface {
+  MatxInference = 1,
+}
+
+export enum MerlinQuotaPoolType {
+  /** 稳定资源 */
+  Default = 0,
+  /** 潮汐资源 */
+  Hybrid = 1,
+  /** 常混资源 */
+  HybridShare = 2,
+  /** 第三方资源ali */
+  ALI = 3,
+  /** 第三方资源hw */
+  HW = 4,
+}
+
+export enum ModelFilterKey {
+  ModelType = 1,
+  ModelUserRight = 2,
+  ModelFeature = 3,
+  ModelFunction = 4,
+  ModelScenario = 5,
+  Custom = 20,
+}
+
+export enum ModelFilterScene {
+  Default = 0,
+  EvalFunctionCall = 1,
+}
+
+export enum ModelParamType {
+  Unknown = 0,
+  Float = 1,
+  Int = 2,
+  Boolean = 3,
+  String = 4,
+}
+
+export enum ModelStatus {
+  Undefined = 0,
+  /** 健康可用 */
+  Available = 1,
+  /** 部署中 */
+  Deploying = 2,
+  /** 不可用（已下线） */
+  Unavailable = 3,
+  /** 下线中 */
+  Offlining = 4,
+}
+
+export enum Provider {
+  /** GPT OpenAPI平台 */
+  GPTOpenAPI = 1,
+  /** 火山方舟 */
+  Maas = 2,
+  /** 暂时特指seed从bot_engine接入 */
+  BotEngine = 3,
+  /** merlin平台 */
+  Merlin = 4,
+  /** merlin-seed平台 */
+  MerlinSeed = 5,
+}
+
+export enum ProviderAccountType {
+  AKSK = 1,
+  APIKey = 2,
+}
+
+export enum Region {
+  CN = 1,
+  SG = 2,
+  US = 3,
+}
+
+export enum RuntimeCustomParamType {
+  Unknown = 0,
+  StringList = 1,
+  IntList = 2,
+  FloatList = 3,
+  String = 4,
+  Int = 5,
+  Float = 6,
+  Bool = 7,
+}
+
+export enum RuntimeHookType {
+  Unknown = 0,
+  MsgPreHook = 1,
+}
+
+export enum SftTaskBaseModelType {
+  Foundation = 0,
+  Custom = 1,
+}
+
+export enum SftTaskErrCode {
+  Default = 0,
+  /** 前2位代表错误分类，后4位代表具体错误
+10 通用错误 */
+  InternalErr = 100000,
+  /** 训练集上传到平台方时出错 */
+  TrainingSetUploadedErr = 100001,
+  /** 在平台方创建精调任务出错 */
+  CreateProviderSftTaskErr = 100002,
+  /** 20 Merlin任务实例整体报错 */
+  MerlinTaskInternalError = 200000,
+  /** gpu cpu mem 套餐配比错误 */
+  MerlinGpuCpuMemRatioBad = 200001,
+  /** 21 Merlin训练脚本主动上报的错误 */
+  MerlinReportedInternalErr = 210000,
+  MerlinOOM = 210001,
+  /** 没找到模型训练产物 */
+  MerlinNoModelGenerated = 210002,
+  /** 30 火山方舟任务失败
+方舟通用错误 */
+  MaaSInternalErr = 300000,
+  /** 验证集比例分割异常 */
+  MaaSValidationSetSplitErr = 300001,
+  /** 训练数据格式不符合预期 */
+  MaaSTrainingSetNoValid = 300002,
+  /** 业务方的火山账号没有开通模型服务 */
+  MaaSAccountModelServiceIsNotActivated = 300003,
+  /** 缺少必要的请求参数。请确认请求参数后重试。 */
+  MaaSRequiredParamMissing = 300004,
+  /** 请求参数值不合法。请检查参数值的正确性后重试。 */
+  MaaSRequestParamInvalid = 300005,
+  /** 对象的标签存在重复Key */
+  MaaSDuplicateTags = 300006,
+  /** 无法同时上传验证集和设置训练集取样为验证集百分比，不支持该操作 */
+  MaaSNotSupportedToConfigureValidationSetAndPercentage = 300007,
+  /** 您没有权限访问基础模型的配置，不支持该操作 */
+  MaaSNotPermittedToAccessModel = 300008,
+  /** 模型不支持该训练方法，不支持该操作 */
+  MaaSModelNotSupportTheTrainingMethod = 300009,
+  /** 基础模型的版本不支持该训练方法，不支持该操作 */
+  MaaSFoundationModelNotSupportTheTrainingMethod = 300010,
+  /** 您的账单已逾期，不支持该操作。请前往火山费用中心充值 */
+  MaaSAccountBalanceOverdue = 300011,
+  /** 未知错误，请稍后重试。如果多次尝试仍失败，请提交工单 */
+  MaaSUnknownErr = 300012,
+}
+
+export enum SftTaskHyperParamType {
+  Int = 1,
+  Float = 2,
+  String = 3,
+  Bool = 4,
+  Percentage = 5,
+}
+
+export enum SftTaskOutputExportType {
+  /** 导出到新模型 */
+  NewModel = 1,
+  /** 导出到已有模型 */
+  ExistModel = 2,
+}
+
+export enum SftTaskOutputStatus {
+  /** 未导出 */
+  Available = 1,
+  /** 已导出 */
+  Exported = 2,
+  /** 已过期 */
+  Expired = 3,
+  /** 导出中 */
+  Exporting = 4,
+  /** 导出失败 */
+  ExportFailed = 5,
+}
+
+export enum SftTaskRunEventType {
+  Undefined = 0,
+  ErrorOccured = 1,
+  UploadCkpt = 2,
+  ReportMetricsURL = 3,
+  ReportProgress = 5,
+  ReportTrainingStart = 6,
+  ReportTrainingFinished = 7,
+}
+
+export enum SftTaskStatusPhase {
+  Preprocessing = 0,
+  Queued = 1,
+  Deploying = 2,
+  Running = 3,
+  Completing = 4,
+  Completed = 5,
+  Terminating = 6,
+  Terminated = 7,
+  Failed = 8,
+}
+
+export enum SftTaskTrainingMethod {
+  LoRA = 1,
+  Full = 2,
+}
+
+export enum SftTaskTrainingType {
+  SftFineTuning = 1,
+}
+
+export enum SftTaskValidationSetType {
+  SplitFromTrainingSet = 1,
+}
+
+export enum TaskStatus {
+  Undefined = 0,
+  /** 正在初始化 */
+  Initializing = 1,
+  /** 正在运行 */
+  Running = 2,
+  /** 成功完成 */
+  Done = 3,
+  /** 失败 */
+  Failed = 4,
+  /** 手动终止 */
+  Terminated = 5,
+  /** 成功完成，但有错误 */
+  DoneWithError = 6,
+}
+
+export enum TrainingDataFileType {
+  Undefined = 0,
+  JSONL = 1,
+}
+
+export enum TrainingDatasetType {
+  Undefined = 0,
+  SFTChat = 1,
+  SFTFunctionCall = 2,
+  SFTMultiModalUnderstanding = 3,
+}
+
+export enum TrainingFileOpType {
+  Undefined = 0,
+  Get = 1,
+  Put = 2,
+}
+
+export enum UsageScenario {
+  /** 默认场景 */
+  Default = 1,
+  /** 评测场景 */
+  Evaluation = 2,
+  /** Prompt as a Service调用 */
+  PromptAsAService = 3,
+  /** AI打标 */
+  AIAnnotate = 4,
+}
+
+export enum ValidateStatus {
+  Pass = 1,
+  Failed = 2,
+  Skip = 3,
+}
+
+export enum VisibleMode {
+  /** 默认（仅模型所属空间可见） */
+  Default = 1,
+  /** 指定空间可见 */
+  Specified = 2,
+  /** 所有空间可见 */
+  All = 3,
+}
+
+export interface Ability {
+  /** 最大上下文长度 */
+  maxContextTokens?: Int64;
+  /** 最大输入长度 */
+  maxInputTokens?: Int64;
+  /** 最大输出长度 */
+  maxOutputTokens?: Int64;
+  /** 是否支持函数调用 */
+  functionCallEnabled?: boolean;
+  /** 是否支持JSON模式 */
+  jsonModeEnabled?: boolean;
+  /** 是否支持多模态 */
+  multiModalEnabled?: boolean;
+  /** 多模态能力配置 */
+  multiModalAbility?: MultiModalAbility;
+  /** 消息预处理hook */
+  messagePreHandleHook?: RuntimeHook;
+  /** 模型可用的参数配置，优先级高于原有的maxContextTokens/maxInputTokens/maxOutputTokens */
+  modelParams?: Array<ModelParam>;
+}
+
+export interface CommercialModelSeries {
+  iconUrl?: string;
+  modelVendor?: string;
+  seriesName?: string;
+}
+
+export interface CommercialModelStatusDetail {
+  isNewModel?: boolean;
+  isAdvancedModel?: boolean;
+}
+
+export interface GPTOpenAPIInfo {
+  apiBaseURL?: string;
+  apiVersion?: string;
+}
+
+export interface IDCDeployDetail {
+  deployID?: string;
+  /** 资源对应服务树节点 id */
+  byteNodeID?: string;
+  region?: string;
+  deviceType?: string;
+  deviceDisplayName?: string;
+  instance?: string;
+}
+
+export interface InstanceResourceOption {
+  cpus?: string;
+  /** 单位 GB */
+  mem?: string;
+  gpus?: string;
+}
+
+export interface MaasInfo {
+  host?: string;
+  region?: string;
+  /** v3 sdk */
+  baseURL?: string;
+  /** 精调模型任务的 ID */
+  customizationJobsID?: string;
+}
+
+export interface MerlinInfo {
+  psm?: string;
+  cluster?: string;
+  idcs?: Array<IDC>;
+  framework?: MerlinFramework;
+  instanceResourceOption?: InstanceResourceOption;
+  /** 资源配置 */
+  deployDetailM?: Record<IDC, IDCDeployDetail>;
+  /** 服务节点id */
+  byteTreeNodeID?: Int64;
+  /** 服务树路径 */
+  byteTreeNodePath?: string;
+  /** 服务详情链接 */
+  serviceDetailURL?: string;
+  /** LLM 接口信息 */
+  llmInterface?: MerlinLLMInterface;
+  /** 是否开启 vllm */
+  useVLLMServe?: boolean;
+  /** 调用 vllm 的 API 路径，仅开启 vllm 时使用 */
+  vllmAPIPath?: string;
+}
+
+export interface Model {
+  /** 模型id, 在商业化场景下可为空，如果为空则用identification+provider直接调用模型 */
+  id?: Int64;
+  /** 模型标识（name，endpoint，与各提供方对齐） */
+  identification?: string;
+  /** 展示名称 */
+  displayName?: string;
+  /** 模型描述 */
+  description?: string;
+  /** 模型家族 */
+  family?: Family;
+  /** 提供方 */
+  provider?: Provider;
+  /** 提供方信息 */
+  providerInfo?: ProviderInfo;
+  /** 是否为公共模型 */
+  isPublic?: boolean;
+  /** 可见性 */
+  visibility?: Visibility;
+  /** 所属空间id */
+  spaceID?: Int64;
+  /** 模型能力 */
+  ability?: Ability;
+  /** 默认运行时参数 */
+  defaultRuntimeParam?: RuntimeParam;
+  /** 创建人 */
+  createdBy?: string;
+  /** 更新人 */
+  updatedBy?: string;
+  /** 创建时间 */
+  createdAt?: Int64;
+  /** 更新时间 */
+  updatedAt?: Int64;
+  /** 编辑版本（用于解决多人同时更新问题） */
+  editVersion?: Int64;
+  modelStatus?: ModelStatus;
+  /** 模型提供方侧的 model id */
+  externalModelID?: string;
+  /** 从精调模型任务的产出中新建推理点产生的模型 */
+  sftTaskID?: Int64;
+  /** 模型版本 */
+  modelVersion?: string;
+  /** 模型头像 */
+  modelIcon?: string;
+  /** 模型公司 */
+  modelVendor?: string;
+  /** 模型真实名称（展示在vendor右侧，可能是豆包endpoint或其他厂商的模型名称） */
+  actualName?: string;
+  /** 模型标签 */
+  modelTags?: Array<string>;
+  /** 商业化模型状态 */
+  commercialModelStatus?: CommercialModelStatus;
+  /** 商业化模型状态详情 */
+  commercialModelStatusDetail?: CommercialModelStatusDetail;
+  /** 商业化模型系列 */
+  commercialModelSeries?: CommercialModelSeries;
+}
+
+export interface ModelParam {
+  name?: string;
+  label?: string;
+  desc?: string;
+  /** 类型： bool/int/float等 */
+  modelParamType?: ModelParamType;
+  min?: string;
+  max?: string;
+  defaultVal?: string;
+  /** 枚举 */
+  modelParamOptions?: Array<ModelParamOption>;
+}
+
+export interface ModelParamOption {
+  /** 展示值 */
+  label?: string;
+  /** 实际值 */
+  value?: string;
+}
+
+export interface MultiModalAbility {
+  /** [1, 99] 图片配置
+是否支持图片 */
+  imageEnabled?: boolean;
+  /** 是否支持二进制图片 */
+  binaryImageEnabled?: boolean;
+  /** 单张图片大小限制, 范围 [0, 20]MB */
+  maxImageSizeInMB?: number;
+  /** 最大图片数量, 范围 [-1, 100], -1 表示无限制 */
+  maxImageCount?: number;
+}
+
+export interface ProviderInfo {
+  gptOpenAPI?: GPTOpenAPIInfo;
+  maas?: MaasInfo;
+  merlin?: MerlinInfo;
+}
+
+export interface RuntimeCustomParam {
+  name?: string;
+  type?: RuntimeCustomParamType;
+  value?: string;
+}
+
+export interface RuntimeHook {
+  type?: RuntimeHookType;
+  url?: string;
+}
+
+export interface RuntimeParam {
+  /** 最大输出长度 */
+  maxTokens?: Int64;
+  temperature?: number;
+  topP?: number;
+  topK?: Int64;
+  jsonMode?: boolean;
+  /** 停止词, 值必须是json序列化后的字符串数组 */
+  stopWords?: string;
+  /** 运行时自定义参数 */
+  runtimeCustomParams?: Array<RuntimeCustomParam>;
+}
+
+export interface Visibility {
+  mode?: VisibleMode;
+  /** Mode为Specified有效，配置为除模型所属空间外的其他空间 */
+  spaceIDs?: Array<Int64>;
+}
+/* eslint-enable */

@@ -1,0 +1,129 @@
+{
+  "name": "@coze-agent-ide/bot-plugin-tools",
+  "version": "0.0.1",
+  "description": "plugin tools",
+  "license": "Apache-2.0",
+  "author": "lihuiwen.123@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.tsx",
+    "./useViewExample": "./src/hooks/example/use-view-example.tsx",
+    "./defaultValueInput": "./src/components/plugin_modal/params-components/default-value-input.tsx",
+    "./pluginModal/config": "./src/components/plugin_modal/config.ts",
+    "./pluginModal/types": "./src/components/plugin_modal/types",
+    "./pluginModal/debug": "./src/components/plugin_modal/debug",
+    "./pluginModal/form-components": "./src/components/plugin_modal/params-components/form-components.tsx",
+    "./infoPopover": "./src/components/info_popover/index.ts",
+    "./pluginModal/utils": "./src/components/plugin_modal/utils.ts",
+    "./example/utils": "./src/hooks/example/utils.ts",
+    "./example/useDebugFooter": "./src/hooks/example/use-debug-footer.tsx",
+    "./useResponseParams": "./src/components/plugin_modal/response-params",
+    "./useRequestParams": "./src/components/plugin_modal/request-params",
+    "./useBaseInfo": "./src/components/plugin_modal/base-info",
+    "./useBaseMore": "./src/components/plugin_modal/base-more",
+    "./useParametersInSettingModalController": "./src/hooks/parameters/use-parameters-in-setting-modal-controller.ts"
+  },
+  "main": "src/index.tsx",
+  "typesVersions": {
+    "*": {
+      "useViewExample": [
+        "./src/hooks/example/use-view-example.tsx"
+      ],
+      "defaultValueInput": [
+        "./src/components/plugin_modal/params-components/default-value-input.tsx"
+      ],
+      "pluginModal/config": [
+        "./src/components/plugin_modal/config.ts"
+      ],
+      "pluginModal/types": [
+        "./src/components/plugin_modal/types"
+      ],
+      "pluginModal/debug": [
+        "./src/components/plugin_modal/debug"
+      ],
+      "infoPopover": [
+        "./src/components/info_popover/index.ts"
+      ],
+      "pluginModal/utils": [
+        "./src/components/plugin_modal/utils.ts"
+      ],
+      "./pluginModal/form-components": [
+        "./src/components/plugin_modal/params-components/form-components.tsx"
+      ],
+      "example/utils": [
+        "./src/hooks/example/utils.ts"
+      ],
+      "example/useDebugFooter": [
+        "./src/hooks/example/use-debug-footer.tsx"
+      ],
+      "useResponseParams": [
+        "./src/components/plugin_modal/response-params"
+      ],
+      "useRequestParams": [
+        "./src/components/plugin_modal/request-params"
+      ],
+      "useBaseInfo": [
+        "./src/components/plugin_modal/base-info"
+      ],
+      "useBaseMore": [
+        "./src/components/plugin_modal/base-more"
+      ],
+      "useParametersInSettingModalController": [
+        "./src/hooks/parameters/use-parameters-in-setting-modal-controller.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-icons": "workspace:*",
+    "@coze-arch/bot-md-box-adapter": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/bot-studio-store": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-studio/bot-plugin-store": "workspace:*",
+    "@coze-studio/bot-utils": "workspace:*",
+    "@coze-studio/file-kit": "workspace:*",
+    "@coze-studio/plugin-shared": "workspace:*",
+    "@coze-studio/user-store": "workspace:*",
+    "@douyinfe/semi-icons": "^2.36.0",
+    "ahooks": "^3.7.8",
+    "classnames": "^2.3.2",
+    "copy-to-clipboard": "^3.3.3",
+    "immer": "^10.0.3",
+    "lodash-es": "^4.17.21",
+    "nanoid": "^4.0.2"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/lodash-es": "^4.17.10",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "stylelint": "^15.11.0",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  }
+}
+

@@ -1,0 +1,75 @@
+id: 0 # 模型 meta id, 同 id 数据不会覆盖
+name: test_model # 模型展示名称
+icon_uri: test_icon_uri # 模型展示图片 uri
+icon_url: test_icon_url # 模型展示图片 url
+description:
+  zh: test_description # 模型默认描述
+  en: test_description
+protocol: test_protocol # 模型连接协议, see: backend/infra/contract/chatmodel/protocol.go
+capability: # 模型基础能力
+  function_call: true # 模型是否支持 function call
+  input_modal: # 模型输入支持模态
+    - text
+    - image
+    - audio
+    - video
+  input_tokens: 1024 # 输入 token 上限
+  output_modal: # 模型输出支持模态
+    - text
+    - image
+    - audio
+    - video
+  output_tokens: 1024 # 输出 token 上限
+  max_tokens: 2048 # 最大 token 数量
+  json_mode: true # 是否支持 json mode
+  prefix_caching: false # 是否支持 prefix caching
+  reasoning: false # 是否支持 reasoning
+  prefill_response: false # 是否支持续写
+conn_config: # 模型连接参数
+  base_url: https://localhost:1234/chat/completion
+  api_key: qweasdzxc
+  timeout: 100 # nanosec
+  model: model_name # 模型名称
+  temperature: 0.7 # 默认 temperature
+  frequency_penalty: 0 # 默认 frequency_penalty
+  presence_penalty: 0 # 默认 presence_penalty
+  max_tokens: 2048 # 默认 max_tokens
+  top_p: 0 # 默认 top_p
+  top_k: 0 # 默认 top_k
+  enable_thinking: false
+  stop:
+    - bye
+  # 下面是模型专用配置，仅配置 protocol 所对应的类型即可
+  openai:
+    by_azure: true
+    api_version: 2024-10-21
+    response_format:
+      type: text
+  claude:
+    by_bedrock: true
+    access_key: bedrock_ak
+    secret_access_key: bedrock_secret_ak
+    session_token: bedrock_session_token
+    region: bedrock_region
+  ark:
+    region: region
+    access_key: ak
+    secret_key: sk
+    retry_times: 123
+    custom_header:
+      key: val
+  deepseek:
+    response_format_type: text
+  gemini:
+    backend: 0
+    project: ''
+    location: ''
+    api_version: ''
+    headers:
+      key_1:
+        - val_1
+        - val_2
+    timeout: 0
+    include_thoughts: true
+    thinking_budget: null
+  status: 1

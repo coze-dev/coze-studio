@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.node.json",
+  "include": ["index.js"],
+  "exclude": [],
+  "compilerOptions": {
+    "allowJs": true,
+    "rootDir": "./",
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  }
+}

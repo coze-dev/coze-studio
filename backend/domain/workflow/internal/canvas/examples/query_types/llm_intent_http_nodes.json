@@ -1,0 +1,435 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": -448.87677364248447,
+          "y": -730.339703409003
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          },
+          {
+            "type": "string",
+            "name": "xxxx",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "yyyy",
+            "required": true
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          },
+          {
+            "type": "string",
+            "name": "xxxx",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "yyyy",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 1473.3237449429023,
+          "y": -557.1872042676127
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "g1",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "global_variable_user",
+                    "path": [
+                      "user_v1"
+                    ],
+                    "blockID": "",
+                    "name": ""
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "117367",
+      "type": "5",
+      "meta": {
+        "position": {
+          "x": 70.62516971618413,
+          "y": -892.2590706557824
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "编写代码，处理输入变量来生成返回值",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
+          "mainColor": "#00B2B2",
+          "subTitle": "代码",
+          "title": "代码"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "2",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "v2",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "boolean"
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "global_variable_app",
+                    "path": [
+                      "app_v1"
+                    ],
+                    "blockID": "",
+                    "name": ""
+                  },
+                  "rawMeta": {
+                    "type": 101
+                  }
+                }
+              }
+            }
+          ],
+          "code": "// 在这里，您可以通过 ‘params’  获取节点中的输入变量，并通过 'ret' 输出结果\n// 'params' 和 'ret' 已经被正确地注入到环境中\n// 下面是一个示例，获取节点输入中参数名为‘input’的值：\n// const input = params.input; \n// 下面是一个示例，输出一个包含多种数据类型的 'ret' 对象：\n// const ret = { \"name\": ‘小明’, \"hobbies\": [“看书”, “旅游”] };\n\nasync function main({ params }: Args): Promise<Output> {\n    // 构建输出对象\n    const ret = {\n        \"key0\": params.input + params.input, // 拼接两次入参 input 的值\n        \"key1\": [\"hello\", \"world\"], // 输出一个数组\n        \"key2\": { // 输出一个Object\n            \"key21\": \"hi\"\n        },\n    };\n\n    return ret;\n}",
+          "language": 5,
+          "settingOnError": {
+            "processType": 1,
+            "timeoutMs": 60000,
+            "retryTimes": 0
+          }
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "key0"
+          },
+          {
+            "type": "list",
+            "name": "key1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "type": "object",
+            "name": "key2",
+            "schema": [
+              {
+                "type": "string",
+                "name": "key21"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "133234",
+      "type": "22",
+      "meta": {
+        "position": {
+          "x": 659.8817806571881,
+          "y": -946.5440413025951
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "用于用户输入的意图识别，并将其与预设意图选项进行匹配。",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Intent-v2.jpg",
+          "mainColor": "#00B2B2",
+          "subTitle": "意图识别",
+          "title": "意图识别"
+        },
+        "outputs": [
+          {
+            "type": "integer",
+            "name": "classificationId"
+          }
+        ],
+        "inputs": {
+          "chatHistorySetting": {
+            "enableChatHistory": false,
+            "chatHistoryRound": 3
+          },
+          "inputParameters": [
+            {
+              "name": "query",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "boolean"
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "global_variable_app",
+                    "path": [
+                      "app_v1"
+                    ],
+                    "blockID": "",
+                    "name": ""
+                  },
+                  "rawMeta": {
+                    "type": 101
+                  }
+                }
+              }
+            }
+          ],
+          "llmParam": {
+            "generationDiversity": "balance",
+            "maxTokens": 1024,
+            "modelName": "豆包·工具调用",
+            "modelType": 1706077826,
+            "prompt": {
+              "type": "string",
+              "value": {
+                "type": "literal",
+                "content": "{{query}}"
+              }
+            },
+            "responseFormat": 2,
+            "temperature": 1,
+            "topP": 0.7,
+            "systemPrompt": {
+              "type": "string",
+              "value": {
+                "type": "literal",
+                "content": ""
+              }
+            },
+            "enableChatHistory": false,
+            "chatHistoryRound": 3
+          },
+          "intents": [
+            {
+              "name": ""
+            }
+          ],
+          "mode": "top_speed",
+          "settingOnError": {
+            "processType": 1,
+            "timeoutMs": 60000,
+            "retryTimes": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "163493",
+      "type": "45",
+      "meta": {
+        "position": {
+          "x": 1073.8936862365279,
+          "y": -927.95637171054
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "用于发送API请求，从接口返回数据",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-HTTP.png",
+          "mainColor": "#3071F2",
+          "subTitle": "HTTP 请求",
+          "title": "HTTP 请求"
+        },
+        "inputParameters": [],
+        "inputs": {
+          "apiInfo": {
+            "method": "GET",
+            "url": "http://www.baidu.com"
+          },
+          "auth": {
+            "authData": {
+              "customData": {
+                "addTo": "header"
+              }
+            },
+            "authOpen": false,
+            "authType": "BEARER_AUTH"
+          },
+          "body": {
+            "bodyData": {
+              "binary": {
+                "fileURL": {
+                  "type": "string",
+                  "value": {
+                    "type": "ref",
+                    "content": {
+                      "source": "block-output",
+                      "blockID": "",
+                      "name": ""
+                    }
+                  }
+                }
+              },
+              "rawText": "xxxxx"
+            },
+            "bodyType": "RAW_TEXT"
+          },
+          "headers": [
+            {
+              "name": "c2",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "global_variable_user",
+                    "path": [
+                      "user_v1"
+                    ],
+                    "blockID": "",
+                    "name": ""
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "params": [
+            {
+              "name": "v1",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "123",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "setting": {
+            "retryTimes": 3,
+            "timeout": 120
+          },
+          "settingOnError": {}
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "body"
+          },
+          {
+            "type": "integer",
+            "name": "statusCode"
+          },
+          {
+            "type": "string",
+            "name": "headers"
+          }
+        ],
+        "settingOnError": {}
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "117367"
+    },
+    {
+      "sourceNodeID": "133234",
+      "targetNodeID": "900001",
+      "sourcePortID": "default"
+    },
+    {
+      "sourceNodeID": "163493",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "117367",
+      "targetNodeID": "133234"
+    },
+    {
+      "sourceNodeID": "133234",
+      "targetNodeID": "163493",
+      "sourcePortID": "branch_0"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

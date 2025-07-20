@@ -1,0 +1,126 @@
+{
+  "name": "@coze-studio/workspace-base",
+  "version": "0.0.1",
+  "description": "Coze 2.0 workspace业务能力入口",
+  "license": "Apache-2.0",
+  "author": "sunzhiyuan.evan@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.tsx",
+    "./knowledge-upload": "./src/pages/knowledge-upload/index.tsx",
+    "./knowledge-preview": "./src/pages/knowledge-preview/index.tsx",
+    "./develop": "./src/pages/develop/index.tsx",
+    "./library": "./src/pages/library/index.tsx"
+  },
+  "main": "src/index.tsx",
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./src/index.tsx"
+      ],
+      "knowledge-upload": [
+        "./src/pages/knowledge-upload/index.tsx"
+      ],
+      "knowledge-preview": [
+        "./src/pages/knowledge-preview/index.tsx"
+      ],
+      "develop": [
+        "./src/pages/develop/index.tsx"
+      ],
+      "library": [
+        "./src/pages/library/index.tsx"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-agent-ide/bot-plugin": "workspace:*",
+    "@coze-agent-ide/space-bot": "workspace:*",
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/bot-space-api": "workspace:*",
+    "@coze-arch/bot-studio-store": "workspace:*",
+    "@coze-arch/bot-tea": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/idl": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-arch/report-events": "workspace:*",
+    "@coze-common/biz-components": "workspace:*",
+    "@coze-common/chat-area-utils": "workspace:*",
+    "@coze-common/coze-mitt": "workspace:*",
+    "@coze-common/prompt-kit": "workspace:*",
+    "@coze-common/prompt-kit-adapter": "workspace:*",
+    "@coze-community/components": "workspace:*",
+    "@coze-data/database-v2": "workspace:*",
+    "@coze-data/knowledge-ide-adapter": "workspace:*",
+    "@coze-data/knowledge-ide-base": "workspace:*",
+    "@coze-data/knowledge-modal-adapter": "workspace:*",
+    "@coze-data/knowledge-resource-processor-adapter": "workspace:*",
+    "@coze-data/knowledge-resource-processor-base": "workspace:*",
+    "@coze-data/knowledge-resource-processor-core": "workspace:*",
+    "@coze-data/knowledge-stores": "workspace:*",
+    "@coze-data/utils": "workspace:*",
+    "@coze-foundation/account-adapter": "workspace:*",
+    "@coze-foundation/enterprise-store-adapter": "workspace:*",
+    "@coze-foundation/layout": "workspace:*",
+    "@coze-foundation/local-storage": "workspace:*",
+    "@coze-studio/bot-plugin-store": "workspace:*",
+    "@coze-studio/bot-utils": "workspace:*",
+    "@coze-studio/components": "workspace:*",
+    "@coze-studio/premium-components-adapter": "workspace:*",
+    "@coze-studio/premium-store-adapter": "workspace:*",
+    "@coze-studio/project-entity-adapter": "workspace:*",
+    "@coze-studio/user-store": "workspace:*",
+    "@coze-workflow/base": "workspace:*",
+    "@coze-workflow/components": "workspace:*",
+    "ahooks": "^3.7.8",
+    "axios": "^1.4.0",
+    "classnames": "^2.3.2",
+    "immer": "^10.0.3",
+    "lodash-es": "^4.17.21",
+    "mitt": "^3.0.1",
+    "qs": "^6.11.2"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@rsbuild/core": "1.1.13",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/lodash-es": "^4.17.10",
+    "@types/node": "18.18.9",
+    "@types/qs": "^6.9.7",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "react-is": ">= 16.8.0",
+    "react-router-dom": "^6.22.0",
+    "styled-components": ">= 2",
+    "stylelint": "^15.11.0",
+    "typescript": "~5.8.2",
+    "vite": "^4.3.9",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5",
+    "webpack": "~5.91.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  }
+}
+

@@ -1,0 +1,65 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { isGlobalVariableKey } from '@coze-workflow/variable';
+import { getSortedInputParameters } from '@coze-workflow/nodes';
+import { ValueExpressionType } from '@coze-workflow/base';
+
+import { isStaticObjectRef } from '@/components/test-run/utils/is-static-object-ref';
+
+import type { WorkflowNodeEntity } from '../types';
+import { generateInputToField } from './generate-input-to-field';
+
+export const generateParametersToProperties = (
+  parameters: any[],
+  { node }: { node: WorkflowNodeEntity },
+) => {
+  if (!parameters || !Array.isArray(parameters)) {
+    return {};
+  }
+
+  const fields = parameters.filter(i => {
+    /** 对象引用类型不需要过滤，全是静态字段的需要过滤 */
+    if (i.input?.type === ValueExpressionType.OBJECT_REF) {
+      return !isStaticObjectRef(i);
+    }
+    /** 非引用类型直接过滤，引用值不存在直接过滤 */
+    if (i.input?.type !== 'ref' || !i.input?.content) {
+      return false;
+    }
+    /** 如果引用来自于自身，则不需要再填写 */
+    const [nodeId] = i.input.content.keyPath || [];
+    if (nodeId && nodeId === node.id) {
+      return false;
+    }
+    if (isGlobalVariableKey(nodeId)) {
+      return false;
+    }
+
+    return true;
+  });
+  const sortedFields = getSortedInputParameters(fields);
+
+  return sortedFields
+    .map(field => generateInputToField(field, { node }))
+    .reduce((properties, field) => {
+      if (field.name) {
+        properties[field.name] = field;
+      }
+      return properties;
+    }, {});
+};

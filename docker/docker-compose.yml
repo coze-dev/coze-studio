@@ -1,0 +1,564 @@
+x-env-file: &env_file
+  - .env
+
+services:
+  mysql:
+    image: mysql:8.4.5
+    container_name: coze-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-opencoze}
+      MYSQL_USER: ${MYSQL_USER:-coze}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-coze123}
+    profiles: ['middleware', 'mysql-setup', 'mysql']
+    env_file: *env_file
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'mysqladmin',
+          'ping',
+          '-h',
+          'localhost',
+          '-u$${MYSQL_USER}',
+          '-p$${MYSQL_PASSWORD}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - coze-network
+
+  redis:
+    image: bitnami/redis:8.0
+    container_name: coze-redis
+    user: root
+    privileged: true
+    profiles: ['middleware']
+    env_file: *env_file
+    environment:
+      - REDIS_AOF_ENABLED=${REDIS_AOF_ENABLED:-no}
+      - REDIS_PORT_NUMBER=${REDIS_PORT_NUMBER:-6379}
+      - REDIS_IO_THREADS=${REDIS_IO_THREADS:-4}
+      - ALLOW_EMPTY_PASSWORD=${ALLOW_EMPTY_PASSWORD:-yes}
+    ports:
+      - '6379:6379'
+    volumes:
+      - ./data/bitnami/redis:/bitnami/redis/data:rw,Z
+    command: >
+      bash -c "
+        /opt/bitnami/scripts/redis/setup.sh
+        # Set proper permissions for data directories
+        chown -R redis:redis /bitnami/redis/data
+        chmod g+s /bitnami/redis/data
+
+        exec /opt/bitnami/scripts/redis/entrypoint.sh /opt/bitnami/scripts/redis/run.sh
+      "
+    depends_on:
+      minio-setup:
+        condition: service_completed_successfully
+      elasticsearch-setup:
+        condition: service_completed_successfully
+      mysql-setup-schema:
+        condition: service_completed_successfully
+      mysql-setup-init-sql:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+    networks:
+      - coze-network
+
+  # rocketmq-namesrv:
+  #   image: apache/rocketmq:5.3.2
+  #   container_name: coze-rocketmq-namesrv
+  #   privileged: true
+  #   user: root
+  #   profiles: ['middleware']
+  #   env_file: *env_file
+  #   ports:
+  #     - '9876:9876'
+  #   volumes:
+  #     - ./data/rocketmq/namesrv/logs:/home/rocketmq/logs:rw,Z
+  #     - ./data/rocketmq/namesrv/store:/home/rocketmq/store:rw,Z
+  #   environment:
+  #     - ALLOW_ANONYMOUS_LOGIN=yes
+  #   command: >
+  #     bash -c "
+  #       # Set proper permissions for data directories
+  #       mkdir -p /home/rocketmq/logs /home/rocketmq/store
+  #       mkdir -p /home/rocketmq/logs/rocketmqlogs
+  #       touch /home/rocketmq/logs/rocketmqlogs/tools.log
+  #       touch /home/rocketmq/logs/rocketmqlogs/tools_default.log
+
+  #       chown -R rocketmq:rocketmq /home/rocketmq/logs /home/rocketmq/store
+  #       chmod g+s /home/rocketmq/logs /home/rocketmq/store
+
+  #       echo 'Starting RocketMQ NameServer...'
+  #       sh mqnamesrv
+  #     "
+  #   healthcheck:
+  #     test: ['CMD', 'sh', 'mqadmin', 'clusterList', '-n', 'localhost:9876']
+  #     interval: 5s
+  #     timeout: 10s
+  #     retries: 10
+  #     start_period: 10s
+  #   networks:
+  #     - coze-network
+  # rocketmq-broker:
+  #   image: apache/rocketmq:5.3.2
+  #   container_name: coze-rocketmq-broker
+  #   privileged: true
+  #   user: root
+  #   profiles: ['middleware']
+  #   env_file: *env_file
+  #   ports:
+  #     - '10909:10909'
+  #     - '10911:10911'
+  #     - '10912:10912'
+  #   volumes:
+  #     - ./data/rocketmq/broker/logs:/home/rocketmq/logs:rw,Z
+  #     - ./data/rocketmq/broker/store:/home/rocketmq/store:rw,Z
+  #     - ./volumes/rocketmq/broker.conf:/home/rocketmq/conf/broker.conf:rw,Z
+  #   networks:
+  #     - coze-network
+  #   command: >
+  #     bash -c '
+  #       # Set proper permissions
+  #       mkdir -p /home/rocketmq/logs/rocketmqlogs /home/rocketmq/store
+  #       touch /home/rocketmq/logs/rocketmqlogs/tools.log \
+  #             /home/rocketmq/logs/rocketmqlogs/tools_default.log
+  #       chown -R rocketmq:rocketmq /home/rocketmq/logs /home/rocketmq/store
+  #       chmod g+s /home/rocketmq/logs /home/rocketmq/store
+
+  #       echo "Starting RocketMQ Broker..."
+  #       sh mqbroker -n rocketmq-namesrv:9876 -c /home/rocketmq/conf/broker.conf &
+
+  #       echo "Waiting for Broker registration..."
+  #       broker_ready=false
+  #       for i in {1..60}; do
+  #         if sh mqadmin clusterList -n rocketmq-namesrv:9876 \
+  #            | grep -q "DefaultCluster.*broker-a"; then
+  #           echo "Registered."
+  #           broker_ready=true
+  #           break
+  #         fi
+  #         echo "Not ready, retry $$i/60..."
+  #         sleep 1
+  #       done
+
+  #       if [ "$$broker_ready" = false ]; then
+  #         echo "ERROR: registration timed out."
+  #         exit 1
+  #       fi
+
+  #       echo "Creating topics..."
+  #       for t in opencoze_knowledge opencoze_search_app opencoze_search_resource \
+  #                 %RETRY%cg_knowledge %RETRY%cg_search_app %RETRY%cg_search_resource; do
+  #         sh mqadmin updateTopic -n rocketmq-namesrv:9876 \
+  #           -c DefaultCluster -t "$$t"
+  #       done
+
+  #       touch /tmp/rocketmq_ready
+  #       echo "Broker started successfully."
+  #       wait
+  #     '
+  #   depends_on:
+  #     - rocketmq-namesrv
+  #   healthcheck:
+  #     test: ['CMD-SHELL', '[ -f /tmp/rocketmq_ready ]']
+  #     interval: 10s
+  #     timeout: 10s
+  #     retries: 10
+  #     start_period: 10s
+
+  elasticsearch:
+    image: bitnami/elasticsearch:8.18.0
+    container_name: coze-elasticsearch
+    user: root
+    privileged: true
+    profiles: ['middleware']
+    env_file: *env_file
+    environment:
+      - TEST=1
+      # Add Java certificate trust configuration
+      # - ES_JAVA_OPTS=-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djavax.net.ssl.trustAll=true -Xms4096m -Xmx4096m
+    ports:
+      - '9200:9200'
+    volumes:
+      - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data
+      - ./volumes/elasticsearch/elasticsearch.yml:/opt/bitnami/elasticsearch/config/my_elasticsearch.yml
+      - ./volumes/elasticsearch/analysis-smartcn.zip:/opt/bitnami/elasticsearch/analysis-smartcn.zip:rw,Z
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -f http://localhost:9200 && [ -f /tmp/es_plugins_ready ]',
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+    networks:
+      - coze-network
+    # Install smartcn analyzer plugin
+    command: >
+      bash -c "
+        /opt/bitnami/scripts/elasticsearch/setup.sh
+        # Set proper permissions for data directories
+        chown -R elasticsearch:elasticsearch /bitnami/elasticsearch/data
+        chmod g+s /bitnami/elasticsearch/data
+
+        # Create plugin directory
+        mkdir -p /bitnami/elasticsearch/plugins;
+
+        # Unzip plugin to plugin directory and set correct permissions
+        echo 'Installing smartcn plugin...';
+        if [ ! -d /opt/bitnami/elasticsearch/plugins/analysis-smartcn ]; then
+
+          # Download plugin package locally
+          echo 'Copying smartcn plugin...';
+          cp /opt/bitnami/elasticsearch/analysis-smartcn.zip /tmp/analysis-smartcn.zip 
+
+          elasticsearch-plugin install file:///tmp/analysis-smartcn.zip
+          if [[ "$?" != "0" ]]; then
+            echo 'Plugin installation failed, exiting operation';
+            rm -rf /opt/bitnami/elasticsearch/plugins/analysis-smartcn
+            exit 1;
+          fi;
+          rm -f /tmp/analysis-smartcn.zip;
+        fi;
+
+        # Create marker file indicating plugin installation success
+        touch /tmp/es_plugins_ready;
+        echo 'Plugin installation successful, marker file created';
+
+        # Start Elasticsearch
+        exec /opt/bitnami/scripts/elasticsearch/entrypoint.sh /opt/bitnami/scripts/elasticsearch/run.sh
+
+        echo -e "⏳ Adjusting Elasticsearch disk watermark settings..."
+      "
+
+  minio:
+    image: minio/minio:RELEASE.2025-06-13T11-33-47Z-cpuv1
+    container_name: coze-minio
+    user: root
+    privileged: true
+    profiles: ['middleware']
+    env_file: *env_file
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - ./data/minio:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_DEFAULT_BUCKETS: ${MINIO_BUCKET:-opencoze},${MINIO_DEFAULT_BUCKETS:-milvus}
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          '/usr/bin/mc alias set health_check http://localhost:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} && /usr/bin/mc ready health_check',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - coze-network
+
+  etcd:
+    image: bitnami/etcd:3.5
+    container_name: coze-etcd
+    user: root
+    privileged: true
+    profiles: ['middleware']
+    env_file: *env_file
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ALLOW_NONE_AUTHENTICATION=yes
+    ports:
+      - 2379:2379
+      - 2380:2380
+    volumes:
+      - ./data/bitnami/etcd:/bitnami/etcd:rw,Z
+      - ./volumes/etcd/etcd.conf.yml:/opt/bitnami/etcd/conf/etcd.conf.yml:ro,Z
+    command: >
+      bash -c "
+        /opt/bitnami/scripts/etcd/setup.sh
+        # Set proper permissions for data and config directories
+        chown -R etcd:etcd /bitnami/etcd
+        chmod g+s /bitnami/etcd
+
+        exec /opt/bitnami/scripts/etcd/entrypoint.sh /opt/bitnami/scripts/etcd/run.sh
+      "
+    healthcheck:
+      test: ['CMD', 'etcdctl', 'endpoint', 'health']
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+    networks:
+      - coze-network
+
+  milvus:
+    container_name: coze-milvus
+    image: milvusdb/milvus:v2.5.10
+    user: root
+    privileged: true
+    profiles: ['middleware']
+    env_file: *env_file
+    command: >
+      bash -c "
+        # Set proper permissions for data directories
+        chown -R root:root /var/lib/milvus
+        chmod g+s /var/lib/milvus
+
+        exec milvus run standalone
+      "
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: coze-etcd:2379
+      MINIO_ADDRESS: coze-minio:9000
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET:-milvus}
+      MINIO_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_USE_SSL: false
+      LOG_LEVEL: debug
+    volumes:
+      - ./data/milvus:/var/lib/milvus:rw,Z
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9091/healthz']
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+    ports:
+      - '19530:19530'
+      - '9091:9091'
+    depends_on:
+      etcd:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - coze-network
+  nsqlookupd:
+    image: nsqio/nsq:v1.2.1
+    container_name: coze-nsqlookupd
+    command: /nsqlookupd
+    profiles: ['middleware']
+    ports:
+      - '4160:4160'
+      - '4161:4161'
+    networks:
+      - coze-network
+    healthcheck:
+      test: ['CMD-SHELL', 'nsqlookupd --version']
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+
+  nsqd:
+    image: nsqio/nsq:v1.2.1
+    container_name: coze-nsqd
+    command: /nsqd --lookupd-tcp-address=coze-nsqlookupd:4160 --broadcast-address=coze-nsqd
+    profiles: ['middleware']
+    ports:
+      - '4150:4150'
+      - '4151:4151'
+    depends_on:
+      nsqlookupd:
+        condition: service_healthy
+    networks:
+      - coze-network
+    healthcheck:
+      test: ['CMD-SHELL', '/nsqd --version']
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+
+  nsqadmin:
+    image: nsqio/nsq:v1.2.1
+    container_name: coze-nsqadmin
+    command: /nsqadmin --lookupd-http-address=coze-nsqlookupd:4161
+    profiles: ['middleware']
+    ports:
+      - '4171:4171'
+    depends_on:
+      nsqlookupd:
+        condition: service_healthy
+    networks:
+      - coze-network
+
+  elasticsearch-setup:
+    image: alpine/curl:8.12.1
+    container_name: coze-elasticsearch-setup
+    profiles: ['middleware', 'volcano-setup']
+    env_file: *env_file
+    volumes:
+      - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh
+      - ./volumes/elasticsearch/es_index_schema:/es_index_schema
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -ex
+        /setup_es.sh
+        echo 'Elasticsearch setup complete.'
+    networks:
+      - coze-network
+    restart: 'no'
+  minio-setup:
+    image: minio/mc:RELEASE.2025-05-21T01-59-54Z-cpuv1
+    container_name: coze-minio-setup
+    profiles: ['middleware']
+    env_file: *env_file
+    depends_on:
+      minio:
+        condition: service_healthy
+    volumes:
+      - ./volumes/minio/default_icon/:/default_icon
+      - ./volumes/minio/official_plugin_icon/:/official_plugin_icon
+    entrypoint: >
+      /bin/sh -c  "
+        (/usr/bin/mc alias set localminio http://coze-minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} && \
+        /usr/bin/mc mb --ignore-existing localminio/${STORAGE_BUCKET} && \
+        /usr/bin/mc cp --recursive /default_icon/ localminio/${STORAGE_BUCKET}/default_icon/ && \
+        /usr/bin/mc cp --recursive /official_plugin_icon/ localminio/${STORAGE_BUCKET}/official_plugin_icon/ && \
+        echo 'upload files to minio complete: Files uploaded to ${STORAGE_BUCKET} bucket.') || exit 1; \
+      "
+    networks:
+      - coze-network
+    restart: 'no'
+
+  mysql-setup-schema:
+    image: arigaio/atlas:0.35.0-community-alpine
+    container_name: coze-mysql-setup-schema
+    profiles: ['middleware', 'mysql-setup', 'run-server']
+    env_file: *env_file
+    volumes:
+      - ./atlas/opencoze_latest_schema.hcl:/opencoze_latest_schema.hcl
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -ex
+        TMP_ATLAS_URL="${ATLAS_URL}"
+        if [ "${MYSQL_HOST}" = "localhost" ] || [ "${MYSQL_HOST}" = "127.0.0.1" ]; then
+            echo "MYSQL_HOST is localhost or 127.0.0.1, replacing with docker network address"
+            TMP_ATLAS_URL="mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:${MYSQL_PORT}/${MYSQL_DATABASE}?charset=utf8mb4&parseTime=True"
+        fi
+
+        echo "final atlas url: $${TMP_ATLAS_URL}"
+        for i in `seq 1 60`; do
+             if atlas schema apply \
+                 -u "$${TMP_ATLAS_URL}" \
+                 --to file:///opencoze_latest_schema.hcl \
+                 --exclude "atlas_schema_revisions,table_*" \
+                 --auto-approve; then
+                 echo "MySQL setup complete."
+                 exit 0
+             fi
+             echo "atlas schema apply failed, retrying...($$i/60)"
+             sleep 1
+         done
+         echo "MySQL setup failed after 60 retries."
+         exit 1
+    networks:
+      - coze-network
+  mysql-setup-init-sql:
+    image: mysql:8.4.5
+    container_name: coze-mysql-setup-init-sql
+    profiles: ['middleware', 'mysql-setup', 'run-server', 'volcano-setup']
+    env_file: *env_file
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -ex
+        for i in $(seq 1 60); do
+          DB_HOST="$${MYSQL_HOST}"
+          if [ "$${MYSQL_HOST}" = "localhost" ] || [ "$${MYSQL_HOST}" = "127.0.0.1" ]; then
+            DB_HOST="mysql"
+          fi
+          if mysql -h "$${DB_HOST}" -P"$${MYSQL_PORT}" -u"$${MYSQL_USER}" -p"$${MYSQL_PASSWORD}" "$${MYSQL_DATABASE}" < /schema.sql && \
+             mysql -h "$${DB_HOST}" -P"$${MYSQL_PORT}" -u"$${MYSQL_USER}" -p"$${MYSQL_PASSWORD}" "$${MYSQL_DATABASE}" < /sql_init.sql; then
+            echo 'MySQL init success.'
+            exit 0
+          fi
+          echo "Retrying to connect to mysql... ($$i/60)"
+          sleep 1
+        done
+        echo 'Failed to init mysql db.'
+        exit 1
+    volumes:
+      - ./volumes/mysql/sql_init.sql:/sql_init.sql
+      - ./volumes/mysql/schema.sql:/schema.sql
+    networks:
+      - coze-network
+    restart: 'no'
+
+  coze-server:
+    # build:
+    #   context: ../
+    #   dockerfile: backend/Dockerfile
+    image: opencoze/opencoze:latest
+    container_name: coze-server
+    profiles: ['run-server']
+    env_file: *env_file
+    environment:
+      LISTEN_ADDR: 0.0.0.0:8888
+    networks:
+      - coze-network
+    ports:
+      - '8888:8888'
+      - '8889:8889'
+    volumes:
+      - .env:/app/.env
+      # - ../backend/conf:/app/resources/conf
+      # - ../backend/static:/app/resources/static
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      # rocketmq-namesrv:
+      #   condition: service_healthy
+      # rocketmq-broker:
+      #   condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      milvus:
+        condition: service_healthy
+      minio-setup:
+        condition: service_completed_successfully
+      elasticsearch-setup:
+        condition: service_completed_successfully
+      mysql-setup-init-sql:
+        condition: service_completed_successfully
+    command: ['/app/bootstrap.sh']
+
+networks:
+  coze-network:
+    driver: bridge

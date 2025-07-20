@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": [],
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../arch/bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-env/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-error/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-flags/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-hooks/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-http/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-store/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-tea/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/logger/tsconfig.build.json"
+    },
+    {
+      "path": "../../components/bot-icons/tsconfig.build.json"
+    },
+    {
+      "path": "../../components/bot-semi/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/user-store/tsconfig.build.json"
+    }
+  ]
+}

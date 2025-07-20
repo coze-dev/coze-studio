@@ -1,0 +1,140 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
+  "commands": [
+    {
+      "name": "pub",
+      "commandKind": "global",
+      "summary": "⭐️️ Publish packages to npm",
+      "shellCommand": "rush-publish pub",
+      "safeForSimultaneousRushProcesses": true
+    },
+    {
+      "name": "change-x",
+      "commandKind": "global",
+      "summary": "⭐️️ generate change log",
+      "shellCommand": "rush-publish change",
+      "safeForSimultaneousRushProcesses": true
+    },
+    {
+      "name": "release",
+      "commandKind": "global",
+      "summary": "⭐️️ release packages",
+      "shellCommand": "rush-publish release",
+      "safeForSimultaneousRushProcesses": true
+    }
+  ],
+  "parameters": [
+    {
+      "parameterKind": "string",
+      "description": "Enable dry run mode",
+      "shortName": "-d",
+      "longName": "--dry-run",
+      "argumentName": "DRY_RUN",
+      "associatedCommands": ["pub"],
+      "required": false
+    },
+    {
+      "parameterKind": "string",
+      "shortName": "-t",
+      "longName": "--to",
+      "description": "Publish specified packages and their downstream dependencies",
+      "argumentName": "TO",
+      "associatedCommands": ["pub"],
+      "required": false
+    },
+    {
+      "parameterKind": "string",
+      "shortName": "-f",
+      "longName": "--from",
+      "description": "Publish specified packages and their upstream/downstream dependencies",
+      "argumentName": "FROM",
+      "associatedCommands": ["pub"],
+      "required": false
+    },
+    {
+      "parameterKind": "string",
+      "shortName": "-o",
+      "longName": "--only",
+      "description": "Only publish specified packages",
+      "argumentName": "ONLY",
+      "associatedCommands": ["pub"],
+      "required": false
+    },
+    {
+      "parameterKind": "flag",
+      "shortName": "-s",
+      "longName": "--skip-commit",
+      "description": "Skip git commit",
+      "associatedCommands": ["pub"],
+      "required": false
+    },
+    {
+      "parameterKind": "flag",
+      "shortName": "-p",
+      "longName": "--skip-push",
+      "description": "Skip git push",
+      "associatedCommands": ["pub"],
+      "required": false
+    },
+    {
+      "parameterKind": "choice",
+      "alternatives": [
+        {
+          "name": "alpha",
+          "description": "Alpha version"
+        },
+        {
+          "name": "beta",
+          "description": "Beta version"
+        },
+        {
+          "name": "patch",
+          "description": "Patch version"
+        },
+        {
+          "name": "minor",
+          "description": "Minor version"
+        },
+        {
+          "name": "major",
+          "description": "Major version"
+        }
+      ],
+      "shortName": "-b",
+      "longName": "--bump-type",
+      "description": "Version bump type (alpha/beta/patch/minor/major)",
+      "associatedCommands": ["pub"],
+      "required": false
+    },
+    {
+      "parameterKind": "flag",
+      "longName": "--amend-commit",
+      "shortName": "-a",
+      "description": "是否 amend commit 阶段",
+      "associatedCommands": ["change-x"]
+    },
+    {
+      "parameterKind": "flag",
+      "longName": "--ci",
+      "shortName": "-i",
+      "description": "是否在 CI 环境",
+      "associatedCommands": ["change-x"]
+    },
+    {
+      "parameterKind": "string",
+      "argumentName": "COMMIT_MSG",
+      "longName": "--commit-msg",
+      "shortName": "-c",
+      "description": "本次提交信息,默认读取 .git/COMMIT_EDITMSG",
+      "associatedCommands": ["change-x"]
+    },
+    {
+      "parameterKind": "string",
+      "argumentName": "COMMIT",
+      "longName": "--commit",
+      "shortName": "-c",
+      "description": "Git commit hash",
+      "associatedCommands": ["release"]
+    }
+  ]
+}

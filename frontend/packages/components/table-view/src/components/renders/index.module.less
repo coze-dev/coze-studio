@@ -1,0 +1,390 @@
+.cell-text-render {
+  overflow: hidden;
+
+  width: 100%;
+  height: 100%;
+  min-height: 32px;
+  margin-left: -16px;
+  padding: 0 16px;
+
+  &:hover {
+    background-color:var(--coz-mg-secondary-hovered);
+    border-radius: 8px;
+  }
+
+  .cell-text-preview {
+    overflow: hidden;
+
+    height: 100%;
+    min-height: 32px;
+
+    font-size: 14px;
+    font-weight: 400;
+    font-style: normal;
+    line-height: 32px;
+    color: var(--coz-fg-primary);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    border-radius: 8px;
+  }
+
+  .cell-text-edit,
+  .cell-text-readonly {
+    position: absolute;
+    z-index: 10;
+    top: 12px;
+    left: 0;
+
+    display: flex;
+    flex-direction: row;
+
+    width: calc(100% - 16px);
+
+    background: var(--coz-bg-max);
+    border-radius: 8px;
+    box-shadow: 0 0 4px 0 rgb(0 0 0 / 10%), 0 0 1px 0 rgb(0 0 0 / 8%);
+
+    .cell-text-area {
+      border: 0;
+
+      textarea {
+        min-height: 22px;
+        max-height: 120px;
+        padding: 2px 13px;
+      }
+    }
+
+    :global {
+      .semi-icon-default {
+        margin-right: 6px;
+      }
+    }
+  }
+
+  .cell-text-edit:not(.cell-text-error) {
+    top: 11px;
+    // margin: -1px 0 0;
+    border: 1px solid var(--coz-fg-hglt);
+
+    .cell-text-area textarea {
+      padding-left: 12px;
+    }
+  }
+  .cell-text-edit-error {
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+  }
+
+  .cell-text-error {
+    border: 1px solid var(--coz-stroke-hglt-red);
+
+    :global {
+      .semi-icon {
+        svg {
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+  }
+
+  .cell-text-readonly {
+    border: 0;
+  }
+
+
+  :global {
+    .semi-input-textarea-wrapper {
+
+      &:active,
+      &:focus,
+      &:hover {
+        background-color: var(--coz-bg-max);;
+      }
+    }
+
+    .semi-input-textarea-wrapper:active .semi-input-textarea-wrapper-disabled,
+    .semi-input-textarea-wrapper-readonly,
+    .semi-input-textarea-wrapper-focus {
+      background-color: var(--coz-bg-max);
+    }
+
+    .semi-input-textarea-readonly {
+      // color: rgb(29 28 35);
+    }
+
+    .semi-input-textarea-autosize {
+      overflow: auto;
+    }
+
+  }
+}
+
+
+.tag-render {
+  font-size: 12px;
+  font-style: normal;
+  line-height: 16px;
+}
+
+.actions-render {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+
+  .action-edit,
+  .action-delete {
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border-radius: 4px;
+
+    &:hover {
+      background-color: var(--coz-mg-secondary-hovered)
+    }
+  }
+
+  :global {
+    .semi-button-light {
+      border: 0
+    }
+  }
+}
+
+.edit-header-render {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+  height: 100%;
+
+  &:hover {
+    background: var(--coz-mg-secondary-hovered);
+  }
+
+  .header-preview {
+    height: 100%;
+  }
+
+  .header-input {
+    border: 1px solid #4D53E8;
+
+  }
+
+  .header-delete {
+    width: 24px;
+    height: 24px;
+    background: transparent;
+
+    &:hover {
+      background-color: #e0e0e4;
+    }
+  }
+
+  :global {
+    .semi-input-wrapper-error {
+      background-color: var(--coz-bg-max);
+      border-color: var(--coz-stroke-hglt-red);
+    }
+
+    .semi-input-textarea-wrapper:active .semi-input-textarea-wrapper-disabled,
+    .semi-input-textarea-wrapper-readonly,
+    .semi-input-textarea-wrapper-focus {
+      background-color: var(--coz-bg-max);;
+    }
+
+    .semi-input-textarea-autosize {
+      overflow: auto;
+    }
+  }
+}
+
+.image-render-empty {
+  &:hover {
+    background: #e0e0e4;
+    border-radius: 8px;
+  }
+}
+
+.image-render-wrapper {
+  width: 100%;
+  height: 100%;
+
+  .image-failed,
+  .image-failed svg {
+    width: 32px;
+    height: 32px
+  }
+
+  .image-container {
+    height: 100%;
+    line-height: 0
+  }
+
+  :global {
+    .semi-image-status {
+      .semi-icon-default {
+        font-size: 32px;
+      }
+    }
+
+    .semi-image-img-error {
+      width: 32px;
+    }
+
+    .semi-image,
+    img {
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      background-color: #fff;
+    }
+  }
+}
+
+.image-preview-modal {
+
+  .image-upload-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 430px;
+
+    background-color: var(--semi-color-primary-light-default);
+    border: 1px dashed var(--semi-color-primary);
+    border-radius: 4px;
+
+    .image-upload-text {
+      margin-bottom: 4px;
+
+      font-size: 14px;
+      font-weight: 400;
+      font-style: normal;
+      line-height: 20px;
+      color: var(--coz-fg-primary);
+    }
+
+    .image-upload-tips {
+      font-size: 12px;
+      font-weight: 400;
+      font-style: normal;
+      line-height: 16px;
+      color: var(--coz-fg-dim);
+
+    }
+
+    :global {
+      .semi-icon {
+        margin-bottom: 4px;
+        font-size: 24px;
+        color: #4D53E8;
+      }
+    }
+  }
+
+  .image-upload {
+    cursor: pointer;
+    width: 592px;
+    height: 430px;
+    margin-bottom: 24px;
+
+    .image-wrapper {
+      width: 100%;
+      height: 100%;
+
+      .image-hover {
+        display: none;
+      }
+
+      &:hover {
+        .image-hover {
+          position: absolute;
+          z-index: 10;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          width: 100%;
+          height: 430px;
+
+          background: var(--coz-mg-hglt);
+        }
+
+      }
+    }
+
+
+  }
+
+
+  :global {
+
+    .semi-upload-add {
+      width: 100%
+    }
+
+    .semi-upload {
+      .semi-image {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        width: 100%;
+        height: 100%;
+      }
+
+      img {
+        max-width: 100%;
+        max-height: 430px;
+        background-color: #fff;
+      }
+    }
+
+    .semi-input-wrapper {
+      margin-top: 8px;
+    }
+
+    .semi-spin-block.semi-spin {
+      width: 100%;
+
+      .semi-spin-children {
+        width: 100%;
+        height: 430px;
+      }
+    }
+
+    .spin-uploading {
+      background-color: #1D1C2359;
+    }
+
+    .semi-spin {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+
+
+      .semi-spin-wrapper {
+        display: flex;
+        flex-direction: row;
+        gap: 6px;
+
+        width: auto;
+        padding: 4px 8px;
+
+        color: var(--coz-bg-max);;
+
+        background: #1D1C2399;
+        border-radius: 4px;
+      }
+    }
+  }
+
+}

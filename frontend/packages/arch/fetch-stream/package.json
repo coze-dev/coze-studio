@@ -1,0 +1,30 @@
+{
+  "name": "@coze-arch/fetch-stream",
+  "version": "0.0.1",
+  "description": "fetch stream vanilla js",
+  "license": "Apache-2.0",
+  "author": "gaoyuanhan.duty@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@mattiasbuelens/web-streams-adapter": "~0.1.0",
+    "eventsource-parser": "^1.0.0",
+    "web-streams-polyfill": "~3.3.2"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/node": "^18",
+    "@vitest/coverage-v8": "~3.0.5",
+    "sucrase": "^3.32.0",
+    "vitest": "~3.0.5"
+  }
+}
+

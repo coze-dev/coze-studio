@@ -1,0 +1,21 @@
+.container {
+  display: flex;
+  flex: 1;
+  position: relative;
+  align-self: stretch;
+  flex-direction: column;
+  margin-left: 8px;
+
+  .desc-not-focus {
+    textarea {
+      padding: 0 12px;
+    }
+  }
+
+  .desc-not-focus-with-value {
+    textarea {
+      padding: 0 12px;
+      -webkit-line-clamp: 1;
+    }
+  }
+}

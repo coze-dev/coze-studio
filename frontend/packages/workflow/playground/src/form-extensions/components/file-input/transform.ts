@@ -1,0 +1,54 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+import { nanoid } from 'nanoid';
+import { type LiteralExpression } from '@coze-workflow/base';
+
+import { type FileItem } from '../../../hooks/use-upload';
+
+export const transformExpressionInputToFileList = (
+  value?: LiteralExpression,
+): FileItem[] => {
+  if (!value) {
+    return [];
+  }
+
+  let fileList: FileItem[] = [];
+
+  const { rawMeta, content } = value;
+
+  const { fileName } = rawMeta || {};
+
+  if (Array.isArray(content)) {
+    fileList = content.map((item, index) => ({
+      url: item,
+      name: fileName?.[index],
+      uid: nanoid(),
+    })) as FileItem[];
+  } else {
+    if (content) {
+      fileList = [
+        {
+          url: content,
+          name: fileName,
+          uid: nanoid(),
+        },
+      ] as FileItem[];
+    }
+  }
+
+  return fileList;
+};

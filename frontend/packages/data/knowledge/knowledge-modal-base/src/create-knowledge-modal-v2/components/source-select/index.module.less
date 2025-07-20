@@ -1,0 +1,88 @@
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable selector-class-pattern */
+.common-svg-icon(@size: 14px, @color: #3370ff) {
+  >svg {
+    width: @size;
+    height: @size;
+
+    >path {
+      fill: @color;
+    }
+  }
+}
+
+
+.radio-wrapper {
+  .radio-group {
+    display: flex;
+    gap: 8px;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .radio-item {
+    flex: 0 0 49%;
+  }
+
+  .displayNone {
+    display: none;
+  }
+
+
+  .form-line-wrapper {
+    position: relative;
+  }
+
+  .form-line {
+    margin-top: 24px;
+  }
+
+  .pt6 {
+    padding-top: 6px;
+  }
+
+  :global {
+    .semi-radioGroup-vertical {
+      row-gap: 8px;
+    }
+
+    .semi-radio-cardRadioGroup {
+      column-gap: 16px;
+      border: 1px solid var(--coz-stroke-plus);
+
+      &:hover {
+        background: var(--coz-mg-secondary-hovered);
+      }
+
+      &:active {
+        background: var(--coz-mg-secondary-pressed);
+      }
+    }
+
+
+
+    .semi-radio-cardRadioGroup_checked {
+      background: var(--coz-mg-hglt);
+      border: 1px solid var(--coz-stroke-hglt);
+
+      &:hover {
+        background: var(--coz-mg-hglt-hovered);
+      }
+
+      &:active {
+        background: var(--coz-mg-hglt-pressed);
+
+      }
+    }
+  }
+
+  .radio-icon {
+    display: flex;
+    align-items: center;
+    margin-right: 8px;
+  }
+}
+
+.icon-size-16 {
+  .common-svg-icon(16px, null);
+}

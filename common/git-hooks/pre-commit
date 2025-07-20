@@ -1,0 +1,27 @@
+#!/bin/bash
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+
+# Invoke the "rush prettier" custom command to reformat files whenever they
+# are committed. The command is defined in common/config/rush/command-line.json
+# and uses the "rush-lint-staged" autoinstaller.
+
+# Force to update codeowners file if packasge.json changed.
+
+# block unresolved conflict; https://git-scm.com/docs/git-diff
+
+if [ "$SKIP_COMMIT_MSG_HOOK" = "true" ]; then
+  exit 0
+fi
+
+source frontend/scripts/block-unresolved-conflict.sh
+
+block_unresolved_conflict '--cached'
+
+if [ "$PRE_LINT" != "1" ]; then
+  node common/scripts/install-run-rush.js fix-ts-refers --use-cached-files --shallow --submit-changes
+  # node infra/commanders/fix-peer-deps/bin/main.js fix --use-cached-files -s
+  node common/scripts/install-run-rush.js -q lint-staged || exit $?
+  bash .codebase/scripts/check-file-size.sh || exit $?
+fi

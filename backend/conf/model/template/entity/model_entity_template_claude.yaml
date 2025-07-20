@@ -1,0 +1,47 @@
+id: 2006 # 模型 entity id, 同 id 数据不会覆盖
+name: Claude-3.5-Sonnet
+description: test claude description
+meta:
+  id: 106
+default_parameters:
+  -
+    name: temperature
+    label:
+      zh: 生成随机性
+      en: Temperature
+    desc:
+      zh: '- **temperature**: 调高温度会使得模型的输出更多样性和创新性，反之，降低温度会使输出内容更加遵循指令要求但减少多样性。建议不要与“Top p”同时调整。'
+      en: '**Temperature**:\n\n- When you increase this value, the model outputs more diverse and innovative content; when you decrease it, the model outputs less diverse content that strictly follows the given instructions.\n- It is recommended not to adjust this value with \"Top p\" at the same time.'
+    type: float
+    min: '0'
+    max: '1'
+    precision: 1
+    default_val:
+      default_val: '1.0'
+      creative: '1'
+      balance: '0.8'
+      precise: '0.3'
+    style:
+      widget: slider
+      label:
+        zh: 生成多样性
+        en: Generation diversity
+  -
+    name: max_tokens
+    label:
+      zh: 最大回复长度
+      en: Response max length
+    desc:
+      zh: '控制模型输出的Tokens 长度上限。通常 100 Tokens 约等于 150 个中文汉字。'
+      en: 'You can specify the maximum length of the tokens output through this value. Typically, 100 tokens are approximately equal to 150 Chinese characters.'
+    type: int
+    min: '1'
+    max: '4096'
+    precision: 0
+    default_val:
+      default_val: '4096'
+    style:
+      widget: slider
+      label:
+        zh: 输入及输出设置
+        en: Input and output settings

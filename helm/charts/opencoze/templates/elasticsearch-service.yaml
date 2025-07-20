@@ -1,0 +1,19 @@
+{{- if .Values.elasticsearch.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "opencoze.fullname" . }}-elasticsearch
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.elasticsearch.service.type }}
+  ports:
+    - port: {{ .Values.elasticsearch.service.port }}
+      targetPort: {{ .Values.elasticsearch.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/component: elasticsearch
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: {{ include "opencoze.name" . }}
+{{- end }}

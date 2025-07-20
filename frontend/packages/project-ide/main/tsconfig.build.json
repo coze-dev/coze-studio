@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {},
+    "jsx": "react",
+    "isolatedModules": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": false,
+    "types": ["react", "react-dom"],
+    "rootDir": "./src",
+    "outDir": "./lib-ts",
+    "tsBuildInfoFile": "./lib-ts/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["./src", "./src/**/*.json"],
+  "references": [
+    {
+      "path": "../../arch/bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-error/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-flags/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/fetch-stream/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/foundation-sdk/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/idl/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/logger/tsconfig.build.json"
+    },
+    {
+      "path": "../biz-components/tsconfig.build.json"
+    },
+    {
+      "path": "../biz-data/tsconfig.build.json"
+    },
+    {
+      "path": "../biz-plugin-registry-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../biz-plugin/tsconfig.build.json"
+    },
+    {
+      "path": "../biz-workflow/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/auth-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/auth/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/chat-area/chat-uikit/tsconfig.build.json"
+    },
+    {
+      "path": "../../components/bot-icons/tsconfig.build.json"
+    },
+    {
+      "path": "../../components/resource-tree/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../framework/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/components/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/publish-manage-hooks/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/user-store/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/workspace/project-entity-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/workspace/project-publish/tsconfig.build.json"
+    },
+    {
+      "path": "../ui-adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../workflow/base/tsconfig.build.json"
+    }
+  ]
+}

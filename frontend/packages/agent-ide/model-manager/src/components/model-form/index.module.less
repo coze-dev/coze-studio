@@ -1,0 +1,48 @@
+.model-select-wrapper {
+  display: flex;
+  flex-direction: column;
+  row-gap: 4px;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+
+  >span {
+    font-size: 16px;
+    font-weight: 500;
+    font-style: normal;
+    line-height: 24px;
+    /* stylelint-disable-next-line custom-property-pattern */
+    color: var(--Fg-Primary-COZ_fg_plus);
+  }
+}
+
+.popover {
+  max-width: 224px;
+  padding: 8px 12px;
+}
+
+.error-state {
+  display: flex;
+  column-gap: 8px;
+  align-items: center;
+
+  height: 100%;
+
+  font-size: 14px;
+
+
+  .fail-page-icon {
+    color: #FF2710;
+  }
+
+  .fail-page-text {
+    font-weight: 600;
+    line-height: 22px;
+  }
+
+  .fail-page-retry {
+    cursor: pointer;
+    color: #4D53E8;
+  }
+}

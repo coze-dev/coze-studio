@@ -1,0 +1,112 @@
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable selector-class-pattern */
+.radio-wrapper {
+  .displayNone {
+    display: none;
+  }
+
+  .form-line-wrapper {
+    position: relative;
+  }
+
+  .line {
+    &::before {
+      content: '';
+
+      position: absolute;
+      top: 10px;
+      left: -15px;
+
+      display: inline-block;
+
+      width: 690px;
+      height: 1px;
+      margin-top: 26px;
+
+      background: var(--light-usage-border-color-border,
+          rgb(28 31 35 / 8%));
+    }
+  }
+
+  .form-line {
+    margin-top: 27px;
+  }
+
+  .pt6 {
+    padding-top: 6px;
+  }
+
+  :global {
+    .semi-radioGroup {
+      &.semi-radioGroup-vertical {
+        row-gap: 16px;
+      }
+
+      .custom-wrapper {
+        padding-bottom: 0;
+
+        .semi-input-default,
+        .semi-input-wrapper-focus {
+          border-radius: 8px;
+        }
+      }
+    }
+
+    .semi-radio-cardRadioGroup {
+      padding: 16px 16px 16px 19px;
+      border: 1px solid var(--light-usage-border-color-border, rgb(28 31 35 / 8%));
+      border-radius: 8px;
+
+      .semi-radio-addon {
+        margin-bottom: 2px;
+      }
+
+      .semi-form-field-label {
+        margin-bottom: 8px;
+      }
+    }
+
+    .semi-checkboxGroup-vertical {
+      row-gap: 8px;
+    }
+
+    .semi-radio-cardRadioGroup_checked {
+      background: transparent;
+      border: 1px solid var(--semi-color-primary);
+    }
+
+    .semi-radio-cardRadioGroup_checked:active {
+      background: transparent;
+    }
+
+    .semi-radio-cardRadioGroup .semi-radio-extra {
+      margin-top: 4px;
+    }
+  }
+
+  .separator-div {
+    margin-top: 33px;
+    margin-bottom: 4px;
+  }
+
+  .separator-not-custom {
+    margin-bottom: 11px;
+  }
+
+  .separator-input {
+    padding-top: 0;
+    padding-bottom: 8px !important;
+
+
+    :global {
+      .semi-form-field-label {
+        display: none !important;
+      }
+    }
+  }
+
+
+  // :global {
+
+  // }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "@coze-arch/rush-logger",
+  "version": "0.0.2-beta.6",
+  "description": "rush logger ",
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./src ./__tests__ --cache",
+    "test": "vitest --run",
+    "test:cov": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@rushstack/node-core-library": "3.55.2"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@vitest/coverage-v8": "~3.0.5",
+    "vitest": "~3.0.5"
+  }
+}
+

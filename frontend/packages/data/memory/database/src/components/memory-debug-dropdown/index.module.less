@@ -1,0 +1,28 @@
+/* stylelint-disable max-nesting-depth */
+/* stylelint-disable declaration-no-important */
+.memory-debug-dropdown {
+  min-width: 120px;
+  padding: 4px;
+}
+
+.memory-debug-dropdown-item {
+  height: 32px !important;
+  padding: 8px !important;
+
+  line-height: 20px;
+  color: var(--coz-fg-primary);
+
+  border-radius: 4px;
+
+  &:not(.semi-dropdown-item-active):hover{
+    background-color:var(--coz-mg-secondary-hovered) !important
+
+  }
+
+  :global {
+    .semi-dropdown-item-icon {
+      font-size: 16px;
+      color: var(--coz-fg-secondary);
+    }
+  }
+}

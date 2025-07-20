@@ -1,0 +1,33 @@
+.input-json-wrap {
+  border: 1px solid var(--coz-stroke-plus);
+  border-radius: 8px;
+  &.disabled {
+    background-color: rgba(var(--coze-bg-5), var(--coze-bg-5-alpha));
+    cursor: not-allowed;
+  }
+  &.error {
+    border: 1px solid var(--coz-stroke-hglt-red);
+  }
+}
+
+.json-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  height: 28px;
+  padding: 0 4px;
+
+  border-bottom: 1px solid var(--coz-stroke-plus);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  .json-label {
+    font-size: 12px;
+    color: var(--coz-fg-secondary);
+    font-weight: 500;
+  }
+}
+.json-editor {
+  overflow: hidden;
+  border-bottom-left-radius: 8px;
+}

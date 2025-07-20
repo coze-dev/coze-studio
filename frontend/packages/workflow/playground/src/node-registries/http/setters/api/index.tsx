@@ -1,0 +1,149 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+import React, { useMemo } from 'react';
+
+import { useNodeTestId, ViewVariableType } from '@coze-workflow/base';
+import { I18n } from '@coze-arch/i18n';
+
+import { type ParsedResult } from '@/utils';
+import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
+import { Section, SelectField, useForm } from '@/form';
+
+import {
+  BodyType,
+  bodyTypeToField,
+  contentTypeToBodyType,
+  HttpMethod,
+} from '../constants';
+import { RawTextEditorField } from '../../fields/raw-text-editor';
+import { transStringParamsToFormData } from './utils';
+import { CurlImport } from './curl-import';
+
+export const ApiSetter = () => {
+  const readonly = useReadonly();
+  const { getNodeSetterId } = useNodeTestId();
+  const form = useForm();
+
+  const handleCurlImport = (parsedCurl: ParsedResult) => {
+    const isGetMethod = parsedCurl.method === HttpMethod.GET;
+    form.setFieldValue('inputs.apiInfo', {
+      method: parsedCurl.method,
+      url: isGetMethod ? parsedCurl?.originPath : parsedCurl?.url,
+    });
+    form.setFieldValue(
+      'inputs.params',
+      transStringParamsToFormData(
+        isGetMethod ? parsedCurl?.query : parsedCurl?.params,
+      ),
+    );
+    const curlHeaders = {};
+    // 特化逻辑，过滤 content-type 字段，由后端发送请求时生成
+    for (const key in parsedCurl?.headers) {
+      if (key.toLowerCase() !== 'content-type') {
+        curlHeaders[key] = parsedCurl?.headers[key];
+      }
+    }
+    form.setFieldValue(
+      'inputs.headers',
+      transStringParamsToFormData(curlHeaders),
+    );
+
+    const contentType = (parsedCurl?.body as Record<string, string>)?.type;
+    const bodyType = contentTypeToBodyType?.[contentType] ?? BodyType.Empty;
+    form.setFieldValue('inputs.body.bodyType', bodyType);
+
+    const parsedCurlBody = (parsedCurl?.body as Record<string, string>).data;
+    if (contentType === BodyType.Empty) {
+      return;
+    }
+    let bodyData;
+    if (
+      // Binary 类型 body 参数为文件路径，前端不处理，直接置空
+      bodyType === BodyType.Binary
+    ) {
+      bodyData = {
+        fileURL: {
+          type: 'literal',
+          content: '',
+          rawMeta: { type: 8 },
+        },
+      };
+    } else if (
+      bodyType === BodyType.FormUrlEncoded ||
+      bodyType === BodyType.FormData
+    ) {
+      bodyData = Object.keys(parsedCurlBody)?.map(key => ({
+        name: key,
+        type: ViewVariableType.String,
+        input: { type: 'literal', content: parsedCurlBody[key] },
+      }));
+    } else if (bodyType === BodyType.RawText) {
+      bodyData = parsedCurlBody;
+    } else if (bodyType === BodyType.Json) {
+      bodyData = JSON.stringify(parsedCurlBody);
+    }
+    form.setFieldValue('inputs.body.bodyData', {
+      [bodyTypeToField[bodyType]]: bodyData,
+    });
+  };
+
+  const optionList = useMemo(
+    () =>
+      Object.keys(HttpMethod).map(item => ({
+        label: HttpMethod?.[item],
+        value: HttpMethod?.[item],
+      })),
+    [],
+  );
+
+  return (
+    <Section
+      title={I18n.t('node_http_api', {}, 'API')}
+      tooltip={I18n.t('node_http_api_tooltips', {}, 'API接口的地址')}
+      actions={[
+        <CurlImport
+          onChange={handleCurlImport}
+          testId={'apiInfo-import-curl'}
+          disabled={readonly}
+        />,
+      ]}
+    >
+      <div className="flex flex-col gap-[8px]">
+        <SelectField
+          name={'inputs.apiInfo.method'}
+          defaultValue={HttpMethod.GET}
+          optionList={optionList}
+          data-testid={getNodeSetterId('apiInfo-method-select')}
+          style={{
+            width: '100%',
+            borderColor:
+              'var(--Stroke-COZ-stroke-plus, rgba(84, 97, 156, 0.27))',
+          }}
+        />
+        <RawTextEditorField
+          name={'inputs.apiInfo.url'}
+          placeholder={I18n.t(
+            'node_http_url_input',
+            {},
+            '请输入接口的URL，可以使用"{{"引用变量',
+          )}
+          minHeight={56}
+        />
+      </div>
+    </Section>
+  );
+};

@@ -1,0 +1,20 @@
+{{- if .Values.etcd.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "opencoze.fullname" . }}-etcd
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: client
+      port: 2379
+      targetPort: 2379
+    - name: peer
+      port: 2380
+      targetPort: 2380
+  selector:
+    app.kubernetes.io/component: etcd
+    app.kubernetes.io/name: {{ include "opencoze.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

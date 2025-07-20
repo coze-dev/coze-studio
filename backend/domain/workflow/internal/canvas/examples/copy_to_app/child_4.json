@@ -1,0 +1,926 @@
+{
+ "nodes": [
+  {
+   "id": "100001",
+   "type": "1",
+   "meta": {
+    "position": {
+     "x": 180,
+     "y": 35.2
+    }
+   },
+   "data": {
+    "nodeMeta": {
+     "description": "The starting node of the workflow, used to set the information needed to initiate the workflow.",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+     "subTitle": "",
+     "title": "Start"
+    },
+    "outputs": [
+     {
+      "type": "string",
+      "name": "input",
+      "required": false
+     }
+    ],
+    "trigger_parameters": []
+   }
+  },
+  {
+   "id": "900001",
+   "type": "2",
+   "meta": {
+    "position": {
+     "x": 2883.4601226993864,
+     "y": -172.42576687116565
+    }
+   },
+   "data": {
+    "nodeMeta": {
+     "description": "The final node of the workflow, used to return the result information after the workflow runs.",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+     "subTitle": "",
+     "title": "End"
+    },
+    "inputs": {
+     "terminatePlan": "returnVariables",
+     "inputParameters": [
+      {
+       "name": "output",
+       "input": {
+        "type": "float",
+        "value": {
+         "type": "ref",
+         "content": {
+          "source": "block-output",
+          "blockID": "137942",
+          "name": "total"
+         },
+         "rawMeta": {
+          "type": 4
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "137942",
+   "type": "4",
+   "meta": {
+    "position": {
+     "x": 1967.239263803681,
+     "y": -430.7699386503067
+    }
+   },
+   "data": {
+    "nodeMeta": {
+     "title": "top_news",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg",
+     "subtitle": "p1:top_news",
+     "description": "帮助用户获取搜狐网上的每日热闻"
+    },
+    "inputs": {
+     "apiParam": [
+      {
+       "name": "apiID",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "7521710149602377728",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "apiName",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "p1",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "pluginID",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "7521710098171822080",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "pluginName",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "p1",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "pluginVersion",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "0",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "tips",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "outDocLink",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      }
+     ],
+     "inputParameters": [
+      {
+       "name": "count",
+       "input": {
+        "type": "integer",
+        "value": {
+         "type": "literal",
+         "content": 1,
+         "rawMeta": {
+          "type": 2
+         }
+        }
+       }
+      },
+      {
+       "name": "q",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "ref",
+         "content": {
+          "source": "block-output",
+          "blockID": "100001",
+          "name": "input"
+         },
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      }
+     ],
+     "settingOnError": {
+      "processType": 1,
+      "timeoutMs": 180000,
+      "retryTimes": 0
+     }
+    },
+    "outputs": [
+     {
+      "type": "float",
+      "name": "total"
+     },
+     {
+      "type": "string",
+      "name": "message"
+     },
+     {
+      "type": "boolean",
+      "name": "success"
+     },
+     {
+      "type": "string",
+      "name": "traceId"
+     },
+     {
+      "type": "float",
+      "name": "code"
+     },
+     {
+      "type": "object",
+      "name": "data",
+      "schema": [
+       {
+        "type": "object",
+        "name": "coze_ark_001",
+        "schema": [
+         {
+          "type": "list",
+          "name": "list",
+          "schema": {
+           "type": "object",
+           "schema": [
+            {
+             "type": "object",
+             "name": "[Array Item]",
+             "schema": [
+              {
+               "type": "string",
+               "name": "title"
+              },
+              {
+               "type": "string",
+               "name": "url"
+              },
+              {
+               "type": "string",
+               "name": "brief"
+              }
+             ]
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "139459",
+   "type": "43",
+   "meta": {
+    "position": {
+     "x": 2448.0245398773004,
+     "y": -313.6687116564417
+    }
+   },
+   "data": {
+    "inputs": {
+     "databaseInfoList": [
+      {
+       "databaseInfoID": "7522311426006843392"
+      }
+     ],
+     "selectParam": {
+      "condition": {
+       "conditionList": [
+        [
+         {
+          "name": "left",
+          "input": {
+           "type": "string",
+           "value": {
+            "type": "literal",
+            "content": "v1"
+           }
+          }
+         },
+         {
+          "name": "operation",
+          "input": {
+           "type": "string",
+           "value": {
+            "type": "literal",
+            "content": "IS_NOT_NULL"
+           }
+          }
+         },
+         null
+        ]
+       ],
+       "logic": "AND"
+      },
+      "orderByList": [],
+      "limit": 100,
+      "fieldList": [
+       {
+        "fieldID": 102,
+        "isDistinct": false
+       }
+      ]
+     },
+     "settingOnError": {
+      "processType": 1,
+      "timeoutMs": 60000,
+      "retryTimes": 0
+     }
+    },
+    "outputs": [
+     {
+      "type": "list",
+      "name": "outputList",
+      "schema": {
+       "type": "object",
+       "schema": [
+        {
+         "type": "integer",
+         "name": "id"
+        }
+       ]
+      }
+     },
+     {
+      "type": "integer",
+      "name": "rowNum"
+     }
+    ],
+    "nodeMeta": {
+     "title": "Query Data",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icaon-database-select.jpg",
+     "description": "Query data from the table, and the user can define query conditions, select columns, etc., and output the data that meets the conditions",
+     "mainColor": "#F2B600",
+     "subTitle": "Query Data"
+    }
+   }
+  },
+  {
+   "id": "118229",
+   "type": "4",
+   "meta": {
+    "position": {
+     "x": 1486.4539877300615,
+     "y": -338.180981595092
+    }
+   },
+   "data": {
+    "nodeMeta": {
+     "title": "job_recommendation",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg",
+     "subtitle": "猎聘:job_recommendation",
+     "description": "帮助用户搜索工作招聘，基于用户的工作经验、教育经历、地理位置、薪水、职位名称、工作性质等"
+    },
+    "inputs": {
+     "apiParam": [
+      {
+       "name": "apiID",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "130001",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "apiName",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "猎聘",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "pluginID",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "13",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "pluginName",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "猎聘",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "pluginVersion",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "tips",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "outDocLink",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      }
+     ],
+     "inputParameters": [],
+     "settingOnError": {
+      "processType": 1,
+      "timeoutMs": 180000,
+      "retryTimes": 0
+     }
+    },
+    "outputs": [
+     {
+      "type": "list",
+      "name": "data",
+      "schema": {
+       "type": "object",
+       "schema": [
+        {
+         "type": "object",
+         "name": "[Array Item]",
+         "schema": [
+          {
+           "type": "string",
+           "name": "compIndustry"
+          },
+          {
+           "type": "string",
+           "name": "compName"
+          },
+          {
+           "type": "string",
+           "name": "compScale"
+          },
+          {
+           "type": "string",
+           "name": "compStage"
+          },
+          {
+           "type": "string",
+           "name": "dq"
+          },
+          {
+           "type": "string",
+           "name": "jobDetailLink"
+          },
+          {
+           "type": "string",
+           "name": "recruiterPhoto"
+          },
+          {
+           "type": "string",
+           "name": "salary"
+          },
+          {
+           "type": "string",
+           "name": "compLogo"
+          },
+          {
+           "type": "list",
+           "name": "labels",
+           "schema": {
+            "type": "object",
+            "schema": [
+             {
+              "type": "string",
+              "name": "[Array Item]"
+             }
+            ]
+           }
+          },
+          {
+           "type": "string",
+           "name": "recruiterName"
+          },
+          {
+           "type": "string",
+           "name": "title"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "145498",
+   "type": "4",
+   "meta": {
+    "position": {
+     "x": 556.2944785276075,
+     "y": -140.25644171779138
+    }
+   },
+   "data": {
+    "nodeMeta": {
+     "title": "top_news_1",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg",
+     "subtitle": "p1_copy:top_news",
+     "description": "帮助用户获取搜狐网上的每日热闻"
+    },
+    "inputs": {
+     "apiParam": [
+      {
+       "name": "apiID",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "7521710447641231360",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "apiName",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "p1_copy",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "pluginID",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "7521710447590899712",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "pluginName",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "p1_copy",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "pluginVersion",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "v0.0.1",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "tips",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      },
+      {
+       "name": "outDocLink",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "literal",
+         "content": "",
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      }
+     ],
+     "inputParameters": [
+      {
+       "name": "count",
+       "input": {
+        "type": "integer",
+        "value": {
+         "type": "literal",
+         "content": 12,
+         "rawMeta": {
+          "type": 2
+         }
+        }
+       }
+      }
+     ],
+     "settingOnError": {
+      "processType": 1,
+      "timeoutMs": 180000,
+      "retryTimes": 0
+     }
+    },
+    "outputs": [
+     {
+      "type": "float",
+      "name": "code"
+     },
+     {
+      "type": "object",
+      "name": "data",
+      "schema": [
+       {
+        "type": "object",
+        "name": "coze_ark_001",
+        "schema": [
+         {
+          "type": "list",
+          "name": "list",
+          "schema": {
+           "type": "object",
+           "schema": [
+            {
+             "type": "object",
+             "name": "[Array Item]",
+             "schema": [
+              {
+               "type": "string",
+               "name": "title"
+              },
+              {
+               "type": "string",
+               "name": "url"
+              },
+              {
+               "type": "string",
+               "name": "brief"
+              }
+             ]
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "float",
+      "name": "total"
+     },
+     {
+      "type": "string",
+      "name": "message"
+     },
+     {
+      "type": "boolean",
+      "name": "success"
+     },
+     {
+      "type": "string",
+      "name": "traceId"
+     }
+    ]
+   }
+  },
+  {
+   "id": "159358",
+   "type": "6",
+   "meta": {
+    "position": {
+     "x": 1038.6625766871166,
+     "y": -279.6564417177914
+    }
+   },
+   "data": {
+    "nodeMeta": {
+     "title": "Knowledge retrieval",
+     "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeQuery-v2.jpg",
+     "description": "In the selected knowledge, the best matching information is recalled based on the input variable and returned as an Array.",
+     "mainColor": "#FF811A",
+     "subTitle": "Knowledge retrieval"
+    },
+    "outputs": [
+     {
+      "type": "list",
+      "name": "outputList",
+      "schema": {
+       "type": "object",
+       "schema": [
+        {
+         "type": "string",
+         "name": "output"
+        }
+       ]
+      }
+     }
+    ],
+    "inputs": {
+     "datasetParam": [
+      {
+       "name": "datasetList",
+       "input": {
+        "type": "list",
+        "schema": {
+         "type": "string"
+        },
+        "value": {
+         "type": "literal",
+         "content": [
+          "7522316202157277184"
+         ]
+        }
+       }
+      },
+      {
+       "name": "topK",
+       "input": {
+        "type": "integer",
+        "value": {
+         "type": "literal",
+         "content": 5
+        }
+       }
+      },
+      {
+       "name": "useRerank",
+       "input": {
+        "type": "boolean",
+        "value": {
+         "type": "literal",
+         "content": true,
+         "rawMeta": {
+          "type": 3
+         }
+        }
+       }
+      },
+      {
+       "name": "useRewrite",
+       "input": {
+        "type": "boolean",
+        "value": {
+         "type": "literal",
+         "content": true,
+         "rawMeta": {
+          "type": 3
+         }
+        }
+       }
+      },
+      {
+       "name": "isPersonalOnly",
+       "input": {
+        "type": "boolean",
+        "value": {
+         "type": "literal",
+         "content": true,
+         "rawMeta": {
+          "type": 3
+         }
+        }
+       }
+      },
+      {
+       "name": "minScore",
+       "input": {
+        "type": "float",
+        "value": {
+         "type": "literal",
+         "content": 0.5
+        }
+       }
+      },
+      {
+       "name": "strategy",
+       "input": {
+        "type": "integer",
+        "value": {
+         "type": "literal",
+         "content": 1
+        }
+       }
+      }
+     ],
+     "inputParameters": [
+      {
+       "name": "Query",
+       "input": {
+        "type": "string",
+        "value": {
+         "type": "ref",
+         "content": {
+          "source": "block-output",
+          "blockID": "100001",
+          "name": "input"
+         },
+         "rawMeta": {
+          "type": 1
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "edges": [
+  {
+   "sourceNodeID": "100001",
+   "targetNodeID": "145498"
+  },
+  {
+   "sourceNodeID": "139459",
+   "targetNodeID": "900001"
+  },
+  {
+   "sourceNodeID": "118229",
+   "targetNodeID": "137942"
+  },
+  {
+   "sourceNodeID": "137942",
+   "targetNodeID": "139459"
+  },
+  {
+   "sourceNodeID": "159358",
+   "targetNodeID": "118229"
+  },
+  {
+   "sourceNodeID": "145498",
+   "targetNodeID": "159358"
+  }
+ ],
+ "versions": {
+  "loop": "v2"
+ }
+}

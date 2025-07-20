@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {},
+    "types": ["react", "react-dom"],
+    "jsx": "react",
+    "isolatedModules": true,
+    "preserveSymlinks": false,
+    "strictPropertyInitialization": false,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../arch/bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-error/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-flags/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-space-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/logger/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/report-events/tsconfig.build.json"
+    },
+    {
+      "path": "../base/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/flowgram-adapter/common/tsconfig.build.json"
+    },
+    {
+      "path": "../../common/flowgram-adapter/free-layout-editor/tsconfig.build.json"
+    },
+    {
+      "path": "../components/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
+      "path": "../setters/tsconfig.build.json"
+    },
+    {
+      "path": "../variable/tsconfig.build.json"
+    }
+  ]
+}

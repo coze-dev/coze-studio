@@ -1,0 +1,61 @@
+.editor-container {
+  position: relative;
+  height: 100%;
+}
+
+.editor {
+  height: 100%;
+  padding: 16px 0;
+
+  background-color: white;
+  border: 1px solid #eee;
+  border-radius: 8px;
+
+
+  :global {
+    .monaco-editor .scroll-decoration {
+      box-shadow: unset;
+    }
+
+    .semi-skeleton-image {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 12px;
+    }
+  }
+}
+
+.editor-container_disabled {
+  :global {
+    .monaco-editor.no-user-select .view-lines {
+      /** 只读状态下 cursor 纠正为正常鼠标 **/
+
+      cursor: default;
+    }
+  }
+
+}
+
+.editor_hidden {
+  position: relative;
+  z-index: -1;
+  opacity: 0;
+}
+
+.skeleton {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  :global {
+    .semi-skeleton-image {
+      width: 100%;
+      height: 100%;
+      margin-bottom: 12px;
+    }
+  }
+}

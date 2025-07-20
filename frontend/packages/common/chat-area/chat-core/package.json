@@ -1,0 +1,74 @@
+{
+  "name": "@coze-common/chat-core",
+  "version": "1.0.0",
+  "description": "bot chat core js",
+  "license": "Apache-2.0",
+  "author": "haozhenfei@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.ts",
+    "./message/types": "./src/message/types/index.ts",
+    "./chat-sdk/types": "./src/chat-sdk/types/interface.ts",
+    "./sdk-events": "./src/chat-sdk/events/sdk-events.ts",
+    "./shared/const": "./src/shared/const.ts"
+  },
+  "main": "src/index.ts",
+  "typesVersions": {
+    "*": {
+      "message/types": [
+        "./src/message/types/index.ts"
+      ],
+      "chat-sdk/types": [
+        "./src/chat-sdk/types/interface.ts"
+      ],
+      "sdk-events": [
+        "./src/chat-sdk/events/sdk-events.ts"
+      ],
+      "shared/const": [
+        "./src/shared/const.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "lint:type": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-common/chat-area-utils": "workspace:*",
+    "@coze-studio/file-kit": "workspace:*",
+    "@coze-studio/slardar-adapter": "workspace:*",
+    "@coze-studio/uploader-adapter": "workspace:*",
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/fetch-stream": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@mattiasbuelens/web-streams-adapter": "~0.1.0",
+    "axios": "^1.4.0",
+    "eventemitter3": "^5.0.1",
+    "eventsource-parser": "^1.0.0",
+    "lodash-es": "^4.17.21",
+    "md5": "^2.3.0",
+    "nanoid": "^4.0.2",
+    "web-streams-polyfill": "~3.3.2"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/lodash-es": "^4.17.10",
+    "@types/md5": "^2.3.2",
+    "@types/mockjs": "~1.0.10",
+    "@types/node": "^18",
+    "@vitest/coverage-v8": "~3.0.5",
+    "debug": "^4.3.4",
+    "mockjs": "~1.1.0",
+    "sucrase": "^3.32.0",
+    "vitest": "~3.0.5"
+  },
+  "// deps": "debug@^4.3.4 为脚本自动补齐，请勿改动"
+}
+

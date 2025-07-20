@@ -1,0 +1,698 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 151.4368482039397,
+          "y": -5.949999999999974
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          },
+          {
+            "type": "list",
+            "name": "array",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          },
+          {
+            "type": "list",
+            "name": "array",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 2472.966396292005,
+          "y": -5.949999999999974
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "190964",
+                    "name": "Group2"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "170911",
+      "type": "5",
+      "meta": {
+        "position": {
+          "x": 590.2433371958285,
+          "y": -64.4449015063731
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "代码",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
+          "description": "编写代码，处理输入变量来生成返回值",
+          "mainColor": "#00B2B2",
+          "subTitle": "代码"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "code": "// 在这里，您可以通过 ‘params’  获取节点中的输入变量，并通过 'ret' 输出结果\n// 'params' 和 'ret' 已经被正确地注入到环境中\n// 下面是一个示例，获取节点输入中参数名为‘input’的值：\n// const input = params.input; \n// 下面是一个示例，输出一个包含多种数据类型的 'ret' 对象：\n// const ret = { \"name\": ‘小明’, \"hobbies\": [“看书”, “旅游”] };\n\nasync function main({ params }: Args): Promise<Output> {\n    // 构建输出对象\n    const ret = {\n        \"key0\": params.input + params.input, // 拼接两次入参 input 的值\n        \"key1\": [\"hello\", \"world\"], // 输出一个数组\n        \"key2\": { // 输出一个Object\n            \"key21\": \"hi\"\n        },\n    };\n\n    return ret;\n}",
+          "language": 5,
+          "settingOnError": {
+            "processType": 1,
+            "timeoutMs": 60000,
+            "retryTimes": 0
+          }
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "key0"
+          },
+          {
+            "type": "list",
+            "name": "key1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "type": "object",
+            "name": "key2",
+            "schema": [
+              {
+                "type": "string",
+                "name": "key21"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "190964",
+      "type": "32",
+      "meta": {
+        "position": {
+          "x": 1524.2815758980303,
+          "y": -95.4449015063731
+        }
+      },
+      "data": {
+        "inputs": {
+          "mergeGroups": [
+            {
+              "name": "Group1",
+              "variables": [
+                {
+                  "type": "string",
+                  "value": {
+                    "type": "ref",
+                    "content": {
+                      "source": "block-output",
+                      "blockID": "170911",
+                      "name": "key0"
+                    },
+                    "rawMeta": {
+                      "type": 1
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Group2",
+              "variables": [
+                {
+                  "type": "string",
+                  "value": {
+                    "type": "ref",
+                    "content": {
+                      "source": "block-output",
+                      "blockID": "170911",
+                      "name": "key0"
+                    },
+                    "rawMeta": {
+                      "type": 1
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "Group1"
+          },
+          {
+            "type": "string",
+            "name": "Group2"
+          }
+        ],
+        "nodeMeta": {
+          "title": "变量聚合",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/VariableMerge-icon.jpg",
+          "description": "对多个分支的输出进行聚合处理",
+          "mainColor": "#00B2B2",
+          "subTitle": "变量聚合"
+        }
+      }
+    },
+    {
+      "id": "156388",
+      "type": "8",
+      "meta": {
+        "position": {
+          "x": 1974.9942062572422,
+          "y": 7.571320973348804
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "选择器",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Condition-v2.jpg",
+          "description": "连接多个下游分支，若设定的条件成立则仅运行对应的分支，若均不成立则只运行“否则”分支",
+          "mainColor": "#00B2B2",
+          "subTitle": "选择器"
+        },
+        "inputs": {
+          "branches": [
+            {
+              "condition": {
+                "logic": 2,
+                "conditions": [
+                  {
+                    "operator": 1,
+                    "left": {
+                      "input": {
+                        "type": "string",
+                        "value": {
+                          "type": "ref",
+                          "content": {
+                            "source": "block-output",
+                            "blockID": "190964",
+                            "name": "Group1"
+                          }
+                        }
+                      }
+                    },
+                    "right": {
+                      "input": {
+                        "type": "string",
+                        "value": {
+                          "type": "literal",
+                          "content": "123",
+                          "rawMeta": {
+                            "type": 1
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "118685",
+      "type": "15",
+      "meta": {
+        "position": {
+          "x": 2359.0498261877174,
+          "y": 211.3
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "文本处理",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
+          "description": "用于处理多个字符串类型变量的格式",
+          "mainColor": "#3071F2",
+          "subTitle": "文本处理"
+        },
+        "inputs": {
+          "method": "concat",
+          "inputParameters": [
+            {
+              "name": "String1",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "165568",
+                    "name": "Group1"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "concatParams": [
+            {
+              "name": "concatResult",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "{{String1}}",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "arrayItemConcatChar",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "，",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "allArrayItemConcatChars",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "object",
+                  "schema": [
+                    {
+                      "type": "string",
+                      "name": "label",
+                      "required": true
+                    },
+                    {
+                      "type": "string",
+                      "name": "value",
+                      "required": true
+                    },
+                    {
+                      "type": "boolean",
+                      "name": "isDefault",
+                      "required": true
+                    }
+                  ]
+                },
+                "value": {
+                  "type": "literal",
+                  "content": [
+                    {
+                      "label": "换行",
+                      "value": "\n",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "制表符",
+                      "value": "\t",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "句号",
+                      "value": "。",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "逗号",
+                      "value": "，",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "分号",
+                      "value": "；",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "空格",
+                      "value": " ",
+                      "isDefault": true
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "113840",
+      "type": "28",
+      "meta": {
+        "position": {
+          "x": 1039.5249130938587,
+          "y": -64.4449015063731
+        },
+        "canvasPosition": {
+          "x": 756.0834298957126,
+          "y": 276.05691112036504
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "批处理",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Batch-v2.jpg",
+          "description": "通过设定批量运行次数和逻辑，运行批处理体内的任务",
+          "mainColor": "#00B2B2",
+          "subTitle": "批处理"
+        },
+        "inputs": {
+          "concurrentSize": {
+            "type": "integer",
+            "value": {
+              "type": "literal",
+              "content": "10"
+            }
+          },
+          "batchSize": {
+            "type": "integer",
+            "value": {
+              "type": "literal",
+              "content": "100"
+            }
+          },
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "170911",
+                    "name": "key1"
+                  },
+                  "rawMeta": {
+                    "type": 99
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "input": {
+              "type": "list",
+              "schema": {
+                "type": "string"
+              },
+              "value": {
+                "type": "ref",
+                "content": {
+                  "source": "block-output",
+                  "blockID": "128176",
+                  "name": "key0"
+                },
+                "rawMeta": {
+                  "type": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "blocks": [
+        {
+          "id": "128176",
+          "type": "5",
+          "meta": {
+            "position": {
+              "x": 0,
+              "y": 100
+            }
+          },
+          "data": {
+            "nodeMeta": {
+              "title": "批量代码",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
+              "description": "编写代码，处理输入变量来生成返回值",
+              "mainColor": "#00B2B2",
+              "subTitle": "代码"
+            },
+            "inputs": {
+              "inputParameters": [
+                {
+                  "name": "input",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "ref",
+                      "content": {
+                        "source": "block-output",
+                        "blockID": "11384000",
+                        "name": "input"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                }
+              ],
+              "code": "// 在这里，您可以通过 ‘params’  获取节点中的输入变量，并通过 'ret' 输出结果\n// 'params' 和 'ret' 已经被正确地注入到环境中\n// 下面是一个示例，获取节点输入中参数名为‘input’的值：\n// const input = params.input; \n// 下面是一个示例，输出一个包含多种数据类型的 'ret' 对象：\n// const ret = { \"name\": ‘小明’, \"hobbies\": [“看书”, “旅游”] };\n\nasync function main({ params }: Args): Promise<Output> {\n    // 构建输出对象\n    const ret = {\n        \"key0\": params.input + params.input, // 拼接两次入参 input 的值\n        \"key1\": [\"hello\", \"world\"], // 输出一个数组\n        \"key2\": { // 输出一个Object\n            \"key21\": \"hi\"\n        },\n    };\n\n    return ret;\n}",
+              "language": 5,
+              "settingOnError": {
+                "processType": 1,
+                "timeoutMs": 60000,
+                "retryTimes": 0
+              }
+            },
+            "outputs": [
+              {
+                "type": "string",
+                "name": "key0"
+              },
+              {
+                "type": "list",
+                "name": "key1",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "object",
+                "name": "key2",
+                "schema": [
+                  {
+                    "type": "string",
+                    "name": "key21"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "165568",
+          "type": "32",
+          "meta": {
+            "position": {
+              "x": 420.4750869061413,
+              "y": 99.29581193873116
+            }
+          },
+          "data": {
+            "inputs": {
+              "mergeGroups": [
+                {
+                  "name": "Group1",
+                  "variables": [
+                    {
+                      "type": "string",
+                      "value": {
+                        "type": "ref",
+                        "content": {
+                          "source": "block-output",
+                          "blockID": "128176",
+                          "name": "key0"
+                        },
+                        "rawMeta": {
+                          "type": 1
+                        }
+                      }
+                    },
+                    {
+                      "type": "string",
+                      "value": {
+                        "type": "ref",
+                        "content": {
+                          "source": "block-output",
+                          "blockID": "170911",
+                          "name": "key0"
+                        },
+                        "rawMeta": {
+                          "type": 1
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "outputs": [
+              {
+                "type": "string",
+                "name": "Group1"
+              }
+            ],
+            "nodeMeta": {
+              "title": "变量聚合_1",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/VariableMerge-icon.jpg",
+              "description": "对多个分支的输出进行聚合处理",
+              "mainColor": "#00B2B2",
+              "subTitle": "变量聚合"
+            }
+          }
+        }
+      ],
+      "edges": [
+        {
+          "sourceNodeID": "113840",
+          "targetNodeID": "128176",
+          "sourcePortID": "batch-function-inline-output"
+        },
+        {
+          "sourceNodeID": "128176",
+          "targetNodeID": "165568"
+        },
+        {
+          "sourceNodeID": "165568",
+          "targetNodeID": "113840",
+          "targetPortID": "batch-function-inline-input"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "170911"
+    },
+    {
+      "sourceNodeID": "156388",
+      "targetNodeID": "900001",
+      "sourcePortID": "true"
+    },
+    {
+      "sourceNodeID": "118685",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "170911",
+      "targetNodeID": "113840"
+    },
+    {
+      "sourceNodeID": "113840",
+      "targetNodeID": "190964",
+      "sourcePortID": "batch-output"
+    },
+    {
+      "sourceNodeID": "190964",
+      "targetNodeID": "156388"
+    },
+    {
+      "sourceNodeID": "156388",
+      "targetNodeID": "118685",
+      "sourcePortID": "false"
+    }
+  ],
+  "versions": {
+    "loop": "v2",
+    "batch": "v2"
+  }
+}

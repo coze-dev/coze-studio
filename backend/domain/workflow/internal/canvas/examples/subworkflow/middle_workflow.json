@@ -1,0 +1,185 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "title": "entry"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "trigger_parameters": []
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": -35,
+          "y": 0
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "112956",
+                    "name": "output",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            },
+            {
+              "input": {
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": {
+                    "blockID": "112956",
+                    "name": "converted",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 99
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "inputArr"
+            }
+          ],
+          "terminatePlan": "returnVariables"
+        },
+        "nodeMeta": {
+          "title": "exit"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 797,
+          "y": -37
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputDefs": [
+            {
+              "input": {},
+              "name": "query1",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "type": "list"
+            }
+          ],
+          "inputParameters": [
+            {
+              "input": {
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": "[\"a\",\"b\"]",
+                  "rawMeta": {
+                    "type": 99
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "query1"
+            }
+          ],
+          "settingOnError": {},
+          "spaceId": "7309328955423670309",
+          "type": 0,
+          "workflowId": "7468899413567684634"
+        },
+        "nodeMeta": {
+          "title": "loop"
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "converted",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "type": "list"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "112956",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 390.5,
+          "y": -190
+        }
+      },
+      "type": "9"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "112956",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "112956",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

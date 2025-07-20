@@ -1,0 +1,47 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+import { type StandardNodeType } from '@coze-workflow/base';
+
+import {
+  SETTING_ON_ERROR_DYNAMIC_PORT_NODES,
+  SETTING_ON_ERROR_NODES,
+  SETTING_ON_ERROR_V2_NODES,
+} from './constants';
+
+/**
+ * 是不是v2版本的节点
+ * @param type
+ * @returns
+ */
+export const isSettingOnErrorV2 = (type?: StandardNodeType) =>
+  type && SETTING_ON_ERROR_V2_NODES.includes(type);
+
+/**
+ * 是不是开启异常设置的节点
+ * @param type
+ * @returns
+ */
+export const isSettingOnError = (type?: StandardNodeType) =>
+  type && SETTING_ON_ERROR_NODES.includes(type);
+
+/**
+ * 是不是动态通道的节点
+ * @param type
+ * @returns
+ */
+export const isSettingOnErrorDynamicPort = (type?: StandardNodeType) =>
+  type && SETTING_ON_ERROR_DYNAMIC_PORT_NODES.includes(type);

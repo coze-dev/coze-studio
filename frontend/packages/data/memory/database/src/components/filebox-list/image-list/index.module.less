@@ -1,0 +1,67 @@
+.card-group {
+  margin-bottom: 20px;
+}
+
+// Card 整体
+.card {
+  cursor: auto;
+  width: 209px;
+  height: 214px;
+  border-radius: 8px;
+
+  &:hover {
+    box-shadow: 0 2px 14px 0 rgba(0, 0, 0, 8%);
+  }
+
+  :global {
+
+    // 固定高度142，超出高度的图片，截取居中部分展示
+    .semi-card-cover {
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      height: 142px;
+    }
+  }
+}
+
+// Card 封面
+.card-cover {
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+
+  // 设置最小高度142，保证填满封面
+  img {
+    min-height: 142px;
+  }
+}
+
+// Card 内容区 (title + description)
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .photo-name {
+    font-weight: 600;
+    line-height: 20px;
+    color: rgba(29, 28, 35, 100%);
+  }
+
+}
+
+// Card 底部栏（时间 + 操作按钮）
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 24px;
+
+  .create-time {
+    font-size: 12px;
+    line-height: 16px;
+    color: rgba(28, 29, 35, 35%)
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@coze-data/e2e",
+  "version": "0.0.1",
+  "description": "e2e打标",
+  "license": "Apache-2.0",
+  "author": "wangyan.yoki@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "stylelint": "^15.11.0"
+  }
+}
+

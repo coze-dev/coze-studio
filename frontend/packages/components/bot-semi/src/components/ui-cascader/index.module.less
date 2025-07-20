@@ -1,0 +1,53 @@
+:global(.semi-popover-wrapper):has(.ui-cascader-dropdown) {
+  background: var(--light-usage-bg-color-bg-3, #FFF);
+  border-radius: 6px;
+}
+
+.ui-cascader {
+  &:global(.semi-cascader.semi-cascader-disabled) {
+    background-color: var(--semi-color-disabled-fill);
+  }
+
+  // 排除disabled 的情况 否者颜色会被覆盖
+  &:not(:global(.semi-cascader-disabled)) {
+
+    div,
+    // 改变 cascader 被选择项颜色 但是不改变 placeholder
+    span:not(:global(.semi-cascader-selection-placeholder)) {
+      color: #1d1c23;
+    }
+  }
+}
+
+.ui-cascader-dropdown {
+  :global .semi-cascader-option-lists {
+    .semi-cascader-option-list {
+      padding: 4px 6px;
+    }
+
+    .semi-cascader-option {
+      font-weight: 600;
+
+      &:not(:first-child) {
+        margin-top: 4px;
+      }
+
+      &:hover {
+        border-radius: 4px;
+        background: var(--light-usage-fill-color-fill-1,
+            rgba(46, 46, 56, 0.08));
+      }
+    }
+
+    .semi-cascader-option-active,
+    .semi-cascader-option-select {
+      border-radius: 4px;
+      color: var(--light-usage-primary-color-primary, #4d53e8);
+      background: var(--light-usage-fill-color-fill-1, rgba(46, 46, 56, 0.08));
+
+      .semi-cascader-option-icon {
+        color: var(--light-usage-primary-color-primary, #4d53e8);
+      }
+    }
+  }
+}

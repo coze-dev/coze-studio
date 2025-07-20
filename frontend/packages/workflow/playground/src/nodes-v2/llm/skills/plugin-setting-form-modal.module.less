@@ -1,0 +1,49 @@
+/* stylelint-disable declaration-no-important */
+.plugin-setting-form-modal {
+  :global(.semi-modal-body-wrapper) {
+    height: calc(100% - 48px);
+    margin: 0 !important;
+  }
+
+  :global(.semi-modal-body) {
+    height: 100%;
+
+    > :global(div) {
+      max-height: none !important;
+
+      >:global(div) {
+        max-height: none !important;
+      }
+    }
+  }
+
+  :global(.semi-modal-content) {
+    gap: 0 !important;
+    padding: 0 !important;
+  }
+
+  :global(.semi-navigation-list-wrapper) {
+    padding-top: 0 !important;
+  }
+
+  :global(.semi-navigation-item-selected) {
+    background-color: var(--coz-mg-primary) !important;
+  }
+
+  :global(.semi-navigation-item-normal:hover) {
+    background-color: var(--coz-mg-primary) !important;
+  }
+
+  :global(.semi-modal-close) {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+  }
+}
+
+.plugin-setting-nav {
+  width: 188px !important;
+  padding: 0;
+  background: transparent !important;
+  border: none !important;
+}

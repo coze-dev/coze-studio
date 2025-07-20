@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "types": [],
+    "strictNullChecks": true,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../bot-error/tsconfig.build.json"
+    },
+    {
+      "path": "../bot-flags/tsconfig.build.json"
+    },
+    {
+      "path": "../bot-store/tsconfig.build.json"
+    },
+    {
+      "path": "../bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
+      "path": "../report-events/tsconfig.build.json"
+    },
+    {
+      "path": "../web-context/tsconfig.build.json"
+    }
+  ]
+}

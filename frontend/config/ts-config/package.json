@@ -1,0 +1,22 @@
+{
+  "name": "@coze-arch/ts-config",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "bin": {
+    "rtsc": "./scripts/rtsc.sh",
+    "tsc": "./scripts/rtsc.sh"
+  },
+  "scripts": {
+    "build": "exit",
+    "lint": "exit",
+    "test": "exit",
+    "test:cov": "exit 0"
+  },
+  "devDependencies": {
+    "eslint": "~9.12.0",
+    "typescript": "~5.8.2"
+  }
+}

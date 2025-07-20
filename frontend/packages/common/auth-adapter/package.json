@@ -1,0 +1,37 @@
+{
+  "name": "@coze-common/auth-adapter",
+  "version": "0.0.1",
+  "description": "统一的权限控制逻辑",
+  "license": "Apache-2.0",
+  "author": "sunzhiyuan.evan@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/idl": "workspace:*",
+    "@coze-common/auth": "workspace:*",
+    "react": "~18.2.0",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/node": "^18",
+    "@types/react": "18.2.37",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react-dom": "~18.2.0",
+    "sucrase": "^3.32.0",
+    "vitest": "~3.0.5"
+  }
+}
+

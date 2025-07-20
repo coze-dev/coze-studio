@@ -1,0 +1,103 @@
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable declaration-no-important */
+// lineHeight: 每一行的高度
+@lineHeight: 16px;
+// reserved: 多行场景需要多留出一点高度，便于用户感知到还有其他行
+@reserved: 12px;
+
+.setMinRows(@minRows) {
+  &-minRows-@{minRows} {
+    &>div[data-slate-editor="true"] {
+      min-height: unit(@minRows * @lineHeight + @reserved, px) !important;
+    }
+  }
+
+  &-cmMinRows-@{minRows} {
+    min-height: unit(@minRows * @lineHeight + @reserved, px) !important;
+  }
+}
+
+.expression-editor-container {
+  position: relative;
+
+  display: inline-block;
+
+  box-sizing: border-box;
+  width: 100%;
+
+  word-break: break-all;
+  vertical-align: bottom;
+
+  background-color: transparent;
+  border: 1px rgba(var(--coze-stroke-6),var(--coze-stroke-6-alpha)) solid;
+  border-radius: 8px;
+
+  transition: background-color var(--semi-transition_duration-none) var(--semi-transition_function-easeIn) var(--semi-transition_delay-none), border var(--semi-transition_duration-none) var(--semi-transition_function-easeIn) var(--semi-transition_delay-none);
+
+
+  &:hover {
+    background-color: rgba(var(--coze-bg-6),var(--coze-bg-6-alpha));
+  }
+
+  .editor-render {
+    cursor: text;
+    resize: none;
+
+    position: relative;
+
+    box-sizing: border-box;
+    width: 100%;
+    padding: 4px;
+
+    font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--semi-color-text-0);
+    vertical-align: bottom;
+
+    background-color: transparent;
+    border: 0 solid transparent;
+    outline: none;
+    box-shadow: none;
+
+    &-bottom-padding {
+      padding: 5px 12px 22px;
+    }
+
+    &-minRows-1 {
+      &>div[data-slate-editor="true"] {
+        min-height: unit(@lineHeight, px) !important;
+      }
+    }
+
+    &-cm-content {
+      box-sizing: content-box;
+    }
+
+    &-cmMinRows-1 {
+      min-height: unit(@lineHeight, px) !important;
+    }
+
+    // 根据最小行数预设最小高度
+    .setMinRows(2);
+    .setMinRows(3);
+    .setMinRows(4);
+    .setMinRows(5);
+
+  }
+}
+
+.expression-editor-error {
+  border: 1px var(--semi-color-danger) solid !important;
+}
+
+.expression-editor-focused {
+  background-color: transparent;
+  border: 1px var(--semi-color-primary) solid;
+
+  &:hover {
+    background-color: transparent;;
+  }
+
+}
+

@@ -1,0 +1,35 @@
+.btn {
+  min-width: 80px;
+  font-size: 14px;
+  line-height: 20px;
+
+  &.grey {
+    background: linear-gradient(90deg, rgba(var(--coze-brand-1), var(--coze-brand-1-alpha)) 0%, rgba(var(--coze-purple-1), var(--coze-purple-1-alpha)) 100%) !important;
+
+    :global {
+      .coz-ai-button-icon {
+        color: rgba(var(--coze-brand-3), var(--coze-brand-3-alpha)) !important;
+      }
+
+      .coz-ai-button-text {
+        background: linear-gradient(90deg, rgba(var(--coze-brand-3), var(--coze-brand-3-alpha)) 0%, rgba(var(--coze-purple-3), var(--coze-purple-3-alpha)) 100%) !important;
+        background-clip: text !important;
+
+        -webkit-text-fill-color: transparent !important;
+      }
+    }
+  }
+
+  .generate-icon {
+    position: relative;
+    top: 2px;
+    margin-right: 8px;
+  }
+
+  :global {
+    .icon-icon-coz_loading {
+      position: relative;
+      top: 1px;
+    }
+  }
+}

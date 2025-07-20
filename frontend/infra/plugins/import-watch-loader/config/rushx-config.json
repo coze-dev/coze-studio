@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../rushx-config.schema.json",
+  "packageAudit": {
+    "enable": true,
+    "rules": [
+      [
+        "essential-config-file",
+        "error",
+        { "essentialFiles": ["OWNERS", "eslint.config.js"] }
+      ]
+    ]
+  },
+  "codecov": {
+    "coverage": 0,
+    "incrementCoverage": 0
+  }
+}

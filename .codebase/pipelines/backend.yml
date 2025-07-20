@@ -1,0 +1,73 @@
+name: "ci@backend pipeline"
+
+trigger:
+  change:
+    paths:
+      - "backend/**"
+
+jobs:
+  unit_test:
+    image: hub.byted.org/codebase/ci_go_1_24:latest
+    name: Unit Test
+    steps:
+      - id: mysql_scripts
+        name: mysql scripts
+        uses: actions/mysql-scripts@v1
+        inputs:
+          db_name: opencoze
+          host: mysql
+          path: "docker/atlas/migrations/*.sql"
+          user: root
+          password: root
+      - name: Go Test
+        uses: actions/codecov
+        inputs:
+          driver: go
+          commands:
+            - modules=`find . -name "go.mod" -exec dirname {} \;`
+            - echo $modules
+            - list=""
+            - coverpkg=""
+            - if [[ ! -f "go.work" ]];then go work init;fi
+            - for module in $modules; do go work use $module; list=$module"/... "$list; coverpkg=$module"/...,"$coverpkg; done
+            - go work sync
+            - go test -coverprofile=coverage.out -gcflags="all=-l -N" -coverpkg=$coverpkg $list
+          config:
+            status:
+              project:
+                opencoze:
+                  minimum_coverage: 0%
+                  paths:
+                    - "!tests"
+                    - "!examples/**"
+                    - "!*/examples/**"
+                    - "!*/mock/**"
+                    - "!*/model/**"
+              diff:
+                eino:
+                  line_limit: 10 # 增量行数少于多少行时，默认置成功
+                  minimum_coverage: 0%
+                  paths:
+                    - "!tests"
+                    - "!examples/**"
+                    - "!*/examples/**"
+                    - "!*/mock/**"
+                    - "!*/model/**"
+      - name: Sonar
+        uses: actions/sonar@v1
+        inputs:
+          coverage_path: /tmp/coverage.out
+          coverage_type: go
+          disable_quality_gates: true
+          exclusions_list:
+            - "!tests"
+            - "examples/**"
+            - "*/mock/**"
+            - "*/model/**"
+          language: go
+    services:
+      - id: mysql
+        image: hub.byted.org/ee/mysql:8.0
+        envs:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: opencoze

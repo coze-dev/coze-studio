@@ -1,0 +1,42 @@
+[
+  {
+    "key": "Authorization Code",
+    "value": 4,
+    "label": "Authorization Code",
+    "items": [
+      {
+        "key": "client_id",
+        "type": "text",
+        "max_len": 100,
+        "required": true
+      },
+      {
+        "key": "client_secret",
+        "type": "text",
+        "max_len": 100,
+        "required": true
+      },
+      {
+        "key": "client_url",
+        "type": "url",
+        "required": true
+      },
+      {
+        "key": "scope",
+        "type": "text",
+        "max_len": 500
+      },
+      {
+        "key": "authorization_url",
+        "type": "url",
+        "required": true
+      },
+      {
+        "key": "authorization_content_type",
+        "type": "text",
+        "default": "application/json",
+        "required": true
+      }
+    ]
+  }
+]

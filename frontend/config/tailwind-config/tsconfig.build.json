@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.node.json",
+  "compilerOptions": {
+    "sourceMap": false,
+    "esModuleInterop": true,
+    "types": [],
+    "rootDir": "./src",
+    "outDir": "dist",
+    "allowJs": true,
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["./src/**/*.ts", "./src/**/*.json"],
+  "references": [
+    {
+      "path": "../eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../infra/utils/monorepo-kits/tsconfig.build.json"
+    },
+    {
+      "path": "../ts-config/tsconfig.build.json"
+    }
+  ]
+}

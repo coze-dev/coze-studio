@@ -1,0 +1,291 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": -50,
+          "y": -47
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "The starting node of the workflow, used to set the information needed to initiate the workflow.",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start.png",
+          "subTitle": "",
+          "title": "Start"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 973,
+          "y": -116
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "The final node of the workflow, used to return the result information after the workflow runs.",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End.png",
+          "subTitle": "",
+          "title": "End"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "123065",
+      "type": "4",
+      "meta": {
+        "position": {
+          "x": 402.4428571428571,
+          "y": -271.6142857142857
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "top_news",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg",
+          "subtitle": "p1:top_news",
+          "description": "帮助用户获取搜狐网上的每日热闻"
+        },
+        "inputs": {
+          "apiParam": [
+            {
+              "name": "apiID",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "7516515616698662912",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "apiName",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "p1",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "pluginID",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "7516515556770447360",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "pluginName",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "p1",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "pluginVersion",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "0",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "tips",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "outDocLink",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "inputParameters": [
+            {
+              "name": "count",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": 12,
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "q",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "settingOnError": {
+            "processType": 1,
+            "timeoutMs": 180000,
+            "retryTimes": 0
+          }
+        },
+        "outputs": [
+          {
+            "type": "object",
+            "name": "data",
+            "schema": [
+              {
+                "type": "object",
+                "name": "coze_ark_001",
+                "schema": [
+                  {
+                    "type": "list",
+                    "name": "list",
+                    "schema": {
+                      "type": "object",
+                      "schema": [
+                        {
+                          "type": "object",
+                          "name": "[Array Item]",
+                          "schema": [
+                            {
+                              "type": "string",
+                              "name": "url"
+                            },
+                            {
+                              "type": "string",
+                              "name": "brief"
+                            },
+                            {
+                              "type": "string",
+                              "name": "title"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "float",
+            "name": "total"
+          },
+          {
+            "type": "string",
+            "name": "message"
+          },
+          {
+            "type": "boolean",
+            "name": "success"
+          },
+          {
+            "type": "string",
+            "name": "traceId"
+          },
+          {
+            "type": "float",
+            "name": "code"
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "123065"
+    },
+    {
+      "sourceNodeID": "123065",
+      "targetNodeID": "900001"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

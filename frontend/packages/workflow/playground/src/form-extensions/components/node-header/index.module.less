@@ -1,0 +1,165 @@
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable no-descending-specificity */
+.container {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  margin-bottom: 8px;
+
+  -webkit-font-smoothing: antialiased;
+}
+
+
+// 覆盖 MonacoEditor tooltip 样式，解决 MonacoEditor tooltip 位置不准的问题。预期：固定在底部
+.json-editor {
+  :global {
+
+    /* stylelint-disable-next-line selector-class-pattern */
+    .overflowingContentWidgets {
+      position: relative;
+    }
+  }
+
+  div[widgetid='editor.contrib.resizableContentHoverWidget'] {
+    position: absolute !important;
+    top: 0 !important; // 调整上方距离
+    left: 0 !important; // 调整左方距离
+  }
+}
+
+.logo {
+  position: relative;
+
+  flex-shrink: 0;
+
+  width: 24px; // Set this to the desired logo size
+  height: 24px;
+  margin-right: 8px;
+
+  border-radius: 4px;
+
+  &::after {
+    content: '';
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    border-radius: 4px;
+    box-shadow: inset 0 0 0 1px var(--coz-stroke-plus);
+  }
+
+  > img {
+    width: 24px; // Set this to the desired logo size
+    height: 24px;
+    border-radius: 4px;
+  }
+}
+
+.input-wrapper {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  :global(input) {
+    font-size: 16px!important;
+    font-weight: 500!important;
+  }
+}
+
+.input-readonly {
+  overflow: hidden;
+  display: flex;
+  flex: 1;
+  column-gap: 4px;
+  align-items: center;
+
+  padding-right: 4px;
+
+  :global {
+    p {
+      font-size: 16px!important;
+    font-weight: 500!important;
+    }
+
+    .coz-icon-button-mini {
+      line-height: 0;
+    }
+  }
+}
+
+.input-wrapper,
+.input {
+  flex: 1;
+}
+
+.input {
+  font-size: 16px;
+
+
+  &,
+  &:focus,
+  &:disabled {
+    margin: 0;
+    padding: 0;
+    color: #000;
+    background-color: transparent;
+  }
+}
+
+.input-error {
+  background-color: var(--semi-color-danger-light-default);
+}
+
+
+
+.subtitle {
+  margin-top: 2px;
+  margin-bottom: 0;
+  padding-left: 28px;
+
+  font-size: 12px;
+  line-height: 16px;
+  color: rgb(28 29 35 / 35%);
+}
+
+.operators {
+  display: flex;
+  flex-direction: row;
+  column-gap: 4px;
+  align-items: center;
+
+  :global(.icon-icon) {
+    font-size: 18px;
+  }
+}
+
+.dropdown-menus {
+  width: 233px;
+
+  &:global(.coz-menu.coz-selection-mode.semi-dropdown-menu .coz-list-item) {
+    padding-left: 8px;
+  }
+
+  &:global(.coz-menu.coz-selection-mode.semi-dropdown-menu .extra-operation-item .coz-item-text) {
+    width: 100%;
+  }
+
+  &:global(.coz-menu.coz-selection-mode.semi-dropdown-menu .coz-item-text) {
+    @apply coz-fg-primary;
+  }
+}
+
+.text-area-wrapper {
+  :global(.semi-input-textarea) {
+    font-size: 12px;
+  }
+}

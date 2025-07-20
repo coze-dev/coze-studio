@@ -1,0 +1,47 @@
+.container {
+  position: relative;
+  flex-shrink: 0;
+
+  :global {
+    .semi-popover-wrapper {
+      border-radius: 8px;
+      padding: 0px;
+      svg {
+        path {
+          fill: var(--light-color-grey-grey-1, #edeff2);
+        }
+      }
+    }
+  }
+
+  .content {
+    min-width: 250px;
+    padding: 0px;
+    font-size: 12px;
+    color: rgba(28, 31, 35, 0.8);
+
+    .header {
+      background: var(--light-color-grey-grey-1, #edeff2);
+      padding: 8px;
+      color: #1c1f23;
+      font-weight: 600;
+    }
+    .title {
+      color: #1c1f23;
+      font-weight: 600;
+    }
+    .value {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .text {
+      line-height: 26px;
+      padding: 8px;
+    }
+    .footer {
+      padding: 8px;
+      border-top: 1px solid rgba(28, 29, 35, 0.12);
+    }
+  }
+}

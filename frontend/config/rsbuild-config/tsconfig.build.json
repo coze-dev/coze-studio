@@ -1,0 +1,34 @@
+{
+  "extends": "@coze-arch/ts-config/tsconfig.node.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "module": "CommonJS",
+    "target": "ES2020",
+    "moduleResolution": "node",
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    {
+      "path": "../eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../infra/plugins/pkg-root-webpack-plugin/tsconfig.build.json"
+    },
+    {
+      "path": "../../packages/arch/bot-env/tsconfig.build.json"
+    },
+    {
+      "path": "../../packages/common/assets/tsconfig.build.json"
+    },
+    {
+      "path": "../ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../vitest-config/tsconfig.build.json"
+    }
+  ]
+}

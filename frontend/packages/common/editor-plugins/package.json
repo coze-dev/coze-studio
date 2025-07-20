@@ -1,0 +1,108 @@
+{
+  "name": "@coze-common/editor-plugins",
+  "version": "0.0.1",
+  "description": "基于@coze-editor/editor的插件库",
+  "license": "Apache-2.0",
+  "author": "haozhenfei@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    "./*": "./src/*",
+    "./theme": "./src/theme/index.ts",
+    "./types": "./src/types.ts",
+    "./input-slot": "./src/input-slot/index.ts",
+    "./library-insert": "./src/library-insert/index.ts",
+    "./library-variable-insert": "./src/library-variable-insert/index.ts",
+    "./language-support": "./src/language-support/index.ts",
+    "./syntax-highlight": "./src/syntax-highlight/index.ts",
+    "./expression": "./src/expression/index.ts",
+    "./action-bar": "./src/action-bar/index.ts",
+    "./actions": "./src/actions/index.ts"
+  },
+  "main": "src/index.tsx",
+  "typesVersions": {
+    "*": {
+      "theme": [
+        "./src/theme/index.ts"
+      ],
+      "language-support": [
+        "./src/language-support/index.ts"
+      ],
+      "syntax-highlight": [
+        "./src/syntax-highlight/index.ts"
+      ],
+      "expression": [
+        "./src/expression/index.ts"
+      ],
+      "types": [
+        "./src/types.ts"
+      ],
+      "input-slot": [
+        "./src/input-slot/index.ts"
+      ],
+      "library-insert": [
+        "./src/library-insert/index.ts"
+      ],
+      "library-variable-insert": [
+        "./src/library-variable-insert/index.ts"
+      ],
+      "action-bar": [
+        "./src/action-bar/index.ts"
+      ],
+      "actions": [
+        "./src/actions/index.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@codemirror/language": "^6.10.1",
+    "@codemirror/state": "^6.4.1",
+    "@codemirror/view": "^6.34.1",
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/idl": "workspace:*",
+    "@coze-editor/editor": "0.1.0-alpha.d92d50",
+    "@lezer/common": "^1.2.2",
+    "ahooks": "^3.7.8",
+    "classnames": "^2.3.2",
+    "dequal": "^2.0.3",
+    "lodash-es": "^4.17.21",
+    "nanoid": "^4.0.2"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/lodash-es": "^4.17.10",
+    "@types/node": "18.18.9",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "stylelint": "^15.11.0",
+    "tailwindcss": "~3.3.3",
+    "typescript": "~5.8.2",
+    "vite": "^4.3.9",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  }
+}
+

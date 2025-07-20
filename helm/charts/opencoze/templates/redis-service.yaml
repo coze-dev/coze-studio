@@ -1,0 +1,17 @@
+{{- if .Values.redis.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "opencoze.fullname" . }}-redis
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: {{ .Values.redis.port }}
+      targetPort: {{ .Values.redis.port }}
+      protocol: TCP
+  selector:
+    app.kubernetes.io/component: redis
+    app.kubernetes.io/name: {{ include "opencoze.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

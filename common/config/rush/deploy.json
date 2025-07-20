@@ -1,0 +1,74 @@
+/**
+ * This configuration file defines a deployment scenario for use with the "rush deploy" command.
+ * The default scenario file path is "deploy.json"; additional files use the naming pattern
+ * "deploy-<scenario-name>.json". For full documentation, please see https://rushjs.io
+ */
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/deploy-scenario.schema.json",
+
+  /**
+   * The "rush deploy" command prepares a deployment folder, starting from the main project and collecting
+   * all of its dependencies (both NPM packages and other Rush projects).  The main project is specified
+   * using the "--project" parameter.  The "deploymentProjectNames" setting lists the allowable choices for
+   * the "--project" parameter; this documents the intended deployments for your monorepo and helps validate
+   * that "rush deploy" is invoked correctly.  If there is only one item in the "deploymentProjectNames" array,
+   * then "--project" can be omitted.  The names should be complete package names as declared in rush.json.
+   *
+   * If the main project should include other unrelated Rush projects, add it to the "projectSettings" section,
+   * and then specify those projects in the "additionalProjectsToInclude" list.
+   */
+  "deploymentProjectNames": [
+    "@coze-studio/app"
+  ],
+  // solve deploy error: ERROR: Symlink targets not under folder
+  "dependencySettings": [],
+
+  /**
+   * When deploying a local Rush project, the package.json "devDependencies" are normally excluded.
+   * If you want to include them, set "includeDevDependencies" to true.
+   *
+   * The default value is false.
+   */
+  // "includeDevDependencies": true,
+
+  /**
+   * When deploying a local Rush project, normally the .npmignore filter is applied so that Rush only copies
+   * files that would be packaged by "npm pack".  Setting "includeNpmIgnoreFiles" to true will disable this
+   * filtering so that all files are copied (with a few trivial exceptions such as the "node_modules" folder).
+   *
+   * The default value is false.
+   */
+  "includeNpmIgnoreFiles": false,
+
+  /**
+   * To improve backwards compatibility with legacy packages, the PNPM package manager installs extra links in the
+   * node_modules folder that enable packages to import undeclared dependencies.  In some cases this workaround may
+   * double the number of links created.  If your deployment does not require this workaround, you can set
+   * "omitPnpmWorkaroundLinks" to true to avoid creating the extra links.
+   *
+   * The default value is false.
+   */
+  // "omitPnpmWorkaroundLinks": true,
+
+  /**
+   * Specify how links (symbolic links, hard links, and/or NTFS junctions) will be created in the deployed folder:
+   *
+   * - "default": Create the links while copying the files; this is the default behavior.
+   * - "script": A Node.js script called "create-links.js" will be written.  When executed, this script will
+   *   create the links described in the "deploy-metadata.json" output file.
+   * - "none": Do nothing; some other tool may create the links later.
+   */
+  // "linkCreation": "script",
+
+  /**
+   * If this path is specified, then after "rush deploy", recursively copy the files from this folder to
+   * the deployment target folder (common/deploy). This can be used to provide additional configuration files
+   * or scripts needed by the server when deploying. The path is resolved relative to the repository root.
+   */
+  //  "folderToCopy": "repo-tools/assets/deploy-config",
+
+  /**
+   * Customize how Rush projects are processed during deployment.
+   */
+  "projectSettings": []
+}

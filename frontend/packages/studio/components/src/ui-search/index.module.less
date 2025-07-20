@@ -1,0 +1,22 @@
+.ui-search {
+  width: 256px !important;
+  max-width: 100%;
+  border-radius: 8px !important;
+
+  input::placeholder {
+    color: var(--light-usage-text-color-text-3, rgb(28 29 35 / 35%));
+  }
+}
+
+.icon-search {
+  display: flex;
+  align-items: center;
+  padding: 0 8px 0 16px;
+
+  &-active {
+    svg {
+      color: var(--light-usage-text-color-text-0, #1d1c23);
+      transition: color 0.2s ease;
+    }
+  }
+}

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ printf "%s-server" (include "opencoze.fullname" .) }}
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.cozeServer.service.type }}
+  ports:
+    - port: {{ .Values.cozeServer.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: app-port
+  selector:
+    app.kubernetes.io/name: {{ include "opencoze.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: server

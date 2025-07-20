@@ -1,0 +1,60 @@
+.sidesheet {
+  :global {
+    .semi-sidesheet-title {
+      width: 100%;
+    }
+
+    .semi-sidesheet-content {
+      background-color: var(--light-color-grey-grey-0, #F7F7FA);
+    }
+
+    .semi-form-field-label-text {
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 16px;
+
+      &::after {
+        margin-left: 0;
+      }
+    }
+
+    // 不要红色感叹号 与workflow对齐
+    .semi-form-field-error-message .semi-form-field-validate-status-icon {
+      display: none;
+    }
+  }
+}
+
+.testset-desc {
+  :global {
+    .semi-input-textarea-counter {
+      font-size: 14px;
+      font-weight: 400;
+      font-style: normal;
+      line-height: 20px;
+      color: var(--light-usage-text-color-text-3, rgb(29 28 35 / 35%));
+    }
+  }
+}
+
+.node-data-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px 0 16px;
+
+  >span {
+    font-size: 18px;
+    font-weight: 600;
+    font-style: normal;
+    line-height: 24px;
+    color: var(--light-usage-text-color-text-0, #1D1C23);
+  }
+
+  .auto-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+}

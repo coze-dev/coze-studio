@@ -1,0 +1,54 @@
+.layout-content {
+  overflow: auto;
+  display: block;
+}
+
+.page-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  padding: 0 24px 14px;
+
+  border-bottom: 1px solid #1D1C2314;
+
+  .page-header-intro {
+    overflow: hidden;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    height: 56px;
+    margin-right: 20px;
+  }
+
+  .page-header-intro_center {
+    justify-content: center;
+    height: 40px;
+  }
+
+  .page-header-intro_top {
+    justify-content: flex-start;
+  }
+
+  .page-header-operations {
+    flex-grow: 0;
+    flex-shrink: 0;
+  }
+
+  .page-header-back {
+    margin-right: 12px;
+
+    & svg {
+      width: 16px;
+      height: 16px;
+      /* stylelint-disable-next-line declaration-no-important -- 覆盖icon颜色 */
+      color: var(--semi-color-text-2) !important;
+    }
+  }
+}
+
+.page-header_full {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}

@@ -1,0 +1,273 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": -186,
+          "y": -77.94999999999999
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 837,
+          "y": -189.95
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "",
+                    "name": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "198684",
+      "type": "3",
+      "meta": {
+        "position": {
+          "x": 341,
+          "y": -216.64999999999998
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "大模型",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg",
+          "description": "调用大语言模型,使用变量和提示词生成回复",
+          "mainColor": "#5C62FF",
+          "subTitle": "大模型"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "123",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "123",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "aaa",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "llmParam": [
+            {
+              "name": "modelType",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": "1",
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "modleName",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "豆包·1.5·Pro·32k",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "generationDiversity",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "balance",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "temperature",
+              "input": {
+                "type": "float",
+                "value": {
+                  "type": "literal",
+                  "content": "0.8",
+                  "rawMeta": {
+                    "type": 4
+                  }
+                }
+              }
+            },
+            {
+              "name": "maxTokens",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": "4096",
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "responseFormat",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": "2",
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "prompt",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "enableChatHistory",
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "type": "literal",
+                  "content": false,
+                  "rawMeta": {
+                    "type": 3
+                  }
+                }
+              }
+            },
+            {
+              "name": "chatHistoryRound",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "literal",
+                  "content": "3",
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "systemPrompt",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "settingOnError": {
+            "processType": 1,
+            "timeoutMs": 180000,
+            "retryTimes": 0
+          }
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output"
+          }
+        ],
+        "version": "3"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "198684"
+    },
+    {
+      "sourceNodeID": "198684",
+      "targetNodeID": "900001"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

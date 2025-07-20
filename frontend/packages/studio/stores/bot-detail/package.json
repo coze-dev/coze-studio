@@ -1,0 +1,129 @@
+{
+  "name": "@coze-studio/bot-detail-store",
+  "version": "0.0.1",
+  "description": "bot detail store",
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/",
+    "./bot-info": "./src/store/bot-info.ts",
+    "./page-runtime": "./src/store/page-runtime/index.ts",
+    "./collaboration": "./src/store/collaboration.ts",
+    "./bot-skill": "./src/store/bot-skill/index.ts",
+    "./model": "./src/store/model.ts",
+    "./multi-agent": "./src/store/multi-agent/index.ts",
+    "./persona": "./src/store/persona.ts",
+    "./message-area": "./src/store/message-area.ts",
+    "./query-collect": "./src/store/query-collect.ts",
+    "./save-manager": "./src/save-manager/index.ts",
+    "./audit-info": "./src/store/audit-info.ts",
+    "./collaborate-quota": "./src/store/collaborate-quota.ts",
+    "./diff-task": "./src/store/diff-task.ts",
+    "./skill-types": "./src/types/skill.ts"
+  },
+  "main": "src/index.ts",
+  "typesVersions": {
+    "*": {
+      "bot-info": [
+        "./src/store/bot-info.ts"
+      ],
+      "page-runtime": [
+        "./src/store/page-runtime/index.ts"
+      ],
+      "collaboration": [
+        "./src/store/collaboration.ts"
+      ],
+      "bot-skill": [
+        "./src/store/bot-skill/index.ts"
+      ],
+      "model": [
+        "./src/store/model.ts"
+      ],
+      "multi-agent": [
+        "./src/store/multi-agent/index.ts"
+      ],
+      "persona": [
+        "./src/store/persona.ts"
+      ],
+      "message-area": [
+        "./src/store/message-area.ts"
+      ],
+      "query-collect": [
+        "./src/store/query-collect.ts"
+      ],
+      "save-manager": [
+        "./src/save-manager/index.ts"
+      ],
+      "audit-info": [
+        "./src/store/audit-info.ts"
+      ],
+      "collaborate-quota": [
+        "./src/store/collaborate-quota.ts"
+      ],
+      "diff-task": [
+        "./src/store/diff-task.ts"
+      ],
+      "skill-types": [
+        "./src/types/skill.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-agent-ide/bot-input-length-limit": "workspace:*",
+    "@coze-agent-ide/tool-config": "workspace:*",
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/bot-space-api": "workspace:*",
+    "@coze-arch/bot-studio-store": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/idl": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-arch/report-events": "workspace:*",
+    "@coze-arch/web-context": "workspace:*",
+    "@coze-common/websocket-manager-adapter": "workspace:*",
+    "@coze-studio/autosave": "workspace:*",
+    "@coze-studio/bot-utils": "workspace:*",
+    "@flowgram-adapter/common": "workspace:*",
+    "@flowgram-adapter/free-layout-editor": "workspace:*",
+    "ahooks": "^3.7.8",
+    "dayjs": "^1.11.7",
+    "deep-diff": "~1.0.2",
+    "immer": "^10.0.3",
+    "lodash-es": "^4.17.21",
+    "nanoid": "^4.0.2",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-env": "workspace:*",
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@coze-common/chat-core": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/lodash-es": "^4.17.10",
+    "@types/node": "^18",
+    "@vitest/coverage-v8": "~3.0.5",
+    "less": "^3.13.1",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "scheduler": ">=0.19.0",
+    "sucrase": "^3.32.0",
+    "vitest": "~3.0.5"
+  }
+}
+

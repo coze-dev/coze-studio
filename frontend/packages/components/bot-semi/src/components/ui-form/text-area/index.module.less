@@ -1,0 +1,12 @@
+div.field {
+  padding-bottom: 24px !important;
+  &:has(:global(.semi-form-field-error-message)) {
+    padding-bottom: 0 !important;
+  }
+  :global {
+    .semi-form-field-error-message {
+      margin-top: 4px;
+      line-height: 20px;
+    }
+  }
+}

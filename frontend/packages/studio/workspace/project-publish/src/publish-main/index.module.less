@@ -1,0 +1,135 @@
+// 修改semi样式 适配UI规范
+.publish-collapse {
+  :global {
+    .semi-collapse-item {
+      position: relative;
+      border-bottom: 1px solid var(--coz-stroke-primary);
+    }
+
+    .semi-collapse-item:hover {
+      border-color: var(--coz-bg-primary);
+    }
+
+    .semi-collapse-header:hover::before {
+      content: '';
+
+      position: absolute;
+      top: -1px;
+      left: 0;
+
+      width: 100%;
+      height: 1px;
+
+      background-color: var(--coz-bg-primary);
+    }
+
+    .semi-collapse-header {
+      margin: 0;
+      padding: 8px 0;
+      border-radius: 0;
+
+      &:hover {
+        background: var(--coz-mg-secondary-hovered);
+        border-radius: 8px;
+      }
+
+      &:active {
+        background: var(--coz-mg-secondary-pressed);
+      }
+    }
+
+    .semi-collapse-header-icon {
+      margin: 4px;
+    }
+
+    .semi-collapse-content {
+      padding: 4px 0 16px;
+    }
+
+    .semi-collapse-item:last-child {
+      border: none;
+    }
+
+    .semi-form-field-label {
+      line-height: 20px;
+    }
+  }
+}
+
+.publish-cards {
+  :global {
+    .semi-select.coz-select {
+      height: 24px;
+      border-radius: var(--small, 6px);
+
+      .semi-select-inset-label {
+        margin: 0 4px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--coz-fg-secondary);
+      }
+
+      .semi-select-selection .semi-select-selection-text {
+        font-size: 12px;
+      }
+
+      .semi-select-arrow {
+        width: 22px;
+      }
+
+      .semi-select-content-wrapper-empty {
+        margin-left: 0;
+      }
+
+      .semi-select-content-wrapper-collapse {
+        gap: 2px;
+        align-items: center;
+        line-height: normal;
+
+        .semi-overflow-list-item, .semi-overflow-list-overflow {
+          display: flex;
+        }
+      }
+
+      .semi-tag {
+        height: 16px;
+        padding: 2px;
+        background: var(--coz-mg_primary, rgba(6, 7, 9, 8%));
+        border-radius: 2px;
+      }
+    }
+
+    .semi-select-error {
+      border: 1px solid var(--coz-stroke-hglt-red);
+    }
+
+    // stylelint-disable-next-line selector-class-pattern -- 暂时修复 checkbox 边框样式
+    .coz-checkbox.semi-checkbox-unChecked {
+      .semi-checkbox-inner-display {
+        border-color: var(--coz-stroke-plus);
+      }
+    }
+  }
+}
+
+.project {
+  :global {
+    .semi-form-field-error-message {
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--coz-fg-hglt-red);
+    }
+
+    .semi-input {
+      border-radius: 8px;
+    }
+
+    .semi-form-field {
+      padding: 0;
+    }
+
+    .semi-input-textarea {
+      height: 72px;
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/subspaces.schema.json",
+
+  /**
+   * Set this flag to "true" to enable usage of subspaces.
+   */
+  "subspacesEnabled": true,
+
+  /**
+   * When a command such as "rush update" is invoked without the "--subspace" or "--to"
+   * parameters, Rush will install all subspaces.  In a huge monorepo with numerous subspaces,
+   * this would be extremely slow.  Set "preventSelectingAllSubspaces" to true to avoid this
+   * mistake by always requiring selection parameters for commands such as "rush update".
+   */
+  "preventSelectingAllSubspaces": false,
+
+  /**
+   * The list of subspace names, which should be lowercase alphanumeric words separated by
+   * hyphens, for example "my-subspace".  The corresponding config files will have paths
+   * such as "common/config/subspaces/my-subspace/package-lock.yaml".
+   */
+  "subspaceNames": [
+    // The "default" subspace always exists even if you don't define it,
+    // but let's include it for clarity
+    "default",
+
+    "e2e", // 👈👈👈 Our secondary subspace name
+    "e2e-opencoze"
+  ]
+}

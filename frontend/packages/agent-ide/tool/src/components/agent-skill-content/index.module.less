@@ -1,0 +1,34 @@
+.item {
+  display: flex;
+  width: 100%;
+  margin-top: 12px;
+
+  &:first-child {
+    margin-top: 0;
+  }
+
+  .icon {
+    position: sticky;
+    top: 0;
+
+    flex-shrink: 0;
+
+    width: 24px;
+    height: 24px;
+  }
+
+  .skills {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    width: 0;
+  }
+}
+
+.popover-content {
+  font-size: 14px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 20px; // 142.857%
+  color: var(--light-usage-bg-color-bg-0, #FFF);
+}

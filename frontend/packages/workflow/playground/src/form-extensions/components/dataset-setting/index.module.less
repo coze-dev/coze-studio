@@ -1,0 +1,88 @@
+/* stylelint-disable declaration-no-important */
+@import '../../../assets/styles/common.less';
+
+.setting {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--light-usage-text-color-text-0, #1f2329);
+
+  .setting-title {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 24px;
+  }
+
+  .setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+
+    &:last-of-type {
+      margin-bottom: 0;
+    }
+
+    :global {
+      .semi-tag-grey-light {
+        background: var(--light-color-brand-brand-1, #d9dcfa) !important;
+      }
+    }
+  }
+}
+
+
+.tip-area {
+  display: flex;
+  width: 316px;
+  padding: 16px;
+  color: var(--light-usage-text-color-text-0, #1c1d23);
+
+  .tip-area-content {
+    margin-left: 8px;
+  }
+
+  .tip-area-title {
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .tip-area-text {
+    font-size: 14px;
+    line-height: 20px;
+  }
+}
+
+.dataset-top-k-popover {
+  &:global(.semi-popover-with-arrow) {
+    padding: 0;
+  }
+
+
+
+}
+
+.tips-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+
+  width: 320px;
+  min-width: 320px;
+  max-width: 320px;
+  padding: 16px;
+
+  border: 0.5px solid var(--Stroke-COZ-stroke-primary, rgba(134, 184, 255, 12%));
+  border-radius: 12px;
+
+  /* COZ_shadow_default */
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 8%), 0 8px 24px 0 rgba(0, 0, 0, 4%);
+
+  :global{
+    .semi-tooltip-icon-arrow{
+      color: var(--Bg-COZ-bg-max, #323D50);
+    }
+  }
+}

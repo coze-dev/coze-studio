@@ -1,0 +1,38 @@
+{
+  "name": "@coze-common/chat-area-utils",
+  "version": "0.0.1",
+  "description": "utils in vanilla ts, no react, no logger, no I18n",
+  "license": "Apache-2.0",
+  "author": "wanglitong@bytedance.com",
+  "maintainers": [],
+  "main": "index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/bot-env": "workspace:*",
+    "mdast": "3.0.0-alpha.6"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-md-box-adapter": "workspace:*",
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/lodash-es": "^4.17.10",
+    "@types/mdast": "4.0.3",
+    "@types/node": "^18",
+    "@vitest/coverage-v8": "~3.0.5",
+    "big-integer": "^1.6.52",
+    "lodash-es": "^4.17.21",
+    "sucrase": "^3.32.0",
+    "vitest": "~3.0.5"
+  },
+  "peerDependencies": {
+    "lodash-es": "^4.17.21"
+  }
+}
+

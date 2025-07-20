@@ -1,0 +1,47 @@
+.label-content {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+  padding-left: 8px;
+
+}
+
+.model-content {
+  overflow: hidden;
+  display: flex;
+  column-gap: 8px;
+  align-items: center;
+
+  width: 100%;
+
+
+  .model-content-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.select {
+  :global(.semi-select-content-wrapper) {
+    width: 100%;
+  }
+}
+
+.select-dropdown {
+  max-width: 432px;
+}
+
+.model-token {
+  flex-shrink: 0;
+}
+
+.model-name {
+  overflow: hidden;
+  display: inline-block;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

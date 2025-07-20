@@ -1,0 +1,795 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "null_value",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "input_arr",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "type": "list"
+          }
+        ],
+        "trigger_parameters": []
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "content": {
+            "type": "string",
+            "value": {
+              "content": "{{output_obj.Group1}}\n{{Group2}}\n{{output_obj}}",
+              "type": "literal"
+            }
+          },
+          "inputParameters": [
+            {
+              "input": {
+                "schema": [
+                  {
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "content": {
+                          "blockID": "100001",
+                          "name": "input",
+                          "source": "block-output"
+                        },
+                        "rawMeta": {
+                          "type": 1
+                        },
+                        "type": "ref"
+                      }
+                    },
+                    "name": "input"
+                  },
+                  {
+                    "input": {
+                      "type": "string",
+                      "value": {
+                        "content": {
+                          "blockID": "150725",
+                          "name": "Group1",
+                          "source": "block-output"
+                        },
+                        "rawMeta": {
+                          "type": 1
+                        },
+                        "type": "ref"
+                      }
+                    },
+                    "name": "Group1"
+                  }
+                ],
+                "type": "object",
+                "value": {
+                  "type": "object_ref"
+                }
+              },
+              "name": "output_obj"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "171842",
+                    "name": "Group1",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "Group2"
+            }
+          ],
+          "streamingOutput": true,
+          "terminatePlan": "useAnswerContent"
+        },
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "position": {
+          "x": 2201.8226540717774,
+          "y": -347.1020271826246
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "branches": [
+            {
+              "condition": {
+                "conditions": [
+                  {
+                    "left": {
+                      "input": {
+                        "type": "string",
+                        "value": {
+                          "content": {
+                            "blockID": "100001",
+                            "name": "input",
+                            "source": "block-output"
+                          },
+                          "type": "ref"
+                        }
+                      }
+                    },
+                    "operator": 3,
+                    "right": {
+                      "input": {
+                        "type": "integer",
+                        "value": {
+                          "content": 3,
+                          "rawMeta": {
+                            "type": 2
+                          },
+                          "type": "literal"
+                        }
+                      }
+                    }
+                  }
+                ],
+                "logic": 2
+              }
+            }
+          ]
+        },
+        "nodeMeta": {
+          "description": "连接多个下游分支，若设定的条件成立则仅运行对应的分支，若均不成立则只运行“否则”分支",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Condition-v2.jpg",
+          "mainColor": "#00B2B2",
+          "subTitle": "选择器",
+          "title": "选择器"
+        }
+      },
+      "edges": null,
+      "id": "101374",
+      "meta": {
+        "position": {
+          "x": 414,
+          "y": -13.649999999999991
+        }
+      },
+      "type": "8"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            }
+          ],
+          "llmParam": [
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "1737521813",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "modelType"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "豆包·1.5·Pro·32k",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "modleName"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "balance",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "generationDiversity"
+            },
+            {
+              "input": {
+                "type": "float",
+                "value": {
+                  "content": "0.8",
+                  "rawMeta": {
+                    "type": 4
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "temperature"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "4096",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "maxTokens"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "2",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "responseFormat"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "prompt"
+            },
+            {
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "content": false,
+                  "rawMeta": {
+                    "type": 3
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "enableChatHistory"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "3",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "chatHistoryRound"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "systemPrompt"
+            }
+          ],
+          "settingOnError": {
+            "processType": 1,
+            "retryTimes": 0,
+            "timeoutMs": 180000
+          }
+        },
+        "nodeMeta": {
+          "description": "调用大语言模型,使用变量和提示词生成回复",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg",
+          "mainColor": "#5C62FF",
+          "subTitle": "大模型",
+          "title": "大模型"
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "type": "string"
+          }
+        ],
+        "version": "3"
+      },
+      "edges": null,
+      "id": "193327",
+      "meta": {
+        "position": {
+          "x": 828,
+          "y": -77.35
+        }
+      },
+      "type": "3"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            }
+          ],
+          "llmParam": [
+            {
+              "input": {
+                "type": "float",
+                "value": {
+                  "content": "0.8",
+                  "rawMeta": {
+                    "type": 4
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "temperature"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "2200",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "maxTokens"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "2",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "responseFormat"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "DeepSeek-R1",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "modleName"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "1738675233",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "modelType"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "balance",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "generationDiversity"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "prompt"
+            },
+            {
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "content": false,
+                  "rawMeta": {
+                    "type": 3
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "enableChatHistory"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "3",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "chatHistoryRound"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "do not output any reasoning content. output content directly",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "systemPrompt"
+            }
+          ],
+          "settingOnError": {
+            "processType": 1,
+            "retryTimes": 0,
+            "timeoutMs": 180000
+          }
+        },
+        "nodeMeta": {
+          "description": "调用大语言模型,使用变量和提示词生成回复",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg",
+          "mainColor": "#5C62FF",
+          "subTitle": "大模型",
+          "title": "大模型_1"
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "type": "string"
+          },
+          {
+            "name": "reasoning_content",
+            "type": "string"
+          }
+        ],
+        "version": "3"
+      },
+      "edges": null,
+      "id": "167144",
+      "meta": {
+        "position": {
+          "x": 828,
+          "y": 191.89872064182828
+        }
+      },
+      "type": "3"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "mergeGroups": [
+            {
+              "name": "Group1",
+              "variables": [
+                {
+                  "type": "string",
+                  "value": {
+                    "content": {
+                      "blockID": "100001",
+                      "name": "null_value",
+                      "source": "block-output"
+                    },
+                    "rawMeta": {
+                      "type": 1
+                    },
+                    "type": "ref"
+                  }
+                },
+                {
+                  "type": "string",
+                  "value": {
+                    "content": {
+                      "blockID": "193327",
+                      "name": "output",
+                      "source": "block-output"
+                    },
+                    "rawMeta": {
+                      "type": 1
+                    },
+                    "type": "ref"
+                  }
+                },
+                {
+                  "type": "string",
+                  "value": {
+                    "content": {
+                      "blockID": "167144",
+                      "name": "reasoning_content",
+                      "source": "block-output"
+                    },
+                    "rawMeta": {
+                      "type": 1
+                    },
+                    "type": "ref"
+                  }
+                },
+                {
+                  "type": "string",
+                  "value": {
+                    "content": {
+                      "blockID": "",
+                      "name": "",
+                      "path": [
+                        "user_var"
+                      ],
+                      "source": "global_variable_user"
+                    },
+                    "rawMeta": {
+                      "type": 1
+                    },
+                    "type": "ref"
+                  }
+                },
+                {
+                  "type": "string",
+                  "value": {
+                    "content": {
+                      "blockID": "167144",
+                      "name": "output",
+                      "source": "block-output"
+                    },
+                    "rawMeta": {
+                      "type": 1
+                    },
+                    "type": "ref"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "nodeMeta": {
+          "description": "对多个分支的输出进行聚合处理",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/VariableMerge-icon.jpg",
+          "mainColor": "#00B2B2",
+          "subTitle": "变量聚合",
+          "title": "变量聚合"
+        },
+        "outputs": [
+          {
+            "name": "Group1",
+            "type": "string"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "171842",
+      "meta": {
+        "position": {
+          "x": 1267.010161715417,
+          "y": -1.3499999999999943
+        }
+      },
+      "type": "32"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "mergeGroups": [
+            {
+              "name": "Group1",
+              "variables": [
+                {
+                  "type": "string",
+                  "value": {
+                    "content": {
+                      "blockID": "167144",
+                      "name": "reasoning_content",
+                      "source": "block-output"
+                    },
+                    "rawMeta": {
+                      "type": 1
+                    },
+                    "type": "ref"
+                  }
+                },
+                {
+                  "type": "string",
+                  "value": {
+                    "content": {
+                      "blockID": "171842",
+                      "name": "Group1",
+                      "source": "block-output"
+                    },
+                    "rawMeta": {
+                      "type": 1
+                    },
+                    "type": "ref"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "nodeMeta": {
+          "description": "对多个分支的输出进行聚合处理",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/VariableMerge-icon.jpg",
+          "mainColor": "#00B2B2",
+          "subTitle": "变量聚合",
+          "title": "变量聚合_1"
+        },
+        "outputs": [
+          {
+            "name": "Group1",
+            "type": "string"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "150725",
+      "meta": {
+        "position": {
+          "x": 1781.932338783341,
+          "y": 216.89872064182828
+        }
+      },
+      "type": "32"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "101374",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "150725",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "101374",
+      "targetNodeID": "193327",
+      "sourcePortID": "true"
+    },
+    {
+      "sourceNodeID": "101374",
+      "targetNodeID": "167144",
+      "sourcePortID": "false"
+    },
+    {
+      "sourceNodeID": "193327",
+      "targetNodeID": "171842",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "167144",
+      "targetNodeID": "171842",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "167144",
+      "targetNodeID": "150725",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "171842",
+      "targetNodeID": "150725",
+      "sourcePortID": ""
+    }
+  ],
+  "versions": {
+    "loop": "v2",
+    "batch": "v2"
+  }
+}

@@ -1,0 +1,142 @@
+/* stylelint-disable declaration-no-important */
+@import '../../assets/common.less';
+
+.brief {
+  .info {
+    display: flex;
+    align-items: center;
+    height: 40px;
+  }
+
+  .icon {
+    width: 36px;
+    height: 36px;
+
+    :global {
+      .semi-avatar {
+        width: 36px;
+        height: 36px;
+
+        background: transparent;
+        border: 0.5px solid var(--coz-stroke-primary);
+        border-radius: 9px;
+      }
+    }
+  }
+
+  .content {
+    overflow: hidden;
+    flex-grow: 1;
+    margin-left: 8px;
+  }
+
+  .bot-count {
+    display: flex;
+    align-items: center;
+
+    width: 220px;
+
+    font-size: 12px;
+    line-height: 16px;
+    color: rgba(29, 28, 36, 35%);
+
+    &-text {
+      margin-right: 4px;
+    }
+
+&-icon {
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
+
+  path {
+    fill: #C6CACD;
+  }
+}
+
+
+  }
+
+  .action-right {
+    margin-left: auto;
+  }
+
+  .tags {
+    margin-top: 5px;
+  }
+
+  .title {
+    max-width: 800px;
+
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: var(--coz-fg-plus);
+  }
+
+  .description {
+    overflow: hidden;
+
+    margin-top: 6px;
+
+    font-size: 14px;
+    font-weight: 700;
+    font-style: normal;
+    line-height: 22px;
+    color: var(--light-usage-text-color-text-1, rgb(28 29 35 / 80%));
+    text-overflow: ellipsis;
+  }
+
+  :global {
+    .semi-tag-blue-light {
+      color: var(--light-color-brand-brand-6, #304cdb);
+      background: var(--light-color-brand-brand-1, #d9e2ff);
+    }
+
+    .semi-button {
+      padding: 8px 12px;
+    }
+
+    .icon-with-suffix-overlay {
+      .icon {
+        width: 36px;
+        height: 36px;
+
+        [role="img"] {
+          .common-svg-icon(24px, null);
+        }
+      }
+
+      .suffix {
+        top: 27px;
+        left: 27px;
+        width: 18px;
+        height: 18px;
+
+        [role="img"] {
+          .common-svg-icon(12px, null);
+        }
+
+      }
+    }
+  }
+}
+
+.doc-icon-note {
+  border-radius: 8px;
+  .common-svg-icon(36px, null);
+}
+
+.bot-used-count {
+  display: flex;
+
+  :global {
+    .related-bots-circle {
+      margin-top: -5px;
+      margin-right: 4px;
+      font-size: 16px;
+    }
+  }
+
+}

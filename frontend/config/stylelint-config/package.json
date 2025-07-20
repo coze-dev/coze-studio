@@ -1,0 +1,27 @@
+{
+  "name": "@coze-arch/stylelint-config",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "license": "Apache-2.0",
+  "author": "liukaizhan.038@bytedance.com",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "exit 0",
+    "example": "stylelint './examples/*.{css,less}'",
+    "lint": "eslint ./"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@types/node": "^18",
+    "stylelint": "^15.11.0",
+    "stylelint-config-clean-order": "^5.2.0",
+    "stylelint-config-rational-order": "^0.1.2",
+    "stylelint-config-recommended": "^13.0.0",
+    "stylelint-config-standard": "^34.0.0",
+    "stylelint-config-standard-less": "^2.0.0",
+    "sucrase": "^3.32.0"
+  }
+}

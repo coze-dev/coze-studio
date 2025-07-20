@@ -1,0 +1,27 @@
+{
+  "name": "@coze-studio/slardar-adapter",
+  "version": "0.0.1",
+  "description": "provide report adapter",
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-studio/default-slardar": "workspace:*"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/node": "^18",
+    "@vitest/coverage-v8": "~3.0.5",
+    "vitest": "~3.0.5"
+  }
+}
+

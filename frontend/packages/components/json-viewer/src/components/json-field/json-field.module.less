@@ -1,0 +1,59 @@
+.json-viewer-field {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  display: flex;
+
+  .field-content {
+    flex: 1 1 0;
+    padding: 2px 0;
+    user-select: auto;
+
+    &.is-error .field-key,
+    &.is-error .field-value {
+      color: #FF441E;
+    }
+
+    &.is-warning .field-key,
+    &.is-warning .field-value {
+      color: #FF9600;
+    }
+
+    .field-value-number {
+      color: #03B6D0;
+    }
+
+    .field-value-boolean {
+      color: #BB2BC9;
+    }
+  }
+
+  .field-icon {
+    vertical-align: middle;
+    font-size: 12px;
+    color: #4D53E8;
+    margin-right: 4px;
+    cursor: pointer;
+
+    &.expand>span {
+      transform: rotate(90deg);
+    }
+  }
+
+  .field-block {
+    padding-left: 16px;
+  }
+
+  .field-key {
+    color: #4D53E8;
+    word-break: break-word;
+  }
+
+  .field-value {
+    overflow-wrap: anywhere;
+  }
+
+  .field-len {
+    color: rgba(29, 28, 35, 0.35);
+  }
+}

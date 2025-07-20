@@ -1,0 +1,21 @@
+/* stylelint-disable declaration-no-important */
+
+div.field {
+  padding-bottom: 24px !important;
+
+  &:has(:global(.semi-form-field-error-message)) {
+    padding-bottom: 0 !important;
+  }
+
+  :global {
+    .semi-form-field-error-message {
+      margin-top: 4px;
+      line-height: 20px;
+    }
+
+    .semi-input-textarea-counter {
+      padding-right: 5px!important;
+      padding-left: 5px;
+    }
+  }
+}

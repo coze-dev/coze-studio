@@ -1,0 +1,150 @@
+{
+  "name": "@coze-data/knowledge-resource-processor-base",
+  "version": "0.0.1",
+  "description": "知识库资源处理,包含导入,切片流程",
+  "license": "Apache-2.0",
+  "author": "haozhenfei@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.tsx",
+    "./types": "./src/types/index.ts",
+    "./types/*": "./src/types/*/index.ts",
+    "./constants": "./src/constants/index.ts",
+    "./constants/*": "./src/constants/*/index.ts",
+    "./utils": "./src/utils/index.ts",
+    "./utils/*": "./src/utils/*/index.ts",
+    "./hooks": "./src/hooks/index.ts",
+    "./hooks/*": "./src/hooks/*/index.ts",
+    "./services": "./src/services/index.ts",
+    "./services/*": "./src/services/*/index.ts",
+    "./components": "./src/components/index.tsx",
+    "./components/*": "./src/components/*/index.tsx",
+    "./features/*": "./src/features/*/index.tsx",
+    "./layout/*": "./src/layout/*/index.tsx"
+  },
+  "main": "src/index.tsx",
+  "typesVersions": {
+    "*": {
+      "types": [
+        "./src/types/index.ts"
+      ],
+      "types/*": [
+        "./src/types/*/index.ts"
+      ],
+      "constants": [
+        "./src/constants/index.ts"
+      ],
+      "constants/*": [
+        "./src/constants/*/index.ts"
+      ],
+      "hooks": [
+        "./src/hooks/index.ts"
+      ],
+      "hooks/*": [
+        "./src/hooks/*/index.ts"
+      ],
+      "services": [
+        "./src/services/index.ts"
+      ],
+      "services/*": [
+        "./src/services/*/index.ts"
+      ],
+      "utils": [
+        "./src/utils/index.ts"
+      ],
+      "utils/*": [
+        "./src/utils/*/index.ts"
+      ],
+      "components": [
+        "./src/components/index.tsx"
+      ],
+      "components/*": [
+        "./src/components/*/index.tsx"
+      ],
+      "features/*": [
+        "./src/features/*/index.tsx"
+      ],
+      "layout/*": [
+        "./src/layout/*/index.tsx"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/bot-http": "workspace:*",
+    "@coze-arch/bot-icons": "workspace:*",
+    "@coze-arch/bot-md-box-adapter": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/bot-studio-store": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/foundation-sdk": "workspace:*",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/idl": "workspace:*",
+    "@coze-arch/pdfjs-shadow": "workspace:*",
+    "@coze-arch/report-events": "workspace:*",
+    "@coze-arch/report-tti": "workspace:*",
+    "@coze-arch/utils": "workspace:*",
+    "@coze-common/table-view": "workspace:*",
+    "@coze-common/virtual-list": "workspace:*",
+    "@coze-data/e2e": "workspace:*",
+    "@coze-data/knowledge-common-components": "workspace:*",
+    "@coze-data/knowledge-common-hooks": "workspace:*",
+    "@coze-data/knowledge-common-services": "workspace:*",
+    "@coze-data/knowledge-modal-base": "workspace:*",
+    "@coze-data/knowledge-resource-processor-core": "workspace:*",
+    "@coze-data/knowledge-stores": "workspace:*",
+    "@coze-data/reporter": "workspace:*",
+    "@coze-data/utils": "workspace:*",
+    "@coze-studio/components": "workspace:*",
+    "@dnd-kit/core": "^6.0.8",
+    "@dnd-kit/modifiers": "^7.0.0",
+    "@dnd-kit/sortable": "^7.0.2",
+    "@dnd-kit/utilities": "^3.2.1",
+    "@douyinfe/semi-icons": "^2.36.0",
+    "@douyinfe/semi-illustrations": "^2.36.0",
+    "ahooks": "^3.7.8",
+    "classnames": "^2.3.2",
+    "cropperjs": "^1.5.12",
+    "immer": "^10.0.3",
+    "lodash-es": "^4.17.21",
+    "nanoid": "^4.0.2",
+    "react-arborist": "^3.4.0",
+    "react-pdf": "9.1.1",
+    "semver": "^7.3.7",
+    "usehooks-ts": "^3.1.0",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/lodash-es": "^4.17.10",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "stylelint": "^15.11.0",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  }
+}
+

@@ -1,0 +1,101 @@
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable max-nesting-depth */
+/* stylelint-disable declaration-no-important */
+.filebox-list {
+  width: 100%;
+  height: 100%;
+
+
+  // 移除全局样式
+  :global {
+    .semi-spin-block.semi-spin {
+      height: auto;
+    }
+
+    .semi-spin-children {
+      height: auto
+    }
+  }
+}
+
+.file-list {
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: calc(100% - 52px);
+
+  .file-list-spin {
+    flex: 1;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+
+  .spin {
+    width: 100%;
+    height: 60px;
+    font-size: 14px;
+  }
+}
+
+
+// UI稿的 confirm modal 和 semi 默认的不一样，需要手动调整样式
+.confirm-modal {
+  :global {
+    .semi-modal-header {
+      margin-bottom: 16px;
+
+      // icon 和 title 的间距
+      .semi-modal-icon-wrapper {
+        margin-right: 8px;
+      }
+
+      // title 颜色
+      .semi-modal-confirm-title-text {
+        color: rgba(29, 28, 35, 100%);
+      }
+
+      // 关闭 icon 的 hover 颜色
+      .semi-button:hover {
+        background-color: rgba(46, 46, 56, 8%);
+      }
+    }
+
+    .semi-modal-body {
+      margin: 0;
+      padding: 16px 0;
+
+      .semi-modal-confirm-content {
+        color: rgba(29, 28, 35, 100%)
+      }
+    }
+
+    .semi-modal-footer button {
+      min-width: 96px;
+      margin-left: 16px;
+    }
+  }
+}
+
+
+// UIModal 的背景颜色不符，需要调整
+.upload-modal{
+  :global{
+    .semi-modal-content{
+      background: #f7f7fa !important
+    }
+  }
+}

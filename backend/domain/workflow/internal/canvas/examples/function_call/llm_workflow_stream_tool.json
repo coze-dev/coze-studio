@@ -1,0 +1,341 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "title": "entry"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "trigger_parameters": []
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "content": {
+            "type": "string",
+            "value": {
+              "content": "{{output}}",
+              "type": "literal"
+            }
+          },
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "128198",
+                    "name": "output",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output"
+            }
+          ],
+          "streamingOutput": true,
+          "terminatePlan": "useAnswerContent"
+        },
+        "nodeMeta": {
+          "title": "exit"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "position": {
+          "x": 1000,
+          "y": 0
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "fcParam": {
+            "workflowFCParam": {
+              "workflowList": [
+                {
+                  "fc_setting": {
+                    "is_draft": false,
+                    "plugin_id": "7504134755689087002",
+                    "request_params": [
+                      {
+                        "assist_type": 0,
+                        "desc": "",
+                        "enum_list": [],
+                        "enum_var_names": [],
+                        "global_disable": false,
+                        "id": "",
+                        "is_required": false,
+                        "local_default": "default_input",
+                        "local_disable": false,
+                        "location": 3,
+                        "name": "input",
+                        "sub_parameters": [],
+                        "type": 1
+                      }
+                    ],
+                    "response_params": [
+                      {
+                        "assist_type": 0,
+                        "desc": "",
+                        "enum_list": [],
+                        "enum_var_names": [],
+                        "global_disable": false,
+                        "id": "",
+                        "is_required": false,
+                        "local_disable": false,
+                        "location": 3,
+                        "name": "any_name",
+                        "sub_parameters": [],
+                        "type": 1
+                      }
+                    ],
+                    "response_style": {
+                      "mode": 0
+                    },
+                    "workflow_id": "7492615435881709608",
+                    "workflow_version": "v0.0.1"
+                  },
+                  "is_draft": false,
+                  "plugin_id": "7504134755689087002",
+                  "plugin_version": "",
+                  "workflow_id": "7492615435881709608",
+                  "workflow_version": "v0.0.1"
+                }
+              ]
+            }
+          },
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            }
+          ],
+          "llmParam": [
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "1706077825",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "modelType"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "doubao·function_call",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "modleName"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "balance",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "generationDiversity"
+            },
+            {
+              "input": {
+                "type": "float",
+                "value": {
+                  "content": "1",
+                  "rawMeta": {
+                    "type": 4
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "temperature"
+            },
+            {
+              "input": {
+                "type": "float",
+                "value": {
+                  "content": "0.7",
+                  "rawMeta": {
+                    "type": 4
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "topP"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "0",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "responseFormat"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "1024",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "maxTokens"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "{{input}}",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "prompt"
+            },
+            {
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "content": false,
+                  "rawMeta": {
+                    "type": 3
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "enableChatHistory"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "3",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "chatHistoryRound"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "use tool whenever possible",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "systemPrompt"
+            }
+          ],
+          "settingOnError": {
+            "processType": 1,
+            "retryTimes": 0,
+            "timeoutMs": 180000
+          }
+        },
+        "nodeMeta": {
+          "title": "llm"
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "type": "string"
+          }
+        ],
+        "version": "3"
+      },
+      "edges": null,
+      "id": "128198",
+      "meta": {
+        "position": {
+          "x": 513,
+          "y": -63.5
+        }
+      },
+      "type": "3"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "128198",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "128198",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

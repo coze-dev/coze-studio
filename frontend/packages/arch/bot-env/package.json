@@ -1,0 +1,48 @@
+{
+  "name": "@coze-arch/bot-env",
+  "version": "0.0.1",
+  "description": "compiler env vars for bot-studio",
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.ts",
+    "./build": "./scripts/build.ts",
+    "./typings": "./src/typings.d.ts",
+    "./runtime": "./src/runtime/index.ts"
+  },
+  "main": "src/index.ts",
+  "typesVersions": {
+    "*": {
+      "build": [
+        "./scripts/build.ts"
+      ],
+      "typings": [
+        "./src/typings.ts"
+      ],
+      "runtime": [
+        "./src/runtime/index.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node -r sucrase/register scripts/index.ts && tsc -b tsconfig.build.json",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-studio/bot-env-adapter": "workspace:*"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/node": "^18",
+    "@vitest/coverage-v8": "~3.0.5",
+    "sucrase": "^3.32.0",
+    "ts-morph": "^20.0.0",
+    "vitest": "~3.0.5"
+  }
+}
+

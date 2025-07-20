@@ -1,0 +1,152 @@
+/* stylelint-disable declaration-no-important */
+.expand-icon {
+  transform: rotate(90deg) !important;
+
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+
+  width: 20px;
+  height: 20px;
+  margin: 0 !important;
+
+  line-height: 20px;
+}
+
+.common-file-picker-wrapper {
+  :global {
+    .semi-tree-option-selected {
+      background-color: var(--coz-mg-hglt-hovered) !important;
+
+      &:hover {
+        background-color: unset;
+      }
+    }
+
+    .semi-tree-option-disable {
+      cursor: not-allowed;
+    }
+
+
+    .semi-tree-option-readonly {
+      cursor: default;
+
+      &:hover{
+        background: transparent !important;
+      }
+    }
+
+    .semi-tree-option {
+      height: 32px !important;
+      margin: 1px 0 !important;
+      line-height: 32px !important;
+      border-radius: 4px;
+
+      &:hover {
+        background-color: var(--coz-mg-secondary-hovered);
+      }
+    }
+
+    .semi-tree-option-expand-icon {
+      .expand-icon();
+    }
+
+    .expand-placeholder {
+      .expand-icon();
+    }
+
+    .semi-tree-option-list .semi-tree-option-collapsed .semi-tree-option-expand-icon {
+      transform: unset !important;
+    }
+
+    .file-selector {
+      width: 16px;
+      height: 16px;
+      margin: 0 12px;
+
+      .semi-checkbox-inner {
+        height: 16px;
+      }
+
+      .semi-radio {
+        height: 16px;
+        min-height: 16px;
+        line-height: 16px;
+        vertical-align: top;
+
+        .semi-radio-inner {
+          margin-top: 0;
+        }
+      }
+    }
+
+    .file-node-row-content {
+      display: flex;
+      flex: 1;
+      align-items: center;
+
+      height: 36px;
+      margin: 2px 0;
+      padding: 8px 13px;
+
+      border-radius: 4px;
+    }
+
+    .file-icon {
+      display: flex;
+      align-items: center;
+      align-self: center;
+      justify-content: center;
+
+      width: 20px;
+      height: 20px;
+      margin-right: 4px;
+
+      line-height: 20px;
+
+      .semi-spin-middle>.semi-spin-wrapper svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      img {
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+      }
+    }
+
+    .file-content {
+      display: flex;
+      flex: 1;
+      justify-content: space-between;
+
+      height: 20px;
+
+      line-height: 20px;
+
+      .file-name {
+        overflow: hidden;
+
+        width: 80%;
+        height: 20px;
+
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        color: var(--coz-fg-primary);
+        white-space: nowrap;
+      }
+
+      .file-loading-info {
+        height: 20px;
+
+        font-size: 12px;
+        font-weight: 400;
+        font-style: normal;
+        line-height: 20px;
+        color: var(--coz-fg-hglt);
+      }
+    }
+  }
+}

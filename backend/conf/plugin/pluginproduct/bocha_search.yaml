@@ -1,0 +1,179 @@
+info:
+  description: 从全网搜索任何网页信息和网页链接，结果准确、摘要完整，更适合AI使用。
+  title: 博查搜索
+  version: v1
+openapi: 3.0.1
+paths:
+  /v1/web-search:
+    post:
+      operationId: web_search
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                count:
+                  default: 10
+                  description: 返回结果的条数（实际返回结果数量可能会小于count指定的数量）。 - 可填范围：1-50，最大单次搜索返回50条 - 默认为100
+                  type: integer
+                freshness:
+                  default: noLimit
+                  description: 搜索指定时间范围内的网页。 可填值： - oneDay，一天内 - oneWeek，一周内 - oneMonth，一个月内 - oneYear，一年内 - noLimit，不限（默认） - YYYY-MM-DD..YYYY-MM-DD，搜索日期范围，例如："2025-01-01..2025-04-06" - YYYY-MM-DD，搜索指定日期，例如："2025-04-06" 推荐使用“noLimit”。搜索算法会自动进行时间范围的改写，效果更佳。
+                  type: string
+                page:
+                  default: 1
+                  description: 页码，默认值为 1
+                  type: integer
+                query:
+                  description: 用户的搜索词
+                  type: string
+                summary:
+                  default: false
+                  description: 是否显示文本摘要。 可填值： - true，显示 - false，不显示（默认）
+                  type: boolean
+              required:
+                - query
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码
+                    type: number
+                  data:
+                    description: 返回数据
+                    properties:
+                      _type:
+                        description: 搜索的类型
+                        type: string
+                      images:
+                        properties:
+                          id:
+                            type: string
+                          isFamilyFriendly:
+                            type: string
+                          readLink:
+                            type: string
+                          value:
+                            items:
+                              properties:
+                                contentSize:
+                                  type: string
+                                contentUrl:
+                                  type: string
+                                datePublished:
+                                  type: string
+                                encodingFormat:
+                                  type: string
+                                height:
+                                  type: number
+                                hostPageDisplayUrl:
+                                  type: string
+                                hostPageUrl:
+                                  type: string
+                                name:
+                                  type: string
+                                thumbnail:
+                                  type: string
+                                thumbnailUrl:
+                                  type: string
+                                webSearchUrl:
+                                  type: string
+                                width:
+                                  type: number
+                              type: object
+                            type: array
+                          webSearchUrl:
+                            type: string
+                        type: object
+                      queryContext:
+                        properties:
+                          originalQuery:
+                            description: 原始的搜索关键字
+                            type: string
+                        type: object
+                      videos:
+                        type: string
+                      webPages:
+                        properties:
+                          someResultsRemoved:
+                            description: 结果中是否有被安全过滤
+                            type: boolean
+                          totalEstimatedMatches:
+                            description: 搜索匹配的网页总数
+                            type: number
+                          value:
+                            items:
+                              properties:
+                                cachedPageUrl:
+                                  description: 网页的缓存页面URL
+                                  type: string
+                                dateLastCrawled:
+                                  description: 网页的发布时间（此处其实是发布时间，名字起为LastCrawled是兼容性适配）
+                                  type: string
+                                datePublished:
+                                  description: 网页的发布时间（例如：2025-02-23T08:18:30+08:00），UTC+8时间
+                                  type: string
+                                displayUrl:
+                                  description: 网页的展示URL（url decode后的格式）
+                                  type: string
+                                id:
+                                  description: 网页的排序ID
+                                  type: string
+                                isFamilyFriendly:
+                                  description: 是否为家庭友好的页面
+                                  type: boolean
+                                isNavigational:
+                                  description: 是否为导航性页面
+                                  type: boolean
+                                language:
+                                  description: 网页的语言
+                                  type: string
+                                name:
+                                  description: 网页的标题
+                                  type: string
+                                siteIcon:
+                                  description: 网页的网站图标
+                                  type: string
+                                siteName:
+                                  description: 网页的网站名称
+                                  type: string
+                                snippet:
+                                  description: 网页内容的简短描述
+                                  type: string
+                                summary:
+                                  description: 网页内容的文本摘要，当请求参数中 summary 为 true 时显示此属性
+                                  type: string
+                                url:
+                                  description: 网页的URL
+                                  type: string
+                              type: object
+                            type: array
+                          webSearchUrl:
+                            description: 网页搜搜的地址
+                            type: string
+                        type: object
+                    type: object
+                  log_id:
+                    description: 日志 id
+                    type: string
+                  msg:
+                    description: 错误信息
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: |-
+        从全网搜索任何网页信息和网页链接，结果准确、摘要完整，更适合AI使用。
+        
+        搜索结果:
+        包括网页、图片、视频，Response格式兼容Bing Search API。
+        - 网页包括name、url、snippet、summary、siteName、siteIcon等信息
+        [图片]
+        - 图片包括 contentUrl、hostPageUrl、width、height等信息
+servers:
+  - url: https://api.bochaai.com

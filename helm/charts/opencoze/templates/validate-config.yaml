@@ -1,0 +1,9 @@
+{{- if not .Values.mysql.rootPassword -}}
+{{- fail "mysql.rootPassword is required" -}}
+{{- end -}}
+{{- if not .Values.minio.accessKey -}}
+{{- fail "minio.accessKey is required" -}}
+{{- end -}}
+{{- if not .Values.minio.secretKey -}}
+{{- fail "minio.secretKey is required" -}}
+{{- end -}}

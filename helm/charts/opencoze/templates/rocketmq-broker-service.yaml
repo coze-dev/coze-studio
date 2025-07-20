@@ -1,0 +1,23 @@
+{{- if .Values.rocketmq.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "opencoze.fullname" . }}-rocketmq-broker
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 10909
+      targetPort: 10909
+      name: broker-a
+    - port: 10911
+      targetPort: 10911
+      name: broker-b
+    - port: 10912
+      targetPort: 10912
+      name: broker-c
+  selector:
+    app.kubernetes.io/component: rocketmq-broker
+    app.kubernetes.io/name: {{ include "opencoze.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

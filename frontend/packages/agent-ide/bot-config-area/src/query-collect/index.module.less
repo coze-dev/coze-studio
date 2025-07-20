@@ -1,0 +1,96 @@
+/* stylelint-disable max-nesting-depth */
+/* stylelint-disable selector-class-pattern */
+.query-collect-modal {
+  :global {
+    .semi-modal-header {
+      align-items: center;
+
+      .semi-button-borderless {
+        width: 40px;
+        height: 40px;
+        padding: 11px;
+
+        &:hover {
+          background-color: rgba(var(--coze-bg-6), var(--coze-bg-6-alpha));
+        }
+
+        &:active {
+          background-color: rgba(var(--coze-bg-8), var(--coze-bg-8-alpha));
+        }
+
+        .semi-button-content {
+          color: rgba(var(--coze-fg-2), var(--coze-fg-2-alpha));
+
+          .semi-icon {
+            font-size: 18px;
+          }
+        }
+      }
+    }
+
+    .semi-modal-footer {
+      margin: 0;
+    }
+
+    .semi-switch:not(.semi-switch-checked){
+      background-color: var(--semi-color-fill-0);
+    }
+
+    .semi-switch:not(.semi-switch-checked):hover {
+      background-color: var(--semi-color-fill-1);
+    }
+  }
+}
+
+.form-wrap {
+  :global {
+    .semi-form-field {
+      padding: 0;
+      padding-bottom: 16px;
+    }
+
+    .semi-form-field-label {
+      margin-bottom: 6px;
+      padding: 0 8px;
+
+      font-size: 12px;
+      font-weight: 500;
+      font-style: normal;
+      line-height: 16px;
+      color: var(--coz-fg-secondary);
+    }
+
+    .semi-form-field-error-message {
+      padding-left: 8px;
+    }
+
+    .semi-input-prefix-text {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--coz-fg-secondary);
+    }
+
+    .semi-input-wrapper {
+      background-color: transparent;
+    }
+
+    .semi-input-suffix {
+      .coz-icon-button {
+        display: flex;
+        padding-right: 4px;
+
+        .coz-button.coz-btn-small{
+          border-radius: 6px;
+        }
+      }
+    }
+
+    .semi-form-field-label-required .semi-form-field-label-text::after{
+      margin-left: 0;
+    }
+
+    .semi-input-wrapper__with-suffix .semi-input{
+      padding-right: 4px;
+    }
+  }
+}

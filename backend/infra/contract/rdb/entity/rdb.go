@@ -1,0 +1,54 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package entity
+
+type Column struct {
+	Name          string // 保证唯一性
+	DataType      DataType
+	Length        *int
+	NotNull       bool
+	DefaultValue  *string
+	AutoIncrement bool // 表示该列是否为自动递增
+	Comment       *string
+}
+
+type Index struct {
+	Name    string
+	Type    IndexType
+	Columns []string
+}
+
+type TableOption struct {
+	Collate       *string
+	AutoIncrement *int64 // 设置表的自动递增初始值
+	Comment       *string
+}
+
+type Table struct {
+	Name      string // 保证唯一性
+	Columns   []*Column
+	Indexes   []*Index
+	Options   *TableOption
+	CreatedAt int64
+	UpdatedAt int64
+}
+
+type ResultSet struct {
+	Columns      []string
+	Rows         []map[string]interface{}
+	AffectedRows int64
+}

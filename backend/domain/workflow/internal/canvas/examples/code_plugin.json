@@ -1,0 +1,407 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": -744.3383265685363,
+          "y": -243.19932319428818
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "code_input",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "code_input_2",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "model_type",
+            "required": true
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "type": "string",
+            "name": "code_input",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "code_input_2",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "model_type",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 717.4514215854077,
+          "y": -243.19932319428818
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "140645",
+                    "name": "key0"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "output2",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "194114",
+                    "name": "log_id"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "194114",
+      "type": "4",
+      "meta": {
+        "position": {
+          "x": 181.651290527654,
+          "y": -270.5993231942882
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "ImageToolPro",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg",
+          "subtitle": "ByteArtist:ImageToolPro",
+          "description": "根据用户的描述生成多种风格的图片\n"
+        },
+        "inputs": {
+          "apiParam": [
+            {
+              "name": "apiID",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "7348853341923016714",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "apiName",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "ImageToolPro",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "pluginID",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "7348853341922983946",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "pluginName",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "ByteArtist",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "pluginVersion",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "tips",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "outDocLink",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "inputParameters": [
+            {
+              "name": "model_type",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "model_type"
+                  },
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "prompt",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "140645",
+                    "name": "key11"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "image_url",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "ImageURL",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "settingOnError": {}
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "log_id",
+            "required": false
+          },
+          {
+            "type": "string",
+            "name": "msg",
+            "required": false
+          },
+          {
+            "type": "float",
+            "name": "code",
+            "required": false
+          },
+          {
+            "type": "object",
+            "name": "data",
+            "schema": [
+              {
+                "type": "string",
+                "name": "image_url",
+                "required": false,
+                "description": "生成图片的地址"
+              },
+              {
+                "type": "string",
+                "name": "prompt",
+                "required": false,
+                "description": "生成图片的描述"
+              }
+            ],
+            "required": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "140645",
+      "type": "5",
+      "meta": {
+        "position": {
+          "x": -228.95588048315332,
+          "y": -203.30700572155118
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "代码",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
+          "description": "编写代码，处理输入变量来生成返回值",
+          "mainColor": "#00B2B2",
+          "subTitle": "代码"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "code_input"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "input_v2",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "code_input_2"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "code": "# 在这里，您可以通过 ‘args’  获取节点中的输入变量，并通过 'ret' 输出结果\n# 'args' 和 'ret' 已经被正确地注入到环境中\n# 下面是一个示例，首先获取节点的全部输入参数params，其次获取其中参数名为‘input’的值：\n# params = args.params; \n# input = params.input;\n# 下面是一个示例，输出一个包含多种数据类型的 'ret' 对象：\n# ret: Output =  { \"name\": ‘小明’, \"hobbies\": [“看书”, “旅游”] };\n\nasync def main(args: Args) -> Output:\n    params = args.params\n    # 构建输出对象\n    ret: Output = {\n        \"key0\": params['input'] + params['input'], # 拼接两次入参 input 的值\n        \"key11\": params['input'] + params['input'], # 拼接两次入参 input 的值\n        \"key1\": [\"hello\", \"world\"]\n    }\n    return ret",
+          "language": 3,
+          "settingOnError": {}
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "key0"
+          },
+          {
+            "type": "list",
+            "name": "key1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "type": "string",
+            "name": "key11"
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "140645"
+    },
+    {
+      "sourceNodeID": "194114",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "140645",
+      "targetNodeID": "194114"
+    }
+  ],
+  "versions": {
+    "loop": "v2",
+    "batch": "v2"
+  }
+}

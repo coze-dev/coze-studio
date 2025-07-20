@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush-plugin-manifest.schema.json",
+  "plugins": [
+    {
+      "pluginName": "rush-init-project-plugin",
+      "description": "Rush plugin for initialize project in monorepo",
+      "commandLineJsonFilePath": "command-line.json"
+    }
+  ]
+}

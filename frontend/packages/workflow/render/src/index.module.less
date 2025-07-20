@@ -1,0 +1,224 @@
+/* stylelint-disable block-no-empty */
+/* stylelint-disable plugin/disallow-first-level-global */
+.playground-load {}
+
+:root {
+  --g-selection-background: #4D53E8;
+  --g-editor-background: #f2f3f5;
+  --g-playground-select: var(--g-selection-background);
+  --g-playground-hover: var(--g-selection-background);
+  --g-playground-line: var(--g-selection-background);
+  --g-playground-blur: #999;
+  --g-playground-selectBox-outline: var(--g-selection-background);
+  --g-playground-selectBox-background: rgba(141, 144, 231, 10%);
+  --g-playground-select-hover-background: rgba(77, 83, 232, 10%);
+  --g-playground-select-control-size: 12px;
+}
+
+:global {
+  .gedit-playground {
+    user-select: none;
+
+    position: absolute;
+    z-index: 10;
+    top: 0;
+    left: 0;
+
+    overflow: hidden;
+
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+
+    background-color: var(--g-editor-background);
+    outline: none;
+  }
+
+  .gedit-playground-scroll-right {
+    position: absolute;
+    z-index: 10;
+    right: 2px;
+
+    width: 7px;
+    height: 100vh;
+  }
+
+  .gedit-playground-scroll-bottom {
+    position: absolute;
+    z-index: 10;
+    bottom: 2px;
+
+    width: 100vw;
+    height: 7px;
+  }
+
+  .gedit-playground-scroll-right-block {
+    position: absolute;
+    opacity: 0.3;
+    border-radius: 3.5px;
+  }
+
+  .gedit-playground-scroll-right-block:hover {
+    opacity: 0.3;
+  }
+
+  .gedit-playground-scroll-bottom-block {
+    position: absolute;
+    opacity: 0.3;
+    border-radius: 3.5px;
+  }
+
+  .gedit-playground-scroll-bottom-block:hover {
+    opacity: 0.3;
+  }
+
+  .gedit-playground-scroll-hidden {
+    opacity: 0;
+  }
+
+  .gedit-playground * {
+    box-sizing: border-box;
+  }
+
+  .gedit-playground-loading {
+    position: absolute;
+    z-index: 100;
+    top: 50%;
+    left: 50%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    color: white;
+    text-align: center;
+
+    opacity: 0.8;
+
+    transition: opacity 0.8s;
+  }
+
+  .gedit-hidden {
+    display: none;
+  }
+
+  .gedit-playground-pipeline {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    overflow: visible;
+
+    width: 100%;
+    height: 100%;
+  }
+
+  .gedit-playground-pipeline::before {
+    content: '';
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 1px;
+    height: 100%;
+  }
+
+  .gedit-playground-layer {
+    position: absolute;
+    overflow: visible;
+  }
+
+  .gedit-selector-box {
+    position: absolute;
+    z-index: 33;
+    top: 0;
+    left: 0;
+
+    width: 0;
+    height: 0;
+
+    background-color: var(--g-playground-selectBox-background);
+    outline: 1px solid var(--g-playground-selectBox-outline);
+  }
+
+  .gedit-selector-box-block {
+    position: absolute;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+
+    display: none;
+
+    width: 0;
+    height: 0;
+
+    background-color: rgba(0, 0, 0, 0%);
+  }
+
+  .gedit-selector-bounds-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 0;
+    height: 0;
+
+    background-color: #f0f4ff;
+    outline: 1px solid var(--g-playground-selectBox-outline);
+  }
+
+  .gedit-selector-bounds-foreground {
+    position: absolute;
+    z-index: 33;
+    top: 0;
+    left: 0;
+
+    width: 0;
+    height: 0;
+
+    background: rgba(255, 255, 255, 0%);
+  }
+
+  .gedit-flow-activity-node {
+    position: absolute;
+
+    &:hover {
+      :global {
+        .workflow-point-bg {
+          transform: scale(0.7, 0.7);
+          background: #4d53e8;
+        }
+
+        .workflow-bg-circle {
+          transform: scale(1, 1);
+        }
+      }
+    }
+
+    &:active {
+      :global {
+        .workflow-point-bg {
+          transform: scale(0.7, 0.7);
+          background: #4d53e8;
+        }
+
+        .workflow-bg-circle {
+          transform: scale(1, 1);
+        }
+      }
+    }
+  }
+
+  .gedit-grid-svg {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+
+    display: block;
+
+    width: 0;
+    height: 0;
+  }
+}

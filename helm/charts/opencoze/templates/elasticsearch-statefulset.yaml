@@ -1,0 +1,88 @@
+{{- if .Values.elasticsearch.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "opencoze.fullname" . }}-elasticsearch
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ .Release.Name }}-elasticsearch
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: elasticsearch
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ include "opencoze.name" . }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: elasticsearch
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/name: {{ include "opencoze.name" . }}
+    spec:
+      initContainers:
+      - name: install-plugins
+        image: "{{ .Values.elasticsearch.image.repository }}:{{ .Values.elasticsearch.image.tag }}"
+        securityContext:
+          runAsUser: 0
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -ex
+          echo 'Installing smartcn plugin...';
+          if [ ! -d /opt/bitnami/elasticsearch/plugins/analysis-smartcn ]; then
+            /opt/bitnami/elasticsearch/bin/elasticsearch-plugin install analysis-smartcn
+          fi
+        volumeMounts:
+        - name: es-plugins
+          mountPath: /opt/bitnami/elasticsearch/plugins
+      containers:
+        - name: elasticsearch
+          securityContext:
+            runAsUser: 0
+          image: "{{ .Values.elasticsearch.image.repository }}:{{ .Values.elasticsearch.image.tag }}"
+          env:
+            - name: ES_JAVA_OPTS
+              value: {{ .Values.elasticsearch.javaOpts | quote }}
+            - name: ELASTIC_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-es-secret
+                  key: username
+            - name: ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-es-secret
+                  key: password
+          command:
+            - /bin/bash
+            - -c
+            - |
+              /opt/bitnami/scripts/elasticsearch/setup.sh
+              chown -R elasticsearch:elasticsearch /bitnami/elasticsearch/data
+              chmod g+s /bitnami/elasticsearch/data
+              exec /opt/bitnami/scripts/elasticsearch/entrypoint.sh /opt/bitnami/scripts/elasticsearch/run.sh
+          ports:
+            - containerPort: {{ .Values.elasticsearch.service.port }}
+          volumeMounts:
+            - name: es-data
+              mountPath: /bitnami/elasticsearch/data
+            - name: es-plugins
+              mountPath: /opt/bitnami/elasticsearch/plugins
+      volumes:
+      - name: es-plugins
+        emptyDir: {}
+      - name: es-config
+        configMap:
+          name: {{ include "opencoze.fullname" . }}-es-init-config
+  volumeClaimTemplates:
+  - metadata:
+      name: es-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ .Values.elasticsearch.persistence.storageClassName | quote }}
+      resources:
+        requests:
+          storage: {{ .Values.elasticsearch.persistence.size | quote }}
+{{- end }}

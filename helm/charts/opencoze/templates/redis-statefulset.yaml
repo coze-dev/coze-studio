@@ -1,0 +1,49 @@
+{{- if .Values.redis.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "opencoze.fullname" . }}-redis
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ .Release.Name }}-redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: redis
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ include "opencoze.name" . }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: redis
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/name: {{ include "opencoze.name" . }}
+    spec:
+      containers:
+        - name: redis
+          image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
+          env:
+            - name: REDIS_AOF_ENABLED
+              value: {{ .Values.redis.aofEnabled | quote }}
+            - name: REDIS_PORT_NUMBER
+              value: {{ .Values.redis.port | quote }}
+            - name: REDIS_IO_THREADS
+              value: {{ .Values.redis.ioThreads | quote }}
+            - name: ALLOW_EMPTY_PASSWORD
+              value: {{ .Values.redis.allowEmptyPassword | quote }}
+          ports:
+            - containerPort: {{ .Values.redis.port }}
+          volumeMounts:
+          - name: redis-data
+            mountPath: /bitnami/redis/data
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: {{ .Values.redis.persistence.storageClassName | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.redis.persistence.size | quote }}
+{{- end }}

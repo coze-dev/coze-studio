@@ -1,0 +1,180 @@
+name: CI@fe-master
+trigger:
+  cron:
+  push:
+    branches: []
+    paths:
+      - "frontend/**"
+    types: [branch]
+    notification:
+      when: failure
+      # 搜索群名：Bot Studio Monorepo CI 报警群
+      to: ['7350862409475031044']
+  manual:
+    notification:
+      when: failure
+
+jobs:
+  lint: &base_job
+    runs-on:
+      env: online
+    name: Lint
+    image: hub.byted.org/base/bot_monorepo_ci_env:ae543e9bbc6d8155cffbd8f5ed27fb73
+    # 从最近的 CI 执行记录看，install 步骤有概率会等待超时
+    # 目前已 oncall，这里先设置一个超时时间，避免阻塞
+    timeout: 30
+    envs:
+      RUSH_BUILD_CACHE_WRITE_ALLOWED: ${{RUSH_BUILD_CACHE_WRITE_ALLOWED}}
+      RUSH_BUILD_CACHE_ENABLED: ${{RUSH_BUILD_CACHE_ENABLED}}
+      RUSH_BUILD_CACHE_CREDENTIAL: ${{RUSH_BUILD_CACHE_CREDENTIAL}}
+      ACCESS_TOKEN: ${{CI_BOT_ACCESS_TOKEN}}
+      CI: 'true'
+      RUN_BYTEST_COV: 'false' # disable Jupiter default behavior of invoke bytestcov
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 'true'
+      CYPRESS_INSTALL_BINARY: '0'
+      TAIKO_SKIP_CHROMIUM_DOWNLOAD: '0'
+      RE2_DOWNLOAD_SKIP_PATH: '1'
+      RE2_DOWNLOAD_MIRROR: https://bnpm.bytedance.net/mirrors
+      # https://typescript-eslint.io/packages/parser/#allowautomaticsingleruninference
+      TSESTREE_SINGLE_RUN: 'true'
+    # 使用云盘缓存：https://bytedance.larkoffice.com/wiki/A60lwgolSinteMkOz71cFPvFneg
+    # TODO:不同job的缓存key暂时使用同一个，后续可以考虑区分
+    caches:
+      - backend: ebs
+        key: bot-studio-monorepo-master-v2-lint
+        size: 256
+    steps:
+      - &checkout_step
+        id: Checkout
+        uses: actions/checkout
+        inputs:
+          depth: 1
+      - &proxy_step
+        name: SetupProxy
+        commands:
+          - bash .codebase/scripts/env.sh
+      - &init_env_step
+        name: Initialization
+        commands:
+          - printenv
+          - git config user.name ci_flow
+          - git config user.email ci_flow@bytedance.com
+      - &install_deps_step
+        name: Install dependencies
+        commands:
+          - node common/scripts/install-run-rush.js install
+      # 暂时不启用，因为eslintignore文件移除会导致解析报错，后期接入可考虑动态读取eslint ignore配置
+      # - name: PreLint
+      #   parallel-with-next-step: true
+      #   commands:
+      #     - npx oxlint@latest -A all .
+      - name: Lint
+        commands:
+          - NODE_OPTIONS="--max-old-space-size=4096" node common/scripts/install-run-rush.js lint
+
+  ts_check:
+    <<: *base_job
+    name: Check TS Type
+    timeout: 30
+    caches:
+      - backend: ebs
+        key: bot-studio-monorepo-master-v2-ts-check
+        size: 256
+    steps:
+      - *checkout_step
+      - *proxy_step
+      - *init_env_step
+      - *install_deps_step
+      - name: Check TS Type
+        commands:
+          - node common/scripts/install-run-rush.js ts-check -v
+
+  build:
+    <<: *base_job
+    name: Build
+    caches:
+      - backend: ebs
+        key: bot-studio-monorepo-master-v2-build
+        size: 256
+    steps:
+      - *checkout_step
+      - *proxy_step
+      - *init_env_step
+      - *install_deps_step
+      - name: Build
+        commands:
+          - CUSTOM_VERSION=release REGION=sg BUILD_BRANCH=test node common/scripts/install-run-rush.js build -v
+
+  test:
+    <<: *base_job
+    caches:
+      - backend: ebs
+        key: bot-studio-monorepo-master-v2-test
+        size: 256
+    name: Test
+    services:
+      # 下面启动一个mysql和mongo服务，主要用于coze.hub.core相关服务的集成测试
+      # id需要保持跟代码中连接的host一致
+      - id: hub_mysql
+        image: hub.byted.org/ee/mysql:5.7
+        envs:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_DATABASE: coze_hub
+          MYSQL_USER: test
+          MYSQL_PASSWORD: test
+          MYSQL_TCP_PORT: 3306
+      - id: hub_mongo
+        image: hub.byted.org/ee/mongo:4.0.24
+        commands:
+          - mongod --replSet rs0
+      - id: mongo-init
+        image: hub.byted.org/ee/mongo:4.0.24
+        commands:
+          - sleep 10s
+          - mongo mongodb://127.0.0.1:27017 --eval 'rs.initiate()'
+    steps:
+      - *checkout_step
+      - *proxy_step
+      - *init_env_step
+      - *install_deps_step
+      - name: wait mongo ready
+        uses: actions/mongodb-scripts
+        inputs:
+          host: 127.0.0.1
+          port: 27017
+      - name: wait mysql ready
+        uses: actions/mysql-scripts
+        inputs:
+          host: hub_mysql
+          user: test
+          password: test
+        commands:
+          - mysql -u test -ptest -h hub_mysql -P 3306 -e 'show databases;'
+      # 服务发现
+      - id: consul
+        uses: actions/setup-consul
+      - name: Test Coverage
+        id: test
+        commands:
+          - node common/scripts/install-run-rush.js test:cov -v
+      # https://bytedance.feishu.cn/wiki/wikcn9Z4azEdfJalVPKcOs9vxsR
+
+  security_scan:
+    <<: *base_job
+    name: Security Scan
+    caches:
+      - backend: ebs
+        key: bot-studio-monorepo-master-v2-scan
+        size: 256
+    steps:
+      - *checkout_step
+      - *proxy_step
+      - *init_env_step
+      - *install_deps_step
+      - name: build
+        commands:
+          - CUSTOM_VERSION=release REGION=sg node common/scripts/install-run-rush.js build -o app-botstudio-main -v
+      - id: Argus
+        commands:
+          - npm i @ies/argus-scan@0.30.37 -g
+          - bash .codebase/scripts/argus-scan.sh

@@ -1,0 +1,31 @@
+{
+  "name": "@coze-arch/logger",
+  "version": "0.0.1",
+  "author": "liukaizhan@bytedance.com",
+  "main": "./src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-studio/slardar-interface": "workspace:*",
+    "@coze-arch/bot-env": "workspace:*",
+    "@coze-arch/bot-typings": "workspace:*",
+    "lodash-es": "^4.17.21",
+    "react": "~18.2.0",
+    "react-error-boundary": "^4.0.9"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/lodash-es": "^4.17.10",
+    "@types/node": "^18",
+    "@types/react": "18.2.37",
+    "@vitest/coverage-v8": "~3.0.5",
+    "vitest": "~3.0.5"
+  }
+}
+

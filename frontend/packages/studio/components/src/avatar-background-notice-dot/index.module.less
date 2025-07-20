@@ -1,0 +1,51 @@
+.ctn {
+  cursor: pointer;
+
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+
+  box-sizing: content-box;
+  width: 12px;
+  height: 12px;
+
+  font-size: 12px;
+
+  background-color: var(--coz-fg-white, #fff);
+  border: 1.5px solid var(--coz-fg-white, #fff);
+  border-radius: 50%;
+
+  &.loading {
+    width: 8px;
+    height: 8px;
+    padding: 2px;
+
+    font-size: 8px;
+
+    background-color: var(--coz-mg-hglt-plus-green, #00B83E);
+  }
+
+  .icon {
+    position: relative;
+    top: -1px;
+
+    &.icon-generating {
+      color: var(--coz-fg-white, #fff);
+    }
+
+    &.icon-success {
+      color: var(--coz-mg-color-plus-emerald, #00B83E);
+    }
+
+    &.icon-fail {
+      color: var(--coz-mg-color-plus-orange, #FF811A);
+    }
+  }
+
+  :global {
+    .icon-icon-coz_loading.icon-icon-loading {
+      animation: semi-animation-rotate .6s linear infinite;
+      animation-fill-mode: forwards;
+    }
+  }
+}

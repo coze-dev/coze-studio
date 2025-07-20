@@ -1,0 +1,31 @@
+.cm-content {
+  .library-block-container {
+    cursor: default;
+
+    display: inline-block;
+
+    margin-right: 4px;
+    padding: 0 5px;
+
+    color: #4E40E5;
+
+    background-color: rgba(186, 192, 255, 20%);
+    border-radius: 4px;
+  }
+
+  .library-block-icon {
+    margin-right: 2px;
+    vertical-align: sub;
+  }
+
+  .library-block-content {
+    word-break: break-all;
+  }
+
+}
+
+.library-block-tooltip {
+  .semi-tooltip-content {
+    width: 100%;
+  }
+}

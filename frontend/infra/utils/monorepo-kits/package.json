@@ -1,0 +1,28 @@
+{
+  "name": "@coze-arch/monorepo-kits",
+  "version": "0.0.1",
+  "description": "monorepo kits",
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@rushstack/rush-sdk": "5.100.2"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/node": "^18",
+    "@vitest/coverage-v8": "~3.0.5",
+    "sucrase": "^3.32.0",
+    "vitest": "~3.0.5"
+  }
+}
+

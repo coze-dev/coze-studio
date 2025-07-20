@@ -1,0 +1,54 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+import { Radio, Typography } from '@coze-arch/coze-design';
+
+interface SourceRadioProps {
+  title: string;
+  description: string;
+  icon?: React.ReactNode;
+  e2e?: string;
+  key?: string;
+  value?: string;
+}
+
+export const SourceRadio = (props: SourceRadioProps) => {
+  const { title, description, icon, e2e, key, value } = props;
+  return (
+    <Radio
+      key={key}
+      value={value}
+      extra={
+        <Typography.Text
+          type="tertiary"
+          ellipsis={{
+            showTooltip: {
+              opts: { content: description },
+            },
+          }}
+          style={{ lineHeight: '20px', width: 180 }}
+        >
+          {description}
+        </Typography.Text>
+      }
+      className="flex-[0_0_49%]"
+      data-testid={e2e}
+    >
+      {icon ? <div className="flex items-center mr-2">{icon}</div> : null}
+      {title}
+    </Radio>
+  );
+};

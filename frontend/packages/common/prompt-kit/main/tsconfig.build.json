@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": [],
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "moduleResolution": "bundler",
+    "module": "ESNext",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "./dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../adapter/tsconfig.build.json"
+    },
+    {
+      "path": "../../../agent-ide/bot-editor-context-store/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-api/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-env/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-error/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-http/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-tea/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/i18n/tsconfig.build.json"
+    },
+    {
+      "path": "../../../arch/idl/tsconfig.build.json"
+    },
+    {
+      "path": "../base/tsconfig.build.json"
+    },
+    {
+      "path": "../../chat-area/chat-answer-action/tsconfig.build.json"
+    },
+    {
+      "path": "../../chat-area/chat-core/tsconfig.build.json"
+    },
+    {
+      "path": "../../chat-area/chat-uikit/tsconfig.build.json"
+    },
+    {
+      "path": "../../chat-area/utils/tsconfig.build.json"
+    },
+    {
+      "path": "../../../components/bot-icons/tsconfig.build.json"
+    },
+    {
+      "path": "../../../components/bot-semi/tsconfig.build.json"
+    },
+    {
+      "path": "../../../components/scroll-view/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/eslint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/stylelint-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/ts-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../editor-plugins/tsconfig.build.json"
+    },
+    {
+      "path": "../../../foundation/local-storage/tsconfig.build.json"
+    }
+  ]
+}

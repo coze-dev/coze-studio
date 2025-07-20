@@ -1,0 +1,80 @@
+{
+  "name": "@coze-foundation/layout",
+  "version": "0.0.1",
+  "description": "基座框架布局package",
+  "license": "Apache-2.0",
+  "author": "yuwenbinjie@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "main": "src/index.tsx",
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./src/index.tsx"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@blueprintjs/core": "^5.1.5",
+    "@coze-arch/bot-error": "workspace:*",
+    "@coze-arch/bot-hooks": "workspace:*",
+    "@coze-arch/bot-icons": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/bot-tea": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/idl": "workspace:*",
+    "@coze-arch/web-context": "workspace:*",
+    "@coze-foundation/account-adapter": "workspace:*",
+    "@coze-foundation/space-store": "workspace:*",
+    "@douyinfe/semi-illustrations": "^2.36.0",
+    "classnames": "^2.3.2",
+    "lodash-es": "^4.17.21",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/foundation-sdk": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@rsbuild/core": "1.1.13",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/lodash-es": "^4.17.10",
+    "@types/node": "18.18.9",
+    "@types/qs": "^6.9.7",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "react-is": ">= 16.8.0",
+    "react-router-dom": "^6.22.0",
+    "styled-components": ">= 2",
+    "stylelint": "^15.11.0",
+    "typescript": "5.7.2",
+    "vite": "^4.3.9",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5",
+    "webpack": "~5.91.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  },
+  "// deps": "immer@^10.0.3 为脚本自动补齐，请勿改动"
+}
+

@@ -1,0 +1,50 @@
+.table-structure {
+  display: flex;
+  flex-direction: column;
+
+
+  :global {
+    .semi-form-horizontal .semi-form-field {
+      flex: 1;
+
+      .semi-select {
+        width: 100%;
+        border-radius: 8px;
+      }
+    }
+
+    .semi-form-field-label-text {
+      font-size: 14px;
+      font-weight: 600;
+      font-style: normal;
+      line-height: 20px;
+      color: #1D1C23;
+    }
+
+    .semi-form-field-label {
+      margin-bottom: 10px;
+    }
+
+    .semi-form-horizontal .semi-form-field:last-child {
+      margin-right: 0;
+      padding-right: 0;
+    }
+
+  }
+
+}
+
+.excel-info-form {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.table-setting-option {
+  :global {
+    .semi-select-option-selected {
+      .semi-select-option-icon {
+        color: #4D53E8
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+.label{
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--Fg-COZ-fg-primary, rgba(15, 21, 41, 82%));
+}
+
+.required {
+  color: var(--Fg-COZ-fg-hglt-red, #F22435);
+}
+
+.tag {
+  position: relative;
+
+  height: 16px;
+  margin-left: 4px;
+
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 12px;
+  color: var(--Fg-COZ-fg-primary, rgba(15, 21, 41, 82%));
+
+  background: #F0F0F5;
+  border-radius: 6px;
+
+  :global{
+    .semi-tag-content{
+      color: var(--Fg-COZ-fg-secondary, rgba(32, 41, 69, 62%));
+    }
+  }
+}

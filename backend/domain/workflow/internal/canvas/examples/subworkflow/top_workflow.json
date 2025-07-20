@@ -1,0 +1,687 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "entry"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "trigger_parameters": []
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "position": {
+          "x": -152,
+          "y": 0
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "content": {
+            "type": "string",
+            "value": {
+              "content": "{{output2}}\n{{output1}}\n{{sub_out}}\n{{inputArr}}",
+              "type": "literal"
+            }
+          },
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "134204",
+                    "name": "output",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output2"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "198743",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "sub_out"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "702225",
+                    "name": "output",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output1"
+            },
+            {
+              "input": {
+                "schema": {
+                  "type": "string"
+                },
+                "type": "list",
+                "value": {
+                  "content": {
+                    "blockID": "198743",
+                    "name": "inputArr",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 99
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "inputArr"
+            }
+          ],
+          "streamingOutput": true,
+          "terminatePlan": "useAnswerContent"
+        },
+        "nodeMeta": {
+          "title": "exit"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "position": {
+          "x": 1565.5581856097149,
+          "y": -171.3393380582597
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "content": {
+            "type": "string",
+            "value": {
+              "content": "{{reasoning_content}}\n\n{{doubao_output}}\n\n{{deepseek_output}}\n",
+              "type": "literal"
+            }
+          },
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "134204",
+                    "name": "output",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "doubao_output"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "702225",
+                    "name": "reasoning_content",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "reasoning_content"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "702225",
+                    "name": "output",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "deepseek_output"
+            }
+          ],
+          "streamingOutput": true
+        },
+        "nodeMeta": {
+          "title": "emitter"
+        }
+      },
+      "edges": null,
+      "id": "196842",
+      "meta": {
+        "position": {
+          "x": 816.6185632343293,
+          "y": -240.04250700596646
+        }
+      },
+      "type": "13"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "fcParam": {
+            "llmNodeUID": "7494994558397874214",
+            "spaceID": "7309328955423670309",
+            "workflowFCParam": {
+              "workflowList": []
+            },
+            "workflowVersion": "v0.0.6"
+          },
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            }
+          ],
+          "llmParam": [
+            {
+              "input": {
+                "type": "float",
+                "value": {
+                  "content": "0.8",
+                  "rawMeta": {
+                    "type": 4
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "temperature"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "4096",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "maxTokens"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "0",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "responseFormat"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "doubao·1.5·Pro·32k",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "modleName"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "1737521813",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "modelType"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "balance",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "generationDiversity"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "{{input}}",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "prompt"
+            },
+            {
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "content": false,
+                  "rawMeta": {
+                    "type": 3
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "enableChatHistory"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "3",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "chatHistoryRound"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "systemPrompt"
+            }
+          ],
+          "settingOnError": {
+            "dataOnErr": "{\n    \"output\": \"\",\n    \"reasoning_content\": \"\"\n}",
+            "processType": 1,
+            "retryTimes": 0,
+            "switch": false,
+            "timeoutMs": 600000
+          }
+        },
+        "nodeMeta": {
+          "title": "llm"
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "version": "3"
+      },
+      "edges": null,
+      "id": "134204",
+      "meta": {
+        "position": {
+          "x": 267.8003860139461,
+          "y": -108.83144690397202
+        }
+      },
+      "type": "3"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "fcParam": {
+            "llmNodeUID": "",
+            "spaceID": "",
+            "workflowFCParam": {},
+            "workflowVersion": ""
+          },
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            }
+          ],
+          "llmParam": [
+            {
+              "input": {
+                "type": "float",
+                "value": {
+                  "content": "0.8",
+                  "rawMeta": {
+                    "type": 4
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "temperature"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "2200",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "maxTokens"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "0",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "responseFormat"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "DeepSeek-R1",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "modleName"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "1738675233",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "modelType"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "balance",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "generationDiversity"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "{{input}}",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "prompt"
+            },
+            {
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "content": false,
+                  "rawMeta": {
+                    "type": 3
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "enableChatHistory"
+            },
+            {
+              "input": {
+                "type": "integer",
+                "value": {
+                  "content": "3",
+                  "rawMeta": {
+                    "type": 2
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "chatHistoryRound"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "systemPrompt"
+            }
+          ],
+          "settingOnError": {
+            "dataOnErr": "{\n    \"output\": \"\",\n    \"reasoning_content\": \"\"\n}",
+            "processType": 1,
+            "retryTimes": 0,
+            "switch": false,
+            "timeoutMs": 600000
+          }
+        },
+        "nodeMeta": {
+          "title": "llm_1"
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "reasoning_content",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "version": "3"
+      },
+      "edges": null,
+      "id": "702225",
+      "meta": {
+        "position": {
+          "x": 267.8003860139461,
+          "y": 313.5659972254057
+        }
+      },
+      "type": "3"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputDefs": [
+            {
+              "input": {},
+              "name": "input",
+              "required": false,
+              "type": "string"
+            }
+          ],
+          "inputParameters": [],
+          "settingOnError": {},
+          "spaceId": "7309328955423670309",
+          "type": 0,
+          "workflowId": "7494849202016272435"
+        },
+        "nodeMeta": {
+          "description": "create a new workflow",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
+          "isImageflow": false,
+          "title": "create_new"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "inputArr",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "type": "list"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "198743",
+      "meta": {
+        "position": {
+          "x": 1110.6772617388901,
+          "y": -25.581803099128322
+        }
+      },
+      "type": "9"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "134204",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "702225",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "198743",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "134204",
+      "targetNodeID": "196842",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "702225",
+      "targetNodeID": "196842",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "196842",
+      "targetNodeID": "198743",
+      "sourcePortID": ""
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

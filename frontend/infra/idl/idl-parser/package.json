@@ -1,0 +1,30 @@
+{
+  "name": "@coze-arch/idl-parser",
+  "version": "0.0.1",
+  "description": "idl parser",
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "maintainers": [],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/rush-logger": "workspace:*",
+    "@lancewuz/thrift-parser": "0.0.13",
+    "proto-parser": "0.0.9"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/node": "^18",
+    "@vitest/coverage-v8": "~3.0.5",
+    "sucrase": "^3.32.0",
+    "vitest": "~3.0.5"
+  }
+}
+

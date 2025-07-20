@@ -1,0 +1,99 @@
+.mock-tab-container {
+  position: relative;
+  height: 100%;
+}
+
+.editor-with-header {
+  height: calc(100% - 48px);
+}
+
+.mock-tab {
+  cursor: pointer;
+
+  position: relative;
+
+  display: inline-block;
+
+  width: 32px;
+  height: 32px;
+  margin-right: 12px;
+
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 30px;
+  color: var(--semi-color-text-0);
+  text-align: center;
+
+  background: white;
+  border: 1px solid var(--semi-color-border);
+  border-radius: 4px;
+}
+
+.mock-tab_active {
+  color: var(--semi-color-primary);
+  background: white;
+  border-color: var(--semi-color-primary);
+}
+
+.mock-tab-error {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+
+  & svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.mock-tab-header {
+  height: 32px;
+  margin-bottom: 12px;
+}
+
+.mock-tab-mask {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: calc(100% - 48px);
+
+  background-color: rgba(var(--semi-white), 0.8);
+  border: 1px solid transparent;
+  border-radius: 8px;
+
+
+  & span {
+    margin-top: 8px;
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--semi-color-text-3);
+  }
+}
+
+.mock-tab-panels {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.mock-tab-panel_visible {
+  visibility: visible;
+}
+
+.mock-tab-panel_invisible {
+  visibility: hidden;
+}
+
+.mock-tab-panel_absolute {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}

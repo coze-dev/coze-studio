@@ -1,0 +1,1338 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.147.1",
+  "pnpmVersion": "8.15.8",
+  "nodeSupportedVersionRange": ">=16.13.0",
+  "projectFolderMinDepth": 3,
+  "projectFolderMaxDepth": 6,
+  "gitPolicy": {
+    "allowedEmailRegExps": [],
+    "sampleEmail": "<user>@bytedance.com",
+    "versionBumpCommitMessage": "chore: bump versions [skip ci]",
+    "changeLogUpdateCommitMessage": "chore: update changelogs [skip ci]",
+    "tagSeparator": "@"
+  },
+  "repository": {},
+  "eventHooks": {
+    "preRushInstall": [],
+    "postRushInstall": [],
+    "preRushBuild": [],
+    "postRushBuild": []
+  },
+  "telemetryEnabled": true,
+  "allowedProjectTags": [
+    "rush-x",
+    "team-automation",
+    "team-builder",
+    "team-community",
+    "team-data",
+    "team-devops",
+    "team-arch",
+    "team-studio",
+    "level-1",
+    "level-2",
+    "level-3",
+    "level-4",
+    "team-qa",
+    "enabled-bundle-diff",
+    "team-fullcode-app",
+    "phase-prebuild",
+    "channel-coze",
+    "rush-tools",
+    "core"
+  ],
+  "projects": [
+    {
+      "packageName": "@coze-arch/eslint-config",
+      "projectFolder": "frontend/config/eslint-config",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/ts-config",
+      "projectFolder": "frontend/config/ts-config",
+      "tags": ["team-arch", "level-1", "core"]
+    },
+    {
+      "packageName": "@coze-arch/stylelint-config",
+      "projectFolder": "frontend/config/stylelint-config",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/eslint-plugin",
+      "projectFolder": "frontend/infra/eslint-plugin",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/i18n",
+      "projectFolder": "frontend/packages/arch/i18n",
+      "tags": ["team-arch", "level-1", "rush-tools"]
+    },
+    {
+      "packageName": "@coze-studio/studio-i18n-resource-adapter",
+      "projectFolder": "frontend/packages/arch/resources/studio-i18n-resource",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/rush-logger",
+      "projectFolder": "frontend/infra/utils/rush-logger",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/logger",
+      "projectFolder": "frontend/packages/arch/logger",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/bot-semi",
+      "projectFolder": "frontend/packages/components/bot-semi",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/bot-icons",
+      "projectFolder": "frontend/packages/components/bot-icons",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@flowgram-adapter/free-layout-editor",
+      "projectFolder": "frontend/packages/common/flowgram-adapter/free-layout-editor",
+      "tags": ["team-automation", "level-2"]
+    },
+    {
+      "packageName": "@flowgram-adapter/fixed-layout-editor",
+      "projectFolder": "frontend/packages/common/flowgram-adapter/fixed-layout-editor",
+      "tags": ["team-automation", "level-2"]
+    },
+    {
+      "packageName": "@flowgram-adapter/common",
+      "projectFolder": "frontend/packages/common/flowgram-adapter/common",
+      "tags": ["team-automation", "level-2"]
+    },
+    {
+      "packageName": "@coze-workflow/nodes",
+      "projectFolder": "frontend/packages/workflow/nodes",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/history",
+      "projectFolder": "frontend/packages/workflow/history",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/render",
+      "projectFolder": "frontend/packages/workflow/render",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/variable",
+      "projectFolder": "frontend/packages/workflow/variable",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-arch/pkg-root-webpack-plugin",
+      "projectFolder": "frontend/infra/plugins/pkg-root-webpack-plugin",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/web-context",
+      "projectFolder": "frontend/packages/arch/web-context",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/bot-http",
+      "projectFolder": "frontend/packages/arch/bot-http",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/bot-api",
+      "projectFolder": "frontend/packages/arch/bot-api",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/vitest-config",
+      "projectFolder": "frontend/config/vitest-config",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/bot-error",
+      "projectFolder": "frontend/packages/arch/bot-error",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/bot-flags",
+      "projectFolder": "frontend/packages/arch/bot-flags",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-data/database-creator",
+      "projectFolder": "frontend/packages/data/memory/database-creator",
+      "tags": ["team-data", "level-3"]
+    },
+    {
+      "packageName": "@coze-data/database",
+      "projectFolder": "frontend/packages/data/memory/database",
+      "tags": ["team-data", "level-3"]
+    },
+    {
+      "packageName": "@coze-data/reporter",
+      "projectFolder": "frontend/packages/data/common/reporter",
+      "tags": ["team-data", "level-2"]
+    },
+    {
+      "packageName": "@coze-data/utils",
+      "projectFolder": "frontend/packages/data/common/utils",
+      "tags": ["team-data", "level-2"]
+    },
+    {
+      "packageName": "@coze-arch/fetch-stream",
+      "projectFolder": "frontend/packages/arch/fetch-stream",
+      "tags": ["team-studio", "level-2"]
+    },
+    {
+      "packageName": "@coze-common/chat-core",
+      "projectFolder": "frontend/packages/common/chat-area/chat-core",
+      "tags": ["team-studio", "level-2"]
+    },
+    {
+      "packageName": "@coze-arch/bot-env",
+      "projectFolder": "frontend/packages/arch/bot-env",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/report-events",
+      "projectFolder": "frontend/packages/arch/report-events",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/bot-studio-store",
+      "projectFolder": "frontend/packages/arch/bot-store",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-common/virtual-list",
+      "projectFolder": "frontend/packages/components/virtual-list",
+      "tags": ["team-data", "level-2"]
+    },
+    {
+      "packageName": "@coze-common/resource-tree",
+      "projectFolder": "frontend/packages/components/resource-tree",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-common/chat-uikit",
+      "projectFolder": "frontend/packages/common/chat-area/chat-uikit",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-arch/report-tti",
+      "projectFolder": "frontend/packages/arch/report-tti",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-common/chat-area",
+      "projectFolder": "frontend/packages/common/chat-area/chat-area",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-data/knowledge-modal-base",
+      "projectFolder": "frontend/packages/data/knowledge/knowledge-modal-base",
+      "tags": ["team-data", "level-3"]
+    },
+    {
+      "packageName": "@coze-arch/bot-utils",
+      "projectFolder": "frontend/packages/arch/bot-utils",
+      "tags": ["team-arch", "level-2"]
+    },
+    {
+      "packageName": "@coze-arch/bot-hooks",
+      "projectFolder": "frontend/packages/arch/bot-hooks",
+      "tags": ["team-arch", "level-3"]
+    },
+    {
+      "packageName": "@coze-arch/bot-hooks-adapter",
+      "projectFolder": "frontend/packages/arch/bot-hooks-adapter",
+      "tags": ["team-arch", "level-3"]
+    },
+    {
+      "packageName": "@coze-arch/bot-hooks-base",
+      "projectFolder": "frontend/packages/arch/bot-hooks-base",
+      "tags": ["team-arch", "level-3"]
+    },
+    {
+      "packageName": "@coze-arch/fs-enhance",
+      "projectFolder": "frontend/infra/utils/fs-enhance",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/bot-typings",
+      "projectFolder": "frontend/packages/arch/bot-typings",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-common/scroll-view",
+      "projectFolder": "frontend/packages/components/scroll-view",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-arch/tailwind-config",
+      "projectFolder": "frontend/config/tailwind-config",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/postcss-config",
+      "projectFolder": "frontend/config/postcss-config",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/bot-tea",
+      "projectFolder": "frontend/packages/arch/bot-tea",
+      "tags": ["team-arch", "level-2"]
+    },
+    {
+      "packageName": "@coze-arch/bot-space-api",
+      "projectFolder": "frontend/packages/arch/bot-space-api",
+      "tags": ["team-arch", "level-2"]
+    },
+    {
+      "packageName": "@coze-studio/autosave",
+      "projectFolder": "frontend/packages/studio/autosave",
+      "tags": ["team-studio", "level-2"]
+    },
+    {
+      "packageName": "@coze-studio/bot-detail-store",
+      "projectFolder": "frontend/packages/studio/stores/bot-detail",
+      "tags": ["team-studio", "level-2"]
+    },
+    {
+      "packageName": "@coze-common/table-view",
+      "projectFolder": "frontend/packages/components/table-view",
+      "tags": ["team-studio", "level-2"]
+    },
+    {
+      "packageName": "@coze-data/knowledge-stores",
+      "projectFolder": "frontend/packages/data/knowledge/common/stores",
+      "tags": ["team-data", "level-3"]
+    },
+    {
+      "packageName": "@coze-data/knowledge-resource-processor-core",
+      "projectFolder": "frontend/packages/data/knowledge/knowledge-resource-processor-core",
+      "tags": ["team-data", "level-2"]
+    },
+    {
+      "packageName": "@coze-studio/components",
+      "projectFolder": "frontend/packages/studio/components",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/base",
+      "projectFolder": "frontend/packages/workflow/base",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/slardar-adapter",
+      "projectFolder": "frontend/packages/arch/slardar-adapter",
+      "tags": ["team-arch", "level-2"]
+    },
+    {
+      "packageName": "@coze-studio/bot-env-adapter",
+      "projectFolder": "frontend/packages/arch/bot-env-adapter",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-common/biz-components",
+      "projectFolder": "frontend/packages/common/biz-components",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-devops/testset-manage",
+      "projectFolder": "frontend/packages/devops/testset-manage",
+      "tags": ["team-devops", "level-3"]
+    },
+    {
+      "packageName": "@coze-devops/mockset-manage",
+      "projectFolder": "frontend/packages/devops/mockset-manage",
+      "tags": ["team-devops", "level-3"]
+    },
+    {
+      "packageName": "@coze-devops/common-modules",
+      "projectFolder": "frontend/packages/devops/common-modules",
+      "tags": ["team-devops", "level-3"]
+    },
+    {
+      "packageName": "@coze-devops/debug-panel",
+      "projectFolder": "frontend/packages/devops/debug/debug-panel",
+      "tags": ["team-devops", "level-3"]
+    },
+    {
+      "packageName": "@coze-arch/load-remote-worker",
+      "projectFolder": "frontend/packages/arch/load-remote-worker",
+      "tags": ["team-arch", "level-2"]
+    },
+    {
+      "packageName": "@coze-agent-ide/onboarding",
+      "projectFolder": "frontend/packages/agent-ide/onboarding",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/model-manager",
+      "projectFolder": "frontend/packages/agent-ide/model-manager",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-studio/bot-plugin-store",
+      "projectFolder": "frontend/packages/studio/stores/bot-plugin",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-arch/responsive-kit",
+      "projectFolder": "frontend/packages/arch/responsive-kit",
+      "tags": ["team-arch", "level-2"]
+    },
+    {
+      "packageName": "@coze-agent-ide/tool",
+      "projectFolder": "frontend/packages/agent-ide/tool",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/tool-config",
+      "projectFolder": "frontend/packages/agent-ide/tool-config",
+      "tags": ["team-studio", "level-2"]
+    },
+    {
+      "packageName": "@coze-foundation/global-store",
+      "projectFolder": "frontend/packages/foundation/global-store",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/sdk",
+      "projectFolder": "frontend/packages/workflow/sdk",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-common/chat-area-utils",
+      "projectFolder": "frontend/packages/common/chat-area/utils",
+      "tags": ["team-studio", "level-2"]
+    },
+    {
+      "packageName": "@coze-common/chat-area-plugins-chat-shortcuts",
+      "projectFolder": "frontend/packages/common/chat-area/plugin-chat-shortcuts",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/chat-background",
+      "projectFolder": "frontend/packages/agent-ide/chat-background",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-data/llmPlugins",
+      "projectFolder": "frontend/packages/data/memory/llm-plugins",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-arch/idl",
+      "projectFolder": "frontend/packages/arch/idl",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-agent-ide/plugin-risk-warning",
+      "projectFolder": "frontend/packages/agent-ide/bot-plugin/plugin-risk-warning",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-common/loading-button",
+      "projectFolder": "frontend/packages/components/loading-button",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-common/json-viewer",
+      "projectFolder": "frontend/packages/components/json-viewer",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-common/mouse-pad-selector",
+      "projectFolder": "frontend/packages/components/mouse-pad-selector",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/space-bot",
+      "projectFolder": "frontend/packages/agent-ide/space-bot",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-arch/import-watch-loader",
+      "projectFolder": "frontend/infra/plugins/import-watch-loader",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-common/chat-answer-action",
+      "projectFolder": "frontend/packages/common/chat-area/chat-answer-action",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/playground",
+      "projectFolder": "frontend/packages/workflow/playground",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/test-run",
+      "projectFolder": "frontend/packages/workflow/test-run",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/test-run-next",
+      "projectFolder": "frontend/packages/workflow/test-run-next/main",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/test-run-form",
+      "projectFolder": "frontend/packages/workflow/test-run-next/form",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/test-run-trace",
+      "projectFolder": "frontend/packages/workflow/test-run-next/trace",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/test-run-shared",
+      "projectFolder": "frontend/packages/workflow/test-run-next/shared",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/components",
+      "projectFolder": "frontend/packages/workflow/components",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/playground-adapter",
+      "projectFolder": "frontend/packages/workflow/adapter/playground",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/nodes-adapter",
+      "projectFolder": "frontend/packages/workflow/adapter/nodes",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/base-adapter",
+      "projectFolder": "frontend/packages/workflow/adapter/base",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/resources-adapter",
+      "projectFolder": "frontend/packages/workflow/adapter/resources",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-common/chat-hooks",
+      "projectFolder": "frontend/packages/common/chat-area/hooks",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-data/e2e",
+      "subspaceName": "e2e",
+      "projectFolder": "frontend/packages/data/common/e2e",
+      "tags": ["level-2"]
+    },
+    {
+      "packageName": "@coze-agent-ide/bot-editor-context-store",
+      "projectFolder": "frontend/packages/agent-ide/bot-editor-context-store",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-common/chat-area-plugin-message-grab",
+      "projectFolder": "frontend/packages/common/chat-area/plugin-message-grab",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-common/text-grab",
+      "projectFolder": "frontend/packages/common/chat-area/text-grab",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/setters",
+      "projectFolder": "frontend/packages/workflow/setters",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-common/assets",
+      "projectFolder": "frontend/packages/common/assets",
+      "tags": ["level-1"]
+    },
+    {
+      "packageName": "@coze-arch/pdfjs-shadow",
+      "projectFolder": "frontend/packages/arch/pdfjs-shadow",
+      "tags": ["team-arch", "level-1"],
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@coze-arch/tea",
+      "projectFolder": "frontend/packages/arch/tea",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-common/chat-area-plugin-resume",
+      "projectFolder": "frontend/packages/common/chat-area/plugin-resume",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/bot-input-length-limit",
+      "projectFolder": "frontend/packages/agent-ide/bot-input-length-limit",
+      "tags": ["team-studio", "level-2"]
+    },
+    {
+      "packageName": "@coze-studio/bot-audit-adapter",
+      "projectFolder": "frontend/packages/agent-ide/bot-audit-adapter",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-studio/bot-audit-base",
+      "projectFolder": "frontend/packages/agent-ide/bot-audit-base",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-arch/bot-monaco-editor",
+      "projectFolder": "frontend/packages/arch/bot-monaco-editor",
+      "tags": ["team-arch", "level-3"]
+    },
+    {
+      "packageName": "@coze-studio/user-store",
+      "projectFolder": "frontend/packages/studio/user-store",
+      "tags": ["level-2"]
+    },
+    {
+      "packageName": "@coze-common/chat-area-plugin-chat-background",
+      "projectFolder": "frontend/packages/common/chat-area/plugin-chat-background",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-foundation/browser-upgrade-banner",
+      "projectFolder": "frontend/packages/foundation/browser-upgrade-banner",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/space-bot-publish-to-base",
+      "projectFolder": "frontend/packages/agent-ide/publish-to-base",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-arch/utils",
+      "projectFolder": "frontend/packages/arch/utils",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-arch/foundation-sdk",
+      "projectFolder": "frontend/packages/arch/foundation-sdk",
+      "tags": ["team-studio", "level-2"]
+    },
+    {
+      "packageName": "@coze-foundation/space-store-adapter",
+      "projectFolder": "frontend/packages/foundation/space-store-adapter",
+      "tags": ["team-studio", "level-1"]
+    },
+    {
+      "packageName": "@coze-foundation/space-store",
+      "projectFolder": "frontend/packages/foundation/space-store",
+      "tags": ["team-studio", "level-1"]
+    },
+    {
+      "packageName": "@coze-foundation/layout",
+      "projectFolder": "frontend/packages/foundation/layout",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-foundation/account-base",
+      "projectFolder": "frontend/packages/foundation/account-base",
+      "tags": ["level-2", "team-studio"]
+    },
+    {
+      "packageName": "@coze-foundation/account-adapter",
+      "projectFolder": "frontend/packages/foundation/account-adapter",
+      "tags": ["team-studio", "level-2"]
+    },
+    {
+      "packageName": "@coze-foundation/account-ui-adapter",
+      "projectFolder": "frontend/packages/foundation/account-ui-adapter",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-foundation/account-ui-base",
+      "projectFolder": "frontend/packages/foundation/account-ui-base",
+      "tags": ["level-3", "team-studio"]
+    },
+    {
+      "packageName": "@coze-foundation/foundation-sdk",
+      "projectFolder": "frontend/packages/foundation/foundation-sdk",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-studio/file-kit",
+      "projectFolder": "frontend/packages/studio/common/file-kit",
+      "tags": ["team-studio", "level-2"]
+    },
+    {
+      "packageName": "@coze-agent-ide/chat-area-plugin-debug-common",
+      "projectFolder": "frontend/packages/agent-ide/chat-area-plugin-debug-common",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/chat-debug-area",
+      "projectFolder": "frontend/packages/agent-ide/chat-debug-area",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/navigate",
+      "projectFolder": "frontend/packages/agent-ide/navigate",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/layout",
+      "projectFolder": "frontend/packages/agent-ide/layout",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/bot-creator",
+      "projectFolder": "frontend/packages/agent-ide/entry",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/workflow",
+      "projectFolder": "frontend/packages/agent-ide/workflow",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/fabric-canvas",
+      "projectFolder": "frontend/packages/workflow/fabric-canvas",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/feature-encapsulate",
+      "projectFolder": "frontend/packages/workflow/feature-encapsulate",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-devops/json-link-preview",
+      "projectFolder": "frontend/packages/devops/json-link-preview",
+      "tags": ["team-devops", "level-3"]
+    },
+    {
+      "packageName": "@coze-studio/bot-utils",
+      "projectFolder": "frontend/packages/studio/bot-utils",
+      "tags": ["level-2"]
+    },
+    {
+      "packageName": "@coze-project-ide/base-adapter",
+      "projectFolder": "frontend/packages/project-ide/base-adapter",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-project-ide/ui-adapter",
+      "projectFolder": "frontend/packages/project-ide/ui-adapter",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-project-ide/base-interface",
+      "projectFolder": "frontend/packages/project-ide/base-interface",
+      "tags": ["team-automation", "level-1"]
+    },
+    {
+      "packageName": "@coze-project-ide/view",
+      "projectFolder": "frontend/packages/project-ide/view",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-project-ide/core",
+      "projectFolder": "frontend/packages/project-ide/core",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-project-ide/client",
+      "projectFolder": "frontend/packages/project-ide/client",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-project-ide/main",
+      "projectFolder": "frontend/packages/project-ide/main",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-project-ide/framework",
+      "projectFolder": "frontend/packages/project-ide/framework",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-project-ide/biz-workflow",
+      "projectFolder": "frontend/packages/project-ide/biz-workflow",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-project-ide/biz-plugin",
+      "projectFolder": "frontend/packages/project-ide/biz-plugin",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-project-ide/biz-components",
+      "projectFolder": "frontend/packages/project-ide/biz-components",
+      "tags": ["team-automation", "level-3"]
+    },
+    {
+      "packageName": "@coze-studio/workspace-base",
+      "projectFolder": "frontend/packages/studio/workspace/entry-base",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-foundation/local-storage",
+      "projectFolder": "frontend/packages/foundation/local-storage",
+      "tags": ["team-studio", "level-1"]
+    },
+    {
+      "packageName": "@coze-common/coze-mitt",
+      "projectFolder": "frontend/packages/common/coze-mitt",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/bot-plugin-export",
+      "projectFolder": "frontend/packages/agent-ide/bot-plugin/export",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/bot-plugin-tools",
+      "projectFolder": "frontend/packages/agent-ide/bot-plugin/tools",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/bot-plugin-mock-set",
+      "projectFolder": "frontend/packages/agent-ide/bot-plugin/mock-set",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/bot-plugin",
+      "projectFolder": "frontend/packages/agent-ide/bot-plugin/entry",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-common/auth",
+      "projectFolder": "frontend/packages/common/auth",
+      "tags": ["team-studio", "level-2"]
+    },
+    {
+      "packageName": "@coze-common/auth-adapter",
+      "projectFolder": "frontend/packages/common/auth-adapter",
+      "tags": ["team-studio", "level-2"]
+    },
+    {
+      "packageName": "@coze-common/prompt-kit",
+      "projectFolder": "frontend/packages/common/prompt-kit/main",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-common/editor-plugins",
+      "projectFolder": "frontend/packages/common/editor-plugins",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/project-entity-base",
+      "projectFolder": "frontend/packages/studio/workspace/project-entity-base",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-studio/project-entity-adapter",
+      "projectFolder": "frontend/packages/studio/workspace/project-entity-adapter",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-project-ide/biz-data",
+      "projectFolder": "frontend/packages/project-ide/biz-data",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/project-publish",
+      "projectFolder": "frontend/packages/studio/workspace/project-publish",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-data/knowledge-data-set-for-agent",
+      "projectFolder": "frontend/packages/data/knowledge/knowledge-data-set-for-agent",
+      "tags": ["team-data", "level-3"]
+    },
+    {
+      "packageName": "@coze-data/database-v2",
+      "projectFolder": "frontend/packages/data/memory/database-v2-main",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-common/biz-tooltip-ui",
+      "projectFolder": "frontend/packages/components/biz-tooltip-ui",
+      "tags": ["team-arch", "level-1"]
+    },
+    {
+      "packageName": "@coze-agent-ide/bot-creator-context",
+      "projectFolder": "frontend/packages/agent-ide/context",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-studio/publish-manage-hooks",
+      "projectFolder": "frontend/packages/studio/publish-manage-hooks",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-foundation/enterprise-store-adapter",
+      "projectFolder": "frontend/packages/foundation/enterprise-store-adapter",
+      "tags": ["level-1", "team-studio"]
+    },
+    {
+      "packageName": "@coze-common/chat-area-plugin-reasoning",
+      "projectFolder": "frontend/packages/common/chat-area/chat-area-plugin-reasoning",
+      "tags": ["team-studio", "level-3"]
+    },
+    {
+      "packageName": "@coze-foundation/global-adapter",
+      "projectFolder": "frontend/packages/foundation/global-adapter",
+      "tags": ["level-3", "team-studio"]
+    },
+    {
+      "packageName": "@coze-foundation/global",
+      "projectFolder": "frontend/packages/foundation/global",
+      "tags": ["level-3", "team-studio"]
+    },
+    {
+      "packageName": "@coze-studio/app",
+      "projectFolder": "frontend/apps/coze-studio",
+      "tags": ["level-4"]
+    },
+    {
+      "packageName": "@coze-arch/rsbuild-config",
+      "projectFolder": "frontend/config/rsbuild-config",
+      "tags": ["level-1"]
+    },
+    {
+      "packageName": "@coze-studio/open-auth",
+      "projectFolder": "frontend/packages/studio/open-platform/open-auth",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-arch/monorepo-kits",
+      "projectFolder": "frontend/infra/utils/monorepo-kits",
+      "tags": ["level-1"]
+    },
+    {
+      "packageName": "@coze-studio/slardar-interface",
+      "projectFolder": "frontend/packages/arch/slardar-interface",
+      "tags": ["level-1"]
+    },
+    {
+      "packageName": "@coze-studio/tea-interface",
+      "projectFolder": "frontend/packages/arch/tea-interface",
+      "tags": ["level-1"]
+    },
+    {
+      "packageName": "@coze-arch/uploader-interface",
+      "projectFolder": "frontend/packages/common/uploader-interface",
+      "tags": ["level-1"]
+    },
+    {
+      "packageName": "@coze-studio/default-slardar",
+      "projectFolder": "frontend/packages/arch/default-slardar",
+      "tags": ["level-2"]
+    },
+    {
+      "packageName": "@coze-studio/uploader-adapter",
+      "projectFolder": "frontend/packages/common/uploader-adapter",
+      "tags": ["level-1"]
+    },
+    {
+      "packageName": "@coze-studio/tea-adapter",
+      "projectFolder": "frontend/packages/arch/tea-adapter",
+      "tags": ["level-1"]
+    },
+    {
+      "packageName": "@coze-data/knowledge-modal-adapter",
+      "projectFolder": "frontend/packages/data/knowledge/knowledge-modal-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/premium-store-adapter",
+      "projectFolder": "frontend/packages/studio/premium/premium-store-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/premium-components-adapter",
+      "projectFolder": "frontend/packages/studio/premium/premium-components-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/agent-ide-commons",
+      "projectFolder": "frontend/packages/agent-ide/commons",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-arch/idl-parser",
+      "projectFolder": "frontend/infra/idl/idl-parser",
+      "tags": ["level-2"]
+    },
+    {
+      "packageName": "@coze-arch/idl2ts-cli",
+      "projectFolder": "frontend/infra/idl/idl2ts-cli",
+      "tags": ["level-2"]
+    },
+    {
+      "packageName": "@coze-arch/idl2ts-generator",
+      "projectFolder": "frontend/infra/idl/idl2ts-generator",
+      "tags": ["level-2", "rush-tools"]
+    },
+    {
+      "packageName": "@coze-arch/idl2ts-helper",
+      "projectFolder": "frontend/infra/idl/idl2ts-helper",
+      "tags": ["level-2", "rush-tools"]
+    },
+    {
+      "packageName": "@coze-arch/idl2ts-plugin",
+      "projectFolder": "frontend/infra/idl/idl2ts-plugin",
+      "tags": ["level-2"]
+    },
+    {
+      "packageName": "@coze-arch/idl2ts-runtime",
+      "projectFolder": "frontend/infra/idl/idl2ts-runtime",
+      "tags": ["level-2"]
+    },
+    {
+      "packageName": "@coze-agent-ide/layout-adapter",
+      "projectFolder": "frontend/packages/agent-ide/layout-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/open-chat",
+      "projectFolder": "frontend/packages/studio/open-platform/open-chat",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/open-env-adapter",
+      "projectFolder": "frontend/packages/studio/open-platform/open-env-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-foundation/space-ui-adapter",
+      "projectFolder": "frontend/packages/foundation/space-ui-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-community/components",
+      "projectFolder": "frontend/packages/community/component",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-foundation/space-ui-base",
+      "projectFolder": "frontend/packages/foundation/space-ui-base",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-community/explore",
+      "projectFolder": "frontend/packages/community/explore",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/entity-adapter",
+      "projectFolder": "frontend/packages/studio/entity-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/entry-adapter",
+      "projectFolder": "frontend/packages/agent-ide/entry-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/prompt",
+      "projectFolder": "frontend/packages/agent-ide/prompt",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/prompt-adapter",
+      "projectFolder": "frontend/packages/agent-ide/prompt-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/workspace-adapter",
+      "projectFolder": "frontend/packages/studio/workspace/entry-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/plugin-shared",
+      "projectFolder": "frontend/packages/agent-ide/plugin-shared",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/plugin-modal-adapter",
+      "projectFolder": "frontend/packages/agent-ide/plugin-modal-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/plugin-setting",
+      "projectFolder": "frontend/packages/agent-ide/plugin-setting",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/plugin-content",
+      "projectFolder": "frontend/packages/agent-ide/plugin-content",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/plugin-setting-adapter",
+      "projectFolder": "frontend/packages/agent-ide/plugin-setting-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/plugin-content-adapter",
+      "projectFolder": "frontend/packages/agent-ide/plugin-content-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/plugin-area-adapter",
+      "projectFolder": "frontend/packages/agent-ide/plugin-area-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-data/knowledge-ide-base",
+      "projectFolder": "frontend/packages/data/knowledge/knowledge-ide-base",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/workflow-item",
+      "projectFolder": "frontend/packages/agent-ide/workflow-item",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/workflow-card-adapter",
+      "projectFolder": "frontend/packages/agent-ide/workflow-card-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/workflow-as-agent-adapter",
+      "projectFolder": "frontend/packages/agent-ide/workflow-as-agent-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/workflow-modal",
+      "projectFolder": "frontend/packages/agent-ide/workflow-modal",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-arch/hooks",
+      "projectFolder": "frontend/packages/arch/hooks",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-data/knowledge-resource-processor-base",
+      "projectFolder": "frontend/packages/data/knowledge/knowledge-resource-processor-base",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-data/knowledge-resource-processor-adapter",
+      "projectFolder": "frontend/packages/data/knowledge/knowledge-resource-processor-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/chat-background-shared",
+      "projectFolder": "frontend/packages/agent-ide/chat-background-shared",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/chat-background-config-content",
+      "projectFolder": "frontend/packages/agent-ide/chat-background-config-content",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/chat-background-config-content-adapter",
+      "projectFolder": "frontend/packages/agent-ide/chat-background-config-content-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/debug-tool-list",
+      "projectFolder": "frontend/packages/agent-ide/debug-tool-list",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/memory-tool-pane-adapter",
+      "projectFolder": "frontend/packages/agent-ide/memory-tool-pane-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/skills-pane-adapter",
+      "projectFolder": "frontend/packages/agent-ide/skills-pane-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-workflow/code-editor-adapter",
+      "projectFolder": "frontend/packages/workflow/adapter/code-editor",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-data/database-v2-adapter",
+      "projectFolder": "frontend/packages/data/memory/database-v2-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-data/database-v2-base",
+      "projectFolder": "frontend/packages/data/memory/database-v2-base",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/chat-area-provider",
+      "projectFolder": "frontend/packages/agent-ide/chat-area-provider",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/chat-area-provider-adapter",
+      "projectFolder": "frontend/packages/agent-ide/chat-area-provider-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/chat-answer-action-adapter",
+      "projectFolder": "frontend/packages/agent-ide/chat-answer-action-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-common/chat-uikit-shared",
+      "projectFolder": "frontend/packages/common/chat-area/chat-uikit-shared",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/chat-components-adapter",
+      "projectFolder": "frontend/packages/agent-ide/chat-components-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-common/prompt-kit-adapter",
+      "projectFolder": "frontend/packages/common/prompt-kit/adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-common/prompt-kit-base",
+      "projectFolder": "frontend/packages/common/prompt-kit/base",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/plugin-shared",
+      "projectFolder": "frontend/packages/studio/plugin-shared",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/plugin-form-adapter",
+      "projectFolder": "frontend/packages/studio/plugin-form-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/plugin-publish-ui-adapter",
+      "projectFolder": "frontend/packages/studio/plugin-publish-ui-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/mockset-editor-adapter",
+      "projectFolder": "frontend/packages/studio/mockset-editor-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/mockset-shared",
+      "projectFolder": "frontend/packages/studio/mockset-shared",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/mockset-editor",
+      "projectFolder": "frontend/packages/studio/mockset-editor",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/mockset-edit-modal-adapter",
+      "projectFolder": "frontend/packages/studio/mockset-edit-modal-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/api-schema",
+      "projectFolder": "frontend/packages/arch/api-schema",
+      "tags": ["level-2"]
+    },
+    {
+      "packageName": "@coze-common/md-editor-adapter",
+      "projectFolder": "frontend/packages/common/md-editor-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/agent-publish",
+      "projectFolder": "frontend/packages/agent-ide/agent-publish",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/bot-config-area-adapter",
+      "projectFolder": "frontend/packages/agent-ide/bot-config-area-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/bot-config-area",
+      "projectFolder": "frontend/packages/agent-ide/bot-config-area",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/plugin-tool-columns",
+      "projectFolder": "frontend/packages/studio/plugin-tool-columns",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-studio/plugin-tool-columns-adapter",
+      "projectFolder": "frontend/packages/studio/plugin-tool-columns-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-common/websocket-manager-adapter",
+      "projectFolder": "frontend/packages/common/websocket-manager-adapter",
+      "tags": ["team-studio", "level-2"]
+    },
+    {
+      "packageName": "@coze-project-ide/biz-plugin-registry-adapter",
+      "projectFolder": "frontend/packages/project-ide/biz-plugin-registry-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-data/variable",
+      "projectFolder": "frontend/packages/data/memory/variables",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-data/knowledge-ide-adapter",
+      "projectFolder": "frontend/packages/data/knowledge/knowledge-ide-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-data/knowledge-common-hooks",
+      "projectFolder": "frontend/packages/data/knowledge/common/hooks",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-data/knowledge-common-services",
+      "projectFolder": "frontend/packages/data/knowledge/common/services",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-data/feature-register",
+      "projectFolder": "frontend/packages/data/common/feature-register",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-data/knowledge-common-components",
+      "projectFolder": "frontend/packages/data/knowledge/common/components",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-agent-ide/onboarding-message-adapter",
+      "projectFolder": "frontend/packages/agent-ide/onboarding-message-adapter",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-common/chat-workflow-render",
+      "projectFolder": "frontend/packages/common/chat-area/chat-workflow-render",
+      "tags": ["level-3"]
+    },
+    {
+      "packageName": "@coze-arch/bot-md-box-adapter",
+      "projectFolder": "frontend/packages/arch/bot-md-box-adapter",
+      "tags": ["level-2"]
+    }
+  ]
+}

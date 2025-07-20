@@ -1,0 +1,32 @@
+.official-label {
+  position: absolute;
+  z-index: 5;
+  right: 0;
+  bottom: 0;
+  transform: translate(25%, 25%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.default {
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  &.small {
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  &.large {
+    svg {
+      width: 32px;
+      height: 32px;
+    }
+  }
+}

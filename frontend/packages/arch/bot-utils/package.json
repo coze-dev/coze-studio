@@ -1,0 +1,78 @@
+{
+  "name": "@coze-arch/bot-utils",
+  "version": "0.0.1",
+  "description": "common utils extracts from apps/bot",
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.ts",
+    "./voice-assistant": "./src/voice-assistant.ts",
+    "./upload-file-v2": "./src/upload-file-v2.ts",
+    "./post-message-channel": "./src/post-message-channel.ts",
+    "./date": "./src/date.ts"
+  },
+  "main": "src/index.ts",
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./src/index.ts"
+      ],
+      "upload-file-v2": [
+        "./src/upload-file-v2.ts"
+      ],
+      "post-message-channel": [
+        "./src/post-message-channel.ts"
+      ],
+      "date": [
+        "./src/date.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-agent-ide/tool-config": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
+    "@coze-studio/uploader-adapter": "workspace:*",
+    "@coze-studio/user-store": "workspace:*",
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/bot-studio-store": "workspace:*",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-arch/report-events": "workspace:*",
+    "@coze-arch/tea": "workspace:*",
+    "@coze-arch/web-context": "workspace:*",
+    "bowser": "2.11.0",
+    "dayjs": "^1.11.7",
+    "eventemitter3": "^5.0.1",
+    "lodash-es": "^4.17.21",
+    "md5": "^2.3.0",
+    "query-string": "^8.1.0"
+  },
+  "devDependencies": {
+    "@coze-common/chat-core": "workspace:*",
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/lodash-es": "^4.17.10",
+    "@types/md5": "^2.3.2",
+    "@types/node": "^18",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "sucrase": "^3.32.0",
+    "vitest": "~3.0.5"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  }
+}
+

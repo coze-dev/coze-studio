@@ -1,0 +1,24 @@
+.ui-input {
+  @pend-border: 1px solid var(--light-usage-border-color-border, rgba(29, 28, 35, 0.08));
+
+  // 解决选中自动提示文案默认样式圆角被覆盖问题
+  &:global(.semi-input-wrapper) {
+    overflow: hidden;
+  }
+
+  :global {
+
+    .semi-input-prepend,
+    .semi-input-prepend.semi-input-prepend-text,
+    .semi-input-append,
+    .semi-input-append.semi-input-append-text {
+      padding: 0 12px;
+      border-top: @pend-border;
+      border-bottom: @pend-border;
+      border-left: @pend-border;
+      background: var(--light-usage-disabled-color-disabled-fill,
+          rgba(46, 46, 56, 0.04));
+
+    }
+  }
+}

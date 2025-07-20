@@ -1,0 +1,3 @@
+﻿col_string_indexing,col_string,col_int,col_number,col_bool,col_time
+hello,asd,1,1.0,TRUE,2006-01-02 15:04:02
+bye,,2,2.0,TRUE,

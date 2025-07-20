@@ -1,0 +1,89 @@
+name: CI@fe-tsc
+trigger:
+  manual:
+  change:
+    # 临时支持 project-ide 项目需求，临时修改为如下格式
+    # 后续需调整回 integration/**
+    types: [create, push, restore]
+    paths:
+      - "frontend/**"
+    notification:
+      when: failure
+
+jobs:
+  ts_check: &base_job
+    runs-on:
+      env: online
+    image: hub.byted.org/base/bot_monorepo_ci_env:ae543e9bbc6d8155cffbd8f5ed27fb73
+    # 从最近的 CI 执行记录看，install 步骤有概率会等待超时
+    # 目前已 oncall，这里先设置一个超时时间，避免阻塞
+    timeout: 30
+    if: ${{ !Event.Change.IsPreSubmit }}
+    envs:
+      targetBranch: ${{Event.Change.Target.Branch}}
+      RUSH_BUILD_CACHE_WRITE_ALLOWED: ${{RUSH_BUILD_CACHE_WRITE_ALLOWED}}
+      RUSH_BUILD_CACHE_ENABLED: ${{RUSH_BUILD_CACHE_ENABLED}}
+      RUSH_BUILD_CACHE_CREDENTIAL: ${{RUSH_BUILD_CACHE_CREDENTIAL}}
+      ACCESS_TOKEN: ${{CI_BOT_ACCESS_TOKEN}}
+      CI: 'true'
+      RUN_BYTEST_COV: 'false'
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 'true'
+      CYPRESS_INSTALL_BINARY: '0'
+      TAIKO_SKIP_CHROMIUM_DOWNLOAD: '0'
+      RE2_DOWNLOAD_SKIP_PATH: '1'
+      RE2_DOWNLOAD_MIRROR: https://bnpm.bytedance.net/mirrors
+      MERGE_REQUEST_TITLE: ${{Event.Change.Title}}
+      TSESTREE_SINGLE_RUN: 'true'
+    steps:
+      - &checkout_step
+        name: Checkout
+        uses: actions/checkout
+        inputs:
+          submodules: true
+          depth: 1
+
+      - &proxy_step
+        name: SetupProxy
+        commands:
+          - bash .codebase/scripts/env.sh
+
+      - &remote_info_step
+        id: RemoteInfo
+        uses: 'actions/mr-remote-info'
+        inputs:
+          info_list: ['behind_commits', 'changed_files', 'changed_files_path']
+
+      - &cache_step
+        id: Cache
+        uses: actions/cache
+        inputs:
+          key: flow-monorepo-${{Event.Change.Source.Branch}}
+          paths:
+            - common/temp/pnpm-store
+          restore_keys:
+            - flow-monorepo-${{Event.Change.Source.Branch}}
+            - flow-monorepo-store-master
+
+      - &init_env_step
+        id: InitEnv
+        name: Initialization
+        commands:
+          - printenv
+          - git config user.name ci_flow
+          - git config user.email ci_flow@bytedance.com
+          - npm config set registry=https://registry.npmjs.org
+          - pnpm config set network-concurrency 32
+          - echo "$(<${{Steps.RemoteInfo.Outputs.changed_files_path}})"
+          - echo "::set-output name=ShouldRunBuild::${{ Event.Change.IsPreSubmit || int(Steps.RemoteInfo.Outputs.behind_commits) <= 6 }}"
+
+      - &install_deps_step
+        name: Install dependencies
+        commands:
+          - npx why-is-node-running@v2.x common/scripts/install-run-rush.js increment --action install -p ${{Steps.RemoteInfo.Outputs.changed_files_path}}
+
+      - name: Prepare basic packages
+        commands:
+          - node common/scripts/install-run-rush.js pre-build -v
+      - name: Check TS Type
+        commands:
+          - node common/scripts/install-run-rush.js increment --action ts-check -p ${{Steps.RemoteInfo.Outputs.changed_files_path}}

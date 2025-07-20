@@ -1,0 +1,31 @@
+id: 103 # 模型 id, 同 id 数据不会覆盖
+name: Gemma-3 # 模型 meta 名称
+icon_uri: ollama.png # 模型展示图片 uri
+icon_url: '' # 模型展示图片 url
+description:
+  zh: ollama 模型简介
+  en: ollama model description
+protocol: ollama # 模型连接协议, see: backend/infra/contract/chatmodel/protocol.go
+capability: # 模型基础能力
+  function_call: true # 模型是否支持 function call
+  input_modal: # 模型输入支持模态
+    - text
+  input_tokens: 128000 # 输入 token 上限
+  output_modal: # 模型输出支持模态
+    - text
+  output_tokens: 16384 # 输出 token 上限
+  max_tokens: 128000 # 最大 token 数量
+  json_mode: false # 是否支持 json mode
+  prefix_caching: false # 是否支持 prefix caching
+  reasoning: false # 是否支持 reasoning
+  prefill_response: false # 是否支持续写
+conn_config: # 模型连接参数
+  base_url: ''  # REQUIRED: base_url
+  model: ''     # REQUIRED: model
+  temperature: 0.6 # 默认 temperature
+  frequency_penalty: 0 # 默认 frequency_penalty
+  presence_penalty: 0 # 默认 presence_penalty
+  max_tokens: 4096 # 默认 max_tokens
+  top_p: 0.95 # 默认 top_p
+  top_k: 20 # 默认 top_k
+  status: 1

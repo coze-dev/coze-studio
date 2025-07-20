@@ -1,0 +1,128 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+import React, { useState, type CSSProperties } from 'react';
+
+import { groupBy, uniq } from 'lodash-es';
+import classNames from 'classnames';
+import { ModelOptionItem } from '@coze-studio/components';
+import { I18n } from '@coze-arch/i18n';
+import { Select } from '@coze-arch/coze-design';
+import { type OptionProps } from '@coze-arch/bot-semi/Select';
+import { type Model } from '@coze-arch/bot-api/developer_api';
+
+import styles from './index.module.less';
+
+export interface ModelSelectProps {
+  className?: string;
+  style?: CSSProperties;
+  value: number | undefined;
+  onChange: (value: number) => void;
+  models: Model[];
+  readonly?: boolean;
+}
+
+export const ModelSelector: React.FC<ModelSelectProps> = ({
+  className,
+  style,
+  value,
+  onChange,
+  models,
+  readonly,
+}) => {
+  // 专业版有项目维度区分class，modal_class 与 modal_class_name存在一对多的情况，因此统一以model_class_name做分组
+  // 以 modal_class_name 首次出现的顺序进行排序
+  const modelClassSortList = uniq(models.map(i => i.model_class_name ?? ''));
+
+  const modelClassGroup = groupBy(models, model => model.model_class_name);
+
+  const [inputValue, setInputValue] = useState('');
+
+  const someHasEndPointName = models.some(model => model?.endpoint_name);
+
+  // 搜索规则: 模型名称/接入点名称包含关键词(不区分大小写)
+  const filterOption = (model: Model) => {
+    const sugInput = inputValue.toUpperCase();
+    return (
+      model.name?.toUpperCase()?.includes(sugInput) ||
+      model?.endpoint_name?.toUpperCase()?.includes(sugInput)
+    );
+  };
+
+  const getModelOptionLabel = (model: Model) => (
+    <ModelOptionItem
+      key={model.model_type}
+      tokenLimit={model.model_quota?.token_limit}
+      avatar={model.model_icon}
+      name={model.name}
+      descriptionGroupList={model.model_desc}
+      searchWords={[inputValue]}
+      endPointName={model.endpoint_name}
+      showEndPointName={someHasEndPointName}
+    />
+  );
+  const optionsList = modelClassSortList
+    .map(stringClassId => {
+      const groupMemberList = modelClassGroup[stringClassId as string];
+      return {
+        label: groupMemberList?.at(0)?.model_class_name,
+        children: groupMemberList
+          ?.filter(model => filterOption(model))
+          ?.map(model => ({
+            label: getModelOptionLabel(model),
+            value: model.model_type,
+          })),
+      };
+    })
+    .map(group => (
+      // 修改key原因：详见https://semi.design/zh-CN/input/select - 分组模块
+      // 1. 分组能力只能使用jsx
+      // 2. 若Select的children需要动态更新，OptGroup上的key也需要进行更新，否则Select无法识别
+      <Select.OptGroup key={`${inputValue}-${group.label}`} label={group.label}>
+        {group.children?.map(option => (
+          <Select.Option value={option.value} key={option.value}>
+            {option.label}
+          </Select.Option>
+        ))}
+      </Select.OptGroup>
+    ));
+  const renderSelectedItem = (optionNode: OptionProps) =>
+    React.isValidElement(optionNode?.children) ? (
+      <ModelOptionItem
+        {...optionNode?.children?.props}
+        showEndPointName={false}
+      />
+    ) : null;
+  return (
+    <Select
+      clickToHide
+      disabled={readonly}
+      className={classNames('w-full', styles.select, className)}
+      style={style}
+      value={value}
+      dropdownClassName={'w-[625px]'}
+      emptyContent={I18n.t('workflow_detail_node_nodata')}
+      onChange={changedValue => {
+        onChange(changedValue as number);
+      }}
+      onSearch={v => setInputValue(v)}
+      filter
+      renderSelectedItem={renderSelectedItem}
+    >
+      {optionsList}
+    </Select>
+  );
+};

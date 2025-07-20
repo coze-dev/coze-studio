@@ -1,0 +1,104 @@
+.icon-default {
+  width: 14px;
+  height: 14px;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.mask-attribute {
+  mask-repeat: no-repeat;
+  mask-size: 100%;
+}
+
+.icon-grey-default {
+  background-color: #7A7B7C;
+  mask: url('../../../../bot-icons/src/assets/icons/icon-audio.svg');
+}
+
+.icon-black-default {
+  background-color: #000;
+  mask: url('../../../../bot-icons/src/assets/icons/icon-audio.svg');
+  .mask-attribute;
+}
+
+
+
+.icon-black-playing {
+  .icon-black-default;
+
+  animation: icons-black 1.5s infinite;
+}
+
+.icon-grey-playing {
+  background-color: #4d53e8;
+  animation: icons-black 1.5s infinite
+}
+
+.icon-blue-default {
+  .icon-black-default;
+  background-color: #4d53e8;
+  mask: url('../../../../bot-icons/src/assets/icons/icon-audio-blue.svg');
+
+}
+
+.icon-blue-playing {
+  .icon-blue-default;
+
+  animation: icons-blue 1.5s infinite;
+}
+
+.icon-black-closed {
+  background-color: black;
+  mask: url('../../../../bot-icons/src/assets/icons/icon-audio-closed.svg');
+  .mask-attribute;
+}
+
+.icon-grey-closed {
+  background-color: #7A7B7C;
+  mask: url('../../../../bot-icons/src/assets/icons/icon-audio-closed.svg');
+}
+
+
+@keyframes icons-black {
+  0% {
+    mask: url('../../../../bot-icons/src/assets/icons/icon-audio-p1.svg');
+    .mask-attribute;
+  }
+
+  33% {
+    mask: url('../../../../bot-icons/src/assets/icons/icon-audio-p2.svg');
+    .mask-attribute;
+  }
+
+  66% {
+    mask: url('../../../../bot-icons/src/assets/icons/icon-audio-p3.svg');
+    .mask-attribute;
+  }
+
+  100% {
+    mask: url('../../../../bot-icons/src/assets/icons/icon-audio-p1.svg');
+    .mask-attribute;
+  }
+}
+
+@keyframes icons-blue {
+  0% {
+    mask: url('../../../../bot-icons/src/assets/icons/icon-audio-blue-p1.svg');
+    .mask-attribute;
+  }
+
+  33% {
+    mask: url('../../../../bot-icons/src/assets/icons/icon-audio-blue-p2.svg');
+    .mask-attribute;
+  }
+
+  66% {
+    mask: url('../../../../bot-icons/src/assets/icons/icon-audio-blue-p3.svg');
+    .mask-attribute;
+  }
+
+  100% {
+    mask: url('../../../../bot-icons/src/assets/icons/icon-audio-blue-p1.svg');
+    .mask-attribute;
+  }
+}

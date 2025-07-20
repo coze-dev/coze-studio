@@ -1,0 +1,31 @@
+/* stylelint-disable max-nesting-depth */
+.container {
+  // align-items: center;
+  position: relative;
+
+  flex: 0 0 116px;
+  flex-direction: column;
+  align-self: stretch;
+
+  margin-left: 4px;
+
+  .pop-container {
+    align-self: self-start;
+  }
+
+  .param-type {
+    height: 32px;
+    padding: 0 1px;
+  }
+
+  :global(.semi-cascader-selection) {
+    padding-right: 0;
+    padding-left: 4px;
+  }
+}
+
+.dropdwon {
+  :global(.coz-menu.semi-dropdown-menu .semi-dropdown-item-disabled .coz-item-text) {
+    @apply coz-fg-dim;
+  }
+}

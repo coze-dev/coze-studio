@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush-plugin-manifest.schema.json",
+  "plugins": [
+    {
+      "pluginName": "@coze-arch/rush-dep-level-check-plugin",
+      "description": "@coze-arch/rush-dep-level-check-plugin",
+      "entryPoint": "./lib/index.js",
+      "associatedCommands": ["install", "update"]
+    }
+  ]
+}

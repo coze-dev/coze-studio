@@ -1,0 +1,234 @@
+// !NOTE: 全局样式代码，不要随便修改！！！
+
+html,
+body {
+  width: 100%;
+  min-width: 1200px;
+  height: 100%;
+  min-height: 600px;
+  margin: 0;
+  padding: 0;
+  // 原来的版本是 冬青(Hiragino) > 苹方；但是项目里大量使用 semi 组件自带 font family，没有暴露出来
+  // 这里修复一下顺序 PingFang > Hiragino
+  font-family: 'PingFang SC', 'Noto Sans SC', sans-serif;
+
+  background: linear-gradient(to bottom, transparent, #fff) #eceeef;
+}
+
+body {
+  // @flowpd/card-web-runtime 依赖 arco design
+  // arco-design 的 reset css, 搞了 body line-height 1.5
+  // 没设置 line-height 的元素可能会因为按需加载 arco 产生瞬时抖动
+  line-height: 1.5;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+p {
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: 'PingFang SC', 'Noto Sans SC', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// 去除 safari 浏览器按钮 focus 状态的蓝色框
+a:focus,
+input:focus,
+p:focus,
+li:focus,
+div:focus,
+svg:focus,
+a:focus-visible,
+input:focus-visible,
+p:focus-visible,
+li:focus-visible,
+div:focus-visible {
+  outline: none;
+
+  -webkit-tap-highlight-color: rgb(0 0 0 / 0% / 0);
+}
+
+// TODO: 底层库依赖了这个 class，暂时不移除
+.operation-admin-base-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  height: 56px;
+
+  line-height: 56px;
+
+  background-color: #fff;
+  border-bottom: 1px solid rgb(46 50 56 / 5%);
+
+  .semi-tabs-content {
+    display: none;
+  }
+}
+
+.operation-admin-base-header-title {
+  display: flex;
+  align-items: center;
+
+  margin: 12px 24px;
+
+  font-size: 18px;
+  line-height: 24px;
+  color: var(--light-color-grey-grey-9, #1c1f23);
+
+  * {
+    user-select: none;
+  }
+
+  .universe-icon {
+    margin-right: 6px;
+  }
+}
+
+.operation-admin-base-header-user-avatar {
+  width: 24px;
+  height: 24px;
+}
+
+.operation-admin-base-header-avatar-method-block {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 8px;
+}
+
+.operation-admin-base-header-avatar-sign-out {
+  text-align: center;
+}
+
+.operation-admin-base-aside {
+  border-right: 1px solid rgb(229 231 235);
+
+  // 非本期改动，但阻塞了ci的构建
+  /* stylelint-disable-next-line selector-class-pattern */
+  .ud__layout__sider-trigger {
+    border-right: 1px solid rgb(229 231 235);
+  }
+}
+
+.operation-admin-base-app {
+  height: 100%;
+}
+
+.operation-admin-base-module-content {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.operation-admin-base-module-content[app-name='playground_prompt'] {
+  background-color: #fff;
+}
+
+.operation-admin-base-module-content[app-name='build_bot'] {
+  background-color: #fff;
+}
+
+.operation-admin-base-module-content[app-name='discover'] {
+  background-color: #fff;
+}
+
+.operation-admin-base-404 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+}
+
+.no-permission {
+  height: calc(100vh - 64px);
+  border: 20px solid #f2f3f5;
+}
+
+.error-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.operation-admin-no-permission {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+}
+
+.operation-admin-base-main-content {
+  overflow: hidden;
+}
+
+.operation-admin-base-header-name {
+  padding: 8px;
+  padding-bottom: 0;
+
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 22px;
+}
+
+.bp5-overflow-list {
+  display: flex;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.bp5-overflow-list-spacer {
+  flex-shrink: 1;
+  width: 1px;
+}
+
+// styled-scrollbar 给需要滚动的元素添加的滚动条样式 增加这个 class 即可
+.styled-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(31, 35, 41, 30%);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 9999px;
+
+  transition: background 0.2s cubic-bezier(0.34, 0.69, 0.1, 1);
+}
+
+.styled-scrollbar::-webkit-scrollbar {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  background-color: transparent;
+}
+
+.styled-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(31, 35, 41, 60%);
+}
+
+.styled-scrollbar::-webkit-scrollbar:hover {
+  width: 11px;
+  height: 11px;
+}
+
+.styled-scrollbar::-webkit-scrollbar-button {
+  display: none;
+}
+
+.styled-scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.styled-scrollbar::-webkit-scrollbar-corner {
+  background-color: transparent;
+}

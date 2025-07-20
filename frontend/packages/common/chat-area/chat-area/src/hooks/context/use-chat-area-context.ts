@@ -1,0 +1,46 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+import { useContext } from 'react';
+
+import { isValidContext } from '../../utils/is-valid-context';
+import { StoreSetContext } from '../../context/store-set';
+import { NullableChatAreaContext } from '../../context/chat-area-context/context';
+
+/**
+ * 内部使用, 这个千万不要对外导出
+ */
+export const useChatAreaContext = () => {
+  const chatAreaContext = useContext(NullableChatAreaContext);
+  const storeSetContext = useContext(StoreSetContext);
+  if (!isValidContext(chatAreaContext) || !isValidContext(storeSetContext)) {
+    throw new Error('chatAreaContext is not valid');
+  }
+
+  return chatAreaContext;
+};
+
+/**
+ * only for 内部使用
+ */
+export const useChatAreaStoreSet = () => {
+  const storeSetContext = useContext(StoreSetContext);
+  if (!isValidContext(storeSetContext)) {
+    throw new Error('chatAreaContext is not valid');
+  }
+
+  return storeSetContext;
+};

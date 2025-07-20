@@ -1,0 +1,94 @@
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable selector-class-pattern */
+
+@import './widgets.css';
+
+.lm-DockPanel-overlay {
+  background: rgba(255, 255, 255, 60%);
+  border: 1px dashed black;
+
+  transition-timing-function: ease;
+  transition-duration: 150ms;
+  transition-property: top, left, right, bottom;
+}
+
+.lm-TabBar {
+  min-height: 24px;
+  max-height: 24px;
+}
+
+.lm-TabBar-content {
+  align-items: flex-end;
+  min-width: 0;
+  min-height: 0;
+  border-bottom: 1px solid #c0c0c0;
+}
+
+.lm-TabBar-tab {
+  flex: 0 1 125px;
+
+  min-width: 35px;
+  min-height: 20px;
+  max-height: 20px;
+  margin-left: -1px;
+  padding: 0 10px;
+
+  font:
+    12px Helvetica,
+    Arial,
+    sans-serif;
+  line-height: 20px;
+
+  background: #e5e5e5;
+  border: 1px solid #c0c0c0;
+  border-bottom: none;
+}
+
+.lm-TabBar-tabLabel .lm-TabBar-tabInput {
+  padding: 0;
+  font:
+    12px Helvetica,
+    Arial,
+    sans-serif;
+  border: 0;
+}
+
+.lm-TabBar-tab.lm-mod-current {
+  transform: translateY(1px);
+  min-height: 23px;
+  max-height: 23px;
+  background: white;
+}
+
+.lm-TabBar-tab:hover:not(.lm-mod-current) {
+  background: #f0f0f0;
+}
+
+.lm-TabBar-tab:first-child {
+  margin-left: 0;
+}
+
+.lm-TabBar-tabIcon,
+.lm-TabBar-tabLabel,
+.lm-TabBar-tabCloseIcon {
+  display: inline-block;
+}
+
+.lm-TabBar-tab.lm-mod-closable > .lm-TabBar-tabCloseIcon {
+  margin-left: 4px;
+}
+
+.lm-TabBar .lm-TabBar-addButton {
+  padding: 0 6px;
+  border-bottom: 1px solid #c0c0c0;
+}
+
+.lm-TabBar-tab.lm-mod-drag-image {
+  min-width: 125px;
+  min-height: 23px;
+  max-height: 23px;
+
+  border: none;
+  box-shadow: 1px 1px 2px rgba(0, 0, 0, 30%);
+}

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush-plugin-manifest.schema.json",
+  "plugins": [
+    {
+      "pluginName": "@coze-arch/rush-increment-run-plugin",
+      "description": "incremently run commands for ci",
+      "commandLineJsonFilePath": "./command-line.json"
+    }
+  ]
+}

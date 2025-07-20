@@ -1,0 +1,45 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
+  "commands": [
+    {
+      "name": "init-project",
+      "commandKind": "global",
+      "summary": "Initialize project in this monorepo",
+      "shellCommand": "rush-init-project",
+      "safeForSimultaneousRushProcesses": true
+    }
+  ],
+  "parameters": [
+    {
+      "parameterKind": "string",
+      "description": "Provide predefined answers with JSON string",
+      "shortName": "-a",
+      "longName": "--answer",
+      "argumentName": "ANSWER",
+      "associatedCommands": ["init-project"],
+      "required": false
+    },
+    {
+      "parameterKind": "flag",
+      "description": "Provide the option isDryRun in plugin context",
+      "longName": "--dry-run",
+      "associatedCommands": ["init-project"],
+      "required": false
+    },
+    {
+      "parameterKind": "flag",
+      "description": "Provide verbose log output",
+      "shortName": "-v",
+      "longName": "--verbose",
+      "associatedCommands": ["init-project"],
+      "required": false
+    },
+    {
+      "parameterKind": "flag",
+      "description": "Provide terminal ui operation",
+      "longName": "--ui",
+      "associatedCommands": ["init-project"],
+      "required": false
+    }
+  ]
+}

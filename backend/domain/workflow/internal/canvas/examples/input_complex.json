@@ -1,0 +1,196 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "trigger_parameters": []
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "schema": [
+                  {
+                    "name": "name",
+                    "required": false,
+                    "type": "string"
+                  },
+                  {
+                    "name": "age",
+                    "required": false,
+                    "type": "integer"
+                  }
+                ],
+                "type": "object",
+                "value": {
+                  "content": {
+                    "blockID": "191011",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 6
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output"
+            },
+            {
+              "input": {
+                "schema": {
+                  "schema": [
+                    {
+                      "name": "name",
+                      "required": false,
+                      "type": "string"
+                    },
+                    {
+                      "name": "age",
+                      "required": false,
+                      "type": "integer"
+                    }
+                  ],
+                  "type": "object"
+                },
+                "type": "list",
+                "value": {
+                  "content": {
+                    "blockID": "191011",
+                    "name": "input_list",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 103
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "output_list"
+            }
+          ],
+          "terminatePlan": "returnVariables"
+        },
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "position": {
+          "x": 978.9666666666667,
+          "y": -13
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "outputSchema": "[{\"type\":\"object\",\"name\":\"input\",\"schema\":[{\"type\":\"string\",\"name\":\"name\",\"required\":false},{\"type\":\"integer\",\"name\":\"age\",\"required\":false}],\"required\":false},{\"type\":\"list\",\"name\":\"input_list\",\"schema\":{\"type\":\"object\",\"schema\":[{\"type\":\"string\",\"name\":\"name\",\"required\":false},{\"type\":\"integer\",\"name\":\"age\",\"required\":false}]},\"required\":false}]"
+        },
+        "nodeMeta": {
+          "description": "支持中间过程的信息输入",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Input-v2.jpg",
+          "mainColor": "#5C62FF",
+          "subTitle": "输入",
+          "title": "输入"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "schema": [
+              {
+                "name": "name",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "name": "age",
+                "required": false,
+                "type": "integer"
+              }
+            ],
+            "type": "object"
+          },
+          {
+            "name": "input_list",
+            "required": false,
+            "schema": {
+              "schema": [
+                {
+                  "name": "name",
+                  "required": false,
+                  "type": "string"
+                },
+                {
+                  "name": "age",
+                  "required": false,
+                  "type": "integer"
+                }
+              ],
+              "type": "object"
+            },
+            "type": "list"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "191011",
+      "meta": {
+        "position": {
+          "x": 489.4833333333333,
+          "y": -0.7000000000000028
+        }
+      },
+      "type": "30"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "191011",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "191011",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

@@ -1,0 +1,121 @@
+.ui-tab-bar {
+  display: flex;
+  justify-content: space-between;
+
+  width: 100%;
+
+  :global {
+    .semi-tabs {
+      width: 100%;
+    }
+  }
+
+  :global {
+    .semi-tabs-bar {
+      display: flex;
+      flex-wrap: nowrap;
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    .semi-tabs-content {
+      display: none;
+    }
+
+    // 分割线
+    .semi-tabs-tab:last-child:before {
+      content: '';
+      background-color: var(--light-usage-border-color-border,
+          rgba(28, 29, 35, 0.12));
+      height: 16px;
+      width: 1px;
+      position: absolute;
+      top: 6px;
+      left: -4px;
+    }
+
+    // 默认Tab 字体
+    .semi-tabs-tab-single.semi-tabs-tab {
+      font-weight: 600;
+      color: var(--light-usage-text-color-text-2, rgba(29, 28, 35, 0.45));
+    }
+
+    //默认 Icon
+    .semi-tabs-tab-single.semi-tabs-tab .semi-icon:not(.semi-icon-checkbox_tick,
+      .semi-icon-radio,
+      .semi-icon-checkbox_indeterminate) {
+      color: var(--light-usage-text-color-text-2, rgba(29, 28, 35, 0.45));
+    }
+
+    // hover 背景
+    .semi-tabs-tab-button.semi-tabs-tab:hover {
+      background-color: transparent;
+    }
+
+    // hover 字体
+    .semi-tabs-tab-single.semi-tabs-tab:hover {
+      color: var(--light-usage-text-color-text-1, rgba(29, 28, 35, 0.8));
+    }
+
+    // hover Icon
+    .semi-tabs-tab-single.semi-tabs-tab:hover .semi-icon:not(.semi-icon-checkbox_tick,
+      .semi-icon-radio,
+      .semi-icon-checkbox_indeterminate) {
+      color: var(--light-usage-text-color-text-1, rgba(29, 28, 35, 0.8));
+    }
+
+    // active 字体背景
+    .semi-tabs-tab-button.semi-tabs-tab-active,
+    .semi-tabs-tab-button.semi-tabs-tab-active:hover {
+      color: var(--light-usage-text-color-text-0, #1d1c23);
+      background-color: transparent;
+    }
+
+    // active Icon
+    .semi-tabs-tab-single.semi-tabs-tab-active .semi-icon:not(.semi-icon-checkbox_tick,
+      .semi-icon-radio,
+      .semi-icon-checkbox_indeterminate),
+    .semi-tabs-tab-single.semi-tabs-tab-active:hover .semi-icon:not(.semi-icon-checkbox_tick,
+      .semi-icon-radio,
+      .semi-icon-checkbox_indeterminate) {
+      color: var(--light-usage-text-color-text-0, #1d1c23);
+    }
+  }
+}
+
+// 蓝色主题
+.tab-bar-blue {
+  :global {
+
+    // active 字体背景
+    .semi-tabs-tab-button.semi-tabs-tab-active,
+    .semi-tabs-tab-button.semi-tabs-tab-active:hover {
+      color: var(--light-usage-primary-color-primary, #4d53e8);
+      background-color: transparent;
+    }
+
+    // active Icon
+    .semi-tabs-tab-single.semi-tabs-tab-active .semi-icon:not(.semi-icon-checkbox_tick,
+      .semi-icon-radio,
+      .semi-icon-checkbox_indeterminate),
+    .semi-tabs-tab-single.semi-tabs-tab-active:hover .semi-icon:not(.semi-icon-checkbox_tick,
+      .semi-icon-radio,
+      .semi-icon-checkbox_indeterminate) {
+      color: var(--light-usage-primary-color-primary, #4d53e8);
+    }
+  }
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.tool-bar {
+  display: flex;
+  align-items: center;
+}

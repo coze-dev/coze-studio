@@ -1,0 +1,14 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
+  "commands": [
+    {
+      "name": "clear-build-cache",
+      "description": "清理构建缓存",
+      "commandKind": "global",
+      "summary": "🚀 清理构建缓存",
+      "shellCommand": "rush-clear-build-cache",
+      "safeForSimultaneousRushProcesses": true
+    }
+  ],
+  "parameters": []
+}

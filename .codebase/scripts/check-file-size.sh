@@ -1,0 +1,94 @@
+#!/bin/bash
+
+# 设置默认值
+TARGET_BRANCH=${targetBranch}
+CI_MODE=${CI:-false}
+
+# Specify the pattern you want to exclude, using *space* as the separator
+EXCLUDE_PATTERNS=(
+  '**/pnpm-lock.yaml'
+  'packages/arch/bot-api/src/auto-generate/**'
+  'apps/bot-op/src/services/bam-auto-generate/**'
+  'apps/prompt-platform/src/services/auto-generate/**'
+  ".cursor/api/**"
+  "**/lib/**"
+  "**/.*/**"
+  '**/__tests__/**'
+  '**/__test__/**'
+  "**/__mocks__/**"
+  "**/__mock__/**"
+  "**/*.test.*/**"
+  "**/*.spec.*/**"
+  "**/__snapshots__/**"
+  "**/*.snap"
+  '**/e2e/**'
+  'common/changes/**'
+  'apps/fornax/**',
+  "packages/arch/semi-theme-hand01",
+  "packages/arch/arco-icon",
+  "packages/arch/resources/**"
+)
+
+for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+  EXCLUDE_STRING+=":(exclude)$pattern "
+done
+
+if [ "$CI_MODE" = true ]; then
+  files=$(git diff --name-only --diff-filter=AM "origin/$TARGET_BRANCH..." $EXCLUDE_STRING)
+else
+  files=$(git diff --name-only --diff-filter=AM --cached $EXCLUDE_STRING)
+fi
+
+# 体积限制为512KB
+size_limit=$((512))
+large_files_info=""
+
+IFS=$'\n' # 处理文件名存在空格情况
+for file in $files; do
+  file_size=$(wc -c <"$file" 2>/dev/null)
+  if [ $? -ne 0 ]; then
+    echo "错误: 无法获取文件 '$file' 的大小"
+    continue
+  fi
+  file_size_kb=$((file_size / 1024))
+  echo "$file file size is $file_size_kb KB"
+  if [ "$file_size_kb" -gt "$size_limit" ]; then
+    large_files_info+="- \`$file\` ($file_size_kb KB)\n"
+  fi
+done
+unset IFS
+
+output_conclusion() {
+  local conclusion="$1"
+  echo "$conclusion" >check-file-size.log
+  echo "::update-check-run::check-file-size.log"
+}
+
+if [ -n "$large_files_info" ]; then
+  if [ "$CI_MODE" = true ]; then
+    CONCLUSION="{
+      \"name\": \"文件体积\",
+      \"conclusion\": \"failed\",
+      \"output\": {
+        \"summary\": \"<h1>错误: 文件体积过大</h1> <br />  以下文件体积超过限制 (${size_limit}KB): \\n \\n $large_files_info  \\n \\n <br /> 你可以将资源上传到CDN并通过URL使用。详情请参考此[文档](https://bytedance.larkoffice.com/wiki/MjoIwfyGyiVCBFkBgnXc8LFTniX)。<br /> 如遇紧急情况,可以联系 [@fanwenjie.fe](https://code.byted.org/fanwenjie.fe) 跳过此错误。\"
+      }
+    }"
+    output_conclusion "$CONCLUSION"
+  else
+    echo "错误: 以下文件体积超过限制 (${size_limit}KB):"
+    echo -e "$large_files_info"
+    echo "请将大文件上传到CDN并通过URL使用。详情请参考: https://bytedance.larkoffice.com/wiki/MjoIwfyGyiVCBFkBgnXc8LFTniX"
+    exit 1
+  fi
+else
+  if [ "$CI_MODE" = true ]; then
+    CONCLUSION="{
+      \"name\": \"文件体积\",
+      \"conclusion\": \"success\",
+      \"output\": {
+        \"summary\": \"GOOD\"
+      }
+    }"
+    output_conclusion "$CONCLUSION"
+  fi
+fi

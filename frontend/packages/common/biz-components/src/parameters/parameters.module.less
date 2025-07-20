@@ -1,0 +1,46 @@
+.container {
+  position: relative;
+
+  .content {
+    overflow-x: auto;
+
+    &.readonly {
+      max-height: 300px;
+      overflow: auto;
+    }
+
+    .add-hot-area {
+      height: 16px;
+      cursor: pointer;
+    }
+
+    :global {
+      .semi-tree-option-list {
+        overflow: initial;
+
+        &>div:first-child {
+          margin-top: 0;
+        }
+      }
+    }
+  }
+
+  :global {
+    .semi-tree-option-list {
+      overflow: inherit;
+
+      .semi-tree-option {
+        padding-left: 0;
+      }
+    }
+
+    .semi-tree-option-list-block .semi-tree-option {
+      cursor: default;
+
+      &:hover,
+      &:active {
+        background: transparent;
+      }
+    }
+  }
+}

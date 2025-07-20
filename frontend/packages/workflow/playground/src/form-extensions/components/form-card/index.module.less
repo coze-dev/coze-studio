@@ -1,0 +1,131 @@
+/* stylelint-disable rule-empty-line-before */
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable max-nesting-depth */
+@import '../../../assets/styles/common.less';
+
+.content-block {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 0;
+
+  .port {
+    position: absolute;
+    top: 50%;
+    right: -10px;
+
+    width: 20px;
+    height: 20px;
+    margin-top: -10px;
+    margin-left: -10px;
+
+    border-radius: 10px;
+  }
+
+  &.no-padding {
+    padding: 0;
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
+
+    &.header-has-content {
+      margin-bottom: 8px;
+    }
+
+    &.header-is-closed {
+      margin-bottom: 0;
+    }
+
+    .header-icon-arrow {
+      cursor: pointer;
+
+      transform: rotate(-90deg);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      margin-right: 3px;
+
+      transition: transform 0.2s linear 0s;
+
+      &.open {
+        transform: rotate(0);
+      }
+    }
+
+    .header-icon {
+      display: flex;
+      margin-right: 8px;
+
+      >img {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 20px;
+
+      .label {
+        margin-left: 4px;
+
+        font-size: 14px;
+        font-weight: 500;
+        font-style: normal;
+        line-height: 22px;
+        color: var(--coz-fg-primary);
+      }
+
+      .popover {
+        margin-left: 4px;
+      }
+    }
+  }
+
+  :global {
+    .semi-collapsible-wrapper {
+      padding-left: 0 !important;
+      border-bottom-right-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+  }
+
+  .overflow-content {
+    padding-left: 0;
+
+    &.open {
+      :global {
+
+        .semi-collapsible-wrapper,
+        .semi-collapsible-wrapper [x-semi-prop] {
+          overflow: visible !important;
+        }
+      }
+    }
+  }
+}
+
+/* stylelint-disable-next-line plugin/disallow-first-level-global */
+:global {
+  .toolip-with-white-bg {
+    max-width: fit-content !important;
+    padding: 16px;
+    background-color: #fff !important;
+    box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 10%);
+
+    >svg>path {
+      fill: #fff !important;
+    }
+  }
+}

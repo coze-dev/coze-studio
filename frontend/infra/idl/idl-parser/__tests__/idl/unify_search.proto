@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+import "base.proto";
+
+message Foo {
+    Base key1 = 1;
+}

@@ -1,0 +1,91 @@
+{
+  "name": "@coze-data/knowledge-common-components",
+  "version": "0.0.1",
+  "description": "@coze-data/knowledge-common-components",
+  "license": "Apache-2.0",
+  "author": "haozhenfei@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.tsx",
+    "./file-picker": "./src/file-picker/index.tsx",
+    "./text-knowledge-editor": "./src/text-knowledge-editor/index.tsx",
+    "./text-knowledge-editor/*": "./src/text-knowledge-editor/*/index.tsx"
+  },
+  "main": "src/index.tsx",
+  "typesVersions": {
+    "*": {
+      "file-picker": [
+        "./src/file-picker/index.tsx"
+      ],
+      "text-knowledge-editor": [
+        "./src/text-knowledge-editor/index.tsx"
+      ],
+      "text-knowledge-editor/*": [
+        "./src/text-knowledge-editor/*/index.tsx"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
+    "@coze-arch/bot-md-box-adapter": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/report-events": "workspace:*",
+    "@coze-common/virtual-list": "workspace:*",
+    "@coze-data/e2e": "workspace:*",
+    "@coze-data/feature-register": "workspace:*",
+    "@coze-data/knowledge-stores": "workspace:*",
+    "@coze-data/reporter": "workspace:*",
+    "@tiptap/core": "^2.12.0",
+    "@tiptap/extension-hard-break": "^2.12.0",
+    "@tiptap/extension-image": "^2.12.0",
+    "@tiptap/extension-table": "^2.12.0",
+    "@tiptap/extension-table-cell": "^2.12.0",
+    "@tiptap/extension-table-header": "^2.12.0",
+    "@tiptap/extension-table-row": "^2.12.0",
+    "@tiptap/pm": "^2.12.0",
+    "@tiptap/react": "^2.12.0",
+    "@tiptap/starter-kit": "^2.12.0",
+    "ahooks": "^3.7.8",
+    "classnames": "^2.3.2",
+    "dompurify": "3.0.8",
+    "lodash-es": "^4.17.21",
+    "mitt": "^3.0.1",
+    "nanoid": "^4.0.2",
+    "react-arborist": "^3.4.0",
+    "react-pdf": "9.1.1",
+    "use-resize-observer": "^9.1.0"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/lodash-es": "^4.17.10",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "stylelint": "^15.11.0",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  }
+}
+

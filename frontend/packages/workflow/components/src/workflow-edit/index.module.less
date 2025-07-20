@@ -1,0 +1,51 @@
+/* stylelint-disable block-no-empty */
+.upload-form {
+  .textarea-single-line {
+    :global {
+      .semi-input-textarea-counter {
+        position: absolute;
+        top: 4px;
+        right: 0;
+      }
+    }
+  }
+
+  .textarea-multi-line {
+    margin-bottom: 16px;
+
+    :global {
+      .semi-input-textarea-counter {}
+    }
+  }
+
+  .conversation-field {
+    padding: 0;
+  }
+
+  .upload-field {
+    padding-top: 0;
+  }
+
+  .schema_type {
+    padding-top: 0;
+  }
+}
+
+.upload-form-item {
+  :global {
+    .semi-form-field-label-text {
+      display: none;
+    }
+  }
+}
+
+.add-card {
+  background-color: white;
+  border-radius: 8px;
+}
+
+.add-card-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

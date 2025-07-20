@@ -1,0 +1,192 @@
+{
+  "nodes": [
+    {
+      "blocks": [],
+      "data": {
+        "nodeMeta": {
+          "description": "",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "entry"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "trigger_parameters": []
+      },
+      "edges": null,
+      "id": "100001",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 180,
+          "y": 13
+        }
+      },
+      "type": "1"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "154951",
+                    "name": "input",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "input"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "154951",
+                    "name": "obj.field1",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "field1"
+            },
+            {
+              "input": {
+                "schema": {
+                  "type": "float"
+                },
+                "type": "list",
+                "value": {
+                  "content": {
+                    "blockID": "154951",
+                    "name": "inputArr",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 102
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "inputArr"
+            }
+          ],
+          "terminatePlan": "returnVariables"
+        },
+        "nodeMeta": {
+          "description": "",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "exit"
+        }
+      },
+      "edges": null,
+      "id": "900001",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 1100,
+          "y": 0
+        }
+      },
+      "type": "2"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "outputSchema": "[{\"type\":\"string\",\"name\":\"input\",\"required\":false},{\"type\":\"object\",\"name\":\"obj\",\"schema\":[{\"type\":\"string\",\"name\":\"field1\",\"required\":false}],\"required\":false},{\"type\":\"list\",\"name\":\"inputArr\",\"schema\":{\"type\":\"float\"},\"required\":false}]"
+        },
+        "nodeMeta": {
+          "description": "",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Input-v2.jpg",
+          "mainColor": "#5C62FF",
+          "subTitle": "input",
+          "title": "input"
+        },
+        "outputs": [
+          {
+            "name": "input",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "obj",
+            "required": false,
+            "schema": [
+              {
+                "name": "field1",
+                "required": false,
+                "type": "string"
+              }
+            ],
+            "type": "object"
+          },
+          {
+            "name": "inputArr",
+            "required": false,
+            "schema": {
+              "type": "float"
+            },
+            "type": "list"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "154951",
+      "meta": {
+        "canvasPosition": {
+          "x": 0,
+          "y": 0
+        },
+        "defaultCollapsed": false,
+        "position": {
+          "x": 640,
+          "y": 12.299999999999997
+        }
+      },
+      "type": "30"
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "154951",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "154951",
+      "targetNodeID": "900001",
+      "sourcePortID": ""
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

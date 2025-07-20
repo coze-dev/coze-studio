@@ -1,0 +1,660 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": -305.7,
+          "y": -117.30000000000001
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 1388.1500457763673,
+          "y": -306.3
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "146744",
+                    "name": "output"
+                  },
+                  "rawMeta": {
+                    "type": 99
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "139973",
+      "type": "15",
+      "meta": {
+        "position": {
+          "x": 261.1500457763673,
+          "y": -130.3
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "文本处理",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
+          "description": "用于处理多个字符串类型变量的格式",
+          "mainColor": "#3071F2",
+          "subTitle": "文本处理"
+        },
+        "inputs": {
+          "method": "concat",
+          "inputParameters": [
+            {
+              "name": "String1",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "123",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "concatParams": [
+            {
+              "name": "concatResult",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "{{String1}}",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "arrayItemConcatChar",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "，",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "allArrayItemConcatChars",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "object",
+                  "schema": [
+                    {
+                      "type": "string",
+                      "name": "label",
+                      "required": true
+                    },
+                    {
+                      "type": "string",
+                      "name": "value",
+                      "required": true
+                    },
+                    {
+                      "type": "boolean",
+                      "name": "isDefault",
+                      "required": true
+                    }
+                  ]
+                },
+                "value": {
+                  "type": "literal",
+                  "content": [
+                    {
+                      "label": "换行",
+                      "value": "\n",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "制表符",
+                      "value": "\t",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "句号",
+                      "value": "。",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "逗号",
+                      "value": "，",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "分号",
+                      "value": "；",
+                      "isDefault": true
+                    },
+                    {
+                      "label": "空格",
+                      "value": " ",
+                      "isDefault": true
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "output",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "147187",
+      "type": "18",
+      "meta": {
+        "position": {
+          "x": 271.1500457763673,
+          "y": -450.6713716634115
+        }
+      },
+      "data": {
+        "inputs": {
+          "llmParam": {
+            "modelType": 1737521813,
+            "modelName": "豆包·1.5·Pro·32k",
+            "generationDiversity": "balance",
+            "temperature": 0.8,
+            "maxTokens": 4096,
+            "responseFormat": 2,
+            "systemPrompt": ""
+          },
+          "inputParameters": [],
+          "answer_type": "text",
+          "option_type": "static",
+          "dynamic_option": {
+            "type": "string",
+            "value": {
+              "type": "ref",
+              "content": {
+                "source": "block-output",
+                "blockID": "",
+                "name": ""
+              }
+            }
+          },
+          "limit": 3
+        },
+        "nodeMeta": {
+          "title": "问答",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Direct-Question-v2.jpg",
+          "description": "支持中间向用户提问问题,支持预置选项提问和开放式问题提问两种方式",
+          "mainColor": "#3071F2",
+          "subTitle": "问答"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "USER_RESPONSE",
+            "required": true,
+            "description": "用户本轮对话输入内容"
+          }
+        ]
+      }
+    },
+    {
+      "id": "146744",
+      "type": "28",
+      "meta": {
+        "position": {
+          "x": 692.1500457763673,
+          "y": -142
+        },
+        "canvasPosition": {
+          "x": 933.1500457763673,
+          "y": 109.49950000000001
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "批处理",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Batch-v2.jpg",
+          "description": "通过设定批量运行次数和逻辑，运行批处理体内的任务",
+          "mainColor": "#00B2B2",
+          "subTitle": "批处理"
+        },
+        "inputs": {
+          "concurrentSize": {
+            "type": "integer",
+            "value": {
+              "type": "literal",
+              "content": "10"
+            }
+          },
+          "batchSize": {
+            "type": "integer",
+            "value": {
+              "type": "literal",
+              "content": "100"
+            }
+          },
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "list",
+                "value": {
+                  "type": "literal",
+                  "content": "[\"1\",\"2\",\"3\"]",
+                  "rawMeta": {
+                    "type": 99
+                  }
+                },
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "input": {
+              "type": "list",
+              "schema": {
+                "type": "string"
+              },
+              "value": {
+                "type": "ref",
+                "content": {
+                  "source": "block-output",
+                  "blockID": "129330",
+                  "name": "output"
+                },
+                "rawMeta": {
+                  "type": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "blocks": [
+        {
+          "id": "129330",
+          "type": "15",
+          "meta": {
+            "position": {
+              "x": 0,
+              "y": 100
+            }
+          },
+          "data": {
+            "nodeMeta": {
+              "title": "文本处理_1",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
+              "description": "用于处理多个字符串类型变量的格式",
+              "mainColor": "#3071F2",
+              "subTitle": "文本处理"
+            },
+            "inputs": {
+              "method": "concat",
+              "inputParameters": [
+                {
+                  "name": "String1",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "ref",
+                      "content": {
+                        "source": "block-output",
+                        "blockID": "146744",
+                        "name": "input"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                }
+              ],
+              "concatParams": [
+                {
+                  "name": "concatResult",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "literal",
+                      "content": "{{String1}}",
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "arrayItemConcatChar",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "literal",
+                      "content": "，",
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "allArrayItemConcatChars",
+                  "input": {
+                    "type": "list",
+                    "schema": {
+                      "type": "object",
+                      "schema": [
+                        {
+                          "type": "string",
+                          "name": "label",
+                          "required": true
+                        },
+                        {
+                          "type": "string",
+                          "name": "value",
+                          "required": true
+                        },
+                        {
+                          "type": "boolean",
+                          "name": "isDefault",
+                          "required": true
+                        }
+                      ]
+                    },
+                    "value": {
+                      "type": "literal",
+                      "content": [
+                        {
+                          "label": "换行",
+                          "value": "\n",
+                          "isDefault": true
+                        },
+                        {
+                          "label": "制表符",
+                          "value": "\t",
+                          "isDefault": true
+                        },
+                        {
+                          "label": "句号",
+                          "value": "。",
+                          "isDefault": true
+                        },
+                        {
+                          "label": "逗号",
+                          "value": "，",
+                          "isDefault": true
+                        },
+                        {
+                          "label": "分号",
+                          "value": "；",
+                          "isDefault": true
+                        },
+                        {
+                          "label": "空格",
+                          "value": " ",
+                          "isDefault": true
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "outputs": [
+              {
+                "type": "string",
+                "name": "output",
+                "required": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "102623",
+          "type": "15",
+          "meta": {
+            "position": {
+              "x": 0,
+              "y": 295.6495
+            }
+          },
+          "data": {
+            "nodeMeta": {
+              "title": "文本处理_2",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
+              "description": "用于处理多个字符串类型变量的格式",
+              "mainColor": "#3071F2",
+              "subTitle": "文本处理"
+            },
+            "inputs": {
+              "method": "concat",
+              "inputParameters": [
+                {
+                  "name": "String1",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "ref",
+                      "content": {
+                        "source": "block-output",
+                        "blockID": "139973",
+                        "name": "output"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                }
+              ],
+              "concatParams": [
+                {
+                  "name": "concatResult",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "literal",
+                      "content": "{{String1}}",
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "arrayItemConcatChar",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "literal",
+                      "content": "，",
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "allArrayItemConcatChars",
+                  "input": {
+                    "type": "list",
+                    "schema": {
+                      "type": "object",
+                      "schema": [
+                        {
+                          "type": "string",
+                          "name": "label",
+                          "required": true
+                        },
+                        {
+                          "type": "string",
+                          "name": "value",
+                          "required": true
+                        },
+                        {
+                          "type": "boolean",
+                          "name": "isDefault",
+                          "required": true
+                        }
+                      ]
+                    },
+                    "value": {
+                      "type": "literal",
+                      "content": [
+                        {
+                          "label": "换行",
+                          "value": "\n",
+                          "isDefault": true
+                        },
+                        {
+                          "label": "制表符",
+                          "value": "\t",
+                          "isDefault": true
+                        },
+                        {
+                          "label": "句号",
+                          "value": "。",
+                          "isDefault": true
+                        },
+                        {
+                          "label": "逗号",
+                          "value": "，",
+                          "isDefault": true
+                        },
+                        {
+                          "label": "分号",
+                          "value": "；",
+                          "isDefault": true
+                        },
+                        {
+                          "label": "空格",
+                          "value": " ",
+                          "isDefault": true
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "outputs": [
+              {
+                "type": "string",
+                "name": "output",
+                "required": true
+              }
+            ]
+          }
+        }
+      ],
+      "edges": [
+        {
+          "sourceNodeID": "146744",
+          "targetNodeID": "129330",
+          "sourcePortID": "batch-function-inline-output"
+        },
+        {
+          "sourceNodeID": "129330",
+          "targetNodeID": "146744",
+          "targetPortID": "batch-function-inline-input"
+        },
+        {
+          "sourceNodeID": "102623",
+          "targetNodeID": "146744",
+          "targetPortID": "batch-function-inline-input"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "139973"
+    },
+    {
+      "sourceNodeID": "147187",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "146744",
+      "targetNodeID": "900001",
+      "sourcePortID": "batch-output"
+    },
+    {
+      "sourceNodeID": "139973",
+      "targetNodeID": "146744"
+    }
+  ],
+  "versions": {
+    "loop": "v2",
+    "batch": "v2"
+  }
+}

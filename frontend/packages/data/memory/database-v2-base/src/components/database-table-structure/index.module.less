@@ -1,0 +1,300 @@
+/* stylelint-disable declaration-no-important */
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable no-duplicate-selectors */
+/* stylelint-disable font-family-no-missing-generic-family-keyword */
+
+.th-tip-name {
+  display: flex;
+  flex-direction: column;
+}
+
+.th-tip-dot {
+  position: relative;
+  padding-left: 16px;
+}
+
+.th-tip-dot::before {
+  content: '';
+
+  position: absolute;
+  top: 7px;
+  left: 0;
+
+  width: 5px;
+  height: 5px;
+
+  background-color: #000;
+  border-radius: 50%;
+}
+
+
+
+
+// 新增样式 @zhangyuanzhou.zyz
+.form-input-error {
+  :global {
+    .semi-input-wrapper {
+      border-color: #f93920
+    }
+
+    .semi-input-wrapper:hover {
+      border-color: var(--semi-color-border, rgba(29, 28, 35, 8%))
+    }
+
+  }
+}
+
+.table-structure-form {
+  padding-bottom: 4px;
+
+  :global {
+
+    // 去除 error message icon
+    .semi-form-field-validate-status-icon {
+      display: none;
+    }
+
+    .semi-form-field-validate-status-icon+span {
+      font-size: 12px;
+    }
+
+    .semi-col-12 {
+      .semi-form-field[x-field-id="prompt_disabled"] {
+        display: flex;
+        justify-content: flex-end;
+
+        .semi-form-field-main {
+          display: flex;
+          align-items: center;
+          width: auto !important;
+        }
+      }
+
+    }
+
+    .semi-switch-checked {
+      background-color: rgba(var(--coze-brand-5),1) !important;
+    }
+
+    .semi-switch-checked:hover {
+      background-color: rgba(var(--coze-brand-6),1) !important;
+    }
+  }
+}
+
+.max-row-banner {
+  margin-bottom: 24px;
+}
+
+.form-item-label-tooltip-icon {
+  cursor: pointer;
+  color: rgba(198, 202, 205, 100%);
+}
+
+.table-setting-select {
+  :global {
+    .semi-select:hover {
+      border: 1px solid var(--semi-color-border) !important;
+    }
+  }
+}
+
+.table-structure-table {
+  :global {
+
+    // table 圆角和边框
+    .semi-table-container {
+      padding: 0 8px;
+      border: 1px solid var(--Light-usage-border---color-border-1, rgba(29, 28, 35, 8%));
+      border-radius: 8px;
+    }
+
+    .semi-table-header {
+      .semi-table-row-head {
+        padding-right: 8px;
+        padding-left: 8px;
+        background: none !important;
+      }
+    }
+
+    // hover时去除背景色
+    .semi-table-body {
+      .semi-table-row {
+        background: none !important;
+      }
+
+      .semi-table-row:hover {
+        >.semi-table-row-cell {
+          background: none !important;
+        }
+      }
+
+    }
+
+    //
+    .semi-table-row {
+      cursor: default !important;
+
+      >.semi-table-row-cell {
+        padding: 12px 8px !important;
+        padding-left: 0;
+        border-bottom: 1px solid transparent !important;
+      }
+    }
+
+    .semi-table-body {
+      overflow: visible;
+      max-height: none !important;
+      padding: 12px 0;
+      border-radius: 8px;
+    }
+
+
+    // 移除 UITable 中的 before元素影响
+    .semi-table-row-cell::before {
+      display: none;
+    }
+
+    // 覆盖表结构编辑弹窗的只读字段样式，（在视觉上）由 disabled input 变为 plain text
+    .semi-input-wrapper-disabled {
+      background: none;
+      border: none;
+
+      .semi-input-disabled {
+        padding: 0;
+        font-weight: 500;
+        color: var(--coz-fg-primary);
+
+        -webkit-text-fill-color: var(--coz-fg-primary);
+      }
+
+      .semi-input-suffix {
+        display: none;
+      }
+    }
+
+    .semi-select-disabled {
+      cursor: default;
+      opacity: 1;
+      background: none;
+      border: none;
+
+      &:hover {
+        background-color: transparent !important;
+      }
+
+      .semi-select-selection {
+        cursor: default;
+        margin: 0;
+
+        .semi-select-selection-text {
+          font-weight: 500;
+          color: var(--coz-fg-primary);
+        }
+      }
+
+      .semi-select-arrow {
+        display: none;
+      }
+    }
+
+  }
+}
+
+.table-structure-table-wrapper {
+  height: auto;
+}
+
+.table-empty-tips {
+  padding: 8px;
+
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: @error-red;
+}
+
+
+.spin {
+  :global {
+    .semi-spin-wrapper div {
+      font-size: 16px;
+      color: rgba(29, 28, 35, 35%);
+    }
+  }
+}
+
+.table-setting-option {
+  :global {
+    .semi-select-option-selected {
+      .semi-select-option-icon {
+        color: #4D53E8
+      }
+    }
+  }
+}
+
+
+
+
+
+
+.table-name-form-field {
+  padding-bottom: 24px !important;
+
+  // semi 原有的 disable 样式不满足需求，需要更明显的文字颜色
+  :global {
+    .semi-input-wrapper-disabled {
+      -webkit-text-fill-color: rgba(29, 28, 35, 100%);
+    }
+  }
+}
+
+.table-desc-form-field {
+  padding-top: 0 !important;
+}
+
+.prompt_disabled_popover {
+  :global {
+    .semi-popover-icon-arrow {
+      right: 8px !important;
+    }
+  }
+}
+
+.read_mode_popover {
+  :global {
+    .semi-popover-icon-arrow {
+      left: 8px !important;
+    }
+  }
+}
+
+
+.hidden-form-border {
+  :global {
+    .semi-table-container {
+      padding: 0;
+      border: none;
+      border-radius: 0;
+    }
+
+    // .semi-table-row-head {
+    //   padding-right: 0 !important;
+    //   padding-left: 0 !important;
+    // }
+
+    // .semi-input-wrapper {
+    //   @apply coz-bg-plus;
+    // }
+
+    // .semi-input-textarea-wrapper {
+    //   @apply coz-bg-plus;
+    // }
+
+    // .semi-select {
+    //   @apply coz-bg-plus;
+    // }
+  }
+}

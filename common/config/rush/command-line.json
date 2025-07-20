@@ -1,0 +1,102 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
+  "commands": [
+    {
+      "name": "lint-staged",
+      "commandKind": "global",
+      "summary": "⭐️️ Use to run some task before commit",
+      "safeForSimultaneousRushProcesses": true,
+      "autoinstallerName": "rush-lint-staged",
+      "shellCommand": "lint-staged --config common/autoinstallers/rush-lint-staged/.lintstagedrc.js --shell '/bin/bash' --concurrent 8"
+    },
+    {
+      "commandKind": "bulk",
+      "name": "lint",
+      "ignoreMissingScript": true,
+      "enableParallelism": true,
+      "incremental": true,
+      "shellCommand": "eslint ./ --cache",
+      "allowWarningsInSuccessfulBuild": true,
+      "summary": "⭐️️ Run lint command for each package",
+      "safeForSimultaneousRushProcesses": true
+    },
+    {
+      "name": "commitlint",
+      "commandKind": "global",
+      "summary": "⭐️️ Used by the pre-commit Git hook. This command invokes commitlint to ensure that the commit messages meet the conventional commit format",
+      "safeForSimultaneousRushProcesses": true,
+      "autoinstallerName": "rush-commitlint",
+      "shellCommand": "commitlint"
+    },
+    {
+      "commandKind": "bulk",
+      "name": "test",
+      "description": "Executes automated tests.",
+      "allowWarningsInSuccessfulBuild": true,
+      "ignoreMissingScript": true,
+      "enableParallelism": true,
+      "summary": "⭐️️ Run test command for each package"
+    },
+    {
+      "commandKind": "bulk",
+      "name": "test:cov",
+      "description": "Executes automated tests with coverage collection.",
+      "allowWarningsInSuccessfulBuild": true,
+      "ignoreMissingScript": true,
+      "enableParallelism": true,
+      "incremental": true,
+      "ignoreDependencyOrder": true,
+      "safeForSimultaneousRushProcesses": true,
+      "summary": "⭐️️ Run coverage command for each package"
+    },
+    {
+      "commandKind": "bulk",
+      "name": "build",
+      "allowWarningsInSuccessfulBuild": true,
+      "ignoreMissingScript": true,
+      "enableParallelism": true,
+      "ignoreDependencyOrder": false,
+      "summary": "⭐️️ Run build command for each package"
+    },
+    {
+      "commandKind": "bulk",
+      "name": "pre-build",
+      "safeForSimultaneousRushProcesses": true,
+      "allowWarningsInSuccessfulBuild": true,
+      "ignoreMissingScript": true,
+      "enableParallelism": true,
+      "summary": "⭐️️ Run pre-build command for packages with tag:phase-prebuild"
+    },
+    {
+      "name": "commit",
+      "commandKind": "global",
+      "summary": "⭐️️ Commit lint hook",
+      "safeForSimultaneousRushProcesses": true,
+      "autoinstallerName": "rush-commitlint",
+      "shellCommand": "export PRE_LINT='1' && rush lint-staged && cd common/autoinstallers/rush-commitlint && git cz"
+    }
+  ],
+  "parameters": [
+    {
+      "parameterKind": "string",
+      "argumentName": "MESSAGE",
+      "longName": "--edit",
+      "description": "",
+      "associatedCommands": ["commitlint"]
+    },
+    {
+      "parameterKind": "string",
+      "argumentName": "MESSAGE",
+      "longName": "--config",
+      "description": "",
+      "associatedCommands": ["commitlint"]
+    },
+    {
+      "parameterKind": "flag",
+      "longName": "--no-verify",
+      "shortName": "-n",
+      "description": "use no verify",
+      "associatedCommands": ["commit"]
+    }
+  ]
+}

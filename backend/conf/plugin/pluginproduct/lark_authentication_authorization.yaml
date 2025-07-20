@@ -1,0 +1,56 @@
+info:
+  description: 飞书认证及授权
+  title: 飞书认证及授权
+  version: v1
+openapi: 3.0.1
+paths:
+  /access_token/get_tenant_access_token:
+    post:
+      operationId: get_tenant_access_token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                app_id:
+                  description: 应用唯一标识，创建应用后获得。
+                  type: string
+                app_secret:
+                  description: 应用秘钥，创建应用后获得。
+                  type: string
+              required:
+                - app_id
+                - app_secret
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 取值表示失败
+                    type: number
+                  expire:
+                    description: tenant_access_token 的过期时间，单位为秒
+                    type: number
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                  tenant_access_token:
+                    description: 租户访问凭证
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: |-
+        自建应用通过此接口获取 tenant_access_token。
+        
+        说明： tenant_access_token 的最大有效期是 2 小时。如果在有效期小于 30 分钟的情况下，调用本接口，会返回一个新的 tenant_access_token，这会同时存在两个有效的 tenant_access_token。
+servers:
+  - url: https://lark-plugin-api.solutionsuite.cn/lark-plugin

@@ -1,0 +1,149 @@
+/* stylelint-disable max-nesting-depth */
+/* stylelint-disable no-descending-specificity */
+
+.table {
+  position: relative;
+  overflow: hidden;
+  flex-grow: 1;
+
+  .table-wrapper {
+    :global {
+      .semi-table-wrapper {
+        line-height: unset;
+      }
+
+      // 横向滚动到最左/最右边时，隐藏左/右固定列的阴影
+      .semi-table-scroll-position-left .semi-table-tbody>.semi-table-row>.semi-table-cell-fixed-left-last,
+      .semi-table-scroll-position-left .semi-table-thead>.semi-table-row>.semi-table-cell-fixed-left-last,
+      .semi-table-scroll-position-right .semi-table-tbody>.semi-table-row>.semi-table-cell-fixed-right-first,
+      .semi-table-scroll-position-right .semi-table-thead>.semi-table-row>.semi-table-cell-fixed-right-first {
+        box-shadow: none;
+      }
+
+      // 左边最后一个固定列的阴影
+      .semi-table-row>.semi-table-cell-fixed-left-last {
+        // 因为 overflow: hidden 对 display: table-row 元素无效，
+        // 所以使阴影 y 轴方向偏移 2px ，避免本行的阴影遮挡上一行元素，同时下一行元素的背景色可以遮挡本行的阴影
+        box-shadow: 2px 2px 3px rgb(0 0 0 / 8%);
+      }
+
+      // 右边第一个固定列的阴影
+      .semi-table-row>.semi-table-cell-fixed-right-first {
+        box-shadow: -2px 2px 3px rgb(0 0 0 / 8%);
+      }
+
+      // 重置表格行 hover 时的鼠标指针
+      .semi-table-tbody>.semi-table-row {
+        cursor: default;
+      }
+
+      // 右边固定列不需要 text-align: right
+      .semi-table-thead > .semi-table-row > .semi-table-row-head:last-child,
+      .semi-table-tbody > .semi-table-row > .semi-table-row-cell:last-child {
+        text-align: unset;
+      }
+
+      // 去掉表头高度限制
+      .coz-table-list .semi-table-fixed-header table {
+        height: unset;
+      }
+
+      // 表头高度对齐设计稿
+      .semi-table-thead>.semi-table-row>.semi-table-row-head {
+        height: 28px;
+        padding-bottom: 0;
+      }
+
+      /** table header样式 **/
+      .semi-table-thead {
+        // 拖拽列宽度的图标样式
+        .semi-table-row {
+          .react-resizable-handle {
+            background: transparent;
+          }
+        }
+
+        &:hover {
+          .react-resizable:not(.semi-table-cell-fixed-left, .resizing, .not-resize-handle) {
+            .react-resizable-handle {
+              width: 7px;
+              border-right: 2px solid var(--coz-stroke-plus);
+              border-left: 1px solid var(--coz-stroke-plus);
+            }
+          }
+        }
+
+        // 拖拽列宽时的高亮右边框
+        &>.semi-table-row>.semi-table-row-head.resizing {
+          border-right-color: var(--coz-stroke-hglt);
+          border-right-width: 1px;
+        }
+
+        // 去掉左边固定列的右边框
+        &>.semi-table-row>.semi-table-row-head.semi-table-cell-fixed-left-last {
+          border-right: 0;
+        }
+
+        // 去掉右边固定列的左边框
+        &>.semi-table-row>.semi-table-row-head.semi-table-cell-fixed-right-first {
+          border-left: 0;
+        }
+      }
+
+      /** table body部分样式 **/
+      .semi-table-tbody {
+        .semi-table-row {
+          >.semi-table-row-cell {
+            // 修复行高，对齐设计稿
+            height: 56px;
+
+            // 拖拽列宽时的高亮右边框
+            &.resizing {
+              border-right-color: var(--coz-stroke-hglt);
+            }
+          }
+
+          // 去掉左边固定列的右边框
+          >.semi-table-cell-fixed-left-last {
+            border-right: 0;
+          }
+
+          // 去掉右边固定列的左边框
+          >.semi-table-cell-fixed-right-first {
+            border-left: 0;
+          }
+
+          // 去掉固定列未在 hover 状态时的奇怪圆角
+          &:not(:hover) {
+            >.semi-table-row-cell.semi-table-cell-fixed-left {
+              border-top-left-radius: 0;
+              border-bottom-left-radius: 0;
+            }
+
+            >.semi-table-row-cell.semi-table-cell-fixed-right {
+              border-top-right-radius: 0;
+              border-bottom-right-radius: 0;
+            }
+          }
+        }
+      }
+
+      .semi-table-pagination-outer {
+        height: 48px;
+        min-height: unset;
+      }
+    }
+  }
+}
+
+.table-wrapper-project {
+  :global {
+    // 适配 Project IDE 中白色背景 table 样式
+    .coz-table-list .semi-table-thead>.semi-table-row>.semi-table-row-head.semi-table-cell-fixed-left::before,
+    .coz-table-list .semi-table-thead>.semi-table-row>.semi-table-row-head.semi-table-cell-fixed-right::before,
+    .coz-table-list .semi-table-thead>.semi-table-row>.semi-table-row-head,
+    .coz-table-list .semi-table-tbody>.semi-table-row:not(:hover)>.semi-table-row-cell {
+      background-color: var(--coz-bg-max);
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "@coze-arch/utils",
+  "version": "0.0.1",
+  "description": "common utils for all apps",
+  "license": "Apache-2.0",
+  "author": "fanwenjie.fe@bytedance.com",
+  "maintainers": [
+    "sunzhiyuan.evan@bytedance.com"
+  ],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@types/jest": "~29.2.4",
+    "@types/node": "^18",
+    "@vitest/coverage-v8": "~3.0.5",
+    "sucrase": "^3.32.0",
+    "vitest": "~3.0.5"
+  }
+}
+

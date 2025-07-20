@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush-plugin-manifest.schema.json",
+  "plugins": [
+    {
+      "pluginName": "@coze-arch/rush-fix-ts-refers-plugin",
+      "description": "rush plugin for auto fix ts references in ts projects",
+      "commandLineJsonFilePath": "./command-line.json"
+    }
+  ]
+}

@@ -1,0 +1,300 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 180,
+          "y": 13
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "str",
+            "required": false,
+            "defaultValue": "str"
+          },
+          {
+            "type": "integer",
+            "name": "inter",
+            "required": false,
+            "defaultValue": "100"
+          },
+          {
+            "type": "float",
+            "name": "number",
+            "required": false,
+            "defaultValue": "12.4"
+          },
+          {
+            "type": "boolean",
+            "name": "bool",
+            "required": false,
+            "defaultValue": false
+          },
+          {
+            "type": "string",
+            "assistType": 10000,
+            "name": "ts",
+            "required": false,
+            "defaultValue": "2025-07-09 21:43:34"
+          },
+          {
+            "type": "object",
+            "name": "object",
+            "schema": [],
+            "required": false,
+            "defaultValue": "{\"a\":\"1\"}"
+          },
+          {
+            "type": "list",
+            "name": "array",
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "defaultValue": "[\"1\",\"2\"]"
+          },
+          {
+            "type": "string",
+            "assistType": 2,
+            "name": "files",
+            "required": false,
+            "defaultValue": "http://imagex.fanlv.fun/tos-cn-i-1heqlfnr21/e81acc11277f421390770618e24e01ce.jpeg~tplv-1heqlfnr21-image.image?x-wf-file_name=20250317-154742.jpeg"
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "type": "string",
+            "name": "str",
+            "required": false
+          },
+          {
+            "type": "integer",
+            "name": "inter",
+            "required": false
+          },
+          {
+            "type": "float",
+            "name": "number",
+            "required": false
+          },
+          {
+            "type": "boolean",
+            "name": "bool",
+            "required": false
+          },
+          {
+            "type": "string",
+            "assistType": 10000,
+            "name": "ts",
+            "required": false
+          },
+          {
+            "type": "object",
+            "name": "object",
+            "schema": [],
+            "required": false
+          },
+          {
+            "type": "list",
+            "name": "array",
+            "schema": {
+              "type": "string"
+            },
+            "required": false
+          },
+          {
+            "type": "string",
+            "assistType": 2,
+            "name": "files",
+            "required": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 640,
+          "y": 0
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "str",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "str"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            },
+            {
+              "name": "inter",
+              "input": {
+                "type": "integer",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "inter"
+                  },
+                  "rawMeta": {
+                    "type": 2
+                  }
+                }
+              }
+            },
+            {
+              "name": "number",
+              "input": {
+                "type": "float",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "number"
+                  },
+                  "rawMeta": {
+                    "type": 4
+                  }
+                }
+              }
+            },
+            {
+              "name": "bool",
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "bool"
+                  },
+                  "rawMeta": {
+                    "type": 3
+                  }
+                }
+              }
+            },
+            {
+              "name": "ts",
+              "input": {
+                "type": "string",
+                "assistType": 10000,
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "ts"
+                  },
+                  "rawMeta": {
+                    "type": 19
+                  }
+                }
+              }
+            },
+            {
+              "name": "object",
+              "input": {
+                "type": "object",
+                "schema": [],
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "object"
+                  },
+                  "rawMeta": {
+                    "type": 6
+                  }
+                }
+              }
+            },
+            {
+              "name": "array",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "array"
+                  },
+                  "rawMeta": {
+                    "type": 99
+                  }
+                }
+              }
+            },
+            {
+              "name": "files",
+              "input": {
+                "type": "string",
+                "assistType": 2,
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "files"
+                  },
+                  "rawMeta": {
+                    "type": 7
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "900001"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

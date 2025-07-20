@@ -1,0 +1,51 @@
+{
+  "name": "@coze-project-ide/biz-workflow",
+  "version": "0.0.1",
+  "author": "jiangxujin@bytedance.com",
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "main": "./src/index.tsx",
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache --quiet"
+  },
+  "dependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-error": "workspace:*",
+    "@coze-arch/bot-flags": "workspace:*",
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-arch/report-events": "workspace:*",
+    "@coze-common/auth": "workspace:*",
+    "@coze-project-ide/biz-components": "workspace:*",
+    "@coze-project-ide/framework": "workspace:*",
+    "@coze-studio/open-chat": "workspace:*",
+    "@coze-studio/user-store": "workspace:*",
+    "@coze-workflow/base": "workspace:*",
+    "@coze-workflow/components": "workspace:*",
+    "@coze-workflow/playground": "workspace:*",
+    "ahooks": "^3.7.8",
+    "classnames": "^2.3.2",
+    "lodash-es": "^4.17.21",
+    "react-scroll": "^1.9.3",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@rsbuild/core": "1.1.13",
+    "@types/node": "18.18.9",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "react-router-dom": "^6.22.0",
+    "stylelint": "^15.11.0",
+    "typescript": "~5.8.2",
+    "webpack": "~5.91.0"
+  }
+}
+

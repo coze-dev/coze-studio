@@ -1,0 +1,31 @@
+{
+  "extends": "@coze-arch/ts-config/tsconfig.web.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "include": [
+    "stories",
+    "vitest.config.ts",
+    "tailwind.config.ts",
+    "rspack.config.ts",
+    "rspack-config/**/*.ts",
+    "./src/**/*.test.ts",
+    "**/__tests__",
+    "src/test/setup.ts"
+  ],
+  "exclude": ["node_modules", "./dist"],
+
+  "references": [
+    {
+      "path": "./tsconfig.build.json"
+    }
+  ],
+  "compilerOptions": {
+    "rootDir": "./",
+    "types": ["vitest/globals", "node"],
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "outDir": "./dist"
+  }
+}

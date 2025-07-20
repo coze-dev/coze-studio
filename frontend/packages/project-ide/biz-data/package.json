@@ -1,0 +1,73 @@
+{
+  "name": "@coze-project-ide/biz-data",
+  "version": "0.0.1",
+  "description": "knowledge in project ide",
+  "license": "Apache-2.0",
+  "author": "meixuliang.3@bytedance.com",
+  "maintainers": [],
+  "exports": {
+    ".": "./src/index.tsx",
+    "./registry": "./src/registry.tsx"
+  },
+  "main": "src/index.tsx",
+  "typesVersions": {
+    "*": {
+      "registry": [
+        "./src/registry.tsx"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "exit 0",
+    "lint": "eslint ./ --cache",
+    "test": "vitest --run --passWithNoTests",
+    "test:cov": "npm run test -- --coverage"
+  },
+  "dependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
+    "@coze-arch/i18n": "workspace:*",
+    "@coze-data/database-v2": "workspace:*",
+    "@coze-data/knowledge-ide-adapter": "workspace:*",
+    "@coze-data/knowledge-ide-base": "workspace:*",
+    "@coze-data/knowledge-modal-adapter": "workspace:*",
+    "@coze-data/knowledge-modal-base": "workspace:*",
+    "@coze-data/knowledge-resource-processor-adapter": "workspace:*",
+    "@coze-data/knowledge-resource-processor-base": "workspace:*",
+    "@coze-data/knowledge-resource-processor-core": "workspace:*",
+    "@coze-data/knowledge-stores": "workspace:*",
+    "@coze-data/utils": "workspace:*",
+    "@coze-data/variable": "workspace:*",
+    "@coze-project-ide/biz-components": "workspace:*",
+    "@coze-project-ide/framework": "workspace:*",
+    "classnames": "^2.3.2",
+    "lodash-es": "^4.17.21",
+    "qs": "^6.11.2",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@coze-arch/bot-typings": "workspace:*",
+    "@coze-arch/eslint-config": "workspace:*",
+    "@coze-arch/stylelint-config": "workspace:*",
+    "@coze-arch/ts-config": "workspace:*",
+    "@coze-arch/vitest-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@vitest/coverage-v8": "~3.0.5",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
+    "stylelint": "^15.11.0",
+    "typescript": "~5.8.2",
+    "vite-plugin-svgr": "~3.3.0",
+    "vitest": "~3.0.5"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  }
+}
+

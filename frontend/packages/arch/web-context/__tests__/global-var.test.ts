@@ -1,0 +1,45 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+import { globalVars } from '../src/global-var';
+
+describe('global-var', () => {
+  test('should be able to set and get a property', () => {
+    const testValue = 'Hello, World';
+    // 设置一个属性
+    globalVars.TEST_PROP = testValue;
+
+    // 确保我们能获取到相同的属性
+    expect(globalVars.TEST_PROP).toBe(testValue);
+  });
+
+  test('should return undefined for unset property', () => {
+    expect(globalVars.UNSET_PROP).toBeUndefined();
+  });
+
+  test('should allow to overwrite an existing property', () => {
+    const firstValue = 'First Value';
+    const secondValue = 'Second Value';
+
+    // 先设置一个属性
+    globalVars.OVERWRITE_PROP = firstValue;
+    expect(globalVars.OVERWRITE_PROP).toBe(firstValue);
+
+    // 再覆盖这个属性
+    globalVars.OVERWRITE_PROP = secondValue;
+    expect(globalVars.OVERWRITE_PROP).toBe(secondValue);
+  });
+});

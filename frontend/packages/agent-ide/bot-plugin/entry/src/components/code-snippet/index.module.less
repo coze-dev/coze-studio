@@ -1,0 +1,21 @@
+.editor-container {
+  position: relative;
+  height: 100%;
+}
+
+.editor {
+  height: 100%;
+  padding: 0;
+
+  background-color: white;
+  border: 1px solid #1D1C231F;
+  border-radius: 8px;
+
+
+  :global {
+    .monaco-editor .scroll-decoration {
+      box-shadow: unset;
+    }
+
+  }
+}

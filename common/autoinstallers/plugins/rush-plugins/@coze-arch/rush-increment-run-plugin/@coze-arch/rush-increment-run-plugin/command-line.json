@@ -1,0 +1,68 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
+  "commands": [
+    {
+      "name": "increment",
+      "description": "增量运行指定的操作命令，基于变更文件分析影响的项目",
+      "commandKind": "global",
+      "summary": "🚀 增量运行操作命令",
+      "shellCommand": "rush-increment-run increment",
+      "safeForSimultaneousRushProcesses": true
+    }
+  ],
+  "parameters": [
+    {
+      "parameterKind": "string",
+      "description": "变更文件列表，使用逗号分隔",
+      "shortName": "-f",
+      "longName": "--changed-files",
+      "argumentName": "FILES",
+      "associatedCommands": ["increment"],
+      "required": false
+    },
+    {
+      "parameterKind": "string",
+      "description": "变更文件列表所在文件路径",
+      "shortName": "-p",
+      "longName": "--changed-path",
+      "argumentName": "PATH",
+      "associatedCommands": ["increment"],
+      "required": false
+    },
+    {
+      "parameterKind": "string",
+      "description": "需要作对比的目标分支，使用该参数前建议先执行 `git fetch`，确保对比结果的正确性",
+      "shortName": "-b",
+      "longName": "--branch",
+      "argumentName": "BRANCH",
+      "associatedCommands": ["increment"],
+      "required": false
+    },
+    {
+      "parameterKind": "flag",
+      "description": "是否打印详细日志",
+      "shortName": "-v",
+      "longName": "--verbose",
+      "associatedCommands": ["increment"],
+      "required": false
+    },
+    {
+      "parameterKind": "string",
+      "description": "支持的增量操作命令",
+      "shortName": "-a",
+      "longName": "--action",
+      "argumentName": "ACTION",
+      "associatedCommands": ["increment"],
+      "required": true
+    },
+    {
+      "parameterKind": "string",
+      "description": "变更文件列表的分隔符",
+      "shortName": "-s",
+      "longName": "--separator",
+      "argumentName": "SEPARATOR",
+      "associatedCommands": ["increment"],
+      "required": false
+    }
+  ]
+}

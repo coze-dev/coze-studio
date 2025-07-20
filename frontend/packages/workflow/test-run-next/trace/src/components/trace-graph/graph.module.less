@@ -1,0 +1,42 @@
+.trace-graph {
+  display: flex;
+  height: 100%;
+  :global .coz-icon-button-mini {
+    line-height: 0px;
+  }
+}
+
+.graph-part {
+  width: 50%;
+  flex-shrink: 1;
+  flex-grow: 1;
+}
+
+.part-tree {
+  padding: 12px;
+  overflow-y: auto;
+}
+.part-chart {
+  border-left: 1px solid var(--coz-stroke-plus);
+}
+
+.trace-charts {
+  height: 100%;
+}
+.chart-header {
+  height: 48px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--coz-stroke-plus);
+
+  .mode-select {
+    width: 100px;
+  }
+}
+
+.chart-content {
+  height: calc(100% - 48px);
+  padding: 4px 8px;
+}
