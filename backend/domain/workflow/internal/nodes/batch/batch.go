@@ -169,21 +169,16 @@ func (b *Batch) Execute(ctx context.Context, in map[string]any, opts ...nodes.Ne
 			currentKey := string(b.config.BatchNodeKey) + "#" + arrayKey
 
 			// Recursively expand map[string]any elements
-			if m, ok := ele.(map[string]any); ok {
-				var expand func(prefix string, val interface{})
-				expand = func(prefix string, val interface{}) {
-					if nestedMap, ok := val.(map[string]any); ok {
-						for k, v := range nestedMap {
-							expand(prefix+"#"+k, v)
-						}
-					} else {
-						input[prefix] = val
+			var expand func(prefix string, val interface{})
+			expand = func(prefix string, val interface{}) {
+				input[prefix] = val
+				if nestedMap, ok := val.(map[string]any); ok {
+					for k, v := range nestedMap {
+						expand(prefix+"#"+k, v)
 					}
 				}
-				expand(currentKey, m)
-			} else {
-				input[currentKey] = ele
 			}
+			expand(currentKey, ele)
 		}
 
 		return input, items, nil

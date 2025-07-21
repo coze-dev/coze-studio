@@ -3604,6 +3604,55 @@ func TestNodeDebugLoop(t *testing.T) {
 		result = r.getNodeExeHistory(id, "", "wrong_node_id", ptr.Of(workflow.NodeHistoryScene_TestRunInput))
 		assert.Equal(t, "", result.Output)
 	})
+
+	mockey.PatchConvey("test node debug loop", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		id := r.load("loop_selector_variable_assign_text_processor.json")
+		exeID := r.nodeDebug(id, "192046", withNDInput(map[string]string{"input": `["a", "bb", "ccc", "dddd"]`}))
+		e := r.getProcess(id, exeID, withSpecificNodeID("192046"))
+		e.assertSuccess()
+		assert.Equal(t, map[string]any{
+			"converted": []any{
+				"new_a",
+				"new_ccc",
+			},
+			"variable_out": "dddd",
+		}, mustUnmarshalToMap(t, e.output))
+
+		result := r.getNodeExeHistory(id, exeID, "192046", nil)
+		assert.Equal(t, mustUnmarshalToMap(t, e.output), mustUnmarshalToMap(t, result.Output))
+
+		// verify this workflow has not been successfully test ran
+		result = r.getNodeExeHistory(id, "", "100001", ptr.Of(workflow.NodeHistoryScene_TestRunInput))
+		assert.Equal(t, "", result.Output)
+
+		// verify that another node of this workflow is not node debugged
+		result = r.getNodeExeHistory(id, "", "wrong_node_id", ptr.Of(workflow.NodeHistoryScene_TestRunInput))
+		assert.Equal(t, "", result.Output)
+	})
+
+	mockey.PatchConvey("test node debug loop", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		runner := mockcode.NewMockRunner(r.ctrl)
+		runner.EXPECT().Run(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, request *code.RunRequest) (*code.RunResponse, error) {
+			return &code.RunResponse{
+				Result: request.Params,
+			}, nil
+		}).AnyTimes()
+
+		code.SetCodeRunner(runner)
+		id := r.load("loop_with_object_input.json")
+		exeID := r.nodeDebug(id, "122149",
+			withNDInput(map[string]string{"input": `[{"a":"1"},{"a":"2"}]`}))
+		e := r.getProcess(id, exeID, withSpecificNodeID("122149"))
+		e.assertSuccess()
+		assert.Equal(t, `{"output":["1","2"]}`, e.output)
+
+	})
+
 }
 
 func TestCopyWorkflow(t *testing.T) {
