@@ -29,6 +29,7 @@ import (
 
 	"github.com/bytedance/mockey"
 	"github.com/cloudwego/eino/schema"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -746,7 +747,7 @@ func TestCodeAndPluginNodes(t *testing.T) {
 		defer ctrl.Finish()
 		mockCodeRunner := mockcode.NewMockRunner(ctrl)
 		mockey.Mock(code.GetCodeRunner).Return(mockCodeRunner).Build()
-		mockCodeRunner.EXPECT().Run(gomock.Any(), gomock.Any()).Return(&code.RunResponse{
+		mockCodeRunner.EXPECT().Run(gomock.Any(), gomock.Any()).Return(&coderunner.RunResponse{
 			Result: map[string]any{
 				"key0":  "value0",
 				"key1":  []string{"value1", "value2"},

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package coderunner
+package direct
 
 import (
 	"bytes"
@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/code"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	"github.com/coze-dev/coze-studio/backend/pkg/goutil"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
@@ -50,32 +50,32 @@ except Exception as  e:
 
 `
 
-type Runner struct{}
-
-func NewRunner() *Runner {
-	return &Runner{}
+func NewRunner() coderunner.Runner {
+	return &runner{}
 }
 
-func (r *Runner) Run(ctx context.Context, request *code.RunRequest) (*code.RunResponse, error) {
+type runner struct{}
+
+func (r *runner) Run(ctx context.Context, request *coderunner.RunRequest) (*coderunner.RunResponse, error) {
 	var (
 		params = request.Params
 		c      = request.Code
 	)
-	if request.Language == code.Python {
+	if request.Language == coderunner.Python {
 		ret, err := r.pythonCmdRun(ctx, c, params)
 		if err != nil {
 			return nil, err
 		}
-		return &code.RunResponse{
+		return &coderunner.RunResponse{
 			Result: ret,
 		}, nil
 	}
 	return nil, fmt.Errorf("unsupported language: %s", request.Language)
 }
 
-func (r *Runner) pythonCmdRun(_ context.Context, code string, params map[string]any) (map[string]any, error) {
+func (r *runner) pythonCmdRun(_ context.Context, code string, params map[string]any) (map[string]any, error) {
 	bs, _ := sonic.Marshal(params)
-	cmd := exec.Command(goutil.GetPython3Path(), "-c", fmt.Sprintf(pythonCode, code), string(bs)) //ignore_security_alert RCE
+	cmd := exec.Command(goutil.GetPython3Path(), "-c", fmt.Sprintf(pythonCode, code), string(bs)) // ignore_security_alert RCE
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
 	cmd.Stdout = stdout

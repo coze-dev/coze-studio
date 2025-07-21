@@ -48,6 +48,8 @@ RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip git && \
     # Remove build dependencies
     apk del .python-build-deps
 
+RUN curl -fsSL https://deno.land/x/install/install.sh | sh
+
 # Copy the built Go binary from the builder stage
 COPY --from=builder /app/opencoze /app/opencoze
 COPY --from=builder /app/proxy_app /app/proxy

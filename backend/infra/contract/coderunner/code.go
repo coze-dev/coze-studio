@@ -14,18 +14,27 @@
  * limitations under the License.
  */
 
-package code
+package coderunner
 
-import (
-	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
+import "context"
+
+type Language string
+
+const (
+	Python     Language = "Python"
+	JavaScript Language = "JavaScript"
 )
 
-func GetCodeRunner() coderunner.Runner {
-	return runnerImpl
+type RunRequest struct {
+	Code     string
+	Params   map[string]any
+	Language Language
+}
+type RunResponse struct {
+	Result map[string]any
 }
 
-func SetCodeRunner(runner coderunner.Runner) {
-	runnerImpl = runner
+//go:generate mockgen -destination  ../../../internal/mock/domain/workflow/crossdomain/code/code_mock.go  --package code  -source code.go
+type Runner interface {
+	Run(ctx context.Context, request *RunRequest) (*RunResponse, error)
 }
-
-var runnerImpl coderunner.Runner

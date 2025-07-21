@@ -21,10 +21,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/code"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	mockcode "github.com/coze-dev/coze-studio/backend/internal/mock/domain/workflow/crossdomain/code"
@@ -68,7 +68,7 @@ async def main(args:Args)->Output:
 			},
 		}
 
-		response := &code.RunResponse{
+		response := &coderunner.RunResponse{
 			Result: ret,
 		}
 
@@ -76,7 +76,7 @@ async def main(args:Args)->Output:
 		ctx := t.Context()
 		c := &CodeRunner{
 			config: &Config{
-				Language: code.Python,
+				Language: coderunner.Python,
 				Code:     codeTpl,
 				OutputConfig: map[string]*vo.TypeInfo{
 					"key0": {Type: vo.DataTypeInteger},
@@ -138,7 +138,7 @@ async def main(args:Args)->Output:
 			"key3": map[string]interface{}{"key31": "hi", "key32": "hello", "key34": map[string]interface{}{"key341": "123"}},
 		}
 
-		response := &code.RunResponse{
+		response := &coderunner.RunResponse{
 			Result: ret,
 		}
 		mockRunner.EXPECT().Run(gomock.Any(), gomock.Any()).Return(response, nil)
@@ -147,7 +147,7 @@ async def main(args:Args)->Output:
 		c := &CodeRunner{
 			config: &Config{
 				Code:     codeTpl,
-				Language: code.Python,
+				Language: coderunner.Python,
 				OutputConfig: map[string]*vo.TypeInfo{
 					"key0": {Type: vo.DataTypeInteger},
 					"key1": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeString}},
@@ -213,7 +213,7 @@ async def main(args:Args)->Output:
 			"key2": []interface{}{int64(123), "345"},
 			"key3": map[string]interface{}{"key31": "hi", "key32": "hello", "key34": map[string]interface{}{"key341": "123", "key343": []any{"hello", "world"}}},
 		}
-		response := &code.RunResponse{
+		response := &coderunner.RunResponse{
 			Result: ret,
 		}
 		mockRunner.EXPECT().Run(gomock.Any(), gomock.Any()).Return(response, nil)
@@ -221,7 +221,7 @@ async def main(args:Args)->Output:
 		c := &CodeRunner{
 			config: &Config{
 				Code:     codeTpl,
-				Language: code.Python,
+				Language: coderunner.Python,
 				OutputConfig: map[string]*vo.TypeInfo{
 					"key0": {Type: vo.DataTypeInteger},
 					"key1": {Type: vo.DataTypeArray, ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeNumber}},
