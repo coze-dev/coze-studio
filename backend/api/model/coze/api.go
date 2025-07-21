@@ -3,10 +3,12 @@
 package coze
 
 import (
+	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/agentrun"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/conversation"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
 	"github.com/coze-dev/coze-studio/backend/api/model/database"
+	"github.com/coze-dev/coze-studio/backend/api/model/file/upload"
 	"github.com/coze-dev/coze-studio/backend/api/model/flow/dataengine/dataset"
 	"github.com/coze-dev/coze-studio/backend/api/model/flow/marketplace/product_public_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/intelligence"
@@ -19,7 +21,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/passport"
 	"github.com/coze-dev/coze-studio/backend/api/model/permission/openapiauth"
 	"github.com/coze-dev/coze-studio/backend/api/model/resource"
-	"github.com/apache/thrift/lib/go/thrift"
 )
 
 type IntelligenceService interface {
@@ -438,6 +439,32 @@ func NewBotOpenApiServiceClient(c thrift.TClient) *BotOpenApiServiceClient {
 	}
 }
 
+type UploadService interface {
+	upload.UploadService
+}
+
+type UploadServiceClient struct {
+	*upload.UploadServiceClient
+}
+
+func NewUploadServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *UploadServiceClient {
+	return &UploadServiceClient{
+		UploadServiceClient: upload.NewUploadServiceClientFactory(t, f),
+	}
+}
+
+func NewUploadServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *UploadServiceClient {
+	return &UploadServiceClient{
+		UploadServiceClient: upload.NewUploadServiceClientProtocol(t, iprot, oprot),
+	}
+}
+
+func NewUploadServiceClient(c thrift.TClient) *UploadServiceClient {
+	return &UploadServiceClient{
+		UploadServiceClient: upload.NewUploadServiceClient(c),
+	}
+}
+
 type IntelligenceServiceProcessor struct {
 	*intelligence.IntelligenceServiceProcessor
 }
@@ -579,5 +606,14 @@ type BotOpenApiServiceProcessor struct {
 
 func NewBotOpenApiServiceProcessor(handler BotOpenApiService) *BotOpenApiServiceProcessor {
 	self := &BotOpenApiServiceProcessor{bot_open_api.NewBotOpenApiServiceProcessor(handler)}
+	return self
+}
+
+type UploadServiceProcessor struct {
+	*upload.UploadServiceProcessor
+}
+
+func NewUploadServiceProcessor(handler UploadService) *UploadServiceProcessor {
+	self := &UploadServiceProcessor{upload.NewUploadServiceProcessor(handler)}
 	return self
 }

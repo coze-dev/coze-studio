@@ -92,6 +92,6 @@ const (
 )
 
 const (
-	ApplyUploadActionURI = "/api/playground/apply_upload_action"
-	UploadURI            = "/api/playground/upload"
+	ApplyUploadActionURI = "/api/common/upload/apply_upload_action"
+	UploadURI            = "/api/common/upload"
 )

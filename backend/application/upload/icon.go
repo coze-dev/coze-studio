@@ -43,6 +43,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/file/upload"
 	"github.com/coze-dev/coze-studio/backend/api/model/flow/dataengine/dataset"
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/developer_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/ocean/cloud/playground"
@@ -263,9 +264,9 @@ func stringToMap(input string) map[string]string {
 
 	return result
 }
-func (u *UploadService) UploadFileCommon(ctx context.Context, req *developer_api.CommonUploadRequest, fullPath string) (*developer_api.CommonUploadResponse, error) {
-	resp := developer_api.NewCommonUploadResponse()
-	re := regexp.MustCompile(`/api/playground/upload/([^?]+)`)
+func (u *UploadService) UploadFileCommon(ctx context.Context, req *upload.CommonUploadRequest, fullPath string) (*upload.CommonUploadResponse, error) {
+	resp := upload.NewCommonUploadResponse()
+	re := regexp.MustCompile(consts.UploadURI + `/([^?]+)`)
 	match := re.FindStringSubmatch(fullPath)
 	if len(match) == 0 {
 		return nil, errorx.New(errno.ErrUploadInvalidParamCode, errorx.KV("msg", "tos key not found"))
@@ -276,8 +277,8 @@ func (u *UploadService) UploadFileCommon(ctx context.Context, req *developer_api
 		if err != nil {
 			return resp, errorx.New(errno.ErrUploadSystemErrorCode, errorx.KV("msg", err.Error()))
 		}
-		resp.Error = &developer_api.Error{Code: 200}
-		resp.Payload = &developer_api.Payload{UploadID: uploadID}
+		resp.Error = &upload.Error{Code: 200}
+		resp.Payload = &upload.Payload{UploadID: uploadID}
 		return resp, nil
 	}
 	if len(ptr.From(req.PartNumber)) != 0 {
@@ -289,7 +290,7 @@ func (u *UploadService) UploadFileCommon(ctx context.Context, req *developer_api
 		if err != nil {
 			return resp, errorx.New(errno.ErrUploadSystemErrorCode, errorx.KV("msg", err.Error()))
 		}
-		resp.Error = &developer_api.Error{Code: 200}
+		resp.Error = &upload.Error{Code: 200}
 		return resp, nil
 	}
 	if len(ptr.From(req.UploadID)) != 0 {
@@ -302,8 +303,8 @@ func (u *UploadService) UploadFileCommon(ctx context.Context, req *developer_api
 		if err != nil {
 			return resp, errorx.New(errno.ErrUploadSystemErrorCode, errorx.KV("msg", err.Error()))
 		}
-		resp.Error = &developer_api.Error{Code: 200}
-		resp.Payload = &developer_api.Payload{Key: uuid.NewString()}
+		resp.Error = &upload.Error{Code: 200}
+		resp.Payload = &upload.Payload{Key: uuid.NewString()}
 		return resp, nil
 	}
 	var err error
@@ -316,8 +317,8 @@ func (u *UploadService) UploadFileCommon(ctx context.Context, req *developer_api
 	if err != nil {
 		return resp, errorx.New(errno.ErrUploadSystemErrorCode, errorx.KV("msg", err.Error()))
 	}
-	resp.Error = &developer_api.Error{Code: 200}
-	resp.Payload = &developer_api.Payload{Key: uuid.NewString()}
+	resp.Error = &upload.Error{Code: 200}
+	resp.Payload = &upload.Payload{Key: uuid.NewString()}
 	return resp, err
 }
 
@@ -614,23 +615,23 @@ func isSVG(uri string) bool {
 	ext = ext[1:]
 	return ext == "svg"
 }
-func (u *UploadService) ApplyImageUpload(ctx context.Context, req *developer_api.ApplyUploadActionRequest, host string) (*developer_api.ApplyUploadActionResponse, error) {
-	resp := developer_api.ApplyUploadActionResponse{}
+func (u *UploadService) ApplyImageUpload(ctx context.Context, req *upload.ApplyUploadActionRequest, host string) (*upload.ApplyUploadActionResponse, error) {
+	resp := upload.ApplyUploadActionResponse{}
 	storeUri := "tos-cn-i-v4nquku3lp/" + uuid.NewString() + ptr.From(req.FileExtension)
 	sessionKey := uuid.NewString()
 	auth := uuid.NewString()
 	uploadID := uuid.NewString()
 	uploadHost := string(host) + consts.UploadURI
-	resp.ResponseMetadata = &developer_api.ResponseMetadata{
+	resp.ResponseMetadata = &upload.ResponseMetadata{
 		RequestId: uuid.NewString(),
 		Action:    "ApplyImageUpload",
 		Version:   "",
 		Service:   "",
 		Region:    "",
 	}
-	resp.Result = &developer_api.ApplyUploadActionResult{
-		UploadAddress: &developer_api.UploadAddress{
-			StoreInfos: []*developer_api.StoreInfo{
+	resp.Result = &upload.ApplyUploadActionResult{
+		UploadAddress: &upload.UploadAddress{
+			StoreInfos: []*upload.StoreInfo{
 				{
 					StoreUri: storeUri,
 					Auth:     auth,
@@ -640,10 +641,10 @@ func (u *UploadService) ApplyImageUpload(ctx context.Context, req *developer_api
 			UploadHosts: []string{uploadHost},
 			SessionKey:  sessionKey,
 		},
-		InnerUploadAddress: &developer_api.InnerUploadAddress{
-			UploadNodes: []*developer_api.UploadNode{
+		InnerUploadAddress: &upload.InnerUploadAddress{
+			UploadNodes: []*upload.UploadNode{
 				{
-					StoreInfos: []*developer_api.StoreInfo{
+					StoreInfos: []*upload.StoreInfo{
 						{
 							StoreUri: storeUri,
 							Auth:     auth,
@@ -664,8 +665,8 @@ func (u *UploadService) ApplyImageUpload(ctx context.Context, req *developer_api
 	return &resp, nil
 }
 
-func (u *UploadService) CommitImageUpload(ctx context.Context, req *developer_api.ApplyUploadActionRequest, host string) (*developer_api.ApplyUploadActionResponse, error) {
-	resp := developer_api.ApplyUploadActionResponse{}
+func (u *UploadService) CommitImageUpload(ctx context.Context, req *upload.ApplyUploadActionRequest, host string) (*upload.ApplyUploadActionResponse, error) {
+	resp := upload.ApplyUploadActionResponse{}
 	type ssKey struct {
 		SessionKey string `json:"SessionKey"`
 	}
@@ -678,22 +679,22 @@ func (u *UploadService) CommitImageUpload(ctx context.Context, req *developer_ap
 	if err != nil {
 		return &resp, errorx.New(errno.ErrUploadSystemErrorCode, errorx.KV("msg", err.Error()))
 	}
-	resp.ResponseMetadata = &developer_api.ResponseMetadata{
+	resp.ResponseMetadata = &upload.ResponseMetadata{
 		RequestId: uuid.NewString(),
 		Action:    "ApplyImageUpload",
 		Version:   "",
 		Service:   "",
 		Region:    "",
 	}
-	resp.Result = &developer_api.ApplyUploadActionResult{
-		Results: []*developer_api.UploadResult{
+	resp.Result = &upload.ApplyUploadActionResult{
+		Results: []*upload.UploadResult{
 			{
 				Uri:       objInfo.ObjKey,
 				UriStatus: 2000,
 			},
 		},
 		RequestId: ptr.Of(uuid.NewString()),
-		PluginResult: []*developer_api.PluginResult{
+		PluginResult: []*upload.PluginResult{
 			{
 				FileName:    objInfo.ObjKey,
 				SourceUri:   objInfo.ObjKey,

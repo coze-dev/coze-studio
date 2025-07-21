@@ -25,6 +25,15 @@ func Register(r *server.Hertz) {
 			_bot.POST("/upload_file", append(_uploadfileMw(), coze.UploadFile)...)
 		}
 		{
+			_common := _api.Group("/common", _commonMw()...)
+			{
+				_upload := _common.Group("/upload", _uploadMw()...)
+				_upload.GET("/apply_upload_action", append(_applyuploadactionMw(), coze.ApplyUploadAction)...)
+				_upload.POST("/apply_upload_action", append(_applyuploadaction0Mw(), coze.ApplyUploadAction)...)
+				_upload.POST("/*tos_uri", append(_commonuploadMw(), coze.CommonUpload)...)
+			}
+		}
+		{
 			_conversation := _api.Group("/conversation", _conversationMw()...)
 			_conversation.POST("/break_message", append(_breakmessageMw(), coze.BreakMessage)...)
 			_conversation.POST("/chat", append(_agentrunMw(), coze.AgentRun)...)
@@ -252,13 +261,10 @@ func Register(r *server.Hertz) {
 		}
 		{
 			_playground := _api.Group("/playground", _playgroundMw()...)
-			_playground.GET("/apply_upload_action", append(_applyuploadactionMw(), coze.ApplyUploadAction)...)
-			_playground.POST("/apply_upload_action", append(_applyuploadaction0Mw(), coze.ApplyUploadAction)...)
 			_playground.POST("/get_onboarding", append(_getonboardingMw(), coze.GetOnboarding)...)
 			{
-				_upload := _playground.Group("/upload", _uploadMw()...)
-				_upload.POST("/auth_token", append(_getuploadauthtokenMw(), coze.GetUploadAuthToken)...)
-				_upload.POST("/*tos_uri", append(_commonuploadMw(), coze.CommonUpload)...)
+				_upload0 := _playground.Group("/upload", _upload0Mw()...)
+				_upload0.POST("/auth_token", append(_getuploadauthtokenMw(), coze.GetUploadAuthToken)...)
 			}
 		}
 		{
@@ -395,8 +401,8 @@ func Register(r *server.Hertz) {
 				_project_conversation.POST("/update", append(_updateprojectconversationdefMw(), coze.UpdateProjectConversationDef)...)
 			}
 			{
-				_upload0 := _workflow_api.Group("/upload", _upload0Mw()...)
-				_upload0.POST("/auth_token", append(_getworkflowuploadauthtokenMw(), coze.GetWorkflowUploadAuthToken)...)
+				_upload1 := _workflow_api.Group("/upload", _upload1Mw()...)
+				_upload1.POST("/auth_token", append(_getworkflowuploadauthtokenMw(), coze.GetWorkflowUploadAuthToken)...)
 			}
 		}
 	}

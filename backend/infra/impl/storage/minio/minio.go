@@ -49,14 +49,14 @@ type minioClient struct {
 }
 
 func NewStorageImagex(ctx context.Context, endpoint, accessKeyID, secretAccessKey, bucketName string, useSSL bool) (imagex.ImageX, error) {
-	m, err := minoClient(ctx, endpoint, accessKeyID, secretAccessKey, bucketName, useSSL)
+	m, err := getMinioClient(ctx, endpoint, accessKeyID, secretAccessKey, bucketName, useSSL)
 	if err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func minoClient(_ context.Context, endpoint, accessKeyID, secretAccessKey, bucketName string, useSSL bool) (*minioClient, error) {
+func getMinioClient(_ context.Context, endpoint, accessKeyID, secretAccessKey, bucketName string, useSSL bool) (*minioClient, error) {
 	client, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: useSSL,
@@ -81,7 +81,7 @@ func minoClient(_ context.Context, endpoint, accessKeyID, secretAccessKey, bucke
 }
 
 func New(ctx context.Context, endpoint, accessKeyID, secretAccessKey, bucketName string, useSSL bool) (storage.Storage, error) {
-	m, err := minoClient(ctx, endpoint, accessKeyID, secretAccessKey, bucketName, useSSL)
+	m, err := getMinioClient(ctx, endpoint, accessKeyID, secretAccessKey, bucketName, useSSL)
 	if err != nil {
 		return nil, err
 	}

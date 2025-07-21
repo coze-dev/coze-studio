@@ -1495,3 +1495,13 @@ func _applyuploadaction0Mw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _commonMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _upload1Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
