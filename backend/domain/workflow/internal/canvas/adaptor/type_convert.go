@@ -23,8 +23,6 @@ import (
 	"strings"
 
 	einoCompose "github.com/cloudwego/eino/compose"
-
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/code"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/model"
@@ -34,6 +32,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/loop"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/qa"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/selector"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/crypto"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -1075,12 +1074,12 @@ func ConvertRetrievalSearchType(s int64) (knowledge.SearchType, error) {
 	}
 }
 
-func ConvertCodeLanguage(l int64) (code.Language, error) {
+func ConvertCodeLanguage(l int64) (coderunner.Language, error) {
 	switch l {
 	case 5:
-		return code.JavaScript, nil
+		return coderunner.JavaScript, nil
 	case 3:
-		return code.Python, nil
+		return coderunner.Python, nil
 	default:
 		return "", fmt.Errorf("invalid language: %d", l)
 

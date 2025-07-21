@@ -23,9 +23,9 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
 	"golang.org/x/exp/maps"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/code"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
@@ -113,9 +113,9 @@ var pythonThirdPartyWhitelist = map[string]struct{}{
 
 type Config struct {
 	Code         string
-	Language     code.Language
+	Language     coderunner.Language
 	OutputConfig map[string]*vo.TypeInfo
-	Runner       code.Runner
+	Runner       coderunner.Runner
 }
 
 type CodeRunner struct {
@@ -136,7 +136,7 @@ func NewCodeRunner(ctx context.Context, cfg *Config) (*CodeRunner, error) {
 		return nil, errors.New("code is required")
 	}
 
-	if cfg.Language != code.Python {
+	if cfg.Language != coderunner.Python {
 		return nil, errors.New("only support python language")
 	}
 
@@ -194,7 +194,7 @@ func (c *CodeRunner) RunCode(ctx context.Context, input map[string]any) (ret map
 	if c.importError != nil {
 		return nil, vo.WrapError(errno.ErrCodeExecuteFail, c.importError, errorx.KV("detail", c.importError.Error()))
 	}
-	response, err := c.config.Runner.Run(ctx, &code.RunRequest{Code: c.config.Code, Language: c.config.Language, Params: input})
+	response, err := c.config.Runner.Run(ctx, &coderunner.RunRequest{Code: c.config.Code, Language: c.config.Language, Params: input})
 	if err != nil {
 		return nil, vo.WrapError(errno.ErrCodeExecuteFail, err, errorx.KV("detail", err.Error()))
 	}

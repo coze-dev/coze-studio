@@ -282,6 +282,7 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 		ModelManager:       b.infra.ModelMgr,
 		DomainNotifier:     b.eventbus.resourceEventBus,
 		CPStore:            checkpoint.NewRedisStore(b.infra.CacheCli),
+		CodeRunner:         b.infra.CodeRunner,
 	}
 }
 

@@ -60,6 +60,7 @@ deactivate
 PARSER_SCRIPT_ROOT="$BACKEND_DIR/infra/impl/document/parser/builtin"
 PDF_PARSER="$PARSER_SCRIPT_ROOT/parse_pdf.py"
 DOCX_PARSER="$PARSER_SCRIPT_ROOT/parse_docx.py"
+WORKFLOW_SANBOX="$BACKEND_DIR/infra/impl/coderunner/script/sandbox.py"
 
 if [ -f "$PDF_PARSER" ]; then
     cp "$PDF_PARSER" "$BIN_DIR/parse_pdf.py"
@@ -75,7 +76,9 @@ else
     exit 1
 fi
 
-
-
-
-
+if [ -f "$WORKFLOW_SANBOX" ]; then
+    cp "$WORKFLOW_SANBOX" "$BIN_DIR/sandbox.py"
+else
+    echo "❌ $WORKFLOW_SANBOX file not found"
+    exit 1
+fi
