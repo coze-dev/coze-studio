@@ -17,8 +17,12 @@
 package mysql
 
 import (
+	"context"
 	"time"
 
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/tcc"
+	"code.byted.org/gopkg/env"
+	"code.byted.org/gopkg/logs"
 	"code.byted.org/gorm/bytedgorm"
 	"gorm.io/gorm"
 )
@@ -31,24 +35,30 @@ type MySQLConfig struct {
 	MaxOpenConns int    `json:"max_open_conns"` // 最大打开连接数
 }
 
-func New() (*gorm.DB, error) {
-	c := GetDBConfig()
+func New(ctx context.Context) (*gorm.DB, error) {
+	c, err := getDBConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
 	basicConfig := bytedgorm.MySQL(c.PSM, c.DBName).With(func(conf *bytedgorm.DBConfig) {
 		// 通过 conf 选项可修改数据库连接的配置信息
 		conf.ReadTimeout = time.Duration(c.ReadTimeOut) * time.Second
-		conf.Cluster = "maliva"
+		// 开发机中指定机房
+		if !env.InTCE() {
+			conf.Cluster = "maliva"
+		}
 	})
 	return gorm.Open(basicConfig,
 		bytedgorm.ConnPool{MaxIdleConns: c.MaxIdleConns, MaxOpenConns: c.MaxOpenConns})
 }
 
-func GetDBConfig() *MySQLConfig {
-	// TODO: 从 TCC 读取配置
-	return &MySQLConfig{
-		PSM:          "toutiao.mysql.ecom_workflow_platform",
-		DBName:       "ecom_workflow_platform",
-		ReadTimeOut:  30,
-		MaxIdleConns: 50,
-		MaxOpenConns: 100,
+var mysqlConfigKey = "mysql_config"
+
+func getDBConfig(ctx context.Context) (*MySQLConfig, error) {
+	config, err := tcc.GetConfigByKey[MySQLConfig](ctx, tcc.Client(), mysqlConfigKey)
+	if err != nil {
+		return nil, err
 	}
+	logs.CtxInfo(ctx, "[GetDBConfig] get mysql config success, config:%v", config)
+	return &config, nil
 }

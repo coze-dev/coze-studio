@@ -89,6 +89,10 @@ require (
 	code.byted.org/aiops/apm_vendor_byted v0.0.27 // indirect
 	code.byted.org/aiops/metrics_codec v0.0.24 // indirect
 	code.byted.org/aiops/monitoring-common-go v0.0.5 // indirect
+	code.byted.org/bcc/bcc-go-client v0.1.50 // indirect
+	code.byted.org/bcc/conf_engine v0.0.0-20230510030051-32fb55f74cf1 // indirect
+	code.byted.org/bcc/pull_json_model v1.0.21 // indirect
+	code.byted.org/bcc/tools v0.0.20 // indirect
 	code.byted.org/bytedtrace-contrib/kitex-go v1.1.36 // indirect
 	code.byted.org/bytedtrace/bytedtrace-client-go v1.2.2 // indirect
 	code.byted.org/bytedtrace/bytedtrace-common/go v0.0.13 // indirect
@@ -117,6 +121,7 @@ require (
 	code.byted.org/gopkg/net2 v1.5.0 // indirect
 	code.byted.org/gopkg/stats v1.2.7 // indirect
 	code.byted.org/gopkg/tccclient v1.4.15 // indirect
+	code.byted.org/gopkg/tccclient/v3 v3.0.3 // indirect
 	code.byted.org/gopkg/thrift v1.12.0 // indirect
 	code.byted.org/inf/authcenter v1.5.0 // indirect
 	code.byted.org/inf/infsecc v1.0.3 // indirect
@@ -131,7 +136,7 @@ require (
 	code.byted.org/log_market/tracelog v0.1.4 // indirect
 	code.byted.org/log_market/ttlogagent_gosdk v0.0.7 // indirect
 	code.byted.org/log_market/ttlogagent_gosdk/v4 v4.0.54 // indirect
-	code.byted.org/middleware/fic_client v0.2.2 // indirect
+	code.byted.org/middleware/fic_client v0.2.8 // indirect
 	code.byted.org/middleware/gocaller v0.0.6 // indirect
 	code.byted.org/rocketmq/rocketmq-go-proxy-mqmesh-interceptor v1.0.18 // indirect
 	code.byted.org/security/go-spiffe-v2 v1.0.6 // indirect
@@ -141,11 +146,13 @@ require (
 	code.byted.org/service_mesh/mesh_transport v1.0.1 // indirect
 	code.byted.org/service_mesh/shmipc v0.2.16 // indirect
 	code.byted.org/trace/trace-client-go v1.3.6 // indirect
+	code.byted.org/ttarch/byteconf-cel-go v0.0.3 // indirect
 	github.com/3vilive/sizeof v0.0.0-20220507072046-f0cfbbd2c289 // indirect
 	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect
 	github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302 // indirect
 	github.com/alicebob/miniredis v2.5.0+incompatible // indirect
+	github.com/antonmedv/expr v1.13.0 // indirect
 	github.com/caarlos0/env/v6 v6.10.1 // indirect
 	github.com/choleraehyq/pid v0.0.20 // indirect
 	github.com/cloudwego/frugal v0.2.0 // indirect
@@ -166,6 +173,7 @@ require (
 	github.com/google/s2a-go v0.1.8 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
+	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hbollon/go-edlib v1.6.0 // indirect
 	github.com/hertz-contrib/http2 v0.1.1 // indirect
@@ -187,6 +195,8 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.7.1 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
+	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
+	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/yuin/gopher-lua v1.1.1 // indirect
 	github.com/zeebo/errs v1.3.0 // indirect
 	go.opencensus.io v0.24.0 // indirect

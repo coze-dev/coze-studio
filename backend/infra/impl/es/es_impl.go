@@ -17,7 +17,11 @@
 package es
 
 import (
+	"context"
+
 	"code.byted.org/data_edc/workflow_engine_next/infra/contract/es"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/tcc"
+	"code.byted.org/gopkg/logs"
 )
 
 type (
@@ -31,10 +35,31 @@ type (
 	Request         = es.Request
 )
 
-func New() (Client, error) {
-	cli, err := newByteES()
+type ESConfig struct {
+	PSMWithCluster string `json:"psm_with_cluster"`
+	Prefix         string `json:"prefix"`
+}
+
+func New(ctx context.Context) (Client, error) {
+	config, err := getESConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	cli, err := newByteES(config)
 	if err != nil {
 		return nil, err
 	}
 	return cli, nil
+}
+
+var esConfigKey = "es_config"
+
+func getESConfig(ctx context.Context) (*ESConfig, error) {
+	config, err := tcc.GetConfigByKey[ESConfig](ctx, tcc.Client(), esConfigKey)
+	if err != nil {
+		return nil, err
+	}
+	logs.CtxInfo(ctx, "[getESConfig] get es config success, config:%v", config)
+	return &config, nil
 }

@@ -134,7 +134,7 @@ func (suite *KnowledgeTestSuite) SetupSuite() {
 	//	panic(err)
 	// }
 
-	knowledgeES, err := es.New()
+	knowledgeES, err := es.New(context.Background())
 	if err != nil {
 		panic(err)
 	}

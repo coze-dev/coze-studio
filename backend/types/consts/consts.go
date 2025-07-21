@@ -19,10 +19,7 @@ package consts
 import "time"
 
 const (
-	WorkflowEnginePSM = "data.ecom.workflow_engine_next"
-	I18nMQCluster     = "ecom_global"
-
-	ElasticSearchPSM = "byte.es.ecom_ai_eng.service.my"
+	I18nMQCluster = "ecom_global"
 
 	MySQLDsn           = "MYSQL_DSN"
 	RedisAddr          = "REDIS_ADDR"

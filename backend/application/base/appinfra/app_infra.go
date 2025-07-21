@@ -28,6 +28,7 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/idgen"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/mysql"
 	"code.byted.org/data_edc/workflow_engine_next/infra/impl/storage"
+	"code.byted.org/data_edc/workflow_engine_next/infra/impl/tcc"
 )
 
 type AppDependencies struct {
@@ -44,13 +45,16 @@ type AppDependencies struct {
 func Init(ctx context.Context) (*AppDependencies, error) {
 	deps := &AppDependencies{}
 	var err error
-
-	deps.DB, err = mysql.New()
+	err = tcc.InitTCCClient()
+	if err != nil {
+		return nil, err
+	}
+	deps.DB, err = mysql.New(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	deps.CacheCli, err = redis.New()
+	deps.CacheCli, err = redis.New(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +64,7 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		return nil, err
 	}
 
-	deps.ESClient, err = es.New()
+	deps.ESClient, err = es.New(ctx)
 	if err != nil {
 		return nil, err
 	}

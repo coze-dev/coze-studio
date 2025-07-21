@@ -26,7 +26,6 @@ import (
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/conv"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/lang/ptr"
 	"code.byted.org/data_edc/workflow_engine_next/pkg/sonic"
-	"code.byted.org/data_edc/workflow_engine_next/types/consts"
 	"code.byted.org/gopkg/logs"
 )
 
@@ -35,16 +34,16 @@ type byteESClient struct {
 	writeClient *elastic.Client
 }
 
-func newByteES() (Client, error) {
+func newByteES(config *ESConfig) (Client, error) {
 	ctx := context.Background()
-	readClient, err := elastic.NewClient(elastic.SetConsulSniff(consts.ElasticSearchPSM, "client"), elastic.SetCustomMetricsPrefix(consts.WorkflowEnginePSM+".read"))
+	readClient, err := elastic.NewClient(elastic.SetConsulSniff(config.PSMWithCluster, "client"), elastic.SetCustomMetricsPrefix(config.Prefix+".read"))
 	logs.CtxInfo(ctx, "[newByteES] new read client: %+v", readClient)
 	if err != nil {
 		logs.CtxError(ctx, "[newByteES] new read client failed, err: %v", err)
 		return nil, err
 	}
 
-	writeClient, err := elastic.NewClient(elastic.SetConsulSniff(consts.ElasticSearchPSM, "data"), elastic.SetCustomMetricsPrefix(consts.WorkflowEnginePSM+".write"))
+	writeClient, err := elastic.NewClient(elastic.SetConsulSniff(config.PSMWithCluster, "data"), elastic.SetCustomMetricsPrefix(config.Prefix+".write"))
 
 	return &byteESClient{
 		readClient:  readClient,
