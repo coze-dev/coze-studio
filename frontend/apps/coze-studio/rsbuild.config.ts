@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import path from 'path';
 
 import { defineConfig } from '@coze-arch/rsbuild-config';
@@ -115,6 +115,13 @@ const mergedConfig = defineConfig({
      */
     decorators: {
       version: 'legacy',
+    },
+  },
+  performance: {
+    chunkSplit: {
+      strategy: 'split-by-size',
+      minSize: 3_000_000,
+      maxSize: 6_000_000,
     },
   },
 });
