@@ -1,0 +1,254 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 180,
+          "y": 26.000000000000007
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "list",
+            "name": "objs",
+            "schema": {
+              "type": "object",
+              "schema": []
+            },
+            "required": true
+          }
+        ],
+        "trigger_parameters": [
+          {
+            "type": "list",
+            "name": "objs",
+            "schema": {
+              "type": "object",
+              "schema": []
+            },
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 1300,
+          "y": 13.000000000000007
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "122149",
+                    "name": "output"
+                  },
+                  "rawMeta": {
+                    "type": 99
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "122149",
+      "type": "21",
+      "meta": {
+        "position": {
+          "x": 740,
+          "y": 0
+        },
+        "canvasPosition": {
+          "x": 560,
+          "y": 317.30000000000007
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "循环",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Loop-v2.jpg",
+          "description": "用于通过设定循环次数和逻辑，重复执行一系列任务",
+          "mainColor": "#00B2B2",
+          "subTitle": "循环"
+        },
+        "inputs": {
+          "loopType": "array",
+          "loopCount": {
+            "type": "integer",
+            "value": {
+              "type": "literal",
+              "content": "10"
+            }
+          },
+          "variableParameters": [],
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "object",
+                  "schema": []
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "objs"
+                  },
+                  "rawMeta": {
+                    "type": 103
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "input": {
+              "type": "list",
+              "schema": {
+                "type": "string"
+              },
+              "value": {
+                "type": "ref",
+                "content": {
+                  "source": "block-output",
+                  "blockID": "116706",
+                  "name": "input.a"
+                },
+                "rawMeta": {
+                  "type": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "blocks": [
+        {
+          "id": "116706",
+          "type": "5",
+          "meta": {
+            "position": {
+              "x": 180,
+              "y": 0
+            }
+          },
+          "data": {
+            "nodeMeta": {
+              "title": "代码",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
+              "description": "编写代码，处理输入变量来生成返回值",
+              "mainColor": "#00B2B2",
+              "subTitle": "代码"
+            },
+            "inputs": {
+              "inputParameters": [
+                {
+                  "name": "input",
+                  "input": {
+                    "type": "object",
+                    "schema": [],
+                    "value": {
+                      "type": "ref",
+                      "content": {
+                        "source": "block-output",
+                        "blockID": "122149",
+                        "name": "input"
+                      },
+                      "rawMeta": {
+                        "type": 6
+                      }
+                    }
+                  }
+                }
+              ],
+              "code": "# 在这里，您可以通过 'args'  获取节点中的输入变量，并通过 'ret' 输出结果\n# 'args' 已经被正确地注入到环境中\n# 下面是一个示例，首先获取节点的全部输入参数params，其次获取其中参数名为'input'的值：\n# params = args.params; \n# input = params['input'];\n# 下面是一个示例，输出一个包含多种数据类型的 'ret' 对象：\n# ret: Output =  { \"name\": '小明', \"hobbies\": [\"看书\", \"旅游\"] };\nimport json\nasync def main(args: Args) -> Output:\n    params = args.params\n    return params",
+              "language": 3,
+              "settingOnError": {
+                "processType": 1,
+                "timeoutMs": 60000,
+                "retryTimes": 0
+              }
+            },
+            "outputs": [
+              {
+                "type": "object",
+                "name": "input",
+                "schema": [
+                  {
+                    "type": "string",
+                    "name": "a"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "edges": [
+        {
+          "sourceNodeID": "122149",
+          "targetNodeID": "116706",
+          "sourcePortID": "loop-function-inline-output"
+        },
+        {
+          "sourceNodeID": "116706",
+          "targetNodeID": "122149",
+          "targetPortID": "loop-function-inline-input"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "122149"
+    },
+    {
+      "sourceNodeID": "122149",
+      "targetNodeID": "900001",
+      "sourcePortID": "loop-output"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}
