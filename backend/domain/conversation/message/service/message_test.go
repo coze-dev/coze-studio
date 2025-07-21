@@ -19,6 +19,7 @@ package message
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
@@ -74,8 +75,10 @@ func TestCreateMessage(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	idGen := mock.NewMockIDGenerator(ctrl)
-	idGen.EXPECT().GenID(gomock.Any()).Return(int64(10), nil).Times(1)
-
+	idGen.EXPECT().GenID(gomock.Any()).DoAndReturn(func(_ context.Context) (int64, error) {
+		newID := time.Now().UnixNano()
+		return newID, nil
+	}).AnyTimes()
 	mockDBGen := orm.NewMockDB()
 	mockDBGen.AddTable(&model.Message{})
 	mockDB, err := mockDBGen.DB()
@@ -92,10 +95,12 @@ func TestCreateMessage(t *testing.T) {
 	imageInput := &message.FileData{
 		Url:  "https://xxxxx.xxxx/image",
 		Name: "test_img",
+		URI:  "",
 	}
 	fileInput := &message.FileData{
 		Url:  "https://xxxxx.xxxx/file",
 		Name: "test_file",
+		URI:  "",
 	}
 	content := []*message.InputMetaData{
 		{

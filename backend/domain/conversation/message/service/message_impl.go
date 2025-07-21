@@ -39,13 +39,14 @@ func NewService(c *Components) Message {
 	}
 }
 
+func (m *messageImpl) PreCreate(ctx context.Context, msg *entity.Message) (*entity.Message, error) {
+	// create message
+	return m.MessageRepo.PreCreate(ctx, msg)
+}
+
 func (m *messageImpl) Create(ctx context.Context, msg *entity.Message) (*entity.Message, error) {
 	// create message
-	msg, err := m.MessageRepo.Create(ctx, msg)
-	if err != nil {
-		return nil, err
-	}
-	return msg, nil
+	return m.MessageRepo.Create(ctx, msg)
 }
 
 func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.ListResult, error) {
@@ -82,12 +83,7 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.L
 }
 
 func (m *messageImpl) GetByRunIDs(ctx context.Context, conversationID int64, runIDs []int64) ([]*entity.Message, error) {
-	messageList, err := m.MessageRepo.GetByRunIDs(ctx, runIDs, "ASC")
-	if err != nil {
-		return nil, err
-	}
-
-	return messageList, nil
+	return m.MessageRepo.GetByRunIDs(ctx, runIDs, "ASC")
 }
 
 func (m *messageImpl) Edit(ctx context.Context, req *entity.Message) (*entity.Message, error) {
@@ -100,21 +96,11 @@ func (m *messageImpl) Edit(ctx context.Context, req *entity.Message) (*entity.Me
 }
 
 func (m *messageImpl) Delete(ctx context.Context, req *entity.DeleteMeta) error {
-	err := m.MessageRepo.Delete(ctx, req.MessageIDs, req.RunIDs)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return m.MessageRepo.Delete(ctx, req.MessageIDs, req.RunIDs)
 }
 
 func (m *messageImpl) GetByID(ctx context.Context, id int64) (*entity.Message, error) {
-	msg, err := m.MessageRepo.GetByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return msg, nil
+	return m.MessageRepo.GetByID(ctx, id)
 }
 
 func (m *messageImpl) Broken(ctx context.Context, req *entity.BrokenMeta) error {

@@ -94,7 +94,7 @@ func (r *replyChunkCallback) OnError(ctx context.Context, info *callbacks.RunInf
 			r.sw.Send(interruptEvent, nil)
 
 		} else {
-			logs.CtxErrorf(ctx, "node execute failed, component=%v, name=%v, err=%w",
+			logs.CtxErrorf(ctx, "node execute failed, component=%v, name=%v, err=%v",
 				info.Component, info.Name, err)
 			var customErr errorx.StatusError
 			errMsg := "Internal server error"

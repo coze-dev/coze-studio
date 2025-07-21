@@ -32,6 +32,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossmodelmgr"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossworkflow"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
@@ -119,47 +120,90 @@ func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
 func (r *AgentRunner) PreHandlerReq(ctx context.Context, req *AgentRequest) *AgentRequest {
 	req.Input = r.preHandlerInput(req.Input)
 	req.History = r.preHandlerHistory(req.History)
+	logs.CtxInfof(ctx, "[AgentRunner] PreHandlerReq, req: %v", conv.DebugJsonToStr(req))
 
 	return req
 }
 
 func (r *AgentRunner) preHandlerInput(input *schema.Message) *schema.Message {
 	var multiContent []schema.ChatMessagePart
+
+	if len(input.MultiContent) == 0 {
+		return input
+	}
+
+	unSupportMultiPart := make([]schema.ChatMessagePart, 0, len(input.MultiContent))
+
 	for _, v := range input.MultiContent {
 		switch v.Type {
 		case schema.ChatMessagePartTypeImageURL:
-			if !slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalImage) {
-				input.Content = input.Content + ": " + v.ImageURL.URL
+			if !r.isSupportImage() {
+				unSupportMultiPart = append(unSupportMultiPart, v)
 			} else {
 				multiContent = append(multiContent, v)
 			}
 		case schema.ChatMessagePartTypeFileURL:
-			if !slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalFile) {
-				input.Content = input.Content + ": " + v.FileURL.URL
+			if !r.isSupportFile() {
+				unSupportMultiPart = append(unSupportMultiPart, v)
 			} else {
 				multiContent = append(multiContent, v)
 			}
 		case schema.ChatMessagePartTypeAudioURL:
-			if !slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalAudio) {
-				input.Content = input.Content + ": " + v.FileURL.URL
+			if !r.isSupportAudio() {
+				unSupportMultiPart = append(unSupportMultiPart, v)
 			} else {
 				multiContent = append(multiContent, v)
 			}
 		case schema.ChatMessagePartTypeVideoURL:
-			if !slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalVideo) {
-				input.Content = input.Content + ": " + v.FileURL.URL
+			if !r.isSupportVideo() {
+				unSupportMultiPart = append(unSupportMultiPart, v)
 			} else {
 				multiContent = append(multiContent, v)
 			}
 		case schema.ChatMessagePartTypeText:
-			break
-
 		default:
 			multiContent = append(multiContent, v)
 		}
 	}
+
+	for _, v := range input.MultiContent {
+		if v.Type != schema.ChatMessagePartTypeText {
+			continue
+		}
+
+		if r.isSupportMultiContent() {
+			if len(multiContent) > 0 {
+				v.Text = concatContentString(v.Text, unSupportMultiPart)
+				multiContent = append(multiContent, v)
+			} else {
+				input.Content = concatContentString(v.Text, unSupportMultiPart)
+			}
+		} else {
+			input.Content = concatContentString(v.Text, unSupportMultiPart)
+		}
+
+	}
 	input.MultiContent = multiContent
 	return input
+}
+func concatContentString(textContent string, unSupportTypeURL []schema.ChatMessagePart) string {
+	if len(unSupportTypeURL) == 0 {
+		return textContent
+	}
+	for _, v := range unSupportTypeURL {
+		switch v.Type {
+		case schema.ChatMessagePartTypeImageURL:
+			textContent += "  this is a image:" + v.ImageURL.URL
+		case schema.ChatMessagePartTypeFileURL:
+			textContent += "  this is a file:" + v.FileURL.URL
+		case schema.ChatMessagePartTypeAudioURL:
+			textContent += "  this is a audio:" + v.AudioURL.URL
+		case schema.ChatMessagePartTypeVideoURL:
+			textContent += "  this is a video:" + v.VideoURL.URL
+		default:
+		}
+	}
+	return textContent
 }
 
 func (r *AgentRunner) preHandlerHistory(history []*schema.Message) []*schema.Message {
@@ -171,4 +215,20 @@ func (r *AgentRunner) preHandlerHistory(history []*schema.Message) []*schema.Mes
 		hm = append(hm, msg)
 	}
 	return hm
+}
+
+func (r *AgentRunner) isSupportMultiContent() bool {
+	return len(r.modelInfo.Meta.Capability.InputModal) > 1
+}
+func (r *AgentRunner) isSupportImage() bool {
+	return slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalImage)
+}
+func (r *AgentRunner) isSupportFile() bool {
+	return slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalFile)
+}
+func (r *AgentRunner) isSupportAudio() bool {
+	return slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalAudio)
+}
+func (r *AgentRunner) isSupportVideo() bool {
+	return slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalVideo)
 }

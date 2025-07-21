@@ -49,3 +49,7 @@ func (c *impl) Create(ctx context.Context, msg *model.Message) (*model.Message, 
 func (c *impl) Edit(ctx context.Context, msg *model.Message) (*model.Message, error) {
 	return c.DomainSVC.Edit(ctx, msg)
 }
+
+func (c *impl) PreCreate(ctx context.Context, msg *model.Message) (*model.Message, error) {
+	return c.DomainSVC.PreCreate(ctx, msg)
+}

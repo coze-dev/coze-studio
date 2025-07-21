@@ -473,6 +473,10 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 		}
 	}()
 
+	reasoningContent := bytes.NewBuffer([]byte{})
+	var createPreMsg = true
+	var preFinalAnswerMsg *msgEntity.Message
+
 	for {
 		chunk, ok := <-mainChan
 		if !ok || chunk == nil {
@@ -505,11 +509,7 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 			}
 		case message.MessageTypeAnswer:
 			fullContent := bytes.NewBuffer([]byte{})
-			reasoningContent := bytes.NewBuffer([]byte{})
-
-			var preMsg *msgEntity.Message
 			var usage *msgEntity.UsageExt
-			var createPreMsg = true
 			var isToolCalls = false
 
 			for {
@@ -518,14 +518,15 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 				if receErr != nil {
 					if errors.Is(receErr, io.EOF) {
 
-						if isToolCalls && reasoningContent.String() == "" {
+						if isToolCalls {
 							break
 						}
 
-						finalAnswer := c.buildSendMsg(ctx, preMsg, false, rtDependence)
+						finalAnswer := c.buildSendMsg(ctx, preFinalAnswerMsg, false, rtDependence)
+
 						finalAnswer.Content = fullContent.String()
 						finalAnswer.ReasoningContent = ptr.Of(reasoningContent.String())
-						hfErr := c.handlerFinalAnswer(ctx, finalAnswer, sw, usage, rtDependence)
+						hfErr := c.handlerFinalAnswer(ctx, finalAnswer, sw, usage, rtDependence, preFinalAnswerMsg)
 						if hfErr != nil {
 							err = hfErr
 							return
@@ -553,14 +554,14 @@ func (c *runImpl) push(ctx context.Context, mainChan chan *entity.AgentRespEvent
 					continue
 				}
 				if createPreMsg && (len(streamMsg.ReasoningContent) > 0 || len(streamMsg.Content) > 0) {
-					preMsg, err = c.handlerPreAnswer(ctx, rtDependence)
+					preFinalAnswerMsg, err = c.PreCreateFinalAnswer(ctx, rtDependence)
 					if err != nil {
 						return
 					}
 					createPreMsg = false
 				}
 
-				sendMsg := c.buildSendMsg(ctx, preMsg, false, rtDependence)
+				sendMsg := c.buildSendMsg(ctx, preFinalAnswerMsg, false, rtDependence)
 				reasoningContent.WriteString(streamMsg.ReasoningContent)
 				sendMsg.ReasoningContent = ptr.Of(streamMsg.ReasoningContent)
 
@@ -590,7 +591,7 @@ func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespE
 	if err != nil {
 		return err
 	}
-	preMsg, err := c.handlerPreAnswer(ctx, rtDependence)
+	preMsg, err := c.PreCreateFinalAnswer(ctx, rtDependence)
 	if err != nil {
 		return err
 	}
@@ -612,7 +613,7 @@ func (c *runImpl) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespE
 	c.runEvent.SendMsgEvent(entity.RunEventMessageDelta, deltaAnswer, sw)
 	finalAnswer := deepcopy.Copy(deltaAnswer).(*entity.ChunkMessageItem)
 
-	err = c.handlerFinalAnswer(ctx, finalAnswer, sw, nil, rtDependence)
+	err = c.handlerFinalAnswer(ctx, finalAnswer, sw, nil, rtDependence, preMsg)
 	if err != nil {
 		return err
 	}
@@ -718,7 +719,7 @@ func (c *runImpl) handlerErr(_ context.Context, err error, sw *schema.StreamWrit
 	})
 }
 
-func (c *runImpl) handlerPreAnswer(ctx context.Context, rtDependence *runtimeDependence) (*msgEntity.Message, error) {
+func (c *runImpl) PreCreateFinalAnswer(ctx context.Context, rtDependence *runtimeDependence) (*msgEntity.Message, error) {
 	arm := rtDependence.runMeta
 	msgMeta := &msgEntity.Message{
 		ConversationID: arm.ConversationID,
@@ -747,10 +748,10 @@ func (c *runImpl) handlerPreAnswer(ctx context.Context, rtDependence *runtimeDep
 	}
 
 	msgMeta.Ext = arm.Ext
-	return crossmessage.DefaultSVC().Create(ctx, msgMeta)
+	return crossmessage.DefaultSVC().PreCreate(ctx, msgMeta)
 }
 
-func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt, rtDependence *runtimeDependence) error {
+func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessageItem, sw *schema.StreamWriter[*entity.AgentRunResponse], usage *msgEntity.UsageExt, rtDependence *runtimeDependence, preFinalAnswerMsg *msgEntity.Message) error {
 
 	if len(msg.Content) == 0 && len(ptr.From(msg.ReasoningContent)) == 0 {
 		return nil
@@ -786,15 +787,12 @@ func (c *runImpl) handlerFinalAnswer(ctx context.Context, msg *entity.ChunkMessa
 	if err != nil {
 		return err
 	}
-	editMsg := &msgEntity.Message{
-		ID:               msg.ID,
-		Content:          msg.Content,
-		ContentType:      msg.ContentType,
-		ModelContent:     string(mc),
-		ReasoningContent: ptr.From(msg.ReasoningContent),
-		Ext:              msg.Ext,
-	}
-	_, err = crossmessage.DefaultSVC().Edit(ctx, editMsg)
+	preFinalAnswerMsg.Content = msg.Content
+	preFinalAnswerMsg.ReasoningContent = ptr.From(msg.ReasoningContent)
+	preFinalAnswerMsg.Ext = msg.Ext
+	preFinalAnswerMsg.ContentType = msg.ContentType
+	preFinalAnswerMsg.ModelContent = string(mc)
+	_, err = crossmessage.DefaultSVC().Create(ctx, preFinalAnswerMsg)
 	if err != nil {
 		return err
 	}

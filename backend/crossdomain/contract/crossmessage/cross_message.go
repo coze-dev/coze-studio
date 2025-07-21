@@ -24,6 +24,7 @@ import (
 
 type Message interface {
 	GetByRunIDs(ctx context.Context, conversationID int64, runIDs []int64) ([]*message.Message, error)
+	PreCreate(ctx context.Context, msg *message.Message) (*message.Message, error)
 	Create(ctx context.Context, msg *message.Message) (*message.Message, error)
 	Edit(ctx context.Context, msg *message.Message) (*message.Message, error)
 }

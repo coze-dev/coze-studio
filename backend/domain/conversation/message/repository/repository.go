@@ -32,6 +32,7 @@ func NewMessageRepo(db *gorm.DB, idGen idgen.IDGenerator) MessageRepo {
 }
 
 type MessageRepo interface {
+	PreCreate(ctx context.Context, msg *entity.Message) (*entity.Message, error)
 	Create(ctx context.Context, msg *entity.Message) (*entity.Message, error)
 	List(ctx context.Context, conversationID int64, limit int, cursor int64,
 		direction entity.ScrollPageDirection, messageType *message.MessageType) ([]*entity.Message, bool, error)

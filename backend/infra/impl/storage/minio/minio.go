@@ -201,7 +201,7 @@ func (m *minioClient) GetObjectUrl(ctx context.Context, objectKey string, opts .
 	}
 
 	if option.Expire == 0 {
-		option.Expire = 3600 * 24
+		option.Expire = 3600 * 24 * 7
 	}
 
 	reqParams := make(url.Values)

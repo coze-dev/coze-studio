@@ -418,11 +418,12 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 
 			resourceUrl, err := c.getUrlByUri(ctx, item.Image.Key)
 			if err != nil {
+				logs.CtxErrorf(ctx, "failed to unescape resource url, err is %v", err)
 				continue
 			}
 
-			if err != nil {
-				logs.CtxErrorf(ctx, "failed to unescape resource url, err is %v", err)
+			if resourceUrl == "" {
+				logs.CtxErrorf(ctx, "failed to unescape resource url, uri is %v", item.Image.Key)
 				continue
 			}
 
@@ -434,6 +435,7 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 				FileData: []*crossDomainMessage.FileData{
 					{
 						Url: resourceUrl,
+						URI: item.Image.Key,
 					},
 				},
 			})
@@ -451,6 +453,7 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 				FileData: []*crossDomainMessage.FileData{
 					{
 						Url: resourceUrl,
+						URI: item.File.FileKey,
 					},
 				},
 			})

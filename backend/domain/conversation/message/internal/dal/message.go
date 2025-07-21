@@ -48,6 +48,14 @@ func NewMessageDAO(db *gorm.DB, idgen idgen.IDGenerator) *MessageDAO {
 	}
 }
 
+func (dao *MessageDAO) PreCreate(ctx context.Context, msg *entity.Message) (*entity.Message, error) {
+	poData, err := dao.messageDO2PO(ctx, msg)
+	if err != nil {
+		return nil, err
+	}
+	return dao.messagePO2DO(poData), nil
+}
+
 func (dao *MessageDAO) Create(ctx context.Context, msg *entity.Message) (*entity.Message, error) {
 	poData, err := dao.messageDO2PO(ctx, msg)
 	if err != nil {
@@ -205,33 +213,44 @@ func (dao *MessageDAO) Delete(ctx context.Context, msgIDs []int64, runIDs []int6
 }
 
 func (dao *MessageDAO) messageDO2PO(ctx context.Context, msgDo *entity.Message) (*model.Message, error) {
-	id, gErr := dao.idgen.GenID(ctx)
-	if gErr != nil {
-		return nil, gErr
+	var id int64
+	if msgDo.ID > 0 {
+		id = msgDo.ID
+	} else {
+		genID, gErr := dao.idgen.GenID(ctx)
+		if gErr != nil {
+			return nil, gErr
+		}
+		id = genID
 	}
 	msgPO := &model.Message{
-		ID:             id,
-		ConversationID: msgDo.ConversationID,
-		RunID:          msgDo.RunID,
-		AgentID:        msgDo.AgentID,
-		SectionID:      msgDo.SectionID,
-		UserID:         msgDo.UserID,
-		Role:           string(msgDo.Role),
-		ContentType:    string(msgDo.ContentType),
-		MessageType:    string(msgDo.MessageType),
-		DisplayContent: msgDo.DisplayContent,
-		Content:        msgDo.Content,
-		BrokenPosition: msgDo.Position,
-		Status:         int32(entity.MessageStatusAvailable),
-		CreatedAt:      time.Now().UnixMilli(),
-		UpdatedAt:      time.Now().UnixMilli(),
+		ID:               id,
+		ConversationID:   msgDo.ConversationID,
+		RunID:            msgDo.RunID,
+		AgentID:          msgDo.AgentID,
+		SectionID:        msgDo.SectionID,
+		UserID:           msgDo.UserID,
+		Role:             string(msgDo.Role),
+		ContentType:      string(msgDo.ContentType),
+		MessageType:      string(msgDo.MessageType),
+		DisplayContent:   msgDo.DisplayContent,
+		Content:          msgDo.Content,
+		BrokenPosition:   msgDo.Position,
+		Status:           int32(entity.MessageStatusAvailable),
+		CreatedAt:        time.Now().UnixMilli(),
+		UpdatedAt:        time.Now().UnixMilli(),
+		ReasoningContent: msgDo.ReasoningContent,
 	}
 
-	mc, err := dao.buildModelContent(msgDo)
-	if err != nil {
-		return nil, err
+	if msgDo.ModelContent != "" {
+		msgPO.ModelContent = msgDo.ModelContent
+	} else {
+		mc, err := dao.buildModelContent(msgDo)
+		if err != nil {
+			return nil, err
+		}
+		msgPO.ModelContent = mc
 	}
-	msgPO.ModelContent = mc
 
 	ext, err := json.Marshal(msgDo.Ext)
 	if err != nil {
@@ -267,11 +286,13 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 			one.Type = schema.ChatMessagePartTypeImageURL
 			one.ImageURL = &schema.ChatMessageImageURL{
 				URL: contentData.FileData[0].Url,
+				URI: contentData.FileData[0].URI,
 			}
 		case message.InputTypeFile:
 			one.Type = schema.ChatMessagePartTypeFileURL
 			one.FileURL = &schema.ChatMessageFileURL{
 				URL: contentData.FileData[0].Url,
+				URI: contentData.FileData[0].URI,
 			}
 		case message.InputTypeVideo:
 			one.Type = schema.ChatMessagePartTypeVideoURL
@@ -282,6 +303,7 @@ func (dao *MessageDAO) buildModelContent(msgDO *entity.Message) (string, error) 
 			one.Type = schema.ChatMessagePartTypeFileURL
 			one.AudioURL = &schema.ChatMessageAudioURL{
 				URL: contentData.FileData[0].Url,
+				URI: contentData.FileData[0].URI,
 			}
 		}
 		multiContent = append(multiContent, one)

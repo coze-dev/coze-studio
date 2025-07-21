@@ -18,10 +18,12 @@ package conversation
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
+	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	singleAgentEntity "github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
@@ -217,7 +219,7 @@ func (c *ConversationApplicationService) buildDomainMsg2VOMessage(ctx context.Co
 	}
 
 	if dm.ContentType == model.ContentTypeMix && dm.DisplayContent != "" {
-		cm.Content = dm.DisplayContent
+		cm.Content = c.buildParseMessageURI(ctx, dm.DisplayContent)
 	}
 
 	if dm.MessageType != model.MessageTypeQuestion {
@@ -225,6 +227,46 @@ func (c *ConversationApplicationService) buildDomainMsg2VOMessage(ctx context.Co
 		cm.SenderID = ptr.Of(strconv.FormatInt(dm.AgentID, 10))
 	}
 	return cm
+}
+
+func (c *ConversationApplicationService) buildParseMessageURI(ctx context.Context, msgContent string) string {
+
+	if msgContent == "" {
+		return msgContent
+	}
+
+	var mc *run.MixContentModel
+	err := json.Unmarshal([]byte(msgContent), &mc)
+	if err != nil {
+		return msgContent
+	}
+	for k, item := range mc.ItemList {
+		switch item.Type {
+		case run.ContentTypeImage:
+
+			url, pErr := c.appContext.ImageX.GetResourceURL(ctx, item.Image.Key)
+			if pErr == nil {
+				mc.ItemList[k].Image.ImageThumb.URL = url.URL
+				mc.ItemList[k].Image.ImageOri.URL = url.URL
+			}
+
+		case run.ContentTypeFile, run.ContentTypeAudio, run.ContentTypeVideo:
+			url, pErr := c.appContext.ImageX.GetResourceURL(ctx, item.File.FileKey)
+			if pErr == nil {
+				mc.ItemList[k].File.FileURL = url.URL
+
+			}
+
+		default:
+
+		}
+	}
+	jsonMsg, err := json.Marshal(mc)
+	if err != nil {
+		return msgContent
+	}
+
+	return string(jsonMsg)
 }
 
 func buildDExt2ApiExt(extra map[string]string) *message.ExtraInfo {

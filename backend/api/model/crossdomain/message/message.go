@@ -56,6 +56,7 @@ const (
 
 type FileData struct {
 	Url  string `json:"url"`
+	URI  string `json:"uri"`
 	Name string `json:"name"`
 }
 

@@ -28,6 +28,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/crossagent"
 	singleagent "github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/service"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -37,11 +38,13 @@ var defaultSVC crossagent.SingleAgent
 
 type impl struct {
 	DomainSVC singleagent.SingleAgent
+	ImagexSVC imagex.ImageX
 }
 
-func InitDomainService(c singleagent.SingleAgent) crossagent.SingleAgent {
+func InitDomainService(c singleagent.SingleAgent, imagexClient imagex.ImageX) crossagent.SingleAgent {
 	defaultSVC = &impl{
 		DomainSVC: c,
+		ImagexSVC: imagexClient,
 	}
 
 	return defaultSVC
@@ -64,14 +67,18 @@ func (c *impl) buildSingleAgentStreamExecuteReq(ctx context.Context, historyMsg 
 	input *message.Message, agentRuntime *model.AgentRuntime,
 ) *model.ExecuteRequest {
 	identity := c.buildIdentity(input, agentRuntime)
-	inputBuild := c.buildSchemaMessage([]*message.Message{input})
-	history := c.buildSchemaMessage(historyMsg)
+	inputBuild := c.buildSchemaMessage(ctx, []*message.Message{input})
+	var inputSM *schema.Message
+	if len(inputBuild) > 0 {
+		inputSM = inputBuild[0]
+	}
+	history := c.buildSchemaMessage(ctx, historyMsg)
 
 	resumeInfo := c.checkResumeInfo(ctx, historyMsg)
 
 	return &model.ExecuteRequest{
 		Identity: identity,
-		Input:    inputBuild[0],
+		Input:    inputSM,
 		History:  history,
 		UserID:   input.UserID,
 		PreCallTools: slices.Transform(agentRuntime.PreRetrieveTools, func(tool *agentrun.Tool) *agentrun.ToolsRetriever {
@@ -143,7 +150,7 @@ func (c *impl) checkResumeInfo(_ context.Context, historyMsg []*message.Message)
 	return resumeInfo
 }
 
-func (c *impl) buildSchemaMessage(msgs []*message.Message) []*schema.Message {
+func (c *impl) buildSchemaMessage(ctx context.Context, msgs []*message.Message) []*schema.Message {
 	schemaMessage := make([]*schema.Message, 0, len(msgs))
 
 	for _, msgOne := range msgs {
@@ -158,10 +165,50 @@ func (c *impl) buildSchemaMessage(msgs []*message.Message) []*schema.Message {
 		if err != nil {
 			continue
 		}
-		schemaMessage = append(schemaMessage, sm)
+		schemaMessage = append(schemaMessage, c.parseMessageURI(ctx, sm))
 	}
 
 	return schemaMessage
+}
+
+func (c *impl) parseMessageURI(ctx context.Context, mcMsg *schema.Message) *schema.Message {
+	if mcMsg.MultiContent == nil {
+		return mcMsg
+	}
+	for k, one := range mcMsg.MultiContent {
+		switch one.Type {
+		case schema.ChatMessagePartTypeImageURL:
+
+			if one.ImageURL.URI != "" {
+				url, err := c.ImagexSVC.GetResourceURL(ctx, one.ImageURL.URI)
+				if err == nil {
+					mcMsg.MultiContent[k].ImageURL.URL = url.URL
+				}
+			}
+		case schema.ChatMessagePartTypeFileURL:
+			if one.FileURL.URI != "" {
+				url, err := c.ImagexSVC.GetResourceURL(ctx, one.FileURL.URI)
+				if err == nil {
+					mcMsg.MultiContent[k].FileURL.URL = url.URL
+				}
+			}
+		case schema.ChatMessagePartTypeAudioURL:
+			if one.AudioURL.URI != "" {
+				url, err := c.ImagexSVC.GetResourceURL(ctx, one.AudioURL.URI)
+				if err == nil {
+					mcMsg.MultiContent[k].AudioURL.URL = url.URL
+				}
+			}
+		case schema.ChatMessagePartTypeVideoURL:
+			if one.VideoURL.URI != "" {
+				url, err := c.ImagexSVC.GetResourceURL(ctx, one.VideoURL.URI)
+				if err == nil {
+					mcMsg.MultiContent[k].VideoURL.URL = url.URL
+				}
+			}
+		}
+	}
+	return mcMsg
 }
 
 func (c *impl) buildIdentity(input *message.Message, agentRuntime *model.AgentRuntime) *model.AgentIdentity {

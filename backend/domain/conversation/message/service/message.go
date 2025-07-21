@@ -24,6 +24,7 @@ import (
 
 type Message interface {
 	List(ctx context.Context, req *entity.ListMeta) (*entity.ListResult, error)
+	PreCreate(ctx context.Context, req *entity.Message) (*entity.Message, error)
 	Create(ctx context.Context, req *entity.Message) (*entity.Message, error)
 	GetByRunIDs(ctx context.Context, conversationID int64, runIDs []int64) ([]*entity.Message, error)
 	GetByID(ctx context.Context, id int64) (*entity.Message, error)
