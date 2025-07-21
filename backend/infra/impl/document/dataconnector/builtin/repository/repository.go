@@ -21,6 +21,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/dataconnector"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin/internal/dal/dao"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/dataconnector/builtin/internal/dal/query"
 	"gorm.io/gorm"
 )
@@ -30,5 +31,6 @@ func NewAuthDAO(db *gorm.DB) AuthRepo {
 }
 
 type AuthRepo interface {
-	GetAuthInfoByCreatorIDAndConnectorID(ctx context.Context, creatorID int64, connectorID dataconnector.ConnectorID) (*dataconnector.AuthInfo, error)
+	GetAuthInfoByCreatorIDAndConnectorID(ctx context.Context, creatorID int64, connectorID dataconnector.ConnectorID) ([]*model.Auth, error)
+	GetAuthByUniqID(ctx context.Context, uniqID string) (*model.Auth, error)
 }
