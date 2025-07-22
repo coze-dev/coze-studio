@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable */
 /* tslint:disable */
 // @ts-nocheck
@@ -34,6 +34,11 @@ export interface TConfigEnv<TVal extends TValue = TValue> {
     release: TVal;
   };
   va: {
+    inhouse: TVal;
+    release: TVal;
+  };
+  oci: {
+    inhouse: TVal;
     release: TVal;
   };
 }
@@ -52,7 +57,11 @@ export const extractEnvValue = <TConfigValue extends TValue = TValue>(
       break;
     }
     case 'va': {
-      key = 'release';
+      key = IS_RELEASE_VERSION ? 'release' : 'inhouse';
+      break;
+    }
+    case 'oci': {
+      key = IS_RELEASE_VERSION ? 'release' : 'inhouse';
       break;
     }
   }
