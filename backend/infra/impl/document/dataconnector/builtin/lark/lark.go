@@ -3,6 +3,7 @@ package lark
 import (
 	"context"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/dataconnector"
@@ -170,9 +171,43 @@ var feishuFileTypeMapping = map[string]dataconnector.FileNodeType{
 	"doc":    dataconnector.FileNodeTypeDocument,
 }
 
-func filterLarkFileListByFileType(ctx context.Context, fileList []*larkdrive.File, fileTypeList []dataconnector.FileNodeType) []*larkdrive.File {
+func filterLarkFileListByFileType(ctx context.Context, fileList []*larkdrive.File, fileTypeList []dataconnector.FileNodeType) (map[string]*dataconnector.FileNode, map[string][]string) {
 	fileTypeSet := sets.FromSlice(fileTypeList)
-
+	var feishuFileMap = make(map[string]*dataconnector.FileNode)
+	var fileParentMap = make(map[string][]string)
+	for _, file := range fileList {
+		if file.Type == nil || file.ParentToken == nil {
+			logs.CtxInfof(ctx, "fileToken or parentToken not found %v", *file.Token)
+			continue
+		}
+		if _, ok := fileTypeSet[feishuFileTypeMapping[ptr.From(file.Type)]]; !ok {
+			continue
+		}
+		feishuFileMap[ptr.From(file.Token)] = &dataconnector.FileNode{
+			FileID:       ptr.From(file.Token),
+			FileNodeType: feishuFileTypeMapping[ptr.From(file.Type)],
+			FileName: func() string {
+				if file.Name == nil || *file.Name == "" {
+					return "Unnamed document"
+				}
+				return ptr.From(file.Name)
+			}(),
+			FileType: func() string {
+				if file.Type == nil || *file.Type == "" {
+					return util.DefaultFeishuFileType
+				}
+				return *file.Type
+			}(),
+			FileURL: ptr.From(file.Url),
+			CreateTime: func() int64 {
+				val, err := strconv.ParseInt(ptr.From(file.CreatedTime))
+				return conv.Int64Default(conv.StringPtrToVal(file.CreatedTime, "0"), 0)
+			},
+			UpdateTime: conv.Int64Default(conv.StringPtrToVal(file.ModifiedTime, "0"), 0),
+		}
+		fileParentMap[*file.ParentToken] = append(fileParentMap[*file.ParentToken], *file.Token)
+	}
+	return feishuFileMap, fileParentMap
 }
 
 func (l *LarkFetcher) searchFeishuFile(ctx context.Context, ak string, req *dataconnector.SearchFileRequest) {
