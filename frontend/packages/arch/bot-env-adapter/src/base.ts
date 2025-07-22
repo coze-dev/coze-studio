@@ -26,7 +26,7 @@ const processEnvs = {
     | 'release'
     | 'inhouse',
   BUILD_BRANCH: (process.env.BUILD_BRANCH || getCurrentBranch()) as string,
-  REGION: (process.env.BUILD_REGION || 'cn') as 'cn' | 'sg' | 'va',
+  REGION: (process.env.BUILD_REGION || 'cn') as 'cn' | 'sg' | 'va' | 'oci',
   NODE_ENV: process.env.NODE_ENV as 'production' | 'development' | 'test',
   CDN_PATH_PREFIX: (process.env.CDN_PATH_PREFIX ?? '/') as string,
   // vmok 生产者使用，用来将生产者的 sourcemap 文件上传至对应的消费者版本下面

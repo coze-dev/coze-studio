@@ -31,7 +31,7 @@ rush update
 import { GLOBAL_ENVS } from '@coze-arch/bot-env';
 
 // Access environment variables with full type safety
-console.log(GLOBAL_ENVS.REGION); // 'cn' | 'sg' | 'va'
+console.log(GLOBAL_ENVS.REGION); // 'cn' | 'sg' | 'va' | 'oci'
 console.log(GLOBAL_ENVS.IS_PROD); // boolean
 console.log(GLOBAL_ENVS.BUILD_TYPE); // 'local' | 'online' | 'offline' | 'test'
 
@@ -49,7 +49,7 @@ console.log(runtimeEnv.isPPE); // boolean
 /// <reference types="@coze-arch/bot-env/typings" />
 
 // All environment variables are available as global constants
-declare const REGION: 'cn' | 'sg' | 'va';
+declare const REGION: 'cn' | 'sg' | 'va' | 'oci';
 declare const IS_PROD: boolean;
 declare const FEATURE_ENABLE_SSO: boolean;
 // ... and many more
@@ -62,9 +62,10 @@ declare const FEATURE_ENABLE_SSO: boolean;
 The main export containing all environment variables organized by category:
 
 #### Base Environment Variables
+
 - `BUILD_TYPE`: Build environment type (`'local' | 'online' | 'offline' | 'test'`)
 - `CUSTOM_VERSION`: Version type (`'inhouse' | 'release'`)
-- `REGION`: Deployment region (`'cn' | 'sg' | 'va'`)
+- `REGION`: Deployment region (`'cn' | 'sg' | 'va' | 'oci'`)
 - `NODE_ENV`: Node environment (`'production' | 'development' | 'test'`)
 - `IS_PROD`: Production environment flag
 - `IS_BOE`: BOE environment flag
@@ -72,6 +73,7 @@ The main export containing all environment variables organized by category:
 - `IS_RELEASE_VERSION`: Release version flag
 
 #### Feature Flags
+
 - `FEATURE_ENABLE_SSO`: Single Sign-On feature
 - `FEATURE_ENABLE_APP_GUIDE`: Application guide feature
 - `FEATURE_ENABLE_MSG_DEBUG`: Message debugging feature
@@ -80,6 +82,7 @@ The main export containing all environment variables organized by category:
 - And many more feature toggles...
 
 #### Configuration Variables
+
 - `CDN`: Content delivery network URL
 - `UPLOAD_CDN`: Upload CDN configuration
 - `COZE_DOMAIN`: Coze service domain
@@ -93,7 +96,7 @@ The main export containing all environment variables organized by category:
 import { runtimeEnv } from '@coze-arch/bot-env/runtime';
 
 // Runtime environment detection
-runtimeEnv.isPPE // boolean - Production-like environment detection
+runtimeEnv.isPPE; // boolean - Production-like environment detection
 ```
 
 ### Build Scripts
@@ -148,15 +151,15 @@ const API_ENDPOINT = extractEnvValue<string>({
   cn: {
     boe: 'https://boe.api.example.com',
     inhouse: 'https://inhouse.api.example.com',
-    release: 'https://api.example.com'
+    release: 'https://api.example.com',
   },
   sg: {
     inhouse: 'https://sg-inhouse.api.example.com',
-    release: 'https://sg.api.example.com'
+    release: 'https://sg.api.example.com',
   },
   va: {
-    release: 'https://va.api.example.com'
-  }
+    release: 'https://va.api.example.com',
+  },
 });
 ```
 
@@ -183,9 +186,11 @@ rush build:types -t @coze-arch/bot-env
 ## Dependencies
 
 ### Runtime Dependencies
+
 - `@coze-studio/bot-env-adapter`: Core environment configuration adapter
 
 ### Development Dependencies
+
 - `@coze-arch/eslint-config`: ESLint configuration
 - `@coze-arch/ts-config`: TypeScript configuration
 - `@coze-arch/vitest-config`: Vitest testing configuration

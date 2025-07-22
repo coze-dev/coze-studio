@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@coze-arch/pdfjs-shadow",
+      "comment": "添加 'oci' 作为 REGION 的新选项",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@coze-arch/pdfjs-shadow",
+  "email": "gaokekuan@bytedance.com"
+}

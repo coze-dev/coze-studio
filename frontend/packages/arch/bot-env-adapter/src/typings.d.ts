@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 /* eslint-disable */
 /* prettier-ignore */
 // 基于src/index.ts自动生成，请勿手动修改
@@ -93,7 +93,7 @@ declare const OUTER_CDN: string | undefined;
 declare const PLUGIN_IDE_EDITION: string;
 declare const PRIVATE_POLICY: string;
 declare const REDDIT_PUBLISH_ID: string;
-declare const REGION: 'cn' | 'sg' | 'va';
+declare const REGION: 'cn' | 'sg' | 'va' | 'oci';
 declare const SAMI_APP_KEY: string;
 declare const SAMI_CHAT_WS_URL: string;
 declare const SAMI_WS_ORIGIN: string;

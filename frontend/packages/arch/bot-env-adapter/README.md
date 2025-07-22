@@ -37,7 +37,7 @@ rush update
 import { GLOBAL_ENVS } from '@coze-studio/bot-env-adapter';
 
 // Access environment variables
-console.log(GLOBAL_ENVS.REGION); // 'cn' | 'sg' | 'va'
+console.log(GLOBAL_ENVS.REGION); // 'cn' | 'sg' | 'va' | 'oci'
 console.log(GLOBAL_ENVS.BUILD_TYPE); // 'local' | 'online' | 'offline' | 'test'
 console.log(GLOBAL_ENVS.BOT_BRAND_NAME); // Region-specific brand name
 
@@ -87,29 +87,31 @@ const myConfig: TConfigEnv<string> = {
 ### Core Exports
 
 #### `GLOBAL_ENVS`
+
 The main export containing all environment variables, feature flags, and configurations.
 
 ```typescript
 import { GLOBAL_ENVS } from '@coze-studio/bot-env-adapter';
 
 // Base environment variables
-GLOBAL_ENVS.BUILD_TYPE    // Build environment type
-GLOBAL_ENVS.REGION        // Deployment region
-GLOBAL_ENVS.NODE_ENV      // Node environment
-GLOBAL_ENVS.CDN           // CDN URL for current environment
+GLOBAL_ENVS.BUILD_TYPE; // Build environment type
+GLOBAL_ENVS.REGION; // Deployment region
+GLOBAL_ENVS.NODE_ENV; // Node environment
+GLOBAL_ENVS.CDN; // CDN URL for current environment
 
 // Feature flags
-GLOBAL_ENVS.FEATURE_ENABLE_SSO           // SSO feature toggle
-GLOBAL_ENVS.FEATURE_ENABLE_APP_GUIDE     // App guide feature
-GLOBAL_ENVS.FEATURE_GOOGLE_LOGIN         // Google login support
+GLOBAL_ENVS.FEATURE_ENABLE_SSO; // SSO feature toggle
+GLOBAL_ENVS.FEATURE_ENABLE_APP_GUIDE; // App guide feature
+GLOBAL_ENVS.FEATURE_GOOGLE_LOGIN; // Google login support
 
 // Business configurations
-GLOBAL_ENVS.APP_ID                       // Application ID
-GLOBAL_ENVS.BOT_BRAND_NAME              // Brand name for current region
-GLOBAL_ENVS.GOOGLE_CLIENT_ID            // Google OAuth client ID
+GLOBAL_ENVS.APP_ID; // Application ID
+GLOBAL_ENVS.BOT_BRAND_NAME; // Brand name for current region
+GLOBAL_ENVS.GOOGLE_CLIENT_ID; // Google OAuth client ID
 ```
 
 #### `extractEnvValue<T>(config: TConfigEnv<T>): T`
+
 Utility function to extract environment-specific values based on current region and build type.
 
 ```typescript
@@ -134,20 +136,26 @@ const apiUrl = extractEnvValue<string>({
 ### Configuration Structure
 
 #### Base Configuration (`base.ts`)
+
 Contains fundamental environment variables and regional judgments:
+
 - Build type and version information
 - Regional flags (IS_OVERSEA, IS_CN_REGION, etc.)
 - CDN configurations
 - Development mode flags
 
 #### Feature Flags (`features.ts`)
+
 Boolean flags controlling feature availability:
+
 - Authentication features (SSO, Google login, etc.)
 - Regional feature differences
 - Version-specific feature toggles
 
 #### Business Configurations (`configs.ts`)
+
 Environment-specific business settings:
+
 - API keys and application IDs
 - External service configurations
 - Legal document URLs
@@ -160,7 +168,7 @@ The package automatically generates TypeScript definitions in `src/typings.d.ts`
 ```typescript
 // Auto-generated types based on actual configuration
 declare const BUILD_TYPE: 'local' | 'online' | 'offline' | 'test';
-declare const REGION: 'cn' | 'sg' | 'va';
+declare const REGION: 'cn' | 'sg' | 'va' | 'oci';
 declare const FEATURE_ENABLE_SSO: boolean;
 // ... and many more
 ```
@@ -190,6 +198,7 @@ src/
 When adding new environment configurations, follow these conventions:
 
 1. **Use `extractEnvValue` for environment-specific values**:
+
 ```typescript
 const MY_CONFIG = extractEnvValue<string>({
   cn: {
@@ -220,6 +229,7 @@ npm run build
 ```
 
 This command:
+
 1. Analyzes the `envs` object in `src/index.ts`
 2. Generates type definitions in `src/typings.d.ts`
 3. Compiles TypeScript files
@@ -229,7 +239,7 @@ This command:
 Set these environment variables to control the adapter behavior:
 
 - `BUILD_TYPE`: Build environment ('local' | 'online' | 'offline' | 'test')
-- `REGION`: Deployment region ('cn' | 'sg' | 'va')
+- `REGION`: Deployment region ('cn' | 'sg' | 'va' | 'oci')
 - `CUSTOM_VERSION`: Version type ('inhouse' | 'release')
 - `NODE_ENV`: Node environment ('development' | 'production' | 'test')
 - `VERBOSE`: Set to 'true' to log all environment values
@@ -245,9 +255,11 @@ npm run lint        # Run linting
 ## Dependencies
 
 ### Runtime Dependencies
+
 This package has no runtime dependencies, making it lightweight and suitable for both client and server environments.
 
 ### Development Dependencies
+
 - **@coze-arch/eslint-config**: Workspace ESLint configuration
 - **@coze-arch/ts-config**: Workspace TypeScript configuration
 - **@coze-arch/vitest-config**: Workspace Vitest configuration
